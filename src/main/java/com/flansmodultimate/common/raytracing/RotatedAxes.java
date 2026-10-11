@@ -28,12 +28,6 @@ public class RotatedAxes
         setAngles(yaw, pitch, roll);
     }
 
-    @Override
-    public RotatedAxes clone()
-    {
-        return new RotatedAxes(rotationMatrix);
-    }
-
     public boolean isValid()
     {
         float determinant = rotationMatrix.determinant();
@@ -185,8 +179,7 @@ public class RotatedAxes
     private void convertMatrixToAngles()
     {
         rotationYaw = (float) Math.atan2(rotationMatrix.m20(), rotationMatrix.m00()) * 180F / Mth.PI;
-        rotationPitch = (float) Math.atan2(-rotationMatrix.m10(), Math.sqrt(rotationMatrix.m12() * rotationMatrix.m12() + rotationMatrix.m11() * rotationMatrix.m11())) * 180F
-            / Mth.PI;
+        rotationPitch = (float) Math.atan2(-rotationMatrix.m10(), Math.sqrt(rotationMatrix.m12() * rotationMatrix.m12() + rotationMatrix.m11() * rotationMatrix.m11())) * 180F / Mth.PI;
         rotationRoll = (float) Math.atan2(rotationMatrix.m12(), rotationMatrix.m11()) * 180F / Mth.PI;
     }
 

@@ -9,10 +9,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -52,8 +49,8 @@ public final class ApocalypseWorldChoice
     /** Whether a world about to be created with this configuration can be offered the Apocalypse. */
     public static boolean isOffered(WorldDataConfiguration configuration)
     {
-        return isAvailable() && (configuration.dataPacks().getEnabled().contains(ApocalypseDatapackSource.PACK_ID)
-            || configuration.dataPacks().getDisabled().contains(ApocalypseDatapackSource.PACK_ID));
+        return isAvailable()
+            && (configuration.dataPacks().getEnabled().contains(ApocalypseDatapackSource.PACK_ID) || configuration.dataPacks().getDisabled().contains(ApocalypseDatapackSource.PACK_ID));
     }
 
     public static boolean isEnabled(WorldDataConfiguration configuration)
@@ -94,6 +91,8 @@ public final class ApocalypseWorldChoice
      * loads. Written the way Minecraft saves {@code level.dat}, keeping the previous one as
      * {@code level.dat_old}.
      */
+    // "record" is only a contextual keyword and stays a valid method name.
+    @SuppressWarnings("java:S6213")
     public static void record(Minecraft minecraft, String levelId, boolean withApocalypse) throws IOException
     {
         try (LevelStorageSource.LevelStorageAccess access = minecraft.getLevelSource().createAccess(levelId))

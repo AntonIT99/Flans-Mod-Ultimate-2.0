@@ -202,7 +202,8 @@ public class Vehicle extends Driveable implements VehicleVisual
         double forwardLength = Math.hypot(steeringForward.x, steeringForward.z);
         Vec3 steeringVelocity = getDeltaMovement();
         double signedSpeed = forwardLength > 1.0E-8D ? (steeringVelocity.x * steeringForward.x + steeringVelocity.z * steeringForward.z) / forwardLength : 0D;
-        double velocityScale = tracked ? (isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D) : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
+        double trackedScale = isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D;
+        double velocityScale = tracked ? trackedScale : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
         float yawDelta = (float) Math.toDegrees(turnControl * steeringScale * velocityScale);
         if (type.usesRealTurnRate(ModCommonConfig.forceLegacyVehiclePhysics(), pushed, tracked))

@@ -254,6 +254,8 @@ public final class DriveableCollisionHelper
     }
 
     /** Moves an entity with the surface it stood on, turning it with the hull as well. */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     private void carry(Entity entity, int shape)
     {
         AABB box = entity.getBoundingBox();
@@ -305,9 +307,8 @@ public final class DriveableCollisionHelper
         if (amount <= 0F)
             return;
         Entity controller = driveable.getControllingEntity();
-        DamageSource source = controller instanceof Player player
-            ? driveable.level().damageSources().playerAttack(player)
-            : controller instanceof LivingEntity living ? driveable.level().damageSources().mobAttack(living) : driveable.level().damageSources().flyIntoWall();
+        DamageSource unmannedSource = controller instanceof LivingEntity living ? driveable.level().damageSources().mobAttack(living) : driveable.level().damageSources().flyIntoWall();
+        DamageSource source = controller instanceof Player player ? driveable.level().damageSources().playerAttack(player) : unmannedSource;
         candidate.hurt(source, amount);
     }
 

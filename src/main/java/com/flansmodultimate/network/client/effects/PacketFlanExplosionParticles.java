@@ -76,6 +76,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
     /** Drawn as a fire explosion: the fireball burns orange throughout rather than cooling to grey. */
     private boolean fiery;
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketFlanExplosionParticles(Vec3 position, int numSmoke, int numDebris, float blastRadius, float explosionRadius, float fragRadius, float fragIntensity, double effectiveFragments,
         FragmentationModel.Pattern fragPattern, Vec3 fragForward, boolean fiery)
     {

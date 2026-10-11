@@ -1,8 +1,6 @@
 package com.flansmodultimate.platform.client;
 
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.eventbus.api.Event;
 
@@ -26,7 +24,8 @@ import java.util.List;
 /** Version boundary for client frame timing and screen helpers. Client-only. */
 public final class ClientPlatform
 {
-    private ClientPlatform() {}
+    private ClientPlatform()
+    {}
 
     /** Interpolation factor between the previous and current game tick for the frame being rendered. */
     public static float partialTick()
@@ -40,6 +39,8 @@ public final class ClientPlatform
         return Minecraft.getInstance().getDeltaFrameTime();
     }
 
+    // Part of the cross-version platform signature; other loader versions use the parameter.
+    @SuppressWarnings("java:S1172")
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         screen.renderBackground(graphics);
@@ -88,9 +89,7 @@ public final class ClientPlatform
         if (quads.isEmpty())
             quads = model.getQuads(state, null, random, modelData, (RenderType) null);
 
-        return quads.isEmpty()
-            ? model.getParticleIcon(modelData)
-            : quads.get(random.nextInt(quads.size())).getSprite();
+        return quads.isEmpty() ? model.getParticleIcon(modelData) : quads.get(random.nextInt(quads.size())).getSprite();
     }
 
     /** The model's particle sprite, without model data. */

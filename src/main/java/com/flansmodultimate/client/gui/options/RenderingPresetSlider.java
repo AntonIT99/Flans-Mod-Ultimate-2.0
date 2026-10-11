@@ -73,13 +73,11 @@ public final class RenderingPresetSlider extends AbstractSliderButton
             return;
 
         selected = next;
-        if (next != ModClientConfig.RenderPreset.CUSTOM)
-        {
-            if (kind == Kind.LOD)
-                ModClientConfig.applyLodPreset(next);
-            else
-                ModClientConfig.applyImpostorPreset(next);
-        }
+        // Custom was rejected above, so next is always an applicable preset here.
+        if (kind == Kind.LOD)
+            ModClientConfig.applyLodPreset(next);
+        else
+            ModClientConfig.applyImpostorPreset(next);
         updateMessage();
     }
 

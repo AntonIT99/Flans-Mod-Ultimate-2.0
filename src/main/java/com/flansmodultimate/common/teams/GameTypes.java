@@ -12,5 +12,7 @@ public final class GameTypes
     {}
 
     static void bootstrap()
-    {}
+    {
+        // Only forces the class to load so its game types register.
+    }
 }

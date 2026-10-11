@@ -13,9 +13,11 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The motorway network left over the wasteland.
  *
- * <p>Two roads run along the world axes and ring roads circle the origin every 600 blocks,
+ * <p>
+ * Two roads run along the world axes and ring roads circle the origin every 600 blocks,
  * all decked at a constant height. The layout is a pure function of world coordinates, so
- * neighbouring chunks always join up and no seed or ordering can shift it.</p>
+ * neighbouring chunks always join up and no seed or ordering can shift it.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseRoads
@@ -67,8 +69,7 @@ public final class ApocalypseRoads
 
         // Carry the deck down onto the terrain, and cut a clear span above it.
         BlockPos support = deck.below();
-        while (support.getY() > carriageway.archHeight() && support.getY() > level.getMinBuildHeight()
-            && level.getBlockState(support).isAir())
+        while (support.getY() > carriageway.archHeight() && support.getY() > level.getMinBuildHeight() && level.getBlockState(support).isAir())
         {
             ApocalypseWorldgen.setBlock(level, support, SUPPORT);
             support = support.below();
@@ -104,8 +105,7 @@ public final class ApocalypseRoads
         {
             carriageways++;
             kerb = ringOffset <= RING_INNER + EDGE_WIDTH || RING_OUTER - EDGE_WIDTH <= ringOffset;
-            dash = RING_MID - 0.5D <= ringOffset && ringOffset <= RING_MID + 0.5D
-                && Mth.positiveModulo(theta, dashArc * 2.0D) < dashArc;
+            dash = RING_MID - 0.5D <= ringOffset && ringOffset <= RING_MID + 0.5D && Mth.positiveModulo(theta, dashArc * 2.0D) < dashArc;
             archHeight = MIN_ARCH_HEIGHT + ARCH_RELIEF * Math.abs(Math.sin(theta / archArc));
             double across = (ringOffset - RING_INNER) / (RING_OUTER - RING_INNER);
             tunnelHeight = TUNNEL_BASE + TUNNEL_RELIEF * Math.sin(across * Math.PI);
@@ -116,7 +116,7 @@ public final class ApocalypseRoads
         {
             carriageways++;
             kerb = absX > AXIS_HALF_WIDTH - EDGE_WIDTH;
-            dash = absX < 0.5D && Mth.positiveModulo((double) z, 2.0D * DASH_LENGTH) < DASH_LENGTH;
+            dash = absX < 0.5D && Mth.positiveModulo(z, 2.0D * DASH_LENGTH) < DASH_LENGTH;
             archHeight = Math.min(archHeight, MIN_ARCH_HEIGHT + ARCH_RELIEF * Math.abs(Math.sin(z * Math.PI / (ARCH_LENGTH * 3.0D))));
             tunnelHeight = Math.max(tunnelHeight, TUNNEL_BASE + TUNNEL_RELIEF * Math.cos(absX / AXIS_HALF_WIDTH * Math.PI * 0.5D));
         }
@@ -126,7 +126,7 @@ public final class ApocalypseRoads
         {
             carriageways++;
             kerb = absZ > AXIS_HALF_WIDTH - EDGE_WIDTH;
-            dash = absZ < 0.5D && Mth.positiveModulo((double) x, 2.0D * DASH_LENGTH) < DASH_LENGTH;
+            dash = absZ < 0.5D && Mth.positiveModulo(x, 2.0D * DASH_LENGTH) < DASH_LENGTH;
             archHeight = Math.min(archHeight, MIN_ARCH_HEIGHT + ARCH_RELIEF * Math.abs(Math.sin(x * Math.PI / (ARCH_LENGTH * 3.0D))));
             tunnelHeight = Math.max(tunnelHeight, TUNNEL_BASE + TUNNEL_RELIEF * Math.cos(absZ / AXIS_HALF_WIDTH * Math.PI * 0.5D));
         }
@@ -134,7 +134,7 @@ public final class ApocalypseRoads
         if (carriageways == 0)
             return null;
         // A junction is all carriageway: no kerb runs through the middle of it.
-        return new Carriageway(carriageways > 1 ? false : kerb, dash, archHeight, tunnelHeight);
+        return new Carriageway(carriageways <= 1 && kerb, dash, archHeight, tunnelHeight);
     }
 
     private record Carriageway(boolean kerb, boolean dash, double archHeight, double tunnelHeight)

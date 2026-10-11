@@ -37,6 +37,8 @@ import java.util.Comparator;
  * damage, loses parts and drops its contents exactly like a piloted one.
  * </p>
  */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AiMechaEntity extends Mecha
 {

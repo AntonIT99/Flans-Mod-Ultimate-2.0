@@ -18,6 +18,8 @@ public final class LegacyItemParticle extends TextureSheetParticle
     private final float uo;
     private final float vo;
 
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
     public LegacyItemParticle(ClientLevel level, ItemStack stack, double x, double y, double z, double vx, double vy, double vz)
     {
         // EntityBreakingFX first constructed an EntityFX with zero requested

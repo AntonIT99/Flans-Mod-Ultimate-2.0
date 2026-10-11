@@ -184,8 +184,7 @@ class TrackLinkLodTest
         assertFalse(lod.matches(parts, false));
         assertNull(TrackLinkLod.create(parts, false).parts());
         normals.clear();
-        var vertices = new PositionTextureVertex[]{new PositionTransformVertex(0, 0, 0, 0, 0), new PositionTransformVertex(1, 0, 0, 1, 0),
-            new PositionTransformVertex(0, 1, 0, 0, 1)};
+        var vertices = new PositionTextureVertex[]{new PositionTransformVertex(0, 0, 0, 0, 0), new PositionTransformVertex(1, 0, 0, 1, 0), new PositionTransformVertex(0, 1, 0, 0, 1)};
         parts[0].copyTo(vertices, new TexturedPolygon[]{new TexturedPolygon(vertices)});
         assertNull(TrackLinkLod.create(parts, false).parts());
     }
@@ -231,6 +230,8 @@ class TrackLinkLodTest
         }
     }
 
+    // "record" is only a contextual keyword and stays a valid method name.
+    @SuppressWarnings("java:S6213")
     private static RecordingVertexConsumer record(ModelRendererTurbo[] parts, boolean oldOrder)
     {
         var result = new RecordingVertexConsumer();

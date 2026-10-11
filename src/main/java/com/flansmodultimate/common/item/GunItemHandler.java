@@ -141,7 +141,7 @@ public class GunItemHandler
         return true;
     }
 
-    public void doCustomMelee(Level level, ServerPlayer player, PlayerData data, InteractionHand hand)
+    public void doCustomMelee(ServerPlayer player, PlayerData data, InteractionHand hand)
     {
         if (item.configType.isDeployable() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
             return;
@@ -203,7 +203,7 @@ public class GunItemHandler
         if (player.isSprinting() && !data.isScoped() && !item.configType.canHipFireWhileSprinting())
             return;
         if (item.configType.isUseCustomMeleeWhenShoot())
-            doCustomMelee(level, player, data, hand);
+            doCustomMelee(player, data, hand);
 
         GunFiredEvent gunFireEvent = new GunFiredEvent(player);
         PlatformEvents.post(gunFireEvent);

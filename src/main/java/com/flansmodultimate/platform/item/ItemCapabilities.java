@@ -17,13 +17,13 @@ public final class ItemCapabilities
     @Nullable
     public static IEnergyStorage energy(ItemStack stack)
     {
-        return stack.getCapability(ForgeCapabilities.ENERGY).orElse(null);
+        return stack.getCapability(ForgeCapabilities.ENERGY).resolve().orElse(null);
     }
 
     /** The stack's fluid handler, or null if it has none. The handler may replace the container as it drains. */
     @Nullable
     public static IFluidHandlerItem fluidHandler(ItemStack stack)
     {
-        return stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).orElse(null);
+        return stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve().orElse(null);
     }
 }

@@ -43,6 +43,8 @@ import net.minecraft.world.phys.*;
 
 import java.util.*;
 
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBullet
 {

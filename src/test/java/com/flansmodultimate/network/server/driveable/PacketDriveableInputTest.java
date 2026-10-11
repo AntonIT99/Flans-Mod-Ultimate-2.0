@@ -53,7 +53,8 @@ class PacketDriveableInputTest
         data.writeVarInt(1_000_000);
 
         PacketDriveableInput decoded = new PacketDriveableInput();
-        assertThrows(DecoderException.class, () -> decoded.decodeInto(new PacketBuffer(buffer)));
+        PacketBuffer truncated = new PacketBuffer(buffer);
+        assertThrows(DecoderException.class, () -> decoded.decodeInto(truncated));
     }
 
     private static byte[] encode(PacketDriveableInput packet)

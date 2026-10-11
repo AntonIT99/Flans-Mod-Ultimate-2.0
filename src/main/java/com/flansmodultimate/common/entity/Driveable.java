@@ -654,41 +654,49 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return entityData.get(DATA_RECOIL_PROGRESS);
     }
 
+    @Override
     public float getIT1DoorAngle()
     {
         return entityData.get(DATA_IT1_DOOR_ANGLE);
     }
 
+    @Override
     public float getPrevIT1DoorAngle()
     {
         return entityData.get(DATA_PREV_IT1_DOOR_ANGLE);
     }
 
+    @Override
     public float getIT1ArmAngle()
     {
         return entityData.get(DATA_IT1_ARM_ANGLE);
     }
 
+    @Override
     public float getPrevIT1ArmAngle()
     {
         return entityData.get(DATA_PREV_IT1_ARM_ANGLE);
     }
 
+    @Override
     public float getIT1RailAngle()
     {
         return entityData.get(DATA_IT1_RAIL_ANGLE);
     }
 
+    @Override
     public float getPrevIT1RailAngle()
     {
         return entityData.get(DATA_PREV_IT1_RAIL_ANGLE);
     }
 
+    @Override
     public boolean isCanFireIT1()
     {
         return getFlag(FLAG_IT1_CAN_FIRE);
     }
 
+    @Override
     public boolean isReloadingDrakon()
     {
         return getFlag(FLAG_IT1_RELOADING);
@@ -1731,6 +1739,17 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (configType instanceof VehicleType vehicle)
             return secondary ? vehicle.getVehicleShellDelay() : vehicle.getVehicleShootDelay();
         return 1F;
+    }
+
+    /** The driveable an entity rides: the entity itself, the driveable its seat belongs to, or the one carrying the entity. */
+    @Nullable
+    public static Driveable ofRiddenEntity(@Nullable Entity vehicle)
+    {
+        if (vehicle instanceof Driveable driveable)
+            return driveable;
+        if (vehicle instanceof Seat seat)
+            return seat.getDriveable();
+        return vehicle != null && vehicle.getVehicle() instanceof Driveable parent ? parent : null;
     }
 
     private static boolean shouldFire(EnumFireMode mode, boolean held, boolean rising, int heldTicks, int burstRemaining)
@@ -2970,7 +2989,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return point;
         Vec3 turretPivot = configuredModelLocal(configType.getTurretOrigin());
         Vec3 barrelPivot = modelBarrelPitchPivot == null ? null : modelPivotToLocal(modelBarrelPitchPivot);
-        Vec3 pitchPivot = partPivot != null ? partPivot : barrelPivot != null ? barrelPivot : turretPivot;
+        Vec3 defaultPivot = barrelPivot != null ? barrelPivot : turretPivot;
+        Vec3 pitchPivot = partPivot != null ? partPivot : defaultPivot;
 
         // The renderer pitches each barrel around its own model pivot first,
         // then yaws the complete turret around TurretOrigin.
@@ -4079,7 +4099,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int baseY = Mth.floor(getY());
         for (int dy : DISMOUNT_HEIGHT_OFFSETS)
         {
-            Vec3 spot = DismountHelper.findSafeDismountLocation(passenger.getType(), level(), BlockPos.containing(column.x, baseY + dy, column.z), true);
+            Vec3 spot = DismountHelper.findSafeDismountLocation(passenger.getType(), level(), BlockPos.containing(column.x, (double) baseY + dy, column.z), true);
             if (spot != null && isClearOfHulls(passenger, spot))
                 return spot;
         }
@@ -4132,6 +4152,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /** Limits the input copied from a movement controller into the driveable itself. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected int movementControlMask(@NotNull Seat seat, int mask)
     {
         return DriveableInput.sanitize(mask);
@@ -4171,6 +4193,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
     }
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void handleRisingInputs(@NotNull Seat seat, @NotNull Player player, int rising)
     {
         if (DriveableInput.isDown(rising, DriveableInput.EXIT))
@@ -4200,6 +4224,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /** Landing gear toggle. Driveables without retractable gear ignore it. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void toggleGear(@NotNull Player player)
     {
         setGearDeployed(!isGearDeployed());
@@ -4209,12 +4235,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      * Parts stowed inside the hull, such as retracted landing gear, are not
      * exposed to bullets or repairs.
      */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public boolean canHitPart(@Nullable EnumDriveablePart part)
     {
         return true;
     }
 
     /** Door toggle. Driveables without doors simply carry the flag. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void toggleDoor(@NotNull Player player)
     {
         setDoorOpen(!isDoorOpen());
@@ -4227,6 +4257,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void toggleAirBrake(@NotNull Player player)
     {}
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void toggleDriveableMode(@NotNull Player player)
     {
         setDriveableMode(Math.floorMod(getDriveableMode() + 1, 2));

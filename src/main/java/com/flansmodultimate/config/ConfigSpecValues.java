@@ -9,10 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.FriendlyByteBuf;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -77,6 +74,8 @@ public final class ConfigSpecValues
     }
 
     /** The config value at the given path, or null when the spec has no such entry. */
+    // The config value type is only known at runtime.
+    @SuppressWarnings("java:S1452")
     @Nullable
     public static ForgeConfigSpec.ConfigValue<?> find(ForgeConfigSpec spec, List<String> path)
     {
@@ -89,8 +88,10 @@ public final class ConfigSpecValues
      * NeoForge's rejects one and restores the default, so the NeoForge side uses {@code defineListAllowEmpty}.
      * {@code newElement} is the value NeoForge's config screen adds to the list; Forge has no such screen.
      */
-    public static <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineList(ForgeConfigSpec.Builder builder, String path, List<? extends T> defaultValue,
-        Supplier<T> newElement, Predicate<Object> elementValidator)
+    // Mirrors the NeoForge defineList signature, where newElement is required.
+    @SuppressWarnings("java:S1172")
+    public static <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineList(ForgeConfigSpec.Builder builder, String path, List<? extends T> defaultValue, Supplier<T> newElement,
+        Predicate<Object> elementValidator)
     {
         return builder.defineList(path, defaultValue, elementValidator);
     }
@@ -115,14 +116,16 @@ public final class ConfigSpecValues
         ForgeConfigSpec.ConfigValue<?> value = find(spec, path);
         if (valueSpec == null || value == null || !spec.isLoaded())
         {
-            FlansLog.log.warn("Ignoring a change of the unknown config entry {}", joinPath(path));
+            if (FlansLog.log.isWarnEnabled())
+                FlansLog.log.warn("Ignoring a change of the unknown config entry {}", joinPath(path));
             return false;
         }
 
         Object corrected = coerce(valueSpec.getClazz(), newValue);
         if (corrected == null || !valueSpec.test(corrected))
         {
-            FlansLog.log.warn("Ignoring the rejected value {} for the config entry {}", newValue, joinPath(path));
+            if (FlansLog.log.isWarnEnabled())
+                FlansLog.log.warn("Ignoring the rejected value {} for the config entry {}", newValue, joinPath(path));
             return false;
         }
 

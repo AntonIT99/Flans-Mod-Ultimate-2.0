@@ -77,8 +77,7 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
     {
         super.init();
         // Legacy 1.7.10 layout: the two shortcuts sit under the mecha preview.
-        Button passengerGuns = Button
-            .builder(Component.translatable("gui.flansmodultimate.mecha.passenger_guns"), ignored -> sendMenuButton(MechaInventoryMenu.PASSENGER_GUNS_BUTTON))
+        Button passengerGuns = Button.builder(Component.translatable("gui.flansmodultimate.mecha.passenger_guns"), ignored -> sendMenuButton(MechaInventoryMenu.PASSENGER_GUNS_BUTTON))
             .bounds(leftPos + 9, topPos + 153, 93, 20).build();
         passengerGuns.active = menu.hasPassengerGunSlots();
         addRenderableWidget(passengerGuns);
@@ -124,8 +123,8 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
             int columns = Math.min(MechaInventoryMenu.COLUMN_COUNT, cargoSlots - firstSlot);
             if (columns <= 0)
                 break;
-            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + CARGO_ROW_LEFT, topPos + CARGO_ROW_TOP + CARGO_ROW_HEIGHT * row, CARGO_ROW_U, CARGO_ROW_V,
-                SLOT_SIZE * columns, SLOT_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + CARGO_ROW_LEFT, topPos + CARGO_ROW_TOP + CARGO_ROW_HEIGHT * row, CARGO_ROW_U, CARGO_ROW_V, SLOT_SIZE * columns,
+                SLOT_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
         }
     }
 
@@ -133,11 +132,11 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
     private void renderScrollButtons(GuiGraphics graphics)
     {
         if (menu.getScrollRow() <= 0)
-            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_UP_TOP, SCROLL_DISABLED_U, SCROLL_UP_DISABLED_V,
-                SCROLL_BUTTON_SIZE, SCROLL_BUTTON_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_UP_TOP, SCROLL_DISABLED_U, SCROLL_UP_DISABLED_V, SCROLL_BUTTON_SIZE,
+                SCROLL_BUTTON_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
         if (menu.getScrollRow() >= menu.getMaxScrollRow())
-            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_DOWN_TOP, SCROLL_DISABLED_U, SCROLL_DOWN_DISABLED_V,
-                SCROLL_BUTTON_SIZE, SCROLL_BUTTON_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_DOWN_TOP, SCROLL_DISABLED_U, SCROLL_DOWN_DISABLED_V, SCROLL_BUTTON_SIZE,
+                SCROLL_BUTTON_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
     }
 
     private void renderFuelGauge(GuiGraphics graphics)
@@ -152,13 +151,12 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
         float fuelInTank = mecha.getDriveableData().getFuelInTank();
 
         if (fuelInTank < (float) fuelTankSize / LOW_FUEL_FRACTION && (mecha.tickCount / 5) % 4 > 1)
-            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + LOW_FUEL_LEFT, topPos + LOW_FUEL_TOP, LOW_FUEL_U, 0, LOW_FUEL_SIZE, LOW_FUEL_SIZE, SHEET_WIDTH,
-                SHEET_HEIGHT);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + LOW_FUEL_LEFT, topPos + LOW_FUEL_TOP, LOW_FUEL_U, 0, LOW_FUEL_SIZE, LOW_FUEL_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
 
         int barHeight = (int) (FUEL_BAR_HEIGHT * Math.min(fuelInTank / fuelTankSize, 1F));
         if (barHeight > 0)
-            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + FUEL_BAR_LEFT, topPos + FUEL_BAR_BOTTOM - barHeight, FUEL_BAR_U, FUEL_BAR_V, FUEL_BAR_WIDTH,
-                barHeight, SHEET_WIDTH, SHEET_HEIGHT);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + FUEL_BAR_LEFT, topPos + FUEL_BAR_BOTTOM - barHeight, FUEL_BAR_U, FUEL_BAR_V, FUEL_BAR_WIDTH, barHeight, SHEET_WIDTH,
+                SHEET_HEIGHT);
     }
 
     /** Renders the mecha itself, slowly turning, the way the legacy window did. */
@@ -171,7 +169,7 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
         float spin = (minecraft.level.getGameTime() + partialTick) * SPIN_DEGREES_PER_TICK;
         PoseStack pose = graphics.pose();
         pose.pushPose();
-        pose.translate(leftPos + MODEL_LEFT, topPos + MODEL_TOP, 100D);
+        pose.translate((double) leftPos + MODEL_LEFT, (double) topPos + MODEL_TOP, 100D);
         float scale = MODEL_SCALE_FACTOR / Math.max(1F, type.getCameraDistance());
         pose.scale(scale, scale, -scale);
         pose.mulPose(Axis.ZP.rotationDegrees(180F));

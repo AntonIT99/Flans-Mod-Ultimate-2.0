@@ -15,7 +15,8 @@ class BakedSizeCullingTest
 {
     private static ModelRendererTurbo box()
     {
-        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 64, 64);
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0, 64, 64);
         part.addBox(-1, 0, -2, 2, 3, 4);
         part.setRotationPoint(5, -3, 2);
         part.rotateAngleY = 0.7F;
@@ -25,9 +26,9 @@ class BakedSizeCullingTest
 
     private static ModelRendererTurbo shape()
     {
-        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 64, 64);
-        part.addShape3D(0, 0, 0, new Shape2D(new Coord2D[]{new Coord2D(0, 0), new Coord2D(8, 0), new Coord2D(0, 4)}),
-            2, 8, 4, 8, 2, ModelRendererTurbo.MR_FRONT);
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0, 64, 64);
+        part.addShape3D(0, 0, 0, new Shape2D(new Coord2D[]{new Coord2D(0, 0), new Coord2D(8, 0), new Coord2D(0, 4)}), 2, 8, 4, 8, 2, ModelRendererTurbo.MR_FRONT);
         part.setRotationPoint(1, 2, 3);
         return part;
     }
@@ -51,13 +52,17 @@ class BakedSizeCullingTest
             {
                 double distance = 2 + step;
                 PoseStack parent = parent(distance, step, uniform);
-                for (int warm = 0; warm < 3; warm++) render(baked, parent, gpu); // Bakes after two stable renders
+                for (int warm = 0; warm < 3; warm++)
+                    render(baked, parent, gpu); // Bakes after two stable renders
                 Sink cpu = new Sink();
                 render(composed, parent, new Plain(cpu));
                 boolean bakedCulled = gpu.lastVisible == Boolean.FALSE, composedCulled = !cpu.vertices;
-                if (uniform) assertEquals(composedCulled, bakedCulled, "distance " + distance);
-                else if (composedCulled) assertTrue(bakedCulled, "distance " + distance);
-                if (composedCulled) culled++;
+                if (uniform)
+                    assertEquals(composedCulled, bakedCulled, "distance " + distance);
+                else if (composedCulled)
+                    assertTrue(bakedCulled, "distance " + distance);
+                if (composedCulled)
+                    culled++;
             }
             assertTrue(culled > 0 && culled < 300, "the sweep crosses the threshold: " + culled + " culled");
         }
@@ -79,16 +84,24 @@ class BakedSizeCullingTest
         PoseStack parent = new PoseStack();
         parent.translate(0.3, -0.2, -distance);
         parent.mulPose(Axis.YP.rotationDegrees(step * 7));
-        if (uniform) parent.scale(1.1F, 1.1F, 1.1F);
-        else parent.scale(0.9F, 1.1F, 1F);
+        if (uniform)
+            parent.scale(1.1F, 1.1F, 1.1F);
+        else
+            parent.scale(0.9F, 1.1F, 1F);
         return parent;
     }
 
     private static void render(ModelRendererTurbo part, PoseStack parent, VertexConsumer consumer)
     {
         ModelRendererTurbo.beginScreenSpaceCulling(2, 500);
-        try { part.render(parent, consumer, 0, 0, 1, 1, 1, 1, 1); }
-        finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+        try
+        {
+            part.render(parent, consumer, 0, 0, 1, 1, 1, 1, 1);
+        }
+        finally
+        {
+            ModelRendererTurbo.endScreenSpaceCulling();
+        }
     }
 
     private static class Sink implements RigidGeometryConsumer
@@ -96,38 +109,138 @@ class BakedSizeCullingTest
         Boolean lastVisible;
         boolean vertices;
 
-        @Override public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha)
-        { lastVisible = true; }
-        @Override public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
-        { lastVisible = visible; }
-        @Override public void submitComposed(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
-        { lastVisible = visible; }
-        @Override public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
-        { vertices = true; }
-        @Override public VertexConsumer vertex(double x, double y, double z) { throw new AssertionError(); }
-        @Override public VertexConsumer color(int r, int g, int b, int a) { throw new AssertionError(); }
-        @Override public VertexConsumer uv(float u, float v) { throw new AssertionError(); }
-        @Override public VertexConsumer overlayCoords(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer uv2(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer normal(float x, float y, float z) { throw new AssertionError(); }
-        @Override public void endVertex() { throw new AssertionError(); }
-        @Override public void defaultColor(int r, int g, int b, int a) {}
-        @Override public void unsetDefaultColor() {}
+        @Override
+        public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha)
+        {
+            lastVisible = true;
+        }
+
+        @Override
+        public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
+        {
+            lastVisible = visible;
+        }
+
+        @Override
+        public void submitComposed(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
+        {
+            lastVisible = visible;
+        }
+
+        @Override
+        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
+        {
+            vertices = true;
+        }
+
+        @Override
+        public VertexConsumer vertex(double x, double y, double z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void endVertex()
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a)
+        { /* Not needed by this test. */ }
+
+        @Override
+        public void unsetDefaultColor()
+        { /* Not needed by this test. */ }
     }
 
     /** A plain consumer, so the part takes the composed CPU path. */
     private record Plain(Sink sink) implements VertexConsumer
     {
-        @Override public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
-        { sink.vertices = true; }
-        @Override public VertexConsumer vertex(double x, double y, double z) { throw new AssertionError(); }
-        @Override public VertexConsumer color(int r, int g, int b, int a) { throw new AssertionError(); }
-        @Override public VertexConsumer uv(float u, float v) { throw new AssertionError(); }
-        @Override public VertexConsumer overlayCoords(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer uv2(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer normal(float x, float y, float z) { throw new AssertionError(); }
-        @Override public void endVertex() { throw new AssertionError(); }
-        @Override public void defaultColor(int r, int g, int b, int a) {}
-        @Override public void unsetDefaultColor() {}
+        @Override
+        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
+        {
+            sink.vertices = true;
+        }
+
+        @Override
+        public VertexConsumer vertex(double x, double y, double z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void endVertex()
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a)
+        { /* Not needed by this test. */ }
+
+        @Override
+        public void unsetDefaultColor()
+        { /* Not needed by this test. */ }
     }
 }

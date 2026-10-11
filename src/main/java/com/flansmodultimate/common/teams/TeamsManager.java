@@ -198,6 +198,8 @@ public final class TeamsManager
     private String motd = DEFAULT_MOTD;
     private final List<UUID> voteOptionIds = new ArrayList<>();
 
+    // The manager registers itself as the server-wide instance when it is created.
+    @SuppressWarnings("java:S3010")
     public TeamsManager()
     {
         instance = this;

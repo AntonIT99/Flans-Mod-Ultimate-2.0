@@ -14,16 +14,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -40,6 +35,8 @@ import net.minecraft.world.phys.Vec3;
  * despawned.
  * </p>
  */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullDroneEntity extends FlanMonster
 {
@@ -63,8 +60,7 @@ public class SkullDroneEntity extends FlanMonster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return FlanMonster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 60.0D).add(Attributes.FLYING_SPEED, 0.45D).add(Attributes.FOLLOW_RANGE, ACQUIRE_RANGE)
-            .add(Attributes.ATTACK_DAMAGE, 5.0D);
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 60.0D).add(Attributes.FLYING_SPEED, 0.45D).add(Attributes.FOLLOW_RANGE, ACQUIRE_RANGE).add(Attributes.ATTACK_DAMAGE, 5.0D);
     }
 
     @Override
@@ -100,8 +96,7 @@ public class SkullDroneEntity extends FlanMonster
 
         if (random.nextInt(REPOSITION_CHANCE) == 0)
         {
-            offsetFromTarget = new Vec3(offsetFromTarget.x * 0.5D + random.nextGaussian() * 10D, random.nextFloat() * 5D + 5D,
-                offsetFromTarget.z * 0.5D + random.nextGaussian() * 10D);
+            offsetFromTarget = new Vec3(offsetFromTarget.x * 0.5D + random.nextGaussian() * 10D, random.nextFloat() * 5D + 5D, offsetFromTarget.z * 0.5D + random.nextGaussian() * 10D);
         }
         Vec3 motion = target.position().add(offsetFromTarget).subtract(position()).scale(APPROACH_RATE);
         setDeltaMovement(motion);
@@ -125,8 +120,7 @@ public class SkullDroneEntity extends FlanMonster
 
     private void acquireNearestPlayer()
     {
-        Player player = level().getNearestPlayer(TargetingConditions.forCombat().range(ACQUIRE_RANGE).selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(),
-            this);
+        Player player = level().getNearestPlayer(TargetingConditions.forCombat().range(ACQUIRE_RANGE).selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(), this);
         if (player != null)
             setTarget(player);
     }
@@ -155,8 +149,8 @@ public class SkullDroneEntity extends FlanMonster
 
     @Override
     @Nullable
-    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType,
-        @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData,
+        @Nullable CompoundTag dataTag)
     {
         SpawnGroupData result = super.finalizeEntitySpawn(level, difficulty, spawnType, spawnData, dataTag);
         equipDefault(level.getRandom());

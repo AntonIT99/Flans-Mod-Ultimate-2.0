@@ -7,11 +7,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -21,12 +17,12 @@ import java.util.function.Supplier;
  */
 public final class ItemAttributes
 {
-    private ItemAttributes() {}
+    private ItemAttributes()
+    {}
 
     public enum Operation
     {
-        ADD_VALUE,
-        ADD_MULTIPLIED_TOTAL
+        ADD_VALUE, ADD_MULTIPLIED_TOTAL
     }
 
     /** Modifiers an item adds on top of its vanilla ones. */
@@ -34,27 +30,31 @@ public final class ItemAttributes
     {
         private final List<Entry> entries = new ArrayList<>();
 
-        private record Entry(Attribute attribute, AttributeModifier modifier) {}
+        private record Entry(Attribute attribute, AttributeModifier modifier)
+        {}
 
-        private Modifiers() {}
+        private Modifiers()
+        {}
 
         /**
-         * @param idPath     1.21 modifier id, in the Flan's Mod Ultimate namespace
-         * @param legacyUuid 1.20.1 modifier UUID; only requested on 1.20.1
-         * @param legacyName 1.20.1 modifier name
+         * @param idPath
+         *            1.21 modifier id, in the Flan's Mod Ultimate namespace
+         * @param legacyUuid
+         *            1.20.1 modifier UUID; only requested on 1.20.1
+         * @param legacyName
+         *            1.20.1 modifier name
          */
-        public void add(Attribute attribute, String idPath, Supplier<UUID> legacyUuid, String legacyName,
-                        double amount, Operation operation)
+        // Part of the cross-version platform signature; other loader versions use the parameter.
+        @SuppressWarnings("java:S1172")
+        public void add(Attribute attribute, String idPath, Supplier<UUID> legacyUuid, String legacyName, double amount, Operation operation)
         {
-            AttributeModifier.Operation legacyOperation = operation == Operation.ADD_VALUE
-                ? AttributeModifier.Operation.ADDITION : AttributeModifier.Operation.MULTIPLY_TOTAL;
+            AttributeModifier.Operation legacyOperation = operation == Operation.ADD_VALUE ? AttributeModifier.Operation.ADDITION : AttributeModifier.Operation.MULTIPLY_TOTAL;
             entries.add(new Entry(attribute, new AttributeModifier(legacyUuid.get(), legacyName, amount, legacyOperation)));
         }
     }
 
     /** Vanilla modifiers plus {@code additions}, applied while the item is held in the main hand. */
-    public static Multimap<Attribute, AttributeModifier> mainHand(EquipmentSlot slot, Multimap<Attribute, AttributeModifier> vanilla,
-                                                                  Consumer<Modifiers> additions)
+    public static Multimap<Attribute, AttributeModifier> mainHand(EquipmentSlot slot, Multimap<Attribute, AttributeModifier> vanilla, Consumer<Modifiers> additions)
     {
         if (slot != EquipmentSlot.MAINHAND)
             return vanilla;
@@ -71,9 +71,7 @@ public final class ItemAttributes
      * Modifiers of an armor piece worn in {@code armorSlot}: {@code additions} replace the vanilla modifiers
      * of the same attributes, and the remaining vanilla modifiers are kept.
      */
-    public static Multimap<Attribute, AttributeModifier> armor(EquipmentSlot slot, EquipmentSlot armorSlot,
-                                                               Multimap<Attribute, AttributeModifier> vanilla,
-                                                               Consumer<Modifiers> additions)
+    public static Multimap<Attribute, AttributeModifier> armor(EquipmentSlot slot, EquipmentSlot armorSlot, Multimap<Attribute, AttributeModifier> vanilla, Consumer<Modifiers> additions)
     {
         if (slot != armorSlot)
             return vanilla;

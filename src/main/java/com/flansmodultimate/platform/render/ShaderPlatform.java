@@ -4,9 +4,7 @@ import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.util.FlansLog;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
+import java.lang.invoke.*;
 
 /**
  * Version boundary for shader mods. Forge 1.20.1 uses Oculus, the Forge port of Iris, which keeps Iris's public
@@ -67,7 +65,8 @@ public final class ShaderPlatform
     @Nullable
     public static String shaderModName()
     {
-        return ShaderMod.NAME != null ? ShaderMod.NAME : ShaderMod.OPTIFINE_LOADED ? "OptiFine" : null;
+        String optiFineName = ShaderMod.OPTIFINE_LOADED ? "OptiFine" : null;
+        return ShaderMod.NAME != null ? ShaderMod.NAME : optiFineName;
     }
 
     /** A {@code ()boolean} handle bound to a query on the live Iris API instance. */
@@ -76,32 +75,6 @@ public final class ShaderPlatform
         Class<?> api = Class.forName(IRIS_API, true, ShaderPlatform.class.getClassLoader());
         Object instance = api.getMethod("getInstance").invoke(null);
         return MethodHandles.publicLookup().findVirtual(api, method, MethodType.methodType(boolean.class)).bindTo(instance);
-    }
-
-    private static boolean isModLoaded(String modId)
-    {
-        try
-        {
-            return PlatformEnvironment.isModLoaded(modId);
-        }
-        catch (RuntimeException ex)
-        {
-            // There is no mod list outside a running game, such as in unit tests.
-            return false;
-        }
-    }
-
-    private static boolean classExists(String name)
-    {
-        try
-        {
-            Class.forName(name, false, ShaderPlatform.class.getClassLoader());
-            return true;
-        }
-        catch (ClassNotFoundException | LinkageError ex)
-        {
-            return false;
-        }
     }
 
     /** Resolved on first query, once the mod list is complete. */
@@ -138,6 +111,32 @@ public final class ShaderPlatform
             SHADER_PACK_IN_USE = inUse;
             RENDERING_SHADOW_PASS = shadowPass;
             NAME = name;
+        }
+
+        private static boolean isModLoaded(String modId)
+        {
+            try
+            {
+                return PlatformEnvironment.isModLoaded(modId);
+            }
+            catch (RuntimeException ex)
+            {
+                // There is no mod list outside a running game, such as in unit tests.
+                return false;
+            }
+        }
+
+        private static boolean classExists(String name)
+        {
+            try
+            {
+                Class.forName(name, false, ShaderPlatform.class.getClassLoader());
+                return true;
+            }
+            catch (ClassNotFoundException | LinkageError ex)
+            {
+                return false;
+            }
         }
     }
 }

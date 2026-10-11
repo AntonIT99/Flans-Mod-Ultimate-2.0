@@ -1,26 +1,21 @@
 package com.flansmodultimate.client.render.gpu;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL;
-
 import com.flansmod.client.tmt.PositionTextureVertex;
 import com.flansmod.client.tmt.TexturedPolygon;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.opengl.GL32C.*;
@@ -32,6 +27,8 @@ import static org.lwjgl.opengl.GL32C.*;
 @EnabledIfEnvironmentVariable(named = "FLANS_GPU_TEST", matches = "true")
 class PartPaletteGlTest
 {
+    private static final Pattern VERSION_LINE = Pattern.compile("(?m)^#version.*$");
+
     @Test
     void geometriesFollowTheirPaletteEntriesFromABoundRange() throws IOException
     {
@@ -48,7 +45,8 @@ class PartPaletteGlTest
             assertNotEquals(0, window);
             GLFW.glfwMakeContextCurrent(window);
             GL.createCapabilities();
-            if (!RenderSystem.isOnRenderThread()) RenderSystem.initRenderThread();
+            if (!RenderSystem.isOnRenderThread())
+                RenderSystem.initRenderThread();
             forgetSharedIndexBuffers();
 
             program = glCreateProgram();
@@ -57,7 +55,8 @@ class PartPaletteGlTest
             glAttachShader(program, vertex);
             glAttachShader(program, fragment);
             String[] attributes = {"Position", "Color", "UV0", "UV1", "UV2", "Normal"};
-            for (int i = 0; i < attributes.length; i++) glBindAttribLocation(program, i, attributes[i]);
+            for (int i = 0; i < attributes.length; i++)
+                glBindAttribLocation(program, i, attributes[i]);
             glLinkProgram(program);
             glDeleteShader(vertex);
             glDeleteShader(fragment);
@@ -74,18 +73,31 @@ class PartPaletteGlTest
             // Palette entry 0 moves geometry left, entry 1 moves it right; the batch writes them in that order.
             RigidGeometry first = quad(-0.1F, 0.1F), second = quad(-0.1F, 0.1F);
             RigidBatch batch = new RigidBatch(GpuModelCache.PARTS_PER_BATCH, 64, 1000);
-            ByteBuffer palette = ByteBuffer.allocateDirect(GpuModelCache.PARTS_PER_BATCH * GpuModelCache.PALETTE_ENTRY_BYTES)
-                .order(ByteOrder.nativeOrder());
+            ByteBuffer palette = ByteBuffer.allocateDirect(GpuModelCache.PARTS_PER_BATCH * GpuModelCache.PALETTE_ENTRY_BYTES).order(ByteOrder.nativeOrder());
             batch.begin(new RigidBatch.Backend()
             {
-                @Override public boolean draw(RigidBatch drawn, boolean flushPending)
+                @Override
+                public boolean draw(RigidBatch drawn, boolean flushPending)
                 {
                     GpuModelCache.writePartPalette(drawn, palette);
                     return true;
                 }
-                @Override public VertexConsumer fallback() { throw new AssertionError(); }
-                @Override public void flushFallback() {}
-                @Override public void failed(RuntimeException exception) { throw new AssertionError(exception); }
+
+                @Override
+                public VertexConsumer fallback()
+                {
+                    throw new AssertionError();
+                }
+
+                @Override
+                public void flushFallback()
+                { /* Not needed by this test. */ }
+
+                @Override
+                public void failed(RuntimeException exception)
+                {
+                    throw new AssertionError(exception);
+                }
             });
             PoseStack left = new PoseStack(), right = new PoseStack();
             left.translate(-0.5, 0, 0);
@@ -137,10 +149,13 @@ class PartPaletteGlTest
         finally
         {
             forgetSharedIndexBuffers();
-            if (buffer != 0) glDeleteBuffers(buffer);
-            if (program != 0) glDeleteProgram(program);
+            if (buffer != 0)
+                glDeleteBuffers(buffer);
+            if (program != 0)
+                glDeleteProgram(program);
             GL.setCapabilities(null);
-            if (window != 0) GLFW.glfwDestroyWindow(window);
+            if (window != 0)
+                GLFW.glfwDestroyWindow(window);
             GLFW.glfwTerminate();
         }
     }
@@ -155,7 +170,8 @@ class PartPaletteGlTest
         {
             for (var field : RenderSystem.class.getDeclaredFields())
             {
-                if (field.getType() != RenderSystem.AutoStorageIndexBuffer.class) continue;
+                if (field.getType() != RenderSystem.AutoStorageIndexBuffer.class)
+                    continue;
                 field.setAccessible(true);
                 Object indexBuffer = field.get(null);
                 for (String name : new String[]{"name", "indexCount"})
@@ -175,17 +191,15 @@ class PartPaletteGlTest
     /** A quad from minX to maxX and y -0.5 to 0.5 in clip space; vertices are in model units, 16 per unit. */
     private static RigidGeometry quad(float minX, float maxX)
     {
-        return new RigidGeometry(new TexturedPolygon[]{new TexturedPolygon(new PositionTextureVertex[]{
-            new PositionTextureVertex(minX * 16, -8, 0, 0, 0), new PositionTextureVertex(maxX * 16, -8, 0, 1, 0),
-            new PositionTextureVertex(maxX * 16, 8, 0, 1, 1), new PositionTextureVertex(minX * 16, 8, 0, 0, 1)})});
+        return new RigidGeometry(new TexturedPolygon[]{new TexturedPolygon(new PositionTextureVertex[]{new PositionTextureVertex(minX * 16, -8, 0, 0, 0),
+            new PositionTextureVertex(maxX * 16, -8, 0, 1, 0), new PositionTextureVertex(maxX * 16, 8, 0, 1, 1), new PositionTextureVertex(minX * 16, 8, 0, 0, 1)})});
     }
 
     private String shaderSource(String path) throws IOException
     {
         String source = read(getClass().getResource(path));
         for (String include : new String[]{"light.glsl", "fog.glsl"})
-            source = source.replace("#moj_import <" + include + ">", read(getClass().getResource(
-                "/assets/minecraft/shaders/include/" + include)).replaceAll("(?m)^#version.*$", ""));
+            source = source.replace("#moj_import <" + include + ">", VERSION_LINE.matcher(read(getClass().getResource("/assets/minecraft/shaders/include/" + include))).replaceAll(""));
         return source;
     }
 

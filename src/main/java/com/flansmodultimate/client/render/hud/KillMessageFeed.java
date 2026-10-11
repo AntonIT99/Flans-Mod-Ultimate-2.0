@@ -46,6 +46,33 @@ public final class KillMessageFeed
             headshot = data.headshot();
             weapon = resolveWeapon(data);
         }
+
+        /**
+         * The icon shows the weapon that scored the kill. When the killer is still holding it,
+         * the paintjob they used is copied over so the feed matches what they are carrying.
+         */
+        private static ItemStack resolveWeapon(KillMessageData data)
+        {
+            InfoType type = InfoType.getInfoType(data.weaponShortName());
+            ItemStack stack = ModUtils.getItemStack(type).orElse(ItemStack.EMPTY);
+            if (stack.isEmpty())
+                return ItemStack.EMPTY;
+
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.level == null)
+                return stack;
+
+            for (Player player : minecraft.level.players())
+            {
+                if (!player.getGameProfile().getName().equals(data.killerName()))
+                    continue;
+                ItemStack held = player.getMainHandItem();
+                if (held.getItem() instanceof IPaintableItem<?> && held.getItem() == stack.getItem() && ItemStackData.has(held))
+                    ItemStackData.set(stack, ItemStackData.copy(held));
+                break;
+            }
+            return stack;
+        }
     }
 
     public static void add(KillMessageData data)
@@ -72,32 +99,5 @@ public final class KillMessageFeed
     public static void clear()
     {
         MESSAGES.clear();
-    }
-
-    /**
-     * The icon shows the weapon that scored the kill. When the killer is still holding it,
-     * the paintjob they used is copied over so the feed matches what they are carrying.
-     */
-    private static ItemStack resolveWeapon(KillMessageData data)
-    {
-        InfoType type = InfoType.getInfoType(data.weaponShortName());
-        ItemStack stack = ModUtils.getItemStack(type).orElse(ItemStack.EMPTY);
-        if (stack.isEmpty())
-            return ItemStack.EMPTY;
-
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null)
-            return stack;
-
-        for (Player player : minecraft.level.players())
-        {
-            if (!player.getGameProfile().getName().equals(data.killerName()))
-                continue;
-            ItemStack held = player.getMainHandItem();
-            if (held.getItem() instanceof IPaintableItem<?> && held.getItem() == stack.getItem() && ItemStackData.has(held))
-                ItemStackData.set(stack, ItemStackData.copy(held));
-            break;
-        }
-        return stack;
     }
 }

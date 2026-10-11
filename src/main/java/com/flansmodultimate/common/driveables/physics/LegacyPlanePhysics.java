@@ -75,7 +75,8 @@ public final class LegacyPlanePhysics
             return 0F;
         float value = finite(throttle);
         float idle = Math.abs(finite(idleThrottle));
-        return Math.abs(value) < idle ? Math.copySign(idle, value == 0F ? 1F : value) : value;
+        float direction = value == 0F ? 1F : value;
+        return Math.abs(value) < idle ? Math.copySign(idle, direction) : value;
     }
 
     /** Degrees a rotor turns in one tick. Unlike the propeller this is linear and signed. */
@@ -105,14 +106,14 @@ public final class LegacyPlanePhysics
         else
         {
             float safeSpeed = Math.max(0F, finite(speed));
-            sensitivity = safeSpeed < FULL_CONTROL_AUTHORITY_SPEED ? safeSpeed / FULL_CONTROL_AUTHORITY_SPEED : safeSpeed < 1F ? 1F : safeSpeed < 3F ? 1.5F - safeSpeed * 0.5F : 0F;
+            sensitivity = fixedWingSensitivity(safeSpeed);
             float divisor = (float) Math.sqrt(Math.max(1.0E-4F, finite(turnRight)));
             yawSensitivity = horizontalSpeed < 0.7F ? Math.max(sensitivity, 2.5F * safeSpeed / divisor) : sensitivity;
         }
         sensitivity *= 0.125F;
         yawSensitivity *= 0.125F * (mode == EnumPlaneMode.PLANE ? FIXED_WING_YAW_AUTHORITY_SCALE : 1F);
-        return new ControlRates(finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * yawSensitivity,
-            finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown)) * sensitivity, finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight)) * sensitivity);
+        return new ControlRates(finite(flapYaw) * finite(flapYaw > 0F ? turnLeft : turnRight) * yawSensitivity, finite(flapPitch) * finite(flapPitch > 0F ? lookUp : lookDown) * sensitivity,
+            finite(flapRoll) * finite(flapRoll > 0F ? rollLeft : rollRight) * sensitivity);
     }
 
     /**
@@ -140,10 +141,9 @@ public final class LegacyPlanePhysics
         float rollRight)
     {
         float sensitivity = Mth.clamp(finite(authority), 0F, 1F) * 0.125F;
-        return new ControlRates(
-            finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * sensitivity * VehiclePhysicsConstants.DERIVED_YAW_AUTHORITY_SCALE * FIXED_WING_YAW_AUTHORITY_SCALE,
-            finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown)) * sensitivity * VehiclePhysicsConstants.DERIVED_PITCH_AUTHORITY_SCALE,
-            finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight)) * sensitivity * VehiclePhysicsConstants.DERIVED_ROLL_AUTHORITY_SCALE);
+        return new ControlRates(finite(flapYaw) * finite(flapYaw > 0F ? turnLeft : turnRight) * sensitivity * VehiclePhysicsConstants.DERIVED_YAW_AUTHORITY_SCALE * FIXED_WING_YAW_AUTHORITY_SCALE,
+            finite(flapPitch) * finite(flapPitch > 0F ? lookUp : lookDown) * sensitivity * VehiclePhysicsConstants.DERIVED_PITCH_AUTHORITY_SCALE,
+            finite(flapRoll) * finite(flapRoll > 0F ? rollLeft : rollRight) * sensitivity * VehiclePhysicsConstants.DERIVED_ROLL_AUTHORITY_SCALE);
     }
 
     public static float approachMomentum(float current, float target)
@@ -170,9 +170,19 @@ public final class LegacyPlanePhysics
         return Mth.clamp(1F - 0.05F * Math.max(0F, finite(configuredDrag)), 0F, 1F);
     }
 
+    private static float fixedWingSensitivity(float safeSpeed)
+    {
+        if (safeSpeed < FULL_CONTROL_AUTHORITY_SPEED)
+            return safeSpeed / FULL_CONTROL_AUTHORITY_SPEED;
+        if (safeSpeed < 1F)
+            return 1F;
+        return safeSpeed < 3F ? 1.5F - safeSpeed * 0.5F : 0F;
+    }
+
     public static float thrust(float throttle, float forwardPower, float reversePower, float waterPower, float engineSpeed, boolean underWater)
     {
-        float configured = throttle > 0F ? (underWater ? waterPower : forwardPower) : reversePower;
+        float forward = underWater ? waterPower : forwardPower;
+        float configured = throttle > 0F ? forward : reversePower;
         return 0.01F * Math.max(0F, finite(configured) + finite(engineSpeed));
     }
 

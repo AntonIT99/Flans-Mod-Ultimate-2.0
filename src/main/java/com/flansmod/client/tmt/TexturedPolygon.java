@@ -4,16 +4,13 @@ import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.flansmodultimate.client.render.gpu.GeometryRevision;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.*;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.lang.Math;
+import java.util.*;
 
 @SuppressWarnings({"unused", "SameParameterValue", "java:S1104"})
 public class TexturedPolygon
@@ -106,18 +103,23 @@ public class TexturedPolygon
         GeometryRevision.changed();
     }
 
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, false);
     }
 
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow)
     {
         draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow, Long.MIN_VALUE);
     }
 
-    void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow,
-        long transformationSequence)
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
+    void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow, long transformationSequence)
     {
         if (nVertices < 3)
             return;
@@ -161,9 +163,8 @@ public class TexturedPolygon
         for (int vertexIndex : indices)
         {
             int dataIndex = vertexIndex * 5;
-            emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer, packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign, perVertexNormalCount,
-                hasPerVertexNormals, vertexIndex, staticVertices[dataIndex], staticVertices[dataIndex + 1], staticVertices[dataIndex + 2], staticVertices[dataIndex + 3],
-                staticVertices[dataIndex + 4]);
+            emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer, packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign, perVertexNormalCount, hasPerVertexNormals,
+                vertexIndex, staticVertices[dataIndex], staticVertices[dataIndex + 1], staticVertices[dataIndex + 2], staticVertices[dataIndex + 3], staticVertices[dataIndex + 4]);
         }
     }
 
@@ -413,9 +414,9 @@ public class TexturedPolygon
         normalMatrix.transform(transformedNormal);
     }
 
-    private void emitVertex(Matrix4f positionMatrix, Matrix3f normalMatrix, Vector3f transformedNormal, VertexConsumer vertexConsumer, int packedOverlay, int finalLight, float red,
-        float green, float blue, float alpha, boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals, int vertexIndex, float localX, float localY,
-        float localZ, float textureX, float textureY)
+    private void emitVertex(Matrix4f positionMatrix, Matrix3f normalMatrix, Vector3f transformedNormal, VertexConsumer vertexConsumer, int packedOverlay, int finalLight, float red, float green,
+        float blue, float alpha, boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals, int vertexIndex, float localX, float localY, float localZ, float textureX,
+        float textureY)
     {
         if (hasPerVertexNormals && !glow && vertexIndex < perVertexNormalCount)
         {
@@ -432,8 +433,7 @@ public class TexturedPolygon
         final float transformedY = positionMatrix.m01() * localX + positionMatrix.m11() * localY + positionMatrix.m21() * localZ + positionMatrix.m31();
         final float transformedZ = positionMatrix.m02() * localX + positionMatrix.m12() * localY + positionMatrix.m22() * localZ + positionMatrix.m32();
 
-        EntityVertexBatch.vertex(vertexConsumer, transformedX, transformedY, transformedZ, red, green, blue, alpha, textureX, textureY, packedOverlay, finalLight, normalX, normalY,
-            normalZ);
+        EntityVertexBatch.vertex(vertexConsumer, transformedX, transformedY, transformedZ, red, green, blue, alpha, textureX, textureY, packedOverlay, finalLight, normalX, normalY, normalZ);
     }
 
     private static final class RenderScratch

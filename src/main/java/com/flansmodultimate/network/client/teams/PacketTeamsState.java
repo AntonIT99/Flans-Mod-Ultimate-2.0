@@ -91,7 +91,7 @@ public final class PacketTeamsState implements IClientPacket
 
         GameType gameType = round.getGametype();
         packet.gameType = gameType == null ? round.getGameTypeId() : gameType.getName();
-        packet.mapName = manager.getMap(round.getMapId()).map(map -> map.getName()).orElse(round.getMapId());
+        packet.mapName = manager.getMap(round.getMapId()).map(TeamsMap::getName).orElse(round.getMapId());
         packet.scoreLimit = round.getScoreLimit();
         packet.sortedByTeam = gameType == null || gameType.isScoreboardSortedByTeam();
         packet.showZombieScore = gameType != null && gameType.showZombieScore();
@@ -134,7 +134,7 @@ public final class PacketTeamsState implements IClientPacket
             Team team = Team.getTeam(id);
             if (team == null)
                 continue;
-            List<PlayerScore> players = manager.getPlayersOnTeam(team).stream().map(player -> playerScore(player))
+            List<PlayerScore> players = manager.getPlayersOnTeam(team).stream().map(PacketTeamsState::playerScore)
                 .sorted(Comparator.comparingInt(PlayerScore::score).reversed().thenComparing(PlayerScore::name, String.CASE_INSENSITIVE_ORDER)).toList();
             scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), players));
         }
@@ -150,7 +150,7 @@ public final class PacketTeamsState implements IClientPacket
         for (int i = 0; i < manager.getVoteOptions().size(); i++)
         {
             TeamsRound option = manager.getVoteOptions().get(i);
-            String map = manager.getMap(option.getMapId()).map(value -> value.getName()).orElse(option.getMapId());
+            String map = manager.getMap(option.getMapId()).map(TeamsMap::getName).orElse(option.getMapId());
             GameType type = option.getGametype();
             String teams = option.getTeamIds().stream().map(Team::getTeam).filter(java.util.Objects::nonNull).map(Team::getName).reduce((left, right) -> left + " vs " + right).orElse("");
             options.add(new VoteOption(map, type == null ? option.getGameTypeId() : type.getName(), teams, votes[i]));

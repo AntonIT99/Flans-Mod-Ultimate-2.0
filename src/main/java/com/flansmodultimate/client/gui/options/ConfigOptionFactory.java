@@ -86,6 +86,8 @@ public final class ConfigOptionFactory
     }
 
     /** The option widget for one config entry, or null when its type cannot be edited on screen. */
+    // The option value type is only known at runtime.
+    @SuppressWarnings("java:S1452")
     @Nullable
     public static OptionInstance<?> option(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value)
     {

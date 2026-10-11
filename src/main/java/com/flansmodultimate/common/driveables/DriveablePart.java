@@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
 @Getter
 public final class DriveablePart
 {
+    private static final String NBT_HEALTH = "health";
     private static final int DEFAULT_FIRE_TICKS = 20;
 
     private final EnumDriveablePart type;
@@ -120,7 +121,7 @@ public final class DriveablePart
     public CompoundTag save(CompoundTag tag)
     {
         tag.putString("part", type.getShortName());
-        tag.putFloat("health", health);
+        tag.putFloat(NBT_HEALTH, health);
         tag.putInt("fire_ticks", fireTime);
         tag.putBoolean("on_fire", onFire);
         tag.putBoolean("dead", dead);
@@ -135,9 +136,9 @@ public final class DriveablePart
 
     public void load(CompoundTag tag)
     {
-        if (tag.contains("health"))
+        if (tag.contains(NBT_HEALTH))
         {
-            health = Mth.clamp(tag.getFloat("health"), 0F, maxHealth);
+            health = Mth.clamp(tag.getFloat(NBT_HEALTH), 0F, maxHealth);
             fireTime = Math.max(0, tag.getInt("fire_ticks"));
             onFire = tag.getBoolean("on_fire") && fireTime > 0;
             dead = tag.getBoolean("dead") || maxHealth > 0F && health <= 0F;

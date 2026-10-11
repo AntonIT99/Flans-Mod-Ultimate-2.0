@@ -4,18 +4,14 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.content.IContentProvider;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.ModUtils;
-import com.flansmodultimate.util.ResourceUtils;
+import com.flansmodultimate.util.*;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 
@@ -24,6 +20,12 @@ import java.util.Optional;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class RecipeResolver
 {
+    private static final String NAMESPACE_MINECRAFT = "minecraft";
+    private static final String TOOL_HATCHET = "hatchet";
+    private static final String MATERIAL_STONE = "stone";
+    private static final String MATERIAL_STEEL = "steel";
+    private static final String MATERIAL_DIAMOND = "diamond";
+
     /**
      * Resolves a legacy recipe token to an item stack with a default count of one.
      * <p>
@@ -179,7 +181,7 @@ public final class RecipeResolver
         if (result.isPresent())
             return result;
 
-        result = resolution.registered("minecraft", sanitizedId);
+        result = resolution.registered(NAMESPACE_MINECRAFT, sanitizedId);
         if (result.isPresent())
             return result;
 
@@ -192,8 +194,8 @@ public final class RecipeResolver
 
     private static boolean isLegacyEquipmentId(String id)
     {
-        String[] prefixes = {"sword", "pickaxe", "hatchet", "axe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots"};
-        String[] materials = {"wood", "stone", "iron", "steel", "gold", "diamond"};
+        String[] prefixes = {"sword", "pickaxe", TOOL_HATCHET, "axe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots"};
+        String[] materials = {"wood", MATERIAL_STONE, "iron", MATERIAL_STEEL, "gold", MATERIAL_DIAMOND};
         for (String prefix : prefixes)
         {
             if (!id.startsWith(prefix))
@@ -233,8 +235,8 @@ public final class RecipeResolver
             case FlansMod.APOCALYPSE_ID -> {
                 return resolution.registered(namespace, apocalypseRecipePath(path));
             }
-            case "minecraft" -> {
-                result = resolution.registered("minecraft", path);
+            case NAMESPACE_MINECRAFT -> {
+                result = resolution.registered(NAMESPACE_MINECRAFT, path);
                 if (result.isPresent())
                     return result;
 
@@ -423,7 +425,7 @@ public final class RecipeResolver
     {
         String equipmentPath = legacyEquipmentPath(id);
         if (equipmentPath != null)
-            return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", equipmentPath));
+            return Optional.of(ResourceLocation.fromNamespaceAndPath(NAMESPACE_MINECRAFT, equipmentPath));
         return getLegacyRecipeItem(id, damage).flatMap(RecipeResolver::id);
     }
 
@@ -432,12 +434,12 @@ public final class RecipeResolver
     {
         String tool = null;
         String material = null;
-        String[] toolPrefixes = {"pickaxe", "hatchet", "shovel", "sword", "axe", "hoe"};
+        String[] toolPrefixes = {"pickaxe", TOOL_HATCHET, "shovel", "sword", "axe", "hoe"};
         for (String prefix : toolPrefixes)
         {
             if (id.startsWith(prefix))
             {
-                tool = prefix.equals("hatchet") ? "axe" : prefix;
+                tool = prefix.equals(TOOL_HATCHET) ? "axe" : prefix;
                 material = id.substring(prefix.length());
                 break;
             }
@@ -448,8 +450,8 @@ public final class RecipeResolver
             {
                 case "wood" -> "wooden";
                 case "gold" -> "golden";
-                case "steel" -> "iron";
-                case "stone", "iron", "diamond" -> material;
+                case MATERIAL_STEEL -> "iron";
+                case MATERIAL_STONE, "iron", MATERIAL_DIAMOND -> material;
                 default -> null;
             };
             return modernMaterial == null ? null : modernMaterial + "_" + tool;
@@ -462,9 +464,9 @@ public final class RecipeResolver
                 continue;
             String armourMaterial = switch (id.substring(slot.length()))
             {
-                case "steel" -> "iron";
+                case MATERIAL_STEEL -> "iron";
                 case "gold" -> "golden";
-                case "iron", "diamond" -> id.substring(slot.length());
+                case "iron", MATERIAL_DIAMOND -> id.substring(slot.length());
                 default -> null;
             };
             return armourMaterial == null ? null : armourMaterial + "_" + slot;
@@ -488,7 +490,7 @@ public final class RecipeResolver
         for (Item item : BuiltInRegistries.ITEM)
         {
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
-            if (itemId.getNamespace().equals("minecraft") && registryPathMatches(itemId.getPath(), lookupPath))
+            if (itemId.getNamespace().equals(NAMESPACE_MINECRAFT) && registryPathMatches(itemId.getPath(), lookupPath))
                 return Optional.of(item);
         }
         return Optional.empty();
@@ -507,12 +509,14 @@ public final class RecipeResolver
         return ResourceUtils.sanitize(lookupId);
     }
 
+    // A flat table of legacy item names is clearer than splitting it up.
+    @SuppressWarnings("java:S1479")
     private static Optional<ItemLike> getLegacyRecipeItem(String id, int damage)
     {
         ItemLike item = switch (id)
         {
             case "workbench" -> Items.CRAFTING_TABLE;
-            case "stone" -> Items.STONE;
+            case MATERIAL_STONE -> Items.STONE;
             case "skull" -> Items.SKELETON_SKULL;
             case "thinglass" -> Items.GLASS_PANE;
             case "blockcoal" -> Items.COAL_BLOCK;

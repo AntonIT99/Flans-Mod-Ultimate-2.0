@@ -13,15 +13,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -32,6 +28,8 @@ import net.minecraft.world.phys.Vec3;
  * sticks like a trident, hits once, and carries the thrown stack so picking it up returns the very
  * same weapon.
  */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ThrownGun extends FlanArrow
 {
@@ -103,11 +101,9 @@ public class ThrownGun extends FlanArrow
         if (!inGround)
         {
             boolean gravity = !isNoGravity();
-            double ratio = isInWater() ? 1D : ProjectileDrag.factor(this,
-                ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG)
-                / ShootableType.AIR_DEFAULT_DRAG;
-            Vec3 motion = getDeltaMovement().add(0D, gravity ? VANILLA_ARROW_GRAVITY : 0D, 0D).scale(ratio)
-                .add(0D, gravity ? -ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT, level()) : 0D, 0D);
+            double ratio = isInWater() ? 1D : ProjectileDrag.factor(this, ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG) / ShootableType.AIR_DEFAULT_DRAG;
+            Vec3 motion = getDeltaMovement().add(0D, gravity ? VANILLA_ARROW_GRAVITY : 0D, 0D).scale(ratio).add(0D, gravity ? -ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT, level()) : 0D,
+                0D);
             setDeltaMovement(motion);
         }
     }

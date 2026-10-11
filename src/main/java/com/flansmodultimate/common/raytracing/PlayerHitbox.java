@@ -160,18 +160,10 @@ public class PlayerHitbox
         ItemStack legs = player.getItemBySlot(EquipmentSlot.LEGS);
         ItemStack feet = player.getItemBySlot(EquipmentSlot.FEET);
 
-        float headPenRes = !(head.getItem() instanceof CustomArmorItem headArmour)
-            ? ArmorType.UNARMORED_HELMET_PENETRATION_RESISTANCE
-            : headArmour.getConfigType().getPenetrationResistance();
-        float chestPenRes = !(chest.getItem() instanceof CustomArmorItem chestArmour)
-            ? ArmorType.UNARMORED_CHESTPLATE_PENETRATION_RESISTANCE
-            : chestArmour.getConfigType().getPenetrationResistance();
-        float legsPenRes = !(legs.getItem() instanceof CustomArmorItem legsArmour)
-            ? ArmorType.UNARMORED_LEGGINGS_PENETRATION_RESISTANCE
-            : legsArmour.getConfigType().getPenetrationResistance();
-        float feetPenRes = !(feet.getItem() instanceof CustomArmorItem feetArmour)
-            ? ArmorType.UNARMORED_BOOTS_PENETRATION_RESISTANCE
-            : feetArmour.getConfigType().getPenetrationResistance();
+        float headPenRes = !(head.getItem() instanceof CustomArmorItem headArmour) ? ArmorType.UNARMORED_HELMET_PENETRATION_RESISTANCE : headArmour.getConfigType().getPenetrationResistance();
+        float chestPenRes = !(chest.getItem() instanceof CustomArmorItem chestArmour) ? ArmorType.UNARMORED_CHESTPLATE_PENETRATION_RESISTANCE : chestArmour.getConfigType().getPenetrationResistance();
+        float legsPenRes = !(legs.getItem() instanceof CustomArmorItem legsArmour) ? ArmorType.UNARMORED_LEGGINGS_PENETRATION_RESISTANCE : legsArmour.getConfigType().getPenetrationResistance();
+        float feetPenRes = !(feet.getItem() instanceof CustomArmorItem feetArmour) ? ArmorType.UNARMORED_BOOTS_PENETRATION_RESISTANCE : feetArmour.getConfigType().getPenetrationResistance();
         float totalPenetrationResistance;
 
         if (type == EnumHitboxType.HEAD)
@@ -251,7 +243,7 @@ public class PlayerHitbox
                 if (ModCommonConfig.get().useNewPenetrationSystem())
                     penetratingPower -= totalPenetrationResistance;
                 else
-                    penetratingPower--;
+                    penetratingPower -= 1F;
 
                 break;
             }

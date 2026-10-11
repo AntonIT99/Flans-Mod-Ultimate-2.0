@@ -4,7 +4,8 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.weapons.*;
-import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
@@ -69,21 +70,25 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ShootPointDebugCommand
 {
+    private static final String PRIMARY = "primary";
+    private static final String INDEX = "index";
+    private static final String SECONDARY = "secondary";
+    private static final String OVERRIDDEN_SUFFIX = "  (overridden)";
+    private static final String DELTA_PREFIX = "   delta ";
     private static final String NO_TARGET = "Ride a driveable or AA gun, hold one as an item, or look at an AA gun or sentry, to inspect its shoot points";
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("flandebug").requires(source -> source.hasPermission(2))
-            .then(Commands.literal("shootpoint").then(Commands.literal("list").executes(ShootPointDebugCommand::list)).then(Commands.literal("reset").executes(ShootPointDebugCommand::reset))
-                .then(Commands.literal("apply").executes(ShootPointDebugCommand::applyMeasured))
-                .then(Commands.literal("primary").then(Commands.argument("index", IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, false, false)))))
-                .then(Commands.literal("secondary").then(Commands.argument("index", IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, true, false)))))
-                .then(Commands.literal("seat").then(Commands.argument("seat", IntegerArgumentType.integer(1)).then(vector(context -> setGunOrigin(context, false)))))
-                .then(Commands.literal("nudge")
-                    .then(Commands.literal("primary").then(Commands.argument("index", IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, false, true)))))
-                    .then(Commands.literal("secondary").then(Commands.argument("index", IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, true, true)))))
-                    .then(Commands.literal("seat").then(Commands.argument("seat", IntegerArgumentType.integer(1)).then(vector(context -> setGunOrigin(context, true))))))
-                .then(Commands.literal("add").then(Commands.literal("primary").then(addVector(false))).then(Commands.literal("secondary").then(addVector(true)))))
+        dispatcher.register(Commands.literal("flandebug").requires(source -> source.hasPermission(2)).then(Commands.literal("shootpoint")
+            .then(Commands.literal("list").executes(ShootPointDebugCommand::list)).then(Commands.literal("reset").executes(ShootPointDebugCommand::reset))
+            .then(Commands.literal("apply").executes(ShootPointDebugCommand::applyMeasured))
+            .then(Commands.literal(PRIMARY).then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, false, false)))))
+            .then(Commands.literal(SECONDARY).then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, true, false)))))
+            .then(Commands.literal("seat").then(Commands.argument("seat", IntegerArgumentType.integer(1)).then(vector(context -> setGunOrigin(context, false)))))
+            .then(Commands.literal("nudge").then(Commands.literal(PRIMARY).then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, false, true)))))
+                .then(Commands.literal(SECONDARY).then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, true, true)))))
+                .then(Commands.literal("seat").then(Commands.argument("seat", IntegerArgumentType.integer(1)).then(vector(context -> setGunOrigin(context, true))))))
+            .then(Commands.literal("add").then(Commands.literal(PRIMARY).then(addVector(false))).then(Commands.literal(SECONDARY).then(addVector(true)))))
             .then(Commands.literal("gunorigin").then(Commands.literal("nudge").then(Commands.argument("seat", IntegerArgumentType.integer(1)).then(vector(context -> setGunOrigin(context, true)))))
                 .then(Commands.argument("seat", IntegerArgumentType.integer(1)).then(vector(context -> setGunOrigin(context, false)))))
             .then(Commands.literal("barrelposition").then(vector(ShootPointDebugCommand::setBarrelPosition))));
@@ -127,7 +132,7 @@ public final class ShootPointDebugCommand
         List<DerivedMuzzle> derived = ClientHooks.RENDER.deriveMuzzles(type);
         send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " shoot points ===");
         send(context, ChatFormatting.WHITE,
-            "type-file units; edit " + type.getFileName() + " in " + type.getContentPack().getName() + (type.hasDebugOverrides() ? "  (overridden)" : StringUtils.EMPTY));
+            "type-file units; edit " + type.getFileName() + " in " + type.getContentPack().getName() + (type.hasDebugOverrides() ? OVERRIDDEN_SUFFIX : StringUtils.EMPTY));
         if (derived.isEmpty())
             send(context, ChatFormatting.GRAY, "no measured geometry: dedicated server, or this model has no barrel or gun parts");
 
@@ -140,7 +145,7 @@ public final class ShootPointDebugCommand
     private static void listBank(CommandContext<CommandSourceStack> context, DriveableType type, boolean secondary, List<DerivedMuzzle> derived)
     {
         List<ShootPoint> points = type.shootPoints(secondary);
-        String bank = secondary ? "secondary" : "primary";
+        String bank = secondary ? SECONDARY : PRIMARY;
         send(context, ChatFormatting.AQUA, "-- " + bank + " (" + type.weaponType(secondary) + ") --");
         if (points.isEmpty())
         {
@@ -158,11 +163,11 @@ public final class ShootPointDebugCommand
             ShootPoint point = points.get(index);
             Vector3f current = modelPixels(point);
             send(context, point.isDebugOverride() ? ChatFormatting.YELLOW : ChatFormatting.GRAY,
-                "  [" + index + "] " + describe(point) + "  " + format(current) + (point.isDebugOverride() ? "  (overridden)" : StringUtils.EMPTY));
+                "  [" + index + "] " + describe(point) + "  " + format(current) + (point.isDebugOverride() ? OVERRIDDEN_SUFFIX : StringUtils.EMPTY));
             if (point.getBarrelCount() > 1)
                 send(context, ChatFormatting.DARK_AQUA, "        fires from " + point.getBarrelCount() + " measured barrels in turn: " + formatBarrels(point.getBarrels()));
             if (barrel != null)
-                send(context, ChatFormatting.DARK_AQUA, "        measured barrel " + format(barrel) + "   delta " + format(delta(barrel, current)));
+                send(context, ChatFormatting.DARK_AQUA, "        measured barrel " + format(barrel) + DELTA_PREFIX + format(delta(barrel, current)));
             send(context, ChatFormatting.DARK_GRAY, "        " + typeFileLine(bank, point, current));
         }
     }
@@ -180,14 +185,14 @@ public final class ShootPointDebugCommand
             Vector3f current = scale(info.getGunOrigin(), 16F);
             boolean overridden = type.isGunOriginOverridden(seat);
             send(context, overridden ? ChatFormatting.YELLOW : ChatFormatting.GRAY,
-                "  seat " + seat + " " + info.getGunName() + "  " + format(current) + (overridden ? "  (overridden)" : StringUtils.EMPTY));
+                "  seat " + seat + " " + info.getGunName() + "  " + format(current) + (overridden ? OVERRIDDEN_SUFFIX : StringUtils.EMPTY));
             if (info.getGunBarrelCount() > 1)
                 send(context, ChatFormatting.DARK_AQUA, "        fires from " + info.getGunBarrelCount() + " measured barrels in turn: " + formatBarrels(info.getGunBarrels()));
             DerivedMuzzle measured = findMuzzle(derived, seat);
             if (measured != null)
             {
                 // Both are rest-pose values: firing turns GunOrigin round the pivot as the gun aims.
-                send(context, ChatFormatting.DARK_AQUA, "        measured gun " + format(measured.position()) + "   delta " + format(delta(measured.position(), current)));
+                send(context, ChatFormatting.DARK_AQUA, "        measured gun " + format(measured.position()) + DELTA_PREFIX + format(delta(measured.position(), current)));
                 if (measured.pivot() != null)
                     send(context, ChatFormatting.DARK_AQUA, "        gun pivot " + format(measured.pivot()) + "   GunOrigin turns round it with the gun");
             }
@@ -205,9 +210,9 @@ public final class ShootPointDebugCommand
         if (type == null)
             return 0;
 
-        int index = IntegerArgumentType.getInteger(context, "index");
+        int index = IntegerArgumentType.getInteger(context, INDEX);
         List<ShootPoint> points = type.shootPoints(secondary);
-        String bank = secondary ? "secondary" : "primary";
+        String bank = secondary ? SECONDARY : PRIMARY;
         if (index >= points.size())
         {
             context.getSource().sendFailure(Component.literal("No " + bank + " shoot point at index " + index + "; this type has " + points.size()));
@@ -239,7 +244,7 @@ public final class ShootPointDebugCommand
         Vector3f target = argumentVector(context);
         int index = type.addDebugShootPoint(secondary, target, part);
         broadcast(context, new PacketDebugShootPoint(type.getShortName(), secondary ? Operation.ADD_SECONDARY : Operation.ADD_PRIMARY, index, target, part.getShortName()));
-        String bank = secondary ? "secondary" : "primary";
+        String bank = secondary ? SECONDARY : PRIMARY;
         confirm(context, bank + " [" + index + "] added", target, "ShootPoint" + StringUtils.capitalize(bank) + " " + format(target) + " " + part.getShortName());
         return 1;
     }
@@ -335,7 +340,7 @@ public final class ShootPointDebugCommand
                 if (type.setDebugShootPoint(false, 0, barrel))
                 {
                     broadcast(context, new PacketDebugShootPoint(type.getShortName(), Operation.SET_PRIMARY, 0, barrel, StringUtils.EMPTY));
-                    confirm(context, "primary [0]", barrel, typeFileLine("primary", type.shootPoints(false).get(0), barrel));
+                    confirm(context, "primary [0]", barrel, typeFileLine(PRIMARY, type.shootPoints(false).get(0), barrel));
                     applied++;
                 }
             }
@@ -406,7 +411,7 @@ public final class ShootPointDebugCommand
         List<Vec3> measured = ClientHooks.RENDER.deriveAAGunBarrelOffsets(type);
         send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " barrels ===");
         send(context, ChatFormatting.WHITE,
-            "type-file units; edit " + type.getFileName() + " in " + type.getContentPack().getName() + (type.hasDebugOverrides() ? "  (overridden)" : StringUtils.EMPTY));
+            "type-file units; edit " + type.getFileName() + " in " + type.getContentPack().getName() + (type.hasDebugOverrides() ? OVERRIDDEN_SUFFIX : StringUtils.EMPTY));
         if (measured.isEmpty())
             send(context, ChatFormatting.GRAY, "no measured geometry: dedicated server, or the model's barrels are empty");
 
@@ -414,12 +419,13 @@ public final class ShootPointDebugCommand
         {
             Vector3f current = new Vector3f(type.getBarrelX()[barrel], type.getBarrelY()[barrel], type.getBarrelZ()[barrel]);
             boolean overridden = type.isBarrelOverridden(barrel);
-            String fires = type.firesFromBarrelLine(barrel) ? "  (fires)" : type.hasMeasuredBarrels() ? "  (the measured muzzle fires)" : StringUtils.EMPTY;
-            send(context, overridden ? ChatFormatting.YELLOW : ChatFormatting.GRAY, "  [" + barrel + "] " + format(current) + (overridden ? "  (overridden)" : StringUtils.EMPTY) + fires);
+            String measuredNote = type.hasMeasuredBarrels() ? "  (the measured muzzle fires)" : StringUtils.EMPTY;
+            String fires = type.firesFromBarrelLine(barrel) ? "  (fires)" : measuredNote;
+            send(context, overridden ? ChatFormatting.YELLOW : ChatFormatting.GRAY, "  [" + barrel + "] " + format(current) + (overridden ? OVERRIDDEN_SUFFIX : StringUtils.EMPTY) + fires);
             if (barrel < measured.size())
             {
                 Vector3f suggested = AAGunBarrelGeometry.legacyBarrelFor(measured.get(barrel), type.isSentry());
-                send(context, ChatFormatting.DARK_AQUA, "        measured muzzle " + format(suggested) + "   delta " + format(delta(suggested, current)));
+                send(context, ChatFormatting.DARK_AQUA, "        measured muzzle " + format(suggested) + DELTA_PREFIX + format(delta(suggested, current)));
                 send(context, ChatFormatting.DARK_GRAY, "        " + barrelLine(barrel, suggested));
             }
         }
@@ -515,7 +521,7 @@ public final class ShootPointDebugCommand
         Entity vehicle = player.getVehicle();
         if (vehicle != null)
         {
-            Driveable driveable = vehicle instanceof Driveable direct ? direct : vehicle instanceof Seat seat ? seat.getDriveable() : vehicle.getVehicle() instanceof Driveable parent ? parent : null;
+            Driveable driveable = Driveable.ofRiddenEntity(vehicle);
             if (driveable != null && driveable.getConfigType() != null)
                 return driveable.getConfigType();
         }

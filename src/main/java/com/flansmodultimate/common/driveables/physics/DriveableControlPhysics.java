@@ -110,7 +110,8 @@ public final class DriveableControlPhysics
         float normalized = normalizedThrottle(throttle, reversePower);
         if (normalized == 0F)
             return 0F;
-        float configured = normalized > 0F ? (inWater ? nonNegative(waterPower) : nonNegative(forwardPower)) : nonNegative(reversePower);
+        float forward = inWater ? waterPower : forwardPower;
+        float configured = nonNegative(normalized > 0F ? forward : reversePower);
         return normalized * configured;
     }
 

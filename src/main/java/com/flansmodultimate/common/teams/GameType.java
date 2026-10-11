@@ -16,13 +16,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Getter
 public abstract class GameType
@@ -124,6 +118,8 @@ public abstract class GameType
     {}
 
     /** The teams a player may join through the team menu. Forced assignments bypass this. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public List<Team> getTeamsCanSpawnAs(TeamsManager manager, TeamsRound round, ServerPlayer player)
     {
         return round.getTeamIds().stream().map(Team::getTeam).filter(Objects::nonNull).toList();
@@ -161,6 +157,8 @@ public abstract class GameType
     public void entityKilled(TeamsManager manager, Entity entity, DamageSource source)
     {}
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public boolean canPlayerPickup(TeamsManager manager, ServerPlayer player, ItemStack stack)
     {
         return true;
@@ -197,6 +195,8 @@ public abstract class GameType
         return false;
     }
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public boolean setVariable(String variable, String value)
     {
         return false;

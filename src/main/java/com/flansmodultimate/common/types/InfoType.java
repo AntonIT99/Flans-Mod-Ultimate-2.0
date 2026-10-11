@@ -5,31 +5,18 @@ import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
-import com.flansmodultimate.content.ContentManager;
-import com.flansmodultimate.content.ContentPackPaths;
-import com.flansmodultimate.content.IContentProvider;
+import com.flansmodultimate.content.*;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.entity.EffectPlatform;
-import com.flansmodultimate.util.DynamicReference;
-import com.flansmodultimate.util.FileUtils;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.ModUtils;
-import com.flansmodultimate.util.ResourceUtils;
-import com.flansmodultimate.util.SoundLengthIndex;
-import com.flansmodultimate.util.TypeReaderUtils;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.flansmodultimate.util.*;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -42,28 +29,20 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.nio.file.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.regex.Pattern;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class InfoType implements IContentType
 {
+    private static final String KEY_RECIPE = "Recipe";
+    private static final String MODEL_CLASS_PREFIX = ".Model";
     private static final String LOOT_POOL_NAME = "FlansMod";
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     /** A timer telling the mod when to play a sound again, paired with the sound it plays. */
     private record SoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength)
@@ -186,6 +165,8 @@ public abstract class InfoType implements IContentType
     /**
      * Whether an entity holding this stack must skip frustum culling
      */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public boolean isFrustumCullingDisabled(ItemStack stack)
     {
         return disableFrustumCulling;
@@ -216,7 +197,7 @@ public abstract class InfoType implements IContentType
         List<String> lines = file.getLines();
         for (int i = 0; i < lines.size(); i++)
         {
-            String[] split = lines.get(i).split("\\s+");
+            String[] split = WHITESPACE.split(lines.get(i));
             readLine(split, i, file);
         }
         if (PlatformEnvironment.isClient())
@@ -256,6 +237,8 @@ public abstract class InfoType implements IContentType
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {}
 
+    // A recipe definition consumes its three following pattern lines.
+    @SuppressWarnings("java:S127")
     private void readRecipeDefinitions(TypeFile file)
     {
         clearRecipeDefinition();
@@ -267,11 +250,11 @@ public abstract class InfoType implements IContentType
             if (StringUtils.isBlank(line) || line.trim().startsWith("//"))
                 continue;
 
-            String[] split = line.trim().split("\\s+");
+            String[] split = WHITESPACE.split(line.trim());
             if (split.length < 1)
                 continue;
 
-            if (split[0].equalsIgnoreCase("Recipe"))
+            if (split[0].equalsIgnoreCase(KEY_RECIPE))
             {
                 clearRecipeDefinition();
                 recipeTokens.addAll(Arrays.asList(split).subList(1, split.length));
@@ -281,8 +264,7 @@ public abstract class InfoType implements IContentType
                 {
                     String recipeRow = getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
                     if (hasRecipeContentAfterGrid(recipeRow))
-                        TypeReaderUtils
-                            .logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
+                        TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 
                     recipePattern.add(padRecipeRow(recipeRow));
                 }
@@ -330,8 +312,8 @@ public abstract class InfoType implements IContentType
     private static String getRecipeRow(String recipeRow)
     {
         String row = Objects.requireNonNullElse(recipeRow, StringUtils.EMPTY);
-        if (row.regionMatches(true, 0, "Recipe", 0, "Recipe".length()) && row.length() > "Recipe".length() && Character.isWhitespace(row.charAt("Recipe".length())))
-            return row.substring("Recipe".length() + 1);
+        if (row.regionMatches(true, 0, KEY_RECIPE, 0, KEY_RECIPE.length()) && row.length() > KEY_RECIPE.length() && Character.isWhitespace(row.charAt(KEY_RECIPE.length())))
+            return row.substring(KEY_RECIPE.length() + 1);
         return row;
     }
 
@@ -488,8 +470,7 @@ public abstract class InfoType implements IContentType
 
             timer.applyLength().accept(measuredLength.getAsInt());
             resolved++;
-            FlansLog.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)", originalShortName, timer.parameterName(), sound, configuredLength,
-                measuredLength.getAsInt());
+            FlansLog.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)", originalShortName, timer.parameterName(), sound, configuredLength, measuredLength.getAsInt());
         }
 
         soundTimers.clear();
@@ -532,6 +513,8 @@ public abstract class InfoType implements IContentType
         }));
     }
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void readClient(TypeFile file)
     {
         modelClassName = findModelClass(modelName, contentPack);
@@ -570,7 +553,7 @@ public abstract class InfoType implements IContentType
             {
                 String modelPackageName = String.join(".", Arrays.copyOf(modelNameSplit, modelNameSplit.length - 1));
                 String modelSimpleName = modelNameSplit[modelNameSplit.length - 1];
-                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
+                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + MODEL_CLASS_PREFIX + modelSimpleName;
 
                 // Try 1.12.2 package format
                 if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
@@ -592,7 +575,7 @@ public abstract class InfoType implements IContentType
                                 String redirectedPackageName = lines.get(1);
                                 if (modelNameSplit.length > 2)
                                     redirectedPackageName += "." + String.join(".", Arrays.copyOfRange(modelNameSplit, 1, modelNameSplit.length - 1));
-                                modelClassName = redirectedPackageName + ".Model" + modelSimpleName;
+                                modelClassName = redirectedPackageName + MODEL_CLASS_PREFIX + modelSimpleName;
                             }
                         }
                         catch (IOException e)
@@ -603,7 +586,7 @@ public abstract class InfoType implements IContentType
 
                     // Fallback to default
                     if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
-                        modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
+                        modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + MODEL_CLASS_PREFIX + modelSimpleName;
                 }
             }
             else
@@ -746,8 +729,7 @@ public abstract class InfoType implements IContentType
         LootPool pool = table.getPool(LOOT_POOL_NAME);
         if (pool == null)
         {
-            table.addPool(LootPool.lootPool().name(LOOT_POOL_NAME).setRolls(ConstantValue.exactly(1F)).setBonusRolls(ConstantValue.exactly(1F))
-                .add(new ExistingLootEntryBuilder(entry)).build());
+            table.addPool(LootPool.lootPool().name(LOOT_POOL_NAME).setRolls(ConstantValue.exactly(1F)).setBonusRolls(ConstantValue.exactly(1F)).add(new ExistingLootEntryBuilder(entry)).build());
             return;
         }
 
@@ -759,6 +741,8 @@ public abstract class InfoType implements IContentType
         }
     }
 
+    // Forge exposes no API to append entries to an existing loot pool.
+    @SuppressWarnings("java:S3011")
     private static Optional<LootPool> createAppendedPool(LootPool pool, LootPoolEntryContainer entry)
     {
         try
@@ -774,12 +758,11 @@ public abstract class InfoType implements IContentType
             LootPoolEntryContainer[] newEntries = Arrays.copyOf(oldEntries, oldEntries.length + 1);
             newEntries[oldEntries.length] = entry;
 
-            Constructor<LootPool> constructor = LootPool.class.getDeclaredConstructor(LootPoolEntryContainer[].class, LootItemCondition[].class, LootItemFunction[].class,
-                NumberProvider.class, NumberProvider.class, String.class);
+            Constructor<LootPool> constructor = LootPool.class.getDeclaredConstructor(LootPoolEntryContainer[].class, LootItemCondition[].class, LootItemFunction[].class, NumberProvider.class,
+                NumberProvider.class, String.class);
             constructor.setAccessible(true);
 
-            return Optional.of(constructor.newInstance(newEntries, (LootItemCondition[]) conditionsField.get(pool), (LootItemFunction[]) functionsField.get(pool), pool.getRolls(),
-                pool.getBonusRolls(), LOOT_POOL_NAME));
+            return Optional.of(constructor.newInstance(newEntries, conditionsField.get(pool), functionsField.get(pool), pool.getRolls(), pool.getBonusRolls(), LOOT_POOL_NAME));
         }
         catch (Exception ex)
         {

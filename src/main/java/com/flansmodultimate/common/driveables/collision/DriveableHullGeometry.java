@@ -164,6 +164,8 @@ public final class DriveableHullGeometry
      * that moved onto it instead of being trapped inside.
      * </p>
      */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     public double clip(int axis, double minX, double minY, double minZ, double maxX, double maxY, double maxZ, double desired)
     {
         if (!hasActiveShapes() || axis < 0 || axis > 2 || !(Math.abs(desired) >= MOVEMENT_EPSILON))
@@ -285,7 +287,9 @@ public final class DriveableHullGeometry
             if (!current.active[shape])
                 continue;
             double[] points = current.vertices[shape];
-            double centreX = 0D, centreY = 0D, centreZ = 0D;
+            double centreX = 0D;
+            double centreY = 0D;
+            double centreZ = 0D;
             for (int vertex = 0; vertex < 8; vertex++)
             {
                 centreX += points[vertex * 3];
@@ -295,7 +299,8 @@ public final class DriveableHullGeometry
             centreX /= 8D;
             centreY /= 8D;
             centreZ /= 8D;
-            double enter = 0D, exit = 1D;
+            double enter = 0D;
+            double exit = 1D;
             boolean missed = false;
             for (int[] face : DriveableCollisionProfile.FACE_QUADS)
             {
@@ -536,6 +541,8 @@ public final class DriveableHullGeometry
         return addAxis(axes, count, abY * acZ - abZ * acY, abZ * acX - abX * acZ, abX * acY - abY * acX);
     }
 
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     private static int addAxis(double[] axes, int count, double x, double y, double z)
     {
         double length = Math.sqrt(x * x + y * y + z * z);
@@ -562,6 +569,8 @@ public final class DriveableHullGeometry
      * which is what lets a riding entity be carried without inverting the
      * pose and turret rotations.
      */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     private static boolean buildFrame(double[] points, double[] frame)
     {
         int[] best = null;
@@ -646,7 +655,8 @@ public final class DriveableHullGeometry
             double centre = normalX * centreX + normalY * centreY + normalZ * centreZ;
             double hullMin = extents[index * 2];
             double hullMax = extents[index * 2 + 1];
-            double speed = axis == 0 ? normalX : axis == 1 ? normalY : normalZ;
+            double horizontalSpeed = axis == 0 ? normalX : normalZ;
+            double speed = axis == 1 ? normalY : horizontalSpeed;
             if (Math.abs(speed) < AXIS_EPSILON)
             {
                 if (centre + radius <= hullMin + CONTACT_EPSILON || centre - radius >= hullMax - CONTACT_EPSILON)

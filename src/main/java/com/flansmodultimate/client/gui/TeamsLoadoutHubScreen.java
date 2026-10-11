@@ -16,10 +16,10 @@ import net.minecraft.network.chat.Component;
 
 public final class TeamsLoadoutHubScreen extends Screen
 {
-    private static final int WIDTH = 256;
+    private static final int PANEL_WIDTH = 256;
     /** The landing page has room for three advertised box types, as in 1.12.2. */
     private static final int BOX_SLOTS = 3;
-    private static final int HEIGHT = 215;
+    private static final int PANEL_HEIGHT = 215;
 
     public TeamsLoadoutHubScreen()
     {
@@ -36,7 +36,8 @@ public final class TeamsLoadoutHubScreen extends Screen
             return;
         }
 
-        int left = width / 2 - WIDTH / 2, top = height / 2 - HEIGHT / 2;
+        int left = width / 2 - PANEL_WIDTH / 2;
+        int top = height / 2 - PANEL_HEIGHT / 2;
         for (int i = 0; i < Math.min(5, state.getLoadouts().size()); i++)
         {
             int index = i;
@@ -73,9 +74,9 @@ public final class TeamsLoadoutHubScreen extends Screen
         if (state == null)
             return;
 
-        int left = width / 2 - WIDTH / 2;
-        int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSLANDINGPAGE, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
+        int left = width / 2 - PANEL_WIDTH / 2;
+        int top = height / 2 - PANEL_HEIGHT / 2;
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSLANDINGPAGE, left, top, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, 512, 256);
         // The server's greeting takes the header, as it did in 1.12.2, with the pool named
         // underneath it so neither is lost.
         graphics.drawCenteredString(font, state.getMotd(), width / 2, top + 6, 0xFFFFFF);

@@ -1,9 +1,7 @@
 package com.flansmodultimate.platform.client;
 
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.client.gui.overlay.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,7 +15,8 @@ public final class HudOverlayPlatform
     @Nullable
     private static ForgeGui currentGui;
 
-    private HudOverlayPlatform() {}
+    private HudOverlayPlatform()
+    {}
 
     /** A HUD layer drawn with the frame partial tick and the scaled screen size. */
     @FunctionalInterface
@@ -51,19 +50,20 @@ public final class HudOverlayPlatform
         {
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), id, wrap(layer));
         }
+
+        private static IGuiOverlay wrap(HudLayer layer)
+        {
+            return (gui, graphics, partialTick, width, height) ->
+            {
+                currentGui = gui;
+                layer.render(graphics, partialTick, width, height);
+            };
+        }
     }
 
     public static Registrar registrar(RegisterGuiOverlaysEvent event)
     {
         return new Registrar(event);
-    }
-
-    private static IGuiOverlay wrap(HudLayer layer)
-    {
-        return (gui, graphics, partialTick, width, height) -> {
-            currentGui = gui;
-            layer.render(graphics, partialTick, width, height);
-        };
     }
 
     /** Whether survival HUD elements, such as health and armor, are drawn. */

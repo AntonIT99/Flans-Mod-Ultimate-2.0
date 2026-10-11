@@ -44,7 +44,6 @@ public final class NpcVehicleState
     private static final float DEFAULT_AIM_STEP = 8F;
     /** A gun fixed to the hull only has to point roughly at the target: the shot itself is aimed exactly. */
     private static final float FIXED_GUN_TOLERANCE = 12F;
-    private static final double MOVING_DISTANCE = 0.003D;
     private static final float[] NO_SEATS = new float[0];
 
     /** Whether the NPC currently is a content-pack model. */
@@ -354,7 +353,8 @@ public final class NpcVehicleState
         float modelPitchStep = driver == null ? DEFAULT_AIM_STEP : driver.pitchSpeed();
         float yawStep = gradual ? aimStep(tuning, Value.AIM_SPEED_YAW, modelYawStep) : 360F;
         float pitchStep = gradual ? aimStep(tuning, Value.AIM_SPEED_PITCH, modelPitchStep) : 360F;
-        MountAim goal = wanted != null ? wanted : new MountAim(driver == null ? 0F : driver.restYaw(), 0F);
+        float yaw = driver == null ? 0F : driver.restYaw();
+        MountAim goal = wanted != null ? wanted : new MountAim(yaw, 0F);
         MountAim next = MountMotion.approach(turretAim(), goal, driver, yawStep, pitchStep);
         turretYaw = next.yaw();
         turretPitch = next.pitch();
@@ -373,7 +373,8 @@ public final class NpcVehicleState
                 next = turretAim();
             else if (mount.gun().isPresent())
             {
-                MountAim goal = track ? MountMotion.relative(direction, hullYaw + (mount.onTurret() ? turretYaw : 0F)) : new MountAim(mount.restYaw(), 0F);
+                float yaw = hullYaw + (mount.onTurret() ? turretYaw : 0F);
+                MountAim goal = track ? MountMotion.relative(direction, yaw) : new MountAim(mount.restYaw(), 0F);
                 next = MountMotion.approach(next, goal, mount, mount.yawSpeed(), mount.pitchSpeed());
             }
             seatYaw[seat] = next.yaw();

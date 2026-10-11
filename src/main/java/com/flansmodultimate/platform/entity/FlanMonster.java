@@ -3,14 +3,14 @@ package com.flansmodultimate.platform.entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 /** Version boundary for mob spawn initialization and custom death loot. */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 public abstract class FlanMonster extends Monster
 {
     protected FlanMonster(EntityType<? extends Monster> type, Level level)

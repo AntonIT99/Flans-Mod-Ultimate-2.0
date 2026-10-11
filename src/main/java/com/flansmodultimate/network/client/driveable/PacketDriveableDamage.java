@@ -84,6 +84,8 @@ public final class PacketDriveableDamage implements IClientPacket
         }
     }
 
+    // Pending damage is tracked per client level, not per packet.
+    @SuppressWarnings("java:S2696")
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {

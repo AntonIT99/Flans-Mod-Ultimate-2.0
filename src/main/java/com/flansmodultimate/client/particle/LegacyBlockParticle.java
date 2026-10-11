@@ -23,15 +23,15 @@ public final class LegacyBlockParticle extends TextureSheetParticle
 {
     public enum Variant
     {
-        CRACK,
-        DUST
+        CRACK, DUST
     }
 
     private final float uo;
     private final float vo;
 
-    private LegacyBlockParticle(ClientLevel level, BlockState state, BlockPos sourcePos, Variant variant,
-                                double x, double y, double z, double vx, double vy, double vz)
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
+    private LegacyBlockParticle(ClientLevel level, BlockState state, BlockPos sourcePos, Variant variant, double x, double y, double z, double vx, double vy, double vz)
     {
         // EntityDiggingFX retained EntityFX's randomized and normalized speed.
         super(level, x, y, z, vx, vy, vz);
@@ -51,8 +51,9 @@ public final class LegacyBlockParticle extends TextureSheetParticle
             setParticleSpeed(vx, vy, vz);
     }
 
-    public static LegacyBlockParticle create(ClientLevel level, BlockState state, BlockPos sourcePos, Variant variant,
-                                             double x, double y, double z, double vx, double vy, double vz)
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
+    public static LegacyBlockParticle create(ClientLevel level, BlockState state, BlockPos sourcePos, Variant variant, double x, double y, double z, double vx, double vy, double vz)
     {
         if (state.isAir() || state.getRenderShape() == RenderShape.INVISIBLE)
             return null;
@@ -86,7 +87,7 @@ public final class LegacyBlockParticle extends TextureSheetParticle
         int color = Minecraft.getInstance().getBlockColors().getColor(state, level, sourcePos);
         if (color != -1)
         {
-            rCol *=(color >> 16 & 255) / 255.0F;
+            rCol *= (color >> 16 & 255) / 255.0F;
             gCol *= (color >> 8 & 255) / 255.0F;
             bCol *= (color & 255) / 255.0F;
         }

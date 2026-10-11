@@ -1,32 +1,24 @@
 package com.flansmodultimate.util;
 
 import com.flansmodultimate.content.IContentProvider;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClassLoaderUtils
 {
+    private static final String ADD_BOX = "addBox";
+
     /** A transformed legacy class file together with the OpenGL transforms found inside it. */
     public record ModifiedClass(byte[] classData, List<TransformOp> transforms)
     {
@@ -65,24 +57,23 @@ public final class ClassLoaderUtils
 
     @Getter
     private static final Map<String, String> minecraftMethodMappings = Map.ofEntries(Map.entry("func_78084_a", "getTextureOffset"), Map.entry("func_78085_a", "setTextureOffset"),
-        Map.entry("func_78086_a", "setLivingAnimations"), Map.entry("func_78087_a", "setRotationAngles"), Map.entry("func_78088_a", "render"),
-        Map.entry("func_78784_a", "setTextureOffset"), Map.entry("func_78785_a", "render"), Map.entry("func_78786_a", "addBox"), Map.entry("func_78787_b", "setTextureSize"),
-        Map.entry("func_78788_d", "compileDisplayList"), Map.entry("func_78789_a", "addBox"), Map.entry("func_78790_a", "addBox"), Map.entry("func_78791_b", "renderWithRotation"),
-        Map.entry("func_78792_a", "addChild"), Map.entry("func_78793_a", "setRotationPoint"), Map.entry("func_78794_c", "postRender"),
-        Map.entry("func_85181_a", "getRandomModelBox"), Map.entry("func_178685_a", "copyModelAngles"), Map.entry("func_178686_a", "setModelAttributes"));
+        Map.entry("func_78086_a", "setLivingAnimations"), Map.entry("func_78087_a", "setRotationAngles"), Map.entry("func_78088_a", "render"), Map.entry("func_78784_a", "setTextureOffset"),
+        Map.entry("func_78785_a", "render"), Map.entry("func_78786_a", ADD_BOX), Map.entry("func_78787_b", "setTextureSize"), Map.entry("func_78788_d", "compileDisplayList"),
+        Map.entry("func_78789_a", ADD_BOX), Map.entry("func_78790_a", ADD_BOX), Map.entry("func_78791_b", "renderWithRotation"), Map.entry("func_78792_a", "addChild"),
+        Map.entry("func_78793_a", "setRotationPoint"), Map.entry("func_78794_c", "postRender"), Map.entry("func_85181_a", "getRandomModelBox"), Map.entry("func_178685_a", "copyModelAngles"),
+        Map.entry("func_178686_a", "setModelAttributes"));
 
     @Getter
     private static final Map<String, String> minecraftFieldMappings = Map.ofEntries(Map.entry("field_78782_b", "textureOffsetY"), Map.entry("field_78783_a", "textureOffsetX"),
-        Map.entry("field_78795_f", "rotateAngleX"), Map.entry("field_78796_g", "rotateAngleY"), Map.entry("field_78797_d", "rotationPointY"),
-        Map.entry("field_78798_e", "rotationPointZ"), Map.entry("field_78799_b", "textureHeight"), Map.entry("field_78800_c", "rotationPointX"),
-        Map.entry("field_78801_a", "textureWidth"), Map.entry("field_78802_n", "boxName"), Map.entry("field_78803_o", "textureOffsetX"), Map.entry("field_78804_l", "cubeList"),
-        Map.entry("field_78805_m", "childModels"), Map.entry("field_78806_j", "showModel"), Map.entry("field_78807_k", "isHidden"), Map.entry("field_78808_h", "rotateAngleZ"),
-        Map.entry("field_78809_i", "mirror"), Map.entry("field_78810_s", "baseModel"), Map.entry("field_78811_r", "displayList"), Map.entry("field_78812_q", "compiled"),
-        Map.entry("field_78813_p", "textureOffsetY"), Map.entry("field_82906_o", "offsetX,0"), Map.entry("field_82907_q", "offsetZ,0"), Map.entry("field_82908_p", "offsetY,0"));
+        Map.entry("field_78795_f", "rotateAngleX"), Map.entry("field_78796_g", "rotateAngleY"), Map.entry("field_78797_d", "rotationPointY"), Map.entry("field_78798_e", "rotationPointZ"),
+        Map.entry("field_78799_b", "textureHeight"), Map.entry("field_78800_c", "rotationPointX"), Map.entry("field_78801_a", "textureWidth"), Map.entry("field_78802_n", "boxName"),
+        Map.entry("field_78803_o", "textureOffsetX"), Map.entry("field_78804_l", "cubeList"), Map.entry("field_78805_m", "childModels"), Map.entry("field_78806_j", "showModel"),
+        Map.entry("field_78807_k", "isHidden"), Map.entry("field_78808_h", "rotateAngleZ"), Map.entry("field_78809_i", "mirror"), Map.entry("field_78810_s", "baseModel"),
+        Map.entry("field_78811_r", "displayList"), Map.entry("field_78812_q", "compiled"), Map.entry("field_78813_p", "textureOffsetY"), Map.entry("field_82906_o", "offsetX,0"),
+        Map.entry("field_82907_q", "offsetZ,0"), Map.entry("field_82908_p", "offsetY,0"));
 
     private static final Map<String, String> classMappings = Map.ofEntries(Map.entry("net/minecraft/client/model/ModelRenderer", "com/flansmodultimate/client/model/ModelRenderer"),
-        Map.entry("net/minecraft/entity/Entity", "net/minecraft/world/entity/Entity"),
-        Map.entry("net/minecraft/entity/EntityLivingBase", "net/minecraft/world/entity/LivingEntity"));
+        Map.entry("net/minecraft/entity/Entity", "net/minecraft/world/entity/Entity"), Map.entry("net/minecraft/entity/EntityLivingBase", "net/minecraft/world/entity/LivingEntity"));
 
     private static final String LEGACY_MODELBASE = "net/minecraft/client/model/ModelBase";
     private static final String NEW_MODELBASE = "com/flansmodultimate/client/model/ModelBase";
@@ -236,7 +227,7 @@ public final class ClassLoaderUtils
                 }
                 return objectClassName;
             }
-            catch (Throwable ex)
+            catch (Exception | LinkageError ex)
             {
                 return objectClassName;
             }

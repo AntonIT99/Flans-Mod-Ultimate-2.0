@@ -20,28 +20,44 @@ import java.util.*;
 /** Brigadier implementation of the legacy /teams administration and player commands. */
 public final class TeamsCommand
 {
+    private static final String TEAMS = "teams";
+    private static final String CLASS = "class";
+    private static final String SCORE = "score";
+    private static final String PLAYER = "player";
+    private static final String MSG_ROUND_STARTED = "Round started";
+    private static final String MSG_NO_VALID_ROUND = "No valid round is configured";
+    private static final String VALUE = "value";
+    private static final String AMOUNT = "amount";
+    private static final String ENABLED = "enabled";
+    private static final String DISABLED = "disabled";
+    private static final String SECONDS = "seconds";
+    private static final String SECONDS_SUFFIX = " seconds";
+    private static final String INDEX = "index";
+    private static final String MSG_INVALID_ROUND_INDEX = "Invalid round index";
+    private static final String DIVISOR = "divisor";
+    private static final String NO_LONGER = "no longer";
+
     private TeamsCommand()
     {}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("teams").executes(TeamsCommand::help)
-            .then(Commands.literal("help").executes(TeamsCommand::help))
+        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(TEAMS).executes(TeamsCommand::help).then(Commands.literal("help").executes(TeamsCommand::help))
             .then(Commands.literal("join")
                 .then(Commands.argument("team", StringArgumentType.word()).suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().map(Team::getShortName), builder))
                     .executes(TeamsCommand::joinTeam)))
-            .then(Commands.literal("class")
-                .then(Commands.argument("class", StringArgumentType.word())
+            .then(Commands.literal(CLASS)
+                .then(Commands.argument(CLASS, StringArgumentType.word())
                     .suggests((context, builder) -> SharedSuggestionProvider.suggest(PlayerClass.values().stream().map(PlayerClass::getShortName), builder)).executes(TeamsCommand::selectClass)))
-            .then(Commands.literal("score").executes(TeamsCommand::score))
+            .then(Commands.literal(SCORE).executes(TeamsCommand::score))
             .then(Commands.literal("motd").executes(TeamsCommand::showMotd)
                 .then(Commands.argument("text", StringArgumentType.greedyString()).requires(source -> source.hasPermission(2)).executes(TeamsCommand::setMotd)))
             .then(Commands.literal("vote").then(Commands.argument("option", IntegerArgumentType.integer(1, 5)).executes(TeamsCommand::vote)))
             .then(Commands.literal("stats").executes(context -> showStats(context.getSource(), context.getSource().getPlayerOrException()))
-                .then(Commands.argument("player", EntityArgument.player()).requires(source -> source.hasPermission(2))
-                    .executes(context -> showStats(context.getSource(), EntityArgument.getPlayer(context, "player")))))
+                .then(Commands.argument(PLAYER, EntityArgument.player()).requires(source -> source.hasPermission(2))
+                    .executes(context -> showStats(context.getSource(), EntityArgument.getPlayer(context, PLAYER)))))
             .then(Commands.literal("leaderboard").executes(TeamsCommand::leaderboard)).then(Commands.literal("loadouts").executes(TeamsCommand::openLoadouts))
-            .then(Commands.literal("list").then(Commands.literal("gametypes").executes(TeamsCommand::listGameTypes)).then(Commands.literal("teams").executes(TeamsCommand::listTeams))
+            .then(Commands.literal("list").then(Commands.literal("gametypes").executes(TeamsCommand::listGameTypes)).then(Commands.literal(TEAMS).executes(TeamsCommand::listTeams))
                 .then(Commands.literal("classes").executes(TeamsCommand::listClasses)).then(Commands.literal("maps").executes(TeamsCommand::listMaps))
                 .then(Commands.literal("rounds").executes(TeamsCommand::listRounds)).then(Commands.literal("loadouts").executes(TeamsCommand::listLoadoutPools))
                 .then(Commands.literal("rewardboxes").executes(TeamsCommand::listRewardBoxes)))
@@ -50,20 +66,20 @@ public final class TeamsCommand
             .then(Commands.literal("listRounds").executes(TeamsCommand::listRounds)).then(Commands.literal("listAllTeams").executes(TeamsCommand::listTeams))
             .then(Commands.literal("on").requires(source -> source.hasPermission(2)).executes(context ->
             {
-                manager(context).setEnabled(true);
+                manager().setEnabled(true);
                 return success(context, "Teams enabled");
             })).then(Commands.literal("off").requires(source -> source.hasPermission(2)).executes(context ->
             {
-                manager(context).setEnabled(false);
+                manager().setEnabled(false);
                 return success(context, "Teams disabled");
             })).then(booleanSetting("explosions", TeamsCommand::setExplosions)).then(booleanSetting("forceAdventure", TeamsCommand::setForceAdventure))
             .then(booleanSetting("forceAdventureMode", TeamsCommand::setForceAdventure)).then(booleanSetting("fuelNeeded", TeamsCommand::setFuelNeeded))
             .then(booleanSetting("vehiclesCanZoom", TeamsCommand::setVehiclesCanZoom));
         root = addRuleCommands(root)
             .then(Commands.literal("start").requires(source -> source.hasPermission(2))
-                .executes(context -> manager(context).startNextRound() ? success(context, "Round started") : failure(context, "No valid round is configured")))
+                .executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND)))
             .then(Commands.literal("nextRound").requires(source -> source.hasPermission(2))
-                .executes(context -> manager(context).startNextRound() ? success(context, "Advanced to the next round") : failure(context, "No valid round is configured")))
+                .executes(context -> manager().startNextRound() ? success(context, "Advanced to the next round") : failure(context, MSG_NO_VALID_ROUND)))
             .then(Commands.literal("getOpKit").requires(source -> source.hasPermission(2)).executes(TeamsCommand::giveKit))
             .then(Commands.literal("setloadoutpool").requires(source -> source.hasPermission(2))
                 .then(Commands.argument("id", StringArgumentType.word())
@@ -71,12 +87,12 @@ public final class TeamsCommand
                         .suggest(java.util.stream.Stream.concat(java.util.stream.Stream.of("none"), LoadoutPool.values().stream().map(LoadoutPool::getShortName)), builder))
                     .executes(TeamsCommand::setLoadoutPool)))
             .then(Commands.literal("xpmultiplier").requires(source -> source.hasPermission(2))
-                .then(Commands.argument("value", FloatArgumentType.floatArg(0F, 100F)).executes(TeamsCommand::setExperienceMultiplier)))
+                .then(Commands.argument(VALUE, FloatArgumentType.floatArg(0F, 100F)).executes(TeamsCommand::setExperienceMultiplier)))
             .then(Commands.literal("xp").requires(source -> source.hasPermission(2))
-                .then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("amount", IntegerArgumentType.integer(1)).executes(TeamsCommand::giveExperience))))
-            .then(Commands.literal("resetrank").requires(source -> source.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).executes(TeamsCommand::resetRank)))
+                .then(Commands.argument(PLAYER, EntityArgument.player()).then(Commands.argument(AMOUNT, IntegerArgumentType.integer(1)).executes(TeamsCommand::giveExperience))))
+            .then(Commands.literal("resetrank").requires(source -> source.hasPermission(2)).then(Commands.argument(PLAYER, EntityArgument.player()).executes(TeamsCommand::resetRank)))
             .then(Commands.literal("giverewardbox").requires(source -> source.hasPermission(2))
-                .then(Commands.argument("player", EntityArgument.player())
+                .then(Commands.argument(PLAYER, EntityArgument.player())
                     .then(Commands.argument("box", StringArgumentType.word())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getShortName), builder)).executes(TeamsCommand::giveRewardBox))))
             .then(adminCommands());
@@ -88,61 +104,61 @@ public final class TeamsCommand
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> adminCommands()
     {
-        return Commands.literal("admin").requires(source -> source.hasPermission(2)).then(Commands.literal("enabled").then(Commands.argument("value", BoolArgumentType.bool()).executes(context ->
+        return Commands.literal("admin").requires(source -> source.hasPermission(2)).then(Commands.literal(ENABLED).then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(context ->
         {
-            manager(context).setEnabled(BoolArgumentType.getBool(context, "value"));
-            return success(context, "Teams " + (manager(context).isEnabled() ? "enabled" : "disabled"));
-        }))).then(Commands.literal("voting").then(Commands.argument("value", BoolArgumentType.bool()).executes(context ->
+            manager().setEnabled(BoolArgumentType.getBool(context, VALUE));
+            return success(context, "Teams " + (manager().isEnabled() ? ENABLED : DISABLED));
+        }))).then(Commands.literal("voting").then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(context ->
         {
-            boolean enabled = BoolArgumentType.getBool(context, "value");
-            manager(context).setVoting(enabled);
-            return success(context, "Round voting " + (enabled ? "enabled" : "disabled"));
-        }))).then(Commands.literal("scoreDisplayTime").then(Commands.argument("seconds", IntegerArgumentType.integer(0, 86400)).executes(context ->
+            boolean enabled = BoolArgumentType.getBool(context, VALUE);
+            manager().setVoting(enabled);
+            return success(context, "Round voting " + (enabled ? ENABLED : DISABLED));
+        }))).then(Commands.literal("scoreDisplayTime").then(Commands.argument(SECONDS, IntegerArgumentType.integer(0, 86400)).executes(context ->
         {
-            int seconds = IntegerArgumentType.getInteger(context, "seconds");
-            manager(context).setScoreDisplayTimeSeconds(seconds);
-            return success(context, "Round results will be displayed for " + seconds + " seconds");
-        }))).then(Commands.literal("rankUpdateTime").then(Commands.argument("seconds", IntegerArgumentType.integer(0, 86400)).executes(context ->
+            int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+            manager().setScoreDisplayTimeSeconds(seconds);
+            return success(context, "Round results will be displayed for " + seconds + SECONDS_SUFFIX);
+        }))).then(Commands.literal("rankUpdateTime").then(Commands.argument(SECONDS, IntegerArgumentType.integer(0, 86400)).executes(context ->
         {
-            int seconds = IntegerArgumentType.getInteger(context, "seconds");
-            manager(context).setRankUpdateTimeSeconds(seconds);
-            return success(context, seconds == 0 ? "The rank update screen is disabled" : "The rank update screen will appear for " + seconds + " seconds");
-        }))).then(Commands.literal("votingTime").then(Commands.argument("seconds", IntegerArgumentType.integer(0, 86400)).executes(context ->
+            int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+            manager().setRankUpdateTimeSeconds(seconds);
+            return success(context, seconds == 0 ? "The rank update screen is disabled" : "The rank update screen will appear for " + seconds + SECONDS_SUFFIX);
+        }))).then(Commands.literal("votingTime").then(Commands.argument(SECONDS, IntegerArgumentType.integer(0, 86400)).executes(context ->
         {
-            int seconds = IntegerArgumentType.getInteger(context, "seconds");
-            manager(context).setVotingTimeSeconds(seconds);
-            return success(context, "Round voting will last " + seconds + " seconds");
+            int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+            manager().setVotingTimeSeconds(seconds);
+            return success(context, "Round voting will last " + seconds + SECONDS_SUFFIX);
         }))).then(Commands.literal("motd").then(Commands.argument("text", StringArgumentType.greedyString()).executes(TeamsCommand::setMotd)))
-            .then(Commands.literal("autobalancetime").then(Commands.argument("seconds", IntegerArgumentType.integer(11, 86400)).executes(context ->
+            .then(Commands.literal("autobalancetime").then(Commands.argument(SECONDS, IntegerArgumentType.integer(11, 86400)).executes(context ->
             {
-                int seconds = IntegerArgumentType.getInteger(context, "seconds");
-                manager(context).setAutoBalanceIntervalSeconds(seconds);
+                int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+                manager().setAutoBalanceIntervalSeconds(seconds);
                 return success(context, "Autobalance will run every " + seconds + " seconds with a 10-second warning");
-            }))).then(Commands.literal("roundsGenerator").then(Commands.argument("value", BoolArgumentType.bool()).executes(context ->
+            }))).then(Commands.literal("roundsGenerator").then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(context ->
             {
-                boolean enabled = BoolArgumentType.getBool(context, "value");
-                manager(context).setRoundsGenerator(enabled);
-                return success(context, "Rounds generator " + (enabled ? "enabled" : "disabled"));
+                boolean enabled = BoolArgumentType.getBool(context, VALUE);
+                manager().setRoundsGenerator(enabled);
+                return success(context, "Rounds generator " + (enabled ? ENABLED : DISABLED));
             })))
-            .then(Commands.literal("start").executes(context -> manager(context).startNextRound() ? success(context, "Round started") : failure(context, "No valid round is configured"))
-                .then(Commands.argument("index", IntegerArgumentType.integer(0))
-                    .executes(context -> manager(context).startRound(IntegerArgumentType.getInteger(context, "index")) ? success(context, "Round started") : failure(context, "Invalid round index"))))
-            .then(Commands.literal("next").executes(context -> manager(context).startNextRound() ? success(context, "Advanced to the next round") : failure(context, "No valid round is configured")))
-            .then(Commands.literal("setnext").then(Commands.argument("index", IntegerArgumentType.integer(0)).executes(TeamsCommand::queueRound)))
+            .then(Commands.literal("start").executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND))
+                .then(Commands.argument(INDEX, IntegerArgumentType.integer(0))
+                    .executes(context -> manager().startRound(IntegerArgumentType.getInteger(context, INDEX)) ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_INVALID_ROUND_INDEX))))
+            .then(Commands.literal("next").executes(context -> manager().startNextRound() ? success(context, "Advanced to the next round") : failure(context, MSG_NO_VALID_ROUND)))
+            .then(Commands.literal("setnext").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::queueRound)))
             .then(Commands.literal("ping").executes(TeamsCommand::listPings))
             .then(Commands.literal("bltss").executes(TeamsCommand::showBulletSnapshot)
-                .then(Commands.argument("min", IntegerArgumentType.integer(0, 100)).then(Commands.argument("divisor", IntegerArgumentType.integer(0, 1000)).executes(TeamsCommand::setBulletSnapshot))))
+                .then(Commands.argument("min", IntegerArgumentType.integer(0, 100)).then(Commands.argument(DIVISOR, IntegerArgumentType.integer(0, 1000)).executes(TeamsCommand::setBulletSnapshot))))
             .then(Commands.literal("stop").executes(context ->
             {
-                manager(context).stopRound();
+                manager().stopRound();
                 return success(context, "Round stopped");
             })).then(Commands.literal("arena").executes(context ->
             {
-                manager(context).applyArenaPreset();
+                manager().applyArenaPreset();
                 return success(context, "Arena preset applied");
             })).then(Commands.literal("survival").executes(context ->
             {
-                manager(context).applySurvivalPreset();
+                manager().applySurvivalPreset();
                 return success(context, "Survival preset applied");
             })).then(Commands.literal("kit").executes(TeamsCommand::giveKit))
             .then(Commands.literal("loadoutpool")
@@ -150,12 +166,12 @@ public final class TeamsCommand
                     .suggests((context, builder) -> SharedSuggestionProvider
                         .suggest(java.util.stream.Stream.concat(java.util.stream.Stream.of("none"), LoadoutPool.values().stream().map(LoadoutPool::getShortName)), builder))
                     .executes(TeamsCommand::setLoadoutPool)))
-            .then(Commands.literal("xpmultiplier").then(Commands.argument("value", FloatArgumentType.floatArg(0F, 100F)).executes(TeamsCommand::setExperienceMultiplier)))
-            .then(Commands.literal("xp")
-                .then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("amount", IntegerArgumentType.integer(1)).executes(TeamsCommand::giveExperience))))
-            .then(Commands.literal("resetrank").then(Commands.argument("player", EntityArgument.player()).executes(TeamsCommand::resetRank)))
+            .then(Commands.literal("xpmultiplier").then(Commands.argument(VALUE, FloatArgumentType.floatArg(0F, 100F)).executes(TeamsCommand::setExperienceMultiplier)))
+            .then(
+                Commands.literal("xp").then(Commands.argument(PLAYER, EntityArgument.player()).then(Commands.argument(AMOUNT, IntegerArgumentType.integer(1)).executes(TeamsCommand::giveExperience))))
+            .then(Commands.literal("resetrank").then(Commands.argument(PLAYER, EntityArgument.player()).executes(TeamsCommand::resetRank)))
             .then(Commands.literal("giverewardbox")
-                .then(Commands.argument("player", EntityArgument.player())
+                .then(Commands.argument(PLAYER, EntityArgument.player())
                     .then(Commands.argument("box", StringArgumentType.word())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getShortName), builder)).executes(TeamsCommand::giveRewardBox))))
             .then(Commands.literal("map")
@@ -164,13 +180,14 @@ public final class TeamsCommand
                 .then(Commands.literal("remove").then(Commands.argument("id", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder)).executes(TeamsCommand::removeMap))))
             .then(
                 Commands.literal("round")
-                    .then(Commands.literal("add").then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder)).then(Commands
-                        .argument("gametype", StringArgumentType.word()).suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder))
-                        .then(Commands.argument("teams", StringArgumentType.word()).then(
-                            Commands.argument("minutes", IntegerArgumentType.integer(1, 1440)).then(Commands.argument("score", IntegerArgumentType.integer(1)).executes(TeamsCommand::addRound)))))))
-                    .then(Commands.literal("remove").then(Commands.argument("index", IntegerArgumentType.integer(0)).executes(TeamsCommand::removeRound))))
+                    .then(Commands.literal("add")
+                        .then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder)).then(Commands.argument("gametype", StringArgumentType.word())
+                            .suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder))
+                            .then(Commands.argument(TEAMS, StringArgumentType.word()).then(
+                                Commands.argument("minutes", IntegerArgumentType.integer(1, 1440)).then(Commands.argument(SCORE, IntegerArgumentType.integer(1)).executes(TeamsCommand::addRound)))))))
+                    .then(Commands.literal("remove").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::removeRound))))
             .then(Commands.literal("setvariable")
-                .then(Commands.argument("name", StringArgumentType.word()).then(Commands.argument("value", StringArgumentType.word()).executes(TeamsCommand::setVariable))));
+                .then(Commands.argument("name", StringArgumentType.word()).then(Commands.argument(VALUE, StringArgumentType.word()).executes(TeamsCommand::setVariable))));
     }
 
     private static int joinTeam(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
@@ -179,7 +196,7 @@ public final class TeamsCommand
         Team team = Team.getTeam(StringArgumentType.getString(context, "team"));
         if (team == null)
             return failure(context, "Unknown team");
-        if (!manager(context).selectTeam(player, team, false))
+        if (!manager().selectTeam(player, team, false))
             return failure(context, "That team is unavailable or joining it would unbalance the round");
         return success(context, "You will join " + team.getName() + " on respawn");
     }
@@ -205,7 +222,7 @@ public final class TeamsCommand
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> booleanSetting(String name, java.util.function.ToIntFunction<CommandContext<CommandSourceStack>> handler)
     {
-        return Commands.literal(name).requires(source -> source.hasPermission(2)).then(Commands.argument("value", BoolArgumentType.bool()).executes(handler::applyAsInt));
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(handler::applyAsInt));
     }
 
     /**
@@ -214,67 +231,67 @@ public final class TeamsCommand
      */
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> addRuleCommands(com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        root.then(rule("overrideHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? "no longer" : "now") + " get hungry during rounds"))
-            .then(rule("noHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? "no longer" : "now") + " get hungry during rounds"))
-            .then(rule("bombs", TeamsManager::setBombsEnabled, enabled -> "Bombs are now " + (enabled ? "enabled" : "disabled")))
-            .then(rule("allowBombs", TeamsManager::setBombsEnabled, enabled -> "Bombs are now " + (enabled ? "enabled" : "disabled")))
-            .then(rule("shells", TeamsManager::setShellsEnabled, enabled -> "Shells are now " + (enabled ? "enabled" : "disabled")))
-            .then(rule("bullets", TeamsManager::setBulletsEnabled, enabled -> "Bullets are now " + (enabled ? "enabled" : "disabled")))
-            .then(rule("bulletsEnabled", TeamsManager::setBulletsEnabled, enabled -> "Bullets are now " + (enabled ? "enabled" : "disabled")))
-            .then(rule("canBreakGuns", TeamsManager::setCanBreakGuns, enabled -> "AAGuns and MGs can " + (enabled ? "now" : "no longer") + " be broken"))
-            .then(rule("canBreakGlass", TeamsManager::setCanBreakGlass, enabled -> "Glass and glowstone can " + (enabled ? "now" : "no longer") + " be broken"))
-            .then(rule("survivalCanBreakVehicles", TeamsManager::setSurvivalCanBreakVehicles, enabled -> "Survival players can " + (enabled ? "now" : "no longer") + " break vehicles"))
-            .then(rule("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles, enabled -> "Survival players can " + (enabled ? "now" : "no longer") + " place vehicles"))
-            .then(rule("armourDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : "no longer") + " be dropped"))
-            .then(rule("armorDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : "no longer") + " be dropped"))
-            .then(rule("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks, enabled -> "Vehicles will " + (enabled ? "now" : "no longer") + " break blocks"))
+        root.then(rule("overrideHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? NO_LONGER : "now") + " get hungry during rounds"))
+            .then(rule("noHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? NO_LONGER : "now") + " get hungry during rounds"))
+            .then(rule("bombs", TeamsManager::setBombsEnabled, enabled -> "Bombs are now " + (enabled ? ENABLED : DISABLED)))
+            .then(rule("allowBombs", TeamsManager::setBombsEnabled, enabled -> "Bombs are now " + (enabled ? ENABLED : DISABLED)))
+            .then(rule("shells", TeamsManager::setShellsEnabled, enabled -> "Shells are now " + (enabled ? ENABLED : DISABLED)))
+            .then(rule("bullets", TeamsManager::setBulletsEnabled, enabled -> "Bullets are now " + (enabled ? ENABLED : DISABLED)))
+            .then(rule("bulletsEnabled", TeamsManager::setBulletsEnabled, enabled -> "Bullets are now " + (enabled ? ENABLED : DISABLED)))
+            .then(rule("canBreakGuns", TeamsManager::setCanBreakGuns, enabled -> "AAGuns and MGs can " + (enabled ? "now" : NO_LONGER) + " be broken"))
+            .then(rule("canBreakGlass", TeamsManager::setCanBreakGlass, enabled -> "Glass and glowstone can " + (enabled ? "now" : NO_LONGER) + " be broken"))
+            .then(rule("survivalCanBreakVehicles", TeamsManager::setSurvivalCanBreakVehicles, enabled -> "Survival players can " + (enabled ? "now" : NO_LONGER) + " break vehicles"))
+            .then(rule("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles, enabled -> "Survival players can " + (enabled ? "now" : NO_LONGER) + " place vehicles"))
+            .then(rule("armourDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
+            .then(rule("armorDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
+            .then(rule("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks, enabled -> "Vehicles will " + (enabled ? "now" : NO_LONGER) + " break blocks"))
             .then(Commands.literal("weaponDrops").requires(source -> source.hasPermission(2))
                 .then(Commands.argument("mode", StringArgumentType.word()).suggests((context, builder) -> SharedSuggestionProvider.suggest(List.of("on", "off", "smart"), builder))
                     .executes(TeamsCommand::setWeaponDrops)))
             .then(lifeSetting("mgLife", "MGs", TeamsManager::setMgLife)).then(lifeSetting("planeLife", "Planes", TeamsManager::setPlaneLife))
             .then(lifeSetting("vehicleLife", "Vehicles", TeamsManager::setVehicleLife)).then(lifeSetting("mechaLife", "Mechas", TeamsManager::setMechaLife))
             .then(lifeSetting("aaLife", "AA guns", TeamsManager::setAaLife))
-            .then(Commands.literal("useRotation").requires(source -> source.hasPermission(2)).then(Commands.argument("value", BoolArgumentType.bool()).executes(context ->
+            .then(Commands.literal("useRotation").requires(source -> source.hasPermission(2)).then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(context ->
             {
                 // A fixed rotation is the opposite of voting for the next round
-                manager(context).setVoting(!BoolArgumentType.getBool(context, "value"));
-                return success(context, "Voting is now " + (manager(context).isVoting() ? "enabled" : "disabled"));
+                manager().setVoting(!BoolArgumentType.getBool(context, VALUE));
+                return success(context, "Voting is now " + (manager().isVoting() ? ENABLED : DISABLED));
             })))
             .then(Commands.literal("autobalance").requires(source -> source.hasPermission(2))
-                .then(Commands.argument("value", BoolArgumentType.bool()).executes(context -> setCurrentVariable(context, "autobalance", String.valueOf(BoolArgumentType.getBool(context, "value"))))))
-            .then(Commands.literal("setRound").requires(source -> source.hasPermission(2)).then(Commands.argument("index", IntegerArgumentType.integer(0)).executes(TeamsCommand::queueRound)))
+                .then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(context -> setCurrentVariable(context, "autobalance", String.valueOf(BoolArgumentType.getBool(context, VALUE))))))
+            .then(Commands.literal("setRound").requires(source -> source.hasPermission(2)).then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::queueRound)))
             .then(Commands.literal("goToMap").requires(source -> source.hasPermission(2))
-                .then(Commands.argument("index", IntegerArgumentType.integer(0))
-                    .executes(context -> manager(context).startRound(IntegerArgumentType.getInteger(context, "index")) ? success(context, "Round started") : failure(context, "Invalid round index"))))
+                .then(Commands.argument(INDEX, IntegerArgumentType.integer(0))
+                    .executes(context -> manager().startRound(IntegerArgumentType.getInteger(context, INDEX)) ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_INVALID_ROUND_INDEX))))
             .then(Commands.literal("getSticks").requires(source -> source.hasPermission(2)).executes(TeamsCommand::giveKit))
             .then(Commands.literal("getOpSticks").requires(source -> source.hasPermission(2)).executes(TeamsCommand::giveKit))
             .then(Commands.literal("ping").requires(source -> source.hasPermission(2)).executes(TeamsCommand::listPings))
             .then(Commands.literal("bltss").requires(source -> source.hasPermission(2)).executes(TeamsCommand::showBulletSnapshot)
-                .then(Commands.argument("min", IntegerArgumentType.integer(0, 100)).then(Commands.argument("divisor", IntegerArgumentType.integer(0, 1000)).executes(TeamsCommand::setBulletSnapshot))))
+                .then(Commands.argument("min", IntegerArgumentType.integer(0, 100)).then(Commands.argument(DIVISOR, IntegerArgumentType.integer(0, 1000)).executes(TeamsCommand::setBulletSnapshot))))
             .then(Commands.literal("showbltss").requires(source -> source.hasPermission(2)).executes(TeamsCommand::showBulletSnapshot));
         return root;
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> rule(String name, java.util.function.BiConsumer<TeamsManager, Boolean> setter,
-        java.util.function.Function<Boolean, String> message)
+        it.unimi.dsi.fastutil.booleans.Boolean2ObjectFunction<String> message)
     {
         return booleanSetting(name, context ->
         {
-            boolean enabled = BoolArgumentType.getBool(context, "value");
-            setter.accept(manager(context), enabled);
-            manager(context).saveSettings();
-            return success(context, message.apply(enabled));
+            boolean enabled = BoolArgumentType.getBool(context, VALUE);
+            setter.accept(manager(), enabled);
+            manager().saveSettings();
+            return success(context, message.get(enabled));
         });
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> lifeSetting(String name, String what, java.util.function.ObjIntConsumer<TeamsManager> setter)
     {
-        return Commands.literal(name).requires(source -> source.hasPermission(2)).then(Commands.argument("seconds", IntegerArgumentType.integer(0)).executes(context ->
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).then(Commands.argument(SECONDS, IntegerArgumentType.integer(0)).executes(context ->
         {
-            int seconds = IntegerArgumentType.getInteger(context, "seconds");
-            setter.accept(manager(context), seconds);
-            manager(context).saveSettings();
-            return success(context, seconds > 0 ? what + " will despawn after " + seconds + " seconds" : what + " will not despawn");
+            int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+            setter.accept(manager(), seconds);
+            manager().saveSettings();
+            return success(context, seconds > 0 ? what + " will despawn after " + seconds + SECONDS_SUFFIX : what + " will not despawn");
         }));
     }
 
@@ -301,18 +318,18 @@ public final class TeamsCommand
                 return failure(context, "Weapon drops must be on, off or smart");
             }
         }
-        manager(context).setWeaponDrops(drops);
-        manager(context).saveSettings();
+        manager().setWeaponDrops(drops);
+        manager().saveSettings();
         return success(context, message);
     }
 
     private static int queueRound(CommandContext<CommandSourceStack> context)
     {
-        int index = IntegerArgumentType.getInteger(context, "index");
-        if (!manager(context).queueNextRound(index))
-            return failure(context, "Invalid round index");
-        TeamsRound round = manager(context).getRounds().get(index);
-        manager(context).broadcast(Component.literal("Next round will be " + round.getGameTypeId() + " in " + round.getMapId()));
+        int index = IntegerArgumentType.getInteger(context, INDEX);
+        if (!manager().queueNextRound(index))
+            return failure(context, MSG_INVALID_ROUND_INDEX);
+        TeamsRound round = manager().getRounds().get(index);
+        manager().broadcast(Component.literal("Next round will be " + round.getGameTypeId() + " in " + round.getMapId()));
         return 1;
     }
 
@@ -341,52 +358,52 @@ public final class TeamsCommand
     private static int setBulletSnapshot(CommandContext<CommandSourceStack> context)
     {
         int min = IntegerArgumentType.getInteger(context, "min");
-        int divisor = IntegerArgumentType.getInteger(context, "divisor");
+        int divisor = IntegerArgumentType.getInteger(context, DIVISOR);
         com.flansmodultimate.config.ModCommonConfig.setBulletSnapshot(min, divisor);
         return showBulletSnapshot(context);
     }
 
     private static int showBulletSnapshot(CommandContext<CommandSourceStack> context)
     {
-        int min = manager(context).getBulletSnapshotMin();
-        int divisor = manager(context).getBulletSnapshotDivisor();
+        int min = manager().getBulletSnapshotMin();
+        int divisor = manager().getBulletSnapshotDivisor();
         context.getSource().sendSuccess(() -> Component.literal("[BulletDelay] Min=" + min + " : Divisor=" + divisor + " (bullets use player snapshot Min + Ping / Divisor)"), false);
         return 1;
     }
 
     private static int setExplosions(CommandContext<CommandSourceStack> context)
     {
-        boolean enabled = BoolArgumentType.getBool(context, "value");
-        manager(context).setExplosionsBreakBlocks(enabled);
-        return success(context, "Terrain damage from explosions " + (enabled ? "enabled" : "disabled"));
+        boolean enabled = BoolArgumentType.getBool(context, VALUE);
+        manager().setExplosionsBreakBlocks(enabled);
+        return success(context, "Terrain damage from explosions " + (enabled ? ENABLED : DISABLED));
     }
 
     private static int setForceAdventure(CommandContext<CommandSourceStack> context)
     {
-        boolean enabled = BoolArgumentType.getBool(context, "value");
-        manager(context).setForceAdventureMode(enabled);
-        return success(context, "Adventure mode will " + (enabled ? "now" : "no longer") + " be forced on respawn");
+        boolean enabled = BoolArgumentType.getBool(context, VALUE);
+        manager().setForceAdventureMode(enabled);
+        return success(context, "Adventure mode will " + (enabled ? "now" : NO_LONGER) + " be forced on respawn");
     }
 
     private static int setFuelNeeded(CommandContext<CommandSourceStack> context)
     {
-        boolean enabled = BoolArgumentType.getBool(context, "value");
-        manager(context).setVehiclesNeedFuel(enabled);
-        return success(context, "Vehicles will " + (enabled ? "now" : "no longer") + " require fuel");
+        boolean enabled = BoolArgumentType.getBool(context, VALUE);
+        manager().setVehiclesNeedFuel(enabled);
+        return success(context, "Vehicles will " + (enabled ? "now" : NO_LONGER) + " require fuel");
     }
 
     private static int setVehiclesCanZoom(CommandContext<CommandSourceStack> context)
     {
-        boolean enabled = BoolArgumentType.getBool(context, "value");
-        manager(context).setVehiclesCanZoom(enabled);
-        return success(context, "Driver-controlled vehicle zoom " + (enabled ? "enabled" : "disabled"));
+        boolean enabled = BoolArgumentType.getBool(context, VALUE);
+        manager().setVehiclesCanZoom(enabled);
+        return success(context, "Driver-controlled vehicle zoom " + (enabled ? ENABLED : DISABLED));
     }
 
     private static int openLoadouts(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
     {
-        if (manager(context).getCurrentLoadoutPool().isEmpty())
+        if (manager().getCurrentLoadoutPool().isEmpty())
             return failure(context, "No ranked loadout pool is active");
-        manager(context).syncLoadouts(context.getSource().getPlayerOrException(), com.flansmodultimate.network.client.teams.PacketLoadoutState.OpenScreen.HUB, 0, "");
+        manager().syncLoadouts(context.getSource().getPlayerOrException(), com.flansmodultimate.network.client.teams.PacketLoadoutState.OpenScreen.HUB, 0, "");
         return 1;
     }
 
@@ -405,37 +422,37 @@ public final class TeamsCommand
     private static int setLoadoutPool(CommandContext<CommandSourceStack> context)
     {
         String id = StringArgumentType.getString(context, "id");
-        return manager(context).setCurrentLoadoutPool(id) ? success(context, "Loadout pool set to " + id) : failure(context, "Unknown loadout pool");
+        return manager().setCurrentLoadoutPool(id) ? success(context, "Loadout pool set to " + id) : failure(context, "Unknown loadout pool");
     }
 
     private static int setExperienceMultiplier(CommandContext<CommandSourceStack> context)
     {
-        float value = FloatArgumentType.getFloat(context, "value");
-        manager(context).setExperienceMultiplier(value);
+        float value = FloatArgumentType.getFloat(context, VALUE);
+        manager().setExperienceMultiplier(value);
         return success(context, "Teams XP multiplier set to " + value);
     }
 
     private static int giveExperience(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
     {
-        ServerPlayer player = EntityArgument.getPlayer(context, "player");
-        int amount = IntegerArgumentType.getInteger(context, "amount");
-        manager(context).awardExperience(player, amount);
+        ServerPlayer player = EntityArgument.getPlayer(context, PLAYER);
+        int amount = IntegerArgumentType.getInteger(context, AMOUNT);
+        manager().awardExperience(player, amount);
         return success(context, "Granted " + amount + " XP to " + player.getScoreboardName());
     }
 
     private static int resetRank(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
     {
-        ServerPlayer player = EntityArgument.getPlayer(context, "player");
-        manager(context).getStats(player).resetRankProgress();
-        manager(context).markPlayerDataDirty();
+        ServerPlayer player = EntityArgument.getPlayer(context, PLAYER);
+        manager().getStats(player).resetRankProgress();
+        manager().markPlayerDataDirty();
         return success(context, "Reset ranked progress for " + player.getScoreboardName());
     }
 
     private static int giveRewardBox(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
     {
-        ServerPlayer player = EntityArgument.getPlayer(context, "player");
+        ServerPlayer player = EntityArgument.getPlayer(context, PLAYER);
         String box = StringArgumentType.getString(context, "box");
-        return manager(context).grantRewardBox(player, box, RewardBoxInstance.Origin.COMMAND)
+        return manager().grantRewardBox(player, box, RewardBoxInstance.Origin.COMMAND)
             ? success(context, "Granted " + box + " to " + player.getScoreboardName())
             : failure(context, "Unknown reward box");
     }
@@ -443,23 +460,23 @@ public final class TeamsCommand
     private static int selectClass(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        PlayerClass playerClass = PlayerClass.getPlayerClass(StringArgumentType.getString(context, "class"));
-        if (!manager(context).selectClass(player, playerClass))
+        PlayerClass playerClass = PlayerClass.getPlayerClass(StringArgumentType.getString(context, CLASS));
+        if (!manager().selectClass(player, playerClass))
             return failure(context, "That class is unavailable for your selected team or rank");
-        manager(context).confirmSelection(player);
+        manager().confirmSelection(player);
         return success(context, "Class selected: " + playerClass.getName());
     }
 
     private static int showMotd(CommandContext<CommandSourceStack> context)
     {
-        return success(context, manager(context).getMotd());
+        return success(context, manager().getMotd());
     }
 
     private static int setMotd(CommandContext<CommandSourceStack> context)
     {
         String text = StringArgumentType.getString(context, "text");
-        manager(context).setMotd(text);
-        return success(context, "Message of the day: " + manager(context).getMotd());
+        manager().setMotd(text);
+        return success(context, "Message of the day: " + manager().getMotd());
     }
 
     private static int score(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
@@ -473,7 +490,7 @@ public final class TeamsCommand
     private static int vote(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
     {
         int option = IntegerArgumentType.getInteger(context, "option");
-        if (!manager(context).castVote(context.getSource().getPlayerOrException(), option))
+        if (!manager().castVote(context.getSource().getPlayerOrException(), option))
             return failure(context, "There is no active vote with that option");
         return success(context, "Vote recorded for option " + option);
     }
@@ -488,7 +505,7 @@ public final class TeamsCommand
 
     private static int leaderboard(CommandContext<CommandSourceStack> context)
     {
-        List<PlayerStats> stats = manager(context).getAllStats().stream().sorted(Comparator.comparingInt(PlayerStats::getTotalExperience).reversed()).limit(10).toList();
+        List<PlayerStats> stats = manager().getAllStats().stream().sorted(Comparator.comparingInt(PlayerStats::getTotalExperience).reversed()).limit(10).toList();
         for (int i = 0; i < stats.size(); i++)
         {
             int rank = i + 1;
@@ -518,14 +535,13 @@ public final class TeamsCommand
 
     private static int listMaps(CommandContext<CommandSourceStack> context)
     {
-        manager(context).getMaps()
-            .forEach(map -> context.getSource().sendSuccess(() -> Component.literal(map.getShortName() + " — " + map.getName() + " [" + map.getDimension().location() + "]"), false));
-        return manager(context).getMaps().size();
+        manager().getMaps().forEach(map -> context.getSource().sendSuccess(() -> Component.literal(map.getShortName() + " — " + map.getName() + " [" + map.getDimension().location() + "]"), false));
+        return manager().getMaps().size();
     }
 
     private static int listRounds(CommandContext<CommandSourceStack> context)
     {
-        List<TeamsRound> rounds = manager(context).getRounds();
+        List<TeamsRound> rounds = manager().getRounds();
         for (int i = 0; i < rounds.size(); i++)
         {
             int index = i;
@@ -541,7 +557,7 @@ public final class TeamsCommand
     {
         try
         {
-            TeamsMap map = manager(context).addMap(StringArgumentType.getString(context, "id"), StringArgumentType.getString(context, "name"), context.getSource().getLevel());
+            TeamsMap map = manager().addMap(StringArgumentType.getString(context, "id"), StringArgumentType.getString(context, "name"), context.getSource().getLevel());
             return success(context, "Created map " + map.getName());
         }
         catch (IllegalArgumentException e)
@@ -552,16 +568,16 @@ public final class TeamsCommand
 
     private static int removeMap(CommandContext<CommandSourceStack> context)
     {
-        return manager(context).removeMap(StringArgumentType.getString(context, "id")) ? success(context, "Map removed") : failure(context, "Unknown map");
+        return manager().removeMap(StringArgumentType.getString(context, "id")) ? success(context, "Map removed") : failure(context, "Unknown map");
     }
 
     private static int addRound(CommandContext<CommandSourceStack> context)
     {
         try
         {
-            List<String> teams = Arrays.stream(StringArgumentType.getString(context, "teams").split(",")).filter(value -> !value.isBlank()).toList();
-            TeamsRound round = manager(context).addRound(StringArgumentType.getString(context, "map"), StringArgumentType.getString(context, "gametype"), teams,
-                IntegerArgumentType.getInteger(context, "minutes"), IntegerArgumentType.getInteger(context, "score"));
+            List<String> teams = Arrays.stream(StringArgumentType.getString(context, TEAMS).split(",")).filter(value -> !value.isBlank()).toList();
+            TeamsRound round = manager().addRound(StringArgumentType.getString(context, "map"), StringArgumentType.getString(context, "gametype"), teams,
+                IntegerArgumentType.getInteger(context, "minutes"), IntegerArgumentType.getInteger(context, SCORE));
             return success(context, "Round added: " + round.getGameTypeId() + " @ " + round.getMapId());
         }
         catch (IllegalArgumentException e)
@@ -572,12 +588,12 @@ public final class TeamsCommand
 
     private static int removeRound(CommandContext<CommandSourceStack> context)
     {
-        return manager(context).removeRound(IntegerArgumentType.getInteger(context, "index")) ? success(context, "Round removed") : failure(context, "Invalid round index");
+        return manager().removeRound(IntegerArgumentType.getInteger(context, INDEX)) ? success(context, "Round removed") : failure(context, MSG_INVALID_ROUND_INDEX);
     }
 
     private static int setVariable(CommandContext<CommandSourceStack> context)
     {
-        return setCurrentVariable(context, StringArgumentType.getString(context, "name"), StringArgumentType.getString(context, "value"));
+        return setCurrentVariable(context, StringArgumentType.getString(context, "name"), StringArgumentType.getString(context, VALUE));
     }
 
     /**
@@ -586,14 +602,14 @@ public final class TeamsCommand
      */
     private static int setCurrentVariable(CommandContext<CommandSourceStack> context, String name, String value)
     {
-        GameType type = manager(context).getCurrentGameType().orElse(null);
+        GameType type = manager().getCurrentGameType().orElse(null);
         if (type == null)
             return failure(context, "There is no game type to set variables for");
         try
         {
             if ("scorelimit".equalsIgnoreCase(name))
             {
-                if (!manager(context).setCurrentScoreLimit(Integer.parseInt(value)))
+                if (!manager().setCurrentScoreLimit(Integer.parseInt(value)))
                     return failure(context, "The score limit must be at least 1");
             }
             else if (!type.setVariable(name, value))
@@ -603,7 +619,7 @@ public final class TeamsCommand
         {
             return failure(context, "Invalid value: " + value);
         }
-        manager(context).saveSettings();
+        manager().saveSettings();
         return success(context, "Set variable " + name + " in game type " + type.getId() + " to " + value);
     }
 
@@ -622,7 +638,7 @@ public final class TeamsCommand
         return SharedSuggestionProvider.suggest(TeamsManager.getInstance().getMaps().stream().map(TeamsMap::getShortName), builder);
     }
 
-    private static TeamsManager manager(CommandContext<CommandSourceStack> ignored)
+    private static TeamsManager manager()
     {
         return TeamsManager.getInstance();
     }

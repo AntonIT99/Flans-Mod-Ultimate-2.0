@@ -118,7 +118,7 @@ public final class WorldModelPreview
                     history.billboard.scale(parentScale, parentScale, parentScale);
                     var result = DriveableImpostorCache.renderPosedOrPrepare(driveableModel, driveableType, texture, translucent, cull, typeRed, typeGreen, typeBlue, history.billboard, buffers, light,
                         overlay, red, green, blue, alpha, parentScale, projectionPixels, distance, cameraOffset.scale(1D / parentScale), history.rotation,
-                        Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation(), !shadow && alpha == 1F && !(type instanceof MechaType), history.usingImpostor);
+                        !shadow && alpha == 1F && !(type instanceof MechaType), history.usingImpostor);
                     if (!shadow)
                         history.usingImpostor = result.usingImpostor();
                     if (result.rendered())

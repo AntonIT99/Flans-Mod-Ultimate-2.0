@@ -12,6 +12,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 @NoArgsConstructor
 public class MechaItemType extends InfoType
 {
+    // The generated accessor name is part of the type API.
+    @SuppressWarnings("java:S1700")
     protected EnumMechaItemType mechaItemType = EnumMechaItemType.NOTHING;
     protected EnumMechaToolType function = EnumMechaToolType.SWORD;
     protected float speed = 1F;

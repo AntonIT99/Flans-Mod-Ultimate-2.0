@@ -37,6 +37,9 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class DriveableType extends PaintableType implements IDriveableType, IAmmoGroupUser, IAmmoOverrideUser
 {
+    private static final String COULD_NOT_PARSE = "Could not parse ";
+    private static final String MATERIAL_PLANT = "plant";
+
     /** {@code VehicleGunReloadTick} value meaning that no chambering sound is timed. */
     public static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     protected VehicleOptics optics = new VehicleOptics();
@@ -637,7 +640,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1248,7 +1251,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     public List<ShootPoint> shootPoints(boolean secondaryWeapon)
     {
-        return secondaryWeapon ? Collections.unmodifiableList(shootPointsSecondary) : Collections.unmodifiableList(shootPointsPrimary);
+        return Collections.unmodifiableList(secondaryWeapon ? shootPointsSecondary : shootPointsPrimary);
     }
 
     /**
@@ -1553,9 +1556,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         ScreenShake shake = switch (weaponType(secondaryWeapon))
         {
             case SHELL, MISSILE -> new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration);
-            case GUN -> !secondaryWeapon
-                ? new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration)
-                : coaxRecoil ? new ScreenShake(fancyScreenShakeCoaxIntensity, fancyScreenShakeCoaxDuration) : null;
+            case GUN -> {
+                if (!secondaryWeapon)
+                    yield new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration);
+                yield coaxRecoil ? new ScreenShake(fancyScreenShakeCoaxIntensity, fancyScreenShakeCoaxDuration) : null;
+            }
             default -> null;
         };
         return shake == null || shake.intensity() <= 0F || shake.durationSeconds() <= 0F ? null : shake;
@@ -1571,6 +1576,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return numEngines();
     }
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public List<ItemStack> getItemsRequired(DriveablePart part, @Nullable PartType engine)
     {
         if (part == null)
@@ -1660,7 +1667,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1736,7 +1743,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1760,7 +1767,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }));
     }
@@ -1879,7 +1886,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1991,11 +1998,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         String tool = raw.trim().toLowerCase(Locale.ROOT);
         switch (tool)
         {
-            case "axe" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", "plant", "vine");
+            case "axe" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", MATERIAL_PLANT, "vine");
             case "pickaxe", "drill" -> Collections.addAll(materialsHarvested, "pickaxe", "stone", "ore", "iron", "anvil", "rock");
             case "spade", "shovel", "excavator" -> Collections.addAll(materialsHarvested, "shovel", "dirt", "grass", "sand", "gravel", "snow", "clay", "ground");
-            case "hoe", "combine" -> Collections.addAll(materialsHarvested, "hoe", "crop", "plant", "leaves", "vine", "cactus", "pumpkin", "melon", "gourd");
-            case "tank" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", "plant", "leaves", "cactus");
+            case "hoe", "combine" -> Collections.addAll(materialsHarvested, "hoe", "crop", MATERIAL_PLANT, "leaves", "vine", "cactus", "pumpkin", "melon", "gourd");
+            case "tank" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", MATERIAL_PLANT, "leaves", "cactus");
             default -> materialsHarvested.add(tool);
         }
     }

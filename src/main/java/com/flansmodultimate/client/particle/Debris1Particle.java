@@ -1,15 +1,10 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.common.physics.ModPhysics;
-
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 
@@ -18,6 +13,8 @@ import net.minecraft.core.particles.SimpleParticleType;
  */
 public final class Debris1Particle extends TextureSheetParticle
 {
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
     private Debris1Particle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
         super(level, x, y, z, vx, vy, vz);
@@ -74,7 +71,7 @@ public final class Debris1Particle extends TextureSheetParticle
             {
                 ParticleHelper.spawnSubParticle(ParticleTypes.FLAME, px, py, pz);
             }
-            
+
             double pySmoke = yo + dy * i * 2.0D;
             ParticleHelper.spawnSubParticle(ParticleTypes.LARGE_SMOKE, px, pySmoke, pz);
         }

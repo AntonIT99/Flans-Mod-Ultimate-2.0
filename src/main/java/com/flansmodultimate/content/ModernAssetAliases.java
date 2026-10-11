@@ -3,11 +3,7 @@ package com.flansmodultimate.content;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.util.FlansLog;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import net.minecraftforge.fml.ModList;
 
 import java.io.IOException;
@@ -15,19 +11,23 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 /** A read-only, pack-local view of modern assets. Legacy texture sources are never indexed here. */
 final class ModernAssetAliases
 {
+    private static final String ITEM_PREFIX = "item/";
+    private static final String BLOCK_PREFIX = "block/";
+    private static final String TEXTURES_PREFIX = "textures/";
+    private static final String MODELS_PREFIX = "models/";
+    private static final String JSON_EXTENSION = ".json";
+    private static final String BLOCKSTATES_PREFIX = "blockstates/";
+    private static final String KEY_TEXTURES = "textures";
+    private static final String KEY_OVERRIDES = "overrides";
+    private static final String KEY_VARIANTS = "variants";
+    private static final String KEY_MULTIPART = "multipart";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final AtomicReference<Map<Path, View>> views = new AtomicReference<>(Map.of());
 
@@ -49,10 +49,11 @@ final class ModernAssetAliases
         static final View EMPTY = new View(Map.of(), Map.of(), Set.of());
     }
 
-    record Assets(Map<String, String> textures, Map<String, JsonObject> models,
-                          Map<String, JsonObject> blockstates, Set<String> metadata) {}
+    record Assets(Map<String, String> textures, Map<String, JsonObject> models, Map<String, JsonObject> blockstates, Set<String> metadata)
+    {}
 
-    private ModernAssetAliases() {}
+    private ModernAssetAliases()
+    {}
 
     static View forPack(Path path)
     {
@@ -71,9 +72,7 @@ final class ModernAssetAliases
             var modFile = ModList.get().getModFileById(FlansMod.MOD_ID).getFile();
             Path builtinAssets = modFile.findResource("assets", FlansMod.FLANSMOD_ID);
             inputs.add(new Input(builtinAssets, true));
-            cachedAssets.add(PackAssetIndex.modern(builtinAssets,
-                Files.isRegularFile(modFile.getFilePath()) ? modFile.getFilePath() : null,
-                modFile.getFilePath()));
+            cachedAssets.add(PackAssetIndex.modern(builtinAssets, Files.isRegularFile(modFile.getFilePath()) ? modFile.getFilePath() : null, modFile.getFilePath()));
             for (IContentProvider provider : providers)
             {
                 if (!provider.shouldIndexAssetsForConflicts())
@@ -81,21 +80,24 @@ final class ModernAssetAliases
                 indexed.add(provider);
                 Set<String> entryModels = new HashSet<>();
                 Map<String, String> renamedModels = new HashMap<>();
-                ContentManager.listItems(provider).forEach(config -> {
-                    entryModels.add("item/" + config.getShortName());
+                ContentManager.listItems(provider).forEach(config ->
+                {
+                    entryModels.add(ITEM_PREFIX + config.getShortName());
                     if (!config.getShortName().equals(config.getOriginalShortName()))
-                        renamedModels.put("item/" + config.getOriginalShortName(), "item/" + config.getShortName());
+                        renamedModels.put(ITEM_PREFIX + config.getOriginalShortName(), ITEM_PREFIX + config.getShortName());
                 });
-                ContentManager.listBlocks(provider).forEach(config -> {
-                    entryModels.add("block/" + config.getShortName());
+                ContentManager.listBlocks(provider).forEach(config ->
+                {
+                    entryModels.add(BLOCK_PREFIX + config.getShortName());
                     if (!config.getShortName().equals(config.getOriginalShortName()))
-                        renamedModels.put("block/" + config.getOriginalShortName(), "block/" + config.getShortName());
+                        renamedModels.put(BLOCK_PREFIX + config.getOriginalShortName(), BLOCK_PREFIX + config.getShortName());
                 });
                 // The cached overload does not use Input.assets; an archive path avoids opening it.
                 inputs.add(new Input(provider.getPath(), provider.isPreprocessed(), entryModels, renamedModels));
             }
             // Each pack's index is independent; the plan below takes them in pack order.
-            cachedAssets.addAll(workers.map(indexed, provider -> {
+            cachedAssets.addAll(workers.map(indexed, provider ->
+            {
                 try
                 {
                     return PackAssetIndex.modern(provider);
@@ -173,7 +175,8 @@ final class ModernAssetAliases
             Map<String, byte[]> json = new LinkedHashMap<>();
             Set<String> hidden = new HashSet<>();
             Set<String> shadowedModels = new HashSet<>();
-            inputs.get(i).renamedModels().forEach((original, renamed) -> {
+            inputs.get(i).renamedModels().forEach((original, renamed) ->
+            {
                 if (!original.equals(renamed) && pack.models().containsKey(original))
                     shadowedModels.add(renamed);
             });
@@ -190,9 +193,9 @@ final class ModernAssetAliases
                     variants.putIfAbsent(texture.getValue(), original);
                 registeredTextures.putIfAbsent(alias, texture.getValue());
                 textureAliases.put(original, alias);
-                expose("textures/" + original + ".png", "textures/" + alias + ".png", sources, hidden);
+                expose(TEXTURES_PREFIX + original + ".png", TEXTURES_PREFIX + alias + ".png", sources, hidden);
                 if (pack.metadata().contains(original))
-                    expose("textures/" + original + ".png.mcmeta", "textures/" + alias + ".png.mcmeta", sources, hidden);
+                    expose(TEXTURES_PREFIX + original + ".png.mcmeta", TEXTURES_PREFIX + alias + ".png.mcmeta", sources, hidden);
             }
 
             // Allocate the whole model graph before rewriting its edges. Even equal JSON can resolve to
@@ -203,13 +206,13 @@ final class ModernAssetAliases
                     continue;
                 String desired = inputs.get(i).renamedModels().getOrDefault(original, original);
                 Integer owner = registeredModels.get(desired);
-                String alias = !immutable && owner != null && owner != i
-                    ? allocate(desired, reservedModels) : desired;
+                String alias = !immutable && owner != null && owner != i ? allocate(desired, reservedModels) : desired;
                 registeredModels.putIfAbsent(alias, i);
                 modelAliases.put(original, alias);
-                expose("models/" + original + ".json", "models/" + alias + ".json", sources, hidden);
+                expose(MODELS_PREFIX + original + JSON_EXTENSION, MODELS_PREFIX + alias + JSON_EXTENSION, sources, hidden);
             }
-            inputs.get(i).renamedModels().forEach((original, renamed) -> {
+            inputs.get(i).renamedModels().forEach((original, renamed) ->
+            {
                 if (!pack.models().containsKey(original) && pack.models().containsKey(renamed))
                     modelAliases.put(original, modelAliases.get(renamed));
             });
@@ -223,18 +226,18 @@ final class ModernAssetAliases
                     JsonObject rewritten = model.getValue().deepCopy();
                     rewriteModel(rewritten, textureAliases, modelAliases);
                     if (!rewritten.equals(model.getValue()))
-                        json.put("models/" + modelAliases.get(model.getKey()) + ".json", bytes(rewritten));
+                        json.put(MODELS_PREFIX + modelAliases.get(model.getKey()) + JSON_EXTENSION, bytes(rewritten));
                 }
                 for (Map.Entry<String, JsonObject> state : pack.blockstates().entrySet())
                 {
-                    if (shadowedModels.contains("block/" + state.getKey()))
+                    if (shadowedModels.contains(BLOCK_PREFIX + state.getKey()))
                         continue;
                     JsonObject rewritten = state.getValue().deepCopy();
                     rewriteBlockstate(rewritten, modelAliases);
-                    String name = inputs.get(i).renamedModels().getOrDefault("block/" + state.getKey(), "block/" + state.getKey()).substring(6);
-                    expose("blockstates/" + state.getKey() + ".json", "blockstates/" + name + ".json", sources, hidden);
+                    String name = inputs.get(i).renamedModels().getOrDefault(BLOCK_PREFIX + state.getKey(), BLOCK_PREFIX + state.getKey()).substring(6);
+                    expose(BLOCKSTATES_PREFIX + state.getKey() + JSON_EXTENSION, BLOCKSTATES_PREFIX + name + JSON_EXTENSION, sources, hidden);
                     if (!rewritten.equals(state.getValue()))
-                        json.put("blockstates/" + name + ".json", bytes(rewritten));
+                        json.put(BLOCKSTATES_PREFIX + name + JSON_EXTENSION, bytes(rewritten));
                 }
             }
             result.add(new View(Map.copyOf(sources), Map.copyOf(json), Set.copyOf(hidden)));
@@ -248,7 +251,7 @@ final class ModernAssetAliases
         Set<String> metadata = new HashSet<>();
         for (String folder : List.of("item", "block"))
         {
-            Path textureRoot = root.resolve("textures");
+            Path textureRoot = root.resolve(KEY_TEXTURES);
             for (Path file : files(textureRoot.resolve(folder), ".png"))
             {
                 String name = relative(textureRoot, file);
@@ -269,7 +272,7 @@ final class ModernAssetAliases
     private static Map<String, JsonObject> readJson(Path root) throws IOException
     {
         Map<String, JsonObject> result = new LinkedHashMap<>();
-        for (Path file : files(root, ".json"))
+        for (Path file : files(root, JSON_EXTENSION))
         {
             try
             {
@@ -294,9 +297,7 @@ final class ModernAssetAliases
             return List.of();
         try (Stream<Path> walk = Files.walk(root))
         {
-            return walk.filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().endsWith(extension))
-                .sorted().toList();
+            return walk.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().endsWith(extension)).sorted().toList();
         }
     }
 
@@ -307,7 +308,7 @@ final class ModernAssetAliases
 
     private static String allocate(String original, Set<String> reserved)
     {
-        for (int suffix = 2; ; suffix++)
+        for (int suffix = 2;; suffix++)
         {
             String candidate = original + "_" + suffix;
             if (reserved.add(candidate))
@@ -334,26 +335,26 @@ final class ModernAssetAliases
 
     private static void rewriteModel(JsonObject model, Map<String, String> textures, Map<String, String> models)
     {
-        if (model.has("textures") && model.get("textures").isJsonObject())
+        if (model.has(KEY_TEXTURES) && model.get(KEY_TEXTURES).isJsonObject())
         {
-            JsonObject slots = model.getAsJsonObject("textures");
+            JsonObject slots = model.getAsJsonObject(KEY_TEXTURES);
             for (String key : List.copyOf(slots.keySet()))
                 rewriteReference(slots, key, textures);
         }
         rewriteReference(model, "parent", models);
-        if (model.has("overrides") && model.get("overrides").isJsonArray())
-            for (JsonElement override : model.getAsJsonArray("overrides"))
+        if (model.has(KEY_OVERRIDES) && model.get(KEY_OVERRIDES).isJsonArray())
+            for (JsonElement override : model.getAsJsonArray(KEY_OVERRIDES))
                 if (override.isJsonObject())
                     rewriteReference(override.getAsJsonObject(), "model", models);
     }
 
     private static void rewriteBlockstate(JsonObject state, Map<String, String> models)
     {
-        if (state.has("variants") && state.get("variants").isJsonObject())
-            for (Map.Entry<String, JsonElement> variant : state.getAsJsonObject("variants").entrySet())
+        if (state.has(KEY_VARIANTS) && state.get(KEY_VARIANTS).isJsonObject())
+            for (Map.Entry<String, JsonElement> variant : state.getAsJsonObject(KEY_VARIANTS).entrySet())
                 rewriteModelChoices(variant.getValue(), models);
-        if (state.has("multipart") && state.get("multipart").isJsonArray())
-            for (JsonElement part : state.getAsJsonArray("multipart"))
+        if (state.has(KEY_MULTIPART) && state.get(KEY_MULTIPART).isJsonArray())
+            for (JsonElement part : state.getAsJsonArray(KEY_MULTIPART))
                 if (part.isJsonObject())
                     rewriteModelChoices(part.getAsJsonObject().get("apply"), models);
     }
@@ -376,7 +377,7 @@ final class ModernAssetAliases
             return;
         String reference = value.getAsString();
         String prefix = FlansMod.FLANSMOD_ID + ":";
-        String normalized = reference.toLowerCase(java.util.Locale.ROOT).replace(prefix + "items/", prefix + "item/");
+        String normalized = reference.toLowerCase(java.util.Locale.ROOT).replace(prefix + "items/", prefix + ITEM_PREFIX);
         if (!normalized.startsWith(prefix))
             return; // Unqualified resource names belong to minecraft; #variables are resolved by the model baker.
         String original = normalized.substring(prefix.length());

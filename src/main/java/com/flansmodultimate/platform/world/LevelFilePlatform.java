@@ -32,6 +32,8 @@ public final class LevelFilePlatform
     }
 
     /** Opens a dimension's entity region without syncing writes; dimension labels are unused on 1.20.1. */
+    // Part of the cross-version platform signature; other loader versions use the parameter.
+    @SuppressWarnings("java:S1172")
     public static RegionFile openEntityRegion(Path file, Path directory, ResourceLocation dimension) throws IOException
     {
         return new RegionFile(file, directory, false);

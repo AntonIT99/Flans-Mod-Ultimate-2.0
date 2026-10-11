@@ -11,6 +11,8 @@ public class PacksMod
 {
     public static final String MOD_ID = "flansmodultimate_manuspacks";
 
+    // Forge instantiates the mod class through this constructor.
+    @SuppressWarnings("java:S1118")
     public PacksMod(FMLJavaModLoadingContext context)
     {
         PackagedContentPackApi.register(context, MOD_ID, "flans_content", "flans_models", Set.of("parts"));

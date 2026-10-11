@@ -33,8 +33,9 @@ public final class DriveableProjectileCollision
             return null;
         boolean turret = DriveableCollisionProfile.isTurretMountedPart(part);
         boolean barrel = DriveableCollisionProfile.isBarrelPart(part);
-        Vec3 origin = turret ? inversePoint(hullLocalOrigin, turretYawDeg, barrel ? turretPitchDeg : 0F, turretPivot, turretOffset) : hullLocalOrigin;
-        Vec3 motion = turret ? inverseDirection(hullLocalMotion, turretYawDeg, barrel ? turretPitchDeg : 0F) : hullLocalMotion;
+        float pitchDeg = barrel ? turretPitchDeg : 0F;
+        Vec3 origin = turret ? inversePoint(hullLocalOrigin, turretYawDeg, pitchDeg, turretPivot, turretOffset) : hullLocalOrigin;
+        Vec3 motion = turret ? inverseDirection(hullLocalMotion, turretYawDeg, pitchDeg) : hullLocalMotion;
         return traceLocal(box, origin, motion);
     }
 
@@ -92,7 +93,8 @@ public final class DriveableProjectileCollision
     {
         boolean turret = DriveableCollisionProfile.isTurretMountedPart(part);
         boolean barrel = DriveableCollisionProfile.isBarrelPart(part);
-        Vec3 point = turret ? inversePoint(hullLocalPoint, turretYawDeg, barrel ? turretPitchDeg : 0F, turretPivot, turretOffset) : hullLocalPoint;
+        float pitchDeg = barrel ? turretPitchDeg : 0F;
+        Vec3 point = turret ? inversePoint(hullLocalPoint, turretYawDeg, pitchDeg, turretPivot, turretOffset) : hullLocalPoint;
         double x = Mth.clamp(point.x, box.minX, box.maxX);
         double y = Mth.clamp(point.y, box.minY, box.maxY);
         double z = Mth.clamp(point.z, box.minZ, box.maxZ);
@@ -110,11 +112,13 @@ public final class DriveableProjectileCollision
     {
         Vec3 normal = surface.outwardNormal();
         Vec3 point = surface.position();
-        int normalAxis = normal.x != 0D ? 0 : normal.y != 0D ? 1 : 2;
+        int nonXAxis = normal.y != 0D ? 1 : 2;
+        int normalAxis = normal.x != 0D ? 0 : nonXAxis;
         double[] minima = {box.minX, box.minY, box.minZ};
         double[] maxima = {box.maxX, box.maxY, box.maxZ};
         double[] base = {point.x, point.y, point.z};
-        base[normalAxis] = (normalAxis == 0 ? normal.x : normalAxis == 1 ? normal.y : normal.z) > 0D ? maxima[normalAxis] : minima[normalAxis];
+        double[] normalComponents = {normal.x, normal.y, normal.z};
+        base[normalAxis] = normalComponents[normalAxis] > 0D ? maxima[normalAxis] : minima[normalAxis];
 
         List<Vec3> samples = new ArrayList<>(5);
         samples.add(new Vec3(base[0], base[1], base[2]));

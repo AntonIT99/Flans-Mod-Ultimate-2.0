@@ -30,6 +30,7 @@ public final class GunpowderRecipeCondition implements ICondition
         @Override
         public void write(JsonObject json, GunpowderRecipeCondition condition)
         {
+            // The condition has no parameters to serialize.
         }
 
         @Override

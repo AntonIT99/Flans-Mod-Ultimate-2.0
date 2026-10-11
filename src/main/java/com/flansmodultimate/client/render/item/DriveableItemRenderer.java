@@ -6,9 +6,7 @@ import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.MechaType;
-import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -27,8 +25,7 @@ public final class DriveableItemRenderer
 {
     public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem)
-            || !(driveableItem.useCustomRenderer(context)))
+        if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem) || !(driveableItem.useCustomRenderer(context)))
         {
             ICustomItemRenderer.renderItemFallback(stack, context, poseStack, buffer, packedLight, packedOverlay);
             return;
@@ -64,7 +61,8 @@ public final class DriveableItemRenderer
         poseStack.scale(modelScale, modelScale, modelScale);
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
-            model.render(type, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay == 0 ? OverlayTexture.NO_OVERLAY : packedOverlay, red, green, blue, 1F, 1F, renderPass);
+            model.render(type, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay == 0 ? OverlayTexture.NO_OVERLAY : packedOverlay, red,
+                green, blue, 1F, 1F, renderPass);
         }
         poseStack.popPose();
     }
@@ -77,8 +75,7 @@ public final class DriveableItemRenderer
             case FIRST_PERSON_LEFT_HAND -> firstPerson(poseStack, -1F);
             case THIRD_PERSON_RIGHT_HAND -> thirdPerson(poseStack, 1F);
             case THIRD_PERSON_LEFT_HAND -> thirdPerson(poseStack, -1F);
-            default ->
-            {
+            default -> {
                 // Ground, GUI and item frames were never routed through the
                 // hand renderers, so they have no legacy hand frame to restore.
             }
@@ -131,16 +128,14 @@ public final class DriveableItemRenderer
         switch (context)
         {
             case GROUND -> poseStack.mulPose(Axis.YP.rotationDegrees(45F));
-            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
-            {
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
                 poseStack.mulPose(Axis.ZP.rotationDegrees(15F));
                 poseStack.mulPose(Axis.XP.rotationDegrees(15F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? 90F : 270F));
-                poseStack.translate(0F, type instanceof PlaneType ? 0.2F : type instanceof MechaType ? 0.1F : 0.15F,
-                    type instanceof PlaneType ? 0.4F : -0.4F);
+                float groundLift = type instanceof MechaType ? 0.1F : 0.15F;
+                poseStack.translate(0F, type instanceof PlaneType ? 0.2F : groundLift, type instanceof PlaneType ? 0.4F : -0.4F);
             }
-            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
-            {
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
                 poseStack.mulPose(Axis.ZP.rotationDegrees(25F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
                 poseStack.translate(0.15F, type instanceof MechaType ? 0.35F : 0.45F, -0.6F);
@@ -149,15 +144,13 @@ public final class DriveableItemRenderer
                 else if (type instanceof MechaType)
                     poseStack.mulPose(Axis.YP.rotationDegrees(90F));
             }
-            case GUI ->
-            {
+            case GUI -> {
                 poseStack.mulPose(Axis.XP.rotationDegrees(22.5F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? 135F : -45F));
                 poseStack.translate(0F, -0.05F, 0F);
             }
             case FIXED -> poseStack.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? 0F : 180F));
-            default ->
-            {
+            default -> {
                 // no-op
             }
         }

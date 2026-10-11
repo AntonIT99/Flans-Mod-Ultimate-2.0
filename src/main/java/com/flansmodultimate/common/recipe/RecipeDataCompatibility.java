@@ -1,14 +1,8 @@
 package com.flansmodultimate.common.recipe;
 
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.FlansLog;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +15,7 @@ import java.util.stream.Stream;
 /** Keeps the two Minecraft recipe data layouts available in ordinary content packs. */
 public final class RecipeDataCompatibility
 {
+    private static final String KEY_RESULT = "result";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public enum Format
@@ -41,16 +36,14 @@ public final class RecipeDataCompatibility
     }
 
     private RecipeDataCompatibility()
-    {
-    }
+    {}
 
     /** Inspect every namespace, not just the one used by Flan's generated recipes. */
     public static boolean hasMissingCounterparts(Path dataRoot)
     {
         for (Path namespace : namespaces(dataRoot))
         {
-            if (hasMissing(namespace, Format.LEGACY, Format.MODERN)
-                || hasMissing(namespace, Format.MODERN, Format.LEGACY))
+            if (hasMissing(namespace, Format.LEGACY, Format.MODERN) || hasMissing(namespace, Format.MODERN, Format.LEGACY))
                 return true;
         }
         return false;
@@ -86,9 +79,7 @@ public final class RecipeDataCompatibility
             return List.of();
         try (Stream<Path> paths = Files.walk(folder))
         {
-            return paths.filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().endsWith(".json"))
-                .sorted().toList();
+            return paths.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().endsWith(".json")).sorted().toList();
         }
         catch (IOException e)
         {
@@ -103,8 +94,7 @@ public final class RecipeDataCompatibility
         Path targetFolder = targetFormat.resolve(namespace);
         for (Path source : recipeFiles(sourceFolder))
         {
-            if (!Files.exists(targetFolder.resolve(sourceFolder.relativize(source)))
-                && readConverted(source, targetFormat).isPresent())
+            if (!Files.exists(targetFolder.resolve(sourceFolder.relativize(source))) && readConverted(source, targetFormat).isPresent())
                 return true;
         }
         return false;
@@ -151,12 +141,11 @@ public final class RecipeDataCompatibility
     /** Converts the vanilla recipe result fields that changed in Minecraft 1.21. */
     public static Optional<JsonObject> convert(JsonObject source, Format format)
     {
-        if (!source.has("type") || !source.get("type").isJsonPrimitive()
-            || !source.getAsJsonPrimitive("type").isString())
+        if (!source.has("type") || !source.get("type").isJsonPrimitive() || !source.getAsJsonPrimitive("type").isString())
             return Optional.empty();
         String type = source.get("type").getAsString();
         JsonObject result = source.deepCopy();
-        JsonElement output = result.get("result");
+        JsonElement output = result.get(KEY_RESULT);
         if (type.equals("minecraft:crafting_shaped") || type.equals("minecraft:crafting_shapeless"))
         {
             if (output == null || !output.isJsonObject())
@@ -169,35 +158,29 @@ public final class RecipeDataCompatibility
             if (!item.has(wanted) && item.has(previous))
                 item.add(wanted, item.remove(previous));
             item.remove(previous);
-            return item.has(wanted) && item.get(wanted).isJsonPrimitive()
-                && item.getAsJsonPrimitive(wanted).isString() ? Optional.of(result) : Optional.empty();
+            return item.has(wanted) && item.get(wanted).isJsonPrimitive() && item.getAsJsonPrimitive(wanted).isString() ? Optional.of(result) : Optional.empty();
         }
-        if (type.equals("minecraft:smelting") || type.equals("minecraft:blasting")
-            || type.equals("minecraft:smoking") || type.equals("minecraft:campfire_cooking")
+        if (type.equals("minecraft:smelting") || type.equals("minecraft:blasting") || type.equals("minecraft:smoking") || type.equals("minecraft:campfire_cooking")
             || type.equals("minecraft:stonecutting"))
         {
-            if (format == Format.MODERN && output != null && output.isJsonPrimitive()
-                && output.getAsJsonPrimitive().isString())
+            if (format == Format.MODERN && output != null && output.isJsonPrimitive() && output.getAsJsonPrimitive().isString())
             {
                 JsonObject item = new JsonObject();
                 item.add("id", output.deepCopy());
-                result.add("result", item);
+                result.add(KEY_RESULT, item);
                 return Optional.of(result);
             }
             if (format == Format.LEGACY && output != null && output.isJsonObject())
             {
                 JsonObject item = output.getAsJsonObject();
-                if (item.size() != 1 || !item.has("id") || !item.get("id").isJsonPrimitive()
-                    || !item.getAsJsonPrimitive("id").isString())
+                if (item.size() != 1 || !item.has("id") || !item.get("id").isJsonPrimitive() || !item.getAsJsonPrimitive("id").isString())
                     return Optional.empty();
-                result.add("result", item.get("id").deepCopy());
+                result.add(KEY_RESULT, item.get("id").deepCopy());
                 return Optional.of(result);
             }
             if (format == Format.MODERN)
-                return output != null && output.isJsonObject() && output.getAsJsonObject().has("id")
-                    ? Optional.of(result) : Optional.empty();
-            return output != null && output.isJsonPrimitive() && output.getAsJsonPrimitive().isString()
-                ? Optional.of(result) : Optional.empty();
+                return output != null && output.isJsonObject() && output.getAsJsonObject().has("id") ? Optional.of(result) : Optional.empty();
+            return output != null && output.isJsonPrimitive() && output.getAsJsonPrimitive().isString() ? Optional.of(result) : Optional.empty();
         }
         return Optional.empty();
     }
@@ -207,19 +190,17 @@ public final class RecipeDataCompatibility
     {
         JsonObject result = convert(recipe, format).orElseGet(recipe::deepCopy);
         String type = result.has("type") ? result.get("type").getAsString() : "";
-        if ((type.equals("minecraft:crafting_shaped") || type.equals("minecraft:crafting_shapeless"))
-            && result.has("result") && result.get("result").isJsonObject())
+        if ((type.equals("minecraft:crafting_shaped") || type.equals("minecraft:crafting_shapeless")) && result.has(KEY_RESULT) && result.get(KEY_RESULT).isJsonObject())
         {
             int count = config.getRecipeOutput();
             if (format == Format.MODERN)
             {
                 int maxStackSize = maxRecipeStackSize(config);
                 if (count > maxStackSize)
-                    FlansLog.log.warn("Recipe for {} requests {} items, but the output stacks to at most {}; limiting the result",
-                        config, count, maxStackSize);
+                    FlansLog.log.warn("Recipe for {} requests {} items, but the output stacks to at most {}; limiting the result", config, count, maxStackSize);
                 count = Math.min(Math.max(1, count), maxStackSize);
             }
-            JsonObject output = result.getAsJsonObject("result");
+            JsonObject output = result.getAsJsonObject(KEY_RESULT);
             if (count == 1)
                 output.remove("count");
             else
@@ -233,8 +214,7 @@ public final class RecipeDataCompatibility
         if (config instanceof ShootableType shootable)
             return Math.max(1, shootable.getMaxStackSize());
         if (config instanceof PartType part)
-            return part.getCategory() == PartType.Category.FUEL && part.getFuel() > 0
-                ? 1 : Math.max(1, part.getStackSize());
+            return part.getCategory() == PartType.Category.FUEL && part.getFuel() > 0 ? 1 : Math.max(1, part.getStackSize());
         return config.getType().isHasBlock() ? 64 : 1;
     }
 }

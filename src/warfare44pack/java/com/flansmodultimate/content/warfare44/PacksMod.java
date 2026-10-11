@@ -9,6 +9,7 @@ public class PacksMod
 {
     public static final String MOD_ID = "flansmodultimate_warfare44";
 
+    @SuppressWarnings("java:S1118")
     public PacksMod(FMLJavaModLoadingContext context)
     {
         PackagedContentPackApi.register(context, MOD_ID, "flans_content", "flans_models");

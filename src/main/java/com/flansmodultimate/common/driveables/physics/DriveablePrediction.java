@@ -124,8 +124,12 @@ public final class DriveablePrediction
     private int unmatchedReports;
 
     // Correction still to be blended into the live position and attitude.
-    private double pendingX, pendingY, pendingZ;
-    private float pendingYaw, pendingPitch, pendingRoll;
+    private double pendingX;
+    private double pendingY;
+    private double pendingZ;
+    private float pendingYaw;
+    private float pendingPitch;
+    private float pendingRoll;
 
     @Nullable
     private Frame queued;
@@ -170,6 +174,8 @@ public final class DriveablePrediction
      * the live one is still being corrected towards, so a report is never compared
      * against a correction that merely has not finished blending in.
      */
+    // "record" is only a contextual keyword and stays a valid method name.
+    @SuppressWarnings("java:S6213")
     public void record(int step, State live)
     {
         State target = new State(live.x() + pendingX, live.y() + pendingY, live.z() + pendingZ, live.vx(), live.vy(), live.vz(), Mth.wrapDegrees(live.yaw() + pendingYaw), live.pitch() + pendingPitch,

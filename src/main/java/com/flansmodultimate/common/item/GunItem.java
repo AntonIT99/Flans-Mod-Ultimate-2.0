@@ -621,10 +621,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
         }
         else if (configType.getPrimaryFunction() == EnumFunction.CUSTOM_MELEE && data.isShootKeyPressed(hand))
-            gunItemHandler.doCustomMelee(level, player, data, hand);
+            gunItemHandler.doCustomMelee(player, data, hand);
 
         if (configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
-            gunItemHandler.doCustomMelee(level, player, data, hand);
+            gunItemHandler.doCustomMelee(player, data, hand);
 
         if (soundDelay > 0)
             soundDelay--;

@@ -8,6 +8,8 @@ import lombok.Getter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
+// Hits are ordered and compared by intersect time and entity only, as defined in BulletHit.
+@SuppressWarnings("java:S2160")
 @Getter
 public class DriveableHit extends BulletHit
 {
@@ -28,8 +30,8 @@ public class DriveableHit extends BulletHit
         this(d, p, f, Vec3.ZERO, Vec3.ZERO, Vec3.ZERO, Vec3.ZERO, EnumArmorFacing.FRONT);
     }
 
-    public DriveableHit(Driveable driveable, EnumDriveablePart part, float fraction, Vec3 hitPosition, Vec3 localHitPosition, Vec3 localProjectileDirection,
-        Vec3 localOutwardNormal, EnumArmorFacing facing)
+    public DriveableHit(Driveable driveable, EnumDriveablePart part, float fraction, Vec3 hitPosition, Vec3 localHitPosition, Vec3 localProjectileDirection, Vec3 localOutwardNormal,
+        EnumArmorFacing facing)
     {
         super(fraction);
         this.part = part;

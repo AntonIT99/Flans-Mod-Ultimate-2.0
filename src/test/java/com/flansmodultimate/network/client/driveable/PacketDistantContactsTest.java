@@ -56,7 +56,9 @@ class PacketDistantContactsTest
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeVarInt(5);
         buf.writeVarInt(1_000_000);
-        assertThrows(IllegalStateException.class, () -> new PacketDistantContacts().decodeInto(new PacketBuffer(buf)));
+        PacketDistantContacts packet = new PacketDistantContacts();
+        PacketBuffer data = new PacketBuffer(buf);
+        assertThrows(IllegalStateException.class, () -> packet.decodeInto(data));
     }
 
     @Test

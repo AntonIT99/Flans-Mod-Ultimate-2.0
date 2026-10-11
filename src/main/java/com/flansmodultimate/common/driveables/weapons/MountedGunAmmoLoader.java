@@ -53,7 +53,9 @@ public final class MountedGunAmmoLoader
         if (slotCount <= 0)
             return new LoadReport(List.of(), List.of());
 
-        ShootableType ammoType = requested == null ? defaultAmmo : allowed.contains(requested) ? requested : null;
+        ShootableType ammoType = defaultAmmo;
+        if (requested != null)
+            ammoType = allowed.contains(requested) ? requested : null;
         if (ammoType == null)
         {
             String problem = requested == null ? "no default ammunition" : requested.getName() + " does not fit this gun";

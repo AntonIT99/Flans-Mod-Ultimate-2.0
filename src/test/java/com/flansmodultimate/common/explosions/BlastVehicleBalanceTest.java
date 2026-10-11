@@ -16,6 +16,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class BlastVehicleBalanceTest
 {
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
     private static final double BLAST_DAMAGE_REFERENCE = 80D;
     private static final double BLAST_FALLOFF_SHARPNESS = 2.5D;
 
@@ -159,7 +161,7 @@ class BlastVehicleBalanceTest
         assertTrue(lines.stream().anyMatch(line -> line.trim().equalsIgnoreCase("ShortName " + shortName)), "definition short name differs from category item: " + definition);
         for (String line : lines)
         {
-            String[] fields = line.trim().split("\\s+");
+            String[] fields = WHITESPACE.split(line.trim());
             if (fields.length >= 3 && fields[0].equalsIgnoreCase("SetupPart"))
             {
                 EnumDriveablePart part = EnumDriveablePart.getPart(fields[1]);

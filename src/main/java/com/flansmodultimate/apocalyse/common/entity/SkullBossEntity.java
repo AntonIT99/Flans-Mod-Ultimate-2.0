@@ -49,6 +49,8 @@ import net.minecraft.world.phys.Vec3;
  * whoever last hurt it. Its laughs, drones and TNT carry on whether or not it has a target.
  * </p>
  */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullBossEntity extends FlanMonster
 {

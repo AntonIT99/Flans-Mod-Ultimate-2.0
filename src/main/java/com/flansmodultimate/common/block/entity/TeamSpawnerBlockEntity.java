@@ -5,9 +5,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
-import com.flansmodultimate.common.teams.ITeamBase;
-import com.flansmodultimate.common.teams.ITeamObject;
-import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
 import com.flansmodultimate.platform.item.ItemStackData;
@@ -17,9 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -32,10 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
 public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITeamObject
 {
@@ -96,6 +89,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         setChangedAndSync();
     }
 
+    // Signature of BlockEntityTicker, which the method is registered as.
+    @SuppressWarnings("java:S1172")
     public static void serverTick(Level level, BlockPos pos, BlockState state, TeamSpawnerBlockEntity spawner)
     {
         if (level.getGameTime() % TEAM_COLOUR_REFRESH_TICKS == 0)
@@ -107,8 +102,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         spawner.currentDelay = spawner.spawnDelayTicks;
 
         AABB nearby = new AABB(pos).inflate(spawner.mode == Mode.VEHICLE ? 8D : 1.5D);
-        if (!serverLevel.getEntities((Entity) null, nearby,
-            entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER) && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
+        if (!serverLevel.getEntities((Entity) null, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER) && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER)))
+            .isEmpty())
             return;
 
         for (int index = 0; index < spawner.templates.size(); index++)
@@ -119,8 +114,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
                 Entity spawned = null;
                 if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
                 {
-                    Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D, pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D,
-                        0F, null, template.copyWithCount(1));
+                    Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D, pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D, 0F, null,
+                        template.copyWithCount(1));
                     spawned = driveable;
                 }
                 else if (template.getItem() instanceof AAGunItem aaGunItem)

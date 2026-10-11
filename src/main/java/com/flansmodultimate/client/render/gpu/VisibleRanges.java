@@ -77,6 +77,8 @@ final class VisibleRanges
     }
 
     /** The caller binds the mesh and shader first. Native storage is reused by this batch. */
+    // LWJGL exposes inherited GL members through the class of the required GL version.
+    @SuppressWarnings("java:S3252")
     void draw(VertexBuffer mesh)
     {
         if (count == 0)

@@ -24,7 +24,9 @@ public class PacketRequestCommonConfig implements IServerPacket
 
     @Override
     public void decodeInto(PacketBuffer data)
-    {}
+    {
+        // The request carries no payload.
+    }
 
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)

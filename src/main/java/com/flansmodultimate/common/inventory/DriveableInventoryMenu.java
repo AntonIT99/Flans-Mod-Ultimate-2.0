@@ -1,10 +1,7 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansModMenus;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.PartItem;
@@ -25,9 +22,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /** One compact, scrollable menu for every driveable inventory and repair page. */
 public final class DriveableInventoryMenu extends AbstractContainerMenu
@@ -59,7 +54,6 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
 
     @Nullable @Getter
     private final Driveable driveable;
-    private final Inventory playerInventory;
     private final Container driveableInventory;
     private final DriveableMappedSlot[] gridSlots = new DriveableMappedSlot[GRID_SLOT_COUNT];
     private final DriveableMappedSlot[] gunSlots = new DriveableMappedSlot[GUN_SLOT_COUNT];
@@ -81,8 +75,8 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         Page[] pages = Page.values();
         int pageIndex = buffer.readVarInt();
         int passengerSeatIndex = buffer.readVarInt();
-        return new DriveableInventoryMenu(containerId, inventory, entity instanceof Driveable found ? found : null,
-            pageIndex >= 0 && pageIndex < pages.length ? pages[pageIndex] : Page.MENU, passengerSeatIndex);
+        return new DriveableInventoryMenu(containerId, inventory, entity instanceof Driveable found ? found : null, pageIndex >= 0 && pageIndex < pages.length ? pages[pageIndex] : Page.MENU,
+            passengerSeatIndex);
     }
 
     public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable)
@@ -98,7 +92,6 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable, Page initialPage, int passengerSeatIndex)
     {
         super(FlansModMenus.driveableInventoryMenu.get(), containerId);
-        this.playerInventory = playerInventory;
         this.driveable = driveable;
         this.passengerSeatIndex = passengerSeatIndex;
         driveableInventory = driveable == null || driveable.getDriveableData() == null ? new SimpleContainer(1) : driveable.getDriveableData();
@@ -154,7 +147,9 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     {
         if (!(driveableInventory instanceof DriveableData data))
             return 0;
-        return isPassengerGunMenu() ? (getPassengerGunAmmoIndex() >= 0 ? 1 : 0) : data.getNumAmmoSlots();
+        if (isPassengerGunMenu())
+            return getPassengerGunAmmoIndex() >= 0 ? 1 : 0;
+        return data.getNumAmmoSlots();
     }
 
     private int getPassengerGunAmmoIndex()
@@ -202,8 +197,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     {
         if (isPassengerGunMenu() || !(driveableInventory instanceof DriveableData data))
             return List.of();
-        return data.getParts().values().stream().filter(part -> part.getMaxHealth() > 0F)
-            .sorted(Comparator.comparing(part -> part.getType().getName(), String.CASE_INSENSITIVE_ORDER)).toList();
+        return data.getParts().values().stream().filter(part -> part.getMaxHealth() > 0F).sorted(Comparator.comparing(part -> part.getType().getName(), String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     @Override

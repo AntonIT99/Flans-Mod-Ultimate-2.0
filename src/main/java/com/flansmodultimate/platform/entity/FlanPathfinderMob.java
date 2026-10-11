@@ -6,6 +6,8 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
 
 /** Version boundary for pathfinder-mob custom death loot. */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 public abstract class FlanPathfinderMob extends PathfinderMob
 {
     protected FlanPathfinderMob(EntityType<? extends PathfinderMob> type, Level level)

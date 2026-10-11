@@ -16,9 +16,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -35,7 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelTextureFitter
 {
-    private record TextureSize(int width, int height) {}
+    private record TextureSize(int width, int height)
+    {}
 
     private static final Map<ResourceLocation, Optional<TextureSize>> textureSizes = new ConcurrentHashMap<>();
 
@@ -47,8 +46,10 @@ public final class ModelTextureFitter
     /**
      * Re-normalises every part of the model against the real size of the given texture.
      *
-     * @param model   the model to correct, may be {@code null}
-     * @param texture the texture the model is rendered with, may be {@code null} or empty
+     * @param model
+     *            the model to correct, may be {@code null}
+     * @param texture
+     *            the texture the model is rendered with, may be {@code null} or empty
      */
     public static void fitToTexture(@Nullable IModelBase model, @Nullable ResourceLocation texture)
     {
@@ -61,9 +62,9 @@ public final class ModelTextureFitter
 
         boolean[] rescaled = {false};
 
-        model.forEachModelBox(modelRenderer -> {
-            if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo
-                && modelRendererTurbo.applyActualTextureSize(size.width(), size.height()))
+        model.forEachModelBox(modelRenderer ->
+        {
+            if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo && modelRendererTurbo.applyActualTextureSize(size.width(), size.height()))
             {
                 rescaled[0] = true;
             }
@@ -71,7 +72,8 @@ public final class ModelTextureFitter
 
         if (rescaled[0])
         {
-            FlansLog.log.warn("Model {} declares a texture size that does not match {} ({}x{}). Its texture coordinates have been rescaled.", model.getClass().getName(), texture, size.width(), size.height());
+            FlansLog.log.warn("Model {} declares a texture size that does not match {} ({}x{}). Its texture coordinates have been rescaled.", model.getClass().getName(), texture, size.width(),
+                size.height());
         }
     }
 
@@ -88,11 +90,8 @@ public final class ModelTextureFitter
             return Optional.empty();
 
         // Only the image header is decoded, the pixels are never read.
-        try (InputStream stream = resource.get().open();
-             ImageInputStream imageInput = new MemoryCacheImageInputStream(stream))
+        try (InputStream stream = resource.get().open(); ImageInputStream imageInput = new MemoryCacheImageInputStream(stream))
         {
-            if (imageInput == null)
-                return Optional.empty();
 
             Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInput);
             if (!readers.hasNext())

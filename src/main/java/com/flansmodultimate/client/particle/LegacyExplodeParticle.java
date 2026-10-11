@@ -1,15 +1,10 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.common.physics.ModPhysics;
-
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
@@ -20,6 +15,8 @@ public final class LegacyExplodeParticle extends TextureSheetParticle
 {
     private final SpriteSet sprites;
 
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
     private LegacyExplodeParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
         super(level, x, y, z, vx, vy, vz);
@@ -37,7 +34,7 @@ public final class LegacyExplodeParticle extends TextureSheetParticle
         // EntityFX rendered particleScale at one tenth of its value. Store the
         // equivalent rendered size in modern SingleQuadParticle units.
         quadSize = random.nextFloat() * random.nextFloat() * 0.6F + 0.1F;
-        lifetime = (int)(16.0D / (random.nextFloat() * 0.8D + 0.2D)) + 2;
+        lifetime = (int) (16.0D / (random.nextFloat() * 0.8D + 0.2D)) + 2;
 
         setLegacySprite(7);
     }

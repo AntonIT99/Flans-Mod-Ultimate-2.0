@@ -6,12 +6,11 @@ import com.flansmodultimate.content.ContentPack;
 import com.flansmodultimate.util.StringOrNumberListMapAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +28,7 @@ class CategoryResolverTest
 
     private static List<Category> resolve(List<Category> defaults, List<Category> users, boolean enabled)
     {
-        return new CategoryResolver(EnumType.BULLET, defaults, users, enabled).resolve(message -> fail(message));
+        return new CategoryResolver(EnumType.BULLET, defaults, users, enabled).resolve(Assertions::fail);
     }
 
     @Test

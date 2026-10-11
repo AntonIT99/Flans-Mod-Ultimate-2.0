@@ -277,7 +277,9 @@ public final class RearmCommand
 
         @Override
         public void commit()
-        {}
+        {
+            // The ammo is loaded directly, so nothing is left to commit.
+        }
 
         @Override
         public String suffix()
@@ -314,7 +316,9 @@ public final class RearmCommand
 
         @Override
         public void commit()
-        {}
+        {
+            // The ammo is loaded directly, so nothing is left to commit.
+        }
 
         @Override
         public String suffix()

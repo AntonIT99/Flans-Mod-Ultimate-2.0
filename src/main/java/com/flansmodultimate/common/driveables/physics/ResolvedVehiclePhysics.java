@@ -6,7 +6,8 @@ import org.jetbrains.annotations.Nullable;
  * The values the new physics path actually uses, resolved once during type
  * finalization.
  *
- * <p>Two rules shape this record. Static derivations that never change, such as
+ * <p>
+ * Two rules shape this record. Static derivations that never change, such as
  * power to weight or wing loading, are computed here so no tick method repeats
  * them. Speed conversions are not baked in, because the global
  * per-class realistic speed scale can change at runtime and the authored
@@ -14,34 +15,23 @@ import org.jetbrains.annotations.Nullable;
  * current scale and converts through {@link VehiclePhysicsUnits}. Runtime physics
  * and item tooltips call the same accessors, so they can never disagree.
  *
- * <p>An instance always exists for every driveable type. {@link #mode()} says
+ * <p>
+ * An instance always exists for every driveable type. {@link #mode()} says
  * which path is live, and the {@code has*} predicates are what the tick methods
  * branch on, so nullable fields never leak into per-tick code.
  */
-public record ResolvedVehiclePhysics(
-    EnumVehiclePhysicsMode mode,
-    EnumVehicleCategory category,
-    RealWorldVehicleSpec source,
-    VehicleGeometry geometry,
+public record ResolvedVehiclePhysics(EnumVehiclePhysicsMode mode, EnumVehicleCategory category, RealWorldVehicleSpec source, VehicleGeometry geometry,
 
-    boolean groundProfileComplete,
-    boolean aircraftProfileComplete,
-    boolean marineProfileComplete,
+    boolean groundProfileComplete, boolean aircraftProfileComplete, boolean marineProfileComplete,
 
     /** Baseline engine power in kilowatts before the installed engine part modifier. */
     float baselinePowerKw,
     /** Baseline jet thrust in kilonewtons before the installed engine part modifier. */
-    float baselineThrustKn,
-    float massKg,
-    float maxSpeedKmh,
+    float baselineThrustKn, float massKg, float maxSpeedKmh,
 
-    float powerToWeightKwPerKg,
-    float thrustToWeight,
-    float wingLoadingKgPerM2,
-    float rollInertiaFactor,
+    float powerToWeightKwPerKg, float thrustToWeight, float wingLoadingKgPerM2, float rollInertiaFactor,
 
-    EnumDriveType driveType,
-    boolean driveTypeExplicit,
+    EnumDriveType driveType, boolean driveTypeExplicit,
     /** Authored reverse cap in km/h, or null to keep legacy reverse behaviour. */
     @Nullable Float maxReverseSpeedKmh,
     /** Authored draft in metres, or null to keep the legacy constant buoyancy. */
@@ -59,13 +49,10 @@ public record ResolvedVehiclePhysics(
      * nothing and both the tooltip and the debug command show them regardless of
      * which physics path is live.
      */
-    public static ResolvedVehiclePhysics legacy(EnumVehicleCategory category, EnumDriveType inferredDriveType,
-                                                VehicleGeometry geometry)
+    public static ResolvedVehiclePhysics legacy(EnumVehicleCategory category, EnumDriveType inferredDriveType, VehicleGeometry geometry)
     {
-        return new ResolvedVehiclePhysics(EnumVehiclePhysicsMode.LEGACY, category,
-            RealWorldVehicleSpec.EMPTY, geometry == null ? VehicleGeometry.EMPTY : geometry,
-            false, false, false, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 1F,
-            inferredDriveType, false, null, null);
+        return new ResolvedVehiclePhysics(EnumVehiclePhysicsMode.LEGACY, category, RealWorldVehicleSpec.EMPTY, geometry == null ? VehicleGeometry.EMPTY : geometry, false, false, false, 0F, 0F, 0F, 0F,
+            0F, 0F, 0F, 1F, inferredDriveType, false, null, null);
     }
 
     // ------------------------------------------------------------- predicates
@@ -76,7 +63,6 @@ public record ResolvedVehiclePhysics(
         return groundProfileComplete && category == EnumVehicleCategory.GROUND;
     }
 
-    /** Whether the new fixed-wing model owns thrust, lift and control authority. */
     /**
      * Whether this hull owns its propulsion through the marine profile. True for a
      * floating definition with a mass, a top speed, engine power and a draft,
@@ -127,16 +113,14 @@ public record ResolvedVehiclePhysics(
      */
     public double reverseSpeedBlocksPerTick(double speedScale)
     {
-        return maxReverseSpeedKmh == null ? 0D
-            : VehiclePhysicsUnits.kmhToBlocksPerTick(maxReverseSpeedKmh, speedScale);
+        return maxReverseSpeedKmh == null ? 0D : VehiclePhysicsUnits.kmhToBlocksPerTick(maxReverseSpeedKmh, speedScale);
     }
 
     /** Authored climb rate as blocks per tick, or zero when unspecified. */
     public double climbRateBlocksPerTick(double speedScale)
     {
         Float climbRate = source.aircraft().climbRateMs();
-        return climbRate == null ? 0D
-            : VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(climbRate, speedScale);
+        return climbRate == null ? 0D : VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(climbRate, speedScale);
     }
 
     /**
@@ -170,7 +154,8 @@ public record ResolvedVehiclePhysics(
      * Usable engine power in watts after the installed engine part's gameplay
      * modifier.
      *
-     * <p>{@code RealEnginePowerKw} is the vehicle's reference powerplant.
+     * <p>
+     * {@code RealEnginePowerKw} is the vehicle's reference powerplant.
      * {@code PartType.engineSpeed} stays what it has always been, a dimensionless
      * gameplay multiplier that defaults to 1.0, so engine upgrades keep working
      * and no arbitrary gameplay number is reinterpreted as kilowatts.
@@ -204,7 +189,6 @@ public record ResolvedVehiclePhysics(
             return 0D;
         double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(maxSpeedBlocksPerTick(speedScale));
         Float wingArea = source.aircraft().effectiveWingAreaM2();
-        return AircraftPerformancePhysics.clampedReferenceSpeedMs(massKg,
-            wingArea == null ? 0F : wingArea, terminalMs, referenceSpeedScale);
+        return AircraftPerformancePhysics.clampedReferenceSpeedMs(massKg, wingArea == null ? 0F : wingArea, terminalMs, referenceSpeedScale);
     }
 }

@@ -17,14 +17,9 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.Optional;
@@ -78,6 +73,8 @@ public class PacksManagerMod
     private static final String CONTENT_LOADING_CONFIG_FILE_NAME = MAIN_MOD_ID + "-content-loading.toml";
     private static final String CONTENT_PACKS_RELATIVE_PATH_KEY = "contentPacksRelativePath";
 
+    // Forge instantiates the mod class through this constructor signature.
+    @SuppressWarnings("java:S1172")
     public PacksManagerMod(FMLJavaModLoadingContext context)
     {
         if (!PlatformEnvironment.isProduction())
@@ -126,8 +123,7 @@ public class PacksManagerMod
         return Optional.ofNullable(previousState).map(state -> state.isCompleteForAtLeast(resolvedPacksVersion, flanOutputDir)).orElse(false);
     }
 
-    private void extractBundledPacks(Path flanOutputDir, Path statePath, @Nullable ExtractionState previousState, int resolvedPacksVersion, int lastExtractedPacksVersion)
-        throws IOException
+    private void extractBundledPacks(Path flanOutputDir, Path statePath, @Nullable ExtractionState previousState, int resolvedPacksVersion, int lastExtractedPacksVersion) throws IOException
     {
         prepareFlanOutputDir(flanOutputDir, previousState, resolvedPacksVersion);
         writeResolvingState(statePath, flanOutputDir, resolvedPacksVersion, lastExtractedPacksVersion);
@@ -203,28 +199,32 @@ public class PacksManagerMod
                 return FALLBACK_BUNDLED_PACKS_VERSION;
             }
 
-            String value = new String(input.readAllBytes(), StandardCharsets.UTF_8).trim();
-            try
-            {
-                int version = Integer.parseInt(value);
-                if (version <= NO_EXTRACTED_PACKS_VERSION)
-                {
-                    log.error("Bundled packs version in '{}' must be greater than {} but was '{}'. Falling back to {}.", BUNDLED_PACKS_VERSION_RESOURCE, NO_EXTRACTED_PACKS_VERSION,
-                        value, FALLBACK_BUNDLED_PACKS_VERSION);
-                    return FALLBACK_BUNDLED_PACKS_VERSION;
-                }
-
-                return version;
-            }
-            catch (NumberFormatException e)
-            {
-                log.error("Invalid bundled packs version in '{}': '{}'. Falling back to {}.", BUNDLED_PACKS_VERSION_RESOURCE, value, FALLBACK_BUNDLED_PACKS_VERSION, e);
-                return FALLBACK_BUNDLED_PACKS_VERSION;
-            }
+            return parseBundledPacksVersion(new String(input.readAllBytes(), StandardCharsets.UTF_8).trim());
         }
         catch (IOException e)
         {
             log.error("Could not read bundled packs version resource '{}'. Falling back to {}.", BUNDLED_PACKS_VERSION_RESOURCE, FALLBACK_BUNDLED_PACKS_VERSION, e);
+            return FALLBACK_BUNDLED_PACKS_VERSION;
+        }
+    }
+
+    private static int parseBundledPacksVersion(String value)
+    {
+        try
+        {
+            int version = Integer.parseInt(value);
+            if (version <= NO_EXTRACTED_PACKS_VERSION)
+            {
+                log.error("Bundled packs version in '{}' must be greater than {} but was '{}'. Falling back to {}.", BUNDLED_PACKS_VERSION_RESOURCE, NO_EXTRACTED_PACKS_VERSION, value,
+                    FALLBACK_BUNDLED_PACKS_VERSION);
+                return FALLBACK_BUNDLED_PACKS_VERSION;
+            }
+
+            return version;
+        }
+        catch (NumberFormatException e)
+        {
+            log.error("Invalid bundled packs version in '{}': '{}'. Falling back to {}.", BUNDLED_PACKS_VERSION_RESOURCE, value, FALLBACK_BUNDLED_PACKS_VERSION, e);
             return FALLBACK_BUNDLED_PACKS_VERSION;
         }
     }
@@ -306,7 +306,7 @@ public class PacksManagerMod
 
     private static String currentTimestamp()
     {
-        return LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
+        return LocalDateTime.now(ZoneId.systemDefault()).format(BACKUP_TIMESTAMP_FORMAT);
     }
 
     private void ensureDirectoryExists(@Nullable Path path) throws IOException
@@ -331,13 +331,12 @@ public class PacksManagerMod
         }
     }
 
-    private void writeExtractionState(Path statePath, Path flanOutputDir, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String message)
-        throws IOException
+    private void writeExtractionState(Path statePath, Path flanOutputDir, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String message) throws IOException
     {
         ensureDirectoryExists(statePath.getParent());
 
-        ExtractionState extractionState = new ExtractionState(EXTRACTION_STATE_PROTOCOL_VERSION, state, resolvedPacksVersion, lastExtractedPacksVersion,
-            normalizePathForState(flanOutputDir), LocalDateTime.now().toString(), message);
+        ExtractionState extractionState = new ExtractionState(EXTRACTION_STATE_PROTOCOL_VERSION, state, resolvedPacksVersion, lastExtractedPacksVersion, normalizePathForState(flanOutputDir),
+            LocalDateTime.now(ZoneId.systemDefault()).toString(), message);
         Path tempPath = statePath.resolveSibling(statePath.getFileName() + ".tmp");
         Files.writeString(tempPath, gson.toJson(extractionState), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
@@ -411,8 +410,8 @@ public class PacksManagerMod
         log.info("Extracted: {} -> {} ({} bytes)", entry.getName(), outputPath, written);
     }
 
-    private record ExtractionState(int protocolVersion, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String flanOutputPath,
-        String updatedAt, @Nullable String message)
+    private record ExtractionState(int protocolVersion, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String flanOutputPath, String updatedAt,
+        @Nullable String message)
     {
         private int effectiveLastExtractedPacksVersion()
         {

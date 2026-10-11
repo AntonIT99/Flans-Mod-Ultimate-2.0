@@ -34,6 +34,8 @@ import java.util.EnumSet;
  * two to five spare magazines. It never targets the Skull Boss, which in turn ignores AI gunfire.
  * </p>
  */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SurvivorEntity extends FlanMonster
 {

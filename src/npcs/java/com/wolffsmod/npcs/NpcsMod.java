@@ -20,6 +20,7 @@ public class NpcsMod
     public static final String MOD_ID = "wolffsmodnpcs";
     public static final Logger log = LogUtils.getLogger();
 
+    @SuppressWarnings("java:S1118")
     public NpcsMod(FMLJavaModLoadingContext context)
     {
         IEventBus modEventBus = context.getModEventBus();

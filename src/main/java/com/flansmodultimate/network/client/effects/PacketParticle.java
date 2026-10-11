@@ -27,6 +27,8 @@ public class PacketParticle implements IClientPacket
         this(s, x1, y1, z1, x2, y2, z2, 1.0F);
     }
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketParticle(String s, double x1, double y1, double z1, double x2, double y2, double z2, float size)
     {
         x = (float) x1;

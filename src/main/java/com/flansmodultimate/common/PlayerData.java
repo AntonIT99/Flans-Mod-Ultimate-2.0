@@ -6,9 +6,7 @@ import com.flansmodultimate.common.guns.reload.PendingReload;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.PlayerClass;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
@@ -120,7 +118,11 @@ public class PlayerData
     // Teams related fields
     /** Gametype variables */
     @Getter @Setter
-    private int score, kills, deaths;
+    private int score;
+    @Getter @Setter
+    private int kills;
+    @Getter @Setter
+    private int deaths;
     /** Zombies variables */
     @Getter @Setter
     private int zombieScore;
@@ -282,12 +284,12 @@ public class PlayerData
     public void tick(Player player)
     {
         if (shootTimeRight > 0)
-            shootTimeRight--;
+            shootTimeRight -= 1F;
         if (shootTimeRight == 0)
             isReloadingRight = false;
 
         if (shootTimeLeft > 0)
-            shootTimeLeft--;
+            shootTimeLeft -= 1F;
         if (shootTimeLeft == 0)
             isReloadingLeft = false;
 
@@ -424,8 +426,7 @@ public class PlayerData
             Vector3f nextAngles = JomlUtils.fromFlansVector(type.getMeleePathAngles().get(0));
             RotatedAxes nextAxes = new RotatedAxes(-nextAngles.y, -nextAngles.z, nextAngles.x);
 
-            Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F)
-                .findLocalVectorGlobally(nextAxes.findLocalVectorGlobally(meleeDamagePoint));
+            Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextAxes.findLocalVectorGlobally(meleeDamagePoint));
             nextPosInPlayerCoords.add(nextPos);
 
             lastMeleePositions[k] = new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getEyeY() + nextPosInPlayerCoords.y),

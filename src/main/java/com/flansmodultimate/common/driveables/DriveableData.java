@@ -1,15 +1,7 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmodultimate.common.item.BulletItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.IPaintableItem;
-import com.flansmodultimate.common.item.MechaAddonItem;
-import com.flansmodultimate.common.item.PartItem;
-import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.MechaType;
-import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.item.*;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
@@ -19,18 +11,13 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Server-authoritative inventory and damage state carried by a driveable item/entity.
@@ -38,6 +25,14 @@ import java.util.Map;
  */
 public final class DriveableData implements Container
 {
+    private static final String LEGACY_NBT_ENGINE = "Engine";
+    private static final String LEGACY_NBT_FUEL_IN_TANK = "FuelInTank";
+    private static final String LEGACY_NBT_PAINT = "Paint";
+    private static final String LEGACY_NBT_AMMO_PREFIX = "Ammo ";
+    private static final String LEGACY_NBT_BOMBS_PREFIX = "Bombs ";
+    private static final String LEGACY_NBT_MISSILES_PREFIX = "Missiles ";
+    private static final String LEGACY_NBT_CARGO_PREFIX = "Cargo ";
+
     /** Hard packet bound; mecha slots are always preferred over decorative missile rows. */
     public static final int MAX_RENDER_SYNC_SLOTS = 256;
     public static final String NBT_DATA = "driveable_data";
@@ -153,6 +148,8 @@ public final class DriveableData implements Container
         return resolved instanceof PartType partType ? partType : PartType.getDefaultEngine(driveableType.getType(), driveableType.getContentPack(), driveableType.getEngine());
     }
 
+    // Kept as a method alongside the other inventory section offsets.
+    @SuppressWarnings("java:S3400")
     public int getAmmoInventoryStart()
     {
         return 0;
@@ -203,8 +200,7 @@ public final class DriveableData implements Container
     {
         int mechaSlots = Math.min(numMechaSlots, MAX_RENDER_SYNC_SLOTS);
         int missileSlots = Math.min(numMissileSlots, MAX_RENDER_SYNC_SLOTS - mechaSlots);
-        return slot >= getMissileInventoryStart() && slot < getMissileInventoryStart() + missileSlots
-            || slot >= getMechaInventoryStart() && slot < getMechaInventoryStart() + mechaSlots;
+        return slot >= getMissileInventoryStart() && slot < getMissileInventoryStart() + missileSlots || slot >= getMechaInventoryStart() && slot < getMechaInventoryStart() + mechaSlots;
     }
 
     public ItemStack getAmmo(int index)
@@ -521,13 +517,14 @@ public final class DriveableData implements Container
         }
         tag.remove(IPaintableItem.NBT_PAINTJOB_ID);
         tag.remove("Type");
-        tag.remove("Engine");
-        tag.remove("FuelInTank");
-        tag.remove("Paint");
+        tag.remove(LEGACY_NBT_ENGINE);
+        tag.remove(LEGACY_NBT_FUEL_IN_TANK);
+        tag.remove(LEGACY_NBT_PAINT);
         tag.remove("Fuel");
         for (String key : new ArrayList<>(tag.getAllKeys()))
         {
-            if (isLegacyIndexedKey(key, "Ammo ") || isLegacyIndexedKey(key, "Bombs ") || isLegacyIndexedKey(key, "Missiles ") || isLegacyIndexedKey(key, "Cargo "))
+            if (isLegacyIndexedKey(key, LEGACY_NBT_AMMO_PREFIX) || isLegacyIndexedKey(key, LEGACY_NBT_BOMBS_PREFIX) || isLegacyIndexedKey(key, LEGACY_NBT_MISSILES_PREFIX)
+                || isLegacyIndexedKey(key, LEGACY_NBT_CARGO_PREFIX))
                 tag.remove(key);
         }
         for (EnumMechaSlotType slot : EnumMechaSlotType.values())
@@ -553,19 +550,14 @@ public final class DriveableData implements Container
         // Unknown keys already nested in our own payload are retained for extensions.
         preservedTag = hasNestedData ? data.copy() : new CompoundTag();
         preservedTag.remove(NBT_DATA);
-        engineShortName = firstNonBlank(data.getString(NBT_ENGINE), data.getString("Engine"), hasNestedData ? source.getString(NBT_ENGINE) : StringUtils.EMPTY,
-            hasNestedData ? source.getString("Engine") : StringUtils.EMPTY, engineShortName);
+        engineShortName = firstNonBlank(data.getString(NBT_ENGINE), data.getString(LEGACY_NBT_ENGINE), hasNestedData ? source.getString(NBT_ENGINE) : StringUtils.EMPTY,
+            hasNestedData ? source.getString(LEGACY_NBT_ENGINE) : StringUtils.EMPTY, engineShortName);
         setFuelInTank(readFuel(data, hasNestedData ? source : null));
-        paintjobID = source.contains(IPaintableItem.NBT_PAINTJOB_ID)
-            ? source.getInt(IPaintableItem.NBT_PAINTJOB_ID)
-            : data.contains(NBT_PAINT, Tag.TAG_ANY_NUMERIC)
-                ? data.getInt(NBT_PAINT)
-                : data.contains("Paint", Tag.TAG_ANY_NUMERIC)
-                    ? data.getInt("Paint")
-                    : hasNestedData && source.contains(NBT_PAINT, Tag.TAG_ANY_NUMERIC) ? source.getInt(NBT_PAINT) : source.getInt("Paint");
+        paintjobID = readPaintjobId(source, data, hasNestedData);
 
         inventory.replaceAll(ignored -> ItemStack.EMPTY);
-        CompoundTag canonicalInventory = data.contains(NBT_ITEMS, Tag.TAG_LIST) ? data : hasNestedData && source.contains(NBT_ITEMS, Tag.TAG_LIST) ? source : null;
+        CompoundTag rootInventory = hasNestedData && source.contains(NBT_ITEMS, Tag.TAG_LIST) ? source : null;
+        CompoundTag canonicalInventory = data.contains(NBT_ITEMS, Tag.TAG_LIST) ? data : rootInventory;
         if (canonicalInventory != null)
         {
             loadItemList(canonicalInventory.getList(NBT_ITEMS, Tag.TAG_COMPOUND));
@@ -597,15 +589,26 @@ public final class DriveableData implements Container
         ++inventoryRevision;
     }
 
+    private static int readPaintjobId(CompoundTag source, CompoundTag data, boolean hasNestedData)
+    {
+        if (source.contains(IPaintableItem.NBT_PAINTJOB_ID))
+            return source.getInt(IPaintableItem.NBT_PAINTJOB_ID);
+        if (data.contains(NBT_PAINT, Tag.TAG_ANY_NUMERIC))
+            return data.getInt(NBT_PAINT);
+        if (data.contains(LEGACY_NBT_PAINT, Tag.TAG_ANY_NUMERIC))
+            return data.getInt(LEGACY_NBT_PAINT);
+        return source.getInt(hasNestedData && source.contains(NBT_PAINT, Tag.TAG_ANY_NUMERIC) ? NBT_PAINT : LEGACY_NBT_PAINT);
+    }
+
     private float readFuel(CompoundTag data, @Nullable CompoundTag root)
     {
         if (data.contains(NBT_FUEL, Tag.TAG_ANY_NUMERIC))
             return data.getFloat(NBT_FUEL);
-        if (data.contains("FuelInTank", Tag.TAG_ANY_NUMERIC))
-            return data.getFloat("FuelInTank");
+        if (data.contains(LEGACY_NBT_FUEL_IN_TANK, Tag.TAG_ANY_NUMERIC))
+            return data.getFloat(LEGACY_NBT_FUEL_IN_TANK);
         if (root != null && root.contains(NBT_FUEL, Tag.TAG_ANY_NUMERIC))
             return root.getFloat(NBT_FUEL);
-        return root != null && root.contains("FuelInTank", Tag.TAG_ANY_NUMERIC) ? root.getFloat("FuelInTank") : 0F;
+        return root != null && root.contains(LEGACY_NBT_FUEL_IN_TANK, Tag.TAG_ANY_NUMERIC) ? root.getFloat(LEGACY_NBT_FUEL_IN_TANK) : 0F;
     }
 
     private void loadItemList(ListTag itemTags)
@@ -630,10 +633,10 @@ public final class DriveableData implements Container
 
     private void loadLegacyInventory(CompoundTag data)
     {
-        loadLegacyRange(data, "Ammo ", getAmmoInventoryStart(), numAmmoSlots);
-        loadLegacyRange(data, "Bombs ", getBombInventoryStart(), numBombSlots);
-        loadLegacyRange(data, "Missiles ", getMissileInventoryStart(), numMissileSlots);
-        loadLegacyRange(data, "Cargo ", getCargoInventoryStart(), numCargoSlots);
+        loadLegacyRange(data, LEGACY_NBT_AMMO_PREFIX, getAmmoInventoryStart(), numAmmoSlots);
+        loadLegacyRange(data, LEGACY_NBT_BOMBS_PREFIX, getBombInventoryStart(), numBombSlots);
+        loadLegacyRange(data, LEGACY_NBT_MISSILES_PREFIX, getMissileInventoryStart(), numMissileSlots);
+        loadLegacyRange(data, LEGACY_NBT_CARGO_PREFIX, getCargoInventoryStart(), numCargoSlots);
         if (data.contains("Fuel", Tag.TAG_COMPOUND))
             putLoadedStack(getFuelSlot(), ItemStackData.parse(registries, data.getCompound("Fuel")));
     }
@@ -700,14 +703,14 @@ public final class DriveableData implements Container
     private void writeLegacyState(CompoundTag tag)
     {
         tag.putString("Type", getType());
-        tag.putString("Engine", engineShortName);
-        tag.putInt("FuelInTank", Math.round(fuelInTank));
-        tag.putInt("Paint", paintjobID);
+        tag.putString(LEGACY_NBT_ENGINE, engineShortName);
+        tag.putInt(LEGACY_NBT_FUEL_IN_TANK, Math.round(fuelInTank));
+        tag.putInt(LEGACY_NBT_PAINT, paintjobID);
 
-        writeLegacyRange(tag, "Ammo ", getAmmoInventoryStart(), numAmmoSlots);
-        writeLegacyRange(tag, "Bombs ", getBombInventoryStart(), numBombSlots);
-        writeLegacyRange(tag, "Missiles ", getMissileInventoryStart(), numMissileSlots);
-        writeLegacyRange(tag, "Cargo ", getCargoInventoryStart(), numCargoSlots);
+        writeLegacyRange(tag, LEGACY_NBT_AMMO_PREFIX, getAmmoInventoryStart(), numAmmoSlots);
+        writeLegacyRange(tag, LEGACY_NBT_BOMBS_PREFIX, getBombInventoryStart(), numBombSlots);
+        writeLegacyRange(tag, LEGACY_NBT_MISSILES_PREFIX, getMissileInventoryStart(), numMissileSlots);
+        writeLegacyRange(tag, LEGACY_NBT_CARGO_PREFIX, getCargoInventoryStart(), numCargoSlots);
         writeLegacyStack(tag, "Fuel", getFuelStack());
 
         for (EnumMechaSlotType slot : EnumMechaSlotType.values())

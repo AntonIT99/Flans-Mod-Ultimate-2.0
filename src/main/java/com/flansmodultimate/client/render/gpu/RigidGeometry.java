@@ -107,6 +107,8 @@ public final class RigidGeometry
         return vertexCount;
     }
 
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public void draw(PoseStack.Pose pose, VertexConsumer consumer, int light, int overlay, float red, float green, float blue, float alpha)
     {
         if (source != null)

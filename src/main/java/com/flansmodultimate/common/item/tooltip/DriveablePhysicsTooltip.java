@@ -29,6 +29,7 @@ import java.util.*;
  */
 public final class DriveablePhysicsTooltip
 {
+    private static final String KMH_SUFFIX = " km/h";
     private static final String PREFIX = "tooltip.flansmodultimate.physics.";
 
     private DriveablePhysicsTooltip()
@@ -113,7 +114,7 @@ public final class DriveablePhysicsTooltip
             tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_ENGINE_THRUST), IFlanItem.formatFloat(resolved.baselineThrustKn(), 1) + " kN"));
         if (resolved.baselinePowerKw() > 0F)
             tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_ENGINE_POWER), IFlanItem.formatFloat(resolved.baselinePowerKw(), 0) + " kW"));
-        tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_MAX_SPEED), IFlanItem.formatFloat(resolved.maxSpeedKmh(), 0) + " km/h"));
+        tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_MAX_SPEED), IFlanItem.formatFloat(resolved.maxSpeedKmh(), 0) + KMH_SUFFIX));
 
         if (resolved.hasAircraftProfile())
         {
@@ -125,7 +126,7 @@ public final class DriveablePhysicsTooltip
             if (aircraft.climbRateMs() != null)
                 tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_CLIMB_RATE), IFlanItem.formatFloat(aircraft.climbRateMs(), 1) + " m/s"));
             double fullLiftSpeedKmh = resolved.referenceSpeedMs(speedScale, aircraftReferenceSpeedScale) * VehiclePhysicsUnits.KMH_PER_METRE_PER_SECOND;
-            tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_REFERENCE_SPEED), IFlanItem.formatDouble(fullLiftSpeedKmh, 0) + " km/h"));
+            tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_REFERENCE_SPEED), IFlanItem.formatDouble(fullLiftSpeedKmh, 0) + KMH_SUFFIX));
         }
 
         // Legacy fields that remain in force as deliberate gameplay trims.
@@ -185,7 +186,7 @@ public final class DriveablePhysicsTooltip
                 + (resolved.driveTypeExplicit() ? "" : " " + Component.translatable(TooltipKeys.PHYSICS_INFERRED).getString())));
         }
         if (resolved.hasReverseSpeedOverride())
-            tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_REVERSE_SPEED), IFlanItem.formatFloat(resolved.maxReverseSpeedKmh(), 0) + " km/h"));
+            tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_REVERSE_SPEED), IFlanItem.formatFloat(resolved.maxReverseSpeedKmh(), 0) + KMH_SUFFIX));
         if (resolved.hasDraft())
             tooltip.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PHYSICS_DRAFT), IFlanItem.formatFloat(resolved.draftM(), 2) + " m"));
     }

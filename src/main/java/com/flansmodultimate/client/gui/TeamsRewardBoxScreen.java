@@ -15,8 +15,8 @@ import net.minecraft.network.chat.Component;
 
 public final class TeamsRewardBoxScreen extends Screen
 {
-    private static final int WIDTH = 196;
-    private static final int HEIGHT = 200;
+    private static final int PANEL_WIDTH = 196;
+    private static final int PANEL_HEIGHT = 200;
     private static final int ROWS = 5;
 
     public TeamsRewardBoxScreen()
@@ -31,8 +31,8 @@ public final class TeamsRewardBoxScreen extends Screen
         if (state == null)
             return;
 
-        int left = width / 2 - WIDTH / 2;
-        int top = height / 2 - HEIGHT / 2;
+        int left = width / 2 - PANEL_WIDTH / 2;
+        int top = height / 2 - PANEL_HEIGHT / 2;
         int row = 0;
 
         // One row per box type the pool offers, whether or not the player holds
@@ -64,9 +64,9 @@ public final class TeamsRewardBoxScreen extends Screen
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
 
-        int left = width / 2 - WIDTH / 2;
-        int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSOPENCREATES, left, top, 0, 0, WIDTH, HEIGHT, 256, 256);
+        int left = width / 2 - PANEL_WIDTH / 2;
+        int top = height / 2 - PANEL_HEIGHT / 2;
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSOPENCREATES, left, top, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, 256, 256);
         graphics.drawCenteredString(font, title, width / 2, top + 10, 0xFFFFFF);
 
         if (state != null)

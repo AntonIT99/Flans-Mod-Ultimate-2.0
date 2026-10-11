@@ -5,9 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -22,14 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -41,6 +32,7 @@ import java.util.stream.Stream;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PackagedContentLoader
 {
+    private static final String DEFINITIONS = "definitions";
     private static final List<RegisteredModule> modules = new ArrayList<>();
 
     /**
@@ -98,8 +90,7 @@ public final class PackagedContentLoader
         Path moduleResourceRoot = modFileInfo.getFile().findResource("pack.mcmeta").getParent();
         Path moduleAssetsRoot = modFileInfo.getFile().findResource("assets", FlansMod.FLANSMOD_ID);
         Path modulePath = modFileInfo.getFile().getFilePath();
-        String moduleDisplayName = ModList.get().getModContainerById(modId).map(container -> container.getModInfo().getDisplayName()).filter(displayName -> !displayName.isBlank())
-            .orElse(modId);
+        String moduleDisplayName = ModList.get().getModContainerById(modId).map(container -> container.getModInfo().getDisplayName()).filter(displayName -> !displayName.isBlank()).orElse(modId);
         boolean archiveBacked = PlatformEnvironment.isProduction();
 
         if (archiveBacked && (!Files.isRegularFile(modulePath) || !modulePath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")))
@@ -140,22 +131,21 @@ public final class PackagedContentLoader
             }
 
             Path packRoot = moduleContentRoot.resolve(packId);
-            boolean definitionsSubdirectory = Files.isDirectory(packRoot.resolve("definitions"));
-            Path definitionsRoot = definitionsSubdirectory ? packRoot.resolve("definitions") : packRoot;
+            boolean definitionsSubdirectory = Files.isDirectory(packRoot.resolve(DEFINITIONS));
+            Path definitionsRoot = definitionsSubdirectory ? packRoot.resolve(DEFINITIONS) : packRoot;
             String archivePackRoot = joinArchivePath(contentRoot, packId);
-            String archiveDefinitionsRoot = definitionsSubdirectory ? joinArchivePath(archivePackRoot, "definitions") : archivePackRoot;
+            String archiveDefinitionsRoot = definitionsSubdirectory ? joinArchivePath(archivePackRoot, DEFINITIONS) : archivePackRoot;
 
-            providers.add(new PackagedContentProvider(displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath, definitionsRoot,
-                moduleAssetsRoot, moduleModelsRoot, archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot, archiveBacked, indexSharedAssets,
-                "flansmodultimate_officialpacks".equals(modId)));
+            providers
+                .add(new PackagedContentProvider(displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath, definitionsRoot, moduleAssetsRoot, moduleModelsRoot,
+                    archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot, archiveBacked, indexSharedAssets, "flansmodultimate_officialpacks".equals(modId)));
             indexSharedAssets = false;
         }
 
         RegisteredModule module = new RegisteredModule(modId, moduleResourceRoot, moduleContentRoot, List.copyOf(providers));
         modules.add(module);
         ContentManager.addPackagedContentPacks(providers);
-        FlansLog.log.info("Registered {} enabled packaged content pack(s) from {}: {}", providers.size(), modId,
-            providers.stream().map(PackagedContentProvider::getPackId).toList());
+        FlansLog.log.info("Registered {} enabled packaged content pack(s) from {}: {}", providers.size(), modId, providers.stream().map(PackagedContentProvider::getPackId).toList());
     }
 
     static synchronized List<RegisteredModule> getRegisteredModules()

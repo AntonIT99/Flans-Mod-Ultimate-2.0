@@ -42,21 +42,17 @@ if (-not $IdeaHome -or -not (Test-Path "$IdeaHome\bin\inspect.bat"))
     throw 'IntelliJ IDEA not found. Set IDEA_HOME or pass -IdeaHome.'
 }
 
-# Isolated IDE dirs: a second IDE instance cannot share config/system with the running editor.
-$work = Join-Path $root 'build\idea-inspect'
+# Isolated IDE dirs: a second IDE instance cannot share config/system with the running editor or with another
+# inspection run, so every run gets its own directory. Starting from an empty system dir also keeps the headless IDE
+# from inspecting a stale cached file snapshot (VFS) instead of the files on disk.
+$base = Join-Path $root 'build\idea-inspect'
+$work = Join-Path $base "run-$PID"
 $output = Join-Path $work 'out'
 New-Item -ItemType Directory -Force $work | Out-Null
-if (Test-Path $output)
-{
-    Remove-Item -Recurse -Force $output
-}
-# The headless run does not refresh its cached file snapshot (VFS) from disk, so it would inspect stale content,
-# and -changes would shelve and restore that stale content over the working tree. Drop the snapshot every run.
-$vfs = Join-Path $work 'system\caches'
-if (Test-Path $vfs)
-{
-    Remove-Item -Recurse -Force $vfs
-}
+# Runs killed by a timeout cannot clean up after themselves.
+Get-ChildItem $base -Directory -Filter 'run-*' | Where-Object { $_.LastWriteTime -lt (Get-Date).AddHours(-2) } |
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
 $props = Join-Path $work 'idea.properties'
 $cfg = (Join-Path $work 'config') -replace '\\', '/'
 $sys = (Join-Path $work 'system') -replace '\\', '/'
@@ -69,11 +65,12 @@ Set-Content -Encoding ASCII $props @(
 $env:IDEA_PROPERTIES = $props
 
 # inspect.bat -changes shelves and unshelves the working tree, which stages changes and can overwrite them, so changed
-# files come from git instead: each of their directories is inspected and the results are limited to those files.
+# files come from git instead: one run inspects a scope made of their directories and the results are limited to those
+# files. Starting the IDE once per directory would take about half a minute each.
 $changed = $null
 if ($Path)
 {
-    $dirs = @((Resolve-Path (Join-Path $root $Path)).Path)
+    $target = @('-d', (Resolve-Path (Join-Path $root $Path)).Path)
 }
 else
 {
@@ -81,12 +78,29 @@ else
         Where-Object { $_ -match '\.(java|kt)$' -and (Test-Path (Join-Path $root $_)) } | Sort-Object -Unique
     if (-not $changed)
     {
+        Remove-Item -Recurse -Force $work
         'No changed Java or Kotlin files to inspect.'
         return
     }
-    $dirs = @($changed | ForEach-Object { Split-Path (Join-Path $root $_) -Parent } | Sort-Object -Unique)
+    # Scope entries are 'dir/*' (files directly inside) or 'dir//*' (recursive). IntelliJ matches them against the path
+    # below the module content root, which is src/<sourceSet> here; '*' also spans directories, for other layouts.
+    $entries = @($changed | ForEach-Object { (Split-Path $_ -Parent).Replace([char]92, '/') } | Sort-Object -Unique |
+        ForEach-Object { if ($_ -match '^src/[^/]+/(.+)$') { "$($Matches[1])/*" } else { "*/$_/*" } } | Sort-Object -Unique)
+    # A Windows command line is capped at 32767 characters: merge the deepest directories into their parents until
+    # the scope fits.
+    while ((($entries | Measure-Object Length -Sum).Sum + 9 * $entries.Count) -gt 28000)
+    {
+        $depth = ($entries | ForEach-Object { ($_ -split '/').Count } | Measure-Object -Maximum).Maximum
+        if ($depth -le 3)
+        {
+            break
+        }
+        $entries = @($entries | ForEach-Object { if (($_ -split '/').Count -eq $depth) { ($_ -replace '/[^/]+//?\*$', '') + '//*' } else { $_ } } | Sort-Object -Unique)
+        $recursive = @($entries | Where-Object { $_.EndsWith('//*') } | ForEach-Object { $_.Substring(0, $_.Length - 2) })
+        $entries = @($entries | Where-Object { $e = $_; -not ($recursive | Where-Object { $e.StartsWith($_) -and $e -ne "$_/*" }) })
+    }
+    $target = @('-scope', (($entries | ForEach-Object { "file:$_" }) -join '||'))
 }
-
 # The headless IDE may rewrite shared .idea settings (for example codeStyles); put them back afterwards.
 $ideaDir = Join-Path $root '.idea'
 $ideaBackup = @{}
@@ -95,16 +109,15 @@ Get-ChildItem $ideaDir -Recurse -File -Filter '*.xml' | ForEach-Object { $ideaBa
 $log = Join-Path $work 'inspect.log'
 try
 {
-    for ($i = 0; $i -lt $dirs.Count; $i++)
+    $inspectArgs = @($root, (Join-Path $root $Profile), $output, '-v0', '-format', 'json') + $target
+    # inspect.bat is only 'idea.bat inspect'; cmd.exe would read the '||' of the scope as an operator and caps a
+    # command line at 8191 characters, so the launcher is started directly.
+    $argumentLine = (@('inspect') + $inspectArgs | ForEach-Object { '"' + $_ + '"' }) -join ' '
+    $process = Start-Process "$IdeaHome\bin\idea64.exe" -ArgumentList $argumentLine -Wait -PassThru -WindowStyle Hidden -RedirectStandardOutput $log -RedirectStandardError "$log.err"
+    if (-not (Test-Path $output))
     {
-        $runOutput = Join-Path $output $i
-        $inspectArgs = @($root, (Join-Path $root $Profile), $runOutput, '-v0', '-format', 'json', '-d', $dirs[$i])
-        & "$IdeaHome\bin\inspect.bat" @inspectArgs *> $log
-        if (-not (Test-Path $runOutput))
-        {
-            Get-Content $log -Tail 40
-            throw "Inspection of $($dirs[$i]) produced no output (exit code $LASTEXITCODE). Full log: $log"
-        }
+        Get-Content $log, "$log.err" -Tail 40
+        throw "Inspection produced no output (exit code $($process.ExitCode)). Full log: $log"
     }
 }
 finally
@@ -116,8 +129,9 @@ finally
             [IO.File]::WriteAllBytes($entry.Key, $entry.Value)
         }
     }
+    # Indexes and caches are several hundred MB per run; only the report and the log are worth keeping.
+    Remove-Item -Recurse -Force (Join-Path $work 'config'), (Join-Path $work 'system') -ErrorAction SilentlyContinue
 }
-
 $rank = @{ 'ERROR' = 4; 'WARNING' = 3; 'WEAK WARNING' = 2; 'INFORMATION' = 1 }
 $min = $rank[$MinSeverity.ToUpper()]
 $problems = foreach ($file in Get-ChildItem $output -Recurse -Filter '*.json')
@@ -170,5 +184,7 @@ else
     {
         "$($p.file):$($p.line): [$($p.severity)] $($p.inspection): $($p.message)"
     }
-    "$($problems.Count) problem(s). Raw report: $output"
+    "$($problems.Count) problem(s)."
 }
+
+Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue

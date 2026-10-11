@@ -64,7 +64,7 @@ public record GunReloader(GunItem item)
         // Digital ammo system: check if enabled and try to use it
         if (ModCommonConfig.get().enableDigitalAmmoSystem())
         {
-            List<ReloadPlan> digitalPlans = computeDigitalAmmoPlansWithCheck(level, player, gunStack, allowed, forceReload);
+            List<ReloadPlan> digitalPlans = computeDigitalAmmoPlansWithCheck(level, player, gunStack, forceReload);
             if (!digitalPlans.isEmpty())
             {
                 long ticks = (long) Math.ceil(reloadTime);
@@ -88,7 +88,7 @@ public record GunReloader(GunItem item)
 
     private boolean loadDefaultAmmo(Level level, ItemStack gunStack)
     {
-        ItemStack ammo = item.getConfigType().getDefaultAmmo().flatMap(type -> ModUtils.getItemStack(type)).orElse(ItemStack.EMPTY);
+        ItemStack ammo = item.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack).orElse(ItemStack.EMPTY);
         if (ammo.isEmpty())
             return false;
         ItemStack stackToLoad = ammo.copy();
@@ -213,24 +213,7 @@ public record GunReloader(GunItem item)
         DigitalAmmoHelper.tryReloadFromDigitalAmmo(player, gunItem, actualGunStack, ammoSlots);
     }
 
-    private List<ReloadPlan> computeDigitalAmmoPlans(ItemStack gunStack, List<ShootableType> allowedAmmoTypes, boolean forceReload, HolderLookup.Provider registries)
-    {
-        int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
-        List<ReloadPlan> plans = new ArrayList<>(ammoSlots);
-
-        for (int i = 0; i < ammoSlots; i++)
-        {
-            ItemStack current = item.getAmmoItemStack(gunStack, i, registries);
-            if (!needsSwap(current, forceReload))
-                continue;
-
-            plans.add(new ReloadPlan(i, -1));
-        }
-
-        return plans;
-    }
-
-    private List<ReloadPlan> computeDigitalAmmoPlansWithCheck(Level level, ServerPlayer player, ItemStack gunStack, List<ShootableType> allowedAmmoTypes, boolean forceReload)
+    private List<ReloadPlan> computeDigitalAmmoPlansWithCheck(Level level, ServerPlayer player, ItemStack gunStack, boolean forceReload)
     {
         int ammoSlots = item.getConfigType().getNumAmmoItemsInGun(gunStack);
         List<ReloadPlan> plans = new ArrayList<>(ammoSlots);

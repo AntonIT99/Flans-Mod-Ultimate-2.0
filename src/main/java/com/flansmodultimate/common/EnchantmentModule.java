@@ -14,14 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
@@ -317,7 +311,7 @@ public final class EnchantmentModule
         }
     }
 
-    private static abstract class OffHandDamageEnchantment extends OffHandEnchantment
+    private abstract static class OffHandDamageEnchantment extends OffHandEnchantment
     {
         protected OffHandDamageEnchantment()
         {
@@ -337,7 +331,7 @@ public final class EnchantmentModule
         }
     }
 
-    private static abstract class OffHandEnchantment extends Enchantment
+    private abstract static class OffHandEnchantment extends Enchantment
     {
         private final boolean glovesOnly;
 

@@ -8,6 +8,8 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 /** Reusable ordered submission buffer, independent of OpenGL so transitions can be tested. */
+// Render diagnostics counters and renderer state are deliberately global.
+@SuppressWarnings("java:S2696")
 final class RigidBatch implements RigidGeometryConsumer
 {
     interface Backend
@@ -47,8 +49,12 @@ final class RigidBatch implements RigidGeometryConsumer
     /** Pose source shared by every part-composed pose. */
     private static final Object COMPOSED = new Object();
     private Object lastSource;
-    private int lastLight, lastOverlay;
-    private float lastRed, lastGreen, lastBlue, lastAlpha;
+    private int lastLight;
+    private int lastOverlay;
+    private float lastRed;
+    private float lastGreen;
+    private float lastBlue;
+    private float lastAlpha;
     private Backend backend;
     private VertexConsumer fallback;
     private boolean needsBarrier;
@@ -98,8 +104,7 @@ final class RigidBatch implements RigidGeometryConsumer
     }
 
     @Override
-    public void submitCached(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue,
-        float alpha, boolean visible)
+    public void submitCached(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
     {
         submit(geometry, identityHash, vertexCount, pose, pose, light, overlay, red, green, blue, alpha, visible);
     }
@@ -109,8 +114,10 @@ final class RigidBatch implements RigidGeometryConsumer
      * the same pose source. Equal values from different stack entries are a coincidence of the current angles
      * (a turret at exactly zero yaw equals its hull) and would otherwise change the mesh as those angles move.
      */
-    private void submit(RigidGeometry geometry, int identityHash, int vertices, PoseStack.Pose pose, Object source, int light, int overlay, float red, float green, float blue,
-        float alpha, boolean visible)
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
+    private void submit(RigidGeometry geometry, int identityHash, int vertices, PoseStack.Pose pose, Object source, int light, int overlay, float red, float green, float blue, float alpha,
+        boolean visible)
     {
         // Split before exceeding the per-tick upload cap, so larger merged batches
         // cannot become permanently uncacheable. A single oversized part still falls back.
@@ -123,8 +130,8 @@ final class RigidBatch implements RigidGeometryConsumer
                 RenderDiagnostics.culledParts++;
         }
         ranges.add(vertices, visible);
-        if (paletteCount != 0 && lastSource == source && lastLight == light && lastOverlay == overlay && lastRed == red && lastGreen == green && lastBlue == blue
-            && lastAlpha == alpha && matchesLastPalette(pose))
+        if (paletteCount != 0 && lastSource == source && lastLight == light && lastOverlay == overlay && lastRed == red && lastGreen == green && lastBlue == blue && lastAlpha == alpha
+            && matchesLastPalette(pose))
         {
             key.add(geometry, identityHash, paletteCount - 1);
             vertexCount += vertices;
@@ -198,15 +205,14 @@ final class RigidBatch implements RigidGeometryConsumer
         Matrix4f m = pose.pose();
         float[] p = poses;
         int o = (paletteCount - 1) * 16;
-        if (p[o + 12] != m.m30() || p[o + 13] != m.m31() || p[o + 14] != m.m32() || p[o] != m.m00() || p[o + 1] != m.m01() || p[o + 2] != m.m02() || p[o + 3] != m.m03()
-            || p[o + 4] != m.m10() || p[o + 5] != m.m11() || p[o + 6] != m.m12() || p[o + 7] != m.m13() || p[o + 8] != m.m20() || p[o + 9] != m.m21() || p[o + 10] != m.m22()
-            || p[o + 11] != m.m23() || p[o + 15] != m.m33())
+        if (p[o + 12] != m.m30() || p[o + 13] != m.m31() || p[o + 14] != m.m32() || p[o] != m.m00() || p[o + 1] != m.m01() || p[o + 2] != m.m02() || p[o + 3] != m.m03() || p[o + 4] != m.m10()
+            || p[o + 5] != m.m11() || p[o + 6] != m.m12() || p[o + 7] != m.m13() || p[o + 8] != m.m20() || p[o + 9] != m.m21() || p[o + 10] != m.m22() || p[o + 11] != m.m23() || p[o + 15] != m.m33())
             return false;
         Matrix3f n = pose.normal();
         float[] q = normals;
         int i = (paletteCount - 1) * 9;
-        return q[i] == n.m00() && q[i + 1] == n.m01() && q[i + 2] == n.m02() && q[i + 3] == n.m10() && q[i + 4] == n.m11() && q[i + 5] == n.m12() && q[i + 6] == n.m20()
-            && q[i + 7] == n.m21() && q[i + 8] == n.m22();
+        return q[i] == n.m00() && q[i + 1] == n.m01() && q[i + 2] == n.m02() && q[i + 3] == n.m10() && q[i + 4] == n.m11() && q[i + 5] == n.m12() && q[i + 6] == n.m20() && q[i + 7] == n.m21()
+            && q[i + 8] == n.m22();
     }
 
     void flush()
@@ -246,11 +252,11 @@ final class RigidBatch implements RigidGeometryConsumer
                             continue;
                         if (RenderDiagnostics.enabled)
                             RenderDiagnostics.fallbackVertices += key.geometries[i].vertexCount();
-                        int palette = key.paletteIndices[i];
-                        int offset = palette * 16;
+                        int paletteIndex = key.paletteIndices[i];
+                        int offset = paletteIndex * 16;
                         fallbackPose.pose().set(poses, offset);
-                        offset = palette * 8;
-                        int normalOffset = palette * 9;
+                        offset = paletteIndex * 8;
+                        int normalOffset = paletteIndex * 9;
                         fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2], normals[normalOffset + 3], normals[normalOffset + 4],
                             normals[normalOffset + 5], normals[normalOffset + 6], normals[normalOffset + 7], normals[normalOffset + 8]);
                         int light = (int) data[offset + 4] | (int) data[offset + 5] << 16;

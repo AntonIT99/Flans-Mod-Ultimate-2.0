@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModCommonConfig
 {
+    private static final String SECTION_TEAMS = "Teams Settings";
     public static final ForgeConfigSpec configSpec;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
@@ -233,7 +234,11 @@ public final class ModCommonConfig
     private static final Supplier<Double> BLOCK_PENETRATION_MODIFIER;
     private static final Supplier<Double> KINETIC_PENETRATION_REFERENCE;
 
+    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> PENETRABLE_BLOCKS_RAW;
+    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> FLUID_FUELS_RAW;
     /**
      * BuildCraft's refined fuels carry roughly twice the energy of the crude oil they come
@@ -245,11 +250,17 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DIGITAL_AMMO_DEFAULT_AMOUNT;
     private static final Supplier<Integer> DIGITAL_AMMO_MAX_AMOUNT;
     private static final Supplier<Integer> DIGITAL_AMMO_NUM_TYPES;
+    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
     private static final Supplier<Integer> DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
+    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSION_GRAVITY_FACTORS;
+    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
@@ -333,7 +344,7 @@ public final class ModCommonConfig
         SHOW_DISTANCE_IN_KILL_MESSAGE = builder.comment("Include the distance between the killer and the victim in Flan's Mod death messages.").define("showDistanceInKillMessage", true);
         builder.pop();
 
-        builder.push("Teams Settings");
+        builder.push(SECTION_TEAMS);
         BULLET_SNAPSHOT_MIN = builder.comment("Lag compensation: number of player snapshots (ticks) every bullet rewinds its targets by, before the shooter's ping is considered.",
             "A bullet uses the snapshot bulletSnapshotMin + ping / bulletSnapshotDivisor. Can also be changed in game with /teams admin bltss.").defineInRange("bulletSnapshotMin", 0, 0, 100);
         BULLET_SNAPSHOT_DIVISOR = builder.comment("Lag compensation: milliseconds of shooter ping per additional snapshot of rewind. 0 ignores the shooter's ping.")
@@ -1156,8 +1167,8 @@ public final class ModCommonConfig
     /** Persists both lag compensation values, as {@code /teams admin bltss} does. Server thread only. */
     public static boolean setBulletSnapshot(int min, int divisor)
     {
-        boolean changed = setRuntimeValue(List.of("Teams Settings", "bulletSnapshotMin"), min);
-        return setRuntimeValue(List.of("Teams Settings", "bulletSnapshotDivisor"), divisor) || changed;
+        boolean changed = setRuntimeValue(List.of(SECTION_TEAMS, "bulletSnapshotMin"), min);
+        return setRuntimeValue(List.of(SECTION_TEAMS, "bulletSnapshotDivisor"), divisor) || changed;
     }
 
     public static EnumPlayerAimPose playerAimPose()

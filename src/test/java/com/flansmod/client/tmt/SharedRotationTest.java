@@ -26,7 +26,8 @@ class SharedRotationTest
                     // Two parts sharing the angles, as an animated array does; the second reuses the rotation.
                     for (int copy = 0; copy < 2; copy++)
                     {
-                        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 64, 64);
+                        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+                        {}, 0, 0, 64, 64);
                         part.addBox(-1, -2, -3, 2, 4, 6);
                         part.setRotationPoint(3 + copy, -2, 5);
                         part.offsetX = 0.25F;
@@ -45,11 +46,16 @@ class SharedRotationTest
                         expected.mulPose(Axis.YP.rotation(0.4F));
                         expected.translate(part.offsetX, part.offsetY, part.offsetZ);
                         expected.translate(part.rotationPointX * 0.0625F * scale, part.rotationPointY * 0.0625F * scale, part.rotationPointZ * 0.0625F * scale);
-                        if (!oldRotateOrder && angle[1] != 0) expected.mulPose(Axis.YP.rotation(angle[1]));
-                        if (angle[2] != 0) expected.mulPose(Axis.ZP.rotation(oldRotateOrder ? -angle[2] : angle[2]));
-                        if (oldRotateOrder && angle[1] != 0) expected.mulPose(Axis.YP.rotation(-angle[1]));
-                        if (angle[0] != 0) expected.mulPose(Axis.XP.rotation(angle[0]));
-                        if (scale != 1) expected.scale(scale, scale, scale);
+                        if (!oldRotateOrder && angle[1] != 0)
+                            expected.mulPose(Axis.YP.rotation(angle[1]));
+                        if (angle[2] != 0)
+                            expected.mulPose(Axis.ZP.rotation(oldRotateOrder ? -angle[2] : angle[2]));
+                        if (oldRotateOrder && angle[1] != 0)
+                            expected.mulPose(Axis.YP.rotation(-angle[1]));
+                        if (angle[0] != 0)
+                            expected.mulPose(Axis.XP.rotation(angle[0]));
+                        if (scale != 1)
+                            expected.scale(scale, scale, scale);
                         Recording reference = new Recording();
                         for (TexturedPolygon face : part.getRenderPolygons())
                             face.draw(expected.last(), reference, 0, 0, 1, 1, 1, 1);
@@ -64,16 +70,60 @@ class SharedRotationTest
     private static final class Recording implements VertexConsumer
     {
         final List<float[]> vertices = new ArrayList<>();
-        @Override public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
-        { vertices.add(new float[]{x, y, z, u, v, nx, ny, nz}); }
-        @Override public VertexConsumer vertex(double x, double y, double z) { throw new AssertionError(); }
-        @Override public VertexConsumer color(int r, int g, int b, int a) { throw new AssertionError(); }
-        @Override public VertexConsumer uv(float u, float v) { throw new AssertionError(); }
-        @Override public VertexConsumer overlayCoords(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer uv2(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer normal(float x, float y, float z) { throw new AssertionError(); }
-        @Override public void endVertex() { throw new AssertionError(); }
-        @Override public void defaultColor(int r, int g, int b, int a) {}
-        @Override public void unsetDefaultColor() {}
+        @Override
+        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
+        {
+            vertices.add(new float[]{x, y, z, u, v, nx, ny, nz});
+        }
+
+        @Override
+        public VertexConsumer vertex(double x, double y, double z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void endVertex()
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a)
+        { /* Not needed by this test. */ }
+
+        @Override
+        public void unsetDefaultColor()
+        { /* Not needed by this test. */ }
     }
 }

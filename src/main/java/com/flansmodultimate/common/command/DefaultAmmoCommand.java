@@ -127,9 +127,7 @@ public final class DefaultAmmoCommand
         if (vehicle instanceof DeployedGun gun && gun.getConfigType() != null)
             return source(gun.getConfigType().getName(), defaultAmmo(gun.getConfigType().getDefaultAmmo()));
 
-        Driveable driveable = vehicle instanceof Driveable direct
-            ? direct
-            : vehicle instanceof Seat seat ? seat.getDriveable() : vehicle != null && vehicle.getVehicle() instanceof Driveable parent ? parent : null;
+        Driveable driveable = Driveable.ofRiddenEntity(vehicle);
         if (driveable == null || driveable.getConfigType() == null || driveable.getDriveableData() == null)
             return null;
         return source(driveable.getConfigType().getName(), DriveableAmmoLoader.defaultAmmo(driveable.getConfigType(), driveable.getDriveableData()));

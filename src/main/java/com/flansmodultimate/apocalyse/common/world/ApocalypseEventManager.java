@@ -128,7 +128,7 @@ public final class ApocalypseEventManager
         NukeDropEntity nuke = new NukeDropEntity(ApocalypseContent.nukeDrop.get(), level);
         double x = mecha.getX() + level.random.nextGaussian() * NUKE_SPREAD;
         double z = mecha.getZ() + level.random.nextGaussian() * NUKE_SPREAD;
-        nuke.moveTo(x, level.getMaxBuildHeight() - 1, z, 0F, 0F);
+        nuke.moveTo(x, level.getMaxBuildHeight() - 1D, z, 0F, 0F);
         level.addFreshEntity(nuke);
     }
 

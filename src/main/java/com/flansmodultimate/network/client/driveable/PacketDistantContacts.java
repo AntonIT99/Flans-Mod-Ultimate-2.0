@@ -30,6 +30,8 @@ public class PacketDistantContacts implements IClientPacket
      * One distant driveable. Angles are the driveable's own yaw, pitch and roll in degrees, in the legacy model
      * basis; velocity is in blocks per tick.
      */
+    // Plain data carrier that is never compared or used as a key.
+    @SuppressWarnings("java:S6218")
     public record Contact(int entityId, String shortName, int paintjobId, double x, double y, double z, float velocityX, float velocityY, float velocityZ, float yaw, float pitch, float roll,
         int[] destroyedParts)
     {}

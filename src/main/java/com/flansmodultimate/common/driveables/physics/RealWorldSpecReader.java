@@ -3,15 +3,14 @@ package com.flansmodultimate.common.driveables.physics;
 import com.flansmodultimate.common.types.TypeFile;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Reads the optional {@code Real*} keys and their unprefixed, unit-specific
  * aliases, plus {@code DriveType}, out of a legacy type file.
  *
- * <p>Two properties matter here. First, the reader touches no key that already
+ * <p>
+ * Two properties matter here. First, the reader touches no key that already
  * existed, so legacy parsing is bit-for-bit unchanged. Second, it never logs
  * directly: malformed values are collected as warning strings and handed back to
  * the caller. That keeps the class free of any dependency on the mod class and
@@ -20,6 +19,8 @@ import java.util.Locale;
  */
 public final class RealWorldSpecReader
 {
+    private static final String UNIT_METRES = "metres";
+
     // Common keys.
     public static final String KEY_MASS = "RealMassKg";
     public static final String KEY_MAX_SPEED = "RealMaxSpeedKmh";
@@ -50,7 +51,8 @@ public final class RealWorldSpecReader
     public static final String KEY_MAX_SPEED_KNOTS = "RealMaxSpeedKn";
     public static final String KEY_MAX_REVERSE_SPEED_KNOTS = "RealMaxReverseSpeedKn";
 
-    private RealWorldSpecReader() {}
+    private RealWorldSpecReader()
+    {}
 
     /**
      * The parsed specification plus any warnings the caller should surface.
@@ -80,27 +82,18 @@ public final class RealWorldSpecReader
         Float enginePowerKw = readEnginePowerKw(file, warnings);
         Float engineThrustKn = readPositive(file, KEY_ENGINE_THRUST, warnings, "kilonewtons");
 
-        RealWorldVehicleSpec.Aircraft aircraft = new RealWorldVehicleSpec.Aircraft(
-            readPositive(file, KEY_WING_SPAN, warnings, "metres"),
-            readPositive(file, KEY_WING_AREA, warnings, "square metres"),
-            readPositive(file, KEY_CLIMB_RATE, warnings, "metres per second"),
-            readPositive(file, KEY_ROTOR_DIAMETER, warnings, "metres"),
-            readRotorCount(file, warnings),
-            readPositive(file, KEY_AIR_BRAKE_AREA, warnings, "square metres"));
+        RealWorldVehicleSpec.Aircraft aircraft = new RealWorldVehicleSpec.Aircraft(readPositive(file, KEY_WING_SPAN, warnings, UNIT_METRES),
+            readPositive(file, KEY_WING_AREA, warnings, "square metres"), readPositive(file, KEY_CLIMB_RATE, warnings, "metres per second"),
+            readPositive(file, KEY_ROTOR_DIAMETER, warnings, UNIT_METRES), readRotorCount(file, warnings), readPositive(file, KEY_AIR_BRAKE_AREA, warnings, "square metres"));
 
-        RealWorldVehicleSpec.Ground ground = new RealWorldVehicleSpec.Ground(
-            readDriveType(file, warnings),
-            readMaxReverseSpeedKmh(file, warnings));
+        RealWorldVehicleSpec.Ground ground = new RealWorldVehicleSpec.Ground(readDriveType(file, warnings), readMaxReverseSpeedKmh(file, warnings));
 
-        RealWorldVehicleSpec.Marine marine = new RealWorldVehicleSpec.Marine(
-            readPositive(file, KEY_DRAFT, warnings, "metres"));
+        RealWorldVehicleSpec.Marine marine = new RealWorldVehicleSpec.Marine(readPositive(file, KEY_DRAFT, warnings, UNIT_METRES));
 
-        RealWorldVehicleSpec spec = new RealWorldVehicleSpec(
-            massKg, maxSpeedKmh, enginePowerKw, engineThrustKn, aircraft, ground, marine);
+        RealWorldVehicleSpec spec = new RealWorldVehicleSpec(massKg, maxSpeedKmh, enginePowerKw, engineThrustKn, aircraft, ground, marine);
 
         if (VehiclePhysicsUnits.isUsablePositive(enginePowerKw) && VehiclePhysicsUnits.isUsablePositive(engineThrustKn))
-            warnings.add("Both " + KEY_ENGINE_POWER + " and " + KEY_ENGINE_THRUST
-                + " are set; thrust is used for aircraft and power for everything else");
+            warnings.add("Both " + KEY_ENGINE_POWER + " and " + KEY_ENGINE_THRUST + " are set; thrust is used for aircraft and power for everything else");
 
         return new Result(spec, warnings);
     }
@@ -123,8 +116,7 @@ public final class RealWorldSpecReader
         }
         if (!VehiclePhysicsUnits.isUsablePositive(value))
         {
-            warnings.add(key + " must be a finite value greater than zero in " + unit
-                + " but was '" + raw + "'; ignoring it");
+            warnings.add(key + " must be a finite value greater than zero in " + unit + " but was '" + raw + "'; ignoring it");
             return null;
         }
         return value;
@@ -223,8 +215,7 @@ public final class RealWorldSpecReader
         EnumDriveType parsed = EnumDriveType.parse(raw);
         if (parsed == null)
         {
-            warnings.add(KEY_DRIVE_TYPE + " '" + raw + "' is not one of "
-                + String.join(", ", names()) + "; falling back to the legacy drive layout");
+            warnings.add(KEY_DRIVE_TYPE + " '" + raw + "' is not one of " + String.join(", ", names()) + "; falling back to the legacy drive layout");
             return null;
         }
         return parsed;
@@ -288,13 +279,9 @@ public final class RealWorldSpecReader
     /** Lower-cased key list, used by the debug command to echo what a pack declared. */
     public static List<String> allKeys()
     {
-        return List.of(KEY_MASS, KEY_MAX_SPEED, KEY_ENGINE_POWER, KEY_ENGINE_POWER_HP, KEY_ENGINE_POWER_PS,
-            KEY_ENGINE_THRUST, KEY_WING_SPAN, KEY_WING_AREA, KEY_CLIMB_RATE,
-            KEY_AIR_BRAKE_AREA,
-            KEY_ROTOR_DIAMETER, KEY_ROTOR_COUNT,
-            KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_DRAFT,
-            KEY_DISPLACEMENT_TONNES, KEY_DISPLACEMENT_LONG_TONS,
-            KEY_MAX_SPEED_KNOTS, KEY_MAX_REVERSE_SPEED_KNOTS);
+        return List.of(KEY_MASS, KEY_MAX_SPEED, KEY_ENGINE_POWER, KEY_ENGINE_POWER_HP, KEY_ENGINE_POWER_PS, KEY_ENGINE_THRUST, KEY_WING_SPAN, KEY_WING_AREA, KEY_CLIMB_RATE, KEY_AIR_BRAKE_AREA,
+            KEY_ROTOR_DIAMETER, KEY_ROTOR_COUNT, KEY_DRIVE_TYPE, KEY_MAX_REVERSE_SPEED, KEY_DRAFT, KEY_DISPLACEMENT_TONNES, KEY_DISPLACEMENT_LONG_TONS, KEY_MAX_SPEED_KNOTS,
+            KEY_MAX_REVERSE_SPEED_KNOTS);
     }
 
     /** Normalised form used when matching keys case-insensitively. */

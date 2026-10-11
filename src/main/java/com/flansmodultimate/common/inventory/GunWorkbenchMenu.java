@@ -14,9 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
@@ -59,8 +57,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     private ItemStack lastGunStack = ItemStack.EMPTY;
     private boolean busy = false;
 
-    private static final String[] SPECIFIC_TAGS = {GunItem.NBT_BARREL, GunItem.NBT_SCOPE, GunItem.NBT_STOCK, GunItem.NBT_GRIP, GunItem.NBT_GADGET, GunItem.NBT_SLIDE,
-        GunItem.NBT_PUMP, GunItem.NBT_ACCESSORY};
+    private static final String[] SPECIFIC_TAGS = {GunItem.NBT_BARREL, GunItem.NBT_SCOPE, GunItem.NBT_STOCK, GunItem.NBT_GRIP, GunItem.NBT_GADGET, GunItem.NBT_SLIDE, GunItem.NBT_PUMP,
+        GunItem.NBT_ACCESSORY};
 
     public GunWorkbenchMenu(int id, Inventory playerInv, BlockPos blockPos)
     {
@@ -151,13 +149,10 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
             if (isGun(fromStack))
             {
                 Slot gunSlot = slots.get(SLOT_GUN);
-                if (!gunSlot.hasItem())
+                if (!gunSlot.hasItem() && moveItemStackTo(fromStack, SLOT_GUN, SLOT_GUN + 1, false))
                 {
-                    if (moveItemStackTo(fromStack, SLOT_GUN, SLOT_GUN + 1, false))
-                    {
-                        from.setChanged();
-                        return copy;
-                    }
+                    from.setChanged();
+                    return copy;
                 }
             }
 

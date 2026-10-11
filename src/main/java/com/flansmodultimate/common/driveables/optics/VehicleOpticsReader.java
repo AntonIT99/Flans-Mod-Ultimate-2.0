@@ -7,10 +7,13 @@ import com.flansmodultimate.common.types.TypeFile;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /** Reads the Krishna optics syntax in source order, including aliases and repeated last-wins values. */
 public final class VehicleOpticsReader
 {
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+
     private VehicleOpticsReader()
     {}
 
@@ -24,7 +27,7 @@ public final class VehicleOpticsReader
             String trimmed = line.trim();
             if (trimmed.isEmpty() || trimmed.startsWith("//"))
                 continue;
-            String[] s = trimmed.split("\\s+");
+            String[] s = WHITESPACE.split(trimmed);
             String key = s[0].toLowerCase(Locale.ROOT);
             try
             {
@@ -113,7 +116,9 @@ public final class VehicleOpticsReader
 
     private static Vector3f vector(String[] s, int offset)
     {
-        float x = Float.parseFloat(s[offset]), y = Float.parseFloat(s[offset + 1]), z = Float.parseFloat(s[offset + 2]);
+        float x = Float.parseFloat(s[offset]);
+        float y = Float.parseFloat(s[offset + 1]);
+        float z = Float.parseFloat(s[offset + 2]);
         if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z))
             throw new IllegalArgumentException("Non-finite optics camera position");
         return new Vector3f(x / 16F, y / 16F, z / 16F);

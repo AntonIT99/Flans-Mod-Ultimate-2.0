@@ -47,10 +47,11 @@ import static com.flansmodultimate.platform.client.KeyContexts.mouseKey;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class KeyInputHandler
 {
-    private static final String CATEGORY_GENERAL = "key.categories." + FlansMod.MOD_ID + ".general";
-    private static final String CATEGORY_DRIVEABLES = "key.categories." + FlansMod.MOD_ID + ".driveables";
-    private static final String CATEGORY_VEHICLES = "key.categories." + FlansMod.MOD_ID + ".vehicles";
-    private static final String CATEGORY_PLANES = "key.categories." + FlansMod.MOD_ID + ".planes";
+    private static final String KEY_CATEGORY_PREFIX = "key.categories.";
+    private static final String CATEGORY_GENERAL = KEY_CATEGORY_PREFIX + FlansMod.MOD_ID + ".general";
+    private static final String CATEGORY_DRIVEABLES = KEY_CATEGORY_PREFIX + FlansMod.MOD_ID + ".driveables";
+    private static final String CATEGORY_VEHICLES = KEY_CATEGORY_PREFIX + FlansMod.MOD_ID + ".vehicles";
+    private static final String CATEGORY_PLANES = KEY_CATEGORY_PREFIX + FlansMod.MOD_ID + ".planes";
     private static final int INPUT_KEEPALIVE_TICKS = 5;
     private static final float AIM_CHANGE_EPSILON = 0.1F;
     private static final float FLIGHT_CONTROL_EPSILON = 0.005F;
@@ -281,7 +282,8 @@ public final class KeyInputHandler
         if (!driving)
             return;
 
-        List<KeyMapping> claimed = driveable instanceof Plane ? AIRCRAFT_BINDS : driveable instanceof Vehicle ? VEHICLE_BINDS : GROUND_BINDS;
+        List<KeyMapping> surfaceBinds = driveable instanceof Vehicle ? VEHICLE_BINDS : GROUND_BINDS;
+        List<KeyMapping> claimed = driveable instanceof Plane ? AIRCRAFT_BINDS : surfaceBinds;
         for (KeyMapping vanilla : claimableVanillaActions())
         {
             boolean alwaysReserved = vanilla == mc.options.keyInventory || vanilla == mc.options.keyDrop;

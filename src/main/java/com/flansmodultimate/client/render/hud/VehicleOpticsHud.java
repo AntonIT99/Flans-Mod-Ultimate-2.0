@@ -106,12 +106,13 @@ public final class VehicleOpticsHud
         }
         float bearing = Mth.positiveModulo(mc.gameRenderer.getMainCamera().getYRot() + 180F, 360F);
         double speed = seat.getDriveable().getDeltaMovement().horizontalDistance() * 72D;
-        String[] values = {rangeCleared ? "0" : range < 0 ? "----" : String.format(Locale.ROOT, rangeApproximate ? "~%.0f" : "%.0f", range), String.format(Locale.ROOT, "%.0f km/h", speed),
-            String.format(Locale.ROOT, "%.0f°", Mth.wrapDegrees(seat.getViewAimYaw(partialTick))), String.format(Locale.ROOT, "%03.0f°", bearing),
-            String.format(Locale.ROOT, "%+.0f°", -seat.getViewAimPitch())};
+        String rangeFormat = rangeApproximate ? "~%.0f" : "%.0f";
+        String rangeText = range < 0 ? "----" : String.format(Locale.ROOT, rangeFormat, range);
+        String[] values = {rangeCleared ? "0" : rangeText, String.format(Locale.ROOT, "%.0f km/h", speed), String.format(Locale.ROOT, "%.0f°", Mth.wrapDegrees(seat.getViewAimYaw(partialTick))),
+            String.format(Locale.ROOT, "%03.0f°", bearing), String.format(Locale.ROOT, "%+.0f°", -seat.getViewAimPitch())};
         float scale = hud.scale(sight);
         int color = hud.color(sight) | 0xFF000000;
-        for (int i = 0; i < OpticsHud.ELEMENTS.length; i++)
+        for (int i = 0; i < OpticsHud.ELEMENT_NAMES.size(); i++)
         {
             if (i == 4 && !hud.isElevationIndicator())
                 continue;

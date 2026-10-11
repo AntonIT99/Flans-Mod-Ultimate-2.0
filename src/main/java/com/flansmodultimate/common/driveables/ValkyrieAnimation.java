@@ -5,9 +5,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * The articulated skeleton that 1.7.10 drove for planes with {@code Valkyrie true}
@@ -50,39 +48,39 @@ public final class ValkyrieAnimation
     public ValkyrieAnimation()
     {
         // Joint positions and parents exactly as AnimationController.initAnim().
-        addPart(11F, -34.5F, 0F, -1);      // 0 core
-        addPart(6F, -34.5F, 0F, 0);        // 1 mid front
-        addPart(-25F, -34.5F, 0F, 1);      // 2 nose
-        addPart(-9F, -25F, -13.5F, 0);     // 3 left leg top
-        addPart(6F, -23F, -21.5F, 3);      // 4 left leg mid
-        addPart(34F, -21.5F, -21.5F, 4);   // 5 left leg shin
-        addPart(-9F, -25F, 13.5F, 0);      // 6 right leg top
-        addPart(6F, -23F, 21.5F, 6);       // 7 right leg mid
-        addPart(34F, -21.5F, 21.5F, 7);    // 8 right leg shin
-        addPart(6F, -33F, 0F, 0);          // 9 rear body
-        addPart(43F, -38.5F, 0F, 9);       // 10 tail mid
-        addPart(60F, -40F, -14.5F, 10);    // 11 fin left
-        addPart(60F, -40F, 14.5F, 10);     // 12 fin right
-        addPart(10F, -36.5F, -17F, 9);     // 13 left wing
-        addPart(10F, -36.5F, 17F, 9);      // 14 right wing
-        addPart(39F, -13F, -21.5F, 5);     // 15 left knee
-        addPart(119F, -23F, -21.5F, 5);    // 16 left foot top
-        addPart(119F, -23F, -21.5F, 5);    // 17 left foot bottom
-        addPart(39F, -13F, 21.5F, 8);      // 18 right knee
-        addPart(119F, -23F, 21.5F, 8);     // 19 right foot top
-        addPart(119F, -23F, 21.5F, 8);     // 20 right foot bottom
-        addPart(-17F, -33F, 0F, 2);        // 21 head
-        addPart(-15F, -23F, 0F, 21);       // 22 head guns
-        addPart(17F, -31F, -7F, 0);        // 23 left shoulder
-        addPart(22F, -20.5F, -7F, 23);     // 24 left shoulder joint
-        addPart(33F, -20.5F, -7F, 24);     // 25 left upper arm
-        addPart(68F, -19.5F, -7F, 25);     // 26 left lower arm
-        addPart(69F, -21.5F, -7F, 26);     // 27 left hand
-        addPart(17F, -31F, 7F, 0);         // 28 right shoulder
-        addPart(22F, -20.5F, 7F, 28);      // 29 right shoulder joint
-        addPart(33F, -20.5F, 7F, 29);      // 30 right upper arm
-        addPart(68F, -19.5F, 7F, 30);      // 31 right lower arm
-        addPart(69F, -21.5F, 7F, 31);      // 32 right hand
+        addPart(11F, -34.5F, 0F, -1); // 0 core
+        addPart(6F, -34.5F, 0F, 0); // 1 mid front
+        addPart(-25F, -34.5F, 0F, 1); // 2 nose
+        addPart(-9F, -25F, -13.5F, 0); // 3 left leg top
+        addPart(6F, -23F, -21.5F, 3); // 4 left leg mid
+        addPart(34F, -21.5F, -21.5F, 4); // 5 left leg shin
+        addPart(-9F, -25F, 13.5F, 0); // 6 right leg top
+        addPart(6F, -23F, 21.5F, 6); // 7 right leg mid
+        addPart(34F, -21.5F, 21.5F, 7); // 8 right leg shin
+        addPart(6F, -33F, 0F, 0); // 9 rear body
+        addPart(43F, -38.5F, 0F, 9); // 10 tail mid
+        addPart(60F, -40F, -14.5F, 10); // 11 fin left
+        addPart(60F, -40F, 14.5F, 10); // 12 fin right
+        addPart(10F, -36.5F, -17F, 9); // 13 left wing
+        addPart(10F, -36.5F, 17F, 9); // 14 right wing
+        addPart(39F, -13F, -21.5F, 5); // 15 left knee
+        addPart(119F, -23F, -21.5F, 5); // 16 left foot top
+        addPart(119F, -23F, -21.5F, 5); // 17 left foot bottom
+        addPart(39F, -13F, 21.5F, 8); // 18 right knee
+        addPart(119F, -23F, 21.5F, 8); // 19 right foot top
+        addPart(119F, -23F, 21.5F, 8); // 20 right foot bottom
+        addPart(-17F, -33F, 0F, 2); // 21 head
+        addPart(-15F, -23F, 0F, 21); // 22 head guns
+        addPart(17F, -31F, -7F, 0); // 23 left shoulder
+        addPart(22F, -20.5F, -7F, 23); // 24 left shoulder joint
+        addPart(33F, -20.5F, -7F, 24); // 25 left upper arm
+        addPart(68F, -19.5F, -7F, 25); // 26 left lower arm
+        addPart(69F, -21.5F, -7F, 26); // 27 left hand
+        addPart(17F, -31F, 7F, 0); // 28 right shoulder
+        addPart(22F, -20.5F, 7F, 28); // 29 right shoulder joint
+        addPart(33F, -20.5F, 7F, 29); // 30 right upper arm
+        addPart(68F, -19.5F, 7F, 30); // 31 right lower arm
+        addPart(69F, -21.5F, 7F, 31); // 32 right hand
     }
 
     private void addPart(float x, float y, float z, int parent)
@@ -245,77 +243,44 @@ public final class ValkyrieAnimation
         }
     }
 
+    // Plain data carrier that is never compared or used as a key.
+    @SuppressWarnings("java:S6218")
     private record Pose(Component[] components)
     {
-        private record Component(Vector3f position, Vector3f rotation, float positionRate, float rotationRate) {}
+        private record Component(Vector3f position, Vector3f rotation, float positionRate, float rotationRate)
+        {}
     }
 
     /** Pose data from AnimationController.addDefaultPose() and addGERWALKPose() to addGERWALK4(). */
     private static Pose[] createPoses()
     {
-        PoseBuilder fighter = new PoseBuilder()
-            .rates(LEFT_LEG_SHIN, 2, 4).rates(RIGHT_LEG_SHIN, 2, 4)
-            .rates(10, 2, 12).rates(11, 2, 4).rates(12, 2, 4)
-            .set(13, 0, 0, 0, 0, 30, 0, 2, 2).set(14, 0, 0, 0, 0, -30, 0, 2, 2);
+        PoseBuilder fighter = new PoseBuilder().rates(LEFT_LEG_SHIN, 2, 4).rates(RIGHT_LEG_SHIN, 2, 4).rates(10, 2, 12).rates(11, 2, 4).rates(12, 2, 4).set(13, 0, 0, 0, 0, 30, 0, 2, 2).set(14, 0, 0,
+            0, 0, -30, 0, 2, 2);
         for (int arm = 23; arm <= 32; arm++)
             fighter.rates(arm, 5, 5);
 
-        PoseBuilder gerwalk = new PoseBuilder()
-            .set(4, 5, 0, 0, -20, 0, -50, 2, 8)
-            .set(5, 5, 0, 0, 0, 0, -100, 2, 16)
-            .set(7, 5, 0, 0, 20, 0, -50, 2, 8)
-            .set(8, 5, 0, 0, 0, 0, -100, 2, 16)
-            .set(10, 0, 0, 0, 0, 0, 160, 2, 12)
-            .set(11, 0, 0, 0, -100, 0, 0, 2, 14)
-            .set(12, 0, 0, 0, 100, 0, 0, 2, 14)
-            .set(15, 0, 0, 0, 0, 0, 90, 2, 25)
-            .set(16, 0, 0, 0, 0, 0, 45, 2, 25)
-            .set(17, 0, 0, 0, 0, 0, -45, 2, 25)
-            .set(18, 0, 0, 0, 0, 0, 90, 2, 25)
-            .set(19, 0, 0, 0, 0, 0, 45, 2, 25)
-            .set(20, 0, 0, 0, 0, 0, -45, 2, 25);
+        PoseBuilder gerwalk = new PoseBuilder().set(4, 5, 0, 0, -20, 0, -50, 2, 8).set(5, 5, 0, 0, 0, 0, -100, 2, 16).set(7, 5, 0, 0, 20, 0, -50, 2, 8).set(8, 5, 0, 0, 0, 0, -100, 2, 16)
+            .set(10, 0, 0, 0, 0, 0, 160, 2, 12).set(11, 0, 0, 0, -100, 0, 0, 2, 14).set(12, 0, 0, 0, 100, 0, 0, 2, 14).set(15, 0, 0, 0, 0, 0, 90, 2, 25).set(16, 0, 0, 0, 0, 0, 45, 2, 25)
+            .set(17, 0, 0, 0, 0, 0, -45, 2, 25).set(18, 0, 0, 0, 0, 0, 90, 2, 25).set(19, 0, 0, 0, 0, 0, 45, 2, 25).set(20, 0, 0, 0, 0, 0, -45, 2, 25);
 
         // GERWALK 2 is the settled stance that stages 3 and 4 build on.
         PoseBuilder gerwalk2 = gerwalk2();
 
-        PoseBuilder gerwalk3 = gerwalk2()
-            .set(23, 15, -25, 0, -90, 0, 0, 6, 12)
-            .set(28, 15, -25, 0, 90, 0, 0, 6, 12);
+        PoseBuilder gerwalk3 = gerwalk2().set(23, 15, -25, 0, -90, 0, 0, 6, 12).set(28, 15, -25, 0, 90, 0, 0, 6, 12);
 
-        PoseBuilder gerwalk4 = gerwalk2()
-            .set(23, 10, -25, -10, -90, 90, 0, 4, 6)
-            .set(24, 0, 0, 0, 0, 0, -80, 2, 6)
-            .set(25, 0, 0, 0, -90, 0, 0, 2, 6)
-            .set(26, 0, 0, 0, 0, 0, 50, 2, 12)
-            .set(27, 23, 0, 0, 180, 0, 0, 2, 20)
-            .set(28, 10, -25, 10, 90, -90, 0, 4, 6)
-            .set(29, 0, 0, 0, 0, 0, -80, 2, 6)
-            .set(30, 0, 0, 0, 90, 0, 0, 2, 6)
-            .set(31, 0, 0, 0, 0, 0, 50, 2, 12)
+        PoseBuilder gerwalk4 = gerwalk2().set(23, 10, -25, -10, -90, 90, 0, 4, 6).set(24, 0, 0, 0, 0, 0, -80, 2, 6).set(25, 0, 0, 0, -90, 0, 0, 2, 6).set(26, 0, 0, 0, 0, 0, 50, 2, 12)
+            .set(27, 23, 0, 0, 180, 0, 0, 2, 20).set(28, 10, -25, 10, 90, -90, 0, 4, 6).set(29, 0, 0, 0, 0, 0, -80, 2, 6).set(30, 0, 0, 0, 90, 0, 0, 2, 6).set(31, 0, 0, 0, 0, 0, 50, 2, 12)
             .set(32, 23, 0, 0, 180, 0, 0, 2, 20);
 
-        return new Pose[] {fighter.build(), gerwalk.build(), gerwalk2.build(), gerwalk3.build(), gerwalk4.build()};
+        return new Pose[]{fighter.build(), gerwalk.build(), gerwalk2.build(), gerwalk3.build(), gerwalk4.build()};
     }
 
     private static PoseBuilder gerwalk2()
     {
-        return new PoseBuilder()
-            .set(4, 10, 0, 0, -20, 0, -35, 2, 3)
-            .set(5, 5, 5, 0, 0, 0, -75, 2, 6)
-            .set(7, 10, 0, 0, 20, 0, -35, 2, 3)
-            .set(8, 5, 5, 0, 0, 0, -75, 2, 6)
-            .set(10, 0, 0, 0, 0, 0, 160, 2, 12)
-            .set(11, 0, 0, 0, -100, 0, 0, 2, 14)
-            .set(12, 0, 0, 0, 100, 0, 0, 2, 14)
-            .set(15, 0, 0, 0, 0, 0, 110, 2, 25)
-            .set(16, 0, 0, 0, 0, 0, 60, 2, 2)
-            .set(17, 0, 0, 0, 0, 0, -30, 2, 2)
-            .set(18, 0, 0, 0, 0, 0, 110, 2, 25)
-            .set(19, 0, 0, 0, 0, 0, 60, 2, 2)
-            .set(20, 0, 0, 0, 0, 0, -30, 2, 2)
-            .set(22, 0, 0, 0, 0, 0, 20, 2, 2)
-            .set(23, 15, 0, 0, 0, 0, 0, 2, 2)
-            .set(28, 15, 0, 0, 0, 0, 0, 2, 2);
+        return new PoseBuilder().set(4, 10, 0, 0, -20, 0, -35, 2, 3).set(5, 5, 5, 0, 0, 0, -75, 2, 6).set(7, 10, 0, 0, 20, 0, -35, 2, 3).set(8, 5, 5, 0, 0, 0, -75, 2, 6)
+            .set(10, 0, 0, 0, 0, 0, 160, 2, 12).set(11, 0, 0, 0, -100, 0, 0, 2, 14).set(12, 0, 0, 0, 100, 0, 0, 2, 14).set(15, 0, 0, 0, 0, 0, 110, 2, 25).set(16, 0, 0, 0, 0, 0, 60, 2, 2)
+            .set(17, 0, 0, 0, 0, 0, -30, 2, 2).set(18, 0, 0, 0, 0, 0, 110, 2, 25).set(19, 0, 0, 0, 0, 0, 60, 2, 2).set(20, 0, 0, 0, 0, 0, -30, 2, 2).set(22, 0, 0, 0, 0, 0, 20, 2, 2)
+            .set(23, 15, 0, 0, 0, 0, 0, 2, 2).set(28, 15, 0, 0, 0, 0, 0, 2, 2);
     }
 
     /** Every joint defaults to rest with rates (2, 2), as in the legacy tables. */
@@ -329,11 +294,9 @@ public final class ValkyrieAnimation
                 components[i] = new Pose.Component(new Vector3f(), new Vector3f(), 2F, 2F);
         }
 
-        private PoseBuilder set(int part, float x, float y, float z, float rotX, float rotY, float rotZ,
-                                float positionRate, float rotationRate)
+        private PoseBuilder set(int part, float x, float y, float z, float rotX, float rotY, float rotZ, float positionRate, float rotationRate)
         {
-            components[part] = new Pose.Component(new Vector3f(x, y, z), new Vector3f(rotX, rotY, rotZ),
-                positionRate, rotationRate);
+            components[part] = new Pose.Component(new Vector3f(x, y, z), new Vector3f(rotX, rotY, rotZ), positionRate, rotationRate);
             return this;
         }
 

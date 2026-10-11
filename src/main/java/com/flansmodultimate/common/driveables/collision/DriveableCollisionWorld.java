@@ -204,7 +204,7 @@ public final class DriveableCollisionWorld
     private static double collideAxis(Direction.Axis axis, AABB box, List<VoxelShape> shapes, List<DriveableHullGeometry> hulls, double desired)
     {
         double allowed = shapes.isEmpty() ? desired : Shapes.collide(axis, box, shapes, desired);
-        int index = axis == Direction.Axis.X ? 0 : axis == Direction.Axis.Y ? 1 : 2;
+        int index = axis.ordinal();
         for (DriveableHullGeometry hull : hulls)
         {
             if (Math.abs(allowed) < MOVEMENT_EPSILON)

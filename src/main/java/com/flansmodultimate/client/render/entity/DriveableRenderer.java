@@ -112,6 +112,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
     }
 
+    // The projection scale of the world pass is shared by every driveable renderer.
+    @SuppressWarnings("java:S2696")
     private void renderDriveable(T driveable, float partialTick, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         DriveableType type = driveable.getConfigType();
@@ -176,7 +178,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 return;
             }
             lodResult = DriveableImpostorCache.renderOrPrepare(model, type, texture, translucent, cull, red, green, blue, poseStack, buffer, packedLight, projectionPixels, cameraDistance,
-                cameraOffset, entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(), !shadowPass && !(driveable instanceof Mecha) && intact, history.usingImpostor);
+                cameraOffset, entityYawRotation, pitch, roll, !shadowPass && !(driveable instanceof Mecha) && intact, history.usingImpostor);
             if (!shadowPass)
                 history.usingImpostor = lodResult.usingImpostor();
             if (lodResult.rendered())

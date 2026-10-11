@@ -9,20 +9,20 @@ import org.apache.commons.io.FilenameUtils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A fingerprint per content pack of the definitions it loaded.
  *
- * <p>This exists to tell a player that their packs are not the server's, which is the usual cause
+ * <p>
+ * This exists to tell a player that their packs are not the server's, which is the usual cause
  * of a client that displays the wrong numbers or plays the wrong animation for a weapon the server
  * resolves differently. It is a diagnostic and nothing more: the mod is server-authoritative, so a
  * mismatch costs accuracy of information rather than fairness, and a fingerprint a client sends can
  * always be whatever that client wants it to be. Nothing here decides who may play.
  *
- * <p>Fingerprints cover definition text, not pack assets, and they are taken per pack so the
+ * <p>
+ * Fingerprints cover definition text, not pack assets, and they are taken per pack so the
  * warning can name which pack to go and fix. Blank lines, comments and indentation are normalised
  * away, because a pack that differs only in its whitespace loads identically on both sides and
  * reporting it would teach players to ignore the warning.
@@ -40,10 +40,13 @@ public final class ContentFingerprint
     /**
      * Folds one definition file into its pack's fingerprint.
      *
-     * <p>Call this as the file is registered, while the content pipeline still holds the file's
+     * <p>
+     * Call this as the file is registered, while the content pipeline still holds the file's
      * text: loading order is deterministic, so feeding the digest in registration order gives both
      * sides the same result without having to sort anything again here.
      */
+    // "record" is only a contextual keyword and stays a valid method name.
+    @SuppressWarnings("java:S6213")
     public static synchronized void record(TypeFile typeFile)
     {
         MessageDigest digest = digests.computeIfAbsent(packName(typeFile), ContentFingerprint::createDigest);
@@ -69,7 +72,8 @@ public final class ContentFingerprint
     /**
      * Which packs differ from the fingerprints given, and how.
      *
-     * @param theirs the other side's fingerprints
+     * @param theirs
+     *            the other side's fingerprints
      * @return pack name to the way it differs, empty when the two sides loaded the same definitions
      */
     public static Map<String, EnumContentMismatch> compareWith(Map<String, String> theirs)
@@ -82,7 +86,8 @@ public final class ContentFingerprint
     {
         Map<String, EnumContentMismatch> mismatches = new TreeMap<>();
 
-        theirs.forEach((pack, theirFingerprint) -> {
+        theirs.forEach((pack, theirFingerprint) ->
+        {
             String ourFingerprint = ours.get(pack);
             if (ourFingerprint == null)
                 mismatches.put(pack, EnumContentMismatch.MISSING);
@@ -90,9 +95,7 @@ public final class ContentFingerprint
                 mismatches.put(pack, EnumContentMismatch.DIFFERENT);
         });
 
-        ours.keySet().stream()
-            .filter(pack -> !theirs.containsKey(pack))
-            .forEach(pack -> mismatches.put(pack, EnumContentMismatch.UNKNOWN_TO_THEM));
+        ours.keySet().stream().filter(pack -> !theirs.containsKey(pack)).forEach(pack -> mismatches.put(pack, EnumContentMismatch.UNKNOWN_TO_THEM));
 
         return mismatches;
     }

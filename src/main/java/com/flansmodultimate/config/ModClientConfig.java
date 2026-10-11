@@ -198,6 +198,8 @@ public final class ModClientConfig
     public static final ForgeConfigSpec.DoubleValue SUPPRESSION_VIGNETTE;
     public static final ForgeConfigSpec.BooleanValue BULLET_FLYBY_SOUNDS;
     public static final ForgeConfigSpec.DoubleValue BULLET_FLYBY_VOLUME;
+    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ADDITIONAL_THERMAL_HOT_PARTICLES;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     public static final ForgeConfigSpec.DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;

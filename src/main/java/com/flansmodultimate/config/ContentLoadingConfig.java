@@ -6,9 +6,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.FlansLog;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +15,14 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ContentLoadingConfig
 {
+    private static final String KEY_CONTENT_PACKS_RELATIVE_PATH = "contentPacksRelativePath";
+    private static final String KEY_FORCE_REGEN_ASSETS_AND_IDS = "forceRegenContentPacksAssetsAndIds";
+    private static final String KEY_CONTENT_LOADING_SYSTEM_VERSION = "contentLoadingSystemVersion";
+    private static final String KEY_USE_DEFAULT_CATEGORIES = "useDefaultCategories";
+    private static final String KEY_OVERRIDE_SOUND_LENGTHS = "overrideConfiguredSoundLengths";
+    private static final String KEY_OVERRIDE_SHOOT_POINTS = "overrideConfiguredShootPoints";
+    private static final String KEY_CONTENT_LOADING_THREADS = "contentLoadingThreads";
+
     @Getter
     private static String contentPacksRelativePath = "flan";
     @Getter
@@ -52,14 +58,14 @@ public final class ContentLoadingConfig
             if (Files.isRegularFile(file))
                 config.load();
 
-            contentPacksRelativePath = readString(config, "contentPacksRelativePath", contentPacksRelativePath);
-            forceRegenContentPacksAssetsAndIds = readBoolean(config, "forceRegenContentPacksAssetsAndIds", forceRegenContentPacksAssetsAndIds);
-            int lastContentLoadingSystemVersion = readInt(config, "contentLoadingSystemVersion", CONTENT_LOADING_SYSTEM_VERSION);
-            useDefaultCategories = readBoolean(config, "useDefaultCategories", useDefaultCategories);
-            overrideConfiguredSoundLengths = readBoolean(config, "overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
-            overrideConfiguredShootPoints = readBoolean(config, "overrideConfiguredShootPoints", overrideConfiguredShootPoints);
+            contentPacksRelativePath = readString(config, KEY_CONTENT_PACKS_RELATIVE_PATH, contentPacksRelativePath);
+            forceRegenContentPacksAssetsAndIds = readBoolean(config, KEY_FORCE_REGEN_ASSETS_AND_IDS, forceRegenContentPacksAssetsAndIds);
+            int lastContentLoadingSystemVersion = readInt(config, KEY_CONTENT_LOADING_SYSTEM_VERSION, CONTENT_LOADING_SYSTEM_VERSION);
+            useDefaultCategories = readBoolean(config, KEY_USE_DEFAULT_CATEGORIES, useDefaultCategories);
+            overrideConfiguredSoundLengths = readBoolean(config, KEY_OVERRIDE_SOUND_LENGTHS, overrideConfiguredSoundLengths);
+            overrideConfiguredShootPoints = readBoolean(config, KEY_OVERRIDE_SHOOT_POINTS, overrideConfiguredShootPoints);
             soundPackPriority = SoundPriorityConfig.reconcile(config.get(SoundPriorityConfig.KEY), List.of());
-            contentLoadingThreads = Math.max(0, readInt(config, "contentLoadingThreads", contentLoadingThreads));
+            contentLoadingThreads = Math.max(0, readInt(config, KEY_CONTENT_LOADING_THREADS, contentLoadingThreads));
 
             save(config);
 
@@ -92,38 +98,38 @@ public final class ContentLoadingConfig
 
     private static void save(CommentedFileConfig config)
     {
-        config.set("contentPacksRelativePath", contentPacksRelativePath);
-        config.setComment("contentPacksRelativePath", "Path to your content packs, relative to the .minecraft directory.");
+        config.set(KEY_CONTENT_PACKS_RELATIVE_PATH, contentPacksRelativePath);
+        config.setComment(KEY_CONTENT_PACKS_RELATIVE_PATH, "Path to your content packs, relative to the .minecraft directory.");
 
-        config.set("forceRegenContentPacksAssetsAndIds", forceRegenContentPacksAssetsAndIds);
-        config.setComment("forceRegenContentPacksAssetsAndIds", """
+        config.set(KEY_FORCE_REGEN_ASSETS_AND_IDS, forceRegenContentPacksAssetsAndIds);
+        config.setComment(KEY_FORCE_REGEN_ASSETS_AND_IDS, """
             Set to true to force asset and ids regeneration. This will increase the startup time significantly.
             Only do this once when you modified some of your content packs (new assets or new ids).""");
 
-        config.set("contentLoadingSystemVersion", CONTENT_LOADING_SYSTEM_VERSION);
-        config.setComment("contentLoadingSystemVersion", """
+        config.set(KEY_CONTENT_LOADING_SYSTEM_VERSION, CONTENT_LOADING_SYSTEM_VERSION);
+        config.setComment(KEY_CONTENT_LOADING_SYSTEM_VERSION, """
             Version of the content loading system.
             Will be incremented when the content loading process is undergoing significant changes.
             When the version changes, asset and ids regeneration will be automatically performed once.""");
 
-        config.set("useDefaultCategories", useDefaultCategories);
-        config.setComment("useDefaultCategories", """
+        config.set(KEY_USE_DEFAULT_CATEGORIES, useDefaultCategories);
+        config.setComment(KEY_USE_DEFAULT_CATEGORIES, """
             The new category system allows items to be grouped and modified without modifying their config files in content packs.
             Categories can apply or override settings for all items within them.
             By default, this mod provides preconfigured categories in .minecraft/config/flansmodultimate/default.
             Set this option to false if you want to disable these default categories.
             User categories can still explicitly inherit them with "inherits": "default:Category Name" in category JSON.""");
 
-        config.set("overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
-        config.setComment("overrideConfiguredSoundLengths", """
+        config.set(KEY_OVERRIDE_SOUND_LENGTHS, overrideConfiguredSoundLengths);
+        config.setComment(KEY_OVERRIDE_SOUND_LENGTHS, """
             Sound lengths such as EngineSoundLength or LoopedSoundLength tell the mod when to play a looping sound again.
             Content packs often configure them only roughly, which makes looping sounds overlap or leave a gap.
             By default these values are replaced with the real length of the sound file, measured while loading the pack.
             Set this option to false if you want the values configured in the content packs to be used as they are.
             Sound lengths that are disabled with None, or that are not set at all, are never filled in automatically.""");
 
-        config.set("overrideConfiguredShootPoints", overrideConfiguredShootPoints);
-        config.setComment("overrideConfiguredShootPoints", """
+        config.set(KEY_OVERRIDE_SHOOT_POINTS, overrideConfiguredShootPoints);
+        config.setComment(KEY_OVERRIDE_SHOOT_POINTS, """
             Content packs often place the muzzles of their vehicles, planes, mechas and AA guns away from the barrels of their models,
             so shots and muzzle flashes appear beside, behind or inside the gun.
             By default the muzzles of the content packs in the flan folder are moved onto the barrels measured off their models
@@ -135,8 +141,8 @@ public final class ContentLoadingConfig
             around that point, at the same rate of fire.
             Server and clients should use the same value.""");
 
-        config.set("contentLoadingThreads", contentLoadingThreads);
-        config.setComment("contentLoadingThreads", """
+        config.set(KEY_CONTENT_LOADING_THREADS, contentLoadingThreads);
+        config.setComment(KEY_CONTENT_LOADING_THREADS, """
             Threads that read and index the content packs while the game starts. 0 chooses from the number of processors.
             The packs are still registered one after the other, in the same order, so this never changes what is loaded.
             Set it to 1 to do everything on the loading thread.""");

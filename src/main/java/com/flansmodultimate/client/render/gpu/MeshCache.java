@@ -3,9 +3,16 @@ package com.flansmodultimate.client.render.gpu;
 import java.util.LinkedHashMap;
 
 /** Render-thread LRU. Eviction/clear own resource disposal, including replacement. */
+// Render diagnostics counters and renderer state are deliberately global.
+@SuppressWarnings("java:S2696")
 final class MeshCache<T extends MeshCache.Resource>
 {
-    interface Resource { long bytes(); void close(); }
+    interface Resource
+    {
+        long bytes();
+
+        void close();
+    }
 
     private static final class Entry<T>
     {
@@ -35,36 +42,66 @@ final class MeshCache<T extends MeshCache.Resource>
     T get(GeometryKey probe)
     {
         Entry<T> entry = entries.get(probe);
-        if (entry != null) entry.frame = frame;
+        if (entry != null)
+            entry.frame = frame;
         if (RenderDiagnostics.enabled)
         {
-            if (entry == null) RenderDiagnostics.misses++;
-            else RenderDiagnostics.hits++;
+            if (entry == null)
+                RenderDiagnostics.misses++;
+            else
+                RenderDiagnostics.hits++;
         }
         return entry == null ? null : entry.resource;
     }
 
-    long bytes() { return bytes; }
-    long maximumBytes() { return maximumBytes; }
-    int size() { return entries.size(); }
-    int maximumEntries() { return maximumEntries; }
+    long bytes()
+    {
+        return bytes;
+    }
+
+    long maximumBytes()
+    {
+        return maximumBytes;
+    }
+
+    int size()
+    {
+        return entries.size();
+    }
+
+    int maximumEntries()
+    {
+        return maximumEntries;
+    }
 
     /** Advance the frame that marks a mesh as in use, for telling working-set evictions from stale ones. */
-    void nextFrame() { frame++; }
-    long frame() { return frame; }
+    void nextFrame()
+    {
+        frame++;
+    }
+
+    long frame()
+    {
+        return frame;
+    }
 
     /** Apply a changed budget at once, evicting least recently used meshes beyond it. */
     void limits(long maximumBytes, int maximumEntries)
     {
         this.maximumBytes = maximumBytes;
         this.maximumEntries = maximumEntries;
-        while (!entries.isEmpty() && (bytes > maximumBytes || entries.size() > maximumEntries)) evictOldest();
+        while (!entries.isEmpty() && (bytes > maximumBytes || entries.size() > maximumEntries))
+            evictOldest();
     }
 
     void put(GeometryKey probe, T resource)
     {
         Entry<T> previous = entries.remove(probe);
-        if (previous != null) { bytes -= previous.resource.bytes(); previous.resource.close(); }
+        if (previous != null)
+        {
+            bytes -= previous.resource.bytes();
+            previous.resource.close();
+        }
         reserve(resource.bytes());
         entries.put(probe.snapshot(), new Entry<>(resource, frame));
         bytes += resource.bytes();
@@ -74,8 +111,10 @@ final class MeshCache<T extends MeshCache.Resource>
     /** Reserve before native allocation so even an upload does not temporarily exceed the GPU budget. */
     void reserve(long size)
     {
-        if (size > maximumBytes) throw new IllegalArgumentException("Mesh exceeds cache budget");
-        while (!entries.isEmpty() && (bytes + size > maximumBytes || entries.size() >= maximumEntries)) evictOldest();
+        if (size > maximumBytes)
+            throw new IllegalArgumentException("Mesh exceeds cache budget");
+        while (!entries.isEmpty() && (bytes + size > maximumBytes || entries.size() >= maximumEntries))
+            evictOldest();
     }
 
     private void evictOldest()
@@ -87,11 +126,13 @@ final class MeshCache<T extends MeshCache.Resource>
         oldest.resource.close();
         // Drawn this frame or the last: the visible working set no longer fits and meshes are re-uploaded.
         boolean workingSet = oldest.frame >= frame - 1;
-        if (workingSet) workingSetEvictions++;
+        if (workingSet)
+            workingSetEvictions++;
         if (RenderDiagnostics.enabled)
         {
             RenderDiagnostics.evictions++;
-            if (workingSet) RenderDiagnostics.workingSetEvictions++;
+            if (workingSet)
+                RenderDiagnostics.workingSetEvictions++;
         }
     }
 
@@ -105,7 +146,8 @@ final class MeshCache<T extends MeshCache.Resource>
 
     void clear()
     {
-        for (Entry<T> entry : entries.values()) entry.resource.close();
+        for (Entry<T> entry : entries.values())
+            entry.resource.close();
         entries.clear();
         bytes = 0;
     }

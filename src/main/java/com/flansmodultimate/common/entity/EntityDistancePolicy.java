@@ -3,7 +3,9 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.api.IFlanNpcDistance;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+
 import net.minecraft.world.entity.Entity;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Common distance rules. Reading client configuration never initializes a client-only class. */
@@ -11,7 +13,8 @@ public final class EntityDistancePolicy
 {
     private static final AtomicLong TRACKING_REVISION = new AtomicLong();
 
-    private EntityDistancePolicy() {}
+    private EntityDistancePolicy()
+    {}
 
     public static boolean isFlanNpc(Entity entity)
     {
@@ -29,7 +32,9 @@ public final class EntityDistancePolicy
     public static double renderDistance(Entity entity, boolean npc)
     {
         ModClientConfig config = ModClientConfig.get();
-        double multiplier = config == null ? 1D : npc ? config.flanNpcRenderDistanceMultiplier : config.driveableRenderDistanceMultiplier;
+        double multiplier = 1D;
+        if (config != null)
+            multiplier = npc ? config.flanNpcRenderDistanceMultiplier : config.driveableRenderDistanceMultiplier;
         return proportionalDistance(entity.getBoundingBox().getSize(), Entity.getViewScale(), multiplier);
     }
 

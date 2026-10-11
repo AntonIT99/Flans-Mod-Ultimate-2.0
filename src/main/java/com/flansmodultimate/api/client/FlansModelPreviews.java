@@ -71,6 +71,8 @@ public final class FlansModelPreviews
      *            tint multiplied with the type's own colour, like {@code green}, {@code blue} and {@code alpha}
      * @return false when the type has no model to preview
      */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public static boolean render(IContentType type, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         return type instanceof InfoType infoType && TypeModelPreview.render(infoType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
@@ -113,6 +115,8 @@ public final class FlansModelPreviews
      *            content definition to draw
      * @return false when the definition has no supported model
      */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public static boolean renderWorld(IContentType type, Entity entity, float partialTick, PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack poseStack,
         MultiBufferSource buffers, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
@@ -158,6 +162,8 @@ public final class FlansModelPreviews
      *            of that tick
      * @return false when the definition has no supported model
      */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public static boolean renderWorld(IContentType type, Entity entity, float partialTick, PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack poseStack,
         MultiBufferSource buffers, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, ModelPose pose)
     {

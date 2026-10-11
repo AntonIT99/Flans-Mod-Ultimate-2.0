@@ -8,20 +8,15 @@ import lombok.Getter;
 
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @Getter
 public class PartType extends InfoType
 {
+    private static final String KEY_PART_BOX_RECIPE = "PartBoxRecipe";
+
     public enum Category
     {
         COCKPIT, WING, ENGINE, PROPELLER, BAY, TAIL, WHEEL, CHASSIS, TURRET, FUEL, MISC
@@ -97,10 +92,10 @@ public class PartType extends InfoType
         fuel = readValue("Fuel", fuel, file);
 
         // Recipe
-        if (hasValueForConfigField("PartBoxRecipe", file))
+        if (hasValueForConfigField(KEY_PART_BOX_RECIPE, file))
         {
             partBoxRecipeSourceFile = file;
-            partBoxRecipeRefs.addAll(RecipeParser.parseAmountThenItemReferences(readValues("PartBoxRecipe", file), 2, contentPack, file, "PartBoxRecipe"));
+            partBoxRecipeRefs.addAll(RecipeParser.parseAmountThenItemReferences(readValues(KEY_PART_BOX_RECIPE, file), 2, contentPack, file, KEY_PART_BOX_RECIPE));
         }
 
         registerAsDefaultEngine();
@@ -225,8 +220,8 @@ public class PartType extends InfoType
         if (partBoxRecipeSourceFile == null)
             return;
 
-        logError("Could not resolve PartBoxRecipe ingredient '" + recipeItem.getItemName() + "' (amount " + recipeItem.getAmount() + ") for part '" + getShortName()
-            + "', skipping ingredient.", partBoxRecipeSourceFile);
+        logError("Could not resolve PartBoxRecipe ingredient '" + recipeItem.getItemName() + "' (amount " + recipeItem.getAmount() + ") for part '" + getShortName() + "', skipping ingredient.",
+            partBoxRecipeSourceFile);
     }
 
 }

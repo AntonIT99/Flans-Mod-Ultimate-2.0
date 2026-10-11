@@ -11,35 +11,14 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
+import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.DirectoryStream;
+import java.nio.file.*;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -75,8 +54,10 @@ public final class FileUtils
     /**
      * Writes UTF-8 text to a file and logs failures instead of throwing them.
      *
-     * @param outputFile target file to write
-     * @param content text content to write
+     * @param outputFile
+     *            target file to write
+     * @param content
+     *            text content to write
      */
     public static void writeString(Path outputFile, String content)
     {
@@ -93,7 +74,8 @@ public final class FileUtils
     /**
      * Deletes a file if it exists and logs failures instead of throwing them.
      *
-     * @param file file to delete
+     * @param file
+     *            file to delete
      */
     public static void deleteIfExists(Path file)
     {
@@ -110,9 +92,10 @@ public final class FileUtils
     /**
      * Finds an unused sibling path by appending a numeric suffix when the destination exists.
      *
-     * @param dst desired destination path
+     * @param dst
+     *            desired destination path
      * @return {@code dst} when it does not exist, otherwise a sibling with a {@code -1}, {@code -2},
-     * etc. suffix before the extension
+     *         etc. suffix before the extension
      */
     public static Path ensureUnique(Path dst)
     {
@@ -133,30 +116,33 @@ public final class FileUtils
         do
         {
             candidate = dst.getParent().resolve(name + "-" + i++ + ext);
-        }
-        while (Files.exists(candidate));
+        } while (Files.exists(candidate));
         return candidate;
     }
 
     /**
      * Checks whether an OGG file name needs sanitizing.
      *
-     * @param p path whose file name should be checked
+     * @param p
+     *            path whose file name should be checked
      * @return {@code true} when the current file name differs from its sanitized OGG target name
      */
     public static boolean needsRename(Path p)
     {
         String current = p.getFileName().toString();
-        String target  = sanitizedOggName(current);
+        String target = sanitizedOggName(current);
         return !current.equals(target);
     }
 
     /**
      * Moves a file while safely handling case-only renames on case-insensitive filesystems.
      *
-     * @param src source file to move
-     * @param dst destination file
-     * @throws IOException when either move operation fails
+     * @param src
+     *            source file to move
+     * @param dst
+     *            destination file
+     * @throws IOException
+     *             when either move operation fails
      */
     public static void moveWithCaseOnlyHopIfNeeded(Path src, Path dst) throws IOException
     {
@@ -181,9 +167,11 @@ public final class FileUtils
     /**
      * Renames a file to its sanitized lowercase resource name.
      *
-     * @param file file to rename
+     * @param file
+     *            file to rename
      * @return the renamed path, or the original path when no rename was needed
-     * @throws IOException when the rename fails
+     * @throws IOException
+     *             when the rename fails
      */
     public static Path renameToLowercase(Path file) throws IOException
     {
@@ -200,7 +188,8 @@ public final class FileUtils
     /**
      * Checks whether a path has an {@code .ogg} file extension.
      *
-     * @param p path to inspect
+     * @param p
+     *            path to inspect
      * @return {@code true} when the file name ends with {@code .ogg}, case-insensitively
      */
     public static boolean isOgg(Path p)
@@ -213,7 +202,8 @@ public final class FileUtils
     /**
      * Builds the sanitized target filename for an OGG file.
      *
-     * @param currentName current file name
+     * @param currentName
+     *            current file name
      * @return sanitized lowercase base name with a forced {@code .ogg} extension
      */
     private static String sanitizedOggName(String currentName)
@@ -230,7 +220,8 @@ public final class FileUtils
      * Each path segment is sanitized independently, converted to lowercase by
      * {@link ResourceUtils#sanitize(String)}, and forced to use the {@code .png} extension.
      *
-     * @param rel relative source path
+     * @param rel
+     *            relative source path
      * @return sanitized relative path using forward slashes
      */
     public static String sanitizePngRelPath(Path rel)
@@ -253,7 +244,8 @@ public final class FileUtils
         }
         // collapse any accidental double slashes, trim leading slash
         String s = out.toString().replaceAll("/{2,}", "/");
-        if (s.startsWith("/")) s = s.substring(1);
+        if (s.startsWith("/"))
+            s = s.substring(1);
         return s;
     }
 
@@ -285,9 +277,12 @@ public final class FileUtils
      * reason, this method returns {@code true} so callers refresh or keep files separate instead of
      * silently treating unknown content as identical.
      *
-     * @param file1 first file to compare
-     * @param file2 second file to compare
-     * @param assumeDifferentWhenMissing value to return when either file does not exist
+     * @param file1
+     *            first file to compare
+     * @param file2
+     *            second file to compare
+     * @param assumeDifferentWhenMissing
+     *            value to return when either file does not exist
      * @return {@code true} when the files should be treated as different
      */
     public static boolean isDifferentFileContent(Path file1, Path file2, boolean assumeDifferentWhenMissing)
@@ -331,9 +326,12 @@ public final class FileUtils
      * It avoids image decoding and returns {@code true} on read errors so callers refresh or keep
      * files separate instead of treating unknown content as identical.
      *
-     * @param file1 first file to compare
-     * @param file2 second file to compare
-     * @param assumeDifferentWhenMissing value to return when either file does not exist
+     * @param file1
+     *            first file to compare
+     * @param file2
+     *            second file to compare
+     * @param assumeDifferentWhenMissing
+     *            value to return when either file does not exist
      * @return {@code true} when the files should be treated as byte-different
      */
     public static boolean isDifferentFileBytes(Path file1, Path file2, boolean assumeDifferentWhenMissing)
@@ -404,9 +402,12 @@ public final class FileUtils
      * read, this method returns {@code true} so callers rewrite or regenerate the file rather than
      * assuming the existing content is correct.
      *
-     * @param file file to compare
-     * @param data expected file content
-     * @param assumeDifferentWhenMissing value to return when the file does not exist
+     * @param file
+     *            file to compare
+     * @param data
+     *            expected file content
+     * @param assumeDifferentWhenMissing
+     *            value to return when the file does not exist
      * @return {@code true} when the file content differs from {@code data}
      */
     public static boolean isDifferentFileContent(Path file, byte[] data, boolean assumeDifferentWhenMissing)
@@ -452,14 +453,14 @@ public final class FileUtils
      * Actual image decoding is still validated later; unsupported or corrupt image files are not
      * considered identical by pixel comparison.
      *
-     * @param p path to inspect
+     * @param p
+     *            path to inspect
      * @return {@code true} when the file name has a known image extension
      */
     private static boolean isImageFile(Path p)
     {
         String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
-        return n.endsWith(PNG_EXTENSION) || n.endsWith(".jpg") || n.endsWith(".jpeg")
-            || n.endsWith(".gif") || n.endsWith(".bmp") || n.endsWith(".webp");
+        return n.endsWith(PNG_EXTENSION) || n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".gif") || n.endsWith(".bmp") || n.endsWith(".webp");
     }
 
     /**
@@ -470,8 +471,10 @@ public final class FileUtils
      * decode errors, or any other failure return {@code false}. Pixel comparison is chunked by rows
      * to avoid allocating one large temporary array per image.
      *
-     * @param file1 first image file
-     * @param file2 second image file
+     * @param file1
+     *            first image file
+     * @param file2
+     *            second image file
      * @return {@code true} only when both images decode successfully and all pixels match
      */
     private static boolean isSameImage(Path file1, Path file2)
@@ -505,10 +508,13 @@ public final class FileUtils
     /**
      * Decodes both images and compares dimensions plus normalized ARGB pixels.
      *
-     * @param file1 first image file
-     * @param file2 second image file
+     * @param file1
+     *            first image file
+     * @param file2
+     *            second image file
      * @return {@code true} when both images decode and have identical dimensions and pixels
-     * @throws IOException when an image reader fails while inspecting or decoding either file
+     * @throws IOException
+     *             when an image reader fails while inspecting or decoding either file
      */
     private static boolean hasSameImagePixels(Path file1, Path file2) throws IOException
     {
@@ -551,19 +557,17 @@ public final class FileUtils
      * The image dimensions are checked before full decode so clearly invalid or unreasonably large
      * files fail before allocating the decoded image buffer.
      *
-     * @param file image file to decode
+     * @param file
+     *            image file to decode
      * @return the decoded image, or {@code null} when no reader is available or dimensions are invalid
-     * @throws IOException when the selected image reader fails while reading metadata or pixels
+     * @throws IOException
+     *             when the selected image reader fails while reading metadata or pixels
      */
     @Nullable
     private static BufferedImage readImage(Path file) throws IOException
     {
-        try (InputStream fileInput = Files.newInputStream(file);
-             ImageInputStream input = new MemoryCacheImageInputStream(fileInput))
+        try (InputStream fileInput = Files.newInputStream(file); ImageInputStream input = new MemoryCacheImageInputStream(fileInput))
         {
-            if (input == null)
-                return null;
-
             Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
             if (!readers.hasNext())
                 return null;
@@ -592,7 +596,8 @@ public final class FileUtils
      * <p>
      * Failures are logged and reported as {@code false} instead of being thrown.
      *
-     * @param path directory path to create
+     * @param path
+     *            directory path to create
      * @return {@code true} when the directory exists or was created successfully
      */
     public static boolean tryCreateDirectories(Path path)
@@ -623,9 +628,12 @@ public final class FileUtils
      * {@link OverlappingFileLockException} instead of waiting when the same JVM already owns an
      * overlapping lock. If the lock cannot be created or acquired, the operation is not run.
      *
-     * @param lockFile file used as the lock target
-     * @param operationName human-readable operation name for log messages
-     * @param operation operation to execute while the lock is held
+     * @param lockFile
+     *            file used as the lock target
+     * @param operationName
+     *            human-readable operation name for log messages
+     * @param operation
+     *            operation to execute while the lock is held
      * @return {@code true} if the operation ran, {@code false} if the lock could not be acquired
      */
     public static boolean runWithFileLock(Path lockFile, String operationName, Runnable operation)
@@ -664,7 +672,8 @@ public final class FileUtils
     /**
      * Opens a filesystem view for an archive content provider.
      *
-     * @param provider content provider to open
+     * @param provider
+     *            content provider to open
      * @return a filesystem for archive providers, or {@code null} for non-archives or open failures
      */
     @Nullable
@@ -691,8 +700,10 @@ public final class FileUtils
     /**
      * Closes a filesystem opened for a content provider and logs close failures.
      *
-     * @param fs filesystem to close, or {@code null}
-     * @param provider provider used only for contextual logging
+     * @param fs
+     *            filesystem to close, or {@code null}
+     * @param provider
+     *            provider used only for contextual logging
      */
     public static void closeFileSystem(@Nullable FileSystem fs, IContentProvider provider)
     {
@@ -731,17 +742,19 @@ public final class FileUtils
         return cache;
     }
 
-
     /**
      * Creates a directory stream over the root of a content provider.
      * <p>
      * Directory providers are streamed directly. Archive providers are opened as a filesystem and the
      * returned stream closes that filesystem when the stream itself is closed.
      *
-     * @param provider content provider to read
+     * @param provider
+     *            content provider to read
      * @return directory stream for the provider root
-     * @throws IOException when the provider directory or archive cannot be opened
-     * @throws IllegalArgumentException when the provider is neither a directory nor an archive
+     * @throws IOException
+     *             when the provider directory or archive cannot be opened
+     * @throws IllegalArgumentException
+     *             when the provider is neither a directory nor an archive
      */
     public static DirectoryStream<Path> createDirectoryStream(IContentProvider provider) throws IOException
     {
@@ -773,8 +786,10 @@ public final class FileUtils
      * Entry names are sanitized and normalized before writing, and Zip Slip attempts are rejected.
      * Failures are logged and reported as {@code false}.
      *
-     * @param archivePath archive file to extract
-     * @param outputDir destination directory
+     * @param archivePath
+     *            archive file to extract
+     * @param outputDir
+     *            destination directory
      * @return {@code true} when extraction completed successfully
      */
     public static boolean extractArchive(Path archivePath, Path outputDir)
@@ -859,16 +874,15 @@ public final class FileUtils
      * files are cleaned up on failure when possible. When converting from JAR to ZIP, the original
      * JAR is deleted only after the ZIP has been written successfully.
      *
-     * @param provider archive provider whose extracted directory should be repacked
+     * @param provider
+     *            archive provider whose extracted directory should be repacked
      * @return whether the processed archive was successfully installed
      */
     public static boolean repackArchive(IContentProvider provider)
     {
         boolean convertJarToZip = provider.isJarFile();
         Path originalArchive = provider.getPath();
-        Path target = convertJarToZip
-            ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION)
-            : provider.getPath();
+        Path target = convertJarToZip ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION) : provider.getPath();
 
         if (convertJarToZip && Files.exists(target))
         {
@@ -885,44 +899,7 @@ public final class FileUtils
             Files.deleteIfExists(tmp);
 
             // 1) Write new archive to tmp (NOT to target)
-            URI uri = URI.create("jar:" + tmp.toUri());
-            try (FileSystem zipFs = FileSystems.newFileSystem(uri, Map.of("create", "true")); Stream<Path> stream = Files.walk(provider.getExtractedPath()))
-            {
-                stream.forEach(source ->
-                {
-                    try
-                    {
-                        Path rel = provider.getExtractedPath().relativize(source);
-                        if (rel.toString().isEmpty())
-                            return;
-
-                        Path zipEntry = zipFs.getPath("/").resolve(rel.toString());
-
-                        if (Files.isDirectory(source))
-                        {
-                            Files.createDirectories(zipEntry);
-                        }
-                        else
-                        {
-                            Files.createDirectories(zipEntry.getParent());
-                            Files.copy(source, zipEntry, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        // Re-throw so we fail the repack and do NOT replace the original archive
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
-            catch (RuntimeException re)
-            {
-                // unwrap and rethrow as IOException for consistent error handling
-                Throwable cause = re.getCause();
-                if (cause instanceof IOException ioe)
-                    throw ioe;
-                throw re;
-            }
+            writeArchive(tmp, provider);
 
             // 2) Swap: target -> bak, tmp -> target (atomic when supported)
             atomicReplace(tmp, target, bak);
@@ -958,16 +935,63 @@ public final class FileUtils
         }
     }
 
+    /** Writes the extracted pack into a new archive at {@code tmp}. */
+    private static void writeArchive(Path tmp, IContentProvider provider) throws IOException
+    {
+        URI uri = URI.create("jar:" + tmp.toUri());
+        try (FileSystem zipFs = FileSystems.newFileSystem(uri, Map.of("create", "true")); Stream<Path> stream = Files.walk(provider.getExtractedPath()))
+        {
+            stream.forEach(source ->
+            {
+                try
+                {
+                    Path rel = provider.getExtractedPath().relativize(source);
+                    if (rel.toString().isEmpty())
+                        return;
+
+                    Path zipEntry = zipFs.getPath("/").resolve(rel.toString());
+
+                    if (Files.isDirectory(source))
+                    {
+                        Files.createDirectories(zipEntry);
+                    }
+                    else
+                    {
+                        Files.createDirectories(zipEntry.getParent());
+                        Files.copy(source, zipEntry, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+                catch (IOException e)
+                {
+                    // Re-throw so we fail the repack and do NOT replace the original archive
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        catch (RuntimeException re)
+        {
+            // unwrap and rethrow as IOException for consistent error handling
+            Throwable cause = re.getCause();
+            if (cause instanceof IOException ioe)
+                throw ioe;
+            throw re;
+        }
+    }
+
     /**
      * Replaces a target file with a temporary file while preserving a backup of the old target.
      * <p>
      * Atomic moves are attempted first and regular replacement moves are used when the filesystem
      * does not support atomic moves.
      *
-     * @param tmp replacement file that should become the target
-     * @param target file to replace
-     * @param backup backup location for the previous target
-     * @throws IOException when any required move fails
+     * @param tmp
+     *            replacement file that should become the target
+     * @param target
+     *            file to replace
+     * @param backup
+     *            backup location for the previous target
+     * @throws IOException
+     *             when any required move fails
      */
     private static void atomicReplace(Path tmp, Path target, Path backup) throws IOException
     {
@@ -998,9 +1022,12 @@ public final class FileUtils
     /**
      * Moves a file, using an atomic move when supported by the filesystem.
      *
-     * @param src source path to move
-     * @param dest destination path
-     * @throws IOException when the move fails
+     * @param src
+     *            source path to move
+     * @param dest
+     *            destination path
+     * @throws IOException
+     *             when the move fails
      */
     public static void safeMove(Path src, Path dest) throws IOException
     {
@@ -1019,16 +1046,17 @@ public final class FileUtils
      * <p>
      * Individual delete failures are logged and traversal failures are logged after traversal stops.
      *
-     * @param dir path to delete
+     * @param dir
+     *            path to delete
      */
     public static void deleteRecursively(Path dir)
     {
-        if (Files.notExists(dir)) return;
+        if (Files.notExists(dir))
+            return;
 
         try (Stream<Path> stream = Files.walk(dir))
         {
-            stream.sorted(Comparator.reverseOrder())
-            .forEach(path ->
+            stream.sorted(Comparator.reverseOrder()).forEach(path ->
             {
                 try
                 {
@@ -1051,14 +1079,16 @@ public final class FileUtils
      * <p>
      * This helper is best-effort; deletion failures are intentionally ignored.
      *
-     * @param dir directory to remove when empty
+     * @param dir
+     *            directory to remove when empty
      */
     public static void deleteDirectoryIfEmpty(@Nullable Path dir)
     {
         if (dir == null)
             return;
 
-        try {
+        try
+        {
             if (!Files.exists(dir) || !Files.isDirectory(dir))
                 return;
 
@@ -1084,7 +1114,8 @@ public final class FileUtils
      * Directories are deleted recursively and files are deleted directly. The temp root itself is
      * left in place unless later removed by {@link #deleteDirectoryIfEmpty(Path)}.
      *
-     * @param tempRoot temporary root directory, usually {@code .flansmod-temp}
+     * @param tempRoot
+     *            temporary root directory, usually {@code .flansmod-temp}
      */
     public static void cleanupFlanTempOnStartup(@Nullable Path tempRoot)
     {
@@ -1126,7 +1157,8 @@ public final class FileUtils
     /**
      * Ensures an archive extraction directory is empty and ready for a fresh extraction.
      *
-     * @param outputDir extraction directory to recreate
+     * @param outputDir
+     *            extraction directory to recreate
      */
     public static void prepareFreshExtractionDir(Path outputDir)
     {
@@ -1147,17 +1179,20 @@ public final class FileUtils
     /**
      * Directory stream wrapper that also owns the filesystem opened for an archive.
      *
-     * @param delegate directory stream returned by the archive filesystem
-     * @param fileSystem archive filesystem that must be closed with the stream
-     * @param provider provider that owns the archive filesystem
+     * @param delegate
+     *            directory stream returned by the archive filesystem
+     * @param fileSystem
+     *            archive filesystem that must be closed with the stream
+     * @param provider
+     *            provider that owns the archive filesystem
      */
-    private record AutoCloseableDirectoryStream(DirectoryStream<Path> delegate, FileSystem fileSystem,
-                                                IContentProvider provider) implements DirectoryStream<Path>
+    private record AutoCloseableDirectoryStream(DirectoryStream<Path> delegate, FileSystem fileSystem, IContentProvider provider) implements DirectoryStream<Path>
     {
         /**
          * Closes the wrapped directory stream and then closes the archive filesystem that owns it.
          *
-         * @throws IOException when closing the stream or filesystem fails
+         * @throws IOException
+         *             when closing the stream or filesystem fails
          */
         @Override
         public void close() throws IOException
@@ -1205,6 +1240,7 @@ public final class FileUtils
         {
             fileSystems = parent.fileSystems;
             owner = false;
+            closed = false;
         }
 
         @Nullable
@@ -1262,7 +1298,8 @@ public final class FileUtils
      * Backslashes are normalized to slashes, invalid filename characters are replaced, control
      * characters are removed, and empty path segments are discarded.
      *
-     * @param name raw archive entry name
+     * @param name
+     *            raw archive entry name
      * @return sanitized relative entry path
      */
     private static String sanitizeArchiveEntryName(String name)
@@ -1271,10 +1308,7 @@ public final class FileUtils
         name = name.replaceAll("[:*?\"<>|\u00D7]", "_");
         name = name.replaceAll("\\p{Cntrl}", "");
 
-        name = Arrays.stream(name.split("/"))
-                .filter(s -> !s.isEmpty())
-                .map(String::trim)
-                .collect(Collectors.joining("/"));
+        name = Arrays.stream(name.split("/")).filter(s -> !s.isEmpty()).map(String::trim).collect(Collectors.joining("/"));
 
         return name;
     }
@@ -1285,9 +1319,12 @@ public final class FileUtils
      * Directory trailing slashes and redundant empty path segments are ignored so normal ZIP
      * directory entries do not produce warnings.
      *
-     * @param rawName original archive entry name
-     * @param safeName sanitized archive entry name
-     * @param isDirectory whether the entry is a directory
+     * @param rawName
+     *            original archive entry name
+     * @param safeName
+     *            sanitized archive entry name
+     * @param isDirectory
+     *            whether the entry is a directory
      * @return {@code true} when sanitization materially changed the entry name
      */
     private static boolean wasMeaningfullySanitized(String rawName, String safeName, boolean isDirectory)
@@ -1297,10 +1334,7 @@ public final class FileUtils
         if (isDirectory && comparableRawName.endsWith("/"))
             comparableRawName = comparableRawName.substring(0, comparableRawName.length() - 1);
 
-        comparableRawName = Arrays.stream(comparableRawName.split("/"))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .collect(Collectors.joining("/"));
+        comparableRawName = Arrays.stream(comparableRawName.split("/")).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.joining("/"));
 
         return !comparableRawName.equals(safeName);
     }

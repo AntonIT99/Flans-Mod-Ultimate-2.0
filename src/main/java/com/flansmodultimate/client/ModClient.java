@@ -61,6 +61,8 @@ public class ModClient
      * Arm transform of {@link #bothArmsAim}: both arms straight forward, independent of head pitch.
      * The server-side hitbox pose {@code PlayerSnapshot.ArmPose.BOTH_AIM} mirrors it.
      */
+    // Signature of IArmPoseTransformer, which the pose is registered as.
+    @SuppressWarnings("java:S1172")
     public static void poseBothArmsAim(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
     {
         model.rightArm.xRot = -Mth.PI / 2F;
@@ -75,6 +77,8 @@ public class ModClient
      * Arm transform of {@link #oneArmAim}: the holding arm of the vanilla bow pose, following the head, without
      * the other arm reaching across. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.ONE_AIM} mirrors it.
      */
+    // Signature of IArmPoseTransformer, which the pose is registered as.
+    @SuppressWarnings("java:S1172")
     public static void poseOneArmAim(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
     {
         ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
@@ -108,6 +112,8 @@ public class ModClient
      * Arm transform of {@link #bowSupport}: the free arm of the vanilla bow pose, reaching across towards
      * where the head looks. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.SUPPORT} mirrors it.
      */
+    // Signature of IArmPoseTransformer, which the pose is registered as.
+    @SuppressWarnings("java:S1172")
     public static void poseBowSupport(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
     {
         ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
@@ -578,6 +584,8 @@ public class ModClient
             addForceDarkOverrides(mechaPos, darkSkyLight);
     }
 
+    // An existing entry is also lowered, which computeIfAbsent cannot express.
+    @SuppressWarnings("java:S3824")
     private static void addForceDarkOverrides(BlockPos center, Long2ByteOpenHashMap overrides)
     {
         for (int i = -3; i <= 3; i++)

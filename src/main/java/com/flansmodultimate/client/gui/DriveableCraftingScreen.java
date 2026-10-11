@@ -5,9 +5,7 @@ import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.MechaType;
-import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.InventoryHelper;
@@ -33,6 +31,8 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 /** Blueprint browser of the Vehicle Crafting Table, on the legacy Flan's Mod panel. */
+// The selection and scroll position are deliberately kept between screen instances.
+@SuppressWarnings("java:S2696")
 public final class DriveableCraftingScreen extends AbstractContainerScreen<DriveableCraftingMenu>
 {
     private static final int SHEET_SIZE = 256;
@@ -163,12 +163,9 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         }
 
         graphics.drawString(font, font.plainSubstrByWidth(ModUtils.getDisplayNameString(selected), MAX_NAME_WIDTH), STATS_LEFT, STATS_TOP, WHITE, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT, WHITE,
-            false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 2,
-            WHITE, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 3, WHITE,
-            false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 2, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 3, WHITE, false);
 
         // Engine requirement, beside its slot
         graphics.drawString(font, selected.numEngines() + "x", 100, 177, WHITE, false);
@@ -275,7 +272,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
 
         PoseStack pose = graphics.pose();
         pose.pushPose();
-        pose.translate(leftPos + MODEL_CENTRE_X, topPos + MODEL_CENTRE_Y, 100D);
+        pose.translate((double) leftPos + MODEL_CENTRE_X, (double) topPos + MODEL_CENTRE_Y, 100D);
         if (selected instanceof MechaType)
             pose.translate(0D, 15D, 0D);
         pose.scale(-scale, scale, scale);
@@ -287,8 +284,8 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
-            model.render(selected, pose, buffers.getBuffer(renderPass.getRenderType(texture, translucent, cull)), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, red, green,
-                blue, 1F, 1F, renderPass);
+            model.render(selected, pose, buffers.getBuffer(renderPass.getRenderType(texture, translucent, cull)), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F,
+                renderPass);
         }
         buffers.endBatch();
         Lighting.setupFor3DItems();
@@ -416,7 +413,9 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         @Override
         public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
         {
-            int u = up ? (active ? UP_ENABLED_U : UP_DISABLED_U) : (active ? DOWN_ENABLED_U : DOWN_DISABLED_U);
+            int enabledU = up ? UP_ENABLED_U : DOWN_ENABLED_U;
+            int disabledU = up ? UP_DISABLED_U : DOWN_DISABLED_U;
+            int u = active ? enabledU : disabledU;
             graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLECRAFTING, getX(), getY(), u, 0, SIZE, SIZE, SHEET_SIZE, SHEET_SIZE);
         }
     }

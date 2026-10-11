@@ -8,9 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -188,8 +186,8 @@ class PartArrayCacheTest
             int[] vertices = new int[n];
             for (int i = 0; i < n; i++)
                 vertices[i] = batch.key.geometries[i].vertexCount();
-            draws.add(new Draw(Arrays.copyOf(batch.key.paletteIndices, n), vertices, Arrays.copyOf(batch.ranges.starts, batch.ranges.count),
-                Arrays.copyOf(batch.ranges.counts, batch.ranges.count), batch.ranges.visibleVertices, batch.poses.clone(), batch.normals.clone(), batch.data.clone()));
+            draws.add(new Draw(Arrays.copyOf(batch.key.paletteIndices, n), vertices, Arrays.copyOf(batch.ranges.starts, batch.ranges.count), Arrays.copyOf(batch.ranges.counts, batch.ranges.count),
+                batch.ranges.visibleVertices, batch.poses.clone(), batch.normals.clone(), batch.data.clone()));
             return true;
         }
 
@@ -201,7 +199,9 @@ class PartArrayCacheTest
 
         @Override
         public void flushFallback()
-        {}
+        {
+            // Not needed by this test.
+        }
 
         @Override
         public void failed(RuntimeException exception)
