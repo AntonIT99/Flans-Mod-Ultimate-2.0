@@ -430,7 +430,7 @@ public class ContentManager
             types.addAll(configs.getOrDefault(provider, new ArrayList<>()));
 
         boolean overrideConfiguredShootPoints = ContentLoadingConfig.isOverrideConfiguredShootPoints();
-        ModelMuzzleMeasurement.measure(types, contentPacks, overrideConfiguredShootPoints);
+        ModelMuzzleMeasurement.measure(types, contentPacks, Collections.unmodifiableMap(generationInputs), overrideConfiguredShootPoints);
         if (!overrideConfiguredShootPoints)
             FlansLog.log.info("Keeping the shoot points and AA gun barrels configured in the flan folder packs because overrideConfiguredShootPoints is disabled.");
     }

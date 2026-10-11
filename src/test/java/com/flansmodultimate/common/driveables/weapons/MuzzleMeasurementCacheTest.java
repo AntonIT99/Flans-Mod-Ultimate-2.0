@@ -5,11 +5,16 @@ import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.content.ContentPack;
 import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import net.minecraft.world.phys.Vec3;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -99,5 +104,34 @@ class MuzzleMeasurementCacheTest
 
         assertNull(MuzzleMeasurementCache.fromJson(json, "after"));
         assertNotNull(MuzzleMeasurementCache.fromJson(json, "before"));
+    }
+
+    @Test
+    void digestedDefinitionsAreNotReadAgainButModelsStillAre(@TempDir Path folder) throws IOException, NoSuchAlgorithmException
+    {
+        IContentProvider pack = new ContentPack("keyPack", folder);
+        Path definition = Files.createDirectories(folder.resolve("vehicles")).resolve("tank.txt");
+        Path model = folder.resolve("ModelTank.class");
+        Files.writeString(definition, "ShortName tank");
+        Files.writeString(model, "model");
+
+        String digested = packsKey(pack, Map.of(pack, "definitions"));
+        String undigested = packsKey(pack, Map.of());
+        Files.writeString(definition, "ShortName tank2");
+
+        // The digest stands for the definitions, which only a pack without one has read from its folder.
+        assertEquals(digested, packsKey(pack, Map.of(pack, "definitions")));
+        assertNotEquals(digested, packsKey(pack, Map.of(pack, "other definitions")));
+        assertNotEquals(undigested, packsKey(pack, Map.of()));
+
+        Files.writeString(model, "other model");
+        assertNotEquals(digested, packsKey(pack, Map.of(pack, "definitions")));
+    }
+
+    private static String packsKey(IContentProvider pack, Map<IContentProvider, String> definitionDigests) throws IOException, NoSuchAlgorithmException
+    {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        MuzzleMeasurementCache.fingerprintPacks(digest, List.of(pack), definitionDigests);
+        return HexFormat.of().formatHex(digest.digest());
     }
 }
