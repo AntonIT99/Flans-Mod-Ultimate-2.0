@@ -1,12 +1,13 @@
 package com.flansmod.client.tmt;
 
+import com.flansmodultimate.util.FlansLog;
+
 import net.minecraft.world.phys.Vec3;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,13 @@ public class ModelPoolObjEntry extends ModelPoolEntry
     @Override
     public void getModel(File file)
     {
-        try (BufferedReader in = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8))
+        getModel(file.toPath());
+    }
+
+    @Override
+    public void getModel(Path path)
+    {
+        try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8))
         {
             String s;
 
@@ -201,9 +208,9 @@ public class ModelPoolObjEntry extends ModelPoolEntry
             vertices = verts.toArray(new PositionTransformVertex[0]);
             faces = face.toArray(new TexturedPolygon[0]);
         }
-        catch (IOException | RuntimeException ignored)
+        catch (IOException | RuntimeException e)
         {
-            // Keep legacy behavior: invalid or unreadable OBJ files are ignored by the model pool.
+            FlansLog.log.warn("Could not read OBJ model {}", path, e);
         }
     }
 }

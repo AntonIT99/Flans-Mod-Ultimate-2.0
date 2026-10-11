@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.model;
 
 import com.flansmod.client.model.*;
+import com.flansmod.client.tmt.ModelPool;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
@@ -44,6 +45,7 @@ public final class ModelCache
 
     public static void reload()
     {
+        ModelPool.clear();
         GpuModelCache.clear();
         DriveableImpostorCache.clear();
         com.flansmodultimate.client.render.preview.WorldModelPreview.clear();

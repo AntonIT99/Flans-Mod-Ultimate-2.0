@@ -1,10 +1,8 @@
 package com.flansmod.client.tmt;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
 
 public abstract class ModelPoolEntry
 {
@@ -37,6 +35,12 @@ public abstract class ModelPoolEntry
     }
 
     public abstract void getModel(File file);
+
+    /** Archive-aware formats override this while existing external format subclasses retain their File API. */
+    public void getModel(Path path)
+    {
+        getModel(path.toFile());
+    }
 
     /**
      * Sets the current transformation group. The transformation group is used
