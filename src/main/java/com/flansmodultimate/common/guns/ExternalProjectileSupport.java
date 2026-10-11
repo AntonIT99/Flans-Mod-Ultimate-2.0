@@ -3,8 +3,7 @@ package com.flansmodultimate.common.guns;
 import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.ProjectileSources.Source;
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.Grenade;
@@ -229,8 +228,13 @@ public final class ExternalProjectileSupport
 
     public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate)
     {
+        return getMuzzles(model, secondary, sequence, alternate, MountAim.REST);
+    }
+
+    public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate, MountAim aim)
+    {
         if (model instanceof AAGunType aa)
-            return aaMuzzles(aa, sequence, alternate);
+            return aaMuzzles(aa, sequence, alternate, aim);
         if (!(model instanceof DriveableType type))
             return List.of();
         List<ShootPoint> points = type.shootPoints(secondary);
@@ -243,13 +247,14 @@ public final class ExternalProjectileSupport
             if (alternatePoints && i != Math.floorMod(sequence, points.size()))
                 continue;
             int barrelSequence = alternatePoints ? Math.floorDiv(sequence, points.size()) : sequence;
-            muzzles.addAll(pointMuzzles(points.get(i), particles, barrelSequence, alternate));
+            muzzles.addAll(pointMuzzles(type, points.get(i), particles, barrelSequence, alternate, aim));
         }
         return List.copyOf(muzzles);
     }
 
-    private static List<WeaponMuzzle> pointMuzzles(ShootPoint point, List<WeaponMuzzle.Particle> particles, int sequence, boolean alternate)
+    private static List<WeaponMuzzle> pointMuzzles(DriveableType type, ShootPoint point, List<WeaponMuzzle.Particle> particles, int sequence, boolean alternate, MountAim aim)
     {
+        boolean aimed = (aim.yaw() != 0F || aim.pitch() != 0F) && EnumDriveablePart.isTurretMounted(point.getRootPos().getPart());
         List<WeaponMuzzle> muzzles = new ArrayList<>();
         for (int barrel = 0; barrel < point.getBarrelCount(); barrel++)
         {
@@ -258,10 +263,27 @@ public final class ExternalProjectileSupport
             var root = point.getRootPos().getPosition();
             var offset = point.getBarrelOffPos(barrel);
             Vec3 position = LegacyDriveableCoordinates.toLocal(new Vec3(root.x + offset.x, root.y + offset.y, root.z + offset.z));
+            if (aimed)
+                position = aimTurretPoint(type, position, aim);
             IContentType mounted = point.getRootPos() instanceof PilotGun pilot ? pilot.getType() : null;
             muzzles.add(new WeaponMuzzle(position, Optional.ofNullable(mounted), particles));
         }
         return muzzles;
+    }
+
+    /**
+     * Carries a rest-pose point of the turret to where the aimed turret holds it, in the preview frame. The gun elevates
+     * first, then the whole turret turns round TurretOrigin, as the vehicle model draws it. The pivot of the barrel on
+     * the loaded model is only known to clients, so the gun elevates round TurretOrigin here.
+     */
+    static Vec3 aimTurretPoint(DriveableType type, Vec3 point, MountAim aim)
+    {
+        Vec3 pivot = LegacyDriveableCoordinates.toLocal(type.getTurretOrigin());
+        Vec3 pitched = LegacyDriveableCoordinates.rotateBarrelPitchLocal(point.subtract(pivot), aim.pitch());
+        // The preview frame is not mirrored as the entity frame is, so a turn to the right is the opposite rotation.
+        Vec3 offset = LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset());
+        Vec3 turned = LegacyDriveableCoordinates.rotateTurretYawLocal(pitched, -aim.yaw());
+        return pivot.add(turned).add(LegacyDriveableCoordinates.rotateTurretYawLocal(offset, -aim.yaw())).subtract(offset);
     }
 
     private static Vec3 previewVelocity(Vec3 legacy)
@@ -270,8 +292,10 @@ public final class ExternalProjectileSupport
         return new Vec3(-local.x, local.y, local.z);
     }
 
-    private static List<WeaponMuzzle> aaMuzzles(AAGunType type, int sequence, boolean alternate)
+    private static List<WeaponMuzzle> aaMuzzles(AAGunType type, int sequence, boolean alternate, MountAim aim)
     {
+        // The preview frame faces the gun yaw of 180 degrees.
+        float yaw = 180F + aim.yaw();
         List<WeaponMuzzle> muzzles = new ArrayList<>();
         Vec3[] pivots = type.getMeasuredBarrelPivots();
         Vec3[] tips = type.getMeasuredBarrelMuzzles();
@@ -280,8 +304,8 @@ public final class ExternalProjectileSupport
             if (alternate && type.isFireAlternately() && barrel != Math.floorMod(sequence, type.getNumBarrels()))
                 continue;
             Vec3 offset = type.hasMeasuredBarrels() && !type.firesFromBarrelLine(barrel)
-                ? AAGunBarrelGeometry.modelBarrelOffset(pivots[barrel], tips[barrel], 180F, 0F)
-                : AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel], type.getBarrelZ()[barrel], 180F, 0F);
+                ? AAGunBarrelGeometry.modelBarrelOffset(pivots[barrel], tips[barrel], yaw, aim.pitch())
+                : AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel], type.getBarrelZ()[barrel], yaw, aim.pitch());
             muzzles.add(new WeaponMuzzle(offset, Optional.empty(), List.of()));
         }
         return List.copyOf(muzzles);

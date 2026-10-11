@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.MechaPhysics;
+import com.flansmodultimate.common.driveables.visual.MechaVisual;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.*;
@@ -50,7 +51,7 @@ import java.util.*;
 
 /** Mecha runtime with server-owned locomotion, addon effects and hand tools. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Mecha extends Driveable
+public class Mecha extends Driveable implements MechaVisual
 {
     private static final int JUMP_COOLDOWN = 20;
     private static final String NBT_LEG_YAW = "LegsYaw";

@@ -2,8 +2,7 @@
 
 - **Reference:** `C:\Users\alpha\Documents\Minecraft-Development\Mr-Monorisu-Brazila-master`. This is the newest Labjac Flan's fork: Minecraft 1.7.10, "Flan's LabCat Mod — TACZ hitreg experiment", including the Dill-branch features listed in `CHANGELOG_DILL.md`. It bundles the `com.hfr` (HBM/Clowder) mod and the `flanshorizons` source set.
 - **Target:** `C:\Users\alpha\Documents\Minecraft-Development\Flans-Mod-Ultimate-2.0`, `master` @ `55b5aed88`.
-- **Date:** 2026-10-09. The comparison runs one way only, from the reference to the target. Functionality that only the target has, refactors, and modernisations are not reported.
-- **Prior report:** `feature-gap-analysis-krishna-mk6c.md` analysed the superseded Krishna Mk6C fork. Every finding below was re-checked against the current target. Several earlier gaps are now partly closed: vehicle per-seat optics, white-hot vehicle thermal, the optics-HUD rangefinder, HEAT, lifetime limits and voting.
+- **Date:** 2026-10-09; completed-port/status refresh 2026-10-11. The comparison runs one way only, from the reference to the target. Functionality that only the target has, refactors, and modernisations are not reported.
 
 Evidence roots:
 
@@ -15,25 +14,6 @@ Evidence roots:
 ---
 
 ## Optics, thermal and fire control
-
-### Thermal vision on guns and scope attachments — MISSING
-
-Reference: `R/common/guns/GunType` and `AttachmentType` (`HasThermalVision`, alias `HasThermal`), `R/client/FlansModClient` (`thermalShader`), `config_txt/new_config_reference.txt`
-When a player aims down a gun's default scope, or a scope attachment, that has `HasThermalVision`, the generation-3 white-hot thermal shader and the hot-entity overlay switch on. This is separate from `AllowNightVision`/`HasNightVision`, which give vanilla Night Vision.
-
-Target checked: `T/client/render/VehicleThermalRenderer`, `T/client/render/VehicleOpticsClient.thermal()`, `T/common/types/GunType`, `AttachmentType`
-Thermal only turns on through `VehicleOpticsClient.thermal()`, which requires an occupied seat with a thermal sight. Neither gun nor attachment types parse a thermal key.
-
-Missing: thermal imaging while aiming hand-held guns and scope attachments.
-
-### Thermal palettes, generations and hot-object coverage — PARTIAL
-
-Reference: `R/client/FlansModClient`, `R/client/particle/ThermalParticleRenderer`, `R/client/ThermalTeamStrobe`, `R/common/driveables/VehicleType` (`ThermalVisionColor`, `ThermalVisionGeneration`/`thermalVisionGen`), and the "Additional Thermal Hot Particles" client config
-Packs can choose a white-, green- or red-hot palette and image generation 1–3, which differ in blur, noise and CRT-style motion. Hot overlays cover players, mobs, vehicles, planes, bullets, grenades, explosions, muzzle flashes and configured particles, and the config can add particles from other mods. During minigames a thermal IFF strobe marks team-mates.
-
-Target checked: `T/client/render/VehicleThermalRenderer` ("Depth-tested white-hot FLIR"), `T/common/driveables/VehicleOptics.thermal(int)`
-**Present:** per-sight white-hot vehicle FLIR (`ThermalGuis`/`thermalSight`) that renders `LivingEntity` and `Driveable` hot, including distant driveables.
-**Missing:** the green- and red-hot palettes, generation-based image quality, hot projectiles, grenades, explosions, muzzle flashes and particles, the extra-hot-particle config, and the team IFF strobe.
 
 ### Ballistic fire-control solution — PARTIAL
 
@@ -88,16 +68,6 @@ Missing: projectile-mounted cameras (TV-guided and TPV drone views), the steerin
 
 ## Weapons and recoil
 
-### Infantry firing screen shake — MISSING
-
-Reference: `R/common/guns/GunType` (`HasScreenShake`, `ScreenShakeStyle Clean|Sustained`, `ScreenShakeIntensity`, `CameraRecoil`, `ScreenShakeCameraKick`), `R/common/network/PacketFancyScreenShake`, `PacketShakeRecoil`, `R/common/guns/BulletType` (`powerShake`, `rangeShake`)
-Firing a gun shakes the camera in Polati style. The shake is either clean or driven by sustained recoil, its intensity is set per gun, and there is an optional camera kick. Explosions also shake nearby players' cameras, scaled by power and range.
-
-Target checked: `T/client/render/VehicleScreenShake`, `T/network/client/PacketDriveableScreenShake`, `T/config/ModClientConfig.vehicleScreenShake`, `T/client/render/item/GunItemRenderer` (`animShakeDistance` only moves the gun model)
-**Present:** camera shake for driveable main and coax guns (`FancyScreenShake*`).
-
-Missing: camera shake when infantry guns fire, and camera shake from explosions.
-
 ### Battlefield and sustained recoil model — MISSING
 
 Reference: `R/common/guns/GunType` (`recoilElevator`, `sustainedelevator`, `firstShotRecoil`, `sustainedRecoilPitch`, `sustainedRecoilYaw`, `dillElevator`, `dillZoomModifier`)
@@ -127,42 +97,15 @@ Target checked: `T/common/guns/ShootingHelper` (bounce/ricochet branch at line 3
 **Present:** projectiles can bounce or ricochet, and penetration decays with distance.
 **Missing:** per-outcome hit sounds, the damage penalty for over-penetration, and time-based penetration decay.
 
-### Tracer beams and mixed ammunition belts — MISSING
+### Motion-sensor grenades — UNCERTAIN
 
-Reference: `R/common/guns/BulletType` (`TracerBeam`, `TracerBeamColor/Length/Width/Alpha`, `AlternateBulletLoad`, `HasAlternateModel`, `AlternateModel`, `AlternateTexture`, `AlternateTracerBeam*`, `AlternateTrailParticles/Type/Count`), `R/client/particle/EntityTracerBeamFX`, `R/common/guns/EntityBullet` (synced alternate-round state)
-A round can draw a 3D tracer beam with configurable colour, size and alpha. Every N-th round of an ammunition type can be an "alternate" round with its own model, texture, beam and trail particles, for example one tracer every five rounds. This works for infantry guns, vehicle guns, coax and passenger guns, and other clients see it.
-
-Target checked: `T/client/particle/FmTracerParticle`, `T/common/entity/Bullet`, `T/common/types/BulletType`
-Only sprite tracer particles exist.
-
-Missing: the 3D tracer beam renderer and alternate-round belt sequencing with its model, texture, beam and particle overrides.
-
-### Hold-to-throw grenades — MISSING
-
-Reference: `R/common/guns/GrenadeType` (`HoldToThrow`, `OverhandThrowSpeedMultiplier`, `UnderhandThrowSpeedMultiplier`, `GrenadeGroundFriction`, `GrenadeAirDrag`, `GrenadeStopSpeed`, `CringeExplodeOnImpact`/`CringeDetonateOnImpact`, `Description`), `R/common/network/PacketGrenadeThrow`
-With `HoldToThrow`, holding and releasing left mouse throws overhand and right mouse tosses underhand. The grenade is used up and spawned only on release, and the fuse starts at release. The throw packet is validated on the server. Each grenade sets its own rolling friction, air drag, stop speed and impact detonation.
-
-Target checked: `T/common/types/GrenadeType` (`ThrowDelay`, `CanThrow`, `Sticky*`, `SpinWhenThrown`, `FlashBang*`, …), `T/common/entity/Grenade`
-Grenades are thrown immediately with a single throw arc.
-
-Missing: hold-and-release throwing, the underhand toss, throw-speed multipliers, separate ground friction, drag and stop-speed physics, and the impact-detonation aliases.
-
-### Motion-sensor grenades — MISSING
-
-Reference: `R/common/guns/GrenadeType` (`MotionSensor`, `MotionSensorRange`, `MotionSound`, `MotionSoundRange`, `MotionTime`)
-A deployed grenade detects movement within range, plays a warning sound and triggers on what it detects.
+Reference: `R/common/guns/GrenadeType` (`MotionSensor`, `MotionSensorRange`, `MotionSound`, `MotionSoundRange`, `MotionTime`), `R/common/guns/EntityGrenade.motionTime`
+The parser accepts these fields, but the current reference only decrements the entity's motion timer. No consumer of the sensor flag, range or sound was found in reference Java code.
 
 Target checked: `T/common/types/GrenadeType`, `T/common/entity/Grenade`
-Missing: motion-sensor detection and triggering.
+No matching sensor mechanic exists, but parsed reference fields alone do not establish a feature to port.
 
-### Suppression on near miss — PARTIAL
-
-Reference: `R/common/guns/BulletType.suppression`, `R/common/network/PacketSuppression`, `FlyBySound`
-Rounds passing close to a player suppress them (a screen effect) and play a per-ammunition fly-by sound.
-
-Target checked: `T/common/entity/Bullet.playFlybyIfClose` (a generic fly-by sound within 5 blocks), the target network packets
-**Present:** a generic bullet fly-by sound.
-Missing: the suppression effect and per-ammunition `FlyBySound`.
+Missing: unconfirmed; do not treat this as an active gameplay gap without evidence of reference detection and triggering.
 
 ### Projectile chunk loading — MISSING
 
@@ -655,21 +598,15 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 
 | Subsystem | Feature | Status | Confidence |
 | --------- | ------- | ------ | ---------- |
-| Optics | Thermal on guns and attachments | MISSING | HIGH |
-| Optics | Thermal palettes, generations and hot-object coverage | PARTIAL | HIGH |
 | Optics | Ballistic fire-control solution | PARTIAL | HIGH |
 | Optics | Turret and sight stabilisation | MISSING | HIGH |
 | Optics | Helicopter seat stabiliser and hover hold | MISSING | HIGH |
 | Optics | Picture-in-picture scopes | MISSING | HIGH |
 | Optics | Missile and shell camera views | MISSING | HIGH |
-| Weapons | Infantry firing and explosion screen shake | MISSING | HIGH |
 | Weapons | Battlefield and sustained recoil | MISSING | HIGH |
 | Weapons | Directional melee and bayonets | MISSING | HIGH |
 | Weapons | Ricochet and penetration feedback | PARTIAL | MEDIUM |
-| Weapons | Tracer beams and mixed belts | MISSING | HIGH |
-| Weapons | Hold-to-throw grenades | MISSING | HIGH |
-| Weapons | Motion-sensor grenades | MISSING | HIGH |
-| Weapons | Suppression on near miss | PARTIAL | HIGH |
+| Weapons | Motion-sensor grenades | UNCERTAIN | LOW |
 | Weapons | Projectile chunk loading | MISSING | HIGH |
 | Weapons | Self-guided, radar and ARM seekers, homing torpedoes | MISSING | HIGH |
 | Weapons | Proportional navigation | MISSING | HIGH |
@@ -726,17 +663,30 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Totals:** 51 MISSING, 14 PARTIAL, 5 UNCERTAIN.
+**Current tracked gaps:** 46 MISSING, 12 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
-**Follow-up (same day):** these opt-in features were implemented after this analysis. The findings above describe the target before they were added.
+## Completed ports (verified 2026-10-11)
 
-- Infantry firing screen shake: `HasScreenShake`, `ScreenShakeStyle`, `ScreenShakeIntensity`, `CameraRecoil` and `ScreenShakeCameraKick`, plus the `gunScreenShake` client setting. Explosion shake is still missing.
-- Tracer beams and mixed belts: `TracerBeam*`, `HasAlternateModel`, `AlternateBulletLoad`, `AlternateModel`, `AlternateTexture`, `AlternateTracerBeam*` and `AlternateTrailParticle*`.
-- Hold-to-throw grenades: `HoldToThrow`, the throw-speed multipliers, `GrenadeGroundFriction`, `GrenadeAirDrag`, `GrenadeStopSpeed`, and the `Cringe*OnImpact` aliases.
-- Thermal on gun and attachment scopes (`HasThermalVision`/`HasThermal`), and the vehicle `ThermalVisionColor` and `ThermalVisionGeneration` settings.
-- Thermal hot coverage: flying rounds, grenades, and hot particles (explosions, fire, muzzle flashes, sparks, tracers, exhaust, Flan's blast smoke), plus the `additionalThermalHotParticles` client setting and the Teams IFF strobe. The thermal finding is now fully covered.
+These findings were removed from the active gap sections and summary table after checking their current target implementations.
+
+- **Gun and attachment thermal scopes:** `HasThermalVision` / `HasThermal`, `IScope`, `VehicleThermalRenderer`.
+- **Thermal palettes, generations and hot coverage:** `ThermalVisionColor`, `ThermalVisionGeneration`, hot rounds, grenades, effects and configured particles (`ThermalHotParticles`), plus team IFF (`ThermalTeamStrobe`).
+- **Infantry and explosion screen shake:** existing `GunScreenShake` and the new enabled-by-default shared shootable `powerShake` / `rangeShake` keys, `ShootingHelper.doExplosion`, `PacketCombatFeedback`, `CombatScreenEffects`. Explosion recipients use the authored radius and uniform strength, matching the reference (defaults: strength 10, radius 32 blocks; explicit zero disables); clients control strength and duration independently.
+- **Tracer beams and mixed belts:** `BulletType.TracerBeam`, alternate round/model/texture/trail settings, shared fired-shot sequencing and synchronized projectile state.
+- **Hold-to-throw grenades:** hold/release overhand and underhand throws, server throw validation, throw multipliers, rolling/drag/stop controls and impact aliases.
+- **Near-miss suppression and ammunition fly-by sounds:** `NearMissHandler` checks travelled flying and hitscan segments, stops at terminal impacts, excludes the shooter, direct hits and obstructed players, and sends at most one sound and suppression impulse per shot/player. `FlyBySound` / `missNoise` use registered pack sounds; absent values keep the generic sound and explicit `None` or blank disables it. Suppression is enabled globally by default; pack strength/range, server multipliers/rider policy and client roll/vignette/recovery controls are supported. Triggers accept players, NPCs and other source entities, including ownerless mod projectiles. Render effects leave aim and accuracy unchanged.
+
+### Validation of the 2026-10-11 combat-feedback port
+
+- 14 focused tests passed: travelled-segment geometry, impact endpoint bounds, intensity/range controls, effect recovery and ceilings, legacy parser defaults/aliases, packet/config round trips, and server-side class loading with Minecraft client/rendering classes blocked.
+- Scoped `spotlessApply` / `spotlessCheck` and main/wiki diff whitespace checks passed. `sonarlintMain` and `sonarlintTest` completed; new findings were fixed, while existing findings outside the changed methods remain.
+- Full `build` failed in the independent Wolff flag pack because shared model classes could not be resolved. A sequential retry failed in the concurrently edited `SkullBossEntity` boss-bar initialization (`BossEvent` versus `ServerBossEvent`). An earlier normal test compilation also encountered an unrelated `ExternalProjectileSupportTest` API mismatch. These unrelated changes were preserved.
+- IntelliJ inspections ran once and reached the ten-minute limit before all directories in the mixed checkout were inspected. Available results were reviewed and introduced warnings corrected; full IDE coverage is incomplete.
+- In-game audio, visual presentation and multiplayer runtime behavior have not been exercised. The renderer adapts the legacy effects to cosmetic modern camera offsets and configurable real-time envelopes; numerical pixel-for-pixel parity with the legacy FOV/shake renderer is not claimed.
 
 ## Areas requiring deeper audit
+
+- **Motion sensors.** Reference parser fields appear dormant; an active implementation has not been established.
 
 - **Passenger and seat weapons.** The target has passenger fire packets and muzzle-flash handling. The reference's `SeatGuns`/`barrels`/`barrelSpread` semantics need a line-by-line comparison against `T/common/entity/Driveable` seat firing.
 - **Crew and part-loss model.** The reference's `damageVsCrew`, `crewEngine` and `engineLoss`/`wingLoss`/`tailLoss` may partly overlap with the target's part-health scaling (`VehicleHealthScaler`) and its aircraft physics. I did not confirm this.

@@ -5,10 +5,17 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class NpcWeaponOptionsTest
 {
+    /** Display states of the model, a frozen turret and extra chunk ticking are never what an untouched NPC wants. */
+    private static final Set<Feature> STARTS_DISABLED = EnumSet.of(Feature.SECONDARY_BANK, Feature.INVULNERABLE, Feature.TURRET_LOCKED, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED,
+        Feature.FULL_THROTTLE, Feature.STAY_ACTIVE);
+
     @Test
     void oldNpcSavesEnableTheUsefulFeaturesAndSelectThePrimaryBank()
     {
@@ -16,10 +23,10 @@ class NpcWeaponOptionsTest
         for (Feature feature : Feature.values())
         {
             // Only switches that would change an untouched NPC's behavior against the builder's intent start disabled.
-            if (feature == Feature.SECONDARY_BANK || feature == Feature.INVULNERABLE)
-                assertFalse(options.enabled(feature));
+            if (STARTS_DISABLED.contains(feature))
+                assertFalse(options.enabled(feature), feature.name());
             else
-                assertTrue(options.enabled(feature));
+                assertTrue(options.enabled(feature), feature.name());
         }
     }
 

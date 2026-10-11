@@ -4,7 +4,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.driveables.visual.AAGunVisual;
 import com.flansmodultimate.common.types.AAGunType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -47,14 +47,14 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         return AAGunType.class;
     }
 
-    public void renderBase(AAGun aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-        float scale, EnumRenderPass renderPass)
+    public void renderBase(AAGunVisual aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
     {
         renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderGun(AAGun aa, float gunPitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
-        float alpha, float scale, EnumRenderPass renderPass)
+    public void renderGun(AAGunVisual aa, float gunPitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         float pitch = -gunPitch * Mth.DEG_TO_RAD;
 
@@ -90,14 +90,13 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         {
             if (!aa.hasAmmo(i))
                 continue;
-            renderBarrelPartArray(ammoModel[i], barrelX, barrelY, barrelZ, pitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-                renderPass);
+            renderBarrelPartArray(ammoModel[i], barrelX, barrelY, barrelZ, pitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
     }
 
     /** Draw a neutral preview, with the gun level and every barrel loaded, for renderers without an AA gun entity. */
-    public void render(AAGunType aaGunType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-        float scale, EnumRenderPass renderPass)
+    public void render(AAGunType aaGunType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
     {
         renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderParts(seatModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -117,8 +116,8 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
             renderBarrelPartArray(ammo, barrelX, barrelY, barrelZ, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private static void renderParts(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderParts(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo part : parts)
         {
@@ -127,8 +126,8 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         }
     }
 
-    private static void renderBarrelPartArray(ModelRendererTurbo[] parts, float x, float y, float z, float pitch, PoseStack poseStack, VertexConsumer vertexConsumer,
-        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderBarrelPartArray(ModelRendererTurbo[] parts, float x, float y, float z, float pitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (parts == null)
             return;
@@ -218,8 +217,7 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
 
     private static double[] emptyBounds()
     {
-        return new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
-            Double.NEGATIVE_INFINITY};
+        return new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
     }
 
     public void flipAll()

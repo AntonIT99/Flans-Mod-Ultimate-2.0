@@ -85,6 +85,12 @@ public final class LegacyPlanePhysics
         return rate == 0F ? 0F : (float) (rate / ROTOR_THROTTLE_DIVISOR * ROTOR_RENDER_SCALE);
     }
 
+    /** Partial engine/propeller loss reduces powered flight without removing a glider's aerodynamic lift. */
+    public static float propellerThrottle(float throttle, float intactFraction)
+    {
+        return finite(throttle) * Mth.clamp(finite(intactFraction), 0F, 1F);
+    }
+
     public static ControlRates controlRates(EnumPlaneMode mode, float speed, float horizontalSpeed, float throttle, float flapYaw, float flapPitch, float flapRoll, float turnLeft, float turnRight,
         float lookUp, float lookDown, float rollLeft, float rollRight)
     {

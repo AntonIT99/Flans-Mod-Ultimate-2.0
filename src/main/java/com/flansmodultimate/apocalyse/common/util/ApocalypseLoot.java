@@ -2,14 +2,7 @@ package com.flansmodultimate.apocalyse.common.util;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
-import com.flansmodultimate.common.types.ArmorType;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.EnumType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.MechaItemType;
-import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModUtils;
@@ -22,32 +15,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
 {
     private static final String[] JOURNAL_LINES = new String[]{"The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
-        "If you find the power cubes, do not stand between them unless you are ready to leave.",
-        "The survivors stopped trusting anyone with clean armor. They still trade bullets for food.",
+        "If you find the power cubes, do not stand between them unless you are ready to leave.", "The survivors stopped trusting anyone with clean armor. They still trade bullets for food.",
         "Sulphur pits mark the old roads. Keep water away from the acid and keep moving.", "The skull drones patrol at night. Their boss laughs before the nukes fall."};
 
     /** The 1.12.2 research lab notes, as {title, page}. */
@@ -61,17 +43,14 @@ public final class ApocalypseLoot
             "Finally, we are looking into other approaches, though I must say, I am quite surprised. Management must have gone a bit mad, they've got us looking for a way to travel back in time... back in time! To destroy the first AI Mecha! How absurd!"},
         {"Research Journal: Entry 5",
             "The time travel research is slow, but having heard some of the ideas from the others, I think we may actually have a shot. Not that this helps, though. I've been trying to explain stable time loops to management, but they either don't understand, or are just too desperate."},
-        {"Research Journal: Entry 6",
-            "We actually did it! I cannot believe it, but we sent someone back in time! Admittedly, they ended up walking with Creepersauruses, but nonetheless, we did it!"},
-        {"Research Journal: Entry 7", "They're here! The mechas are here! If you read this, please, go back in time, destroy the creator, stop th..."},
-        {"Time Portal: Instruction Manual",
+        {"Research Journal: Entry 6", "We actually did it! I cannot believe it, but we sent someone back in time! Admittedly, they ended up walking with Creepersauruses, but nonetheless, we did it!"},
+        {"Research Journal: Entry 7", "They're here! The mechas are here! If you read this, please, go back in time, destroy the creator, stop th..."}, {"Time Portal: Instruction Manual",
             "The Time Portal uses the portal properties of obsidian combined with our state-of-the-art power cubes. Place one in each corner of the obsidian grid to activate the portal."}};
 
     /** The 1.12.2 brewing-stand pool (legacy potion metadata 8193-8206). */
     private static final List<Supplier<ItemStack>> BREWING_STAND_POTIONS = List.of(() -> ItemStackData.potion(Items.POTION, Potions.REGENERATION),
-        () -> ItemStackData.potion(Items.POTION, Potions.SWIFTNESS), () -> ItemStackData.potion(Items.POTION, Potions.FIRE_RESISTANCE),
-        () -> ItemStackData.potion(Items.POTION, Potions.HEALING), () -> ItemStackData.potion(Items.POTION, Potions.NIGHT_VISION),
-        () -> ItemStackData.potion(Items.POTION, Potions.STRENGTH), () -> ItemStackData.potion(Items.POTION, Potions.LEAPING),
+        () -> ItemStackData.potion(Items.POTION, Potions.SWIFTNESS), () -> ItemStackData.potion(Items.POTION, Potions.FIRE_RESISTANCE), () -> ItemStackData.potion(Items.POTION, Potions.HEALING),
+        () -> ItemStackData.potion(Items.POTION, Potions.NIGHT_VISION), () -> ItemStackData.potion(Items.POTION, Potions.STRENGTH), () -> ItemStackData.potion(Items.POTION, Potions.LEAPING),
         () -> ItemStackData.potion(Items.POTION, Potions.WATER_BREATHING), () -> ItemStackData.potion(Items.POTION, Potions.INVISIBILITY));
 
     public static ItemStack randomLoot(RandomSource random, boolean gunsOnly)
@@ -228,7 +207,7 @@ public final class ApocalypseLoot
     public static ItemStack itemHolderLoot(RandomSource random, boolean gunsOnly)
     {
         if (gunsOnly || random.nextInt(3) != 0)
-            return ApocalypseGunHelper.randomGun(random, false).flatMap(gun -> ApocalypseGunHelper.loadGun(gun, random, true)).orElse(ItemStack.EMPTY);
+            return ApocalypseGunHelper.randomLootGun(random).orElse(ItemStack.EMPTY);
         if (random.nextBoolean())
             return survivorJournal(random);
         if (random.nextBoolean())
@@ -255,8 +234,8 @@ public final class ApocalypseLoot
 
     private static ItemStack randomFluidBucket(RandomSource random)
     {
-        List<Item> buckets = BuiltInRegistries.FLUID.stream().filter(fluid -> fluid.isSource(fluid.defaultFluidState())).map(Fluid::getBucket).filter(bucket -> bucket != Items.AIR)
-            .distinct().sorted(Comparator.comparing(bucket -> String.valueOf(BuiltInRegistries.ITEM.getKey(bucket)))).toList();
+        List<Item> buckets = BuiltInRegistries.FLUID.stream().filter(fluid -> fluid.isSource(fluid.defaultFluidState())).map(Fluid::getBucket).filter(bucket -> bucket != Items.AIR).distinct()
+            .sorted(Comparator.comparing(bucket -> String.valueOf(BuiltInRegistries.ITEM.getKey(bucket)))).toList();
         return buckets.isEmpty() ? ItemStack.EMPTY : new ItemStack(buckets.get(random.nextInt(buckets.size())));
     }
 
@@ -335,12 +314,25 @@ public final class ApocalypseLoot
 
     private static void equipRandomArmorSet(LivingEntity entity, RandomSource random)
     {
-        List<ArmorType> armor = armorTypes();
-        if (armor.isEmpty())
+        List<Team> teams = Team.values().stream().filter(team -> team != Team.SPECTATORS).sorted(Comparator.comparing(InfoType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
+        if (teams.isEmpty())
+        {
+            equipRandomArmorPiece(entity, random);
             return;
-        for (ArmorType type : armor)
-            if (random.nextInt(3) != 0)
-                equipArmor(entity, type);
+        }
+        Team team = teams.get(random.nextInt(teams.size()));
+        List<PlayerClass> classes = team.getClasses();
+        PlayerClass playerClass = classes.isEmpty() ? null : classes.get(random.nextInt(classes.size()));
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR)
+                continue;
+            ItemStack armor = playerClass == null ? ItemStack.EMPTY : playerClass.getArmour(slot);
+            if (armor.isEmpty())
+                armor = team.getArmour(slot);
+            if (!armor.isEmpty())
+                entity.setItemSlot(slot, armor.copy());
+        }
     }
 
     private static void equipArmor(LivingEntity entity, ArmorType armor)
@@ -361,6 +353,7 @@ public final class ApocalypseLoot
             if (type instanceof ArmorType armorType && ModUtils.getItemStack(armorType).isPresent())
                 armor.add(armorType);
         }
+        armor.sort(Comparator.comparing(InfoType::getShortName, String.CASE_INSENSITIVE_ORDER));
         return armor;
     }
 

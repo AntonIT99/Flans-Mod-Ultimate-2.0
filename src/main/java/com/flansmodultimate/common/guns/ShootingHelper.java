@@ -46,8 +46,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -625,6 +624,8 @@ public final class ShootingHelper
             return;
 
         new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
+        if (!level.isClientSide && type.getPowerShake() > 0F && type.getRangeShake() > 0F)
+            PacketHandler.sendToAllAround(new PacketCombatFeedback(true, type.getPowerShake(), 0F), position, type.getRangeShake(), level.dimension());
 
         // The caller owns the projectile lifecycle. In particular, smoke shells must remain as
         // stationary smoke sources after their explosive payload has been processed.
@@ -717,6 +718,8 @@ public final class ShootingHelper
             shot.getBulletType());
         Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;
+        Vec3 feedbackEnd = shootingOrigin.add(shootingVector);
+        Set<UUID> directHits = new HashSet<>();
 
         for (int i = 0; i < hits.size(); i++)
         {
@@ -731,15 +734,20 @@ public final class ShootingHelper
             ClientHooks.RENDER.spawnDebugVector(previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
 
             previousHitPos = hitPos;
+            if (hit.getEntity() instanceof Player player)
+                directHits.add(player.getUUID());
             hitData = onHit(level, shot, hit, hitPos, shotVector, hitData, null);
 
             if (hitData.penetratingPower() <= 0F)
             {
                 onDetonate(level, shot, hitPos);
                 finalhit = hitPos;
+                feedbackEnd = hitPos;
                 break;
             }
         }
+
+        NearMissHandler.dispatch(level, shot, shootingOrigin, feedbackEnd, directHits, null);
 
         if (finalhit == null)
         {

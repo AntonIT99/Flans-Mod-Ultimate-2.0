@@ -189,6 +189,12 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
     private static final ForgeConfigSpec.EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
 
+    private static final ForgeConfigSpec.BooleanValue BULLET_FLYBY_SOUNDS;
+    private static final ForgeConfigSpec.DoubleValue BULLET_FLYBY_RANGE_MULTIPLIER;
+    private static final ForgeConfigSpec.BooleanValue NEAR_MISS_SUPPRESSION;
+    private static final ForgeConfigSpec.DoubleValue SUPPRESSION_RANGE_MULTIPLIER;
+    private static final ForgeConfigSpec.DoubleValue SUPPRESSION_INTENSITY;
+    private static final ForgeConfigSpec.BooleanValue SUPPRESSION_AFFECTS_RIDERS;
     private static final ForgeConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
@@ -420,6 +426,16 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Shootable Settings");
+        BULLET_FLYBY_SOUNDS = builder.comment("Send near-miss sounds for flying bullets and hitscan shots. Clients can mute these independently.").define("bulletFlybySounds", true);
+        BULLET_FLYBY_RANGE_MULTIPLIER = builder.comment("Scale ammunition FlyBySoundRange. Effective reach is capped at 32 blocks; zero disables near-miss sounds.")
+            .defineInRange("bulletFlybyRangeMultiplier", 1D, 0D, 10D);
+        NEAR_MISS_SUPPRESSION = builder.comment("Enable visual near-miss suppression for bullets and hitscan shots. Does not change damage, accuracy or player aim.").define("nearMissSuppression",
+            true);
+        SUPPRESSION_RANGE_MULTIPLIER = builder.comment("Scale each ammunition's SuppressionRange. Effective reach is capped at 32 blocks; zero disables suppression.")
+            .defineInRange("suppressionRangeMultiplier", 1D, 0D, 10D);
+        SUPPRESSION_INTENSITY = builder.comment("Scale server-authored suppression impulses, combined with the ammunition's Suppression value. Zero disables impulses.")
+            .defineInRange("suppressionIntensity", 1D, 0D, 10D);
+        SUPPRESSION_AFFECTS_RIDERS = builder.comment("Allow near-miss suppression for players riding entities. Labjac excludes riders by default.").define("suppressionAffectsRiders", false);
         SHOOTABLES_CAN_BREAK_GLASS = builder.comment("Whether guns and grenades can break glass").define("shootablesCanBreakGlass", true);
         NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE = builder.comment("Damage reference for the kinetic damage system (when 'Mass' is set).",
             "A 9 g projectile retains the established baseline; heavier projectiles scale with mass^(2/3) so shell damage remains proportional to normalized vehicle health.",
@@ -702,7 +718,8 @@ public final class ModCommonConfig
 
             ENCHANTMENT_MODULE_ENABLED.get(),
 
-            List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get());
+            List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
+            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1313,6 +1330,12 @@ public final class ModCommonConfig
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS, QuickSection.SERVER),
         FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS, QuickSection.SERVER),
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS, QuickSection.SERVER),
+        BULLET_FLYBY_SOUNDS(() -> ModCommonConfig.BULLET_FLYBY_SOUNDS, QuickSection.SERVER),
+        BULLET_FLYBY_RANGE_MULTIPLIER(() -> ModCommonConfig.BULLET_FLYBY_RANGE_MULTIPLIER, QuickSection.SERVER),
+        NEAR_MISS_SUPPRESSION(() -> ModCommonConfig.NEAR_MISS_SUPPRESSION, QuickSection.SERVER),
+        SUPPRESSION_RANGE_MULTIPLIER(() -> ModCommonConfig.SUPPRESSION_RANGE_MULTIPLIER, QuickSection.SERVER),
+        SUPPRESSION_INTENSITY(() -> ModCommonConfig.SUPPRESSION_INTENSITY, QuickSection.SERVER),
+        SUPPRESSION_AFFECTS_RIDERS(() -> ModCommonConfig.SUPPRESSION_AFFECTS_RIDERS, QuickSection.SERVER),
         SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS, QuickSection.SERVER),
         PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE, QuickSection.SERVER),
         ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE, QuickSection.SERVER),

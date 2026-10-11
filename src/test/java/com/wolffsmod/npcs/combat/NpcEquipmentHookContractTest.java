@@ -104,6 +104,54 @@ class NpcEquipmentHookContractTest
         }
     }
 
+    @Test
+    void simulationHooksTargetMethodsTheEntityDeclaresAndOverrideOnlyOnesItDoesNot() throws IOException
+    {
+        ClassNode npc = read(NPC);
+        assertDoesNotThrow(() ->
+        {
+            method(npc, "(Lnet/minecraft/world/phys/Vec3;)V", "m_7023_", "travel");
+            method(npc, "()F", "m_6108_", "getWaterSlowDown");
+            method(npc, "(Lnet/minecraft/world/entity/Entity;D)Z", "isInRange");
+        });
+        // The mixin adds these as overrides; a method of the same name in the target would silently win or clash.
+        assertFalse(declares(npc, "(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F", "m_6431_", "getStandingEyeHeight"));
+        assertFalse(declares(npc, "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V", "m_19956_", "positionRider"));
+        assertFalse(declares(npc, "()Lnet/minecraft/world/phys/AABB;", "m_6921_", "getBoundingBoxForCulling"));
+        assertFalse(declares(npc, "(Lnet/minecraft/world/entity/Entity;)Z", "m_142582_", "hasLineOfSight"));
+        ClassNode custom = read("noppes/npcs/entity/EntityCustomNpc");
+        assertFalse(declares(custom, "(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F", "m_6431_", "getStandingEyeHeight"));
+        assertFalse(declares(custom, "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V", "m_19956_", "positionRider"));
+        assertFalse(declares(custom, "()Lnet/minecraft/world/phys/AABB;", "m_6921_", "getBoundingBoxForCulling"));
+        assertFalse(declares(custom, "(Lnet/minecraft/world/entity/Entity;)Z", "m_142582_", "hasLineOfSight"));
+    }
+
+    @Test
+    void navigationAndTargetingHooksMatchTheInstalledGoals() throws IOException
+    {
+        ClassNode ranged = read("noppes/npcs/ai/EntityAIRangedAttack");
+        assertTrue(ranged.fields.stream().anyMatch(field -> field.name.equals("moveTries") && field.desc.equals("I")));
+        assertDoesNotThrow(
+            () -> method(read("noppes/npcs/ai/NpcWalkNodeEvaluator"), "(Lnet/minecraft/world/entity/Mob;III)Lnet/minecraft/world/level/pathfinder/BlockPathTypes;", "m_77567_", "getCachedBlockType"));
+        ClassNode navigator = read("noppes/npcs/ai/NpcGroundPathNavigator");
+        assertEquals("net/minecraft/world/entity/ai/navigation/GroundPathNavigation", navigator.superName);
+        assertFalse(declares(navigator, "(Lnet/minecraft/world/entity/Entity;D)Z", "m_5624_", "moveTo"));
+        assertFalse(declares(navigator, "(Ljava/util/Set;IZIF)Lnet/minecraft/world/level/pathfinder/Path;", "m_148222_", "createPath"));
+        ClassNode goal = read("noppes/npcs/ai/target/NpcNearestAttackableTargetGoal");
+        assertEquals("net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal", goal.superName);
+        assertFalse(declares(goal, "()Z", "m_8036_", "canUse"));
+        assertFalse(declares(goal, "()D", "m_7623_", "getFollowDistance"));
+        // Its own check for giving a target up asks for the follow distance, which the mixin extends by the margin.
+        MethodNode keep = method(goal, "()Z", "m_8045_", "canContinueToUse");
+        assertTrue(invokes(keep, "noppes/npcs/ai/target/NpcNearestAttackableTargetGoal", "m_7623_", "()D")
+            || invokes(keep, "noppes/npcs/ai/target/NpcNearestAttackableTargetGoal", "getFollowDistance", "()D"));
+    }
+
+    private static boolean declares(ClassNode owner, String descriptor, String... names)
+    {
+        return owner.methods.stream().anyMatch(method -> List.of(names).contains(method.name) && method.desc.equals(descriptor));
+    }
+
     private static boolean invokes(MethodNode method, String owner, String name, String descriptor)
     {
         for (var instruction : method.instructions)

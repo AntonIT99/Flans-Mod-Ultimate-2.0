@@ -134,6 +134,30 @@ public final class ClientEventHandler
         }
         applyVehicleScreenShake(event);
         applyGunScreenShake(event);
+        applyCombatScreenEffects(event);
+    }
+
+    /** Composes cosmetic explosion and near-miss motion without changing player or mounted weapon aim. */
+    private static void applyCombatScreenEffects(ViewportEvent.ComputeCameraAngles event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null)
+            return;
+        long now = Util.getMillis();
+        if (!config.explosionScreenShake)
+            CombatScreenEffects.resetExplosion();
+        if (!config.nearMissSuppression)
+            CombatScreenEffects.resetSuppression();
+        if (Minecraft.getInstance().player == null || !Minecraft.getInstance().player.isAlive() || Minecraft.getInstance().player.isSpectator())
+        {
+            CombatScreenEffects.reset();
+            return;
+        }
+        float explosion = (float) (CombatScreenEffects.explosionLevel(now, config.explosionShakeDuration) * config.explosionShakeIntensity * 0.05D);
+        float roll = explosion * (float) Math.sin(now * 0.071D);
+        roll += (float) (Mth.clamp(CombatScreenEffects.suppressionRoll(now, config.suppressionDuration) * config.suppressionIntensity, -1D, 1D) * config.suppressionCameraRoll);
+        event.setPitch(Mth.clamp(event.getPitch() - explosion * 0.4F, -89.9F, 89.9F));
+        event.setRoll(event.getRoll() + roll);
     }
 
     /** Adds the camera kick of a screen-shaking gun the player just fired. 1.7.10 applied it through view bobbing. */
@@ -497,6 +521,7 @@ public final class ClientEventHandler
         ThermalHotParticles.reset();
         VehicleScreenShake.reset();
         GunScreenShake.reset();
+        CombatScreenEffects.reset();
         GrenadeThrowInput.reset();
         DistantHorizonsClient.reset();
         ModClient.clearTransientLighting();

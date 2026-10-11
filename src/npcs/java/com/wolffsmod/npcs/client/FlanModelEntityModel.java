@@ -13,11 +13,13 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.RenderType;
 
 /**
- * Vanilla entity model drawing the static preview of a content-pack AA gun or driveable model.
+ * Vanilla entity model drawing a content-pack AA gun or driveable model.
  *
- * <p>Custom NPCs renders a picked model entity by calling this model from its own NPC renderer, so
+ * <p>
+ * Custom NPCs renders a picked model entity by calling this model from its own NPC renderer, so
  * all drawing happens here rather than in {@link FlanModelRenderer}. The platform buffer adapter
- * opts the normal body into optimized world rendering; special layers retain the supplied buffer.</p>
+ * opts the normal body into optimized world rendering; special layers retain the supplied buffer.
+ * </p>
  */
 public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
 {
@@ -28,7 +30,8 @@ public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
 
     public FlanModelEntityModel(FlanModelEntityType entityType)
     {
-        super(texture -> {
+        super(texture ->
+        {
             IContentType type = entityType.getInfoType();
             return type != null ? FlansModelPreviews.getRenderType(type, texture) : RenderType.entityCutoutNoCull(texture);
         });
@@ -38,7 +41,7 @@ public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
     @Override
     public void setupAnim(@NotNull FlanModelEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch)
     {
-        // Static preview for now.
+        // The NPC wearing the model animates it; see NpcModelPoses. Menus draw it at rest.
     }
 
     @Override

@@ -3,10 +3,8 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumMechaSlotType;
-import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.visual.DriveableVisual;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.MechaType;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -55,8 +53,8 @@ public class ModelMecha extends ModelDriveable
     public Vector3f leftFootOrigin = new Vector3f();
 
     @Override
-    public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void render(DriveableVisual driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         if (driveable.isPartIntact(EnumDriveablePart.CORE))
             super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -73,8 +71,7 @@ public class ModelMecha extends ModelDriveable
             poseStack.mulPose(Axis.YP.rotationDegrees(-headYaw));
             renderPart(headModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (driveable.isPartIntact(EnumDriveablePart.BARREL))
-                renderWithRotation(barrelModel, 0F, 0F, -state.turretPitch() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
-                    scale, renderPass);
+                renderWithRotation(barrelModel, 0F, 0F, -state.turretPitch() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
 
@@ -99,63 +96,58 @@ public class ModelMecha extends ModelDriveable
         float armSpaceScale = configSpaceScale(type);
         if (driveable.isPartIntact(EnumDriveablePart.LEFT_ARM))
         {
-            renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(), type == null ? null : type.getLeftHandModifier(),
-                type == null ? 1F : type.getArmLength(), armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL), poseStack, vertexConsumer, packedLight,
-                packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(), type == null ? null : type.getLeftHandModifier(), type == null ? 1F : type.getArmLength(),
+                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         if (driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM))
         {
-            renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(), type == null ? null : type.getRightHandModifier(),
-                type == null ? 1F : type.getArmLength(), armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL), poseStack, vertexConsumer, packedLight,
-                packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(), type == null ? null : type.getRightHandModifier(), type == null ? 1F : type.getArmLength(),
+                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
-        renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.VEHICLE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-            renderPass);
+        renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.VEHICLE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private void renderLegs(MechaType type, RenderState state, float leftSwing, float rightSwing, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
-        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderLegs(MechaType type, RenderState state, float leftSwing, float rightSwing, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,
+        float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         float legLength = type == null ? 1F : Math.max(0F, type.getLegLength());
         float legTrans = type == null ? 0F : type.getLegTrans();
-        renderSimpleLeg(leftLegModel, leftFootModel, legTrans, legLength, leftSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-            renderPass);
-        renderSimpleLeg(rightLegModel, rightFootModel, legTrans, legLength, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-            renderPass);
+        renderSimpleLeg(leftLegModel, leftFootModel, legTrans, legLength, leftSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderSimpleLeg(rightLegModel, rightFootModel, legTrans, legLength, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         // 1.12.2 multi-legged mechas: rear and front pairs swing opposite to the main pair.
         float rearLegLength = type == null ? 1F : Math.max(0F, type.getRearLegLength());
         float rearLegTrans = type == null ? 0F : type.getRearLegTrans();
-        renderSimpleLeg(leftRearLegModel, leftRearFootModel, rearLegTrans, rearLegLength, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
-            alpha, scale, renderPass);
-        renderSimpleLeg(rightRearLegModel, rightRearFootModel, rearLegTrans, rearLegLength, leftSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
-            alpha, scale, renderPass);
+        renderSimpleLeg(leftRearLegModel, leftRearFootModel, rearLegTrans, rearLegLength, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
+        renderSimpleLeg(rightRearLegModel, rightRearFootModel, rearLegTrans, rearLegLength, leftSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
 
         float frontLegLength = type == null ? 1F : Math.max(0F, type.getFrontLegLength());
         float frontLegTrans = type == null ? 0F : type.getFrontLegTrans();
-        renderSimpleLeg(leftFrontLegModel, leftFrontFootModel, frontLegTrans, frontLegLength, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
-            alpha, scale, renderPass);
-        renderSimpleLeg(rightFrontLegModel, rightFrontFootModel, frontLegTrans, frontLegLength, leftSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
-            alpha, scale, renderPass);
+        renderSimpleLeg(leftFrontLegModel, leftFrontFootModel, frontLegTrans, frontLegLength, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
+        renderSimpleLeg(rightFrontLegModel, rightFrontFootModel, frontLegTrans, frontLegLength, leftSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
 
         LegAnimation animation = state.legAnimation();
-        renderLimb(leftAnimLegUpperModel, leftLegUpperOrigin, Axis.ZP, animation.angle(LegAnimation.LEFT_UPPER, state.partialTick()), poseStack, vertexConsumer, packedLight,
-            packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderLimb(rightAnimLegUpperModel, rightLegUpperOrigin, Axis.ZP, animation.angle(LegAnimation.RIGHT_UPPER, state.partialTick()), poseStack, vertexConsumer, packedLight,
-            packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderLimb(leftAnimLegLowerModel, leftLegLowerOrigin, Axis.ZP, animation.angle(LegAnimation.LEFT_LOWER, state.partialTick()), poseStack, vertexConsumer, packedLight,
-            packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderLimb(rightAnimLegLowerModel, rightLegLowerOrigin, Axis.ZP, animation.angle(LegAnimation.RIGHT_LOWER, state.partialTick()), poseStack, vertexConsumer, packedLight,
-            packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderLimb(leftAnimFootModel, leftFootOrigin, Axis.ZP, animation.angle(LegAnimation.LEFT_FOOT, state.partialTick()), poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass);
-        renderLimb(rightAnimFootModel, rightFootOrigin, Axis.ZP, animation.angle(LegAnimation.RIGHT_FOOT, state.partialTick()), poseStack, vertexConsumer, packedLight,
-            packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderLimb(leftAnimLegUpperModel, leftLegUpperOrigin, Axis.ZP, animation.angle(LegAnimation.LEFT_UPPER, state.partialTick()), poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
+            blue, alpha, scale, renderPass);
+        renderLimb(rightAnimLegUpperModel, rightLegUpperOrigin, Axis.ZP, animation.angle(LegAnimation.RIGHT_UPPER, state.partialTick()), poseStack, vertexConsumer, packedLight, packedOverlay, red,
+            green, blue, alpha, scale, renderPass);
+        renderLimb(leftAnimLegLowerModel, leftLegLowerOrigin, Axis.ZP, animation.angle(LegAnimation.LEFT_LOWER, state.partialTick()), poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
+            blue, alpha, scale, renderPass);
+        renderLimb(rightAnimLegLowerModel, rightLegLowerOrigin, Axis.ZP, animation.angle(LegAnimation.RIGHT_LOWER, state.partialTick()), poseStack, vertexConsumer, packedLight, packedOverlay, red,
+            green, blue, alpha, scale, renderPass);
+        renderLimb(leftAnimFootModel, leftFootOrigin, Axis.ZP, animation.angle(LegAnimation.LEFT_FOOT, state.partialTick()), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
+            alpha, scale, renderPass);
+        renderLimb(rightAnimFootModel, rightFootOrigin, Axis.ZP, animation.angle(LegAnimation.RIGHT_FOOT, state.partialTick()), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
+            alpha, scale, renderPass);
     }
 
-    private void renderSimpleLeg(ModelRendererTurbo[] leg, ModelRendererTurbo[] foot, float legTrans, float legLength, float swingDegrees, PoseStack poseStack,
-        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderSimpleLeg(ModelRendererTurbo[] leg, ModelRendererTurbo[] foot, float legTrans, float legLength, float swingDegrees, PoseStack poseStack, VertexConsumer vertexConsumer,
+        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if ((leg == null || leg.length == 0) && (foot == null || foot.length == 0))
             return;
@@ -173,7 +165,7 @@ public class ModelMecha extends ModelDriveable
         poseStack.popPose();
     }
 
-    private static boolean hasAddon(Driveable driveable, EnumMechaSlotType slot)
+    private static boolean hasAddon(DriveableVisual driveable, EnumMechaSlotType slot)
     {
         DriveableData data = driveable.getDriveableData();
         return data != null && !data.getMechaAddon(slot).isEmpty();
@@ -196,9 +188,8 @@ public class ModelMecha extends ModelDriveable
         return modelScale <= 0F ? 1F : 1F / modelScale;
     }
 
-    private void renderArm(ModelRendererTurbo[] arm, ModelRendererTurbo[] hand, Vector3f origin, Vector3f handModifier, float armLength, float configScale, float aimPitch,
-        boolean renderHand, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
-        EnumRenderPass renderPass)
+    private void renderArm(ModelRendererTurbo[] arm, ModelRendererTurbo[] hand, Vector3f origin, Vector3f handModifier, float armLength, float configScale, float aimPitch, boolean renderHand,
+        PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         if (origin != null)
@@ -218,8 +209,8 @@ public class ModelMecha extends ModelDriveable
     }
 
     @Override
-    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
-        float alpha, float scale, EnumRenderPass renderPass)
+    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         super.render(driveableType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         MechaType type = driveableType instanceof MechaType mechaType ? mechaType : null;
@@ -245,14 +236,14 @@ public class ModelMecha extends ModelDriveable
         renderPart(headModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(barrelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         float armSpaceScale = configSpaceScale(type);
-        renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(), type == null ? null : type.getLeftHandModifier(),
-            type == null ? 1F : type.getArmLength(), armSpaceScale, 0F, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(), type == null ? null : type.getRightHandModifier(),
-            type == null ? 1F : type.getArmLength(), armSpaceScale, 0F, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(), type == null ? null : type.getLeftHandModifier(), type == null ? 1F : type.getArmLength(), armSpaceScale,
+            0F, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(), type == null ? null : type.getRightHandModifier(), type == null ? 1F : type.getArmLength(),
+            armSpaceScale, 0F, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private void renderLimb(ModelRendererTurbo[] parts, Vector3f origin, Axis axis, float angleDegrees, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
-        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderLimb(ModelRendererTurbo[] parts, Vector3f origin, Axis axis, float angleDegrees, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (parts == null || parts.length == 0)
             return;
@@ -265,8 +256,8 @@ public class ModelMecha extends ModelDriveable
         poseStack.popPose();
     }
 
-    private void renderWithRotation(ModelRendererTurbo[] parts, float x, float y, float z, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderWithRotation(ModelRendererTurbo[] parts, float x, float y, float z, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,
+        float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (parts == null)
             return;

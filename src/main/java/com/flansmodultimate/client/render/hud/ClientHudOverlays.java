@@ -5,6 +5,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DriveableArmorDebugHud;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.render.effects.SuppressionOverlay;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
@@ -95,6 +96,7 @@ public final class ClientHudOverlays
         registrar.aboveCameraOverlays("scope", SCOPE);
         registrar.aboveCameraOverlays("armor", ARMOR);
         registrar.aboveCameraOverlays("wounded_flash", WOUNDED_FLASH);
+        registrar.aboveCameraOverlays("near_miss_suppression", SuppressionOverlay::render);
         registrar.aboveCameraOverlays("flash_bang", FLASH_BANG);
         registrar.aboveArmorLevel("damage_absorption", DAMAGE_ABSORPTION);
         registrar.aboveHotbar("hud", HUD);

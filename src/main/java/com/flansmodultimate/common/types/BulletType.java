@@ -70,6 +70,16 @@ public class BulletType extends ShootableType
 
     @Getter
     protected String hitSound;
+    /** Null keeps the generic fly-by; an empty string explicitly disables it. */
+    @Getter @Nullable
+    protected String flyBySound;
+    @Getter
+    protected float flyBySoundRange = 5F;
+    /** Labjac strength scale: 16 is neutral, zero disables suppression for this ammunition. */
+    @Getter
+    protected float suppression = 16F;
+    @Getter
+    protected float suppressionRange = 3F;
     protected float hitSoundRange = -1F;
     @Getter
     protected boolean hitSoundEnable;
@@ -254,6 +264,7 @@ public class BulletType extends ShootableType
         if (hasValueForConfigField("HitSound", file))
             hitSound = readSound("HitSound", hitSound, file);
         hitSoundRange = readValue("HitSoundRange", hitSoundRange, file);
+        readCombatFeedback(file);
 
         penetrates = readValue("Penetrates", true, file);
         penetratingPower = readValue("Penetration", penetratingPower, file);
@@ -648,5 +659,17 @@ public class BulletType extends ShootableType
     public float getBlockPenetrationModifier()
     {
         return blockPenetrationModifier < 0F ? (float) ModCommonConfig.get().blockPenetrationModifier() : blockPenetrationModifier;
+    }
+
+    private void readCombatFeedback(TypeFile file)
+    {
+        flyBySound = readSound("missNoise", flyBySound, file);
+        flyBySound = readSound("FlyBySound", flyBySound, file);
+        flyBySoundRange = readValue("FlyBySoundRange", flyBySoundRange, file);
+        suppression = readValue("Suppression", suppression, file);
+        suppressionRange = readValue("SuppressionRange", suppressionRange, file);
+        flyBySoundRange = Float.isFinite(flyBySoundRange) ? Mth.clamp(flyBySoundRange, 0F, 32F) : 5F;
+        suppression = Float.isFinite(suppression) ? Mth.clamp(suppression, 0F, 160F) : 0F;
+        suppressionRange = Float.isFinite(suppressionRange) ? Mth.clamp(suppressionRange, 0F, 32F) : 0F;
     }
 }

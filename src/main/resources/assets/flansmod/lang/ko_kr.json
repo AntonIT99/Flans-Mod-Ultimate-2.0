@@ -1,10 +1,11 @@
 {
+  "block.flansmod.gunpowderblock": "화약 블록",
   "block.flansmod.gunworkbench": "총기 개조대",
   "block.flansmod.paintjobtable": "도색대",
-  "block.flansmod.vehiclecraftingtable": "차량 제작대",
   "block.flansmod.teams_item_spawner": "팀 아이템 스포너",
   "block.flansmod.teams_player_spawner": "팀 플레이어 스포너",
   "block.flansmod.teams_vehicle_spawner": "팀 차량 스포너",
+  "block.flansmod.vehiclecraftingtable": "차량 제작대",
   "gui.flansmod.teams.base_name": "기지 이름:",
   "gui.flansmod.teams.base_settings": "기지 설정",
   "gui.flansmod.teams.choose_class": "클래스 선택",

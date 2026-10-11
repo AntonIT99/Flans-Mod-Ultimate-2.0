@@ -156,10 +156,16 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled,
 
     List<String> fluidFuelLines,
-    double vehicleThrottleDecayMultiplier
+    double vehicleThrottleDecayMultiplier,
+    boolean nearMissSuppression,
+    double suppressionRangeMultiplier,
+    double suppressionIntensity,
+    boolean suppressionAffectsRiders,
+    boolean bulletFlybySounds,
+    double bulletFlybyRangeMultiplier
 )
 {
-    public static final int CURRENT_VERSION = 41;
+    public static final int CURRENT_VERSION = 42;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -323,6 +329,12 @@ public record CommonConfigSnapshot(
         for (String line : s.fluidFuelLines)
             buf.writeUtf(line, 32767);
         buf.writeDouble(s.vehicleThrottleDecayMultiplier);
+        buf.writeBoolean(s.nearMissSuppression);
+        buf.writeDouble(s.suppressionRangeMultiplier);
+        buf.writeDouble(s.suppressionIntensity);
+        buf.writeBoolean(s.suppressionAffectsRiders);
+        buf.writeBoolean(s.bulletFlybySounds);
+        buf.writeDouble(s.bulletFlybyRangeMultiplier);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -477,6 +489,12 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
 
             List.copyOf(readLines(buf)),
+            buf.readDouble(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readBoolean(),
+            buf.readBoolean(),
             buf.readDouble()
         );
     }

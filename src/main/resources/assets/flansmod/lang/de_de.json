@@ -1,10 +1,11 @@
 {
+  "block.flansmod.gunpowderblock": "Schießpulverblock",
   "block.flansmod.gunworkbench": "Waffenmodifikationstisch",
   "block.flansmod.paintjobtable": "Lackierungstisch",
-  "block.flansmod.vehiclecraftingtable": "Fahrzeugerstellungsblock",
   "block.flansmod.teams_item_spawner": "Teams-Gegenstandsspawner",
   "block.flansmod.teams_player_spawner": "Teams-Spielerspawner",
   "block.flansmod.teams_vehicle_spawner": "Teams-Fahrzeugspawner",
+  "block.flansmod.vehiclecraftingtable": "Fahrzeugerstellungsblock",
   "gui.flansmod.teams.base_name": "Basisname:",
   "gui.flansmod.teams.base_settings": "Basiseinstellungen",
   "gui.flansmod.teams.choose_class": "Klasse auswählen",

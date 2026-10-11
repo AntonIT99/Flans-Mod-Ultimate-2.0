@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.common.driveables.physics.*;
+import com.flansmodultimate.common.driveables.visual.DriveableVisual;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.explosions.FlanExplosion;
@@ -83,7 +84,7 @@ import java.util.stream.IntStream;
  * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Driveable extends FlanEntity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
+public abstract class Driveable extends FlanEntity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity, DriveableVisual
 {
     public static final String NBT_TYPE = "driveable_type";
     public static final String NBT_YAW = "driveable_yaw";
@@ -640,6 +641,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         DriveablePrediction.Frame frame = predictedFrame();
         return frame != null ? frame.mouseControl() && this instanceof Plane : entityData.get(DATA_MOUSE_CONTROL);
+    }
+
+    @Override
+    public int getVisualTick()
+    {
+        return tickCount;
     }
 
     public float getRecoilProgress()

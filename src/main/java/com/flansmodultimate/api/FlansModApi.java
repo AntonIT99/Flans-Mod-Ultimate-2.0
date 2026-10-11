@@ -14,10 +14,7 @@ import org.jetbrains.annotations.ApiStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Entry point for looking up the definitions of the loaded content packs.
@@ -32,6 +29,18 @@ public final class FlansModApi
 {
     private FlansModApi()
     {}
+
+    /**
+     * Reads the range, set by the server, within which NPCs using the Flan distance settings are sent to clients. An
+     * NPC cannot usefully fight an enemy it is not sent to, so addons use it as the upper limit of NPC combat ranges.
+     * Synchronised to clients, so either side may read it.
+     *
+     * @return tracking range in blocks
+     */
+    public static int getNpcTrackingRange()
+    {
+        return ModCommonConfig.flanNpcTrackingRange();
+    }
 
     /**
      * Reevaluate player tracking after an addon changes an entity's distance classification.

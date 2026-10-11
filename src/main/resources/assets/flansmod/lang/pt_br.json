@@ -1,10 +1,11 @@
 {
+  "block.flansmod.gunpowderblock": "Bloco de pólvora",
   "block.flansmod.gunworkbench": "Mesa de modificação de armas",
   "block.flansmod.paintjobtable": "Mesa de pintura",
-  "block.flansmod.vehiclecraftingtable": "Bancada de Trabalho de Veículos",
   "block.flansmod.teams_item_spawner": "Gerador de itens das equipes",
   "block.flansmod.teams_player_spawner": "Gerador de jogadores das equipes",
   "block.flansmod.teams_vehicle_spawner": "Gerador de veículos das equipes",
+  "block.flansmod.vehiclecraftingtable": "Bancada de Trabalho de Veículos",
   "gui.flansmod.teams.base_name": "Nome da base:",
   "gui.flansmod.teams.base_settings": "Configurações da base",
   "gui.flansmod.teams.choose_class": "Escolher uma classe",

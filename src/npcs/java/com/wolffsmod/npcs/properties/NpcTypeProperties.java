@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
+import com.wolffsmod.npcs.sim.NpcTuning;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -48,7 +49,8 @@ public final class NpcTypeProperties
             : null;
         ItemStack ammunition = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
         boolean nativeAttack = NpcRangedAttack.usesFlanProjectile(options, ammunition);
-        long flags = flags(options) | (long) combat.customSignature() << 32;
+        // There are more switches than fit beside the signature, so the two are mixed rather than packed side by side.
+        long flags = flags(options) * 31L + combat.customSignature();
         if (selected != lastType || flags != lastFlags || nativeAttack != lastNative || npc.tickCount >= nextInspection)
         {
             lastType = selected;
@@ -192,6 +194,7 @@ public final class NpcTypeProperties
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().save(tag);
         NpcPresentation.of(npc).save(tag);
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().save(tag);
+        NpcTuning.of(npc).save(tag);
         for (NpcTypeProperty property : NpcTypeProperty.values())
             tag.put(property.name(), overrides.stored(property, key -> NpcTypePropertyAccess.read(npc, key)).copy());
         return tag;
@@ -203,6 +206,7 @@ public final class NpcTypeProperties
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().load(tag);
         NpcPresentation.of(npc).load(tag);
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().load(tag);
+        NpcTuning.of(npc).load(tag);
         for (Component component : Component.values())
             loaded(component);
         for (NpcTypeProperty property : NpcTypeProperty.values())

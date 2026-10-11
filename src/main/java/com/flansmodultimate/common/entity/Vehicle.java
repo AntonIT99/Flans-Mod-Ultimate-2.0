@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.*;
+import com.flansmodultimate.common.driveables.visual.VehicleVisual;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -24,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** Wheel-, track- and water-capable server vehicle simulation. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Vehicle extends Driveable
+public class Vehicle extends Driveable implements VehicleVisual
 {
     @Getter
     protected float wheelYaw;

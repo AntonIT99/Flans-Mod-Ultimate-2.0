@@ -1,39 +1,41 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModItems;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.types.GloveType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.entity.FlanMonster;
 import com.flansmodultimate.platform.registry.RegistryEntry;
+import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.syncher.*;
+import net.minecraft.server.level.*;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -50,6 +52,8 @@ import net.minecraft.world.phys.Vec3;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullBossEntity extends FlanMonster
 {
+    private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(SkullBossEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Long> ACTION_STARTED = SynchedEntityData.defineId(SkullBossEntity.class, EntityDataSerializers.LONG);
     private static final String NBT_ACTION = "apocalypse_action";
     private static final String NBT_ACTION_TICKS = "apocalypse_action_ticks";
     private static final String NBT_HOME = "apocalypse_home";
@@ -65,11 +69,11 @@ public class SkullBossEntity extends FlanMonster
     private static final double REACQUIRE_RANGE = 128.0D;
     private static final float MAX_DAMAGE = 99.0F;
 
-    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW,
-        BossEvent.BossBarOverlay.PROGRESS);
+    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
     private Action currentAction = Action.IDLE;
     private int actionTicks;
-    @Nullable
+    // The point the boss circles and hovers below.
+    @Setter @Nullable
     private Vec3 home;
 
     public SkullBossEntity(EntityType<? extends SkullBossEntity> type, Level level)
@@ -78,11 +82,50 @@ public class SkullBossEntity extends FlanMonster
         setNoGravity(true);
         setPersistenceRequired();
         xpReward = 5000;
+        bossEvent.setDarkenScreen(true);
+    }
+
+    @Override
+    protected void defineSynchedData()
+    {
+        super.defineSynchedData();
+        entityData.define(ACTION, Action.IDLE.ordinal());
+        entityData.define(ACTION_STARTED, 0L);
+    }
+
+    /** Server game time makes phase animation correct even when a client starts tracking mid-attack. */
+    public float getSpawnSpin(float partialTick)
+    {
+        if (Action.byId(entityData.get(ACTION)) != Action.SPAWN_DRONES)
+            return 0F;
+        float progress = animationProgress(partialTick);
+        return progress * progress * (3F - 2F * progress) * 720F;
+    }
+
+    public float getLaughFactor(float partialTick)
+    {
+        Action action = Action.byId(entityData.get(ACTION));
+        if (action != Action.LAUGH && action != Action.SHOOT_TNT)
+            return 0F;
+        float progress = animationProgress(partialTick);
+        float result = 0F;
+        for (int i = 0; i < 6; i++)
+        {
+            float phase = progress * 7F - i;
+            if (phase >= 0F && phase <= 2F)
+                result += (float) Math.sin(Math.PI * phase / 2F);
+        }
+        return result;
+    }
+
+    private float animationProgress(float partialTick)
+    {
+        return Mth.clamp((level().getGameTime() - entityData.get(ACTION_STARTED) + partialTick) / ACTION_TICKS, 0F, 1F);
     }
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return FlanMonster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1024.0D).add(Attributes.FLYING_SPEED, 0.35D).add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE)
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1024.0D).add(Attributes.FLYING_SPEED, 0.35D).add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE)
             .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D).add(Attributes.ATTACK_DAMAGE, 12.0D);
     }
 
@@ -90,12 +133,6 @@ public class SkullBossEntity extends FlanMonster
     protected void registerGoals()
     {
         // Deliberately none: movement, targeting and attacks are the legacy state machine in tick().
-    }
-
-    /** The point the boss circles and hovers below. */
-    public void setHome(Vec3 home)
-    {
-        this.home = home;
     }
 
     @Override
@@ -162,8 +199,7 @@ public class SkullBossEntity extends FlanMonster
         }
         if (target == null && tickCount % 20 == 0)
         {
-            target = level().getNearestPlayer(TargetingConditions.forCombat().range(REACQUIRE_RANGE).selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(),
-                this);
+            target = level().getNearestPlayer(TargetingConditions.forCombat().range(REACQUIRE_RANGE).selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(), this);
             setTarget(target);
         }
         return target;
@@ -198,6 +234,13 @@ public class SkullBossEntity extends FlanMonster
     {
         currentAction = action;
         actionTicks = 0;
+        syncAction();
+    }
+
+    private void syncAction()
+    {
+        entityData.set(ACTION, currentAction.ordinal());
+        entityData.set(ACTION_STARTED, level().getGameTime() - actionTicks);
     }
 
     private void tickLaugh(Level level)
@@ -207,8 +250,8 @@ public class SkullBossEntity extends FlanMonster
 
         if (actionTicks % 5 == 0 && level instanceof ServerLevel serverLevel)
         {
-            serverLevel.explode(this, getX() + random.nextGaussian() * 10.0D, getY() + random.nextGaussian() * 10.0D, getZ() + random.nextGaussian() * 10.0D, LAUGH_EXPLOSION_POWER,
-                false, Level.ExplosionInteraction.NONE);
+            serverLevel.explode(this, getX() + random.nextGaussian() * 10.0D, getY() + random.nextGaussian() * 10.0D, getZ() + random.nextGaussian() * 10.0D, LAUGH_EXPLOSION_POWER, false,
+                Level.ExplosionInteraction.NONE);
         }
     }
 
@@ -307,10 +350,19 @@ public class SkullBossEntity extends FlanMonster
     @Override
     protected void dropEntityDeathLoot(@NotNull DamageSource source, boolean recentlyHit)
     {
-        spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE, 1 + random.nextInt(3)));
-        spawnAtLocation(new ItemStack(Items.GUNPOWDER, 16 + random.nextInt(16)));
-        if (random.nextBoolean())
-            spawnAtLocation(new ItemStack(Items.TOTEM_OF_UNDYING));
+        spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE, 1 + random.nextInt(4)));
+        spawnAtLocation(new ItemStack(Items.TOTEM_OF_UNDYING));
+        for (int i = 0; i < 3; i++)
+        {
+            spawnAtLocation(new ItemStack(Items.GUNPOWDER, 1 + random.nextInt(32)));
+            spawnAtLocation(new ItemStack(FlansModItems.gunpowderBlockItem.get(), 1 + random.nextInt(4)));
+        }
+        GloveType.getGlove("nukranium_gauntlet").flatMap(ModUtils::getItemStack).ifPresent(stack ->
+        {
+            if (random.nextBoolean())
+                stack = EnchantmentHelper.enchantItem(random, stack, 50, true);
+            spawnAtLocation(stack);
+        });
     }
 
     @Override
@@ -338,8 +390,9 @@ public class SkullBossEntity extends FlanMonster
     {
         super.readAdditionalSaveData(tag);
         currentAction = Action.byId(tag.getInt(NBT_ACTION));
-        actionTicks = tag.getInt(NBT_ACTION_TICKS);
-        if (tag.contains(NBT_HOME, CompoundTag.TAG_COMPOUND))
+        actionTicks = Mth.clamp(tag.getInt(NBT_ACTION_TICKS), 0, ACTION_TICKS);
+        syncAction();
+        if (tag.contains(NBT_HOME, Tag.TAG_COMPOUND))
         {
             CompoundTag homeTag = tag.getCompound(NBT_HOME);
             home = new Vec3(homeTag.getDouble("x"), homeTag.getDouble("y"), homeTag.getDouble("z"));

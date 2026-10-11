@@ -1,6 +1,6 @@
 package com.flansmod.client.model;
 
-import com.flansmodultimate.common.entity.Vehicle;
+import com.flansmodultimate.common.driveables.visual.VehicleVisual;
 import com.flansmodultimate.common.types.VehicleType;
 
 import net.minecraft.util.Mth;
@@ -58,7 +58,7 @@ public final class TrackLinkAnimation
      * vehicle was not rendered, so a track that comes back into view catches up
      * instead of easing from a stale angle.
      */
-    public void advance(Vehicle vehicle, VehicleType type, int elapsed)
+    public void advance(VehicleVisual vehicle, VehicleType type, int elapsed)
     {
         if (!configure(type))
             return;

@@ -78,6 +78,16 @@ class LegacyPlanePhysicsTest
     }
 
     @Test
+    void losingPropellersReducesPoweredFlightWhilePreservingReverseThrottle()
+    {
+        assertEquals(0.8F, LegacyPlanePhysics.propellerThrottle(0.8F, 1F), EPSILON);
+        assertEquals(0.4F, LegacyPlanePhysics.propellerThrottle(0.8F, 0.5F), EPSILON);
+        assertEquals(-0.4F, LegacyPlanePhysics.propellerThrottle(-0.8F, 0.5F), EPSILON);
+        assertEquals(0F, LegacyPlanePhysics.propellerThrottle(0.8F, 0F), EPSILON);
+        assertEquals(0F, LegacyPlanePhysics.propellerThrottle(0.8F, Float.NaN), EPSILON);
+    }
+
+    @Test
     void angularMomentumApproachesControlInsteadOfSnapping()
     {
         assertEquals(1F, LegacyPlanePhysics.approachMomentum(0F, 8F), EPSILON);

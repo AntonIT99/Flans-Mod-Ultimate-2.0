@@ -2,19 +2,9 @@ package com.flansmodultimate.apocalyse;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.client.SulphuricAcidFluidExtensions;
-import com.flansmodultimate.apocalyse.common.block.PowerCubeBlock;
-import com.flansmodultimate.apocalyse.common.block.SulphurBlock;
-import com.flansmodultimate.apocalyse.common.block.SulphuricAcidBlock;
+import com.flansmodultimate.apocalyse.common.block.*;
 import com.flansmodultimate.apocalyse.common.block.entity.PowerCubeBlockEntity;
-import com.flansmodultimate.apocalyse.common.entity.AiMechaEntity;
-import com.flansmodultimate.apocalyse.common.entity.FlyByPlaneEntity;
-import com.flansmodultimate.apocalyse.common.entity.InventoryHolderEntity;
-import com.flansmodultimate.apocalyse.common.entity.NukeDropEntity;
-import com.flansmodultimate.apocalyse.common.entity.SkullBossEntity;
-import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
-import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
-import com.flansmodultimate.apocalyse.common.entity.TeleporterEntity;
-import com.flansmodultimate.apocalyse.common.entity.WorldgenSpawnMarker;
+import com.flansmodultimate.apocalyse.common.entity.*;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseChunkFeature;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -29,23 +19,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.BucketItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.material.*;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -93,16 +75,15 @@ public final class ApocalypseContent
 
     // Fluids
     public static final Supplier<? extends FlowingFluid> sulphuricAcid = fluidRegistry.register("sulphuric_acid", () -> new ForgeFlowingFluid.Source(sulphuricAcidProperties()));
-    public static final Supplier<? extends FlowingFluid> flowingSulphuricAcid = fluidRegistry.register("flowing_sulphuric_acid",
-        () -> new ForgeFlowingFluid.Flowing(sulphuricAcidProperties()));
+    public static final Supplier<? extends FlowingFluid> flowingSulphuricAcid = fluidRegistry.register("flowing_sulphuric_acid", () -> new ForgeFlowingFluid.Flowing(sulphuricAcidProperties()));
 
     // Blocks
     public static final Supplier<? extends Block> blockSulphur = blockRegistry.register("blocksulphur",
         () -> new SulphurBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.5F).sound(SoundType.SAND)));
     public static final Supplier<? extends Block> blockLabStone = blockRegistry.register("blocklabstone",
         () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(3.0F, 5.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-    public static final Supplier<? extends Block> blockPowerCube = blockRegistry.register("blockpowercube", () -> new PowerCubeBlock(BlockBehaviour.Properties.of()
-        .mapColor(MapColor.METAL).strength(3.0F, 5.0F).sound(SoundType.METAL).lightLevel(state -> 8).noOcclusion().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
+    public static final Supplier<? extends Block> blockPowerCube = blockRegistry.register("blockpowercube", () -> new PowerCubeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
+        .strength(3.0F, 5.0F).sound(SoundType.METAL).lightLevel(state -> 8).noOcclusion().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
     public static final Supplier<? extends SulphuricAcidBlock> blockSulphuricAcid = blockRegistry.register("blocksulphuricacid",
         () -> new SulphuricAcidBlock(sulphuricAcid, BlockBehaviour.Properties.copy(Blocks.WATER).mapColor(MapColor.COLOR_YELLOW).noLootTable()));
 
@@ -120,39 +101,32 @@ public final class ApocalypseContent
 
     // Worldgen features, placed by the apocalypse biomes and by an overworld biome modifier
     public static final Supplier<? extends Feature<NoneFeatureConfiguration>> wastelandFeature = featureRegistry.register("wasteland", () -> new ApocalypseChunkFeature(true));
-    public static final Supplier<? extends Feature<NoneFeatureConfiguration>> abandonedPortalFeature = featureRegistry.register("abandoned_portal",
-        () -> new ApocalypseChunkFeature(false));
+    public static final Supplier<? extends Feature<NoneFeatureConfiguration>> abandonedPortalFeature = featureRegistry.register("abandoned_portal", () -> new ApocalypseChunkFeature(false));
 
     // Entities
-    public static final Supplier<? extends EntityType<TeleporterEntity>> teleporter = entityRegistry.register("teleporter",
-        () -> EntityType.Builder.of(TeleporterEntity::new, MobCategory.MISC).sized(4.0F, 3.0F).clientTrackingRange(64).updateInterval(10)
-            .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "teleporter").toString()));
+    public static final Supplier<? extends EntityType<TeleporterEntity>> teleporter = entityRegistry.register("teleporter", () -> EntityType.Builder.of(TeleporterEntity::new, MobCategory.MISC)
+        .sized(4.0F, 3.0F).clientTrackingRange(64).updateInterval(10).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "teleporter").toString()));
     public static final Supplier<? extends EntityType<WorldgenSpawnMarker>> worldgenSpawnMarker = entityRegistry.register("worldgen_spawn_marker",
-        () -> EntityType.Builder.<WorldgenSpawnMarker>of(WorldgenSpawnMarker::new, MobCategory.MISC).sized(0.0F, 0.0F).clientTrackingRange(0).updateInterval(20).noSummon()
-            .fireImmune().build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "worldgen_spawn_marker").toString()));
-    public static final Supplier<? extends EntityType<NukeDropEntity>> nukeDrop = entityRegistry.register("nukedrop",
-        () -> EntityType.Builder.of(NukeDropEntity::new, MobCategory.MISC).sized(1.0F, 1.0F).clientTrackingRange(256).updateInterval(2)
-            .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "nukedrop").toString()));
-    public static final Supplier<? extends EntityType<SurvivorEntity>> survivor = entityRegistry.register("survivor",
-        () -> EntityType.Builder.of(SurvivorEntity::new, MobCategory.CREATURE).sized(0.6F, 1.95F).clientTrackingRange(80).updateInterval(3)
-            .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "survivor").toString()));
-    public static final Supplier<? extends EntityType<SkullDroneEntity>> skullDrone = entityRegistry.register("autodrone",
-        () -> EntityType.Builder.of(SkullDroneEntity::new, MobCategory.MONSTER).sized(1.6F, 1.0F).clientTrackingRange(128).updateInterval(2)
-            .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "autodrone").toString()));
+        () -> EntityType.Builder.<WorldgenSpawnMarker>of(WorldgenSpawnMarker::new, MobCategory.MISC).sized(0.0F, 0.0F).clientTrackingRange(0).updateInterval(20).noSummon().fireImmune()
+            .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "worldgen_spawn_marker").toString()));
+    public static final Supplier<? extends EntityType<NukeDropEntity>> nukeDrop = entityRegistry.register("nukedrop", () -> EntityType.Builder.of(NukeDropEntity::new, MobCategory.MISC)
+        .sized(1.0F, 1.0F).clientTrackingRange(256).updateInterval(2).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "nukedrop").toString()));
+    public static final Supplier<? extends EntityType<SurvivorEntity>> survivor = entityRegistry.register("survivor", () -> EntityType.Builder.of(SurvivorEntity::new, MobCategory.CREATURE)
+        .sized(0.6F, 1.95F).clientTrackingRange(80).updateInterval(3).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "survivor").toString()));
+    public static final Supplier<? extends EntityType<SkullDroneEntity>> skullDrone = entityRegistry.register("autodrone", () -> EntityType.Builder.of(SkullDroneEntity::new, MobCategory.MONSTER)
+        .sized(1.6F, 1.0F).clientTrackingRange(128).updateInterval(2).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "autodrone").toString()));
     public static final Supplier<? extends EntityType<InventoryHolderEntity>> inventoryHolder = entityRegistry.register("fakeplayer",
         () -> EntityType.Builder.of(InventoryHolderEntity::new, MobCategory.CREATURE).sized(0.6F, 1.95F).clientTrackingRange(80).updateInterval(3)
             .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "fakeplayer").toString()));
     // The two autonomous driveables mirror the plane and mecha entity types they extend, so
     // they are tracked and sized exactly like the piloted ones.
     public static final Supplier<? extends EntityType<FlyByPlaneEntity>> flyByPlane = entityRegistry.register("flybyplane",
-        () -> EntityType.Builder.<FlyByPlaneEntity>of(FlyByPlaneEntity::new, MobCategory.MISC).sized(3F, 2F).clientTrackingRange(128).updateInterval(1)
-            .setShouldReceiveVelocityUpdates(true).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "flybyplane").toString()));
-    public static final Supplier<? extends EntityType<AiMechaEntity>> aiMecha = entityRegistry.register("aimecha",
-        () -> EntityType.Builder.<AiMechaEntity>of(AiMechaEntity::new, MobCategory.MISC).sized(2F, 4F).clientTrackingRange(128).updateInterval(1)
-            .setShouldReceiveVelocityUpdates(true).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "aimecha").toString()));
-    public static final Supplier<? extends EntityType<SkullBossEntity>> skullBoss = entityRegistry.register("skullboss",
-        () -> EntityType.Builder.of(SkullBossEntity::new, MobCategory.MONSTER).sized(8.0F, 8.0F).clientTrackingRange(256).updateInterval(2).fireImmune()
-            .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "skullboss").toString()));
+        () -> EntityType.Builder.<FlyByPlaneEntity>of(FlyByPlaneEntity::new, MobCategory.MISC).sized(3F, 2F).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true)
+            .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "flybyplane").toString()));
+    public static final Supplier<? extends EntityType<AiMechaEntity>> aiMecha = entityRegistry.register("aimecha", () -> EntityType.Builder.<AiMechaEntity>of(AiMechaEntity::new, MobCategory.MISC)
+        .sized(2F, 4F).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "aimecha").toString()));
+    public static final Supplier<? extends EntityType<SkullBossEntity>> skullBoss = entityRegistry.register("skullboss", () -> EntityType.Builder.of(SkullBossEntity::new, MobCategory.MONSTER)
+        .sized(16.0F, 16.0F).clientTrackingRange(256).updateInterval(2).fireImmune().build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "skullboss").toString()));
 
     public static void register(IEventBus modEventBus)
     {

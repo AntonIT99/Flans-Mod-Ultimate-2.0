@@ -54,6 +54,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
             getParentModel().copyPropertiesTo((HumanoidModel<T>) model);
             if (entity instanceof IEquipmentPolicy policy && !policy.flansArmorAnimations())
                 com.flansmodultimate.client.model.EquipmentAnimationSupport.restArmor(model);
+            com.flansmodultimate.client.model.EquipmentAnimationSupport.armorPoseSteps(model, entity);
 
             setModelPartVisibility(model, slot, entity);
 

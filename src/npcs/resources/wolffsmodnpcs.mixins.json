@@ -8,8 +8,11 @@
       "EntityAIRangedAttackMixin",
       "EntityNPCInterfaceMixin",
       "NpcEquipmentAttackAiMixin",
+      "NpcGroundPathNavigatorMixin",
+      "NpcNearestAttackableTargetGoalMixin",
       "NpcTypeDataMixin",
       "NpcTypeModelLoadMixin",
+      "NpcWalkNodeEvaluatorMixin",
       "NpcWeaponSettingsMixin"
   ],
   "client": [

@@ -14,9 +14,10 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.BooleanUtils;
+
+import net.minecraft.client.Minecraft;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,6 +61,16 @@ public final class ModClientConfig
     public final boolean showFlashesWhenWounded;
     public final boolean vehicleScreenShake;
     public final boolean gunScreenShake;
+    public final boolean explosionScreenShake;
+    public final double explosionShakeIntensity;
+    public final double explosionShakeDuration;
+    public final boolean nearMissSuppression;
+    public final double suppressionIntensity;
+    public final double suppressionDuration;
+    public final double suppressionCameraRoll;
+    public final double suppressionVignette;
+    public final boolean bulletFlybySounds;
+    public final double bulletFlybyVolume;
     /** Particle type ids, such as {@code somemod:plasma}, that thermal sights also show hot */
     public final List<String> additionalThermalHotParticles;
     public final boolean enablePlayerClassSkinOverrides;
@@ -177,6 +188,16 @@ public final class ModClientConfig
     public static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
     public static final ForgeConfigSpec.BooleanValue VEHICLE_SCREEN_SHAKE;
     public static final ForgeConfigSpec.BooleanValue GUN_SCREEN_SHAKE;
+    public static final ForgeConfigSpec.BooleanValue EXPLOSION_SCREEN_SHAKE;
+    public static final ForgeConfigSpec.DoubleValue EXPLOSION_SHAKE_INTENSITY;
+    public static final ForgeConfigSpec.DoubleValue EXPLOSION_SHAKE_DURATION;
+    public static final ForgeConfigSpec.BooleanValue NEAR_MISS_SUPPRESSION;
+    public static final ForgeConfigSpec.DoubleValue SUPPRESSION_INTENSITY;
+    public static final ForgeConfigSpec.DoubleValue SUPPRESSION_DURATION;
+    public static final ForgeConfigSpec.DoubleValue SUPPRESSION_CAMERA_ROLL;
+    public static final ForgeConfigSpec.DoubleValue SUPPRESSION_VIGNETTE;
+    public static final ForgeConfigSpec.BooleanValue BULLET_FLYBY_SOUNDS;
+    public static final ForgeConfigSpec.DoubleValue BULLET_FLYBY_VOLUME;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ADDITIONAL_THERMAL_HOT_PARTICLES;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     public static final ForgeConfigSpec.DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;
@@ -264,8 +285,7 @@ public final class ModClientConfig
         SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder.comment("Show content pack names in item descriptions").define("showPackNameInItemDescriptions", true);
         SHOW_DETAILED_ITEM_DESCRIPTIONS = builder.comment("Show the detailed descriptions of guns, ammunition and other Flan's items: loaded ammunition, statistics",
             "and the full statistics shown while sneaking. When disabled, only the item's own description is listed.").define("showDetailedItemDescriptions", true);
-        ENABLE_UNCENSORED_CONTENT = builder
-            .comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources.")
+        ENABLE_UNCENSORED_CONTENT = builder.comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources.")
             .define("enableUncensoredContent", false);
         OPTIONS_BUTTON_PLACEMENT = builder.comment("""
             Where the button opening the Flan's Mod options screen is added.
@@ -297,8 +317,7 @@ public final class ModClientConfig
             shipping its own version of a model that also exists in the mod renders with its own version.
             Content packs keep loading the model classes the mod does not provide either way.
             """).define("preferBuiltInModelClasses", false);
-        SHOW_SHOOTABLE_DURABILITY_BARS = builder.comment("Show a durability-style bar for shootable items when their current round item is not full")
-            .define("showShootableDurabilityBars", true);
+        SHOW_SHOOTABLE_DURABILITY_BARS = builder.comment("Show a durability-style bar for shootable items when their current round item is not full").define("showShootableDurabilityBars", true);
         SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder.comment("Show the armor-style HUD bar for legacy armor damage absorption").define("showArmorDamageAbsorptionBar", true);
         DRIVEABLE_SPEED_UNIT = builder.comment("Unit used for vehicle and plane speed on the HUD").defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
         DRIVEABLE_VERTICAL_SPEED_UNIT = builder.comment("Unit used for plane vertical speed on the HUD").defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
@@ -322,15 +341,23 @@ public final class ModClientConfig
             """).define("fancyHitMarker", true);
         SHOW_HIT_MARKER = builder.comment("Show a hit marker when one of your shots hits").define("showHitMarker", true);
         HIT_MARKER_RED = builder.comment("Red component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerRed", 1D, 0D, 1D);
-        HIT_MARKER_GREEN = builder.comment("Green component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerGreen", 1D,
-            0D, 1D);
-        HIT_MARKER_BLUE = builder.comment("Blue component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerBlue", 1D, 0D,
-            1D);
+        HIT_MARKER_GREEN = builder.comment("Green component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerGreen", 1D, 0D, 1D);
+        HIT_MARKER_BLUE = builder.comment("Blue component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerBlue", 1D, 0D, 1D);
         HIT_MARKER_ALPHA = builder.comment("Opacity of the hit marker, applied to every style and colour").defineInRange("hitMarkerAlpha", 1D, 0D, 1D);
         SHOW_FLASHES_WHEN_WOUNDED = builder.comment("Show the red blood overlay flash when the player takes damage").define("showFlashesWhenWounded", true);
-        VEHICLE_SCREEN_SHAKE = builder.comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun")
-            .define("vehicleScreenShake", true);
+        VEHICLE_SCREEN_SHAKE = builder.comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun").define("vehicleScreenShake", true);
         GUN_SCREEN_SHAKE = builder.comment("Punch the field of view in and kick the camera when you fire a gun that opts into HasScreenShake").define("gunScreenShake", true);
+        EXPLOSION_SCREEN_SHAKE = builder.comment("Allow camera shake from ammunition or grenades configured with powerShake and rangeShake.").define("explosionScreenShake", true);
+        EXPLOSION_SHAKE_INTENSITY = builder.comment("Scale explosion camera movement. Zero disables movement.").defineInRange("explosionShakeIntensity", 1D, 0.0, 5.0);
+        EXPLOSION_SHAKE_DURATION = builder.comment("Duration in seconds of an explosion camera impulse.").defineInRange("explosionShakeDuration", 0.5D, 0.05, 5.0);
+        NEAR_MISS_SUPPRESSION = builder.comment("Show server-authored visual near-miss suppression. The server must enable the mechanic.").define("nearMissSuppression", true);
+        SUPPRESSION_INTENSITY = builder.comment("Scale the visual suppression effect. Zero disables it.").defineInRange("suppressionIntensity", 1D, 0.0, 5.0);
+        SUPPRESSION_DURATION = builder.comment("Seconds for a full suppression impulse to recover.").defineInRange("suppressionDuration", 2D, 0.1, 10.0);
+        SUPPRESSION_CAMERA_ROLL = builder.comment("Maximum visual camera roll in degrees from suppression. Zero disables camera movement; aim is unchanged.").defineInRange("suppressionCameraRoll",
+            3.5D, 0.0, 10.0);
+        SUPPRESSION_VIGNETTE = builder.comment("Maximum opacity of the suppression vignette. Zero disables darkening.").defineInRange("suppressionVignette", 0.82D, 0.0, 1.0);
+        BULLET_FLYBY_SOUNDS = builder.comment("Play bullet near-miss sounds, including ammunition FlyBySound overrides.").define("bulletFlybySounds", true);
+        BULLET_FLYBY_VOLUME = builder.comment("Volume of near-miss sounds. Zero mutes them. Vanilla volume also controls audible attenuation.").defineInRange("bulletFlybyVolume", 10D, 0.0, 10.0);
         ADDITIONAL_THERMAL_HOT_PARTICLES = ConfigSpecValues.defineList(builder.comment("""
             Extra particle type ids, such as somemod:plasma, that thermal sights show hot. Explosions, fire,
             muzzle flashes, sparks, tracers and Flan's own blast and smoke particles are hot already.
@@ -344,8 +371,7 @@ public final class ModClientConfig
 
         builder.push("Ammo HUD Settings");
         SHOW_AMMO_HUD = builder.comment("Show the held-gun ammunition HUD independently of the rest of the Minecraft HUD.").define("showAmmoHud", true);
-        AMMO_HUD_LAYOUT = builder
-            .comment("Ammo HUD layout. CURRENT preserves the existing Ultimate 2.0 layout; LEGACY_FANCY and LEGACY_DEFAULT reproduce the two Ultimate 1.7.10 placements.")
+        AMMO_HUD_LAYOUT = builder.comment("Ammo HUD layout. CURRENT preserves the existing Ultimate 2.0 layout; LEGACY_FANCY and LEGACY_DEFAULT reproduce the two Ultimate 1.7.10 placements.")
             .defineEnum("ammoHudLayout", EnumAmmoHudLayout.CURRENT);
         builder.pop();
 
@@ -353,14 +379,13 @@ public final class ModClientConfig
         VEHICLE_HUD_LEFT_X = builder
             .comment("Distance in GUI pixels from the left screen edge to the vehicle HUD's left block (name, health, fuel, speed). Also used by AA gun and deployed gun readouts.")
             .defineInRange("vehicleHudLeftX", DEFAULT_VEHICLE_HUD_LEFT_X, 0, MAX_VEHICLE_HUD_OFFSET);
-        VEHICLE_HUD_LEFT_Y = builder.comment("Distance in GUI pixels from the top screen edge to the vehicle HUD's left block.").defineInRange("vehicleHudLeftY",
-            DEFAULT_VEHICLE_HUD_TOP, 0, MAX_VEHICLE_HUD_OFFSET);
+        VEHICLE_HUD_LEFT_Y = builder.comment("Distance in GUI pixels from the top screen edge to the vehicle HUD's left block.").defineInRange("vehicleHudLeftY", DEFAULT_VEHICLE_HUD_TOP, 0,
+            MAX_VEHICLE_HUD_OFFSET);
         VEHICLE_HUD_RIGHT_X = builder
-            .comment(
-                "Distance in GUI pixels from the right screen edge to the vehicle HUD's right block (aim, weapons, ammunition). Also used by AA gun and deployed gun readouts.")
+            .comment("Distance in GUI pixels from the right screen edge to the vehicle HUD's right block (aim, weapons, ammunition). Also used by AA gun and deployed gun readouts.")
             .defineInRange("vehicleHudRightX", DEFAULT_VEHICLE_HUD_RIGHT_X, 0, MAX_VEHICLE_HUD_OFFSET);
-        VEHICLE_HUD_RIGHT_Y = builder.comment("Distance in GUI pixels from the top screen edge to the vehicle HUD's right block.").defineInRange("vehicleHudRightY",
-            DEFAULT_VEHICLE_HUD_TOP, 0, MAX_VEHICLE_HUD_OFFSET);
+        VEHICLE_HUD_RIGHT_Y = builder.comment("Distance in GUI pixels from the top screen edge to the vehicle HUD's right block.").defineInRange("vehicleHudRightY", DEFAULT_VEHICLE_HUD_TOP, 0,
+            MAX_VEHICLE_HUD_OFFSET);
         builder.pop();
 
         builder.push("Entity Rendering Settings");
@@ -387,8 +412,7 @@ public final class ModClientConfig
             "Enable automatic world-rendered driveable LOD. Medium-distance models use stronger part culling and supported tank track links use simplified geometry. Distant vehicles / planes may use generated impostors. Mechas do not use impostors because held add-ons are not part of their base model.")
             .define("enableDriveableLod", true);
         MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE = builder
-            .comment(
-                "Base far-distance projected part diameter for whole-model LOD, before driveableLodDetailMultiplier. Must exceed minimumDriveablePartPixelSize to have an effect.")
+            .comment("Base far-distance projected part diameter for whole-model LOD, before driveableLodDetailMultiplier. Must exceed minimumDriveablePartPixelSize to have an effect.")
             .defineInRange("maximumDriveableLodPartPixelSize", 1D, 0D, 32D);
         DRIVEABLE_LOD_DETAIL_MULTIPLIER = builder.comment(
             "Multiply the far-distance part-culling threshold for the whole vehicle, including hull/turret details. Ramps smoothly from 24 to 80 size-scaled blocks, independently of impostor eligibility. 1 keeps the configured far threshold; 2 doubles it. Does not change the near threshold or enable explicitly disabled part culling.")
@@ -419,8 +443,7 @@ public final class ModClientConfig
         DRIVEABLE_IMPOSTOR_YAW_ANGLES = builder.comment(
             "Base number of horizontal views per driveable impostor, scaled by the square of driveableImpostorQualityMultiplier up to 64. Nine vertical views cover -90 to +90 degrees automatically. Views are captured on demand.")
             .defineInRange("driveableImpostorYawAngles", 8, 4, 64);
-        DRIVEABLE_IMPOSTOR_CACHE_ENTRIES = builder.comment("Maximum generated model / paintjob impostor atlases retained in memory.").defineInRange("driveableImpostorCacheEntries",
-            32, 1, 128);
+        DRIVEABLE_IMPOSTOR_CACHE_ENTRIES = builder.comment("Maximum generated model / paintjob impostor atlases retained in memory.").defineInRange("driveableImpostorCacheEntries", 32, 1, 128);
         builder.pop();
 
         builder.push("Particle Rendering Settings");
@@ -430,8 +453,7 @@ public final class ModClientConfig
         FULL_PARTICLE_DENSITY_SHARE = builder.comment(
             "Share of each effect's drawing distance within which its particles keep full density. Density gradually falls beyond it, down to distantParticleDensity at the edge. Large landmark effects are never thinned.")
             .defineInRange("fullParticleDensityShare", 0.25D, 0D, 1D);
-        DISTANT_PARTICLE_DENSITY = builder.comment("Fraction of Flan's Mod particles retained at the edge of each effect's drawing distance.")
-            .defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
+        DISTANT_PARTICLE_DENSITY = builder.comment("Fraction of Flan's Mod particles retained at the edge of each effect's drawing distance.").defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
         MAX_FLANS_PARTICLES_PER_TICK = builder
             .comment("Maximum particles Flan's Mod may create in one client tick. Nearby particles are considered first by normal packet and entity processing order.")
             .defineInRange("maxFlansParticlesPerTick", 2048, 16, 100000);
@@ -480,12 +502,10 @@ public final class ModClientConfig
             A server can force one of the two on every player with its playerAimPose setting.
             """).defineEnum("aimPose", EnumAimPose.DYNAMIC);
         ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON = builder
-            .comment(
-                "This will display gun animations such as melee and reloading, not only in first person view but also in third person view including animations from other players")
+            .comment("This will display gun animations such as melee and reloading, not only in first person view but also in third person view including animations from other players")
             .define("enableGunAnimationsInThirdPerson", true);
         ENABLE_WEAPON_SPRINT_STANCE = builder.comment("This will move weapons to a lowered position when sprinting").define("enableWeaponSprintStance", true);
-        ENABLE_RANDOM_SPRINT_STANCE = builder.comment("This will randomly generate unique positions for each weapon using the weapon name as a seed")
-            .define("enableRandomSprintStance", false);
+        ENABLE_RANDOM_SPRINT_STANCE = builder.comment("This will randomly generate unique positions for each weapon using the weapon name as a seed").define("enableRandomSprintStance", false);
         SHOW_CASING_EJECTIONS = builder.comment("Render animated casing ejections for guns that provide a casing model").define("showCasingEjections", true);
         MUZZLE_FLASH_STYLE = builder.comment("""
             Preferred muzzle flash model: FMU_1_7_10 uses FlashModel (FMU 1.7.10 Style),
@@ -523,18 +543,17 @@ public final class ModClientConfig
         builder.pop();
 
         builder.push("Distant Horizons Integration");
-        DISTANT_HORIZONS_INTEGRATION = builder.comment("Use Distant Horizons, when it is installed, to show and measure what lies beyond the vanilla render distance.",
-            "The settings below only apply while this is enabled.").define("distantHorizonsIntegration", true);
+        DISTANT_HORIZONS_INTEGRATION = builder
+            .comment("Use Distant Horizons, when it is installed, to show and measure what lies beyond the vanilla render distance.", "The settings below only apply while this is enabled.")
+            .define("distantHorizonsIntegration", true);
         DISTANT_HORIZONS_RANGEFINDER = builder.comment("Let vehicle rangefinders measure the far terrain beyond the loaded chunks. Such ranges are approximate and shown with a ~.")
             .define("distantHorizonsRangefinder", true);
         DISTANT_HORIZONS_CONTACTS = builder.comment("Show driveables beyond the entity render distance as simplified shapes on the far terrain, including those the server",
             "only reports from beyond the tracking range, when the server allows it.").define("distantHorizonsContacts", true);
         DISTANT_HORIZONS_EXPLOSIONS = builder.comment("Show large explosions beyond the particle range as a flash, a fireball and a smoke column, when the server allows it.")
             .define("distantHorizonsExplosions", true);
-        DISTANT_HORIZONS_DRIVEABLE_RENDERING = builder
-            .comment("Keep drawing driveables as entities up to the edge of the vanilla chunks, where their far-terrain shapes take over,",
-                "This explicitly extends the configured size-based render cutoff. Off keeps that cutoff and uses distant contact shapes beyond it.")
-            .define("distantHorizonsDriveableRendering", false);
+        DISTANT_HORIZONS_DRIVEABLE_RENDERING = builder.comment("Keep drawing driveables as entities up to the edge of the vanilla chunks, where their far-terrain shapes take over,",
+            "This explicitly extends the configured size-based render cutoff. Off keeps that cutoff and uses distant contact shapes beyond it.").define("distantHorizonsDriveableRendering", false);
         builder.pop();
 
         configSpec = builder.build();
@@ -580,6 +599,16 @@ public final class ModClientConfig
         showFlashesWhenWounded = SHOW_FLASHES_WHEN_WOUNDED.get();
         vehicleScreenShake = VEHICLE_SCREEN_SHAKE.get();
         gunScreenShake = GUN_SCREEN_SHAKE.get();
+        explosionScreenShake = EXPLOSION_SCREEN_SHAKE.get();
+        explosionShakeIntensity = EXPLOSION_SHAKE_INTENSITY.get();
+        explosionShakeDuration = EXPLOSION_SHAKE_DURATION.get();
+        nearMissSuppression = NEAR_MISS_SUPPRESSION.get();
+        suppressionIntensity = SUPPRESSION_INTENSITY.get();
+        suppressionDuration = SUPPRESSION_DURATION.get();
+        suppressionCameraRoll = SUPPRESSION_CAMERA_ROLL.get();
+        suppressionVignette = SUPPRESSION_VIGNETTE.get();
+        bulletFlybySounds = BULLET_FLYBY_SOUNDS.get();
+        bulletFlybyVolume = BULLET_FLYBY_VOLUME.get();
         additionalThermalHotParticles = ADDITIONAL_THERMAL_HOT_PARTICLES.get().stream().map(String::valueOf).map(String::trim).filter(id -> !id.isEmpty()).toList();
         enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
         driveableRenderDistanceMultiplier = DRIVEABLE_RENDER_DISTANCE_MULTIPLIER.get();
@@ -757,15 +786,13 @@ public final class ModClientConfig
 
     private static ForgeConfigSpec.BooleanValue defineTranslucentDefault(String typeName, String configName, boolean defaultValue)
     {
-        return builder
-            .comment("Render " + typeName + " with translucent render types by default. Content files with TranslucentRendering true remain translucent regardless of this option.")
+        return builder.comment("Render " + typeName + " with translucent render types by default. Content files with TranslucentRendering true remain translucent regardless of this option.")
             .define(configName, defaultValue);
     }
 
     private static ForgeConfigSpec.BooleanValue defineCullingDefault(String typeName, String configName, boolean defaultValue)
     {
-        return builder.comment("Render " + typeName + " with face culling by default. Disable this only for content that needs double-sided model faces.").define(configName,
-            defaultValue);
+        return builder.comment("Render " + typeName + " with face culling by default. Disable this only for content that needs double-sided model faces.").define(configName, defaultValue);
     }
 
     /**
@@ -883,8 +910,8 @@ public final class ModClientConfig
     /** Reads pending option values, so the tooltip also reflects a slider still being dragged. */
     public static LodValues currentLodValues()
     {
-        return new LodValues(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get(), MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get(), DRIVEABLE_LOD_DETAIL_MULTIPLIER.get(),
-            DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.get(), DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.get());
+        return new LodValues(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get(), MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get(), DRIVEABLE_LOD_DETAIL_MULTIPLIER.get(), DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.get(),
+            DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.get());
     }
 
     public static ImpostorValues currentImpostorValues()
@@ -964,8 +991,7 @@ public final class ModClientConfig
             minecraft.execute(minecraft::reloadResourcePacks);
         }
 
-        if (PlatformEnvironment.isClient()
-            && (old == null || old.combineAmmoOnReload != get().combineAmmoOnReload || old.ammoToUpperInventoryOnReload != get().ammoToUpperInventoryOnReload))
+        if (PlatformEnvironment.isClient() && (old == null || old.combineAmmoOnReload != get().combineAmmoOnReload || old.ammoToUpperInventoryOnReload != get().ammoToUpperInventoryOnReload))
             ReloadPreferencesSync.sendToServer();
 
         if (PlatformEnvironment.isClient() && (old == null || old.aimPose != get().aimPose))

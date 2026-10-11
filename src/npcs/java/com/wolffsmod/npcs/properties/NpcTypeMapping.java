@@ -41,7 +41,8 @@ public final class NpcTypeMapping
             return values;
         integer(values, NpcTypeProperty.HEALTH, type.health(), 1D, 1, (int) Math.min(Integer.MAX_VALUE, maxHealth));
         integer(values, NpcTypeProperty.AGGRO_RANGE, type.targetRange(), 1D, 1, 512);
-        integer(values, NpcTypeProperty.RANGE, type.targetRange(), 1D, 1, 256);
+        // Beyond the 256 blocks of the Custom NPCs editor; the server limit is applied to the NPC afterwards.
+        integer(values, NpcTypeProperty.RANGE, type.targetRange(), 1D, 1, 512);
         integer(values, NpcTypeProperty.WALKING_SPEED, type.walkingSpeed(), 20D, 0, 100);
         type.meleeReach().ifPresent(reach -> values.put(NpcTypeProperty.MELEE_REACH, FloatTag.valueOf((float) Math.max(0D, reach))));
         type.worksUnderWater().ifPresent(works -> values.put(NpcTypeProperty.CAN_DROWN, ByteTag.valueOf(!works)));

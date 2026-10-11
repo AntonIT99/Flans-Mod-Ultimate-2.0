@@ -5,6 +5,7 @@ import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.sim.*;
 import noppes.npcs.Resistances;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -24,6 +25,8 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
@@ -40,6 +43,10 @@ import java.util.Optional;
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
  * resists knockback while it is a vehicle.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
+ * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
+ * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.</li>
+ * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
+ * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
  * </ul>
  *
  * <p>
@@ -50,7 +57,7 @@ import java.util.Optional;
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
 // instanceof checks on this are valid, and the overrides keep the target signatures.
 @SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
-public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource, IFlanDamageModel
+public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource, IFlanDamageModel, NpcVehicleStateHolder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -70,6 +77,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
 
     @Unique
     private final NpcEngineAudio wolffsmodnpcsEngineAudio = new NpcEngineAudio();
+    /** Created on first use: the entity's constructors already ask for its eye height. */
+    @Unique
+    private NpcVehicleState wolffsmodnpcsVehicle;
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
@@ -352,6 +362,80 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (npc.level().isClientSide && tag.contains(WOLFFSMODNPCS_TYPE_DEFAULTS))
             NpcTypeProperties.of(npc).readSyncedDefaults(npc, tag.getCompound(WOLFFSMODNPCS_TYPE_DEFAULTS));
+    }
+
+    // Vehicle simulation
+
+    @Override
+    public NpcVehicleState wolffsmodnpcsVehicleState()
+    {
+        if (wolffsmodnpcsVehicle == null)
+            wolffsmodnpcsVehicle = new NpcVehicleState();
+        return wolffsmodnpcsVehicle;
+    }
+
+    @Inject(method = {"tick", "m_8119_"}, at = @At("TAIL"))
+    private void wolffsmodnpcsVehicleTick(CallbackInfo callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        wolffsmodnpcsVehicleState().tick(npc);
+        if (!level().isClientSide)
+            NpcMobility.tick(npc);
+    }
+
+    @ModifyVariable(method = {"travel", "m_7023_"}, at = @At("HEAD"), argsOnly = true)
+    private Vec3 wolffsmodnpcsDrive(Vec3 travel)
+    {
+        if (level().isClientSide)
+            return travel;
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcVehicleState state = wolffsmodnpcsVehicleState();
+        state.beforeTravel(npc);
+        float factor = state.getSpeedFactor() * NpcMobility.landFactor(npc);
+        return factor == 1F ? travel : new Vec3(travel.x * factor, travel.y, travel.z * factor);
+    }
+
+    @Inject(method = {"getWaterSlowDown", "m_6108_"}, at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsWaterSpeed(CallbackInfoReturnable<Float> callback)
+    {
+        callback.setReturnValue(NpcMobility.waterSlowDown((EntityNPCInterface) (Object) this, callback.getReturnValueF()));
+    }
+
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions)
+    {
+        float height = super.getStandingEyeHeight(pose, dimensions);
+        return wolffsmodnpcsVehicleState().eyeHeight((EntityNPCInterface) (Object) this, dimensions.height).orElse(height);
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction move)
+    {
+        Optional<Vec3> seat = hasPassenger(passenger) ? wolffsmodnpcsVehicleState().riderOffset((EntityNPCInterface) (Object) this) : Optional.empty();
+        if (seat.isPresent())
+            move.accept(passenger, getX() + seat.get().x, getY() + seat.get().y + passenger.getMyRidingOffset(), getZ() + seat.get().z);
+        else
+            super.positionRider(passenger, move);
+    }
+
+    @Override
+    public AABB getBoundingBoxForCulling()
+    {
+        return wolffsmodnpcsVehicleState().cullingBox((EntityNPCInterface) (Object) this).orElseGet(super::getBoundingBoxForCulling);
+    }
+
+    // Senses
+
+    @Override
+    public boolean hasLineOfSight(Entity entity)
+    {
+        return NpcSight.sees((EntityNPCInterface) (Object) this, entity);
+    }
+
+    @ModifyVariable(method = "isInRange(Lnet/minecraft/world/entity/Entity;D)Z", at = @At("HEAD"), argsOnly = true)
+    private double wolffsmodnpcsKeepTarget(double range, Entity entity)
+    {
+        return entity != null && entity == getTarget() ? range + NpcTargetSearch.margin(this) : range;
     }
 
     // Tracking and render distance

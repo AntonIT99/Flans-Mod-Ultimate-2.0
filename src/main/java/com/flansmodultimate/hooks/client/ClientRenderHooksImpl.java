@@ -18,6 +18,7 @@ import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
 import com.flansmodultimate.util.FileUtils;
@@ -28,6 +29,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -340,6 +342,33 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     {
         if (value)
             ModClient.startFlash(time);
+    }
+
+    @Override
+    public void addCombatFeedback(boolean explosion, float intensity, float direction)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        var player = Minecraft.getInstance().player;
+        if (config == null || player == null)
+            return;
+        if (explosion && config.explosionScreenShake)
+            CombatScreenEffects.addExplosion(intensity, Util.getMillis(), config.explosionShakeDuration);
+        else if (!explosion && config.nearMissSuppression && Float.isFinite(direction))
+        {
+            float side = (float) Math.sin(direction - Math.toRadians(player.getYRot()));
+            CombatScreenEffects.addSuppression(intensity, side, Util.getMillis(), config.suppressionDuration);
+        }
+    }
+
+    @Override
+    public void playBulletFlyby(String sound, Vec3 position)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        var level = Minecraft.getInstance().level;
+        if (config == null || level == null || !config.bulletFlybySounds || config.bulletFlybyVolume <= 0D)
+            return;
+        float pitch = 1F / (level.random.nextFloat() * 0.4F + 0.8F);
+        FlansMod.getSoundEvent(sound).ifPresent(event -> level.playLocalSound(position.x, position.y, position.z, event.get(), SoundSource.HOSTILE, (float) config.bulletFlybyVolume, pitch, false));
     }
 
     @Override

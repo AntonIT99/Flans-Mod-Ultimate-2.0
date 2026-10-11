@@ -1,22 +1,19 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.explosions.ExplosionScaling;
-import com.flansmodultimate.common.explosions.FlanExplosion;
-import com.flansmodultimate.common.explosions.FragmentationModel;
+import com.flansmodultimate.common.explosions.*;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.FlansLog;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 
 import java.util.*;
 
@@ -29,6 +26,12 @@ public abstract class ShootableType extends InfoType
     /** Conversion factor between the gram and kilogram scales the mass parameters are authored at. */
     public static final float GRAMS_PER_KILOGRAM = 1000F;
     public static final double FALL_SPEED_COEFFICIENT = (9.81 / 400.0);
+    /** Explosion shake defaults apply to ammunition and grenades; either field can be zero to disable it. */
+    @Getter
+    protected float powerShake = 10F;
+    @Getter
+    protected float rangeShake = 32F;
+
     public static final float AIR_DEFAULT_DRAG = 0.99F;
     public static final float WATER_DEFAULT_DRAG = 0.8F;
     public static final float LAVA_DEFAULT_DRAG = 0.6F;
@@ -447,8 +450,7 @@ public abstract class ShootableType extends InfoType
         fragMetalMassGrams = readValue("FragMetalMassg", fragMetalMassGrams, file);
         fragCount = readValue("FragCount", fragCount, file);
         fragBurstHeight = readValue("FragBurstHeight", fragBurstHeight, file);
-        if (!Float.isFinite(fragMetalMassGrams) || fragMetalMassGrams < 0F || !Float.isFinite(fragCount) || fragCount < 0F || !Float.isFinite(fragBurstHeight)
-            || fragBurstHeight < 0F)
+        if (!Float.isFinite(fragMetalMassGrams) || fragMetalMassGrams < 0F || !Float.isFinite(fragCount) || fragCount < 0F || !Float.isFinite(fragBurstHeight) || fragBurstHeight < 0F)
         {
             logError("FragMetalMassg, FragCount and FragBurstHeight must be finite non-negative values", file);
             fragMetalMassGrams = Math.max(0F, Float.isFinite(fragMetalMassGrams) ? fragMetalMassGrams : 0F);
@@ -467,8 +469,8 @@ public abstract class ShootableType extends InfoType
         explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsVehicles", explosionFragDamage.getDamageVsVehicles(), file));
         explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsDriveable", explosionFragDamage.getDamageVsVehicles(), file));
         explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsDriveables", explosionFragDamage.getDamageVsVehicles(), file));
-        explosionFragDamage.setReadDamageVsVehicles(file.hasConfigLine("FragDamageVsVehicle") || file.hasConfigLine("FragDamageVsVehicles")
-            || file.hasConfigLine("FragDamageVsDriveable") || file.hasConfigLine("FragDamageVsDriveables"));
+        explosionFragDamage.setReadDamageVsVehicles(
+            file.hasConfigLine("FragDamageVsVehicle") || file.hasConfigLine("FragDamageVsVehicles") || file.hasConfigLine("FragDamageVsDriveable") || file.hasConfigLine("FragDamageVsDriveables"));
         explosionFragDamage.setDamageVsPlanes(readValue("FragDamageVsPlane", explosionFragDamage.getDamageVsPlanes(), file));
         explosionFragDamage.setDamageVsPlanes(readValue("FragDamageVsPlanes", explosionFragDamage.getDamageVsPlanes(), file));
         explosionFragDamage.setReadDamageVsPlanes(file.hasConfigLine("FragDamageVsPlane") || file.hasConfigLine("FragDamageVsPlanes"));
@@ -482,6 +484,7 @@ public abstract class ShootableType extends InfoType
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readSound("DetonateSound", detonateSound, file);
+        readExplosionShake(file);
 
         // Particles
         smokeParticleCount = readValue("FlareParticleCount", smokeParticleCount, file);
@@ -530,9 +533,7 @@ public abstract class ShootableType extends InfoType
 
     public float getExplosionRadius()
     {
-        float radius = useNewExplosionSystem()
-            ? ExplosionScaling.craterRadius(ModCommonConfig.get().newDamageSystemExplosiveRadiusReference(), getExplosiveMass())
-            : explosionRadius;
+        float radius = useNewExplosionSystem() ? ExplosionScaling.craterRadius(ModCommonConfig.get().newDamageSystemExplosiveRadiusReference(), getExplosiveMass()) : explosionRadius;
 
         // Mirrors the cap FlanExplosion.Stats applies to every explosion it simulates, so a
         // tooltip never advertises a crater bigger than what the server will actually carve.
@@ -713,5 +714,13 @@ public abstract class ShootableType extends InfoType
     public static Optional<ShootableType> findAmmoType(String shortname, IContentProvider contentPack)
     {
         return findAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
+    }
+
+    private void readExplosionShake(TypeFile file)
+    {
+        powerShake = readValue("powerShake", powerShake, file);
+        rangeShake = readValue("rangeShake", rangeShake, file);
+        powerShake = Float.isFinite(powerShake) ? Mth.clamp(powerShake, 0F, 100F) : 0F;
+        rangeShake = Float.isFinite(rangeShake) ? Mth.clamp(rangeShake, 0F, 4096F) : 0F;
     }
 }

@@ -3,8 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.EntityTypeProperties.Sound;
 import com.flansmodultimate.api.EntityTypeProperties.Weapon;
-import com.flansmodultimate.common.driveables.EngineSoundPitch;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.physics.MechaPhysics;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
@@ -13,7 +12,9 @@ import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.item.ShootableItem;
 import org.apache.commons.lang3.StringUtils;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -22,6 +23,36 @@ public final class EntityTypePropertySupport
 {
     private EntityTypePropertySupport()
     {}
+
+    /** Traverse and elevation speed, in degrees per tick, of a mount whose definition states none. */
+    private static final float DEFAULT_AIM_SPEED = 8F;
+
+    public static List<WeaponMount> mounts(IContentType type)
+    {
+        if (type instanceof AAGunType aa)
+        {
+            float side = Math.abs(aa.getSideViewLimit());
+            MountAim minimum = new MountAim(side >= 180F ? -360F : -side, -Math.abs(aa.getTopViewLimit()));
+            MountAim maximum = new MountAim(side >= 180F ? 360F : side, aa.getBottomViewLimit());
+            return List.of(new WeaponMount(0, true, false, minimum, maximum, DEFAULT_AIM_SPEED, DEFAULT_AIM_SPEED, Vec3.ZERO, Vec3.ZERO, Optional.empty()));
+        }
+        if (!(type instanceof DriveableType driveable))
+            return List.of();
+        List<WeaponMount> mounts = new ArrayList<>();
+        for (SeatInfo seat : driveable.getSeats())
+        {
+            if (seat == null)
+                continue;
+            float yawSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().x), 0.25F, 45F);
+            float pitchSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().y), 0.25F, 45F);
+            boolean onTurret = EnumDriveablePart.isTurretMounted(seat.getPart());
+            Vec3 position = LegacyDriveableCoordinates.toLocal(seat.getPosition());
+            mounts.add(new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(seat.getMinYaw(), seat.getMinPitch()), new MountAim(seat.getMaxYaw(), seat.getMaxPitch()), yawSpeed,
+                pitchSpeed, position, onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType())));
+        }
+        mounts.sort(Comparator.comparingInt(WeaponMount::seat));
+        return List.copyOf(mounts);
+    }
 
     public static Optional<EngineSound> engineSound(IContentType type)
     {

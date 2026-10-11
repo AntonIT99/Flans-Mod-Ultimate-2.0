@@ -111,6 +111,10 @@ public interface IClientRenderHooks
     /** Kicks the camera for a nearby driveable firing its main or coaxial gun. */
     void addVehicleScreenShake(float intensity, float durationSeconds);
 
+    void addCombatFeedback(boolean explosion, float intensity, float direction);
+
+    void playBulletFlyby(String sound, Vec3 position);
+
     void updatePlayerClassSkins(Map<UUID, String> playerClasses);
 
     void addKillMessage(KillMessageData message);

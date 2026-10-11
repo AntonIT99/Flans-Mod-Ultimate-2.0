@@ -1,10 +1,11 @@
 {
+  "block.flansmod.gunpowderblock": "火薬ブロック",
   "block.flansmod.gunworkbench": "銃器改造台",
   "block.flansmod.paintjobtable": "塗装台",
-  "block.flansmod.vehiclecraftingtable": "車両製作台",
   "block.flansmod.teams_item_spawner": "チーム用アイテムスポナー",
   "block.flansmod.teams_player_spawner": "チーム用プレイヤースポナー",
   "block.flansmod.teams_vehicle_spawner": "チーム用ビークルスポナー",
+  "block.flansmod.vehiclecraftingtable": "車両製作台",
   "gui.flansmod.teams.base_name": "拠点名:",
   "gui.flansmod.teams.base_settings": "拠点設定",
   "gui.flansmod.teams.choose_class": "クラスを選択",

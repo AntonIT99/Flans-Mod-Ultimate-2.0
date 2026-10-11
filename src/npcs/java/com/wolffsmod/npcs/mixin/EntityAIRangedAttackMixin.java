@@ -4,6 +4,7 @@ import com.flansmodultimate.api.ReloadCycle;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcReloadFeedback;
 import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.ai.EntityAIRangedAttack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataRanged;
@@ -11,6 +12,8 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Optional;
 
@@ -23,6 +26,8 @@ import java.util.Optional;
  * <li>With a reload cycle, an inherited bank fires its magazine, reloads for the model's reload time and plays the model's
  * reload and chambering sounds. Losing the target does not cut a reload short.</li>
  * <li>When a Custom NPCs burst ends, Flan guns the NPC merely holds play their reload sound and animation.</li>
+ * <li>The trigger waits, without spending its cooldown or its burst, until a model's gun is on target and until nothing the NPC
+ * must not fire through is in the way; meanwhile the NPC keeps closing in.</li>
  * </ul>
  */
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
@@ -37,6 +42,8 @@ public abstract class EntityAIRangedAttackMixin
     private int rangedAttackTime;
     @Shadow @SuppressWarnings("FieldCanBeLocal") // Shadowed target state, written for the target.
     private boolean hasFired;
+    @Shadow @SuppressWarnings("FieldCanBeLocal") // Shadowed target state, written for the target.
+    private int moveTries;
     @Unique
     private final NpcTypeCadence wolffsmodnpcsCadence = new NpcTypeCadence();
     @Unique
@@ -81,6 +88,23 @@ public abstract class EntityAIRangedAttackMixin
         Optional<ReloadCycle> cycle = properties.reloadCycle();
         if (cycle.isPresent() && cycle.get().chamberSoundTick().isPresent() && rangedAttackTime == cycle.get().chamberSoundTick().getAsInt())
             NpcReloadFeedback.chamber(npc);
+    }
+
+    // Declared after the timing hook, which may reset the countdown this hook then holds.
+    @Inject(method = {"tick", "m_8037_"}, at = @At("HEAD"))
+    private void wolffsmodnpcsHoldFire(CallbackInfo callback)
+    {
+        NpcVehicleState state = NpcVehicleState.of(npc);
+        boolean hold = state.isActive() && !state.isAligned();
+        LivingEntity target = npc.getTarget();
+        if (target != null && state.holdsFire(npc, target))
+        {
+            hold = true;
+            // Custom NPCs stops advancing once it has seen its target for a while; it has to keep going for a clear shot.
+            moveTries = 0;
+        }
+        if (hold && rangedAttackTime <= 0)
+            rangedAttackTime = 1;
     }
 
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataRanged;getBurst()I"))

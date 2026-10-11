@@ -7,6 +7,7 @@ import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.ModUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.nbt.*;
@@ -116,8 +117,12 @@ public final class ApocalypseGunCombat
         if (gunStack.getItem() instanceof GunItem gunItem)
         {
             ItemStack loaded = gunItem.getAmmoItemStack(gunStack, 0, owner.level().registryAccess());
-            if (!loaded.isEmpty())
-                addReserve(loaded.copyWithCount(1));
+            if (loaded.getItem() instanceof ShootableItem shootable)
+            {
+                ItemStack spare = loaded.copyWithCount(1);
+                ShootableItem.setRoundsRemaining(spare, Math.max(1, shootable.getConfigType().getRoundsPerItem()));
+                addReserve(spare);
+            }
         }
     }
 
@@ -228,30 +233,49 @@ public final class ApocalypseGunCombat
         {
             if (ShootableItem.hasRoundsLeft(gunItem.getAmmoItemStack(gunStack, slot, owner.level().registryAccess())))
                 continue;
-            int best = -1;
-            int bestRounds = 0;
-            for (int i = 0; i < reserve.size(); i++)
+            int best = bestReserveIndex(gunType);
+            if (best >= 0)
             {
-                ItemStack candidate = reserve.get(i);
-                if (!(candidate.getItem() instanceof ShootableItem shootable) || !gunType.getAmmoTypes().contains(shootable.getConfigType()))
-                    continue;
-                int rounds = ShootableItem.getRoundsRemaining(candidate);
-                if (rounds > bestRounds)
-                {
-                    best = i;
-                    bestRounds = rounds;
-                }
+                replaceMagazine(gunItem, gunStack, slot, best);
+                reloaded = true;
             }
-            if (best < 0)
+        }
+        return reloaded;
+    }
+
+    private int bestReserveIndex(GunType gunType)
+    {
+        int best = -1;
+        int bestRounds = 0;
+        for (int i = 0; i < reserve.size(); i++)
+        {
+            ItemStack candidate = reserve.get(i);
+            if (!(candidate.getItem() instanceof ShootableItem shootable) || !gunType.getAmmoTypes().contains(shootable.getConfigType()))
                 continue;
-            ItemStack magazine = reserve.get(best);
-            gunItem.setBulletItemStack(gunStack, magazine.copyWithCount(1), slot, owner.level().registryAccess());
+            int rounds = ShootableItem.getRoundsRemaining(candidate);
+            if (rounds > bestRounds)
+            {
+                best = i;
+                bestRounds = rounds;
+            }
+        }
+        return best;
+    }
+
+    private void replaceMagazine(GunItem gunItem, ItemStack gunStack, int slot, int best)
+    {
+        ItemStack spent = gunItem.getAmmoItemStack(gunStack, slot, owner.level().registryAccess());
+        if (profile == Profile.SURVIVOR && spent.getItem() instanceof ShootableItem shootable)
+            ModUtils.dropItem(owner.level(), owner, shootable.getConfigType().getDropItemOnReload(), shootable.getConfigType().getContentPack());
+        ItemStack magazine = reserve.get(best);
+        gunItem.setBulletItemStack(gunStack, magazine.copyWithCount(1), slot, owner.level().registryAccess());
+        // Legacy drones reloaded in creative mode; the one reserve stack was reusable.
+        if (profile == Profile.SURVIVOR)
+        {
             magazine.shrink(1);
             if (magazine.isEmpty())
                 reserve.remove(best);
-            reloaded = true;
         }
-        return reloaded;
     }
 
     private int findLoadedSlot(GunItem gunItem, ItemStack gunStack)
@@ -288,6 +312,10 @@ public final class ApocalypseGunCombat
         reserve.clear();
         for (Tag entry : tag.getList(NBT_RESERVE, Tag.TAG_COMPOUND))
             Optional.of(ItemStackData.parse(owner.level().registryAccess(), (CompoundTag) entry)).filter(stack -> !stack.isEmpty()).ifPresent(this::addReserve);
+        // Old saves may contain a drone whose only reserve was consumed. Its magazine
+        // still identifies the reusable ammo it should have carried.
+        if (profile == Profile.DRONE && reserve.isEmpty())
+            stockCopyOfLoadedAmmo();
         shootDelay = tag.getFloat(NBT_SHOOT_DELAY);
     }
 }

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
 import java.util.Optional;
 
 /** Read-only AA and driveable property inspection for addons, without creating a live vehicle. */
@@ -103,5 +104,18 @@ public final class FlansEntityTypes
     public static Optional<ReloadCycle> getReloadCycle(IContentType type, boolean secondary, ItemStack ammunition)
     {
         return EntityTypePropertySupport.reloadCycle(type, secondary, ammunition);
+    }
+
+    /**
+     * Lists what a definition can aim: every seat of a driveable, the driver first, or the single gun of an AA gun.
+     * Either side after content loading.
+     *
+     * @param type
+     *            selected AA gun, mecha, plane or vehicle definition
+     * @return immutable mounts ordered by seat index; empty for an unsupported definition
+     */
+    public static List<WeaponMount> getMounts(IContentType type)
+    {
+        return EntityTypePropertySupport.mounts(type);
     }
 }

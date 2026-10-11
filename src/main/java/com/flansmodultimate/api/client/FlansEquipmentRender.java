@@ -23,4 +23,15 @@ public final class FlansEquipmentRender
     {
         EquipmentAnimationSupport.weapons(model, holder);
     }
+
+    /**
+     * Registers a step run on every Flan armour model just before each piece is drawn. Call once, during client setup.
+     *
+     * @param step
+     *            adjusts the armour model for its wearer
+     */
+    public static void addArmorPoseStep(ArmorPoseStep step)
+    {
+        EquipmentAnimationSupport.addArmorPoseStep(step);
+    }
 }

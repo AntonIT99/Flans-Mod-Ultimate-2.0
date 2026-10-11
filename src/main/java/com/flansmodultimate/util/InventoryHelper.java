@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class InventoryHelper
 {
+    /** Counts recipe ingredients by item identity, ignoring paintjobs and other stack data. */
     public static int countInInventory(Container inv, ItemStack needle)
     {
         if (needle == null || needle.isEmpty())
@@ -22,7 +23,7 @@ public final class InventoryHelper
         for (int i = 0; i < inv.getContainerSize(); i++)
         {
             ItemStack s = inv.getItem(i);
-            if (!s.isEmpty() && ItemStackData.isSameItemSameData(s, needle))
+            if (!s.isEmpty() && ItemStack.isSameItem(s, needle))
                 total += s.getCount();
         }
         return total;
@@ -40,7 +41,7 @@ public final class InventoryHelper
             if (have.isEmpty())
                 continue;
 
-            if (ItemStackData.isSameItemSameData(have, want))
+            if (ItemStack.isSameItem(have, want))
             {
                 int take = Math.min(remaining, have.getCount());
                 have.shrink(take);
@@ -54,6 +55,7 @@ public final class InventoryHelper
      * Checks a complete legacy recipe against one snapshot of an inventory. This
      * matters when a recipe contains the same item more than once: checking every
      * ingredient independently would allow both entries to count the same stack.
+     * Ingredients match by item identity, ignoring paintjobs and other stack data.
      */
     public static boolean canConsumeAll(Container inv, List<ItemStack> required)
     {
@@ -69,7 +71,7 @@ public final class InventoryHelper
             int remaining = want.getCount();
             for (ItemStack have : available)
             {
-                if (have.isEmpty() || !ItemStackData.isSameItemSameData(have, want))
+                if (have.isEmpty() || !ItemStack.isSameItem(have, want))
                     continue;
 
                 int taken = Math.min(remaining, have.getCount());

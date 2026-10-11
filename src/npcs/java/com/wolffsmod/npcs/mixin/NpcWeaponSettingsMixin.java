@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
+import com.wolffsmod.npcs.sim.NpcTuning;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataStats;
 import org.spongepowered.asm.mixin.*;
@@ -33,6 +34,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
 
     @Unique
     private final NpcCombatSettings wolffsmodnpcsCombat = new NpcCombatSettings();
+    @Unique
+    private final NpcTuning wolffsmodnpcsTuning = new NpcTuning();
 
     @Inject(method = "readToNBT", at = @At("HEAD"))
     private void wolffsmodnpcsRetainHealth(CompoundTag tag, CallbackInfo callback)
@@ -46,6 +49,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsOptions.load(compound);
         wolffsmodnpcsPresentation.load(compound);
         wolffsmodnpcsCombat.load(compound);
+        wolffsmodnpcsTuning.load(compound);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
     }
@@ -56,6 +60,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsOptions.save(callback.getReturnValue());
         wolffsmodnpcsPresentation.save(callback.getReturnValue());
         wolffsmodnpcsCombat.save(callback.getReturnValue());
+        wolffsmodnpcsTuning.save(callback.getReturnValue());
         wolffsmodnpcsProperties.saveDefaults(Component.STATS, callback.getReturnValue());
     }
 
@@ -81,5 +86,11 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     public NpcCombatSettings wolffsmodnpcsCombat()
     {
         return wolffsmodnpcsCombat;
+    }
+
+    @Override
+    public NpcTuning wolffsmodnpcsTuning()
+    {
+        return wolffsmodnpcsTuning;
     }
 }

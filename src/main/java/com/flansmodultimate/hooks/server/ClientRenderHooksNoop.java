@@ -162,6 +162,18 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public void addCombatFeedback(boolean explosion, float intensity, float direction)
+    {
+        // Dedicated servers have no camera or suppression overlay.
+    }
+
+    @Override
+    public void playBulletFlyby(String sound, Vec3 position)
+    {
+        // Near-miss audio is played only by recipient clients.
+    }
+
+    @Override
     public void addVehicleScreenShake(float intensity, float durationSeconds)
     {
         /* no-op */

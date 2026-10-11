@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
+import com.wolffsmod.npcs.sim.NpcTuning;
 
 /** Implemented on Custom NPCs' stats object so its editor, save and preset paths share the settings. */
 public interface NpcWeaponSettings
@@ -13,4 +14,6 @@ public interface NpcWeaponSettings
     NpcPresentation wolffsmodnpcsPresentation();
 
     NpcCombatSettings wolffsmodnpcsCombat();
+
+    NpcTuning wolffsmodnpcsTuning();
 }

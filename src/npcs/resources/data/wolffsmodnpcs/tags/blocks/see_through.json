@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:leaves",
+    "#minecraft:fences",
+    "#minecraft:fence_gates",
+    "#minecraft:impermeable",
+    "minecraft:iron_bars",
+    "minecraft:chain",
+    "minecraft:scaffolding",
+    "minecraft:glass_pane",
+    {
+      "id": "#forge:glass",
+      "required": false
+    },
+    {
+      "id": "#forge:glass_panes",
+      "required": false
+    }
+  ]
+}

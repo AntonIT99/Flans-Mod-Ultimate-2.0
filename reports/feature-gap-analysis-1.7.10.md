@@ -1,36 +1,20 @@
 # Feature gap analysis: Ultimate 1.7.10 → Ultimate 2.0
 
-Initial audit: 2026-09-10. Last updated: 2026-10-02. Direction is strictly reference → target.
+Initial audit: 2026-09-10. Last updated: 2026-10-11. Direction is strictly reference → target.
 
 - Reference: `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-1.7.10`, HEAD `9b669b12149c3c9fa3a69f1a4ac5d8a55367506d` (unchanged since the initial audit).
 - Target initially audited: HEAD `08494f8a4972c249feb4e7d8522e981547439c4e`; previous revalidation: `e0b68dc60fc7060324ee4293678183aca93650b7`.
-- Target revalidated: HEAD `767d2dc61b42f488ad423e704d1c4a8981e6a481` (166 commits after the 2026-09-21 update). The findings of that revalidation were then implemented in the working tree on the same day.
+- Target revalidated on 2026-10-02: HEAD `767d2dc61b42f488ad423e704d1c4a8981e6a481` (166 commits after the 2026-09-21 update). The findings of that revalidation were then implemented in the working tree on the same day.
+- Current target revalidated: HEAD `263d1fe447df1b5cd779ef18ea6fbe37a8ff3d04` plus the current working tree (including ongoing driveable animation changes). Reference HEAD is unchanged.
 - Completed findings are removed as they are implemented, so the report remains a backlog rather than a historical snapshot.
 - Remaining: **0 MISSING, 0 PARTIAL, 0 UNCERTAIN**. The deeper audit of 2026-10-02 found three more differences: two are recorded as deliberate divergences and one was fixed. These counts describe outstanding findings, not a percentage of port completeness.
 - Findings closed by a deliberately different design, rather than by reproducing the reference, are recorded under "Deliberate divergences" instead of being deleted.
 
-## What changed in this revalidation
+## Revalidation (2026-10-11)
 
-The 2026-09-21 revision listed no outstanding findings. This pass re-ran discovery from the reference instead of only rechecking the earlier backlog, and found 2 missing and 9 partial features. Ten were in areas the earlier pass had not opened up far enough (Teams administration, death drops and pickups, gameplay settings from `FlansMod.java`, HUD options); one, the `OneHanded` default, came from commit `4b3037279` and is now recorded as a deliberate divergence.
+Rechecked the previously closed findings and the remaining divergence/validation notes against current sources. No previously reported gameplay gap was found to have reopened. This is a revalidation of the existing audit, not a new exhaustive discovery pass or an in-game parity test.
 
-The rewritten blast/fragmentation, gravity/drag, steering and HEAT systems were checked for missing mechanics. Their changes in numbers are listed under "Areas requiring deeper audit" rather than counted as gaps, because they are deliberate model replacements.
-
-### Closed on 2026-10-02
-
-| Finding | Closed by |
-| --- | --- |
-| Per-rule Teams administration commands | `T/common/command/TeamsCommand.java#addRuleCommands`: every legacy rule under its legacy spelling and aliases (`overrideHunger`/`noHunger`, `bombs`/`allowBombs`, `shells`, `bullets`/`bulletsEnabled`, `canBreakGuns`, `canBreakGlass`, `survivalCanBreakVehicles`, `survivalCanPlaceVehicles`, `armourDrops`/`armorDrops`, `weaponDrops <on\|off\|smart>`, `vehiclesBreakBlocks`, the five `*Life` timers), plus `useRotation`, `autobalance`, `setRound`, `goToMap`, `getSticks`/`getOpSticks` and `ping`. `T/common/teams/TeamsManager.java#queueNextRound` keeps the operator's next-round choice ahead of rotation and voting, and `setCurrentScoreLimit` gives every game type the `scorelimit` variable. Game-type variables are now saved after `setvariable`. |
-| Lag-compensation tuning | `bulletSnapshotMin`/`bulletSnapshotDivisor` in the common config (`Teams Settings`), read by `TeamsManager#getBulletSnapshotMin`/`Divisor`; `/teams bltss <min> <divisor>` persists them, `/teams bltss`, `/teams showbltss` and `/teams admin bltss` show them. |
-| Death drops under `weaponDrops`/`armourDrops` | `T/common/teams/TeamsDeathDrops.java`, called from `CommonEventHandler#onLivingDrops`. Smart drops spawn one `GunItemEntity` bundle per gun type carrying the matching ammunition, as 1.7.10 did. |
-| Spectator pickup and team item spawners | `CommonEventHandler#canPickUp` blocks spectators during a round. `T/common/entity/TeamItemEntity.java` circles the spawner client-side, is indestructible, never despawns or merges, and only the team owning the spawner's base can take it (`TeamSpawnerBlockEntity#getOwningTeam`). |
-| Post-respawn slot 0 and automatic reload | `TeamsManager#respawnPlayer` selects slot 0 and schedules `PlayerData#tickRespawnReload` five ticks later; that reload uses the existing instant first-reload rule. |
-| `ShootWithOpenDoor` semantics and weapon-arming HUD | `T/common/types/VehicleType.java#doorAllowsFiring`, used by `Vehicle#canFireWeaponBank`; `ClientHudOverlays` shows `Weapon: READY/DISABLED [door key]`. |
-| Player maximum health | `maxPlayerHealth` (`General Settings`), applied by `CommonEventHandler#applyMaxHealth` on login and on respawn. |
-| Gun development mode | `gunDevMode` (`Gun Settings`) and the restored `GunReloadEvent#needsAmmo`: either loads the default ammunition without consuming any (`GunReloader#loadDefaultAmmo`). |
-| Kill message toggles and distance | `enableKillMessages` and `showDistanceInKillMessage` (`General Settings`); `FlanDamageSources.FlanDamageSource#getLocalizedDeathMessage` appends the distance, and `CommonEventHandler#sendKillMessage` honours the switch. |
-| Hit-marker and tooltip display options | Client `showHitMarker`, `hitMarkerRed/Green/Blue/Alpha` (`ClientHudOverlays#renderHitMarker`) and `showDetailedItemDescriptions` (`IFlanItem#showDetailedDescriptions`). |
-
-While implementing smart drops, `GunItemEntity` turned out to have no client renderer registered; it now uses the vanilla item renderer, as does `TeamItemEntity`.
+The restored Teams commands, snapshot tuning, smart death drops, spectator/spawner pickups, respawn reload, vehicle door firing rule, maximum-health/gun-development settings and kill-message/HUD preferences still have implementation and consumer paths. Closed implementation history has been removed from the backlog. `OnRadar` and other discarded parser surface remain covered by the separate InfoType reports; dead reference declarations are not gameplay gaps.
 
 ## Findings table
 
@@ -46,7 +30,7 @@ Evidence paths use these roots:
 - `T/` = target `src/main/java/com/flansmodultimate`.
 - `TL/` = target legacy-compatibility package `src/main/java/com/flansmod`.
 
-`MISSING` means the described capability has no equivalent in the inspected target paths. `PARTIAL` means the broader mechanic exists but the stated option or secondary behavior does not. Confidence concerns the narrow finding, not full subsystem equivalence. The audit itself changed nothing; the implementation that closed its findings is listed below. Unit tests and a full build were run for that implementation, but no in-game test was, so runtime parity is not established by this report.
+`MISSING` means the described capability has no equivalent in the inspected target paths. `PARTIAL` means the broader mechanic exists but the stated option or secondary behavior does not. Confidence concerns the narrow finding, not full subsystem equivalence. This revalidation changes only the reports. Tests/builds mentioned in the original implementation history are historical evidence, not checks run for this update. No in-game test was run, so runtime parity is not established by this report.
 
 
 ## Deliberate divergences
@@ -76,7 +60,7 @@ Not carried over: two separate booleans, server-side configuration of this behav
 Reference: `R/common/sync/Sync.java`, `R/common/sync/SyncEventHandler.java#playerJoined`, `R/common/network/PacketHashSend.java`, `kickNonMatchingHashes`.
 The reference hashes all normalized definition text into one aggregate hash. On dedicated-server login the server sends it, the client replies with its own, and with `kickNonMatchingHashes` enabled the server disconnects a mismatching client.
 
-Target: `T/common/sync/ContentFingerprint.java`, `T/common/sync/EnumContentMismatch.java`, `T/network/client/PacketContentFingerprint.java`, `T/ContentManager.java#registerConfigs`, `T/event/handler/CommonEventHandler.java#onPlayerLogin`.
+Target: `T/common/sync/ContentFingerprint.java`, `T/common/sync/EnumContentMismatch.java`, `T/network/client/config/PacketContentFingerprint.java`, `T/ContentManager.java#registerConfigs`, `T/event/handler/CommonEventHandler.java#onPlayerLogin`.
 The target fingerprints definition text per content pack (SHA-256, normalized to drop blank lines, comments and indentation) and sends the server's fingerprints to each player on login. The client compares them with its own and names the packs that differ, are missing, or are unknown to the server. Nobody is disconnected and the client sends nothing back.
 
 Why the reference design was not reproduced:
@@ -129,7 +113,7 @@ Damage to a fully exposed player with multipliers at 1, 1.7.10 / target:
 | R = 4 | 65 / 33 | 43 / 10 | 25 / 0 | 11 / 0 | 1 / 0 |
 | R = 8 | 129 / 65 | 85 / 19 | 49 / 0 | 21 / 0 | 1 / 0 |
 
-Built-in content is barely affected: 184 of the 221 explosive bullets and grenades get an explosive mass from the category files or their own definitions and use the new model as intended. Of the other 37, 32 are AP shells with a cosmetic radius of 1 or 2 (27 Warfare 44, 3 Official Packs, 2 Wolff Germany). Five use real legacy blasts: the Manus Packs `ammopowerpackxx9` (R 27), `wh40k_ammo_warhoundplasmablastgun` (R 27) and `wh40k_ammo_warhoundturbolaserdestructor` (R 31), and the Official Packs `grenadelauncherincendiaryammo` and `mg151ammo`. Third-party legacy packs are affected in full: their grenades, rockets and HE shells do about half the damage at the centre and nothing past their radius. `forceLegacyPlanePhysics` and `forceLegacyVehiclePhysics` restore legacy movement, but nothing restores this curve.
+Content census from the 2026-10-02 audit (not recounted in this revalidation): 184 of the 221 explosive bullets and grenades get an explosive mass from the category files or their own definitions and use the new model as intended. Of the other 37, 32 are AP shells with a cosmetic radius of 1 or 2 (27 Warfare 44, 3 Official Packs, 2 Wolff Germany). Five use real legacy blasts: the Manus Packs `ammopowerpackxx9` (R 27), `wh40k_ammo_warhoundplasmablastgun` (R 27) and `wh40k_ammo_warhoundturbolaserdestructor` (R 31), and the Official Packs `grenadelauncherincendiaryammo` and `mg151ammo`. Third-party legacy packs are affected in full: their grenades, rockets and HE shells do about half the damage at the centre and nothing past their radius. `forceLegacyPlanePhysics` and `forceLegacyVehiclePhysics` restore legacy movement, but nothing restores this curve.
 
 Why the reference curve was not kept: the legacy formula comes from vanilla 1.7.10, whose `Explosion` doubled the authored size before hurting entities, so an `ExplosionRadius` of 4 hurt players 8 blocks away. The target aligns legacy definitions with the modern blast model instead: the authored radius is the radius at which the blast stops hurting, the peak scales with it, and the falloff matches the one used for explosives declared by mass. The input radius therefore means what it says.
 
@@ -150,7 +134,7 @@ Bullets now fall with 9.81/400 ≈ 0.0245 blocks/tick² instead of 0.02, 23 % mo
 | Grenade `ThrowSpeed 1` at 45°, range | 9.8 | 8.1 |
 | Grenade `ThrowSpeed 2` at 45°, range | 40.1 | 28.3 |
 
-Built-in content compensates through its categories: 682 bullet entries set `FallSpeed` and 34 grenade entries set `ThrowSpeedMs` for the new coefficients. Third-party legacy packs do not: their guns shoot lower and their grenades and grenade launchers fall short, by up to about 30 % for strong throws.
+The 2026-10-02 content census recorded compensation through categories: 682 bullet entries set `FallSpeed` and 34 grenade entries set `ThrowSpeedMs` for the new coefficients. Third-party legacy packs do not: their guns shoot lower and their grenades and grenade launchers fall short, by up to about 30 % for strong throws.
 
 Why the reference values were not kept: 0.02 blocks/tick² was an arbitrary constant. 9.81/400 is Earth's gravity at one block per metre and 20 ticks per second, and it applies to every Flan's projectile alike. Bullets (`Bullet#applyDragAndGravity`) and grenades (`Shootable#applyDragAndGravity`) use the same `FALL_SPEED_COEFFICIENT · FallSpeed`, the same 0.99 air, 0.8 water and 0.6 lava drag through `ProjectileDrag`, and the same dimension factors through `ModPhysics`, which `FlansModApi#getGravityFactor`/`setGravityFactor` and `getDragFactor`/`setDragFactor` read and change. A grenade therefore flies exactly like a bullet with the same speed and `FallSpeed`.
 
@@ -176,7 +160,7 @@ Fixed in `T/common/driveables/DriveableTerrainProbes.java` and `T/common/entity/
 
 ### Checked and found equivalent
 
-- **Mecha simple-leg animation.** 1.7.10 steps `legSwing` towards `1 / (LegSwingLimit − 1)` while walking and divides it by `LegSwingLimit` every tick, then draws `sin(ticks / LegSwingTime) · legSwing` radians. `TL/client/model/ModelMecha.java` uses the same amplitude and period from `Driveable.tickCount`. The only differences are cosmetic: the amplitude is capped at 70°, which only matters for `LegSwingLimit` below about 1.82, and it follows the walking throttle instead of ramping up and down over a few ticks.
+- **Mecha simple-leg animation.** 1.7.10 steps `legSwing` towards `1 / (LegSwingLimit − 1)` while walking and divides it by `LegSwingLimit` every tick, then draws `sin(ticks / LegSwingTime) · legSwing` radians. `TL/client/model/ModelMecha.java` retains the amplitude and period formula; the current working tree supplies interpolated `ModelDriveable.RenderState.animationTime()` instead of reading `Driveable.tickCount` directly. The only differences are cosmetic: the amplitude is capped at 70°, which only matters for `LegSwingLimit` below about 1.82, and it follows the walking throttle instead of ramping up and down over a few ticks.
 - **Seated players across a reconnect.** Neither version keeps a player mounted across a logout: 1.7.10 `EntitySeat` is never written to NBT, and target seats are unsaved proxies rebuilt by `Driveable#ensureProxyEntities`.
 - **Late entity tracking.** Driveable part health and states reach players who start tracking a driveable later (`CommonEventHandler#onStartTracking` → `Driveable#sendPartStateTo`). Seat links travel in synced entity data (`Seat.DATA_SEAT_INDEX`, `DATA_PARENT_ID`), and passengers through vanilla pairing.
 
@@ -184,3 +168,7 @@ Fixed in `T/common/driveables/DriveableTerrainProbes.java` and `T/common/entity/
 
 - Multiplayer timing: reconnecting in the middle of a reload, round transitions with players in vehicles, and persisted rounds across a server restart. Source review found no gap, but cannot prove that timing-dependent behaviour matches.
 - Articulated vehicles and custom model transforms: visual equivalence of legacy model animation was not established by this audit.
+
+## Validation of this update
+
+Static source/consumer review covered the previously closed findings, terrain probes, animation state, late-tracking synchronization, content fingerprints, and the documented explosion/gravity divergences. Detailed terrain collision and multiplayer timing still require the in-game checks above. No feature or implementation changed, so no wiki update is needed.

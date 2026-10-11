@@ -13,6 +13,8 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FlansModItems
 {
+    public static final Supplier<? extends Item> gunpowderBlockItem = FlansModRegistries.itemRegistry.register("gunpowderblock",
+        () -> new BlockItem(FlansModBlocks.gunpowderBlock.get(), new Item.Properties()));
     public static final Supplier<? extends Item> rainbowPaintcan = FlansModRegistries.itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
     public static final Supplier<? extends Item> gunWorkbenchItem = FlansModRegistries.itemRegistry.register("gunworkbench",
         () -> new BlockItem(FlansModBlocks.gunWorkbench.get(), new Item.Properties()));

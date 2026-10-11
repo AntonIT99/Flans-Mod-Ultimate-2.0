@@ -8,6 +8,7 @@ import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.common.driveables.physics.*;
+import com.flansmodultimate.common.driveables.visual.PlaneVisual;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.PlaneType;
@@ -41,7 +42,7 @@ import java.util.*;
 
 /** Server-authoritative flight runtime supporting fixed wing, helicopter, VTOL and six-DOF craft. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Plane extends Driveable
+public class Plane extends Driveable implements PlaneVisual
 {
     private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
     private static final Vec3 MODEL_FLIGHT_UP = LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D));
@@ -603,6 +604,11 @@ public class Plane extends Driveable
         setThrottle(throttle);
     }
 
+    private float effectivePropellerThrottle(PlaneType type, float throttle)
+    {
+        return type.isNewFlightControl() ? throttle : LegacyPlanePhysics.propellerThrottle(throttle, intactPropellerFraction(type.getPropellers()));
+    }
+
     private Vec3 fixedWingPhysics(PlaneType type)
     {
         Vec3 current = getDeltaMovement();
@@ -619,7 +625,8 @@ public class Plane extends Driveable
             return current.add(0D, -ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level()), 0D);
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
-        float thrust = LegacyPlanePhysics.thrust(throttle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater());
+        float effectiveThrottle = effectivePropellerThrottle(type, throttle);
+        float thrust = LegacyPlanePhysics.thrust(effectiveThrottle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater());
         float drag = Math.max(0F, LegacyPlanePhysics.drag(type.getDrag()) - (float) Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
         // The legacy model carries drag as a per-tick multiplier rather than a
         // force, so the air brake folds into that same multiplier.
@@ -631,7 +638,7 @@ public class Plane extends Driveable
         double newSpeed = type.isNewFlightControl()
             ? speed + throttle * type.getMaxThrust() / Math.max(1F, type.getMass()) * type.getPropellers().stream().filter(propeller -> isPartIntact(propeller.getPlanePart())).count()
             : speed + thrust * 2F;
-        double correction = Mth.clamp(2D * Math.abs(throttle), 0D, 1.5D);
+        double correction = Mth.clamp(2D * Math.abs(effectiveThrottle), 0D, 1.5D);
         Vec3 velocity = current.scale(1D - correction).add(forward.scale(correction * newSpeed));
 
         int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0) + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);

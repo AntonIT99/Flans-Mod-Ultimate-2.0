@@ -106,7 +106,30 @@ public final class FlansProjectiles
      */
     public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate)
     {
-        return ExternalProjectileSupport.getMuzzles(model, secondary, sequence, alternate);
+        return ExternalProjectileSupport.getMuzzles(model, secondary, sequence, alternate, MountAim.REST);
+    }
+
+    /**
+     * Selects the muzzles of an AA or driveable model with its turret or gun aimed, without creating a driveable
+     * entity. Muzzles on the turret turn round the turret origin of the definition and elevate with the gun; the
+     * barrels of an AA gun turn and elevate round the gun. Muzzles fixed to the hull stay where they are. Either side.
+     *
+     * @param model
+     *            model definition
+     * @param secondary
+     *            selected weapon bank
+     * @param sequence
+     *            trigger index, used to alternate points and individual barrels
+     * @param alternate
+     *            whether authored alternating fire is honored; false fires every barrel together
+     * @param aim
+     *            where the turret or AA gun points, relative to the hull
+     * @return immutable selected muzzles, in the same frame as the unaimed ones; empty when the model has no defined
+     *         weapon positions
+     */
+    public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate, MountAim aim)
+    {
+        return ExternalProjectileSupport.getMuzzles(model, secondary, sequence, alternate, aim);
     }
 
     /**

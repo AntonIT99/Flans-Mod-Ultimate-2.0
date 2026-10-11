@@ -6,12 +6,13 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
+import com.wolffsmod.npcs.sim.NpcModels;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.event.NpcEvent;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
-import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,8 +23,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /** Bridges an NPC trigger to Flan's reusable projectile API. Custom NPCs retains timing and targeting. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -44,6 +44,21 @@ public final class NpcRangedAttack
         return true;
     }
 
+    /**
+     * Resolves the round the NPC would fire next from its model's first muzzle, without firing it, so that a turret can
+     * be laid for its speed and drop before the trigger is pulled. Server thread.
+     */
+    public static Optional<ProjectileShot> preview(EntityNPCInterface npc)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        ItemStack ammo = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
+        if (!usesFlanProjectile(options, ammo) || !(npc.level() instanceof ServerLevel))
+            return Optional.empty();
+        Attack attack = new Attack(npc, null, ammo, options, false, 0);
+        WeaponMuzzle muzzle = attack.muzzles().stream().findFirst().orElse(EYE_MUZZLE);
+        return FlansProjectiles.prepare(npc, ammo, attack.held, muzzle.weapon().orElse(null), attack.definition, attack.secondary, attack.parameters(0, attack.adjustedWeapon(muzzle).orElse(null)));
+    }
+
     public static boolean usesFlanProjectile(NpcWeaponOptions options, ItemStack ammo)
     {
         return options.enabled(Feature.PROJECTILES) && ammo != null && FlansProjectiles.isProjectile(ammo) && (!FlansProjectiles.isGrenade(ammo) || options.enabled(Feature.GRENADES));
@@ -60,15 +75,17 @@ public final class NpcRangedAttack
         private final FlanModelEntity model;
         private final IContentType definition;
         private final boolean secondary;
-        private final Vec3 targetPoint;
-        private final Vec3 targetVelocity;
-        private final NpcEvent.RangedLaunchedEvent event;
+        @Nullable
+        private final LivingEntity target;
+        private final NpcVehicleState state;
+        private final float damage;
         private final int shotCount;
+        private NpcEvent.RangedLaunchedEvent event;
         private boolean modelMuzzles;
         private boolean fired;
         private boolean soundPlayed;
 
-        private Attack(EntityNPCInterface npc, LivingEntity target, ItemStack ammo, NpcWeaponOptions options, boolean highArc, int sequence)
+        private Attack(EntityNPCInterface npc, @Nullable LivingEntity target, ItemStack ammo, NpcWeaponOptions options, boolean highArc, int sequence)
         {
             this.npc = npc;
             this.ammo = ammo;
@@ -76,38 +93,34 @@ public final class NpcRangedAttack
             this.highArc = highArc;
             this.sequence = sequence;
             held = npc.getMainHandItem();
-            model = npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity flan ? flan : null;
+            model = NpcModels.flan(npc);
             definition = model == null ? null : model.getInfoType();
             secondary = options.enabled(Feature.SECONDARY_BANK);
-            targetPoint = target.position().add(0D, target.getBbHeight() * 0.5D, 0D);
-            targetVelocity = options.enabled(Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO;
-            event = new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, npc.stats.ranged.getStrength());
+            this.target = target;
+            state = NpcVehicleState.of(npc);
+            damage = npc.stats.ranged.getStrength();
             shotCount = Math.max(1, Math.min(10, npc.stats.ranged.getShotCount()));
         }
 
-        private static float modelScale(EntityNPCInterface npc)
+        /** The yaw the model is drawn at: the hull of a vehicle, which need not be where the NPC looks. */
+        private float hullYaw()
         {
-            return npc instanceof EntityCustomNpc custom && custom.modelData.simpleRender ? 1F : npc.display.getSize() / 5F;
+            return state.isActive() ? state.getHullYaw() : npc.yBodyRot;
         }
 
-        private static Vec3 modelOrigin(EntityNPCInterface npc, FlanModelEntity model, Vec3 offset)
+        /** The model's muzzles for this trigger, carried round with the turret when the NPC aims one. */
+        private List<WeaponMuzzle> muzzles()
         {
-            float height = model.getModelType() == null ? 0F : model.getModelType().getShape().modelHeight();
-            Vec3 position = offset.add(0D, height, 0D).scale(modelScale(npc)).yRot((float) Math.toRadians(180F - npc.yBodyRot));
-            double bodyOffset = npc.currentAnimation == 0 ? npc.ais.bodyOffsetY / 10D - 0.5D : 0D;
-            if (npc.isPassenger() && npc instanceof EntityCustomNpc custom)
-                bodyOffset -= 0.5D - custom.modelData.getLegsY() * 0.8D;
-            else if (npc.isCrouching())
-                bodyOffset -= 0.125D;
-            bodyOffset *= npc.display.getSize() / 5D;
-            return npc.position().add(position).add(0D, bodyOffset, 0D);
+            if (definition == null || !options.enabled(Feature.MODEL_MUZZLES))
+                return List.of();
+            MountAim aim = state.isActive() && options.enabled(Feature.TURRET_MUZZLES) ? state.turretAim() : MountAim.REST;
+            return FlansProjectiles.getMuzzles(definition, secondary, sequence, options.enabled(Feature.ALTERNATE_BARRELS), aim);
         }
 
         private void fire()
         {
-            List<WeaponMuzzle> muzzles = definition != null && options.enabled(Feature.MODEL_MUZZLES)
-                ? FlansProjectiles.getMuzzles(definition, secondary, sequence, options.enabled(Feature.ALTERNATE_BARRELS))
-                : List.of();
+            event = new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, damage);
+            List<WeaponMuzzle> muzzles = muzzles();
             modelMuzzles = !muzzles.isEmpty();
             if (!modelMuzzles)
                 muzzles = List.of(EYE_MUZZLE);
@@ -119,7 +132,7 @@ public final class NpcRangedAttack
 
         private void fireMuzzle(WeaponMuzzle muzzle)
         {
-            Vec3 origin = modelMuzzles ? modelOrigin(npc, model, muzzle.offset()) : npc.getEyePosition();
+            Vec3 origin = modelMuzzles ? NpcModels.world(npc, model, muzzle.offset(), hullYaw()) : npc.getEyePosition();
             Weapon adjusted = adjustedWeapon(muzzle).orElse(null);
             // A weapon firing with adjusted statistics still throws its own pellets, unless the shot count is adjusted too.
             int shots = adjusted != null && !own(NpcTypeProperty.SHOT_COUNT) ? Math.max(1, Math.min(128, adjusted.projectiles())) : shotCount;
@@ -148,12 +161,12 @@ public final class NpcRangedAttack
         private ProjectileParameters parameters(int shotIndex, @Nullable Weapon weapon)
         {
             int round = sequence * shotCount + shotIndex;
-            float damage = event.damage;
+            float shotDamage = event == null ? damage : event.damage;
             float spread = (100F - npc.stats.ranged.getAccuracy()) * 0.2F;
             float speed = Math.max(0.01F, npc.stats.ranged.getSpeed() / 10F);
             if (weapon == null)
-                return new ProjectileParameters(round, options.enabled(Feature.WEAPON_STATS), damage, spread, speed);
-            return new ProjectileParameters(round, false, own(NpcTypeProperty.DAMAGE) ? damage : (float) weapon.damage(), own(NpcTypeProperty.ACCURACY) ? spread : (float) weapon.spread(),
+                return new ProjectileParameters(round, options.enabled(Feature.WEAPON_STATS), shotDamage, spread, speed);
+            return new ProjectileParameters(round, false, own(NpcTypeProperty.DAMAGE) ? shotDamage : (float) weapon.damage(), own(NpcTypeProperty.ACCURACY) ? spread : (float) weapon.spread(),
                 own(NpcTypeProperty.SPEED) ? speed : (float) weapon.speed().orElse(speed));
         }
 
@@ -163,8 +176,10 @@ public final class NpcRangedAttack
             if (prepared.isEmpty())
                 return false;
             var shot = prepared.get();
-            Vec3 direction = ProjectileAim.direction(targetPoint.subtract(origin), targetVelocity, shot.speed(), options.enabled(Feature.BALLISTIC_AIM) ? shot.gravity() : 0D,
-                options.enabled(Feature.BALLISTIC_AIM) ? shot.drag() : 1D, highArc);
+            boolean arc = options.enabled(Feature.BALLISTIC_AIM);
+            // Only a preview has no target, and a preview never launches.
+            LivingEntity aimed = Objects.requireNonNull(target);
+            Vec3 direction = state.lead(NpcVehicleState.aimPoint(aimed).subtract(origin), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
             if (shot.launch(origin, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
             playLaunchEffects(muzzle, origin, shotIndex);
@@ -181,11 +196,14 @@ public final class NpcRangedAttack
                     soundPlayed = FlansProjectiles.playShootSound(npc, muzzle.weapon().orElse(definition), held, secondary);
             }
             if (shotIndex == 0 && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(ammo) || modelMuzzles))
-                FlansProjectiles.shootParticles(npc, muzzle, origin, npc.yBodyRot, modelScale(npc));
+                FlansProjectiles.shootParticles(npc, muzzle, origin, hullYaw() + (state.isActive() ? state.turretAim().yaw() : 0F), NpcModels.scale(npc));
         }
 
         private void finishAttack()
         {
+            if (modelMuzzles)
+                // Every usual barrel count divides 120, so the remainder still names the barrel after the trip to the client.
+                state.fired(Math.floorMod(sequence, 120));
             if (!soundPlayed)
             {
                 SoundEvent sound = npc.stats.ranged.getSoundEvent(0);

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.model;
 
 import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.client.ArmorPoseStep;
 import com.flansmodultimate.common.guns.GunArmPoses;
 
 import net.minecraft.client.model.HumanoidModel;
@@ -10,11 +11,30 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.UseAnim;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /** Resting limb pose for equipment whose wearer disables armor animations. */
 public final class EquipmentAnimationSupport
 {
     private EquipmentAnimationSupport()
     {}
+
+    /** Steps addons registered for armour models; read on the render thread, written during client setup. */
+    private static final List<ArmorPoseStep> armorPoseSteps = new CopyOnWriteArrayList<>();
+
+    public static void addArmorPoseStep(ArmorPoseStep step)
+    {
+        armorPoseSteps.add(Objects.requireNonNull(step));
+    }
+
+    /** Lets addons adjust an armour model whose pose has just been copied from its wearer's model. */
+    public static void armorPoseSteps(HumanoidModel<?> model, LivingEntity wearer)
+    {
+        for (ArmorPoseStep step : armorPoseSteps)
+            step.apply(wearer, model);
+    }
 
     public static void restArmor(HumanoidModel<?> model)
     {
