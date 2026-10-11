@@ -59,8 +59,8 @@ public final class ModelArmourDamage
         boolean blocked = resolved.penetration().armourGateRequired() && !resolved.penetration().penetrated();
         CollisionBox core = type.getHealth().get(EnumDriveablePart.CORE);
         float resistance = core == null ? 1F : Math.max(1F, core.getPenetrationResistance());
-        // A shaped charge spends its jet on the first surface, and a stopped round goes no further.
-        float remaining = heat || blocked ? 0F : Math.max(0F, previousPower - resistance);
+        // Explosive warheads act at the first surface, and a stopped round goes no further.
+        float remaining = heat || bulletType.isHesh() || blocked ? 0F : Math.max(0F, previousPower - resistance);
         return Optional.of(new Result(blocked ? 0F : resolved.damage(), blocked, remaining));
     }
 

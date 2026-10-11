@@ -51,6 +51,9 @@ public class BulletType extends ShootableType
      */
     @Getter
     protected boolean heat;
+    /** Squash-head explosive round: stops at the first vehicle surface without using the HEAT jet channel. */
+    @Getter
+    protected boolean hesh;
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -179,6 +182,16 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean torpedo;
     @Getter
+    protected boolean depthCharge;
+    @Getter
+    protected float activationDepth = 20F;
+    /** Depth charges may need longer than the ordinary thirty-second projectile lifetime to reach deep settings. */
+    @Getter
+    protected int depthChargeLifetime = 2400;
+    /** Omitted overrides use the dimension's sea level, including custom dimensions. */
+    @Getter
+    protected int depthChargeSeaLevel = Integer.MIN_VALUE;
+    @Getter
     protected boolean laserGuidance;
 
     // Submunitions
@@ -254,6 +267,7 @@ public class BulletType extends ShootableType
         }
         // Same key the Labjac edition uses, so its packs arrive with their HEAT rounds already marked.
         heat = readValue("HEAT", heat, file);
+        hesh = readValue("HESH", hesh, file);
 
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
@@ -294,6 +308,11 @@ public class BulletType extends ShootableType
         trackPhaseTurn = readValue("GuidedPhaseTurnSpeed", trackPhaseTurn, file);
         boostPhaseParticle = readValue("BoostParticle", boostPhaseParticle, file);
         torpedo = readValue("Torpedo", torpedo, file);
+        depthCharge = readValue("depthCharge", depthCharge, file);
+        activationDepth = readValue("activationDepth", activationDepth, file);
+        activationDepth = Float.isFinite(activationDepth) ? Mth.clamp(activationDepth, 0F, 4096F) : 20F;
+        depthChargeLifetime = Mth.clamp(readValue("DepthChargeLifetime", depthChargeLifetime, file), 1, 72000);
+        depthChargeSeaLevel = readValue("DepthChargeSeaLevel", depthChargeSeaLevel, file);
 
         // Some content packs use true and false after this, which confuses things...
         if (readFieldWithOptionalValue("Bomb", false, file))

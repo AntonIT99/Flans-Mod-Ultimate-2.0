@@ -144,11 +144,12 @@ public final class ShootingHelper
      * <p>
      * A weapon is hitscan only when nothing in the chain declares a muzzle velocity: not the
      * ammunition, not a per-ammunition override and not the weapon itself. Anything with a velocity
-     * flies as a {@link Bullet} entity at that velocity.
+     * flies as a {@link Bullet} entity at that velocity. Depth charges always need a projectile to sink;
+     * with no authored velocity they use the normal projectile fallback.
      */
     private static void fireBullets(@NotNull Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 shootingOrigin, Vec3 shootingDirection)
     {
-        boolean instant = firedShot.getMuzzleVelocity(false) <= 0F;
+        boolean instant = !firedShot.getBulletType().isDepthCharge() && firedShot.getMuzzleVelocity(false) <= 0F;
 
         for (int i = 0; i < numBullets; i++)
         {

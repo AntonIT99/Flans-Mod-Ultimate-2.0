@@ -4573,7 +4573,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         // A shaped charge fires its jet at the first surface it strikes. Whatever it hits first - a skirt, an ERA
         // block, a track - takes the jet in place of the hull behind, so it never carries on into the next part.
-        if (heat)
+        // A HESH round likewise acts at the first surface, without selecting the shaped-charge damage channel.
+        if (heat || bulletType.isHesh())
             return new ShootingHelper.HitData(0F, armourBlocked ? 0F : penetrationRatio, false);
         return new ShootingHelper.HitData(remainingPower, armourBlocked ? 0F : penetrationRatio, false);
     }

@@ -463,6 +463,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 return;
             if (handleFuseAndLifetime(level))
                 return;
+            if (handleDepthCharge(level))
+                return;
 
             handleDetonationConditions(level);
             handleSubmunitions(level);
@@ -622,7 +624,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         {
             setDead(level);
         }
-        if (tickCount > bulletLife)
+        if (tickCount > (configType.isDepthCharge() ? configType.getDepthChargeLifetime() : bulletLife))
         {
             setDead(level);
         }
@@ -794,6 +796,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     @Override
     protected void applyDragAndGravity()
     {
+        if (configType.isDepthCharge())
+        {
+            double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed(), level());
+            float drag = ProjectileDrag.factor(this, configType.getDragInAir(), configType.getDragInWater());
+            velocity = DepthChargePhysics.velocity(velocity, isInWater(), gravity, drag);
+            setDeltaMovement(velocity);
+            return;
+        }
         if (configType.isTorpedo())
             return;
 
@@ -805,7 +815,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected void updateTorpedoVelocity()
     {
-        if (!configType.isTorpedo())
+        if (!configType.isTorpedo() || configType.isDepthCharge())
             return;
 
         if (isInWater())
@@ -819,6 +829,18 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             velocity = velocity.add(0, -gravity, 0);
         }
         setDeltaMovement(velocity);
+    }
+
+    /** Only the server detonates; the usual prime delay, fuse and smoke lifecycle still apply. */
+    protected boolean handleDepthCharge(Level level)
+    {
+        if (!level.isClientSide && configType.isDepthCharge())
+        {
+            int seaLevel = configType.getDepthChargeSeaLevel() == Integer.MIN_VALUE ? level.getSeaLevel() : configType.getDepthChargeSeaLevel();
+            if (DepthChargePhysics.shouldDetonate(isInWater(), getY(), seaLevel, configType.getActivationDepth()))
+                detonate(level);
+        }
+        return isRemoved() || isSmoking();
     }
 
     protected void updatePositionAndOrientation()

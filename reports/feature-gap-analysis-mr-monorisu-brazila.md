@@ -2,7 +2,7 @@
 
 - **Reference:** `C:\Users\alpha\Documents\Minecraft-Development\Mr-Monorisu-Brazila-master`. This is the newest Labjac Flan's fork: Minecraft 1.7.10, "Flan's LabCat Mod — TACZ hitreg experiment", including the Dill-branch features listed in `CHANGELOG_DILL.md`. It bundles the `com.hfr` (HBM/Clowder) mod and the `flanshorizons` source set.
 - **Target:** `C:\Users\alpha\Documents\Minecraft-Development\Flans-Mod-Ultimate-2.0`, `master` @ `55b5aed88`.
-- **Date:** 2026-10-09; completed-port/status refresh 2026-10-11. The comparison runs one way only, from the reference to the target. Functionality that only the target has, refactors, and modernisations are not reported.
+- **Date:** 2026-10-09; completed-port/status refreshes 2026-10-11 and 2026-10-12. The comparison runs one way only, from the reference to the target. Functionality that only the target has, refactors, and modernisations are not reported.
 
 Evidence roots:
 
@@ -158,14 +158,6 @@ Wire-guided missiles draw a wire from the launcher to the missile, and guidance 
 Target checked: `T/common/entity/Driveable.hasLineOfSight` (an unrelated LOS check)
 Missing: the guidance-wire entity and its rendering.
 
-### Naval ordnance: depth charges — MISSING
-
-Reference: `R/common/guns/EntityBullet` (around line 1667; `type.depthCharge`, `activationDepth`, `TeamsManager.seaLevel`)
-A depth charge sinks and detonates at its activation depth below the configured sea level.
-
-Target checked: `T/common/types/BulletType` (`Torpedo`), `T/common/entity/Bullet`
-Missing: depth-triggered detonation and a sea-level setting. (`navalMine` is a ghost key in the reference: it is parsed but never used.)
-
 ### Illumination (star) shells — MISSING
 
 Reference: `BulletType.starShell`, `R/client/FlansModClient` (around line 1118), `R/client/EntityCamera`
@@ -173,15 +165,6 @@ Star shells light up the area below them while they descend.
 
 Target checked: `T/client/ModClient` dynamic lights (`HasDynamicLight` projectiles at a flat level)
 Missing: a dedicated slow-falling illumination round.
-
-### HESH shell class — MISSING
-
-Reference: `BulletType.Hesh`, `R/common/driveables/EntityDriveable` (around line 4606)
-HESH rounds, like HEAT, cannot go through armour types that kinetic rounds can over-penetrate.
-
-Target checked: `T/common/types/BulletType.heat` ("HEAT" key and armour-face protection against HEAT)
-**Note:** HEAT is present.
-Missing: the HESH flag and its penetration rule.
 
 ### Soft-target and vanilla-damage modifiers — MISSING
 
@@ -613,9 +596,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Missile twirl and ground skim | MISSING | HIGH |
 | Weapons | Fly-over top attack | PARTIAL | HIGH |
 | Weapons | Wire-guided missile and wire | MISSING | HIGH |
-| Weapons | Depth charges | MISSING | HIGH |
 | Weapons | Illumination star shells | MISSING | HIGH |
-| Weapons | HESH | MISSING | MEDIUM |
 | Weapons | Soft-target and vanilla-damage modifiers | MISSING | MEDIUM |
 | Weapons | glTF gun animation | MISSING | HIGH |
 | Weapons | Tactical reload and secondary switch timing | MISSING | MEDIUM |
@@ -663,7 +644,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 46 MISSING, 12 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 44 MISSING, 12 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -683,6 +664,27 @@ These findings were removed from the active gap sections and summary table after
 - Full `build` failed in the independent Wolff flag pack because shared model classes could not be resolved. A sequential retry failed in the concurrently edited `SkullBossEntity` boss-bar initialization (`BossEvent` versus `ServerBossEvent`). An earlier normal test compilation also encountered an unrelated `ExternalProjectileSupportTest` API mismatch. These unrelated changes were preserved.
 - IntelliJ inspections ran once and reached the ten-minute limit before all directories in the mixed checkout were inspected. Available results were reviewed and introduced warnings corrected; full IDE coverage is incomplete.
 - In-game audio, visual presentation and multiplayer runtime behavior have not been exercised. The renderer adapts the legacy effects to cosmetic modern camera offsets and configurable real-time envelopes; numerical pixel-for-pixel parity with the legacy FOV/shake renderer is not claimed.
+
+## Ammunition ports (2026-10-12)
+
+- **Depth charges:** checked `BulletType`, `Bullet`, and all shared firing paths before implementation; only torpedo motion existed. Legacy `depthCharge` and `activationDepth` now select sinking motion and server detonation strictly below the authored depth in water. `DepthChargeSeaLevel` optionally overrides the dimension sea level. Depth charges always use projectile entities, including when a weapon would otherwise use hitscan. `FallSpeed`, air/water drag, prime delay, fuse, lifetime and smoke behavior remain available. No shooter-type restriction is imposed.
+- **HESH:** checked `Driveable.bulletHit`, `ModelArmourDamage`, and `BulletType`; HEAT already existed, HESH did not. `Hesh` now stops the round at the first vehicle surface, including an NPC or other entity using the driveable armour adapter. Unlike HEAT it retains the existing kinetic armour and direct-damage channel. This adapts the reference auxiliary-armour stopping rule to the target's existing first-surface warhead policy. It does not add a new squash-head spalling or damage model.
+- These are ammunition-specific traits, active whenever authored; ordinary ammunition is unaffected. No bundled ammunition definitions were converted automatically. The reference repository contained no matching text definitions to exercise, so parser fixtures use its actual directive spellings.
+
+### Validation of the 2026-10-12 ammunition port
+
+- 30 focused tests passed: eight new depth-charge/parser tests plus existing HEAT, vehicle-armour and damage-channel regression tests.
+- Full `build` succeeded, including the main mod, API, NPC, built-in and independent pack artifacts. The full suite reported 1,535 tests: 1,525 passed, 10 skipped, no failures or errors. This includes the existing dedicated-server class-loading tests.
+- Scoped `spotlessApply` / `spotlessCheck`, `sonarlintMain`, `sonarlintTest`, IntelliJ inspection and main/wiki `git diff --check` completed. No new analysis findings were introduced. Existing SonarLint complexity/parameter/loop findings (45 in the touched main classes) and 39 pre-existing IntelliJ warnings remain outside this change's new code; the existing `Driveable.bulletHit` complexity warning is retained rather than refactoring the full damage pipeline during this port.
+- In-game water movement, actual depth detonation, NPC firing and visual/audio presentation have not been exercised. Tests cover deterministic motion, activation boundaries, content parsing and existing armour/damage calculations, not a running Minecraft world.
+
+### Category follow-up (2026-10-12)
+
+- Audited all category labels and their existing aliases for HESH/HEP and depth-charge identities. Updated four existing `bullet_categories.json` categories, covering eight existing short names: L31A7 receives `HESH true`; aerial, generic and Type 3 depth charges receive `depthCharge true` and `Fuse 0`. No new categories, membership, ammunition groups, masses, filler, velocity or penetration figures were authored.
+- Identity evidence: official Modern Warfare English localization and `Shell120mmL31A7.txt`; English localization and bullet definitions inside the read-only installed TaP OHIO and Rainfire Battle Squadrons ZIPs. Names like `HEshell` are ordinary HE, not HESH, and were excluded. Available TaP charges explicitly author 20/40 m aerial and 25/50/75/100 m ship-launched settings; categories preserve those fields rather than inferring depths from short-name suffixes. Type 3 has no depth field and retains the 20-block gameplay fallback, not a claimed historical setting. Historical nomenclature for that pack's Type 3 remains ambiguous: the [US Navy submarine war-damage report, section III](https://www.ibiblio.org/hyperwar/USN/rep/WDR/WDR58/WDR58-3.html) distinguishes Type 3 pistols from Type 95/Type 2 charges. No new historical values were inferred from it.
+- The installed charges used positive 100–300 tick legacy self-destruct fuses, which can pre-empt the port's drag-limited sink. Category `Fuse 0` allows depth activation. Added `DepthChargeLifetime` (2400 ticks by default; configurable 1–72000) because a 100 m setting needs more than the ordinary 600-tick bullet ceiling. Ordinary bullet lifetimes are unchanged. This is a gameplay safety ceiling, not a historical fuse delay.
+
+- Category follow-up validation: strict JSON, preserved order/membership/statistics and cross-category property checks passed. Ten focused tests passed, including lifetime bounds and 100 m sinking beyond the old 600-tick ceiling. Full `build` passed with 1,527 tests passed and 10 skipped; scoped formatting, main/test SonarLint, IntelliJ and diff whitespace checks completed with no new issues. Existing analysis warnings remain as documented above. In-game depth-charge behavior remains untested.
 
 ## Areas requiring deeper audit
 
