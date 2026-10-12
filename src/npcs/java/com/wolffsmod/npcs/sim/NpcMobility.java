@@ -12,6 +12,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
@@ -51,9 +52,20 @@ public final class NpcMobility
 
     static float landFactor(int tenthsPerSecond, int walkingSpeed)
     {
+        return (float) Math.max(0.05D, Math.min(20D, tenthsPerSecond / 200D / naturalSpeed(walkingSpeed)));
+    }
+
+    /** @return blocks per tick the NPC settles at on land at its full pace: its land speed setting, or what its walking speed comes to */
+    public static double topSpeed(EntityNPCInterface npc)
+    {
+        int tenths = NpcTuning.of(npc).get(Value.LAND_SPEED);
+        return tenths > 0 ? tenths / 200D : naturalSpeed(npc.ais.getWalkingSpeed());
+    }
+
+    static double naturalSpeed(int walkingSpeed)
+    {
         double speed = Math.max(1, walkingSpeed) / 20D;
-        double natural = GROUND_SPEED_FACTOR * speed * speed;
-        return (float) Math.max(0.05D, Math.min(20D, tenthsPerSecond / 200D / natural));
+        return GROUND_SPEED_FACTOR * speed * speed;
     }
 
     /**
@@ -129,17 +141,46 @@ public final class NpcMobility
         return switch (tuning.terrain())
         {
             case DEFAULT, AMPHIBIOUS -> type;
-            case GROUND -> type == BlockPathTypes.WATER && depth(level, x, y, z, tuning.get(Value.MAX_WADE_DEPTH) + 1) > tuning.get(Value.MAX_WADE_DEPTH) ? BlockPathTypes.BLOCKED : type;
-            case WATERCRAFT -> watercraft(level, x, y, z, type, tuning.get(Value.MIN_WATER_DEPTH));
+            case GROUND ->
+                type == BlockPathTypes.WATER && depth(level, x, y, z, footprint(mob), tuning.get(Value.MAX_WADE_DEPTH) + 1, true) > tuning.get(Value.MAX_WADE_DEPTH) ? BlockPathTypes.BLOCKED : type;
+            case WATERCRAFT -> watercraft(level, x, y, z, footprint(mob), type, tuning.get(Value.MIN_WATER_DEPTH));
         };
     }
 
-    private static BlockPathTypes watercraft(BlockGetter level, int x, int y, int z, BlockPathTypes type, int minimumDepth)
+    private static BlockPathTypes watercraft(BlockGetter level, int x, int y, int z, int footprint, BlockPathTypes type, int minimumDepth)
     {
         // Open air has to stay open: the search drops through it to find the water below.
         if (type == BlockPathTypes.OPEN)
             return type;
-        return type == BlockPathTypes.WATER && depth(level, x, y, z, minimumDepth) >= minimumDepth ? type : BlockPathTypes.BLOCKED;
+        return type == BlockPathTypes.WATER && depth(level, x, y, z, footprint, minimumDepth, false) >= minimumDepth ? type : BlockPathTypes.BLOCKED;
+    }
+
+    /** @return how many blocks wide the path search takes the mob to be, as vanilla does */
+    private static int footprint(Mob mob)
+    {
+        return Mth.floor(mob.getBbWidth() + 1F);
+    }
+
+    /**
+     * The path search merges the ground under a wide mob into one kind, so the water has to be measured under all of it.
+     *
+     * @param footprint
+     *            blocks the mob covers east and south of the position
+     * @param deepest
+     *            whether the deepest column counts, rather than the shallowest
+     * @return how many water blocks are stacked through that column, counted no further than the given limit
+     */
+    static int depth(BlockGetter level, int x, int y, int z, int footprint, int limit, boolean deepest)
+    {
+        // Nothing is deeper than the limit and nothing shallower than dry, so the search ends there.
+        int bound = deepest ? limit : 0;
+        int result = deepest ? 0 : limit;
+        for (int column = 0; column < footprint * footprint && result != bound; column++)
+        {
+            int found = depth(level, x + column / footprint, y, z + column % footprint, limit);
+            result = deepest ? Math.max(result, found) : Math.min(result, found);
+        }
+        return result;
     }
 
     /** @return how many water blocks are stacked through the position, counted no further than the given limit */

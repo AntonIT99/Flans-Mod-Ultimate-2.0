@@ -485,7 +485,7 @@ public final class NpcVehicleState
         NpcTuning tuning = NpcTuning.of(npc);
         if (options.enabled(Feature.DRIVING))
         {
-            NpcDriving.Command command = driving.travel(npc, hullYaw, tuning, options);
+            NpcDriving.Command command = driving.travel(npc, hullYaw, Math.abs(this.travel), tuning, options);
             hullYaw = command.hullYaw();
             npc.setYRot(hullYaw);
             return new Vec3(0D, travel.y, NpcDriving.input(npc, command.throttle()));

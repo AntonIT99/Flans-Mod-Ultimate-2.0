@@ -13,7 +13,8 @@
       "NpcTypeDataMixin",
       "NpcTypeModelLoadMixin",
       "NpcWalkNodeEvaluatorMixin",
-      "NpcWeaponSettingsMixin"
+      "NpcWeaponSettingsMixin",
+      "PathNavigationMixin"
   ],
   "client": [
       "NpcArmorControlsMixin",

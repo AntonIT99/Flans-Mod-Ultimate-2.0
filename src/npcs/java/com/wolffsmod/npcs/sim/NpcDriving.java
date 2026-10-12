@@ -43,6 +43,10 @@ public final class NpcDriving
     private static final float RECOVERY_THROTTLE = 0.6F;
     private static final int FOLLOW_INTERVAL = 10;
     private static final float FOLLOW_CONE = 35F;
+    /** Share of full throttle a vehicle keeps up to the end of its path, so that it gets there. */
+    private static final float ARRIVAL_THROTTLE = 0.2F;
+    /** Blocks from a position it is pushed toward without a path at which a vehicle has arrived. */
+    private static final double ARRIVED = 0.3D;
 
     /** Signed share of the top speed the vehicle is commanded to: negative in reverse. */
     @Getter
@@ -56,6 +60,8 @@ public final class NpcDriving
     private Vec3 anchor;
     private int anchorTick;
     private float followLimit = 1F;
+    /** Whether the vehicle was last slowing down for the end of its path, which it then brakes at rather than rolls past. */
+    private boolean arriving;
     /** The point the vehicle currently steers for, for the path preview. */
     @Getter @Nullable
     private Vec3 steerPoint;
@@ -129,8 +135,13 @@ public final class NpcDriving
      *            blocks the vehicle actually moved per tick
      * @param limit
      *            share of its speed traffic ahead allows, from 0 to 1
+     * @param haltDistance
+     *            blocks from the end of its path at which it comes to a halt
+     * @param topSpeed
+     *            blocks per tick it moves at full throttle; 0 when unknown, which leaves it at speed up to its goal
      */
-    public record Situation(float hullYaw, float wantedYaw, double goalDistance, float cornerAngle, double cornerDistance, double lookahead, double speed, float limit)
+    public record Situation(float hullYaw, float wantedYaw, double goalDistance, float cornerAngle, double cornerDistance, double lookahead, double speed, float limit, double haltDistance,
+        double topSpeed)
     {}
 
     /**
@@ -145,7 +156,7 @@ public final class NpcDriving
     {}
 
     /** Where the path leads from here. */
-    private record Route(Vec3 steer, double goalDistance, float cornerAngle, double cornerDistance)
+    private record Route(Vec3 steer, double goalDistance, float cornerAngle, double cornerDistance, double haltDistance)
     {}
 
     /** Steers and sets the throttle for one tick with somewhere to go. */
@@ -174,15 +185,35 @@ public final class NpcDriving
             share *= Mth.lerp(near, 1F, corner);
         }
         share *= Mth.clamp(situation.limit(), 0F, 1F);
-        throttle = approach(reversing ? -share * settings.reverseShare() : share, settings, false);
+        // It slows down in time to halt where its path ends, rather than rolling past.
+        float free = reversing ? share * settings.reverseShare() : share;
+        float wanted = Math.min(free, arrival(situation.goalDistance() - situation.haltDistance(), situation.topSpeed(), settings.brake()));
+        arriving = wanted < free;
+        throttle = approach(reversing ? -wanted : wanted, settings, false);
         return new Command(hull, throttle);
     }
 
-    /** Lets the vehicle roll out when it has nowhere to go. */
+    /**
+     * @param remaining
+     *            blocks left to where the vehicle halts
+     * @param topSpeed
+     *            blocks per tick it moves at full throttle
+     * @param brake
+     *            throttle it sheds per tick while braking
+     * @return the highest throttle from which braking still stops it within that distance, never so low that it does not arrive
+     */
+    static float arrival(double remaining, double topSpeed, float brake)
+    {
+        if (topSpeed <= 0D)
+            return 1F;
+        return (float) Mth.clamp(Math.sqrt(2D * brake * Math.max(0D, remaining) / topSpeed), ARRIVAL_THROTTLE, 1D);
+    }
+
+    /** Lets the vehicle roll out when it has nowhere to go, or brakes it when it has just got there. */
     public Command idle(float hullYaw, Settings settings)
     {
         reversing = false;
-        throttle = approach(0F, settings, true);
+        throttle = approach(0F, settings, !arriving);
         return new Command(hullYaw, throttle);
     }
 
@@ -215,6 +246,7 @@ public final class NpcDriving
         anchor = null;
         followLimit = 1F;
         steerPoint = null;
+        arriving = false;
     }
 
     /**
@@ -222,12 +254,14 @@ public final class NpcDriving
      *
      * @param hullYaw
      *            where its hull points now
+     * @param speed
+     *            blocks it actually moved during the last tick
      * @return the decision, whose throttle the caller turns into the NPC's forward movement
      */
-    public Command travel(EntityNPCInterface npc, float hullYaw, NpcTuning tuning, NpcWeaponOptions options)
+    public Command travel(EntityNPCInterface npc, float hullYaw, double speed, NpcTuning tuning, NpcWeaponOptions options)
     {
         Settings settings = Settings.of(tuning, options, tracked(npc));
-        Route route = route(npc, tuning.get(Value.DRIVE_LOOKAHEAD));
+        Route route = route(npc, tuning.get(Value.DRIVE_LOOKAHEAD), tuning.get(Value.STOP_DISTANCE));
         steerPoint = route == null ? null : route.steer();
         if (route != null && stopsShort(npc, route, tuning.get(Value.STOP_DISTANCE)))
             route = null;
@@ -250,8 +284,9 @@ public final class NpcDriving
         }
         updateTraffic(npc, hullYaw, tuning.get(Value.FOLLOW_DISTANCE));
         float wanted = MountMotion.yaw(route.steer().subtract(npc.position()));
-        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), tuning.get(Value.DRIVE_LOOKAHEAD),
-            npc.getDeltaMovement().horizontalDistance(), followLimit), settings);
+        // The NPC's own motion is no measure of its speed here: before it moves, ground friction has already been taken off it.
+        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), tuning.get(Value.DRIVE_LOOKAHEAD), speed, followLimit,
+            route.haltDistance(), NpcMobility.topSpeed(npc)), settings);
         watchProgress(npc, Mth.wrapDegrees(wanted - command.hullYaw()));
         return command;
     }
@@ -334,7 +369,7 @@ public final class NpcDriving
 
     /** Reads the point to steer for, the next corner and the distance to the goal off the NPC's path or its movement input. */
     @Nullable
-    private static Route route(EntityNPCInterface npc, int lookahead)
+    private static Route route(EntityNPCInterface npc, int lookahead, int stopDistance)
     {
         Vec3 position = npc.position();
         Path path = npc.getNavigation().getPath();
@@ -364,7 +399,9 @@ public final class NpcDriving
             from = to;
         }
         Vec3 end = path.getEntityPosAtNode(npc, path.getNodeCount() - 1);
-        return new Route(steer, horizontal(position, end), cornerAngle, cornerDistance);
+        // The navigator calls the path done as soon as the NPC's body reaches its last node.
+        float width = npc.getBbWidth();
+        return new Route(steer, horizontal(position, end), cornerAngle, cornerDistance, Math.max(stopDistance, width > 0.75F ? width / 2F : 0.75F - width / 2F));
     }
 
     /** Without a path, a goal may still push the NPC directly: toward a wanted position, or sideways round a target. */
@@ -375,12 +412,12 @@ public final class NpcDriving
         {
             Vec3 wanted = new Vec3(npc.getMoveControl().getWantedX(), npc.getMoveControl().getWantedY(), npc.getMoveControl().getWantedZ());
             double distance = horizontal(position, wanted);
-            return distance < 0.3D ? null : new Route(wanted, distance, 0F, Double.MAX_VALUE);
+            return distance < ARRIVED ? null : new Route(wanted, distance, 0F, Double.MAX_VALUE, ARRIVED);
         }
         if (npc.zza == 0F && npc.xxa == 0F)
             return null;
         Vec3 direction = new Vec3(npc.xxa, 0D, npc.zza).normalize().yRot((float) Math.toRadians(-npc.getYRot()));
-        return new Route(position.add(direction.scale(lookahead)), Double.MAX_VALUE, 0F, Double.MAX_VALUE);
+        return new Route(position.add(direction.scale(lookahead)), Double.MAX_VALUE, 0F, Double.MAX_VALUE, 0D);
     }
 
     private static double horizontal(Vec3 from, Vec3 to)

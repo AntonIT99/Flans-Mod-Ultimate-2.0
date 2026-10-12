@@ -14,7 +14,7 @@ class NpcDrivingTest
 
     private static Situation ahead(float hullYaw, float wantedYaw, double speed)
     {
-        return new Situation(hullYaw, wantedYaw, 100D, 0F, Double.MAX_VALUE, 4D, speed, 1F);
+        return new Situation(hullYaw, wantedYaw, 100D, 0F, Double.MAX_VALUE, 4D, speed, 1F, 0D, 0D);
     }
 
     @Test
@@ -77,15 +77,15 @@ class NpcDrivingTest
     @Test
     void aCornerAheadSlowsTheVehicleMoreTheSharperAndTheNearerItIs()
     {
-        float open = settle(new Situation(0F, 0F, 100D, 0F, Double.MAX_VALUE, 4D, 0.1D, 1F));
-        float sharpNear = settle(new Situation(0F, 0F, 100D, 90F, 1D, 4D, 0.1D, 1F));
-        float gentleNear = settle(new Situation(0F, 0F, 100D, 45F, 1D, 4D, 0.1D, 1F));
-        float sharpFar = settle(new Situation(0F, 0F, 100D, 90F, 3D, 4D, 0.1D, 1F));
+        float open = settle(new Situation(0F, 0F, 100D, 0F, Double.MAX_VALUE, 4D, 0.1D, 1F, 0D, 0D));
+        float sharpNear = settle(new Situation(0F, 0F, 100D, 90F, 1D, 4D, 0.1D, 1F, 0D, 0D));
+        float gentleNear = settle(new Situation(0F, 0F, 100D, 45F, 1D, 4D, 0.1D, 1F, 0D, 0D));
+        float sharpFar = settle(new Situation(0F, 0F, 100D, 90F, 3D, 4D, 0.1D, 1F, 0D, 0D));
         assertEquals(1F, open, 1.0E-6F);
         assertEquals(0.45F, sharpNear, 1.0E-5F);
         assertEquals(0.725F, gentleNear, 1.0E-5F);
         assertEquals(0.725F, sharpFar, 1.0E-5F);
-        assertEquals(1F, settle(new Situation(0F, 0F, 100D, 90F, 6D, 4D, 0.1D, 1F)), 1.0E-6F);
+        assertEquals(1F, settle(new Situation(0F, 0F, 100D, 90F, 6D, 4D, 0.1D, 1F, 0D, 0D)), 1.0E-6F);
     }
 
     private static float settle(Situation situation)
@@ -102,20 +102,20 @@ class NpcDrivingTest
         NpcDriving driving = new NpcDriving();
         for (int tick = 0; tick < 30; tick++)
             driving.drive(ahead(0F, 0F, 0.1D), TRACKED);
-        Situation behind = new Situation(0F, 170F, 6D, 0F, Double.MAX_VALUE, 4D, 0.1D, 1F);
+        Situation behind = new Situation(0F, 170F, 6D, 0F, Double.MAX_VALUE, 4D, 0.1D, 1F, 0D, 0D);
         // It brakes first: no jump from forward to reverse.
         assertEquals(0.875F, driving.drive(behind, TRACKED).throttle(), 1.0E-6F);
         float hull = 0F;
         for (int tick = 0; tick < 60; tick++)
-            hull = driving.drive(new Situation(hull, 170F, 6D, 0F, Double.MAX_VALUE, 4D, 0.05D, 1F), TRACKED).hullYaw();
+            hull = driving.drive(new Situation(hull, 170F, 6D, 0F, Double.MAX_VALUE, 4D, 0.05D, 1F, 0D, 0D), TRACKED).hullYaw();
         assertTrue(driving.isReversing());
         assertEquals(-0.4F, driving.getThrottle(), 1.0E-6F);
         // The rear points at the goal, so the hull faces away from it.
         assertEquals(-10F, hull, 1.0E-3F);
         // Once reversing it stays in reverse until the goal is clearly ahead, not merely under the first threshold.
-        driving.drive(new Situation(hull, hull + 100F, 6D, 0F, Double.MAX_VALUE, 4D, 0.05D, 1F), TRACKED);
+        driving.drive(new Situation(hull, hull + 100F, 6D, 0F, Double.MAX_VALUE, 4D, 0.05D, 1F, 0D, 0D), TRACKED);
         assertTrue(driving.isReversing());
-        driving.drive(new Situation(hull, hull + 80F, 6D, 0F, Double.MAX_VALUE, 4D, 0.05D, 1F), TRACKED);
+        driving.drive(new Situation(hull, hull + 80F, 6D, 0F, Double.MAX_VALUE, 4D, 0.05D, 1F, 0D, 0D), TRACKED);
         assertFalse(driving.isReversing());
     }
 
@@ -123,11 +123,11 @@ class NpcDrivingTest
     void aFarGoalBehindOrAVehicleNotAllowedToReverseTurnsRound()
     {
         NpcDriving far = new NpcDriving();
-        far.drive(new Situation(0F, 170F, 40D, 0F, Double.MAX_VALUE, 4D, 0D, 1F), TRACKED);
+        far.drive(new Situation(0F, 170F, 40D, 0F, Double.MAX_VALUE, 4D, 0D, 1F, 0D, 0D), TRACKED);
         assertFalse(far.isReversing());
         NpcDriving forbidden = new NpcDriving();
         Settings forwardOnly = new Settings(true, 4.5F, 3F, 0.05F, 0.125F, 0.03F, 0.4F, 0.45F, 0.15F, false, 110F, 10D);
-        Command command = forbidden.drive(new Situation(0F, 170F, 6D, 0F, Double.MAX_VALUE, 4D, 0D, 1F), forwardOnly);
+        Command command = forbidden.drive(new Situation(0F, 170F, 6D, 0F, Double.MAX_VALUE, 4D, 0D, 1F, 0D, 0D), forwardOnly);
         assertFalse(forbidden.isReversing());
         assertEquals(4.5F, command.hullYaw(), 1.0E-4F);
     }
@@ -144,8 +144,32 @@ class NpcDrivingTest
         for (int tick = 0; tick < 30; tick++)
             driving.drive(ahead(0F, 0F, 0.1D), TRACKED);
         for (int tick = 0; tick < 20; tick++)
-            driving.drive(new Situation(0F, 0F, 100D, 0F, Double.MAX_VALUE, 4D, 0.1D, 0F), TRACKED);
+            driving.drive(new Situation(0F, 0F, 100D, 0F, Double.MAX_VALUE, 4D, 0.1D, 0F, 0D, 0D), TRACKED);
         assertEquals(0F, driving.getThrottle());
+    }
+
+    @Test
+    void aVehicleBrakesInTimeToHaltWhereItsPathEnds()
+    {
+        // From full throttle, braking at 0.125 a tick takes 8 ticks: 1.8 blocks at 0.45 blocks per tick.
+        assertEquals(1F, NpcDriving.arrival(1.8D, 0.45D, 0.125F), 1.0E-6F);
+        assertEquals(1F, NpcDriving.arrival(Double.MAX_VALUE, 0.45D, 0.125F));
+        assertEquals(0.5F, NpcDriving.arrival(0.45D, 0.45D, 0.125F), 1.0E-6F);
+        // It keeps enough throttle to arrive, and a vehicle of unknown speed is left alone.
+        assertEquals(0.2F, NpcDriving.arrival(0D, 0.45D, 0.125F), 1.0E-6F);
+        assertEquals(0.2F, NpcDriving.arrival(-3D, 0.45D, 0.125F), 1.0E-6F);
+        assertEquals(1F, NpcDriving.arrival(0D, 0D, 0.125F));
+        // Driven tick by tick toward a path that ends 1.5 blocks short of its last node, it is down to a crawl there.
+        NpcDriving driving = new NpcDriving();
+        double distance = 30D;
+        for (int tick = 0; tick < 400 && distance > 1.5D; tick++)
+            distance -= 0.45D * driving.drive(new Situation(0F, 0F, distance, 0F, Double.MAX_VALUE, 4D, 0.45D, 1F, 1.5D, 0.45D), TRACKED).throttle();
+        assertTrue(driving.getThrottle() <= 0.4F, "throttle at the end of the path: " + driving.getThrottle());
+        // Having got there it brakes, which takes it a fraction of a block further where rolling out took blocks.
+        double overshoot = 0D;
+        while (driving.getThrottle() > 0F)
+            overshoot += 0.45D * driving.idle(0F, TRACKED).throttle();
+        assertTrue(overshoot < 0.25D, "overshoot: " + overshoot);
     }
 
     @Test

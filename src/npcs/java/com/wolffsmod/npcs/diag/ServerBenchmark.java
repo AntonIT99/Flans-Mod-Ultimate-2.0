@@ -43,10 +43,11 @@ public final class ServerBenchmark
         private final BenchmarkStats path = new BenchmarkStats();
         private final BenchmarkStats target = new BenchmarkStats();
         private final BenchmarkStats ticking = new BenchmarkStats();
-        private final BenchmarkReport report = new BenchmarkReport("server", "tick,tick_ms,npc_ms,npc_ticks,path_ms,path_searches,target_ms");
+        private final BenchmarkReport report = new BenchmarkReport("server", "tick,tick_ms,npc_ms,npc_ticks,path_ms,path_searches,path_failures,target_ms");
         private int warmUp = WARM_UP_TICKS;
         private long started;
         private int pathSearches;
+        private int pathFailures;
 
         private Run(CommandSourceStack requester, int ticks)
         {
@@ -105,8 +106,9 @@ public final class ServerBenchmark
         current.target.add(sample.targetMillis());
         current.ticking.add(sample.npcTicks());
         current.pathSearches += sample.pathSearches();
-        current.report.row(String.format(Locale.ROOT, "%d,%.4f,%.4f,%d,%.4f,%d,%.4f", current.tick.count(), millis, sample.npcMillis(), sample.npcTicks(), sample.pathMillis(), sample.pathSearches(),
-            sample.targetMillis()));
+        current.pathFailures += sample.pathFailures();
+        current.report.row(String.format(Locale.ROOT, "%d,%.4f,%.4f,%d,%.4f,%d,%d,%.4f", current.tick.count(), millis, sample.npcMillis(), sample.npcTicks(), sample.pathMillis(),
+            sample.pathSearches(), sample.pathFailures(), sample.targetMillis()));
         if (current.tick.count() >= current.ticks)
             finish(event.getServer(), null);
     }
@@ -146,8 +148,8 @@ public final class ServerBenchmark
         report.line("Server tick: " + finished.tick.summary("ms") + String.format(Locale.ROOT, "; about %.1f ticks per second", mean <= 50D ? 20D : 1000D / mean));
         report.line(
             String.format(Locale.ROOT, "NPC ticks: %s; %.1f%% of the tick; %.1f NPCs ticking on average", finished.npc.summary(PER_TICK), share(finished.npc.mean(), mean), finished.ticking.mean()));
-        report.line(String.format(Locale.ROOT, "Path searches: %d in all, %.2f per tick; %s", finished.pathSearches, ticks == 0 ? 0D : (double) finished.pathSearches / ticks,
-            finished.path.summary(PER_TICK)));
+        report.line(String.format(Locale.ROOT, "Path searches: %d in all, %d without a path, %.2f per tick; %s", finished.pathSearches, finished.pathFailures,
+            ticks == 0 ? 0D : (double) finished.pathSearches / ticks, finished.path.summary(PER_TICK)));
         report.line("Target searches: " + finished.target.summary(PER_TICK));
         if (finished.ticking.mean() < 0.5D)
             report.line("Note: hardly any NPC was ticking. Stand near the NPCs to be measured, or let them stay active at a distance.");

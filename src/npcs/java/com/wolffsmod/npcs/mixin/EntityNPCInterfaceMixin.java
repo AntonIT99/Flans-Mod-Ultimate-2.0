@@ -45,7 +45,8 @@ import java.util.Optional;
  * resists knockback while it is a vehicle.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
- * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.</li>
+ * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
+ * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
@@ -208,6 +209,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsItemMelee(Entity target, CallbackInfoReturnable<Boolean> callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // An aircraft below its attack altitude attacks with nothing, whatever asks it to.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire())
+        {
+            callback.setReturnValue(false);
+            return;
+        }
         // A held Flan gun is swung whether the item or the editor decides the damage.
         NpcItemAttacks.meleeFeedback(npc);
         if (NpcEquipment.weaponAuthority(npc))
@@ -301,6 +308,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsFireFlanRound(LivingEntity target, float distanceFactor, CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire())
+        {
+            callback.cancel();
+            return;
+        }
         if (NpcEquipment.weaponAuthority(npc))
         {
             // Scripted ranged triggers use the same item action, never the editor projectile template.
@@ -439,7 +452,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     @Override
     public AABB getBoundingBoxForCulling()
     {
-        return wolffsmodnpcsVehicleState().cullingBox((EntityNPCInterface) (Object) this).orElseGet(super::getBoundingBoxForCulling);
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        return wolffsmodnpcsVehicleState().cullingBox(npc).or(() -> NpcModels.unhitCullingBox(npc)).orElseGet(super::getBoundingBoxForCulling);
     }
 
     // Senses

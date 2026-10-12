@@ -61,6 +61,7 @@ class NpcDiagnosticsTest
         assertEquals(2, sample.npcTicks());
         assertEquals(6.5D, sample.pathMillis(), 1.0E-9D);
         assertEquals(2, sample.pathSearches());
+        assertEquals(1, sample.pathFailures());
         assertEquals(1D, sample.targetMillis(), 1.0E-9D);
         // Draining starts the next tick; the bands and the slow paths last until a reset.
         assertEquals(0, NpcProfiler.drainServer().npcTicks());

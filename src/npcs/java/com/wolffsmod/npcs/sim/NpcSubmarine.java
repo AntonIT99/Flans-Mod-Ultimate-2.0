@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.sim.NpcTuning.Terrain;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.core.BlockPos;
@@ -20,6 +21,8 @@ public final class NpcSubmarine
     private static final int SURFACE_SEARCH = 72;
 
     private int sampledAt = Integer.MIN_VALUE;
+    /** Whether the NPC is in water and holding a running depth. */
+    @Getter
     private boolean submerged;
     private int surface;
     private int depth;
@@ -64,6 +67,22 @@ public final class NpcSubmarine
         if (error > 0.35D)
             return Math.min(0.16D, error * 0.08D);
         return vertical * 0.45D;
+    }
+
+    /**
+     * A floating NPC's path is laid along the surface, and Custom NPCs only counts a node as reached within a block of
+     * its height. A submarine reaches it by passing below.
+     *
+     * @param dx
+     *            blocks from the middle of the node to the submarine, likewise dy from the node's floor and dz
+     * @param width
+     *            how wide the submarine is
+     * @return whether the submarine is under the node, out of the reach Custom NPCs tests itself
+     */
+    public static boolean passesBelow(double dx, double dy, double dz, float width)
+    {
+        double reach = width > 0.75F ? width / 2F : 0.75F - width / 2F;
+        return dy <= -1D && Math.abs(dx) < reach && Math.abs(dz) < reach;
     }
 
     /** @return the depth to run at in water that deep: the wanted one, less over shallows so the hull clears the bottom, at least 1 */

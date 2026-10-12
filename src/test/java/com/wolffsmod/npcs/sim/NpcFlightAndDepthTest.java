@@ -7,8 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NpcFlightAndDepthTest
 {
@@ -94,6 +93,19 @@ class NpcFlightAndDepthTest
         assertEquals(2, NpcPathDebug.stride(NpcPathDebug.MAX_MARKERS + 1));
         assertEquals(5, NpcPathDebug.stride(200));
         assertTrue(200 / NpcPathDebug.stride(200) <= NpcPathDebug.MAX_MARKERS);
+    }
+
+    @Test
+    void aSubmarinePassesAPathNodeFromBelow()
+    {
+        // Level with the node or just under it, Custom NPCs counts the node itself.
+        assertFalse(NpcSubmarine.passesBelow(0D, 0D, 0D, 2F));
+        assertFalse(NpcSubmarine.passesBelow(0D, -0.65D, 0D, 2F));
+        assertTrue(NpcSubmarine.passesBelow(0.9D, -3D, -0.9D, 2F));
+        assertTrue(NpcSubmarine.passesBelow(0D, -40D, 0D, 0.6F));
+        // Beside the node is not under it.
+        assertFalse(NpcSubmarine.passesBelow(1.1D, -3D, 0D, 2F));
+        assertFalse(NpcSubmarine.passesBelow(0D, -3D, 0.5D, 0.6F));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.FlansEquipment;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.InteractionHand;
@@ -85,6 +86,12 @@ public final class NpcEquipmentRangedGoal extends Goal
             return;
         }
         npc.getNavigation().stop();
+        // An aircraft below its attack altitude climbs first; it keeps its target and its aim meanwhile.
+        if (NpcVehicleState.of(npc).getFlight().holdsFire())
+        {
+            cancelUse();
+            return;
+        }
         tickMainHand(target);
         if (NpcEquipment.offHandGun(npc))
             tickOffHand(target);

@@ -29,6 +29,7 @@ public final class NpcProfiler
     private static int npcTicks;
     private static long pathNanos;
     private static int pathSearches;
+    private static int pathFailures;
     private static long targetNanos;
     private static final Band[] bandTotals = new Band[BANDS];
     private static final List<SlowPath> slowPaths = new ArrayList<>();
@@ -90,8 +91,13 @@ public final class NpcProfiler
         }
     }
 
-    /** What the server hooks collected during one server tick. */
-    public record ServerSample(double npcMillis, int npcTicks, double pathMillis, int pathSearches, double targetMillis)
+    /**
+     * What the server hooks collected during one server tick.
+     *
+     * @param pathFailures
+     *            how many of the path searches found no path
+     */
+    public record ServerSample(double npcMillis, int npcTicks, double pathMillis, int pathSearches, int pathFailures, double targetMillis)
     {}
 
     /** What the render hooks collected during one frame. */
@@ -146,6 +152,8 @@ public final class NpcProfiler
     {
         pathNanos += nanos;
         pathSearches++;
+        if (!found)
+            pathFailures++;
         double millis = nanos / NANOS_PER_MILLI;
         if (millis < SLOW_PATH_MILLIS)
             return;
@@ -176,11 +184,12 @@ public final class NpcProfiler
     /** @return what was collected since the last call, which starts the next tick's collection */
     public static ServerSample drainServer()
     {
-        ServerSample sample = new ServerSample(npcTickNanos / NANOS_PER_MILLI, npcTicks, pathNanos / NANOS_PER_MILLI, pathSearches, targetNanos / NANOS_PER_MILLI);
+        ServerSample sample = new ServerSample(npcTickNanos / NANOS_PER_MILLI, npcTicks, pathNanos / NANOS_PER_MILLI, pathSearches, pathFailures, targetNanos / NANOS_PER_MILLI);
         npcTickNanos = 0L;
         npcTicks = 0;
         pathNanos = 0L;
         pathSearches = 0;
+        pathFailures = 0;
         targetNanos = 0L;
         return sample;
     }

@@ -8,12 +8,18 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
 
 /** Where the content-pack model of an NPC stands in the world. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcModels
 {
+    /** Blocks under which a hitbox is one Custom NPCs switched off. */
+    private static final double UNHIT_WIDTH = 0.01D;
+
     /** @return the content-pack model the NPC is drawn as, or null for any other NPC */
     @Nullable
     public static FlanModelEntity flan(Entity entity)
@@ -25,6 +31,22 @@ public final class NpcModels
     public static float scale(EntityNPCInterface npc)
     {
         return npc instanceof EntityCustomNpc custom && custom.modelData.simpleRender ? 1F : npc.display.getSize() / 5F;
+    }
+
+    /**
+     * Custom NPCs makes the hitbox of an NPC that has none, or whose killed body is hidden, a hair wide, and the client
+     * culls by that hitbox: a large NPC disappears as soon as the line through its middle leaves the view.
+     *
+     * @return the hitbox widened to what it would be with a hitbox; empty for an NPC that has its width
+     */
+    public static Optional<AABB> unhitCullingBox(EntityNPCInterface npc)
+    {
+        AABB box = npc.getBoundingBox();
+        if (box.getXsize() >= UNHIT_WIDTH)
+            return Optional.empty();
+        Entity model = npc instanceof EntityCustomNpc custom ? custom.modelData.getEntity(custom) : null;
+        double half = (model == null ? npc.baseSize.width : model.getBbWidth()) * npc.display.getSize() / 10D;
+        return Optional.of(box.inflate(half, 0D, half));
     }
 
     /** @return how far the NPC's body offset and posture move its model up or down, in blocks */
