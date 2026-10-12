@@ -3,11 +3,12 @@ package com.flansmodultimate.common.driveables.collision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -151,6 +152,37 @@ public final class DriveableHullGeometry
         if (previousValid && !previousIsCurrent)
             found |= mergeBounds(previous, out);
         return found;
+    }
+
+    /** Finds a clear place on the current hull, preferring the column above the departing seat. */
+    @Nullable
+    public Vec3 findTopDismount(Vec3 preferred, double width, double height, Predicate<Vec3> isSafe)
+    {
+        if (!hasActiveShapes())
+            return null;
+        List<Vec3> columns = new ArrayList<>();
+        for (int shape = 0; shape < shapes.size(); shape++)
+        {
+            if (!current.active[shape])
+                continue;
+            double[] bounds = current.bounds[shape];
+            columns.add(new Vec3((bounds[0] + bounds[3]) * 0.5D, 0D, (bounds[2] + bounds[5]) * 0.5D));
+        }
+        columns.sort(Comparator.comparingDouble(column -> Math.pow(column.x - preferred.x, 2D) + Math.pow(column.z - preferred.z, 2D)));
+        columns.add(0, preferred);
+        double startY = current.totalBounds[4] + 0.1D;
+        double drop = current.totalBounds[1] - startY - 1D;
+        double halfWidth = width * 0.5D;
+        for (Vec3 column : columns)
+        {
+            double descent = clip(1, column.x - halfWidth, startY, column.z - halfWidth, column.x + halfWidth, startY + height, column.z + halfWidth, drop);
+            if (descent <= drop)
+                continue;
+            Vec3 feet = new Vec3(column.x, startY + descent + 1.0E-4D, column.z);
+            if (!intersects(feet.x - halfWidth, feet.y, feet.z - halfWidth, feet.x + halfWidth, feet.y + height, feet.z + halfWidth) && isSafe.test(feet))
+                return feet;
+        }
+        return null;
     }
 
     /**

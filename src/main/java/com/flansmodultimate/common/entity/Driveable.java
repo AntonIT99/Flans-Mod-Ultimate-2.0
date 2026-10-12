@@ -4064,7 +4064,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Exit spot beside the driveable, preferring the side of the seat being left.
+     * Exit spot on top of ships, or beside other driveables, preferring the seat being left.
      *
      * <p>
      * Candidates are tested against the shaped hulls as well as blocks:
@@ -4075,6 +4075,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public Vec3 getSafeDismountPosition(@NotNull LivingEntity passenger, int seatIndex)
     {
         Vec3 origin = position();
+        if (configType != null && configType.isShip())
+            return getShipDismountPosition(passenger, seatIndex);
         Vec3 right = getRightVector().multiply(1D, 0D, 1D);
         right = right.lengthSqr() < 1.0E-6D ? new Vec3(1D, 0D, 0D) : right.normalize();
         Vec3 forward = new Vec3(-right.z, 0D, right.x);
@@ -4091,6 +4093,20 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             }
         }
         return origin.add(0D, getBbHeight() + 0.5D, 0D);
+    }
+
+    private Vec3 getShipDismountPosition(LivingEntity passenger, int seatIndex)
+    {
+        if (collisionHelper != null)
+        {
+            Vec3 deck = collisionHelper.findTopDismount(passenger, getSeatWorldPosition(seatIndex));
+            if (deck != null)
+                return deck;
+            Vec3 aboveHull = collisionHelper.topDismountFallback();
+            if (aboveHull != null)
+                return aboveHull;
+        }
+        return position().add(0D, getBbHeight() + 0.5D, 0D);
     }
 
     @Nullable

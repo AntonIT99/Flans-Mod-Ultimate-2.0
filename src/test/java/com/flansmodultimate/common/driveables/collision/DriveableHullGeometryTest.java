@@ -23,6 +23,34 @@ class DriveableHullGeometryTest
     private static final double DECK_TOP = ORIGIN_Y + 1D;
 
     @Test
+    void dismountStaysAboveTheSeatOnRotatedAndTiltedDecks()
+    {
+        for (float yaw : new float[]{0F, 90F, -127F})
+        {
+            DriveableHullGeometry geometry = posed(yaw, 10F, deck(-2F, 4F));
+            Vec3 feet = geometry.findTopDismount(new Vec3(0D, ORIGIN_Y, 0D), HALF_WIDTH * 2D, HEIGHT, spot -> true);
+            assertNotNull(feet);
+            assertEquals(0D, feet.x, EPSILON);
+            assertEquals(0D, feet.z, EPSILON);
+            assertTrue(feet.y > ORIGIN_Y);
+            assertFalse(geometry.intersects(feet.x - HALF_WIDTH, feet.y, feet.z - HALF_WIDTH, feet.x + HALF_WIDTH, feet.y + HEIGHT, feet.z + HALF_WIDTH));
+            assertTrue(clipPlayer(geometry, Y, feet.x, feet.y, feet.z, -1D) > -0.001D);
+        }
+    }
+
+    @Test
+    void dismountTriesAnotherHullWhenTheSeatColumnIsBlockedOrOffDeck()
+    {
+        DriveableHullGeometry geometry = posed(0F, 0F, deck(-2F, 4F));
+        Vec3 blocked = new Vec3(0D, ORIGIN_Y, 1D);
+        Vec3 alternative = geometry.findTopDismount(blocked, HALF_WIDTH * 2D, HEIGHT, spot -> Math.abs(spot.z - blocked.z) > 0.5D);
+        assertNotNull(alternative);
+        assertEquals(DECK_TOP + 1.0E-4D, alternative.y, EPSILON);
+        assertNotNull(geometry.findTopDismount(new Vec3(100D, ORIGIN_Y, 100D), HALF_WIDTH * 2D, HEIGHT, spot -> true));
+        assertNull(geometry.findTopDismount(blocked, HALF_WIDTH * 2D, HEIGHT, spot -> false));
+    }
+
+    @Test
     void fallingPlayerLandsFlushOnDeckAtAnyHeading()
     {
         // The driveable basis is mirrored, which once flipped every deck normal

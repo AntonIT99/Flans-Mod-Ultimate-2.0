@@ -7,8 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -76,6 +75,25 @@ public final class DriveableCollisionHelper
     public boolean hasGeometry()
     {
         return !profile.isEmpty();
+    }
+
+    /** Searches the posed hull for a clear standing position on top of this driveable. */
+    @Nullable
+    public Vec3 findTopDismount(LivingEntity passenger, Vec3 preferred)
+    {
+        var dimensions = passenger.getDimensions(Pose.STANDING);
+        return geometry.findTopDismount(preferred, dimensions.width, dimensions.height, feet ->
+        {
+            AABB box = dimensions.makeBoundingBox(feet);
+            return passenger.level().noCollision(passenger, box) && !DriveableCollisionWorld.intersectsAnyHull(passenger.level(), box);
+        });
+    }
+
+    /** Top of the posed hull, for a last-resort exit above the ship rather than beside it. */
+    @Nullable
+    public Vec3 topDismountFallback()
+    {
+        return geometry.queryBounds(boundsScratch) ? new Vec3((boundsScratch[0] + boundsScratch[3]) * 0.5D, boundsScratch[4] + 0.1D, (boundsScratch[2] + boundsScratch[5]) * 0.5D) : null;
     }
 
     DriveableHullGeometry geometry()
