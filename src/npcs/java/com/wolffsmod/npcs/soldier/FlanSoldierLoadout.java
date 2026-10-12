@@ -37,7 +37,7 @@ public final class FlanSoldierLoadout
     /** What a starting item is to an NPC. */
     public enum Kind
     {
-        /** A Flan gun the NPC fires from a hand. */
+        /** A Flan gun the NPC fires from a hand. A deployable gun is not one: it is only carried. */
         GUN,
         /** A shield, raised from the off hand. */
         SHIELD,
@@ -73,7 +73,8 @@ public final class FlanSoldierLoadout
     {}
 
     /**
-     * Distributes the starting items of a class, in the order it lists them. The first gun goes in the main hand. The
+     * Distributes the starting items of a class, in the order it lists them. The first gun that is fired from the hand
+     * goes in the main hand. The
      * off hand takes a shield, or a second gun only when it is the same weapon as the first, for dual wielding. A gun
      * reloads from the projectile slot, which takes the first ammunition the main-hand gun loads; without any, or
      * without a gun, it takes the first throwable. Everything else goes to the inventory, up to its size.
@@ -148,7 +149,8 @@ public final class FlanSoldierLoadout
             return Kind.OTHER;
         if (weapon.get().throwable())
             return Kind.THROWABLE;
-        return weapon.get().ranged() ? Kind.GUN : Kind.OTHER;
+        // A deployable gun is fired from where it is set up, so the next gun of the class is the one to hold.
+        return weapon.get().ranged() && !FlansEquipment.isDeployable(stack) ? Kind.GUN : Kind.OTHER;
     }
 
     /**

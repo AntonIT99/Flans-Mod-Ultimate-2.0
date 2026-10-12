@@ -34,6 +34,17 @@ public final class FlansEquipment
         return EquipmentSupport.armor(armor);
     }
 
+    /**
+     * Tells whether a gun is a deployable one, such as a tripod machine gun: it is placed in the world and fired from
+     * there, never from the hand. Either side.
+     *
+     * @return whether the stack is such a gun; false for any other item
+     */
+    public static boolean isDeployable(ItemStack weapon)
+    {
+        return EquipmentSupport.deployable(weapon);
+    }
+
     /** @return whether the gun has a usable loaded round; does not consume ammunition; either side */
     public static boolean hasLoadedRound(ItemStack weapon)
     {

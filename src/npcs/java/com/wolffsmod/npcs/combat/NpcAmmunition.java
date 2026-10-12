@@ -111,7 +111,8 @@ public final class NpcAmmunition
     private static boolean usableGun(EntityNPCInterface npc, ItemStack stack)
     {
         Optional<EquippedWeaponProperties> weapon = FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY);
-        return weapon.isPresent() && weapon.get().ranged() && !weapon.get().throwable() && !weapon.get().shield() && (FlansEquipment.hasLoadedRound(stack) || hasAmmunition(npc, stack));
+        return weapon.isPresent() && weapon.get().ranged() && !weapon.get().throwable() && !weapon.get().shield() && !FlansEquipment.isDeployable(stack)
+            && (FlansEquipment.hasLoadedRound(stack) || hasAmmunition(npc, stack));
     }
 
     /** @return what the item does in melee, or the damage of an empty hand when it is not a melee weapon */

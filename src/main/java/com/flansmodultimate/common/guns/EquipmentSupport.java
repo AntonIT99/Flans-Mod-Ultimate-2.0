@@ -104,6 +104,11 @@ public final class EquipmentSupport
         return loadedAmmunition(stack).map(ShootableItem::getRoundsFired).orElse(0);
     }
 
+    public static boolean deployable(ItemStack weapon)
+    {
+        return weapon.getItem() instanceof GunItem gun && gun.getConfigType().isDeployable();
+    }
+
     public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
     {
         return weapon.getItem() instanceof GunItem gun && ammunition.getItem() instanceof ShootableItem ammo && ShootableItem.hasRoundsLeft(ammunition)
