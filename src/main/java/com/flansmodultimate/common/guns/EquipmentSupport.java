@@ -104,6 +104,12 @@ public final class EquipmentSupport
         return loadedAmmunition(stack).map(ShootableItem::getRoundsFired).orElse(0);
     }
 
+    public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
+    {
+        return weapon.getItem() instanceof GunItem gun && ammunition.getItem() instanceof ShootableItem ammo && ShootableItem.hasRoundsLeft(ammunition)
+            && compatible(gun.getConfigType(), weapon, ammo.getConfigType());
+    }
+
     public static boolean loadMagazine(LivingEntity holder, ItemStack weapon, ItemStack spare)
     {
         if (!server(holder) || !(weapon.getItem() instanceof GunItem gun) || !(spare.getItem() instanceof ShootableItem ammo) || !ShootableItem.hasRoundsLeft(spare)

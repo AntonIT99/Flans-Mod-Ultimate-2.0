@@ -71,6 +71,8 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     private static final int WHITE = 0xFFFFFF;
     private static final int MAX_NAME_WIDTH = 88;
 
+    private static final List<String> BLUEPRINT_FILTERS = List.of("all", "plane", "vehicle", "ship", "mecha");
+    private static int blueprintFilter;
     private static int selectedBlueprint;
     private static int blueprintScrollRow;
     private int recipeScrollRow;
@@ -80,6 +82,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     private ArrowButton recipeUpButton;
     private ArrowButton recipeDownButton;
     private Button craftButton;
+    private List<DriveableType> visibleBlueprints = List.of();
     private ItemStack hoveredStack = ItemStack.EMPTY;
 
     public DriveableCraftingScreen(DriveableCraftingMenu menu, Inventory inventory, Component title)
@@ -93,6 +96,18 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     protected void init()
     {
         super.init();
+        refreshBlueprints();
+        addRenderableWidget(Button.builder(filterLabel(), button ->
+        {
+            blueprintFilter = (blueprintFilter + 1) % BLUEPRINT_FILTERS.size();
+            selectedBlueprint = 0;
+            blueprintScrollRow = 0;
+            recipeScrollRow = 0;
+            refreshBlueprints();
+            button.setMessage(filterLabel());
+            clampSelection();
+            updateButtons();
+        }).bounds(leftPos, topPos - 22, GUI_WIDTH, 20).build());
         craftButton = addRenderableWidget(
             Button.builder(Component.translatable("gui.flansmodultimate.driveable.craft"), button -> craftSelected()).bounds(leftPos + 110, topPos + 198, 40, 20).build());
         blueprintsUpButton = addRenderableWidget(new ArrowButton(leftPos + 157, topPos + 21, true, button -> scrollBlueprints(-1)));
@@ -101,6 +116,17 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         recipeDownButton = addRenderableWidget(new ArrowButton(leftPos + 83, topPos + 213, false, button -> scrollRecipe(1)));
         clampSelection();
         updateButtons();
+    }
+
+    private Component filterLabel()
+    {
+        return Component.translatable("gui.flansmodultimate.driveable.filter." + BLUEPRINT_FILTERS.get(blueprintFilter));
+    }
+
+    private void refreshBlueprints()
+    {
+        String filter = BLUEPRINT_FILTERS.get(blueprintFilter);
+        visibleBlueprints = DriveableCraftingMenu.getBlueprints().stream().filter(type -> filter.equals("all") || filter.equals(DriveableCraftingMenu.getBlueprintCategory(type))).toList();
     }
 
     private void scrollBlueprints(int direction)
@@ -117,10 +143,13 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
 
     private void craftSelected()
     {
-        List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
+        List<DriveableType> blueprints = visibleBlueprints;
         if (minecraft == null || minecraft.player == null || minecraft.gameMode == null || selectedBlueprint < 0 || selectedBlueprint >= blueprints.size())
             return;
-        int id = DriveableCraftingMenu.CRAFT_BUTTON_BASE + selectedBlueprint;
+        int blueprintIndex = DriveableCraftingMenu.getBlueprints().indexOf(blueprints.get(selectedBlueprint));
+        if (blueprintIndex < 0)
+            return;
+        int id = DriveableCraftingMenu.CRAFT_BUTTON_BASE + blueprintIndex;
         if (menu.clickMenuButton(minecraft.player, id))
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
     }
@@ -174,7 +203,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
 
     private void renderBlueprints(GuiGraphics graphics, int mouseX, int mouseY)
     {
-        List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
+        List<DriveableType> blueprints = visibleBlueprints;
         for (int row = 0; row < BLUEPRINT_ROWS; row++)
         {
             for (int column = 0; column < BLUEPRINT_COLUMNS; column++)
@@ -311,7 +340,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
-        List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
+        List<DriveableType> blueprints = visibleBlueprints;
         int localX = (int) mouseX - leftPos - BLUEPRINTS_LEFT;
         int localY = (int) mouseY - topPos - BLUEPRINTS_TOP;
         if (localX >= 0 && localX < BLUEPRINT_COLUMNS * SLOT_SIZE && localY >= 0 && localY < BLUEPRINT_ROWS * SLOT_SIZE)
@@ -341,7 +370,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
 
     private int maxBlueprintScrollRow()
     {
-        int rows = (DriveableCraftingMenu.getBlueprints().size() + BLUEPRINT_COLUMNS - 1) / BLUEPRINT_COLUMNS;
+        int rows = (visibleBlueprints.size() + BLUEPRINT_COLUMNS - 1) / BLUEPRINT_COLUMNS;
         return Math.max(0, rows - BLUEPRINT_ROWS);
     }
 
@@ -356,7 +385,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
 
     private void clampSelection()
     {
-        int size = DriveableCraftingMenu.getBlueprints().size();
+        int size = visibleBlueprints.size();
         selectedBlueprint = size == 0 ? -1 : Mth.clamp(selectedBlueprint, 0, size - 1);
         blueprintScrollRow = Mth.clamp(blueprintScrollRow, 0, maxBlueprintScrollRow());
         recipeScrollRow = Mth.clamp(recipeScrollRow, 0, maxRecipeScrollRow());
@@ -384,7 +413,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     @Nullable
     private DriveableType getSelectedBlueprint()
     {
-        List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
+        List<DriveableType> blueprints = visibleBlueprints;
         return selectedBlueprint >= 0 && selectedBlueprint < blueprints.size() ? blueprints.get(selectedBlueprint) : null;
     }
 

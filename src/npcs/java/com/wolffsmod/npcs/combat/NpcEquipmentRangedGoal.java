@@ -193,14 +193,26 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         if (hand.reloadFailed)
             return true;
+        // An NPC that uses up its ammunition does not go through the motions of a reload it has nothing for.
+        if (hand.reloading <= 0 && NpcAmmunition.exhausted(npc, weapon))
+        {
+            outOfAmmunition(hand);
+            return true;
+        }
         if (hand.reloading <= 0)
         {
             hand.reloading = Math.max(1, (int) Math.ceil(flan.get().reloadTime()));
             NpcReloadFeedback.reload(npc, hand.side, hand.reloading);
         }
-        if (--hand.reloading <= 0)
-            hand.reloadFailed = !NpcItemAttacks.loadFlanGun(npc, hand.side);
+        if (--hand.reloading <= 0 && !NpcItemAttacks.loadFlanGun(npc, hand.side))
+            outOfAmmunition(hand);
         return true;
+    }
+
+    /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */
+    private void outOfAmmunition(Hand hand)
+    {
+        hand.reloadFailed = hand != main || !NpcAmmunition.switchWeapon(npc);
     }
 
     private void aim(LivingEntity target)

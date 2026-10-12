@@ -40,6 +40,21 @@ public final class FlansEquipment
         return EquipmentSupport.hasLoadedRound(weapon);
     }
 
+    /**
+     * Tells whether a gun can be reloaded with a stack: ammunition the gun takes, in its current fire mode, that still
+     * holds rounds. Nothing is consumed. Either side.
+     *
+     * @param weapon
+     *            the gun; false for any other item
+     * @param ammunition
+     *            the stack offered to it
+     * @return whether {@link #loadMagazine} would accept the stack for an empty slot of the gun
+     */
+    public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
+    {
+        return EquipmentSupport.acceptsAmmunition(weapon, ammunition);
+    }
+
     /** @return a detached copy of the first usable loaded magazine, or empty; either side, without consumption */
     public static Optional<ItemStack> getLoadedAmmunition(ItemStack weapon)
     {

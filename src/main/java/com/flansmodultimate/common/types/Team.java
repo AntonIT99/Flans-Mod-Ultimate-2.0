@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -12,11 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -26,7 +23,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
  * after loading.
  */
 @NoArgsConstructor
-public class Team extends InfoType
+public class Team extends InfoType implements ITeam
 {
     public static final String SPECTATORS_ID = "spectators";
     public static final Team SPECTATORS = new Team(SPECTATORS_ID, "Spectators", 0x404040, ChatFormatting.GRAY);
@@ -97,11 +94,13 @@ public class Team extends InfoType
      * The classes this team's {@code AddClass} lines name, resolved against this team's own content
      * pack first so that a shortname another pack also uses cannot pull in the wrong class.
      */
+    @Override
     public List<PlayerClass> getClasses()
     {
         return classIds.stream().map(id -> PlayerClass.getPlayerClass(id, contentPack)).filter(java.util.Objects::nonNull).toList();
     }
 
+    @Override
     public ItemStack getArmour(EquipmentSlot slot)
     {
         String id = armour.get(slot);

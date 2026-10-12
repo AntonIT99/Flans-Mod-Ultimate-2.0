@@ -146,6 +146,8 @@ public final class NpcItemAttacks
 
     public static boolean loadFlanGun(EntityNPCInterface npc, InteractionHand hand)
     {
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+            return NpcAmmunition.load(npc, hand);
         // NPC ammunition is infinite: load from a detached copy large enough to fill every gun slot, never from the projectile slot itself.
         ItemStack spare = ItemStackWrapper.MCItem(npc.inventory.getProjectile()).copyWithCount(Integer.MAX_VALUE);
         return FlansEquipment.loadMagazine(npc, npc.getItemInHand(hand), spare);

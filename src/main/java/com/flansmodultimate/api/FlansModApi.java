@@ -6,6 +6,7 @@
 package com.flansmodultimate.api;
 
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.PlatformEnvironment;
@@ -78,6 +79,27 @@ public final class FlansModApi
     public static Collection<IContentType> getTypes()
     {
         return Collections.unmodifiableCollection(InfoType.getInfoTypes().values());
+    }
+
+    /**
+     * @return every team the loaded content packs define, unmodifiable and in loading order; the
+     *         built-in spectators are not a content team and are left out. Either side.
+     */
+    public static Collection<ITeam> getTeams()
+    {
+        return List.copyOf(Team.values());
+    }
+
+    /**
+     * @param shortName
+     *            the team's short name, as {@link ITeam#getShortName()} reports it
+     * @return the content team with that name, or empty for an unknown name and for the built-in
+     *         spectators. Either side.
+     */
+    public static Optional<ITeam> getTeam(String shortName)
+    {
+        Team team = Team.getTeam(shortName);
+        return team == Team.SPECTATORS ? Optional.empty() : Optional.ofNullable(team);
     }
 
     /**

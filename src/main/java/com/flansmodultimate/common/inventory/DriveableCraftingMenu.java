@@ -44,7 +44,22 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
     public static List<DriveableType> getBlueprints()
     {
         return InfoType.getInfoTypes().values().stream().filter(DriveableType.class::isInstance).map(DriveableType.class::cast).distinct()
-            .sorted(Comparator.comparing(DriveableType::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(DriveableType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
+            .sorted(Comparator.comparing((DriveableType type) -> type.getContentPack().getName(), String.CASE_INSENSITIVE_ORDER).thenComparing(DriveableCraftingMenu::getBlueprintCategory)
+                .thenComparing(DriveableType::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(DriveableType::getShortName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(DriveableType::getShortName))
+            .toList();
+    }
+
+    /** Ships form their own group regardless of the legacy definition type. */
+    public static String getBlueprintCategory(DriveableType type)
+    {
+        if (type.isShip())
+            return "ship";
+        if (type instanceof PlaneType)
+            return "plane";
+        if (type instanceof MechaType)
+            return "mecha";
+        return "vehicle";
     }
 
     @Override

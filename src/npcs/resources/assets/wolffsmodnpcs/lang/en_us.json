@@ -9,7 +9,7 @@
   "menu.wolffsmodnpcs": "Wolff's Mod",
   "wolffsmodnpcs.weapons.title": "Wolff's Mod settings",
   "wolffsmodnpcs.category.equipment": "Equipment",
-  "wolffsmodnpcs.category.equipment.help": "Equipped weapons and armor, a second gun and equipment stat imports",
+  "wolffsmodnpcs.category.equipment.help": "Equipped weapons and armor, a second gun, ammunition use and equipment stat imports",
   "wolffsmodnpcs.category.firing": "Firing",
   "wolffsmodnpcs.category.firing.help": "Projectiles, throwables, weapon banks, reloading and muzzles",
   "wolffsmodnpcs.category.aiming": "Aiming",
@@ -452,5 +452,16 @@
   "commands.wolffsmodnpcs.benchmark.written": "Report written to %s",
   "commands.wolffsmodnpcs.benchmark.busy": "A benchmark is already running.",
   "commands.wolffsmodnpcs.benchmark.idle": "No benchmark is running.",
-  "commands.wolffsmodnpcs.server.denied": "Only operators may change server-wide NPC settings or run the server benchmark."
+  "commands.wolffsmodnpcs.server.denied": "Only operators may change server-wide NPC settings or run the server benchmark.",
+  "wolffsmodnpcs.weapons.consume_ammo": "Use up ammunition",
+  "wolffsmodnpcs.weapons.consume_ammo.help": "Equipped Flan guns reload from the real items in the Projectile slot and use them up. When the slot is empty or holds something the gun does not take, the next ammunition the gun takes is moved there from the NPC's inventory slots. No keeps ammunition infinite. Needs Use equipped weapons; model weapons are not affected.",
+  "wolffsmodnpcs.tuning.weapon_switch": "When out of ammunition",
+  "wolffsmodnpcs.tuning.weapon_switch.help": "What the NPC does once its main-hand gun has no ammunition left in the Projectile and inventory slots. Guns and melee: take another gun from the inventory that is loaded or has ammunition, and a melee weapon once no gun is usable. Melee only: take the hardest-hitting melee weapon. None: keep the empty gun. The gun put away takes the inventory slot of the weapon taken.",
+  "wolffsmodnpcs.tuning.weapon_switch.guns_and_melee": "Guns and melee",
+  "wolffsmodnpcs.tuning.weapon_switch.melee_only": "Melee only",
+  "wolffsmodnpcs.tuning.weapon_switch.none": "None",
+  "wolffsmodnpcs.soldier.apply_loadout": "Apply class loadout",
+  "wolffsmodnpcs.soldier.loadout.applied": "Equipped the NPC with the %s loadout.",
+  "wolffsmodnpcs.soldier.loadout.denied": "You may not change this NPC's equipment.",
+  "wolffsmodnpcs.soldier.loadout.unknown": "That team or class is not loaded on the server."
 }

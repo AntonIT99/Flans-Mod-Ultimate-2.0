@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.client.FlanModelMenuPreview;
+import com.wolffsmod.npcs.client.FlanSoldierPreview;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import noppes.npcs.client.gui.model.GuiCreationEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
@@ -11,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.LivingEntity;
 
+/** Fits Flan model previews to the model screens' preview area, and dresses the preview of a Flan soldier in its class loadout. */
 @SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = GuiCreationScreenInterface.class, remap = false)
 public abstract class NpcModelPreviewMixin
@@ -22,6 +24,6 @@ public abstract class NpcModelPreviewMixin
         if (screen instanceof GuiCreationEntities && screen.entity instanceof FlanModelEntity model)
             FlanModelMenuPreview.render(screen, graphics, model, rotation);
         else
-            screen.drawNpc(graphics, npc, x, y, zoom, rotation);
+            FlanSoldierPreview.draw(screen, () -> screen.drawNpc(graphics, npc, x, y, zoom, rotation));
     }
 }

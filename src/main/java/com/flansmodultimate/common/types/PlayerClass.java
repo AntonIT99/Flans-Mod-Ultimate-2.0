@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.api.IPlayerClass;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.content.IContentProvider;
@@ -16,17 +17,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 import static com.flansmodultimate.util.TypeReaderUtils.readValuesInLines;
 
 /** Content-pack loadout definition used by the Teams system. */
 @NoArgsConstructor
-public class PlayerClass extends InfoType
+public class PlayerClass extends InfoType implements IPlayerClass
 {
     private static final ItemlessTypeRegistry<PlayerClass> CLASSES = new ItemlessTypeRegistry<>("player class");
 
@@ -89,6 +87,7 @@ public class PlayerClass extends InfoType
             armour.put(slot, value);
     }
 
+    @Override
     public List<ItemStack> createStartingItems()
     {
         List<ItemStack> result = new ArrayList<>(startingItems.size());
@@ -131,10 +130,8 @@ public class PlayerClass extends InfoType
             for (int i = 1; i < parts.length; i++)
             {
                 AttachmentType attachment = AttachmentType.getAttachment(parts[i]);
-                if (attachment == null)
-                    continue;
-                ItemStack attachmentStack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
-                if (attachmentStack.isEmpty())
+                ItemStack attachmentStack = attachment == null ? ItemStack.EMPTY : ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
+                if (attachment == null || attachmentStack.isEmpty())
                     continue;
                 String slot = attachmentSlot(attachment.getEnumAttachmentType(), generic);
                 if (attachment.getEnumAttachmentType() == EnumAttachmentType.GENERIC)
@@ -143,8 +140,7 @@ public class PlayerClass extends InfoType
             }
             gunData.put(GunItem.NBT_ATTACHMENTS, attachments);
             ItemStackData.set(stack, gunData);
-            gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack)
-                .ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
+            gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack).ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
         }
         return stack;
     }
@@ -165,6 +161,7 @@ public class PlayerClass extends InfoType
         };
     }
 
+    @Override
     public ItemStack getArmour(EquipmentSlot slot)
     {
         String id = armour.get(slot);

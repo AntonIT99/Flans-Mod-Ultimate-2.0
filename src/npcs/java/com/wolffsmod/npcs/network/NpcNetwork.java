@@ -40,6 +40,13 @@ public final class NpcNetwork
                 context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.wolffsmod.npcs.client.NpcClientPackets.serverSettings(packet)));
             context.get().setPacketHandled(true);
         });
+        CHANNEL.registerMessage(2, ApplyLoadoutPacket.class, ApplyLoadoutPacket::write, ApplyLoadoutPacket::read, (packet, context) ->
+        {
+            ServerPlayer sender = context.get().getSender();
+            if (sender != null)
+                context.get().enqueueWork(() -> packet.handle(sender));
+            context.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -48,6 +55,11 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(ServerControlPacket packet)
+    {
+        CHANNEL.sendToServer(packet);
+    }
+
+    public static void sendToServer(ApplyLoadoutPacket packet)
     {
         CHANNEL.sendToServer(packet);
     }

@@ -153,7 +153,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         // One page a line, one tab a line: the order here is the order on screen.
         // spotless:off
-        EQUIPMENT(Section.COMBAT, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.DUAL_WIELD)),
+        EQUIPMENT(Section.COMBAT, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
         MODEL_STATS(Section.COMBAT, Tab.of(Feature.TYPE_PROPERTIES, Feature.WEAPON_STATS)),
         FIRING(Section.COMBAT, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES, Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE,
             Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES)),
@@ -316,14 +316,21 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             initVehicleSounds(guiTop + top);
             return;
         }
-        int control = initRows(shown.rows(), top);
-        int below = top + shown.rows().size() * ROW_HEIGHT;
+        List<Object> rows = shown.rows().stream().filter(this::visible).toList();
+        int control = initRows(rows, top);
+        int below = top + rows.size() * ROW_HEIGHT;
         if (category == Category.EQUIPMENT)
             combat.initImportsLink(loaded, below + 6);
         else if (category == Category.MODEL_STATS)
             combat.initPropertiesLink(loaded, below + 6);
         else if (category == Category.PROTECTION)
             combat.initProtection(loaded, control, below);
+    }
+
+    /** A row that only means something while another setting is on is left out until then. */
+    private boolean visible(Object row)
+    {
+        return row != Value.WEAPON_SWITCH || ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.CONSUME_AMMO);
     }
 
     /**
@@ -413,6 +420,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case DRIVE_PRESET -> NpcTuning.DrivePreset.values();
             case DRIVE_TYPE -> NpcTuning.DriveType.values();
             case FLIGHT_TYPE -> NpcTuning.Flight.values();
+            case WEAPON_SWITCH -> NpcTuning.WeaponSwitch.values();
             default -> new Enum<?>[0];
         };
     }

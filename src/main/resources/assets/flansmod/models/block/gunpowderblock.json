@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "flansmod:blocks/gunpowderblock"
+    "all": "flansmod:block/gunpowderblock"
   }
 }

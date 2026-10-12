@@ -93,7 +93,9 @@ public final class NpcTuning
         /** Speed of a plane in tenths of a block per second; 0 keeps it between a stall and a top speed. */
         FLIGHT_SPEED(0, 0, 600),
         /** Blocks below the surface a watercraft runs at; 0 floats. */
-        SUBMARINE_DEPTH(0, 0, 64);
+        SUBMARINE_DEPTH(0, 0, 64),
+        /** Index into {@link WeaponSwitch}. */
+        WEAPON_SWITCH(0, 0, WeaponSwitch.values().length - 1);
 
         private final int fallback;
         private final int minimum;
@@ -195,6 +197,17 @@ public final class NpcTuning
         HELICOPTER
     }
 
+    /** What an NPC that uses up its ammunition does once the gun it holds has none left. */
+    public enum WeaponSwitch
+    {
+        /** Takes another gun it has ammunition for, and a melee weapon once it has none. */
+        GUNS_AND_MELEE,
+        /** Takes a melee weapon. */
+        MELEE_ONLY,
+        /** Keeps the empty gun. */
+        NONE
+    }
+
     /** What an NPC sees and fires through. */
     public enum Sight
     {
@@ -234,6 +247,11 @@ public final class NpcTuning
     public DriveType driveType()
     {
         return DriveType.values()[get(Value.DRIVE_TYPE)];
+    }
+
+    public WeaponSwitch weaponSwitch()
+    {
+        return WeaponSwitch.values()[get(Value.WEAPON_SWITCH)];
     }
 
     public Flight flight()
