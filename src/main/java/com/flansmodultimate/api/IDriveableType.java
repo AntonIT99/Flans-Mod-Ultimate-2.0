@@ -28,6 +28,18 @@ public interface IDriveableType extends IContentType
     DriveableKind getDriveableKind();
 
     /**
+     * Returns the ship classification used by creative inventory and model browsers.
+     * Water-only hulls and explicitly marked ships qualify; amphibious ground vehicles
+     * and seaplanes with flight controls do not. Safe to query on either side.
+     *
+     * @return whether this definition represents a ship, independently of its underlying entity kind
+     */
+    default boolean isShip()
+    {
+        return false;
+    }
+
+    /**
      * @return whether the driveable runs on tracks and can turn on the spot, as a tank does
      */
     default boolean isTracked()

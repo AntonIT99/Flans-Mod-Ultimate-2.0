@@ -106,9 +106,11 @@ public final class CommonEventHandler
     {
         DigitalAmmoCommand.register(event.getDispatcher());
         DefaultAmmoCommand.register(event.getDispatcher());
+        CraftingPartsCommand.register(event.getDispatcher());
         FMParticleCommand.register(event.getDispatcher());
         FlanEntityCommand.register(event.getDispatcher());
         GunAttachmentsCommand.register(event.getDispatcher());
+        FlansModHelpCommand.register(event.getDispatcher());
         RearmCommand.register(event.getDispatcher());
         ShootPointDebugCommand.register(event.getDispatcher());
         HitboxDebugCommand.register(event.getDispatcher());

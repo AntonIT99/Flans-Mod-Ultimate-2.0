@@ -19,7 +19,8 @@ import java.util.*;
 
 /**
  * The combat pages of the Wolff's Mod tab that are more than a list of switches: knockback and minimum hit damage on the
- * Protection page, the model properties page with its Inherit/Custom modes, and the one-shot equipment import page.
+ * Protection page, the model properties page with its Inherit/Custom modes that the Model stats page opens, and the
+ * one-shot equipment import page that the Equipment page opens.
  *
  * <p>
  * Everything is edited on the client copy of the NPC's settings; the tab sends them through the Custom NPCs stats menu
@@ -121,11 +122,16 @@ final class CombatPages
 
     // Category extras
 
-    /** The buttons on the Equipment page that open the two statistics pages. */
-    void initEquipmentLinks(boolean loaded, int y)
+    /** The button on the Model stats page that opens the model properties page. */
+    void initPropertiesLink(boolean loaded, int y)
     {
         link(PROPERTIES_PAGE_ID, "properties", loaded, y);
-        link(IMPORTS_PAGE_ID, "imports", loaded, y + 24);
+    }
+
+    /** The button on the Equipment page that opens the equipment import page. */
+    void initImportsLink(boolean loaded, int y)
+    {
+        link(IMPORTS_PAGE_ID, "imports", loaded, y);
     }
 
     private void link(int id, String name, boolean loaded, int y)
@@ -136,14 +142,14 @@ final class CombatPages
         gui.addLabel(new GuiLabel(id, PREFIX + name + ".summary", gui.guiLeft + 176, gui.guiTop + y + 6));
     }
 
-    /** Knockback handling and the minimum hit damage of each kind, below the Protection switches. */
-    void initProtection(boolean loaded, int y)
+    /** Knockback handling and the minimum hit damage of each kind, below the Protection switches and in their column. */
+    void initProtection(boolean loaded, int control, int y)
     {
         NpcCombatSettings settings = settings();
         int x = gui.guiLeft + 8;
         String knockback = PREFIX + "knockback";
         gui.addLabel(new GuiLabel(KNOCKBACK_ID, knockback, x, gui.guiTop + y + 5, knockback + HELP_SUFFIX));
-        GuiButtonNop mode = new GuiButtonNop(gui, KNOCKBACK_ID, x + 148, gui.guiTop + y, 90, 20, names(knockback, Knockback.values()), settings.getKnockback().ordinal());
+        GuiButtonNop mode = new GuiButtonNop(gui, KNOCKBACK_ID, control, gui.guiTop + y, 90, 20, names(knockback, Knockback.values()), settings.getKnockback().ordinal());
         mode.setEnabled(loaded);
         gui.addButton(mode);
         NpcDamageCategory[] kinds = {NpcDamageCategory.PROJECTILE, NpcDamageCategory.MELEE, NpcDamageCategory.EXPLOSION};
@@ -153,7 +159,7 @@ final class CombatPages
             int id = MINIMUM_HIT_ID + kinds[i].ordinal();
             String key = PREFIX + "minimum_hit." + kinds[i].name().toLowerCase(Locale.ROOT);
             gui.addLabel(new GuiLabel(id, key, x, rowY + 5, PREFIX + "minimum_hit" + HELP_SUFFIX));
-            GuiTextFieldNop field = new GuiTextFieldNop(id, gui, x + 148, rowY, 60, 20, Integer.toString(settings.minimumHit(kinds[i])));
+            GuiTextFieldNop field = new GuiTextFieldNop(id, gui, control, rowY, 60, 20, Integer.toString(settings.minimumHit(kinds[i])));
             field.setEditable(loaded);
             field.setTextColorUneditable(READ_ONLY_COLOR);
             field.numbersOnly = true;

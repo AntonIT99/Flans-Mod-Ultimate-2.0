@@ -38,6 +38,7 @@ public final class FlansModCreativeTabs
     public static final String TAB_MECHAS = "mechas";
     public static final String TAB_PLANES = "planes";
     public static final String TAB_VEHICLES = "vehicles";
+    public static final String TAB_SHIPS = "ships";
     public static final String TAB_PARTS = "parts";
 
     @SuppressWarnings("unchecked")
@@ -84,7 +85,11 @@ public final class FlansModCreativeTabs
         registerCreativeTab(registerTab, TAB_MECHAS, FlansMod.getItems(EnumSet.of(EnumType.MECHA, EnumType.MECHA_ITEM)), List.of(EnumType.MECHA), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_PLANES, FlansMod.getItems(EnumSet.of(EnumType.PLANE)), List.of(EnumType.PLANE), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_VEHICLES, FlansMod.getItems(EnumSet.of(EnumType.VEHICLE)), List.of(EnumType.VEHICLE), creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        registerCreativeTab(registerTab, TAB_PARTS, FlansMod.getItems(EnumSet.of(EnumType.PART)), List.of(EnumType.PART), creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        ResourceKey<CreativeModeTab> vehiclesKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, TAB_VEHICLES));
+        registerCreativeTab(registerTab, TAB_SHIPS, FlansMod.getItems(EnumSet.of(EnumType.VEHICLE, EnumType.PLANE)), List.of(EnumType.VEHICLE, EnumType.PLANE), vehiclesKey,
+            creativeTabsFlansModReloadedKey);
+        ResourceKey<CreativeModeTab> shipsKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, TAB_SHIPS));
+        registerCreativeTab(registerTab, TAB_PARTS, FlansMod.getItems(EnumSet.of(EnumType.PART)), List.of(EnumType.PART), shipsKey, creativeTabsFlansModReloadedKey);
     }
 
     @SafeVarargs
@@ -105,6 +110,8 @@ public final class FlansModCreativeTabs
 
             List<? extends Supplier<? extends Item>> itemsForIcon = itemsForTab.stream().filter(ro ->
             {
+                if (!belongsInTab(tabName, ro.get()))
+                    return false;
                 for (EnumType type : typesForIcons)
                 {
                     Class<?> itemClass = type.getItemClass();
@@ -126,7 +133,7 @@ public final class FlansModCreativeTabs
         boolean onlyGunAmmo = tabName.equals(TAB_GUNS);
         boolean onlyVehicleAmmo = tabName.equals(TAB_BOMBS_AND_SHELLS);
         // The tab's items are fixed once registration ends; the tab is rebuilt on every world join.
-        Supplier<List<Supplier<? extends Item>>> sortedItems = Suppliers.memoize(() -> sortForCreativeTab(itemsForTab));
+        Supplier<List<Supplier<? extends Item>>> sortedItems = Suppliers.memoize(() -> sortForCreativeTab(itemsForTab.stream().filter(ro -> belongsInTab(tabName, ro.get())).toList()));
 
         return (parameters, output) ->
         {
@@ -147,6 +154,17 @@ public final class FlansModCreativeTabs
                             output.accept(createCreativeStack(paintableItem.makePaintjobStack(pj), parameters));
                 }
             }
+        };
+    }
+
+    private static boolean belongsInTab(String tabName, Item item)
+    {
+        boolean ship = item instanceof DriveableItem<?, ?> driveable && driveable.getConfigType().isShip();
+        return switch (tabName)
+        {
+            case TAB_SHIPS -> ship;
+            case TAB_VEHICLES, TAB_PLANES -> !ship;
+            default -> true;
         };
     }
 

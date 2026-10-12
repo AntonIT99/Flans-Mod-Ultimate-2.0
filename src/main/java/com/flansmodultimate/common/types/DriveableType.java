@@ -1194,6 +1194,20 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return id >= 0 && id < wheelPositions.size() ? wheelPositions.get(id) : null;
     }
 
+    /** Water-only hulls qualify; amphibious ground vehicles and aircraft with flight controls do not. */
+    @Override
+    public boolean isShip()
+    {
+        if (!(this instanceof VehicleType || this instanceof PlaneType))
+            return false;
+        if (isEpicShip())
+            return true;
+        if (!isPlaceableOnWater() || isPlaceableOnLand() || !isFloatOnWater())
+            return false;
+        return this instanceof VehicleType
+            || this instanceof PlaneType plane && plane.getLookUpModifier() == 0F && plane.getLookDownModifier() == 0F && plane.getRollLeftModifier() == 0F && plane.getRollRightModifier() == 0F;
+    }
+
     @Override
     public DriveableKind getDriveableKind()
     {
