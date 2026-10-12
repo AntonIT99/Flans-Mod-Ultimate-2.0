@@ -107,7 +107,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
             button.setMessage(filterLabel());
             clampSelection();
             updateButtons();
-        }).bounds(leftPos, topPos - 22, GUI_WIDTH, 20).build());
+        }).bounds(leftPos + STATS_LEFT, topPos + 142, MAX_NAME_WIDTH, 18).build());
         craftButton = addRenderableWidget(
             Button.builder(Component.translatable("gui.flansmodultimate.driveable.craft"), button -> craftSelected()).bounds(leftPos + 110, topPos + 198, 40, 20).build());
         blueprintsUpButton = addRenderableWidget(new ArrowButton(leftPos + 157, topPos + 21, true, button -> scrollBlueprints(-1)));
