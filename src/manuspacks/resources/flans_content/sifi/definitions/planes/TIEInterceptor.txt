@@ -11,9 +11,9 @@ Texture SkinPlaneTIEInterceptor
 FuelTankSize 5000
 CargoSlots 0
 BombSlots 0
-AddRecipeParts core 1 Part_Cockpit_Jet 5 Mat_Plate_Steel
-AddRecipeParts leftWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
-AddRecipeParts rightWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
 AddDye 5 gray
 
 // Movement and Physics
@@ -52,8 +52,8 @@ UseRealisticVehicleHealth true
 
 // Parts and Seats
 CameraDistance 10.0
-Propeller 0 0 0 0 leftWing Part_Propeller_TurbineSpace
-Propeller 1 0 0 0 rightWing Part_Propeller_TurbineSpace
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 rightWing SMP_Part_Propeller_TurbineSpace
 Pilot 4 45 0
 Passengers 0
 SetupPart core 400 -17 41 -54 34 38 108

@@ -14,14 +14,14 @@ ModelScale 1
 FuelTankSize 32000
 CargoSlots 0
 BombSlots 0
-AddRecipeParts core 1 Part_Cockpit_Large 12 Mat_Plate_Steel
-AddRecipeParts nose 1 Part_Nose_Plane 6 Mat_Plate_Steel
-AddRecipeParts tail 1 Part_Tail_Large 16 Mat_Plate_Steel
-AddRecipeParts leftWing 1 Part_Wing_Large 20 Mat_Plate_Steel
-AddRecipeParts rightWing 1 Part_Wing_Large 20 Mat_Plate_Steel
-AddRecipeParts leftWingWheel 4 Part_Wheel_Plane
-AddRecipeParts rightWingWheel 4 Part_Wheel_Plane
-AddRecipeParts coreWheel 2 Part_Wheel_Plane
+AddRecipeParts core 1 SMP_Part_Cockpit_Large 12 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Large 16 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Large 20 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Large 20 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 4 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 4 SMP_Part_Wheel_Plane
+AddRecipeParts coreWheel 2 SMP_Part_Wheel_Plane
 AddDye 25 gray
 
 // Movement and Physics
@@ -56,10 +56,10 @@ UseRealisticVehicleHealth true
 
 // Parts and Seats
 CameraDistance 60.0
-Propeller 0 0 0 0 leftWing Part_Propeller_RotorPlane
-Propeller 1 0 0 0 leftWing Part_Propeller_RotorPlane
-Propeller 2 0 0 0 rightWing Part_Propeller_RotorPlane
-Propeller 3 0 0 0 rightWing Part_Propeller_RotorPlane
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_RotorPlane
+Propeller 1 0 0 0 leftWing SMP_Part_Propeller_RotorPlane
+Propeller 2 0 0 0 rightWing SMP_Part_Propeller_RotorPlane
+Propeller 3 0 0 0 rightWing SMP_Part_Propeller_RotorPlane
 Pilot 146 24 -9
 Passengers 7
 Passenger 1 146 24 9 core

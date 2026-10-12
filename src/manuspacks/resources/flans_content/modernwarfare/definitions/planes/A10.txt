@@ -12,14 +12,14 @@ Texture SkinPlaneA10
 FuelTankSize 6000
 CargoSlots 0
 BombSlots 7
-AddRecipeParts core 1 Part_Cockpit_Jet 6 Mat_Plate_Steel
-AddRecipeParts nose 1 Part_Nose_Plane 3 Mat_Plate_Steel
-AddRecipeParts tail 1 Part_Tail_Jet 5 Mat_Plate_Steel
-AddRecipeParts leftWing 1 Part_Wing_Jet 6 Mat_Plate_Steel
-AddRecipeParts rightWing 1 Part_Wing_Jet 6 Mat_Plate_Steel
-AddRecipeParts leftWingWheel 1 Part_Wheel_Plane
-AddRecipeParts rightWingWheel 1 Part_Wheel_Plane
-AddRecipeParts coreWheel 1 Part_Wheel_Plane
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts coreWheel 1 SMP_Part_Wheel_Plane
 AddDye 10 green
 
 // Movement and Physics
@@ -55,8 +55,8 @@ UseRealisticVehicleHealth true
 
 // Parts and Seats
 CameraDistance 10.0
-Propeller 0 0 0 0 tail Part_Propeller_TurbineJet
-Propeller 1 0 0 0 tail Part_Propeller_TurbineJet
+Propeller 0 0 0 0 tail SMP_Part_Propeller_TurbineJet
+Propeller 1 0 0 0 tail SMP_Part_Propeller_TurbineJet
 Pilot 62 18 0
 Passengers 0
 SetupPart nose 150 92 10 -9 10 16 18

@@ -14,12 +14,12 @@ AddAmmo ShellNATO35mmPMD062AHEAD
 FuelTankSize 2000
 CargoSlots 18
 ShellSlots 5
-AddRecipeParts turret 1 Part_Turret_APC 8 Mat_Armor_Steel
-AddRecipeParts core 1 Part_Chassis_APC 10 Mat_Plate_Steel 15 Mat_Armor_Steel
-AddRecipeParts frontLeftWheel 2 Part_Wheel_APC
-AddRecipeParts frontRightWheel 2 Part_Wheel_APC
-AddRecipeParts backLeftWheel 2 Part_Wheel_APC
-AddRecipeParts backRightWheel 2 Part_Wheel_APC
+AddRecipeParts turret 1 SMP_Part_Turret_APC 8 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_APC 10 SMP_Part_Mat_Plate_Steel 15 SMP_Part_Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 2 SMP_Part_Wheel_APC
+AddRecipeParts frontRightWheel 2 SMP_Part_Wheel_APC
+AddRecipeParts backLeftWheel 2 SMP_Part_Wheel_APC
+AddRecipeParts backRightWheel 2 SMP_Part_Wheel_APC
 AddDye 10 green
 
 // Movement and Physics

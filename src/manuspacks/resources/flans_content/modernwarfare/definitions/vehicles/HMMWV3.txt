@@ -12,11 +12,11 @@ RotateWheels True
 FuelTankSize 1500
 CargoSlots 18
 ShellSlots 0
-AddRecipeParts core 1 Part_Chassis_Van 10 Mat_Plate_Steel 4 Mat_Armor_Steel
-AddRecipeParts frontLeftWheel 1 Part_Wheel_Car
-AddRecipeParts frontRightWheel 1 Part_Wheel_Car
-AddRecipeParts backLeftWheel 1 Part_Wheel_Car
-AddRecipeParts backRightWheel 1 Part_Wheel_Car
+AddRecipeParts core 1 SMP_Part_Chassis_Van 10 SMP_Part_Mat_Plate_Steel 4 SMP_Part_Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
 AddDye 5 green
 
 // Movement and Physics
