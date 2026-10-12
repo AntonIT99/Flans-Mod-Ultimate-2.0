@@ -91,7 +91,8 @@ public final class NpcMobility
     public static void tick(EntityNPCInterface npc)
     {
         Terrain terrain = NpcTuning.of(npc).terrain();
-        if (floats(terrain) && npc.isInWater() && npc.getFluidTypeHeight(ForgeMod.WATER_TYPE.get()) > npc.getFluidJumpThreshold() && npc.getRandom().nextFloat() < 0.8F)
+        if (floats(terrain) && NpcSubmarine.runningDepth(npc) == 0 && npc.isInWater() && npc.getFluidTypeHeight(ForgeMod.WATER_TYPE.get()) > npc.getFluidJumpThreshold()
+            && npc.getRandom().nextFloat() < 0.8F)
             npc.getJumpControl().jump();
         if ((npc.tickCount + npc.getId()) % REFRESH_INTERVAL != 0)
             return;

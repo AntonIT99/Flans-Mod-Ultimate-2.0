@@ -2,6 +2,10 @@ package com.wolffsmod.npcs.client;
 
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.diag.ServerBenchmark;
+import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -20,9 +24,11 @@ import noppes.npcs.shared.client.gui.listeners.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 /** Per-NPC controls grouped inside the Wolff's Mod tab, using the Custom NPCs stats transport and sound picker. */
@@ -55,9 +61,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int FIRING_RANGE_ID = 1101;
     private static final int READ_ONLY_COLOR = 0xA0A0A0;
     private static final String TUNING = "wolffsmodnpcs.tuning.";
+    private static final int PAGE_BUTTON_ID = 1300;
+    private static final int SERVER_NEAR_ID = 1200;
+    private static final int SERVER_FAR_ID = 1201;
+    private static final int SERVER_PROFILE_ID = 1202;
+    private static final int SERVER_BENCHMARK_ID = 1203;
+    private static final int CLIENT_BENCHMARK_ID = 1204;
     /** The overview lists its categories in two columns of this many. */
-    private static final int OVERVIEW_ROWS = 7;
+    private static final int OVERVIEW_ROWS = 8;
+    /** Rows that fit on a page; a category with more gets a button to turn the page. */
+    private static final int PAGE_ROWS = 8;
     private static final String HELP_SUFFIX = ".help";
+    private static final String[] NO_YES = {"gui.no", "gui.yes"};
 
     /** A page of the tab. Its rows are switches and numbers, listed top to bottom in the order given. */
     private enum Category
@@ -66,12 +81,17 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Feature.MODEL_MUZZLES, Feature.ALTERNATE_BARRELS, Feature.SECONDARY_BANK, Feature.RELOAD_CYCLE), AIMING(Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM,
                 Feature.TURRET_MUZZLES), TURRET(Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE, Feature.HULL_ASSISTS_AIM,
                     Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED), VEHICLE(Feature.HULL_FACES_TRAVEL, Value.HULL_TURN_RATE, Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR, Feature.RIDER_AT_SEAT,
-                        Feature.EYE_AT_MUZZLE), MODEL(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
-                            Feature.MODEL_CULLING), MOVEMENT(Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Value.LAND_SPEED, Value.WATER_SPEED, Feature.ADAPTIVE_PATH_RANGE,
-                                Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL), SENSES(Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL,
-                                    Value.SEARCH_FAR_INTERVAL, Value.TARGET_MARGIN), RANGES(Feature.STAY_ACTIVE, Value.ACTIVE_RANGE), PROTECTION(Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR,
-                                        Feature.FLAN_DAMAGE_TYPES, Feature.INVULNERABLE), ANIMATIONS(Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION,
-                                            Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION), EFFECTS(Feature.MODEL_SOUNDS, Feature.SHOOT_PARTICLES), DISPLAY;
+                        Feature.EYE_AT_MUZZLE), DRIVING(Feature.DRIVING, Value.DRIVE_PRESET, Value.DRIVE_TYPE, Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.TURN_RADIUS,
+                            Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED, Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE, Value.STOP_DISTANCE,
+                            Value.FOLLOW_DISTANCE), MODEL(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
+                                Feature.MODEL_CULLING), MOVEMENT(Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Value.SUBMARINE_DEPTH, Value.LAND_SPEED, Value.WATER_SPEED,
+                                    Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED, Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL,
+                                    Feature.PATH_DEBUG), SENSES(Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL,
+                                        Value.TARGET_MARGIN), RANGES(Feature.STAY_ACTIVE, Value.ACTIVE_RANGE), PROTECTION(Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR, Feature.FLAN_DAMAGE_TYPES,
+                                            Feature.INVULNERABLE), ANIMATIONS(Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION,
+                                                Feature.GUN_MELEE_ANIMATION), EFFECTS(Feature.MODEL_SOUNDS, Feature.SHOOT_PARTICLES), DISPLAY,
+        /** Settings and diagnostics of the whole server rather than of the NPC being edited. */
+        SERVER;
 
         private final Object[] rows;
 
@@ -88,13 +108,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         /** Whether the page edits simulation settings rather than weapons, which its hint line reflects. */
         private boolean simulation()
         {
-            return this == TURRET || this == VEHICLE || this == MODEL || this == MOVEMENT || this == SENSES || this == RANGES;
+            return this == TURRET || this == VEHICLE || this == DRIVING || this == MODEL || this == MOVEMENT || this == SENSES || this == RANGES;
         }
     }
 
     private boolean loaded;
     private boolean changed;
     private Category category;
+    /** Which page of a category with more rows than fit is shown. */
+    private int rowPage;
     private boolean vehicleSoundsPage;
     private boolean weaponSoundsPage;
     private NpcEngineSettings editingSound;
@@ -118,6 +140,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         String hint = category == Category.DISPLAY || vehicleSoundsPage ? "wolffsmodnpcs.presentation.hint" : "wolffsmodnpcs.weapons.ammo_hint";
         if (category == null)
             hint = TUNING + "overview_hint";
+        else if (category == Category.SERVER)
+            hint = TUNING + (ClientServerSettings.isKnown() ? "server_hint" : "server_waiting");
         else if (category.simulation())
             hint = TUNING + "hint";
         if (category != null && combat.active())
@@ -132,7 +156,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         for (int i = 0; i < categories.length; i++)
         {
             int x = guiLeft + 8 + i / OVERVIEW_ROWS * 200;
-            int y = guiTop + 29 + i % OVERVIEW_ROWS * 24;
+            int y = guiTop + 29 + i % OVERVIEW_ROWS * 21;
             String key = categories[i].key();
             GuiButtonNop button = new GuiButtonNop(this, CATEGORY_BUTTON_ID + i, x, y, 192, 20, new String[]{key}, 0);
             button.setEnabled(loaded);
@@ -163,6 +187,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         }
         else if (weaponSoundsPage)
             initRows(new Object[]{Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS});
+        else if (category == Category.SERVER)
+            initServer();
         else
             initSwitches();
     }
@@ -181,8 +207,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** A category's switches, followed by the controls and page links that are more than a switch. */
     private void initSwitches()
     {
-        initRows(category.rows);
-        int below = 29 + category.rows.length * 21;
+        int pages = (category.rows.length + PAGE_ROWS - 1) / PAGE_ROWS;
+        rowPage = Math.max(0, Math.min(pages - 1, rowPage));
+        Object[] rows = Arrays.copyOfRange(category.rows, rowPage * PAGE_ROWS, Math.min(category.rows.length, (rowPage + 1) * PAGE_ROWS));
+        if (pages > 1)
+        {
+            String[] names = new String[pages];
+            for (int page = 0; page < pages; page++)
+                names[page] = I18n.get(TUNING + "page", page + 1, pages);
+            addButton(new GuiButtonNop(this, PAGE_BUTTON_ID, guiLeft + 270, guiTop + 4, 80, 20, names, rowPage));
+        }
+        initRows(rows);
+        int below = 29 + rows.length * 21;
         if (category == Category.RANGES)
         {
             rangeField(AGGRO_RANGE_ID, "aggro_range", npc.stats.aggroRange, below);
@@ -221,7 +257,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         String key = "wolffsmodnpcs.weapons." + feature.name().toLowerCase(Locale.ROOT);
         addLabel(new GuiLabel(feature.ordinal(), key, guiLeft + 8, y + 5, key + HELP_SUFFIX));
         boolean enabled = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);
-        GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 48, 20, new String[]{"gui.no", "gui.yes"}, enabled ? 1 : 0);
+        GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 48, 20, NO_YES, enabled ? 1 : 0);
         button.setEnabled(loaded);
         addButton(button);
     }
@@ -232,9 +268,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         int id = VALUE_ID + value.ordinal();
         int current = NpcTuning.of(npc).get(value);
         addLabel(new GuiLabel(id, key, guiLeft + 8, y + 5, key + HELP_SUFFIX));
-        if (value == Value.TERRAIN || value == Value.SIGHT)
+        Enum<?>[] choices = choices(value);
+        if (choices.length > 0)
         {
-            Enum<?>[] choices = value == Value.TERRAIN ? NpcTuning.Terrain.values() : NpcTuning.Sight.values();
             String[] names = new String[choices.length];
             for (int choice = 0; choice < choices.length; choice++)
                 names[choice] = key + "." + choices[choice].name().toLowerCase(Locale.ROOT);
@@ -244,6 +280,107 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return;
         }
         numberField(id, control, y, current, value.minimum(), value.maximum(), value.fallback());
+    }
+
+    /** @return the named choices of a value that is one, or none for a number */
+    private static Enum<?>[] choices(Value value)
+    {
+        return switch (value)
+        {
+            case TERRAIN -> NpcTuning.Terrain.values();
+            case SIGHT -> NpcTuning.Sight.values();
+            case DRIVE_PRESET -> NpcTuning.DrivePreset.values();
+            case DRIVE_TYPE -> NpcTuning.DriveType.values();
+            case FLIGHT_TYPE -> NpcTuning.Flight.values();
+            default -> new Enum<?>[0];
+        };
+    }
+
+    /** Whether editing the value by hand means the vehicle no longer follows its preset. */
+    private static boolean presetValue(Value value)
+    {
+        return switch (value)
+        {
+            case DRIVE_TYPE, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING, TURN_RADIUS, DRIVE_LOOKAHEAD, CORNER_SPEED, HULL_TURN_RATE -> true;
+            default -> false;
+        };
+    }
+
+    private void editValue(Value value, int number)
+    {
+        NpcTuning tuning = NpcTuning.of(npc);
+        if (value == Value.DRIVE_PRESET)
+            tuning.applyPreset(NpcTuning.DrivePreset.values()[Math.max(0, Math.min(NpcTuning.DrivePreset.values().length - 1, number))]);
+        else
+        {
+            tuning.set(value, number);
+            if (presetValue(value))
+                tuning.set(Value.DRIVE_PRESET, NpcTuning.DrivePreset.CUSTOM.ordinal());
+        }
+    }
+
+    /** The settings and diagnostics of the whole server. The server sends the values and decides who may change them. */
+    private void initServer()
+    {
+        boolean known = ClientServerSettings.isKnown();
+        serverField(SERVER_NEAR_ID, "server_near_interval", ClientServerSettings.getNearInterval(), NpcServerSettings.MAX_NEAR_INTERVAL, 29, known);
+        serverField(SERVER_FAR_ID, "server_far_interval", ClientServerSettings.getFarInterval(), NpcServerSettings.MAX_FAR_INTERVAL, 50, known);
+        String profile = TUNING + "server_profiling";
+        addLabel(new GuiLabel(SERVER_PROFILE_ID, profile, guiLeft + 8, guiTop + 76, profile + HELP_SUFFIX));
+        GuiButtonNop toggle = new GuiButtonNop(this, SERVER_PROFILE_ID, guiLeft + 228, guiTop + 71, 48, 20, NO_YES, ClientServerSettings.isProfiling() ? 1 : 0);
+        toggle.setEnabled(known);
+        addButton(toggle);
+        benchmarkButton(SERVER_BENCHMARK_ID, "server_benchmark", 104);
+        benchmarkButton(CLIENT_BENCHMARK_ID, "client_benchmark", 128);
+    }
+
+    private void serverField(int id, String name, int current, int maximum, int y, boolean known)
+    {
+        String key = TUNING + name;
+        addLabel(new GuiLabel(id, key, guiLeft + 8, guiTop + y + 5, key + HELP_SUFFIX));
+        GuiTextFieldNop field = new GuiTextFieldNop(id, this, guiLeft + 228, guiTop + y, 60, 20, Integer.toString(current));
+        field.setEditable(known);
+        field.setTextColorUneditable(READ_ONLY_COLOR);
+        field.numbersOnly = true;
+        field.setMinMaxDefault(1, maximum, current);
+        addTextField(field);
+    }
+
+    private void benchmarkButton(int id, String name, int y)
+    {
+        String key = TUNING + name;
+        GuiButtonNop button = new GuiButtonNop(this, id, guiLeft + 8, guiTop + y, 268, 20, new String[]{key}, 0);
+        button.setTooltip(Tooltip.create(Component.translatable(key + HELP_SUFFIX)));
+        addButton(button);
+    }
+
+    /** @return whether the field or button belonged to the Server page */
+    private boolean editServer(int id, int number)
+    {
+        int near = ClientServerSettings.getNearInterval();
+        int far = ClientServerSettings.getFarInterval();
+        boolean profiling = ClientServerSettings.isProfiling();
+        switch (id)
+        {
+            case SERVER_NEAR_ID -> near = number;
+            case SERVER_FAR_ID -> far = number;
+            case SERVER_PROFILE_ID -> profiling = number == 1;
+            case SERVER_BENCHMARK_ID -> {
+                NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
+                return true;
+            }
+            case CLIENT_BENCHMARK_ID -> {
+                // A benchmark does not measure a screen: the editor closes first.
+                close();
+                ClientBenchmark.start(ServerBenchmark.DEFAULT_SECONDS);
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
+        NpcNetwork.sendToServer(new ServerControlPacket(ServerControlPacket.Action.SET, near, far, profiling, 0));
+        return true;
     }
 
     /** The two Custom NPCs ranges, editable here up to the server's limit rather than the editor's. */
@@ -268,7 +405,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         String key = "wolffsmodnpcs.presentation." + name;
         addLabel(new GuiLabel(id, key, guiLeft + 8, guiTop + y + 5, key + HELP_SUFFIX));
-        GuiButtonNop button = new GuiButtonNop(this, id, guiLeft + 278, guiTop + y, 48, 20, new String[]{"gui.no", "gui.yes"}, value ? 1 : 0);
+        GuiButtonNop button = new GuiButtonNop(this, id, guiLeft + 278, guiTop + y, 48, 20, NO_YES, value ? 1 : 0);
         button.setEnabled(loaded);
         addButton(button);
     }
@@ -348,6 +485,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             changed = true;
             return;
         }
+        if (field.isInteger() && editServer(field.id, field.getInteger()))
+            return;
         if (loaded && editNumber(field))
         {
             changed = true;
@@ -376,7 +515,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (!field.isInteger())
             return false;
         if (field.id >= VALUE_ID && field.id < VALUE_ID + Value.values().length)
-            NpcTuning.of(npc).set(Value.values()[field.id - VALUE_ID], field.getInteger());
+            editValue(Value.values()[field.id - VALUE_ID], field.getInteger());
         else if (field.id == AGGRO_RANGE_ID)
             npc.stats.aggroRange = Math.max(1, Math.min(NpcMobility.rangeLimit(), field.getInteger()));
         else if (field.id == FIRING_RANGE_ID)
@@ -392,20 +531,21 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (!loaded)
             return;
         GuiTextFieldNop.unfocus();
-        if (button.id == BACK_BUTTON_ID)
+        if (editServer(button.id, button.getValue()))
+            return;
+        if (navigate(button))
         {
-            goBack();
+            init();
+            return;
         }
-        else if (button.id >= CATEGORY_BUTTON_ID && button.id < CATEGORY_BUTTON_ID + Category.values().length)
-            category = Category.values()[button.id - CATEGORY_BUTTON_ID];
-        else if (button.id >= 0 && button.id < Feature.values().length)
+        if (button.id >= 0 && button.id < Feature.values().length)
         {
             ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.values()[button.id], button.getValue() == 1);
             changed = true;
         }
         else if (button.id >= VALUE_ID && button.id < VALUE_ID + Value.values().length)
         {
-            NpcTuning.of(npc).set(Value.values()[button.id - VALUE_ID], button.getValue());
+            editValue(Value.values()[button.id - VALUE_ID], button.getValue());
             changed = true;
         }
         else if (combat.handles(button.id))
@@ -426,6 +566,32 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             changed = true;
         }
         init();
+    }
+
+    /** @return whether the button only moved between pages */
+    private boolean navigate(GuiButtonNop button)
+    {
+        if (button.id == BACK_BUTTON_ID)
+            goBack();
+        else if (button.id >= CATEGORY_BUTTON_ID && button.id < CATEGORY_BUTTON_ID + Category.values().length)
+            openCategory(Category.values()[button.id - CATEGORY_BUTTON_ID]);
+        else if (button.id == PAGE_BUTTON_ID)
+            rowPage = button.getValue();
+        else
+            return false;
+        return true;
+    }
+
+    private void openCategory(Category opened)
+    {
+        category = opened;
+        rowPage = 0;
+        if (opened == Category.SERVER)
+        {
+            // The page shows what the server answers, not what an earlier visit left behind.
+            ClientServerSettings.forget();
+            NpcNetwork.sendToServer(ServerControlPacket.request());
+        }
     }
 
     private void goBack()

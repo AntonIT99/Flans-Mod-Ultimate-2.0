@@ -95,7 +95,8 @@ public abstract class EntityAIRangedAttackMixin
     private void wolffsmodnpcsHoldFire(CallbackInfo callback)
     {
         NpcVehicleState state = NpcVehicleState.of(npc);
-        boolean hold = state.isActive() && !state.isAligned();
+        // An aircraft below its attack altitude climbs first; it keeps its target meanwhile.
+        boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire();
         LivingEntity target = npc.getTarget();
         if (target != null && state.holdsFire(npc, target))
         {

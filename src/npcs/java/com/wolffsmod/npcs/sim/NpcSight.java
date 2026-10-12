@@ -15,11 +15,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Line of sight for NPCs. Unlike the vanilla check it is not cut off at 128 blocks, so long-range NPCs can see as far
@@ -29,10 +29,10 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcSight
 {
-    /** Blocks an NPC may see or fire through; a data pack can change the list. */
-    public static final TagKey<Block> SEE_THROUGH = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "see_through"));
     /** The vanilla limit of line of sight, which stays the least an NPC can see. */
     private static final double VANILLA_RANGE = 128D;
+    /** Blocks beyond the far face of the last block a shot starts at, so it does not start inside the face. */
+    private static final double EXIT_MARGIN = 0.1D;
 
     /** @return how far, in blocks, the NPC can see at all */
     public static double range()
@@ -63,6 +63,37 @@ public final class NpcSight
         return clear(npc.level(), from, to, transparent, npc);
     }
 
+    /**
+     * Finds where a shot through transparent blocks should start so that those blocks cannot stop it: the point at
+     * which the line of fire leaves the last of them.
+     *
+     * @param transparent
+     *            how many see-through blocks the NPC may fire through
+     * @return that point, or the muzzle itself when the line is blocked or crosses no such block
+     */
+    public static Vec3 launchPoint(EntityNPCInterface npc, Vec3 muzzle, Vec3 target, int transparent)
+    {
+        if (transparent <= 0 || muzzle.distanceToSqr(target) > range() * range())
+            return muzzle;
+        Set<BlockPos> crossed = new LinkedHashSet<>();
+        Level level = npc.level();
+        ClipContext context = new ClipContext(muzzle, target, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
+        Boolean blocked = BlockGetter.traverseBlocks(muzzle, target, context, (clip, position) -> blocks(level, clip, position, transparent, crossed) ? Boolean.TRUE : null, clip -> Boolean.FALSE);
+        if (Boolean.TRUE.equals(blocked) || crossed.isEmpty())
+            return muzzle;
+        BlockPos last = null;
+        for (BlockPos position : crossed)
+            last = position;
+        return exit(last, muzzle, target);
+    }
+
+    /** @return where a line leaves a block it crosses, a little beyond its far face; the start of the line if it misses the block */
+    static Vec3 exit(BlockPos block, Vec3 from, Vec3 to)
+    {
+        // Entering the block from the far end of the line finds the face the line leaves it by.
+        return new AABB(block).clip(to, from).map(face -> face.add(to.subtract(from).normalize().scale(EXIT_MARGIN))).orElse(from);
+    }
+
     static boolean clear(Level level, Vec3 from, Vec3 to, int transparent, Entity viewer)
     {
         Set<BlockPos> crossed = transparent > 0 ? new HashSet<>() : Set.of();
@@ -82,11 +113,18 @@ public final class NpcSight
         VoxelShape shape = context.getBlockShape(state, level, position);
         if (shape.isEmpty() || level.clipWithInteractionOverride(context.getFrom(), context.getTo(), position, shape, state) == null)
             return false;
-        if (transparent > 0 && state.is(SEE_THROUGH))
+        if (transparent > 0 && state.is(Tags.SEE_THROUGH))
         {
             crossed.add(position.immutable());
             return crossed.size() > transparent;
         }
         return true;
+    }
+
+    /** Held apart so that the geometry above can be used, and tested, before the game's registries exist. */
+    private static final class Tags
+    {
+        /** Blocks an NPC may see or fire through; a data pack can change the list. */
+        private static final TagKey<Block> SEE_THROUGH = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "see_through"));
     }
 }

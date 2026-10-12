@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs;
 
 import com.mojang.logging.LogUtils;
+import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.sim.NpcActivity;
@@ -29,5 +31,8 @@ public class NpcsMod
         NpcNetwork.register();
         MinecraftForge.EVENT_BUS.addListener(NpcNetwork::startTracking);
         MinecraftForge.EVENT_BUS.addListener(NpcActivity::levelTick);
+        MinecraftForge.EVENT_BUS.addListener(ServerBenchmark::serverTick);
+        MinecraftForge.EVENT_BUS.addListener(ServerBenchmark::serverStopping);
+        MinecraftForge.EVENT_BUS.addListener(NpcServerSettings::serverTick);
     }
 }

@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.mixin;
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
@@ -47,6 +48,7 @@ import java.util.Optional;
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
+ * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
  * </ul>
  *
  * <p>
@@ -80,6 +82,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     /** Created on first use: the entity's constructors already ask for its eye height. */
     @Unique
     private NpcVehicleState wolffsmodnpcsVehicle;
+    @Unique
+    private long wolffsmodnpcsTickStarted;
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
@@ -345,6 +349,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsInheritType(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // Zero doubles as "not measuring": the clock never reads it in practice.
+        wolffsmodnpcsTickStarted = NpcProfiler.server() && !npc.level().isClientSide ? System.nanoTime() : 0L;
         if (!npc.level().isClientSide)
             NpcTypeProperties.of(npc).refresh(npc);
     }
@@ -378,9 +384,22 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsVehicleTick(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        wolffsmodnpcsVehicleState().tick(npc);
-        if (!level().isClientSide)
+        NpcVehicleState state = wolffsmodnpcsVehicleState();
+        boolean server = !level().isClientSide;
+        if (server)
+        {
+            // Before the model state, which reads the heading these leave the NPC with.
+            state.getFlight().tick(npc);
+            state.getSubmarine().tick(npc);
+        }
+        state.tick(npc);
+        if (server)
+        {
             NpcMobility.tick(npc);
+            NpcPathDebug.tick(npc, state);
+        }
+        if (wolffsmodnpcsTickStarted != 0L)
+            NpcProfiler.npcTick(System.nanoTime() - wolffsmodnpcsTickStarted);
     }
 
     @ModifyVariable(method = {"travel", "m_7023_"}, at = @At("HEAD"), argsOnly = true)
@@ -389,10 +408,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         if (level().isClientSide)
             return travel;
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        NpcVehicleState state = wolffsmodnpcsVehicleState();
-        state.beforeTravel(npc);
-        float factor = state.getSpeedFactor() * NpcMobility.landFactor(npc);
-        return factor == 1F ? travel : new Vec3(travel.x * factor, travel.y, travel.z * factor);
+        Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
+        float factor = NpcMobility.landFactor(npc);
+        return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
     }
 
     @Inject(method = {"getWaterSlowDown", "m_6108_"}, at = @At("RETURN"), cancellable = true)

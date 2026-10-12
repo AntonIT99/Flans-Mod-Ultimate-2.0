@@ -1,6 +1,7 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
 import com.flansmodultimate.common.item.GunItem;
@@ -48,6 +49,8 @@ public class PlayerData
     private float shootTimeRight;
     @Getter @Setter
     private float shootTimeLeft;
+    private int secondarySwitchRight;
+    private int secondarySwitchLeft;
     /** Stops player shooting immediately after swapping weapons */
     @Getter @Setter
     private int shootClickDelay;
@@ -231,7 +234,31 @@ public class PlayerData
 
     public float getShootTime(InteractionHand hand)
     {
-        return hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
+        float delay = hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
+        int switching = getSecondarySwitchRemaining(hand);
+        return switching > 0 ? Math.max(delay, switching) : delay;
+    }
+
+    public int getSecondarySwitchRemaining(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? secondarySwitchLeft : secondarySwitchRight;
+    }
+
+    public boolean isSecondaryModeSwitching(InteractionHand hand)
+    {
+        return getSecondarySwitchRemaining(hand) > 0;
+    }
+
+    public void beginSecondaryModeSwitch(InteractionHand hand, int ticks)
+    {
+        int duration = Math.max(0, Math.min(1200, ticks));
+        if (hand == InteractionHand.OFF_HAND)
+            secondarySwitchLeft = duration;
+        else
+            secondarySwitchRight = duration;
+        if (duration > 0)
+            setShootTime(hand, Math.max(getShootTime(hand), duration));
+        setBurstRoundsRemaining(hand, 0);
     }
 
     public void setShootTime(InteractionHand hand, float value)
@@ -281,17 +308,24 @@ public class PlayerData
             burstRoundsRemainingRight = value;
     }
 
-    public void tick(Player player)
+    /** Advances transient gun state once per player tick, retaining firing carry and clearing completed reloads. */
+    void tickGunCooldowns()
     {
-        if (shootTimeRight > 0)
-            shootTimeRight -= 1F;
-        if (shootTimeRight == 0)
+        secondarySwitchRight = Math.max(0, secondarySwitchRight - 1);
+        secondarySwitchLeft = Math.max(0, secondarySwitchLeft - 1);
+        shootTimeRight = ShotCooldown.tick(shootTimeRight);
+        if (ShotCooldown.isReady(shootTimeRight))
             isReloadingRight = false;
 
-        if (shootTimeLeft > 0)
-            shootTimeLeft -= 1F;
-        if (shootTimeLeft == 0)
+        shootTimeLeft = ShotCooldown.tick(shootTimeLeft);
+        if (ShotCooldown.isReady(shootTimeLeft))
             isReloadingLeft = false;
+
+    }
+
+    public void tick(Player player)
+    {
+        tickGunCooldowns();
 
         if (shootClickDelay > 0)
             shootClickDelay--;

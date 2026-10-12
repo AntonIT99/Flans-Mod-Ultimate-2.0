@@ -2,6 +2,8 @@ package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.diag.NpcProfiler;
+import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -52,8 +54,10 @@ public final class NpcTargetSearch
     public LivingEntity find(EntityNPCInterface npc, TargetingConditions conditions, double range)
     {
         NpcTuning tuning = NpcTuning.of(npc);
-        int near = tuning.get(Value.SEARCH_NEAR_INTERVAL);
-        int far = Math.max(near, tuning.get(Value.SEARCH_FAR_INTERVAL));
+        // An NPC without intervals of its own follows the ones set for the whole server.
+        NpcServerSettings server = npc.getServer() == null ? null : NpcServerSettings.get(npc.getServer());
+        int near = interval(tuning.get(Value.SEARCH_NEAR_INTERVAL), server == null ? NpcServerSettings.DEFAULT_NEAR_INTERVAL : server.getSearchNearInterval());
+        int far = Math.max(near, interval(tuning.get(Value.SEARCH_FAR_INTERVAL), server == null ? NpcServerSettings.DEFAULT_FAR_INTERVAL : server.getSearchFarInterval()));
         long now = npc.level().getGameTime();
         if (!started)
         {
@@ -70,7 +74,7 @@ public final class NpcTargetSearch
             if (due(band, now, near, far))
             {
                 searched[band] = now;
-                LivingEntity found = scan(npc, conditions, inner, outer);
+                LivingEntity found = scan(npc, conditions, band, inner, outer);
                 if (found != null)
                     return found;
             }
@@ -94,8 +98,9 @@ public final class NpcTargetSearch
     }
 
     @Nullable
-    private static LivingEntity scan(EntityNPCInterface npc, TargetingConditions conditions, double inner, double outer)
+    private static LivingEntity scan(EntityNPCInterface npc, TargetingConditions conditions, int band, double inner, double outer)
     {
+        long started = NpcProfiler.server() ? System.nanoTime() : 0L;
         double innerSquared = inner * inner;
         double outerSquared = outer * outer;
         List<LivingEntity> candidates = npc.level().getEntitiesOfClass(LivingEntity.class, npc.getBoundingBox().inflate(outer), entity ->
@@ -104,12 +109,23 @@ public final class NpcTargetSearch
             return entity != npc && entity.isAlive() && distance > innerSquared && distance <= outerSquared;
         });
         candidates.sort(Comparator.comparingDouble(npc::distanceToSqr));
-        for (LivingEntity candidate : candidates)
+        LivingEntity found = null;
+        int tested = 0;
+        for (int index = 0; index < candidates.size() && found == null; index++)
         {
-            if (conditions.test(npc, candidate))
-                return candidate;
+            tested++;
+            if (conditions.test(npc, candidates.get(index)))
+                found = candidates.get(index);
         }
-        return null;
+        if (started != 0L)
+            NpcProfiler.targetSearch(band, candidates.size(), tested, found != null, System.nanoTime() - started);
+        return found;
+    }
+
+    /** @return the NPC's own interval, or the server's when the NPC states none */
+    static int interval(int own, int server)
+    {
+        return own > 0 ? own : Math.max(1, server);
     }
 
     /**

@@ -761,7 +761,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
+        boolean tactical = getBulletItemStackList(gunStack, registries).stream()
+            .anyMatch(ammo -> GunHandlingTiming.tacticalReload(true, maxAmmo, ShootableItem.getMaxRounds(ammo), configType.getTacticalReloadTime()));
+        float baseTime = configType.getReloadTime(gunStack, tactical);
+        float reloadTime = (maxAmmo <= 1) ? baseTime : (baseTime / maxAmmo) * getReloadCount(gunStack, registries);
         return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
     }
 

@@ -9,7 +9,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.effects.MuzzleFlashRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
-import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.*;
@@ -247,6 +247,12 @@ public final class GunItemRenderer
         poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
 
         renderWeaponSwitchMovement(animations, poseStack);
+        if (model.getType().isSecondarySwitchMovement())
+        {
+            float movement = GunHandlingTiming.switchMovement(animations.getSecondarySwitchRemaining(), animations.getSecondarySwitchLength(), ClientPlatform.partialTick());
+            poseStack.translate(0D, -0.1D * movement, 0D);
+            poseStack.mulPose(Axis.XP.rotationDegrees(12F * movement));
+        }
         renderSprintingMovement(model, animations, sprinting, poseStack);
         renderMeleeMovement(model.getType(), animations, poseStack);
         renderLookAtGunMovement(animations, poseStack);
@@ -1050,7 +1056,8 @@ public final class GunItemRenderer
         AttachmentType gripAttachment = model.getType().getGrip(stack);
         ItemStack gripItemStack = model.getType().getGripItemStack(stack);
 
-        if (gripAttachment != null && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment gripModel)
+        if (gripAttachment != null && GunHandlingTiming.attachmentVisible(gripAttachment.isRenderOnlyOnMode(), model.getType().getSecondaryFire(stack), animations.getSecondarySwitchRemaining() > 0)
+            && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment gripModel)
         {
             int color = gripAttachment.getColour();
             float red = (color >> 16 & 255) / 255F;
@@ -1115,6 +1122,9 @@ public final class GunItemRenderer
         // Get all the attachments that we may need to render
         for (AttachmentType attachment : attachments)
         {
+            if (attachment.getEnumAttachmentType() == EnumAttachmentType.GRIP
+                && !GunHandlingTiming.attachmentVisible(attachment.isRenderOnlyOnMode(), model.getType().getSecondaryFire(item), animations.getSecondarySwitchRemaining() > 0))
+                continue;
             poseStack.pushPose();
 
             switch (attachment.getEnumAttachmentType())

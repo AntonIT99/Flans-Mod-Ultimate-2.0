@@ -81,6 +81,12 @@ public final class NpcVehicleState
 
     // Server
     private final TargetMotion motion = new TargetMotion();
+    @Getter
+    private final NpcDriving driving = new NpcDriving();
+    @Getter
+    private final NpcFlight flight = new NpcFlight();
+    @Getter
+    private final NpcSubmarine submarine = new NpcSubmarine();
     private int targetId = -1;
     @Nullable
     private Vec3 solution;
@@ -306,7 +312,7 @@ public final class NpcVehicleState
 
     private static boolean driving(EntityNPCInterface npc)
     {
-        return !npc.getNavigation().isDone() || npc.zza != 0F || npc.xxa != 0F;
+        return !npc.getNavigation().isDone() || npc.zza != 0F || npc.xxa != 0F || NpcVehicleState.of(npc).driving.getThrottle() != 0F;
     }
 
     /**
@@ -338,12 +344,22 @@ public final class NpcVehicleState
         else
         {
             turretYaw = 0F;
-            turretPitch = 0F;
+            turretPitch = current.kind() == FlanModelKind.MECHA ? armPitch(options, tuning, wanted) : 0F;
             // A fixed gun is on target when the hull is; a model that turns like any NPC faces its target anyway.
             aligned = wanted == null || !held || Math.abs(wanted.yaw()) <= Math.max(tolerance, FIXED_GUN_TOLERANCE);
         }
         if (!options.enabled(Feature.FIRE_WHEN_ALIGNED))
             aligned = true;
+    }
+
+    /** A mecha has no turret, but its arms raise and lower with its aim, as far as its model lets them. */
+    private float armPitch(NpcWeaponOptions options, NpcTuning tuning, @Nullable MountAim wanted)
+    {
+        if (options.enabled(Feature.TURRET_LOCKED))
+            return turretPitch;
+        float goal = wanted == null ? 0F : wanted.pitch();
+        float step = options.enabled(Feature.GRADUAL_AIM) ? aimStep(tuning, Value.AIM_SPEED_PITCH, DEFAULT_AIM_STEP) : 360F;
+        return turretPitch + Mth.clamp(goal - turretPitch, -step, step);
     }
 
     /** Turns the turret toward the wanted aim, or back to its rest direction without one. */
@@ -445,22 +461,44 @@ public final class NpcVehicleState
 
     /**
      * Turns a driving vehicle's hull toward where it wants to go, makes it drive where the hull points, and slows it
-     * down while the two differ. Server only, before the NPC moves.
+     * down while the two differ: with the driving controller as a vehicle would, without it by plain steering.
+     * Server only, before the NPC moves.
+     *
+     * @param travel
+     *            the movement input the NPC was about to use
+     * @return the movement input it uses instead
      */
-    public void beforeTravel(EntityNPCInterface npc)
+    public Vec3 beforeTravel(EntityNPCInterface npc, Vec3 travel)
     {
         speedFactor = 1F;
         if (!active || layout == null || layout.kind() != FlanModelKind.VEHICLE || !hullKnown || npc.isKilled() || npc.isVehicle() && npc.ais.mountControl)
-            return;
+        {
+            driving.reset();
+            return travel;
+        }
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        if (!options.enabled(Feature.HULL_FACES_TRAVEL) || npc.zza == 0F && npc.xxa == 0F)
-            return;
+        if (!options.enabled(Feature.HULL_FACES_TRAVEL))
+        {
+            driving.reset();
+            return travel;
+        }
         NpcTuning tuning = NpcTuning.of(npc);
+        if (options.enabled(Feature.DRIVING))
+        {
+            NpcDriving.Command command = driving.travel(npc, hullYaw, tuning, options);
+            hullYaw = command.hullYaw();
+            npc.setYRot(hullYaw);
+            return new Vec3(0D, travel.y, NpcDriving.input(npc, command.throttle()));
+        }
+        driving.reset();
+        if (npc.zza == 0F && npc.xxa == 0F)
+            return travel;
         float desired = npc.getYRot();
         hullYaw = MountMotion.turn(hullYaw, desired, hullStep(tuning));
         if (options.enabled(Feature.MISALIGNED_THROTTLE))
             speedFactor = MountMotion.throttle(desired - hullYaw, tuning.get(Value.THROTTLE_FLOOR) / 100F);
         npc.setYRot(hullYaw);
+        return speedFactor == 1F ? travel : new Vec3(travel.x * speedFactor, travel.y, travel.z * speedFactor);
     }
 
     // Shape

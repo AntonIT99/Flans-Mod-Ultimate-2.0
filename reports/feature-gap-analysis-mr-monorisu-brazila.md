@@ -182,13 +182,13 @@ Guns can be animated from glTF clips: reload start, loop and end, tactical reloa
 Target checked: `T/common/types/GunAnimationConfig` (legacy model animation, staged-reload rendering)
 Missing: glTF animation loading and playback.
 
-### Tactical reload timing and secondary-mode switch animations — MISSING
+### Tactical reload timing and secondary-mode switching — PARTIAL
 
-Reference: `GunType` (`TacticalReloadTime`, `StagedReloadTime`, `ForceStagedReload`, `SecondarySwitchTime`, `SecondaryUnSwitchTime`, `RunPosTime`, `RunCrouchTime`), `AttachmentType` (`RefundAmmoOnSwitch`, `UnSwitchAnimationOnEmpty`, `RenderOnlyOnMode`, `AimingTimeMultiplier`)
-A reload with a round still chambered is faster. Switching to and from secondary mode takes time and plays an animation. Attachments can refund ammo when switched and render only in a chosen mode.
+Reference: `GunType` (`TacticalReloadTime`, `StagedReloadTime`, `ForceStagedReload`, `SecondarySwitchTime`, `SecondaryUnSwitchTime`, `RunPosTime`, `RunCrouchTime`), `AttachmentType` (`RefundAmmoOnSwitch`, `UnSwitchAnimationOnEmpty`, `RenderOnlyOnMode`, `AimingTimeMultiplier`).
 
-Target checked: `T/common/types/GunAnimationConfig` (staged-reload render keys), `T/network/server/PacketGunSecondaryMode`, `PacketGunSwitchDelay`
-Missing: the shorter tactical reload, timed secondary switching, ammo refund on switch, and mode-gated attachment rendering.
+**Present (2026-10-12):** tactical reload selection from the actual loaded ammunition before scheduling; per-gun explicit timing and configurable default magazine multiplier; independent server-authoritative secondary enter/exit delays, a cosmetic switching movement, and grip/ammo visibility gated by secondary mode while retained during transitions. The normal attachment, ammunition and enchantment reload multipliers still apply; secondary attachment reload timing stays independent.
+
+**Missing:** glTF switch clips, ammo refund, empty-secondary unswitch-animation policy, the fork's forced/staged reload behavior and run/crouch timing keys. Existing legacy staged-reload rendering remains available but is not the fork's full staged-reload mechanic.
 
 ### Gun carry limits and gun tiers — MISSING
 
@@ -599,7 +599,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Illumination star shells | MISSING | HIGH |
 | Weapons | Soft-target and vanilla-damage modifiers | MISSING | MEDIUM |
 | Weapons | glTF gun animation | MISSING | HIGH |
-| Weapons | Tactical reload and secondary switch timing | MISSING | MEDIUM |
+| Weapons | Tactical reload and secondary switch timing | PARTIAL | HIGH |
 | Weapons | Gun carry limits and tiers | MISSING | HIGH |
 | Weapons | Ammunition evolution | MISSING | MEDIUM |
 | Weapons | Muzzle and chamber smoke models | PARTIAL | MEDIUM |
@@ -644,7 +644,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 44 MISSING, 12 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 43 MISSING, 13 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -685,6 +685,21 @@ These findings were removed from the active gap sections and summary table after
 - The installed charges used positive 100–300 tick legacy self-destruct fuses, which can pre-empt the port's drag-limited sink. Category `Fuse 0` allows depth activation. Added `DepthChargeLifetime` (2400 ticks by default; configurable 1–72000) because a 100 m setting needs more than the ordinary 600-tick bullet ceiling. Ordinary bullet lifetimes are unchanged. This is a gameplay safety ceiling, not a historical fuse delay.
 
 - Category follow-up validation: strict JSON, preserved order/membership/statistics and cross-category property checks passed. Ten focused tests passed, including lifetime bounds and 100 m sinking beyond the old 600-tick ceiling. Full `build` passed with 1,527 tests passed and 10 skipped; scoped formatting, main/test SonarLint, IntelliJ and diff whitespace checks completed with no new issues. Existing analysis warnings remain as documented above. In-game depth-charge behavior remains untested.
+
+## Weapon-handling ports (2026-10-12)
+
+- Checked current `GunType`, `GunItem.getActualReloadTime`, reload scheduling, NPC equipment properties, secondary-mode packets, `AttachmentType` and `GunItemRenderer` before implementation. Reloads previously had one duration; secondary mode changed immediately; grips ignored `RenderOnlyOnMode`.
+- `TacticalReloadTime` sets an explicit live-ammo duration. The default `-1` derives 80% of the ordinary duration through `TacticalReloadMultiplier`; `0` disables the bonus. Automatic eligibility is limited to a single ammo slot with live multi-round ammunition; internal and single-round loading retains ordinary timing unless an explicit positive tactical time is authored. The default reduction is a configurable gameplay assignment, not a historically sourced speed. The shared equipment property path exposes the timing to NPC/other holders; the ordinary secondary-grip reload duration remains independent.
+- `SecondarySwitchTime` / `SecondaryUnSwitchTime` default to eight ticks and are independently configurable (zero disables). The server validates the held gun, life/spectator state, cooldown and pending reload, changes the mode and acknowledges the server duration. Per-hand transient switch state blocks firing and reload attempts and cancels the old burst queue; changing the ordinary shoot timer cannot shorten the switch. The client plays a cosmetic dip, independently disabled with `SecondarySwitchMovement false`. Protocol 23 rejects peers using the older acknowledgement shape. This is the player secondary-mode control path; arbitrary mod code that directly edits gun NBT does not initiate a timed switch.
+- `RenderOnlyOnMode` applies to grip attachments and their ammunition meshes. Hidden primary-mode grips stay visible throughout the switching interval. Existing physical launchers remain visible unless their packs explicitly request mode gating; no attachment category was authored to hide a real mounted launcher.
+- Category integration: eleven reviewed belt-fed categories covering 35 existing aliases receive `TacticalReloadMultiplier 1.0`, preserving their authored reload duration instead of granting the new magazine bonus. Source definitions and pack-local English localization were checked for the aliases. Existing category ordering, membership, ballistics and cadence remain unchanged. These are gameplay compatibility exceptions, not new historical reload-time estimates. The touched MG 42 entry at 1200 RPM was rechecked against the later [US War Department report, Tactical and Technical Trends no. 31](https://www.lonesentry.com/articles/ttt/mg42.html), which gives 1100–1350 RPM; its existing cadence was retained. No new categories or coverage were added.
+
+### Weapon-handling validation
+
+- Full `build` passed with 1,571 tests: 1,561 passed, 10 skipped, no failures/errors. The 15 focused timing, parser, packet, presentation, cooldown-lifecycle and expanded server-safety checks passed within that suite. Pack artifacts were rebuilt without changing their source definitions.
+- Fractional reload completion now clears its flag when the countdown is ready, through the existing `ShotCooldown` rule. Firing retains its negative fractional remainder, including several shots per tick, and a zero-duration mode change preserves that remainder. Dedicated cooldown tests cover these interactions alongside switch expiry and a timer reset during switching.
+- Scoped `spotlessApply` / `spotlessCheck`, strict category/property checks, main/test SonarLint and main/wiki whitespace checks passed. Existing main-source complexity/unused warnings outside the new behavior remain. IntelliJ ran once; five constant-input assertions were given narrowly explained suppressions. The subsequent cooldown refactor was compiled, tested and analyzed with SonarLint but not re-inspected by IntelliJ.
+- Actual Minecraft reloads, secondary controls, first/third-person presentation and multiplayer latency have not been exercised. The cosmetic switch movement is an adaptation to the current renderer, not a port of the fork's glTF clips. Remaining switch/refund/staged-animation gaps are retained above.
 
 ## Areas requiring deeper audit
 

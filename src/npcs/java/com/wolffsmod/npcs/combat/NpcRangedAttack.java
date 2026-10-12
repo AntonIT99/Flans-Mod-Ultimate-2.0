@@ -6,8 +6,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
-import com.wolffsmod.npcs.sim.NpcModels;
-import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.sim.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -179,11 +178,19 @@ public final class NpcRangedAttack
             boolean arc = options.enabled(Feature.BALLISTIC_AIM);
             // Only a preview has no target, and a preview never launches.
             LivingEntity aimed = Objects.requireNonNull(target);
-            Vec3 direction = state.lead(NpcVehicleState.aimPoint(aimed).subtract(origin), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
-            if (shot.launch(origin, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
+            Vec3 from = throughCover(origin, NpcVehicleState.aimPoint(aimed));
+            Vec3 direction = state.lead(NpcVehicleState.aimPoint(aimed).subtract(from), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
+            if (shot.launch(from, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
             playLaunchEffects(muzzle, origin, shotIndex);
             return true;
+        }
+
+        /** An NPC that fires through transparent blocks launches from beyond them, so the round is not stopped by what it aimed through. */
+        private Vec3 throughCover(Vec3 origin, Vec3 aimPoint)
+        {
+            NpcTuning tuning = NpcTuning.of(npc);
+            return tuning.sight() == NpcTuning.Sight.SEE_AND_FIRE_THROUGH ? NpcSight.launchPoint(npc, origin, aimPoint, tuning.get(NpcTuning.Value.FIRE_LIMIT)) : origin;
         }
 
         private void playLaunchEffects(WeaponMuzzle muzzle, Vec3 origin, int shotIndex)

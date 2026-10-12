@@ -81,6 +81,12 @@ public class VehicleType extends DriveableType
     protected String stompSoundBackLeft = StringUtils.EMPTY;
 
     @Override
+    public boolean isTracked()
+    {
+        return tank;
+    }
+
+    @Override
     protected void read(TypeFile file)
     {
         super.read(file);

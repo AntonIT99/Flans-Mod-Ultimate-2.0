@@ -155,6 +155,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected int reloadTime;
+    @Getter
+    protected float tacticalReloadTime = -1F;
+    @Getter
+    protected float tacticalReloadMultiplier = 0.8F;
+    @Getter
+    protected float secondarySwitchTime = 8F;
+    @Getter
+    protected float secondaryUnSwitchTime = 8F;
+    @Getter
+    protected boolean secondarySwitchMovement = true;
 
     /**
      * Digital ammo system: which ammo type to consume (1-7 by default)
@@ -749,6 +759,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         // Reload
         canForceReload = readValue("CanForceReload", canForceReload, file);
         reloadTime = readValue("ReloadTime", reloadTime, file);
+        readHandling(file);
         consumeBulletType = readValue("ConsumeBulletType", consumeBulletType, file);
         bulletsPerReload = readValue("BulletsPerReload", bulletsPerReload, file);
 
@@ -1863,7 +1874,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public float getReloadTime(ItemStack stack)
     {
-        float stackReloadTime = reloadTime;
+        return getReloadTime(stack, false);
+    }
+
+    /** Tactical selection is made from the ammunition present before a reload is queued. */
+    public float getReloadTime(ItemStack stack, boolean tactical)
+    {
+        float stackReloadTime = GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, tactical);
 
         if (getGrip(stack) != null && getSecondaryFire(stack))
             stackReloadTime = getGrip(stack).secondaryReloadTime;
@@ -2204,5 +2221,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public boolean isSilencedSound(@Nullable ItemStack stack)
     {
         return Optional.ofNullable(stack).map(this::getBarrel).map(AttachmentType::isSilencer).orElse(false);
+    }
+
+    private void readHandling(TypeFile file)
+    {
+        tacticalReloadTime = readValue("TacticalReloadTime", tacticalReloadTime, file);
+        tacticalReloadTime = Float.isFinite(tacticalReloadTime) ? Mth.clamp(tacticalReloadTime, -1F, 72000F) : -1F;
+        tacticalReloadMultiplier = readValue("TacticalReloadMultiplier", tacticalReloadMultiplier, file);
+        tacticalReloadMultiplier = Float.isFinite(tacticalReloadMultiplier) ? Mth.clamp(tacticalReloadMultiplier, 0F, 2F) : 0.8F;
+        secondarySwitchTime = GunHandlingTiming.switchTicks(readValue("SecondarySwitchTime", secondarySwitchTime, file));
+        secondaryUnSwitchTime = GunHandlingTiming.switchTicks(readValue("SecondaryUnSwitchTime", secondaryUnSwitchTime, file));
+        secondarySwitchMovement = readValue("SecondarySwitchMovement", secondarySwitchMovement, file);
     }
 }

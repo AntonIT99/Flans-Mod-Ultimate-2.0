@@ -18,6 +18,12 @@ import net.minecraft.world.phys.HitResult;
 public class ClientGunHooksNoop implements IClientGunHooks
 {
     @Override
+    public void secondaryModeSwitch(Player player, InteractionHand hand, int ticks)
+    {
+        /* Client animation only. */
+    }
+
+    @Override
     public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
     {
         /* no-op */

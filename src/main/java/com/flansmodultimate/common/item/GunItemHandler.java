@@ -306,6 +306,8 @@ public class GunItemHandler
 
     public boolean doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
+        if (data.isSecondaryModeSwitching(hand))
+            return false;
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
         float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand);

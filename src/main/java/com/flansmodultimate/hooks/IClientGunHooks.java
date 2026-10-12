@@ -16,6 +16,8 @@ import net.minecraft.world.phys.HitResult;
 
 public interface IClientGunHooks
 {
+    void secondaryModeSwitch(Player player, InteractionHand hand, int ticks);
+
     void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand);
 
     void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand);

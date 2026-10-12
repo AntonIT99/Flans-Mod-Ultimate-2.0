@@ -44,6 +44,12 @@ public class ClientGunHooksImpl implements IClientGunHooks
     private static int lastSelectedSlot = -1;
 
     @Override
+    public void secondaryModeSwitch(Player player, InteractionHand hand, int ticks)
+    {
+        ModClient.getGunAnimations(player, hand).beginSecondaryModeSwitch(ticks);
+    }
+
+    @Override
     public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
     {
         PlayerData data = PlayerData.getInstance(player);

@@ -31,6 +31,25 @@ public final class NpcNetwork
             context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.wolffsmod.npcs.client.NpcClientPackets.vehicleState(packet)));
             context.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(1, ServerControlPacket.class, ServerControlPacket::write, ServerControlPacket::read, (packet, context) ->
+        {
+            ServerPlayer sender = context.get().getSender();
+            if (sender != null)
+                context.get().enqueueWork(() -> packet.handle(sender));
+            else
+                context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.wolffsmod.npcs.client.NpcClientPackets.serverSettings(packet)));
+            context.get().setPacketHandled(true);
+        });
+    }
+
+    public static void sendTo(ServerPlayer player, ServerControlPacket packet)
+    {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    }
+
+    public static void sendToServer(ServerControlPacket packet)
+    {
+        CHANNEL.sendToServer(packet);
     }
 
     public static void sendToTracking(EntityNPCInterface npc, VehicleStatePacket packet)

@@ -1,22 +1,19 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansModTextures;
-import com.flansmodultimate.common.guns.EnumAttachmentType;
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 
@@ -88,6 +85,8 @@ public class AttachmentType extends PaintableType implements IScope
     // Underbarrel functions
     /** This variable controls whether the underbarrel is enabled */
     protected boolean secondaryFire;
+    @Getter
+    protected boolean renderOnlyOnMode;
     /** The list of bullet types that can be used in the secondary mode */
     @Getter
     protected List<String> secondaryAmmo = new ArrayList<>();
@@ -160,6 +159,7 @@ public class AttachmentType extends PaintableType implements IScope
 
         // Secondary Stuff
         secondaryFire = readValue("SecondaryMode", secondaryFire, file);
+        renderOnlyOnMode = readValue("RenderOnlyOnMode", renderOnlyOnMode, file);
 
         String ammo = readValue("SecondaryAmmo", StringUtils.EMPTY, file);
         if (!ammo.isBlank())
