@@ -123,14 +123,26 @@ public final class FlanSoldierBrowser
             screen.npc.display.setSkinTexture(skin.toString());
     }
 
-    /** Adds the button that asks the server for the selected class's loadout; without a selected class there is none. */
+    /**
+     * Adds the button that gives the NPC the selected class's loadout; without a selected class there is none. The class
+     * skin is applied again with it, in case the skin was changed since the class was chosen.
+     */
     public static void addLoadoutButton(GuiCreationScreenInterface screen)
     {
         Optional<FlanSoldierSelection> selection = FlanSoldierSelection.read(screen.playerdata.extra);
         if (selection.isEmpty())
             return;
-        screen.addButton(new GuiButtonNop(screen, LOADOUT_BUTTON_ID, screen.guiLeft + 124, screen.guiTop + 23, 130, 20, "wolffsmodnpcs.soldier.apply_loadout",
-            button -> NpcNetwork.sendToServer(ApplyLoadoutPacket.of(screen.npc.getId(), selection.get()))));
+        screen.addButton(
+            new GuiButtonNop(screen, LOADOUT_BUTTON_ID, screen.guiLeft + 124, screen.guiTop + 23, 130, 20, "wolffsmodnpcs.soldier.apply_loadout", button -> applyLoadout(screen, selection.get())));
+    }
+
+    private static void applyLoadout(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
+    {
+        select(screen, selection);
+        // The server takes the skin and its model from the screen's own save, then equips the NPC.
+        screen.save();
+        NpcNetwork.sendToServer(ApplyLoadoutPacket.of(screen.npc.getId(), selection));
+        screen.init();
     }
 
     private static SkinLayout layout(@Nullable ResourceLocation skin)
