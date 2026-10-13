@@ -175,6 +175,90 @@ public abstract class GameType
         return manager.getTeamScore(team) >= manager.getCurrentRound().map(TeamsRound::getScoreLimit).orElse(Integer.MAX_VALUE);
     }
 
+    /**
+     * The team that won the round that just ended, or null for a draw.
+     *
+     * <p>
+     * A team that met the winning condition takes it; when the clock ran out instead, the team
+     * ahead on score does, and level scores are a draw.
+     * </p>
+     */
+    @Nullable
+    public Team getWinner(TeamsManager manager)
+    {
+        List<Team> teams = manager.getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream()).map(Team::getTeam).filter(Objects::nonNull).toList();
+        for (Team team : teams)
+            if (hasWinner(manager, team))
+                return team;
+        Team best = null;
+        boolean tied = false;
+        for (Team team : teams)
+        {
+            if (best == null || manager.getTeamScore(team) > manager.getTeamScore(best))
+            {
+                best = team;
+                tied = false;
+            }
+            else if (manager.getTeamScore(team) == manager.getTeamScore(best))
+                tied = true;
+        }
+        return tied ? null : best;
+    }
+
+    /** How this game type uses capture points; {@link ObjectiveMode#NONE} for the ones that do not. */
+    public ObjectiveMode getObjectiveMode()
+    {
+        return ObjectiveMode.NONE;
+    }
+
+    /** The capture points of the running round as clients see them, in the order they are fought over. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
+    public List<ObjectiveSnapshot> createObjectives(TeamsManager manager)
+    {
+        return List.of();
+    }
+
+    /** Round team id shown on the left of the objective HUD: the attackers where a mode has them. */
+    public int getAttackingTeamId()
+    {
+        return 2;
+    }
+
+    /** Round team id shown on the right of the objective HUD: the defenders where a mode has them. */
+    public int getDefendingTeamId()
+    {
+        return 3;
+    }
+
+    /** Seconds a dead player of the given round team waits on the deployment map before choosing a spawn. */
+    // Base implementation of a hook; overriding subclasses use the parameters.
+    @SuppressWarnings("java:S1172")
+    public int getDeployDelaySeconds(TeamsManager manager, int teamId)
+    {
+        return 0;
+    }
+
+    /**
+     * Records where a player asked to come back: at a capture point, or at headquarters for null.
+     *
+     * @return whether this game type lets players choose
+     */
+    // Base implementation of a hook; overriding subclasses use the parameters.
+    @SuppressWarnings("java:S1172")
+    public boolean selectSpawn(TeamsManager manager, ServerPlayer player, @Nullable UUID capturePointId)
+    {
+        return false;
+    }
+
+    /** Whether a round of this game type makes sense on the map, which the rounds generator respects. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
+    public boolean isPlayableOn(TeamsMap map)
+    {
+        return true;
+    }
+
     public boolean isFriendlyFireEnabled()
     {
         return false;

@@ -30,6 +30,15 @@ public class PlayerClass extends InfoType implements IPlayerClass
 
     @Getter
     private int unlockLevel;
+    /** Prestige level a player needs before this class opens up, on top of the unlock rank. */
+    @Getter
+    private int requiredPrestigeLevel;
+    /** Most players of one team who may use this class at once; negative for no limit. */
+    @Getter
+    private int classLimit = -1;
+    /** Largest share of a team, in percent, that may use this class at once; negative for no limit. */
+    @Getter
+    private float classLimitPercent = -1F;
     @Getter
     private String skinOverride = StringUtils.EMPTY;
     /** Client-side location of the SkinOverride texture, before it is checked against the player model. */
@@ -51,6 +60,11 @@ public class PlayerClass extends InfoType implements IPlayerClass
     {
         super.read(file);
         unlockLevel = Math.max(0, readValue("UnlockLevel", unlockLevel, file));
+        requiredPrestigeLevel = Math.max(0, readValue("RequiredPrestigeLevel", requiredPrestigeLevel, file));
+        classLimit = Math.max(-1, readValue("ClassLimit", classLimit, file));
+        classLimitPercent = readValue("ClassLimitPercent", classLimitPercent, file);
+        classLimitPercent = readValue("ClassLimitPercentage", classLimitPercent, file);
+        classLimitPercent = Float.isFinite(classLimitPercent) ? Math.max(-1F, Math.min(100F, classLimitPercent)) : -1F;
         // Legacy packs write skin names like "Zombie"; texture paths must be sanitized
         skinOverride = readResource("SkinOverride", skinOverride, file);
         readArmour(file, EquipmentSlot.HEAD, "Hat", "Helmet");

@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.IBullet;
 import com.flansmodultimate.api.IContentType;
@@ -836,7 +837,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     {
         if (!level.isClientSide && configType.isDepthCharge())
         {
-            int seaLevel = configType.getDepthChargeSeaLevel() == Integer.MIN_VALUE ? level.getSeaLevel() : configType.getDepthChargeSeaLevel();
+            int seaLevel = configType.getDepthChargeSeaLevel() == Integer.MIN_VALUE ? FlansMod.teamsManager.getSeaLevel(level) : configType.getDepthChargeSeaLevel();
             if (DepthChargePhysics.shouldDetonate(isInWater(), getY(), seaLevel, configType.getActivationDepth()))
                 detonate(level);
         }

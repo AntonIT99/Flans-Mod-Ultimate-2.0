@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DriveableArmorDebugHud;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
+import com.flansmodultimate.client.gui.TeamsRankUpPopup;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.render.effects.SuppressionOverlay;
 import com.flansmodultimate.client.teams.TeamsClientState;
@@ -100,6 +101,7 @@ public final class ClientHudOverlays
         registrar.aboveCameraOverlays("flash_bang", FLASH_BANG);
         registrar.aboveArmorLevel("damage_absorption", DAMAGE_ABSORPTION);
         registrar.aboveHotbar("hud", HUD);
+        registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
 
@@ -897,6 +899,9 @@ public final class ClientHudOverlays
      */
     public static void renderTeamInfo(GuiGraphics g, int sw)
     {
+        // Rounds fought over capture points have a banner of their own.
+        if (TeamsObjectiveHud.render(g, sw))
+            return;
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         PacketTeamsState state = TeamsClientState.get();

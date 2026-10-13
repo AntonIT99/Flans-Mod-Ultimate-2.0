@@ -438,38 +438,16 @@ Missing (unconfirmed): repair costs, plus drift and terrain penalties as configu
 
 ## Teams and game modes
 
-### Conquest, Domination and Assault game types — MISSING
-
-Reference: `R/common/teams/GameTypeConquest`, `GameTypeDomination`, `GameTypeAssault`, `capturepoint/`, `ITeamCapturePoint`, `TeamObjectiveSnapshot`, `TeamsHudSnapshot`, `PacketCapturePointEdit`
-These are objective modes with capture points, ticket bleed and assault phases.
-
-Target checked: `T/common/teams/GameTypes` (DM, TDM, CTF, Zombies)
-Missing: these three modes and capture points.
-
-### Deployment layouts and spawn selection — MISSING
-
-Reference: `R/common/teams/DeployLayoutEntry`, `PacketDeployLayoutSave`, `PacketConquestSpawnSelect`, `DriveableType.DeploymentPoint`
-Players pick where to spawn, including vehicles used as deployment points, and admins edit and save the layouts.
-
-Target checked: `T/common/teams/TeamsManager`, `T/network/server/PacketTeamsAction`
-Missing: spawn selection and deployment layouts.
-
-### Class limits, prestige and victory presentation — MISSING
-
-Reference: `PlayerClass` (`ClassLimit`, `ClassLimitPercent[age]`, `RequiredPrestigeLevel`), `CommandRanks` (`prestige`, `setRank`), `Team` (`VictorySound`, `DefeatSound`, `HasVictorySound`, `VictoryFlagTexture`), `PacketRankUp`, `PacketRoundFinished`
-Each class has a player cap and can require a prestige level. Teams have victory and defeat sounds and a flag screen.
-
-Target checked: `T/common/types/PlayerClass`, `T/common/types/Team`, `T/client/gui/TeamsRankIcon`
-Missing: class caps, prestige gating, and the victory and defeat presentation.
+Conquest, Domination and Assault, deployment layouts and spawn selection, class limits, prestige and the victory presentation were ported on 2026-10-13; see [Teams ports (2026-10-13)](#teams-ports-2026-10-13).
 
 ### Map and rotation administration and spawn-rate limits — PARTIAL
 
-Reference: `R/common/teams/CommandTeams` (`addMap`, `addMapWithBounds`, `removeMap`, `renameMap`, `setMapImage`, `addToRotation`/`removeFromRotation`/`listRotation`, `planeRate`/`vehicleRate`/`seatRate`, `raiding`, `pacifism`, `seaLevel`, `shake`, `rviForce`/`rviRate`, `movieProp`)
-Admins manage maps and rotation from commands, set per-type spawn-rate limits, and toggle raiding, pacifism and other match rules.
+Reference: `R/common/teams/CommandTeams` (`planeRate`/`vehicleRate`/`seatRate`, `rviForce`/`rviRate`, `raiding`)
+The reference lets admins throttle how often planes, vehicles and seats send their position packets, and how often and how close the long-range vehicle indicator packets are sent.
 
-Target checked: `T/common/command/TeamsCommand` (`add`, `remove`, `maps`, `rounds`, `useRotation`, `setvariable` with lifetime keys)
-**Present:** adding and removing maps and rounds, rotation, lifetime limits and voting.
-**Missing:** map bounds, renaming and images, spawn-rate limits, and the raiding, pacifism, sea-level, shake and RVI rule toggles.
+Target checked: `T/common/command/TeamsCommand`, `T/FlansModEntities` (driveables registered with `updateInterval(1)`), `T/common/distant/DistantSync` (`distantContactUpdateInterval`)
+**Present (2026-10-13):** map bounds, renaming and deployment images, the legacy map and rotation spellings, and the pacifism, movie-prop, sea-level and shake commands.
+**Missing:** `planeRate`, `vehicleRate` and `seatRate`. The target syncs driveables through the vanilla entity tracker, whose interval is fixed when the entity type is registered, so there is no per-type packet rate to expose. `rviForce`/`rviRate` have no counterpart either; the nearest target mechanism, distant contacts, already has its own `distantContactUpdateInterval` config. `raiding` is parsed and saved by the reference but nothing reads it, so there is no behaviour to port.
 
 ---
 
@@ -556,7 +534,7 @@ Missing: the integration.
 Reference: `R/client/teams/JourneyMapCapturePointHook`, `R/client/JourneyMapPerformanceFix`
 Capture points appear on the JourneyMap minimap.
 
-Target checked: whole target (there are no capture points)
+Target checked: whole target; capture points exist since 2026-10-13 (`T/common/block/entity/CapturePointBlockEntity`), with an on-screen compass cue but no minimap integration
 Missing: the minimap overlay.
 
 ### Flan's Horizons distant terrain — UNCERTAIN
@@ -628,9 +606,6 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | Multi-barrel seat guns | UNCERTAIN | LOW |
 | Vehicles | Crew damage and part-loss effects | UNCERTAIN | LOW |
 | Vehicles | Repair costs and alternative driving model | UNCERTAIN | LOW |
-| Teams | Conquest, Domination and Assault | MISSING | HIGH |
-| Teams | Deployment layouts and spawn selection | MISSING | HIGH |
-| Teams | Class limits, prestige and victory presentation | MISSING | HIGH |
 | Teams | Map administration and spawn-rate limits | PARTIAL | HIGH |
 | AI | Armed bot NPCs | PARTIAL | MEDIUM |
 | AI | AI target aircraft | PARTIAL | MEDIUM |
@@ -644,7 +619,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 43 MISSING, 13 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 40 MISSING, 13 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -700,6 +675,26 @@ These findings were removed from the active gap sections and summary table after
 - Fractional reload completion now clears its flag when the countdown is ready, through the existing `ShotCooldown` rule. Firing retains its negative fractional remainder, including several shots per tick, and a zero-duration mode change preserves that remainder. Dedicated cooldown tests cover these interactions alongside switch expiry and a timer reset during switching.
 - Scoped `spotlessApply` / `spotlessCheck`, strict category/property checks, main/test SonarLint and main/wiki whitespace checks passed. Existing main-source complexity/unused warnings outside the new behavior remain. IntelliJ ran once; five constant-input assertions were given narrowly explained suppressions. The subsequent cooldown refactor was compiled, tested and analyzed with SonarLint but not re-inspected by IntelliJ.
 - Actual Minecraft reloads, secondary controls, first/third-person presentation and multiplayer latency have not been exercised. The cosmetic switch movement is an adaptation to the current renderer, not a port of the fork's glTF clips. Remaining switch/refund/staged-animation gaps are retained above.
+
+## Teams ports (2026-10-13)
+
+- Checked `T/common/teams` (game types, manager, maps), `T/common/entity/Flagpole`, `TeamSpawnerBlockEntity`, `PacketTeamsState` and the Teams screens before implementing. Bases were flagpole entities only; the manager, the base editor and the operator stick were generalised to `ITeamBase` so a block entity can be a base.
+- **Capture points:** `teams_capture_point` block and block entity (`ITeamCapturePoint`), with name, letter A–E, capture radius, default owner and map set in an operator-stick editor. The flag climbs the legacy flagpole model in the holder's colour, or flies the team's `VictoryFlagTexture`. Capture state is saved with the block and stamped with the round it belongs to, so a point that loads late or a server that restarts mid-round keeps its progress; the reference resets it.
+- **Domination, Conquest, Assault** (`dom`, `con`, `aslt`): the reference capture arithmetic is in `CaptureRules`, covered by unit tests. Scoring, ticket bleed, kill tickets, Assault reinforcements, stage time, defender deploy delays and all game-type variables follow the reference defaults. Deviations: Domination undoes a rival's unfinished capture of a neutral point before starting its own, as Conquest does, instead of inheriting it; a map without capture points no longer hands Assault attackers an instant win; players standing on a captured point also get five score, so the scoreboard and MVP mean something; XP follows the target's scale (25 per capture). The reference removes every driveable in every world at round end; the target's other game types do not, and neither do these.
+- **Objective HUD** (`TeamsObjectiveHud`) replaces the plain Teams banner in these modes: ticket or reinforcement bars, clock, one square per point, and the Conquest/Assault compass cue. The capture tick sounds of the reference HUD were not ported.
+- **Deployment map** (`TeamsDeployScreen`): replaces the death screen in Conquest and Assault, with headquarters, held points, Assault front-line rules, the deploy delay, a class button and the operator edit mode (drag nodes, crop the image, save). Layout, image and crop are stored per map. The delay is a client-side countdown as in the reference; the server validates only where a player may spawn. No map image is bundled: maps without one are drawn as a plain chart.
+- **Class limits and prestige:** `ClassLimit`, `ClassLimitPercent[age]`, `RequiredPrestigeLevel`; enforced on the server, shown in the class menu. `/teams prestige`, `/ranks`, `/teams setRank`. Rank-up popup (`PacketRankUp`), also sent without a loadout pool.
+- **Victory presentation:** the winner is decided per game type when a round ends; `HasVictorySound`, `VictorySound`, `DefeatSound`, `VictoryFlagTexture`. The reference's Victory, Defeat, Draw and LevelUp sound files and its deployment image were not copied into the target; the names resolve against pack sounds, with vanilla sounds standing in for victory and rank-up.
+- **Rules and administration:** map bounds with the 20-second out-of-bounds kill, `renameMap`, `setMapImage`, rotation aliases, `pacifism`, `movieProp`, `seaLevel` (applies to depth charges, the only target consumer of a sea level outside each dimension's own) and `shake`. Movie-prop mode does not retract plane landing gear.
+- `DriveableType.DeploymentPoint`, listed under deployment in the original audit, is where a troop transport unloads its soldiers. It belongs to the troop-transport gap and is not part of Teams.
+
+### Validation of the 2026-10-13 Teams port
+
+- Full `build` passed with 1,640 tests: 1,630 passed, 10 skipped, no failures or errors. The 34 new tests cover the capture arithmetic of all three modes, the Assault front line, class-limit capacity, prestige, map persistence (bounds, deployment image, crop, layout, old saves), the objective snapshot round trip, and loading the new packets and rules with Minecraft client classes blocked.
+- Scoped `spotlessApply` / `spotlessCheck`, `sonarlintMain`, `sonarlintTest` and `git diff --check` completed. New SonarLint findings were fixed; the four that remain in touched files are complexity warnings on methods that predate this port (`TeamsManager.tick`, `applyLoadout`, `loadRuntime`, `TeamsCommand.addRuleCommands`).
+- IntelliJ inspections ran on `common/teams` and `client/gui` only; findings in new code were fixed. The remaining packages touched by this port (`network`, `common/block`, `client/render`, `client/teams`, `common/command`) were not inspected.
+- Network protocol bumped to 24 because `PacketTeamsState` changed shape.
+- Nothing was exercised in a running game. Capturing, the objective HUD, the deployment map and its edit mode, the capture point editor and renderer, respawning at a chosen point, map bounds and multiplayer behaviour are untested in play, as is a dedicated server.
 
 ## Areas requiring deeper audit
 

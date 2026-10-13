@@ -29,7 +29,8 @@ public interface IFlanDamageModel
     /**
      * Whether kinetic rounds and shaped charges are resolved against the driveable's core armour, on the face the shot
      * strikes as seen from the entity's body yaw. Armour that stops a round leaves the entity unhurt. Ignored for AA guns
-     * and when no driveable is returned.
+     * and when no driveable is returned. An entity hit by the part ({@link IFlanPartTarget}) meets the armour of the part
+     * and face that were struck instead, and blasts are weighed against it too.
      *
      * @return whether the driveable's armour protects this entity
      */

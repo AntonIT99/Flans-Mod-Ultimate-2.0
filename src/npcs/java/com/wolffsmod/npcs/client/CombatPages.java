@@ -19,8 +19,8 @@ import java.util.*;
 
 /**
  * The combat pages of the Wolff's Mod tab that are more than a list of switches: knockback and minimum hit damage on the
- * Protection page, the model properties page with its Inherit/Custom modes that the Model stats page opens, and the
- * one-shot equipment import page that the Equipment page opens.
+ * Protection page, the model properties page with its Inherit/Custom modes that the Model stats page opens, the
+ * one-shot equipment import page that the Equipment page opens, and the part hitbox page that the Protection page opens.
  *
  * <p>
  * Everything is edited on the client copy of the NPC's settings; the tab sends them through the Custom NPCs stats menu
@@ -33,6 +33,7 @@ final class CombatPages
     static final int MINIMUM_HIT_ID = 710;
     static final int PROPERTIES_PAGE_ID = 720;
     static final int IMPORTS_PAGE_ID = 721;
+    static final int PARTS_PAGE_ID = 722;
     static final int GROUP_ID = 730;
     static final int IMPORT_ALL_ID = 760;
     static final int EQUIPMENT_IMPORT_ID = 770;
@@ -58,11 +59,12 @@ final class CombatPages
     private final EntityNPCInterface npc;
     private Page page = Page.NONE;
     private Group group = Group.GENERAL;
+    private final PartHitboxPage parts;
 
     /** The page shown instead of a category's switches. */
     enum Page
     {
-        NONE, PROPERTIES, IMPORTS
+        NONE, PROPERTIES, IMPORTS, PARTS
     }
 
     /** Tabs of the model properties page; every property belongs to exactly one. */
@@ -89,6 +91,7 @@ final class CombatPages
     {
         this.gui = gui;
         this.npc = npc;
+        parts = new PartHitboxPage(gui, npc);
     }
 
     boolean active()
@@ -98,12 +101,17 @@ final class CombatPages
 
     String title()
     {
-        return PREFIX + (page == Page.PROPERTIES ? "properties" : "imports");
+        return switch (page)
+        {
+            case PROPERTIES -> PREFIX + "properties";
+            case PARTS -> PREFIX + "parts";
+            default -> PREFIX + "imports";
+        };
     }
 
     String hint()
     {
-        return PREFIX + "import_hint";
+        return PREFIX + (page == Page.PARTS ? "parts_hint" : "import_hint");
     }
 
     /** @return whether a combat page was open and has been closed */
@@ -132,6 +140,16 @@ final class CombatPages
     void initImportsLink(boolean loaded, int y)
     {
         link(IMPORTS_PAGE_ID, "imports", loaded, y);
+    }
+
+    /** The button on the Protection page that opens the part hitbox page. */
+    void initPartsLink(boolean loaded)
+    {
+        // The tab is full of switches, so the button sits in the title row, left of Back.
+        GuiButtonNop button = new GuiButtonNop(gui, PARTS_PAGE_ID, gui.guiLeft + 236, gui.guiTop + 4, 114, 20, new String[]{PREFIX + "parts"}, 0);
+        button.setEnabled(loaded);
+        button.setTooltip(Tooltip.create(Component.translatable(PREFIX + "parts.summary")));
+        gui.addButton(button);
     }
 
     private void link(int id, String name, boolean loaded, int y)
@@ -184,6 +202,8 @@ final class CombatPages
             initProperties(loaded);
         else if (page == Page.IMPORTS)
             initImports(loaded);
+        else if (page == Page.PARTS)
+            parts.init(loaded);
     }
 
     private void initProperties(boolean loaded)
@@ -280,8 +300,9 @@ final class CombatPages
 
     boolean handles(int id)
     {
-        return id == KNOCKBACK_ID || id == PROPERTIES_PAGE_ID || id == IMPORTS_PAGE_ID || id == IMPORT_ALL_ID || id >= GROUP_ID && id < GROUP_ID + Group.values().length
-            || id >= EQUIPMENT_IMPORT_ID && id < EQUIPMENT_IMPORT_ID + EquipmentImport.values().length || id >= PROPERTY_MODE_ID && id < PROPERTY_IMPORT_ID + NpcTypeProperty.values().length;
+        return id == KNOCKBACK_ID || id == PROPERTIES_PAGE_ID || id == IMPORTS_PAGE_ID || id == PARTS_PAGE_ID || parts.handles(id) || id == IMPORT_ALL_ID
+            || id >= GROUP_ID && id < GROUP_ID + Group.values().length || id >= EQUIPMENT_IMPORT_ID && id < EQUIPMENT_IMPORT_ID + EquipmentImport.values().length
+            || id >= PROPERTY_MODE_ID && id < PROPERTY_IMPORT_ID + NpcTypeProperty.values().length;
     }
 
     /** @return whether the click changed a setting that has to be saved */
@@ -294,6 +315,13 @@ final class CombatPages
             page = id == PROPERTIES_PAGE_ID ? Page.PROPERTIES : Page.IMPORTS;
             return false;
         }
+        if (id == PARTS_PAGE_ID)
+        {
+            page = Page.PARTS;
+            return false;
+        }
+        if (parts.handles(id))
+            return parts.buttonEvent(button);
         if (id >= GROUP_ID && id < GROUP_ID + Group.values().length)
         {
             group = Group.values()[id - GROUP_ID];
@@ -318,6 +346,8 @@ final class CombatPages
     /** @return whether the field belongs to these pages and its value was stored */
     boolean unFocused(GuiTextFieldNop field)
     {
+        if (page == Page.PARTS)
+            return parts.unFocused(field);
         int index = field.id - MINIMUM_HIT_ID;
         if (index < 0 || index >= NpcDamageCategory.values().length)
             return false;

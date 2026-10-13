@@ -56,6 +56,12 @@ public class GameTypeTDM extends GameType
         int xp = manager.getCurrentLoadoutPool().map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
             .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
         manager.awardExperience(attacker, xp);
+        scoreKill(manager, attackerTeam);
+    }
+
+    /** What killing an enemy is worth to the killer's team: one point here, tickets in the objective modes. */
+    protected void scoreKill(TeamsManager manager, Team attackerTeam)
+    {
         manager.addTeamScore(attackerTeam, 1);
     }
 

@@ -15,5 +15,7 @@ public interface NpcWeaponSettings
 
     NpcCombatSettings wolffsmodnpcsCombat();
 
+    NpcPartSettings wolffsmodnpcsParts();
+
     NpcTuning wolffsmodnpcsTuning();
 }

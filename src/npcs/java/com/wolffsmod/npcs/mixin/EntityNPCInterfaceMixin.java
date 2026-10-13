@@ -42,7 +42,8 @@ import java.util.Optional;
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
- * resists knockback while it is a vehicle.</li>
+ * resists knockback while it is a vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
+ * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
@@ -60,7 +61,7 @@ import java.util.Optional;
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
 // instanceof checks on this are valid, and the overrides keep the target signatures.
 @SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
-public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource, IFlanDamageModel, NpcVehicleStateHolder
+public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource, IFlanPartTarget, NpcVehicleStateHolder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -309,7 +310,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire())
+        // A gun whose turret has been shot off stays silent.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled())
         {
             callback.cancel();
             return;
@@ -354,6 +356,46 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     {
         if (!level().isClientSide && NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount))
             callback.setReturnValue(false);
+    }
+
+    @Override
+    public Optional<IPartBody> flansmodultimatePartBody()
+    {
+        return wolffsmodnpcsVehicleState().getParts().body();
+    }
+
+    @Override
+    public boolean flansmodultimateHurtPart(String part, DamageSource source, float amount)
+    {
+        return wolffsmodnpcsVehicleState().getParts().hurtPart((EntityNPCInterface) (Object) this, part, source, amount);
+    }
+
+    @Inject(method = {"actuallyHurt", "m_6475_"}, at = @At("HEAD"))
+    private void wolffsmodnpcsBeforePartDamage(DamageSource source, float amount, CallbackInfo callback)
+    {
+        wolffsmodnpcsVehicleState().getParts().beforeDamage((EntityNPCInterface) (Object) this);
+    }
+
+    // The health lost is handed to the part that was struck before the NPC is checked for death.
+    @Inject(method = {"actuallyHurt", "m_6475_"}, at = @At("RETURN"))
+    private void wolffsmodnpcsAfterPartDamage(DamageSource source, float amount, CallbackInfo callback)
+    {
+        wolffsmodnpcsVehicleState().getParts().afterDamage((EntityNPCInterface) (Object) this, source);
+    }
+
+    @Inject(method = {"addAdditionalSaveData", "m_7380_"}, at = @At("TAIL"))
+    private void wolffsmodnpcsSaveParts(CompoundTag tag, CallbackInfo callback)
+    {
+        CompoundTag parts = wolffsmodnpcsVehicleState().getParts().save();
+        if (parts != null)
+            tag.put(NpcParts.NBT_KEY, parts);
+    }
+
+    @Inject(method = {"readAdditionalSaveData", "m_7378_"}, at = @At("TAIL"))
+    private void wolffsmodnpcsReadParts(CompoundTag tag, CallbackInfo callback)
+    {
+        if (tag.contains(NpcParts.NBT_KEY, net.minecraft.nbt.Tag.TAG_COMPOUND))
+            wolffsmodnpcsVehicleState().getParts().load(tag.getCompound(NpcParts.NBT_KEY));
     }
 
     // Type properties
@@ -422,7 +464,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
             return travel;
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
-        float factor = NpcMobility.landFactor(npc);
+        // Broken tracks, wheels and engines slow the NPC down or stop it.
+        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().getParts().effects().mobility();
         return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
     }
 

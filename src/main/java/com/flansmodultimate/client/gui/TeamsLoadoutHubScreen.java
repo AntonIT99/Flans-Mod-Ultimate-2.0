@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.teams.LoadoutClientState;
+import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketLoadoutState;
@@ -82,7 +83,7 @@ public final class TeamsLoadoutHubScreen extends Screen
         graphics.drawCenteredString(font, state.getMotd(), width / 2, top + 6, 0xFFFFFF);
         graphics.drawCenteredString(font, state.getPoolName(), width / 2, top + 16, 0xA0A0A0);
         graphics.drawString(font, "Rank " + state.getRank(), left + 113, top + 150, 0xFFFFFF, false);
-        TeamsRankIcon.draw(graphics, state.getRank(), 0, left + 9, top + 146, false);
+        TeamsRankIcon.draw(graphics, state.getRank(), TeamsClientState.playerPrestige(), left + 9, top + 146, false);
 
         int next = state.getExperienceForNextRank();
         String xp = next == Integer.MAX_VALUE ? "MAX" : state.getExperience() + " / " + next + " XP";

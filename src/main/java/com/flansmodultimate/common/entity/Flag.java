@@ -11,9 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -191,7 +189,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
     public Flagpole getBase()
     {
         UUID id = getBaseId();
-        return id == null ? null : TeamsManager.getInstance().getBase(id).orElse(null);
+        return id == null ? null : TeamsManager.getInstance().getBase(id).filter(Flagpole.class::isInstance).map(Flagpole.class::cast).orElse(null);
     }
 
     @Override

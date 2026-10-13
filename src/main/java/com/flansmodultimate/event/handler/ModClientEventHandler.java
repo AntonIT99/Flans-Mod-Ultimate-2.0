@@ -9,6 +9,7 @@ import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.*;
+import com.flansmodultimate.client.render.blockentity.CapturePointRenderer;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.entity.*;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
@@ -57,6 +58,7 @@ import java.util.stream.Collectors;
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ModClientEventHandler
 {
+    private static final int CAPTURE_POINT_ITEM_TINT = 0xFFD966;
     private static boolean isSoundEngineInitialized;
 
     @SubscribeEvent
@@ -160,6 +162,7 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(FlansModEntities.gunItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
         event.registerEntityRenderer(FlansModEntities.teamItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
         event.registerBlockEntityRenderer(FlansModBlocks.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
+        event.registerBlockEntityRenderer(FlansModBlocks.capturePointBlockEntity.get(), CapturePointRenderer::new);
     }
 
     @SubscribeEvent
@@ -208,6 +211,8 @@ public final class ModClientEventHandler
         // A spawner in the inventory belongs to no team yet
         event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF, FlansModItems.playerSpawnerItem.get(), FlansModItems.itemSpawnerItem.get(),
             FlansModItems.vehicleSpawnerItem.get());
+        // The capture point shares the flagpole icon; a gold tint tells the two apart
+        event.register((stack, tintIndex) -> CAPTURE_POINT_ITEM_TINT, FlansModItems.capturePointItem.get());
 
         event.register((stack, tintIndex) ->
         {

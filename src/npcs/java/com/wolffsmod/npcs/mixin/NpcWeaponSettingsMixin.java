@@ -35,6 +35,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     @Unique
     private final NpcCombatSettings wolffsmodnpcsCombat = new NpcCombatSettings();
     @Unique
+    private final NpcPartSettings wolffsmodnpcsParts = new NpcPartSettings();
+    @Unique
     private final NpcTuning wolffsmodnpcsTuning = new NpcTuning();
 
     @Inject(method = "readToNBT", at = @At("HEAD"))
@@ -49,6 +51,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsOptions.load(compound);
         wolffsmodnpcsPresentation.load(compound);
         wolffsmodnpcsCombat.load(compound);
+        wolffsmodnpcsParts.load(compound);
         wolffsmodnpcsTuning.load(compound);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
@@ -60,6 +63,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsOptions.save(callback.getReturnValue());
         wolffsmodnpcsPresentation.save(callback.getReturnValue());
         wolffsmodnpcsCombat.save(callback.getReturnValue());
+        wolffsmodnpcsParts.save(callback.getReturnValue());
         wolffsmodnpcsTuning.save(callback.getReturnValue());
         wolffsmodnpcsProperties.saveDefaults(Component.STATS, callback.getReturnValue());
     }
@@ -86,6 +90,12 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     public NpcCombatSettings wolffsmodnpcsCombat()
     {
         return wolffsmodnpcsCombat;
+    }
+
+    @Override
+    public NpcPartSettings wolffsmodnpcsParts()
+    {
+        return wolffsmodnpcsParts;
     }
 
     @Override

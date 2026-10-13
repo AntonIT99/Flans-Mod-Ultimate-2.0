@@ -2,6 +2,7 @@ package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
+import com.flansmodultimate.api.IFlanPartTarget;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -34,6 +35,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -237,44 +239,25 @@ public final class ShootingHelper
             ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 0F, 0F);
             showHitMarker = true;
         }
+        else if (bulletHit instanceof PartBodyHit partHit)
+        {
+            // A stand-in hit by the part meets the armour of the part and face the round struck.
+            HitData entityHitData = onEntityHit(level, shot, bullet, partHit.getEntity(), partHit, hit, ModelArmourDamage.resolve(partHit, shot, bulletType, penetratingPower),
+                new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
+            penetratingPower = entityHitData.penetratingPower();
+            lastHitPenAmount = entityHitData.lastHitPenAmount();
+
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 0.5F, 0F);
+            showHitMarker = true;
+        }
         else if (bulletHit instanceof EntityHit entityHit && entityHit.getEntity() != null)
         {
             Entity entity = entityHit.getEntity();
-
-            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
-                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
-
-            if (owner instanceof Player)
-                lastHitPenAmount = 1F;
-
             // A stand-in for a driveable meets that driveable's armour instead of soft flesh.
-            Optional<ModelArmourDamage.Result> armoured = ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower);
-            boolean armourBlocked = armoured.map(ModelArmourDamage.Result::blocked).orElse(false);
-
-            if (!level.isClientSide && !armourBlocked)
-            {
-                float damage = armoured.map(ModelArmourDamage.Result::damage).orElseGet(() -> ShootingHelper.getDamage(entity, bullet, shot));
-
-                if (damage > 0F && entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
-                {
-                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0),
-                        entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
-                    bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
-                    // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
-                    living.invulnerableTime = living.hurtDuration / 2;
-                }
-            }
-
-            if (bulletType.isSetEntitiesOnFire() && !armourBlocked)
-                EntityPlatform.igniteForSeconds(entity, 20);
-
-            float powerBefore = penetratingPower;
-            penetratingPower = armoured.map(ModelArmourDamage.Result::remainingPower).orElse(penetratingPower - 1F);
-            if (armourBlocked)
-                lastHitPenAmount = 0F;
-
-            if (bullet != null)
-                bullet.getPenetrationLosses().add(new PenetrationLoss(Math.max(0F, powerBefore - penetratingPower), PenetrationLoss.EnumType.ENTITY));
+            HitData entityHitData = onEntityHit(level, shot, bullet, entity, null, hit, ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower),
+                new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
+            penetratingPower = entityHitData.penetratingPower();
+            lastHitPenAmount = entityHitData.lastHitPenAmount();
 
             ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 1F, 0F);
             showHitMarker = true;
@@ -294,6 +277,69 @@ public final class ShootingHelper
             PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
 
         return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
+    }
+
+    /**
+     * A round striking an entity other than a player or a driveable.
+     *
+     * @param partHit
+     *            the part that was struck when the entity is hit by the part, or null when it is hit as one box
+     * @param armoured
+     *            the hit resolved against a driveable's armour, when the entity stands in for one
+     */
+    // Every argument is one fact of the hit; a holder would only be built to be taken apart again.
+    @SuppressWarnings("java:S107")
+    private static HitData onEntityHit(Level level, FiredShot shot, @Nullable Bullet bullet, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Optional<ModelArmourDamage.Result> armoured,
+        HitData hitData)
+    {
+        BulletType bulletType = shot.getBulletType();
+        float penetratingPower = hitData.penetratingPower();
+        float lastHitPenAmount = hitData.lastHitPenAmount();
+
+        if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
+            PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
+
+        if (shot.getAttacker().orElse(null) instanceof Player)
+            lastHitPenAmount = 1F;
+
+        boolean armourBlocked = armoured.map(ModelArmourDamage.Result::blocked).orElse(false);
+
+        if (!level.isClientSide && !armourBlocked)
+        {
+            float damage = armoured.map(ModelArmourDamage.Result::damage).orElseGet(() -> ShootingHelper.getDamage(entity, bullet, shot));
+            // The jet has already done the warhead's work on this part; its blast is left to the others.
+            if (partHit != null && armoured.map(ModelArmourDamage.Result::shapedCharge).orElse(false))
+                partHit.getBody().markShapedCharge(partHit.getPart(), partHit.getHitPosition(), level.getGameTime());
+
+            if (damage > 0F && hurt(entity, partHit, shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+            {
+                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entity.getX(), entity.getY(), entity.getZ(), 0, 0, 0), entity.position(),
+                    ModCommonConfig.entityHitParticleRange(), level.dimension());
+                bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
+                // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
+                living.invulnerableTime = living.hurtDuration / 2;
+            }
+        }
+
+        if (bulletType.isSetEntitiesOnFire() && !armourBlocked)
+            EntityPlatform.igniteForSeconds(entity, 20);
+
+        float powerBefore = penetratingPower;
+        penetratingPower = armoured.map(ModelArmourDamage.Result::remainingPower).orElse(penetratingPower - 1F);
+        if (armourBlocked)
+            lastHitPenAmount = 0F;
+
+        if (bullet != null)
+            bullet.getPenetrationLosses().add(new PenetrationLoss(Math.max(0F, powerBefore - penetratingPower), PenetrationLoss.EnumType.ENTITY));
+
+        return new HitData(penetratingPower, lastHitPenAmount, hitData.lastHitHeadshot());
+    }
+
+    private static boolean hurt(Entity entity, @Nullable PartBodyHit partHit, DamageSource source, float damage)
+    {
+        if (partHit != null && entity instanceof IFlanPartTarget target)
+            return target.flansmodultimateHurtPart(partHit.getPart().getShortName(), source, damage);
+        return entity.hurt(source, damage);
     }
 
     private static float handleBlockHit(Level level, BlockHitResult hitResult, Vec3 shootingMotion, FiredShot shot, float penetratingPower, @Nullable Bullet bullet)

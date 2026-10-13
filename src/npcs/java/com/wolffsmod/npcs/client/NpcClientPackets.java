@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.client;
 
-import com.wolffsmod.npcs.network.ServerControlPacket;
-import com.wolffsmod.npcs.network.VehicleStatePacket;
+import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,6 +17,13 @@ public final class NpcClientPackets
         var level = Minecraft.getInstance().level;
         if (level != null && level.getEntity(packet.entityId()) instanceof EntityNPCInterface npc)
             NpcVehicleState.of(npc).receive(packet);
+    }
+
+    public static void partState(PartStatePacket packet)
+    {
+        var level = Minecraft.getInstance().level;
+        if (level != null && level.getEntity(packet.entityId()) instanceof EntityNPCInterface npc)
+            NpcVehicleState.of(npc).getParts().receive(packet);
     }
 
     public static void serverSettings(ServerControlPacket packet)

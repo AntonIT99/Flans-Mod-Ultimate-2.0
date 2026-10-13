@@ -60,20 +60,20 @@ public final class PacketHandler
         if (prepared)
             return;
 
-        addClientPackets(PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class, PacketBlockHitEffect.class, PacketBulletFlyby.class,
-            PacketBulletTrail.class, PacketCombatFeedback.class, PacketCancelGunReloadClient.class, PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class,
-            PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDistantContacts.class, PacketDistantExplosion.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
-            PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveablePassengerFired.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class,
-            PacketDriveableScreenShake.class, PacketExplodeParticles.class, PacketFlak.class, PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class,
-            PacketGunFireModeClient.class, PacketGunHolderAnimation.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class,
-            PacketGunSecondaryModeClient.class, PacketGunShootClient.class, PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class, PacketHitMarker.class,
-            PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class, PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class,
-            PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketTeamsState.class);
+        addClientPackets(PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class, PacketCapturePointEditState.class, PacketBlockHitEffect.class,
+            PacketBulletFlyby.class, PacketBulletTrail.class, PacketCombatFeedback.class, PacketCancelGunReloadClient.class, PacketCancelSound.class, PacketCommonConfigValues.class,
+            PacketContentFingerprint.class, PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDistantContacts.class, PacketDistantExplosion.class, PacketDriveableBankFired.class,
+            PacketDriveableCrashFireball.class, PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveablePassengerFired.class, PacketDriveablePrediction.class,
+            PacketDriveableRenderState.class, PacketDriveableScreenShake.class, PacketExplodeParticles.class, PacketFlak.class, PacketFlanExplosionBlockParticles.class,
+            PacketFlanExplosionParticles.class, PacketFlashBang.class, PacketGunFireModeClient.class, PacketGunHolderAnimation.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class,
+            PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class, PacketGunShootClient.class, PacketGunShotPose.class, PacketGunToggleClient.class,
+            PacketGunVariableZoomClient.class, PacketHitMarker.class, PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class, PacketPlayerClassSkins.class,
+            PacketPlaySound.class, PacketSmokeShell.class, PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketRankUp.class, PacketTeamsObjectives.class, PacketTeamsState.class);
         addServerPackets(PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class, PacketDeployedGunInput.class,
             PacketDistantSubscription.class, PacketDriveableInput.class, PacketBuyWeapon.class, PacketGrenadeThrow.class, PacketGunFireMode.class, PacketGunInput.class, PacketGunPreferredAmmo.class,
             PacketGunReload.class, PacketGunScopedState.class, PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunToggle.class, PacketGunVariableZoom.class, PacketManualGuidance.class,
             PacketReloadPreferences.class, PacketRequestCommonConfig.class, PacketRequestDebug.class, PacketRequestDismount.class, PacketSelectPaintjob.class, PacketSetCommonConfigValue.class,
-            PacketTeamsAction.class, PacketLoadoutAction.class);
+            PacketTeamsAction.class, PacketLoadoutAction.class, PacketCapturePointEditAction.class, PacketDeployLayoutSave.class, PacketDeploySpawnSelect.class);
 
         Comparator<Class<?>> byName = Comparator.comparing(Class::getName, String.CASE_INSENSITIVE_ORDER);
         CLIENT_PACKET_TYPES.sort(byName);

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.teams;
 
 import com.flansmodultimate.client.gui.*;
+import com.flansmodultimate.common.teams.ObjectiveSnapshot;
 import com.flansmodultimate.network.client.teams.PacketTeamsState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.List;
 import java.util.Optional;
 
 /** Client-only snapshot store. Server snapshots remain the sole source of truth. */
@@ -15,6 +17,8 @@ import java.util.Optional;
 public final class TeamsClientState
 {
     private static PacketTeamsState snapshot;
+    /** Capture points of the running round; refreshed more often than the full snapshot. */
+    private static List<ObjectiveSnapshot> objectives = List.of();
 
     public static PacketTeamsState get()
     {
@@ -96,10 +100,37 @@ public final class TeamsClientState
         return Optional.empty();
     }
 
+    /** Prestige level of the local player, which picks the row of the rank sheet their badges come from. */
+    public static int playerPrestige()
+    {
+        return snapshot == null ? 0 : snapshot.getPlayerPrestige();
+    }
+
+    /** The capture points of the running round in play order, or nothing when its game type has none. */
+    public static List<ObjectiveSnapshot> objectives()
+    {
+        return objectives;
+    }
+
+    public static void acceptObjectives(List<ObjectiveSnapshot> update)
+    {
+        objectives = List.copyOf(update);
+    }
+
+    /** Whether the running game type sends the dead to the deployment map instead of the death screen. */
+    public static boolean usesDeployment()
+    {
+        return hasActiveRound() && snapshot.getObjectiveMode().usesDeployment() && !objectives.isEmpty();
+    }
+
     public static void accept(PacketTeamsState update)
     {
         Minecraft minecraft = Minecraft.getInstance();
+        boolean roundJustDecided = update.isRoundDecided() && (snapshot == null || !snapshot.isRoundDecided());
         snapshot = update;
+        objectives = update.getObjectives();
+        if (roundJustDecided)
+            TeamsRoundResult.announce(update);
         if (update.getOpenScreen() == PacketTeamsState.OpenScreen.NONE && minecraft.screen instanceof TeamsSelectScreen)
             return;
         switch (update.getOpenScreen())
@@ -108,8 +139,10 @@ public final class TeamsClientState
             case CLASS_SELECT -> minecraft.setScreen(new TeamsSelectScreen(true));
             case SCOREBOARD -> minecraft.setScreen(new TeamsScoreScreen());
             case VOTING -> minecraft.setScreen(new TeamsVotingScreen());
+            case DEPLOY -> minecraft.setScreen(new TeamsDeployScreen(true));
             case CLOSE -> {
-                if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen || minecraft.screen instanceof TeamsVotingScreen)
+                if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen || minecraft.screen instanceof TeamsVotingScreen
+                    || minecraft.screen instanceof TeamsDeployScreen deploy && deploy.isManuallyOpened())
                     minecraft.setScreen(null);
             }
             case NONE -> {
@@ -122,5 +155,7 @@ public final class TeamsClientState
     public static void clear()
     {
         snapshot = null;
+        objectives = List.of();
+        TeamsDeployScreen.resetDeath();
     }
 }

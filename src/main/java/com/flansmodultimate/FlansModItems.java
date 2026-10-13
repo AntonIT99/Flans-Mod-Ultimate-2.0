@@ -28,6 +28,8 @@ public final class FlansModItems
         () -> new BlockItem(FlansModBlocks.itemSpawner.get(), new Item.Properties()));
     public static final Supplier<? extends Item> vehicleSpawnerItem = FlansModRegistries.itemRegistry.register("teams_vehicle_spawner",
         () -> new BlockItem(FlansModBlocks.vehicleSpawner.get(), new Item.Properties()));
+    public static final Supplier<? extends Item> capturePointItem = FlansModRegistries.itemRegistry.register("teams_capture_point",
+        () -> new BlockItem(FlansModBlocks.capturePoint.get(), new Item.Properties()));
     public static final Supplier<? extends Item> opStick = FlansModRegistries.itemRegistry.register("op_stick", ItemOpStick::new);
     public static final Supplier<? extends Item> flagpoleItem = FlansModRegistries.itemRegistry.register("flagpole", FlagpoleItem::new);
 

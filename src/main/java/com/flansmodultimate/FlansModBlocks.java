@@ -32,6 +32,8 @@ public final class FlansModBlocks
         () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.ITEM, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
     public static final Supplier<? extends Block> vehicleSpawner = FlansModRegistries.blockRegistry.register("teams_vehicle_spawner",
         () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.VEHICLE, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
+    public static final Supplier<? extends Block> capturePoint = FlansModRegistries.blockRegistry.register("teams_capture_point",
+        () -> new CapturePointBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1F, 3600000F).sound(SoundType.METAL).noOcclusion().noLootTable()));
 
     public static final Supplier<? extends BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = FlansModRegistries.blockEntityRegistry.register("paintjobtable",
         () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
@@ -39,6 +41,8 @@ public final class FlansModBlocks
         () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, FlansMod.getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
     public static final Supplier<? extends BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = FlansModRegistries.blockEntityRegistry.register("teams_spawner",
         () -> BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
+    public static final Supplier<? extends BlockEntityType<CapturePointBlockEntity>> capturePointBlockEntity = FlansModRegistries.blockEntityRegistry.register("teams_capture_point",
+        () -> BlockEntityType.Builder.of(CapturePointBlockEntity::new, capturePoint.get()).build(null));
 
     /** Forces supplier registration without resolving any registry entries. */
     static void initialize()

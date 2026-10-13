@@ -5,6 +5,7 @@ import com.flansmodultimate.client.*;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
+import com.flansmodultimate.client.gui.TeamsDeployScreen;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.*;
@@ -84,6 +85,14 @@ public final class ClientEventHandler
         if (event.usedConfiguredFov() && config != null && config.gunScreenShake)
             fov = Math.max(1D, fov + GunScreenShake.fovOffset((float) event.getPartialTick()));
         event.setFOV(fov);
+    }
+
+    /** In Conquest and Assault the dead choose where to come back on the deployment map, not on the death screen. */
+    @SubscribeEvent
+    public static void onScreenOpening(ScreenEvent.Opening event)
+    {
+        if (event.getNewScreen() instanceof DeathScreen && TeamsClientState.usesDeployment())
+            event.setNewScreen(new TeamsDeployScreen());
     }
 
     /** Adds the mod's options button to the vanilla options screen and pause menu, as configured. */
@@ -269,6 +278,8 @@ public final class ClientEventHandler
             DriveableHitboxRenderer.renderAll(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
             PlayerHitboxRenderer.renderAll(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
         }
+        // Part bodies outline themselves outside debug mode when their owner asks for it.
+        DriveableHitboxRenderer.renderPartBodies(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
     }
 
     /** Whether the vanilla crosshair is replaced by the hit marker alone for the current frame. */

@@ -1,13 +1,15 @@
 package com.flansmodultimate.common.explosions;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.IFlanPartTarget;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.*;
+import com.flansmodultimate.common.driveables.parts.PartBodies;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.*;
-import com.flansmodultimate.common.types.DamageStats;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketFlanExplosionBlockParticles;
@@ -374,14 +376,18 @@ public class FlanExplosion extends Explosion
         List<Entity> entities = ModUtils.queryEntities(level, canDamageSelf ? null : explosive, getHurtEntitiesAabb(), e -> !EntityPlatform.ignoresExplosion(e, this));
         PlatformEvents.onExplosionDetonate(level, this, entities, stats.explosionRadius * 2F);
 
+        hurtPartBodies();
+        // Entities hit by the part have just been dealt with.
+        entities.removeIf(e -> PartBodies.of(e) != null);
+
         Set<Driveable> handledDriveables = new HashSet<>();
         for (Entity e : entities)
         {
             Driveable driveable = driveableOf(e);
             if (driveable != null)
             {
-                if (handledDriveables.add(driveable))
-                    applyVehicleDamage(driveable);
+                if (handledDriveables.add(driveable) && driveable.getConfigType() != null)
+                    applyVehicleDamage(new DriveableBody(driveable, driveable.getConfigType()));
                 continue;
             }
             double distance = e.getEyePosition().distanceTo(center);
@@ -402,11 +408,108 @@ public class FlanExplosion extends Explosion
         }
     }
 
-    private void applyVehicleDamage(Driveable driveable)
+    /** Part boxes reach past the box of the entity wearing them, so those entities are not looked up by a box query. */
+    private void hurtPartBodies()
     {
-        if (driveable == null || driveable.getConfigType() == null)
-            return;
-        List<VehicleExplosionTarget> targets = driveable.resolveExplosionTargets(center);
+        for (Entity wearer : PartBodies.wearers(level))
+        {
+            PartBody body = PartBodies.of(wearer);
+            if (body != null && (canDamageSelf || wearer != explosive) && !EntityPlatform.ignoresExplosion(wearer, this) && wearer instanceof IFlanPartTarget target
+                && body.getPose().origin().distanceTo(center) <= body.reach() + Math.max(stats.blastRadius(), stats.fragRadius()) + 2D)
+                applyVehicleDamage(new WornBody(wearer, target, body));
+        }
+    }
+
+    /** Something a blast damages by the part: a driveable, or an entity wearing a driveable's part boxes. */
+    private interface BlastBody
+    {
+        Entity entity();
+
+        ArmorPlate plate(VehicleExplosionTarget target);
+
+        List<VehicleExplosionTarget> targets(Vec3 detonation);
+
+        @Nullable
+        EnumDriveablePart penetratedByJet(Vec3 detonation);
+
+        boolean intact(EnumDriveablePart part);
+
+        boolean damage(EnumDriveablePart part, float amount, DamageSource source);
+    }
+
+    private record DriveableBody(Driveable entity, DriveableType type) implements BlastBody
+    {
+        @Override
+        public ArmorPlate plate(VehicleExplosionTarget target)
+        {
+            return type.getResolvedArmor().plate(target.part(), target.facing()).authored();
+        }
+
+        @Override
+        public List<VehicleExplosionTarget> targets(Vec3 detonation)
+        {
+            return entity.resolveExplosionTargets(detonation);
+        }
+
+        @Override
+        public EnumDriveablePart penetratedByJet(Vec3 detonation)
+        {
+            return entity.consumeShapedChargeImpact(detonation);
+        }
+
+        @Override
+        public boolean intact(EnumDriveablePart part)
+        {
+            return entity.isPartIntact(part);
+        }
+
+        @Override
+        public boolean damage(EnumDriveablePart part, float amount, DamageSource source)
+        {
+            return entity.damagePart(part, amount, source);
+        }
+    }
+
+    private record WornBody(Entity entity, IFlanPartTarget target, PartBody body) implements BlastBody
+    {
+        /** A wearer whose armour is switched off, or that takes no driveable's damage, meets a blast bare. */
+        @Override
+        public ArmorPlate plate(VehicleExplosionTarget struck)
+        {
+            if (target.flansmodultimateModelArmour() && target.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type)
+                return type.getResolvedArmor().plate(struck.part(), struck.facing()).authored();
+            return ResolvedArmorPlate.unarmoured(struck.facing()).authored();
+        }
+
+        @Override
+        public List<VehicleExplosionTarget> targets(Vec3 detonation)
+        {
+            return body.explosionTargets(detonation);
+        }
+
+        @Override
+        public EnumDriveablePart penetratedByJet(Vec3 detonation)
+        {
+            return body.consumeShapedCharge(detonation, entity.level().getGameTime());
+        }
+
+        @Override
+        public boolean intact(EnumDriveablePart part)
+        {
+            return body.isIntact(part);
+        }
+
+        @Override
+        public boolean damage(EnumDriveablePart part, float amount, DamageSource source)
+        {
+            return amount > 0F && target.flansmodultimateHurtPart(part.getShortName(), source, amount);
+        }
+    }
+
+    private void applyVehicleDamage(BlastBody blasted)
+    {
+        Entity driveable = blasted.entity();
+        List<VehicleExplosionTarget> targets = blasted.targets(center);
         if (targets.isEmpty())
             return;
 
@@ -418,7 +521,7 @@ public class FlanExplosion extends Explosion
             : ExplosionVehicleDamageResolver.legacyTntEquivalentKg(stats.explosionRadius(), stats.explosionPower(), ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
         Float explosiveMass = charge > 0F ? charge : null;
         // A HEAT warhead that has just penetrated a part already did its damage there through the jet.
-        EnumDriveablePart penetratedByJet = driveable.consumeShapedChargeImpact(center);
+        EnumDriveablePart penetratedByJet = blasted.penetratedByJet(center);
         List<VehicleExplosionTarget> affectedParts = new ArrayList<>();
         List<Float> rawDamage = new ArrayList<>();
         double knockbackExposure = 0D;
@@ -436,7 +539,7 @@ public class FlanExplosion extends Explosion
             float blast = distance <= stats.blastRadius() ? (float) getBlastDamage(driveable, seen, blastFalloff) : 0F;
             blast *= ExplosionVehicleDamageResolver.structuralBlastMultiplier(charge, distance, stats.blastRadius());
             float fragmentation = distance <= stats.fragRadius() ? (float) getFragDamage(driveable, seen, distance, target.surfaceWorldPosition()) : 0F;
-            ArmorPlate plate = driveable.getConfigType().getResolvedArmor().plate(target.part(), target.facing()).authored();
+            ArmorPlate plate = blasted.plate(target);
             ExplosionVehicleDamageResolver.DamageChannels channels = ExplosionVehicleDamageResolver.resolve(plate.thicknessMm(), explosiveMass, distance, blast, fragmentation,
                 ModCommonConfig.armoredBlastResistanceKPaPerMm(), ModCommonConfig.minimumBlastDistanceMeters());
             affectedParts.add(target);
@@ -456,7 +559,7 @@ public class FlanExplosion extends Explosion
         for (int index = 0; index < affectedParts.size(); index++)
         {
             VehicleExplosionTarget target = affectedParts.get(index);
-            if (!driveable.isPartIntact(target.part()))
+            if (!blasted.intact(target.part()))
                 continue;
             float amount;
             if (index == 0)
@@ -466,12 +569,12 @@ public class FlanExplosion extends Explosion
                 List<Float> remainingRaw = new ArrayList<>();
                 for (int remaining = index; remaining < affectedParts.size(); remaining++)
                 {
-                    if (driveable.isPartIntact(affectedParts.get(remaining).part()))
+                    if (blasted.intact(affectedParts.get(remaining).part()))
                         remainingRaw.add(rawDamage.get(remaining));
                 }
                 amount = VehicleExplosionDamageBudget.allocateSecondaries(remainingRaw, damageBudget - committedDamage).get(0);
             }
-            if (driveable.damagePart(target.part(), amount, source))
+            if (blasted.damage(target.part(), amount, source))
             {
                 committedDamage += amount;
                 hurt = true;
@@ -483,7 +586,7 @@ public class FlanExplosion extends Explosion
     }
 
     /** Fraction of short rays from the detonation that reach the exposed face of one part. */
-    private double vehicleExposure(Driveable driveable, VehicleExplosionTarget target)
+    private double vehicleExposure(Entity driveable, VehicleExplosionTarget target)
     {
         int clear = 0;
         for (Vec3 sample : target.exposureSamples())

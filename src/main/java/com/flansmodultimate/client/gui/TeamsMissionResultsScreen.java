@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.teams.LoadoutClientState;
+import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketLoadoutState;
 import com.flansmodultimate.network.server.teams.PacketLoadoutAction;
@@ -42,9 +43,9 @@ public final class TeamsMissionResultsScreen extends Screen
         {
             graphics.drawCenteredString(font, "Rank " + state.getRank(), width / 2, top + 74, 0xFFFFFF);
             graphics.drawCenteredString(font, state.getExperience() + " / " + state.getExperienceForNextRank() + " XP", width / 2, top + 92, 0xFFFFFF);
-            TeamsRankIcon.draw(graphics, state.getRank(), 0, left + 8, top + 123, true);
+            TeamsRankIcon.draw(graphics, state.getRank(), TeamsClientState.playerPrestige(), left + 8, top + 123, true);
             if (state.getExperienceForNextRank() != Integer.MAX_VALUE)
-                TeamsRankIcon.draw(graphics, state.getRank() + 1, 0, left + 216, top + 123, true);
+                TeamsRankIcon.draw(graphics, state.getRank() + 1, TeamsClientState.playerPrestige(), left + 216, top + 123, true);
         }
         super.render(graphics, mouseX, mouseY, partialTick);
     }

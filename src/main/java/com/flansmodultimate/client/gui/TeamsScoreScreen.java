@@ -2,6 +2,8 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.teams.TeamsClientState;
+import com.flansmodultimate.client.teams.TeamsRoundResult;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.client.teams.PacketTeamsState;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Comparator;
 import java.util.List;
@@ -16,6 +19,10 @@ import java.util.List;
 /** Legacy-styled team and free-for-all scoreboard. */
 public final class TeamsScoreScreen extends Screen
 {
+    private static final int RESULT_TOP = 12;
+    private static final int RESULT_FLAG_WIDTH = 48;
+    private static final int RESULT_FLAG_HEIGHT = 32;
+
     public TeamsScoreScreen()
     {
         super(Component.translatable("gui.flansmod.teams.scores"));
@@ -35,7 +42,37 @@ public final class TeamsScoreScreen extends Screen
             renderTwoTeams(graphics, state);
         else
             renderFreeForAll(graphics, state);
+        renderResult(graphics, state);
         super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    /**
+     * Once the round is over, says at the top of the screen how it went for this player, in the
+     * colour of the winning team and beside its flag when the team has one.
+     */
+    private void renderResult(GuiGraphics graphics, PacketTeamsState state)
+    {
+        TeamsRoundResult.Outcome outcome = TeamsRoundResult.outcome(state);
+        if (outcome == TeamsRoundResult.Outcome.NONE)
+            return;
+        Team winner = TeamsRoundResult.winner(state);
+        Component text = switch (outcome)
+        {
+            case VICTORY -> Component.translatable("gui.flansmod.teams.victory");
+            case DEFEAT -> Component.translatable("gui.flansmod.teams.defeat");
+            case WATCHED -> Component.translatable("gui.flansmod.teams.team_wins", winner == null ? state.getWinnerId() : winner.getName());
+            default -> Component.translatable("gui.flansmod.teams.draw");
+        };
+        int colour = winner == null ? 0xFFFFFF : winner.getTeamColour();
+        graphics.pose().pushPose();
+        graphics.pose().translate(width / 2F, RESULT_TOP, 0F);
+        graphics.pose().scale(2F, 2F, 1F);
+        graphics.drawCenteredString(font, text, 0, 0, 0xFF000000 | colour);
+        graphics.pose().popPose();
+
+        ResourceLocation flag = winner == null ? null : winner.getVictoryFlagTextureLocation();
+        if (flag != null)
+            graphics.blit(flag, width / 2 - font.width(text) - RESULT_FLAG_WIDTH - 6, RESULT_TOP - 6, 0F, 0F, RESULT_FLAG_WIDTH, RESULT_FLAG_HEIGHT, RESULT_FLAG_WIDTH, RESULT_FLAG_HEIGHT);
     }
 
     private void renderTwoTeams(GuiGraphics graphics, PacketTeamsState state)

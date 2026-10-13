@@ -194,6 +194,7 @@ public final class NpcTypeProperties
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().save(tag);
         NpcPresentation.of(npc).save(tag);
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().save(tag);
+        ((NpcWeaponSettings) npc.stats).wolffsmodnpcsParts().save(tag);
         NpcTuning.of(npc).save(tag);
         for (NpcTypeProperty property : NpcTypeProperty.values())
             tag.put(property.name(), overrides.stored(property, key -> NpcTypePropertyAccess.read(npc, key)).copy());
@@ -206,6 +207,7 @@ public final class NpcTypeProperties
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().load(tag);
         NpcPresentation.of(npc).load(tag);
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().load(tag);
+        ((NpcWeaponSettings) npc.stats).wolffsmodnpcsParts().load(tag);
         NpcTuning.of(npc).load(tag);
         for (Component component : Component.values())
             loaded(component);

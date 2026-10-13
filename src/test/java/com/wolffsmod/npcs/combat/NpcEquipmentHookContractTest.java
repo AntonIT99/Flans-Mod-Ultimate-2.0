@@ -47,6 +47,22 @@ class NpcEquipmentHookContractTest
     }
 
     @Test
+    void partHealthHooksTheMethodThatTakesTheHealthAndTheSaveMethodsTheEntityDeclares() throws IOException
+    {
+        ClassNode npc = read(NPC);
+        // The health a hit takes is handed to the part struck between the loss and the death check, which only an
+        // injection into a method the entity itself declares can reach.
+        MethodNode actuallyHurt = method(npc, "(Lnet/minecraft/world/damagesource/DamageSource;F)V", "m_6475_", "actuallyHurt");
+        assertTrue(invokes(actuallyHurt, "net/minecraft/world/entity/PathfinderMob", "m_6475_", "(Lnet/minecraft/world/damagesource/DamageSource;F)V")
+            || invokes(actuallyHurt, "net/minecraft/world/entity/PathfinderMob", "actuallyHurt", "(Lnet/minecraft/world/damagesource/DamageSource;F)V"));
+        assertDoesNotThrow(() ->
+        {
+            method(npc, "(Lnet/minecraft/nbt/CompoundTag;)V", "m_7380_", "addAdditionalSaveData");
+            method(npc, "(Lnet/minecraft/nbt/CompoundTag;)V", "m_7378_", "readAdditionalSaveData");
+        });
+    }
+
+    @Test
     void incomingDamageAndKnockbackHaveExactlyOneEditorResistanceRedirect() throws IOException
     {
         ClassNode npc = read(NPC);

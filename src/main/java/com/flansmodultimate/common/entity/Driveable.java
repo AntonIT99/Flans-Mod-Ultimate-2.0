@@ -1631,8 +1631,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         boolean occupied = isUnderCommand();
         // A driver moving to a passenger seat keeps the engine running; it is only cut
         // once the driveable is left entirely.
-        boolean ridden = occupied || hasRider();
-        if (occupied && !driverWasPresent)
+        // Movie prop mode of the Teams rules: every driveable runs as if it had a driver, at full throttle.
+        boolean movieProp = !level().isClientSide && FlansMod.teamsManager.isMovieProp();
+        boolean ridden = occupied || hasRider() || movieProp;
+        if (occupied && !driverWasPresent || movieProp)
             engineRequested = true;
         else if (!ridden && wasRidden)
         {
@@ -1645,8 +1647,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         wasRidden = ridden;
 
         boolean flooded = isUnderWater() && !configType.isWorksUnderWater();
-        if (flooded)
+        // Pacifism, the other Labjac rule, holds every driveable where it stands.
+        if (flooded || !level().isClientSide && FlansMod.teamsManager.isPacifism())
             setThrottle(0F);
+        else if (movieProp)
+            setThrottle(1F);
         boolean canStart = ridden && !flooded && hasFuelForEngine();
         if (!engineRequested || !canStart)
         {
@@ -2569,6 +2574,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean weaponEnabled(EnumWeaponType weapon)
     {
+        if (FlansMod.teamsManager.isPacifism())
+            return false;
         return switch (weapon)
         {
             case BOMB, MINE -> FlansMod.teamsManager.isBombsEnabled();

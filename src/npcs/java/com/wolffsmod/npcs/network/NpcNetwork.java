@@ -20,7 +20,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcNetwork
 {
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
 
     public static void register()
@@ -47,6 +47,11 @@ public final class NpcNetwork
                 context.get().enqueueWork(() -> packet.handle(sender));
             context.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(3, PartStatePacket.class, PartStatePacket::write, PartStatePacket::read, (packet, context) ->
+        {
+            context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.wolffsmod.npcs.client.NpcClientPackets.partState(packet)));
+            context.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -69,10 +74,18 @@ public final class NpcNetwork
         CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> npc), packet);
     }
 
+    public static void sendToTracking(EntityNPCInterface npc, PartStatePacket packet)
+    {
+        CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> npc), packet);
+    }
+
     /** A client that starts tracking an NPC needs its current state, not just the next change. */
     public static void startTracking(PlayerEvent.StartTracking event)
     {
         if (event.getTarget() instanceof EntityNPCInterface npc && event.getEntity() instanceof ServerPlayer player && NpcVehicleState.of(npc).isActive())
+        {
             CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), NpcVehicleState.of(npc).packet(npc));
+            NpcVehicleState.of(npc).getParts().packet(npc).ifPresent(packet -> CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet));
+        }
     }
 }

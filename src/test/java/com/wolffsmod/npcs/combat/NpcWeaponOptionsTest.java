@@ -12,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NpcWeaponOptionsTest
 {
-    /** Display states of the model, a frozen turret, extra chunk ticking and running out of ammunition are never what an untouched NPC wants. */
+    /** Display states of the model, a frozen turret, extra chunk ticking, running out of ammunition and drawn hitboxes are never what an untouched NPC wants. */
     private static final Set<Feature> STARTS_DISABLED = EnumSet.of(Feature.SECONDARY_BANK, Feature.INVULNERABLE, Feature.TURRET_LOCKED, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED,
-        Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO);
+        Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.SOLID_HITBOXES);
 
     @Test
     void oldNpcSavesEnableTheUsefulFeaturesAndSelectThePrimaryBank()

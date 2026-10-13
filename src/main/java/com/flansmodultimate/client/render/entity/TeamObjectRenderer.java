@@ -10,10 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -44,8 +41,8 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
         flag = root.getChild("flag");
     }
 
-    /** Legacy box list, kept in its original texture offsets on the 64x32 sheet. */
-    private static LayerDefinition createLayer()
+    /** Legacy box list, kept in its original texture offsets on the 64x32 sheet. Capture points reuse it. */
+    public static LayerDefinition createLayer()
     {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
@@ -80,8 +77,7 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
 
             int colour = flagEntity.getColour();
             poseStack.scale(-1F, -1F, 1F);
-            VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY, (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F,
-                (colour & 255) / 255F, 1F);
+            VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY, (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
         }
         else
         {

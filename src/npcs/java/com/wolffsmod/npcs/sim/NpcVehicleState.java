@@ -87,6 +87,9 @@ public final class NpcVehicleState
     private final NpcFlight flight = new NpcFlight();
     @Getter
     private final NpcSubmarine submarine = new NpcSubmarine();
+    /** The part hitboxes of the model, on either side. */
+    @Getter
+    private final NpcParts parts = new NpcParts();
     private int targetId = -1;
     @Nullable
     private Vec3 solution;
@@ -179,6 +182,7 @@ public final class NpcVehicleState
         Layout current = resolve(npc);
         if (current == null)
         {
+            parts.tick(npc, null, 0F, MountAim.REST);
             deactivate(npc);
             return;
         }
@@ -211,6 +215,8 @@ public final class NpcVehicleState
             shapeSignature = shape;
             npc.refreshDimensions();
         }
+        // Last: the part boxes stand where the hull and turret have just been put.
+        parts.tick(npc, NpcModels.flan(npc), hullYaw, turretAim());
     }
 
     private void deactivate(EntityNPCInterface npc)
@@ -337,7 +343,8 @@ public final class NpcVehicleState
     {
         if (current.turreted())
         {
-            if (!options.enabled(Feature.TURRET_LOCKED))
+            // A turret that has been shot off no longer turns.
+            if (!options.enabled(Feature.TURRET_LOCKED) && !parts.effects().gunDisabled())
                 turnTurret(current.driver(), tuning, wanted, options.enabled(Feature.GRADUAL_AIM));
             aligned = wanted == null || MountMotion.error(turretAim(), wanted) <= tolerance;
         }

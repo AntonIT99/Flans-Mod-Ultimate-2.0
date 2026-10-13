@@ -93,6 +93,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SOUND_COLUMN = 278;
     /** The tab of the Sounds page that is the engine sound controls rather than a list of rows. */
     private static final String ENGINE_TAB = "engine";
+    /** The tabs of the Protection page: its switches, the part hitboxes, and knockback with the minimum hits. */
+    private static final String DAMAGE_TAB = "damage";
+    private static final String PARTS_TAB = "parts";
+    private static final String HITS_TAB = "hits";
     private static final String PATH_SEPARATOR = " > ";
     private static final String HELP_SUFFIX = ".help";
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
@@ -159,7 +163,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES)),
         AIMING(Section.COMBAT, Tab.of(Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE, Feature.EYE_AT_MUZZLE)),
         TURRET(Section.COMBAT, Tab.of(Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED)),
-        PROTECTION(Section.COMBAT, Tab.of(Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR, Feature.FLAN_DAMAGE_TYPES, Feature.INVULNERABLE)),
+        PROTECTION(Section.COMBAT,
+            Tab.named(DAMAGE_TAB, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR, Feature.FLAN_DAMAGE_TYPES, Feature.INVULNERABLE),
+            Tab.named(PARTS_TAB, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES, Feature.HITBOX_OUTLINES),
+            Tab.named(HITS_TAB)),
         DETECTION(Section.MOVEMENT, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
         TERRAIN(Section.MOVEMENT, Tab.of(Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Value.LAND_SPEED, Value.WATER_SPEED)),
         DRIVING(Section.MOVEMENT,
@@ -323,8 +330,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             combat.initImportsLink(loaded, below + 6);
         else if (category == Category.MODEL_STATS)
             combat.initPropertiesLink(loaded, below + 6);
-        else if (category == Category.PROTECTION)
+        else if (category == Category.PROTECTION && HITS_TAB.equals(shown.name()))
             combat.initProtection(loaded, control, below);
+        else if (category == Category.PROTECTION && PARTS_TAB.equals(shown.name()))
+            combat.initPartsLink(loaded);
     }
 
     /** A row that only means something while another setting is on is left out until then. */
