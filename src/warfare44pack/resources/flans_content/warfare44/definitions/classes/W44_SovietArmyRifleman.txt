@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman
+ShortName W44_SovietArmyRifleman
+Description General infantry with plentiful rifle ammunition and two fragmentation grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_MosinNagant
+AddItem 44_MosinNagantAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

@@ -1,0 +1,14 @@
+// Identity
+Name Assault
+ShortName W44_GermanArmyAssault
+Description Close-range infantry with a submachine gun, fragmentation and smoke grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 4
+AddItem 44_stielhandgranate
+AddItem 44_Smokestielhandgranate 2
+AddItem 44_Bandage

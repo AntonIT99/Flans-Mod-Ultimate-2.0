@@ -1,0 +1,13 @@
+// Identity
+Name Tank Crew
+ShortName W44_BritishArmyTankCrew
+Description Vehicle crew loadout with a compact weapon and repair tool.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Sten
+AddItem 44_StenAmmo 3
+AddItem 44_RepairTool
+AddItem 44_Bandage

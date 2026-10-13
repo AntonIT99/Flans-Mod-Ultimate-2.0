@@ -1,0 +1,18 @@
+// Identity
+Name Scout
+ShortName W44_GermanArmyScout
+Description Scoped rifle specialist with binoculars and limited ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanSplittermusterCamoSmock
+
+// Items
+AddItem 44_Kar98k+44_ZF39Scope
+AddItem 44_Kar98kAmmo 4
+AddItem 44_Binoculars
+AddItem 44_Bandage

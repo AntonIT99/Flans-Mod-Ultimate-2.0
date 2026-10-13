@@ -1,0 +1,15 @@
+// Identity
+Name Engineer
+ShortName W44_SovietArmyEngineer
+Description Vehicle repair and demolition specialist with a wrench and satchel charge.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_PPs43
+AddItem 44_PPs43Ammo 4
+AddItem 44_Wrench
+AddItem 44_SatchelCharge
+AddItem 44_SmokeM8Smoke
+AddItem 44_Bandage

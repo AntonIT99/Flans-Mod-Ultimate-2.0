@@ -1,0 +1,26 @@
+// Identity
+Name Japanese Army
+ShortName W44_JapaneseArmy
+
+// Appearance
+TextColour Yellow
+TeamColour 190 170 90
+Hat 44_JapaneseType3FieldCap
+Chest 44_JapaneseType98ChestKhaki
+Legs 44_JapaneseType98PantsKhaki
+Shoes 44_JapaneseBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Classes
+AddClass W44_JapaneseArmyRifleman
+AddClass W44_JapaneseArmyAssault
+AddClass W44_JapaneseArmySupport
+AddClass W44_JapaneseArmyMedic
+AddClass W44_JapaneseArmyEngineer
+AddClass W44_JapaneseArmyAntiTank
+AddClass W44_JapaneseArmyScout
+AddClass W44_JapaneseArmySquadLeader
+AddClass W44_JapaneseArmyTankCrew
+AddClass W44_JapaneseArmyPilot

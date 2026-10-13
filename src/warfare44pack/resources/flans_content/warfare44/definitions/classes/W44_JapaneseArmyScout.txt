@@ -1,0 +1,15 @@
+// Identity
+Name Scout
+ShortName W44_JapaneseArmyScout
+Description Scoped rifle specialist with binoculars and limited ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Items
+AddItem 44_Type99Rifle+44_Type97Scope
+AddItem 44_Type3899Ammo 4
+AddItem 44_Binoculars
+AddItem 44_Bandage

@@ -1,0 +1,15 @@
+// Identity
+Name Engineer
+ShortName W44_GermanArmyEngineer
+Description Vehicle repair and demolition specialist with a wrench and satchel charge.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 4
+AddItem 44_Wrench
+AddItem 44_SatchelCharge
+AddItem 44_Smokestielhandgranate
+AddItem 44_Bandage

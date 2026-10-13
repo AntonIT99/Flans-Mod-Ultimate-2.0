@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman - M1941 Uniform
+ShortName W44_USArmyRifleman1941
+Description General infantry wearing the alternative M1941 uniform.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_AmericanM1941CombatFieldUniformChest
+Legs 44_AmericanM1941CombatFieldUniformPants
+
+// Items
+AddItem 44_M1Garand
+AddItem 44_M1GarandAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

@@ -1,0 +1,19 @@
+// Identity
+Name Squad Leader
+ShortName W44_FallschirmjagerSquadLeader
+Description Squad leader with a submachine gun, pistol, binoculars and smoke.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 4
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
+AddItem 44_Binoculars
+AddItem 44_Smokestielhandgranate 3
+AddItem 44_Bandage
+AddItem 44_Parachute

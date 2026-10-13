@@ -1,0 +1,14 @@
+// Identity
+Name Support
+ShortName W44_BritishArmySupport
+Description Machine gunner carrying a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Bren
+AddItem 44_BrenAmmo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage

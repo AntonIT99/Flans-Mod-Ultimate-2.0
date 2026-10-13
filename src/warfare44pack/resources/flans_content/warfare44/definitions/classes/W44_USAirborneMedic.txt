@@ -1,0 +1,15 @@
+// Identity
+Name Medic
+ShortName W44_USAirborneMedic
+Description Combat medic carrying a medical bag, bandages and smoke.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_M1Carbine
+AddItem 44_M1CarbineAmmo 4
+AddItem 44_MedicalBag
+AddItem 44_Bandage 4
+AddItem 44_SmokeM8Smoke 2
+AddItem 44_Parachute

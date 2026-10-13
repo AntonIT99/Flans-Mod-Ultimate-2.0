@@ -1,0 +1,15 @@
+// Identity
+Name Assault
+ShortName W44_FallschirmjagerAssault
+Description Close-range infantry with a submachine gun, fragmentation and smoke grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 4
+AddItem 44_stielhandgranate
+AddItem 44_Smokestielhandgranate 2
+AddItem 44_Bandage
+AddItem 44_Parachute

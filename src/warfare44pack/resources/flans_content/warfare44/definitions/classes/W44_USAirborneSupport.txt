@@ -1,0 +1,15 @@
+// Identity
+Name Support
+ShortName W44_USAirborneSupport
+Description Machine gunner carrying a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_BAR
+AddItem 44_BARAmmo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage
+AddItem 44_Parachute

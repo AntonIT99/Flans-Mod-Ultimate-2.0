@@ -1,0 +1,15 @@
+// Identity
+Name Assault
+ShortName W44_USAirborneAssault
+Description Close-range infantry with a submachine gun, fragmentation and smoke grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_ThompsonM1A1
+AddItem 44_ThompsonM1A1Ammo 4
+AddItem 44_Mk2Frag
+AddItem 44_SmokeM8Smoke 2
+AddItem 44_Bandage
+AddItem 44_Parachute

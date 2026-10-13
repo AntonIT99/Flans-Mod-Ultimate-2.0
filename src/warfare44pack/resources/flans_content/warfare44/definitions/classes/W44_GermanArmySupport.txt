@@ -1,0 +1,14 @@
+// Identity
+Name Support
+ShortName W44_GermanArmySupport
+Description Machine gunner carrying a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Mg42
+AddItem 44_Mg42Ammo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage

@@ -1,0 +1,13 @@
+// Identity
+Name Pilot
+ShortName W44_SovietArmyPilot
+Description Pilot loadout with a pistol and parachute.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_TT33
+AddItem 44_TT33Ammo 3
+AddItem 44_Parachute
+AddItem 44_Bandage
