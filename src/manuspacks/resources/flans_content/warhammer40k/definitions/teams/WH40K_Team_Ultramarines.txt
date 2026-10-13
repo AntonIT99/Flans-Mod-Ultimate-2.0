@@ -1,0 +1,21 @@
+// Identity
+Name Ultramarines
+ShortName WH40K_Team_Ultramarines
+
+// Appearance
+TextColour Blue
+TeamColour 48 80 192
+Hat WH40K_Armor_SpaceMarineHelmet_1A
+Chest WH40K_Armor_SpaceMarineBody_1A
+Legs WH40K_Armor_SpaceMarineLegs_1A
+Shoes WH40K_Armor_SpaceMarineBoots_1A
+
+// Rounds
+AllowedForRoundsGenerator False
+HasVictorySound False
+
+// Classes
+AddClass WH40K_Class_UltramarinesTactical
+AddClass WH40K_Class_UltramarinesAssault
+AddClass WH40K_Class_UltramarinesVeteran
+AddClass WH40K_Class_UltramarinesSergeant

@@ -1,0 +1,15 @@
+// Identity
+Name Assault Veteran
+ShortName WH40K_Class_CatachanAssaultVeteran
+
+// Armour
+Hat WH40K_Armor_CatachanBandana_1A
+Chest WH40K_Armor_CatachanWest_1A
+Legs WH40K_Armor_CatachanLegs_1A
+Shoes WH40K_Armor_CatachanBoots_1A
+
+// Items
+AddItem WH40K_Gun_Mk22cCombatShotgun_1A
+AddItem WH40K_Gun_Chainsword_1A
+AddItem WH40K_Grenade_FragGrenade_1A 2
+AddItem WH40K_Ammo_CombatShotgun 4

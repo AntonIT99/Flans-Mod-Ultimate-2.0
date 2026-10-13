@@ -1,0 +1,14 @@
+// Identity
+Name Guardsman
+ShortName WH40K_Class_CadiaGuardsman
+
+// Armour
+Hat WH40K_Armor_CadiaHelemt_1A
+Chest WH40K_Armor_CadiaJacket_1A
+Legs WH40K_Armor_CadiaLegs_1A
+Shoes WH40K_Armor_CadiaBoots_1A
+
+// Items
+AddItem WH40K_Gun_M36Lasgun_1A+WH40K_Attachment_M36Bayonett_1A
+AddItem WH40K_Grenade_FragGrenade_1A
+AddItem WH40K_Ammo_PowerpackLasgun 4

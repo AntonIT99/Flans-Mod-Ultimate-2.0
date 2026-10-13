@@ -1,0 +1,14 @@
+// Identity
+Name Commissar
+ShortName WH40K_Class_CadiaCommissar
+
+// Armour
+Hat WH40K_Armor_CommissarHat_1A
+Chest WH40K_Armor_CommissarCoat_1A
+Legs WH40K_Armor_CommissarLegs_1A
+Shoes WH40K_Armor_CommissarBoots_1A
+
+// Items
+AddItem WH40K_Gun_MKIIIBoltpistol_1A
+AddItem WH40K_Gun_PowerSword_2A
+AddItem WH40K_Ammo_BoltPistolCal75 3

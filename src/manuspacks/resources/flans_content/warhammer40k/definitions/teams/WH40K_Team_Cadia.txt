@@ -1,0 +1,24 @@
+// Identity
+Name Cadian Shock Troops
+ShortName WH40K_Team_Cadia
+
+// Appearance
+TextColour DarkGreen
+TeamColour 96 128 64
+Hat WH40K_Armor_CadiaHelemt_1A
+Chest WH40K_Armor_CadiaJacket_1A
+Legs WH40K_Armor_CadiaLegs_1A
+Shoes WH40K_Armor_CadiaBoots_1A
+
+// Rounds
+AllowedForRoundsGenerator False
+HasVictorySound False
+
+// Classes
+AddClass WH40K_Class_CadiaGuardsman
+AddClass WH40K_Class_CadiaGrenadier
+AddClass WH40K_Class_CadiaHeavyBolter
+AddClass WH40K_Class_CadiaLascannon
+AddClass WH40K_Class_CadiaCommissar
+AddClass WH40K_Class_CadiaTankCrew
+AddClass WH40K_Class_CadiaPilot

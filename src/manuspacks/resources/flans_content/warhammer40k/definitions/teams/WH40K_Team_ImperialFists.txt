@@ -1,0 +1,20 @@
+// Identity
+Name Imperial Fists
+ShortName WH40K_Team_ImperialFists
+
+// Appearance
+TextColour Yellow
+TeamColour 240 192 32
+Hat WH40K_Armor_SpaceMarineHelmet_1C
+Chest WH40K_Armor_SpaceMarineBody_1C
+Legs WH40K_Armor_SpaceMarineLegs_1C
+Shoes WH40K_Armor_SpaceMarineBoots_1C
+
+// Rounds
+AllowedForRoundsGenerator False
+HasVictorySound False
+
+// Classes
+AddClass WH40K_Class_ImperialFistsTactical
+AddClass WH40K_Class_ImperialFistsSiegeVeteran
+AddClass WH40K_Class_ImperialFistsSergeant
