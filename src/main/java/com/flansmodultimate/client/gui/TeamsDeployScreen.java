@@ -189,7 +189,7 @@ public final class TeamsDeployScreen extends Screen
         if (state == null)
             return;
         List<ObjectiveSnapshot> objectives = TeamsClientState.objectives();
-        StringBuilder signature = new StringBuilder().append(editMode).append(state.getPlayerTeamId()).append(width).append('x').append(height);
+        StringBuilder signature = new StringBuilder().append(editMode).append(state.getPlayerTeamId()).append(state.getSideIds()).append(width).append('x').append(height);
         objectives.forEach(objective -> signature.append(objective.id()).append(objective.symbol()).append(objective.name()));
         state.getDeployLayout().forEach(entry -> signature.append(entry.key()).append(entry.x()).append(entry.y()));
         signature.append(state.getDeployImageCrop());
@@ -214,14 +214,17 @@ public final class TeamsDeployScreen extends Screen
 
         if (editMode)
         {
-            // Both headquarters are placed while editing; in play each side only sees its own.
-            addNode(state, new Node(DeployLayoutEntry.HQ_PREFIX + state.getAttackingTeamId(), "HQ1", teamName(state, state.getAttackingTeamId()), null), startX, y - 16);
-            addNode(state, new Node(DeployLayoutEntry.HQ_PREFIX + state.getDefendingTeamId(), "HQ2", teamName(state, state.getDefendingTeamId()), null), startX, y + 16);
+            // Every headquarters is placed while editing; in play each side only sees its own.
+            List<Integer> sideIds = new ArrayList<>(List.of(state.getAttackingTeamId(), state.getDefendingTeamId()));
+            state.getSideIds().stream().filter(sideId -> !sideIds.contains(sideId)).forEach(sideIds::add);
+            for (int i = 0; i < sideIds.size(); i++)
+                addNode(state, new Node(DeployLayoutEntry.HQ_PREFIX + sideIds.get(i), "HQ" + (i + 1), teamName(state, sideIds.get(i)), null), startX, y - 16 * (sideIds.size() - 1) + 32 * i);
         }
         else
         {
-            int teamId = state.getPlayerTeamId() < 2 ? state.getAttackingTeamId() : state.getPlayerTeamId();
-            addNode(state, new Node(DeployLayoutEntry.HQ_PREFIX + teamId, "HQ", Component.translatable("gui.flansmod.teams.deploy.headquarters"), null), startX, y);
+            // Allied teams share one headquarters marker; which base they come back at is up to the server.
+            int sideId = state.getPlayerSideId() < 2 ? state.getAttackingTeamId() : state.getPlayerSideId();
+            addNode(state, new Node(DeployLayoutEntry.HQ_PREFIX + sideId, "HQ", Component.translatable("gui.flansmod.teams.deploy.headquarters"), null), startX, y);
         }
         for (int i = 0; i < objectives.size(); i++)
         {
@@ -234,7 +237,7 @@ public final class TeamsDeployScreen extends Screen
     private static Component teamName(PacketTeamsState state, int teamId)
     {
         PacketTeamsState.TeamScore team = state.getTeamScore(teamId);
-        return team == null ? Component.translatable("gui.flansmod.teams.deploy.headquarters") : Component.literal(team.name());
+        return team == null ? Component.translatable("gui.flansmod.teams.deploy.headquarters") : Component.literal(state.getSideName(team.sideId()));
     }
 
     /** Puts a choice where the saved layout has it, or on the default row for one that was never placed. */
@@ -269,7 +272,7 @@ public final class TeamsDeployScreen extends Screen
             else if (assault)
                 updateAssaultNode(node, objective, frontline, assaultSpawn);
             else
-                updateConquestNode(node, objective, state.getPlayerTeamId());
+                updateConquestNode(node, objective, state.getPlayerSideId());
         }
     }
 
@@ -304,7 +307,7 @@ public final class TeamsDeployScreen extends Screen
     @Nullable
     private static ObjectiveSnapshot assaultSpawn(PacketTeamsState state, List<ObjectiveSnapshot> objectives)
     {
-        int teamId = state.getPlayerTeamId();
+        int teamId = state.getPlayerSideId();
         int active = 0;
         while (active < objectives.size() && objectives.get(active).state().isHeldBy(state.getAttackingTeamId()))
             active++;

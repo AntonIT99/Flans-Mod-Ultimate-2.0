@@ -34,10 +34,11 @@ public final class TeamsRoundResult
             return Outcome.DRAW;
         if (state.getPlayerTeamId() < 2)
             return Outcome.WATCHED;
-        return state.getWinnerId().equals(state.getSelectedTeam()) ? Outcome.VICTORY : Outcome.DEFEAT;
+        // The winner is reported as the first team of its side; everyone allied with it won too.
+        return state.getWinnerId().equals(state.getSelectedTeam()) || state.areAllied(state.getWinnerId(), state.getSelectedTeam()) ? Outcome.VICTORY : Outcome.DEFEAT;
     }
 
-    /** The winning team as content on this client, or null for a draw or a team this client does not have. */
+    /** The winning team as content on this client, the first of its side for an alliance, or null for a draw or a team this client does not have. */
     @Nullable
     public static Team winner(PacketTeamsState state)
     {

@@ -83,7 +83,7 @@ public final class EquipmentSupport
         if (!(stack.getItem() instanceof CustomArmorItem item))
             return Optional.empty();
         var type = item.getConfigType();
-        return Optional.of(new EquippedArmorProperties(type.getDefence(), type.getBulletDefence(), type.isNegateFallDamage(), type.isWaterBreathing(), type.isFireResistance()));
+        return Optional.of(new EquippedArmorProperties(type.getDefence(), type.getBulletDefence(), type.isNegateFallDamage(), type.isWaterBreathing(), type.isFireResistance(), type.isInvisible()));
     }
 
     public static boolean hasLoadedRound(ItemStack stack)

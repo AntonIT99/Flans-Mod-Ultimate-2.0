@@ -506,6 +506,7 @@
   "wolffsmodnpcs.tuning.weapon_switch.melee_only": "Melee only",
   "wolffsmodnpcs.tuning.weapon_switch.none": "None",
   "wolffsmodnpcs.soldier.apply_loadout": "Apply class loadout",
+  "wolffsmodnpcs.soldier.apply_skin": "Apply class skin",
   "wolffsmodnpcs.soldier.loadout.applied": "Equipped the NPC with the %s loadout.",
   "wolffsmodnpcs.soldier.loadout.denied": "You may not change this NPC's equipment.",
   "wolffsmodnpcs.soldier.loadout.unknown": "That team or class is not loaded on the server."

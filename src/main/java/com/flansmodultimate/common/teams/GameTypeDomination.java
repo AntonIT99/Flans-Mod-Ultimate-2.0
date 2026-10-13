@@ -10,8 +10,8 @@ import java.util.Locale;
 
 /**
  * Domination from the Labjac fork: every capture point starts neutral, a point only changes
- * hands while one team stands on it alone, and the team holding more points gains score until
- * one reaches the score limit. Players come back at any base their team owns.
+ * hands while one side stands on it alone, and the side holding the most points gains score until
+ * one reaches the score limit. Players come back at any base their team owns or their side holds.
  */
 public final class GameTypeDomination extends GameTypeObjective
 {
@@ -25,7 +25,7 @@ public final class GameTypeDomination extends GameTypeObjective
 
     GameTypeDomination()
     {
-        super("dom", "Domination", DEFAULT_CAPTURE_TICKS);
+        super("dom", "Domination", TeamLimits.upToSides(TeamsRound.MAX_SIDES), DEFAULT_CAPTURE_TICKS);
     }
 
     @Override
@@ -42,7 +42,7 @@ public final class GameTypeDomination extends GameTypeObjective
     }
 
     @Override
-    protected CaptureState initialState(List<ITeamCapturePoint> points, int index)
+    protected CaptureState initialState(TeamsRound round, List<ITeamCapturePoint> points, int index)
     {
         return CaptureState.NEUTRAL;
     }

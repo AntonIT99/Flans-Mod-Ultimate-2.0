@@ -9,7 +9,7 @@ public final class GameTypeDM extends GameType
 {
     GameTypeDM()
     {
-        super("dm", "Deathmatch", 2);
+        super("dm", "Deathmatch", TeamLimits.exactly(2), true);
     }
 
     @Override

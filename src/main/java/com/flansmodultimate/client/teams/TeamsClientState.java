@@ -38,7 +38,7 @@ public final class TeamsClientState
         return hasActiveRound() && viewer != null && renderedPlayer != viewer && !isTeamsSpectator(viewer) && isTeamsSpectator(renderedPlayer);
     }
 
-    /** Enemy tags are hidden in team modes; every active-player tag is hidden in FFA. */
+    /** Enemy tags are hidden in team modes, those of allied teams stay; every active-player tag is hidden in FFA. */
     public static boolean shouldHideNameTag(Player renderedPlayer)
     {
         Minecraft minecraft = Minecraft.getInstance();
@@ -52,7 +52,7 @@ public final class TeamsClientState
 
         Optional<String> viewerTeam = findTeam(viewer);
         Optional<String> renderedTeam = findTeam(renderedPlayer);
-        return viewerTeam.isPresent() && renderedTeam.isPresent() && !viewerTeam.get().equals(renderedTeam.get());
+        return viewerTeam.isPresent() && renderedTeam.isPresent() && !snapshot.areAllied(viewerTeam.get(), renderedTeam.get());
     }
 
     /**
@@ -68,7 +68,7 @@ public final class TeamsClientState
             return viewer.getTeam() != null && viewer.isAlliedTo(other);
         Optional<String> viewerTeam = findTeam(viewer);
         Optional<String> otherTeam = findTeam(other);
-        return viewerTeam.isPresent() && viewerTeam.equals(otherTeam);
+        return viewerTeam.isPresent() && otherTeam.isPresent() && snapshot.areAllied(viewerTeam.get(), otherTeam.get());
     }
 
     private static boolean hasActiveRound()

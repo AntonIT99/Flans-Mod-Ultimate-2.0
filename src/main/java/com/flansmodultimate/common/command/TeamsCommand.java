@@ -43,6 +43,8 @@ public final class TeamsCommand
     private static final String IMAGE = "image";
     private static final String FROM = "from";
     private static final String MSG_UNKNOWN_MAP = "Unknown map";
+    /** Prefix of the arguments that each name one side of a round being added. */
+    private static final String SIDE = "side";
 
     private TeamsCommand()
     {}
@@ -191,10 +193,11 @@ public final class TeamsCommand
                 .then(
                     Commands.literal("add").then(Commands.argument("id", StringArgumentType.word()).then(Commands.argument("name", StringArgumentType.greedyString()).executes(TeamsCommand::addMap))))
                 .then(Commands.literal("remove").then(Commands.argument("id", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder)).executes(TeamsCommand::removeMap))))
-            .then(Commands.literal("round").then(Commands.literal("add").then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder))
-                .then(Commands.argument(GAMETYPE, StringArgumentType.word()).suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder))
-                    .then(Commands.argument(TEAMS, StringArgumentType.word())
-                        .then(Commands.argument(MINUTES, IntegerArgumentType.integer(1, 1440)).then(Commands.argument(SCORE, IntegerArgumentType.integer(1)).executes(TeamsCommand::addRound)))))))
+            .then(Commands.literal("round")
+                .then(Commands.literal("add")
+                    .then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder))
+                        .then(Commands.argument(GAMETYPE, StringArgumentType.word())
+                            .suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder)).then(sideArgument(1)))))
                 .then(Commands.literal("remove").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::removeRound))))
             .then(Commands.literal("setvariable")
                 .then(Commands.argument("name", StringArgumentType.word()).then(Commands.argument(VALUE, StringArgumentType.word()).executes(TeamsCommand::setVariable))));
@@ -273,10 +276,28 @@ public final class TeamsCommand
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> roundAdd(String name)
     {
-        return operatorLiteral(name).then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder))
-            .then(Commands.argument(GAMETYPE, StringArgumentType.word()).suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder))
-                .then(Commands.argument(TEAMS, StringArgumentType.word())
-                    .then(Commands.argument(MINUTES, IntegerArgumentType.integer(1, 1440)).then(Commands.argument(SCORE, IntegerArgumentType.integer(1)).executes(TeamsCommand::addRound))))));
+        return operatorLiteral(name)
+            .then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder)).then(Commands.argument(GAMETYPE, StringArgumentType.word())
+                .suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder)).then(sideArgument(1))));
+    }
+
+    /**
+     * The teams of a round, then its length and score limit: {@code us+uk vs germany+italy 15 50}.
+     *
+     * <p>
+     * Each side is one argument, with allied teams joined by {@code +}, and further sides follow a
+     * {@code vs}. A quoted argument may also list several sides separated by commas, which is the
+     * way rounds were written before alliances: {@code "red,blue"}.
+     * </p>
+     */
+    private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> sideArgument(int index)
+    {
+        com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> side = Commands.argument(SIDE + index, StringArgumentType.string())
+            .suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().filter(team -> team != Team.SPECTATORS).map(Team::getShortName), builder));
+        side.then(Commands.argument(MINUTES, IntegerArgumentType.integer(1, 1440)).then(Commands.argument(SCORE, IntegerArgumentType.integer(1)).executes(TeamsCommand::addRound)));
+        if (index < TeamsRound.MAX_SIDES)
+            side.then(Commands.literal("vs").then(sideArgument(index + 1)));
+        return side;
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> roundRemove(String name)
@@ -394,7 +415,7 @@ public final class TeamsCommand
         if (context.getSource().hasPermission(2))
         {
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|forceAdventure|fuelNeeded|vehiclesCanZoom|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance> <true|false>, /teams weaponDrops <on|off|smart>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife> <seconds>"),
+                "Rules: /teams <explosions|forceAdventure|fuelNeeded|vehiclesCanZoom|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -433,6 +454,7 @@ public final class TeamsCommand
             .then(rule("armourDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
             .then(rule("armorDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
             .then(rule("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks, enabled -> "Vehicles will " + (enabled ? "now" : NO_LONGER) + " break blocks"))
+            .then(rule("alliedSpawns", TeamsManager::setAlliedSpawnSharing, enabled -> "Allied teams will " + (enabled ? "now" : NO_LONGER) + " spawn at each other's bases"))
             .then(Commands.literal("weaponDrops").requires(source -> source.hasPermission(2))
                 .then(Commands.argument("mode", StringArgumentType.word()).suggests((context, builder) -> SharedSuggestionProvider.suggest(List.of("on", "off", "smart"), builder))
                     .executes(TeamsCommand::setWeaponDrops)))
@@ -709,7 +731,7 @@ public final class TeamsCommand
 
     private static int listGameTypes(CommandContext<CommandSourceStack> context)
     {
-        GameType.values().forEach(type -> context.getSource().sendSuccess(() -> Component.literal(type.getId() + " — " + type.getName() + " (" + type.getRequiredTeams() + " teams)"), false));
+        GameType.values().forEach(type -> context.getSource().sendSuccess(() -> Component.literal(type.getId() + " — " + type.getName() + " (" + type.getTeamLimits().describe() + ")"), false));
         return GameType.values().size();
     }
 
@@ -738,8 +760,9 @@ public final class TeamsCommand
         {
             int index = i;
             TeamsRound round = rounds.get(i);
-            context.getSource().sendSuccess(() -> Component.literal(
-                index + ": " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + String.join(", ", round.getTeamIds()) + "] " + round.getTimeLimitMinutes() + "m / " + round.getScoreLimit()),
+            context.getSource().sendSuccess(
+                () -> Component
+                    .literal(index + ": " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams() + "] " + round.getTimeLimitMinutes() + "m / " + round.getScoreLimit()),
                 false);
         }
         return rounds.size();
@@ -767,10 +790,14 @@ public final class TeamsCommand
     {
         try
         {
-            List<String> teams = Arrays.stream(StringArgumentType.getString(context, TEAMS).split(",")).filter(value -> !value.isBlank()).toList();
-            TeamsRound round = manager().addRound(StringArgumentType.getString(context, "map"), StringArgumentType.getString(context, GAMETYPE), teams,
+            List<String> sideArguments = new ArrayList<>();
+            for (com.mojang.brigadier.context.ParsedCommandNode<CommandSourceStack> node : context.getNodes())
+                if (node.getNode() instanceof com.mojang.brigadier.tree.ArgumentCommandNode<?, ?> && node.getNode().getName().startsWith(SIDE))
+                    sideArguments.add(StringArgumentType.getString(context, node.getNode().getName()));
+            TeamsRound.Lineup lineup = TeamsRound.parseLineup(sideArguments);
+            TeamsRound round = manager().addRound(StringArgumentType.getString(context, "map"), StringArgumentType.getString(context, GAMETYPE), lineup.teamIds(), lineup.sides(),
                 IntegerArgumentType.getInteger(context, MINUTES), IntegerArgumentType.getInteger(context, SCORE));
-            return success(context, "Round added: " + round.getGameTypeId() + " @ " + round.getMapId());
+            return success(context, "Round added: " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams() + "]");
         }
         catch (IllegalArgumentException e)
         {

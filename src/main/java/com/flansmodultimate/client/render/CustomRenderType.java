@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11C;
 
 import net.minecraft.Util;
@@ -87,16 +88,36 @@ public class CustomRenderType
     private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull(), true));
     private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT_UNSORTED = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull(), false));
 
+    /** Vanilla view-offset scale, which pulls geometry towards a perspective camera at the origin */
+    private static final float ARMOR_VIEW_OFFSET_SCALE = 0.99975586F;
+    /** Orthographic armor offset in normalized device depth: 64 steps of a 24-bit depth buffer */
+    private static final float ARMOR_ORTHOGRAPHIC_DEPTH_OFFSET = 1F / (1 << 17);
+
     private static final RenderStateShard.LayeringStateShard ARMOR_VIEW_OFFSET_LAYERING = new RenderStateShard.LayeringStateShard("armor_view_offset_layering", () ->
     {
         VertexPlatform.pushModelView();
-        VertexPlatform.scaleModelView(0.99975586F, 0.99975586F, 0.99975586F);
+        applyArmorViewOffset(RenderSystem.getProjectionMatrix(), VertexPlatform.modelView());
         RenderSystem.applyModelViewMatrix();
     }, () ->
     {
         VertexPlatform.popModelView();
         RenderSystem.applyModelViewMatrix();
     });
+
+    /**
+     * Moves armor slightly towards the viewer, so parts lying flush with the body they are worn on win the depth test.
+     * The vanilla view-offset scale only does that for a perspective camera at the origin. Under an orthographic
+     * projection, as in GUI entity previews, it shrinks the armor towards the screen origin and pushes it away from the
+     * viewer, hiding thin parts inside the body; there the armor is shifted along the view axis by a fixed depth instead.
+     */
+    static void applyArmorViewOffset(Matrix4f projection, Matrix4f modelView)
+    {
+        boolean orthographic = Math.abs(projection.m23()) < 1.0E-6F && Math.abs(projection.m22()) > 1.0E-12F;
+        if (orthographic)
+            modelView.translateLocal(0F, 0F, -ARMOR_ORTHOGRAPHIC_DEPTH_OFFSET / projection.m22());
+        else
+            modelView.scale(ARMOR_VIEW_OFFSET_SCALE);
+    }
 
     /**
      * Vanilla draws glow as texture times colour, ignoring light and fog. Shader mods map that shader to their text

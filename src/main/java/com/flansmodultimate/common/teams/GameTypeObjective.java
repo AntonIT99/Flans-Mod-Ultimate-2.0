@@ -14,16 +14,17 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 /**
- * What Domination, Conquest and Assault have in common: two teams fighting over the capture
- * points of the map. Kills are scored as in Team Deathmatch; subclasses decide how points are
- * taken, what holding them is worth and where players come back.
+ * What Domination, Conquest and Assault have in common: sides fighting over the capture points
+ * of the map. Kills are scored as in Team Deathmatch; subclasses decide how points are taken,
+ * what holding them is worth and where players come back.
+ *
+ * <p>
+ * A capture point belongs to a side rather than to one team, so its owner is always a side id:
+ * allied teams take it together and all of them hold it.
+ * </p>
  */
 public abstract class GameTypeObjective extends GameTypeTDM
 {
-    /** Round team id of the first team of the round. */
-    protected static final int FIRST_TEAM_ID = 2;
-    /** Round team id of the second team of the round. */
-    protected static final int SECOND_TEAM_ID = 3;
     /** Stored as a spawn choice to mean the team's headquarters rather than any capture point. */
     protected static final UUID HEADQUARTERS = new UUID(0L, 0L);
     /** Pack sounds the Labjac fork plays at a point that changes hands; silent where no pack provides them. */
@@ -46,16 +47,16 @@ public abstract class GameTypeObjective extends GameTypeTDM
     private final Map<UUID, UUID> preferredSpawns = new HashMap<>();
     private final Map<UUID, CaptureState> lastSynced = new HashMap<>();
 
-    protected GameTypeObjective(String id, String name, int defaultCaptureTicks)
+    protected GameTypeObjective(String id, String name, TeamLimits teamLimits, int defaultCaptureTicks)
     {
-        super(id, name, 2);
+        super(id, name, teamLimits);
         settingsPrefix = id.toLowerCase(Locale.ROOT) + "_";
         this.defaultCaptureTicks = defaultCaptureTicks;
         captureTicks = defaultCaptureTicks;
     }
 
     /** The state a point starts the round in, given all the points of the map in play order. */
-    protected abstract CaptureState initialState(List<ITeamCapturePoint> points, int index);
+    protected abstract CaptureState initialState(TeamsRound round, List<ITeamCapturePoint> points, int index);
 
     /** Advances every point by one tick. Called once all of them carry the state of this round. */
     protected abstract void tickObjectives(TeamsManager manager, TeamsRound round, ServerLevel level, List<ITeamCapturePoint> points);
@@ -65,7 +66,7 @@ public abstract class GameTypeObjective extends GameTypeTDM
     {
         TeamsRound round = manager.getCurrentRound().orElse(null);
         ServerLevel level = manager.getCurrentLevel();
-        if (round == null || level == null || round.getTeamIds().size() < 2)
+        if (round == null || level == null || round.getSideCount() < 2)
             return;
 
         List<ITeamCapturePoint> points = manager.getCapturePoints();
@@ -75,7 +76,7 @@ public abstract class GameTypeObjective extends GameTypeTDM
             ITeamCapturePoint point = points.get(i);
             if (!Objects.equals(roundId, point.getRoundId()))
             {
-                point.setCaptureState(initialState(points, i));
+                point.setCaptureState(initialState(round, points, i));
                 point.setRoundId(roundId);
             }
         }
@@ -138,18 +139,17 @@ public abstract class GameTypeObjective extends GameTypeTDM
         return map.hasCapturePoints();
     }
 
-    /** Rewards the players who took a point and tells everyone about it. */
-    protected void pointCaptured(TeamsManager manager, TeamsRound round, ITeamCapturePoint point, CaptureScan scan, int teamId, String messageKey)
+    /** Rewards the players of the side that took a point and tells everyone about it. */
+    protected void pointCaptured(TeamsManager manager, TeamsRound round, ITeamCapturePoint point, CaptureScan scan, int sideId, String messageKey)
     {
-        for (ServerPlayer player : scan.players(teamId))
+        for (ServerPlayer player : scan.players(sideId))
         {
             PlayerData data = PlayerData.getInstance(player);
             data.setScore(data.getScore() + CAPTURE_SCORE);
             manager.awardExperience(player, CAPTURE_EXPERIENCE);
         }
-        Team team = round.getTeam(teamId - FIRST_TEAM_ID);
-        if (team != null)
-            manager.broadcast(Component.translatable(messageKey, team.getDisplayComponent(), pointLabel(point)));
+        if (round.getSideLeader(sideId) != null)
+            manager.broadcast(Component.translatable(messageKey, round.getSideDisplayComponent(sideId), pointLabel(point)));
         manager.playSoundAt(point, SOUND_POINT_TAKEN, SOUND_RANGE);
     }
 
@@ -164,21 +164,30 @@ public abstract class GameTypeObjective extends GameTypeTDM
         return Component.literal("[" + point.getSymbol() + "] " + point.getBaseName()).withStyle(ChatFormatting.YELLOW);
     }
 
-    /** Gives a point to the team ahead for each point it holds more than the other, as tickets bleed away. */
+    /**
+     * Gives a point to the side holding the most capture points for each one it holds more than
+     * the next best side, as tickets bleed away. Nobody scores while the lead is shared.
+     */
     protected static void drainTickets(TeamsManager manager, TeamsRound round, List<ITeamCapturePoint> points)
     {
-        int first = 0;
-        int second = 0;
-        for (ITeamCapturePoint point : points)
+        int aheadSideId = 0;
+        int most = 0;
+        int nextBest = 0;
+        for (int sideId : round.getSideIds())
         {
-            if (point.getCaptureState().isHeldBy(FIRST_TEAM_ID))
-                first++;
-            else if (point.getCaptureState().isHeldBy(SECOND_TEAM_ID))
-                second++;
+            int held = (int) points.stream().filter(point -> point.getCaptureState().isHeldBy(sideId)).count();
+            if (held > most)
+            {
+                nextBest = most;
+                most = held;
+                aheadSideId = sideId;
+            }
+            else if (held > nextBest)
+                nextBest = held;
         }
-        Team ahead = round.getTeam(first > second ? 0 : 1);
-        if (first != second && ahead != null)
-            manager.addTeamScore(ahead, Math.abs(first - second));
+        Team ahead = round.getSideLeader(aheadSideId);
+        if (most > nextBest && ahead != null)
+            manager.addTeamScore(ahead, most - nextBest);
     }
 
     // --- Spawning ---
@@ -222,6 +231,12 @@ public abstract class GameTypeObjective extends GameTypeTDM
     protected static int teamIdOf(TeamsManager manager, ServerPlayer player)
     {
         return manager.getCurrentRound().map(round -> round.getTeamId(PlayerData.getInstance(player).getNewTeam())).orElse(0);
+    }
+
+    /** The side id a player fights for, which is what capture points are owned under. */
+    protected static int sideIdOf(TeamsManager manager, ServerPlayer player)
+    {
+        return manager.getCurrentRound().map(round -> round.getSideId(PlayerData.getInstance(player).getNewTeam())).orElse(0);
     }
 
     // --- Settings ---

@@ -62,9 +62,10 @@ public final class VertexPlatform
         RenderSystem.getModelViewStack().setIdentity();
     }
 
-    public static void scaleModelView(float x, float y, float z)
+    /** The live top of the global model-view stack. Call {@link RenderSystem#applyModelViewMatrix} after changing it. */
+    public static Matrix4f modelView()
     {
-        RenderSystem.getModelViewStack().scale(x, y, z);
+        return RenderSystem.getModelViewStack().last().pose();
     }
 
     /** Multiplies the pose stack by the matrix. */

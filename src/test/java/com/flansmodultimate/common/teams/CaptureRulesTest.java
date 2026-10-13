@@ -164,16 +164,45 @@ class CaptureRulesTest
     }
 
     @Test
+    void withSeveralSidesOnAPointTheStrongestAdvancesByItsLeadOverTheNextOne()
+    {
+        int third = 4;
+        CaptureRules.Result result = CaptureRules.pressure(CaptureState.NEUTRAL, java.util.Map.of(FIRST, 2, SECOND, 1, third, 4), TICKS);
+        assertEquals(third, result.state().capturingTeamId());
+        assertEquals(2F / TICKS, result.state().progress(), 1.0E-6F);
+        assertTrue(result.state().contested());
+    }
+
+    @Test
+    void aSharedLeadBetweenSeveralSidesHoldsThePointStill()
+    {
+        CaptureState state = new CaptureState(0, FIRST, 0.4F, false);
+        CaptureRules.Result result = CaptureRules.pressure(state, java.util.Map.of(FIRST, 1, SECOND, 3, 4, 3), TICKS);
+        assertEquals(0.4F, result.state().progress());
+        assertEquals(FIRST, result.state().capturingTeamId());
+        assertTrue(result.state().contested());
+    }
+
+    @Test
+    void theSeveralSidesRuleMatchesTheTwoSidedOne()
+    {
+        CaptureRules.Result pair = CaptureRules.pressure(CaptureState.NEUTRAL, FIRST, 3, SECOND, 1, TICKS);
+        CaptureRules.Result many = CaptureRules.pressure(CaptureState.NEUTRAL, java.util.Map.of(FIRST, 3, SECOND, 1), TICKS);
+        assertEquals(pair, many);
+        assertEquals(CaptureRules.pressure(CaptureState.NEUTRAL, FIRST, 0, SECOND, 0, TICKS), CaptureRules.pressure(CaptureState.NEUTRAL, java.util.Map.of(), TICKS));
+    }
+
+    @Test
     void theActiveAssaultObjectiveIsTheFirstOneNotHeldByTheAttackers()
     {
         CaptureState taken = CaptureState.ownedBy(SECOND);
         CaptureState defended = CaptureState.ownedBy(FIRST);
         CaptureState falling = new CaptureState(SECOND, FIRST, 0.5F, false);
-        assertEquals(0, GameTypeAssault.activeObjectiveIndex(List.of(defended, defended)));
-        assertEquals(1, GameTypeAssault.activeObjectiveIndex(List.of(taken, defended)));
-        assertEquals(1, GameTypeAssault.activeObjectiveIndex(List.of(taken, falling, defended)));
-        assertEquals(2, GameTypeAssault.activeObjectiveIndex(List.of(taken, taken)));
-        assertEquals(0, GameTypeAssault.activeObjectiveIndex(List.of()));
+        assertEquals(0, GameTypeAssault.activeObjectiveIndex(List.of(defended, defended), SECOND));
+        assertEquals(1, GameTypeAssault.activeObjectiveIndex(List.of(taken, defended), SECOND));
+        assertEquals(1, GameTypeAssault.activeObjectiveIndex(List.of(taken, falling, defended), SECOND));
+        assertEquals(2, GameTypeAssault.activeObjectiveIndex(List.of(taken, taken), SECOND));
+        assertEquals(0, GameTypeAssault.activeObjectiveIndex(List.of(), SECOND));
     }
 
     @Test

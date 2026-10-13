@@ -9,7 +9,10 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
-/** The living team players standing on a capture point this tick, grouped by round team id. */
+/**
+ * The living team players standing on a capture point this tick, grouped by side id. Allied teams
+ * count as one, so they take a point together instead of contesting it against each other.
+ */
 public final class CaptureScan
 {
     private final Map<Integer, List<ServerPlayer>> playersByTeam = new TreeMap<>();
@@ -31,9 +34,9 @@ public final class CaptureScan
             double dz = player.getZ() - centre.z;
             boolean onPoint = player.isAlive() && !player.isSpectator() && dx * dx + dz * dz <= radiusSquared && Math.abs(player.getY() - centre.y) <= radius;
             Team team = onPoint ? PlayerData.getInstance(player).getTeam() : null;
-            int teamId = round.getTeamId(team);
-            if (teamId > 1)
-                scan.add(teamId, player);
+            int sideId = round.getSideId(team);
+            if (sideId >= TeamsRound.FIRST_TEAM_ID)
+                scan.add(sideId, player);
         }
         return scan;
     }
@@ -65,9 +68,17 @@ public final class CaptureScan
         return playersByTeam.size() > 1;
     }
 
-    /** The one team on the point, or 0 when it is empty or shared. */
+    /** The one side on the point, or 0 when it is empty or shared. */
     public int onlyTeamId()
     {
         return playersByTeam.size() == 1 ? playersByTeam.keySet().iterator().next() : 0;
+    }
+
+    /** How many players each side has on the point, by side id in round order. */
+    public Map<Integer, Integer> counts()
+    {
+        Map<Integer, Integer> counts = new TreeMap<>();
+        playersByTeam.forEach((sideId, players) -> counts.put(sideId, players.size()));
+        return counts;
     }
 }

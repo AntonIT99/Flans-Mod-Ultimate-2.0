@@ -23,7 +23,7 @@ import java.util.*;
 
 /**
  * Groups ships separately, adds content-pack folders and restores parent viewports in the model picker while retaining Custom NPCs' model selection and save logic.
- * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, and the button that applies that class's loadout.
+ * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the button that applies that class's loadout and the toggle that keeps the NPC's own skin.
  */
 // Mixin merges this class into the target, so self-casts are valid.
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference", "DataFlowIssue"})
@@ -86,7 +86,7 @@ public abstract class NpcModelBrowserMixin
         int offset = wolffsmodnpcsTopLevel() ? WOLFFSMODNPCS_TOP_FOLDERS : 1;
         scroll.setSelectedIndex(selected < 0 ? -1 : selected + offset);
         wolffsmodnpcsRestoreSelectionScroll();
-        FlanSoldierBrowser.addLoadoutButton(screen);
+        FlanSoldierBrowser.addLoadoutControls(screen, wolffsmodnpcsSoldiers != null);
     }
 
     /** The first level: the Flan folders, then every model that is not a Flan one. */

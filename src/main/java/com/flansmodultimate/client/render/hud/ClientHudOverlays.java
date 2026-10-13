@@ -909,7 +909,10 @@ public final class ClientHudOverlays
             return;
 
         PacketTeamsState.PlayerScore localScore = findPlayerScore(state, player.getGameProfile().getName());
-        boolean teamGame = state.isSortedByTeam() && state.getTeamScores().size() == 2;
+        // Allied teams share a colour block and a score, so the banner counts sides rather than teams.
+        List<Integer> sideIds = state.isSortedByTeam() ? state.getSideIds() : List.of();
+        PacketTeamsState.TeamScore left = sideIds.size() == 2 ? state.getTeamScore(sideIds.get(0)) : null;
+        PacketTeamsState.TeamScore right = sideIds.size() == 2 ? state.getTeamScore(sideIds.get(1)) : null;
         if (localScore == null || (state.getTeamScores().isEmpty() && state.isSortedByTeam()))
             return;
 
@@ -923,10 +926,8 @@ public final class ClientHudOverlays
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         g.blit(FlansModTextures.TEXTURE_GUI_TEAMSSCORES, centre - TEAM_INFO_HALF_WIDTH, 0, TEAM_INFO_U, TEAM_INFO_V, TEAM_INFO_HALF_WIDTH * 2, TEAM_INFO_HEIGHT, 256, 256);
 
-        if (teamGame)
+        if (left != null && right != null)
         {
-            PacketTeamsState.TeamScore left = state.getTeamScores().get(0);
-            PacketTeamsState.TeamScore right = state.getTeamScores().get(1);
             drawTeamColourBlock(g, centre - TEAM_INFO_HALF_WIDTH, TEAM_COLOUR_LEFT_U, left.colour());
             drawTeamColourBlock(g, centre + TEAM_INFO_HALF_WIDTH - TEAM_COLOUR_WIDTH, TEAM_COLOUR_RIGHT_U, right.colour());
             RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
@@ -936,6 +937,8 @@ public final class ClientHudOverlays
             g.drawString(font, leftScore, centre - 36, 8, HUD_WHITE, true);
             g.drawString(font, rightScore, centre + 34 - font.width(rightScore), 8, HUD_WHITE, true);
         }
+        else if (sideIds.size() > 2)
+            drawSideScores(g, font, state, sideIds, centre);
 
         g.drawString(font, state.getGameType(), centre + 47, 8, HUD_WHITE, true);
         g.drawString(font, state.getMapName(), centre - 48 - font.width(state.getMapName()), 8, HUD_WHITE, true);
@@ -956,6 +959,21 @@ public final class ClientHudOverlays
     {
         int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
         return String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60);
+    }
+
+    /** With more than two sides the banner has no end for each, so their scores go in a row under the clock, each in its colour. */
+    private static void drawSideScores(GuiGraphics g, Font font, PacketTeamsState state, List<Integer> sideIds, int centre)
+    {
+        List<PacketTeamsState.TeamScore> sides = sideIds.stream().map(state::getTeamScore).filter(Objects::nonNull).toList();
+        int gap = 10;
+        int width = sides.stream().mapToInt(side -> font.width(Integer.toString(side.score()))).sum() + gap * Math.max(0, sides.size() - 1);
+        int x = centre - width / 2;
+        for (PacketTeamsState.TeamScore side : sides)
+        {
+            String score = Integer.toString(side.score());
+            g.drawString(font, score, x, 40, 0xFF000000 | side.colour(), true);
+            x += font.width(score) + gap;
+        }
     }
 
     /** Tints one end of the banner with a team's colour. */

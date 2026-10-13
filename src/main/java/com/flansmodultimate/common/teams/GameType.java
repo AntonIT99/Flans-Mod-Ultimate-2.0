@@ -21,24 +21,62 @@ import java.util.*;
 @Getter
 public abstract class GameType
 {
+    /**
+     * How many teams a round of a game type takes and how many sides they may form. Teams on the
+     * same side are allied; a game type that needs as many sides as teams has no alliances.
+     */
+    public record TeamLimits(int minTeams, int maxTeams, int minSides, int maxSides)
+    {
+        /** Exactly this many teams, each on its own side. */
+        public static TeamLimits exactly(int teams)
+        {
+            return new TeamLimits(teams, teams, teams, teams);
+        }
+
+        /** Two to {@link TeamsRound#MAX_TEAMS} teams forming two to {@code maxSides} sides. */
+        public static TeamLimits upToSides(int maxSides)
+        {
+            return new TeamLimits(2, TeamsRound.MAX_TEAMS, 2, maxSides);
+        }
+
+        /** Why these teams and sides cannot play, or null when they can. */
+        @Nullable
+        public String describeRefusal(int teams, int sides)
+        {
+            if (teams < minTeams || teams > maxTeams)
+                return "requires " + describe(minTeams, maxTeams, "team");
+            if (sides < minSides || sides > maxSides)
+                return "requires " + describe(minSides, maxSides, "side");
+            return null;
+        }
+
+        /** The limits in words, as the game type list shows them. */
+        public String describe()
+        {
+            String teams = describe(minTeams, maxTeams, "team");
+            return minSides == minTeams && maxSides == maxTeams ? teams : teams + " on " + describe(minSides, maxSides, "side");
+        }
+
+        private static String describe(int minimum, int maximum, String noun)
+        {
+            String plural = maximum == 1 ? noun : noun + "s";
+            return minimum == maximum ? minimum + " " + plural : minimum + " to " + maximum + " " + plural;
+        }
+    }
+
     private static final Map<String, GameType> TYPES = new LinkedHashMap<>();
 
     private final String id;
     private final String name;
-    private final int requiredTeams;
+    private final TeamLimits teamLimits;
     /** Whether the rounds generator may pick this game type. */
     private final boolean allowedForRoundsGenerator;
 
-    protected GameType(String id, String name, int requiredTeams)
-    {
-        this(id, name, requiredTeams, true);
-    }
-
-    protected GameType(String id, String name, int requiredTeams, boolean allowedForRoundsGenerator)
+    protected GameType(String id, String name, TeamLimits teamLimits, boolean allowedForRoundsGenerator)
     {
         this.id = id.toLowerCase(Locale.ROOT);
         this.name = name;
-        this.requiredTeams = requiredTeams;
+        this.teamLimits = teamLimits;
         this.allowedForRoundsGenerator = allowedForRoundsGenerator;
         if (TYPES.putIfAbsent(this.id, this) != null)
             throw new IllegalStateException("Duplicate game type: " + id);
@@ -58,7 +96,7 @@ public abstract class GameType
         TeamsManager manager = TeamsManager.getInstance();
         Team victimTeam = manager.getPlayerTeam(victim);
         Team attackerTeam = manager.getPlayerTeam(attacker);
-        return victimTeam != Team.SPECTATORS && attackerTeam != null && victimTeam != null && (victimTeam != attackerTeam || isFriendlyFireEnabled());
+        return victimTeam != Team.SPECTATORS && attackerTeam != null && victimTeam != null && (!manager.areAllied(victimTeam, attackerTeam) || isFriendlyFireEnabled());
     }
 
     public boolean playerAttacked(ServerPlayer player, DamageSource source)
@@ -176,17 +214,19 @@ public abstract class GameType
     }
 
     /**
-     * The team that won the round that just ended, or null for a draw.
+     * The team that won the round that just ended, or null for a draw. Its allies won with it, so
+     * the winner of an alliance is reported as the first team of that side.
      *
      * <p>
-     * A team that met the winning condition takes it; when the clock ran out instead, the team
+     * A side that met the winning condition takes it; when the clock ran out instead, the side
      * ahead on score does, and level scores are a draw.
      * </p>
      */
     @Nullable
     public Team getWinner(TeamsManager manager)
     {
-        List<Team> teams = manager.getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream()).map(Team::getTeam).filter(Objects::nonNull).toList();
+        // Allies share a score, so comparing every team would call any alliance a tie with itself.
+        List<Team> teams = manager.getCurrentRound().stream().flatMap(round -> round.getSideIds().stream().map(round::getSideLeader)).filter(Objects::nonNull).toList();
         for (Team team : teams)
             if (hasWinner(manager, team))
                 return team;
@@ -219,16 +259,23 @@ public abstract class GameType
         return List.of();
     }
 
-    /** Round team id shown on the left of the objective HUD: the attackers where a mode has them. */
-    public int getAttackingTeamId()
+    /** Side id shown on the left of the objective HUD: the attackers where a mode has them. */
+    public int getAttackingTeamId(TeamsRound round)
     {
-        return 2;
+        return sideId(round, 0);
     }
 
-    /** Round team id shown on the right of the objective HUD: the defenders where a mode has them. */
-    public int getDefendingTeamId()
+    /** Side id shown on the right of the objective HUD: the defenders where a mode has them. */
+    public int getDefendingTeamId(TeamsRound round)
     {
-        return 3;
+        return sideId(round, 1);
+    }
+
+    /** The side id of the side at {@code index} in round order, or 0 when the round has fewer sides. */
+    protected static int sideId(TeamsRound round, int index)
+    {
+        List<Integer> sideIds = round.getSideIds();
+        return index < sideIds.size() ? sideIds.get(index) : 0;
     }
 
     /** Seconds a dead player of the given round team waits on the deployment map before choosing a spawn. */

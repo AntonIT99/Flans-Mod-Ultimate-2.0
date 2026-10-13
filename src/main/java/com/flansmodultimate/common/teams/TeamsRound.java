@@ -5,22 +5,46 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
+/**
+ * One entry of the rotation: a map, a game type and the teams that play it.
+ *
+ * <p>
+ * The teams are grouped into sides. Teams on the same side are allied: they share one score, hold
+ * capture points together and win or lose together. A round saved without sides puts every team
+ * on a side of its own, which is how rounds were played before alliances existed.
+ * </p>
+ *
+ * <p>
+ * Players and bases carry a <em>round team id</em>: 0 for none, 1 for spectators and 2 onwards for
+ * the teams in round order. A side goes by the round team id of its first team, its <em>side
+ * id</em>, so in a round without alliances the two are the same number.
+ * </p>
+ */
 @Getter
 public final class TeamsRound implements Comparable<TeamsRound>
 {
+    /** Most teams a round can hold, whatever its game type allows. */
+    public static final int MAX_TEAMS = 8;
+    /** Most sides a round can hold, whatever its game type allows. */
+    public static final int MAX_SIDES = 4;
+    /** Round team id of the first team of a round; the ids below it mean nobody and the spectators. */
+    public static final int FIRST_TEAM_ID = 2;
+
+    /** The teams of a round and the side each one is on, as two parallel lists. */
+    public record Lineup(List<String> teamIds, List<Integer> sides)
+    {}
+
     private static final String NBT_ID = "id";
     private static final String NBT_MAP = "map";
     private static final String NBT_GAME_TYPE = "game_type";
     private static final String NBT_TEAMS = "teams";
+    private static final String NBT_SIDES = "sides";
     private static final String NBT_TIME_LIMIT = "time_limit";
     private static final String NBT_SCORE_LIMIT = "score_limit";
     private static final String NBT_POPULARITY = "popularity";
@@ -30,26 +54,66 @@ public final class TeamsRound implements Comparable<TeamsRound>
     private final String mapId;
     private final String gameTypeId;
     private final List<String> teamIds;
+    /** Side of each team, parallel to {@link #teamIds} and numbered from 0 in order of first appearance. */
+    private final List<Integer> sides;
     private final int timeLimitMinutes;
     private int scoreLimit;
     private final float popularity;
     private int roundsSincePlayed;
 
+    /** A round in which every team fights for itself. */
     public TeamsRound(String mapId, String gameTypeId, List<String> teamIds, int timeLimitMinutes, int scoreLimit)
     {
-        this(UUID.randomUUID(), mapId, gameTypeId, teamIds, timeLimitMinutes, scoreLimit, 0.5F, 0);
+        this(mapId, gameTypeId, teamIds, List.of(), timeLimitMinutes, scoreLimit);
     }
 
-    private TeamsRound(UUID id, String mapId, String gameTypeId, List<String> teamIds, int timeLimitMinutes, int scoreLimit, float popularity, int roundsSincePlayed)
+    /**
+     * @param sides
+     *            the side of each team, parallel to {@code teamIds}; teams given the same number are allied.
+     *            Anything that does not line up with the teams puts each team on its own side.
+     */
+    public TeamsRound(String mapId, String gameTypeId, List<String> teamIds, List<Integer> sides, int timeLimitMinutes, int scoreLimit)
+    {
+        this(UUID.randomUUID(), mapId, gameTypeId, teamIds, sides, timeLimitMinutes, scoreLimit, 0.5F, 0);
+    }
+
+    // The saved form of a round has this many independent values.
+    @SuppressWarnings("java:S107")
+    private TeamsRound(UUID id, String mapId, String gameTypeId, List<String> teamIds, List<Integer> sides, int timeLimitMinutes, int scoreLimit, float popularity, int roundsSincePlayed)
     {
         this.id = id;
-        this.mapId = Objects.requireNonNull(mapId).toLowerCase(java.util.Locale.ROOT);
-        this.gameTypeId = Objects.requireNonNull(gameTypeId).toLowerCase(java.util.Locale.ROOT);
-        this.teamIds = teamIds.stream().map(idValue -> idValue.toLowerCase(java.util.Locale.ROOT)).toList();
+        this.mapId = Objects.requireNonNull(mapId).toLowerCase(Locale.ROOT);
+        this.gameTypeId = Objects.requireNonNull(gameTypeId).toLowerCase(Locale.ROOT);
+        this.teamIds = teamIds.stream().map(idValue -> idValue.toLowerCase(Locale.ROOT)).toList();
+        this.sides = normaliseSides(sides, this.teamIds.size());
         this.timeLimitMinutes = Math.max(1, timeLimitMinutes);
         this.scoreLimit = Math.max(1, scoreLimit);
         this.popularity = Math.max(0F, Math.min(1F, popularity));
         this.roundsSincePlayed = Math.max(0, roundsSincePlayed);
+    }
+
+    /** Renumbers sides from 0 in order of first appearance, or gives every team its own when they do not match the teams. */
+    static List<Integer> normaliseSides(List<Integer> sides, int teamCount)
+    {
+        List<Integer> normalised = new ArrayList<>(teamCount);
+        if (sides.size() != teamCount)
+        {
+            for (int i = 0; i < teamCount; i++)
+                normalised.add(i);
+            return List.copyOf(normalised);
+        }
+        List<Integer> seen = new ArrayList<>();
+        for (Integer side : sides)
+        {
+            int index = seen.indexOf(side);
+            if (index < 0)
+            {
+                index = seen.size();
+                seen.add(side);
+            }
+            normalised.add(index);
+        }
+        return List.copyOf(normalised);
     }
 
     public int getTimeLimitTicks()
@@ -97,7 +161,134 @@ public final class TeamsRound implements Comparable<TeamsRound>
         if (Team.SPECTATORS.equals(team))
             return 1;
         int index = teamIds.indexOf(team.getShortName());
-        return index < 0 ? 0 : index + 2;
+        return index < 0 ? 0 : index + FIRST_TEAM_ID;
+    }
+
+    // --- Sides ---
+
+    /** Number of sides fighting each other in this round. */
+    public int getSideCount()
+    {
+        return (int) sides.stream().distinct().count();
+    }
+
+    /** Whether any side of this round is made of more than one team. */
+    public boolean hasAlliances()
+    {
+        return getSideCount() < teamIds.size();
+    }
+
+    /**
+     * The side id a round team id belongs to: the round team id of the first team on its side.
+     * Ids that are not a team of this round, such as nobody and the spectators, are returned as they are.
+     */
+    public int getSideId(int teamId)
+    {
+        int index = teamId - FIRST_TEAM_ID;
+        if (index < 0 || index >= sides.size())
+            return teamId;
+        return sides.indexOf(sides.get(index)) + FIRST_TEAM_ID;
+    }
+
+    /** The side id a team fights for, 0 for a team that is not in this round and 1 for the spectators. */
+    public int getSideId(@Nullable Team team)
+    {
+        return getSideId(getTeamId(team));
+    }
+
+    /** The side ids of this round, in the order their first teams were listed. */
+    public List<Integer> getSideIds()
+    {
+        List<Integer> ids = new ArrayList<>();
+        for (int i = 0; i < sides.size(); i++)
+            if (sides.indexOf(sides.get(i)) == i)
+                ids.add(i + FIRST_TEAM_ID);
+        return ids;
+    }
+
+    /** The first team of a side, which is the one the score of the whole side is kept under. */
+    @Nullable
+    public Team getSideLeader(int sideId)
+    {
+        return getTeam(getSideId(sideId) - FIRST_TEAM_ID);
+    }
+
+    /** Every team of a side, in round order; empty for an id that is not a side of this round. */
+    public List<Team> getTeamsOnSide(int sideId)
+    {
+        List<Team> teams = new ArrayList<>();
+        for (int i = 0; i < teamIds.size(); i++)
+        {
+            Team team = getTeam(i);
+            if (team != null && getSideId(i + FIRST_TEAM_ID) == sideId)
+                teams.add(team);
+        }
+        return teams;
+    }
+
+    /** Whether two teams fight on the same side of this round. A team is its own ally; outsiders are nobody's. */
+    public boolean areAllied(@Nullable Team first, @Nullable Team second)
+    {
+        int firstSide = getSideId(first);
+        return firstSide >= FIRST_TEAM_ID && firstSide == getSideId(second);
+    }
+
+    /** The names of the teams of a side in their colours, joined with ampersands. */
+    public Component getSideDisplayComponent(int sideId)
+    {
+        MutableComponent name = Component.empty();
+        List<Team> teams = getTeamsOnSide(sideId);
+        for (int i = 0; i < teams.size(); i++)
+        {
+            if (i > 0)
+                name.append(" & ");
+            name.append(teams.get(i).getDisplayComponent());
+        }
+        return name;
+    }
+
+    /** The short names of the teams as an operator writes them: allies joined by {@code +}, sides by {@code vs}. */
+    public String describeTeams()
+    {
+        List<String> parts = new ArrayList<>();
+        for (int sideId : getSideIds())
+        {
+            List<String> members = new ArrayList<>();
+            for (int i = 0; i < teamIds.size(); i++)
+                if (getSideId(i + FIRST_TEAM_ID) == sideId)
+                    members.add(teamIds.get(i));
+            parts.add(String.join("+", members));
+        }
+        return String.join(" vs ", parts);
+    }
+
+    /**
+     * Reads the teams of a round as an operator writes them. Each argument is one side with its
+     * allied teams joined by {@code +}; an argument may also hold several sides separated by commas.
+     * Blank names are skipped, so stray separators do no harm.
+     */
+    public static Lineup parseLineup(List<String> sideArguments)
+    {
+        List<String> teams = new ArrayList<>();
+        List<Integer> sides = new ArrayList<>();
+        int side = 0;
+        for (String argument : sideArguments)
+        {
+            for (String members : argument.split(","))
+            {
+                int before = teams.size();
+                for (String team : members.split("\\+"))
+                {
+                    if (team.isBlank())
+                        continue;
+                    teams.add(team.strip());
+                    sides.add(side);
+                }
+                if (teams.size() > before)
+                    side++;
+            }
+        }
+        return new Lineup(List.copyOf(teams), List.copyOf(sides));
     }
 
     public CompoundTag save()
@@ -109,6 +300,7 @@ public final class TeamsRound implements Comparable<TeamsRound>
         ListTag teams = new ListTag();
         teamIds.forEach(team -> teams.add(StringTag.valueOf(team)));
         tag.put(NBT_TEAMS, teams);
+        tag.putIntArray(NBT_SIDES, sides);
         tag.putInt(NBT_TIME_LIMIT, timeLimitMinutes);
         tag.putInt(NBT_SCORE_LIMIT, scoreLimit);
         tag.putFloat(NBT_POPULARITY, popularity);
@@ -119,9 +311,11 @@ public final class TeamsRound implements Comparable<TeamsRound>
     public static TeamsRound load(CompoundTag tag)
     {
         List<String> teams = tag.getList(NBT_TEAMS, Tag.TAG_STRING).stream().map(Tag::getAsString).toList();
+        // Rounds saved before alliances existed have no sides, which reads as an empty array.
+        List<Integer> sides = java.util.Arrays.stream(tag.getIntArray(NBT_SIDES)).boxed().toList();
         UUID id = tag.hasUUID(NBT_ID) ? tag.getUUID(NBT_ID) : UUID.randomUUID();
-        return new TeamsRound(id, tag.getString(NBT_MAP), tag.getString(NBT_GAME_TYPE), teams,
-            tag.getInt(NBT_TIME_LIMIT), tag.getInt(NBT_SCORE_LIMIT), tag.getFloat(NBT_POPULARITY), tag.getInt(NBT_ROUNDS_SINCE_PLAYED));
+        return new TeamsRound(id, tag.getString(NBT_MAP), tag.getString(NBT_GAME_TYPE), teams, sides, tag.getInt(NBT_TIME_LIMIT), tag.getInt(NBT_SCORE_LIMIT), tag.getFloat(NBT_POPULARITY),
+            tag.getInt(NBT_ROUNDS_SINCE_PLAYED));
     }
 
     @Override

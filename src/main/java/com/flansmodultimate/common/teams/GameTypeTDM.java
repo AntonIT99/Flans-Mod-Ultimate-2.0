@@ -17,12 +17,12 @@ public class GameTypeTDM extends GameType
 
     GameTypeTDM()
     {
-        this("tdm", "Team Deathmatch", 2);
+        this("tdm", "Team Deathmatch", TeamLimits.upToSides(TeamsRound.MAX_SIDES));
     }
 
-    protected GameTypeTDM(String id, String name, int requiredTeams)
+    protected GameTypeTDM(String id, String name, TeamLimits teamLimits)
     {
-        super(id, name, requiredTeams);
+        super(id, name, teamLimits, true);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class GameTypeTDM extends GameType
         Team attackerTeam = manager.getPlayerTeam(attacker);
         Team victimTeam = manager.getPlayerTeam(victim);
         PlayerData attackerData = PlayerData.getInstance(attacker);
-        if (attackerTeam == victimTeam)
+        if (attackerTeam == victimTeam || manager.areAllied(attackerTeam, victimTeam))
         {
             attackerData.setScore(attackerData.getScore() - 1);
             return;

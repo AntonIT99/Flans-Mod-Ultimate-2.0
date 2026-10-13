@@ -45,7 +45,11 @@ public final class PacketTeamsState implements IClientPacket
     }
     public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass)
     {}
-    public record TeamScore(String id, String name, int colour, int score, List<PlayerScore> players)
+    /**
+     * A team of the round. Allied teams carry the same {@code sideId}, the round team id of the first
+     * team of their side, and the same {@code score}, which belongs to the side as a whole.
+     */
+    public record TeamScore(String id, String name, int colour, int score, int sideId, List<PlayerScore> players)
     {}
     public record VoteOption(String mapName, String gameType, String teams, int votes)
     {}
@@ -78,6 +82,8 @@ public final class PacketTeamsState implements IClientPacket
     private int playerPrestige;
     /** Round team id the viewer plays or is about to play for; 0 when they have none. */
     private int playerTeamId;
+    /** Side id of that team: the id capture points are owned under and allies have in common. */
+    private int playerSideId;
     private ObjectiveMode objectiveMode = ObjectiveMode.NONE;
     private int attackingTeamId;
     private int defendingTeamId;
@@ -129,6 +135,7 @@ public final class PacketTeamsState implements IClientPacket
         packet.sortedByTeam = gameType == null || gameType.isScoreboardSortedByTeam();
         packet.showZombieScore = gameType != null && gameType.showZombieScore();
         packet.playerTeamId = round.getTeamId(selectedTeam);
+        packet.playerSideId = round.getSideId(selectedTeam);
         if (gameType != null && gameType.getObjectiveMode() != ObjectiveMode.NONE)
             packet.describeObjectives(manager, viewer, round, gameType, shared);
 
@@ -168,8 +175,8 @@ public final class PacketTeamsState implements IClientPacket
     private void describeObjectives(TeamsManager manager, ServerPlayer viewer, TeamsRound round, GameType type, SharedScoreboard shared)
     {
         objectiveMode = type.getObjectiveMode();
-        attackingTeamId = type.getAttackingTeamId();
-        defendingTeamId = type.getDefendingTeamId();
+        attackingTeamId = type.getAttackingTeamId(round);
+        defendingTeamId = type.getDefendingTeamId(round);
         deployDelaySeconds = type.getDeployDelaySeconds(manager, playerTeamId);
         canEditDeployLayout = viewer.hasPermissions(2);
         objectives = shared.objectives();
@@ -196,7 +203,7 @@ public final class PacketTeamsState implements IClientPacket
                 continue;
             List<PlayerScore> players = manager.getPlayersOnTeam(team).stream().map(PacketTeamsState::playerScore)
                 .sorted(Comparator.comparingInt(PlayerScore::score).reversed().thenComparing(PlayerScore::name, String.CASE_INSENSITIVE_ORDER)).toList();
-            scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), players));
+            scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), round.getSideId(team), players));
         }
 
         int[] votes = new int[manager.getVoteOptions().size()];
@@ -212,7 +219,8 @@ public final class PacketTeamsState implements IClientPacket
             TeamsRound option = manager.getVoteOptions().get(i);
             String map = manager.getMap(option.getMapId()).map(TeamsMap::getName).orElse(option.getMapId());
             GameType type = option.getGametype();
-            String teams = option.getTeamIds().stream().map(Team::getTeam).filter(java.util.Objects::nonNull).map(Team::getName).reduce((left, right) -> left + " vs " + right).orElse("");
+            String teams = option.getSideIds().stream().map(sideId -> option.getSideDisplayComponent(sideId).getString()).filter(side -> !side.isEmpty()).reduce((left, right) -> left + " vs " + right)
+                .orElse("");
             options.add(new VoteOption(map, type == null ? option.getGameTypeId() : type.getName(), teams, votes[i]));
         }
         GameType gameType = round.getGametype();
@@ -268,6 +276,7 @@ public final class PacketTeamsState implements IClientPacket
             buf.writeUtf(team.name());
             buf.writeInt(team.colour());
             buf.writeVarInt(team.score());
+            buf.writeVarInt(team.sideId());
             buf.writeCollection(team.players(), PacketTeamsState::writePlayer);
         });
         data.writeCollection(voteOptions, (buf, option) ->
@@ -279,6 +288,7 @@ public final class PacketTeamsState implements IClientPacket
         });
         data.writeVarInt(playerPrestige);
         data.writeVarInt(playerTeamId);
+        data.writeVarInt(playerSideId);
         data.writeBoolean(roundDecided);
         data.writeUtf(winnerId);
         data.writeByte(objectiveMode.ordinal());
@@ -337,10 +347,11 @@ public final class PacketTeamsState implements IClientPacket
         classChoices = new ArrayList<>(classCount);
         for (int i = 0; i < classCount; i++)
             classChoices.add(new ClassChoice(data.readUtf(), data.readUtf(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readVarInt() - 1, PacketIO.readItems(data)));
-        teamScores = data.readList(buf -> new TeamScore(buf.readUtf(), buf.readUtf(), buf.readInt(), buf.readVarInt(), buf.readList(PacketTeamsState::readPlayer)));
+        teamScores = data.readList(buf -> new TeamScore(buf.readUtf(), buf.readUtf(), buf.readInt(), buf.readVarInt(), buf.readVarInt(), buf.readList(PacketTeamsState::readPlayer)));
         voteOptions = data.readList(buf -> new VoteOption(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readVarInt()));
         playerPrestige = data.readVarInt();
         playerTeamId = data.readVarInt();
+        playerSideId = data.readVarInt();
         roundDecided = data.readBoolean();
         winnerId = data.readUtf();
         objectiveMode = ObjectiveMode.byOrdinal(data.readUnsignedByte());
@@ -533,11 +544,50 @@ public final class PacketTeamsState implements IClientPacket
         return winnerId;
     }
 
-    /** The team score of a round team id, or null when the round has no such team. */
+    public int getPlayerSideId()
+    {
+        return playerSideId;
+    }
+
+    /**
+     * The team score of a round team id, or null when the round has no such team. Given a side id
+     * it is the first team of that side, whose colour and score stand for the whole side.
+     */
     @Nullable
     public TeamScore getTeamScore(int teamId)
     {
-        int index = teamId - 2;
+        int index = teamId - TeamsRound.FIRST_TEAM_ID;
         return index >= 0 && index < teamScores.size() ? teamScores.get(index) : null;
+    }
+
+    /** The side ids of the round in order, one for each group of allied teams. */
+    public List<Integer> getSideIds()
+    {
+        return teamScores.stream().map(TeamScore::sideId).distinct().toList();
+    }
+
+    /** The teams fighting on a side, in round order. */
+    public List<TeamScore> getTeamsOnSide(int sideId)
+    {
+        return teamScores.stream().filter(team -> team.sideId() == sideId).toList();
+    }
+
+    /** The names of the teams of a side, joined with ampersands. */
+    public String getSideName(int sideId)
+    {
+        return getTeamsOnSide(sideId).stream().map(TeamScore::name).reduce((left, right) -> left + " & " + right).orElse("");
+    }
+
+    /** The side id of a team by short name, or 0 for one that is not playing this round. */
+    public int getSideId(String teamId)
+    {
+        return teamScores.stream().filter(team -> team.id().equals(teamId)).mapToInt(TeamScore::sideId).findFirst().orElse(0);
+    }
+
+    /** Whether two teams, by short name, fight on the same side of the round. */
+    public boolean areAllied(String firstTeamId, String secondTeamId)
+    {
+        int side = getSideId(firstTeamId);
+        return side >= TeamsRound.FIRST_TEAM_ID && side == getSideId(secondTeamId);
     }
 }

@@ -11,10 +11,10 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 /**
- * Conquest from the Labjac fork: both teams may stand on a capture point and the side with more
- * players takes it. The team holding more points gains score until one reaches the score limit.
+ * Conquest from the Labjac fork: every side may stand on a capture point and the one with the most
+ * players takes it. The side holding the most points gains score until one reaches the score limit.
  * Dead players choose on the deployment map whether to come back at headquarters or at a point
- * their team holds.
+ * their side holds.
  */
 public final class GameTypeConquest extends GameTypeObjective
 {
@@ -32,7 +32,7 @@ public final class GameTypeConquest extends GameTypeObjective
 
     GameTypeConquest()
     {
-        super("con", "Conquest", DEFAULT_CAPTURE_TICKS);
+        super("con", "Conquest", TeamLimits.upToSides(TeamsRound.MAX_SIDES), DEFAULT_CAPTURE_TICKS);
     }
 
     @Override
@@ -49,13 +49,14 @@ public final class GameTypeConquest extends GameTypeObjective
     }
 
     @Override
-    protected CaptureState initialState(List<ITeamCapturePoint> points, int index)
+    protected CaptureState initialState(TeamsRound round, List<ITeamCapturePoint> points, int index)
     {
-        if (!preCaptureEndPoints || points.size() < 2)
+        // A line of points only has two ends, so only two sides can start with one each.
+        if (!preCaptureEndPoints || points.size() < 2 || round.getSideCount() != 2)
             return CaptureState.NEUTRAL;
         if (index == 0)
-            return CaptureState.ownedBy(FIRST_TEAM_ID);
-        return index == points.size() - 1 ? CaptureState.ownedBy(SECOND_TEAM_ID) : CaptureState.NEUTRAL;
+            return CaptureState.ownedBy(sideId(round, 0));
+        return index == points.size() - 1 ? CaptureState.ownedBy(sideId(round, 1)) : CaptureState.NEUTRAL;
     }
 
     @Override
@@ -64,7 +65,7 @@ public final class GameTypeConquest extends GameTypeObjective
         for (ITeamCapturePoint point : points)
         {
             CaptureScan scan = CaptureScan.of(point, level, round);
-            CaptureRules.Result result = CaptureRules.pressure(point.getCaptureState(), FIRST_TEAM_ID, scan.count(FIRST_TEAM_ID), SECOND_TEAM_ID, scan.count(SECOND_TEAM_ID), captureTicks);
+            CaptureRules.Result result = CaptureRules.pressure(point.getCaptureState(), scan.counts(), captureTicks);
             point.setCaptureState(result.state());
             if (result.event() == CaptureRules.Event.CAPTURED)
                 pointCaptured(manager, round, point, scan, result.state().ownerTeamId(), "message.flansmodultimate.teams.point_captured");
@@ -100,7 +101,7 @@ public final class GameTypeConquest extends GameTypeObjective
         if (preferred != null && !HEADQUARTERS.equals(preferred))
         {
             ITeamCapturePoint point = manager.getCapturePoints().stream().filter(candidate -> candidate.getObjectId().equals(preferred)).findFirst().orElse(null);
-            Vec3 spawn = point != null && point.getOwnerId() == teamId ? spawnAt(manager, point) : null;
+            Vec3 spawn = point != null && point.getOwnerId() == sideIdOf(manager, player) ? spawnAt(manager, point) : null;
             if (spawn != null)
                 return spawn;
             // The point was lost or lost its spawner; the choice falls back to headquarters for good.

@@ -11,10 +11,15 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 
-/** Carries render context through borrowed buffers, copies visual policies to Flan models and immediately hides killed bodies when requested. */
+/**
+ * Carries render context through borrowed buffers, copies visual policies to Flan models, immediately hides killed bodies when requested
+ * and leaves the body of an invisible NPC undrawn.
+ */
 @Mixin(value = RenderCustomNpc.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
 public abstract class NpcRenderContextMixin
@@ -43,6 +48,18 @@ public abstract class NpcRenderContextMixin
     private void wolffsmodnpcsRenderStarted(EntityCustomNpc npc, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, CallbackInfo callback)
     {
         wolffsmodnpcsRenderStarted = NpcProfiler.client() ? System.nanoTime() : 0L;
+    }
+
+    /**
+     * Custom NPCs gives its humanoid body a render type whether or not the body is visible. An invisible NPC, which is one
+     * wearing Flan armor that hides its wearer, is drawn as vanilla draws an invisible mob: only its outline while it glows.
+     */
+    @SuppressWarnings("unchecked") // The renderer's entity type is erased; every RenderCustomNpc draws an EntityCustomNpc.
+    @Inject(method = "getRenderType(Lnoppes/npcs/entity/EntityCustomNpc;ZZZ)Lnet/minecraft/client/renderer/RenderType;", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsInvisibleBody(EntityCustomNpc npc, boolean bodyVisible, boolean translucent, boolean glowing, CallbackInfoReturnable<RenderType> callback)
+    {
+        if (!bodyVisible && !translucent)
+            callback.setReturnValue(glowing ? RenderType.outline(((RenderCustomNpc<EntityCustomNpc, ?>) (Object) this).getTextureLocation(npc)) : null);
     }
 
     @Inject(method = "render(Lnoppes/npcs/entity/EntityCustomNpc;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("RETURN"))

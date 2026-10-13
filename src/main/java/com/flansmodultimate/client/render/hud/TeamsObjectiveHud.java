@@ -38,6 +38,8 @@ public final class TeamsObjectiveHud
     private static final int BAR_WIDTH = 76;
     private static final int BAR_HEIGHT = 7;
     private static final int BAR_GAP = 28;
+    private static final int SIDE_BAR_WIDTH = 46;
+    private static final int SIDE_BAR_GAP = 6;
     private static final int ICON_SIZE = 10;
     private static final int ICON_GAP = 5;
     /** How far to either side of straight ahead the compass cue slides before it turns into an arrow. */
@@ -73,6 +75,16 @@ public final class TeamsObjectiveHud
         ObjectiveSnapshot standingOn = standingOn(player, shown);
 
         int limit = Math.max(1, state.getScoreLimit());
+        List<Integer> sideIds = state.getSideIds();
+        if (sideIds.size() > 2)
+        {
+            drawSideBars(graphics, font, state, sideIds, centre, limit);
+            int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
+            String line = state.getMapName() + "  " + String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60) + "  " + state.getGameType();
+            drawCentred(graphics, font, line, centre, TOP + 9, 0.62F, TEXT);
+            drawObjectives(graphics, font, state, player, objectives, shown, standingOn, centre);
+            return true;
+        }
         if (assault)
         {
             // Defenders are measured in objectives they still hold, attackers in reinforcements left.
@@ -90,7 +102,16 @@ public final class TeamsObjectiveHud
         drawCentred(graphics, font, String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60), centre, TOP + 1, 0.72F, TEXT);
         drawCentred(graphics, font, state.getMapName(), leftX + BAR_WIDTH / 2, TOP + 9, 0.62F, TEXT);
         drawCentred(graphics, font, state.getGameType(), rightX + BAR_WIDTH / 2, TOP + 9, 0.62F, TEXT);
+        drawObjectives(graphics, font, state, player, objectives, shown, standingOn, centre);
+        return true;
+    }
 
+    /** The row of capture point squares and, under it, the compass cue towards the one worth going for. */
+    // The banner is laid out around these values; bundling them would only move the list elsewhere.
+    @SuppressWarnings("java:S107")
+    private static void drawObjectives(GuiGraphics graphics, Font font, PacketTeamsState state, LocalPlayer player, List<ObjectiveSnapshot> objectives, List<ObjectiveSnapshot> shown,
+        @Nullable ObjectiveSnapshot standingOn, int centre)
+    {
         int rowWidth = shown.size() * ICON_SIZE + Math.max(0, shown.size() - 1) * ICON_GAP;
         for (int i = 0; i < shown.size(); i++)
             drawObjective(graphics, font, state, shown.get(i), centre - rowWidth / 2 + i * (ICON_SIZE + ICON_GAP), TOP + 15, shown.get(i) == standingOn);
@@ -98,7 +119,27 @@ public final class TeamsObjectiveHud
         ObjectiveSnapshot target = navigationTarget(state, objectives, player);
         if (target != null)
             drawNavigation(graphics, font, player, target, standingOn != null && standingOn.id().equals(target.id()), centre, TOP + 28);
-        return true;
+    }
+
+    /**
+     * With more than two sides there is no single enemy whose score is this side's lost tickets,
+     * so each side gets a bar of its own filling up towards the score limit.
+     */
+    private static void drawSideBars(GuiGraphics graphics, Font font, PacketTeamsState state, List<Integer> sideIds, int centre, int limit)
+    {
+        int rowWidth = sideIds.size() * SIDE_BAR_WIDTH + (sideIds.size() - 1) * SIDE_BAR_GAP;
+        for (int i = 0; i < sideIds.size(); i++)
+        {
+            PacketTeamsState.TeamScore side = state.getTeamScore(sideIds.get(i));
+            if (side == null)
+                continue;
+            int x = centre - rowWidth / 2 + i * (SIDE_BAR_WIDTH + SIDE_BAR_GAP);
+            int fill = Math.min(SIDE_BAR_WIDTH, Math.round(SIDE_BAR_WIDTH * (Math.max(0, side.score()) / (float) limit)));
+            graphics.fill(x - 1, TOP - 1, x + SIDE_BAR_WIDTH + 1, TOP + BAR_HEIGHT + 1, BAR_OUTLINE);
+            graphics.fill(x, TOP, x + SIDE_BAR_WIDTH, TOP + BAR_HEIGHT, BAR_BACKGROUND);
+            graphics.fill(x, TOP, x + fill, TOP + BAR_HEIGHT, 0xFF000000 | side.colour());
+            drawCentred(graphics, font, Integer.toString(side.score()), x + SIDE_BAR_WIDTH / 2, TOP + 1, 0.62F, 0xFFFFFFFF);
+        }
     }
 
     /** The objective an Assault is being fought over: the first one the attackers do not hold outright. */
@@ -128,7 +169,8 @@ public final class TeamsObjectiveHud
     @Nullable
     private static ObjectiveSnapshot navigationTarget(PacketTeamsState state, List<ObjectiveSnapshot> objectives, LocalPlayer player)
     {
-        int teamId = state.getPlayerTeamId();
+        // Capture points are owned by sides, so the viewer is compared by the side they fight for.
+        int teamId = state.getPlayerSideId();
         if (state.getObjectiveMode() == ObjectiveMode.ASSAULT)
             return teamId == state.getAttackingTeamId() ? frontline(objectives, state.getAttackingTeamId()) : null;
         if (state.getObjectiveMode() != ObjectiveMode.CONQUEST || teamId < 2)

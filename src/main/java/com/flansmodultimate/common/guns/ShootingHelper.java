@@ -200,7 +200,8 @@ public final class ShootingHelper
                         PlayerData dataAttacker = PlayerData.getInstance(serverPlayer);
                         Team driverTeam = dataDriver.getTeam();
                         Team attackerTeam = dataAttacker.getTeam();
-                        if (driverTeam != null && driverTeam.equals(attackerTeam))
+                        // Allied teams of a Teams round count as friends too
+                        if (driverTeam != null && (driverTeam.equals(attackerTeam) || round.areAllied(driverTeam, attackerTeam)))
                             isFriendly.set(true);
                     }
                 }

@@ -45,6 +45,7 @@ import java.util.Optional;
  * resists knockback while it is a vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
+ * <li>Flan armor that makes its wearer invisible makes the NPC invisible to the client: its body is not drawn, its armor is.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
  * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
@@ -241,6 +242,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     {
         if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquippedArmorProperties::waterBreathing))
             callback.setReturnValue(air);
+    }
+
+    /**
+     * Flan armor that makes its wearer invisible hides the NPC's body and leaves the armor drawn, as the effect does for a
+     * player. Custom NPCs ignores that effect, so the armor is read directly; only on the client, which leaves what the
+     * server makes of the NPC unchanged.
+     */
+    @Inject(method = {"isInvisible", "m_20145_"}, at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsArmorHidesBody(CallbackInfoReturnable<Boolean> callback)
+    {
+        if (level().isClientSide && !callback.getReturnValueZ() && NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquippedArmorProperties::invisibility))
+            callback.setReturnValue(true);
     }
 
     @Inject(method = {"causeFallDamage", "m_142535_"}, at = @At("HEAD"), cancellable = true)

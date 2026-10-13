@@ -19,7 +19,7 @@ public final class GameTypeCTF extends GameTypeTDM
 
     GameTypeCTF()
     {
-        super("ctf", "Capture the Flag", 2);
+        super("ctf", "Capture the Flag", TeamLimits.upToSides(TeamsRound.MAX_SIDES));
     }
 
     @Override
@@ -41,7 +41,7 @@ public final class GameTypeCTF extends GameTypeTDM
             return;
 
         PlayerData data = PlayerData.getInstance(player);
-        if (playerTeam == flagTeam)
+        if (manager.areAllied(playerTeam, flagTeam))
         {
             if (!flag.isHome() && !flag.hasCarrier())
             {

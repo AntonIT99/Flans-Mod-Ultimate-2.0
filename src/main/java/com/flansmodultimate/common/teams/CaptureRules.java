@@ -3,6 +3,8 @@ package com.flansmodultimate.common.teams;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 /**
  * Capture arithmetic shared by Domination, Conquest and Assault, ported from the game types of
  * the Labjac fork. Each rule advances a point by one server tick and reports whether that tick
@@ -85,6 +87,33 @@ public final class CaptureRules
         if (net == 0)
             return Result.unchanged(state, contested);
         return advance(state, net > 0 ? firstTeamId : secondTeamId, Math.abs(net), contested, captureTicks);
+    }
+
+    /**
+     * Conquest between any number of sides: the side with the most players on the point makes
+     * progress at the pace of its lead over the next strongest one, and a shared lead holds it still.
+     *
+     * @param counts
+     *            players on the point by side id
+     */
+    public static Result pressure(CaptureState state, Map<Integer, Integer> counts, int captureTicks)
+    {
+        int leadingSideId = 0;
+        int most = 0;
+        int nextBest = 0;
+        for (Map.Entry<Integer, Integer> entry : counts.entrySet())
+        {
+            int count = entry.getValue();
+            if (count > most)
+            {
+                nextBest = most;
+                most = count;
+                leadingSideId = entry.getKey();
+            }
+            else if (count > nextBest)
+                nextBest = count;
+        }
+        return pressure(state, leadingSideId, most, 0, nextBest, captureTicks);
     }
 
     /**
