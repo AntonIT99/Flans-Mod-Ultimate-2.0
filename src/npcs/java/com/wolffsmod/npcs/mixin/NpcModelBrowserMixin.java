@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.client.FlanSoldierBrowser;
+import com.wolffsmod.npcs.client.NpcModelNameScroll;
 import com.wolffsmod.npcs.model.*;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -11,10 +12,10 @@ import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
 import noppes.npcs.shared.client.gui.components.GuiCustomScrollNop;
 import noppes.npcs.shared.common.util.NaturalOrderComparator;
 import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -23,6 +24,7 @@ import java.util.*;
 
 /**
  * Groups ships separately, adds content-pack folders and restores parent viewports in the model picker while retaining Custom NPCs' model selection and save logic.
+ * Shows full-name hover tooltips for shortened picker entries.
  * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the button that applies that class's loadout and the toggle that keeps the NPC's own skin.
  */
 // Mixin merges this class into the target, so self-casts are valid.
@@ -61,6 +63,12 @@ public abstract class NpcModelBrowserMixin
     /** The soldier folder while the picker is inside it. */
     @Unique
     private FlanSoldierBrowser wolffsmodnpcsSoldiers;
+
+    @Redirect(method = {"init", "m_7856_"}, at = @At(value = "NEW", target = "noppes/npcs/shared/client/gui/components/GuiCustomScrollNop"))
+    private GuiCustomScrollNop wolffsmodnpcsNameTooltips(Screen parent, int id)
+    {
+        return new NpcModelNameScroll(parent, id);
+    }
 
     // Forge production uses SRG names; the development dependency uses Mojang names.
     @Inject(method = {"init", "m_7856_"}, at = @At("TAIL"))
@@ -116,7 +124,10 @@ public abstract class NpcModelBrowserMixin
                 .map(type -> ((FlanModelEntityType) type).getInfoType()).filter(Objects::nonNull).map(IContentType::getContentPack).distinct()
                 .sorted(Comparator.comparing(IContentPack::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(pack -> pack.getPath().toString())).toList();
             for (IContentPack pack : wolffsmodnpcsPacks)
-                labels.add(pack.getName());
+            {
+                String name = pack.getName();
+                labels.add(name.regionMatches(true, Math.max(0, name.length() - 4), ".zip", 0, 4) ? name.substring(0, name.length() - 4) : name);
+            }
         }
         else if (wolffsmodnpcsVariantModel != null)
         {
