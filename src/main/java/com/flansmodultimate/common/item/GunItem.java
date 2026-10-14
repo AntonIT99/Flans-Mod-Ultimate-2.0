@@ -9,7 +9,6 @@ import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.effects.PacketCancelSound;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.gun.PacketGunShootClient;
 import com.flansmodultimate.platform.item.ItemAttributes;
@@ -47,13 +46,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.IntStream;
 
 public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendereredItem<GunType>
 {
-    public static final int LOCK_ON_SOUND_RANGE = 10;
-
     public static final String NBT_AMMO = "ammo";
     public static final String NBT_SECONDARY_AMMO = "secondary_ammo";
     public static final String NBT_PREFERRED_AMMO = "preferred_ammo";
@@ -623,24 +619,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
         }
         else if (configType.getPrimaryFunction() == EnumFunction.CUSTOM_MELEE && data.isShootKeyPressed(hand))
-            gunItemHandler.doCustomMelee(level, player, data, hand);
+            gunItemHandler.doCustomMelee(player, data, hand);
 
         if (configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
-            gunItemHandler.doCustomMelee(level, player, data, hand);
+            gunItemHandler.doCustomMelee(player, data, hand);
 
         if (soundDelay > 0)
             soundDelay--;
-
-        int idleSoundDelay = data.getIdleSoundDelay(hand);
-        if (idleSoundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()) && !configType.isPoweredOff(gunStack))
-        {
-            UUID soundId = data.getIdleSoundId(hand);
-            PacketHandler.sendToDimension(level.dimension(), new PacketCancelSound(soundId));
-            PacketPlaySound.sendSoundPacket(player, configType.getIdleSoundRange(), configType.getIdleSound(), false, false, true, soundId);
-            idleSoundDelay = configType.getIdleSoundLength();
-        }
-
-        data.setIdleSoundDelay(hand, Math.max(0, idleSoundDelay - 1));
     }
 
     private void ensureGunTags(ItemStack stack)
@@ -763,7 +748,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
+        boolean tactical = getBulletItemStackList(gunStack, registries).stream()
+            .anyMatch(ammo -> GunHandlingTiming.tacticalReload(true, maxAmmo, ShootableItem.getMaxRounds(ammo), configType.getTacticalReloadTime()));
+        float baseTime = configType.getReloadTime(gunStack, tactical);
+        float reloadTime = (maxAmmo <= 1) ? baseTime : (baseTime / maxAmmo) * getReloadCount(gunStack, registries);
         return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
     }
 

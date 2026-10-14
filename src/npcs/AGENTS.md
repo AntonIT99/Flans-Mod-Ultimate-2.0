@@ -5,9 +5,10 @@
 - Custom NPCs classes may only be referenced from this module. The main mod treats Custom NPCs
   as optional and must not depend on it.
 - Keep NPC behaviour server-authoritative, and keep client-only code out of common entrypoints.
-- Mixins into Custom NPCs classes use `remap = false`. Custom NPCs is SRG-named in production and
-  Mojang-named in the development dependency, so a vanilla method it overrides is targeted by both
-  names, for example `method = {"tick", "m_8119_"}`.
+- Mixins into Custom NPCs classes use `remap = false`. On NeoForge 1.21.1, Custom NPCs and Minecraft
+  are Mojang-named in production and development, so a vanilla method it overrides is targeted by its
+  Mojang name only, for example `method = "tick"`. Merges from the Forge branch add SRG aliases such as
+  `"m_8119_"`; remove them.
 - All Custom NPCs entity hooks belong in `EntityNPCInterfaceMixin` and all fallback ranged-AI hooks
   in `EntityAIRangedAttackMixin`, following the root one-mixin-per-target rule.
 

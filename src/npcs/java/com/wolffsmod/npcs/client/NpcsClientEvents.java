@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.api.client.FlansEquipmentRender;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import noppes.npcs.CustomEntities;
 
@@ -15,6 +17,12 @@ import noppes.npcs.CustomEntities;
 @EventBusSubscriber(modid = NpcsMod.MOD_ID, value = Dist.CLIENT)
 public final class NpcsClientEvents
 {
+    @SubscribeEvent
+    public static void clientSetup(FMLClientSetupEvent event)
+    {
+        event.enqueueWork(() -> FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply));
+    }
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {

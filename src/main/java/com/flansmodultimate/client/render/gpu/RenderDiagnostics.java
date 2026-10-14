@@ -3,25 +3,55 @@ package com.flansmodultimate.client.render.gpu;
 import com.flansmodultimate.platform.render.VertexWriterPlatform;
 import com.flansmodultimate.util.FlansLog;
 
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /** Opt-in render-thread counters. No allocations; clocks are read only while recording, per driveable and per GPU draw. */
 public final class RenderDiagnostics
 {
     static boolean enabled;
-    static long hits, misses, uploads, uploadBytes, evictions, workingSetEvictions, throttled;
-    static long draws, immediateDraws, paletteEntries, stateSetups, ranges, vertices, submittedParts, culledParts, fallbackVertices, excludedScopes;
-    private static long shadowDriveables, shadowImpostors, shadowParts, shadowCulledParts, shadowEntitiesSkipped;
-    private static long bulkWrites, bulkVertices;
-    private static long frames, startNanos, stopNanos;
-    private static long driveables, driveableNanos, drawNanos, lookupNanos, paletteNanos, glDrawNanos;
+    static long hits;
+    static long misses;
+    static long uploads;
+    static long uploadBytes;
+    static long evictions;
+    static long workingSetEvictions;
+    static long throttled;
+    static long draws;
+    static long immediateDraws;
+    static long paletteEntries;
+    static long stateSetups;
+    static long ranges;
+    static long vertices;
+    static long submittedParts;
+    static long culledParts;
+    static long fallbackVertices;
+    static long excludedScopes;
+    private static long shadowDriveables;
+    private static long shadowImpostors;
+    private static long shadowParts;
+    private static long shadowCulledParts;
+    private static long shadowEntitiesSkipped;
+    private static long bulkWrites;
+    private static long bulkVertices;
+    private static long frames;
+    private static long startNanos;
+    private static long stopNanos;
+    private static long driveables;
+    private static long driveableNanos;
+    private static long drawNanos;
+    private static long lookupNanos;
+    private static long paletteNanos;
+    private static long glDrawNanos;
     /** Caller stacks of geometry changes logged per recording, to name what keeps invalidating geometry. */
     private static final int LOGGED_GEOMETRY_CHANGES = 3;
-    private static long geometryChanges, faceRevalidations, scannedRevalidations, cpuParts, cpuVertices;
+    private static long geometryChanges;
+    private static long faceRevalidations;
+    private static long scannedRevalidations;
+    private static long cpuParts;
+    private static long cpuVertices;
     private static final Map<String, long[]> cpuPartReasons = new LinkedHashMap<>();
-    private static long cachedArrayParts, uncachedArrayParts;
+    private static long cachedArrayParts;
+    private static long uncachedArrayParts;
     private static final Map<String, long[]> uncachedArrayReasons = new LinkedHashMap<>();
 
     private RenderDiagnostics()
@@ -55,7 +85,8 @@ public final class RenderDiagnostics
         startNanos = stopNanos = System.nanoTime();
     }
 
-    private static long peakBytes, peakMeshes;
+    private static long peakBytes;
+    private static long peakMeshes;
 
     /** Resident size after an upload; the peak shows saturation even after evictions or a shrink. */
     static void countResident(long bytes, int meshes)
@@ -138,8 +169,8 @@ public final class RenderDiagnostics
     {
         StringBuilder text = new StringBuilder();
         for (var entry : counts.entrySet())
-            text.append(text.length() == 0 ? " (" : ", ").append(entry.getKey()).append(' ').append(String.format(Locale.ROOT, "%.1f", entry.getValue()[0] / frames));
-        return text.length() == 0 ? "" : text.append(')').toString();
+            text.append(text.isEmpty() ? " (" : ", ").append(entry.getKey()).append(' ').append(String.format(Locale.ROOT, "%.1f", entry.getValue()[0] / frames));
+        return text.isEmpty() ? "" : text.append(')').toString();
     }
 
     /** A clock reading to pass to a matching count, or 0 while not recording. */
@@ -157,7 +188,6 @@ public final class RenderDiagnostics
         driveableNanos += System.nanoTime() - started;
     }
 
-    /** CPU time of one GPU model draw: mesh lookup, uploads, flushes, state setup and the GL calls. */
     /** Mesh cache lookup, including any upload, of one GPU draw. */
     static void countLookupTime(long started)
     {

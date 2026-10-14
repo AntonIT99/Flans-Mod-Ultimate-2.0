@@ -3,9 +3,7 @@ package com.flansmod.client.model;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.types.GunType;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import net.minecraft.util.RandomSource;
 
@@ -80,6 +78,8 @@ public class GunAnimations
     protected float switchAnimationProgress;
     @Setter
     protected float switchAnimationLength;
+    protected int secondarySwitchRemaining;
+    protected int secondarySwitchLength;
 
     /** Fancy stance / running animation stuff */
     protected float runningStanceAnimationProgress;
@@ -102,6 +102,12 @@ public class GunAnimations
         {
             this.time = time;
         }
+    }
+
+    public void beginSecondaryModeSwitch(int ticks)
+    {
+        secondarySwitchLength = Math.max(0, Math.min(1200, ticks));
+        secondarySwitchRemaining = secondarySwitchLength;
     }
 
     public void updateSprintStance(GunType type)
@@ -132,6 +138,7 @@ public class GunAnimations
 
     public void update()
     {
+        secondarySwitchRemaining = Math.max(0, secondarySwitchRemaining - 1);
         // Assign values
         lastPumped = pumped;
         lastCharged = charged;

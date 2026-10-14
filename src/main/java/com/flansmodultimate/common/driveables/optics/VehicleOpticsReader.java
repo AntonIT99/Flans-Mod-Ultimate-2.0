@@ -4,13 +4,24 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.types.TypeFile;
 
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /** Reads the Krishna optics syntax in source order, including aliases and repeated last-wins values. */
 public final class VehicleOpticsReader
 {
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+    private static final String SEAT_HUD_PREFIX = "seatoptics";
+    private static final String KEY_PILOT_OPTICS = "pilotoptics";
+    private static final String PILOT_HUD_PREFIX = KEY_PILOT_OPTICS + "hud";
+    /** Every key {@link #read} has a case for. A line with another key is not split at all, so a new case needs its key here. */
+    private static final Set<String> KEYS = Set.of("hasscope", "nightscope", "nightsight", "gunsight", "overlay", "gunsightzoom", "thermalguis", "thermalsight", "thermalvisioncolor",
+        "thermalvisioncolour", "thermalvisiongeneration", "thermalvisiongen", "showcrosshair", "hasgunsightpos", "gunsightpos", "heligui", "passengergunsight", "opticsmodeseat", "seatopticsmode",
+        KEY_PILOT_OPTICS, "driveroptics", "gunneroptic", "seatopticscamera", "opticscameraseat", "pilotopticscamera", "driveropticscamera", "gunneropticcamera", "passengerzoom", "seathasscope",
+        "passengerhasscope", "seatautoscope", "passengerautoscope", "seatnightsight", "passengernightsight", "heliguiseat", "seatoverlay", "seatgunsight", "passengergunsights", "seatgunsightzoom",
+        "seatgunsightzooms", "passengergunsightzoom", "seatthermalguis", "passengerthermalguis");
+
     private VehicleOpticsReader()
     {}
 
@@ -22,10 +33,11 @@ public final class VehicleOpticsReader
         for (String line : file.getLines())
         {
             String trimmed = line.trim();
-            if (trimmed.isEmpty() || trimmed.startsWith("//"))
+            // Most lines of a vehicle are blank, a comment or not about optics, and are not worth splitting to find that out.
+            String key = firstToken(trimmed).toLowerCase(Locale.ROOT);
+            if (!KEYS.contains(key) && !key.startsWith(SEAT_HUD_PREFIX) && !key.startsWith(PILOT_HUD_PREFIX))
                 continue;
-            String[] s = trimmed.split("\\s+");
-            String key = s[0].toLowerCase(Locale.ROOT);
+            String[] s = WHITESPACE.split(trimmed);
             try
             {
                 switch (key)
@@ -44,7 +56,7 @@ public final class VehicleOpticsReader
                     case "gunsightpos" -> driver.camera = vector(s, 1);
                     case "heligui", "passengergunsight" -> passengerOverlay = s[1];
                     case "opticsmodeseat", "seatopticsmode" -> setMode(seat(seats, s[1]), s[2]);
-                    case "pilotoptics", "driveroptics", "gunneroptic" -> setMode(seat(seats, "0"), s[1]);
+                    case KEY_PILOT_OPTICS, "driveroptics", "gunneroptic" -> setMode(seat(seats, "0"), s[1]);
                     case "seatopticscamera", "opticscameraseat" -> setCamera(seat(seats, s[1]), s, 2);
                     case "pilotopticscamera", "driveropticscamera", "gunneropticcamera" -> setCamera(seat(seats, "0"), s, 1);
                     case "passengerzoom" -> seat(seats, s[1]).zoom = VehicleOptics.positive(s[2], 1F);
@@ -66,13 +78,13 @@ public final class VehicleOpticsReader
                         optic.hasScope = true;
                     }
                     default -> {
-                        if (key.startsWith("seatoptics"))
-                            seat(seats, s[1]).hud.read(key.substring("seatoptics".length()), s, 2);
-                        else if (key.startsWith("pilotopticshud"))
+                        if (key.startsWith(SEAT_HUD_PREFIX))
+                            seat(seats, s[1]).hud.read(key.substring(SEAT_HUD_PREFIX.length()), s, 2);
+                        else if (key.startsWith(PILOT_HUD_PREFIX))
                         {
                             OpticsHud hud = seat(seats, "0").hud;
                             boolean override = hud.overridePilotDefaults;
-                            hud.read(key.substring("pilotoptics".length()), s, 1);
+                            hud.read(key.substring(KEY_PILOT_OPTICS.length()), s, 1);
                             hud.overridePilotDefaults = override;
                         }
                     }
@@ -87,6 +99,18 @@ public final class VehicleOpticsReader
             if (seat != null)
                 seat.getOptics().fallbackOverlay = passengerOverlay;
         return driver;
+    }
+
+    /** The part of a trimmed line before the first character {@link #WHITESPACE} splits on. */
+    private static String firstToken(String trimmed)
+    {
+        for (int i = 0; i < trimmed.length(); i++)
+        {
+            char c = trimmed.charAt(i);
+            if (c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r')
+                return trimmed.substring(0, i);
+        }
+        return trimmed;
     }
 
     private static VehicleOptics seat(List<SeatInfo> seats, String value)
@@ -113,7 +137,9 @@ public final class VehicleOpticsReader
 
     private static Vector3f vector(String[] s, int offset)
     {
-        float x = Float.parseFloat(s[offset]), y = Float.parseFloat(s[offset + 1]), z = Float.parseFloat(s[offset + 2]);
+        float x = Float.parseFloat(s[offset]);
+        float y = Float.parseFloat(s[offset + 1]);
+        float z = Float.parseFloat(s[offset + 2]);
         if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z))
             throw new IllegalArgumentException("Non-finite optics camera position");
         return new Vector3f(x / 16F, y / 16F, z / 16F);

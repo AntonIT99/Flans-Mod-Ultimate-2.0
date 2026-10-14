@@ -16,10 +16,10 @@ AddAmmo ShellNATO120mmDM53LKE
 FuelTankSize 3000
 CargoSlots 0
 ShellSlots 6
-AddRecipeParts turret 1 Part_Turret_Tank 14 Mat_Armor_Steel
-AddRecipeParts core 1 Part_Chassis_Tank 18 Mat_Armor_Steel
-AddRecipeParts leftTrack 1 Part_Wheel_Tanktrack
-AddRecipeParts rightTrack 1 Part_Wheel_Tanktrack
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 14 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 18 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
 AddDye 10 green
 
 // Movement and Physics

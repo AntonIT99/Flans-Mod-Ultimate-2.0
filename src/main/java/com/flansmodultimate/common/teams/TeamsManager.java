@@ -1,15 +1,18 @@
 package com.flansmodultimate.common.teams;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
-import com.flansmodultimate.common.entity.Flagpole;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.teams.*;
 import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -26,11 +29,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Authoritative Teams runtime. All mutation occurs on the logical server thread;
@@ -80,6 +84,17 @@ public final class TeamsManager
     private static final String NBT_EXPERIENCE_MULTIPLIER = "experience_multiplier";
     private static final String NBT_SCORES = "scores";
     private static final String NBT_QUEUED_ROUND = "queued_round";
+    private static final String NBT_ROUND_INSTANCE = "round_instance";
+    private static final String NBT_PACIFISM = "pacifism";
+    private static final String NBT_MOVIE_PROP = "movie_prop";
+    private static final String NBT_SEA_LEVEL = "sea_level";
+    private static final String NBT_WINNER = "winner";
+    private static final String NBT_ROUND_DECIDED = "round_decided";
+    private static final String NBT_ALLIED_SPAWN_SHARING = "allied_spawn_sharing";
+    /** Seconds a player may stay outside the bounds of the map before being killed, as in the Labjac fork. */
+    private static final int OUT_OF_BOUNDS_GRACE_SECONDS = 20;
+    /** Marks {@link #seaLevelOverride} as unset, leaving each dimension its own sea level. */
+    private static final int NO_SEA_LEVEL_OVERRIDE = Integer.MIN_VALUE;
     private static final int DEFAULT_INTERMISSION_PHASE_TICKS = 200;
     private static final int DEFAULT_AUTO_BALANCE_INTERVAL_TICKS = 400;
     private static final int AUTO_BALANCE_WARNING_TICKS = 200;
@@ -126,7 +141,6 @@ public final class TeamsManager
     private boolean forceAdventureMode = true;
     @Getter @Setter
     private boolean armourDrops = true;
-    @Getter
     private boolean vehiclesNeedFuel = true;
     @Getter
     private boolean vehiclesCanZoom;
@@ -156,12 +170,26 @@ public final class TeamsManager
     private String currentLoadoutPoolId = "";
     @Getter
     private float experienceMultiplier = 1F;
+    /** Labjac "pacifism" rule: while on, nobody can fire a weapon or throw a grenade and driveables stand still. */
+    @Getter
+    private boolean pacifism;
+    /** Labjac "movie prop" rule: driveables run at full throttle on their own and need no fuel, for filming. */
+    @Getter
+    private boolean movieProp;
+    /**
+     * Whether allied teams come back at each other's bases. A team without a base of its own on the
+     * map does so whatever this says.
+     */
+    @Getter @Setter
+    private boolean alliedSpawnSharing;
+    private int seaLevelOverride = NO_SEA_LEVEL_OVERRIDE;
 
     @Nullable
     private MinecraftServer server;
     @Nullable
     private TeamsSavedData savedData;
-    private final Map<UUID, Flagpole> liveBases = new HashMap<>();
+    private final Map<UUID, ITeamBase> liveBases = new HashMap<>();
+    private final Map<UUID, Integer> outOfBoundsSeconds = new HashMap<>();
     private Map<UUID, String> lastSyncedPlayerClassSkins = Map.of();
     private final Map<UUID, ITeamObject> liveObjects = new HashMap<>();
     private final Map<String, Integer> teamScores = new LinkedHashMap<>();
@@ -173,6 +201,15 @@ public final class TeamsManager
     private boolean roundRunning;
     @Nullable
     private UUID currentRoundId;
+    /** Identifies this playing of the round; a round of the rotation gets a new one every time it starts. */
+    @Getter @Nullable
+    private UUID roundInstanceId;
+    /** Short name of the team that won the round that last ended, or blank for a draw. */
+    @Getter
+    private String lastWinnerId = "";
+    /** Whether a round has ended and not been replaced yet, so that a blank winner means a draw. */
+    @Getter
+    private boolean lastRoundDecided;
     private int rotationIndex = -1;
     /** Round an operator picked to come next with {@code /teams admin setnext}; played once, then forgotten. */
     @Nullable
@@ -198,6 +235,8 @@ public final class TeamsManager
     private String motd = DEFAULT_MOTD;
     private final List<UUID> voteOptionIds = new ArrayList<>();
 
+    // The manager registers itself as the server-wide instance when it is created.
+    @SuppressWarnings("java:S3010")
     public TeamsManager()
     {
         instance = this;
@@ -317,6 +356,37 @@ public final class TeamsManager
         saveRuntime();
     }
 
+    /** Movie prop mode lifts the fuel requirement along with driving the vehicles. */
+    public boolean isVehiclesNeedFuel()
+    {
+        return vehiclesNeedFuel && !movieProp;
+    }
+
+    public void setPacifism(boolean pacifism)
+    {
+        this.pacifism = pacifism;
+        saveRuntime();
+    }
+
+    public void setMovieProp(boolean movieProp)
+    {
+        this.movieProp = movieProp;
+        saveRuntime();
+    }
+
+    /** Overrides the sea level depth charges measure their depth from; null restores that of each dimension. */
+    public void setSeaLevelOverride(@Nullable Integer seaLevel)
+    {
+        seaLevelOverride = seaLevel == null ? NO_SEA_LEVEL_OVERRIDE : seaLevel;
+        saveRuntime();
+    }
+
+    /** The sea level of a dimension, unless an operator set one with {@code /teams seaLevel}. */
+    public int getSeaLevel(Level level)
+    {
+        return seaLevelOverride == NO_SEA_LEVEL_OVERRIDE ? level.getSeaLevel() : seaLevelOverride;
+    }
+
     public void setVehiclesCanZoom(boolean vehiclesCanZoom)
     {
         this.vehiclesCanZoom = vehiclesCanZoom;
@@ -380,14 +450,68 @@ public final class TeamsManager
 
     public TeamsMap addMap(String id, String name, ServerLevel level)
     {
+        return addMap(id, name, level, null);
+    }
+
+    /** Adds a map, optionally with the playing area its players have to stay inside. */
+    public TeamsMap addMap(String id, String name, ServerLevel level, @Nullable TeamsMap.Bounds bounds)
+    {
         ensureData();
         TeamsMap map = new TeamsMap(id, name, level.dimension());
+        map.setBounds(bounds);
 
         if (savedData != null && savedData.maps.putIfAbsent(map.getShortName(), map) != null)
             throw new IllegalArgumentException("A map named '" + map.getShortName() + "' already exists");
 
         markDirty();
         return map;
+    }
+
+    public boolean renameMap(String id, String name)
+    {
+        Optional<TeamsMap> map = getMap(id);
+        map.ifPresent(found -> found.setName(name));
+        return afterMapChange(map.isPresent());
+    }
+
+    /** Sets or, with null, removes the playing area of a map. */
+    public boolean setMapBounds(String id, @Nullable TeamsMap.Bounds bounds)
+    {
+        Optional<TeamsMap> map = getMap(id);
+        map.ifPresent(found -> found.setBounds(bounds));
+        return afterMapChange(map.isPresent());
+    }
+
+    /** Sets the deployment image of a map by resource name. Fails for an unknown map or an unsafe name. */
+    public boolean setMapImage(String id, @Nullable String image)
+    {
+        return afterMapChange(getMap(id).map(map -> map.setDeployImage(image)).orElse(false));
+    }
+
+    /**
+     * Stores the deployment layout an operator arranged for a map.
+     *
+     * @return whether the map exists
+     */
+    public boolean saveDeployLayout(String mapId, Collection<DeployLayoutEntry> entries, TeamsMap.ImageCrop crop)
+    {
+        Optional<TeamsMap> map = getMap(mapId);
+        map.ifPresent(found ->
+        {
+            found.replaceDeployLayout(entries);
+            found.setDeployImageCrop(crop.minU(), crop.minV(), crop.maxU(), crop.maxV());
+        });
+        return afterMapChange(map.isPresent());
+    }
+
+    private boolean afterMapChange(boolean changed)
+    {
+        if (changed)
+        {
+            markDirty();
+            syncAll(PacketTeamsState.OpenScreen.NONE);
+        }
+        return changed;
     }
 
     public boolean removeMap(String id)
@@ -406,21 +530,38 @@ public final class TeamsManager
         return true;
     }
 
-    public TeamsRound addRound(String mapId, String gameTypeId, List<String> teamIds, int minutes, int scoreLimit)
+    /**
+     * Adds a round to the rotation.
+     *
+     * @param sides
+     *            the side of each team, parallel to {@code teamIds}; teams given the same number are allied.
+     *            Empty for a round without alliances.
+     */
+    public TeamsRound addRound(String mapId, String gameTypeId, List<String> teamIds, List<Integer> sides, int minutes, int scoreLimit)
     {
         ensureData();
         TeamsMap map = getMap(mapId).orElseThrow(() -> new IllegalArgumentException("Unknown map: " + mapId));
         com.flansmodultimate.common.teams.GameType type = Optional.ofNullable(com.flansmodultimate.common.teams.GameType.get(gameTypeId))
             .orElseThrow(() -> new IllegalArgumentException("Unknown game type: " + gameTypeId));
 
-        if (teamIds.size() != type.getRequiredTeams())
-            throw new IllegalArgumentException(type.getName() + " requires " + type.getRequiredTeams() + " team(s)");
+        if (!sides.isEmpty() && sides.size() != teamIds.size())
+            throw new IllegalArgumentException("Every team needs a side");
 
+        Set<String> seen = new HashSet<>();
         for (String teamId : teamIds)
-            if (Team.getTeam(teamId) == null)
+        {
+            Team team = Team.getTeam(teamId);
+            if (team == null || team == Team.SPECTATORS)
                 throw new IllegalArgumentException("Unknown team: " + teamId);
+            // A team listed twice could end up fighting itself, or on two sides at once.
+            if (!seen.add(team.getShortName()))
+                throw new IllegalArgumentException("Team listed twice: " + teamId);
+        }
 
-        TeamsRound round = new TeamsRound(map.getShortName(), type.getId(), teamIds, minutes, scoreLimit);
+        TeamsRound round = new TeamsRound(map.getShortName(), type.getId(), teamIds, sides, minutes, scoreLimit);
+        String refusal = type.getTeamLimits().describeRefusal(teamIds.size(), round.getSideCount());
+        if (refusal != null)
+            throw new IllegalArgumentException(type.getName() + " " + refusal);
         Objects.requireNonNull(savedData).rounds.add(round);
         markDirty();
 
@@ -455,7 +596,7 @@ public final class TeamsManager
         if (!roundsGenerator || Objects.requireNonNull(savedData).rounds.size() >= GENERATED_ROUND_TARGET)
             return;
 
-        List<Team> allowedTeams = Team.values().stream().filter(Team::isAllowedForRoundsGenerator).toList();
+        List<Team> allowedTeams = Team.values().stream().filter(Team::isAllowedForRoundsGenerator).filter(team -> team != Team.SPECTATORS).toList();
         List<com.flansmodultimate.common.teams.GameType> allowedGameTypes = com.flansmodultimate.common.teams.GameType.values().stream()
             .filter(com.flansmodultimate.common.teams.GameType::isAllowedForRoundsGenerator).toList();
         List<TeamsMap> maps = List.copyOf(getMaps());
@@ -465,17 +606,29 @@ public final class TeamsManager
         int missing = GENERATED_ROUND_TARGET - savedData.rounds.size();
         for (int i = 0; i < missing; i++)
         {
-            com.flansmodultimate.common.teams.GameType gameType = allowedGameTypes.get(random.nextInt(allowedGameTypes.size()));
+            TeamsMap map = maps.get(random.nextInt(maps.size()));
+            // A game type is left out when it needs more distinct teams than the generator may use.
+            List<com.flansmodultimate.common.teams.GameType> playable = allowedGameTypes.stream().filter(type -> type.isPlayableOn(map) && type.getTeamLimits().minTeams() <= allowedTeams.size())
+                .toList();
+            if (playable.isEmpty())
+                continue;
+            com.flansmodultimate.common.teams.GameType gameType = playable.get(random.nextInt(playable.size()));
+            // Generated rounds stay at the fewest teams the game type takes, each on its own side.
+            int teamCount = gameType.getTeamLimits().minTeams();
+            List<Team> candidates = new ArrayList<>(allowedTeams);
             List<String> teamIds = new ArrayList<>();
-            for (int team = 0; team < gameType.getRequiredTeams(); team++)
-                teamIds.add(allowedTeams.get(random.nextInt(allowedTeams.size())).getShortName());
+            for (int team = 0; team < teamCount; team++)
+                teamIds.add(candidates.remove(random.nextInt(candidates.size())).getShortName());
 
-            addRound(maps.get(random.nextInt(maps.size())).getShortName(), gameType.getId(), teamIds, 10 + random.nextInt(10), generatedScoreLimit(gameType));
+            addRound(map.getShortName(), gameType.getId(), teamIds, List.of(), 10 + random.nextInt(10), generatedScoreLimit(gameType));
         }
     }
 
     private static int generatedScoreLimit(com.flansmodultimate.common.teams.GameType gameType)
     {
+        // Tickets in the objective modes: reinforcements for the attackers of an Assault, score to reach otherwise.
+        if (gameType.getObjectiveMode() != ObjectiveMode.NONE)
+            return gameType.getObjectiveMode() == ObjectiveMode.ASSAULT ? 100 : 300;
         if (gameType instanceof GameTypeCTF)
             return 5;
         if (gameType instanceof GameTypeTDM)
@@ -501,6 +654,10 @@ public final class TeamsManager
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
         rotationIndex = index;
         currentRoundId = next.getId();
+        roundInstanceId = UUID.randomUUID();
+        lastWinnerId = "";
+        lastRoundDecided = false;
+        outOfBoundsSeconds.clear();
         roundTimeLeftTicks = next.getTimeLimitTicks();
         roundElapsedTicks = 0;
         intermissionTicks = 0;
@@ -618,6 +775,10 @@ public final class TeamsManager
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
         roundRunning = false;
         currentRoundId = null;
+        roundInstanceId = null;
+        lastWinnerId = "";
+        lastRoundDecided = false;
+        outOfBoundsSeconds.clear();
         roundTimeLeftTicks = 0;
         roundElapsedTicks = 0;
         intermissionTicks = 0;
@@ -656,6 +817,7 @@ public final class TeamsManager
         roundElapsedTicks++;
         roundTimeLeftTicks = Math.max(0, roundTimeLeftTicks - 1);
         getCurrentGameType().ifPresent(type -> type.tick(this));
+        enforceMapBounds();
         int autoBalancePhase = roundElapsedTicks % autoBalanceIntervalTicks;
         if (autoBalancePhase == autoBalanceIntervalTicks - AUTO_BALANCE_WARNING_TICKS && needsAutoBalance())
             broadcast(Component.literal("Autobalancing teams in 10 seconds..."));
@@ -670,10 +832,64 @@ public final class TeamsManager
             saveRuntime();
     }
 
+    /** Lets a game type restart the clock, as Assault does each time an objective falls. */
+    public void setRoundTimeLeftTicks(int ticks)
+    {
+        roundTimeLeftTicks = Math.max(0, ticks);
+        saveRuntime();
+        syncAll(PacketTeamsState.OpenScreen.NONE);
+    }
+
+    /**
+     * Warns the players of the round who are outside the playing area of the map, once a second,
+     * and kills the ones who stayed out for the whole grace period.
+     */
+    private void enforceMapBounds()
+    {
+        if (roundElapsedTicks % 20 != 0)
+            return;
+        TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
+        TeamsMap.Bounds bounds = map == null ? null : map.getBounds();
+        if (bounds == null)
+        {
+            outOfBoundsSeconds.clear();
+            return;
+        }
+        for (ServerPlayer player : getServer().getPlayerList().getPlayers())
+        {
+            boolean playing = getRoundTeamIndex(getPlayerTeam(player)) >= 0 && player.isAlive() && !player.getAbilities().instabuild && !player.isSpectator();
+            boolean inside = player.level().dimension().equals(map.getDimension()) && bounds.contains(player.position());
+            if (playing && !inside)
+                countOutOfBounds(player);
+            else
+                outOfBoundsSeconds.remove(player.getUUID());
+        }
+    }
+
+    /** Counts one more second outside the playing area for a player, warning them until the grace period is spent. */
+    private void countOutOfBounds(ServerPlayer player)
+    {
+        int seconds = outOfBoundsSeconds.merge(player.getUUID(), 1, Integer::sum);
+        if (seconds <= OUT_OF_BOUNDS_GRACE_SECONDS)
+        {
+            player.displayClientMessage(Component.translatable("message.flansmodultimate.teams.out_of_bounds", OUT_OF_BOUNDS_GRACE_SECONDS - seconds), true);
+            return;
+        }
+        outOfBoundsSeconds.remove(player.getUUID());
+        player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.out_of_bounds_killed"));
+        // A rider is put out of their seat first, because damage to anyone in a driveable is suppressed.
+        player.stopRiding();
+        player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+    }
+
     private void finishRound()
     {
         if (!roundRunning)
             return;
+        // Decided before anything is cleaned up, while the scores and capture points still tell who won.
+        lastWinnerId = getCurrentGameType().map(type -> type.getWinner(this)).map(Team::getShortName).orElse("");
+        lastRoundDecided = true;
+        outOfBoundsSeconds.clear();
         roundRunning = false;
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         awardRoundStats();
@@ -843,7 +1059,7 @@ public final class TeamsManager
             team = Team.SPECTATORS;
         if (team != Team.SPECTATORS && getRoundTeamIndex(team) < 0)
             return false;
-        if (!force && team != Team.SPECTATORS && wouldUnbalance(team))
+        if (!force && team != Team.SPECTATORS && wouldUnbalance(player, team))
             return false;
         if (!force && team != Team.SPECTATORS && !canChooseTeam(player, team))
             return false;
@@ -895,14 +1111,95 @@ public final class TeamsManager
     {
         PlayerData data = PlayerData.getInstance(player);
         Team team = data.getNewTeam();
-        if (playerClass == null || team == null || team == Team.SPECTATORS || !team.getClasses().contains(playerClass))
-            return false;
-        if (getStats(player).getRank() < playerClass.getUnlockLevel())
+        if (playerClass == null || team == null || describeClassRefusal(player, playerClass) != null)
             return false;
         data.setNewPlayerClass(playerClass);
         getStats(player).setSelection(team.getShortName(), playerClass.getShortName());
         markDirty();
         return true;
+    }
+
+    /**
+     * Why a player may not take a class on the team they picked, or null when they may.
+     *
+     * <p>
+     * A class can be closed by the unlock rank, by the prestige level it requires, or because
+     * its {@code ClassLimit} / {@code ClassLimitPercent} slots on that team are all taken.
+     * </p>
+     */
+    @Nullable
+    public Component describeClassRefusal(ServerPlayer player, @Nullable PlayerClass playerClass)
+    {
+        Team team = PlayerData.getInstance(player).getNewTeam();
+        if (playerClass == null || team == null || team == Team.SPECTATORS || !team.getClasses().contains(playerClass))
+            return Component.translatable("message.flansmodultimate.teams.class_unavailable");
+        PlayerStats stats = getStats(player);
+        if (stats.getRank() < playerClass.getUnlockLevel())
+            return Component.translatable("message.flansmodultimate.teams.class_rank", playerClass.getName(), playerClass.getUnlockLevel());
+        if (stats.getPrestige() < playerClass.getRequiredPrestigeLevel())
+            return Component.translatable("message.flansmodultimate.teams.class_prestige", playerClass.getName(), playerClass.getRequiredPrestigeLevel());
+        int capacity = getClassCapacity(team, playerClass);
+        int used = countPlayersUsingClass(team, playerClass, player);
+        if (!ClassLimits.hasSlot(capacity, used))
+            return Component.translatable("message.flansmodultimate.teams.class_full", playerClass.getName(), used, capacity);
+        return null;
+    }
+
+    /** Slots a limited class has on a team at its present size; {@link ClassLimits#UNLIMITED} when it has no limit. */
+    public int getClassCapacity(Team team, PlayerClass playerClass)
+    {
+        return ClassLimits.capacity(playerClass.getClassLimit(), playerClass.getClassLimitPercent(), getPlayersChoosing(team).size());
+    }
+
+    /**
+     * Players of a team using a class, or waiting to respawn with it. Counting the pending choice
+     * keeps repeated selections from getting past a limit; {@code except} is left out so that a
+     * player keeping their own class does not count against themselves.
+     */
+    public int countPlayersUsingClass(Team team, PlayerClass playerClass, @Nullable ServerPlayer except)
+    {
+        int count = 0;
+        for (ServerPlayer member : getPlayersChoosing(team))
+        {
+            PlayerData data = PlayerData.getInstance(member);
+            PlayerClass effective = data.getNewPlayerClass() != null ? data.getNewPlayerClass() : data.getPlayerClass();
+            if (member != except && effective == playerClass)
+                count++;
+        }
+        return count;
+    }
+
+    /** Everyone on a team or about to join it, which is the team size class limits are measured against. */
+    private List<ServerPlayer> getPlayersChoosing(Team team)
+    {
+        return server == null ? List.of() : server.getPlayerList().getPlayers().stream().filter(player -> team.equals(PlayerData.getInstance(player).getNewTeam())).toList();
+    }
+
+    /** The rank at which a player may trade their progress for a prestige level. */
+    public int getPrestigeRank()
+    {
+        return getCurrentLoadoutPool().map(LoadoutPool::getMaxLevel).orElse(PlayerStats.DEFAULT_PRESTIGE_RANK);
+    }
+
+    public boolean gainPrestige(ServerPlayer player)
+    {
+        if (!getStats(player).gainPrestige(getPrestigeRank()))
+            return false;
+        markDirty();
+        syncPlayer(player, PacketTeamsState.OpenScreen.NONE);
+        return true;
+    }
+
+    /**
+     * Records where a dead player asked to come back on the deployment map.
+     *
+     * @param capturePointId
+     *            the capture point, or null for headquarters
+     * @return whether the running game type lets players choose
+     */
+    public boolean selectSpawn(ServerPlayer player, @Nullable UUID capturePointId)
+    {
+        return roundRunning && getCurrentGameType().map(type -> type.selectSpawn(this, player, capturePointId)).orElse(false);
     }
 
     /**
@@ -977,29 +1274,40 @@ public final class TeamsManager
             player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.loadout_on_respawn"));
     }
 
-    private boolean wouldUnbalance(Team requested)
+    /**
+     * Whether joining {@code requested} would leave the sides of the round uneven. Balance is kept
+     * between sides only, so a player is always free to move to another team of their own side.
+     */
+    private boolean wouldUnbalance(ServerPlayer player, Team requested)
     {
         Optional<com.flansmodultimate.common.teams.GameType> type = getCurrentGameType();
-        if (type.isEmpty() || !type.get().isAutoBalanceEnabled())
+        TeamsRound round = getCurrentRound().orElse(null);
+        if (round == null || type.isEmpty() || !type.get().isAutoBalanceEnabled())
             return false;
-        int requestedCount = getPlayersOnTeam(requested).size();
-        int minimum = getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream()).map(Team::getTeam).filter(java.util.Objects::nonNull).mapToInt(team -> getPlayersOnTeam(team).size())
-            .min().orElse(0);
-        return requestedCount > minimum;
+        PlayerData data = PlayerData.getInstance(player);
+        if (round.areAllied(requested, data.getTeam()) || round.areAllied(requested, data.getNewTeam()))
+            return false;
+        int minimum = round.getSideIds().stream().mapToInt(sideId -> getPlayersOnSide(round, sideId).size()).min().orElse(0);
+        return getPlayersOnSide(round, round.getSideId(requested)).size() > minimum;
     }
 
+    /** Moves the lowest scoring player of the largest side to the smallest team of the smallest side. */
     private void autoBalanceIfNeeded()
     {
-        if (!needsAutoBalance())
+        TeamsRound round = getCurrentRound().orElse(null);
+        if (round == null || !needsAutoBalance())
             return;
 
-        List<Team> teams = currentRoundTeams();
-        Team largest = teams.stream().max(Comparator.comparingInt(team -> getPlayersOnTeam(team).size())).orElse(null);
-        Team smallest = teams.stream().min(Comparator.comparingInt(team -> getPlayersOnTeam(team).size())).orElse(null);
+        List<Integer> sideIds = round.getSideIds();
+        int largest = sideIds.stream().max(Comparator.comparingInt(sideId -> getPlayersOnSide(round, sideId).size())).orElseThrow();
+        int smallest = sideIds.stream().min(Comparator.comparingInt(sideId -> getPlayersOnSide(round, sideId).size())).orElseThrow();
+        Team destination = round.getTeamsOnSide(smallest).stream().min(Comparator.comparingInt(team -> getPlayersOnTeam(team).size())).orElse(null);
+        if (destination == null)
+            return;
 
-        getPlayersOnTeam(largest).stream().min(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore())).ifPresent(player ->
+        getPlayersOnSide(round, largest).stream().min(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore())).ifPresent(player ->
         {
-            selectTeam(player, smallest, true);
+            selectTeam(player, destination, true);
             PlayerData.getInstance(player).setPlayerMovedByAutobalancer(true);
             respawnPlayer(player, false);
             player.sendSystemMessage(Component.literal("You were moved to balance the teams"));
@@ -1008,19 +1316,21 @@ public final class TeamsManager
 
     private boolean needsAutoBalance()
     {
-        if (getCurrentGameType().map(type -> !type.isAutoBalanceEnabled()).orElse(true))
+        TeamsRound round = getCurrentRound().orElse(null);
+        if (round == null || getCurrentGameType().map(type -> !type.isAutoBalanceEnabled()).orElse(true))
             return false;
-        List<Team> teams = currentRoundTeams();
-        if (teams.size() < 2)
+        List<Integer> sideIds = round.getSideIds();
+        if (sideIds.size() < 2)
             return false;
-        int largest = teams.stream().mapToInt(team -> getPlayersOnTeam(team).size()).max().orElse(0);
-        int smallest = teams.stream().mapToInt(team -> getPlayersOnTeam(team).size()).min().orElse(0);
+        int largest = sideIds.stream().mapToInt(sideId -> getPlayersOnSide(round, sideId).size()).max().orElse(0);
+        int smallest = sideIds.stream().mapToInt(sideId -> getPlayersOnSide(round, sideId).size()).min().orElse(0);
         return largest - smallest > 1;
     }
 
-    private List<Team> currentRoundTeams()
+    /** Everyone playing for any team of a side. */
+    private List<ServerPlayer> getPlayersOnSide(TeamsRound round, int sideId)
     {
-        return getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream()).map(Team::getTeam).filter(java.util.Objects::nonNull).toList();
+        return round.getTeamsOnSide(sideId).stream().flatMap(team -> getPlayersOnTeam(team).stream()).toList();
     }
 
     public void playerLoggedIn(ServerPlayer player)
@@ -1154,7 +1464,31 @@ public final class TeamsManager
                 if (!player.getInventory().add(stack.copy()))
                     player.drop(stack.copy(), false);
         }
+        equipMeleeOnlyLoadout(player);
         player.getInventory().setChanged();
+    }
+
+    /** Places a melee gun in the main slot when the kit has no non-melee gun. */
+    private void equipMeleeOnlyLoadout(ServerPlayer player)
+    {
+        var inventory = player.getInventory();
+        int meleeSlot = -1;
+        for (int slot = 0; slot < inventory.items.size(); slot++)
+        {
+            ItemStack stack = inventory.items.get(slot);
+            if (!(stack.getItem() instanceof GunItem gun))
+                continue;
+            if (!gun.getConfigType().getPrimaryFunction().isMelee())
+                return;
+            if (meleeSlot < 0)
+                meleeSlot = slot;
+        }
+        if (meleeSlot > 0)
+        {
+            ItemStack melee = inventory.items.get(meleeSlot);
+            inventory.items.set(meleeSlot, inventory.items.get(0));
+            inventory.items.set(0, melee);
+        }
     }
 
     public void awardExperience(ServerPlayer player, int baseAmount)
@@ -1165,6 +1499,7 @@ public final class TeamsManager
         PlayerStats stats = getStats(player);
         LoadoutPool pool = getCurrentLoadoutPool().orElse(null);
         int amount = Math.round(baseAmount * experienceMultiplier);
+        int rankBefore = stats.getRank();
         if (pool == null)
             stats.addExperience(amount);
         else
@@ -1176,6 +1511,8 @@ public final class TeamsManager
                 player.sendSystemMessage(Component.literal("Rank up! You reached rank " + rank));
             }
         }
+        if (stats.getRank() > rankBefore)
+            PacketHandler.sendTo(new PacketRankUp(rankBefore, stats.getRank(), stats.getPrestige()), player);
         markDirty();
     }
 
@@ -1218,19 +1555,100 @@ public final class TeamsManager
             return Optional.empty();
 
         int teamId = round.getTeamId(PlayerData.getInstance(player).getNewTeam());
+        Predicate<ITeamBase> usable = anyTeam ? base -> true : spawnBases(round, map, teamId);
 
         List<ITeamObject> choices = liveObjects.values().stream().filter(ITeamObject::isSpawnPoint).filter(object -> object.getDimension().equals(map.getDimension())).filter(object ->
         {
-            Flagpole base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
-            return base != null && base.getMapId().equals(map.getShortName()) && (anyTeam || base.getOwnerId() == teamId);
+            ITeamBase base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
+            return base != null && base.getMapId().equals(map.getShortName()) && usable.test(base);
         }).toList();
 
         if (!choices.isEmpty())
             return Optional.of(choices.get(random.nextInt(choices.size())).getTeamObjectPosition().add(0D, 0.1D, 0D));
 
-        List<Flagpole> bases = liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName())).filter(base -> anyTeam || base.getOwnerId() == teamId).toList();
+        List<ITeamBase> bases = liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName())).filter(usable).toList();
 
-        return bases.isEmpty() ? Optional.empty() : Optional.of(bases.get(random.nextInt(bases.size())).position().add(0D, 1D, 0D));
+        return bases.isEmpty() ? Optional.empty() : Optional.of(bases.get(random.nextInt(bases.size())).getTeamObjectPosition().add(0D, 1D, 0D));
+    }
+
+    /**
+     * The bases of a map a team may come back at.
+     *
+     * <p>
+     * Those are its own, and the capture points its side holds, since allies take those together.
+     * With {@link #alliedSpawnSharing} on, the bases of its allies count as well. A team that was
+     * given no base of its own on the map shares those of its allies whatever the setting, so an
+     * alliance can be played on a map that only has one headquarters per side.
+     * </p>
+     */
+    private Predicate<ITeamBase> spawnBases(TeamsRound round, TeamsMap map, int teamId)
+    {
+        int sideId = round.getSideId(teamId);
+        boolean hasOwnBase = liveBases.values().stream().anyMatch(base -> !(base instanceof ITeamCapturePoint) && base.getMapId().equals(map.getShortName()) && base.getOwnerId() == teamId);
+        if (alliedSpawnSharing || !hasOwnBase)
+            return base -> base.getOwnerId() >= TeamsRound.FIRST_TEAM_ID && round.getSideId(base.getOwnerId()) == sideId;
+        return base -> base.getOwnerId() == teamId || base instanceof ITeamCapturePoint && base.getOwnerId() == sideId;
+    }
+
+    /** Where the player spawners connected to a base put players. Empty for a base without any. */
+    public List<Vec3> getSpawnPositions(ITeamBase base)
+    {
+        return liveObjects.values().stream().filter(ITeamObject::isSpawnPoint).filter(object -> base.getObjectId().equals(object.getBaseId()))
+            .filter(object -> object.getDimension().equals(base.getDimension())).map(object -> object.getTeamObjectPosition().add(0D, 0.1D, 0D)).toList();
+    }
+
+    /**
+     * A spawn at one of the bases a team holds that is not a capture point: its headquarters in
+     * the objective game types. Falls back to the base itself when it has no player spawner.
+     */
+    public Optional<Vec3> findHeadquartersSpawn(int teamId)
+    {
+        TeamsRound round = getCurrentRound().orElse(null);
+        TeamsMap map = round == null ? null : getMap(round.getMapId()).orElse(null);
+        if (map == null)
+            return Optional.empty();
+        List<ITeamBase> bases = liveBases.values().stream().filter(base -> !(base instanceof ITeamCapturePoint)).filter(base -> base.getMapId().equals(map.getShortName()))
+            .filter(spawnBases(round, map, teamId)).toList();
+        List<Vec3> spawns = bases.stream().flatMap(base -> getSpawnPositions(base).stream()).toList();
+        if (!spawns.isEmpty())
+            return Optional.of(spawns.get(random.nextInt(spawns.size())));
+        return bases.isEmpty() ? Optional.empty() : Optional.of(bases.get(random.nextInt(bases.size())).getTeamObjectPosition().add(0D, 1D, 0D));
+    }
+
+    /** The loaded capture points of the map being played, in play order: by letter, then by id. */
+    public List<ITeamCapturePoint> getCapturePoints()
+    {
+        String mapId = getCurrentRound().map(TeamsRound::getMapId).orElse(null);
+        if (mapId == null)
+            return List.of();
+        return liveBases.values().stream().filter(ITeamCapturePoint.class::isInstance).map(ITeamCapturePoint.class::cast).filter(point -> mapId.equals(point.getMapId()))
+            .sorted(Comparator.comparingInt(ITeamCapturePoint::getSymbol).thenComparing(ITeamCapturePoint::getObjectId)).toList();
+    }
+
+    /** The level the map being played is in, or null when no round is set up or its dimension is gone. */
+    @Nullable
+    public ServerLevel getCurrentLevel()
+    {
+        TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
+        return map == null || server == null ? null : server.getLevel(map.getDimension());
+    }
+
+    /** Plays a content-pack sound at a team object for everyone in range; silent when no pack provides it. */
+    public void playSoundAt(ITeamObject object, String sound, double range)
+    {
+        String name = ResourceUtils.sanitize(sound);
+        if (FlansMod.getSoundEvent(name).isEmpty())
+            return;
+        Vec3 position = object.getTeamObjectPosition();
+        PacketHandler.sendToAllAround(new PacketPlaySound(position, range, name, false, false, null), position, range, object.getDimension());
+    }
+
+    /** Sends the capture points of the running round to everyone, between the full state updates. */
+    public void syncObjectives()
+    {
+        if (server == null || server.getPlayerList().getPlayers().isEmpty())
+            return;
+        getCurrentGameType().ifPresent(type -> PacketHandler.sendToAll(new PacketTeamsObjectives(type.createObjectives(this))));
     }
 
     public Team getPlayerTeam(Player player)
@@ -1258,15 +1676,34 @@ public final class TeamsManager
         return server == null || team == null ? List.of() : server.getPlayerList().getPlayers().stream().filter(player -> team.equals(getPlayerTeam(player))).toList();
     }
 
-    public int getTeamScore(@Nullable Team team)
+    /**
+     * Whether two teams are on the same side: the same team, or allies in the round being played.
+     * Spectators and players without a team are on nobody's side.
+     */
+    public boolean areAllied(@Nullable Team first, @Nullable Team second)
     {
-        return team == null ? 0 : teamScores.getOrDefault(team.getShortName(), 0);
+        if (first == null || second == null || first == Team.SPECTATORS || second == Team.SPECTATORS)
+            return false;
+        return first == second || getCurrentRound().map(round -> round.areAllied(first, second)).orElse(false);
     }
 
+    /** The score of the side a team fights for, which all its allies share. */
+    public int getTeamScore(@Nullable Team team)
+    {
+        return team == null ? 0 : teamScores.getOrDefault(scoreKey(team), 0);
+    }
+
+    /** Adds to the score of the side a team fights for. */
     public void addTeamScore(Team team, int amount)
     {
-        teamScores.merge(team.getShortName(), amount, Integer::sum);
+        teamScores.merge(scoreKey(team), amount, Integer::sum);
         saveRuntime();
+    }
+
+    /** Allies share one score, kept under the first team of their side. */
+    private String scoreKey(Team team)
+    {
+        return getCurrentRound().map(round -> round.getSideLeader(round.getSideId(team))).orElse(team).getShortName();
     }
 
     public void resetScores()
@@ -1288,13 +1725,14 @@ public final class TeamsManager
         return savedData == null ? List.of() : savedData.getStats();
     }
 
-    public void registerBase(Flagpole base)
+    public void registerBase(ITeamBase base)
     {
-        liveBases.put(base.getUUID(), base);
-        liveObjects.put(base.getUUID(), base);
+        liveBases.put(base.getObjectId(), base);
+        liveObjects.put(base.getObjectId(), base);
         getMap(base.getMapId()).ifPresent(map ->
         {
-            map.addBase(base.getUUID(), BlockPos.containing(base.position()));
+            map.addBase(base.getObjectId(), BlockPos.containing(base.getTeamObjectPosition()));
+            map.markCapturePoint(base.getObjectId(), base instanceof ITeamCapturePoint);
             markDirty();
         });
         if (roundRunning && isBaseInCurrentMap(base))
@@ -1317,7 +1755,7 @@ public final class TeamsManager
         liveObjects.remove(id);
     }
 
-    public Optional<Flagpole> getBase(UUID id)
+    public Optional<ITeamBase> getBase(UUID id)
     {
         return Optional.ofNullable(liveBases.get(id));
     }
@@ -1332,6 +1770,7 @@ public final class TeamsManager
         getMap(base.getMapId()).ifPresent(old -> old.removeBase(base.getObjectId()));
         base.setMapId(map.getShortName());
         map.addBase(base.getObjectId(), BlockPos.containing(base.getTeamObjectPosition()));
+        map.markCapturePoint(base.getObjectId(), base instanceof ITeamCapturePoint);
         markDirty();
     }
 
@@ -1348,25 +1787,7 @@ public final class TeamsManager
     public void destroyObject(ITeamObject object)
     {
         if (object instanceof ITeamBase base)
-        {
-            TeamsMap map = getMap(base.getMapId()).orElse(null);
-            if (map != null)
-            {
-                if (isBaseInCurrentMap(base) && server != null)
-                {
-                    ServerLevel level = server.getLevel(map.getDimension());
-                    if (level != null)
-                    {
-                        ChunkPos chunk = new ChunkPos(BlockPos.containing(base.getTeamObjectPosition()));
-                        ChunkTicketPlatform.force(level, base.getObjectId(), chunk.x, chunk.z, false, true);
-                    }
-                }
-                map.removeBase(base.getObjectId());
-            }
-            for (UUID childId : List.copyOf(base.getObjectIds()))
-                getObject(childId).ifPresent(child -> child.setBaseId(null));
-            unregisterBase(base.getObjectId());
-        }
+            releaseBase(base);
         else
         {
             UUID baseId = object.getBaseId();
@@ -1375,6 +1796,35 @@ public final class TeamsManager
             unregisterObject(object.getObjectId());
         }
         object.destroyTeamObject();
+        markDirty();
+    }
+
+    /**
+     * Forgets a base that is going away for good: its map drops it, its chunk ticket is released
+     * and the objects connected to it are left without a base. Does nothing for a base already
+     * released, so removing the block or entity afterwards is harmless.
+     */
+    public void releaseBase(ITeamBase base)
+    {
+        if (!liveBases.containsKey(base.getObjectId()))
+            return;
+        TeamsMap map = getMap(base.getMapId()).orElse(null);
+        if (map != null)
+        {
+            if (isBaseInCurrentMap(base) && server != null)
+            {
+                ServerLevel level = server.getLevel(map.getDimension());
+                if (level != null)
+                {
+                    ChunkPos chunk = new ChunkPos(BlockPos.containing(base.getTeamObjectPosition()));
+                    ChunkTicketPlatform.force(level, base.getObjectId(), chunk.x, chunk.z, false, true);
+                }
+            }
+            map.removeBase(base.getObjectId());
+        }
+        for (UUID childId : List.copyOf(base.getObjectIds()))
+            getObject(childId).ifPresent(child -> child.setBaseId(null));
+        unregisterBase(base.getObjectId());
         markDirty();
     }
 
@@ -1392,7 +1842,7 @@ public final class TeamsManager
     @Nullable
     public Flag getFlagCarriedBy(ServerPlayer player)
     {
-        return liveBases.values().stream().map(Flagpole::getFlag).filter(java.util.Objects::nonNull).filter(flag -> flag.isCarriedBy(player)).findFirst().orElse(null);
+        return liveBases.values().stream().map(ITeamBase::getFlag).filter(java.util.Objects::nonNull).filter(flag -> flag.isCarriedBy(player)).findFirst().orElse(null);
     }
 
     private void dropFlag(ServerPlayer player)
@@ -1516,6 +1966,13 @@ public final class TeamsManager
             return;
 
         queuedRoundId = tag.hasUUID(NBT_QUEUED_ROUND) ? tag.getUUID(NBT_QUEUED_ROUND) : null;
+        roundInstanceId = tag.hasUUID(NBT_ROUND_INSTANCE) ? tag.getUUID(NBT_ROUND_INSTANCE) : null;
+        lastWinnerId = tag.getString(NBT_WINNER);
+        lastRoundDecided = tag.getBoolean(NBT_ROUND_DECIDED);
+        pacifism = tag.getBoolean(NBT_PACIFISM);
+        movieProp = tag.getBoolean(NBT_MOVIE_PROP);
+        alliedSpawnSharing = tag.getBoolean(NBT_ALLIED_SPAWN_SHARING);
+        seaLevelOverride = tag.contains(NBT_SEA_LEVEL) ? tag.getInt(NBT_SEA_LEVEL) : NO_SEA_LEVEL_OVERRIDE;
         enabled = !tag.contains(NBT_ENABLED) || tag.getBoolean(NBT_ENABLED);
         roundRunning = tag.getBoolean(NBT_ROUND_RUNNING);
         currentRoundId = tag.hasUUID(NBT_CURRENT_ROUND) ? tag.getUUID(NBT_CURRENT_ROUND) : null;
@@ -1630,6 +2087,19 @@ public final class TeamsManager
             tag.remove(NBT_QUEUED_ROUND);
         else
             tag.putUUID(NBT_QUEUED_ROUND, queuedRoundId);
+        if (roundInstanceId == null)
+            tag.remove(NBT_ROUND_INSTANCE);
+        else
+            tag.putUUID(NBT_ROUND_INSTANCE, roundInstanceId);
+        tag.putString(NBT_WINNER, lastWinnerId);
+        tag.putBoolean(NBT_ROUND_DECIDED, lastRoundDecided);
+        tag.putBoolean(NBT_PACIFISM, pacifism);
+        tag.putBoolean(NBT_MOVIE_PROP, movieProp);
+        tag.putBoolean(NBT_ALLIED_SPAWN_SHARING, alliedSpawnSharing);
+        if (seaLevelOverride == NO_SEA_LEVEL_OVERRIDE)
+            tag.remove(NBT_SEA_LEVEL);
+        else
+            tag.putInt(NBT_SEA_LEVEL, seaLevelOverride);
         tag.putInt(NBT_TIME_LEFT, roundTimeLeftTicks);
         tag.putInt(NBT_ELAPSED, roundElapsedTicks);
         tag.putInt(NBT_INTERMISSION, intermissionTicks);

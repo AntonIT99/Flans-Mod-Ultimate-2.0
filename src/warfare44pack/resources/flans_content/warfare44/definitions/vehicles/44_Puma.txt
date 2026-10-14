@@ -166,15 +166,12 @@ FlareSound SmokeGrenadeShoot
 // Sounds
 StartSound JeepIdle
 StartSoundLength 7
-StartSoundRange 12
 EngineSound Engine_LT_ArmoredCar
 EngineSoundLength 39
-EngineSoundRange 50
 BackSound JeepBack
 BackSound Engine_LT_ArmoredCar
 BackSoundLength 61
 BackSoundLength 39
-BackSoundRange 25
 YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2

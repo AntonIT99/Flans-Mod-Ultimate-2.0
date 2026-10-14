@@ -1,0 +1,16 @@
+// Identity
+Name Sergeant
+ShortName WH40K_Class_BloodAngelsSergeant
+
+// Armour
+Hat WH40K_Armor_SpaceMarineHelmet_1H
+Chest WH40K_Armor_SpaceMarineBody_1H
+Legs WH40K_Armor_SpaceMarineLegs_1H
+Shoes WH40K_Armor_SpaceMarineBoots_1H
+
+// Items
+AddItem WH40K_Gun_MKIIIBoltpistol_1A
+AddItem WH40K_Gun_PowerSword_1A
+AddItem WH40K_Grenade_FragGrenade_1A
+AddItem WH40K_Grenade_KrakGrenade_1A
+AddItem WH40K_Ammo_BoltPistolCal75 4

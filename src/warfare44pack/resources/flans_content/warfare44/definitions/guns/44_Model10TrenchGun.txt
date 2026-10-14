@@ -61,7 +61,5 @@ NumGenericAttachmentSlots 1
 // Sounds
 ShootSound Model10TrenchGunShoot
 DistortSound False
-GunSoundRange 400
 ReloadSound Model10TrenchGunReload
-ReloadSoundRange 5
 EmptyClickSound emptyclick

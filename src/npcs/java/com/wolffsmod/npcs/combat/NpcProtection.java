@@ -1,0 +1,97 @@
+package com.wolffsmod.npcs.combat;
+
+import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.model.FlanModelEntity;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import noppes.npcs.Resistances;
+import noppes.npcs.entity.EntityCustomNpc;
+import noppes.npcs.entity.EntityNPCInterface;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.*;
+
+/** Per-NPC damage gates and knockback handling, applied on the server before Custom NPCs resolves a hit. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class NpcProtection
+{
+    private static final ResourceLocation KNOCKBACK_IMMUNITY = ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "knockback_immunity");
+
+    public static NpcCombatSettings settings(EntityNPCInterface npc)
+    {
+        return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
+    }
+
+    /**
+     * Whether the hit is ignored outright: the NPC is invulnerable, or the hit is weaker than the minimum for its kind.
+     * Damage that bypasses invulnerability, such as {@code /kill} and the void, always applies.
+     */
+    public static boolean ignores(EntityNPCInterface npc, DamageSource source, float amount)
+    {
+        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY))
+            return false;
+        if (NpcEquipment.enabled(npc, Feature.INVULNERABLE))
+            return true;
+        return belowMinimum(settings(npc).minimumHit(NpcDamageCategory.of(source)), amount);
+    }
+
+    /** A hit of exactly the minimum is accepted; 0 disables the minimum. */
+    static boolean belowMinimum(int minimum, float amount)
+    {
+        return minimum > 0 && amount < minimum;
+    }
+
+    /**
+     * Applies the NPC's editor resistances. With Flan damage types recognized, Flan melee and tag-only damage types
+     * reach the resistance of their kind; otherwise Custom NPCs classifies by message ID alone.
+     */
+    public static float resist(EntityNPCInterface npc, Resistances resistances, DamageSource source, float amount)
+    {
+        if (!NpcEquipment.enabled(npc, Feature.FLAN_DAMAGE_TYPES))
+            return resistances.applyResistance(source, amount);
+        return resist(NpcDamageCategory.of(source), resistances.arrow, resistances.melee, resistances.explosion, amount);
+    }
+
+    /** Custom NPCs resistance scale: 1 is neutral, 2 is immune and 0 doubles the damage. */
+    static float resist(NpcDamageCategory category, float projectile, float melee, float explosion, float amount)
+    {
+        return switch (category)
+        {
+            case PROJECTILE -> amount * (2F - projectile);
+            case MELEE -> amount * (2F - melee);
+            case EXPLOSION -> amount * (2F - explosion);
+            case OTHER -> amount;
+        };
+    }
+
+    public static boolean knockbackImmune(EntityNPCInterface npc)
+    {
+        return knockbackImmune(settings(npc).getKnockback(), npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity);
+    }
+
+    static boolean knockbackImmune(Knockback mode, boolean flanModel)
+    {
+        return mode == Knockback.IMMUNE || mode == Knockback.MODEL && flanModel;
+    }
+
+    /**
+     * Keeps a full knockback-resistance modifier on immune NPCs, the vanilla mechanism heavy mobs use, so every
+     * knockback path that honors the attribute leaves them in place. Server thread.
+     */
+    public static void updateKnockback(EntityNPCInterface npc)
+    {
+        AttributeInstance resistance = npc.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+        if (resistance == null)
+            return;
+        boolean immune = knockbackImmune(npc);
+        boolean applied = resistance.getModifier(KNOCKBACK_IMMUNITY) != null;
+        if (immune && !applied)
+            resistance.addTransientModifier(new AttributeModifier(KNOCKBACK_IMMUNITY, 1D, AttributeModifier.Operation.ADD_VALUE));
+        else if (!immune && applied)
+            resistance.removeModifier(KNOCKBACK_IMMUNITY);
+    }
+}

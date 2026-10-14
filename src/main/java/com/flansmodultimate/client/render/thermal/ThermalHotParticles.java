@@ -74,6 +74,8 @@ public final class ThermalHotParticles
     }
 
     /** Draws every visible hot particle into the heat mask. */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     public static void renderMask(PoseStack pose, VertexConsumer mask, Vec3 camera, Quaternionf cameraRotation, Frustum frustum, float partialTick)
     {
         Matrix4f matrix = pose.last().pose();

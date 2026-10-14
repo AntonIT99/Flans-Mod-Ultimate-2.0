@@ -3,9 +3,7 @@ package com.wolffsmod.npcs.client;
 import com.flansmodultimate.api.ProjectileSources;
 import com.flansmodultimate.api.ProjectileSources.Source;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /** Custom NPCs widget IDs whose stored defaults are inactive for the selected Flan attack. */
@@ -46,6 +44,20 @@ public record RangedControlLocks(Map<Integer, Reason> textFields, Map<Integer, R
     {
         return new ProjectileSources(combine(sources, ProjectileSources::damage), combine(sources, ProjectileSources::spread), combine(sources, ProjectileSources::speed),
             !sources.isEmpty() && sources.stream().allMatch(ProjectileSources::firingSound));
+    }
+
+    /**
+     * Hands a weapon-supplied value back to the NPC where it keeps its own value for the matching model property, so the
+     * control stays editable. Values the ammunition supplies stay with the ammunition: no NPC value can replace those.
+     */
+    static ProjectileSources release(ProjectileSources sources, boolean damage, boolean spread, boolean speed, boolean firingSound)
+    {
+        return new ProjectileSources(release(sources.damage(), damage), release(sources.spread(), spread), release(sources.speed(), speed), sources.firingSound() && !firingSound);
+    }
+
+    private static Source release(Source source, boolean own)
+    {
+        return own && source == Source.WEAPON ? Source.CALLER : source;
     }
 
     static RangedControlLocks merge(RangedControlLocks first, RangedControlLocks second)

@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.model;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.PaintjobVariant;
+import com.flansmodultimate.api.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -19,15 +19,36 @@ import net.minecraft.world.level.Level;
  *
  * <p>
  * Custom NPCs creates it detached from the level, copies the NPC's position and rotation into it
- * and renders it in place of the NPC's body. It carries no behaviour of its own.
+ * and renders it in place of the NPC's body. It carries no behaviour of its own, with one exception:
+ * summoned into a level on its own, it replaces itself with a Custom NPC that wears it.
  * </p>
  */
 @Getter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class FlanModelEntity extends Mob
+public class FlanModelEntity extends Mob implements ILivingVisualEffects
 {
     public static final String PAINTJOB_KEY = "FlanPaintjob";
     private int paintjobId;
+    private boolean hurtFlash = true;
+    private boolean deathRotation = true;
+
+    public void setVisualEffects(boolean hurt, boolean death)
+    {
+        hurtFlash = hurt;
+        deathRotation = death;
+    }
+
+    @Override
+    public boolean flansmodultimateHurtFlash()
+    {
+        return hurtFlash;
+    }
+
+    @Override
+    public boolean flansmodultimateDeathRotation()
+    {
+        return deathRotation;
+    }
 
     @Nullable
     public ResourceLocation getModelTexture()
@@ -55,6 +76,15 @@ public class FlanModelEntity extends Mob
     public FlanModelEntity(EntityType<? extends FlanModelEntity> entityType, Level level)
     {
         super(entityType, level);
+    }
+
+    @Override
+    public void tick()
+    {
+        super.tick();
+        // A model entity of an NPC is never added to a level; one that is was summoned.
+        if (isAddedToLevel() && level() instanceof ServerLevel level && !isRemoved())
+            FlanModelSummons.replace(level, this);
     }
 
     public static AttributeSupplier.Builder createAttributes()

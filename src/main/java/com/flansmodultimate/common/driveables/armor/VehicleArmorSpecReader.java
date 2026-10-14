@@ -4,16 +4,12 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.types.TypeFile;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** Deterministic reader for optional semantic and per-part armour keys. */
 public final class VehicleArmorSpecReader
 {
+    private static final String IGNORING_SUFFIX = "'; ignoring it";
     public static final String ARMOR_FRONT = "ArmorFrontMm";
     public static final String ARMOR_REAR = "ArmorRearMm";
     public static final String ARMOR_SIDE = "ArmorSideMm";
@@ -58,7 +54,8 @@ public final class VehicleArmorSpecReader
 
     private static final float MAX_SLOPE_DEG = 89F;
 
-    private VehicleArmorSpecReader() {}
+    private VehicleArmorSpecReader()
+    {}
 
     public record Result(VehicleArmorSpec spec, List<String> warnings)
     {
@@ -114,7 +111,7 @@ public final class VehicleArmorSpecReader
                 EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
                 if (part == null)
                 {
-                    warnings.add(PART_ARMOR + " names unknown part '" + values[0] + "'; ignoring it");
+                    warnings.add(PART_ARMOR + " names unknown part '" + values[0] + IGNORING_SUFFIX);
                     continue;
                 }
                 Float thickness = parseThickness(values[1], PART_ARMOR + " " + values[0], warnings);
@@ -132,9 +129,8 @@ public final class VehicleArmorSpecReader
         return facingKey.substring(0, facingKey.length() - "Mm".length()) + HEAT_SUFFIX;
     }
 
-    private static void readHeatProtection(TypeFile file, EnumMap<EnumArmorFacing, ArmorPlate> hull,
-                                           EnumMap<EnumArmorFacing, ArmorPlate> turret,
-                                           EnumMap<EnumDriveablePart, ArmorPlate> parts, List<String> warnings)
+    private static void readHeatProtection(TypeFile file, EnumMap<EnumArmorFacing, ArmorPlate> hull, EnumMap<EnumArmorFacing, ArmorPlate> turret, EnumMap<EnumDriveablePart, ArmorPlate> parts,
+        List<String> warnings)
     {
         readHeatFacing(file, ARMOR_FRONT, hull, List.of(EnumArmorFacing.FRONT), warnings);
         readHeatFacing(file, ARMOR_REAR, hull, List.of(EnumArmorFacing.REAR), warnings);
@@ -143,8 +139,7 @@ public final class VehicleArmorSpecReader
         readHeatFacing(file, ARMOR_BOTTOM, hull, List.of(EnumArmorFacing.BOTTOM), warnings);
         readHeatFacing(file, TURRET_ARMOR_FRONT, turret, List.of(EnumArmorFacing.FRONT), warnings);
         readHeatFacing(file, TURRET_ARMOR_REAR, turret, List.of(EnumArmorFacing.REAR), warnings);
-        readHeatFacing(file, TURRET_ARMOR_SIDE, turret, List.of(EnumArmorFacing.LEFT, EnumArmorFacing.RIGHT),
-            warnings);
+        readHeatFacing(file, TURRET_ARMOR_SIDE, turret, List.of(EnumArmorFacing.LEFT, EnumArmorFacing.RIGHT), warnings);
         readHeatFacing(file, TURRET_ARMOR_TOP, turret, List.of(EnumArmorFacing.TOP), warnings);
         readHeatFacing(file, TURRET_ARMOR_BOTTOM, turret, List.of(EnumArmorFacing.BOTTOM), warnings);
 
@@ -164,14 +159,13 @@ public final class VehicleArmorSpecReader
             EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
             if (part == null)
             {
-                warnings.add(PART_ARMOR_VS_HEAT + " names unknown part '" + values[0] + "'; ignoring it");
+                warnings.add(PART_ARMOR_VS_HEAT + " names unknown part '" + values[0] + IGNORING_SUFFIX);
                 continue;
             }
             ArmorPlate plate = parts.get(part);
             if (plate == null)
             {
-                warnings.add(PART_ARMOR_VS_HEAT + " " + values[0] + " needs a " + PART_ARMOR
-                    + " or naval armour line for the same part; ignoring it");
+                warnings.add(PART_ARMOR_VS_HEAT + " " + values[0] + " needs a " + PART_ARMOR + " or naval armour line for the same part; ignoring it");
                 continue;
             }
             Float thickness = parseThickness(values[1], PART_ARMOR_VS_HEAT + " " + values[0], warnings);
@@ -180,8 +174,7 @@ public final class VehicleArmorSpecReader
         }
     }
 
-    private static void readHeatFacing(TypeFile file, String facingKey, EnumMap<EnumArmorFacing, ArmorPlate> target,
-                                       List<EnumArmorFacing> facings, List<String> warnings)
+    private static void readHeatFacing(TypeFile file, String facingKey, EnumMap<EnumArmorFacing, ArmorPlate> target, List<EnumArmorFacing> facings, List<String> warnings)
     {
         String key = heatKey(facingKey);
         List<String> lines = file.getConfigLines(key);
@@ -206,8 +199,7 @@ public final class VehicleArmorSpecReader
         }
     }
 
-    private static void readSides(TypeFile file, String key, EnumMap<EnumArmorFacing, ArmorPlate> target,
-                                  List<String> warnings)
+    private static void readSides(TypeFile file, String key, EnumMap<EnumArmorFacing, ArmorPlate> target, List<String> warnings)
     {
         ArmorPlate plate = readLastPlate(file, key, warnings);
         if (plate != null)
@@ -217,8 +209,7 @@ public final class VehicleArmorSpecReader
         }
     }
 
-    private static void readFacing(TypeFile file, String key, EnumMap<EnumArmorFacing, ArmorPlate> target,
-                                   EnumArmorFacing facing, List<String> warnings)
+    private static void readFacing(TypeFile file, String key, EnumMap<EnumArmorFacing, ArmorPlate> target, EnumArmorFacing facing, List<String> warnings)
     {
         ArmorPlate plate = readLastPlate(file, key, warnings);
         if (plate != null)
@@ -254,8 +245,7 @@ public final class VehicleArmorSpecReader
                 }
                 if (!Float.isFinite(slope) || slope < 0F || slope > MAX_SLOPE_DEG)
                 {
-                    warnings.add(key + " slope must be finite and between 0 and " + MAX_SLOPE_DEG
-                        + " degrees but was '" + values[1] + "'; ignoring the line");
+                    warnings.add(key + " slope must be finite and between 0 and " + MAX_SLOPE_DEG + " degrees but was '" + values[1] + "'; ignoring the line");
                     return null;
                 }
             }
@@ -274,13 +264,12 @@ public final class VehicleArmorSpecReader
         }
         catch (NumberFormatException ex)
         {
-            warnings.add(key + " thickness must be a number in millimetres but was '" + raw + "'; ignoring it");
+            warnings.add(key + " thickness must be a number in millimetres but was '" + raw + IGNORING_SUFFIX);
             return null;
         }
         if (!Float.isFinite(value) || value < 0F)
         {
-            warnings.add(key + " thickness must be a finite non-negative value in millimetres but was '"
-                + raw + "'; ignoring it");
+            warnings.add(key + " thickness must be a finite non-negative value in millimetres but was '" + raw + IGNORING_SUFFIX);
             return null;
         }
         return value;
@@ -317,28 +306,20 @@ public final class VehicleArmorSpecReader
         // The side of the hull. leftsideArmor/rightsideArmor are the generic
         // side boxes a naval definition uses for its belt when it has no
         // dedicated belt part.
-        families.put(ARMOR_BELT, List.of(EnumDriveablePart.BELT, EnumDriveablePart.BELT_LEFT,
-            EnumDriveablePart.BELT_RIGHT, EnumDriveablePart.PORT, EnumDriveablePart.STARBOARD,
-            EnumDriveablePart.LEFT, EnumDriveablePart.RIGHT, EnumDriveablePart.LEFTSIDE_ARMOR,
-            EnumDriveablePart.RIGHTSIDE_ARMOR));
-        families.put(ARMOR_DECK, List.of(EnumDriveablePart.DECK, EnumDriveablePart.DECK_2,
-            EnumDriveablePart.DECK_3));
+        families.put(ARMOR_BELT, List.of(EnumDriveablePart.BELT, EnumDriveablePart.BELT_LEFT, EnumDriveablePart.BELT_RIGHT, EnumDriveablePart.PORT, EnumDriveablePart.STARBOARD, EnumDriveablePart.LEFT,
+            EnumDriveablePart.RIGHT, EnumDriveablePart.LEFTSIDE_ARMOR, EnumDriveablePart.RIGHTSIDE_ARMOR));
+        families.put(ARMOR_DECK, List.of(EnumDriveablePart.DECK, EnumDriveablePart.DECK_2, EnumDriveablePart.DECK_3));
         families.put(ARMOR_CITADEL, List.of(EnumDriveablePart.CITADEL));
         families.put(ARMOR_BULKHEAD, List.of(EnumDriveablePart.BULKHEAD, EnumDriveablePart.BULKHEAD_2));
-        families.put(ARMOR_CONNING_TOWER, List.of(EnumDriveablePart.CONNING_TOWER,
-            EnumDriveablePart.CONNING_TOWER_AFT, EnumDriveablePart.BRIDGE));
-        families.put(ARMOR_TORPEDO_BULGE, List.of(EnumDriveablePart.TORPEDO_BULGE,
-            EnumDriveablePart.TORPEDO_BULGE_2, EnumDriveablePart.TORPEDO_BULGE_3,
-            EnumDriveablePart.TORPEDO_BULGE_4, EnumDriveablePart.BULGE,
-            EnumDriveablePart.BULGE_LEFT, EnumDriveablePart.BULGE_RIGHT));
+        families.put(ARMOR_CONNING_TOWER, List.of(EnumDriveablePart.CONNING_TOWER, EnumDriveablePart.CONNING_TOWER_AFT, EnumDriveablePart.BRIDGE));
+        families.put(ARMOR_TORPEDO_BULGE, List.of(EnumDriveablePart.TORPEDO_BULGE, EnumDriveablePart.TORPEDO_BULGE_2, EnumDriveablePart.TORPEDO_BULGE_3, EnumDriveablePart.TORPEDO_BULGE_4,
+            EnumDriveablePart.BULGE, EnumDriveablePart.BULGE_LEFT, EnumDriveablePart.BULGE_RIGHT));
         families.put(ARMOR_SUPERSTRUCTURE, List.of(EnumDriveablePart.SUPERSTRUCTURE));
         families.put(ARMOR_BOW, List.of(EnumDriveablePart.BOW));
         families.put(ARMOR_STERN, List.of(EnumDriveablePart.STERN));
         families.put(ARMOR_MACHINERY, machinery());
-        families.put(ARMOR_FLIGHT_DECK, List.of(EnumDriveablePart.FLIGHT_DECK,
-            EnumDriveablePart.FLIGHT_DECK_2, EnumDriveablePart.HANGAR,
-            EnumDriveablePart.HANGAR_DECK, EnumDriveablePart.HANGAR_DECK_2,
-            EnumDriveablePart.HANGAR_DECK_3));
+        families.put(ARMOR_FLIGHT_DECK, List.of(EnumDriveablePart.FLIGHT_DECK, EnumDriveablePart.FLIGHT_DECK_2, EnumDriveablePart.HANGAR, EnumDriveablePart.HANGAR_DECK,
+            EnumDriveablePart.HANGAR_DECK_2, EnumDriveablePart.HANGAR_DECK_3));
         return Collections.unmodifiableMap(families);
     }
 

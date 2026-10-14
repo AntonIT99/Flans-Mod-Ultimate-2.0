@@ -55,7 +55,5 @@ NumGenericAttachmentSlots 1
 // Sounds
 ShootSound ThompsonM1A1Shoot
 DistortSound False
-GunSoundRange 400
 ReloadSound ThompsonM1A1Reload
-ReloadSoundRange 5
 EmptyClickSound emptyclick

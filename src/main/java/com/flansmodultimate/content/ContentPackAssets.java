@@ -3,21 +3,14 @@ package com.flansmodultimate.content;
 import com.flansmodultimate.common.recipe.RecipeDataCompatibility;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.util.DynamicReference;
-import com.flansmodultimate.util.FileUtils;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.SoundLengthIndex;
+import com.flansmodultimate.util.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.*;
+import java.util.*;
 
 import static com.flansmodultimate.content.ContentPackPaths.*;
 
@@ -25,6 +18,7 @@ import static com.flansmodultimate.content.ContentPackPaths.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class ContentPackAssets
 {
+    private static final String JSON_EXTENSION = ".json";
     private static final String GENERATED_ASSETS_VERSION_FILE = ".flans_generated_assets_version";
     // 3: regenerate lang JSON baked with names mis-decoded as GB18030.
     private static final String GENERATED_ASSETS_VERSION = "3";
@@ -32,7 +26,8 @@ final class ContentPackAssets
     private static final int LEGACY_RESOURCE_PACK_FORMAT = 15;
     private static final int CURRENT_RESOURCE_PACK_FORMAT = 34;
 
-    record TextureReferences(Map<String, DynamicReference> armor, Map<String, DynamicReference> gui, Map<String, DynamicReference> skins) {}
+    record TextureReferences(Map<String, DynamicReference> armor, Map<String, DynamicReference> gui, Map<String, DynamicReference> skins)
+    {}
 
     static boolean aliasesChanged(IContentProvider provider, TextureReferences aliases)
     {
@@ -45,16 +40,15 @@ final class ContentPackAssets
     static boolean outputsPresent(IContentProvider provider, List<InfoType> items, List<InfoType> blocks, TextureReferences aliases)
     {
         Path assets = provider.getAssetsPath();
-        if (!Files.isRegularFile(assets.resolve(FOLDER_LANG).resolve("en_us.json"))
-            || shouldUpdateGeneratedTextureFiles(provider, null, aliases)
+        if (!Files.isRegularFile(assets.resolve(FOLDER_LANG).resolve("en_us.json")) || shouldUpdateGeneratedTextureFiles(provider, null, aliases)
             || SoundLengthIndex.isOutdated(assets.resolve(FOLDER_SOUNDS), assets.resolve(SoundLengthIndex.FILE_NAME)))
             return false;
         for (InfoType type : items)
-            if (!Files.isRegularFile(assets.resolve("models/item/" + type.getOriginalShortName() + ".json")))
+            if (!Files.isRegularFile(assets.resolve("models/item/" + type.getOriginalShortName() + JSON_EXTENSION)))
                 return false;
         for (InfoType type : blocks)
-            if (!Files.isRegularFile(assets.resolve("models/block/" + type.getOriginalShortName() + ".json"))
-                || !Files.isRegularFile(assets.resolve("blockstates/" + type.getOriginalShortName() + ".json")))
+            if (!Files.isRegularFile(assets.resolve("models/block/" + type.getOriginalShortName() + JSON_EXTENSION))
+                || !Files.isRegularFile(assets.resolve("blockstates/" + type.getOriginalShortName() + JSON_EXTENSION)))
                 return false;
         return true;
     }
@@ -62,8 +56,7 @@ final class ContentPackAssets
     static boolean dataOutputsPresent(IContentProvider provider, List<InfoType> items)
     {
         Path data = provider.getDataPath();
-        return !RecipeJsonGenerator.needsRegeneration(items, data)
-            && !RecipeDataCompatibility.hasMissingCounterparts(data.getParent());
+        return !RecipeJsonGenerator.needsRegeneration(items, data) && !RecipeDataCompatibility.hasMissingCounterparts(data.getParent());
     }
 
     static void generate(IContentProvider provider, List<InfoType> types, List<InfoType> items, List<InfoType> blocks, TextureReferences aliases)
@@ -118,7 +111,8 @@ final class ContentPackAssets
         GeneratedTextureFiles.copy(sourcePath, destPath, aliasMapping, folderName.equals(FOLDER_TEXTURES_ARMOR));
     }
 
-    static void createMcMeta(IContentProvider provider) {
+    static void createMcMeta(IContentProvider provider)
+    {
         Path mcMetaFile = (provider.isArchive() ? provider.getExtractedPath() : provider.getPath()).resolve("pack.mcmeta");
         if (Files.notExists(mcMetaFile))
         {
@@ -132,8 +126,7 @@ final class ContentPackAssets
                             "supported_formats": [%d, %d],
                             "description": "%s"
                         }
-                    }""", LEGACY_RESOURCE_PACK_FORMAT, LEGACY_RESOURCE_PACK_FORMAT, CURRENT_RESOURCE_PACK_FORMAT,
-                    FilenameUtils.getBaseName(provider.getName()));
+                    }""", LEGACY_RESOURCE_PACK_FORMAT, LEGACY_RESOURCE_PACK_FORMAT, CURRENT_RESOURCE_PACK_FORMAT, FilenameUtils.getBaseName(provider.getName()));
                 Files.writeString(mcMetaFile, content);
             }
             catch (IOException e)
@@ -146,8 +139,10 @@ final class ContentPackAssets
     private static boolean shouldUpdateGeneratedTextureFiles(IContentProvider provider, FileSystem fs, TextureReferences aliases)
     {
         Path assetsPath = provider.getAssetsPath(fs);
-        return GeneratedTextureFiles.needsUpdate(assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM), Collections.emptyMap(), false)
-            || GeneratedTextureFiles.needsUpdate(assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK), Collections.emptyMap(), false)
+        return GeneratedTextureFiles.needsUpdate(assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM),
+            Collections.emptyMap(), false)
+            || GeneratedTextureFiles.needsUpdate(assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK),
+                Collections.emptyMap(), false)
             || GeneratedTextureFiles.needsUpdate(assetsPath.resolve(FOLDER_TEXTURES_ARMOR), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ARMOR), aliases.armor(), true)
             || GeneratedTextureFiles.needsUpdate(assetsPath.resolve(FOLDER_TEXTURES_GUI), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_GUI), aliases.gui(), false)
             || GeneratedTextureFiles.needsUpdate(assetsPath.resolve(FOLDER_TEXTURES_SKINS), assetsPath.resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_SKINS), aliases.skins(), false);

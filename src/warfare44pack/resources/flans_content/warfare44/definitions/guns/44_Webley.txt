@@ -54,7 +54,5 @@ NumGenericAttachmentSlots 1
 // Sounds
 ShootSound C96Shoot
 DistortSound False
-GunSoundRange 400
 ReloadSound LugerReload
-ReloadSoundRange 5
 EmptyClickSound emptyclick

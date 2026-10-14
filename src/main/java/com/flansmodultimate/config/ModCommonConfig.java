@@ -12,10 +12,7 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,17 +21,14 @@ import net.minecraft.world.level.Level;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModCommonConfig
 {
+    private static final String SECTION_TEAMS = "Teams Settings";
     public static final ModConfigSpec configSpec;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
@@ -196,6 +190,12 @@ public final class ModCommonConfig
     private static final ModConfigSpec.EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
     private static final ModConfigSpec.EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
 
+    private static final ModConfigSpec.BooleanValue BULLET_FLYBY_SOUNDS;
+    private static final ModConfigSpec.DoubleValue BULLET_FLYBY_RANGE_MULTIPLIER;
+    private static final ModConfigSpec.BooleanValue NEAR_MISS_SUPPRESSION;
+    private static final ModConfigSpec.DoubleValue SUPPRESSION_RANGE_MULTIPLIER;
+    private static final ModConfigSpec.DoubleValue SUPPRESSION_INTENSITY;
+    private static final ModConfigSpec.BooleanValue SUPPRESSION_AFFECTS_RIDERS;
     private static final ModConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
@@ -212,21 +212,33 @@ public final class ModCommonConfig
     private static final Supplier<Integer> SMOKE_PARTICLES_COUNT;
     private static final Supplier<Double> SMOKE_PARTICLES_RANGE;
 
-    private static final Supplier<Double> SOUND_RANGE;
-    private static final Supplier<Double> GUN_FIRE_SOUND_RANGE;
-    private static final Supplier<Double> EXPLOSION_SOUND_RANGE;
-    private static final Supplier<Double> VEHICLE_SOUND_RANGE;
-    private static final Supplier<Double> VEHICLE_UTILITY_SOUND_RANGE;
-    private static final Supplier<Double> VEHICLE_FLARE_SOUND_RANGE;
-    private static final Supplier<Double> VEHICLE_LOCK_ON_SOUND_RANGE;
-    private static final Supplier<Double> VEHICLE_LOCKED_ON_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue RELOAD_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue GUN_ACTION_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue MELEE_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue GRENADE_THROW_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue GUN_LOCK_ON_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue GUN_FIRE_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue EXPLOSION_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue VEHICLE_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue VEHICLE_UTILITY_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue VEHICLE_FLARE_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue VEHICLE_LOCK_ON_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue VEHICLE_LOCKED_ON_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue BULLET_HIT_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue GRENADE_STICK_SOUND_RANGE;
+    private static final ModConfigSpec.DoubleValue GRENADE_FLASH_SOUND_RANGE;
+    private static final ModConfigSpec.BooleanValue OVERRIDE_PACK_SOUND_RANGES;
 
     private static final Supplier<Boolean> USE_NEW_PENETRATION_SYSTEM;
     private static final Supplier<Boolean> ENABLE_BLOCK_PENETRATION;
     private static final Supplier<Double> BLOCK_PENETRATION_MODIFIER;
     private static final Supplier<Double> KINETIC_PENETRATION_REFERENCE;
 
+    // ModConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> PENETRABLE_BLOCKS_RAW;
+    // ModConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> FLUID_FUELS_RAW;
     /**
      * BuildCraft's refined fuels carry roughly twice the energy of the crude oil they come
@@ -238,11 +250,17 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DIGITAL_AMMO_DEFAULT_AMOUNT;
     private static final Supplier<Integer> DIGITAL_AMMO_MAX_AMOUNT;
     private static final Supplier<Integer> DIGITAL_AMMO_NUM_TYPES;
+    // ModConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
     private static final Supplier<Integer> DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
+    // ModConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final ModConfigSpec.ConfigValue<List<? extends String>> DIMENSION_GRAVITY_FACTORS;
+    // ModConfigSpec.Builder#defineList imposes this wildcard type.
+    @SuppressWarnings("java:S4968")
     private static final ModConfigSpec.ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
@@ -275,6 +293,9 @@ public final class ModCommonConfig
     private static final Supplier<Double> DISTANT_EXPLOSION_MIN_RADIUS;
 
     private static final Supplier<Boolean> ENCHANTMENT_MODULE_ENABLED;
+
+    /** Config section holding every sound range; each of its entries is a range in blocks that also sets loudness. */
+    private static final String SOUND_SETTINGS_SECTION = "Sound Settings";
 
     private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
@@ -323,7 +344,7 @@ public final class ModCommonConfig
         SHOW_DISTANCE_IN_KILL_MESSAGE = builder.comment("Include the distance between the killer and the victim in Flan's Mod death messages.").define("showDistanceInKillMessage", true);
         builder.pop();
 
-        builder.push("Teams Settings");
+        builder.push(SECTION_TEAMS);
         BULLET_SNAPSHOT_MIN = builder.comment("Lag compensation: number of player snapshots (ticks) every bullet rewinds its targets by, before the shooter's ping is considered.",
             "A bullet uses the snapshot bulletSnapshotMin + ping / bulletSnapshotDivisor. Can also be changed in game with /teams admin bltss.").defineInRange("bulletSnapshotMin", 0, 0, 100);
         BULLET_SNAPSHOT_DIVISOR = builder.comment("Lag compensation: milliseconds of shooter ping per additional snapshot of rewind. 0 ignores the shooter's ping.")
@@ -416,6 +437,16 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Shootable Settings");
+        BULLET_FLYBY_SOUNDS = builder.comment("Send near-miss sounds for flying bullets and hitscan shots. Clients can mute these independently.").define("bulletFlybySounds", true);
+        BULLET_FLYBY_RANGE_MULTIPLIER = builder.comment("Scale ammunition FlyBySoundRange. Effective reach is capped at 32 blocks; zero disables near-miss sounds.")
+            .defineInRange("bulletFlybyRangeMultiplier", 1D, 0D, 10D);
+        NEAR_MISS_SUPPRESSION = builder.comment("Enable visual near-miss suppression for bullets and hitscan shots. Does not change damage, accuracy or player aim.").define("nearMissSuppression",
+            true);
+        SUPPRESSION_RANGE_MULTIPLIER = builder.comment("Scale each ammunition's SuppressionRange. Effective reach is capped at 32 blocks; zero disables suppression.")
+            .defineInRange("suppressionRangeMultiplier", 1D, 0D, 10D);
+        SUPPRESSION_INTENSITY = builder.comment("Scale server-authored suppression impulses, combined with the ammunition's Suppression value. Zero disables impulses.")
+            .defineInRange("suppressionIntensity", 1D, 0D, 10D);
+        SUPPRESSION_AFFECTS_RIDERS = builder.comment("Allow near-miss suppression for players riding entities. Labjac excludes riders by default.").define("suppressionAffectsRiders", false);
         SHOOTABLES_CAN_BREAK_GLASS = builder.comment("Whether guns and grenades can break glass").define("shootablesCanBreakGlass", true);
         NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE = builder.comment("Damage reference for the kinetic damage system (when 'Mass' is set).",
             "A 9 g projectile retains the established baseline; heavier projectiles scale with mass^(2/3) so shell damage remains proportional to normalized vehicle health.",
@@ -455,8 +486,15 @@ public final class ModCommonConfig
         SMOKE_PARTICLES_RANGE = builder.comment("Range in blocks for sending smoke particle packets to clients.").defineInRange("smokeParticlesRange", 32.0, 1.0, 4096.0);
         builder.pop();
 
-        builder.push("Sound Settings");
-        SOUND_RANGE = builder.comment("Range in blocks for general sound packets (also determines volume).").defineInRange("soundRange", 48.0, 1.0, 4096.0);
+        builder.push(SOUND_SETTINGS_SECTION);
+        RELOAD_SOUND_RANGE = builder.comment("Range in blocks for reload sounds of guns, AA guns, NPC weapons and vehicle weapons, shell inserts included.",
+            "From 16 blocks up it also sets loudness. ReloadSoundRange in a content pack can replace it, see overridePackSoundRanges.").defineInRange("reloadSoundRange", 64.0, 1.0, 4096.0);
+        GUN_ACTION_SOUND_RANGE = builder.comment("Range in blocks for gun handling sounds: bolt and pump actions, idle sounds and minigun warm-up, loop and cool-down.",
+            "IdleSoundRange in a content pack can replace it for idle sounds.").defineInRange("gunActionSoundRange", 48.0, 1.0, 4096.0);
+        MELEE_SOUND_RANGE = builder.comment("Range in blocks for melee swing, hit and shield block sounds. MeleeSoundRange in a content pack can replace it.").defineInRange("meleeSoundRange", 48.0,
+            1.0, 4096.0);
+        GRENADE_THROW_SOUND_RANGE = builder.comment("Range in blocks for grenade throw sounds.").defineInRange("grenadeThrowSoundRange", 48.0, 1.0, 4096.0);
+        GUN_LOCK_ON_SOUND_RANGE = builder.comment("Range in blocks for the lock-on sound of a hand-held launcher locking onto a target.").defineInRange("gunLockOnSoundRange", 10.0, 1.0, 4096.0);
         GUN_FIRE_SOUND_RANGE = builder.comment("Range in blocks for gun fire sound packets (also determines volume).").defineInRange("gunFireSoundRange", 128.0, 1.0, 4096.0);
         EXPLOSION_SOUND_RANGE = builder.comment("Maximum range in blocks at which explosions are heard. Each explosion is heard at 6 blocks per block of blast radius (at least 48), up to this cap.")
             .defineInRange("explosionSoundRange", 1024.0, 1.0, 4096.0);
@@ -467,6 +505,14 @@ public final class ModCommonConfig
         VEHICLE_LOCK_ON_SOUND_RANGE = builder.comment("Range in blocks for the lock-on sound heard by the vehicle operator.").defineInRange("vehicleLockOnSoundRange", 10.0, 1.0, 4096.0);
         VEHICLE_LOCKED_ON_SOUND_RANGE = builder.comment("Default range in blocks for a vehicle's incoming lock warning. LockedOnSoundRange in a content pack overrides this default.")
             .defineInRange("vehicleLockedOnSoundRange", 5.0, 1.0, 4096.0);
+        BULLET_HIT_SOUND_RANGE = builder.comment("Range in blocks for bullet hit sounds. HitSoundRange in a content pack can replace it, see overridePackSoundRanges.")
+            .defineInRange("bulletHitSoundRange", 64.0, 1.0, 4096.0);
+        GRENADE_STICK_SOUND_RANGE = builder.comment("Range in blocks for the sound of a grenade sticking to a surface. StickSoundRange in a content pack can replace it.")
+            .defineInRange("grenadeStickSoundRange", 10.0, 1.0, 4096.0);
+        GRENADE_FLASH_SOUND_RANGE = builder.comment("Range in blocks for the sound of a flash grenade going off. FlashSoundRange in a content pack can replace it.")
+            .defineInRange("grenadeFlashSoundRange", 16.0, 1.0, 4096.0);
+        OVERRIDE_PACK_SOUND_RANGES = builder.comment("Whether the sound ranges above replace the *SoundRange values of content packs, so every pack sounds alike.",
+            "When false, a pack's GunSoundRange, ReloadSoundRange, EngineSoundRange and similar lines take precedence.").define("overridePackSoundRanges", true);
         builder.pop();
 
         builder.push("Penetration System Settings");
@@ -658,9 +704,11 @@ public final class ModCommonConfig
             SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE.get(), LOCK_ON_RANGE.get(), FLAK_PARTICLES_RANGE.get(), ENTITY_HIT_PARTICLE_RANGE.get(), BLOCK_HIT_PARTICLE_RANGE.get(),
             SMOKE_PARTICLES_COUNT.get(), SMOKE_PARTICLES_RANGE.get(),
 
-            SOUND_RANGE.get().floatValue(), GUN_FIRE_SOUND_RANGE.get().floatValue(), EXPLOSION_SOUND_RANGE.get().floatValue(), VEHICLE_SOUND_RANGE.get().floatValue(),
+            RELOAD_SOUND_RANGE.get().floatValue(), GUN_ACTION_SOUND_RANGE.get().floatValue(), MELEE_SOUND_RANGE.get().floatValue(), GRENADE_THROW_SOUND_RANGE.get().floatValue(),
+            GUN_LOCK_ON_SOUND_RANGE.get().floatValue(), GUN_FIRE_SOUND_RANGE.get().floatValue(), EXPLOSION_SOUND_RANGE.get().floatValue(), VEHICLE_SOUND_RANGE.get().floatValue(),
             VEHICLE_UTILITY_SOUND_RANGE.get().floatValue(), VEHICLE_FLARE_SOUND_RANGE.get().floatValue(), VEHICLE_LOCK_ON_SOUND_RANGE.get().floatValue(),
-            VEHICLE_LOCKED_ON_SOUND_RANGE.get().floatValue(),
+            VEHICLE_LOCKED_ON_SOUND_RANGE.get().floatValue(), BULLET_HIT_SOUND_RANGE.get().floatValue(), GRENADE_STICK_SOUND_RANGE.get().floatValue(), GRENADE_FLASH_SOUND_RANGE.get().floatValue(),
+            OVERRIDE_PACK_SOUND_RANGES.get(),
 
             USE_NEW_PENETRATION_SYSTEM.get(), ENABLE_BLOCK_PENETRATION.get(), BLOCK_PENETRATION_MODIFIER.get(), KINETIC_PENETRATION_REFERENCE.get(),
 
@@ -681,7 +729,8 @@ public final class ModCommonConfig
 
             ENCHANTMENT_MODULE_ENABLED.get(),
 
-            List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get());
+            List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
+            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1118,8 +1167,8 @@ public final class ModCommonConfig
     /** Persists both lag compensation values, as {@code /teams admin bltss} does. Server thread only. */
     public static boolean setBulletSnapshot(int min, int divisor)
     {
-        boolean changed = setRuntimeValue(List.of("Teams Settings", "bulletSnapshotMin"), min);
-        return setRuntimeValue(List.of("Teams Settings", "bulletSnapshotDivisor"), divisor) || changed;
+        boolean changed = setRuntimeValue(List.of(SECTION_TEAMS, "bulletSnapshotMin"), min);
+        return setRuntimeValue(List.of(SECTION_TEAMS, "bulletSnapshotDivisor"), divisor) || changed;
     }
 
     public static EnumPlayerAimPose playerAimPose()
@@ -1287,14 +1336,69 @@ public final class ModCommonConfig
     @AllArgsConstructor
     public enum RuntimeOption
     {
-        DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS), EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS), FLAN_EXPLOSIONS_DROP_BLOCKS(
-            () -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS), DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS), SHOOTABLES_CAN_BREAK_GLASS(
-                () -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS), PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE), ENTITY_AIM_POSE(
-                    () -> ModCommonConfig.ENTITY_AIM_POSE), DRIVEABLE_TRACKING_RANGE(
-                        () -> ModCommonConfig.DRIVEABLE_TRACKING_RANGE), FLAN_NPC_TRACKING_RANGE(() -> ModCommonConfig.FLAN_NPC_TRACKING_RANGE);
+        // spotless:off
+        DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS, QuickSection.SERVER),
+        EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS, QuickSection.SERVER),
+        FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS, QuickSection.SERVER),
+        DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS, QuickSection.SERVER),
+        BULLET_FLYBY_SOUNDS(() -> ModCommonConfig.BULLET_FLYBY_SOUNDS, QuickSection.SERVER),
+        BULLET_FLYBY_RANGE_MULTIPLIER(() -> ModCommonConfig.BULLET_FLYBY_RANGE_MULTIPLIER, QuickSection.SERVER),
+        NEAR_MISS_SUPPRESSION(() -> ModCommonConfig.NEAR_MISS_SUPPRESSION, QuickSection.SERVER),
+        SUPPRESSION_RANGE_MULTIPLIER(() -> ModCommonConfig.SUPPRESSION_RANGE_MULTIPLIER, QuickSection.SERVER),
+        SUPPRESSION_INTENSITY(() -> ModCommonConfig.SUPPRESSION_INTENSITY, QuickSection.SERVER),
+        SUPPRESSION_AFFECTS_RIDERS(() -> ModCommonConfig.SUPPRESSION_AFFECTS_RIDERS, QuickSection.SERVER),
+        SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS, QuickSection.SERVER),
+        PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE, QuickSection.SERVER),
+        ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE, QuickSection.SERVER),
+        DRIVEABLE_TRACKING_RANGE(() -> ModCommonConfig.DRIVEABLE_TRACKING_RANGE, QuickSection.SERVER),
+        FLAN_NPC_TRACKING_RANGE(() -> ModCommonConfig.FLAN_NPC_TRACKING_RANGE, QuickSection.SERVER),
+        RELOAD_SOUND_RANGE(() -> ModCommonConfig.RELOAD_SOUND_RANGE, QuickSection.SOUNDS),
+        GUN_ACTION_SOUND_RANGE(() -> ModCommonConfig.GUN_ACTION_SOUND_RANGE, QuickSection.SOUNDS),
+        MELEE_SOUND_RANGE(() -> ModCommonConfig.MELEE_SOUND_RANGE, QuickSection.SOUNDS),
+        GRENADE_THROW_SOUND_RANGE(() -> ModCommonConfig.GRENADE_THROW_SOUND_RANGE, QuickSection.SOUNDS),
+        GUN_LOCK_ON_SOUND_RANGE(() -> ModCommonConfig.GUN_LOCK_ON_SOUND_RANGE, QuickSection.SOUNDS),
+        GUN_FIRE_SOUND_RANGE(() -> ModCommonConfig.GUN_FIRE_SOUND_RANGE, QuickSection.SOUNDS),
+        EXPLOSION_SOUND_RANGE(() -> ModCommonConfig.EXPLOSION_SOUND_RANGE, QuickSection.SOUNDS),
+        VEHICLE_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_SOUND_RANGE, QuickSection.SOUNDS),
+        VEHICLE_UTILITY_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_UTILITY_SOUND_RANGE, QuickSection.SOUNDS),
+        VEHICLE_FLARE_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_FLARE_SOUND_RANGE, QuickSection.SOUNDS),
+        VEHICLE_LOCK_ON_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_LOCK_ON_SOUND_RANGE, QuickSection.SOUNDS),
+        VEHICLE_LOCKED_ON_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_LOCKED_ON_SOUND_RANGE, QuickSection.SOUNDS),
+        BULLET_HIT_SOUND_RANGE(() -> ModCommonConfig.BULLET_HIT_SOUND_RANGE, QuickSection.SOUNDS),
+        GRENADE_STICK_SOUND_RANGE(() -> ModCommonConfig.GRENADE_STICK_SOUND_RANGE, QuickSection.SOUNDS),
+        GRENADE_FLASH_SOUND_RANGE(() -> ModCommonConfig.GRENADE_FLASH_SOUND_RANGE, QuickSection.SOUNDS),
+        OVERRIDE_PACK_SOUND_RANGES(() -> ModCommonConfig.OVERRIDE_PACK_SOUND_RANGES, QuickSection.SOUNDS);
+        // spotless:on
 
         /** Deferred so that the enum can be loaded before the outer config spec is built. */
         private final Supplier<? extends ModConfigSpec.ConfigValue<?>> configValue;
+        /** The quick screen heading this setting is listed under. */
+        private final QuickSection section;
+    }
+
+    /**
+     * The range of a sound a content pack may set with a {@code *SoundRange} line: the pack's value when it
+     * has one and {@code overridePackSoundRanges} is off, otherwise the server setting.
+     *
+     * @param packRange
+     *            the pack's value, zero or negative when the pack sets none
+     */
+    public static float packSoundRange(float packRange, float configRange)
+    {
+        return packRange > 0F && !get().overridePackSoundRanges() ? packRange : configRange;
+    }
+
+    /** Whether this entry is one of the sound ranges, which the options screens tune by the block. */
+    public static boolean isSoundRange(ModConfigSpec.ConfigValue<?> value)
+    {
+        List<String> path = value.getPath();
+        return path.size() == 2 && SOUND_SETTINGS_SECTION.equals(path.get(0));
+    }
+
+    /** Headings of the server settings on the quick options screen, in display order. */
+    public enum QuickSection
+    {
+        SERVER, SOUNDS
     }
 
     /**

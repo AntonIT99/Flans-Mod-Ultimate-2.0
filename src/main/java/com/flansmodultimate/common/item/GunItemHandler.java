@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.*;
@@ -141,7 +142,7 @@ public class GunItemHandler
         return true;
     }
 
-    public void doCustomMelee(Level level, ServerPlayer player, PlayerData data, InteractionHand hand)
+    public void doCustomMelee(ServerPlayer player, PlayerData data, InteractionHand hand)
     {
         if (item.configType.isDeployable() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
             return;
@@ -192,7 +193,7 @@ public class GunItemHandler
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
-        if (item.configType.isDeployable() || !gunCanBeHandled(player))
+        if (item.configType.isDeployable() || !gunCanBeHandled(player) || FlansMod.teamsManager.isPacifism())
             return;
         if ((!item.configType.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;
@@ -203,7 +204,7 @@ public class GunItemHandler
         if (player.isSprinting() && !data.isScoped() && !item.configType.canHipFireWhileSprinting())
             return;
         if (item.configType.isUseCustomMeleeWhenShoot())
-            doCustomMelee(level, player, data, hand);
+            doCustomMelee(player, data, hand);
 
         GunFiredEvent gunFireEvent = new GunFiredEvent(player);
         PlatformEvents.post(gunFireEvent);
@@ -240,6 +241,8 @@ public class GunItemHandler
 
             playShootSound(level, player, gunStack, lastBullet);
             spawnMuzzleFlashParticles(level, player, gunStack, hand);
+            // Lets the players who see the shooter play this shot's animation and muzzle flash model.
+            PacketHandler.sendToTracking(new PacketGunShotPose(player.getId(), hand), player);
 
             shootTime += shootDelay;
 
@@ -304,6 +307,8 @@ public class GunItemHandler
 
     public boolean doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
+        if (data.isSecondaryModeSwitching(hand))
+            return false;
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
         float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand);
@@ -401,20 +406,20 @@ public class GunItemHandler
             data.setLoopedSoundDelay(item.configType.getWarmupSoundLength());
             data.setLoopingSoundActive(true);
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getWarmupSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getWarmupSound(), false);
         }
         else if (data.isShootKeyPressed(hand))
         {
             data.setLoopedSoundDelay(item.configType.getLoopedSoundLength());
             data.setLoopingSoundActive(true);
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getLoopedSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getLoopedSound(), false);
         }
         else if (data.isLoopingSoundActive())
         {
             data.setLoopingSoundActive(false);
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getCooldownSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getCooldownSound(), false);
         }
     }
 
@@ -514,7 +519,7 @@ public class GunItemHandler
         if (!(held.getItem() instanceof GunItem itemGun))
             return;
 
-        PacketPlaySound.sendSoundPacket(player, GunItem.LOCK_ON_SOUND_RANGE, itemGun.configType.getLockOnSound(), false);
+        PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunLockOnSoundRange(), itemGun.configType.getLockOnSound(), false);
 
         if (closestEntity instanceof Driveable driveable && driveable.getConfigType().isHasFlare())
         {

@@ -6,6 +6,8 @@ import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.driveables.collision.DriveableProjectileCollision;
+import com.flansmodultimate.common.driveables.parts.PartBodies;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.platform.render.VertexPlatform;
@@ -25,7 +27,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Outlines driveable part boxes and the single rotating AA gun collision box in debug mode.
+ * Outlines driveable part boxes and the single rotating AA gun collision box in debug mode, and the part boxes worn by
+ * other entities.
  * Boxes go through the same hull and turret transforms as projectile tracing,
  * so what is drawn is what bullets actually hit.
  */
@@ -70,6 +73,47 @@ public final class DriveableHitboxRenderer
             }
         }
         buffer.endBatch(CustomRenderType.debugLinesSeeThrough());
+    }
+
+    /**
+     * Outlines the part boxes entities other than driveables wear: all of them in debug mode, otherwise those whose owner
+     * asked for an outline. Drawn through the transforms rounds are traced with.
+     */
+    public static void renderPartBodies(@NotNull PoseStack poseStack, @NotNull MultiBufferSource.BufferSource buffer, @NotNull Camera camera, @NotNull Frustum frustum, float partialTick)
+    {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null)
+            return;
+
+        boolean debug = ModClient.isDebug();
+        Vec3 cameraPosition = camera.getPosition();
+        VertexConsumer lines = null;
+        for (Entity wearer : PartBodies.wearers(level))
+        {
+            PartBody body = PartBodies.of(wearer);
+            if (body == null || !debug && !body.isOutlined() || !frustum.isVisible(wearer.getBoundingBoxForCulling()))
+                continue;
+            if (lines == null)
+                lines = buffer.getBuffer(CustomRenderType.debugLinesSeeThrough());
+            // The pose is that of the tick; the entity's own interpolation carries it between ticks.
+            Vec3 origin = body.getPose().origin().add(wearer.getPosition(partialTick)).subtract(wearer.position()).subtract(cameraPosition);
+            poseStack.pushPose();
+            poseStack.translate(origin.x, origin.y, origin.z);
+            renderPartBody(body, poseStack.last(), lines);
+            poseStack.popPose();
+        }
+        if (lines != null)
+            buffer.endBatch(CustomRenderType.debugLinesSeeThrough());
+    }
+
+    /** Expects {@code pose} to be translated to the model origin, with no rotation applied. */
+    private static void renderPartBody(PartBody body, PoseStack.Pose pose, VertexConsumer lines)
+    {
+        for (PartBody.Outline outline : body.outlines())
+        {
+            for (int[] edge : EDGES)
+                addLine(pose, lines, outline.corners()[edge[0]], outline.corners()[edge[1]], 1F, outline.hittable() ? 1F : 0F, 0F);
+        }
     }
 
     private static void renderAAGun(double[] vertices, PoseStack.Pose pose, VertexConsumer lines)

@@ -169,6 +169,8 @@ public final class DistantSync
      * @param particleRange
      *            how far the explosion's particles were sent, in blocks
      */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     public static void onExplosion(ServerLevel level, Vec3 center, float explosionRadius, float blastRadius, boolean fiery, double particleRange)
     {
         if (subscriptions.isEmpty())

@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman
+ShortName W44_JapaneseArmyRifleman
+Description General infantry with plentiful rifle ammunition and two fragmentation grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Type99Rifle
+AddItem 44_Type3899Ammo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

@@ -7,6 +7,7 @@ import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.ModUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.nbt.*;
@@ -24,9 +25,9 @@ import java.util.*;
  * {@code EntityFlansModShooter} and {@code EntitySkullDrone}.
  *
  * <p>
- * Each call to {@link #tryFire} is one trigger pull. It respects the weapon's own cadence
- * through a shoot delay that counts down every tick, and when the gun runs dry it reloads from
- * the shooter's reserve magazines, waiting out the weapon's reload time before the next shot.
+ * Each call to {@link #tryFire} is one trigger pull. Automatic guns may fire several rounds
+ * in that tick, carrying fractional cooldowns through {@link ShotCooldown}. When the gun runs dry it
+ * reloads from the shooter's reserve magazines, waiting out the weapon's reload time before the next shot.
  * The two legacy shooters differed in their timings and aim, which {@link Profile} captures.
  * </p>
  */
@@ -71,15 +72,14 @@ public final class ApocalypseGunCombat
     /** Counts the weapon's delays down. Call once per server tick. */
     public void tick()
     {
-        if (shootDelay > 0F)
-            shootDelay--;
+        shootDelay = ShotCooldown.tick(shootDelay);
         if (soundDelay > 0)
             soundDelay--;
     }
 
     public boolean isReady()
     {
-        return shootDelay <= 0F;
+        return ShotCooldown.isReady(shootDelay);
     }
 
     public boolean hasGun()
@@ -116,8 +116,12 @@ public final class ApocalypseGunCombat
         if (gunStack.getItem() instanceof GunItem gunItem)
         {
             ItemStack loaded = gunItem.getAmmoItemStack(gunStack, 0, owner.level().registryAccess());
-            if (!loaded.isEmpty())
-                addReserve(loaded.copyWithCount(1));
+            if (loaded.getItem() instanceof ShootableItem shootable)
+            {
+                ItemStack spare = loaded.copyWithCount(1);
+                ShootableItem.setRoundsRemaining(spare, Math.max(1, shootable.getConfigType().getRoundsPerItem()));
+                addReserve(spare);
+            }
         }
     }
 
@@ -131,15 +135,30 @@ public final class ApocalypseGunCombat
     /**
      * Pulls the trigger at {@code target}.
      *
-     * @return {@code true} if a round left the barrel
+     * @return {@code true} if at least one round left the barrel, even if a later round needed a reload
      */
     public boolean tryFire(Entity target)
     {
-        if (owner.level().isClientSide || shootDelay > 0F)
+        if (owner.level().isClientSide || !isReady())
             return false;
         ItemStack gunStack = owner.getMainHandItem();
         if (!(gunStack.getItem() instanceof GunItem gunItem))
             return false;
+        boolean automaticFire = gunItem.getConfigType().getFireMode(gunStack).isAutomaticFire();
+        boolean fired = false;
+        while (isReady() && target.isAlive() && !target.isRemoved())
+        {
+            if (!tryFireRound(gunItem, gunStack, target))
+                return fired;
+            fired = true;
+            if (!automaticFire)
+                break;
+        }
+        return fired;
+    }
+
+    private boolean tryFireRound(GunItem gunItem, ItemStack gunStack, Entity target)
+    {
         GunType gunType = gunItem.getConfigType();
 
         int slot = findLoadedSlot(gunItem, gunStack);
@@ -162,20 +181,21 @@ public final class ApocalypseGunCombat
         ShootableType shootableType = shootableItem.getConfigType();
         boolean lastBullet = ShootableItem.getRoundsRemaining(ammoStack) == 1;
 
-        fire(gunType, gunStack, shootableType, ammoStack, target, () ->
+        if (!fire(gunType, gunStack, shootableType, ammoStack, target, () ->
         {
             ShootableItem.consumeRound(ammoStack);
             gunItem.setBulletItemStack(gunStack, ammoStack, slot, owner.level().registryAccess());
-        });
+        }))
+            return false;
 
         if (soundDelay <= 0 && playSound(gunType.getShootSound(gunStack, lastBullet), gunType.getGunSoundRange(), gunType.isDistortSound(), gunType.isSilencedSound(gunStack)))
             soundDelay = gunType.getShootSoundLength();
 
-        shootDelay = nextShotDelay(gunType, gunStack, ShootableItem.getRoundsFired(ammoStack));
+        shootDelay = ShotCooldown.charge(shootDelay, nextShotDelay(gunType, gunStack, ShootableItem.getRoundsFired(ammoStack)));
         return true;
     }
 
-    private void fire(GunType gunType, ItemStack gunStack, ShootableType shootableType, ItemStack ammoStack, Entity target, ShootingHandler consume)
+    private boolean fire(GunType gunType, ItemStack gunStack, ShootableType shootableType, ItemStack ammoStack, Entity target, ShootingHandler consume)
     {
         Vec3 origin;
         Vec3 direction;
@@ -196,10 +216,11 @@ public final class ApocalypseGunCombat
             fireableGun = new FireableGun(gunType, gunStack, owner, null, EnumMovement.NONE, !owner.onGround());
         }
         if (direction.lengthSqr() < 1.0E-6D)
-            return;
+            return false;
 
         ShootingHelper.fireWeapon(owner.level(), fireableGun, shootableType, gunType.getNumBullets(gunStack, shootableType), origin, direction.normalize(), owner, owner,
             ShootableItem.getRoundsFired(ammoStack), consume);
+        return true;
     }
 
     private float nextShotDelay(GunType gunType, ItemStack gunStack, int roundsFired)
@@ -228,30 +249,49 @@ public final class ApocalypseGunCombat
         {
             if (ShootableItem.hasRoundsLeft(gunItem.getAmmoItemStack(gunStack, slot, owner.level().registryAccess())))
                 continue;
-            int best = -1;
-            int bestRounds = 0;
-            for (int i = 0; i < reserve.size(); i++)
+            int best = bestReserveIndex(gunType);
+            if (best >= 0)
             {
-                ItemStack candidate = reserve.get(i);
-                if (!(candidate.getItem() instanceof ShootableItem shootable) || !gunType.getAmmoTypes().contains(shootable.getConfigType()))
-                    continue;
-                int rounds = ShootableItem.getRoundsRemaining(candidate);
-                if (rounds > bestRounds)
-                {
-                    best = i;
-                    bestRounds = rounds;
-                }
+                replaceMagazine(gunItem, gunStack, slot, best);
+                reloaded = true;
             }
-            if (best < 0)
+        }
+        return reloaded;
+    }
+
+    private int bestReserveIndex(GunType gunType)
+    {
+        int best = -1;
+        int bestRounds = 0;
+        for (int i = 0; i < reserve.size(); i++)
+        {
+            ItemStack candidate = reserve.get(i);
+            if (!(candidate.getItem() instanceof ShootableItem shootable) || !gunType.getAmmoTypes().contains(shootable.getConfigType()))
                 continue;
-            ItemStack magazine = reserve.get(best);
-            gunItem.setBulletItemStack(gunStack, magazine.copyWithCount(1), slot, owner.level().registryAccess());
+            int rounds = ShootableItem.getRoundsRemaining(candidate);
+            if (rounds > bestRounds)
+            {
+                best = i;
+                bestRounds = rounds;
+            }
+        }
+        return best;
+    }
+
+    private void replaceMagazine(GunItem gunItem, ItemStack gunStack, int slot, int best)
+    {
+        ItemStack spent = gunItem.getAmmoItemStack(gunStack, slot, owner.level().registryAccess());
+        if (profile == Profile.SURVIVOR && spent.getItem() instanceof ShootableItem shootable)
+            ModUtils.dropItem(owner.level(), owner, shootable.getConfigType().getDropItemOnReload(), shootable.getConfigType().getContentPack());
+        ItemStack magazine = reserve.get(best);
+        gunItem.setBulletItemStack(gunStack, magazine.copyWithCount(1), slot, owner.level().registryAccess());
+        // Legacy drones reloaded in creative mode; the one reserve stack was reusable.
+        if (profile == Profile.SURVIVOR)
+        {
             magazine.shrink(1);
             if (magazine.isEmpty())
                 reserve.remove(best);
-            reloaded = true;
         }
-        return reloaded;
     }
 
     private int findLoadedSlot(GunItem gunItem, ItemStack gunStack)
@@ -288,6 +328,10 @@ public final class ApocalypseGunCombat
         reserve.clear();
         for (Tag entry : tag.getList(NBT_RESERVE, Tag.TAG_COMPOUND))
             Optional.of(ItemStackData.parse(owner.level().registryAccess(), (CompoundTag) entry)).filter(stack -> !stack.isEmpty()).ifPresent(this::addReserve);
+        // Old saves may contain a drone whose only reserve was consumed. Its magazine
+        // still identifies the reusable ammo it should have carried.
+        if (profile == Profile.DRONE && reserve.isEmpty())
+            stockCopyOfLoadedAmmo();
         shootDelay = tag.getFloat(NBT_SHOOT_DELAY);
     }
 }

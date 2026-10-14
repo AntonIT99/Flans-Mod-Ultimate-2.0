@@ -57,7 +57,5 @@ NumGenericAttachmentSlots 1
 // Sounds
 ShootSound Modell1915Shoot
 DistortSound False
-GunSoundRange 400
 ReloadSound Modell1915Reload
-ReloadSoundRange 5
 EmptyClickSound emptyclick

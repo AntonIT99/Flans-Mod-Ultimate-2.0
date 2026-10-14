@@ -2,14 +2,7 @@ package com.flansmodultimate.apocalyse.common.util;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
-import com.flansmodultimate.common.types.ArmorType;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.EnumType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.MechaItemType;
-import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModUtils;
@@ -22,24 +15,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -224,7 +207,7 @@ public final class ApocalypseLoot
     public static ItemStack itemHolderLoot(RandomSource random, boolean gunsOnly)
     {
         if (gunsOnly || random.nextInt(3) != 0)
-            return ApocalypseGunHelper.randomGun(random, false).flatMap(gun -> ApocalypseGunHelper.loadGun(gun, random, true)).orElse(ItemStack.EMPTY);
+            return ApocalypseGunHelper.randomLootGun(random).orElse(ItemStack.EMPTY);
         if (random.nextBoolean())
             return survivorJournal(random);
         if (random.nextBoolean())
@@ -331,12 +314,25 @@ public final class ApocalypseLoot
 
     private static void equipRandomArmorSet(LivingEntity entity, RandomSource random)
     {
-        List<ArmorType> armor = armorTypes();
-        if (armor.isEmpty())
+        List<Team> teams = Team.values().stream().filter(team -> team != Team.SPECTATORS).sorted(Comparator.comparing(InfoType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
+        if (teams.isEmpty())
+        {
+            equipRandomArmorPiece(entity, random);
             return;
-        for (ArmorType type : armor)
-            if (random.nextInt(3) != 0)
-                equipArmor(entity, type);
+        }
+        Team team = teams.get(random.nextInt(teams.size()));
+        List<PlayerClass> classes = team.getClasses();
+        PlayerClass playerClass = classes.isEmpty() ? null : classes.get(random.nextInt(classes.size()));
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR)
+                continue;
+            ItemStack armor = playerClass == null ? ItemStack.EMPTY : playerClass.getArmour(slot);
+            if (armor.isEmpty())
+                armor = team.getArmour(slot);
+            if (!armor.isEmpty())
+                entity.setItemSlot(slot, armor.copy());
+        }
     }
 
     private static void equipArmor(LivingEntity entity, ArmorType armor)
@@ -357,6 +353,7 @@ public final class ApocalypseLoot
             if (type instanceof ArmorType armorType && ModUtils.getItemStack(armorType).isPresent())
                 armor.add(armorType);
         }
+        armor.sort(Comparator.comparing(InfoType::getShortName, String.CASE_INSENSITIVE_ORDER));
         return armor;
     }
 

@@ -1,0 +1,15 @@
+// Identity
+Name Sword Brother
+ShortName WH40K_Class_BlackTemplarsSwordBrother
+
+// Armour
+Hat WH40K_Armor_SpaceMarineHelmet_1I
+Chest WH40K_Armor_SpaceMarineBody_1I
+Legs WH40K_Armor_SpaceMarineLegs_1I
+Shoes WH40K_Armor_SpaceMarineBoots_1I
+
+// Items
+AddItem WH40K_Gun_MKIIIBoltpistol_1A
+AddItem WH40K_Gun_ThunderHammer_1A
+AddItem WH40K_Grenade_KrakGrenade_1A
+AddItem WH40K_Ammo_BoltPistolCal75 4

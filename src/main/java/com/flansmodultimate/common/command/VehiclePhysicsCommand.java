@@ -1,19 +1,10 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.common.driveables.armor.ArmorPlate;
-import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
-import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
-import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
-import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
-import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
-import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
-import com.flansmodultimate.common.driveables.physics.VehicleGeometry;
-import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
+import com.flansmodultimate.common.driveables.armor.*;
+import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.DriveableItem;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.PlaneType;
-import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -35,21 +26,21 @@ import java.util.Locale;
 /**
  * Developer introspection for the real-world physics system.
  *
- * <p>Answers the question the mode enum alone cannot: why is this vehicle on
+ * <p>
+ * Answers the question the mode enum alone cannot: why is this vehicle on
  * {@code LEGACY} rather than {@code REAL_WORLD_PROFILE}. It prints the authored
  * source values, what was missing, the resolved values, the active mode and the
  * effective speed scale, all read from the same resolver the simulation uses.
  *
- * <p>Deliberately a command rather than logging, so normal play stays quiet.
+ * <p>
+ * Deliberately a command rather than logging, so normal play stays quiet.
  */
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class VehiclePhysicsCommand
 {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("vehiclephysics")
-            .requires(source -> source.hasPermission(2))
-            .executes(VehiclePhysicsCommand::report));
+        dispatcher.register(Commands.literal("vehiclephysics").requires(source -> source.hasPermission(2)).executes(VehiclePhysicsCommand::report));
     }
 
     private static int report(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
@@ -58,8 +49,7 @@ public final class VehiclePhysicsCommand
         DriveableType type = findType(player);
         if (type == null)
         {
-            context.getSource().sendFailure(Component.literal(
-                "Ride a driveable or hold a driveable item to inspect its physics"));
+            context.getSource().sendFailure(Component.literal("Ride a driveable or hold a driveable item to inspect its physics"));
             return 0;
         }
 
@@ -69,10 +59,8 @@ public final class VehiclePhysicsCommand
         RealWorldVehicleSpec source = type.getRealWorldSpec();
 
         send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " physics ===");
-        send(context, ChatFormatting.WHITE, "mode: " + resolved.mode()
-            + "  category: " + resolved.category()
-            + "  speedScale: " + format(speedScale)
-            + "  aircraftReferenceSpeedScale: " + format(referenceSpeedScale));
+        send(context, ChatFormatting.WHITE,
+            "mode: " + resolved.mode() + "  category: " + resolved.category() + "  speedScale: " + format(speedScale) + "  aircraftReferenceSpeedScale: " + format(referenceSpeedScale));
 
         send(context, ChatFormatting.AQUA, "-- authored source --");
         if (source.isEmpty())
@@ -88,69 +76,54 @@ public final class VehiclePhysicsCommand
             line(context, RealWorldSpecReader.KEY_CLIMB_RATE, source.aircraft().climbRateMs(), "m/s");
             line(context, RealWorldSpecReader.KEY_ROTOR_DIAMETER, source.aircraft().rotorDiameterM(), "m");
             if (source.ground().driveType() != null)
-                send(context, ChatFormatting.GRAY, "  " + RealWorldSpecReader.KEY_DRIVE_TYPE
-                    + " = " + source.ground().driveType());
+                send(context, ChatFormatting.GRAY, "  " + RealWorldSpecReader.KEY_DRIVE_TYPE + " = " + source.ground().driveType());
             line(context, RealWorldSpecReader.KEY_MAX_REVERSE_SPEED, source.ground().maxReverseSpeedKmh(), "km/h");
             line(context, RealWorldSpecReader.KEY_DRAFT, source.marine().draftM(), "m");
         }
 
         send(context, ChatFormatting.AQUA, "-- completeness --");
-        send(context, ChatFormatting.GRAY, "  ground profile: " + resolved.groundProfileComplete()
-            + explainGround(source, resolved));
-        send(context, ChatFormatting.GRAY, "  aircraft profile: " + resolved.aircraftProfileComplete()
-            + explainAircraft(source, resolved));
+        send(context, ChatFormatting.GRAY, "  ground profile: " + resolved.groundProfileComplete() + explainGround(source, resolved));
+        send(context, ChatFormatting.GRAY, "  aircraft profile: " + resolved.aircraftProfileComplete() + explainAircraft(source, resolved));
 
         send(context, ChatFormatting.AQUA, "-- resolved --");
         if (resolved.hasGroundPropulsion() || resolved.hasAircraftProfile())
         {
             send(context, ChatFormatting.GRAY, "  mass = " + format(resolved.massKg()) + " kg");
-            send(context, ChatFormatting.GRAY, "  maxSpeed = " + format(resolved.maxSpeedKmh()) + " km/h -> "
-                + format(resolved.maxSpeedBlocksPerTick(speedScale)) + " blocks/tick");
+            send(context, ChatFormatting.GRAY, "  maxSpeed = " + format(resolved.maxSpeedKmh()) + " km/h -> " + format(resolved.maxSpeedBlocksPerTick(speedScale)) + " blocks/tick");
             send(context, ChatFormatting.GRAY, "  powerToWeight = " + format(resolved.powerToWeightKwPerKg()) + " kW/kg");
             send(context, ChatFormatting.GRAY, "  thrustToWeight = " + format(resolved.thrustToWeight()));
             if (resolved.hasAircraftProfile())
             {
                 send(context, ChatFormatting.GRAY, "  wingLoading = " + format(resolved.wingLoadingKgPerM2()) + " kg/m2");
-                send(context, ChatFormatting.GRAY, "  referenceSpeed = "
-                    + format(resolved.referenceSpeedMs(speedScale, referenceSpeedScale)) + " m/s");
+                send(context, ChatFormatting.GRAY, "  referenceSpeed = " + format(resolved.referenceSpeedMs(speedScale, referenceSpeedScale)) + " m/s");
                 send(context, ChatFormatting.GRAY, "  rollInertiaFactor = " + format(resolved.rollInertiaFactor()));
             }
         }
         else
         {
-            send(context, ChatFormatting.GRAY, "  propulsion falls back to legacy: "
-                + legacyPropulsionSource(type));
+            send(context, ChatFormatting.GRAY, "  propulsion falls back to legacy: " + legacyPropulsionSource(type));
         }
-        send(context, ChatFormatting.GRAY, "  driveType = " + resolved.driveType()
-            + (resolved.driveTypeExplicit() ? " (explicit)" : " (inferred from Tank/FourWheelDrive)"));
-        send(context, ChatFormatting.GRAY, "  reverseOverride = " + (resolved.hasReverseSpeedOverride()
-            ? format(resolved.reverseSpeedBlocksPerTick(speedScale)) + " blocks/tick"
-            : "none (legacy MaxNegativeThrottle " + format(type.getMaxNegativeThrottle()) + ")"));
-        send(context, ChatFormatting.GRAY, "  uphillResponse = "
-            + (resolved.hasGroundPropulsion() ? "derived from powerToWeight and driveType" : "legacy"));
-        send(context, ChatFormatting.GRAY, "  draft = "
-            + (resolved.hasDraft() ? format(resolved.draftM()) + " m" : "none (legacy Buoyancy "
-                + format(type.getBuoyancy()) + ")"));
-        send(context, ChatFormatting.GRAY, "  movementClamp = " + format(resolved.movementClampBlocksPerTick())
-            + " blocks/tick, wheelProbe = " + format(resolved.wheelPredictionBlocks(speedScale)) + " blocks");
+        send(context, ChatFormatting.GRAY, "  driveType = " + resolved.driveType() + (resolved.driveTypeExplicit() ? " (explicit)" : " (inferred from Tank/FourWheelDrive)"));
+        send(context, ChatFormatting.GRAY,
+            "  reverseOverride = " + (resolved.hasReverseSpeedOverride()
+                ? format(resolved.reverseSpeedBlocksPerTick(speedScale)) + " blocks/tick"
+                : "none (legacy MaxNegativeThrottle " + format(type.getMaxNegativeThrottle()) + ")"));
+        send(context, ChatFormatting.GRAY, "  uphillResponse = " + (resolved.hasGroundPropulsion() ? "derived from powerToWeight and driveType" : "legacy"));
+        send(context, ChatFormatting.GRAY, "  draft = " + (resolved.hasDraft() ? format(resolved.draftM()) + " m" : "none (legacy Buoyancy " + format(type.getBuoyancy()) + ")"));
+        send(context, ChatFormatting.GRAY,
+            "  movementClamp = " + format(resolved.movementClampBlocksPerTick()) + " blocks/tick, wheelProbe = " + format(resolved.wheelPredictionBlocks(speedScale)) + " blocks");
 
         VehicleImpulsePhysics.ImpulseMass impulseMass = type.getImpulseMass();
         double referenceMass = ModCommonConfig.vehicleKnockbackReferenceMassKg();
         send(context, ChatFormatting.AQUA, "-- knockback --");
-        send(context, ChatFormatting.GRAY, "  impulseMass = " + format(impulseMass.massKg()) + " kg ("
-            + impulseMassSource(impulseMass.source(), type) + ")");
-        send(context, ChatFormatting.GRAY, "  knockbackScale = "
-            + format(VehicleImpulsePhysics.knockbackScale(impulseMass.massKg(), referenceMass))
-            + " (reference " + format(referenceMass) + " kg"
+        send(context, ChatFormatting.GRAY, "  impulseMass = " + format(impulseMass.massKg()) + " kg (" + impulseMassSource(impulseMass.source(), type) + ")");
+        send(context, ChatFormatting.GRAY, "  knockbackScale = " + format(VehicleImpulsePhysics.knockbackScale(impulseMass.massKg(), referenceMass)) + " (reference " + format(referenceMass) + " kg"
             + (ModCommonConfig.forceLegacyVehicleKnockback() ? ", inactive: forceLegacyVehicleKnockback)" : ")"));
 
         VehicleGeometry geometry = resolved.geometry();
         send(context, ChatFormatting.AQUA, "-- derived geometry --");
-        send(context, ChatFormatting.GRAY, "  length = " + format(geometry.lengthM())
-            + " m, width = " + format(geometry.widthM())
-            + " m, height = " + format(geometry.heightM()) + " m");
-        send(context, ChatFormatting.GRAY, "  wheelbase = " + format(geometry.wheelbaseM())
-            + " m, track = " + format(geometry.trackWidthM()) + " m");
+        send(context, ChatFormatting.GRAY, "  length = " + format(geometry.lengthM()) + " m, width = " + format(geometry.widthM()) + " m, height = " + format(geometry.heightM()) + " m");
+        send(context, ChatFormatting.GRAY, "  wheelbase = " + format(geometry.wheelbaseM()) + " m, track = " + format(geometry.trackWidthM()) + " m");
 
         send(context, ChatFormatting.AQUA, "-- armour and normalized health --");
         VehicleArmorSpec armor = type.getArmorSpec();
@@ -163,20 +136,17 @@ public final class VehiclePhysicsCommand
                 ArmorPlate hull = armor.hull().get(facing);
                 ArmorPlate turret = armor.turret().get(facing);
                 if (hull != null)
-                    send(context, ChatFormatting.GRAY, "  hull " + facing.name().toLowerCase(Locale.ROOT)
-                        + " = " + plate(hull));
+                    send(context, ChatFormatting.GRAY, "  hull " + facing.name().toLowerCase(Locale.ROOT) + " = " + plate(hull));
                 if (turret != null)
-                    send(context, ChatFormatting.GRAY, "  turret " + facing.name().toLowerCase(Locale.ROOT)
-                        + " = " + plate(turret));
+                    send(context, ChatFormatting.GRAY, "  turret " + facing.name().toLowerCase(Locale.ROOT) + " = " + plate(turret));
             }
-            armor.partOverrides().forEach((part, plate) -> send(context, ChatFormatting.GRAY,
-                "  part " + part.getShortName() + " = " + plate(plate)));
+            armor.partOverrides().forEach((part, plate) -> send(context, ChatFormatting.GRAY, "  part " + part.getShortName() + " = " + plate(plate)));
         }
         send(context, ChatFormatting.GRAY, "  RealMassKg = " + format(source.massKg()) + " kg");
-        send(context, ChatFormatting.GRAY, "  normalized health requested = "
-            + type.isUseRealisticVehicleHealth() + ", enabled = " + type.getResolvedHealth().enabled()
-            + ", total HP = " + format(type.getTotalHp()));
-        type.getResolvedHealth().allocations().forEach((part, hp) -> {
+        send(context, ChatFormatting.GRAY,
+            "  normalized health requested = " + type.isUseRealisticVehicleHealth() + ", enabled = " + type.getResolvedHealth().enabled() + ", total HP = " + format(type.getTotalHp()));
+        type.getResolvedHealth().allocations().forEach((part, hp) ->
+        {
             if (hp > 0F)
                 send(context, ChatFormatting.GRAY, "    " + part.getShortName() + " = " + format(hp) + " HP");
         });
@@ -192,8 +162,7 @@ public final class VehiclePhysicsCommand
         StringBuilder missing = new StringBuilder();
         appendMissing(missing, source.massKg(), RealWorldSpecReader.KEY_MASS);
         if (source.enginePowerKw() == null)
-            append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_HP
-                + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_PS);
+            append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_HP + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_PS);
         appendMissing(missing, source.maxSpeedKmh(), RealWorldSpecReader.KEY_MAX_SPEED);
         return missing.isEmpty() ? "" : " missing: " + missing;
     }
@@ -210,8 +179,8 @@ public final class VehiclePhysicsCommand
         appendMissing(missing, source.aircraft().effectiveWingSpanM(), RealWorldSpecReader.KEY_WING_SPAN);
         appendMissing(missing, source.aircraft().effectiveWingAreaM2(), RealWorldSpecReader.KEY_WING_AREA);
         if (source.enginePowerKw() == null && source.engineThrustKn() == null)
-            append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " (or " + RealWorldSpecReader.KEY_ENGINE_POWER_HP
-                + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_PS + ") or " + RealWorldSpecReader.KEY_ENGINE_THRUST);
+            append(missing, RealWorldSpecReader.KEY_ENGINE_POWER + " (or " + RealWorldSpecReader.KEY_ENGINE_POWER_HP + " or " + RealWorldSpecReader.KEY_ENGINE_POWER_PS + ") or "
+                + RealWorldSpecReader.KEY_ENGINE_THRUST);
         return missing.isEmpty() ? "" : " missing: " + missing;
     }
 
@@ -223,8 +192,7 @@ public final class VehiclePhysicsCommand
                 : "fixed 0.01 acceleration, MaxThrottle " + format(type.getMaxThrottle());
         if (type instanceof PlaneType plane)
             return plane.isNewFlightControl()
-                ? "NewFlightControl (legacy Mass " + format(plane.getMass())
-                    + ", MaxThrust " + format(plane.getMaxThrust()) + ")"
+                ? "NewFlightControl (legacy Mass " + format(plane.getMass()) + ", MaxThrust " + format(plane.getMaxThrust()) + ")"
                 : "legacy flight model, MaxThrottle " + format(type.getMaxThrottle());
         return "legacy";
     }
@@ -237,8 +205,7 @@ public final class VehiclePhysicsCommand
             case LEGACY_MASS -> "legacy Mass, read in " + (type instanceof VehicleType ? "tonnes" : "kg");
             case FALLBACK -> type.getAuthoredMassKg() == null
                 ? "class fallback: no RealMassKg or Mass"
-                : "class fallback: legacy Mass resolves to " + format(type.getAuthoredMassKg())
-                    + " kg, below the plausible minimum";
+                : "class fallback: legacy Mass resolves to " + format(type.getAuthoredMassKg()) + " kg, below the plausible minimum";
         };
     }
 
@@ -278,8 +245,7 @@ public final class VehiclePhysicsCommand
 
     private static String plate(ArmorPlate plate)
     {
-        return format(plate.thicknessMm()) + " mm"
-            + (plate.slopeDeg() == 0F ? "" : " @ " + format(plate.slopeDeg()) + " deg")
+        return format(plate.thicknessMm()) + " mm" + (plate.slopeDeg() == 0F ? "" : " @ " + format(plate.slopeDeg()) + " deg")
             + (plate.hasDistinctHeatProtection() ? ", vs HEAT " + format(plate.heatThicknessMm()) + " mm" : "");
     }
 
@@ -289,8 +255,8 @@ public final class VehiclePhysicsCommand
         Entity vehicle = player.getVehicle();
         if (vehicle != null)
         {
-            Driveable driveable = vehicle instanceof Driveable direct ? direct
-                : vehicle.getVehicle() instanceof Driveable parent ? parent : null;
+            Driveable carrier = vehicle.getVehicle() instanceof Driveable parent ? parent : null;
+            Driveable driveable = vehicle instanceof Driveable direct ? direct : carrier;
             if (driveable != null && driveable.getConfigType() != null)
                 return driveable.getConfigType();
         }

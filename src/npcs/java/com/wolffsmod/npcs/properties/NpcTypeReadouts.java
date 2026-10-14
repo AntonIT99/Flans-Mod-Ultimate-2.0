@@ -32,7 +32,7 @@ public final class NpcTypeReadouts
             if (type.weapons().stream().allMatch(weapon -> weapon.speed().isPresent()))
                 numbers(values, type, NpcTypeProperty.SPEED, weapon -> Math.max(0D, Math.min(100D, Math.ceil(weapon.speed().getAsDouble() * 10D))));
         }
-        if (options.enabled(Feature.FLAN_SOUNDS) && !type.weapons().isEmpty() && type.weapons().stream().noneMatch(weapon -> weapon.firingSound().isBlank()))
+        if (options.enabled(Feature.FIRE_SOUNDS) && !type.weapons().isEmpty() && type.weapons().stream().noneMatch(weapon -> weapon.firingSound().isBlank()))
             values.put(NpcTypeProperty.FIRING_SOUND, type.weapons().stream().map(Weapon::firingSound).distinct().collect(Collectors.joining(" / ")));
         return Map.copyOf(values);
     }

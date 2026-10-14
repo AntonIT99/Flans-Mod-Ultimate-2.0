@@ -1,0 +1,15 @@
+// Identity
+Name Scout
+ShortName W44_SovietArmyScout
+Description Scoped rifle specialist with binoculars and limited ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Items
+AddItem 44_MosinNagant+44_PUScope
+AddItem 44_MosinNagantAmmo 4
+AddItem 44_Binoculars
+AddItem 44_Bandage

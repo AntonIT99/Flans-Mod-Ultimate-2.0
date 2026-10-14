@@ -22,8 +22,7 @@ class DefinitionFileTest
     @Test
     void anUntouchedFileRoundTripsByteForByte()
     {
-        byte[] bytes = ("ï»¿Name Tiger\r\n// comment\r\n\tModel W44.Tiger  \r\nDescription PzÃ¤\n"
-            + "BarrelPosition 1 2 3").getBytes(StandardCharsets.ISO_8859_1);
+        byte[] bytes = ("ï»¿Name Tiger\r\n// comment\r\n\tModel W44.Tiger  \r\nDescription PzÃ¤\nBarrelPosition 1 2 3").getBytes(StandardCharsets.ISO_8859_1);
 
         DefinitionFile file = DefinitionFile.parse(bytes);
 
@@ -35,8 +34,7 @@ class DefinitionFileTest
     @Test
     void keysMatchAnyCaseAndCommentsEndTheValues()
     {
-        DefinitionFile file = parse("shootpointprimary 1 2 3 turret // main gun\n//ShootPointPrimary 9 9 9\n"
-            + "  // ShootPointPrimary 8 8 8\n");
+        DefinitionFile file = parse("shootpointprimary 1 2 3 turret // main gun\n//ShootPointPrimary 9 9 9\n  // ShootPointPrimary 8 8 8\n");
 
         List<DefinitionFile.Line> lines = file.lines("ShootPointPrimary");
 

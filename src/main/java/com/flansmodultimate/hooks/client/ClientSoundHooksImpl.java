@@ -11,6 +11,12 @@ import java.util.UUID;
 
 public class ClientSoundHooksImpl implements IClientSoundHooks
 {
+    @Override
+    public void playEngineClip(String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instance, @Nullable Entity emitter, boolean variablePitch)
+    {
+        SoundHelper.playSound(sound, pos, range, distort, silenced, cancellable, instance, emitter, variablePitch);
+    }
+
     public void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Entity emitter)
     {
         SoundHelper.playSound(sound, pos, range, distort, silenced, cancellable, instanceUUID, emitter);

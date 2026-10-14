@@ -1,12 +1,6 @@
 package com.flansmodultimate.util;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import lombok.AccessLevel;
@@ -18,21 +12,14 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SoundJsonProcessor
 {
+    private static final String KEY_SOUNDS = "sounds";
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
     private static final String DEFAULT_CATEGORY = "player";
@@ -194,7 +181,7 @@ public final class SoundJsonProcessor
         for (Map.Entry<String, JsonElement> e : def.entrySet())
         {
             String k = e.getKey();
-            if (!"sounds".equals(k))
+            if (!KEY_SOUNDS.equals(k))
             {
                 out.add(k, e.getValue());
                 continue;
@@ -203,7 +190,7 @@ public final class SoundJsonProcessor
             JsonElement soundsEl = e.getValue();
             if (!soundsEl.isJsonArray())
             {
-                out.add("sounds", soundsEl);
+                out.add(KEY_SOUNDS, soundsEl);
                 continue;
             }
 
@@ -239,7 +226,7 @@ public final class SoundJsonProcessor
                     arr.add(se);
                 }
             }
-            out.add("sounds", arr);
+            out.add(KEY_SOUNDS, arr);
         }
         return out;
     }
@@ -269,7 +256,7 @@ public final class SoundJsonProcessor
 
             JsonArray arr = new JsonArray();
             arr.add(new JsonPrimitive(o.identifier));
-            def.add("sounds", arr);
+            def.add(KEY_SOUNDS, arr);
 
             root.add(key, def);
         }
@@ -347,7 +334,7 @@ public final class SoundJsonProcessor
             if (!defEl.isJsonObject())
                 continue;
             JsonObject def = defEl.getAsJsonObject();
-            JsonElement soundsEl = def.get("sounds");
+            JsonElement soundsEl = def.get(KEY_SOUNDS);
             if (soundsEl == null || !soundsEl.isJsonArray())
                 continue;
 

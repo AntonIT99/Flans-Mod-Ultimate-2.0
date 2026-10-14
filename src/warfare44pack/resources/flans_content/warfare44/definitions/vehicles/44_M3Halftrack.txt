@@ -110,14 +110,11 @@ DriverYawBeforePitch false
 // Sounds
 StartSound TankIdle1
 StartSoundLength 41
-StartSoundRange 12
 EngineSound TankRun1
 EngineSoundLength 39
-EngineSoundRange 50
 BackSound Engine_TR_Halftrack
 BackSoundLength 39
 BackSoundLength 61
-BackSoundRange 25
 ShootSoundPrimary None
 ShootSoundSecondary None
 PlaceSoundPrimary TankPlace

@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.server.gun;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.GunHandlingTiming;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.network.PacketHandler;
@@ -46,15 +47,17 @@ public class PacketGunSecondaryMode implements IServerPacket
             return;
 
         PlayerData data = PlayerData.getInstance(player);
-        if (data.getShootTime(hand) > 0F || !gunItem.getConfigType().canToggleSecondaryFire(stack))
+        if (!player.isAlive() || player.isSpectator() || data.getShootTime(hand) > 0F || data.isReloading(hand) || data.getPendingReload().isPresent()
+            || !gunItem.getConfigType().canToggleSecondaryFire(stack))
             return;
 
         boolean secondary = !gunItem.getConfigType().getSecondaryFire(stack);
         gunItem.getConfigType().setSecondaryFire(stack, secondary);
-        data.setBurstRoundsRemaining(hand, 0);
+        int switchTicks = GunHandlingTiming.switchTicks(secondary ? gunItem.getConfigType().getSecondarySwitchTime() : gunItem.getConfigType().getSecondaryUnSwitchTime());
+        data.beginSecondaryModeSwitch(hand, switchTicks);
         player.getInventory().setChanged();
         player.containerMenu.broadcastChanges();
-        PacketHandler.sendTo(new PacketGunSecondaryModeClient(hand, secondary), player);
+        PacketHandler.sendTo(new PacketGunSecondaryModeClient(hand, secondary, switchTicks), player);
 
         String sound = gunItem.getConfigType().getSecondaryFireToggleSound(stack);
         if (StringUtils.isNotBlank(sound))

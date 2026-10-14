@@ -1,8 +1,7 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.ProjectileParameters;
-import com.flansmodultimate.api.WeaponMuzzle;
+import com.flansmodultimate.api.*;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
@@ -45,6 +44,48 @@ class ExternalProjectileSupportTest
         assertEquals(2, ExternalProjectileSupport.getMuzzles(type, false, 0, false).size());
         type.setMeasuredBarrels(new Vec3[]{new Vec3(0D, 8D, 0D), new Vec3(0D, 8D, 0D)}, new Vec3[]{new Vec3(20D, 0D, 4D), new Vec3(20D, 0D, -4D)});
         assertVector(AAGunBarrelGeometry.modelBarrelOffset(new Vec3(0D, 8D, 0D), new Vec3(20D, 0D, 4D), 180F, 0F), ExternalProjectileSupport.getMuzzles(type, false, 0, true).get(0).offset());
+    }
+
+    @Test
+    void turretMuzzlesTurnAndElevateExactlyAsTheDriveableEntityCarriesThem()
+    {
+        Vector3f muzzle = new Vector3f(4F, 2F, 0.5F);
+        Vector3f origin = new Vector3f(1F, 1.5F, 0F);
+        TestVehicle type = new TestVehicle(new Vector3f());
+        type.turret(origin, muzzle);
+        MountAim aim = new MountAim(35F, -12F);
+        Vec3 aimed = ExternalProjectileSupport.getMuzzles(type, false, 0, true, aim).get(0).offset();
+        // The entity works in its mirrored attachment frame: pitch round the pivot, then yaw, then out to the world.
+        Vec3 point = mirrored(muzzle);
+        Vec3 pivot = mirrored(origin);
+        Vec3 turned = LegacyDriveableCoordinates.rotateTurretLocal(point.subtract(pivot), aim.yaw(), aim.pitch()).add(pivot);
+        assertVector(LegacyDriveableCoordinates.modelLocalToWorldDirection(turned, 90F, 0F, 0F), aimed);
+        // A turn to the right moves a muzzle ahead of the pivot to the right, and elevation lifts it.
+        Vec3 rest = ExternalProjectileSupport.getMuzzles(type, false, 0, true).get(0).offset();
+        assertVector(rest, ExternalProjectileSupport.getMuzzles(type, false, 0, true, MountAim.REST).get(0).offset());
+        assertEquals(true, ExternalProjectileSupport.getMuzzles(type, false, 0, true, new MountAim(35F, 0F)).get(0).offset().x > rest.x);
+        assertEquals(true, ExternalProjectileSupport.getMuzzles(type, false, 0, true, new MountAim(0F, -12F)).get(0).offset().y > rest.y);
+        // Muzzles on the hull stay where they are, whatever the turret does.
+        assertVector(ExternalProjectileSupport.getMuzzles(type, true, 0, true).get(0).offset(), ExternalProjectileSupport.getMuzzles(type, true, 0, true, aim).get(0).offset());
+    }
+
+    @Test
+    void anAaGunCarriesItsBarrelsRoundAndUpWithItsAim()
+    {
+        TestAA type = new TestAA();
+        MountAim aim = new MountAim(40F, -25F);
+        assertVector(AAGunBarrelGeometry.legacyBarrelOffset(16D, 8D, 4D, 220F, -25F), ExternalProjectileSupport.getMuzzles(type, false, 0, true, aim).get(0).offset());
+        type.setMeasuredBarrels(new Vec3[]{new Vec3(0D, 8D, 0D), new Vec3(0D, 8D, 0D)}, new Vec3[]{new Vec3(20D, 0D, 4D), new Vec3(20D, 0D, -4D)});
+        Vec3 rest = ExternalProjectileSupport.getMuzzles(type, false, 0, true).get(0).offset();
+        Vec3 aimed = ExternalProjectileSupport.getMuzzles(type, false, 0, true, aim).get(0).offset();
+        assertVector(AAGunBarrelGeometry.modelBarrelOffset(new Vec3(0D, 8D, 0D), new Vec3(20D, 0D, 4D), 220F, -25F), aimed);
+        assertEquals(true, aimed.y > rest.y);
+    }
+
+    private static Vec3 mirrored(Vector3f legacy)
+    {
+        Vec3 local = LegacyDriveableCoordinates.toLocal(legacy);
+        return new Vec3(-local.x, local.y, local.z);
     }
 
     @Test
@@ -106,6 +147,14 @@ class ExternalProjectileSupportTest
         private void usePureGunStats()
         {
             readWeaponsFromGunTypes = true;
+        }
+
+        /** Replaces the primary point by one on the turret. */
+        private void turret(Vector3f origin, Vector3f muzzle)
+        {
+            turretOrigin = origin;
+            shootPointsPrimary.clear();
+            shootPointsPrimary.add(new ShootPoint(new DriveablePosition(muzzle, EnumDriveablePart.TURRET), new Vector3f()));
         }
     }
 

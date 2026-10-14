@@ -1,33 +1,28 @@
 package com.flansmod.client.tmt;
 
-import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
+import com.flansmodultimate.util.ModelResourceResolver;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ModelPool
 {
-    private static final Map<String, ModelPoolEntry> modelMap = new HashMap<>();
-    private static final String[] resourceDir = new String[]{"/resources/models/", "/resources/mod/models/", "/Flan/"};
+    private record ModelKey(String resource, Class<?> format)
+    {}
+
+    private static final Map<ModelKey, ModelPoolEntry> modelMap = new HashMap<>();
     public static final Class<ModelPoolObjEntry> OBJ = ModelPoolObjEntry.class;
 
     private ModelPool()
     {}
 
     @Nullable
-    public static ModelPoolEntry addFile(String file, Class<?> modelClass, Map<String, TransformGroup> group, Map<String, TextureGroup> textureGroup)
+    public static synchronized ModelPoolEntry addFile(String file, Class<?> modelClass, Map<String, TransformGroup> group, Map<String, TextureGroup> textureGroup)
     {
         ModelPoolEntry entry;
-
-        if (modelMap.containsKey(file))
-        {
-            entry = modelMap.get(file);
-            entry.applyGroups(group, textureGroup);
-            return entry;
-        }
 
         try
         {
@@ -40,30 +35,45 @@ public class ModelPool
             return null;
         }
 
-        File modelFile = null;
-
-        for (int i = 0; i < resourceDir.length && (modelFile == null || !modelFile.exists()); i++)
+        try (ModelResourceResolver.Resource resource = ModelResourceResolver.open(file, entry.fileExtensions))
         {
-            String absPath = new File(PlatformPaths.configDir().getParent().toFile(), resourceDir[i]).getAbsolutePath();
-            if (!absPath.endsWith("/") || !absPath.endsWith("\\"))
-                absPath += "/";
-            modelFile = entry.checkValidPath(absPath + file);
+            if (resource == null)
+            {
+                FlansLog.log.warn("The model with the name {} does not exist.", file);
+                return null;
+            }
+
+            // Authored strings can be identical in unrelated packs. Cache the resolved source instead.
+            ModelKey key = new ModelKey(resource.path().toUri().toString(), modelClass);
+            ModelPoolEntry cached = modelMap.get(key);
+            if (cached != null)
+            {
+                cached.applyGroups(group, textureGroup);
+                return cached;
+            }
+
+            entry.groups = new HashMap<>();
+            entry.textures = new HashMap<>();
+            entry.name = file;
+            entry.setGroup("0");
+            entry.setTextureGroup("0");
+            entry.getModel(resource.path());
+            if (entry.vertices == null || entry.faces == null)
+                return null;
+            entry.applyGroups(group, textureGroup);
+            modelMap.put(key, entry);
+            return entry;
         }
-
-        if (modelFile == null || !modelFile.exists())
+        catch (IOException | RuntimeException e)
         {
-            FlansLog.log.warn("The model with the name {} does not exist.", file);
+            FlansLog.log.warn("Could not load model {}", file, e);
             return null;
         }
+    }
 
-        entry.groups = new HashMap<>();
-        entry.textures = new HashMap<>();
-        entry.name = file;
-        entry.setGroup("0");
-        entry.setTextureGroup("0");
-        entry.getModel(modelFile);
-        entry.applyGroups(group, textureGroup);
-        modelMap.put(file, entry);
-        return entry;
+    /** Discards parsed geometry together with the client model cache on resource reload. */
+    public static synchronized void clear()
+    {
+        modelMap.clear();
     }
 }

@@ -37,6 +37,11 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class DriveableType extends PaintableType implements IDriveableType, IAmmoGroupUser, IAmmoOverrideUser
 {
+    private static final String COULD_NOT_PARSE = "Could not parse ";
+    private static final String MATERIAL_PLANT = "plant";
+
+    /** {@code VehicleGunReloadTick} value meaning that no chambering sound is timed. */
+    public static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     protected VehicleOptics optics = new VehicleOptics();
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
@@ -110,7 +115,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean dropHarvest;
     protected Vector3f harvestBoxSize = new Vector3f();
     protected Vector3f harvestBoxPos = new Vector3f();
-    protected int reloadSoundTick = 15_214_541;
+    protected int reloadSoundTick = RELOAD_SOUND_TICK_UNSET;
     protected float fallDamageFactor = 1F;
     protected int engineStartTime;
     /** Optional engine shortname/item ID that overrides global automatic engine selection. */
@@ -308,22 +313,22 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     public float getStartSoundRange()
     {
-        return startSoundRange > 0 ? startSoundRange : ModCommonConfig.get().vehicleSoundRange();
+        return ModCommonConfig.packSoundRange(startSoundRange, ModCommonConfig.get().vehicleSoundRange());
     }
 
     public float getEngineSoundRange()
     {
-        return engineSoundRange > 0 ? engineSoundRange : ModCommonConfig.get().vehicleSoundRange();
+        return ModCommonConfig.packSoundRange(engineSoundRange, ModCommonConfig.get().vehicleSoundRange());
     }
 
     public float getBackSoundRange()
     {
-        return backSoundRange > 0 ? backSoundRange : ModCommonConfig.get().vehicleSoundRange();
+        return ModCommonConfig.packSoundRange(backSoundRange, ModCommonConfig.get().vehicleSoundRange());
     }
 
     public float getLockedOnSoundRange()
     {
-        return lockedOnSoundRange > 0 ? lockedOnSoundRange : ModCommonConfig.get().vehicleLockedOnSoundRange();
+        return ModCommonConfig.packSoundRange(lockedOnSoundRange, ModCommonConfig.get().vehicleLockedOnSoundRange());
     }
 
     protected boolean lockOnToPlanes;
@@ -635,7 +640,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1189,6 +1194,20 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return id >= 0 && id < wheelPositions.size() ? wheelPositions.get(id) : null;
     }
 
+    /** Water-only hulls qualify; amphibious ground vehicles and aircraft with flight controls do not. */
+    @Override
+    public boolean isShip()
+    {
+        if (!(this instanceof VehicleType || this instanceof PlaneType))
+            return false;
+        if (isEpicShip())
+            return true;
+        if (!isPlaceableOnWater() || isPlaceableOnLand() || !isFloatOnWater())
+            return false;
+        return this instanceof VehicleType
+            || this instanceof PlaneType plane && plane.getLookUpModifier() == 0F && plane.getLookDownModifier() == 0F && plane.getRollLeftModifier() == 0F && plane.getRollRightModifier() == 0F;
+    }
+
     @Override
     public DriveableKind getDriveableKind()
     {
@@ -1246,7 +1265,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     public List<ShootPoint> shootPoints(boolean secondaryWeapon)
     {
-        return secondaryWeapon ? Collections.unmodifiableList(shootPointsSecondary) : Collections.unmodifiableList(shootPointsPrimary);
+        return Collections.unmodifiableList(secondaryWeapon ? shootPointsSecondary : shootPointsPrimary);
     }
 
     /**
@@ -1551,9 +1570,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         ScreenShake shake = switch (weaponType(secondaryWeapon))
         {
             case SHELL, MISSILE -> new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration);
-            case GUN -> !secondaryWeapon
-                ? new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration)
-                : coaxRecoil ? new ScreenShake(fancyScreenShakeCoaxIntensity, fancyScreenShakeCoaxDuration) : null;
+            case GUN -> {
+                if (!secondaryWeapon)
+                    yield new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration);
+                yield coaxRecoil ? new ScreenShake(fancyScreenShakeCoaxIntensity, fancyScreenShakeCoaxDuration) : null;
+            }
             default -> null;
         };
         return shake == null || shake.intensity() <= 0F || shake.durationSeconds() <= 0F ? null : shake;
@@ -1569,6 +1590,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return numEngines();
     }
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public List<ItemStack> getItemsRequired(DriveablePart part, @Nullable PartType engine)
     {
         if (part == null)
@@ -1658,7 +1681,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1734,7 +1757,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1758,7 +1781,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }));
     }
@@ -1877,7 +1900,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             catch (RuntimeException ex)
             {
-                logError("Could not parse " + key, file, ex);
+                logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
     }
@@ -1989,11 +2012,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         String tool = raw.trim().toLowerCase(Locale.ROOT);
         switch (tool)
         {
-            case "axe" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", "plant", "vine");
+            case "axe" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", MATERIAL_PLANT, "vine");
             case "pickaxe", "drill" -> Collections.addAll(materialsHarvested, "pickaxe", "stone", "ore", "iron", "anvil", "rock");
             case "spade", "shovel", "excavator" -> Collections.addAll(materialsHarvested, "shovel", "dirt", "grass", "sand", "gravel", "snow", "clay", "ground");
-            case "hoe", "combine" -> Collections.addAll(materialsHarvested, "hoe", "crop", "plant", "leaves", "vine", "cactus", "pumpkin", "melon", "gourd");
-            case "tank" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", "plant", "leaves", "cactus");
+            case "hoe", "combine" -> Collections.addAll(materialsHarvested, "hoe", "crop", MATERIAL_PLANT, "leaves", "vine", "cactus", "pumpkin", "melon", "gourd");
+            case "tank" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", MATERIAL_PLANT, "leaves", "cactus");
             default -> materialsHarvested.add(tool);
         }
     }

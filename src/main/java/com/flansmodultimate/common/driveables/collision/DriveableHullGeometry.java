@@ -3,11 +3,12 @@ package com.flansmodultimate.common.driveables.collision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -153,6 +154,37 @@ public final class DriveableHullGeometry
         return found;
     }
 
+    /** Finds a clear place on the current hull, preferring the column above the departing seat. */
+    @Nullable
+    public Vec3 findTopDismount(Vec3 preferred, double width, double height, Predicate<Vec3> isSafe)
+    {
+        if (!hasActiveShapes())
+            return null;
+        List<Vec3> columns = new ArrayList<>();
+        for (int shape = 0; shape < shapes.size(); shape++)
+        {
+            if (!current.active[shape])
+                continue;
+            double[] bounds = current.bounds[shape];
+            columns.add(new Vec3((bounds[0] + bounds[3]) * 0.5D, 0D, (bounds[2] + bounds[5]) * 0.5D));
+        }
+        columns.sort(Comparator.comparingDouble(column -> Math.pow(column.x - preferred.x, 2D) + Math.pow(column.z - preferred.z, 2D)));
+        columns.add(0, preferred);
+        double startY = current.totalBounds[4] + 0.1D;
+        double drop = current.totalBounds[1] - startY - 1D;
+        double halfWidth = width * 0.5D;
+        for (Vec3 column : columns)
+        {
+            double descent = clip(1, column.x - halfWidth, startY, column.z - halfWidth, column.x + halfWidth, startY + height, column.z + halfWidth, drop);
+            if (descent <= drop)
+                continue;
+            Vec3 feet = new Vec3(column.x, startY + descent + 1.0E-4D, column.z);
+            if (!intersects(feet.x - halfWidth, feet.y, feet.z - halfWidth, feet.x + halfWidth, feet.y + height, feet.z + halfWidth) && isSafe.test(feet))
+                return feet;
+        }
+        return null;
+    }
+
     /**
      * Limits movement of a box along one world axis ({@code 0} X, {@code 1} Y,
      * {@code 2} Z) so it stops flush with the first hull surface in its path.
@@ -164,6 +196,8 @@ public final class DriveableHullGeometry
      * that moved onto it instead of being trapped inside.
      * </p>
      */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     public double clip(int axis, double minX, double minY, double minZ, double maxX, double maxY, double maxZ, double desired)
     {
         if (!hasActiveShapes() || axis < 0 || axis > 2 || !(Math.abs(desired) >= MOVEMENT_EPSILON))
@@ -285,7 +319,9 @@ public final class DriveableHullGeometry
             if (!current.active[shape])
                 continue;
             double[] points = current.vertices[shape];
-            double centreX = 0D, centreY = 0D, centreZ = 0D;
+            double centreX = 0D;
+            double centreY = 0D;
+            double centreZ = 0D;
             for (int vertex = 0; vertex < 8; vertex++)
             {
                 centreX += points[vertex * 3];
@@ -295,7 +331,8 @@ public final class DriveableHullGeometry
             centreX /= 8D;
             centreY /= 8D;
             centreZ /= 8D;
-            double enter = 0D, exit = 1D;
+            double enter = 0D;
+            double exit = 1D;
             boolean missed = false;
             for (int[] face : DriveableCollisionProfile.FACE_QUADS)
             {
@@ -536,6 +573,8 @@ public final class DriveableHullGeometry
         return addAxis(axes, count, abY * acZ - abZ * acY, abZ * acX - abX * acZ, abX * acY - abY * acX);
     }
 
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     private static int addAxis(double[] axes, int count, double x, double y, double z)
     {
         double length = Math.sqrt(x * x + y * y + z * z);
@@ -562,6 +601,8 @@ public final class DriveableHullGeometry
      * which is what lets a riding entity be carried without inverting the
      * pose and turret rotations.
      */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     private static boolean buildFrame(double[] points, double[] frame)
     {
         int[] best = null;
@@ -646,7 +687,8 @@ public final class DriveableHullGeometry
             double centre = normalX * centreX + normalY * centreY + normalZ * centreZ;
             double hullMin = extents[index * 2];
             double hullMax = extents[index * 2 + 1];
-            double speed = axis == 0 ? normalX : axis == 1 ? normalY : normalZ;
+            double horizontalSpeed = axis == 0 ? normalX : normalZ;
+            double speed = axis == 1 ? normalY : horizontalSpeed;
             if (Math.abs(speed) < AXIS_EPSILON)
             {
                 if (centre + radius <= hullMin + CONTACT_EPSILON || centre - radius >= hullMax - CONTACT_EPSILON)

@@ -7,9 +7,7 @@ import com.flansmodultimate.util.FlansLog;
 import com.mojang.datafixers.util.Pair;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,9 +21,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.WorldDataConfiguration;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -107,6 +103,8 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
             minecraft.tell(this::flansmodultimateCreateAnswered);
     }
 
+    // The shadowed vanilla method returns null when the data packs cannot be prepared.
+    @SuppressWarnings("java:S2589")
     @Unique
     private void flansmodultimateApplyChoice(boolean withApocalypse)
     {

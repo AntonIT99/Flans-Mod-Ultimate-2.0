@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.FlansModParticles;
-
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -47,8 +46,7 @@ public final class ExplosionSpectacle
     private static final float DUST_BASE_B = 0.50F;
     private static final float GROUND_COLOUR_SHARE = 0.45F;
 
-    private static final BlastPuffParticle.Look AFTERGLOW = new BlastPuffParticle.Look(
-        1.0F, 0.78F, 0.45F, 0.85F, 0.28F, 0.06F, 0.9F, 0.7F, 1.0F, 0F, 1.0F, true, false);
+    private static final BlastPuffParticle.Look AFTERGLOW = new BlastPuffParticle.Look(1.0F, 0.78F, 0.45F, 0.85F, 0.28F, 0.06F, 0.9F, 0.7F, 1.0F, 0F, 1.0F, true, false);
 
     private static final List<Staged> ACTIVE = new ArrayList<>();
 
@@ -95,48 +93,13 @@ public final class ExplosionSpectacle
         emit(level, ExplosionVisuals.landmarkRange(craterRadius), position.x, position.y, position.z, 0D, 0D, 0D, AFTERGLOW, scale * 0.6F, lifetime);
     }
 
-    private static void emit(ClientLevel level, float range, double x, double y, double z, double vx, double vy, double vz,
-                             BlastPuffParticle.Look look, float size, int lifetime)
+    private static void emit(ClientLevel level, float range, double x, double y, double z, double vx, double vy, double vz, BlastPuffParticle.Look look, float size, int lifetime)
     {
         if (!ParticleHelper.shouldSpawnLandmark(x, y, z, range))
             return;
         BlastPuffParticle particle = BlastPuffParticle.create(level, x, y, z, vx, vy, vz, look, size, lifetime);
         if (particle != null)
             Minecraft.getInstance().particleEngine.add(particle);
-    }
-
-    /**
-     * One burst of the animated fire-explosion sprite, drawn {@code size} blocks from its centre to
-     * its edge. It is created through the engine's own provider so it animates like any other.
-     */
-    private static void emitFire(float range, double x, double y, double z, float size)
-    {
-        if (!ParticleHelper.shouldSpawnLandmark(x, y, z, range))
-            return;
-        Particle particle = Minecraft.getInstance().particleEngine.createParticle(
-            FlansModParticles.fireExplosionParticle.get(), x, y, z, 0D, 0D, 0D);
-        if (particle != null)
-            particle.scale(size / FireExplosionParticle.BASE_SIZE);
-    }
-
-    /**
-     * The colour of dust thrown up from this block: its own map colour, pulled toward bare earth.
-     * Anything growing on dirt throws dirt, so a meadow gives brown dust and snow or sand keep
-     * their own colour.
-     */
-    private static float[] dustColour(BlockState ground, ClientLevel level, BlockPos pos)
-    {
-        BlockState source = ground.is(BlockTags.DIRT) ? Blocks.DIRT.defaultBlockState() : ground;
-        MapColor mapColour = source.getMapColor(level, pos);
-        if (mapColour == MapColor.NONE)
-            return new float[] {DUST_BASE_R, DUST_BASE_G, DUST_BASE_B};
-
-        int rgb = mapColour.col;
-        return new float[] {
-            Mth.lerp(GROUND_COLOUR_SHARE, DUST_BASE_R, ((rgb >> 16) & 0xFF) / 255F),
-            Mth.lerp(GROUND_COLOUR_SHARE, DUST_BASE_G, ((rgb >> 8) & 0xFF) / 255F),
-            Mth.lerp(GROUND_COLOUR_SHARE, DUST_BASE_B, (rgb & 0xFF) / 255F)
-        };
     }
 
     /** One detonation's staged layers, advanced a tick at a time. */
@@ -174,9 +137,7 @@ public final class ExplosionSpectacle
             this.landmarkRange = ExplosionVisuals.landmarkRange(craterRadius);
             this.lifetimeScale = ExplosionVisuals.lifetimeScale(craterRadius);
             this.skirtY = skirtY;
-            this.dustLook = new BlastPuffParticle.Look(dust[0], dust[1], dust[2],
-                dust[0] * 0.85F, dust[1] * 0.85F, dust[2] * 0.85F,
-                0.8F, 1.6F, 0.9F, 0.0015F, 0F, false, true);
+            this.dustLook = new BlastPuffParticle.Look(dust[0], dust[1], dust[2], dust[0] * 0.85F, dust[1] * 0.85F, dust[2] * 0.85F, 0.8F, 1.6F, 0.9F, 0.0015F, 0F, false, true);
 
             boolean hasGround = !Double.isNaN(skirtY);
             this.skirtWaves = hasGround ? ExplosionVisuals.dustSkirtWaves(craterRadius) : 0;
@@ -258,9 +219,8 @@ public final class ExplosionSpectacle
                 double dz = Math.sin(angle);
                 double speed = push * (0.7D + random.nextDouble() * 0.6D);
 
-                emit(level, landmarkRange, position.x + dx * distance, skirtY + random.nextDouble() * size * 0.3D, position.z + dz * distance,
-                    dx * speed, 0.01D + random.nextDouble() * 0.03D, dz * speed,
-                    dustLook, size * (0.7F + random.nextFloat() * 0.6F), lifetime + random.nextInt(20));
+                emit(level, landmarkRange, position.x + dx * distance, skirtY + random.nextDouble() * size * 0.3D, position.z + dz * distance, dx * speed, 0.01D + random.nextDouble() * 0.03D,
+                    dz * speed, dustLook, size * (0.7F + random.nextFloat() * 0.6F), lifetime + random.nextInt(20));
             }
         }
 
@@ -282,12 +242,8 @@ public final class ExplosionSpectacle
             {
                 double angle = random.nextDouble() * Mth.TWO_PI;
                 double distance = width * Math.sqrt(random.nextDouble());
-                emit(level, landmarkRange,
-                    position.x + Math.cos(angle) * distance,
-                    position.y + height + random.nextGaussian() * width * 0.3D,
-                    position.z + Math.sin(angle) * distance,
-                    random.nextGaussian() * 0.02D, 0.03D + random.nextDouble() * 0.04D, random.nextGaussian() * 0.02D,
-                    look, size * (0.8F + random.nextFloat() * 0.4F), lifetime + random.nextInt(30));
+                emit(level, landmarkRange, position.x + Math.cos(angle) * distance, position.y + height + random.nextGaussian() * width * 0.3D, position.z + Math.sin(angle) * distance,
+                    random.nextGaussian() * 0.02D, 0.03D + random.nextDouble() * 0.04D, random.nextGaussian() * 0.02D, look, size * (0.8F + random.nextFloat() * 0.4F), lifetime + random.nextInt(30));
             }
 
             // The foot of the stem burns. The fire sprite plays out in about half a second, so it is
@@ -299,10 +255,7 @@ public final class ExplosionSpectacle
                 {
                     double angle = random.nextDouble() * Mth.TWO_PI;
                     double distance = width * 0.8D * Math.sqrt(random.nextDouble());
-                    emitFire(landmarkRange,
-                        position.x + Math.cos(angle) * distance,
-                        position.y + height + random.nextGaussian() * width * 0.25D,
-                        position.z + Math.sin(angle) * distance,
+                    emitFire(landmarkRange, position.x + Math.cos(angle) * distance, position.y + height + random.nextGaussian() * width * 0.25D, position.z + Math.sin(angle) * distance,
                         size * (0.9F + random.nextFloat() * 0.4F));
                 }
             }
@@ -314,8 +267,7 @@ public final class ExplosionSpectacle
             float r = Mth.lerp(progress, 1.0F, 0.22F);
             float g = Mth.lerp(progress, 0.55F, 0.19F);
             float b = Mth.lerp(progress, 0.18F, 0.16F);
-            return new BlastPuffParticle.Look(r, g, b, 0.14F, 0.13F, 0.12F,
-                0.9F, 0.8F, 0.93F, 0.003F, 0.4F * (1F - progress), false, false);
+            return new BlastPuffParticle.Look(r, g, b, 0.14F, 0.13F, 0.12F, 0.9F, 0.8F, 0.93F, 0.003F, 0.4F * (1F - progress), false, false);
         }
 
         /**
@@ -339,18 +291,42 @@ public final class ExplosionSpectacle
                 double outward = capRadius * 0.035D * (0.6D + random.nextDouble() * 0.8D);
 
                 BlastPuffParticle.Look look = share < 0.4D
-                    ? new BlastPuffParticle.Look(0.95F, 0.5F, 0.18F, 0.16F, 0.14F, 0.12F,
-                        0.9F, 1.0F, 0.94F, 0.002F, 0.3F, false, false)
-                    : new BlastPuffParticle.Look(0.26F, 0.22F, 0.2F, 0.13F, 0.12F, 0.11F,
-                        0.85F, 1.2F, 0.94F, 0.001F, 0F, false, false);
+                    ? new BlastPuffParticle.Look(0.95F, 0.5F, 0.18F, 0.16F, 0.14F, 0.12F, 0.9F, 1.0F, 0.94F, 0.002F, 0.3F, false, false)
+                    : new BlastPuffParticle.Look(0.26F, 0.22F, 0.2F, 0.13F, 0.12F, 0.11F, 0.85F, 1.2F, 0.94F, 0.001F, 0F, false, false);
 
-                emit(level, landmarkRange,
-                    position.x + dx * distance,
-                    top + random.nextGaussian() * size * 0.4D,
-                    position.z + dz * distance,
-                    dx * outward, -0.02D * share + 0.01D, dz * outward,
-                    look, size * (0.8F + random.nextFloat() * 0.5F), lifetime + random.nextInt(40));
+                emit(level, landmarkRange, position.x + dx * distance, top + random.nextGaussian() * size * 0.4D, position.z + dz * distance, dx * outward, -0.02D * share + 0.01D, dz * outward, look,
+                    size * (0.8F + random.nextFloat() * 0.5F), lifetime + random.nextInt(40));
             }
+        }
+
+        /**
+         * One burst of the animated fire-explosion sprite, drawn {@code size} blocks from its centre to
+         * its edge. It is created through the engine's own provider so it animates like any other.
+         */
+        private static void emitFire(float range, double x, double y, double z, float size)
+        {
+            if (!ParticleHelper.shouldSpawnLandmark(x, y, z, range))
+                return;
+            Particle particle = Minecraft.getInstance().particleEngine.createParticle(FlansModParticles.fireExplosionParticle.get(), x, y, z, 0D, 0D, 0D);
+            if (particle != null)
+                particle.scale(size / FireExplosionParticle.BASE_SIZE);
+        }
+
+        /**
+         * The colour of dust thrown up from this block: its own map colour, pulled toward bare earth.
+         * Anything growing on dirt throws dirt, so a meadow gives brown dust and snow or sand keep
+         * their own colour.
+         */
+        private static float[] dustColour(BlockState ground, ClientLevel level, BlockPos pos)
+        {
+            BlockState source = ground.is(BlockTags.DIRT) ? Blocks.DIRT.defaultBlockState() : ground;
+            MapColor mapColour = source.getMapColor(level, pos);
+            if (mapColour == MapColor.NONE)
+                return new float[]{DUST_BASE_R, DUST_BASE_G, DUST_BASE_B};
+
+            int rgb = mapColour.col;
+            return new float[]{Mth.lerp(GROUND_COLOUR_SHARE, DUST_BASE_R, ((rgb >> 16) & 0xFF) / 255F), Mth.lerp(GROUND_COLOUR_SHARE, DUST_BASE_G, ((rgb >> 8) & 0xFF) / 255F),
+                Mth.lerp(GROUND_COLOUR_SHARE, DUST_BASE_B, (rgb & 0xFF) / 255F)};
         }
     }
 }

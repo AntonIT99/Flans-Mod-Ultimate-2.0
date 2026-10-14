@@ -7,6 +7,7 @@ import com.flansmodultimate.apocalyse.common.entity.WorldgenSpawnMarker;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseDriveableHelper;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
+import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.InfoType;
@@ -18,9 +19,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -29,20 +28,13 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * The Apocalypse's per-chunk generators.
@@ -134,7 +126,7 @@ public final class ApocalypseWorldgen
             }
             case PARKED_PLANE -> ApocalypseDriveableHelper.spawnParkedPlane(level, position.x, position.y, position.z, random);
             case APOCALYPSE_PORTAL -> {
-                if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ApocalypsePortalManager.createPortal(level, pos, null))
+                if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ApocalypsePortalManager.createAbandonedPortal(level, pos, random))
                     return;
                 ApocalypseStructures.placePortalCache(level, random, pos);
                 if (random.nextBoolean())
@@ -210,19 +202,23 @@ public final class ApocalypseWorldgen
         Driveable.spawn(level, type, pos.getX() + 0.5D, pos.getY() + type.getYOffset(), pos.getZ() + 0.5D, yaw, null, null).ifPresent(vehicle ->
         {
             vehicle.getPersistentData().putBoolean("flansmodultimate:apocalypse_abandoned", true);
-            vehicle.getDriveableData().setFuelInTank(0F);
-
-            // Leave the vehicle repairable and usable while making the generated
-            // state visibly abandoned. Never destroy a part here because doing so
-            // would trigger normal combat drops and chained part destruction.
-            for (DriveablePart part : vehicle.getDriveableData().getParts().values())
+            DriveableData data = vehicle.getDriveableData();
+            if (data != null)
             {
-                if (part.getMaxHealth() <= 0F || random.nextFloat() >= 0.65F)
-                    continue;
-                float damageFraction = 0.15F + random.nextFloat() * 0.40F;
-                part.damage(part.getMaxHealth() * damageFraction, false);
+                vehicle.getDriveableData().setFuelInTank(0F);
+
+                // Leave the vehicle repairable and usable while making the generated
+                // state visibly abandoned. Never destroy a part here because doing so
+                // would trigger normal combat drops and chained part destruction.
+                for (DriveablePart part : vehicle.getDriveableData().getParts().values())
+                {
+                    if (part.getMaxHealth() <= 0F || random.nextFloat() >= 0.65F)
+                        continue;
+                    float damageFraction = 0.15F + random.nextFloat() * 0.40F;
+                    part.damage(part.getMaxHealth() * damageFraction, false);
+                }
+                vehicle.getDriveableData().setChanged();
             }
-            vehicle.getDriveableData().setChanged();
         });
     }
 
@@ -233,28 +229,37 @@ public final class ApocalypseWorldgen
         int height = 4 + random.nextInt(5);
         for (int y = 0; y < height; y++)
             setBlock(level, base.above(y), Blocks.OAK_LOG.defaultBlockState());
-        for (Direction direction : Direction.Plane.HORIZONTAL)
+        int branches = 2 + random.nextInt(2);
+        for (int i = 0; i < branches; i++)
         {
-            if (random.nextBoolean())
+            int dx = random.nextInt(3) - 1;
+            int dz = random.nextInt(3) - 1;
+            BlockPos branch = base.above(height - 1);
+            for (int step = 0; step < height; step++)
             {
-                BlockPos branch = base.above(height - 1).relative(direction);
+                branch = branch.offset(random.nextInt(2) * dx, 1, random.nextInt(2) * dz);
                 setBlock(level, branch, Blocks.OAK_LOG.defaultBlockState());
-                if (random.nextBoolean())
-                    setBlock(level, branch.below(), Blocks.COBWEB.defaultBlockState());
             }
+            if (random.nextBoolean())
+                setBlock(level, branch.below().offset(1, 0, 0), Blocks.COBWEB.defaultBlockState());
         }
     }
 
     private static void generateSkeletonDisplay(WorldGenLevel level, RandomSource random, BlockPos pos)
     {
-        Optional<Block> skeleton = random.nextBoolean() ? flanBlock("flanskeleton") : flanBlock("flanskeleton2");
+        Optional<Block> skeleton;
+        if (random.nextBoolean())
+            skeleton = flanBlock("flanskeleton");
+        else
+            skeleton = flanBlock("flanskeleton2");
+
         skeleton.ifPresent(block ->
         {
             BlockState state = block.defaultBlockState();
             if (state.hasProperty(HorizontalDirectionalBlock.FACING))
                 state = state.setValue(HorizontalDirectionalBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(random));
             if (setBlock(level, pos, state) && level.getBlockEntity(pos) instanceof ItemHolderBlockEntity holder)
-                holder.setStack(ApocalypseLoot.randomLoot(random, false));
+                holder.setStack(ApocalypseLoot.itemHolderLoot(random, false));
         });
     }
 
@@ -362,7 +367,7 @@ public final class ApocalypseWorldgen
     static Optional<Block> flanBlock(String path)
     {
         Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, path));
-        if (block == null || block == Blocks.AIR)
+        if (block == Blocks.AIR)
             return Optional.empty();
         return Optional.of(block);
     }

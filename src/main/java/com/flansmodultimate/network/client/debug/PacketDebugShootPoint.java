@@ -115,6 +115,9 @@ public class PacketDebugShootPoint implements IClientPacket
             case ADD_SECONDARY -> type.addDebugShootPoint(true, position, EnumDriveablePart.getPart(partName));
             case GUN_ORIGIN -> type.setDebugGunOrigin(index, position);
             case RESET -> type.resetDebugOverrides();
+            default -> {
+                // The remaining operations do not apply to driveable types.
+            }
         }
     }
 

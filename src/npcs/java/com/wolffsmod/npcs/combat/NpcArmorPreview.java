@@ -9,7 +9,7 @@ import net.minecraft.world.damagesource.CombatRules;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcArmorPreview
 {
-    public static float protection(float incoming, float defense, float armor, float toughness, int enchantments)
+    public static float protection(float incoming, float defense, float armor, float toughness, float enchantments)
     {
         if (incoming <= 0F)
             return 0F;

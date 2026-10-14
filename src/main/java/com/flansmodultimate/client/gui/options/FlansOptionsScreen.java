@@ -14,7 +14,6 @@ import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -64,7 +63,10 @@ public class FlansOptionsScreen extends Screen
         new QuickSection("hud",
             List.of(ModClientConfig.SHOW_FLANS_HUD, ModClientConfig.SHOW_AMMO_HUD, ModClientConfig.AMMO_HUD_LAYOUT, ModClientConfig.SHOW_ARMOR_DAMAGE_ABSORPTION_BAR,
                 ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS, ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED, ModClientConfig.VEHICLE_SCREEN_SHAKE, ModClientConfig.GUN_SCREEN_SHAKE,
-                ModClientConfig.VEHICLE_HUD_LEFT_X, ModClientConfig.VEHICLE_HUD_LEFT_Y, ModClientConfig.VEHICLE_HUD_RIGHT_X, ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
+                ModClientConfig.EXPLOSION_SCREEN_SHAKE, ModClientConfig.EXPLOSION_SHAKE_INTENSITY, ModClientConfig.EXPLOSION_SHAKE_DURATION, ModClientConfig.NEAR_MISS_SUPPRESSION,
+                ModClientConfig.SUPPRESSION_INTENSITY, ModClientConfig.SUPPRESSION_DURATION, ModClientConfig.SUPPRESSION_CAMERA_ROLL, ModClientConfig.SUPPRESSION_VIGNETTE,
+                ModClientConfig.BULLET_FLYBY_SOUNDS, ModClientConfig.BULLET_FLYBY_VOLUME, ModClientConfig.VEHICLE_HUD_LEFT_X, ModClientConfig.VEHICLE_HUD_LEFT_Y, ModClientConfig.VEHICLE_HUD_RIGHT_X,
+                ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
         new QuickSection("crosshair", List.of(ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS, ModClientConfig.HIT_MARKER_STYLE, ModClientConfig.FANCY_HIT_MARKER, ModClientConfig.MUZZLE_FLASH_STYLE)),
         new QuickSection("rendering", List.of(ModClientConfig.ENABLE_GPU_MODEL_CACHE, ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER, ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)),
         new QuickSection("gameplay",
@@ -168,18 +170,25 @@ public class FlansOptionsScreen extends Screen
         if (minecraft == null || minecraft.level == null)
             return;
 
-        for (ModCommonConfig.RuntimeOption runtimeOption : ModCommonConfig.RuntimeOption.values())
+        for (ModCommonConfig.QuickSection section : ModCommonConfig.QuickSection.values())
         {
-            OptionInstance<?> option = ConfigOptionFactory.option(commonTarget, runtimeOption.getConfigValue().get());
-            if (option != null)
-                commonOptions.add(option);
+            List<OptionInstance<?>> options = new ArrayList<>();
+            for (ModCommonConfig.RuntimeOption runtimeOption : ModCommonConfig.RuntimeOption.values())
+            {
+                if (runtimeOption.getSection() != section)
+                    continue;
+                OptionInstance<?> option = ConfigOptionFactory.option(commonTarget, runtimeOption.getConfigValue().get());
+                if (option != null)
+                    options.add(option);
+            }
+
+            if (options.isEmpty())
+                continue;
+
+            list.addHeader(Component.translatable(SECTION_KEY_PREFIX + (section == ModCommonConfig.QuickSection.SOUNDS ? "server_sounds" : "server")));
+            list.addOptions(options);
+            commonOptions.addAll(options);
         }
-
-        if (commonOptions.isEmpty())
-            return;
-
-        list.addHeader(Component.translatable(SECTION_KEY_PREFIX + "server"));
-        list.addOptions(commonOptions);
     }
 
     private void addCommonSections()
@@ -201,15 +210,12 @@ public class FlansOptionsScreen extends Screen
 
     private void lockCommonOptions()
     {
-        Tooltip locked = Tooltip.create(Component.translatable("gui.flansmodultimate.options.server_option_locked"));
+        // Their tooltips already carry the locked note, next to the name and value they still show
         for (OptionInstance<?> option : commonOptions)
         {
             AbstractWidget widget = list.findWidget(option);
-            if (widget == null)
-                continue;
-
-            widget.active = false;
-            widget.setTooltip(locked);
+            if (widget != null)
+                widget.active = false;
         }
     }
 

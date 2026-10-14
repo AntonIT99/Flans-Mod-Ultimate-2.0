@@ -1,8 +1,6 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
-import com.flansmodultimate.apocalyse.common.util.ApocalypseGunCombat;
-import com.flansmodultimate.apocalyse.common.util.ApocalypseGunHelper;
-import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
+import com.flansmodultimate.apocalyse.common.util.*;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.platform.entity.FlanMonster;
 import lombok.EqualsAndHashCode;
@@ -11,28 +9,16 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.*;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -48,6 +34,8 @@ import java.util.EnumSet;
  * two to five spare magazines. It never targets the Skull Boss, which in turn ignores AI gunfire.
  * </p>
  */
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SurvivorEntity extends FlanMonster
 {
@@ -65,7 +53,7 @@ public class SurvivorEntity extends FlanMonster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return FlanMonster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 20.0D).add(Attributes.MOVEMENT_SPEED, 0.25D).add(Attributes.FOLLOW_RANGE, 80.0D).add(Attributes.ATTACK_DAMAGE, 2.0D);
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 20.0D).add(Attributes.MOVEMENT_SPEED, 0.25D).add(Attributes.FOLLOW_RANGE, 80.0D).add(Attributes.ATTACK_DAMAGE, 2.0D);
     }
 
     @Override
@@ -100,6 +88,7 @@ public class SurvivorEntity extends FlanMonster
     {
         SpawnGroupData result = super.finalizeEntitySpawn(level, difficulty, spawnType, spawnData, dataTag);
         equipDefault(level.getRandom());
+        setCanPickUpLoot(level.getRandom().nextFloat() < 0.55F * difficulty.getSpecialMultiplier());
         return result;
     }
 
@@ -145,9 +134,8 @@ public class SurvivorEntity extends FlanMonster
 
     /**
      * The skeleton bow AI the legacy survivor inherited, holding a gun: close to range, strafe
-     * once the target has been in sight for a second, and fire after a one-second aim followed by
-     * a cooldown of half a second on Hard and a second otherwise. The gun's own cadence and reloads
-     * gate each trigger pull on top of that.
+     * once the target has been in sight for a second, and fire after a one-second aim. While the
+     * target remains visible and in range, the gun's own cadence and reloads control sustained fire.
      */
     private final class GunAttackGoal extends Goal
     {
@@ -155,9 +143,9 @@ public class SurvivorEntity extends FlanMonster
 
         private final double speedModifier;
         private final float attackRadiusSqr;
-        private int attackTime = -1;
         private int seeTime;
-        private int aimTicks = -1;
+        private int aimTicks;
+        private LivingEntity aimedTarget;
         private boolean strafingClockwise;
         private boolean strafingBackwards;
         private int strafingTime = -1;
@@ -192,8 +180,8 @@ public class SurvivorEntity extends FlanMonster
         {
             setAggressive(false);
             seeTime = 0;
-            attackTime = -1;
-            aimTicks = -1;
+            aimTicks = 0;
+            aimedTarget = null;
         }
 
         @Override
@@ -215,6 +203,12 @@ public class SurvivorEntity extends FlanMonster
                 seeTime = 0;
             seeTime += canSee ? 1 : -1;
 
+            updateMovement(target, distanceSqr);
+            updateAimAndFire(target, canSee, distanceSqr);
+        }
+
+        private void updateMovement(LivingEntity target, double distanceSqr)
+        {
             if (distanceSqr <= attackRadiusSqr && seeTime >= 20)
             {
                 getNavigation().stop();
@@ -234,7 +228,11 @@ public class SurvivorEntity extends FlanMonster
                     strafingBackwards = !strafingBackwards;
                 strafingTime = 0;
             }
+            applyStrafe(target, distanceSqr);
+        }
 
+        private void applyStrafe(LivingEntity target, double distanceSqr)
+        {
             if (strafingTime > -1)
             {
                 if (distanceSqr > attackRadiusSqr * 0.75F)
@@ -248,24 +246,24 @@ public class SurvivorEntity extends FlanMonster
             {
                 getLookControl().setLookAt(target, 30.0F, 30.0F);
             }
+        }
 
-            if (aimTicks >= 0)
+        private void updateAimAndFire(LivingEntity target, boolean canSee, double distanceSqr)
+        {
+            if (target != aimedTarget)
             {
-                if (!canSee && seeTime < -60)
-                {
-                    aimTicks = -1;
-                }
-                else if (canSee && ++aimTicks >= AIM_TICKS)
-                {
-                    aimTicks = -1;
-                    if (ModApocalypseConfig.apocalypseMobsEnabled())
-                        gun.tryFire(target);
-                    attackTime = level().getDifficulty() == Difficulty.HARD ? 10 : 20;
-                }
+                aimedTarget = target;
+                aimTicks = 0;
             }
-            else if (--attackTime <= 0 && seeTime >= -60)
+            if (!canSee || distanceSqr > attackRadiusSqr)
             {
                 aimTicks = 0;
+            }
+            else
+            {
+                aimTicks = Math.min(AIM_TICKS, aimTicks + 1);
+                if (aimTicks == AIM_TICKS && ModApocalypseConfig.apocalypseMobsEnabled())
+                    gun.tryFire(target);
             }
         }
     }

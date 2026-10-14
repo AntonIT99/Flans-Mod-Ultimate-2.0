@@ -41,6 +41,8 @@ public class PacketBlockHitEffect implements IClientPacket
             blockHitFXScale, bbWidth);
     }
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketBlockHitEffect(float x, float y, float z, float motionX, float motionY, float motionZ, int blockX, int blockY, int blockZ, Direction facingDirection, float explosionRadius,
         float blockHitFXScale, float bbWidth)
     {

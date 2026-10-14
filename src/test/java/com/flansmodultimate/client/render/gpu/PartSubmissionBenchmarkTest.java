@@ -14,20 +14,24 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
  * Nanoseconds per part through ModelDriveable.renderPart into a real RigidBatch, for static baked
  * parts sharing a parent pose with size culling on. Excludes OpenGL. Set FLANS_RENDER_BENCHMARK=true.
  */
+// A benchmark: it reports timings instead of asserting.
+@SuppressWarnings("java:S2699")
 @EnabledIfEnvironmentVariable(named = "FLANS_RENDER_BENCHMARK", matches = "true")
 class PartSubmissionBenchmarkTest
 {
     @Test
     void bakedPartArray()
     {
-        ModelBase base = new ModelBase() {};
+        ModelBase base = new ModelBase()
+        {};
         ModelRendererTurbo[] hull = new ModelRendererTurbo[120];
         for (int i = 0; i < hull.length; i++)
         {
             hull[i] = new ModelRendererTurbo(base, 0, 0, 256, 256);
             hull[i].addBox(0, 0, 0, 2 + i % 7, 1 + i % 3, 3);
             hull[i].setRotationPoint(i % 11 - 5, i % 5, i % 13 - 6);
-            if (i % 4 == 0) hull[i].rotateAngleY = 0.3F;
+            if (i % 4 == 0)
+                hull[i].rotateAngleY = 0.3F;
         }
         ModelVehicle model = new ModelVehicle();
         RigidBatch batch = new RigidBatch(GpuModelCache.PARTS_PER_BATCH, GpuModelCache.PARTS_PER_BATCH * 8, 100000);
@@ -49,10 +53,14 @@ class PartSubmissionBenchmarkTest
                     model.renderPart(hull, stack, batch, 15728880, 0, 1, 1, 1, 1, 1, EnumRenderPass.DEFAULT);
                     batch.end();
                 }
-                finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+                finally
+                {
+                    ModelRendererTurbo.endScreenSpaceCulling();
+                }
             }
             long elapsed = System.nanoTime() - start;
-            if (round >= 4) best = Math.min(best, elapsed);
+            if (round >= 4)
+                best = Math.min(best, elapsed);
         }
         System.out.printf("baked part array: %.1f ns per part%n", best / (4000.0 * hull.length));
     }
@@ -61,7 +69,8 @@ class PartSubmissionBenchmarkTest
     @Test
     void manyVehiclesOfSeveralModels()
     {
-        ModelBase base = new ModelBase() {};
+        ModelBase base = new ModelBase()
+        {};
         int types = 15, partsPerModel = 1100, vehicles = 54;
         ModelRendererTurbo[][] models = new ModelRendererTurbo[types][];
         for (int t = 0; t < types; t++)
@@ -72,7 +81,8 @@ class PartSubmissionBenchmarkTest
                 ModelRendererTurbo part = new ModelRendererTurbo(base, 0, 0, 256, 256);
                 part.addBox(0, 0, 0, 2 + i % 7, 1 + i % 3, 3);
                 part.setRotationPoint(i % 11 - 5, i % 5, i % 13 - 6);
-                if (i % 4 == 0) part.rotateAngleY = 0.3F;
+                if (i % 4 == 0)
+                    part.rotateAngleY = 0.3F;
                 models[t][i] = part;
             }
         }
@@ -97,20 +107,24 @@ class PartSubmissionBenchmarkTest
                         model.renderPart(models[v % types], stack, batch, 15728880, 0, 1, 1, 1, 1, 1, EnumRenderPass.DEFAULT);
                         batch.end();
                     }
-                    finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+                    finally
+                    {
+                        ModelRendererTurbo.endScreenSpaceCulling();
+                    }
                 }
             long elapsed = System.nanoTime() - start;
-            if (round >= 3) best = Math.min(best, elapsed);
+            if (round >= 3)
+                best = Math.min(best, elapsed);
         }
-        System.out.printf("many vehicles: %.1f ns per part, %.2f ms per frame%n",
-            best / ((double)frames * vehicles * partsPerModel), best / 1E6 / frames);
+        System.out.printf("many vehicles: %.1f ns per part, %.2f ms per frame%n", best / ((double) frames * vehicles * partsPerModel), best / 1E6 / frames);
     }
 
     /** Track links: a few parts per link, each link under its own pushed pose, 160 links per vehicle. */
     @Test
     void trackLinks()
     {
-        ModelBase base = new ModelBase() {};
+        ModelBase base = new ModelBase()
+        {};
         int types = 15, vehicles = 54, links = 160;
         ModelRendererTurbo[][] linkModels = new ModelRendererTurbo[types][];
         for (int t = 0; t < types; t++)
@@ -151,20 +165,40 @@ class PartSubmissionBenchmarkTest
                         }
                         batch.end();
                     }
-                    finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+                    finally
+                    {
+                        ModelRendererTurbo.endScreenSpaceCulling();
+                    }
                 }
             long elapsed = System.nanoTime() - start;
-            if (round >= 3) best = Math.min(best, elapsed);
+            if (round >= 3)
+                best = Math.min(best, elapsed);
         }
-        System.out.printf("track links: %.1f ns per part, %.2f ms per frame%n",
-            best / ((double)frames * vehicles * links * 4), best / 1E6 / frames);
+        System.out.printf("track links: %.1f ns per part, %.2f ms per frame%n", best / ((double) frames * vehicles * links * 4), best / 1E6 / frames);
     }
 
     private static final class Backend implements RigidBatch.Backend
     {
-        @Override public boolean draw(RigidBatch batch, boolean flushPending) { return true; }
-        @Override public VertexConsumer fallback() { throw new AssertionError(); }
-        @Override public void flushFallback() {}
-        @Override public void failed(RuntimeException exception) { throw new AssertionError(exception); }
+        @Override
+        public boolean draw(RigidBatch batch, boolean flushPending)
+        {
+            return true;
+        }
+
+        @Override
+        public VertexConsumer fallback()
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void flushFallback()
+        { /* Not needed by this test. */ }
+
+        @Override
+        public void failed(RuntimeException exception)
+        {
+            throw new AssertionError(exception);
+        }
     }
 }

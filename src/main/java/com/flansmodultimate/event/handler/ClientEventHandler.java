@@ -5,6 +5,7 @@ import com.flansmodultimate.client.*;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
+import com.flansmodultimate.client.gui.TeamsDeployScreen;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.*;
@@ -53,6 +54,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
@@ -94,6 +96,14 @@ public final class ClientEventHandler
         if (event.usedConfiguredFov() && config != null && config.gunScreenShake)
             fov = Math.max(1D, fov + GunScreenShake.fovOffset((float) event.getPartialTick()));
         event.setFOV(fov);
+    }
+
+    /** In Conquest and Assault the dead choose where to come back on the deployment map, not on the death screen. */
+    @SubscribeEvent
+    public static void onScreenOpening(ScreenEvent.Opening event)
+    {
+        if (event.getNewScreen() instanceof DeathScreen && TeamsClientState.usesDeployment())
+            event.setNewScreen(new TeamsDeployScreen());
     }
 
     /** Adds the mod's options button to the vanilla options screen and pause menu, as configured. */
@@ -144,6 +154,30 @@ public final class ClientEventHandler
         }
         applyVehicleScreenShake(event);
         applyGunScreenShake(event);
+        applyCombatScreenEffects(event);
+    }
+
+    /** Composes cosmetic explosion and near-miss motion without changing player or mounted weapon aim. */
+    private static void applyCombatScreenEffects(ViewportEvent.ComputeCameraAngles event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null)
+            return;
+        long now = Util.getMillis();
+        if (!config.explosionScreenShake)
+            CombatScreenEffects.resetExplosion();
+        if (!config.nearMissSuppression)
+            CombatScreenEffects.resetSuppression();
+        if (Minecraft.getInstance().player == null || !Minecraft.getInstance().player.isAlive() || Minecraft.getInstance().player.isSpectator())
+        {
+            CombatScreenEffects.reset();
+            return;
+        }
+        float explosion = (float) (CombatScreenEffects.explosionLevel(now, config.explosionShakeDuration) * config.explosionShakeIntensity * 0.05D);
+        float roll = explosion * (float) Math.sin(now * 0.071D);
+        roll += (float) (Mth.clamp(CombatScreenEffects.suppressionRoll(now, config.suppressionDuration) * config.suppressionIntensity, -1D, 1D) * config.suppressionCameraRoll);
+        event.setPitch(Mth.clamp(event.getPitch() - explosion * 0.4F, -89.9F, 89.9F));
+        event.setRoll(event.getRoll() + roll);
     }
 
     /** Adds the camera kick of a screen-shaking gun the player just fired. 1.7.10 applied it through view bobbing. */
@@ -255,6 +289,8 @@ public final class ClientEventHandler
             DriveableHitboxRenderer.renderAll(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
             PlayerHitboxRenderer.renderAll(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
         }
+        // Part bodies outline themselves outside debug mode when their owner asks for it.
+        DriveableHitboxRenderer.renderPartBodies(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
     }
 
     /** Whether the vanilla crosshair is replaced by the hit marker alone for the current frame. */
@@ -507,6 +543,7 @@ public final class ClientEventHandler
         ThermalHotParticles.reset();
         VehicleScreenShake.reset();
         GunScreenShake.reset();
+        CombatScreenEffects.reset();
         GrenadeThrowInput.reset();
         DistantHorizonsClient.reset();
         ModClient.clearTransientLighting();

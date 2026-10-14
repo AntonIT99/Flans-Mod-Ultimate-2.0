@@ -1,0 +1,14 @@
+// Identity
+Name Tank Crew
+ShortName W44_USAirborneTankCrew
+Description Vehicle crew loadout with a compact weapon and repair tool.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_M1Carbine
+AddItem 44_M1CarbineAmmo 3
+AddItem 44_RepairTool
+AddItem 44_Bandage
+AddItem 44_Parachute

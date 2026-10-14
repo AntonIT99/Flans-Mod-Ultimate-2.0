@@ -48,7 +48,9 @@ public class PlaneType extends DriveableType
     @Override
     public float getEngineIdleLoopPitchRange()
     {
-        return StringUtils.isBlank(idleSound) ? (Float.isFinite(engineSoundPitchRange) ? engineSoundPitchRange : 1F) : 0F;
+        if (!StringUtils.isBlank(idleSound))
+            return 0F;
+        return Float.isFinite(engineSoundPitchRange) ? engineSoundPitchRange : 1F;
     }
 
     @Override

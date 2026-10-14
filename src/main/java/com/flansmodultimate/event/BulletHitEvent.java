@@ -1,11 +1,7 @@
 package com.flansmodultimate.event;
 
 import com.flansmodultimate.common.entity.Bullet;
-import com.flansmodultimate.common.raytracing.hits.BlockHit;
-import com.flansmodultimate.common.raytracing.hits.BulletHit;
-import com.flansmodultimate.common.raytracing.hits.DriveableHit;
-import com.flansmodultimate.common.raytracing.hits.EntityHit;
-import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
+import com.flansmodultimate.common.raytracing.hits.*;
 import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +33,7 @@ public class BulletHitEvent extends FlanCancellableEvent
         {
             hitEntity = playerBulletHit.getHitbox().player;
         }
-        else if (hit instanceof EntityHit)
+        else if (hit instanceof EntityHit || hit instanceof PartBodyHit)
         {
             hitEntity = hit.getEntity();
         }

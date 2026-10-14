@@ -1,37 +1,35 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.EquippedArmorProperties;
-import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.IEquipmentPolicy;
-import com.flansmodultimate.api.IFlanNpcDistance;
-import com.wolffsmod.npcs.combat.NpcEquipment;
-import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
-import com.wolffsmod.npcs.combat.NpcItemAttacks;
-import com.wolffsmod.npcs.combat.NpcRangedAttack;
+import com.flansmodultimate.api.*;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.properties.NpcTypeProperties;
+import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.sim.*;
 import noppes.npcs.Resistances;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
 
 /**
  * Every hook into the Custom NPCs entity base class.
@@ -42,6 +40,18 @@ import net.minecraft.world.level.Level;
  * <li>Model and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
+ * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat.</li>
+ * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
+ * resists knockback while it is a vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
+ * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
+ * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
+ * <li>Flan armor that makes its wearer invisible makes the NPC invisible to the client: its body is not drawn, its armor is.</li>
+ * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
+ * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
+ * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
+ * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
+ * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
+ * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
  * </ul>
  *
  * <p>
@@ -52,7 +62,7 @@ import net.minecraft.world.level.Level;
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
 // instanceof checks on this are valid, and the overrides keep the target signatures.
 @SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
-public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance
+public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource, IFlanPartTarget, NpcVehicleStateHolder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -70,9 +80,44 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     @Unique
     private boolean wolffsmodnpcsLastDistanceManaged;
 
+    @Unique
+    private final NpcEngineAudio wolffsmodnpcsEngineAudio = new NpcEngineAudio();
+    /** Created on first use: the entity's constructors already ask for its eye height. */
+    @Unique
+    private NpcVehicleState wolffsmodnpcsVehicle;
+    @Unique
+    private long wolffsmodnpcsTickStarted;
+
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
         super(type, level);
+    }
+
+    // Presentation
+
+    @Override
+    public float flansmodultimateEnginePitch()
+    {
+        return NpcVehicleSounds.pitch((EntityNPCInterface) (Object) this);
+    }
+
+    @Override
+    public boolean flansmodultimateHurtFlash()
+    {
+        return NpcPresentation.of((EntityNPCInterface) (Object) this).isHurtFlash();
+    }
+
+    @Override
+    public boolean flansmodultimateDeathRotation()
+    {
+        return NpcPresentation.of((EntityNPCInterface) (Object) this).isDeathRotation();
+    }
+
+    @Inject(method = "playStepSound", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsEngineReplacesSteps(BlockPos pos, BlockState state, CallbackInfo callback)
+    {
+        if (NpcPresentation.of((EntityNPCInterface) (Object) this).getVehicleSounds().resolve((EntityNPCInterface) (Object) this, true).isPresent())
+            callback.cancel();
     }
 
     // Equipment
@@ -101,6 +146,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.WEAPON_ANIMATIONS);
     }
 
+    @Override
+    public boolean flansGunShotAnimations()
+    {
+        return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.GUN_SHOT_ANIMATION);
+    }
+
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
     {
@@ -116,7 +167,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (level().isClientSide)
             return;
+        wolffsmodnpcsEngineAudio.tick(npc);
         wolffsmodnpcsUpdateArmorAttributes();
+        NpcProtection.updateKnockback(npc);
         if (wolffsmodnpcsShieldCooldown > 0)
             wolffsmodnpcsShieldCooldown--;
         if (!flansWeaponEffects() || npc.getTarget() == null || !npc.getTarget().isAlive() || wolffsmodnpcsShieldCooldown > 0)
@@ -158,6 +211,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsItemMelee(Entity target, CallbackInfoReturnable<Boolean> callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // An aircraft below its attack altitude attacks with nothing, whatever asks it to.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire())
+        {
+            callback.setReturnValue(false);
+            return;
+        }
+        // A held Flan gun is swung whether the item or the editor decides the damage.
+        NpcItemAttacks.meleeFeedback(npc);
         if (NpcEquipment.weaponAuthority(npc))
             callback.setReturnValue(NpcItemAttacks.melee(npc, target));
     }
@@ -183,6 +244,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
             callback.setReturnValue(air);
     }
 
+    /**
+     * Flan armor that makes its wearer invisible hides the NPC's body and leaves the armor drawn, as the effect does for a
+     * player. Custom NPCs ignores that effect, so the armor is read directly; only on the client, which leaves what the
+     * server makes of the NPC unchanged.
+     */
+    @Inject(method = "isInvisible", at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsArmorHidesBody(CallbackInfoReturnable<Boolean> callback)
+    {
+        if (level().isClientSide && !callback.getReturnValueZ() && NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquippedArmorProperties::invisibility))
+            callback.setReturnValue(true);
+    }
+
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsArmorFall(float distance, float multiplier, DamageSource source, CallbackInfoReturnable<Boolean> callback)
     {
@@ -193,7 +266,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     @Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnoppes/npcs/Resistances;applyResistance(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
     private float wolffsmodnpcsArmorNotEditor(Resistances resistances, DamageSource source, float amount)
     {
-        return flansArmorEffects() ? amount : resistances.applyResistance(source, amount);
+        return flansArmorEffects() ? amount : NpcProtection.resist((EntityNPCInterface) (Object) this, resistances, source, amount);
     }
 
     @Redirect(method = "knockback", at = @At(value = "FIELD", target = "Lnoppes/npcs/Resistances;knockback:F", opcode = Opcodes.GETFIELD))
@@ -249,6 +322,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsFireFlanRound(LivingEntity target, float distanceFactor, CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
+        // A gun whose turret has been shot off stays silent.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled())
+        {
+            callback.cancel();
+            return;
+        }
         if (NpcEquipment.weaponAuthority(npc))
         {
             // Scripted ranged triggers use the same item action, never the editor projectile template.
@@ -261,7 +341,74 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         {
             wolffsmodnpcsRound = wolffsmodnpcsRound >= Integer.MAX_VALUE / 10 - 1 ? 0 : wolffsmodnpcsRound + 1;
             callback.cancel();
+            return;
         }
+        if (NpcThrowables.fire(npc, target, distanceFactor == 1F))
+            callback.cancel();
+    }
+
+    // Protection
+
+    @Override
+    public Optional<IContentType> flansmodultimateDamageModel()
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (!NpcEquipment.enabled(npc, Feature.VEHICLE_DAMAGE) || !(npc instanceof EntityCustomNpc custom) || !(custom.modelData.getEntity(npc) instanceof FlanModelEntity model))
+            return Optional.empty();
+        return Optional.ofNullable(model.getInfoType());
+    }
+
+    @Override
+    public boolean flansmodultimateModelArmour()
+    {
+        return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.MODEL_ARMOUR);
+    }
+
+    @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsIgnoreHit(DamageSource source, float amount, CallbackInfoReturnable<Boolean> callback)
+    {
+        if (!level().isClientSide && NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount))
+            callback.setReturnValue(false);
+    }
+
+    @Override
+    public Optional<IPartBody> flansmodultimatePartBody()
+    {
+        return wolffsmodnpcsVehicleState().getParts().body();
+    }
+
+    @Override
+    public boolean flansmodultimateHurtPart(String part, DamageSource source, float amount)
+    {
+        return wolffsmodnpcsVehicleState().getParts().hurtPart((EntityNPCInterface) (Object) this, part, source, amount);
+    }
+
+    @Inject(method = "actuallyHurt", at = @At("HEAD"))
+    private void wolffsmodnpcsBeforePartDamage(DamageSource source, float amount, CallbackInfo callback)
+    {
+        wolffsmodnpcsVehicleState().getParts().beforeDamage((EntityNPCInterface) (Object) this);
+    }
+
+    // The health lost is handed to the part that was struck before the NPC is checked for death.
+    @Inject(method = "actuallyHurt", at = @At("RETURN"))
+    private void wolffsmodnpcsAfterPartDamage(DamageSource source, float amount, CallbackInfo callback)
+    {
+        wolffsmodnpcsVehicleState().getParts().afterDamage((EntityNPCInterface) (Object) this, source);
+    }
+
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void wolffsmodnpcsSaveParts(CompoundTag tag, CallbackInfo callback)
+    {
+        CompoundTag parts = wolffsmodnpcsVehicleState().getParts().save();
+        if (parts != null)
+            tag.put(NpcParts.NBT_KEY, parts);
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void wolffsmodnpcsReadParts(CompoundTag tag, CallbackInfo callback)
+    {
+        if (tag.contains(NpcParts.NBT_KEY, net.minecraft.nbt.Tag.TAG_COMPOUND))
+            wolffsmodnpcsVehicleState().getParts().load(tag.getCompound(NpcParts.NBT_KEY));
     }
 
     // Type properties
@@ -270,6 +417,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsInheritType(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // Zero doubles as "not measuring": the clock never reads it in practice.
+        wolffsmodnpcsTickStarted = NpcProfiler.server() && !npc.level().isClientSide ? System.nanoTime() : 0L;
         if (!npc.level().isClientSide)
             NpcTypeProperties.of(npc).refresh(npc);
     }
@@ -287,6 +436,99 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (npc.level().isClientSide && tag.contains(WOLFFSMODNPCS_TYPE_DEFAULTS))
             NpcTypeProperties.of(npc).readSyncedDefaults(npc, tag.getCompound(WOLFFSMODNPCS_TYPE_DEFAULTS));
+    }
+
+    // Vehicle simulation
+
+    @Override
+    public NpcVehicleState wolffsmodnpcsVehicleState()
+    {
+        if (wolffsmodnpcsVehicle == null)
+            wolffsmodnpcsVehicle = new NpcVehicleState();
+        return wolffsmodnpcsVehicle;
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void wolffsmodnpcsVehicleTick(CallbackInfo callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcVehicleState state = wolffsmodnpcsVehicleState();
+        boolean server = !level().isClientSide;
+        if (server)
+        {
+            // Before the model state, which reads the heading these leave the NPC with.
+            state.getFlight().tick(npc);
+            state.getSubmarine().tick(npc);
+        }
+        state.tick(npc);
+        if (server)
+        {
+            NpcMobility.tick(npc);
+            NpcPathDebug.tick(npc, state);
+        }
+        if (wolffsmodnpcsTickStarted != 0L)
+            NpcProfiler.npcTick(System.nanoTime() - wolffsmodnpcsTickStarted);
+    }
+
+    @ModifyVariable(method = "travel", at = @At("HEAD"), argsOnly = true)
+    private Vec3 wolffsmodnpcsDrive(Vec3 travel)
+    {
+        if (level().isClientSide)
+            return travel;
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
+        // Broken tracks, wheels and engines slow the NPC down or stop it.
+        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().getParts().effects().mobility();
+        return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
+    }
+
+    @Inject(method = "getWaterSlowDown", at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsWaterSpeed(CallbackInfoReturnable<Float> callback)
+    {
+        callback.setReturnValue(NpcMobility.waterSlowDown((EntityNPCInterface) (Object) this, callback.getReturnValueF()));
+    }
+
+    /** Minecraft 1.21 takes the eye height from the entity's dimensions, which Custom NPCs builds in getDimensions. */
+    @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsEyeHeight(Pose pose, CallbackInfoReturnable<EntityDimensions> callback)
+    {
+        EntityDimensions dimensions = callback.getReturnValue();
+        wolffsmodnpcsVehicleState().eyeHeight((EntityNPCInterface) (Object) this, dimensions.height()).ifPresent(height -> callback.setReturnValue(dimensions.withEyeHeight(height)));
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction move)
+    {
+        Optional<Vec3> seat = hasPassenger(passenger) ? wolffsmodnpcsVehicleState().riderOffset((EntityNPCInterface) (Object) this) : Optional.empty();
+        if (seat.isPresent())
+        {
+            // Minecraft 1.21 replaced the rider's own riding offset with its vehicle attachment point.
+            Vec3 attachment = passenger.getVehicleAttachmentPoint(this);
+            move.accept(passenger, getX() + seat.get().x - attachment.x, getY() + seat.get().y - attachment.y, getZ() + seat.get().z - attachment.z);
+        }
+        else
+            super.positionRider(passenger, move);
+    }
+
+    @Override
+    public AABB getBoundingBoxForCulling()
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        return wolffsmodnpcsVehicleState().cullingBox(npc).or(() -> NpcModels.unhitCullingBox(npc)).orElseGet(super::getBoundingBoxForCulling);
+    }
+
+    // Senses
+
+    @Override
+    public boolean hasLineOfSight(Entity entity)
+    {
+        return NpcSight.sees((EntityNPCInterface) (Object) this, entity);
+    }
+
+    @ModifyVariable(method = "isInRange(Lnet/minecraft/world/entity/Entity;D)Z", at = @At("HEAD"), argsOnly = true)
+    private double wolffsmodnpcsKeepTarget(double range, Entity entity)
+    {
+        return entity != null && entity == getTarget() ? range + NpcTargetSearch.margin(this) : range;
     }
 
     // Tracking and render distance

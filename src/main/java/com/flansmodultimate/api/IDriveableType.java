@@ -14,16 +14,38 @@ import java.util.Optional;
 /**
  * A content-pack driveable definition: a vehicle, plane or mecha.
  *
- * <p>Distances are in blocks, in the driveable's local frame before it is rotated, with the
+ * <p>
+ * Distances are in blocks, in the driveable's local frame before it is rotated, with the
  * origin at the driveable entity's position and Y up. Horizontally, X is the lateral axis and Z
  * the longitudinal (fore-aft) one. Which end of Z is the front differs between planes and other
- * driveables, so rely on extents rather than on signs.</p>
+ * driveables, so rely on extents rather than on signs.
+ * </p>
  */
 @ApiStatus.Experimental
 @ApiStatus.NonExtendable
 public interface IDriveableType extends IContentType
 {
     DriveableKind getDriveableKind();
+
+    /**
+     * Returns the ship classification used by creative inventory and model browsers.
+     * Water-only hulls and explicitly marked ships qualify; amphibious ground vehicles
+     * and seaplanes with flight controls do not. Safe to query on either side.
+     *
+     * @return whether this definition represents a ship, independently of its underlying entity kind
+     */
+    default boolean isShip()
+    {
+        return false;
+    }
+
+    /**
+     * @return whether the driveable runs on tracks and can turn on the spot, as a tank does
+     */
+    default boolean isTracked()
+    {
+        return false;
+    }
 
     /**
      * @return the height of the origin above level ground when the driveable rests on its wheels,

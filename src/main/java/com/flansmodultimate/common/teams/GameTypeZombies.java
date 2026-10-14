@@ -22,7 +22,7 @@ public final class GameTypeZombies extends GameType
 
     GameTypeZombies()
     {
-        super("zom", "Zombies", 2, false);
+        super("zom", "Zombies", TeamLimits.exactly(2), false);
     }
 
     @Override
@@ -64,9 +64,7 @@ public final class GameTypeZombies extends GameType
         super.playerKilled(manager, victim, source);
         if (infectionStarted)
         {
-            manager.getCurrentRound()
-                .map(round -> round.getTeam(1))
-                .ifPresent(zombies -> manager.selectTeam(victim, zombies, true));
+            manager.getCurrentRound().map(round -> round.getTeam(1)).ifPresent(zombies -> manager.selectTeam(victim, zombies, true));
         }
     }
 

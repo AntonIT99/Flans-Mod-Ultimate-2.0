@@ -4780,6 +4780,7 @@
 
     "120mm L31A7 HESH (L30A1)": {
         "properties": {
+            "HESH": "true",
             "AddToAmmoGroup": "120mm L30A1",
             "Mass": 17300,
             "MuzzleVelocity": 670,
@@ -7894,6 +7895,8 @@
 
     "Aerial Depth Charge (Generic)": {
         "properties": {
+            "depthCharge": "true",
+            "Fuse": 0,
             "Mass": 150000,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 100,
@@ -8337,6 +8340,8 @@
 
     "Depth Charge (Generic)": {
         "properties": {
+            "depthCharge": "true",
+            "Fuse": 0,
             "Mass": 180000,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 130,
@@ -9819,6 +9824,8 @@
 
     "Type 3 Depth Charge": {
         "properties": {
+            "depthCharge": "true",
+            "Fuse": 0,
             "Mass": 160000,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 105,

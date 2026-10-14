@@ -21,6 +21,14 @@ import java.util.Collection;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class DigitalAmmoCommand
 {
+    private static final String PLAYER = "player";
+    private static final String AMOUNT = "amount";
+    private static final String MSG_DISABLED = "Digital ammo system is disabled";
+    private static final String MSG_PLAYER_NOT_FOUND = "Player not found";
+    private static final String MSG_TYPE_RANGE = "Type must be between 1 and ";
+    private static final String MSG_FOR = " for ";
+    private static final String MSG_PLAYERS = " player(s)";
+
     private static boolean isDigitalAmmoEnabled()
     {
         try
@@ -47,59 +55,46 @@ public final class DigitalAmmoCommand
         }
     }
 
-    private static int getSupplyAmount()
-    {
-        try
-        {
-            CommonConfigSnapshot config = ModCommonConfig.get();
-            return config != null ? config.digitalAmmoSupplyAmount() : 100;
-        }
-        catch (Exception e)
-        {
-            return 100;
-        }
-    }
-
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         dispatcher.register(Commands.literal("digitalammo").requires(source -> source.hasPermission(2))
             .then(Commands.literal("set")
-                .then(Commands.argument("player", EntityArgument.players())
-                    .then(Commands.argument("type", IntegerArgumentType.integer(1)).then(Commands.argument("amount", IntegerArgumentType.integer(0)).executes(DigitalAmmoCommand::setAmmo)))))
+                .then(Commands.argument(PLAYER, EntityArgument.players())
+                    .then(Commands.argument("type", IntegerArgumentType.integer(1)).then(Commands.argument(AMOUNT, IntegerArgumentType.integer(0)).executes(DigitalAmmoCommand::setAmmo)))))
             .then(Commands.literal("add")
-                .then(Commands.argument("player", EntityArgument.players())
-                    .then(Commands.argument("type", IntegerArgumentType.integer(1)).then(Commands.argument("amount", IntegerArgumentType.integer(0)).executes(DigitalAmmoCommand::addAmmo)))))
-            .then(Commands.literal("fill")
-                .then(Commands.argument("player", EntityArgument.players()).then(Commands.argument("type", StringArgumentType.string()).executes(DigitalAmmoCommand::fillAmmo))))
-            .then(Commands.literal("get").then(Commands.argument("player", EntityArgument.players()).executes(DigitalAmmoCommand::getAmmo))));
+                .then(Commands.argument(PLAYER, EntityArgument.players())
+                    .then(Commands.argument("type", IntegerArgumentType.integer(1)).then(Commands.argument(AMOUNT, IntegerArgumentType.integer(0)).executes(DigitalAmmoCommand::addAmmo)))))
+            .then(
+                Commands.literal("fill").then(Commands.argument(PLAYER, EntityArgument.players()).then(Commands.argument("type", StringArgumentType.string()).executes(DigitalAmmoCommand::fillAmmo))))
+            .then(Commands.literal("get").then(Commands.argument(PLAYER, EntityArgument.players()).executes(DigitalAmmoCommand::getAmmo))));
     }
 
     private static int setAmmo(CommandContext<CommandSourceStack> context)
     {
         if (!isDigitalAmmoEnabled())
         {
-            context.getSource().sendFailure(Component.literal("Digital ammo system is disabled"));
+            context.getSource().sendFailure(Component.literal(MSG_DISABLED));
             return 0;
         }
 
         Collection<ServerPlayer> players;
         try
         {
-            players = EntityArgument.getPlayers(context, "player");
+            players = EntityArgument.getPlayers(context, PLAYER);
         }
         catch (Exception e)
         {
-            context.getSource().sendFailure(Component.literal("Player not found"));
+            context.getSource().sendFailure(Component.literal(MSG_PLAYER_NOT_FOUND));
             return 0;
         }
 
         int type = IntegerArgumentType.getInteger(context, "type");
-        int amount = IntegerArgumentType.getInteger(context, "amount");
+        int amount = IntegerArgumentType.getInteger(context, AMOUNT);
         int numTypes = getNumTypes();
 
         if (type > numTypes)
         {
-            context.getSource().sendFailure(Component.literal("Type must be between 1 and " + numTypes));
+            context.getSource().sendFailure(Component.literal(MSG_TYPE_RANGE + numTypes));
             return 0;
         }
 
@@ -108,7 +103,7 @@ public final class DigitalAmmoCommand
             DigitalAmmoHelper.setPlayerAmmo(player, type, amount);
         }
 
-        context.getSource().sendSuccess(() -> Component.literal("Set ammo type " + type + " to " + amount + " for " + players.size() + " player(s)"), true);
+        context.getSource().sendSuccess(() -> Component.literal("Set ammo type " + type + " to " + amount + MSG_FOR + players.size() + MSG_PLAYERS), true);
         return 1;
     }
 
@@ -116,28 +111,28 @@ public final class DigitalAmmoCommand
     {
         if (!isDigitalAmmoEnabled())
         {
-            context.getSource().sendFailure(Component.literal("Digital ammo system is disabled"));
+            context.getSource().sendFailure(Component.literal(MSG_DISABLED));
             return 0;
         }
 
         Collection<ServerPlayer> players;
         try
         {
-            players = EntityArgument.getPlayers(context, "player");
+            players = EntityArgument.getPlayers(context, PLAYER);
         }
         catch (Exception e)
         {
-            context.getSource().sendFailure(Component.literal("Player not found"));
+            context.getSource().sendFailure(Component.literal(MSG_PLAYER_NOT_FOUND));
             return 0;
         }
 
         int type = IntegerArgumentType.getInteger(context, "type");
-        int amount = IntegerArgumentType.getInteger(context, "amount");
+        int amount = IntegerArgumentType.getInteger(context, AMOUNT);
         int numTypes = getNumTypes();
 
         if (type > numTypes)
         {
-            context.getSource().sendFailure(Component.literal("Type must be between 1 and " + numTypes));
+            context.getSource().sendFailure(Component.literal(MSG_TYPE_RANGE + numTypes));
             return 0;
         }
 
@@ -146,7 +141,7 @@ public final class DigitalAmmoCommand
             DigitalAmmoHelper.addAmmoToPlayer(player, type, amount);
         }
 
-        context.getSource().sendSuccess(() -> Component.literal("Added " + amount + " to ammo type " + type + " for " + players.size() + " player(s)"), true);
+        context.getSource().sendSuccess(() -> Component.literal("Added " + amount + " to ammo type " + type + MSG_FOR + players.size() + MSG_PLAYERS), true);
         return 1;
     }
 
@@ -154,18 +149,18 @@ public final class DigitalAmmoCommand
     {
         if (!isDigitalAmmoEnabled())
         {
-            context.getSource().sendFailure(Component.literal("Digital ammo system is disabled"));
+            context.getSource().sendFailure(Component.literal(MSG_DISABLED));
             return 0;
         }
 
         Collection<ServerPlayer> players;
         try
         {
-            players = EntityArgument.getPlayers(context, "player");
+            players = EntityArgument.getPlayers(context, PLAYER);
         }
         catch (Exception e)
         {
-            context.getSource().sendFailure(Component.literal("Player not found"));
+            context.getSource().sendFailure(Component.literal(MSG_PLAYER_NOT_FOUND));
             return 0;
         }
 
@@ -183,7 +178,7 @@ public final class DigitalAmmoCommand
                     DigitalAmmoHelper.setPlayerAmmo(player, i, maxAmount);
                 }
             }
-            context.getSource().sendSuccess(() -> Component.literal("Filled all ammo types for " + players.size() + " player(s)"), true);
+            context.getSource().sendSuccess(() -> Component.literal("Filled all ammo types for " + players.size() + MSG_PLAYERS), true);
         }
         else
         {
@@ -192,7 +187,7 @@ public final class DigitalAmmoCommand
                 int type = Integer.parseInt(typeStr);
                 if (type < 1 || type > numTypes)
                 {
-                    context.getSource().sendFailure(Component.literal("Type must be between 1 and " + numTypes + " or 'all'"));
+                    context.getSource().sendFailure(Component.literal(MSG_TYPE_RANGE + numTypes + " or 'all'"));
                     return 0;
                 }
 
@@ -202,7 +197,7 @@ public final class DigitalAmmoCommand
                     int maxAmount = bulletData.getMaxAmount();
                     DigitalAmmoHelper.setPlayerAmmo(player, type, maxAmount);
                 }
-                context.getSource().sendSuccess(() -> Component.literal("Filled ammo type " + type + " for " + players.size() + " player(s)"), true);
+                context.getSource().sendSuccess(() -> Component.literal("Filled ammo type " + type + MSG_FOR + players.size() + MSG_PLAYERS), true);
             }
             catch (NumberFormatException e)
             {
@@ -218,18 +213,18 @@ public final class DigitalAmmoCommand
     {
         if (!isDigitalAmmoEnabled())
         {
-            context.getSource().sendFailure(Component.literal("Digital ammo system is disabled"));
+            context.getSource().sendFailure(Component.literal(MSG_DISABLED));
             return 0;
         }
 
         Collection<ServerPlayer> players;
         try
         {
-            players = EntityArgument.getPlayers(context, "player");
+            players = EntityArgument.getPlayers(context, PLAYER);
         }
         catch (Exception e)
         {
-            context.getSource().sendFailure(Component.literal("Player not found"));
+            context.getSource().sendFailure(Component.literal(MSG_PLAYER_NOT_FOUND));
             return 0;
         }
 

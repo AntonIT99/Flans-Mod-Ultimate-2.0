@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.entity.layers.CapeLayer;
 @Mixin(CapeLayer.class)
 public abstract class CapeLayerMixin
 {
+    // The handler mirrors the parameters of the injected method.
+    @SuppressWarnings("java:S107")
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;FFFFFF)V", at = @At("HEAD"), cancellable = true)
     private void flansmodultimateHideCapeUnderArmorCape(PoseStack poseStack, MultiBufferSource buffer, int packedLight, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
         float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo callback)

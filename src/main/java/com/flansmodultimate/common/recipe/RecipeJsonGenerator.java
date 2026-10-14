@@ -4,11 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.FlansLog;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -19,17 +15,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RecipeJsonGenerator
 {
+    private static final String KEY_RESULT = "result";
+    private static final String KEY_COUNT = "count";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String SHAPED_SUFFIX = "_shaped";
     private static final String SHAPELESS_SUFFIX = "_shapeless";
@@ -61,8 +53,8 @@ public final class RecipeJsonGenerator
             try
             {
                 JsonObject recipe = JsonParser.parseString(Files.readString(modernRecipe, StandardCharsets.UTF_8)).getAsJsonObject();
-                JsonObject result = recipe.getAsJsonObject("result");
-                if (result == null || (result.has("count") && (result.get("count").getAsInt() < 1 || result.get("count").getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config))))
+                JsonObject result = recipe.getAsJsonObject(KEY_RESULT);
+                if (result == null || (result.has(KEY_COUNT) && (result.get(KEY_COUNT).getAsInt() < 1 || result.get(KEY_COUNT).getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config))))
                     return true;
             }
             catch (RuntimeException | IOException exception)
@@ -140,7 +132,7 @@ public final class RecipeJsonGenerator
 
         root.add("pattern", patternJson);
         root.add("key", keyJson);
-        root.add("result", createResult(config));
+        root.add(KEY_RESULT, createResult(config));
 
         return root;
     }
@@ -181,7 +173,7 @@ public final class RecipeJsonGenerator
         JsonObject root = new JsonObject();
         root.addProperty("type", "minecraft:crafting_shapeless");
         root.add("ingredients", ingredients);
-        root.add("result", createResult(config));
+        root.add(KEY_RESULT, createResult(config));
 
         return root;
     }
@@ -192,7 +184,7 @@ public final class RecipeJsonGenerator
 
         root.addProperty("type", "minecraft:smelting");
         root.add("ingredient", createIngredient(config.getSmeltableFrom(), config));
-        root.addProperty("result", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
+        root.addProperty(KEY_RESULT, FlansMod.FLANSMOD_ID + ":" + config.getShortName());
         root.addProperty("experience", 0.0F);
         root.addProperty("cookingtime", 200);
 
@@ -218,7 +210,7 @@ public final class RecipeJsonGenerator
         JsonObject result = new JsonObject();
         result.addProperty("item", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
         if (config.getRecipeOutput() != 1)
-            result.addProperty("count", config.getRecipeOutput());
+            result.addProperty(KEY_COUNT, config.getRecipeOutput());
         return result;
     }
 

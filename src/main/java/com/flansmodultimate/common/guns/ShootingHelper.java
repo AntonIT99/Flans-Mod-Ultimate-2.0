@@ -2,6 +2,7 @@ package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
+import com.flansmodultimate.api.IFlanPartTarget;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -34,6 +35,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,8 +48,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -145,11 +146,12 @@ public final class ShootingHelper
      * <p>
      * A weapon is hitscan only when nothing in the chain declares a muzzle velocity: not the
      * ammunition, not a per-ammunition override and not the weapon itself. Anything with a velocity
-     * flies as a {@link Bullet} entity at that velocity.
+     * flies as a {@link Bullet} entity at that velocity. Depth charges always need a projectile to sink;
+     * with no authored velocity they use the normal projectile fallback.
      */
     private static void fireBullets(@NotNull Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 shootingOrigin, Vec3 shootingDirection)
     {
-        boolean instant = firedShot.getMuzzleVelocity(false) <= 0F;
+        boolean instant = !firedShot.getBulletType().isDepthCharge() && firedShot.getMuzzleVelocity(false) <= 0F;
 
         for (int i = 0; i < numBullets; i++)
         {
@@ -198,7 +200,8 @@ public final class ShootingHelper
                         PlayerData dataAttacker = PlayerData.getInstance(serverPlayer);
                         Team driverTeam = dataDriver.getTeam();
                         Team attackerTeam = dataAttacker.getTeam();
-                        if (driverTeam != null && driverTeam.equals(attackerTeam))
+                        // Allied teams of a Teams round count as friends too
+                        if (driverTeam != null && (driverTeam.equals(attackerTeam) || round.areAllied(driverTeam, attackerTeam)))
                             isFriendly.set(true);
                     }
                 }
@@ -237,37 +240,25 @@ public final class ShootingHelper
             ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 0F, 0F);
             showHitMarker = true;
         }
+        else if (bulletHit instanceof PartBodyHit partHit)
+        {
+            // A stand-in hit by the part meets the armour of the part and face the round struck.
+            HitData entityHitData = onEntityHit(level, shot, bullet, partHit.getEntity(), partHit, hit, ModelArmourDamage.resolve(partHit, shot, bulletType, penetratingPower),
+                new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
+            penetratingPower = entityHitData.penetratingPower();
+            lastHitPenAmount = entityHitData.lastHitPenAmount();
+
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 0.5F, 0F);
+            showHitMarker = true;
+        }
         else if (bulletHit instanceof EntityHit entityHit && entityHit.getEntity() != null)
         {
             Entity entity = entityHit.getEntity();
-
-            if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
-                PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
-
-            if (owner instanceof Player)
-                lastHitPenAmount = 1F;
-
-            if (!level.isClientSide)
-            {
-                float damage = ShootingHelper.getDamage(entity, bullet, shot);
-
-                if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
-                {
-                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0),
-                        entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
-                    bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
-                    // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
-                    living.invulnerableTime = living.hurtDuration / 2;
-                }
-            }
-
-            if (bulletType.isSetEntitiesOnFire())
-                EntityPlatform.igniteForSeconds(entity, 20);
-
-            penetratingPower -= 1F;
-
-            if (bullet != null)
-                bullet.getPenetrationLosses().add(new PenetrationLoss(1F, PenetrationLoss.EnumType.ENTITY));
+            // A stand-in for a driveable meets that driveable's armour instead of soft flesh.
+            HitData entityHitData = onEntityHit(level, shot, bullet, entity, null, hit, ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower),
+                new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
+            penetratingPower = entityHitData.penetratingPower();
+            lastHitPenAmount = entityHitData.lastHitPenAmount();
 
             ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 1F, 0F);
             showHitMarker = true;
@@ -287,6 +278,69 @@ public final class ShootingHelper
             PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
 
         return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
+    }
+
+    /**
+     * A round striking an entity other than a player or a driveable.
+     *
+     * @param partHit
+     *            the part that was struck when the entity is hit by the part, or null when it is hit as one box
+     * @param armoured
+     *            the hit resolved against a driveable's armour, when the entity stands in for one
+     */
+    // Every argument is one fact of the hit; a holder would only be built to be taken apart again.
+    @SuppressWarnings("java:S107")
+    private static HitData onEntityHit(Level level, FiredShot shot, @Nullable Bullet bullet, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Optional<ModelArmourDamage.Result> armoured,
+        HitData hitData)
+    {
+        BulletType bulletType = shot.getBulletType();
+        float penetratingPower = hitData.penetratingPower();
+        float lastHitPenAmount = hitData.lastHitPenAmount();
+
+        if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
+            PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
+
+        if (shot.getAttacker().orElse(null) instanceof Player)
+            lastHitPenAmount = 1F;
+
+        boolean armourBlocked = armoured.map(ModelArmourDamage.Result::blocked).orElse(false);
+
+        if (!level.isClientSide && !armourBlocked)
+        {
+            float damage = armoured.map(ModelArmourDamage.Result::damage).orElseGet(() -> ShootingHelper.getDamage(entity, bullet, shot));
+            // The jet has already done the warhead's work on this part; its blast is left to the others.
+            if (partHit != null && armoured.map(ModelArmourDamage.Result::shapedCharge).orElse(false))
+                partHit.getBody().markShapedCharge(partHit.getPart(), partHit.getHitPosition(), level.getGameTime());
+
+            if (damage > 0F && hurt(entity, partHit, shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+            {
+                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entity.getX(), entity.getY(), entity.getZ(), 0, 0, 0), entity.position(),
+                    ModCommonConfig.entityHitParticleRange(), level.dimension());
+                bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
+                // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
+                living.invulnerableTime = living.hurtDuration / 2;
+            }
+        }
+
+        if (bulletType.isSetEntitiesOnFire() && !armourBlocked)
+            EntityPlatform.igniteForSeconds(entity, 20);
+
+        float powerBefore = penetratingPower;
+        penetratingPower = armoured.map(ModelArmourDamage.Result::remainingPower).orElse(penetratingPower - 1F);
+        if (armourBlocked)
+            lastHitPenAmount = 0F;
+
+        if (bullet != null)
+            bullet.getPenetrationLosses().add(new PenetrationLoss(Math.max(0F, powerBefore - penetratingPower), PenetrationLoss.EnumType.ENTITY));
+
+        return new HitData(penetratingPower, lastHitPenAmount, hitData.lastHitHeadshot());
+    }
+
+    private static boolean hurt(Entity entity, @Nullable PartBodyHit partHit, DamageSource source, float damage)
+    {
+        if (partHit != null && entity instanceof IFlanPartTarget target)
+            return target.flansmodultimateHurtPart(partHit.getPart().getShortName(), source, damage);
+        return entity.hurt(source, damage);
     }
 
     private static float handleBlockHit(Level level, BlockHitResult hitResult, Vec3 shootingMotion, FiredShot shot, float penetratingPower, @Nullable Bullet bullet)
@@ -618,6 +672,8 @@ public final class ShootingHelper
             return;
 
         new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
+        if (!level.isClientSide && type.getPowerShake() > 0F && type.getRangeShake() > 0F)
+            PacketHandler.sendToAllAround(new PacketCombatFeedback(true, type.getPowerShake(), 0F), position, type.getRangeShake(), level.dimension());
 
         // The caller owns the projectile lifecycle. In particular, smoke shells must remain as
         // stationary smoke sources after their explosive payload has been processed.
@@ -710,6 +766,8 @@ public final class ShootingHelper
             shot.getBulletType());
         Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;
+        Vec3 feedbackEnd = shootingOrigin.add(shootingVector);
+        Set<UUID> directHits = new HashSet<>();
 
         for (int i = 0; i < hits.size(); i++)
         {
@@ -724,15 +782,20 @@ public final class ShootingHelper
             ClientHooks.RENDER.spawnDebugVector(previousHitPos, hitPos.subtract(previousHitPos), 1000, 1F, 1F, ((float) i / hits.size()));
 
             previousHitPos = hitPos;
+            if (hit.getEntity() instanceof Player player)
+                directHits.add(player.getUUID());
             hitData = onHit(level, shot, hit, hitPos, shotVector, hitData, null);
 
             if (hitData.penetratingPower() <= 0F)
             {
                 onDetonate(level, shot, hitPos);
                 finalhit = hitPos;
+                feedbackEnd = hitPos;
                 break;
             }
         }
+
+        NearMissHandler.dispatch(level, shot, shootingOrigin, feedbackEnd, directHits, null);
 
         if (finalhit == null)
         {

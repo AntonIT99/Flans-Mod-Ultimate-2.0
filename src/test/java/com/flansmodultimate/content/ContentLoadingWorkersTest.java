@@ -29,7 +29,8 @@ class ContentLoadingWorkersTest
         Set<String> threads = ConcurrentHashMap.newKeySet();
         try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(4))
         {
-            List<Integer> squares = workers.map(inputs, value -> {
+            List<Integer> squares = workers.map(inputs, value ->
+            {
                 threads.add(Thread.currentThread().getName());
                 return value * value;
             });
@@ -46,15 +47,19 @@ class ContentLoadingWorkersTest
     {
         try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(3))
         {
-            IllegalArgumentException mapped = assertThrows(IllegalArgumentException.class,
-                () -> workers.map(List.of(1, 2, 3), value -> {
-                    if (value == 2)
-                        throw new IllegalArgumentException("broken");
-                    return value;
-                }));
+            List<Integer> values = List.of(1, 2, 3);
+            IllegalArgumentException mapped = assertThrows(IllegalArgumentException.class, () -> workers.map(values, value ->
+            {
+                if (value == 2)
+                    throw new IllegalArgumentException("broken");
+                return value;
+            }));
             // Thrown on another worker, it may arrive as a copy of the same type that wraps the original.
             assertTrue(mapped.getMessage().contains("broken"), mapped::getMessage);
-            ContentLoadingWorkers.Task<Object> task = workers.submit(() -> { throw new IllegalStateException("task"); });
+            ContentLoadingWorkers.Task<Object> task = workers.submit(() ->
+            {
+                throw new IllegalStateException("task");
+            });
             assertEquals("task", assertThrows(IllegalStateException.class, task::join).getMessage());
         }
     }

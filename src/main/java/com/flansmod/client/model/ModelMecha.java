@@ -3,10 +3,8 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumMechaSlotType;
-import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.visual.DriveableVisual;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.MechaType;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -55,8 +53,8 @@ public class ModelMecha extends ModelDriveable
     public Vector3f leftFootOrigin = new Vector3f();
 
     @Override
-    public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-        float scale, EnumRenderPass renderPass)
+    public void render(DriveableVisual driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         if (driveable.isPartIntact(EnumDriveablePart.CORE))
             super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -167,7 +165,7 @@ public class ModelMecha extends ModelDriveable
         poseStack.popPose();
     }
 
-    private static boolean hasAddon(Driveable driveable, EnumMechaSlotType slot)
+    private static boolean hasAddon(DriveableVisual driveable, EnumMechaSlotType slot)
     {
         DriveableData data = driveable.getDriveableData();
         return data != null && !data.getMechaAddon(slot).isEmpty();

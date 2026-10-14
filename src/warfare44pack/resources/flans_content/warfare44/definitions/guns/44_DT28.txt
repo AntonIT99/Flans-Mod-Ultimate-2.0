@@ -56,7 +56,5 @@ NumGenericAttachmentSlots 1
 // Sounds
 ShootSound Shoot_MG_DT28
 DistortSound False
-GunSoundRange 400
 ReloadSound Mg34Reload
-ReloadSoundRange 5
 EmptyClickSound emptyclick

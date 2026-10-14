@@ -5,6 +5,7 @@ import com.flansmodultimate.api.*;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.optics.*;
+import com.flansmodultimate.common.driveables.visual.SeatVisual;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
@@ -46,7 +47,7 @@ import java.util.*;
  * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Seat extends FlanEntity implements IControllable, ISeat
+public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
 {
     private static final EntityDataAccessor<Boolean> DATA_SCOPED = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_SIGHT = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);

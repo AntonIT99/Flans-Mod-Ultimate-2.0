@@ -37,7 +37,8 @@ public final class VehicleThermalRenderer
     private static boolean renderingMask;
     private static boolean failed;
     private static boolean maskReady;
-    private static int width, height;
+    private static int width;
+    private static int height;
 
     private VehicleThermalRenderer()
     {}
@@ -56,6 +57,8 @@ public final class VehicleThermalRenderer
         maskReady = false;
     }
 
+    // The post chain is cached between frames and closed on reset, not per call.
+    @SuppressWarnings("java:S2093")
     public static void render(RenderLevelStageEvent event)
     {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)

@@ -31,7 +31,6 @@ PenetrationAt100m 20
 
 // Sounds
 HitSound LargeImpact
-HitSoundRange 15
 HitSoundEnable true
 EntityHitSoundEnable true
 

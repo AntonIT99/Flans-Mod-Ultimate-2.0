@@ -1,0 +1,26 @@
+// Identity
+Name Soviet Army
+ShortName W44_SovietArmy
+
+// Appearance
+TextColour Red
+TeamColour 180 60 50
+Hat 44_SovietSummerObr43Helmet
+Chest 44_SovietSummerObr43Chest
+Legs 44_SovietSummerObr43Pants
+Shoes 44_SovietSummerObr43Boots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Classes
+AddClass W44_SovietArmyRifleman
+AddClass W44_SovietArmyAssault
+AddClass W44_SovietArmySupport
+AddClass W44_SovietArmyMedic
+AddClass W44_SovietArmyEngineer
+AddClass W44_SovietArmyAntiTank
+AddClass W44_SovietArmyScout
+AddClass W44_SovietArmySquadLeader
+AddClass W44_SovietArmyTankCrew
+AddClass W44_SovietArmyPilot

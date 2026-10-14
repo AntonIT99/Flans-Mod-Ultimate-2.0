@@ -26,6 +26,8 @@ public final class VehicleScreenShake
     private static float intensity;
 
     /** Starts a kick of the given strength lasting the given number of seconds. */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     public static void add(float newIntensity, float durationSeconds, long now)
     {
         // Written as negated comparisons so that NaN is rejected too

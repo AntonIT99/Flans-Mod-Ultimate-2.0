@@ -230,6 +230,8 @@ class TrackLinkLodTest
         }
     }
 
+    // "record" is only a contextual keyword and stays a valid method name.
+    @SuppressWarnings("java:S6213")
     private static RecordingVertexConsumer record(ModelRendererTurbo[] parts, boolean oldOrder)
     {
         var result = new RecordingVertexConsumer();

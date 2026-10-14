@@ -12,9 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.logError;
 
@@ -29,6 +27,12 @@ public class ArmorBoxType extends BlockType
     {
         super.read(file);
         guiTexturePath = readFileNameResource("GuiTexture", guiTexturePath, file);
+    }
+
+    @Override
+    protected boolean readsLinesInOrder()
+    {
+        return true;
     }
 
     @Override

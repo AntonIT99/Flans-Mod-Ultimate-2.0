@@ -243,7 +243,7 @@ public class PlayerHitbox
                 if (ModCommonConfig.get().useNewPenetrationSystem())
                     penetratingPower -= totalPenetrationResistance;
                 else
-                    penetratingPower--;
+                    penetratingPower -= 1F;
 
                 break;
             }

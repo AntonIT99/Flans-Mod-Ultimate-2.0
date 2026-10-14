@@ -11,10 +11,10 @@ ModelScale 1.2
 // Recipe and Inventory
 FuelTankSize 20000
 CargoSlots 0
-AddRecipeParts core 1 Mecha_MediumBodyFrame 40 Mat_Armor_DuraSteel
-AddRecipeParts leftArm 1 Mecha_MediumArmFrame 20 Mat_Armor_DuraSteel
-AddRecipeParts rightArm 1 Mecha_MediumArmFrame 20 Mat_Armor_DuraSteel
-AddRecipeParts hips 2 Mecha_MediumLegFrame 1 Mecha_MediumHipFrame 40 Mat_Armor_DuraSteel
+AddRecipeParts core 1 SMP_Part_Mecha_MediumBodyFrame 40 SMP_Part_Mat_Armor_DuraSteel
+AddRecipeParts leftArm 1 SMP_Part_Mecha_MediumArmFrame 20 SMP_Part_Mat_Armor_DuraSteel
+AddRecipeParts rightArm 1 SMP_Part_Mecha_MediumArmFrame 20 SMP_Part_Mat_Armor_DuraSteel
+AddRecipeParts hips 2 SMP_Part_Mecha_MediumLegFrame 1 SMP_Part_Mecha_MediumHipFrame 40 SMP_Part_Mat_Armor_DuraSteel
 AddDye 30 gray
 
 // Movement and Physics

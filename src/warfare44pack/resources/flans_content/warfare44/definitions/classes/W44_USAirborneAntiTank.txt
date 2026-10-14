@@ -1,0 +1,17 @@
+// Identity
+Name Anti-Tank
+ShortName W44_USAirborneAntiTank
+Description Anti-tank specialist with limited launcher ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_M1Carbine
+AddItem 44_M1CarbineAmmo 3
+AddItem 44_Bazooka
+AddItem 44_BazookaAmmo 2
+AddItem 44_SmokeM8Smoke
+AddItem 44_Bandage
+AddItem 44_Parachute

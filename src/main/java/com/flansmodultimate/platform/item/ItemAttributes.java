@@ -10,11 +10,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -51,6 +47,8 @@ public final class ItemAttributes
          * @param legacyName
          *            1.20.1 modifier name
          */
+        // Part of the cross-version platform signature; other loader versions use the legacy UUID and name.
+        @SuppressWarnings("java:S1172")
         public void add(Holder<Attribute> attribute, String idPath, Supplier<UUID> legacyUuid, String legacyName, double amount, Operation operation)
         {
             AttributeModifier.Operation modernOperation = operation == Operation.ADD_VALUE ? AttributeModifier.Operation.ADD_VALUE : AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;

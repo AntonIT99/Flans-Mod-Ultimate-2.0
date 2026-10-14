@@ -10,14 +10,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.List;
 import java.util.function.Predicate;
 
 /** Uses the rotated AA gun hull for vanilla targeting while retaining other entities' normal boxes. */
+// Mixin classes are never instantiated and must not declare a constructor.
+@SuppressWarnings("java:S1118")
 @Mixin(ProjectileUtil.class)
 public abstract class ProjectileUtilAAGunHullMixin
 {
@@ -69,6 +69,8 @@ public abstract class ProjectileUtilAAGunHullMixin
         callback.setReturnValue(chosen == null ? null : new EntityHitResult(chosen, chosenHit));
     }
 
+    // The handler mirrors the parameters of the injected method.
+    @SuppressWarnings("java:S107")
     @Inject(method = "getEntityHitResult(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;F)Lnet/minecraft/world/phys/EntityHitResult;", at = @At("HEAD"), cancellable = true)
     private static void flansmodultimateProjectileAAGunHull(Level level, Entity projectile, Vec3 start, Vec3 end, AABB search, Predicate<Entity> filter, float inflation,
         CallbackInfoReturnable<EntityHitResult> callback)

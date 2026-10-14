@@ -1,9 +1,7 @@
 package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.entity.Bullet;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.entity.Wheel;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
@@ -23,17 +21,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.Interaction;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -41,11 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -61,9 +49,6 @@ public final class ModUtils
             return true;
 
         ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        if (id == null)
-            return false;
-
         String path = id.getPath().toLowerCase(Locale.ROOT);
         return path.contains("vehicle");
     }
@@ -74,9 +59,6 @@ public final class ModUtils
             return true;
 
         ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        if (id == null)
-            return false;
-
         String path = id.getPath().toLowerCase(Locale.ROOT);
         return path.contains("plane");
     }
@@ -212,7 +194,7 @@ public final class ModUtils
             return Optional.empty();
 
         Item item = BuiltInRegistries.ITEM.get(id);
-        if (item == null || (item == Items.AIR && !AIR_ID.equals(id)))
+        if (item == Items.AIR && !AIR_ID.equals(id))
             return Optional.empty();
         return Optional.of(item);
     }

@@ -28,12 +28,6 @@ public class RotatedAxes
         setAngles(yaw, pitch, roll);
     }
 
-    @Override
-    public RotatedAxes clone()
-    {
-        return new RotatedAxes(rotationMatrix);
-    }
-
     public boolean isValid()
     {
         float determinant = rotationMatrix.determinant();

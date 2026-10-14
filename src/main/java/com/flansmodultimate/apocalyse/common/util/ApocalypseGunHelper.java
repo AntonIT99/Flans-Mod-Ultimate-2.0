@@ -1,17 +1,11 @@
 package com.flansmodultimate.apocalyse.common.util;
 
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.GunArmPoses;
-import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -23,9 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseGunHelper
@@ -36,6 +28,14 @@ public final class ApocalypseGunHelper
         if (preferred.isPresent())
             return loadGun(preferred.get(), random, false);
         return randomGun(random, false).flatMap(type -> loadGun(type, random, false));
+    }
+
+    /** Display loot uses the whole dungeon gun pool, including weapons with only explosive ammo. */
+    public static Optional<ItemStack> randomLootGun(RandomSource random)
+    {
+        List<GunType> guns = InfoType.getInfoTypes().values().stream().filter(GunType.class::isInstance).map(GunType.class::cast).distinct()
+            .filter(gun -> gun.getDungeonChance() != 0 && ModUtils.getItemStack(gun).isPresent()).sorted(Comparator.comparing(InfoType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
+        return guns.isEmpty() ? Optional.empty() : loadGun(guns.get(random.nextInt(guns.size())), random, true);
     }
 
     public static Optional<GunType> randomGun(RandomSource random, boolean preferSemiAuto)
@@ -73,7 +73,7 @@ public final class ApocalypseGunHelper
         if (!paintjobs.isEmpty())
             gun.applyPaintjobToStack(gunStack, paintjobs.get(random.nextInt(paintjobs.size())));
 
-        List<BulletType> ammo = combatAmmoTypes(gun, explosivesAllowed);
+        List<? extends ShootableType> ammo = explosivesAllowed ? gun.getAmmoTypes().stream().filter(type -> ModUtils.getItemStack(type).isPresent()).toList() : combatAmmoTypes(gun, false);
         if (ammo.isEmpty())
             return Optional.of(gunStack);
 
@@ -81,7 +81,7 @@ public final class ApocalypseGunHelper
         for (int slot = 0; slot < slots; slot++)
         {
             int ammoSlot = slot;
-            BulletType ammoType = ammo.get(random.nextInt(ammo.size()));
+            ShootableType ammoType = ammo.get(random.nextInt(ammo.size()));
             ModUtils.getItemStack(ammoType).ifPresent(ammoStack ->
             {
                 int rounds = Math.max(1, ammoType.getRoundsPerItem());

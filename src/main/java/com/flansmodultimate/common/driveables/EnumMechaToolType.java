@@ -16,6 +16,7 @@ public enum EnumMechaToolType
             }
             catch (IllegalArgumentException ignored)
             {
+                // Unknown names fall back to the sword below.
             }
         }
         return SWORD;

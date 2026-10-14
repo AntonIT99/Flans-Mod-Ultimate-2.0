@@ -2,19 +2,9 @@ package com.flansmodultimate.content;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.BlockType;
-import com.flansmodultimate.common.types.GloveType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ItemHolderType;
-import com.flansmodultimate.common.types.PaintableType;
-import com.flansmodultimate.util.FileUtils;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.ResourceUtils;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.util.*;
+import com.google.gson.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -31,6 +21,9 @@ import static com.flansmodultimate.content.ContentPackPaths.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class ContentPackModels
 {
+    private static final String KEY_PARENT = "parent";
+    private static final String BLOCK_INFIX = ":block/";
+    private static final String KEY_TEXTURES = "textures";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     static void generate(IContentProvider provider, List<InfoType> items, List<InfoType> blocks)
@@ -170,11 +163,11 @@ final class ContentPackModels
     {
         if (model.has("elements") || model.has("display") || model.has("loader"))
             return false;
-        if (!model.has("parent") || !model.get("parent").isJsonPrimitive())
+        if (!model.has(KEY_PARENT) || !model.get(KEY_PARENT).isJsonPrimitive())
             return false;
 
-        String parent = model.get("parent").getAsString();
-        return parent.equals("minecraft:item/generated") || parent.equals("minecraft:item/handheld") || parent.startsWith(FlansMod.FLANSMOD_ID + ":block/");
+        String parent = model.get(KEY_PARENT).getAsString();
+        return parent.equals("minecraft:item/generated") || parent.equals("minecraft:item/handheld") || parent.startsWith(FlansMod.FLANSMOD_ID + BLOCK_INFIX);
     }
 
     /**
@@ -184,12 +177,12 @@ final class ContentPackModels
      */
     private static boolean isOutdatedGeneratedGloveModel(JsonObject model, InfoType config)
     {
-        if (!(config instanceof GloveType) || model.has("parent") || !model.has("elements"))
+        if (!(config instanceof GloveType) || model.has(KEY_PARENT) || !model.has("elements"))
             return false;
-        if (!model.has("textures") || !model.get("textures").isJsonObject())
+        if (!model.has(KEY_TEXTURES) || !model.get(KEY_TEXTURES).isJsonObject())
             return false;
 
-        JsonObject textures = model.getAsJsonObject("textures");
+        JsonObject textures = model.getAsJsonObject(KEY_TEXTURES);
         if (textures.size() != 2 || !textures.has("0") || !textures.has("particle"))
             return false;
 
@@ -230,7 +223,7 @@ final class ContentPackModels
 
     private static String canonicalIds(String json, InfoType config)
     {
-        return json.replace(FlansMod.FLANSMOD_ID + ":block/" + config.getShortName() + "\"", FlansMod.FLANSMOD_ID + ":block/" + config.getOriginalShortName() + "\"");
+        return json.replace(FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getShortName() + "\"", FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getOriginalShortName() + "\"");
     }
 
     private static void restoreOriginal(Path folder, InfoType config, java.util.Map<String, String> previous)
@@ -273,7 +266,7 @@ final class ContentPackModels
         try
         {
             JsonObject existing = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
-            String originalJson = generatedJson.replace(FlansMod.FLANSMOD_ID + ":block/" + config.getShortName(), FlansMod.FLANSMOD_ID + ":block/" + config.getOriginalShortName());
+            String originalJson = generatedJson.replace(FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getShortName(), FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getOriginalShortName());
             return !existing.equals(JsonParser.parseString(generatedJson)) && !existing.equals(JsonParser.parseString(originalJson));
         }
         catch (IOException | IllegalStateException | JsonSyntaxException e)

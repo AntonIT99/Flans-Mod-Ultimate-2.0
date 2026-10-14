@@ -34,4 +34,14 @@ public interface IEquipmentPolicy
     {
         return true;
     }
+
+    /**
+     * Read on the server when a held gun fires; the aim pose is governed by {@link #flansWeaponAnimations()} instead.
+     *
+     * @return whether a held Flan gun plays its shot animation and muzzle flash model for others
+     */
+    default boolean flansGunShotAnimations()
+    {
+        return true;
+    }
 }

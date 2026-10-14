@@ -151,9 +151,10 @@ public final class PacketTeamsAction implements IServerPacket
     private void selectClass(TeamsManager manager, ServerPlayer player)
     {
         PlayerClass playerClass = PlayerClass.getPlayerClass(value);
-        if (!manager.selectClass(player, playerClass))
+        Component refusal = manager.describeClassRefusal(player, playerClass);
+        if (refusal != null || !manager.selectClass(player, playerClass))
         {
-            player.sendSystemMessage(Component.literal("That class is unavailable or requires a higher rank"));
+            player.sendSystemMessage(refusal == null ? Component.translatable("message.flansmodultimate.teams.class_unavailable") : refusal);
             manager.syncPlayer(player, PacketTeamsState.OpenScreen.CLASS_SELECT);
             return;
         }

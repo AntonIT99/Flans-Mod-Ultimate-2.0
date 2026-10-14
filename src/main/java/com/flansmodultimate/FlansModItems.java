@@ -13,6 +13,8 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FlansModItems
 {
+    public static final Supplier<? extends Item> gunpowderBlockItem = FlansModRegistries.itemRegistry.register("gunpowderblock",
+        () -> new BlockItem(FlansModBlocks.gunpowderBlock.get(), new Item.Properties()));
     public static final Supplier<? extends Item> rainbowPaintcan = FlansModRegistries.itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
     public static final Supplier<? extends Item> gunWorkbenchItem = FlansModRegistries.itemRegistry.register("gunworkbench",
         () -> new BlockItem(FlansModBlocks.gunWorkbench.get(), new Item.Properties()));
@@ -26,6 +28,8 @@ public final class FlansModItems
         () -> new BlockItem(FlansModBlocks.itemSpawner.get(), new Item.Properties()));
     public static final Supplier<? extends Item> vehicleSpawnerItem = FlansModRegistries.itemRegistry.register("teams_vehicle_spawner",
         () -> new BlockItem(FlansModBlocks.vehicleSpawner.get(), new Item.Properties()));
+    public static final Supplier<? extends Item> capturePointItem = FlansModRegistries.itemRegistry.register("teams_capture_point",
+        () -> new BlockItem(FlansModBlocks.capturePoint.get(), new Item.Properties()));
     public static final Supplier<? extends Item> opStick = FlansModRegistries.itemRegistry.register("op_stick", ItemOpStick::new);
     public static final Supplier<? extends Item> flagpoleItem = FlansModRegistries.itemRegistry.register("flagpole", FlagpoleItem::new);
 

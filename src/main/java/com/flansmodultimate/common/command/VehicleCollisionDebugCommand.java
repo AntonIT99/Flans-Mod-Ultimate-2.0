@@ -6,7 +6,6 @@ import com.flansmodultimate.network.client.driveable.PacketDriveableCollisionByp
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +32,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VehicleCollisionDebugCommand
 {
+    private static final String TARGETS = "targets";
+    private static final String MESSAGE_PREFIX = "Vehicle collision ";
     private static final String COLLISION = "collision";
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
@@ -41,8 +42,8 @@ public final class VehicleCollisionDebugCommand
             .then(Commands.literal("vehiclecollision").executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()), null))
                 .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()), bypass(context))))
                 .then(Commands.literal("player")
-                    .then(Commands.argument("targets", EntityArgument.players()).executes(context -> setPlayers(context, EntityArgument.getPlayers(context, "targets"), null))
-                        .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setPlayers(context, EntityArgument.getPlayers(context, "targets"), bypass(context))))))
+                    .then(Commands.argument(TARGETS, EntityArgument.players()).executes(context -> setPlayers(context, EntityArgument.getPlayers(context, TARGETS), null))
+                        .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setPlayers(context, EntityArgument.getPlayers(context, TARGETS), bypass(context))))))
                 .then(Commands.literal("all").executes(context -> setAll(context, !DriveableCollisionBypass.isAllEntities()))
                     .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setAll(context, bypass(context)))))));
     }
@@ -54,7 +55,7 @@ public final class VehicleCollisionDebugCommand
     }
 
     /** Sets each target's own bypass, or toggles each one individually when {@code bypass} is null. */
-    private static int setPlayers(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets, @Nullable Boolean bypass) throws CommandSyntaxException
+    private static int setPlayers(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets, @Nullable Boolean bypass)
     {
         CommandSourceStack source = context.getSource();
         boolean lastState = false;
@@ -64,17 +65,18 @@ public final class VehicleCollisionDebugCommand
             DriveableCollisionBypass.setEnabled(player, state);
             PacketHandler.sendTo(new PacketDriveableCollisionBypass(false, state), player);
             if (player != source.getEntity())
-                player.sendSystemMessage(stateMessage("Vehicle collision " + describe(state) + " for you", state));
+                player.sendSystemMessage(stateMessage(MESSAGE_PREFIX + describe(state) + " for you", state));
             lastState = state;
         }
 
         // A toggle over several players can leave them in different states.
         boolean single = targets.size() == 1;
-        String action = single ? describe(lastState) : bypass == null ? "toggled" : describe(bypass);
+        String groupAction = bypass == null ? "toggled" : describe(bypass);
+        String action = single ? describe(lastState) : groupAction;
         String who = single ? targets.iterator().next().getName().getString() : targets.size() + " players";
         String note = DriveableCollisionBypass.isAllEntities() ? " (it is still off for all entities)" : "";
         boolean highlight = single ? lastState : bypass == null || bypass;
-        source.sendSuccess(() -> stateMessage("Vehicle collision " + action + " for " + who + note, highlight), true);
+        source.sendSuccess(() -> stateMessage(MESSAGE_PREFIX + action + " for " + who + note, highlight), true);
         return targets.size();
     }
 
@@ -82,7 +84,7 @@ public final class VehicleCollisionDebugCommand
     {
         DriveableCollisionBypass.setAllEntities(bypass);
         PacketHandler.sendToAll(new PacketDriveableCollisionBypass(true, bypass));
-        context.getSource().sendSuccess(() -> stateMessage("Vehicle collision " + describe(bypass) + " for all entities", bypass), true);
+        context.getSource().sendSuccess(() -> stateMessage(MESSAGE_PREFIX + describe(bypass) + " for all entities", bypass), true);
         return 1;
     }
 

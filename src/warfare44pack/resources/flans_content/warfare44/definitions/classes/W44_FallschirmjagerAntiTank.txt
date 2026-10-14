@@ -1,0 +1,17 @@
+// Identity
+Name Anti-Tank
+ShortName W44_FallschirmjagerAntiTank
+Description Anti-tank specialist with limited launcher ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 3
+AddItem 44_PanzerFaust
+AddItem 44_PanzerFaustAmmo 2
+AddItem 44_Smokestielhandgranate
+AddItem 44_Bandage
+AddItem 44_Parachute

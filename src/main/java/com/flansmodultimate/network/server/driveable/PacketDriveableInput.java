@@ -53,32 +53,44 @@ public final class PacketDriveableInput implements IServerPacket
     public PacketDriveableInput()
     {}
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketDriveableInput(Driveable driveable, int inputMask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
         this(driveable.getId(), inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, null, sequence);
     }
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketDriveableInput(Driveable driveable, int inputMask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, @Nullable Vec3 barrelPitchPivot,
         int sequence)
     {
         this(driveable.getId(), inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, barrelPitchPivot, sequence);
     }
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketDriveableInput(Seat seat, int inputMask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
         this(seat.getDriveable() == null ? -1 : seat.getDriveable().getId(), inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, null, sequence);
     }
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketDriveableInput(Seat seat, int inputMask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, @Nullable Vec3 barrelPitchPivot, int sequence)
     {
         this(seat.getDriveable() == null ? -1 : seat.getDriveable().getId(), inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, barrelPitchPivot, sequence);
     }
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketDriveableInput(int driveableId, int inputMask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
         this(driveableId, inputMask, aimYaw, aimPitch, flightPitch, flightRoll, mouseControl, null, sequence);
     }
 
+    // The constructor mirrors the wire fields of the packet.
+    @SuppressWarnings("java:S107")
     public PacketDriveableInput(int driveableId, int inputMask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, @Nullable Vec3 barrelPitchPivot, int sequence)
     {
         this.driveableId = driveableId;

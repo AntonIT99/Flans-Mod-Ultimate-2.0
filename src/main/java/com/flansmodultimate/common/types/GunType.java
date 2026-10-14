@@ -5,9 +5,7 @@ import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.*;
-import com.flansmodultimate.common.item.AttachmentItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
@@ -34,6 +32,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IAmmoOverrideUser
 {
+    private static final String KEY_MELEE_DAMAGE = "MeleeDamage";
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
     /** The vanilla trident's charge time */
@@ -156,6 +155,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected int reloadTime;
+    @Getter
+    protected float tacticalReloadTime = -1F;
+    @Getter
+    protected float tacticalReloadMultiplier = 0.8F;
+    @Getter
+    protected float secondarySwitchTime = 8F;
+    @Getter
+    protected float secondaryUnSwitchTime = 8F;
+    @Getter
+    protected boolean secondarySwitchMovement = true;
 
     /**
      * Digital ammo system: which ammo type to consume (1-7 by default)
@@ -744,12 +753,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         // Damage
         damage = readValue("Damage", damage, file);
-        meleeDamage = readValue("MeleeDamage", meleeDamage, file);
+        meleeDamage = readValue(KEY_MELEE_DAMAGE, meleeDamage, file);
         meleeDamageDriveableModifier = readValue("MeleeDamageDriveableModifier", meleeDamageDriveableModifier, file);
 
         // Reload
         canForceReload = readValue("CanForceReload", canForceReload, file);
         reloadTime = readValue("ReloadTime", reloadTime, file);
+        readHandling(file);
         consumeBulletType = readValue("ConsumeBulletType", consumeBulletType, file);
         bulletsPerReload = readValue("BulletsPerReload", bulletsPerReload, file);
 
@@ -1003,7 +1013,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         shieldMaxBlockableMeleeDamage = readValue("ShieldMaxBlockableMeleeDamage", shieldMaxBlockableMeleeDamage, file);
 
         // Primary Function
-        if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && ammo.isEmpty())
+        if (file.hasConfigLine(KEY_MELEE_DAMAGE) && meleeDamage > 0F && ammo.isEmpty())
             primaryFunction = EnumFunction.MELEE;
         useCustomMeleeWhenShoot = readValue("UseCustomMeleeWhenShoot", useCustomMeleeWhenShoot, file);
         if (readFieldWithOptionalValue("UseCustomMelee", false, file) && ammo.isEmpty())
@@ -1015,7 +1025,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             secondaryFunction = EnumFunction.ZOOM;
         else if (file.hasConfigLine("FOVZoomLevel") && fovFactor > 1F)
             secondaryFunction = EnumFunction.ADS_ZOOM;
-        if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && primaryFunction != EnumFunction.MELEE && StringUtils.isBlank(overlayName))
+        if (file.hasConfigLine(KEY_MELEE_DAMAGE) && meleeDamage > 0F && primaryFunction != EnumFunction.MELEE && StringUtils.isBlank(overlayName))
             secondaryFunction = EnumFunction.MELEE;
         if (readFieldWithOptionalValue("UseCustomMelee", false, file) && primaryFunction != EnumFunction.CUSTOM_MELEE)
             secondaryFunction = EnumFunction.CUSTOM_MELEE;
@@ -1068,27 +1078,27 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     public float getIdleSoundRange()
     {
-        return idleSoundRange > 0 ? idleSoundRange : ModCommonConfig.get().soundRange();
+        return ModCommonConfig.packSoundRange(idleSoundRange, ModCommonConfig.get().gunActionSoundRange());
     }
 
     public float getMeleeSoundRange()
     {
-        return meleeSoundRange > 0 ? meleeSoundRange : ModCommonConfig.get().soundRange();
+        return ModCommonConfig.packSoundRange(meleeSoundRange, ModCommonConfig.get().meleeSoundRange());
     }
 
     public float getReloadSoundRange()
     {
-        return reloadSoundRange > 0 ? reloadSoundRange : ModCommonConfig.get().soundRange();
+        return ModCommonConfig.packSoundRange(reloadSoundRange, ModCommonConfig.get().reloadSoundRange());
     }
 
     public float getGunSoundRange()
     {
-        return gunSoundRange > 0 ? gunSoundRange : ModCommonConfig.get().gunFireSoundRange();
+        return ModCommonConfig.packSoundRange(gunSoundRange, ModCommonConfig.get().gunFireSoundRange());
     }
 
     public float getDistantSoundRange()
     {
-        return distantSoundRange > 0 ? distantSoundRange : ModCommonConfig.get().gunFireSoundRange() * 1.5F;
+        return ModCommonConfig.packSoundRange(distantSoundRange, ModCommonConfig.get().gunFireSoundRange() * 1.5F);
     }
 
     public boolean canShootUnderwater()
@@ -1864,7 +1874,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public float getReloadTime(ItemStack stack)
     {
-        float stackReloadTime = reloadTime;
+        return getReloadTime(stack, false);
+    }
+
+    /** Tactical selection is made from the ammunition present before a reload is queued. */
+    public float getReloadTime(ItemStack stack, boolean tactical)
+    {
+        float stackReloadTime = GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, tactical);
 
         if (getGrip(stack) != null && getSecondaryFire(stack))
             stackReloadTime = getGrip(stack).secondaryReloadTime;
@@ -2205,5 +2221,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public boolean isSilencedSound(@Nullable ItemStack stack)
     {
         return Optional.ofNullable(stack).map(this::getBarrel).map(AttachmentType::isSilencer).orElse(false);
+    }
+
+    private void readHandling(TypeFile file)
+    {
+        tacticalReloadTime = readValue("TacticalReloadTime", tacticalReloadTime, file);
+        tacticalReloadTime = Float.isFinite(tacticalReloadTime) ? Mth.clamp(tacticalReloadTime, -1F, 72000F) : -1F;
+        tacticalReloadMultiplier = readValue("TacticalReloadMultiplier", tacticalReloadMultiplier, file);
+        tacticalReloadMultiplier = Float.isFinite(tacticalReloadMultiplier) ? Mth.clamp(tacticalReloadMultiplier, 0F, 2F) : 0.8F;
+        secondarySwitchTime = GunHandlingTiming.switchTicks(readValue("SecondarySwitchTime", secondarySwitchTime, file));
+        secondaryUnSwitchTime = GunHandlingTiming.switchTicks(readValue("SecondaryUnSwitchTime", secondaryUnSwitchTime, file));
+        secondarySwitchMovement = readValue("SecondarySwitchMovement", secondarySwitchMovement, file);
     }
 }

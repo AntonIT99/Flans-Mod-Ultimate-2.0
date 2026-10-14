@@ -133,8 +133,9 @@ checking. They are read-only references: never edit them unless explicitly asked
 ## IntelliJ Inspections
 
 IntelliJ editor warnings are available headlessly through
-`scripts/idea-inspect.ps1`, which runs the local IDE's `inspect.bat` with the shared
-profile `.idea/inspectionProfiles/Project_Default.xml` (works while the IDE is open).
+`scripts/idea-inspect.ps1`, which starts the local IDE headlessly once per call with the shared
+profile `.idea/inspectionProfiles/Project_Default.xml` (works while the IDE is open and
+alongside other runs).
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects
   files with uncommitted changes; `-Path <dir>` inspects a directory instead;

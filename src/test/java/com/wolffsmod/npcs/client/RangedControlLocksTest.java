@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RangedControlLocksTest
 {
@@ -93,5 +91,24 @@ class RangedControlLocksTest
         assertFalse(combined.firingSound());
         assertFalse(RangedControlLocks.create(Page.PROJECTILE, true, combined, true).textFields().containsKey(4));
         assertFalse(RangedControlLocks.create(Page.RANGED, true, combined, true).textFields().containsKey(1));
+    }
+
+    @Test
+    void customModelPropertiesStayEditableUnlessTheAmmunitionSuppliesTheValue()
+    {
+        var content = new ProjectileSources(Source.AMMUNITION, Source.WEAPON, Source.WEAPON, true);
+        var released = RangedControlLocks.release(content, true, true, false, true);
+        // Kinetic ammunition still sets its own damage; no NPC value can replace it.
+        assertEquals(Source.AMMUNITION, released.damage());
+        assertEquals(Source.CALLER, released.spread());
+        assertEquals(Source.WEAPON, released.speed());
+        assertFalse(released.firingSound());
+        var ranged = RangedControlLocks.create(Page.RANGED, true, released, true);
+        assertFalse(ranged.textFields().containsKey(1));
+        assertFalse(ranged.textFields().containsKey(7));
+        var projectile = RangedControlLocks.create(Page.PROJECTILE, true, released, true);
+        assertEquals(Reason.AMMUNITION, projectile.textFields().get(1));
+        assertEquals(Reason.WEAPON_STATS, projectile.textFields().get(4));
+        assertEquals(content, RangedControlLocks.release(content, false, false, false, false));
     }
 }

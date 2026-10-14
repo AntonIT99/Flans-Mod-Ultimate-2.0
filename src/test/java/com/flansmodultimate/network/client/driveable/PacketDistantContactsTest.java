@@ -57,7 +57,9 @@ class PacketDistantContactsTest
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         buf.writeVarInt(5);
         buf.writeVarInt(1_000_000);
-        assertThrows(IllegalStateException.class, () -> new PacketDistantContacts().decodeInto(new PacketBuffer(buf)));
+        PacketDistantContacts packet = new PacketDistantContacts();
+        PacketBuffer data = new PacketBuffer(buf);
+        assertThrows(IllegalStateException.class, () -> packet.decodeInto(data));
     }
 
     @Test

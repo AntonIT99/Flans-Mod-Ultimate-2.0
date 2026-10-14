@@ -5,16 +5,9 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /** UUID-keyed, world-persistent Teams statistics. */
 public final class PlayerStats
@@ -26,6 +19,7 @@ public final class PlayerStats
     private static final String NBT_EXPERIENCE = "experience";
     private static final String NBT_TOTAL_EXPERIENCE = "total_experience";
     private static final String NBT_RANK = "rank";
+    private static final String NBT_PRESTIGE = "prestige";
     private static final String NBT_LONGEST_KILL = "longest_kill";
     private static final String NBT_PLAYED_ROUNDS = "played_rounds";
     private static final String NBT_PLAY_TIME = "play_time";
@@ -42,6 +36,10 @@ public final class PlayerStats
     private static final String NBT_POOL = "pool";
     private static final String NBT_LOADOUTS = "loadouts";
     private static final String NBT_REWARD_BOXES = "reward_boxes";
+    /** Prestige can be earned this many times, as in the Labjac fork. */
+    public static final int MAX_PRESTIGE = 5;
+    /** Rank a player has to reach before prestige is offered when no loadout pool sets a maximum. */
+    public static final int DEFAULT_PRESTIGE_RANK = 30;
 
     @Getter
     private final UUID playerId;
@@ -57,6 +55,9 @@ public final class PlayerStats
     private int totalExperience;
     @Getter
     private int rank = 1;
+    /** Times the player traded a maxed rank for a fresh start; unlocks classes with {@code RequiredPrestigeLevel}. */
+    @Getter
+    private int prestige;
     @Getter
     private double longestKill;
     @Getter
@@ -252,11 +253,36 @@ public final class PlayerStats
         return reached;
     }
 
+    /**
+     * Trades a maxed rank for a prestige level: rank and experience start over, everything else is kept.
+     *
+     * @param requiredRank
+     *            rank the player must have reached
+     * @return whether prestige was gained
+     */
+    public boolean gainPrestige(int requiredRank)
+    {
+        if (rank < requiredRank || prestige >= MAX_PRESTIGE)
+            return false;
+        prestige++;
+        rank = 1;
+        experience = 0;
+        return true;
+    }
+
+    /** Puts the player at the start of {@code newRank}, for operators setting up minigame ranks. */
+    public void setRank(int newRank)
+    {
+        rank = Math.max(1, newRank);
+        experience = 0;
+    }
+
     public void resetRankProgress()
     {
         experience = 0;
         totalExperience = 0;
         rank = 1;
+        prestige = 0;
         selectedLoadout = 0;
         killstreak = 0;
         bestKillstreak = 0;
@@ -274,6 +300,7 @@ public final class PlayerStats
         tag.putInt(NBT_EXPERIENCE, experience);
         tag.putInt(NBT_TOTAL_EXPERIENCE, totalExperience);
         tag.putInt(NBT_RANK, rank);
+        tag.putInt(NBT_PRESTIGE, prestige);
         tag.putDouble(NBT_LONGEST_KILL, longestKill);
         tag.putInt(NBT_PLAYED_ROUNDS, playedRounds);
         tag.putLong(NBT_PLAY_TIME, playTimeTicks);
@@ -313,6 +340,7 @@ public final class PlayerStats
         result.experience = tag.getInt(NBT_EXPERIENCE);
         result.totalExperience = tag.getInt(NBT_TOTAL_EXPERIENCE);
         result.rank = Math.max(1, tag.getInt(NBT_RANK));
+        result.prestige = Math.max(0, Math.min(MAX_PRESTIGE, tag.getInt(NBT_PRESTIGE)));
         result.longestKill = tag.getDouble(NBT_LONGEST_KILL);
         result.playedRounds = tag.getInt(NBT_PLAYED_ROUNDS);
         result.playTimeTicks = tag.getLong(NBT_PLAY_TIME);

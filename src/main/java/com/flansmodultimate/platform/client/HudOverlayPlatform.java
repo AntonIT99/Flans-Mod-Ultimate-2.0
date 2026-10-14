@@ -52,16 +52,16 @@ public final class HudOverlayPlatform
         {
             return ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, path);
         }
+
+        private static LayeredDraw.Layer wrap(HudLayer layer)
+        {
+            return (graphics, deltaTracker) -> layer.render(graphics, deltaTracker.getGameTimeDeltaPartialTick(true), graphics.guiWidth(), graphics.guiHeight());
+        }
     }
 
     public static Registrar registrar(RegisterGuiLayersEvent event)
     {
         return new Registrar(event);
-    }
-
-    private static LayeredDraw.Layer wrap(HudLayer layer)
-    {
-        return (graphics, deltaTracker) -> layer.render(graphics, deltaTracker.getGameTimeDeltaPartialTick(true), graphics.guiWidth(), graphics.guiHeight());
     }
 
     /** Whether survival HUD elements, such as health and armor, are drawn. */

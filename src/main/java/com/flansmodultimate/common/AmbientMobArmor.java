@@ -17,18 +17,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AmbientMobArmor
 {
-    private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
-        EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
+    private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
 
     private static final String NBT_PENDING = "flansmodultimate:ambient_armor_pending";
     private static final String NBT_ARMOR_SLOTS = "flansmodultimate:ambient_armor_slots";
@@ -42,8 +37,7 @@ public final class AmbientMobArmor
             return;
 
         RandomSource random = mob.getRandom();
-        boolean equipPiece = pool.teamOutfits().isEmpty()
-            || (!pool.armorPieces().isEmpty() && random.nextBoolean());
+        boolean equipPiece = pool.teamOutfits().isEmpty() || (!pool.armorPieces().isEmpty() && random.nextBoolean());
         if (equipPiece)
         {
             ItemStack armor = pool.armorPieces().get(random.nextInt(pool.armorPieces().size()));
@@ -61,7 +55,7 @@ public final class AmbientMobArmor
         // Vanilla never drops this armor; dropArmor rolls ambientMobArmorDropRate instead
         mob.setDropChance(slot, 0.0F);
         CompoundTag data = mob.getPersistentData();
-        data.putByte(NBT_ARMOR_SLOTS, (byte) (data.getByte(NBT_ARMOR_SLOTS) | 1 << slot.getIndex()));
+        data.putByte(NBT_ARMOR_SLOTS, (byte) ((data.getByte(NBT_ARMOR_SLOTS) & 0xFF) | 1 << slot.getIndex()));
     }
 
     /** Marks a mob to receive ambient armor once it joins the level; survives chunk-generation serialization. */
@@ -119,11 +113,7 @@ public final class AmbientMobArmor
 
     private static EquipmentPool buildEquipmentPool()
     {
-        List<ItemStack> armorPieces = FlansMod.getItems(EnumType.ARMOR).stream()
-            .map(RegistryEntry::get)
-            .filter(CustomArmorItem.class::isInstance)
-            .map(ItemStack::new)
-            .toList();
+        List<ItemStack> armorPieces = FlansMod.getItems(EnumType.ARMOR).stream().map(RegistryEntry::get).filter(CustomArmorItem.class::isInstance).map(ItemStack::new).toList();
 
         List<Map<EquipmentSlot, ItemStack>> teamOutfits = new ArrayList<>();
         for (Team team : Team.values())
@@ -141,5 +131,6 @@ public final class AmbientMobArmor
         return new EquipmentPool(List.copyOf(armorPieces), List.copyOf(teamOutfits));
     }
 
-    private record EquipmentPool(List<ItemStack> armorPieces, List<Map<EquipmentSlot, ItemStack>> teamOutfits) {}
+    private record EquipmentPool(List<ItemStack> armorPieces, List<Map<EquipmentSlot, ItemStack>> teamOutfits)
+    {}
 }

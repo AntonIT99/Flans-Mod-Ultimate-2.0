@@ -16,6 +16,8 @@ public final class VertexPlatform
     {}
 
     /** Entity-format vertex; position and normal are transformed by {@code pose}. */
+    // One argument per vertex attribute, as VertexConsumer#vertex.
+    @SuppressWarnings("java:S107")
     public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay,
         int packedLight, float normalX, float normalY, float normalZ)
     {
@@ -23,6 +25,8 @@ public final class VertexPlatform
     }
 
     /** Entity-format vertex whose position and normal are already transformed. */
+    // One argument per vertex attribute, as VertexConsumer#vertex.
+    @SuppressWarnings("java:S107")
     public static void vertex(VertexConsumer consumer, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay, int packedLight, float normalX,
         float normalY, float normalZ)
     {
@@ -30,11 +34,15 @@ public final class VertexPlatform
     }
 
     /** Position-colour-normal vertex, as used by line render types. */
+    // One argument per vertex attribute, as VertexConsumer#vertex.
+    @SuppressWarnings("java:S107")
     public static void lineVertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z, float red, float green, float blue, float alpha, float normalX, float normalY, float normalZ)
     {
         consumer.addVertex(pose.pose(), x, y, z).setColor(red, green, blue, alpha).setNormal(pose, normalX, normalY, normalZ);
     }
 
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public static void renderModelPart(ModelPart part, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         int color = Math.round(alpha * 255F) << 24 | Math.round(red * 255F) << 16 | Math.round(green * 255F) << 8 | Math.round(blue * 255F);
@@ -57,9 +65,10 @@ public final class VertexPlatform
         RenderSystem.getModelViewStack().identity();
     }
 
-    public static void scaleModelView(float x, float y, float z)
+    /** The live top of the global model-view stack, which is itself the matrix since 1.20.5. Call {@link RenderSystem#applyModelViewMatrix} after changing it. */
+    public static Matrix4f modelView()
     {
-        RenderSystem.getModelViewStack().scale(x, y, z);
+        return RenderSystem.getModelViewStack();
     }
 
     /** Multiplies the pose stack by the matrix. */
@@ -75,6 +84,8 @@ public final class VertexPlatform
     }
 
     /** Emits one model cube with a float colour, packed to ARGB by truncation. */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public static void compileCube(ModelPart.Cube cube, PoseStack.Pose pose, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         int packedColor = ((int) (alpha * 255F) & 0xFF) << 24 | ((int) (red * 255F) & 0xFF) << 16 | ((int) (green * 255F) & 0xFF) << 8 | ((int) (blue * 255F) & 0xFF);

@@ -1,25 +1,22 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.ResourceUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Reader and lookup table for the per-ammunition overrides a weapon may declare.
  *
- * <p>The reader collects warnings instead of logging, so a malformed optional line can
+ * <p>
+ * The reader collects warnings instead of logging, so a malformed optional line can
  * never abort content loading and the whole class stays unit testable.
  *
- * <p>Recognised keys, all repeatable and all keyed by the ammunition's
+ * <p>
+ * Recognised keys, all repeatable and all keyed by the ammunition's
  * <em>original</em> short name as written in its own definition:
  *
  * <pre>
@@ -34,6 +31,7 @@ import java.util.Map;
  */
 public final class AmmoOverrides
 {
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
     public static final String KEY_MASS = "AmmoMass";
     public static final String KEY_MASS_KG = "AmmoMassKg";
     public static final String KEY_MUZZLE_VELOCITY = "AmmoMuzzleVelocity";
@@ -63,7 +61,8 @@ public final class AmmoOverrides
     }
 
     /**
-     * @param ammoOriginalShortName the ammunition's own {@code ShortName}, matched case-insensitively
+     * @param ammoOriginalShortName
+     *            the ammunition's own {@code ShortName}, matched case-insensitively
      * @return the override for that ammunition, or null when this weapon declares none for it
      */
     @Nullable
@@ -110,16 +109,12 @@ public final class AmmoOverrides
 
         Map<String, Builder> builders = new LinkedHashMap<>();
         readScalar(file, KEY_MASS, "grams", builders, warnings, (b, v) -> b.mass = v);
-        readScalar(file, KEY_MASS_KG, "kilograms", builders, warnings,
-            (b, v) -> b.mass = v * ShootableType.GRAMS_PER_KILOGRAM);
+        readScalar(file, KEY_MASS_KG, "kilograms", builders, warnings, (b, v) -> b.mass = v * ShootableType.GRAMS_PER_KILOGRAM);
         // Authored in m/s for consistency with MuzzleVelocity; stored in blocks per tick.
-        readScalar(file, KEY_MUZZLE_VELOCITY, "metres per second", builders, warnings,
-            (b, v) -> b.speed = v / 20F);
+        readScalar(file, KEY_MUZZLE_VELOCITY, "metres per second", builders, warnings, (b, v) -> b.speed = v / 20F);
         // Both explosive-mass keys land in the same kg TNT equivalent field.
-        readScalar(file, KEY_EXPLOSIVE_MASS_G, "grams TNT equivalent", builders, warnings,
-            (b, v) -> b.explosiveMass = v / ShootableType.GRAMS_PER_KILOGRAM);
-        readScalar(file, KEY_EXPLOSIVE_MASS_KG, "kilograms TNT equivalent", builders, warnings,
-            (b, v) -> b.explosiveMass = v);
+        readScalar(file, KEY_EXPLOSIVE_MASS_G, "grams TNT equivalent", builders, warnings, (b, v) -> b.explosiveMass = v / ShootableType.GRAMS_PER_KILOGRAM);
+        readScalar(file, KEY_EXPLOSIVE_MASS_KG, "kilograms TNT equivalent", builders, warnings, (b, v) -> b.explosiveMass = v);
         readScalar(file, KEY_PENETRATION, "millimetres", builders, warnings, (b, v) -> b.penetration = v);
         readRounds(file, builders, warnings);
 
@@ -138,15 +133,13 @@ public final class AmmoOverrides
         void accept(Builder builder, float value);
     }
 
-    private static void readScalar(TypeFile file, String key, String unit, Map<String, Builder> builders,
-                                   List<String> warnings, Assign assign)
+    private static void readScalar(TypeFile file, String key, String unit, Map<String, Builder> builders, List<String> warnings, Assign assign)
     {
         for (String[] values : lines(file, key))
         {
             if (values.length < 2)
             {
-                warnings.add(key + " requires <ammoShortName> <" + unit + ">; ignoring '"
-                    + String.join(" ", values) + "'");
+                warnings.add(key + " requires <ammoShortName> <" + unit + ">; ignoring '" + String.join(" ", values) + "'");
                 continue;
             }
             Float value = parseNonNegative(values[1], key, unit, warnings);
@@ -162,9 +155,7 @@ public final class AmmoOverrides
         {
             if (values.length < 4)
             {
-                warnings.add(KEY_ADD_ROUND + " requires <ammoShortName> <name> <count> <massG>"
-                    + " [explosiveMassG] [muzzleVelocityMps] [penetrationMm]; ignoring '"
-                    + String.join(" ", values) + "'");
+                warnings.add(KEY_ADD_ROUND + " requires <ammoShortName> <name> <count> <massG>" + " [explosiveMassG] [muzzleVelocityMps] [penetrationMm]; ignoring '" + String.join(" ", values) + "'");
                 continue;
             }
             int count;
@@ -174,27 +165,22 @@ public final class AmmoOverrides
             }
             catch (NumberFormatException ex)
             {
-                warnings.add(KEY_ADD_ROUND + " count must be a whole number but was '" + values[2]
-                    + "'; ignoring the line");
+                warnings.add(KEY_ADD_ROUND + " count must be a whole number but was '" + values[2] + "'; ignoring the line");
                 continue;
             }
             if (count <= 0)
             {
-                warnings.add(KEY_ADD_ROUND + " count must be greater than zero but was '" + values[2]
-                    + "'; ignoring the line");
+                warnings.add(KEY_ADD_ROUND + " count must be greater than zero but was '" + values[2] + "'; ignoring the line");
                 continue;
             }
             Float mass = parseNonNegative(values[3], KEY_ADD_ROUND, "mass in grams", warnings);
             if (mass == null)
                 continue;
             // Authored in grams TNT equivalent, matching AddRound; stored in kg.
-            float explosiveMass = optional(values, 4, KEY_ADD_ROUND, "explosive mass in g TNT equivalent", warnings)
-                / ShootableType.GRAMS_PER_KILOGRAM;
+            float explosiveMass = optional(values, 4, KEY_ADD_ROUND, "explosive mass in g TNT equivalent", warnings) / ShootableType.GRAMS_PER_KILOGRAM;
             float speed = optional(values, 5, KEY_ADD_ROUND, "muzzle velocity in m/s", warnings) / 20F;
             float penetration = optional(values, 6, KEY_ADD_ROUND, "penetration at 100 m in millimetres", warnings);
-            builders.computeIfAbsent(key(values[0]), k -> new Builder()).rounds.add(
-                new BulletType.RoundEntry(values[1], count,
-                    new BulletType.RoundStats(mass, explosiveMass, speed, penetration)));
+            builders.computeIfAbsent(key(values[0]), k -> new Builder()).rounds.add(new BulletType.RoundEntry(values[1], count, new BulletType.RoundStats(mass, explosiveMass, speed, penetration)));
         }
     }
 
@@ -221,8 +207,7 @@ public final class AmmoOverrides
         }
         if (!Float.isFinite(value) || value < 0F)
         {
-            warnings.add(key + " " + unit + " must be finite and non-negative but was '" + raw
-                + "'; ignoring it");
+            warnings.add(key + " " + unit + " must be finite and non-negative but was '" + raw + "'; ignoring it");
             return null;
         }
         return value;
@@ -251,7 +236,7 @@ public final class AmmoOverrides
         List<String[]> out = new ArrayList<>(cleaned.size());
         for (String line : cleaned)
         {
-            String[] split = line.split("\\s+");
+            String[] split = WHITESPACE.split(line);
             // Some readers hand back the key as the first token; drop it when present.
             if (split.length > 0 && split[0].equalsIgnoreCase(key))
                 split = java.util.Arrays.copyOfRange(split, 1, split.length);

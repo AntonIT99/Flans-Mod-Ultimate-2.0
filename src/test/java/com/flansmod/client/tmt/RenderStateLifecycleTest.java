@@ -23,14 +23,19 @@ class RenderStateLifecycleTest
         second.poly.addAll(first.poly);
         assertListEquality(first.poly, second.poly);
 
-        ModelRenderer firstParent = new ModelRenderer(new ModelBase() {});
-        ModelRenderer secondParent = new ModelRenderer(new ModelBase() {});
-        firstParent.childModels.add(new ModelRenderer(new ModelBase() {}));
+        ModelRenderer firstParent = new ModelRenderer(new ModelBase()
+        {});
+        ModelRenderer secondParent = new ModelRenderer(new ModelBase()
+        {});
+        firstParent.childModels.add(new ModelRenderer(new ModelBase()
+        {}));
         firstParent.childModels.add(null);
         secondParent.childModels.addAll(firstParent.childModels);
         assertListEquality(firstParent.childModels, secondParent.childModels);
     }
 
+    // The argument order makes the assertion call first.equals(null).
+    @SuppressWarnings("java:S3415")
     private static <T> void assertListEquality(List<T> first, List<T> second)
     {
         List<T> ordinary = new ArrayList<>(first);
@@ -74,7 +79,8 @@ class RenderStateLifecycleTest
         try
         {
             ModelRendererTurbo.beginFixedScaleCulling(100, 1);
-            CompletableFuture.runAsync(() -> {
+            CompletableFuture.runAsync(() ->
+            {
                 ModelRendererTurbo.beginFixedScaleCulling(1, 100);
                 ModelRendererTurbo.clearRenderScratch();
             }).join();
@@ -101,11 +107,8 @@ class RenderStateLifecycleTest
     private static RecordingVertexConsumer drawPolygon()
     {
         RecordingVertexConsumer consumer = new RecordingVertexConsumer();
-        TexturedPolygon polygon = new TexturedPolygon(new PositionTextureVertex[] {
-            new PositionTextureVertex(0, 0, 0, 0, 0),
-            new PositionTextureVertex(16, 0, 0, 1, 0),
-            new PositionTextureVertex(0, 16, 0, 0, 1)
-        });
+        TexturedPolygon polygon = new TexturedPolygon(
+            new PositionTextureVertex[]{new PositionTextureVertex(0, 0, 0, 0, 0), new PositionTextureVertex(16, 0, 0, 1, 0), new PositionTextureVertex(0, 16, 0, 0, 1)});
         polygon.draw(new PoseStack().last(), consumer, 17, 23, 1, 1, 1, 1);
         return consumer;
     }

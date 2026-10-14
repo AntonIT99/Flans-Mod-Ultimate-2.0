@@ -17,12 +17,12 @@ public class GameTypeTDM extends GameType
 
     GameTypeTDM()
     {
-        this("tdm", "Team Deathmatch", 2);
+        this("tdm", "Team Deathmatch", TeamLimits.upToSides(TeamsRound.MAX_SIDES));
     }
 
-    protected GameTypeTDM(String id, String name, int requiredTeams)
+    protected GameTypeTDM(String id, String name, TeamLimits teamLimits)
     {
-        super(id, name, requiredTeams);
+        super(id, name, teamLimits, true);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class GameTypeTDM extends GameType
         Team attackerTeam = manager.getPlayerTeam(attacker);
         Team victimTeam = manager.getPlayerTeam(victim);
         PlayerData attackerData = PlayerData.getInstance(attacker);
-        if (attackerTeam == victimTeam)
+        if (attackerTeam == victimTeam || manager.areAllied(attackerTeam, victimTeam))
         {
             attackerData.setScore(attackerData.getScore() - 1);
             return;
@@ -56,6 +56,12 @@ public class GameTypeTDM extends GameType
         int xp = manager.getCurrentLoadoutPool().map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
             .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
         manager.awardExperience(attacker, xp);
+        scoreKill(manager, attackerTeam);
+    }
+
+    /** What killing an enemy is worth to the killer's team: one point here, tickets in the objective modes. */
+    protected void scoreKill(TeamsManager manager, Team attackerTeam)
+    {
         manager.addTeamScore(attackerTeam, 1);
     }
 

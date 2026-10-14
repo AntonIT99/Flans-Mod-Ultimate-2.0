@@ -15,6 +15,8 @@ public final class ParticlePlatform
      * whose providers read the colour from the velocity. The ambient variant is drawn at 15% opacity.
      * Each channel is converted like the 1.20.1 float vertex colour, {@code (int)(v * 255)} truncated to a byte.
      */
+    // Part of the cross-version platform signature; other loader versions use the parameter.
+    @SuppressWarnings("java:S1172")
     public static ParticleOptions entityEffect(boolean ambient, double vx, double vy, double vz)
     {
         int argb = channel(ambient ? 0.15F : 1F) << 24 | channel((float) vx) << 16 | channel((float) vy) << 8 | channel((float) vz);

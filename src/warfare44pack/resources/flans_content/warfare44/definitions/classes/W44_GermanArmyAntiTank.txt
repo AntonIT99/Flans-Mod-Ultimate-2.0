@@ -1,0 +1,16 @@
+// Identity
+Name Anti-Tank
+ShortName W44_GermanArmyAntiTank
+Description Anti-tank specialist with limited launcher ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 3
+AddItem 44_Panzerschreck
+AddItem 44_PanzerschreckAmmo 2
+AddItem 44_Smokestielhandgranate
+AddItem 44_Bandage

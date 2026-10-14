@@ -1,12 +1,7 @@
 package com.flansmodultimate;
 
-import com.flansmodultimate.common.block.GunWorkbenchBlock;
-import com.flansmodultimate.common.block.PaintjobTableBlock;
-import com.flansmodultimate.common.block.TeamSpawnerBlock;
-import com.flansmodultimate.common.block.VehicleCraftingTableBlock;
-import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
-import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
-import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
+import com.flansmodultimate.common.block.*;
+import com.flansmodultimate.common.block.entity.*;
 import com.flansmodultimate.common.types.EnumType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -23,6 +18,8 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FlansModBlocks
 {
+    public static final Supplier<? extends Block> gunpowderBlock = FlansModRegistries.blockRegistry.register("gunpowderblock",
+        () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0F).sound(SoundType.SAND)));
     public static final Supplier<? extends Block> gunWorkbench = FlansModRegistries.blockRegistry.register("gunworkbench",
         () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3F, 6F).sound(SoundType.METAL).requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
     public static final Supplier<? extends Block> vehicleCraftingTable = FlansModRegistries.blockRegistry.register("vehiclecraftingtable", () -> new VehicleCraftingTableBlock(
@@ -35,6 +32,8 @@ public final class FlansModBlocks
         () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.ITEM, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
     public static final Supplier<? extends Block> vehicleSpawner = FlansModRegistries.blockRegistry.register("teams_vehicle_spawner",
         () -> new TeamSpawnerBlock(TeamSpawnerBlockEntity.Mode.VEHICLE, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1F, 2F).sound(SoundType.METAL).noOcclusion()));
+    public static final Supplier<? extends Block> capturePoint = FlansModRegistries.blockRegistry.register("teams_capture_point",
+        () -> new CapturePointBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1F, 3600000F).sound(SoundType.METAL).noOcclusion().noLootTable()));
 
     public static final Supplier<? extends BlockEntityType<PaintjobTableBlockEntity>> paintjobTableBlockEntity = FlansModRegistries.blockEntityRegistry.register("paintjobtable",
         () -> BlockEntityType.Builder.of(PaintjobTableBlockEntity::new, paintjobTable.get()).build(null));
@@ -42,6 +41,8 @@ public final class FlansModBlocks
         () -> BlockEntityType.Builder.of(ItemHolderBlockEntity::new, FlansMod.getRegisteredBlocks(EnumType.ITEM_HOLDER)).build(null));
     public static final Supplier<? extends BlockEntityType<TeamSpawnerBlockEntity>> teamSpawnerBlockEntity = FlansModRegistries.blockEntityRegistry.register("teams_spawner",
         () -> BlockEntityType.Builder.of(TeamSpawnerBlockEntity::new, playerSpawner.get(), itemSpawner.get(), vehicleSpawner.get()).build(null));
+    public static final Supplier<? extends BlockEntityType<CapturePointBlockEntity>> capturePointBlockEntity = FlansModRegistries.blockEntityRegistry.register("teams_capture_point",
+        () -> BlockEntityType.Builder.of(CapturePointBlockEntity::new, capturePoint.get()).build(null));
 
     /** Forces supplier registration without resolving any registry entries. */
     static void initialize()

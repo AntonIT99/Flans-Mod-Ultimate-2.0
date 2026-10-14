@@ -36,6 +36,12 @@ public final class FlansProjectiles
         return ExternalProjectileSupport.isGrenade(stack);
     }
 
+    /** @return the rounds one item of this Flan ammunition holds when full, or zero for another item; readable on either side */
+    public static int getRoundsPerItem(ItemStack stack)
+    {
+        return ExternalProjectileSupport.roundsPerItem(stack);
+    }
+
     /**
      * Describes which caller defaults are replaced, without preparing or spawning a projectile.
      * Readable on either side after content loading, including for an editor preview.
@@ -100,7 +106,30 @@ public final class FlansProjectiles
      */
     public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate)
     {
-        return ExternalProjectileSupport.getMuzzles(model, secondary, sequence, alternate);
+        return ExternalProjectileSupport.getMuzzles(model, secondary, sequence, alternate, MountAim.REST);
+    }
+
+    /**
+     * Selects the muzzles of an AA or driveable model with its turret or gun aimed, without creating a driveable
+     * entity. Muzzles on the turret turn round the turret origin of the definition and elevate with the gun; the
+     * barrels of an AA gun turn and elevate round the gun. Muzzles fixed to the hull stay where they are. Either side.
+     *
+     * @param model
+     *            model definition
+     * @param secondary
+     *            selected weapon bank
+     * @param sequence
+     *            trigger index, used to alternate points and individual barrels
+     * @param alternate
+     *            whether authored alternating fire is honored; false fires every barrel together
+     * @param aim
+     *            where the turret or AA gun points, relative to the hull
+     * @return immutable selected muzzles, in the same frame as the unaimed ones; empty when the model has no defined
+     *         weapon positions
+     */
+    public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate, MountAim aim)
+    {
+        return ExternalProjectileSupport.getMuzzles(model, secondary, sequence, alternate, aim);
     }
 
     /**
@@ -119,6 +148,38 @@ public final class FlansProjectiles
     public static boolean playShootSound(Entity shooter, @Nullable IContentType weapon, ItemStack heldWeapon, boolean secondary)
     {
         return ExternalProjectileSupport.playShootSound(shooter, weapon, heldWeapon, secondary);
+    }
+
+    /**
+     * Plays the sound an AA gun or driveable bank makes when it begins a reload, with its authored range. A bank of
+     * mounted guns prefers the gun's own reload sound, as the driveable does. Server thread only.
+     *
+     * @param source
+     *            source position and dimension
+     * @param platform
+     *            AA gun or driveable definition
+     * @param secondary
+     *            selected driveable bank; ignored for AA guns
+     * @return whether a sound was declared and sent
+     */
+    public static boolean playReloadSound(Entity source, IContentType platform, boolean secondary)
+    {
+        return ExternalProjectileSupport.playReloadSound(source, platform, secondary);
+    }
+
+    /**
+     * Plays a driveable main gun's chambering sound ({@code ShootReloadSound}), timed by the caller from
+     * {@link ReloadCycle#chamberSoundTick()}. Server thread only.
+     *
+     * @param source
+     *            source position and dimension
+     * @param platform
+     *            driveable definition
+     * @return whether a sound was declared and sent
+     */
+    public static boolean playChamberSound(Entity source, IContentType platform)
+    {
+        return ExternalProjectileSupport.playChamberSound(source, platform);
     }
 
     /**

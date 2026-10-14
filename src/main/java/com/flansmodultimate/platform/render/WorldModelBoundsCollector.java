@@ -11,8 +11,12 @@ public final class WorldModelBoundsCollector implements VertexConsumer
 {
     private double radiusSquared;
     private boolean valid = true;
-    private double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
-    private double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
+    private double minX = Double.POSITIVE_INFINITY;
+    private double minY = Double.POSITIVE_INFINITY;
+    private double minZ = Double.POSITIVE_INFINITY;
+    private double maxX = Double.NEGATIVE_INFINITY;
+    private double maxY = Double.NEGATIVE_INFINITY;
+    private double maxZ = Double.NEGATIVE_INFINITY;
 
     /** Empty if no vertices were emitted or any vertex was invalid. */
     public Optional<AABB> bounds()

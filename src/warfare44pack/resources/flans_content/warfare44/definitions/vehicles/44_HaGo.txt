@@ -173,13 +173,10 @@ gunsightZoom 2.5
 // Sounds
 StartSound TankIdle1
 StartSoundLength 41
-StartSoundRange 12
 EngineSound TankRun1
 EngineSoundLength 39
-EngineSoundRange 40
 BackSound TankBack1
 BackSoundLength 39
-BackSoundRange 25
 YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2

@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.api.IPlayerClass;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.content.IContentProvider;
@@ -16,22 +17,28 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 import static com.flansmodultimate.util.TypeReaderUtils.readValuesInLines;
 
 /** Content-pack loadout definition used by the Teams system. */
 @NoArgsConstructor
-public class PlayerClass extends InfoType
+public class PlayerClass extends InfoType implements IPlayerClass
 {
     private static final ItemlessTypeRegistry<PlayerClass> CLASSES = new ItemlessTypeRegistry<>("player class");
 
     @Getter
     private int unlockLevel;
+    /** Prestige level a player needs before this class opens up, on top of the unlock rank. */
+    @Getter
+    private int requiredPrestigeLevel;
+    /** Most players of one team who may use this class at once; negative for no limit. */
+    @Getter
+    private int classLimit = -1;
+    /** Largest share of a team, in percent, that may use this class at once; negative for no limit. */
+    @Getter
+    private float classLimitPercent = -1F;
     @Getter
     private String skinOverride = StringUtils.EMPTY;
     /** Client-side location of the SkinOverride texture, before it is checked against the player model. */
@@ -53,6 +60,11 @@ public class PlayerClass extends InfoType
     {
         super.read(file);
         unlockLevel = Math.max(0, readValue("UnlockLevel", unlockLevel, file));
+        requiredPrestigeLevel = Math.max(0, readValue("RequiredPrestigeLevel", requiredPrestigeLevel, file));
+        classLimit = Math.max(-1, readValue("ClassLimit", classLimit, file));
+        classLimitPercent = readValue("ClassLimitPercent", classLimitPercent, file);
+        classLimitPercent = readValue("ClassLimitPercentage", classLimitPercent, file);
+        classLimitPercent = Float.isFinite(classLimitPercent) ? Math.max(-1F, Math.min(100F, classLimitPercent)) : -1F;
         // Legacy packs write skin names like "Zombie"; texture paths must be sanitized
         skinOverride = readResource("SkinOverride", skinOverride, file);
         readArmour(file, EquipmentSlot.HEAD, "Hat", "Helmet");
@@ -89,6 +101,7 @@ public class PlayerClass extends InfoType
             armour.put(slot, value);
     }
 
+    @Override
     public List<ItemStack> createStartingItems()
     {
         List<ItemStack> result = new ArrayList<>(startingItems.size());
@@ -131,10 +144,8 @@ public class PlayerClass extends InfoType
             for (int i = 1; i < parts.length; i++)
             {
                 AttachmentType attachment = AttachmentType.getAttachment(parts[i]);
-                if (attachment == null)
-                    continue;
-                ItemStack attachmentStack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
-                if (attachmentStack.isEmpty())
+                ItemStack attachmentStack = attachment == null ? ItemStack.EMPTY : ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
+                if (attachment == null || attachmentStack.isEmpty())
                     continue;
                 String slot = attachmentSlot(attachment.getEnumAttachmentType(), generic);
                 if (attachment.getEnumAttachmentType() == EnumAttachmentType.GENERIC)
@@ -164,6 +175,7 @@ public class PlayerClass extends InfoType
         };
     }
 
+    @Override
     public ItemStack getArmour(EquipmentSlot slot)
     {
         String id = armour.get(slot);

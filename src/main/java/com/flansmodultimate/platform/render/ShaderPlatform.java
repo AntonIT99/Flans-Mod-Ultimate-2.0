@@ -4,9 +4,7 @@ import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.util.FlansLog;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
+import java.lang.invoke.*;
 
 /**
  * Version boundary for shader mods. NeoForge 1.21.1 runs Iris itself, whose public
@@ -78,19 +76,6 @@ public final class ShaderPlatform
         return MethodHandles.publicLookup().findVirtual(api, method, MethodType.methodType(boolean.class)).bindTo(instance);
     }
 
-    private static boolean isModLoaded(String modId)
-    {
-        try
-        {
-            return PlatformEnvironment.isModLoaded(modId);
-        }
-        catch (RuntimeException ex)
-        {
-            // There is no mod list outside a running game, such as in unit tests.
-            return false;
-        }
-    }
-
     /** Resolved on first query, once the mod list is complete. */
     private static final class ShaderMod
     {
@@ -124,6 +109,19 @@ public final class ShaderPlatform
             SHADER_PACK_IN_USE = inUse;
             RENDERING_SHADOW_PASS = shadowPass;
             NAME = name;
+        }
+
+        private static boolean isModLoaded(String modId)
+        {
+            try
+            {
+                return PlatformEnvironment.isModLoaded(modId);
+            }
+            catch (RuntimeException ex)
+            {
+                // There is no mod list outside a running game, such as in unit tests.
+                return false;
+            }
         }
     }
 }

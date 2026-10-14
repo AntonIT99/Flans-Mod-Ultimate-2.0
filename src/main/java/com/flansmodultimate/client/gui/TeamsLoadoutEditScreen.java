@@ -20,8 +20,8 @@ import java.util.List;
 
 public final class TeamsLoadoutEditScreen extends Screen
 {
-    private static final int WIDTH = 326;
-    private static final int HEIGHT = 198;
+    private static final int PANEL_WIDTH = 326;
+    private static final int PANEL_HEIGHT = 198;
     private static final int PAGE_SIZE = 15;
     private final int loadoutIndex;
     @Getter
@@ -41,8 +41,8 @@ public final class TeamsLoadoutEditScreen extends Screen
         PacketLoadoutState state = LoadoutClientState.get();
         if (state == null || loadoutIndex >= state.getLoadouts().size())
             return;
-        int left = width / 2 - WIDTH / 2;
-        int top = height / 2 - HEIGHT / 2;
+        int left = width / 2 - PANEL_WIDTH / 2;
+        int top = height / 2 - PANEL_HEIGHT / 2;
         for (LoadoutSlot slot : LoadoutSlot.values())
             addRenderableWidget(Button.builder(Component.literal(slot.getDisplayName()), ignored ->
             {
@@ -122,9 +122,9 @@ public final class TeamsLoadoutEditScreen extends Screen
     {
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
-        int left = width / 2 - WIDTH / 2;
-        int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSLOADOUTEDITOR, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
+        int left = width / 2 - PANEL_WIDTH / 2;
+        int top = height / 2 - PANEL_HEIGHT / 2;
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSLOADOUTEDITOR, left, top, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, 512, 256);
         graphics.drawString(font, title, left + 8, top + 8, 0xFFFFFF, true);
         graphics.drawString(font, "Rank " + (state == null ? 0 : state.getRank()) + " · " + selectedSlot.getDisplayName(), left + 110, top + 9, 0xFFFFFF, false);
         if (state != null && loadoutIndex < state.getLoadouts().size())

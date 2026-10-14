@@ -204,7 +204,7 @@ public final class DriveableCollisionWorld
     private static double collideAxis(Direction.Axis axis, AABB box, List<VoxelShape> shapes, List<DriveableHullGeometry> hulls, double desired)
     {
         double allowed = shapes.isEmpty() ? desired : Shapes.collide(axis, box, shapes, desired);
-        int index = axis == Direction.Axis.X ? 0 : axis == Direction.Axis.Y ? 1 : 2;
+        int index = axis.ordinal();
         for (DriveableHullGeometry hull : hulls)
         {
             if (Math.abs(allowed) < MOVEMENT_EPSILON)
@@ -219,10 +219,12 @@ public final class DriveableCollisionWorld
     {
         private final List<DriveableCollisionHelper> helpers = new ArrayList<>();
         private final List<AAGunCollisionHelper> aaGuns = new ArrayList<>();
+        /** Part boxes worn by entities that are not driveables. */
+        private final List<PartBodyCollisionHelper> bodies = new ArrayList<>();
 
         boolean isEmpty()
         {
-            return helpers.isEmpty() && aaGuns.isEmpty();
+            return helpers.isEmpty() && aaGuns.isEmpty() && bodies.isEmpty();
         }
 
         void add(DriveableCollisionHelper helper)
@@ -247,9 +249,20 @@ public final class DriveableCollisionWorld
             aaGuns.remove(helper);
         }
 
+        void add(PartBodyCollisionHelper helper)
+        {
+            if (!bodies.contains(helper))
+                bodies.add(helper);
+        }
+
+        void remove(PartBodyCollisionHelper helper)
+        {
+            bodies.remove(helper);
+        }
+
         private List<DriveableHullGeometry> collect(Entity entity, AABB reach)
         {
-            List<DriveableHullGeometry> nearby = List.of();
+            List<DriveableHullGeometry> nearby = collectBodies(entity, reach);
             for (int index = aaGuns.size() - 1; index >= 0; index--)
             {
                 AAGunCollisionHelper helper = liveAAGun(index);
@@ -272,8 +285,29 @@ public final class DriveableCollisionWorld
             return nearby;
         }
 
+        private List<DriveableHullGeometry> collectBodies(Entity entity, AABB reach)
+        {
+            List<DriveableHullGeometry> nearby = List.of();
+            for (int index = bodies.size() - 1; index >= 0; index--)
+            {
+                DriveableHullGeometry geometry = liveBody(index, entity);
+                if (geometry == null || !geometry.mayTouch(reach.minX, reach.minY, reach.minZ, reach.maxX, reach.maxY, reach.maxZ))
+                    continue;
+                if (nearby.isEmpty())
+                    nearby = new ArrayList<>(2);
+                nearby.add(geometry);
+            }
+            return nearby;
+        }
+
         private boolean intersects(@Nullable Entity entity, AABB box)
         {
+            for (int index = bodies.size() - 1; index >= 0; index--)
+            {
+                DriveableHullGeometry geometry = liveBody(index, entity);
+                if (geometry != null && geometry.intersects(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ))
+                    return true;
+            }
             for (int index = aaGuns.size() - 1; index >= 0; index--)
             {
                 AAGunCollisionHelper helper = liveAAGun(index);
@@ -300,6 +334,23 @@ public final class DriveableCollisionWorld
             helpers.remove(index);
             helper.forgetRegistry();
             return null;
+        }
+
+        /**
+         * Returns the posed boxes of the body at {@code index} that the entity collides with, dropping the body instead
+         * when its wearer is gone or no longer wears it.
+         */
+        @Nullable
+        private DriveableHullGeometry liveBody(int index, @Nullable Entity entity)
+        {
+            PartBodyCollisionHelper helper = bodies.get(index);
+            if (!helper.isLive())
+            {
+                bodies.remove(index);
+                helper.forgetRegistry();
+                return null;
+            }
+            return helper.passes(entity) ? null : helper.geometry();
         }
 
         @Nullable

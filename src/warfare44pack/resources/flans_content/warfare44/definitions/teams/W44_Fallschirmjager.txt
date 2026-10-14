@@ -1,0 +1,26 @@
+// Identity
+Name German Fallschirmjager
+ShortName W44_Fallschirmjager
+
+// Appearance
+TextColour Dark_Aqua
+TeamColour 60 125 125
+Hat 44_FallschirmjagerCamoM38Stahlhelm
+Chest 44_FallschirmjagerCamoChest
+Legs 44_GermanFeldgrauPants
+Shoes 44_GermanBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Classes
+AddClass W44_FallschirmjagerRifleman
+AddClass W44_FallschirmjagerAssault
+AddClass W44_FallschirmjagerSupport
+AddClass W44_FallschirmjagerMedic
+AddClass W44_FallschirmjagerEngineer
+AddClass W44_FallschirmjagerAntiTank
+AddClass W44_FallschirmjagerScout
+AddClass W44_FallschirmjagerSquadLeader
+AddClass W44_FallschirmjagerTankCrew
+AddClass W44_FallschirmjagerPilot

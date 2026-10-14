@@ -1,0 +1,26 @@
+// Identity
+Name German Army
+ShortName W44_GermanArmy
+
+// Appearance
+TextColour Gray
+TeamColour 140 150 145
+Hat 44_GermanM42FeldgrauStahlhelm
+Chest 44_GermanPzGrenadierFeldgrauChest
+Legs 44_GermanFeldgrauPants
+Shoes 44_GermanBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Classes
+AddClass W44_GermanArmyRifleman
+AddClass W44_GermanArmyAssault
+AddClass W44_GermanArmySupport
+AddClass W44_GermanArmyMedic
+AddClass W44_GermanArmyEngineer
+AddClass W44_GermanArmyAntiTank
+AddClass W44_GermanArmyScout
+AddClass W44_GermanArmySquadLeader
+AddClass W44_GermanArmyTankCrew
+AddClass W44_GermanArmyPilot

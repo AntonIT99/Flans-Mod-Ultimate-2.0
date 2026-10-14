@@ -2,7 +2,9 @@ package com.flansmodultimate.client.render.preview;
 
 import com.flansmod.client.model.*;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.api.client.ModelPose;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.client.render.entity.*;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
@@ -14,20 +16,23 @@ import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.flansmodultimate.platform.render.WorldModelBoundsCollector;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
 import java.util.WeakHashMap;
 
-/** Static world models use the live driveable caches and policies without creating a driveable entity. */
+/** World models for other entities use the live driveable caches, policies and animation without creating a driveable entity. */
 public final class WorldModelPreview
 {
     private static final Map<Entity, History> histories = new WeakHashMap<>();
@@ -38,6 +43,16 @@ public final class WorldModelPreview
 
     public static boolean render(InfoType type, Entity entity, float partialTick, PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack pose, MultiBufferSource buffers,
         int light, int overlay, float red, float green, float blue, float alpha)
+    {
+        return render(type, entity, partialTick, entityPose, renderOffset, texture, pose, buffers, light, overlay, red, green, blue, alpha, null);
+    }
+
+    /**
+     * @param modelPose
+     *            the owner's moving state for the entity's current tick, or {@code null} to draw the model at rest
+     */
+    public static boolean render(InfoType type, Entity entity, float partialTick, PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack pose, MultiBufferSource buffers,
+        int light, int overlay, float red, float green, float blue, float alpha, @Nullable ModelPose modelPose)
     {
         var model = ModelCache.getOrLoadTypeModel(type);
         if (!(model instanceof ModelDriveable && type instanceof DriveableType) && !(model instanceof ModelAAGun && type instanceof AAGunType))
@@ -64,6 +79,8 @@ public final class WorldModelPreview
                 ? DriveableImpostorCache.modelRadius(driveableModel, driveableType)
                 : measureRadius(type);
         }
+        // Stepped before any detail decision, so the motion carries on while an impostor is shown.
+        ModelDriveable.RenderState state = modelPose == null ? null : history.animate(type, entity.tickCount, partialTick, modelPose);
         boolean translucent = config.useTranslucentRendering(type);
         boolean cull = config.useCullingRendering(type);
         int colour = type.getColour();
@@ -101,7 +118,7 @@ public final class WorldModelPreview
                     history.billboard.scale(parentScale, parentScale, parentScale);
                     var result = DriveableImpostorCache.renderPosedOrPrepare(driveableModel, driveableType, texture, translucent, cull, typeRed, typeGreen, typeBlue, history.billboard, buffers, light,
                         overlay, red, green, blue, alpha, parentScale, projectionPixels, distance, cameraOffset.scale(1D / parentScale), history.rotation,
-                        Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation(), !shadow && alpha == 1F && !(type instanceof MechaType), history.usingImpostor);
+                        !shadow && alpha == 1F && !(type instanceof MechaType), history.usingImpostor);
                     if (!shadow)
                         history.usingImpostor = result.usingImpostor();
                     if (result.rendered())
@@ -155,9 +172,19 @@ public final class WorldModelPreview
                 try
                 {
                     if (model instanceof ModelDriveable driveableModel && type instanceof DriveableType driveableType)
-                        driveableModel.render(driveableType, pose, vertices, light, overlay, red * typeRed, green * typeGreen, blue * typeBlue, alpha, 1F, pass);
+                    {
+                        if (state != null)
+                            driveableModel.render(history.visual, state, pose, vertices, light, overlay, red * typeRed, green * typeGreen, blue * typeBlue, alpha, 1F, pass);
+                        else
+                            driveableModel.render(driveableType, pose, vertices, light, overlay, red * typeRed, green * typeGreen, blue * typeBlue, alpha, 1F, pass);
+                    }
                     else if (model instanceof ModelAAGun aaModel && type instanceof AAGunType aaType)
-                        aaModel.render(aaType, pose, vertices, light, overlay, red * typeRed, green * typeGreen, blue * typeBlue, alpha, type.getModelScale(), pass);
+                    {
+                        if (modelPose != null)
+                            renderAimedGun(aaModel, history.visual, partialTick, pose, vertices, light, overlay, red * typeRed, green * typeGreen, blue * typeBlue, alpha, type.getModelScale(), pass);
+                        else
+                            aaModel.render(aaType, pose, vertices, light, overlay, red * typeRed, green * typeGreen, blue * typeBlue, alpha, type.getModelScale(), pass);
+                    }
                 }
                 finally
                 {
@@ -173,6 +200,17 @@ public final class WorldModelPreview
             TrackLinkLod.setGroup(previousTrackGroup);
             pose.popPose();
         }
+    }
+
+    /** The base stays with the hull; the gun turns on it and elevates, as the AA gun renderer draws it. */
+    private static void renderAimedGun(ModelAAGun model, PosedModelVisual visual, float partialTick, PoseStack pose, VertexConsumer vertices, int light, int overlay, float red, float green,
+        float blue, float alpha, float scale, EnumRenderPass pass)
+    {
+        model.renderBase(visual, pose, vertices, light, overlay, red, green, blue, alpha, scale, pass);
+        pose.pushPose();
+        pose.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(partialTick, visual.getPrevTurretYaw(), visual.getTurretYaw())));
+        model.renderGun(visual, Mth.lerp(partialTick, visual.getPrevTurretPitch(), visual.getTurretPitch()), pose, vertices, light, overlay, red, green, blue, alpha, scale, pass);
+        pose.popPose();
     }
 
     static boolean perspectiveProjection(Matrix4f projection)
@@ -214,5 +252,23 @@ public final class WorldModelPreview
         private final Matrix4f rotationScratch = new Matrix4f();
         private final Quaternionf rotation = new Quaternionf();
         private final PoseStack billboard = new PoseStack();
+        private PosedModelVisual visual;
+        private DriveableAnimationHistory animation;
+
+        /** @return the pose a driveable model draws this frame, or {@code null} for an AA gun, which reads the stand-in directly */
+        @Nullable
+        private ModelDriveable.RenderState animate(InfoType type, int tick, float partialTick, ModelPose modelPose)
+        {
+            if (visual == null)
+            {
+                visual = new PosedModelVisual();
+                animation = new DriveableAnimationHistory();
+            }
+            visual.update(type, tick, modelPose);
+            if (!(type instanceof DriveableType driveableType))
+                return null;
+            animation.advance(visual, driveableType);
+            return animation.state(visual, partialTick, 0F, 0F, 0F);
+        }
     }
 }

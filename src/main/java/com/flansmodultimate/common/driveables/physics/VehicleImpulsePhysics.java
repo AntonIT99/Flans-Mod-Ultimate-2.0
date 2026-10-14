@@ -7,7 +7,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * How outside pushes, knockback and collisions act on a heavy driveable.
  *
- * <p>Minecraft knockback is tuned for a player. Applied unchanged to a vehicle
+ * <p>
+ * Minecraft knockback is tuned for a player. Applied unchanged to a vehicle
  * it throws a sixty-tonne tank as far as a person, so every outside velocity
  * change is weighed against the vehicle's mass instead, as momentum
  * conservation would: a push that moves a reference body by {@code dv} moves a
@@ -15,7 +16,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class VehicleImpulsePhysics
 {
-    private VehicleImpulsePhysics() {}
+    private VehicleImpulsePhysics()
+    {}
 
     /** Where a resolved impulse mass came from, in order of precedence. */
     public enum MassSource
@@ -28,7 +30,8 @@ public final class VehicleImpulsePhysics
         FALLBACK
     }
 
-    public record ImpulseMass(float massKg, MassSource source) {}
+    public record ImpulseMass(float massKg, MassSource source)
+    {}
 
     /** Velocity changes along a contact normal, in blocks per tick: negative for the striking body, positive for the struck one. */
     public record CollisionImpulse(double selfDelta, double otherDelta)
@@ -44,7 +47,8 @@ public final class VehicleImpulsePhysics
     /**
      * Resolves the mass outside pushes are weighed against.
      *
-     * <p>A usable real-world mass wins. The legacy {@code Mass} key is only a
+     * <p>
+     * A usable real-world mass wins. The legacy {@code Mass} key is only a
      * fallback, already converted to kilograms from the unit its driveable class
      * authored it in, and only when it is plausible: a value lighter than
      * {@link VehiclePhysicsConstants#MIN_PLAUSIBLE_LEGACY_MASS_KG} is a
@@ -54,8 +58,7 @@ public final class VehicleImpulsePhysics
     {
         if (realMassKg != null && Float.isFinite(realMassKg) && realMassKg > 0F)
             return new ImpulseMass(Math.max(VehiclePhysicsConstants.MIN_IMPULSE_MASS_KG, realMassKg), MassSource.REAL_MASS);
-        if (legacyMassKg != null && Float.isFinite(legacyMassKg)
-            && legacyMassKg >= VehiclePhysicsConstants.MIN_PLAUSIBLE_LEGACY_MASS_KG)
+        if (legacyMassKg != null && Float.isFinite(legacyMassKg) && legacyMassKg >= VehiclePhysicsConstants.MIN_PLAUSIBLE_LEGACY_MASS_KG)
             return new ImpulseMass(legacyMassKg, MassSource.LEGACY_MASS);
         float fallback = Double.isFinite(fallbackMassKg) ? (float) fallbackMassKg : 0F;
         return new ImpulseMass(Math.max(VehiclePhysicsConstants.MIN_IMPULSE_MASS_KG, fallback), MassSource.FALLBACK);
@@ -85,17 +88,20 @@ public final class VehicleImpulsePhysics
     /**
      * A one-dimensional inelastic collision along the contact normal.
      *
-     * <p>Momentum is conserved and the bodies separate at {@code restitution}
+     * <p>
+     * Momentum is conserved and the bodies separate at {@code restitution}
      * times their closing speed. Nothing happens unless they are actually
      * closing, so bodies already moving apart, or merely resting against each
      * other, exchange nothing.
      *
-     * @param closingSpeed how fast the striking body approaches the struck one along the normal
+     * @param closingSpeed
+     *            how fast the striking body approaches the struck one along the normal
      */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     public static CollisionImpulse collision(double selfMassKg, double otherMassKg, double closingSpeed, double restitution)
     {
-        if (!(closingSpeed > 0D) || !Double.isFinite(closingSpeed)
-            || !finitePositive(selfMassKg) || !finitePositive(otherMassKg))
+        if (!(closingSpeed > 0D) || !Double.isFinite(closingSpeed) || !finitePositive(selfMassKg) || !finitePositive(otherMassKg))
             return CollisionImpulse.NONE;
         double exchange = (1D + Math.max(0D, Math.min(1D, restitution))) * closingSpeed;
         double total = selfMassKg + otherMassKg;
@@ -106,11 +112,11 @@ public final class VehicleImpulsePhysics
      * Guarantees that horizontal motion slows by at least a given amount this
      * tick, and brings it to rest once it is slower than the rest speed.
      *
-     * <p>Only ever removes speed: whatever the movement model already decided is
+     * <p>
+     * Only ever removes speed: whatever the movement model already decided is
      * kept when it decelerates harder, and vertical motion is untouched.
      */
-    public static Vec3 enforceMinimumDeceleration(Vec3 before, Vec3 after, double decelerationBlocksPerTickSquared,
-                                                  double restSpeedBlocksPerTick)
+    public static Vec3 enforceMinimumDeceleration(Vec3 before, Vec3 after, double decelerationBlocksPerTickSquared, double restSpeedBlocksPerTick)
     {
         if (!isFinite(before) || !isFinite(after))
             return after;

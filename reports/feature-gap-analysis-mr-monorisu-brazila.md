@@ -2,8 +2,7 @@
 
 - **Reference:** `C:\Users\alpha\Documents\Minecraft-Development\Mr-Monorisu-Brazila-master`. This is the newest Labjac Flan's fork: Minecraft 1.7.10, "Flan's LabCat Mod — TACZ hitreg experiment", including the Dill-branch features listed in `CHANGELOG_DILL.md`. It bundles the `com.hfr` (HBM/Clowder) mod and the `flanshorizons` source set.
 - **Target:** `C:\Users\alpha\Documents\Minecraft-Development\Flans-Mod-Ultimate-2.0`, `master` @ `55b5aed88`.
-- **Date:** 2026-10-09. The comparison runs one way only, from the reference to the target. Functionality that only the target has, refactors, and modernisations are not reported.
-- **Prior report:** `feature-gap-analysis-krishna-mk6c.md` analysed the superseded Krishna Mk6C fork. Every finding below was re-checked against the current target. Several earlier gaps are now partly closed: vehicle per-seat optics, white-hot vehicle thermal, the optics-HUD rangefinder, HEAT, lifetime limits and voting.
+- **Date:** 2026-10-09; completed-port/status refreshes 2026-10-11 and 2026-10-12. The comparison runs one way only, from the reference to the target. Functionality that only the target has, refactors, and modernisations are not reported.
 
 Evidence roots:
 
@@ -15,25 +14,6 @@ Evidence roots:
 ---
 
 ## Optics, thermal and fire control
-
-### Thermal vision on guns and scope attachments — MISSING
-
-Reference: `R/common/guns/GunType` and `AttachmentType` (`HasThermalVision`, alias `HasThermal`), `R/client/FlansModClient` (`thermalShader`), `config_txt/new_config_reference.txt`
-When a player aims down a gun's default scope, or a scope attachment, that has `HasThermalVision`, the generation-3 white-hot thermal shader and the hot-entity overlay switch on. This is separate from `AllowNightVision`/`HasNightVision`, which give vanilla Night Vision.
-
-Target checked: `T/client/render/VehicleThermalRenderer`, `T/client/render/VehicleOpticsClient.thermal()`, `T/common/types/GunType`, `AttachmentType`
-Thermal only turns on through `VehicleOpticsClient.thermal()`, which requires an occupied seat with a thermal sight. Neither gun nor attachment types parse a thermal key.
-
-Missing: thermal imaging while aiming hand-held guns and scope attachments.
-
-### Thermal palettes, generations and hot-object coverage — PARTIAL
-
-Reference: `R/client/FlansModClient`, `R/client/particle/ThermalParticleRenderer`, `R/client/ThermalTeamStrobe`, `R/common/driveables/VehicleType` (`ThermalVisionColor`, `ThermalVisionGeneration`/`thermalVisionGen`), and the "Additional Thermal Hot Particles" client config
-Packs can choose a white-, green- or red-hot palette and image generation 1–3, which differ in blur, noise and CRT-style motion. Hot overlays cover players, mobs, vehicles, planes, bullets, grenades, explosions, muzzle flashes and configured particles, and the config can add particles from other mods. During minigames a thermal IFF strobe marks team-mates.
-
-Target checked: `T/client/render/VehicleThermalRenderer` ("Depth-tested white-hot FLIR"), `T/common/driveables/VehicleOptics.thermal(int)`
-**Present:** per-sight white-hot vehicle FLIR (`ThermalGuis`/`thermalSight`) that renders `LivingEntity` and `Driveable` hot, including distant driveables.
-**Missing:** the green- and red-hot palettes, generation-based image quality, hot projectiles, grenades, explosions, muzzle flashes and particles, the extra-hot-particle config, and the team IFF strobe.
 
 ### Ballistic fire-control solution — PARTIAL
 
@@ -88,16 +68,6 @@ Missing: projectile-mounted cameras (TV-guided and TPV drone views), the steerin
 
 ## Weapons and recoil
 
-### Infantry firing screen shake — MISSING
-
-Reference: `R/common/guns/GunType` (`HasScreenShake`, `ScreenShakeStyle Clean|Sustained`, `ScreenShakeIntensity`, `CameraRecoil`, `ScreenShakeCameraKick`), `R/common/network/PacketFancyScreenShake`, `PacketShakeRecoil`, `R/common/guns/BulletType` (`powerShake`, `rangeShake`)
-Firing a gun shakes the camera in Polati style. The shake is either clean or driven by sustained recoil, its intensity is set per gun, and there is an optional camera kick. Explosions also shake nearby players' cameras, scaled by power and range.
-
-Target checked: `T/client/render/VehicleScreenShake`, `T/network/client/PacketDriveableScreenShake`, `T/config/ModClientConfig.vehicleScreenShake`, `T/client/render/item/GunItemRenderer` (`animShakeDistance` only moves the gun model)
-**Present:** camera shake for driveable main and coax guns (`FancyScreenShake*`).
-
-Missing: camera shake when infantry guns fire, and camera shake from explosions.
-
 ### Battlefield and sustained recoil model — MISSING
 
 Reference: `R/common/guns/GunType` (`recoilElevator`, `sustainedelevator`, `firstShotRecoil`, `sustainedRecoilPitch`, `sustainedRecoilYaw`, `dillElevator`, `dillZoomModifier`)
@@ -127,42 +97,15 @@ Target checked: `T/common/guns/ShootingHelper` (bounce/ricochet branch at line 3
 **Present:** projectiles can bounce or ricochet, and penetration decays with distance.
 **Missing:** per-outcome hit sounds, the damage penalty for over-penetration, and time-based penetration decay.
 
-### Tracer beams and mixed ammunition belts — MISSING
+### Motion-sensor grenades — UNCERTAIN
 
-Reference: `R/common/guns/BulletType` (`TracerBeam`, `TracerBeamColor/Length/Width/Alpha`, `AlternateBulletLoad`, `HasAlternateModel`, `AlternateModel`, `AlternateTexture`, `AlternateTracerBeam*`, `AlternateTrailParticles/Type/Count`), `R/client/particle/EntityTracerBeamFX`, `R/common/guns/EntityBullet` (synced alternate-round state)
-A round can draw a 3D tracer beam with configurable colour, size and alpha. Every N-th round of an ammunition type can be an "alternate" round with its own model, texture, beam and trail particles, for example one tracer every five rounds. This works for infantry guns, vehicle guns, coax and passenger guns, and other clients see it.
-
-Target checked: `T/client/particle/FmTracerParticle`, `T/common/entity/Bullet`, `T/common/types/BulletType`
-Only sprite tracer particles exist.
-
-Missing: the 3D tracer beam renderer and alternate-round belt sequencing with its model, texture, beam and particle overrides.
-
-### Hold-to-throw grenades — MISSING
-
-Reference: `R/common/guns/GrenadeType` (`HoldToThrow`, `OverhandThrowSpeedMultiplier`, `UnderhandThrowSpeedMultiplier`, `GrenadeGroundFriction`, `GrenadeAirDrag`, `GrenadeStopSpeed`, `CringeExplodeOnImpact`/`CringeDetonateOnImpact`, `Description`), `R/common/network/PacketGrenadeThrow`
-With `HoldToThrow`, holding and releasing left mouse throws overhand and right mouse tosses underhand. The grenade is used up and spawned only on release, and the fuse starts at release. The throw packet is validated on the server. Each grenade sets its own rolling friction, air drag, stop speed and impact detonation.
-
-Target checked: `T/common/types/GrenadeType` (`ThrowDelay`, `CanThrow`, `Sticky*`, `SpinWhenThrown`, `FlashBang*`, …), `T/common/entity/Grenade`
-Grenades are thrown immediately with a single throw arc.
-
-Missing: hold-and-release throwing, the underhand toss, throw-speed multipliers, separate ground friction, drag and stop-speed physics, and the impact-detonation aliases.
-
-### Motion-sensor grenades — MISSING
-
-Reference: `R/common/guns/GrenadeType` (`MotionSensor`, `MotionSensorRange`, `MotionSound`, `MotionSoundRange`, `MotionTime`)
-A deployed grenade detects movement within range, plays a warning sound and triggers on what it detects.
+Reference: `R/common/guns/GrenadeType` (`MotionSensor`, `MotionSensorRange`, `MotionSound`, `MotionSoundRange`, `MotionTime`), `R/common/guns/EntityGrenade.motionTime`
+The parser accepts these fields, but the current reference only decrements the entity's motion timer. No consumer of the sensor flag, range or sound was found in reference Java code.
 
 Target checked: `T/common/types/GrenadeType`, `T/common/entity/Grenade`
-Missing: motion-sensor detection and triggering.
+No matching sensor mechanic exists, but parsed reference fields alone do not establish a feature to port.
 
-### Suppression on near miss — PARTIAL
-
-Reference: `R/common/guns/BulletType.suppression`, `R/common/network/PacketSuppression`, `FlyBySound`
-Rounds passing close to a player suppress them (a screen effect) and play a per-ammunition fly-by sound.
-
-Target checked: `T/common/entity/Bullet.playFlybyIfClose` (a generic fly-by sound within 5 blocks), the target network packets
-**Present:** a generic bullet fly-by sound.
-Missing: the suppression effect and per-ammunition `FlyBySound`.
+Missing: unconfirmed; do not treat this as an active gameplay gap without evidence of reference detection and triggering.
 
 ### Projectile chunk loading — MISSING
 
@@ -215,14 +158,6 @@ Wire-guided missiles draw a wire from the launcher to the missile, and guidance 
 Target checked: `T/common/entity/Driveable.hasLineOfSight` (an unrelated LOS check)
 Missing: the guidance-wire entity and its rendering.
 
-### Naval ordnance: depth charges — MISSING
-
-Reference: `R/common/guns/EntityBullet` (around line 1667; `type.depthCharge`, `activationDepth`, `TeamsManager.seaLevel`)
-A depth charge sinks and detonates at its activation depth below the configured sea level.
-
-Target checked: `T/common/types/BulletType` (`Torpedo`), `T/common/entity/Bullet`
-Missing: depth-triggered detonation and a sea-level setting. (`navalMine` is a ghost key in the reference: it is parsed but never used.)
-
 ### Illumination (star) shells — MISSING
 
 Reference: `BulletType.starShell`, `R/client/FlansModClient` (around line 1118), `R/client/EntityCamera`
@@ -230,15 +165,6 @@ Star shells light up the area below them while they descend.
 
 Target checked: `T/client/ModClient` dynamic lights (`HasDynamicLight` projectiles at a flat level)
 Missing: a dedicated slow-falling illumination round.
-
-### HESH shell class — MISSING
-
-Reference: `BulletType.Hesh`, `R/common/driveables/EntityDriveable` (around line 4606)
-HESH rounds, like HEAT, cannot go through armour types that kinetic rounds can over-penetrate.
-
-Target checked: `T/common/types/BulletType.heat` ("HEAT" key and armour-face protection against HEAT)
-**Note:** HEAT is present.
-Missing: the HESH flag and its penetration rule.
 
 ### Soft-target and vanilla-damage modifiers — MISSING
 
@@ -256,13 +182,13 @@ Guns can be animated from glTF clips: reload start, loop and end, tactical reloa
 Target checked: `T/common/types/GunAnimationConfig` (legacy model animation, staged-reload rendering)
 Missing: glTF animation loading and playback.
 
-### Tactical reload timing and secondary-mode switch animations — MISSING
+### Tactical reload timing and secondary-mode switching — PARTIAL
 
-Reference: `GunType` (`TacticalReloadTime`, `StagedReloadTime`, `ForceStagedReload`, `SecondarySwitchTime`, `SecondaryUnSwitchTime`, `RunPosTime`, `RunCrouchTime`), `AttachmentType` (`RefundAmmoOnSwitch`, `UnSwitchAnimationOnEmpty`, `RenderOnlyOnMode`, `AimingTimeMultiplier`)
-A reload with a round still chambered is faster. Switching to and from secondary mode takes time and plays an animation. Attachments can refund ammo when switched and render only in a chosen mode.
+Reference: `GunType` (`TacticalReloadTime`, `StagedReloadTime`, `ForceStagedReload`, `SecondarySwitchTime`, `SecondaryUnSwitchTime`, `RunPosTime`, `RunCrouchTime`), `AttachmentType` (`RefundAmmoOnSwitch`, `UnSwitchAnimationOnEmpty`, `RenderOnlyOnMode`, `AimingTimeMultiplier`).
 
-Target checked: `T/common/types/GunAnimationConfig` (staged-reload render keys), `T/network/server/PacketGunSecondaryMode`, `PacketGunSwitchDelay`
-Missing: the shorter tactical reload, timed secondary switching, ammo refund on switch, and mode-gated attachment rendering.
+**Present (2026-10-12):** tactical reload selection from the actual loaded ammunition before scheduling; per-gun explicit timing and configurable default magazine multiplier; independent server-authoritative secondary enter/exit delays, a cosmetic switching movement, and grip/ammo visibility gated by secondary mode while retained during transitions. The normal attachment, ammunition and enchantment reload multipliers still apply; secondary attachment reload timing stays independent.
+
+**Missing:** glTF switch clips, ammo refund, empty-secondary unswitch-animation policy, the fork's forced/staged reload behavior and run/crouch timing keys. Existing legacy staged-reload rendering remains available but is not the fork's full staged-reload mechanic.
 
 ### Gun carry limits and gun tiers — MISSING
 
@@ -512,38 +438,16 @@ Missing (unconfirmed): repair costs, plus drift and terrain penalties as configu
 
 ## Teams and game modes
 
-### Conquest, Domination and Assault game types — MISSING
-
-Reference: `R/common/teams/GameTypeConquest`, `GameTypeDomination`, `GameTypeAssault`, `capturepoint/`, `ITeamCapturePoint`, `TeamObjectiveSnapshot`, `TeamsHudSnapshot`, `PacketCapturePointEdit`
-These are objective modes with capture points, ticket bleed and assault phases.
-
-Target checked: `T/common/teams/GameTypes` (DM, TDM, CTF, Zombies)
-Missing: these three modes and capture points.
-
-### Deployment layouts and spawn selection — MISSING
-
-Reference: `R/common/teams/DeployLayoutEntry`, `PacketDeployLayoutSave`, `PacketConquestSpawnSelect`, `DriveableType.DeploymentPoint`
-Players pick where to spawn, including vehicles used as deployment points, and admins edit and save the layouts.
-
-Target checked: `T/common/teams/TeamsManager`, `T/network/server/PacketTeamsAction`
-Missing: spawn selection and deployment layouts.
-
-### Class limits, prestige and victory presentation — MISSING
-
-Reference: `PlayerClass` (`ClassLimit`, `ClassLimitPercent[age]`, `RequiredPrestigeLevel`), `CommandRanks` (`prestige`, `setRank`), `Team` (`VictorySound`, `DefeatSound`, `HasVictorySound`, `VictoryFlagTexture`), `PacketRankUp`, `PacketRoundFinished`
-Each class has a player cap and can require a prestige level. Teams have victory and defeat sounds and a flag screen.
-
-Target checked: `T/common/types/PlayerClass`, `T/common/types/Team`, `T/client/gui/TeamsRankIcon`
-Missing: class caps, prestige gating, and the victory and defeat presentation.
+Conquest, Domination and Assault, deployment layouts and spawn selection, class limits, prestige and the victory presentation were ported on 2026-10-13; see [Teams ports (2026-10-13)](#teams-ports-2026-10-13).
 
 ### Map and rotation administration and spawn-rate limits — PARTIAL
 
-Reference: `R/common/teams/CommandTeams` (`addMap`, `addMapWithBounds`, `removeMap`, `renameMap`, `setMapImage`, `addToRotation`/`removeFromRotation`/`listRotation`, `planeRate`/`vehicleRate`/`seatRate`, `raiding`, `pacifism`, `seaLevel`, `shake`, `rviForce`/`rviRate`, `movieProp`)
-Admins manage maps and rotation from commands, set per-type spawn-rate limits, and toggle raiding, pacifism and other match rules.
+Reference: `R/common/teams/CommandTeams` (`planeRate`/`vehicleRate`/`seatRate`, `rviForce`/`rviRate`, `raiding`)
+The reference lets admins throttle how often planes, vehicles and seats send their position packets, and how often and how close the long-range vehicle indicator packets are sent.
 
-Target checked: `T/common/command/TeamsCommand` (`add`, `remove`, `maps`, `rounds`, `useRotation`, `setvariable` with lifetime keys)
-**Present:** adding and removing maps and rounds, rotation, lifetime limits and voting.
-**Missing:** map bounds, renaming and images, spawn-rate limits, and the raiding, pacifism, sea-level, shake and RVI rule toggles.
+Target checked: `T/common/command/TeamsCommand`, `T/FlansModEntities` (driveables registered with `updateInterval(1)`), `T/common/distant/DistantSync` (`distantContactUpdateInterval`)
+**Present (2026-10-13):** map bounds, renaming and deployment images, the legacy map and rotation spellings, and the pacifism, movie-prop, sea-level and shake commands.
+**Missing:** `planeRate`, `vehicleRate` and `seatRate`. The target syncs driveables through the vanilla entity tracker, whose interval is fixed when the entity type is registered, so there is no per-type packet rate to expose. `rviForce`/`rviRate` have no counterpart either; the nearest target mechanism, distant contacts, already has its own `distantContactUpdateInterval` config. `raiding` is parsed and saved by the reference but nothing reads it, so there is no behaviour to port.
 
 ---
 
@@ -630,7 +534,7 @@ Missing: the integration.
 Reference: `R/client/teams/JourneyMapCapturePointHook`, `R/client/JourneyMapPerformanceFix`
 Capture points appear on the JourneyMap minimap.
 
-Target checked: whole target (there are no capture points)
+Target checked: whole target; capture points exist since 2026-10-13 (`T/common/block/entity/CapturePointBlockEntity`), with an on-screen compass cue but no minimap integration
 Missing: the minimap overlay.
 
 ### Flan's Horizons distant terrain — UNCERTAIN
@@ -655,33 +559,25 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 
 | Subsystem | Feature | Status | Confidence |
 | --------- | ------- | ------ | ---------- |
-| Optics | Thermal on guns and attachments | MISSING | HIGH |
-| Optics | Thermal palettes, generations and hot-object coverage | PARTIAL | HIGH |
 | Optics | Ballistic fire-control solution | PARTIAL | HIGH |
 | Optics | Turret and sight stabilisation | MISSING | HIGH |
 | Optics | Helicopter seat stabiliser and hover hold | MISSING | HIGH |
 | Optics | Picture-in-picture scopes | MISSING | HIGH |
 | Optics | Missile and shell camera views | MISSING | HIGH |
-| Weapons | Infantry firing and explosion screen shake | MISSING | HIGH |
 | Weapons | Battlefield and sustained recoil | MISSING | HIGH |
 | Weapons | Directional melee and bayonets | MISSING | HIGH |
 | Weapons | Ricochet and penetration feedback | PARTIAL | MEDIUM |
-| Weapons | Tracer beams and mixed belts | MISSING | HIGH |
-| Weapons | Hold-to-throw grenades | MISSING | HIGH |
-| Weapons | Motion-sensor grenades | MISSING | HIGH |
-| Weapons | Suppression on near miss | PARTIAL | HIGH |
+| Weapons | Motion-sensor grenades | UNCERTAIN | LOW |
 | Weapons | Projectile chunk loading | MISSING | HIGH |
 | Weapons | Self-guided, radar and ARM seekers, homing torpedoes | MISSING | HIGH |
 | Weapons | Proportional navigation | MISSING | HIGH |
 | Weapons | Missile twirl and ground skim | MISSING | HIGH |
 | Weapons | Fly-over top attack | PARTIAL | HIGH |
 | Weapons | Wire-guided missile and wire | MISSING | HIGH |
-| Weapons | Depth charges | MISSING | HIGH |
 | Weapons | Illumination star shells | MISSING | HIGH |
-| Weapons | HESH | MISSING | MEDIUM |
 | Weapons | Soft-target and vanilla-damage modifiers | MISSING | MEDIUM |
 | Weapons | glTF gun animation | MISSING | HIGH |
-| Weapons | Tactical reload and secondary switch timing | MISSING | MEDIUM |
+| Weapons | Tactical reload and secondary switch timing | PARTIAL | HIGH |
 | Weapons | Gun carry limits and tiers | MISSING | HIGH |
 | Weapons | Ammunition evolution | MISSING | MEDIUM |
 | Weapons | Muzzle and chamber smoke models | PARTIAL | MEDIUM |
@@ -710,9 +606,6 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | Multi-barrel seat guns | UNCERTAIN | LOW |
 | Vehicles | Crew damage and part-loss effects | UNCERTAIN | LOW |
 | Vehicles | Repair costs and alternative driving model | UNCERTAIN | LOW |
-| Teams | Conquest, Domination and Assault | MISSING | HIGH |
-| Teams | Deployment layouts and spawn selection | MISSING | HIGH |
-| Teams | Class limits, prestige and victory presentation | MISSING | HIGH |
 | Teams | Map administration and spawn-rate limits | PARTIAL | HIGH |
 | AI | Armed bot NPCs | PARTIAL | MEDIUM |
 | AI | AI target aircraft | PARTIAL | MEDIUM |
@@ -726,17 +619,86 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Totals:** 51 MISSING, 14 PARTIAL, 5 UNCERTAIN.
+**Current tracked gaps:** 40 MISSING, 13 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
-**Follow-up (same day):** these opt-in features were implemented after this analysis. The findings above describe the target before they were added.
+## Completed ports (verified 2026-10-11)
 
-- Infantry firing screen shake: `HasScreenShake`, `ScreenShakeStyle`, `ScreenShakeIntensity`, `CameraRecoil` and `ScreenShakeCameraKick`, plus the `gunScreenShake` client setting. Explosion shake is still missing.
-- Tracer beams and mixed belts: `TracerBeam*`, `HasAlternateModel`, `AlternateBulletLoad`, `AlternateModel`, `AlternateTexture`, `AlternateTracerBeam*` and `AlternateTrailParticle*`.
-- Hold-to-throw grenades: `HoldToThrow`, the throw-speed multipliers, `GrenadeGroundFriction`, `GrenadeAirDrag`, `GrenadeStopSpeed`, and the `Cringe*OnImpact` aliases.
-- Thermal on gun and attachment scopes (`HasThermalVision`/`HasThermal`), and the vehicle `ThermalVisionColor` and `ThermalVisionGeneration` settings.
-- Thermal hot coverage: flying rounds, grenades, and hot particles (explosions, fire, muzzle flashes, sparks, tracers, exhaust, Flan's blast smoke), plus the `additionalThermalHotParticles` client setting and the Teams IFF strobe. The thermal finding is now fully covered.
+These findings were removed from the active gap sections and summary table after checking their current target implementations.
+
+- **Gun and attachment thermal scopes:** `HasThermalVision` / `HasThermal`, `IScope`, `VehicleThermalRenderer`.
+- **Thermal palettes, generations and hot coverage:** `ThermalVisionColor`, `ThermalVisionGeneration`, hot rounds, grenades, effects and configured particles (`ThermalHotParticles`), plus team IFF (`ThermalTeamStrobe`).
+- **Infantry and explosion screen shake:** existing `GunScreenShake` and the new enabled-by-default shared shootable `powerShake` / `rangeShake` keys, `ShootingHelper.doExplosion`, `PacketCombatFeedback`, `CombatScreenEffects`. Explosion recipients use the authored radius and uniform strength, matching the reference (defaults: strength 10, radius 32 blocks; explicit zero disables); clients control strength and duration independently.
+- **Tracer beams and mixed belts:** `BulletType.TracerBeam`, alternate round/model/texture/trail settings, shared fired-shot sequencing and synchronized projectile state.
+- **Hold-to-throw grenades:** hold/release overhand and underhand throws, server throw validation, throw multipliers, rolling/drag/stop controls and impact aliases.
+- **Near-miss suppression and ammunition fly-by sounds:** `NearMissHandler` checks travelled flying and hitscan segments, stops at terminal impacts, excludes the shooter, direct hits and obstructed players, and sends at most one sound and suppression impulse per shot/player. `FlyBySound` / `missNoise` use registered pack sounds; absent values keep the generic sound and explicit `None` or blank disables it. Suppression is enabled globally by default; pack strength/range, server multipliers/rider policy and client roll/vignette/recovery controls are supported. Triggers accept players, NPCs and other source entities, including ownerless mod projectiles. Render effects leave aim and accuracy unchanged.
+
+### Validation of the 2026-10-11 combat-feedback port
+
+- 14 focused tests passed: travelled-segment geometry, impact endpoint bounds, intensity/range controls, effect recovery and ceilings, legacy parser defaults/aliases, packet/config round trips, and server-side class loading with Minecraft client/rendering classes blocked.
+- Scoped `spotlessApply` / `spotlessCheck` and main/wiki diff whitespace checks passed. `sonarlintMain` and `sonarlintTest` completed; new findings were fixed, while existing findings outside the changed methods remain.
+- Full `build` failed in the independent Wolff flag pack because shared model classes could not be resolved. A sequential retry failed in the concurrently edited `SkullBossEntity` boss-bar initialization (`BossEvent` versus `ServerBossEvent`). An earlier normal test compilation also encountered an unrelated `ExternalProjectileSupportTest` API mismatch. These unrelated changes were preserved.
+- IntelliJ inspections ran once and reached the ten-minute limit before all directories in the mixed checkout were inspected. Available results were reviewed and introduced warnings corrected; full IDE coverage is incomplete.
+- In-game audio, visual presentation and multiplayer runtime behavior have not been exercised. The renderer adapts the legacy effects to cosmetic modern camera offsets and configurable real-time envelopes; numerical pixel-for-pixel parity with the legacy FOV/shake renderer is not claimed.
+
+## Ammunition ports (2026-10-12)
+
+- **Depth charges:** checked `BulletType`, `Bullet`, and all shared firing paths before implementation; only torpedo motion existed. Legacy `depthCharge` and `activationDepth` now select sinking motion and server detonation strictly below the authored depth in water. `DepthChargeSeaLevel` optionally overrides the dimension sea level. Depth charges always use projectile entities, including when a weapon would otherwise use hitscan. `FallSpeed`, air/water drag, prime delay, fuse, lifetime and smoke behavior remain available. No shooter-type restriction is imposed.
+- **HESH:** checked `Driveable.bulletHit`, `ModelArmourDamage`, and `BulletType`; HEAT already existed, HESH did not. `Hesh` now stops the round at the first vehicle surface, including an NPC or other entity using the driveable armour adapter. Unlike HEAT it retains the existing kinetic armour and direct-damage channel. This adapts the reference auxiliary-armour stopping rule to the target's existing first-surface warhead policy. It does not add a new squash-head spalling or damage model.
+- These are ammunition-specific traits, active whenever authored; ordinary ammunition is unaffected. No bundled ammunition definitions were converted automatically. The reference repository contained no matching text definitions to exercise, so parser fixtures use its actual directive spellings.
+
+### Validation of the 2026-10-12 ammunition port
+
+- 30 focused tests passed: eight new depth-charge/parser tests plus existing HEAT, vehicle-armour and damage-channel regression tests.
+- Full `build` succeeded, including the main mod, API, NPC, built-in and independent pack artifacts. The full suite reported 1,535 tests: 1,525 passed, 10 skipped, no failures or errors. This includes the existing dedicated-server class-loading tests.
+- Scoped `spotlessApply` / `spotlessCheck`, `sonarlintMain`, `sonarlintTest`, IntelliJ inspection and main/wiki `git diff --check` completed. No new analysis findings were introduced. Existing SonarLint complexity/parameter/loop findings (45 in the touched main classes) and 39 pre-existing IntelliJ warnings remain outside this change's new code; the existing `Driveable.bulletHit` complexity warning is retained rather than refactoring the full damage pipeline during this port.
+- In-game water movement, actual depth detonation, NPC firing and visual/audio presentation have not been exercised. Tests cover deterministic motion, activation boundaries, content parsing and existing armour/damage calculations, not a running Minecraft world.
+
+### Category follow-up (2026-10-12)
+
+- Audited all category labels and their existing aliases for HESH/HEP and depth-charge identities. Updated four existing `bullet_categories.json` categories, covering eight existing short names: L31A7 receives `HESH true`; aerial, generic and Type 3 depth charges receive `depthCharge true` and `Fuse 0`. No new categories, membership, ammunition groups, masses, filler, velocity or penetration figures were authored.
+- Identity evidence: official Modern Warfare English localization and `Shell120mmL31A7.txt`; English localization and bullet definitions inside the read-only installed TaP OHIO and Rainfire Battle Squadrons ZIPs. Names like `HEshell` are ordinary HE, not HESH, and were excluded. Available TaP charges explicitly author 20/40 m aerial and 25/50/75/100 m ship-launched settings; categories preserve those fields rather than inferring depths from short-name suffixes. Type 3 has no depth field and retains the 20-block gameplay fallback, not a claimed historical setting. Historical nomenclature for that pack's Type 3 remains ambiguous: the [US Navy submarine war-damage report, section III](https://www.ibiblio.org/hyperwar/USN/rep/WDR/WDR58/WDR58-3.html) distinguishes Type 3 pistols from Type 95/Type 2 charges. No new historical values were inferred from it.
+- The installed charges used positive 100–300 tick legacy self-destruct fuses, which can pre-empt the port's drag-limited sink. Category `Fuse 0` allows depth activation. Added `DepthChargeLifetime` (2400 ticks by default; configurable 1–72000) because a 100 m setting needs more than the ordinary 600-tick bullet ceiling. Ordinary bullet lifetimes are unchanged. This is a gameplay safety ceiling, not a historical fuse delay.
+
+- Category follow-up validation: strict JSON, preserved order/membership/statistics and cross-category property checks passed. Ten focused tests passed, including lifetime bounds and 100 m sinking beyond the old 600-tick ceiling. Full `build` passed with 1,527 tests passed and 10 skipped; scoped formatting, main/test SonarLint, IntelliJ and diff whitespace checks completed with no new issues. Existing analysis warnings remain as documented above. In-game depth-charge behavior remains untested.
+
+## Weapon-handling ports (2026-10-12)
+
+- Checked current `GunType`, `GunItem.getActualReloadTime`, reload scheduling, NPC equipment properties, secondary-mode packets, `AttachmentType` and `GunItemRenderer` before implementation. Reloads previously had one duration; secondary mode changed immediately; grips ignored `RenderOnlyOnMode`.
+- `TacticalReloadTime` sets an explicit live-ammo duration. The default `-1` derives 80% of the ordinary duration through `TacticalReloadMultiplier`; `0` disables the bonus. Automatic eligibility is limited to a single ammo slot with live multi-round ammunition; internal and single-round loading retains ordinary timing unless an explicit positive tactical time is authored. The default reduction is a configurable gameplay assignment, not a historically sourced speed. The shared equipment property path exposes the timing to NPC/other holders; the ordinary secondary-grip reload duration remains independent.
+- `SecondarySwitchTime` / `SecondaryUnSwitchTime` default to eight ticks and are independently configurable (zero disables). The server validates the held gun, life/spectator state, cooldown and pending reload, changes the mode and acknowledges the server duration. Per-hand transient switch state blocks firing and reload attempts and cancels the old burst queue; changing the ordinary shoot timer cannot shorten the switch. The client plays a cosmetic dip, independently disabled with `SecondarySwitchMovement false`. Protocol 23 rejects peers using the older acknowledgement shape. This is the player secondary-mode control path; arbitrary mod code that directly edits gun NBT does not initiate a timed switch.
+- `RenderOnlyOnMode` applies to grip attachments and their ammunition meshes. Hidden primary-mode grips stay visible throughout the switching interval. Existing physical launchers remain visible unless their packs explicitly request mode gating; no attachment category was authored to hide a real mounted launcher.
+- Category integration: eleven reviewed belt-fed categories covering 35 existing aliases receive `TacticalReloadMultiplier 1.0`, preserving their authored reload duration instead of granting the new magazine bonus. Source definitions and pack-local English localization were checked for the aliases. Existing category ordering, membership, ballistics and cadence remain unchanged. These are gameplay compatibility exceptions, not new historical reload-time estimates. The touched MG 42 entry at 1200 RPM was rechecked against the later [US War Department report, Tactical and Technical Trends no. 31](https://www.lonesentry.com/articles/ttt/mg42.html), which gives 1100–1350 RPM; its existing cadence was retained. No new categories or coverage were added.
+
+### Weapon-handling validation
+
+- Full `build` passed with 1,571 tests: 1,561 passed, 10 skipped, no failures/errors. The 15 focused timing, parser, packet, presentation, cooldown-lifecycle and expanded server-safety checks passed within that suite. Pack artifacts were rebuilt without changing their source definitions.
+- Fractional reload completion now clears its flag when the countdown is ready, through the existing `ShotCooldown` rule. Firing retains its negative fractional remainder, including several shots per tick, and a zero-duration mode change preserves that remainder. Dedicated cooldown tests cover these interactions alongside switch expiry and a timer reset during switching.
+- Scoped `spotlessApply` / `spotlessCheck`, strict category/property checks, main/test SonarLint and main/wiki whitespace checks passed. Existing main-source complexity/unused warnings outside the new behavior remain. IntelliJ ran once; five constant-input assertions were given narrowly explained suppressions. The subsequent cooldown refactor was compiled, tested and analyzed with SonarLint but not re-inspected by IntelliJ.
+- Actual Minecraft reloads, secondary controls, first/third-person presentation and multiplayer latency have not been exercised. The cosmetic switch movement is an adaptation to the current renderer, not a port of the fork's glTF clips. Remaining switch/refund/staged-animation gaps are retained above.
+
+## Teams ports (2026-10-13)
+
+- Checked `T/common/teams` (game types, manager, maps), `T/common/entity/Flagpole`, `TeamSpawnerBlockEntity`, `PacketTeamsState` and the Teams screens before implementing. Bases were flagpole entities only; the manager, the base editor and the operator stick were generalised to `ITeamBase` so a block entity can be a base.
+- **Capture points:** `teams_capture_point` block and block entity (`ITeamCapturePoint`), with name, letter A–E, capture radius, default owner and map set in an operator-stick editor. The flag climbs the legacy flagpole model in the holder's colour, or flies the team's `VictoryFlagTexture`. Capture state is saved with the block and stamped with the round it belongs to, so a point that loads late or a server that restarts mid-round keeps its progress; the reference resets it.
+- **Domination, Conquest, Assault** (`dom`, `con`, `aslt`): the reference capture arithmetic is in `CaptureRules`, covered by unit tests. Scoring, ticket bleed, kill tickets, Assault reinforcements, stage time, defender deploy delays and all game-type variables follow the reference defaults. Deviations: Domination undoes a rival's unfinished capture of a neutral point before starting its own, as Conquest does, instead of inheriting it; a map without capture points no longer hands Assault attackers an instant win; players standing on a captured point also get five score, so the scoreboard and MVP mean something; XP follows the target's scale (25 per capture). The reference removes every driveable in every world at round end; the target's other game types do not, and neither do these.
+- **Objective HUD** (`TeamsObjectiveHud`) replaces the plain Teams banner in these modes: ticket or reinforcement bars, clock, one square per point, and the Conquest/Assault compass cue. The capture tick sounds of the reference HUD were not ported.
+- **Deployment map** (`TeamsDeployScreen`): replaces the death screen in Conquest and Assault, with headquarters, held points, Assault front-line rules, the deploy delay, a class button and the operator edit mode (drag nodes, crop the image, save). Layout, image and crop are stored per map. The delay is a client-side countdown as in the reference; the server validates only where a player may spawn. No map image is bundled: maps without one are drawn as a plain chart.
+- **Class limits and prestige:** `ClassLimit`, `ClassLimitPercent[age]`, `RequiredPrestigeLevel`; enforced on the server, shown in the class menu. `/teams prestige`, `/ranks`, `/teams setRank`. Rank-up popup (`PacketRankUp`), also sent without a loadout pool.
+- **Victory presentation:** the winner is decided per game type when a round ends; `HasVictorySound`, `VictorySound`, `DefeatSound`, `VictoryFlagTexture`. The reference's Victory, Defeat, Draw and LevelUp sound files and its deployment image were not copied into the target; the names resolve against pack sounds, with vanilla sounds standing in for victory and rank-up.
+- **Rules and administration:** map bounds with the 20-second out-of-bounds kill, `renameMap`, `setMapImage`, rotation aliases, `pacifism`, `movieProp`, `seaLevel` (applies to depth charges, the only target consumer of a sea level outside each dimension's own) and `shake`. Movie-prop mode does not retract plane landing gear.
+- `DriveableType.DeploymentPoint`, listed under deployment in the original audit, is where a troop transport unloads its soldiers. It belongs to the troop-transport gap and is not part of Teams.
+
+### Validation of the 2026-10-13 Teams port
+
+- Full `build` passed with 1,640 tests: 1,630 passed, 10 skipped, no failures or errors. The 34 new tests cover the capture arithmetic of all three modes, the Assault front line, class-limit capacity, prestige, map persistence (bounds, deployment image, crop, layout, old saves), the objective snapshot round trip, and loading the new packets and rules with Minecraft client classes blocked.
+- Scoped `spotlessApply` / `spotlessCheck`, `sonarlintMain`, `sonarlintTest` and `git diff --check` completed. New SonarLint findings were fixed; the four that remain in touched files are complexity warnings on methods that predate this port (`TeamsManager.tick`, `applyLoadout`, `loadRuntime`, `TeamsCommand.addRuleCommands`).
+- IntelliJ inspections ran on `common/teams` and `client/gui` only; findings in new code were fixed. The remaining packages touched by this port (`network`, `common/block`, `client/render`, `client/teams`, `common/command`) were not inspected.
+- Network protocol bumped to 24 because `PacketTeamsState` changed shape.
+- Nothing was exercised in a running game. Capturing, the objective HUD, the deployment map and its edit mode, the capture point editor and renderer, respawning at a chosen point, map bounds and multiplayer behaviour are untested in play, as is a dedicated server.
 
 ## Areas requiring deeper audit
+
+- **Motion sensors.** Reference parser fields appear dormant; an active implementation has not been established.
 
 - **Passenger and seat weapons.** The target has passenger fire packets and muzzle-flash handling. The reference's `SeatGuns`/`barrels`/`barrelSpread` semantics need a line-by-line comparison against `T/common/entity/Driveable` seat firing.
 - **Crew and part-loss model.** The reference's `damageVsCrew`, `crewEngine` and `engineLoss`/`wingLoss`/`tailLoss` may partly overlap with the target's part-health scaling (`VehicleHealthScaler`) and its aircraft physics. I did not confirm this.

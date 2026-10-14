@@ -25,11 +25,15 @@ import java.util.UUID;
 /**
  * An item offered by a Teams item spawner, as the 1.7.10 {@code EntityTeamItem}.
  *
- * <p>It hovers in a small circle around the spawner instead of falling, cannot be destroyed, never
+ * <p>
+ * It hovers in a small circle around the spawner instead of falling, cannot be destroyed, never
  * despawns or merges, and only players of the team owning the spawner's base can take it. The circling
  * is purely visual: the server keeps the item at the centre, and each client moves it along the circle
- * from the centre and phase it received in the spawn packet.</p>
+ * from the centre and phase it received in the spawn packet.
+ * </p>
  */
+// Entities are compared by identity through Entity#equals.
+@SuppressWarnings("java:S2160")
 public class TeamItemEntity extends FlanItemEntity implements SpawnDataEntity
 {
     private static final String NBT_CENTER_X = "center_x";
@@ -98,13 +102,14 @@ public class TeamItemEntity extends FlanItemEntity implements SpawnDataEntity
         super.playerTouch(player);
     }
 
-    /** Only the team owning the spawner may take its items; anyone may while no team owns it. */
+    /** Only the team owning the spawner and its allies may take its items; anyone may while no team owns it. */
     private boolean canBeTakenBy(Player player)
     {
         if (spawnerId == null || !(TeamsManager.getInstance().getObject(spawnerId).orElse(null) instanceof TeamSpawnerBlockEntity spawner))
             return true;
         Team owner = spawner.getOwningTeam();
-        return owner == null || owner.equals(PlayerData.getInstance(player).getTeam());
+        Team team = PlayerData.getInstance(player).getTeam();
+        return owner == null || owner.equals(team) || TeamsManager.getInstance().areAllied(owner, team);
     }
 
     @Override

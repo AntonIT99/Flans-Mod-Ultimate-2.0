@@ -5,22 +5,28 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.EnumSet;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class NpcWeaponOptionsTest
 {
+    /** Display states of the model, a frozen turret, extra chunk ticking, running out of ammunition and drawn hitboxes are never what an untouched NPC wants. */
+    private static final Set<Feature> STARTS_DISABLED = EnumSet.of(Feature.SECONDARY_BANK, Feature.INVULNERABLE, Feature.TURRET_LOCKED, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED,
+        Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.SOLID_HITBOXES);
+
     @Test
     void oldNpcSavesEnableTheUsefulFeaturesAndSelectThePrimaryBank()
     {
         NpcWeaponOptions options = new NpcWeaponOptions();
         for (Feature feature : Feature.values())
         {
-            if (feature == Feature.SECONDARY_BANK)
-                assertFalse(options.enabled(feature));
+            // Only switches that would change an untouched NPC's behavior against the builder's intent start disabled.
+            if (STARTS_DISABLED.contains(feature))
+                assertFalse(options.enabled(feature), feature.name());
             else
-                assertTrue(options.enabled(feature));
+                assertTrue(options.enabled(feature), feature.name());
         }
     }
 
@@ -30,7 +36,7 @@ class NpcWeaponOptionsTest
         NpcWeaponOptions options = new NpcWeaponOptions();
         options.set(Feature.PROJECTILES, false);
         options.set(Feature.TYPE_PROPERTIES, false);
-        options.set(Feature.FLAN_SOUNDS, false);
+        options.set(Feature.FIRE_SOUNDS, false);
         options.set(Feature.ITEM_ARMOR, false);
         options.set(Feature.WEAPON_ANIMATIONS, false);
         options.set(Feature.SECONDARY_BANK, true);
@@ -41,7 +47,7 @@ class NpcWeaponOptionsTest
         clone.load(npc.copy());
         assertFalse(clone.enabled(Feature.PROJECTILES));
         assertFalse(clone.enabled(Feature.TYPE_PROPERTIES));
-        assertFalse(clone.enabled(Feature.FLAN_SOUNDS));
+        assertFalse(clone.enabled(Feature.FIRE_SOUNDS));
         assertFalse(clone.enabled(Feature.ITEM_ARMOR));
         assertFalse(clone.enabled(Feature.WEAPON_ANIMATIONS));
         assertTrue(clone.enabled(Feature.ITEM_WEAPONS));
@@ -49,6 +55,35 @@ class NpcWeaponOptionsTest
         assertTrue(clone.enabled(Feature.SECONDARY_BANK));
         assertTrue(clone.enabled(Feature.BALLISTIC_AIM));
         assertEquals(19, npc.getInt("pDamage"));
+    }
+
+    @Test
+    void legacySoundSwitchMigratesAndExplicitChannelSettingsWin()
+    {
+        CompoundTag root = new CompoundTag();
+        CompoundTag settings = new CompoundTag();
+        settings.putBoolean("FLAN_SOUNDS", false);
+        settings.putBoolean("RELOAD_SOUNDS", true);
+        root.put(NpcWeaponOptions.NBT_KEY, settings);
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.load(root);
+        assertFalse(options.enabled(Feature.FIRE_SOUNDS));
+        assertTrue(options.enabled(Feature.RELOAD_SOUNDS));
+        assertFalse(options.enabled(Feature.THROW_SOUNDS));
+        assertFalse(options.enabled(Feature.MODEL_SOUNDS));
+        assertFalse(options.enabled(Feature.MELEE_SOUNDS));
+        // The former switch only governed sounds.
+        assertTrue(options.enabled(Feature.RELOAD_CYCLE));
+        assertTrue(options.enabled(Feature.GUN_RELOAD_ANIMATION));
+        options.set(Feature.THROW_SOUNDS, true);
+        options.save(root);
+        assertFalse(root.getCompound(NpcWeaponOptions.NBT_KEY).contains("FLAN_SOUNDS"));
+        NpcWeaponOptions clone = new NpcWeaponOptions();
+        clone.load(root);
+        assertFalse(clone.enabled(Feature.FIRE_SOUNDS));
+        assertTrue(clone.enabled(Feature.RELOAD_SOUNDS));
+        assertTrue(clone.enabled(Feature.THROW_SOUNDS));
+        assertFalse(clone.enabled(Feature.MODEL_SOUNDS));
     }
 
     @Test

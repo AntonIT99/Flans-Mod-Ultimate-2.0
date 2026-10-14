@@ -4,21 +4,14 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.PlatformEnvironment;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
+import javax.tools.*;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
@@ -27,20 +20,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.CodeSource;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HexFormat;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeMap;
+import java.security.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -48,6 +29,8 @@ import java.util.stream.Stream;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JavaModelCompiler
 {
+    private static final String KEY_VERSION = "version";
+    private static final String KEY_SOURCES = "sources";
     private static final String COM_FOLDER = "com";
     private static final String JAVA_EXTENSION = ".java";
     private static final String MANIFEST_FILE = ".flansmod_compiled_java_models.json";
@@ -198,11 +181,11 @@ public final class JavaModelCompiler
         try
         {
             JsonObject object = GSON.fromJson(json, JsonObject.class);
-            if (object == null || !object.has("version") || !object.has("sources"))
+            if (object == null || !object.has(KEY_VERSION) || !object.has(KEY_SOURCES))
                 return Optional.empty();
 
-            int version = object.get("version").getAsInt();
-            Map<String, String> sources = GSON.fromJson(object.get("sources"), SOURCE_HASH_MAP_TYPE);
+            int version = object.get(KEY_VERSION).getAsInt();
+            Map<String, String> sources = GSON.fromJson(object.get(KEY_SOURCES), SOURCE_HASH_MAP_TYPE);
             return Optional.of(new SourceManifest(version, sources == null ? Collections.emptyMap() : sources));
         }
         catch (RuntimeException e)
@@ -214,8 +197,8 @@ public final class JavaModelCompiler
     private static void writeManifest(Path packRoot, Map<String, String> sourceHashes) throws IOException
     {
         JsonObject object = new JsonObject();
-        object.addProperty("version", SOURCE_TRANSFORM_VERSION);
-        object.add("sources", GSON.toJsonTree(sourceHashes, SOURCE_HASH_MAP_TYPE));
+        object.addProperty(KEY_VERSION, SOURCE_TRANSFORM_VERSION);
+        object.add(KEY_SOURCES, GSON.toJsonTree(sourceHashes, SOURCE_HASH_MAP_TYPE));
         Files.writeString(packRoot.resolve(MANIFEST_FILE), GSON.toJson(object), StandardCharsets.UTF_8);
     }
 

@@ -1,0 +1,13 @@
+// Identity
+Name Tank Crew
+ShortName W44_JapaneseArmyTankCrew
+Description Vehicle crew loadout with a compact weapon and repair tool.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Type100
+AddItem 44_Type100Ammo 3
+AddItem 44_RepairTool
+AddItem 44_Bandage

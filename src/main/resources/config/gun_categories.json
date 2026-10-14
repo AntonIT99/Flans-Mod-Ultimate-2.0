@@ -314,6 +314,7 @@
 
     "7.7mm Vickers Machine Gun": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 744,
             "RoundsPerMin": 500,
             "Dispersion": 0.15
@@ -515,6 +516,7 @@
 
     "12.7mm Vickers Mark III": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 770,
             "RoundsPerMin": 700,
             "Dispersion": 0.2
@@ -3151,6 +3153,7 @@
 
     "FN M240": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 853,
             "RoundsPerMin": 750,
             "Dispersion": 0.1
@@ -4078,6 +4081,7 @@
 
     "M2 Browning .50Cal": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 890.0,
             "RoundsPerMin": 500.0,
             "Dispersion": 0.35
@@ -4228,6 +4232,7 @@
 
     "M60E4": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 855.0,
             "RoundsPerMin": 600.0,
             "Dispersion": 0.36
@@ -4287,6 +4292,7 @@
 
     "M249 SAW": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 915.0,
             "RoundsPerMin": 850.0,
             "Dispersion": 0.34
@@ -4349,6 +4355,7 @@
 
     "M1919A4 Browning .30Cal": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 850.0,
             "RoundsPerMin": 550.0,
             "Dispersion": 0.33
@@ -4365,6 +4372,7 @@
 
     "M1919A6 Browning .30 Cal": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 850.0,
             "RoundsPerMin": 550.0,
             "Dispersion": 0.32
@@ -4534,6 +4542,7 @@
 
     "MG 34": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 765.0,
             "RoundsPerMin": 850.0,
             "Dispersion": 0.36
@@ -4548,6 +4557,7 @@
 
     "MG 42": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 740.0,
             "RoundsPerMin": 1200.0,
             "Dispersion": 0.38
@@ -5251,6 +5261,7 @@
 
     "PM M1910 Maxim": {
         "properties": {
+            "TacticalReloadMultiplier": 1.0,
             "MuzzleVelocity": 865,
             "RoundsPerMin": 600,
             "Dispersion": 0.1

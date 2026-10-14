@@ -13,10 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -114,8 +111,7 @@ public final class FluidFuel
 
     private static int resolve(Fluid fluid)
     {
-        ResourceLocation id = BuiltInRegistries.FLUID.getKey(fluid);
-        return id == null ? 0 : fuelPerBucket(id);
+        return fuelPerBucket(BuiltInRegistries.FLUID.getKey(fluid));
     }
 
     /** Fuel a bucket of the liquid with this registry id is worth, or zero if it does not burn. */

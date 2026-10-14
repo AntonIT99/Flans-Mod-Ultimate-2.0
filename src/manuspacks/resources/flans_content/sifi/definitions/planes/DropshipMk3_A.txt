@@ -18,14 +18,14 @@ Paintjob IconPlaneDropshipMk3_A_Jungle SkinPlaneDropshipMk3_Jungle white 10
 FuelTankSize 10000
 CargoSlots 12
 BombSlots 0
-AddRecipeParts core 1 Part_Cockpit_Civil 15 Mat_Plate_Aluminium
-AddRecipeParts nose 1 Part_Nose_Plane 4 Mat_Plate_Aluminium
-AddRecipeParts tail 1 Part_Tail_Civil 8 Mat_Plate_Aluminium
-AddRecipeParts leftWing 1 Part_Wing_Civil 10 Mat_Plate_Aluminium
-AddRecipeParts rightWing 1 Part_Wing_Civil 10 Mat_Plate_Aluminium
-AddRecipeParts leftWingWheel 1 Part_Wheel_Plane 2 Mat_Plate_Steel
-AddRecipeParts rightWingWheel 1 Part_Wheel_Plane 2 Mat_Plate_Steel
-AddRecipeParts coreWheel 1 Part_Wheel_Plane 1 Mat_Plate_Steel
+AddRecipeParts core 1 SMP_Part_Cockpit_Civil 15 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 4 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts tail 1 SMP_Part_Tail_Civil 8 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWing 1 SMP_Part_Wing_Civil 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts rightWing 1 SMP_Part_Wing_Civil 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane 2 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane 2 SMP_Part_Mat_Plate_Steel
+AddRecipeParts coreWheel 1 SMP_Part_Wheel_Plane 1 SMP_Part_Mat_Plate_Steel
 AddDye 10 white
 
 // Movement and Physics
@@ -60,8 +60,8 @@ UseRealisticVehicleHealth true
 
 // Parts and Seats
 CameraDistance 15.0
-Propeller 0 0 0 0 leftWing Part_Propeller_TurbineSpace
-Propeller 1 0 0 0 rightWing Part_Propeller_TurbineSpace
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 rightWing SMP_Part_Propeller_TurbineSpace
 Pilot 55 14 -11 -80 80 -45 45
 Passengers 9
 Passenger 1 55 14 11 core -100 100 -50 10 ColonialBlasterCannon TurretGun

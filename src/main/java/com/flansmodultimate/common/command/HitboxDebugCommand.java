@@ -3,7 +3,6 @@ package com.flansmodultimate.common.command;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.network.PacketHandler;
@@ -25,6 +24,10 @@ import java.util.*;
 /** Operator-only, session-only SetupPart geometry editor. */
 public final class HitboxDebugCommand
 {
+    private static final String RESET = "reset";
+    private static final String REMOVE = "remove";
+    private static final String NUDGE = "nudge";
+    private static final String ROOT = "flandebug";
     private static final Set<DriveableType> EDITED = new HashSet<>();
     private static final String[] AXES = {"x", "y", "z", "width", "height", "depth"};
     private HitboxDebugCommand()
@@ -33,14 +36,14 @@ public final class HitboxDebugCommand
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         var command = Commands.literal("htibox").executes(c -> edit(c, "list"));
-        for (String operation : new String[]{"list", "reset"})
+        for (String operation : new String[]{"list", RESET})
             command.then(Commands.literal(operation).executes(c -> edit(c, operation)));
-        command.then(Commands.literal("remove").then(part().executes(c -> edit(c, "remove"))));
+        command.then(Commands.literal(REMOVE).then(part().executes(c -> edit(c, REMOVE))));
         command.then(Commands.literal("set").then(part().then(geometry("set", 0))));
         command.then(Commands.literal("add").then(part().then(Commands.argument("hp", FloatArgumentType.floatArg(0.001F, 1000000F)).then(geometry("add", 0)))));
-        command.then(Commands.literal("nudge").then(part().then(geometry("nudge", 0))));
-        dispatcher.register(Commands.literal("flandebug").requires(s -> s.hasPermission(2)).then(command));
-        dispatcher.register(Commands.literal("flandebug").requires(s -> s.hasPermission(2)).then(Commands.literal("hitbox").redirect(dispatcher.getRoot().getChild("flandebug").getChild("htibox"))));
+        command.then(Commands.literal(NUDGE).then(part().then(geometry(NUDGE, 0))));
+        dispatcher.register(Commands.literal(ROOT).requires(s -> s.hasPermission(2)).then(command));
+        dispatcher.register(Commands.literal(ROOT).requires(s -> s.hasPermission(2)).then(Commands.literal("hitbox").redirect(dispatcher.getRoot().getChild(ROOT).getChild("htibox"))));
     }
 
     private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> part()
@@ -51,8 +54,8 @@ public final class HitboxDebugCommand
 
     private static ArgumentBuilder<CommandSourceStack, ?> geometry(String operation, int index)
     {
-        var argument = Commands.argument(AXES[index], index < 3 ? FloatArgumentType.floatArg(-1024F, 1024F) : FloatArgumentType.floatArg(0.001F, 1024F));
-        if (index == (operation.equals("nudge") ? 2 : 5))
+        var argument = Commands.argument(AXES[index], FloatArgumentType.floatArg(index < 3 ? -1024F : 0.001F, 1024F));
+        if (index == (operation.equals(NUDGE) ? 2 : 5))
             return argument.executes(c -> edit(c, operation));
         return argument.then(geometry(operation, index + 1));
     }
@@ -60,7 +63,7 @@ public final class HitboxDebugCommand
     private static DriveableType target(ServerPlayer player)
     {
         var vehicle = player.getVehicle();
-        Driveable driveable = vehicle instanceof Driveable d ? d : vehicle instanceof Seat seat ? seat.getDriveable() : vehicle != null && vehicle.getVehicle() instanceof Driveable d ? d : null;
+        Driveable driveable = Driveable.ofRiddenEntity(vehicle);
         if (driveable != null)
             return driveable.getConfigType();
         for (InteractionHand hand : InteractionHand.values())
@@ -80,7 +83,7 @@ public final class HitboxDebugCommand
             type.getHealth().forEach((part, box) -> say(context, line(type, part, box)));
             return type.getHealth().size();
         }
-        if (operation.equals("reset"))
+        if (operation.equals(RESET))
         {
             type.resetDebugHitboxes();
             EDITED.remove(type);
@@ -98,15 +101,15 @@ public final class HitboxDebugCommand
                 return fail(context, "Part has no hitbox; use add");
             var boxes = new EnumMap<EnumDriveablePart, CollisionBox>(EnumDriveablePart.class);
             boxes.putAll(type.getHealth());
-            if (operation.equals("remove"))
+            if (operation.equals(REMOVE))
                 boxes.remove(part);
             else
             {
-                float[] geometry = operation.equals("nudge") ? type.debugHitboxPixels(old) : new float[6];
-                for (int i = 0; i < (operation.equals("nudge") ? 3 : 6); i++)
+                float[] geometry = operation.equals(NUDGE) ? type.debugHitboxPixels(old) : new float[6];
+                for (int i = 0; i < (operation.equals(NUDGE) ? 3 : 6); i++)
                 {
                     float value = FloatArgumentType.getFloat(context, AXES[i]);
-                    geometry[i] = operation.equals("nudge") ? geometry[i] + value : value;
+                    geometry[i] = operation.equals(NUDGE) ? geometry[i] + value : value;
                 }
                 for (float value : geometry)
                     if (!Float.isFinite(value) || Math.abs(value) > 1024F)
@@ -124,7 +127,7 @@ public final class HitboxDebugCommand
         var server = context.getSource().getServer();
         for (ServerPlayer player : server.getPlayerList().getPlayers())
             if (!server.isSingleplayerOwner(player.getGameProfile()))
-                PacketHandler.sendTo(new PacketDebugHitboxes(type, operation.equals("reset")), player);
+                PacketHandler.sendTo(new PacketDebugHitboxes(type, operation.equals(RESET)), player);
         say(context, "Hitboxes " + operation + ": " + type.getShortName() + "; session only, affects every driveable of this type. /flandebug htibox reset restores geometry.");
         return 1;
     }

@@ -2,21 +2,12 @@ package com.flansmodultimate.content;
 
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
-import com.flansmodultimate.util.FileUtils;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.TextDecoding;
+import com.flansmodultimate.util.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
+import java.nio.file.*;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static com.flansmodultimate.content.ContentPackPaths.*;
@@ -31,8 +22,11 @@ import static com.flansmodultimate.content.ContentPackPaths.*;
  */
 final class ContentPackReader
 {
-    /** Packs read ahead of the one being registered; the text of each is held until its turn. */
-    static final int PACKS_AHEAD = 2;
+    /**
+     * Packs read ahead of the one being registered; the text of each is held until its turn. Small
+     * packs register faster than a large one after them can be read, so the lead is a long one.
+     */
+    static final int PACKS_AHEAD = 8;
 
     private static final Set<String> ALIAS_FILES = Set.of(ID_ALIAS_FILE, ARMOR_TEXTURES_ALIAS_FILE, GUI_TEXTURES_ALIAS_FILE, SKINS_TEXTURES_ALIAS_FILE);
 
@@ -59,20 +53,35 @@ final class ContentPackReader
         tasks = new ArrayList<>(this.providers.size());
     }
 
+    /**
+     * Starts reading the first packs before any of them is asked for, so that their files are read
+     * while startup is still busy with whatever comes before the first registration.
+     */
+    void start()
+    {
+        if (workers.isParallel())
+            submitThrough(PACKS_AHEAD);
+    }
+
     /** Waits for the files of the pack, the next one in order, and starts reading the packs after it. */
     Result take(IContentProvider provider)
     {
         int index = indexOf(provider);
         if (index < 0)
             return read(provider, workers);
-        int last = workers.isParallel() ? Math.min(providers.size() - 1, index + PACKS_AHEAD) : index;
+        submitThrough(workers.isParallel() ? index + PACKS_AHEAD : index);
+        ContentLoadingWorkers.Task<Result> task = tasks.set(index, null);
+        return task != null ? task.join() : read(provider, workers);
+    }
+
+    private void submitThrough(int index)
+    {
+        int last = Math.min(providers.size() - 1, index);
         while (tasks.size() <= last)
         {
             IContentProvider next = providers.get(tasks.size());
             tasks.add(workers.submit(() -> read(next, workers)));
         }
-        ContentLoadingWorkers.Task<Result> task = tasks.set(index, null);
-        return task != null ? task.join() : read(provider, workers);
     }
 
     private int indexOf(IContentProvider provider)

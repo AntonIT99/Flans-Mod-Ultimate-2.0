@@ -23,6 +23,8 @@ public abstract class ParticleEngineThermalMixin
     }
 
     /** Particles created from a particle type are also matched by their type id. */
+    // The handler mirrors the parameters of the injected method.
+    @SuppressWarnings("java:S107")
     @Inject(method = "createParticle", at = @At("RETURN"))
     private void flansmodultimateTrackHotParticleByType(ParticleOptions options, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, CallbackInfoReturnable<Particle> cir)
     {

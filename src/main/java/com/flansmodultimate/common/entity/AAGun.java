@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.collision.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
+import com.flansmodultimate.common.driveables.visual.AAGunVisual;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.geometry.AAGunTraverse;
 import com.flansmodultimate.common.guns.*;
@@ -46,7 +47,7 @@ import net.minecraft.world.phys.*;
 import java.util.*;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity
+public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity, AAGunVisual
 {
     private boolean suppressRemovalDrops;
     @Nullable
@@ -663,9 +664,9 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (gunner != null)
             return gunner.hurt(source, amount);
 
-        if (attacker instanceof Player && FlansMod.teamsManager.isCanBreakGuns())
+        if (attacker instanceof Player player && FlansMod.teamsManager.isCanBreakGuns())
         {
-            if (FlanEntityPermissions.allows((Player) attacker, FlanEntityPermissions.AA_GUN_PICKUP))
+            if (FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_PICKUP))
                 discard();
             return true;
         }

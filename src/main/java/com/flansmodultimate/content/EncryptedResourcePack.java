@@ -14,29 +14,15 @@ import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.IoSupplier;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.security.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -46,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class EncryptedResourcePack implements PackResources
 {
+    private static final String ASSETS_PREFIX = "assets/";
     public static final String BUNDLE_RESOURCE_PATH = "flans_content/content.fmu";
 
     private static final byte[] ENCRYPTED_MAGIC = "FMUENC01".getBytes(StandardCharsets.US_ASCII);
@@ -263,13 +250,13 @@ public final class EncryptedResourcePack implements PackResources
 
     private static ResourceLocation parseAssetPath(String sourcePath) throws IOException
     {
-        if (!sourcePath.startsWith("assets/") || sourcePath.contains("\\") || sourcePath.contains(".."))
+        if (!sourcePath.startsWith(ASSETS_PREFIX) || sourcePath.contains("\\") || sourcePath.contains(".."))
             throw new IOException("Invalid encrypted asset path: " + sourcePath);
-        int namespaceEnd = sourcePath.indexOf('/', "assets/".length());
+        int namespaceEnd = sourcePath.indexOf('/', ASSETS_PREFIX.length());
         if (namespaceEnd < 0 || namespaceEnd == sourcePath.length() - 1)
             throw new IOException("Invalid encrypted asset path: " + sourcePath);
 
-        String namespace = sourcePath.substring("assets/".length(), namespaceEnd);
+        String namespace = sourcePath.substring(ASSETS_PREFIX.length(), namespaceEnd);
         String path = sourcePath.substring(namespaceEnd + 1);
         if (!(path.startsWith("lang/") || path.startsWith("textures/")))
             throw new IOException("Encrypted resources may only contain lang or textures assets: " + sourcePath);

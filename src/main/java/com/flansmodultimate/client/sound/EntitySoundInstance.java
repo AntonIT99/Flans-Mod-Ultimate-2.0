@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.sound;
 
+import com.flansmodultimate.api.IEngineSoundSource;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.PlaneType;
@@ -26,6 +27,8 @@ public class EntitySoundInstance extends AbstractTickableSoundInstance
     @Setter
     private boolean varyPitch;
     private boolean stopRequested;
+    @Setter
+    private boolean externalEnginePitch;
 
     public EntitySoundInstance(SoundEvent soundEvent, Entity source, float range, boolean looping, boolean varyPitch)
     {
@@ -74,7 +77,12 @@ public class EntitySoundInstance extends AbstractTickableSoundInstance
         }
 
         followSource();
-        if (varyPitch && emitter instanceof Driveable driveable && driveable.getConfigType() != null)
+        if (externalEnginePitch && emitter instanceof IEngineSoundSource engine)
+        {
+            float value = engine.flansmodultimateEnginePitch();
+            pitch = Float.isFinite(value) ? Math.max(0.5F, Math.min(2F, value)) : 1F;
+        }
+        else if (varyPitch && emitter instanceof Driveable driveable && driveable.getConfigType() != null)
             pitch = DriveableControlPhysics.engineSoundPitch(driveable.getThrottle(),
                 driveable.getConfigType()
                     .getEngineSoundPitchCurve(driveable.getConfigType() instanceof PlaneType ? ModClientConfig.defaultPlaneEnginePitch() : ModClientConfig.defaultVehicleEnginePitch()),

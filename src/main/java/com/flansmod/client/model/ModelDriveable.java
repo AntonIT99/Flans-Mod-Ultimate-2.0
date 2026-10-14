@@ -5,11 +5,9 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.common.driveables.DriveableInput;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.SeatInfo;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.visual.DriveableVisual;
+import com.flansmodultimate.common.driveables.visual.SeatVisual;
 import com.flansmodultimate.common.types.DriveableType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -21,20 +19,17 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Base for legacy driveable models.
  *
- * <p>The public fields and model-editing methods intentionally match the old
+ * <p>
+ * The public fields and model-editing methods intentionally match the old
  * content-pack API. Rendering itself is stateless and receives all transient
  * values through {@link RenderState}; this keeps cached model instances safe to
- * reuse for multiple entities in the same frame.</p>
+ * reuse for multiple entities in the same frame.
+ * </p>
  */
 @SuppressWarnings({"unused", "java:S1104"})
 public class ModelDriveable extends ModelBase implements IFlanTypeModel<DriveableType>
@@ -65,44 +60,15 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * Interpolated values shared by the plane, vehicle and mecha render paths.
      * Progress values are normalized to {@code [0, 1]}.
      */
-    public record RenderState(
-        float partialTick,
-        float yaw,
-        float pitch,
-        float roll,
-        float throttle,
-        float turretYaw,
-        float turretPitch,
-        float wheelAngle,
-        float steeringAngle,
-        float animationTime,
-        float gearProgress,
-        float doorProgress,
-        float modeProgress,
-        float leftTrackProgress,
-        float rightTrackProgress,
-        float legSwing,
-        float legYaw,
-        AnimatedTransform wingTransform,
-        AnimatedTransform wingWheelTransform,
-        AnimatedTransform bodyWheelTransform,
-        AnimatedTransform tailWheelTransform,
-        AnimatedTransform doorTransform,
-        AnimatedTransform door2Transform,
-        LegAnimation legAnimation,
-        int inputMask,
-        int mode,
-        boolean flareActive,
+    public record RenderState(float partialTick, float yaw, float pitch, float roll, float throttle, float turretYaw, float turretPitch, float wheelAngle, float steeringAngle, float animationTime,
+        float gearProgress, float doorProgress, float modeProgress, float leftTrackProgress, float rightTrackProgress, float legSwing, float legYaw, AnimatedTransform wingTransform,
+        AnimatedTransform wingWheelTransform, AnimatedTransform bodyWheelTransform, AnimatedTransform tailWheelTransform, AnimatedTransform doorTransform, AnimatedTransform door2Transform,
+        LegAnimation legAnimation, int inputMask, int mode, boolean flareActive,
         /* Live per-link track angles, or null for static poses such as inventory renders. */
         @Nullable TrackLinkAnimation trackLinks)
     {
-        public static final RenderState ITEM = new RenderState(
-            0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F,
-            1F, 0F, 0F, 0F, 0F, 0F, 0F,
-            AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO,
-            AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO,
-            LegAnimation.ZERO, 0, 0, false, null
-        );
+        public static final RenderState ITEM = new RenderState(0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 1F, 0F, 0F, 0F, 0F, 0F, 0F, AnimatedTransform.ZERO, AnimatedTransform.ZERO,
+            AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, LegAnimation.ZERO, 0, 0, false, null);
     }
 
     /**
@@ -125,17 +91,14 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             System.arraycopy(current, 0, previous, 0, AXES);
         }
 
-        public void advance(Vector3f targetPosition, Vector3f targetRotation,
-                            Vector3f positionRate, Vector3f rotationRate, int elapsedTicks)
+        public void advance(Vector3f targetPosition, Vector3f targetRotation, Vector3f positionRate, Vector3f rotationRate, int elapsedTicks)
         {
             System.arraycopy(current, 0, previous, 0, AXES);
             int elapsed = Math.max(1, elapsedTicks);
             for (int axis = 0; axis < 3; axis++)
             {
-                current[axis] = approachConfigured(current[axis], value(targetPosition, axis),
-                    value(positionRate, axis), elapsed);
-                current[axis + 3] = approachConfigured(current[axis + 3], value(targetRotation, axis),
-                    value(rotationRate, axis), elapsed);
+                current[axis] = approachConfigured(current[axis], value(targetPosition, axis), value(positionRate, axis), elapsed);
+                current[axis + 3] = approachConfigured(current[axis + 3], value(targetRotation, axis), value(rotationRate, axis), elapsed);
             }
         }
 
@@ -209,9 +172,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             for (int joint = 0; joint < current.length; joint++)
             {
                 float amount = speed[joint] * elapsed;
-                current[joint] = current[joint] < target[joint]
-                    ? Math.min(current[joint] + amount, target[joint])
-                    : Math.max(current[joint] - amount, target[joint]);
+                current[joint] = current[joint] < target[joint] ? Math.min(current[joint] + amount, target[joint]) : Math.max(current[joint] - amount, target[joint]);
             }
         }
 
@@ -225,27 +186,25 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
 
     protected enum GunMountFilter
     {
-        ALL,
-        BODY,
-        TURRET
+        ALL, BODY, TURRET
     }
 
     protected enum GunYawConvention
     {
-        PLANE,
-        VEHICLE
+        PLANE, VEHICLE
     }
 
     /** Draw the non-animated base shared by every driveable. */
-    public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void render(DriveableVisual driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         renderPart(bodyModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPart(state.doorProgress() >= 0.5F ? bodyDoorOpenModel : bodyDoorCloseModel,
-            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(state.doorProgress() >= 0.5F ? bodyDoorOpenModel : bodyDoorCloseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     /** Draw a neutral preview used by item, GUI and item-frame renderers. */
-    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         renderPart(bodyModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(bodyDoorCloseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -253,17 +212,14 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             renderPartMatrix(gun, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderPart(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer,
-                           int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-                           float scale, EnumRenderPass renderPass)
+    public void renderPart(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
-        ModelRendererTurbo.renderArray(parts, poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+        ModelRendererTurbo.renderArray(parts, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass, oldRotateOrder);
     }
 
-    protected void renderPartMatrix(ModelRendererTurbo[][] parts, PoseStack poseStack, VertexConsumer vertexConsumer,
-                                    int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-                                    float scale, EnumRenderPass renderPass)
+    protected void renderPartMatrix(ModelRendererTurbo[][] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         if (parts == null)
             return;
@@ -272,37 +228,32 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     }
 
     /** Render legacy seat-gun groups: yaw, yaw+pitch, recoil and minigun rows. */
-    protected void renderRegisteredGuns(Driveable driveable, RenderState state, GunMountFilter mountFilter,
-                                        GunYawConvention yawConvention, PoseStack poseStack, VertexConsumer vertexConsumer,
-                                        int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-                                        float scale, EnumRenderPass renderPass)
+    protected void renderRegisteredGuns(DriveableVisual driveable, RenderState state, GunMountFilter mountFilter, GunYawConvention yawConvention, PoseStack poseStack, VertexConsumer vertexConsumer,
+        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         DriveableType driveableType = driveable.getConfigType();
         if (driveableType == null || driveableType.getSeats().isEmpty() || gunModels.isEmpty())
             return;
 
-        Seat driverSeat = driveable.getSeat(0);
+        SeatVisual driverSeat = driveable.getSeat(0);
         float driverYaw = interpolatedYaw(driverSeat, state.partialTick(), state.turretYaw());
         float gunScale = Math.max(0.001F, driveableType.getVehicleGunModelScale());
         for (SeatInfo seatInfo : driveableType.getSeats())
         {
-            if (seatInfo == null || seatInfo.getGunName().isEmpty()
-                || !driveable.isPartIntact(seatInfo.getPart()))
+            if (seatInfo == null || seatInfo.getGunName().isEmpty() || !driveable.isPartIntact(seatInfo.getPart()))
                 continue;
 
             boolean turretMounted = seatInfo.getPart() == EnumDriveablePart.TURRET;
-            if (mountFilter == GunMountFilter.BODY && turretMounted
-                || mountFilter == GunMountFilter.TURRET && !turretMounted)
+            if (mountFilter == GunMountFilter.BODY && turretMounted || mountFilter == GunMountFilter.TURRET && !turretMounted)
                 continue;
 
             ModelRendererTurbo[][] gun = gunModels.get(seatInfo.getGunName());
-            Seat seat = driveable.getSeat(seatInfo.getId());
+            SeatVisual seat = driveable.getSeat(seatInfo.getId());
             if (gun == null || seat == null)
                 continue;
 
             // Only the driver's aim turns the turret; turret passengers already aim relative to it.
-            float[] angles = registeredGunAngles(seat, state.partialTick(), state.turretYaw(),
-                mountFilter == GunMountFilter.TURRET && seat.isDriverSeat() ? driverYaw : 0F, yawConvention);
+            float[] angles = registeredGunAngles(seat, state.partialTick(), state.turretYaw(), mountFilter == GunMountFilter.TURRET && seat.isDriverSeat() ? driverYaw : 0F, yawConvention);
             float yaw = angles[0];
             float pitch = angles[1];
 
@@ -332,8 +283,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
                         part.rotateAngleZ = pitch;
                     if (row > 2 && seat.isInputDown(DriveableInput.PRIMARY_FIRE | DriveableInput.SECONDARY_FIRE))
                         part.rotateAngleX = state.animationTime() * 0.75F;
-                    part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-                        red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+                    part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass, oldRotateOrder);
                     part.rotateAngleX = oldX;
                     part.rotateAngleY = oldY;
                     part.rotateAngleZ = oldZ;
@@ -350,12 +300,12 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * registered seat gun. {@code relativeYaw} is subtracted from the seat's aim,
      * which turret-mounted guns need because the turret already carries it.
      */
-    protected static float[] registeredGunAngles(@NotNull Seat seat, float partialTick, float fallbackYaw, float relativeYaw, GunYawConvention yawConvention)
+    protected static float[] registeredGunAngles(@NotNull SeatVisual seat, float partialTick, float fallbackYaw, float relativeYaw, GunYawConvention yawConvention)
     {
         float aimYaw = Mth.wrapDegrees(interpolatedYaw(seat, partialTick, fallbackYaw) - relativeYaw);
         float aimPitch = Mth.lerp(partialTick, seat.getPrevAimPitch(), seat.getAimPitch());
         float yaw = (yawConvention == GunYawConvention.PLANE ? 180F - aimYaw : -aimYaw) * Mth.DEG_TO_RAD;
-        return new float[] { yaw, -aimPitch * Mth.DEG_TO_RAD };
+        return new float[]{yaw, -aimPitch * Mth.DEG_TO_RAD};
     }
 
     /**
@@ -367,7 +317,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * @return the aimed muzzle, or {@code null} when the seat has no measurable gun
      */
     @Nullable
-    public Vec3 getAimedRegisteredGunMuzzle(Driveable driveable, SeatInfo seatInfo, float partialTick)
+    public Vec3 getAimedRegisteredGunMuzzle(DriveableVisual driveable, SeatInfo seatInfo, float partialTick)
     {
         return aimRegisteredGunPoint(driveable, seatInfo, getRegisteredGunMuzzle(seatInfo.getGunName()), partialTick);
     }
@@ -376,27 +326,24 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * {@link #getAimedRegisteredGunMuzzle} for every barrel of a twin or quad
      * seat gun, in model pixels; one entry for a single gun.
      */
-    public List<Vec3> getAimedRegisteredGunMuzzles(Driveable driveable, SeatInfo seatInfo, float partialTick)
+    public List<Vec3> getAimedRegisteredGunMuzzles(DriveableVisual driveable, SeatInfo seatInfo, float partialTick)
     {
-        return getRegisteredGunMuzzles(seatInfo.getGunName(), gunModelScale()).stream()
-            .map(muzzle -> aimRegisteredGunPoint(driveable, seatInfo, muzzle, partialTick))
-            .toList();
+        return getRegisteredGunMuzzles(seatInfo.getGunName(), gunModelScale()).stream().map(muzzle -> aimRegisteredGunPoint(driveable, seatInfo, muzzle, partialTick)).toList();
     }
 
     @Nullable
-    private Vec3 aimRegisteredGunPoint(Driveable driveable, SeatInfo seatInfo, @Nullable Vec3 muzzle, float partialTick)
+    private Vec3 aimRegisteredGunPoint(DriveableVisual driveable, SeatInfo seatInfo, @Nullable Vec3 muzzle, float partialTick)
     {
         Vec3 pivot = getRegisteredGunAimPivot(seatInfo.getGunName());
-        Seat seat = driveable.getSeat(seatInfo.getId());
+        SeatVisual seat = driveable.getSeat(seatInfo.getId());
         if (muzzle == null || pivot == null || seat == null)
             return muzzle;
 
         boolean turretMounted = isTurretMountedGun(seatInfo);
-        Seat driverSeat = driveable.getSeat(0);
+        SeatVisual driverSeat = driveable.getSeat(0);
         float turretYaw = driveable.getTurretYaw();
         float driverYaw = turretMounted && seat.isDriverSeat() ? interpolatedYaw(driverSeat, partialTick, turretYaw) : 0F;
-        float[] angles = registeredGunAngles(seat, partialTick, turretYaw, driverYaw,
-            this instanceof ModelPlane ? GunYawConvention.PLANE : GunYawConvention.VEHICLE);
+        float[] angles = registeredGunAngles(seat, partialTick, turretYaw, driverYaw, this instanceof ModelPlane ? GunYawConvention.PLANE : GunYawConvention.VEHICLE);
 
         Vec3 aimed = rotatePartOffset(muzzle.subtract(pivot.scale(16D)), angles[0], angles[1]).add(pivot.scale(16D));
         return turretMounted ? toTurretPose(driveable, aimed, turretYaw) : aimed;
@@ -409,7 +356,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     }
 
     /** Applies the turret transform around a point drawn inside it. */
-    protected Vec3 toTurretPose(Driveable driveable, Vec3 modelPixels, float turretYaw)
+    protected Vec3 toTurretPose(DriveableVisual driveable, Vec3 modelPixels, float turretYaw)
     {
         return modelPixels;
     }
@@ -417,9 +364,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     /** Mirrors {@code ModelRendererTurbo#translateAndRotate} for a vector relative to a rotation point. */
     private Vec3 rotatePartOffset(Vec3 offset, float yaw, float pitch)
     {
-        return oldRotateOrder
-            ? rotateZ(rotateY(offset, -yaw), -pitch)
-            : rotateY(rotateZ(offset, pitch), yaw);
+        return oldRotateOrder ? rotateZ(rotateY(offset, -yaw), -pitch) : rotateY(rotateZ(offset, pitch), yaw);
     }
 
     protected static Vec3 rotateY(Vec3 v, float radians)
@@ -436,13 +381,13 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         return new Vec3(v.x * cos - v.y * sin, v.x * sin + v.y * cos, v.z);
     }
 
-    protected static float recoilOffset(Driveable driveable)
+    protected static float recoilOffset(DriveableVisual driveable)
     {
         float progress = Mth.clamp(driveable.getRecoilProgress(), 0F, 1F);
         return Mth.sin(Mth.PI * progress) * -(5F / 16F);
     }
 
-    private static float interpolatedYaw(@Nullable Seat seat, float partialTick, float fallback)
+    private static float interpolatedYaw(@Nullable SeatVisual seat, float partialTick, float fallback)
     {
         return seat == null ? fallback : Mth.rotLerp(partialTick, seat.getPrevAimYaw(), seat.getAimYaw());
     }
@@ -459,9 +404,8 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         };
     }
 
-    protected void renderPartAt(ModelRendererTurbo[] parts, Vector3f origin, PoseStack poseStack, VertexConsumer vertexConsumer,
-                                int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-                                float scale, EnumRenderPass renderPass)
+    protected void renderPartAt(ModelRendererTurbo[] parts, Vector3f origin, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         translateToModelPoint(poseStack, origin);
@@ -510,9 +454,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         if (pivotPart == null)
             return null;
 
-        return new Vec3(pivotPart.rotationPointX * MODEL_SCALE * gunScale,
-            pivotPart.rotationPointY * MODEL_SCALE * gunScale,
-            pivotPart.rotationPointZ * MODEL_SCALE * gunScale);
+        return new Vec3(pivotPart.rotationPointX * MODEL_SCALE * gunScale, pivotPart.rotationPointY * MODEL_SCALE * gunScale, pivotPart.rotationPointZ * MODEL_SCALE * gunScale);
     }
 
     private static ModelRendererTurbo firstPart(ModelRendererTurbo[] parts)
@@ -533,9 +475,11 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * from a handful of boxes, and the single furthest one is often an asymmetric
      * corner piece; averaging the group is what keeps the result on the bore axis.
      *
-     * <p>Kept tight because a gun's front sight usually stands a couple of pixels
+     * <p>
+     * Kept tight because a gun's front sight usually stands a couple of pixels
      * behind the muzzle: the Warfare 44 Tiger's MG34 sight ends 2.3 pixels short
-     * of the tip, and at 3 pixels it lifted the measured bore by half a pixel.</p>
+     * of the tip, and at 3 pixels it lifted the measured bore by half a pixel.
+     * </p>
      */
     private static final float MUZZLE_FACE_TOLERANCE = 1.5F;
 
@@ -544,11 +488,14 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * model's forward axis, centred laterally and vertically on every box that
      * reaches within {@link #MUZZLE_FACE_TOLERANCE} of it.
      *
-     * <p>Reads the parts as the renderer sees them, after any constructor-time
+     * <p>
+     * Reads the parts as the renderer sees them, after any constructor-time
      * {@code flipAll} and {@code translateAll}, so the result is directly
-     * comparable with the pivots {@link #getRegisteredGunAimPivot} returns.</p>
+     * comparable with the pivots {@link #getRegisteredGunAimPivot} returns.
+     * </p>
      *
-     * @param scale factor the renderer applies to this group before drawing it
+     * @param scale
+     *            factor the renderer applies to this group before drawing it
      * @return the muzzle in model pixels, or {@code null} when the group carries no geometry
      */
     @Nullable
@@ -574,8 +521,9 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * its tubes. A hint that falls between barrels keeps the whole face, since that
      * is where a single point firing for all of them sits.
      *
-     * @param hint point, in unscaled model pixels, whose Y and Z pick the barrel,
-     *             or {@code null} to take the whole face
+     * @param hint
+     *            point, in unscaled model pixels, whose Y and Z pick the barrel,
+     *            or {@code null} to take the whole face
      */
     @Nullable
     protected static Vec3 measureMuzzle(float scale, @Nullable Vec3 hint, ModelRendererTurbo[]... groups)
@@ -616,17 +564,15 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         List<double[]> ends = new ArrayList<>();
         for (double[] part : parts)
         {
-            if (part[3] >= face.forward() - MUZZLE_FACE_TOLERANCE || part[3] < face.forward() - SHORTER_BARREL_REACH
-                || !isTube(part) || continuesPast(part, parts))
+            if (part[3] >= face.forward() - MUZZLE_FACE_TOLERANCE || part[3] < face.forward() - SHORTER_BARREL_REACH || !isTube(part) || continuesPast(part, parts))
                 continue;
-            ends.add(new double[] { part[1], part[2], part[4], part[5], part[3] });
+            ends.add(new double[]{part[1], part[2], part[4], part[5], part[3]});
         }
         for (List<double[]> barrel : barrels(ends, parts))
         {
             double[] rect = union(barrel);
             // A tube tucked right under a barrel, such as a Vickers K's gas cylinder, is part of that gun.
-            if (frontBarrels.stream().anyMatch(front -> overlaps(front, rect)
-                || faceDistance(front, rectCentre(rect)) < SHORTER_BARREL_CLEARANCE))
+            if (frontBarrels.stream().anyMatch(front -> overlaps(front, rect) || faceDistance(front, rectCentre(rect)) < SHORTER_BARREL_CLEARANCE))
                 continue;
             double end = barrel.stream().mapToDouble(piece -> piece[4]).max().orElse(face.forward());
             muzzles.add(centre((float) end, rect, scale));
@@ -661,10 +607,8 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
                 double[] b = emptyBounds();
                 if (part == null || !part.appendFaceBounds(b))
                     continue;
-                bounds.add(new double[] {
-                    part.rotationPointX + b[0], part.rotationPointY + b[1], part.rotationPointZ + b[2],
-                    part.rotationPointX + b[3], part.rotationPointY + b[4], part.rotationPointZ + b[5]
-                });
+                bounds.add(new double[]{part.rotationPointX + b[0], part.rotationPointY + b[1], part.rotationPointZ + b[2], part.rotationPointX + b[3], part.rotationPointY + b[4],
+                    part.rotationPointZ + b[5]});
             }
         }
         return bounds;
@@ -682,8 +626,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     {
         for (double[] other : parts)
         {
-            if (other != tube && other[3] > tube[3] + 0.25D && other[0] <= tube[3] + 0.25D
-                && other[1] < tube[4] && other[4] > tube[1] && other[2] < tube[5] && other[5] > tube[2])
+            if (other != tube && other[3] > tube[3] + 0.25D && other[0] <= tube[3] + 0.25D && other[1] < tube[4] && other[4] > tube[1] && other[2] < tube[5] && other[5] > tube[2])
                 return true;
         }
         return false;
@@ -695,11 +638,14 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     }
 
     /**
-     * @param forward how far forward the furthest part reaches, in model pixels
-     * @param parts   the Y and Z extents, as {@code {minY, minZ, maxY, maxZ}}, of every
-     *                part reaching within {@link #MUZZLE_FACE_TOLERANCE} of it
+     * @param forward
+     *            how far forward the furthest part reaches, in model pixels
+     * @param parts
+     *            the Y and Z extents, as {@code {minY, minZ, maxY, maxZ}}, of every
+     *            part reaching within {@link #MUZZLE_FACE_TOLERANCE} of it
      */
-    private record MuzzleFace(float forward, List<double[]> parts) {}
+    private record MuzzleFace(float forward, List<double[]> parts)
+    {}
 
     @Nullable
     private static MuzzleFace muzzleFace(ModelRendererTurbo[]... groups)
@@ -724,10 +670,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
 
     private static double[] union(List<double[]> parts)
     {
-        double[] face = {
-            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
-            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
-        };
+        double[] face = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
         for (double[] part : parts)
         {
             face[0] = Math.min(face[0], part[0]);
@@ -741,8 +684,9 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     /**
      * Joins the pieces of a muzzle face into barrels, keeping the order they were found in.
      *
-     * @param bodies every part of the groups the face was read from, whose gun tubes tell
-     *               the pieces that end separate bores apart
+     * @param bodies
+     *            every part of the groups the face was read from, whose gun tubes tell
+     *            the pieces that end separate bores apart
      */
     private static List<List<double[]>> barrels(List<double[]> parts, List<double[]> bodies)
     {
@@ -803,7 +747,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             double y = (body[1] + body[4]) * 0.5D;
             double z = (body[2] + body[5]) * 0.5D;
             if (y >= piece[0] && y <= piece[2] && z >= piece[1] && z <= piece[3])
-                return new double[] { y, z };
+                return new double[]{y, z};
         }
         return null;
     }
@@ -891,7 +835,8 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * forward axis. A machine gun is modelled as such a tube, so its muzzle is
      * where one ends, while the turret or hull around it is not.
      *
-     * @param forwardNegativeX whether the model faces -X, as aircraft models do
+     * @param forwardNegativeX
+     *            whether the model faces -X, as aircraft models do
      */
     public double distanceToTubeEnd(Vec3 modelPixels, boolean forwardNegativeX)
     {
@@ -918,7 +863,8 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         if (restPartBounds == null)
         {
             List<double[]> bounds = new ArrayList<>();
-            forEachModelBox(box -> {
+            forEachModelBox(box ->
+            {
                 if (box instanceof ModelRendererTurbo part)
                 {
                     double[] rest = part.restBounds();
@@ -964,25 +910,19 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         for (ModelRendererTurbo part : parts)
         {
             double[] bounds = emptyBounds();
-            if (part == null || !part.appendFaceBounds(bounds)
-                || part.rotationPointX + bounds[3] < threshold)
+            if (part == null || !part.appendFaceBounds(bounds) || part.rotationPointX + bounds[3] < threshold)
                 continue;
-            faces.add(new double[] {
-                part.rotationPointY + bounds[1], part.rotationPointZ + bounds[2],
-                part.rotationPointY + bounds[4], part.rotationPointZ + bounds[5]
-            });
+            faces.add(new double[]{part.rotationPointY + bounds[1], part.rotationPointZ + bounds[2], part.rotationPointY + bounds[4], part.rotationPointZ + bounds[5]});
         }
     }
 
     private static double[] emptyBounds()
     {
-        return new double[] {
-            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
-            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
-        };
+        return new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
     }
 
-    private record GunMuzzleKey(String gunName, float gunScale) {}
+    private record GunMuzzleKey(String gunName, float gunScale)
+    {}
 
     /** Measurements are a full vertex walk, and diagnostics ask for them every tick. */
     private final HashMap<GunMuzzleKey, Optional<Vec3>> gunMuzzles = new HashMap<>();
@@ -1005,7 +945,8 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     @Nullable
     public Vec3 getRegisteredGunMuzzle(String gunName, float gunScale)
     {
-        return gunMuzzles.computeIfAbsent(new GunMuzzleKey(gunName, gunScale), key -> {
+        return gunMuzzles.computeIfAbsent(new GunMuzzleKey(gunName, gunScale), key ->
+        {
             ModelRendererTurbo[][] gun = gunModels.get(key.gunName());
             if (gun == null || gun.length == 0)
                 return Optional.empty();
@@ -1022,7 +963,8 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      */
     public List<Vec3> getRegisteredGunMuzzles(String gunName, float gunScale)
     {
-        return gunBarrelMuzzles.computeIfAbsent(new GunMuzzleKey(gunName, gunScale), key -> {
+        return gunBarrelMuzzles.computeIfAbsent(new GunMuzzleKey(gunName, gunScale), key ->
+        {
             ModelRendererTurbo[][] gun = gunModels.get(key.gunName());
             return gun == null || gun.length == 0 ? List.of() : List.copyOf(measureMuzzles(key.gunScale(), gun));
         });

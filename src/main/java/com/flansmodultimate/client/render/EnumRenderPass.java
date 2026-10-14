@@ -48,9 +48,11 @@ public enum EnumRenderPass
             case GLOW_ALPHA_NO_DEPTH_WRITE -> CustomRenderType.entityEmissiveAlphaNoDepthWrite(texture, cull);
             case GLOW_ALPHA -> CustomRenderType.entityEmissiveAlpha(texture, cull);
             case GLOW_ADDITIVE -> CustomRenderType.entityEmissiveAdditive(texture, cull);
-            default -> translucent
-                ? (ModClientConfig.get().enableFastTranslucentRendering ? CustomRenderType.armorTranslucentUnsorted(texture, cull) : CustomRenderType.armorTranslucent(texture, cull))
-                : CustomRenderType.armorCutout(texture, cull);
+            default -> {
+                if (!translucent)
+                    yield CustomRenderType.armorCutout(texture, cull);
+                yield ModClientConfig.get().enableFastTranslucentRendering ? CustomRenderType.armorTranslucentUnsorted(texture, cull) : CustomRenderType.armorTranslucent(texture, cull);
+            }
         };
     }
 }

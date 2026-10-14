@@ -3,16 +3,15 @@ package com.flansmodultimate.client.particle;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.*;
 
 public abstract class ParticleBase extends TextureSheetParticle
 {
     protected final SpriteSet sprites;
     protected float scaleMultiplier = 1F;
 
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
     protected ParticleBase(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
         super(level, x, y, z, vx, vy, vz);

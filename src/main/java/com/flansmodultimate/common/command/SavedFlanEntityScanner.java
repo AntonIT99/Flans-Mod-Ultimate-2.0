@@ -2,10 +2,7 @@ package com.flansmodultimate.common.command;
 
 import com.flansmodultimate.platform.world.LevelFilePlatform;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.storage.RegionFile;
@@ -41,51 +38,68 @@ final class SavedFlanEntityScanner
         int failures = 0;
         for (Source source : sources)
         {
-            Path directory = source.entitiesDirectory();
-            if (!Files.isDirectory(directory))
-                continue;
-            try (Stream<Path> paths = Files.list(directory))
-            {
-                for (Path file : paths.filter(Files::isRegularFile).toList())
-                {
-                    Matcher matcher = REGION_NAME.matcher(file.getFileName().toString());
-                    if (!matcher.matches())
-                        continue;
-                    try (RegionFile region = LevelFilePlatform.openEntityRegion(file, directory, source.dimension()))
-                    {
-                        int regionX = Integer.parseInt(matcher.group(1));
-                        int regionZ = Integer.parseInt(matcher.group(2));
-                        for (int localZ = 0; localZ < 32; localZ++)
-                        {
-                            for (int localX = 0; localX < 32; localX++)
-                            {
-                                ChunkPos chunk = new ChunkPos(regionX * 32 + localX, regionZ * 32 + localZ);
-                                if (!region.hasChunk(chunk))
-                                    continue;
-                                try (DataInputStream input = region.getChunkDataInputStream(chunk))
-                                {
-                                    if (input != null)
-                                        readChunk(NbtIo.read(input), source.dimension(), chunk, entries);
-                                }
-                                catch (IOException | RuntimeException exception)
-                                {
-                                    failures++;
-                                }
-                            }
-                        }
-                    }
-                    catch (IOException | RuntimeException exception)
-                    {
-                        failures++;
-                    }
-                }
-            }
-            catch (IOException exception)
-            {
-                failures++;
-            }
+            if (Files.isDirectory(source.entitiesDirectory()))
+                failures += scanDirectory(source, entries);
         }
         return new Result(List.copyOf(entries), failures);
+    }
+
+    /** Scans every region file of one dimension and returns how many regions or chunks could not be read. */
+    private static int scanDirectory(Source source, List<Entry> entries)
+    {
+        int failures = 0;
+        try (Stream<Path> paths = Files.list(source.entitiesDirectory()))
+        {
+            for (Path file : paths.filter(Files::isRegularFile).toList())
+                failures += scanRegion(source, file, entries);
+        }
+        catch (IOException exception)
+        {
+            failures++;
+        }
+        return failures;
+    }
+
+    private static int scanRegion(Source source, Path file, List<Entry> entries)
+    {
+        Matcher matcher = REGION_NAME.matcher(file.getFileName().toString());
+        if (!matcher.matches())
+            return 0;
+        int failures = 0;
+        try (RegionFile region = LevelFilePlatform.openEntityRegion(file, source.entitiesDirectory(), source.dimension()))
+        {
+            int regionX = Integer.parseInt(matcher.group(1));
+            int regionZ = Integer.parseInt(matcher.group(2));
+            for (int localZ = 0; localZ < 32; localZ++)
+            {
+                for (int localX = 0; localX < 32; localX++)
+                {
+                    ChunkPos chunk = new ChunkPos(regionX * 32 + localX, regionZ * 32 + localZ);
+                    if (region.hasChunk(chunk) && !scanChunk(region, chunk, source.dimension(), entries))
+                        failures++;
+                }
+            }
+        }
+        catch (IOException | RuntimeException exception)
+        {
+            failures++;
+        }
+        return failures;
+    }
+
+    /** Returns false when the chunk could not be read. */
+    private static boolean scanChunk(RegionFile region, ChunkPos chunk, ResourceLocation dimension, List<Entry> entries)
+    {
+        try (DataInputStream input = region.getChunkDataInputStream(chunk))
+        {
+            if (input != null)
+                readChunk(NbtIo.read(input), dimension, chunk, entries);
+            return true;
+        }
+        catch (IOException | RuntimeException exception)
+        {
+            return false;
+        }
     }
 
     private static void readChunk(CompoundTag root, ResourceLocation dimension, ChunkPos chunk, List<Entry> entries)
@@ -100,7 +114,8 @@ final class SavedFlanEntityScanner
             ListTag position = tag.getList("Pos", Tag.TAG_DOUBLE);
             if (position.size() < 3)
                 continue;
-            String type = tag.contains("driveable_type", Tag.TAG_STRING) ? tag.getString("driveable_type") : tag.contains("Type", Tag.TAG_STRING) ? tag.getString("Type") : tag.getString("type");
+            String legacyTypeKey = tag.contains("Type", Tag.TAG_STRING) ? "Type" : "type";
+            String type = tag.getString(tag.contains("driveable_type", Tag.TAG_STRING) ? "driveable_type" : legacyTypeKey);
             entries.add(new Entry(dimension, id, type, position.getDouble(0), position.getDouble(1), position.getDouble(2), chunk.x, chunk.z));
         }
     }

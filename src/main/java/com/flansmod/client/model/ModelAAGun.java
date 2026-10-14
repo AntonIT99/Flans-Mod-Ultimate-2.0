@@ -4,7 +4,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.IFlanTypeModel;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.driveables.visual.AAGunVisual;
 import com.flansmodultimate.common.types.AAGunType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -47,13 +47,13 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         return AAGunType.class;
     }
 
-    public void renderBase(AAGun aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+    public void renderBase(AAGunVisual aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
         EnumRenderPass renderPass)
     {
         renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderGun(AAGun aa, float gunPitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+    public void renderGun(AAGunVisual aa, float gunPitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
         float scale, EnumRenderPass renderPass)
     {
         float pitch = -gunPitch * Mth.DEG_TO_RAD;

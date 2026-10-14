@@ -1,19 +1,18 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.FlansProjectiles;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.ProjectileSources;
+import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.ProjectileSources.Source;
-import com.flansmodultimate.api.WeaponMuzzle;
 import com.wolffsmod.npcs.client.RangedControlLocks.Page;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
-import com.wolffsmod.npcs.combat.NpcRangedAttack;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.client.ReadOnlyTooltips.Widget;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.properties.NpcTypeProperties;
+import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.client.gui.SubGuiNpcRangeProperties;
+import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.client.gui.util.GuiNPCInterface;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -21,16 +20,11 @@ import noppes.npcs.shared.client.gui.components.GuiBasic;
 import noppes.npcs.shared.client.gui.components.GuiLabel;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /** Client-only presentation of inactive Custom NPCs defaults; it never changes saved statistics. */
 public final class NpcRangedControls
@@ -54,8 +48,11 @@ public final class NpcRangedControls
         if (!NpcRangedAttack.usesFlanProjectile(options, ammunition))
             return inherited;
         List<ProjectileSources> sources = sources(npc, options, ammunition);
-        ProjectileSources combined = RangedControlLocks.combine(sources);
-        RangedControlLocks locks = RangedControlLocks.create(page, true, combined, options.enabled(Feature.FLAN_SOUNDS));
+        // Model properties the NPC keeps its own value for drive the shot, so their controls stay editable.
+        ProjectileSources combined = RangedControlLocks.release(RangedControlLocks.combine(sources), NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.DAMAGE),
+            NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.ACCURACY), NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.SPEED),
+            NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.FIRING_SOUND));
+        RangedControlLocks locks = RangedControlLocks.create(page, true, combined, options.enabled(FlansProjectiles.isGrenade(ammunition) ? Feature.THROW_SOUNDS : Feature.FIRE_SOUNDS));
         locks = RangedControlLocks.merge(locks, inherited);
         markControls(gui, locks);
         return locks;
@@ -100,7 +97,7 @@ public final class NpcRangedControls
             {
                 field.setEditable(false);
                 field.setTextColorUneditable(READ_ONLY_COLOR);
-                field.setTooltip(tooltip(reason));
+                field.setTooltip(ReadOnlyTooltips.create(gui, Widget.FIELD, id, reason));
             }
         });
         locks.buttons().forEach((id, reason) ->
@@ -109,7 +106,7 @@ public final class NpcRangedControls
             if (button != null)
             {
                 button.setEnabled(false);
-                button.setTooltip(tooltip(reason));
+                button.setTooltip(ReadOnlyTooltips.create(gui, Widget.BUTTON, id, reason));
             }
         });
         for (Map.Entry<Integer, Reason> entry : locks.labels().entrySet())
@@ -119,15 +116,10 @@ public final class NpcRangedControls
             {
                 label.setColor(READ_ONLY_COLOR);
                 label.setHeight(10);
-                label.setTooltip(tooltip(entry.getValue()));
+                label.setTooltip(ReadOnlyTooltips.create(gui, Widget.LABEL, entry.getKey(), entry.getValue()));
             }
         }
-        if (!locks.textFields().isEmpty() || !locks.buttons().isEmpty())
+        if (!(gui instanceof GuiNpcStats) && (!locks.textFields().isEmpty() || !locks.buttons().isEmpty()))
             gui.addLabel(new GuiLabel(1000, "wolffsmodnpcs.weapons.read_only.notice", gui.guiLeft + 5, gui.guiTop - 12, "wolffsmodnpcs.weapons.read_only.notice.help"));
-    }
-
-    private static Tooltip tooltip(Reason reason)
-    {
-        return Tooltip.create(Component.translatable("wolffsmodnpcs.weapons.read_only." + reason.name().toLowerCase(Locale.ROOT)));
     }
 }

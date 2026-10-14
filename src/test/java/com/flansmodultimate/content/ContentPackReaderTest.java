@@ -8,9 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -18,9 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ContentPackReaderTest
 {
-    @TempDir Path root;
+    @TempDir
+    Path root;
 
-    private record Read(String name, EnumType type, List<String> lines) {}
+    private record Read(String name, EnumType type, List<String> lines)
+    {}
 
     @Test
     void parallelReadingProducesWhatOneThreadReads() throws Exception
@@ -73,6 +73,7 @@ class ContentPackReaderTest
         try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(3))
         {
             ContentPackReader reader = new ContentPackReader(packs, workers);
+            reader.start();
             for (int i = 0; i < packs.size(); i++)
             {
                 List<TypeFile> files = reader.take(packs.get(i)).typeFiles();

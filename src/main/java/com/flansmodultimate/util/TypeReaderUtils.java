@@ -6,16 +6,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TypeReaderUtils
 {
+    private static final String A_FLOAT = "a float";
+    private static final String A_BOOLEAN = "a boolean";
+    private static final String FLOAT_VALUES_USAGE = "<float values>";
+
     private TypeReaderUtils()
     {}
 
@@ -124,7 +124,7 @@ public class TypeReaderUtils
             }
             catch (Exception e)
             {
-                logError(incorrectFormatWrongType(key, strValue, "a float"), file);
+                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
             }
         }
         return defaultValue;
@@ -142,7 +142,7 @@ public class TypeReaderUtils
             }
             catch (Exception e)
             {
-                logError(incorrectFormatWrongType(key, strValue, "a float"), file);
+                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
             }
         }
         return null;
@@ -159,7 +159,7 @@ public class TypeReaderUtils
             }
             catch (Exception e)
             {
-                logError(incorrectFormatWrongType(key, strValue, "a float"), file);
+                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
             }
         }
         return defaultValue;
@@ -177,7 +177,7 @@ public class TypeReaderUtils
             }
             catch (Exception e)
             {
-                logError(incorrectFormatWrongType(key, strValue, "a float"), file);
+                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
             }
         }
         return null;
@@ -192,7 +192,7 @@ public class TypeReaderUtils
             strValue = strValue.equals("0") ? Boolean.FALSE.toString() : strValue;
             if (!Boolean.TRUE.toString().equalsIgnoreCase(strValue) && !Boolean.FALSE.toString().equalsIgnoreCase(strValue))
             {
-                logError(incorrectFormatWrongType(key, strValue, "a boolean"), file);
+                logError(incorrectFormatWrongType(key, strValue, A_BOOLEAN), file);
                 return defaultValue;
             }
             return Boolean.parseBoolean(strValue);
@@ -210,7 +210,7 @@ public class TypeReaderUtils
             strValue = strValue.equals("0") ? Boolean.FALSE.toString() : strValue;
             if (!Boolean.TRUE.toString().equalsIgnoreCase(strValue) && !Boolean.FALSE.toString().equalsIgnoreCase(strValue))
             {
-                logError(incorrectFormatWrongType(key, strValue, "a boolean"), file);
+                logError(incorrectFormatWrongType(key, strValue, A_BOOLEAN), file);
                 return null;
             }
             return Boolean.parseBoolean(strValue);
@@ -397,7 +397,7 @@ public class TypeReaderUtils
                 }
                 catch (NumberFormatException e)
                 {
-                    logError(incorrectFormat(key, "<float values>"), file);
+                    logError(incorrectFormat(key, FLOAT_VALUES_USAGE), file);
                     return null;
                 }
             }
@@ -419,7 +419,7 @@ public class TypeReaderUtils
                 }
                 catch (NumberFormatException e)
                 {
-                    logError(incorrectFormat(key, "<float values>"), file);
+                    logError(incorrectFormat(key, FLOAT_VALUES_USAGE), file);
                     return null;
                 }
             }
@@ -439,7 +439,7 @@ public class TypeReaderUtils
                 values[i] = values[i].equals("0") ? Boolean.FALSE.toString() : values[i];
                 if (!values[i].equalsIgnoreCase(Boolean.TRUE.toString()) && !values[i].equalsIgnoreCase(Boolean.FALSE.toString()))
                 {
-                    logError(incorrectFormatWrongType(key, "... " + values[i] + " ...", "a boolean"), file);
+                    logError(incorrectFormatWrongType(key, "... " + values[i] + " ...", A_BOOLEAN), file);
                     return null;
                 }
                 result[i] = Boolean.parseBoolean(values[i]);
@@ -591,7 +591,7 @@ public class TypeReaderUtils
                 }
                 catch (NumberFormatException e)
                 {
-                    logError(incorrectFormat(key, "<float values>"), file);
+                    logError(incorrectFormat(key, FLOAT_VALUES_USAGE), file);
                     return null;
                 }
             }
@@ -613,7 +613,7 @@ public class TypeReaderUtils
                 }
                 catch (NumberFormatException e)
                 {
-                    logError(incorrectFormat(key, "<float values>"), file);
+                    logError(incorrectFormat(key, FLOAT_VALUES_USAGE), file);
                     return null;
                 }
             }
@@ -633,7 +633,7 @@ public class TypeReaderUtils
                 values[i] = values[i].equals("0") ? Boolean.FALSE.toString() : values[i];
                 if (!values[i].equalsIgnoreCase(Boolean.TRUE.toString()) && !values[i].equalsIgnoreCase(Boolean.FALSE.toString()))
                 {
-                    logError(incorrectFormatWrongType(key, "... " + values[i] + " ...", "a boolean"), file);
+                    logError(incorrectFormatWrongType(key, "... " + values[i] + " ...", A_BOOLEAN), file);
                     return null;
                 }
                 result[i] = Boolean.parseBoolean(values[i]);

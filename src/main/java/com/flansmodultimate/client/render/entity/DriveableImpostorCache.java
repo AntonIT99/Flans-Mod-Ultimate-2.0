@@ -28,18 +28,14 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Lazily generated far-distance driveable impostors.
@@ -111,7 +107,7 @@ public final class DriveableImpostorCache
      */
     public static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue,
         PoseStack poseStack, MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset, float entityYaw, float entityPitch, float entityRoll,
-        Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
+        boolean allowImpostor, boolean wasUsingImpostor)
     {
         return renderOrPrepare(model, type, sourceTexture, translucent, cull, red, green, blue, poseStack, buffer, packedLight, projectionPixels, cameraDistance, cameraOffset, entityYaw, entityPitch,
             entityRoll, null, allowImpostor, wasUsingImpostor, 1F, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
@@ -120,7 +116,7 @@ public final class DriveableImpostorCache
     /** Neutral-model atlas shared with externally posed instances; tint and damage overlays stay per draw. */
     public static Result renderPosedOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation texture, boolean translucent, boolean cull, float typeRed, float typeGreen, float typeBlue,
         PoseStack pose, MultiBufferSource buffers, int light, int overlay, float red, float green, float blue, float alpha, float parentScale, float projectionPixels, double distance,
-        Vec3 localCameraOffset, Quaternionf rotation, Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
+        Vec3 localCameraOffset, Quaternionf rotation, boolean allowImpostor, boolean wasUsingImpostor)
     {
         return renderOrPrepare(model, type, texture, translucent, cull, typeRed, typeGreen, typeBlue, pose, buffers, light, projectionPixels, distance, localCameraOffset, 0F, 0F, 0F, rotation,
             allowImpostor, wasUsingImpostor, parentScale, overlay, red, green, blue, alpha);
@@ -249,19 +245,7 @@ public final class DriveableImpostorCache
 
     private static ModelBounds cachedBounds(ModelDriveable model, DriveableType type)
     {
-        IdentityHashMap<DriveableType, ModelBounds> byType = boundsCache.get(model);
-        if (byType == null)
-        {
-            byType = new IdentityHashMap<>();
-            boundsCache.put(model, byType);
-        }
-        ModelBounds bounds = byType.get(type);
-        if (bounds == null)
-        {
-            bounds = measureBounds(model, type);
-            byType.put(type, bounds);
-        }
-        return bounds;
+        return boundsCache.computeIfAbsent(model, ignored -> new IdentityHashMap<>()).computeIfAbsent(type, ignored -> measureBounds(model, type));
     }
 
     /** Conservative radius about the model origin, including an off-center hull; needs no atlas entry. */

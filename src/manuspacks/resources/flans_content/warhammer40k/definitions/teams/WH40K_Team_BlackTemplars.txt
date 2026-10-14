@@ -1,0 +1,20 @@
+// Identity
+Name Black Templars
+ShortName WH40K_Team_BlackTemplars
+
+// Appearance
+TextColour Gray
+TeamColour 48 48 48
+Hat WH40K_Armor_SpaceMarineHelmet_1I
+Chest WH40K_Armor_SpaceMarineBody_1I
+Legs WH40K_Armor_SpaceMarineLegs_1I
+Shoes WH40K_Armor_SpaceMarineBoots_1I
+
+// Rounds
+AllowedForRoundsGenerator False
+HasVictorySound False
+
+// Classes
+AddClass WH40K_Class_BlackTemplarsInitiate
+AddClass WH40K_Class_BlackTemplarsSwordBrother
+AddClass WH40K_Class_BlackTemplarsCrusadeSergeant

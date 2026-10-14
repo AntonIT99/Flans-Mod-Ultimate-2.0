@@ -53,10 +53,10 @@ RealClimbRateMs 20
 Primary Gun
 ModePrimary FullAuto
 AlternatePrimary False
-ShootPointPrimary 52 34 4 core WW2_MG_MK108FF_1A
-ShootPointPrimary 52 34 -4 core WW2_MG_MK108FF_1A
-ShootPointPrimary 52 31 8 core WW2_MG_MK108FF_1A
-ShootPointPrimary 52 31 -8 core WW2_MG_MK108FF_1A
+ShootPointPrimary 52 34 4 core WW2_MG_MK108_1A
+ShootPointPrimary 52 34 -4 core WW2_MG_MK108_1A
+ShootPointPrimary 52 31 8 core WW2_MG_MK108_1A
+ShootPointPrimary 52 31 -8 core WW2_MG_MK108_1A
 ShootPointSecondary -35 0 0 core
 ShootDelayPrimary 7
 Secondary Bomb

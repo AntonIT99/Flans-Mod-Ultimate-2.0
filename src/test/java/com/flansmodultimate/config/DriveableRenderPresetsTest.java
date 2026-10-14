@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DriveableRenderPresetsTest
 {
+    // One scenario walks the shared config through each preset in turn.
+    @SuppressWarnings("java:S5961")
     @Test
     void presetsAreIndependentAndRecognizeCustomValues()
     {

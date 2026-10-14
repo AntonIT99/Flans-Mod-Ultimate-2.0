@@ -26,6 +26,8 @@ public abstract class FlanEntityBlock extends BaseEntityBlock
     }
 
     /** Handles a right-click on this block with the given hand. By default the block does nothing, as in vanilla. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         return InteractionResult.PASS;

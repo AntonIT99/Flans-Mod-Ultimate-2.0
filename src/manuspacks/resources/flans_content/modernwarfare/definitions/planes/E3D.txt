@@ -13,15 +13,15 @@ ModelScale 1
 FuelTankSize 32000
 CargoSlots 0
 BombSlots 0
-AddRecipeParts core 1 Part_Cockpit_Large 50 Mat_Plate_Aluminium
-AddRecipeParts nose 1 Part_Nose_Plane 10 Mat_Plate_Aluminium
-AddRecipeParts tail 1 Part_Tail_Large 30 Mat_Plate_Aluminium
-AddRecipeParts leftWing 1 Part_Wing_Large 40 Mat_Plate_Aluminium
-AddRecipeParts rightWing 1 Part_Wing_Large 40 Mat_Plate_Aluminium
-AddRecipeParts leftWingWheel 4 Part_Wheel_Plane 8 Mat_Plate_Steel
-AddRecipeParts rightWingWheel 4 Part_Wheel_Plane 8 Mat_Plate_Steel
-AddRecipeParts coreWheel 2 Part_Wheel_Plane 5 Mat_Plate_Steel
-AddRecipeParts bay 10 27092_Part_Misc_Radar
+AddRecipeParts core 1 SMP_Part_Cockpit_Large 50 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts tail 1 SMP_Part_Tail_Large 30 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWing 1 SMP_Part_Wing_Large 40 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts rightWing 1 SMP_Part_Wing_Large 40 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWingWheel 4 SMP_Part_Wheel_Plane 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWingWheel 4 SMP_Part_Wheel_Plane 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts coreWheel 2 SMP_Part_Wheel_Plane 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts bay 10 SMP_Part_Misc_Radar
 AddDye 25 gray
 
 // Movement and Physics
@@ -56,10 +56,10 @@ UseRealisticVehicleHealth true
 
 // Parts and Seats
 CameraDistance 60.0
-Propeller 0 0 0 0 leftWing Part_Propeller_TurbineJet
-Propeller 1 0 0 0 leftWing Part_Propeller_TurbineJet
-Propeller 2 0 0 0 rightWing Part_Propeller_TurbineJet
-Propeller 3 0 0 0 rightWing Part_Propeller_TurbineJet
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineJet
+Propeller 1 0 0 0 leftWing SMP_Part_Propeller_TurbineJet
+Propeller 2 0 0 0 rightWing SMP_Part_Propeller_TurbineJet
+Propeller 3 0 0 0 rightWing SMP_Part_Propeller_TurbineJet
 Pilot 292 71 -12 -80 80 -45 45
 Passengers 4
 Passenger 1 292 71 -12 core -80 80 -45 45

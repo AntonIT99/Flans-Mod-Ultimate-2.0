@@ -1,0 +1,26 @@
+// Identity
+Name US Airborne
+ShortName W44_USAirborne
+
+// Appearance
+TextColour Blue
+TeamColour 70 120 180
+Hat 44_AmericanM1HelmetNetting
+Chest 44_AmericanM42AirborneChest
+Legs 44_AmericanM42AirbornePants
+Shoes 44_AmericanBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Classes
+AddClass W44_USAirborneRifleman
+AddClass W44_USAirborneAssault
+AddClass W44_USAirborneSupport
+AddClass W44_USAirborneMedic
+AddClass W44_USAirborneEngineer
+AddClass W44_USAirborneAntiTank
+AddClass W44_USAirborneScout
+AddClass W44_USAirborneSquadLeader
+AddClass W44_USAirborneTankCrew
+AddClass W44_USAirbornePilot

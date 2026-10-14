@@ -169,7 +169,7 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
         float spin = (minecraft.level.getGameTime() + partialTick) * SPIN_DEGREES_PER_TICK;
         PoseStack pose = graphics.pose();
         pose.pushPose();
-        pose.translate(leftPos + MODEL_LEFT, topPos + MODEL_TOP, 100D);
+        pose.translate((double) leftPos + MODEL_LEFT, (double) topPos + MODEL_TOP, 100D);
         float scale = MODEL_SCALE_FACTOR / Math.max(1F, type.getCameraDistance());
         pose.scale(scale, scale, -scale);
         pose.mulPose(Axis.ZP.rotationDegrees(180F));

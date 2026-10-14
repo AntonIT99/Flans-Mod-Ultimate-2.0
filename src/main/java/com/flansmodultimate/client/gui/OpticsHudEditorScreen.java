@@ -41,7 +41,7 @@ public final class OpticsHudEditorScreen extends Screen
         graphics.fill(0, height - 52, width, height, 0xB0000000);
         graphics.drawCenteredString(font, title, width / 2, height - 46, 0xFFFFFF);
         graphics.drawCenteredString(font, Component.translatable("gui.flansmodultimate.optics.editor_controls"), width / 2, height - 32, 0xFFFFFF);
-        graphics.drawCenteredString(font, OpticsHud.ELEMENTS[selected], width / 2, height - 18, 0x55FF55);
+        graphics.drawCenteredString(font, OpticsHud.ELEMENT_NAMES.get(selected), width / 2, height - 18, 0x55FF55);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -72,7 +72,7 @@ public final class OpticsHudEditorScreen extends Screen
                 for (int i = 0; i < 5; i++)
                 {
                     OpticsHud.Element e = hud.getElements()[i];
-                    String prefix = "SeatOptics" + OpticsHud.ELEMENTS[i];
+                    String prefix = "SeatOptics" + OpticsHud.ELEMENT_NAMES.get(i);
                     lines.append(String.format(Locale.ROOT, "%sPosSight %d %d %d %d%n%sScaleSight %d %d %.2f%n", prefix, sourceSeat, sight + 1, e.x(sight), e.y(sight), prefix, sourceSeat, sight + 1,
                         e.scale(sight)));
                 }

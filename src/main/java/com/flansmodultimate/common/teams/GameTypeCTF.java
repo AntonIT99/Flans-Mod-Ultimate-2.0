@@ -13,12 +13,13 @@ import net.minecraft.server.level.ServerPlayer;
 @Getter
 public final class GameTypeCTF extends GameTypeTDM
 {
+    private static final String FLAG_SUFFIX = " flag";
     private static final String NBT_FLAG_RETURN_TIME = "ctf_flag_time";
     private int flagReturnTimeSeconds = 30;
 
     GameTypeCTF()
     {
-        super("ctf", "Capture the Flag", 2);
+        super("ctf", "Capture the Flag", TeamLimits.upToSides(TeamsRound.MAX_SIDES));
     }
 
     @Override
@@ -40,7 +41,7 @@ public final class GameTypeCTF extends GameTypeTDM
             return;
 
         PlayerData data = PlayerData.getInstance(player);
-        if (playerTeam == flagTeam)
+        if (manager.areAllied(playerTeam, flagTeam))
         {
             if (!flag.isHome() && !flag.hasCarrier())
             {
@@ -48,7 +49,7 @@ public final class GameTypeCTF extends GameTypeTDM
                 data.setScore(data.getScore() + 2);
                 manager.getStats(player).recordFlagSave();
                 manager.awardExperience(player, 10);
-                manager.broadcast(Component.literal(player.getScoreboardName() + " returned the " + flagTeam.getName() + " flag"));
+                manager.broadcast(Component.literal(player.getScoreboardName() + " returned the " + flagTeam.getName() + FLAG_SUFFIX));
                 return;
             }
 
@@ -61,7 +62,7 @@ public final class GameTypeCTF extends GameTypeTDM
                 data.setScore(data.getScore() + 10);
                 manager.getStats(player).recordFlagCapture();
                 manager.awardExperience(player, 20);
-                manager.broadcast(Component.literal(player.getScoreboardName() + " captured the " + (captured == null ? "enemy" : captured.getName()) + " flag"));
+                manager.broadcast(Component.literal(player.getScoreboardName() + " captured the " + (captured == null ? "enemy" : captured.getName()) + FLAG_SUFFIX));
             }
             return;
         }
@@ -76,7 +77,7 @@ public final class GameTypeCTF extends GameTypeTDM
             if (flag.isHome())
                 data.setScore(data.getScore() + 3);
             flag.pickUp(player);
-            manager.broadcast(Component.literal(player.getScoreboardName() + " picked up the " + flagTeam.getName() + " flag"));
+            manager.broadcast(Component.literal(player.getScoreboardName() + " picked up the " + flagTeam.getName() + FLAG_SUFFIX));
         }
     }
 

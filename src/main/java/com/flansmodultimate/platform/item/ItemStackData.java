@@ -5,14 +5,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
@@ -57,16 +55,22 @@ public final class ItemStackData
         set(stack, tag);
     }
 
+    // Part of the cross-version platform signature; other loader versions use the parameter.
+    @SuppressWarnings("java:S1172")
     public static CompoundTag save(ItemStack stack, HolderLookup.Provider registries)
     {
         return (CompoundTag) stack.save(registries, new CompoundTag());
     }
 
+    // Part of the cross-version platform signature; other loader versions use the parameter.
+    @SuppressWarnings("java:S1172")
     public static void save(ItemStack stack, HolderLookup.Provider registries, CompoundTag target)
     {
         stack.save(registries, target);
     }
 
+    // Part of the cross-version platform signature; other loader versions use the parameter.
+    @SuppressWarnings("java:S1172")
     public static ItemStack parse(HolderLookup.Provider registries, CompoundTag tag)
     {
         return tag.isEmpty() ? ItemStack.EMPTY : ItemStack.parseOptional(registries, tag);

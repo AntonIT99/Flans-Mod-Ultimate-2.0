@@ -1,7 +1,6 @@
 package com.flansmodultimate.network.server.teams;
 
-import com.flansmodultimate.common.teams.ITeamBase;
-import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
@@ -57,9 +56,9 @@ public final class PacketBaseEditAction implements IServerPacket
         if (base == null || !base.getDimension().equals(level.dimension()) || player.position().distanceToSqr(base.getTeamObjectPosition()) > 64D * 64D)
             return;
 
-        int ownerSlots = manager.getCurrentRound().map(round -> round.getTeamIds().size() + 2).orElse(4);
         base.setBaseName(baseName);
-        base.setDefaultOwnerId(Math.max(0, Math.min(ownerId, Math.max(1, ownerSlots - 1))));
+        // Any team slot a round could have may own a base; a round with fewer teams leaves the rest unowned.
+        base.setDefaultOwnerId(Math.max(0, Math.min(ownerId, TeamsRound.MAX_TEAMS + 1)));
         manager.getMap(mapId).filter(map -> map.getDimension().equals(base.getDimension())).ifPresent(map -> manager.assignBaseToMap(base, map));
     }
 }

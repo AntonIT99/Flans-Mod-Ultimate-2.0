@@ -8,6 +8,8 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 /** Reusable ordered submission buffer, independent of OpenGL so transitions can be tested. */
+// Render diagnostics counters and renderer state are deliberately global.
+@SuppressWarnings("java:S2696")
 final class RigidBatch implements RigidGeometryConsumer
 {
     interface Backend
@@ -47,8 +49,12 @@ final class RigidBatch implements RigidGeometryConsumer
     /** Pose source shared by every part-composed pose. */
     private static final Object COMPOSED = new Object();
     private Object lastSource;
-    private int lastLight, lastOverlay;
-    private float lastRed, lastGreen, lastBlue, lastAlpha;
+    private int lastLight;
+    private int lastOverlay;
+    private float lastRed;
+    private float lastGreen;
+    private float lastBlue;
+    private float lastAlpha;
     private Backend backend;
     private VertexConsumer fallback;
     private boolean needsBarrier;
@@ -108,6 +114,8 @@ final class RigidBatch implements RigidGeometryConsumer
      * the same pose source. Equal values from different stack entries are a coincidence of the current angles
      * (a turret at exactly zero yaw equals its hull) and would otherwise change the mesh as those angles move.
      */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     private void submit(RigidGeometry geometry, int identityHash, int vertices, PoseStack.Pose pose, Object source, int light, int overlay, float red, float green, float blue, float alpha,
         boolean visible)
     {
@@ -244,11 +252,11 @@ final class RigidBatch implements RigidGeometryConsumer
                             continue;
                         if (RenderDiagnostics.enabled)
                             RenderDiagnostics.fallbackVertices += key.geometries[i].vertexCount();
-                        int palette = key.paletteIndices[i];
-                        int offset = palette * 16;
+                        int paletteIndex = key.paletteIndices[i];
+                        int offset = paletteIndex * 16;
                         fallbackPose.pose().set(poses, offset);
-                        offset = palette * 8;
-                        int normalOffset = palette * 9;
+                        offset = paletteIndex * 8;
+                        int normalOffset = paletteIndex * 9;
                         fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2], normals[normalOffset + 3], normals[normalOffset + 4],
                             normals[normalOffset + 5], normals[normalOffset + 6], normals[normalOffset + 7], normals[normalOffset + 8]);
                         int light = (int) data[offset + 4] | (int) data[offset + 5] << 16;

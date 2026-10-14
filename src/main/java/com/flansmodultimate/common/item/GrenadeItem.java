@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
@@ -134,7 +135,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade
-        if (configType.isCanThrow() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
+        if (configType.isCanThrow() && !FlansMod.teamsManager.isPacifism() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
         {
             // Delay the next throw / weapon fire / whatnot
             data.setShootTimeRight(configType.getThrowDelay());

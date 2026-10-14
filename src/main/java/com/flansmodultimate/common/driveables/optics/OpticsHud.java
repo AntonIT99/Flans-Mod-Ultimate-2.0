@@ -2,14 +2,13 @@ package com.flansmodultimate.common.driveables.optics;
 
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /** Definition and per-sight overrides for the five legacy optics HUD elements. */
 @Getter
 public final class OpticsHud
 {
-    public static final String[] ELEMENTS = {"Range", "Speed", "Traverse", "Compass", "Elevation"};
+    public static final List<String> ELEMENT_NAMES = List.of("Range", "Speed", "Traverse", "Compass", "Elevation");
     boolean enabled;
     boolean edit;
     boolean requireRangeKey = true;
@@ -20,7 +19,10 @@ public final class OpticsHud
     int color = 0x55FF55;
     float scale = 1F;
     String compassMarker = "";
-    int markerWidth = 18, markerHeight = 24, markerX, markerY = 10;
+    int markerWidth = 18;
+    int markerHeight = 24;
+    int markerX;
+    int markerY = 10;
     final Element[] elements = {new Element(-120, 70, 80, 24), new Element(-120, 88, 96, 32), new Element(0, 70, 120, 48), new Element(0, -85, 220, 36), new Element(105, 0, 36, 120)};
     final Map<Integer, Integer> colors = new HashMap<>();
     final Map<Integer, Float> scales = new HashMap<>();
@@ -44,7 +46,10 @@ public final class OpticsHud
     @Getter
     public static final class Element
     {
-        int x, y, width, height;
+        int x;
+        int y;
+        int width;
+        int height;
         float scale = 1F;
         String texture = "";
         final Map<Integer, int[]> positions = new HashMap<>();
@@ -120,14 +125,15 @@ public final class OpticsHud
                 markerY = Integer.parseInt(values[offset + 1]);
             }
             default -> {
-                for (int i = 0; i < ELEMENTS.length; i++)
+                for (int i = 0; i < ELEMENT_NAMES.size(); i++)
                 {
-                    if (!key.startsWith(ELEMENTS[i].toLowerCase(java.util.Locale.ROOT)))
+                    if (!key.startsWith(ELEMENT_NAMES.get(i).toLowerCase(java.util.Locale.ROOT)))
                         continue;
                     Element element = elements[i];
                     if (key.contains("pos"))
                     {
-                        int x = Integer.parseInt(value), y = Integer.parseInt(values[offset + 1]);
+                        int x = Integer.parseInt(value);
+                        int y = Integer.parseInt(values[offset + 1]);
                         if (perSight)
                             element.positions.put(sight, new int[]{x, y});
                         else

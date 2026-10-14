@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.common.driveables.physics.*;
+import com.flansmodultimate.common.driveables.visual.DriveableVisual;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.explosions.FlanExplosion;
@@ -83,7 +84,7 @@ import java.util.stream.IntStream;
  * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Driveable extends FlanEntity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
+public abstract class Driveable extends FlanEntity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity, DriveableVisual
 {
     public static final String NBT_TYPE = "driveable_type";
     public static final String NBT_YAW = "driveable_yaw";
@@ -170,7 +171,6 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private static final int CHILD_REPAIR_INTERVAL = 20;
     /** Matches the radius the server used when it still broadcast emitter particles. */
     private static final double EMITTER_PARTICLE_RANGE = 128D;
-    private static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     private static final double MAX_SPAWN_COORDINATE = 29_999_984D;
     private static final double MAX_DISMOUNT_DISTANCE = 12D;
     private static final double DISMOUNT_DISTANCE_STEP = 0.5D;
@@ -643,46 +643,60 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return frame != null ? frame.mouseControl() && this instanceof Plane : entityData.get(DATA_MOUSE_CONTROL);
     }
 
+    @Override
+    public int getVisualTick()
+    {
+        return tickCount;
+    }
+
     public float getRecoilProgress()
     {
         return entityData.get(DATA_RECOIL_PROGRESS);
     }
 
+    @Override
     public float getIT1DoorAngle()
     {
         return entityData.get(DATA_IT1_DOOR_ANGLE);
     }
 
+    @Override
     public float getPrevIT1DoorAngle()
     {
         return entityData.get(DATA_PREV_IT1_DOOR_ANGLE);
     }
 
+    @Override
     public float getIT1ArmAngle()
     {
         return entityData.get(DATA_IT1_ARM_ANGLE);
     }
 
+    @Override
     public float getPrevIT1ArmAngle()
     {
         return entityData.get(DATA_PREV_IT1_ARM_ANGLE);
     }
 
+    @Override
     public float getIT1RailAngle()
     {
         return entityData.get(DATA_IT1_RAIL_ANGLE);
     }
 
+    @Override
     public float getPrevIT1RailAngle()
     {
         return entityData.get(DATA_PREV_IT1_RAIL_ANGLE);
     }
 
+    @Override
     public boolean isCanFireIT1()
     {
         return getFlag(FLAG_IT1_CAN_FIRE);
     }
 
+    @Override
     public boolean isReloadingDrakon()
     {
         return getFlag(FLAG_IT1_RELOADING);
@@ -1578,10 +1592,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int ticksLeft = ShotCooldown.displayTicks(primaryShootDelay);
         // ShootReloadSound is the main gun's shell being worked into the breech. A
         // primary bank of mounted guns reloads with the gun's own sound instead.
-        if (configType == null || isGunBank(false) || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET || previousPrimaryShootDelay <= ticksLeft
+        if (configType == null || isGunBank(false) || configType.getReloadSoundTick() == DriveableType.RELOAD_SOUND_TICK_UNSET || previousPrimaryShootDelay <= ticksLeft
             || ticksLeft != configType.getReloadSoundTick() || StringUtils.isBlank(configType.getShootReloadSound()))
             return;
-        PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), configType.getShootReloadSound(), false);
+        PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().reloadSoundRange(), configType.getShootReloadSound(), false);
     }
 
     private void applyPlacementEffects()
@@ -1595,9 +1609,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         String primarySound = configType.getPlaceSoundPrimary();
         String secondarySound = configType.getPlaceSoundSecondary();
         if (StringUtils.isNotBlank(primarySound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), primarySound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), primarySound, false);
         if (StringUtils.isNotBlank(secondarySound) && !secondarySound.equals(primarySound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), secondarySound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), secondarySound, false);
     }
 
     /**
@@ -1617,8 +1631,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         boolean occupied = isUnderCommand();
         // A driver moving to a passenger seat keeps the engine running; it is only cut
         // once the driveable is left entirely.
-        boolean ridden = occupied || hasRider();
-        if (occupied && !driverWasPresent)
+        // Movie prop mode of the Teams rules: every driveable runs as if it had a driver, at full throttle.
+        boolean movieProp = !level().isClientSide && FlansMod.teamsManager.isMovieProp();
+        boolean ridden = occupied || hasRider() || movieProp;
+        if (occupied && !driverWasPresent || movieProp)
             engineRequested = true;
         else if (!ridden && wasRidden)
         {
@@ -1631,8 +1647,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         wasRidden = ridden;
 
         boolean flooded = isUnderWater() && !configType.isWorksUnderWater();
-        if (flooded)
+        // Pacifism, the other Labjac rule, holds every driveable where it stands.
+        if (flooded || !level().isClientSide && FlansMod.teamsManager.isPacifism())
             setThrottle(0F);
+        else if (movieProp)
+            setThrottle(1F);
         boolean canStart = ridden && !flooded && hasFuelForEngine();
         if (!engineRequested || !canStart)
         {
@@ -1725,6 +1744,17 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (configType instanceof VehicleType vehicle)
             return secondary ? vehicle.getVehicleShellDelay() : vehicle.getVehicleShootDelay();
         return 1F;
+    }
+
+    /** The driveable an entity rides: the entity itself, the driveable its seat belongs to, or the one carrying the entity. */
+    @Nullable
+    public static Driveable ofRiddenEntity(@Nullable Entity vehicle)
+    {
+        if (vehicle instanceof Driveable driveable)
+            return driveable;
+        if (vehicle instanceof Seat seat)
+            return seat.getDriveable();
+        return vehicle != null && vehicle.getVehicle() instanceof Driveable parent ? parent : null;
     }
 
     private static boolean shouldFire(EnumFireMode mode, boolean held, boolean rising, int heldTicks, int burstRemaining)
@@ -1992,7 +2022,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         GunType gunType = selection.gunType();
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, gunType == null ? ModCommonConfig.get().soundRange() : gunType.getReloadSoundRange(), sound, false);
+            PacketPlaySound.sendSoundPacket(this, gunType == null ? ModCommonConfig.get().reloadSoundRange() : gunType.getReloadSoundRange(), sound, false);
     }
 
     /**
@@ -2293,7 +2323,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         String sound = type.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), sound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().reloadSoundRange(), sound, false);
     }
 
     /** Keeps a bank's chambered round honest: reloads when what it held is gone. */
@@ -2544,6 +2574,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean weaponEnabled(EnumWeaponType weapon)
     {
+        if (FlansMod.teamsManager.isPacifism())
+            return false;
         return switch (weapon)
         {
             case BOMB, MINE -> FlansMod.teamsManager.isBombsEnabled();
@@ -2964,7 +2996,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return point;
         Vec3 turretPivot = configuredModelLocal(configType.getTurretOrigin());
         Vec3 barrelPivot = modelBarrelPitchPivot == null ? null : modelPivotToLocal(modelBarrelPitchPivot);
-        Vec3 pitchPivot = partPivot != null ? partPivot : barrelPivot != null ? barrelPivot : turretPivot;
+        Vec3 defaultPivot = barrelPivot != null ? barrelPivot : turretPivot;
+        Vec3 pitchPivot = partPivot != null ? partPivot : defaultPivot;
 
         // The renderer pitches each barrel around its own model pivot first,
         // then yaws the complete turret around TurretOrigin.
@@ -4038,7 +4071,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Exit spot beside the driveable, preferring the side of the seat being left.
+     * Exit spot on top of ships, or beside other driveables, preferring the seat being left.
      *
      * <p>
      * Candidates are tested against the shaped hulls as well as blocks:
@@ -4049,6 +4082,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public Vec3 getSafeDismountPosition(@NotNull LivingEntity passenger, int seatIndex)
     {
         Vec3 origin = position();
+        if (configType != null && configType.isShip())
+            return getShipDismountPosition(passenger, seatIndex);
         Vec3 right = getRightVector().multiply(1D, 0D, 1D);
         right = right.lengthSqr() < 1.0E-6D ? new Vec3(1D, 0D, 0D) : right.normalize();
         Vec3 forward = new Vec3(-right.z, 0D, right.x);
@@ -4067,13 +4102,27 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return origin.add(0D, getBbHeight() + 0.5D, 0D);
     }
 
+    private Vec3 getShipDismountPosition(LivingEntity passenger, int seatIndex)
+    {
+        if (collisionHelper != null)
+        {
+            Vec3 deck = collisionHelper.findTopDismount(passenger, getSeatWorldPosition(seatIndex));
+            if (deck != null)
+                return deck;
+            Vec3 aboveHull = collisionHelper.topDismountFallback();
+            if (aboveHull != null)
+                return aboveHull;
+        }
+        return position().add(0D, getBbHeight() + 0.5D, 0D);
+    }
+
     @Nullable
     private Vec3 findDismountSpot(@NotNull LivingEntity passenger, @NotNull Vec3 column)
     {
         int baseY = Mth.floor(getY());
         for (int dy : DISMOUNT_HEIGHT_OFFSETS)
         {
-            Vec3 spot = DismountHelper.findSafeDismountLocation(passenger.getType(), level(), BlockPos.containing(column.x, baseY + dy, column.z), true);
+            Vec3 spot = DismountHelper.findSafeDismountLocation(passenger.getType(), level(), BlockPos.containing(column.x, (double) baseY + dy, column.z), true);
             if (spot != null && isClearOfHulls(passenger, spot))
                 return spot;
         }
@@ -4126,6 +4175,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /** Limits the input copied from a movement controller into the driveable itself. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected int movementControlMask(@NotNull Seat seat, int mask)
     {
         return DriveableInput.sanitize(mask);
@@ -4165,6 +4216,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
     }
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void handleRisingInputs(@NotNull Seat seat, @NotNull Player player, int rising)
     {
         if (DriveableInput.isDown(rising, DriveableInput.EXIT))
@@ -4194,6 +4247,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /** Landing gear toggle. Driveables without retractable gear ignore it. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void toggleGear(@NotNull Player player)
     {
         setGearDeployed(!isGearDeployed());
@@ -4203,12 +4258,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      * Parts stowed inside the hull, such as retracted landing gear, are not
      * exposed to bullets or repairs.
      */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     public boolean canHitPart(@Nullable EnumDriveablePart part)
     {
         return true;
     }
 
     /** Door toggle. Driveables without doors simply carry the flag. */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void toggleDoor(@NotNull Player player)
     {
         setDoorOpen(!isDoorOpen());
@@ -4221,6 +4280,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void toggleAirBrake(@NotNull Player player)
     {}
 
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
     protected void toggleDriveableMode(@NotNull Player player)
     {
         setDriveableMode(Math.floorMod(getDriveableMode() + 1, 2));
@@ -4535,13 +4596,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         // A shaped charge fires its jet at the first surface it strikes. Whatever it hits first - a skirt, an ERA
         // block, a track - takes the jet in place of the hull behind, so it never carries on into the next part.
-        if (heat)
+        // A HESH round likewise acts at the first surface, without selecting the shaped-charge damage channel.
+        if (heat || bulletType.isHesh())
             return new ShootingHelper.HitData(0F, armourBlocked ? 0F : penetrationRatio, false);
         return new ShootingHelper.HitData(remainingPower, armourBlocked ? 0F : penetrationRatio, false);
     }
 
     /** Charge of a HEAT round in kg TNT, recovered from its legacy explosion when it declares no explosive mass. */
-    private static float shapedChargeKg(@Nullable FiredShot shot, BulletType bulletType)
+    public static float shapedChargeKg(@Nullable FiredShot shot, BulletType bulletType)
     {
         float charge = shot != null ? shot.getExplosiveMass() : bulletType.getExplosiveMass();
         if (charge > 0F && Float.isFinite(charge))

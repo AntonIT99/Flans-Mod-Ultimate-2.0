@@ -8,9 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -201,7 +199,9 @@ class PartArrayCacheTest
 
         @Override
         public void flushFallback()
-        {}
+        {
+            // Not needed by this test.
+        }
 
         @Override
         public void failed(RuntimeException exception)

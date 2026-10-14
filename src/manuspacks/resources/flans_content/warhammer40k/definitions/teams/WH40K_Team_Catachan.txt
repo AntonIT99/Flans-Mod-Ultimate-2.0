@@ -1,0 +1,22 @@
+// Identity
+Name Catachan Jungle Fighters
+ShortName WH40K_Team_Catachan
+
+// Appearance
+TextColour Green
+TeamColour 48 96 48
+Hat WH40K_Armor_CatachanBandana_1A
+Chest WH40K_Armor_CatachanWest_1A
+Legs WH40K_Armor_CatachanLegs_1A
+Shoes WH40K_Armor_CatachanBoots_1A
+
+// Rounds
+AllowedForRoundsGenerator False
+HasVictorySound False
+
+// Classes
+AddClass WH40K_Class_CatachanJungleFighter
+AddClass WH40K_Class_CatachanAssaultVeteran
+AddClass WH40K_Class_CatachanGrenadier
+AddClass WH40K_Class_CatachanHeavyBolter
+AddClass WH40K_Class_CatachanLascannon

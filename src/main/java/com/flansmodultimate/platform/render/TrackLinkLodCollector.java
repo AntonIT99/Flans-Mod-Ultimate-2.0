@@ -1,8 +1,6 @@
 package com.flansmodultimate.platform.render;
 
-import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmod.client.tmt.PositionTextureVertex;
-import com.flansmod.client.tmt.TexturedPolygon;
+import com.flansmod.client.tmt.*;
 import com.flansmodultimate.client.model.ModelBase;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
@@ -78,7 +76,8 @@ public final class TrackLinkLodCollector implements VertexConsumer
             if (Math.abs(normal) < 0.95F)
                 continue;
             int face = axis * 2 + (normal > 0 ? 1 : 0);
-            int first = (axis + 1) % 3, second = (axis + 2) % 3;
+            int first = (axis + 1) % 3;
+            int second = (axis + 2) % 3;
             float[] low = {Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY};
             float[] high = {Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY};
             for (float[] vertex : quad)
@@ -115,7 +114,9 @@ public final class TrackLinkLodCollector implements VertexConsumer
 
     public float diameter()
     {
-        float x = max[0] - min[0], y = max[1] - min[1], z = max[2] - min[2];
+        float x = max[0] - min[0];
+        float y = max[1] - min[1];
+        float z = max[2] - min[2];
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
@@ -127,6 +128,8 @@ public final class TrackLinkLodCollector implements VertexConsumer
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
     public ModelRendererTurbo build(float spacing, int group)
     {
         if (count <= 24 || count > 4096 || count % 4 != 0 || !Float.isFinite(diameter()) || !(spacing > 0))
@@ -145,7 +148,9 @@ public final class TrackLinkLodCollector implements VertexConsumer
         {}, 0, 0);
         for (int face = 0; face < 6; face++)
         {
-            int axis = face / 2, first = (axis + 1) % 3, second = (axis + 2) % 3;
+            int axis = face / 2;
+            int first = (axis + 1) % 3;
+            int second = (axis + 2) % 3;
             // Cyclic axes: first cross second is the positive face normal.
             int[] order = face % 2 == 1 ? new int[]{0, 1, 3, 2} : new int[]{0, 2, 3, 1};
             PositionTextureVertex[] vertices = new PositionTextureVertex[4];

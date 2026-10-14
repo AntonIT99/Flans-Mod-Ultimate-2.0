@@ -105,9 +105,6 @@ EngineSound TankRun2
 EngineSoundLength 41
 BackSoundLength 41
 BackSound TankBack2
-StartSoundRange 12
-EngineSoundRange 22
-BackSoundRange 10
 PlaceSoundPrimary TankPlace
 ReloadSoundSecondary Mg34Reload
 ShootSoundPrimary 75mmShoot

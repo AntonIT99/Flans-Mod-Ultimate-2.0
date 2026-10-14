@@ -49,11 +49,10 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
         if (!(entity instanceof IFlanEntity<?> flanEntity))
             return;
 
-        renderFlanEntity(entity, flanEntity, entityYaw, partialTick, poseStack, buffer, packedLight);
+        renderFlanEntity(entity, flanEntity, poseStack, buffer, packedLight);
     }
 
-    protected void renderFlanEntity(@NotNull T entity, @NotNull IFlanEntity<?> flanEntity, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer,
-        int packedLight)
+    protected void renderFlanEntity(@NotNull T entity, @NotNull IFlanEntity<?> flanEntity, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
         InfoType type = flanEntity.getConfigType();
         if (type == null)
@@ -109,6 +108,8 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
         return (type.getColour() & 255) / 255F;
     }
 
+    // Kept symmetric with the other colour hooks, which subclasses override per type.
+    @SuppressWarnings("java:S1172")
     protected float getAlpha(@NotNull InfoType type)
     {
         return 1F;

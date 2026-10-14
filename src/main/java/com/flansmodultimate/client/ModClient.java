@@ -62,6 +62,8 @@ public class ModClient
      * Arm transform of {@link #bothArmsAim}: both arms straight forward, independent of head pitch.
      * The server-side hitbox pose {@code PlayerSnapshot.ArmPose.BOTH_AIM} mirrors it.
      */
+    // Signature of IArmPoseTransformer, which the pose is registered as.
+    @SuppressWarnings("java:S1172")
     public static void poseBothArmsAim(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
     {
         model.rightArm.xRot = -Mth.PI / 2F;
@@ -76,6 +78,8 @@ public class ModClient
      * Arm transform of {@link #oneArmAim}: the holding arm of the vanilla bow pose, following the head, without
      * the other arm reaching across. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.ONE_AIM} mirrors it.
      */
+    // Signature of IArmPoseTransformer, which the pose is registered as.
+    @SuppressWarnings("java:S1172")
     public static void poseOneArmAim(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
     {
         ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
@@ -109,6 +113,8 @@ public class ModClient
      * Arm transform of {@link #bowSupport}: the free arm of the vanilla bow pose, reaching across towards
      * where the head looks. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.SUPPORT} mirrors it.
      */
+    // Signature of IArmPoseTransformer, which the pose is registered as.
+    @SuppressWarnings("java:S1172")
     public static void poseBowSupport(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
     {
         ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
@@ -579,6 +585,8 @@ public class ModClient
             addForceDarkOverrides(mechaPos, darkSkyLight);
     }
 
+    // An existing entry is also lowered, which computeIfAbsent cannot express.
+    @SuppressWarnings("java:S3824")
     private static void addForceDarkOverrides(BlockPos center, Long2ByteOpenHashMap overrides)
     {
         for (int i = -3; i <= 3; i++)
@@ -864,7 +872,7 @@ public class ModClient
             || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
-            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().soundRange());
+            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().gunActionSoundRange());
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
@@ -883,19 +891,19 @@ public class ModClient
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
                     int time = (int) (animations.getReloadAnimationTime() / maxBullets);
-                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange(), time);
+                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), time);
                     ModClient.setLastBulletReload(-1);
                 }
                 else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
                 {
                     ModClient.setLastBulletReload(bulletNum);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
                 }
 
                 if ((ammoPosition < 0.03 && bulletProgress > 0))
                 {
                     ModClient.setLastBulletReload(-2);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
                 }
             }
         }

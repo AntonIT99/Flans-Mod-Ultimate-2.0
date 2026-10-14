@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.opengl.GL32C.*;
@@ -35,6 +36,10 @@ import static org.lwjgl.opengl.GL32C.*;
 @EnabledIfEnvironmentVariable(named = "FLANS_GPU_TEST", matches = "true")
 class RigidModelShaderTest
 {
+    private static final Pattern VERSION_LINE = Pattern.compile("(?m)^#version.*$");
+
+    // The GLFW window is a native handle, not an AutoCloseable.
+    @SuppressWarnings("java:S2093")
     @Test
     void paletteShaderLinksOnOpenGl32AndExposesEveryPart() throws Exception
     {
@@ -63,7 +68,7 @@ class RigidModelShaderTest
                     String source = read(url);
                     for (String include : new String[]{"light.glsl", "fog.glsl"})
                         if (source.contains("#moj_import <" + include + ">"))
-                            source = source.replace("#moj_import <" + include + ">", read(getClass().getResource("/assets/minecraft/shaders/include/" + include)).replaceAll("(?m)^#version.*$", ""));
+                            source = source.replace("#moj_import <" + include + ">", VERSION_LINE.matcher(read(getClass().getResource("/assets/minecraft/shaders/include/" + include))).replaceAll(""));
                     return new ByteArrayInputStream(source.getBytes(StandardCharsets.UTF_8));
                 }));
             };

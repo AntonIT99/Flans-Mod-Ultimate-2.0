@@ -5,10 +5,7 @@ import com.flansmodultimate.common.recipe.GunpowderRecipeCondition;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
-import com.flansmodultimate.config.CategoryManager;
-import com.flansmodultimate.config.ModApocalypseConfig;
-import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.*;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.network.NetworkPlatform;
 import com.flansmodultimate.platform.registry.RegistryEntry;
@@ -27,14 +24,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Mod(FlansMod.MOD_ID)
@@ -59,6 +49,7 @@ public class FlansMod
     @Getter
     private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
 
+    @SuppressWarnings("java:S1118")
     public FlansMod(IEventBus modEventBus, ModContainer modContainer)
     {
         GunpowderRecipeCondition.CODECS.register(modEventBus);

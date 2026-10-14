@@ -22,11 +22,7 @@ public abstract class BulletHit implements Comparable<BulletHit>
     @Override
     public int compareTo(BulletHit other)
     {
-        if (intersectTime < other.intersectTime)
-            return -1;
-        else if (intersectTime > other.intersectTime)
-            return 1;
-        return 0;
+        return Float.compare(intersectTime, other.intersectTime);
     }
 
     @Override

@@ -42,6 +42,8 @@ public final class ClientPlatform
         return Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
     }
 
+    // Part of the cross-version platform signature; other loader versions use the parameter.
+    @SuppressWarnings("java:S1172")
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         screen.renderBackground(graphics, mouseX, mouseY, partialTick);

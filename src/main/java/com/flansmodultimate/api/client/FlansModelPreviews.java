@@ -23,12 +23,12 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Optional;
 
 /**
- * Draws static previews of content-pack models, such as for a GUI, a custom entity or a block
+ * Draws previews of content-pack models, such as for a GUI, a custom entity or a block
  * entity. Client only, on the render thread.
  *
  * <p>
  * Supports AA guns and driveables. A preview shows the model at rest: turrets and guns face
- * forward, doors are closed and gear is down.
+ * forward, doors are closed and gear is down. A world model can also be drawn in motion, from a {@link ModelPose}.
  * </p>
  */
 @ApiStatus.Experimental
@@ -71,6 +71,8 @@ public final class FlansModelPreviews
      *            tint multiplied with the type's own colour, like {@code green}, {@code blue} and {@code alpha}
      * @return false when the type has no model to preview
      */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public static boolean render(IContentType type, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         return type instanceof InfoType infoType && TypeModelPreview.render(infoType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
@@ -113,10 +115,59 @@ public final class FlansModelPreviews
      *            content definition to draw
      * @return false when the definition has no supported model
      */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
     public static boolean renderWorld(IContentType type, Entity entity, float partialTick, PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack poseStack,
         MultiBufferSource buffers, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         return type instanceof InfoType infoType
             && WorldModelPreview.render(infoType, entity, partialTick, entityPose, renderOffset, texture, poseStack, buffers, packedLight, packedOverlay, red, green, blue, alpha);
+    }
+
+    /**
+     * Draws a world model in motion: turret and seat guns aimed, wheels, tracks, propellers and legs moving, doors,
+     * gear and wings in the given position, barrels recoiling. Everything else is as for the static world model.
+     * A distant impostor shows the model at rest. Client render thread only.
+     *
+     * @param type
+     *            content definition to draw
+     * @param entity
+     *            world instance used for position, its tick count and weakly held animation history
+     * @param partialTick
+     *            interpolation fraction between game ticks
+     * @param entityPose
+     *            snapshot of the renderer pose before living-model rotation, scaling or offsets
+     * @param renderOffset
+     *            renderer displacement from the interpolated entity position, in world blocks
+     * @param texture
+     *            actual body skin, including a custom skin or paintjob
+     * @param poseStack
+     *            current pose at the model origin, with Y up and facing -Z
+     * @param buffers
+     *            source used for the ordinary body pass
+     * @param packedLight
+     *            packed Minecraft light coordinates
+     * @param packedOverlay
+     *            packed Minecraft overlay coordinates, including damage flashes
+     * @param red
+     *            red tint multiplied with the definition colour
+     * @param green
+     *            green tint multiplied with the definition colour
+     * @param blue
+     *            blue tint multiplied with the definition colour
+     * @param alpha
+     *            opacity; partially transparent models retain geometry
+     * @param pose
+     *            moving state of the owner for the current tick of the entity; it may be passed again on every frame
+     *            of that tick
+     * @return false when the definition has no supported model
+     */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
+    public static boolean renderWorld(IContentType type, Entity entity, float partialTick, PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack poseStack,
+        MultiBufferSource buffers, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, ModelPose pose)
+    {
+        return type instanceof InfoType infoType
+            && WorldModelPreview.render(infoType, entity, partialTick, entityPose, renderOffset, texture, poseStack, buffers, packedLight, packedOverlay, red, green, blue, alpha, pose);
     }
 }

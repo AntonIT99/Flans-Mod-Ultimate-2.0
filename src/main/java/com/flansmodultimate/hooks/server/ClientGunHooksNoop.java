@@ -9,6 +9,7 @@ import com.flansmodultimate.hooks.IClientGunHooks;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -17,6 +18,12 @@ import net.minecraft.world.phys.HitResult;
 public class ClientGunHooksNoop implements IClientGunHooks
 {
     @Override
+    public void secondaryModeSwitch(Player player, InteractionHand hand, int ticks)
+    {
+        /* Client animation only. */
+    }
+
+    @Override
     public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
     {
         /* no-op */
@@ -24,6 +31,24 @@ public class ClientGunHooksNoop implements IClientGunHooks
 
     @Override
     public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void animateRemoteShot(LivingEntity shooter, InteractionHand hand)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void animateRemoteReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void animateRemoteMelee(LivingEntity holder, InteractionHand hand)
     {
         /* no-op */
     }

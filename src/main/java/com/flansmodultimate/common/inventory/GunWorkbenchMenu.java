@@ -14,9 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
@@ -151,13 +149,10 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
             if (isGun(fromStack))
             {
                 Slot gunSlot = slots.get(SLOT_GUN);
-                if (!gunSlot.hasItem())
+                if (!gunSlot.hasItem() && moveItemStackTo(fromStack, SLOT_GUN, SLOT_GUN + 1, false))
                 {
-                    if (moveItemStackTo(fromStack, SLOT_GUN, SLOT_GUN + 1, false))
-                    {
-                        from.setChanged();
-                        return copy;
-                    }
+                    from.setChanged();
+                    return copy;
                 }
             }
 

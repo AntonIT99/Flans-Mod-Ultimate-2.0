@@ -5,9 +5,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.fml.ModContainer;
@@ -20,16 +18,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.*;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -41,6 +31,7 @@ import java.util.stream.Stream;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PackagedContentLoader
 {
+    private static final String DEFINITIONS = "definitions";
     private static final List<RegisteredModule> modules = new ArrayList<>();
 
     /**
@@ -92,13 +83,13 @@ public final class PackagedContentLoader
         if (modFileInfo == null)
             throw new IllegalStateException("Could not find NeoForge mod file for " + modId);
 
-        Path moduleContentRoot = modFileInfo.getFile().findResource(splitPath(contentRoot));
-        Path moduleModelsRoot = modFileInfo.getFile().findResource(splitPath(modelsRoot));
-        Path moduleResourceRoot = modFileInfo.getFile().findResource("pack.mcmeta").getParent();
-        Path moduleAssetsRoot = modFileInfo.getFile().findResource("assets", FlansMod.FLANSMOD_ID);
-        Path modulePath = modFileInfo.getFile().getFilePath();
-        String moduleDisplayName = ModList.get().getModContainerById(modId).map(container -> container.getModInfo().getDisplayName()).filter(displayName -> !displayName.isBlank()).orElse(modId);
         boolean archiveBacked = PlatformEnvironment.isProduction();
+        Path modulePath = modFileInfo.getFile().getFilePath();
+        Path moduleContentRoot = developmentPath(modulePath, modFileInfo.getFile().findResource(splitPath(contentRoot)), archiveBacked);
+        Path moduleModelsRoot = modFileInfo.getFile().findResource(splitPath(modelsRoot));
+        Path moduleResourceRoot = developmentPath(modulePath, modFileInfo.getFile().findResource("pack.mcmeta"), archiveBacked).getParent();
+        Path moduleAssetsRoot = developmentPath(modulePath, modFileInfo.getFile().findResource("assets", FlansMod.FLANSMOD_ID), archiveBacked);
+        String moduleDisplayName = ModList.get().getModContainerById(modId).map(container -> container.getModInfo().getDisplayName()).filter(displayName -> !displayName.isBlank()).orElse(modId);
 
         if (archiveBacked && (!Files.isRegularFile(modulePath) || !modulePath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")))
         {
@@ -138,10 +129,10 @@ public final class PackagedContentLoader
             }
 
             Path packRoot = moduleContentRoot.resolve(packId);
-            boolean definitionsSubdirectory = Files.isDirectory(packRoot.resolve("definitions"));
-            Path definitionsRoot = definitionsSubdirectory ? packRoot.resolve("definitions") : packRoot;
+            boolean definitionsSubdirectory = Files.isDirectory(packRoot.resolve(DEFINITIONS));
+            Path definitionsRoot = definitionsSubdirectory ? packRoot.resolve(DEFINITIONS) : packRoot;
             String archivePackRoot = joinArchivePath(contentRoot, packId);
-            String archiveDefinitionsRoot = definitionsSubdirectory ? joinArchivePath(archivePackRoot, "definitions") : archivePackRoot;
+            String archiveDefinitionsRoot = definitionsSubdirectory ? joinArchivePath(archivePackRoot, DEFINITIONS) : archivePackRoot;
 
             providers
                 .add(new PackagedContentProvider(displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath, definitionsRoot, moduleAssetsRoot, moduleModelsRoot,
@@ -287,6 +278,21 @@ public final class PackagedContentLoader
         if (packId.isBlank())
             return packId;
         return Character.toUpperCase(packId.charAt(0)) + packId.substring(1);
+    }
+
+    /**
+     * A development module is the loader's union of its output folders, and walking that union costs
+     * many times what walking a folder does. Whatever lies in the module's own resource folder is
+     * therefore addressed there; anything else, such as its classes, stays a path of the union.
+     */
+    static Path developmentPath(Path modulePath, Path resource, boolean archiveBacked)
+    {
+        if (archiveBacked || resource.getFileSystem() == FileSystems.getDefault() || !Files.isDirectory(modulePath))
+            return resource;
+        Path direct = modulePath;
+        for (String part : splitPath(resource.toAbsolutePath().toString()))
+            direct = direct.resolve(part);
+        return Files.exists(direct) ? direct : resource;
     }
 
     private static String[] splitPath(String path)

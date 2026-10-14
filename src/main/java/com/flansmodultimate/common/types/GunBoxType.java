@@ -13,15 +13,16 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.logError;
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 
 public class GunBoxType extends BlockType
 {
+    private static final String DEFAULT_TEXT_COLOR = "404040";
+    private static final String KEY_ADD_GUN = "AddGun";
+    private static final String KEY_ADD_AMMO = "AddAmmo";
     private static final int MAX_GUNS_PER_PAGE = 8;
     private static final String DEFAULT_PAGE_NAME = "Default";
 
@@ -33,11 +34,11 @@ public class GunBoxType extends BlockType
     /** Custom GUI variables. Use an unsigned hex code for colors. */
     protected String guiTexturePath;
     @Getter
-    protected String gunBoxTextColor = "404040";
+    protected String gunBoxTextColor = DEFAULT_TEXT_COLOR;
     @Getter
-    protected String itemListTextColor = "404040";
+    protected String itemListTextColor = DEFAULT_TEXT_COLOR;
     @Getter
-    protected String itemTextColor = "404040";
+    protected String itemTextColor = DEFAULT_TEXT_COLOR;
     @Getter
     protected String pageTextColor = "FFFFFF";
     @Getter
@@ -64,6 +65,12 @@ public class GunBoxType extends BlockType
     }
 
     @Override
+    protected boolean readsLinesInOrder()
+    {
+        return true;
+    }
+
+    @Override
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {
         super.readLine(split, lineIndex, file);
@@ -86,7 +93,7 @@ public class GunBoxType extends BlockType
             }
         }
 
-        if (key.equalsIgnoreCase("AddGun") || key.equalsIgnoreCase("AddType"))
+        if (key.equalsIgnoreCase(KEY_ADD_GUN) || key.equalsIgnoreCase("AddType"))
         {
             try
             {
@@ -109,7 +116,7 @@ public class GunBoxType extends BlockType
             }
         }
 
-        if (key.equalsIgnoreCase("AddAmmo") || key.equalsIgnoreCase("AddAltType") || key.equalsIgnoreCase("AddAltAmmo") || key.equalsIgnoreCase("AddAlternateAmmo"))
+        if (key.equalsIgnoreCase(KEY_ADD_AMMO) || key.equalsIgnoreCase("AddAltType") || key.equalsIgnoreCase("AddAltAmmo") || key.equalsIgnoreCase("AddAlternateAmmo"))
         {
             try
             {
@@ -329,7 +336,7 @@ public class GunBoxType extends BlockType
             InfoType entryType = getType();
             if (entryType != null && ModUtils.getItemStack(entryType).isEmpty())
             {
-                String entryKind = ammoEntry ? "AddAmmo" : "AddGun";
+                String entryKind = ammoEntry ? KEY_ADD_AMMO : KEY_ADD_GUN;
                 logError("Could not create GunBox output item stack for " + entryKind + " '" + itemShortName + "' (resolved type '" + entryType.getShortName() + "'), skipping output. Source line: "
                     + sourceLine, sourceFile);
             }
@@ -357,7 +364,7 @@ public class GunBoxType extends BlockType
 
         private void logMissingRequiredPart(RecipeIngredient recipeItem)
         {
-            String entryKind = ammoEntry ? "AddAmmo" : "AddGun";
+            String entryKind = ammoEntry ? KEY_ADD_AMMO : KEY_ADD_GUN;
             logError("Could not resolve GunBox recipe ingredient '" + recipeItem.getItemName() + "' (amount " + recipeItem.getAmount() + ") for " + entryKind + " '" + itemShortName
                 + "', skipping ingredient. Source line: " + sourceLine, sourceFile);
         }

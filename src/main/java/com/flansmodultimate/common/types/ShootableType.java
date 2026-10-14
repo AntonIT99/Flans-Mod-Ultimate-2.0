@@ -1,16 +1,12 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.explosions.ExplosionScaling;
-import com.flansmodultimate.common.explosions.FlanExplosion;
-import com.flansmodultimate.common.explosions.FragmentationModel;
+import com.flansmodultimate.common.explosions.*;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.FlansLog;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -30,6 +26,12 @@ public abstract class ShootableType extends InfoType
     /** Conversion factor between the gram and kilogram scales the mass parameters are authored at. */
     public static final float GRAMS_PER_KILOGRAM = 1000F;
     public static final double FALL_SPEED_COEFFICIENT = (9.81 / 400.0);
+    /** Explosion shake defaults apply to ammunition and grenades; either field can be zero to disable it. */
+    @Getter
+    protected float powerShake = 10F;
+    @Getter
+    protected float rangeShake = 32F;
+
     public static final float AIR_DEFAULT_DRAG = 0.99F;
     public static final float WATER_DEFAULT_DRAG = 0.8F;
     public static final float LAVA_DEFAULT_DRAG = 0.6F;
@@ -482,6 +484,7 @@ public abstract class ShootableType extends InfoType
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readSound("DetonateSound", detonateSound, file);
+        readExplosionShake(file);
 
         // Particles
         smokeParticleCount = readValue("FlareParticleCount", smokeParticleCount, file);
@@ -711,5 +714,13 @@ public abstract class ShootableType extends InfoType
     public static Optional<ShootableType> findAmmoType(String shortname, IContentProvider contentPack)
     {
         return findAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
+    }
+
+    private void readExplosionShake(TypeFile file)
+    {
+        powerShake = readValue("powerShake", powerShake, file);
+        rangeShake = readValue("rangeShake", rangeShake, file);
+        powerShake = Float.isFinite(powerShake) ? Mth.clamp(powerShake, 0F, 100F) : 0F;
+        rangeShake = Float.isFinite(rangeShake) ? Mth.clamp(rangeShake, 0F, 4096F) : 0F;
     }
 }

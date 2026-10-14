@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -141,6 +142,19 @@ public final class ApocalypsePortalManager
 
         buildObsidianSupport(level, lowerLeftCorner);
         spawnTeleporterIfAbsent(level, lowerLeftCorner, reciprocalTarget);
+        return true;
+    }
+
+    /** Builds a salvageable ruin, leaving one or two powered corners for the player to finish. */
+    public static boolean createAbandonedPortal(Level level, BlockPos corner, RandomSource random)
+    {
+        if (!hasPortalClearance(level, corner))
+            return false;
+        for (int dx = 0; dx < PORTAL_SIZE; dx++)
+            for (int dz = 0; dz < PORTAL_SIZE; dz++)
+                level.setBlock(corner.offset(dx, -1, dz), Blocks.OBSIDIAN.defaultBlockState(), 3);
+        for (int i = 0; i < 2; i++)
+            level.setBlock(corner.offset(random.nextInt(2) * 3, 0, random.nextInt(2) * 3), ApocalypseContent.blockPowerCube.get().defaultBlockState(), 3);
         return true;
     }
 

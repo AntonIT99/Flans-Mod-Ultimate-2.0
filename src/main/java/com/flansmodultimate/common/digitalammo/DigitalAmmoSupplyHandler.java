@@ -45,21 +45,23 @@ public final class DigitalAmmoSupplyHandler
 
             List<String> blockIds = config.digitalAmmoSupplyBlocks();
             for (String blockId : blockIds)
-            {
-                try
-                {
-                    ResourceLocation loc = ResourceLocation.parse(blockId.trim());
-                    supplyBlocks.add(loc);
-                }
-                catch (Exception e)
-                {
-                    // Invalid block ID, skip
-                }
-            }
+                addSupplyBlock(blockId);
         }
         catch (Exception e)
         {
             // Config not loaded yet
+        }
+    }
+
+    private static void addSupplyBlock(String blockId)
+    {
+        try
+        {
+            supplyBlocks.add(ResourceLocation.parse(blockId.trim()));
+        }
+        catch (Exception e)
+        {
+            // Invalid block ID, skip
         }
     }
 

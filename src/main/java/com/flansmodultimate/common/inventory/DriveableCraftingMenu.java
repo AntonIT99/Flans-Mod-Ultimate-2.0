@@ -4,9 +4,7 @@ import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.item.PartItem;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,11 +19,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Server-authoritative driveable workbench. The client sends only the selected
@@ -50,7 +44,22 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
     public static List<DriveableType> getBlueprints()
     {
         return InfoType.getInfoTypes().values().stream().filter(DriveableType.class::isInstance).map(DriveableType.class::cast).distinct()
-            .sorted(Comparator.comparing(DriveableType::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(DriveableType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
+            .sorted(Comparator.comparing((DriveableType type) -> type.getContentPack().getName(), String.CASE_INSENSITIVE_ORDER).thenComparing(DriveableCraftingMenu::getBlueprintCategory)
+                .thenComparing(DriveableType::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(DriveableType::getShortName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(DriveableType::getShortName))
+            .toList();
+    }
+
+    /** Ships form their own group regardless of the legacy definition type. */
+    public static String getBlueprintCategory(DriveableType type)
+    {
+        if (type.isShip())
+            return "ship";
+        if (type instanceof PlaneType)
+            return "plane";
+        if (type instanceof MechaType)
+            return "mecha";
+        return "vehicle";
     }
 
     @Override
@@ -120,14 +129,15 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
     /**
      * Finds the fastest compatible engine after first reserving the normal recipe
      * ingredients. This prevents recipe entries and the engine requirement from
-     * claiming the same item stack.
+     * claiming the same item stack. Missing non-engine ingredients do not hide
+     * compatible engines; the complete recipe is checked separately before crafting.
      */
     @Nullable
     private static PartType findBestEngine(Container inventory, DriveableType type, boolean creative)
     {
         SimpleContainer available = copyOf(inventory);
-        if (!creative && !InventoryHelper.tryConsumeAll(available, type.getDriveableRecipe(), false))
-            return null;
+        if (!creative)
+            type.getDriveableRecipe().forEach(ingredient -> InventoryHelper.consumeFromInventory(available, ingredient));
 
         int enginesNeeded = Math.max(0, type.numEngines());
         if (enginesNeeded == 0)

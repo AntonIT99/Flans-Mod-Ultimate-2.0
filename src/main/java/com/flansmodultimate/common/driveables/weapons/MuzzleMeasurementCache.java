@@ -74,10 +74,14 @@ final class MuzzleMeasurementCache
     }
 
     /** Measured AA gun barrel pivots and muzzles, in model pixels. */
+    // Plain data carrier that is never compared or used as a key.
+    @SuppressWarnings("java:S6218")
     record Barrels(double[][] pivots, double[][] muzzles)
     {}
 
     /** Measured deployable-gun pivot and muzzle, in model pixels. */
+    // Plain data carrier that is never compared or used as a key.
+    @SuppressWarnings("java:S6218")
     record Muzzle(double[] pivot, double[] muzzle)
     {}
 
@@ -86,6 +90,8 @@ final class MuzzleMeasurementCache
     {}
 
     /** The barrels of one shoot point or seat gun, as offsets from its muzzle in type-file pixels. */
+    // Plain data carrier that is never compared or used as a key.
+    @SuppressWarnings("java:S6218")
     record Spread(boolean gunOrigin, boolean secondary, int index, float[][] offsets)
     {
         Spread(boolean gunOrigin, boolean secondary, int index, List<Vector3f> offsets)
@@ -224,8 +230,11 @@ final class MuzzleMeasurementCache
     /**
      * A digest of everything a measurement depends on: every content pack, the
      * user's categories, which packs are corrected, and the measuring code.
+     *
+     * @param definitionDigests
+     *            the digest of each pack's definitions, taken while they were read
      */
-    static String key(List<IContentProvider> contentPacks, boolean correctFlanFolderPacks)
+    static String key(List<IContentProvider> contentPacks, Map<IContentProvider, String> definitionDigests, boolean correctFlanFolderPacks)
     {
         try
         {
@@ -233,22 +242,8 @@ final class MuzzleMeasurementCache
             update(digest, "format " + FORMAT_VERSION + " correct " + correctFlanFolderPacks + " defaultCategories " + ContentLoadingConfig.isUseDefaultCategories());
             for (Class<?> code : MEASURING_CODE)
                 update(digest, code.getName(), classBytes(code));
-            // Mods register their packs from their constructors, which run in parallel,
-            // so the packs are taken in an order of their own rather than the load order.
-            List<IContentProvider> packs = contentPacks.stream().sorted(Comparator.comparing(IContentProvider::getName).thenComparing(pack -> pack.getPath().toString())).toList();
-            // Logical packs packaged in one mod share its jar or folder, which is read once.
-            Set<Path> fingerprinted = new HashSet<>();
-            for (IContentProvider pack : packs)
-            {
-                update(digest, "pack " + pack.getName() + " " + pack.isPreprocessed());
-                if (fingerprinted.add(pack.getPath()))
-                    fingerprint(digest, pack.getPath(), false);
-                // A packaged pack in development keeps its model classes outside its content root.
-                Path models = modelRoot(pack);
-                if (models != null && !models.startsWith(pack.getPath()) && fingerprinted.add(models))
-                    fingerprint(digest, models, false);
-            }
-            fingerprint(digest, PlatformPaths.configDir().resolve(FlansMod.MOD_ID), true);
+            fingerprintPacks(digest, contentPacks, definitionDigests);
+            fingerprint(digest, PlatformPaths.configDir().resolve(FlansMod.MOD_ID), true, true);
             return HexFormat.of().formatHex(digest.digest());
         }
         catch (NoSuchAlgorithmException | IOException | RuntimeException e)
@@ -256,6 +251,42 @@ final class MuzzleMeasurementCache
             // Without a key nothing can be trusted, so every run measures again.
             FlansLog.log.warn("Could not fingerprint the content for the muzzle measurement cache: {}", e.toString());
             return "unkeyed-" + System.nanoTime();
+        }
+    }
+
+    /**
+     * The definitions and models of every pack. A pack's definitions were digested
+     * as they were read, so its folder is only read for them when that digest is
+     * missing, and not walked at all when its models are kept elsewhere.
+     */
+    static void fingerprintPacks(MessageDigest digest, List<IContentProvider> contentPacks, Map<IContentProvider, String> definitionDigests) throws IOException
+    {
+        // Mods register their packs from their constructors, which run in parallel,
+        // so the packs are taken in an order of their own rather than the load order.
+        List<IContentProvider> packs = contentPacks.stream().sorted(Comparator.comparing(IContentProvider::getName).thenComparing(pack -> pack.getPath().toString())).toList();
+        // Logical packs packaged in one mod share its jar or folder, whose definitions are read unless every one of them was digested.
+        Set<Path> undigested = new HashSet<>();
+        for (IContentProvider pack : packs)
+        {
+            if (definitionDigests.get(pack) == null)
+                undigested.add(pack.getPath());
+        }
+        Set<Path> fingerprinted = new HashSet<>();
+        for (IContentProvider pack : packs)
+        {
+            update(digest, "pack " + pack.getName() + " " + pack.isPreprocessed());
+            String definitions = definitionDigests.get(pack);
+            if (definitions != null)
+                update(digest, "definitions " + definitions);
+            Path path = pack.getPath();
+            // A packaged pack in development keeps its model classes outside its content root.
+            Path models = modelRoot(pack);
+            boolean readDefinitions = undigested.contains(path);
+            boolean holdsModels = models == null || models.startsWith(path);
+            if ((readDefinitions || holdsModels || !Files.isDirectory(path)) && fingerprinted.add(path))
+                fingerprint(digest, path, readDefinitions, false);
+            if (models != null && !models.startsWith(path) && fingerprinted.add(models))
+                fingerprint(digest, models, false, false);
         }
     }
 
@@ -275,11 +306,12 @@ final class MuzzleMeasurementCache
 
     /**
      * An archive by its size and time; a folder by the name and content of every
-     * definition and model file in it, and of every category file when
-     * {@code categories} is set. Content rather than time, because startup rewrites
-     * some of them, such as the default categories, unchanged.
+     * model file in it, of every definition file when {@code definitions} is set,
+     * and of every category file when {@code categories} is set. Content rather
+     * than time, because startup rewrites some of them, such as the default
+     * categories, unchanged.
      */
-    private static void fingerprint(MessageDigest digest, Path path, boolean categories) throws IOException
+    private static void fingerprint(MessageDigest digest, Path path, boolean definitions, boolean categories) throws IOException
     {
         if (Files.isRegularFile(path))
         {
@@ -295,7 +327,7 @@ final class MuzzleMeasurementCache
                 String name = file.getFileName().toString().toLowerCase(Locale.ROOT);
                 if (name.endsWith(".zip") || name.endsWith(".jar"))
                     update(digest, path.relativize(file) + " " + Files.size(file) + " " + Files.getLastModifiedTime(file).toMillis());
-                else if (name.endsWith(".txt") || name.endsWith(".class") || name.endsWith(".java") || categories && name.endsWith(".json"))
+                else if (definitions && name.endsWith(".txt") || name.endsWith(".class") || name.endsWith(".java") || categories && name.endsWith(".json"))
                     update(digest, path.relativize(file).toString(), Files.readAllBytes(file));
             }
         }

@@ -14,3 +14,5 @@ def npcsSourceSet = registerFmuModule(
 dependencies.add(npcsSourceSet.compileOnlyConfigurationName, customNpcsDependency)
 // Geometry-framing tests use the module's client helper without loading Custom NPCs.
 dependencies.add('testImplementation', npcsSourceSet.output)
+// Vanilla 1.21.1 makes LivingEntity.getDimensions final; Custom NPCs' runtime access transformer opens it.
+neoForge.accessTransformers.from(file('src/npcs/customnpcs-accesstransformer.cfg'))

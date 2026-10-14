@@ -1,17 +1,12 @@
 package com.flansmodultimate.common.raytracing;
 
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.Bullet;
-import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.driveables.parts.PartBodies;
+import com.flansmodultimate.common.driveables.parts.PartBody;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.raytracing.hits.BlockHit;
-import com.flansmodultimate.common.raytracing.hits.BulletHit;
-import com.flansmodultimate.common.raytracing.hits.EntityHit;
-import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.raytracing.hits.*;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -27,15 +22,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Raytracer
@@ -62,9 +51,12 @@ public class Raytracer
         List<Entity> candidates = new ArrayList<>(ModUtils.queryEntities(level, bullet, search, entity -> !(entity instanceof Driveable)));
         candidates.addAll(ModUtils.queryEntities(level, bullet, segment.inflate(DriveableType.getMaxBulletDetectionRadius()), Driveable.class, null));
 
+        checkPartBodyHits(level, entitiesToIgnore, origin, motion, owner, hits);
+
         for (Entity entity : candidates)
         {
-            if (!entity.isAlive() || (entity instanceof LivingEntity living && living.isDeadOrDying()) || entitiesToIgnore.contains(entity) || !ModUtils.canEntityBeHitByBullets(entity))
+            if (!entity.isAlive() || (entity instanceof LivingEntity living && living.isDeadOrDying()) || entitiesToIgnore.contains(entity) || !ModUtils.canEntityBeHitByBullets(entity)
+                || PartBodies.of(entity) != null)
                 continue;
 
             if (entity instanceof Driveable driveable)
@@ -99,6 +91,22 @@ public class Raytracer
         {
             // Raytrace the bullet
             hits.addAll(driveable.attackFromBullet(origin, motion));
+        }
+    }
+
+    /** Entities hit by the part are found by their part boxes, wherever their own box is. */
+    private static void checkPartBodyHits(Level level, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, @Nullable LivingEntity owner, List<BulletHit> hits)
+    {
+        for (Entity wearer : PartBodies.wearers(level))
+        {
+            PartBody body = PartBodies.of(wearer);
+            // A stand-in does not shoot itself, nor is it shot by whoever rides it.
+            boolean own = owner != null && (owner == wearer || wearer.hasIndirectPassenger(owner));
+            if (body == null || own || entitiesToIgnore.contains(wearer) || wearer instanceof LivingEntity living && living.isDeadOrDying())
+                continue;
+            double range = body.reach() + motion.length();
+            if (body.getPose().origin().distanceToSqr(origin) <= range * range)
+                hits.addAll(body.trace(wearer, origin, motion));
         }
     }
 

@@ -45,6 +45,8 @@ public final class EntityVertexBatch
     }
 
     /** One entity-format vertex, already transformed: batched for the open batch's consumer, otherwise written directly. */
+    // One argument per vertex attribute, as VertexConsumer#vertex.
+    @SuppressWarnings("java:S107")
     public static void vertex(VertexConsumer consumer, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay, int packedLight, float normalX,
         float normalY, float normalZ)
     {
@@ -93,6 +95,8 @@ public final class EntityVertexBatch
     }
 
     /** Encodes one vertex exactly as Minecraft's buffer builder does, with a zero padding byte. */
+    // One argument per vertex attribute, as VertexConsumer#vertex.
+    @SuppressWarnings("java:S107")
     static void put(long pointer, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay, int packedLight, float normalX, float normalY,
         float normalZ)
     {

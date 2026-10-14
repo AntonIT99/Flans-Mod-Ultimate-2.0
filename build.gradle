@@ -87,6 +87,20 @@ spotless {
         endWithNewline()
     }
 
+    format 'json', {
+        target 'src/*/resources/**/*.json'
+
+        // Match quoted strings first so array-like text inside strings remains untouched.
+        // Keep numeric arrays inline; preserve wrapping for strings, objects and mixed arrays.
+        custom 'inline numeric arrays', { text ->
+            def number = /-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/
+            def tokens = /"(?:\\.|[^"\\])*"|\[\s*${number}(?:\s*,\s*${number})*\s*\]/
+            text.replaceAll(tokens) { token ->
+                token.startsWith('[') ? '[' + (token.findAll(number).join(', ')) + ']' : token
+            }
+        }
+    }
+
     format 'misc', {
         target '*.gradle', '*.properties', '.gitignore', '*.md'
         trimTrailingWhitespace()
@@ -323,6 +337,8 @@ dependencies {
 
     // Optional mods loaded only in development runs.
     localRuntime customNpcsDependency
+    // NPC unit tests use Custom NPCs data classes; ModDevGradle's localRuntime does not reach the test runtime.
+    testRuntimeOnly customNpcsDependency
     if (project.hasProperty('withDistantHorizons'))
         localRuntime "maven.modrinth:distanthorizons:$version_distant_horizons"
 }

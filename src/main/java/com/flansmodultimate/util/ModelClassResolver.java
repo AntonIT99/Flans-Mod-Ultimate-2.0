@@ -59,7 +59,10 @@ public final class ModelClassResolver
     public static Object instantiate(ModelClassLocation location, boolean preferBuiltInModelClasses) throws ReflectiveOperationException, IOException
     {
         boolean preferContentPackClass = location.ownClassFile() && !preferBuiltInModelClasses;
-        return ClassLoaderUtils.loadModelClass(location.contentPack(), location.className(), preferContentPackClass).getConstructor().newInstance();
+        try (ModelResourceResolver.Scope ignored = ModelResourceResolver.useContentPack(location.contentPack()))
+        {
+            return ClassLoaderUtils.loadModelClass(location.contentPack(), location.className(), preferContentPackClass).getConstructor().newInstance();
+        }
     }
 
     /** Legacy content packs may ship the same model below their own package instead of the common one. */

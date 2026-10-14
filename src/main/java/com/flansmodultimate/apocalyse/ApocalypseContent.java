@@ -1,19 +1,9 @@
 package com.flansmodultimate.apocalyse;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.apocalyse.common.block.PowerCubeBlock;
-import com.flansmodultimate.apocalyse.common.block.SulphurBlock;
-import com.flansmodultimate.apocalyse.common.block.SulphuricAcidBlock;
+import com.flansmodultimate.apocalyse.common.block.*;
 import com.flansmodultimate.apocalyse.common.block.entity.PowerCubeBlockEntity;
-import com.flansmodultimate.apocalyse.common.entity.AiMechaEntity;
-import com.flansmodultimate.apocalyse.common.entity.FlyByPlaneEntity;
-import com.flansmodultimate.apocalyse.common.entity.InventoryHolderEntity;
-import com.flansmodultimate.apocalyse.common.entity.NukeDropEntity;
-import com.flansmodultimate.apocalyse.common.entity.SkullBossEntity;
-import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
-import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
-import com.flansmodultimate.apocalyse.common.entity.TeleporterEntity;
-import com.flansmodultimate.apocalyse.common.entity.WorldgenSpawnMarker;
+import com.flansmodultimate.apocalyse.common.entity.*;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseChunkFeature;
 import lombok.NoArgsConstructor;
 import net.neoforged.bus.api.IEventBus;
@@ -27,23 +17,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.BucketItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.material.*;
 
 import java.util.function.Supplier;
 
@@ -134,7 +116,7 @@ public final class ApocalypseContent
     public static final Supplier<? extends EntityType<AiMechaEntity>> aiMecha = entityRegistry.register("aimecha", () -> EntityType.Builder.<AiMechaEntity>of(AiMechaEntity::new, MobCategory.MISC)
         .sized(2F, 4F).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "aimecha").toString()));
     public static final Supplier<? extends EntityType<SkullBossEntity>> skullBoss = entityRegistry.register("skullboss", () -> EntityType.Builder.of(SkullBossEntity::new, MobCategory.MONSTER)
-        .sized(8.0F, 8.0F).clientTrackingRange(256).updateInterval(2).fireImmune().build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "skullboss").toString()));
+        .sized(16.0F, 16.0F).clientTrackingRange(256).updateInterval(2).fireImmune().build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "skullboss").toString()));
 
     public static void register(IEventBus modEventBus)
     {

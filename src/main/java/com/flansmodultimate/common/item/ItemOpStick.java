@@ -4,6 +4,7 @@ import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketBaseEditState;
+import com.flansmodultimate.network.client.teams.PacketCapturePointEditState;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
 
@@ -109,7 +110,11 @@ public final class ItemOpStick extends Item
             player.displayClientMessage(Component.literal("Ownership is configured on bases"), false);
             return;
         }
-        PacketHandler.sendTo(PacketBaseEditState.create(TeamsManager.getInstance(), base), player);
+        // A capture point has more to set than a plain base: its letter and how close players must stand.
+        if (base instanceof ITeamCapturePoint point)
+            PacketHandler.sendTo(PacketCapturePointEditState.create(TeamsManager.getInstance(), point), player);
+        else
+            PacketHandler.sendTo(PacketBaseEditState.create(TeamsManager.getInstance(), base), player);
     }
 
     private void connect(ServerPlayer player, ITeamObject object, ItemStack stack)

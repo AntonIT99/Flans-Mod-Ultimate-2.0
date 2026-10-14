@@ -19,6 +19,8 @@ public interface IClientRenderHooks
 
     void spawnParticle(String s, double x, double y, double z, float scale);
 
+    // Mirrors Level#addParticle: position and velocity, plus the effect options.
+    @SuppressWarnings("java:S107")
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale);
 
     /**
@@ -27,6 +29,8 @@ public interface IClientRenderHooks
      * clears early, which is what makes a small-calibre detonation read as brief; above one it
      * lingers. It changes only how long the particle lives, never how fast it animates.
      */
+    // Mirrors Level#addParticle: position and velocity, plus the effect options.
+    @SuppressWarnings("java:S107")
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale);
 
     /**
@@ -58,6 +62,8 @@ public interface IClientRenderHooks
     /** A vehicle smoke-launcher shell, flown and burst entirely on the client. */
     void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks);
 
+    // Mirrors Level#addParticle: position and velocity, plus the effect options.
+    @SuppressWarnings("java:S107")
     void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale);
 
     void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter);
@@ -110,6 +116,10 @@ public interface IClientRenderHooks
 
     /** Kicks the camera for a nearby driveable firing its main or coaxial gun. */
     void addVehicleScreenShake(float intensity, float durationSeconds);
+
+    void addCombatFeedback(boolean explosion, float intensity, float direction);
+
+    void playBulletFlyby(String sound, Vec3 position);
 
     void updatePlayerClassSkins(Map<UUID, String> playerClasses);
 

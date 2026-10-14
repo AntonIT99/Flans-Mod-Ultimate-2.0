@@ -5,11 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
@@ -62,6 +58,8 @@ public class BlastPuffParticle extends TextureSheetParticle
         boolean collides)
     {}
 
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
     protected BlastPuffParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites, Look look, float size, int lifetime)
     {
         super(level, x, y, z);
@@ -82,6 +80,8 @@ public class BlastPuffParticle extends TextureSheetParticle
     }
 
     /** Creates a puff, or returns {@code null} before the particle sprites have loaded. */
+    // Mirrors the vanilla particle constructor shape: level, position and velocity.
+    @SuppressWarnings("java:S107")
     @Nullable
     public static BlastPuffParticle create(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, Look look, float size, int lifetime)
     {

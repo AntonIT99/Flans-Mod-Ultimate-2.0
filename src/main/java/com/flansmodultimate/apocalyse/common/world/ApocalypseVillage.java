@@ -14,9 +14,11 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The villages that were here before the wasteland was.
  *
- * <p>They sit on a fixed grid so they are spread evenly and reproducibly, and each one is a
+ * <p>
+ * They sit on a fixed grid so they are spread evenly and reproducibly, and each one is a
  * well with a handful of collapsing cobblestone-and-plank houses and worked-out fields
- * around it — the ruined counterpart of the settlement generator 1.7.10 shipped.</p>
+ * around it — the ruined counterpart of the settlement generator 1.7.10 shipped.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseVillage
@@ -44,8 +46,7 @@ public final class ApocalypseVillage
         if (!isAnchor(level.getSeed(), chunkPos))
             return;
 
-        RandomSource random = RandomSource.create(level.getSeed()
-            ^ (chunkPos.x * 738297199L) ^ (chunkPos.z * 1128889L));
+        RandomSource random = RandomSource.create(level.getSeed() ^ (chunkPos.x * 738297199L) ^ (chunkPos.z * 1128889L));
         BlockPos centre = ApocalypseWorldgen.surfacePos(level, chunkPos.getMinBlockX() + 8, chunkPos.getMinBlockZ() + 8);
         if (centre.getY() <= level.getMinBuildHeight() + 4 || centre.getY() >= level.getMaxBuildHeight() - 12)
             return;
@@ -69,8 +70,10 @@ public final class ApocalypseVillage
     /**
      * Whether this chunk is the one chosen inside its grid cell.
      *
-     * <p>Derived from the seed and the cell alone, so every chunk in the world agrees on
-     * where the villages are without consulting any shared state.</p>
+     * <p>
+     * Derived from the seed and the cell alone, so every chunk in the world agrees on
+     * where the villages are without consulting any shared state.
+     * </p>
      */
     private static boolean isAnchor(long seed, ChunkPos pos)
     {
@@ -172,7 +175,10 @@ public final class ApocalypseVillage
                     }
                     // Higher courses have fallen away more than lower ones.
                     boolean standing = corner || random.nextFloat() > 0.15F + 0.2F * dy;
-                    ApocalypseWorldgen.setBlock(level, pos, standing ? (random.nextInt(5) == 0 ? PATCH : WALL) : AIR);
+                    if (standing)
+                        ApocalypseWorldgen.setBlock(level, pos, random.nextInt(5) == 0 ? PATCH : WALL);
+                    else
+                        ApocalypseWorldgen.setBlock(level, pos, AIR);
                 }
                 if (corner)
                     ApocalypseWorldgen.setBlock(level, origin.offset(dx, height - 1, dz), BEAM);
@@ -225,8 +231,7 @@ public final class ApocalypseVillage
         if (random.nextInt(6) != 0)
             return;
         BlockPos wall = origin.offset(1, 1, 0);
-        ApocalypseWorldgen.flanBlock("flangunrack").ifPresent(block ->
-            ApocalypseWorldgen.placeItemHolder(level, random, block, wall, Direction.SOUTH, true));
+        ApocalypseWorldgen.flanBlock("flangunrack").ifPresent(block -> ApocalypseWorldgen.placeItemHolder(level, random, block, wall, Direction.SOUTH, true));
     }
 
     /** A plot that was still being worked when everyone left. */
@@ -239,8 +244,10 @@ public final class ApocalypseVillage
             {
                 BlockPos soil = origin.offset(dx, -1, dz);
                 boolean channel = dx == size / 2;
-                ApocalypseWorldgen.setBlock(level, soil, channel ? Blocks.WATER.defaultBlockState()
-                    : random.nextInt(4) == 0 ? Blocks.COARSE_DIRT.defaultBlockState() : Blocks.FARMLAND.defaultBlockState());
+                if (channel)
+                    ApocalypseWorldgen.setBlock(level, soil, Blocks.WATER.defaultBlockState());
+                else
+                    ApocalypseWorldgen.setBlock(level, soil, random.nextInt(4) == 0 ? Blocks.COARSE_DIRT.defaultBlockState() : Blocks.FARMLAND.defaultBlockState());
                 BlockPos above = origin.offset(dx, 0, dz);
                 if (channel || level.getBlockState(soil).is(Blocks.COARSE_DIRT))
                 {

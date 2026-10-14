@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.*;
+import com.flansmodultimate.common.driveables.visual.VehicleVisual;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -24,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** Wheel-, track- and water-capable server vehicle simulation. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Vehicle extends Driveable
+public class Vehicle extends Driveable implements VehicleVisual
 {
     @Getter
     protected float wheelYaw;
@@ -201,7 +202,8 @@ public class Vehicle extends Driveable
         double forwardLength = Math.hypot(steeringForward.x, steeringForward.z);
         Vec3 steeringVelocity = getDeltaMovement();
         double signedSpeed = forwardLength > 1.0E-8D ? (steeringVelocity.x * steeringForward.x + steeringVelocity.z * steeringForward.z) / forwardLength : 0D;
-        double velocityScale = tracked ? (isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D) : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
+        double trackedScale = isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D;
+        double velocityScale = tracked ? trackedScale : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
         float yawDelta = (float) Math.toDegrees(turnControl * steeringScale * velocityScale);
         if (type.usesRealTurnRate(ModCommonConfig.forceLegacyVehiclePhysics(), pushed, tracked))

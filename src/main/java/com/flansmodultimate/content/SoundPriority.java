@@ -25,15 +25,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Sound priority is independent of definition loading, texture aliases, and recipe pack order. */
@@ -81,6 +73,14 @@ public final class SoundPriority
 
     private SoundPriority()
     {}
+
+    /** Measured duration independent of whether type-defined sound timers are overridden. */
+    public static OptionalInt measuredLength(String path)
+    {
+        State current = state.get();
+        Integer length = current == null ? null : current.plan().lengths().get(path);
+        return length != null && length > 0 ? OptionalInt.of(length) : OptionalInt.empty();
+    }
 
     static void initialize(List<IContentProvider> providers)
     {

@@ -2,38 +2,35 @@ package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.BlockType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ItemHolderType;
-import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.common.types.*;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ResourceUtils
 {
+    private static final String KEY_PARENT = "parent";
+    private static final String MODEL_CUBE_BOTTOM_TOP = "minecraft:block/cube_bottom_top";
+    private static final String KEY_TEXTURES = "textures";
+    private static final String KEY_BOTTOM = "bottom";
+    private static final String BLOCK_INFIX = ":block/";
+    private static final String ITEM_INFIX = ":item/";
+    private static final String MODEL_ITEM_GENERATED = "minecraft:item/generated";
+    private static final String KEY_LAYER0 = "layer0";
+
     /** Recognize only the basic cube shape emitted by this mod, so authored geometry survives regeneration. */
     public static boolean isGeneratedBlockModel(JsonObject model)
     {
-        if (model.size() != 2 || !model.has("parent") || !model.get("parent").isJsonPrimitive()
-            || !model.get("parent").getAsString().equals("minecraft:block/cube_bottom_top")
-            || !model.has("textures") || !model.get("textures").isJsonObject())
+        if (model.size() != 2 || !model.has(KEY_PARENT) || !model.get(KEY_PARENT).isJsonPrimitive() || !model.get(KEY_PARENT).getAsString().equals(MODEL_CUBE_BOTTOM_TOP) || !model.has(KEY_TEXTURES)
+            || !model.get(KEY_TEXTURES).isJsonObject())
             return false;
-        Set<String> slots = model.getAsJsonObject("textures").keySet();
-        return slots.equals(Set.of("top", "bottom", "side"))
-            || slots.equals(Set.of("top", "bottom", "side", "particle"));
+        Set<String> slots = model.getAsJsonObject(KEY_TEXTURES).keySet();
+        return slots.equals(Set.of("top", KEY_BOTTOM, "side")) || slots.equals(Set.of("top", KEY_BOTTOM, "side", "particle"));
     }
 
     public static String sanitize(@Nullable String name)
@@ -91,54 +88,51 @@ public final class ResourceUtils
 
         public static ModelJson createBlockModel(BlockType config)
         {
-            String parent = "minecraft:block/cube_bottom_top";
+            String parent = MODEL_CUBE_BOTTOM_TOP;
 
             Map<String, String> textures = new LinkedHashMap<>();
-            textures.put("top", FlansMod.FLANSMOD_ID + ":block/" + config.getTopTextureName());
-            textures.put("bottom", FlansMod.FLANSMOD_ID + ":block/" + config.getBottomTextureName());
-            textures.put("side", FlansMod.FLANSMOD_ID + ":block/" + config.getSideTextureName());
+            textures.put("top", FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getTopTextureName());
+            textures.put(KEY_BOTTOM, FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getBottomTextureName());
+            textures.put("side", FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getSideTextureName());
 
             return new ModelJson(parent, null, textures, null);
         }
 
         public static ModelJson createItemHolderBlockModel(ItemHolderType config)
         {
-            String iconTexture = FlansMod.FLANSMOD_ID + ":item/" + config.getIcon();
+            String iconTexture = FlansMod.FLANSMOD_ID + ITEM_INFIX + config.getIcon();
 
             Map<String, String> textures = new LinkedHashMap<>();
             textures.put("particle", iconTexture);
             textures.put("top", iconTexture);
-            textures.put("bottom", iconTexture);
+            textures.put(KEY_BOTTOM, iconTexture);
             textures.put("side", iconTexture);
 
-            return new ModelJson("minecraft:block/cube_bottom_top", null, textures, null);
+            return new ModelJson(MODEL_CUBE_BOTTOM_TOP, null, textures, null);
         }
 
         public static ModelJson createItemModel(InfoType config)
         {
             if (config instanceof ItemHolderType)
             {
-                return new ModelJson("minecraft:item/generated", null,
-                    Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + config.getIcon()), null);
+                return new ModelJson(MODEL_ITEM_GENERATED, null, Map.of(KEY_LAYER0, FlansMod.FLANSMOD_ID + ITEM_INFIX + config.getIcon()), null);
             }
 
-            String parent = "minecraft:item/generated";
+            String parent = MODEL_ITEM_GENERATED;
             if (config.getType().isHasBlock())
-                parent = FlansMod.FLANSMOD_ID + ":block/" + config.getShortName();
+                parent = FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getShortName();
             else if (config.getType().isHandHeldItem())
                 parent = "minecraft:item/handheld";
 
             Map<String, String> textures = null;
             if (!config.getType().isHasBlock())
-                textures = Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + config.getIcon());
+                textures = Map.of(KEY_LAYER0, FlansMod.FLANSMOD_ID + ITEM_INFIX + config.getIcon());
 
             List<Override> overrides = null;
             if (config instanceof PaintableType paintableType)
             {
-                overrides = paintableType.getPaintjobs().values().stream()
-                    .filter(p -> !p.equals(paintableType.getDefaultPaintjob()))
-                    .map(p -> new Override(FlansMod.PAINTJOB.toString(), p.getId(), FlansMod.FLANSMOD_ID + ":item/" + p.getIcon()))
-                    .toList();
+                overrides = paintableType.getPaintjobs().values().stream().filter(p -> !p.equals(paintableType.getDefaultPaintjob()))
+                    .map(p -> new Override(FlansMod.PAINTJOB.toString(), p.getId(), FlansMod.FLANSMOD_ID + ITEM_INFIX + p.getIcon())).toList();
             }
 
             return new ModelJson(parent, null, textures, overrides);
@@ -151,15 +145,15 @@ public final class ResourceUtils
 
         public static ModelJson createItemModel(InfoType config, String icon)
         {
-            String parent = "minecraft:item/generated";
+            String parent = MODEL_ITEM_GENERATED;
             if (config.getType().isHasBlock())
-                parent = FlansMod.FLANSMOD_ID + ":block/" + config.getShortName();
+                parent = FlansMod.FLANSMOD_ID + BLOCK_INFIX + config.getShortName();
             else if (config.getType().isHandHeldItem())
                 parent = "minecraft:item/handheld";
 
             Map<String, String> textures = null;
             if (!config.getType().isHasBlock())
-                textures = Map.of("layer0", FlansMod.FLANSMOD_ID + ":item/" + icon);
+                textures = Map.of(KEY_LAYER0, FlansMod.FLANSMOD_ID + ITEM_INFIX + icon);
 
             return new ModelJson(parent, null, textures, null);
         }
@@ -177,8 +171,8 @@ public final class ResourceUtils
         public static BlockStateJson create(InfoType type)
         {
             if (type instanceof ItemHolderType)
-                return BlockStateJson.horizontalFacing(FlansMod.FLANSMOD_ID + ":block/" + type.getShortName(), true);
-            return BlockStateJson.single(FlansMod.FLANSMOD_ID + ":block/" + type.getShortName());
+                return BlockStateJson.horizontalFacing(FlansMod.FLANSMOD_ID + BLOCK_INFIX + type.getShortName(), true);
+            return BlockStateJson.single(FlansMod.FLANSMOD_ID + BLOCK_INFIX + type.getShortName());
         }
 
         /** Represents one model entry inside a variant */
@@ -199,23 +193,27 @@ public final class ResourceUtils
 
             public Variant rotX(int x)
             {
-                this.x = x; return this;
+                this.x = x;
+                return this;
             }
 
             public Variant rotY(int y)
             {
-                this.y = y; return this;
+                this.y = y;
+                return this;
 
             }
 
             public Variant uvlock(boolean uv)
             {
-                this.uvLock = uv; return this;
+                this.uvLock = uv;
+                return this;
             }
 
             public Variant weight(int w)
             {
-                this.weight = w; return this;
+                this.weight = w;
+                return this;
             }
         }
 
@@ -255,8 +253,8 @@ public final class ResourceUtils
             BlockStateJson bs = new BlockStateJson();
             bs.variants.put("facing=north", new Variant(model).rotY(180).uvlock(uvLock));
             bs.variants.put("facing=south", new Variant(model).rotY(0).uvlock(uvLock));
-            bs.variants.put("facing=west",  new Variant(model).rotY(90).uvlock(uvLock));
-            bs.variants.put("facing=east",  new Variant(model).rotY(270).uvlock(uvLock));
+            bs.variants.put("facing=west", new Variant(model).rotY(90).uvlock(uvLock));
+            bs.variants.put("facing=east", new Variant(model).rotY(270).uvlock(uvLock));
             return bs;
         }
     }

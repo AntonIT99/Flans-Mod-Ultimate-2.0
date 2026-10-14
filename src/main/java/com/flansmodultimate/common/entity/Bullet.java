@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.*;
+import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.IBullet;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.*;
@@ -8,6 +9,7 @@ import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.Raytracer;
+import com.flansmodultimate.common.raytracing.hits.BlockHit;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
@@ -33,7 +35,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
@@ -43,6 +44,8 @@ import net.minecraft.world.phys.*;
 
 import java.util.*;
 
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBullet
 {
@@ -119,7 +122,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     /** UUID of the entity which shot that bullet (directly) */
     protected UUID shooterUUID;
 
-    protected boolean playedFlybySound;
+    protected NearMissHandler.Recipients nearMissRecipients;
+    protected final Set<UUID> directHitPlayers = new HashSet<>();
 
     public Bullet(EntityType<?> entityType, Level level)
     {
@@ -460,6 +464,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 return;
             if (handleFuseAndLifetime(level))
                 return;
+            if (handleDepthCharge(level))
+                return;
 
             handleDetonationConditions(level);
             handleSubmunitions(level);
@@ -619,7 +625,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         {
             setDead(level);
         }
-        if (tickCount > bulletLife)
+        if (tickCount > (configType.isDepthCharge() ? configType.getDepthChargeLifetime() : bulletLife))
         {
             setDead(level);
         }
@@ -692,14 +698,17 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected void performRaytraceAndApplyHits(Level level)
     {
         Vec3 origin = position();
+        Vec3 traceMotion = velocity;
         List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir < 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity,
             pingOfShooter, 0F, getHitboxSize(), configType);
 
-        if (hits.isEmpty())
-            return;
+        float feedbackProgress = 1F;
 
-        lastHitPenAmount = 0F;
-        lastHitHeadshot = false;
+        if (!hits.isEmpty())
+        {
+            lastHitPenAmount = 0F;
+            lastHitHeadshot = false;
+        }
 
         for (BulletHit bulletHit : hits)
         {
@@ -709,19 +718,26 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 continue;
 
             Vec3 hitPos = origin.add(velocity.scale(bulletHit.getIntersectTime()));
+            // A block contact may bounce the round and change velocity. Feedback only covers the incoming traced segment.
+            if (bulletHit instanceof BlockHit)
+                feedbackProgress = Math.min(feedbackProgress, bulletHit.getIntersectTime());
+            if (bulletHit.getEntity() instanceof Player player)
+                directHitPlayers.add(player.getUUID());
 
             ShootingHelper.HitData hitData = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, new ShootingHelper.HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot), this);
             penetratingPower = hitData.penetratingPower();
             lastHitPenAmount = hitData.lastHitPenAmount();
             lastHitHeadshot = hitData.lastHitHeadshot();
 
-            if (penetratingPower <= 0F || (configType.isExplodeOnImpact() && ticksInAir > 1))
+            if (isRemoved() || isSmoking() || penetratingPower <= 0F || (configType.isExplodeOnImpact() && ticksInAir > 1))
             {
+                feedbackProgress = Math.min(feedbackProgress, bulletHit.getIntersectTime());
                 setPos(hitPos);
                 setDead(level);
                 break;
             }
         }
+        nearMissRecipients = NearMissHandler.dispatch(level, firedShot, origin, origin.add(traceMotion.scale(feedbackProgress)), directHitPlayers, nearMissRecipients);
     }
 
     public void handleBounceOrStop(Level level, BlockHitResult hitResult, Vec3 hitVec)
@@ -781,6 +797,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     @Override
     protected void applyDragAndGravity()
     {
+        if (configType.isDepthCharge())
+        {
+            double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed(), level());
+            float drag = ProjectileDrag.factor(this, configType.getDragInAir(), configType.getDragInWater());
+            velocity = DepthChargePhysics.velocity(velocity, isInWater(), gravity, drag);
+            setDeltaMovement(velocity);
+            return;
+        }
         if (configType.isTorpedo())
             return;
 
@@ -792,7 +816,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected void updateTorpedoVelocity()
     {
-        if (!configType.isTorpedo())
+        if (!configType.isTorpedo() || configType.isDepthCharge())
             return;
 
         if (isInWater())
@@ -806,6 +830,18 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             velocity = velocity.add(0, -gravity, 0);
         }
         setDeltaMovement(velocity);
+    }
+
+    /** Only the server detonates; the usual prime delay, fuse and smoke lifecycle still apply. */
+    protected boolean handleDepthCharge(Level level)
+    {
+        if (!level.isClientSide && configType.isDepthCharge())
+        {
+            int seaLevel = configType.getDepthChargeSeaLevel() == Integer.MIN_VALUE ? FlansMod.teamsManager.getSeaLevel(level) : configType.getDepthChargeSeaLevel();
+            if (DepthChargePhysics.shouldDetonate(isInWater(), getY(), seaLevel, configType.getActivationDepth()))
+                detonate(level);
+        }
+        return isRemoved() || isSmoking();
     }
 
     protected void updatePositionAndOrientation()
@@ -1150,7 +1186,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected void clientTick(Level level)
     {
-        playFlybyIfClose(level);
         spawnWaterBubbles(level);
         spawnTracerBeam();
         spawnParticles();
@@ -1236,19 +1271,4 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         }
     }
 
-    protected void playFlybyIfClose(Level level)
-    {
-        if (playedFlybySound)
-            return;
-        if (ClientHooks.PLAYER.isLocalPlayer(firedShot.getAttacker().orElse(null)))
-            return;
-        if (!ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, 25.0)) // Must be within 5 blocks
-            return;
-
-        playedFlybySound = true;
-        float soundVolume = 10.0F;
-        float soundPitch = 1.0F / (random.nextFloat() * 0.4F + 0.8F);
-        FlansMod.getSoundEvent(FlansModSounds.SOUND_BULLETFLYBY)
-            .ifPresent(soundEvent -> level.playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
-    }
 }

@@ -6,9 +6,7 @@ import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.explosions.FlanExplosion;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.TracerBeam;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
@@ -53,6 +51,9 @@ public class BulletType extends ShootableType
      */
     @Getter
     protected boolean heat;
+    /** Squash-head explosive round: stops at the first vehicle surface without using the HEAT jet channel. */
+    @Getter
+    protected boolean hesh;
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -72,8 +73,17 @@ public class BulletType extends ShootableType
 
     @Getter
     protected String hitSound;
+    /** Null keeps the generic fly-by; an empty string explicitly disables it. */
+    @Getter @Nullable
+    protected String flyBySound;
     @Getter
-    protected float hitSoundRange = 64F;
+    protected float flyBySoundRange = 5F;
+    /** Labjac strength scale: 16 is neutral, zero disables suppression for this ammunition. */
+    @Getter
+    protected float suppression = 16F;
+    @Getter
+    protected float suppressionRange = 3F;
+    protected float hitSoundRange = -1F;
     @Getter
     protected boolean hitSoundEnable;
     @Getter
@@ -172,6 +182,16 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean torpedo;
     @Getter
+    protected boolean depthCharge;
+    @Getter
+    protected float activationDepth = 20F;
+    /** Depth charges may need longer than the ordinary thirty-second projectile lifetime to reach deep settings. */
+    @Getter
+    protected int depthChargeLifetime = 2400;
+    /** Omitted overrides use the dimension's sea level, including custom dimensions. */
+    @Getter
+    protected int depthChargeSeaLevel = Integer.MIN_VALUE;
+    @Getter
     protected boolean laserGuidance;
 
     // Submunitions
@@ -224,6 +244,11 @@ public class BulletType extends ShootableType
     @Getter
     protected int alternateTrailParticleCount = 10;
 
+    public float getHitSoundRange()
+    {
+        return ModCommonConfig.packSoundRange(hitSoundRange, ModCommonConfig.get().bulletHitSoundRange());
+    }
+
     @Override
     protected void read(TypeFile file)
     {
@@ -242,6 +267,7 @@ public class BulletType extends ShootableType
         }
         // Same key the Labjac edition uses, so its packs arrive with their HEAT rounds already marked.
         heat = readValue("HEAT", heat, file);
+        hesh = readValue("HESH", hesh, file);
 
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
@@ -252,6 +278,7 @@ public class BulletType extends ShootableType
         if (hasValueForConfigField("HitSound", file))
             hitSound = readSound("HitSound", hitSound, file);
         hitSoundRange = readValue("HitSoundRange", hitSoundRange, file);
+        readCombatFeedback(file);
 
         penetrates = readValue("Penetrates", true, file);
         penetratingPower = readValue("Penetration", penetratingPower, file);
@@ -281,6 +308,11 @@ public class BulletType extends ShootableType
         trackPhaseTurn = readValue("GuidedPhaseTurnSpeed", trackPhaseTurn, file);
         boostPhaseParticle = readValue("BoostParticle", boostPhaseParticle, file);
         torpedo = readValue("Torpedo", torpedo, file);
+        depthCharge = readValue("depthCharge", depthCharge, file);
+        activationDepth = readValue("activationDepth", activationDepth, file);
+        activationDepth = Float.isFinite(activationDepth) ? Mth.clamp(activationDepth, 0F, 4096F) : 20F;
+        depthChargeLifetime = Mth.clamp(readValue("DepthChargeLifetime", depthChargeLifetime, file), 1, 72000);
+        depthChargeSeaLevel = readValue("DepthChargeSeaLevel", depthChargeSeaLevel, file);
 
         // Some content packs use true and false after this, which confuses things...
         if (readFieldWithOptionalValue("Bomb", false, file))
@@ -646,5 +678,17 @@ public class BulletType extends ShootableType
     public float getBlockPenetrationModifier()
     {
         return blockPenetrationModifier < 0F ? (float) ModCommonConfig.get().blockPenetrationModifier() : blockPenetrationModifier;
+    }
+
+    private void readCombatFeedback(TypeFile file)
+    {
+        flyBySound = readSound("missNoise", flyBySound, file);
+        flyBySound = readSound("FlyBySound", flyBySound, file);
+        flyBySoundRange = readValue("FlyBySoundRange", flyBySoundRange, file);
+        suppression = readValue("Suppression", suppression, file);
+        suppressionRange = readValue("SuppressionRange", suppressionRange, file);
+        flyBySoundRange = Float.isFinite(flyBySoundRange) ? Mth.clamp(flyBySoundRange, 0F, 32F) : 5F;
+        suppression = Float.isFinite(suppression) ? Mth.clamp(suppression, 0F, 160F) : 0F;
+        suppressionRange = Float.isFinite(suppressionRange) ? Mth.clamp(suppressionRange, 0F, 32F) : 0F;
     }
 }

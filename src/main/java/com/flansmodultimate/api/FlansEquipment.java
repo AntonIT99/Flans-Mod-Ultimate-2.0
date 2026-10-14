@@ -34,10 +34,36 @@ public final class FlansEquipment
         return EquipmentSupport.armor(armor);
     }
 
+    /**
+     * Tells whether a gun is a deployable one, such as a tripod machine gun: it is placed in the world and fired from
+     * there, never from the hand. Either side.
+     *
+     * @return whether the stack is such a gun; false for any other item
+     */
+    public static boolean isDeployable(ItemStack weapon)
+    {
+        return EquipmentSupport.deployable(weapon);
+    }
+
     /** @return whether the gun has a usable loaded round; does not consume ammunition; either side */
     public static boolean hasLoadedRound(ItemStack weapon)
     {
         return EquipmentSupport.hasLoadedRound(weapon);
+    }
+
+    /**
+     * Tells whether a gun can be reloaded with a stack: ammunition the gun takes, in its current fire mode, that still
+     * holds rounds. Nothing is consumed. Either side.
+     *
+     * @param weapon
+     *            the gun; false for any other item
+     * @param ammunition
+     *            the stack offered to it
+     * @return whether {@link #loadMagazine} would accept the stack for an empty slot of the gun
+     */
+    public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
+    {
+        return EquipmentSupport.acceptsAmmunition(weapon, ammunition);
     }
 
     /** @return a detached copy of the first usable loaded magazine, or empty; either side, without consumption */
@@ -56,6 +82,65 @@ public final class FlansEquipment
     public static void playReloadSound(LivingEntity holder, ItemStack weapon)
     {
         EquipmentSupport.reloadSound(holder, weapon);
+    }
+
+    /**
+     * Raises the held gun's aim pose and plays its shot animation and muzzle flash model for clients that see the holder,
+     * as {@link #fire} does. For a caller that launches its own projectile on behalf of the held gun. Server thread only;
+     * honors {@link IEquipmentPolicy#flansGunShotAnimations()}.
+     *
+     * @param holder
+     *            entity holding the gun
+     * @param hand
+     *            hand holding the gun; nothing happens when it holds no Flan gun
+     */
+    public static void animateShot(LivingEntity holder, InteractionHand hand)
+    {
+        EquipmentSupport.animateShot(holder, hand);
+    }
+
+    /**
+     * Plays the held gun's reload animation for clients that see the holder. Players animate their own reloads, so a player
+     * holder is ignored. Server thread only.
+     *
+     * @param holder
+     *            non-player entity holding the gun
+     * @param hand
+     *            hand holding the gun; nothing happens when it holds no Flan gun
+     * @param reloadTicks
+     *            duration of the animation in ticks; nothing happens when not positive
+     */
+    public static void animateReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        EquipmentSupport.animateReload(holder, hand, reloadTicks);
+    }
+
+    /**
+     * Plays the held gun's melee animation for clients that see the holder. Players animate their own melee, so a player
+     * holder is ignored. Server thread only.
+     *
+     * @param holder
+     *            non-player entity holding the gun
+     * @param hand
+     *            hand holding the gun; nothing happens when it holds no Flan gun
+     */
+    public static void animateMelee(LivingEntity holder, InteractionHand hand)
+    {
+        EquipmentSupport.animateMelee(holder, hand);
+    }
+
+    /**
+     * Plays the held gun's melee sound with its authored range. Server thread only.
+     *
+     * @param holder
+     *            entity holding the gun
+     * @param hand
+     *            hand holding the gun
+     * @return whether the gun declares a melee sound and it was sent
+     */
+    public static boolean playMeleeSound(LivingEntity holder, InteractionHand hand)
+    {
+        return EquipmentSupport.meleeSound(holder, hand);
     }
 
     /**

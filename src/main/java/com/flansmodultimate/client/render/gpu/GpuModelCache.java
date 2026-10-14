@@ -1,46 +1,33 @@
 package com.flansmodultimate.client.render.gpu;
 
-import com.flansmodultimate.*;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.*;
-import com.flansmodultimate.client.render.CustomRenderType;
-import com.flansmodultimate.client.render.EntityVertexBatch;
-import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.client.render.thermal.*;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
-import com.flansmodultimate.config.*;
 import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.mixin.*;
 import com.flansmodultimate.mixin.BufferSourceAccessor;
-import com.flansmodultimate.platform.render.*;
 import com.flansmodultimate.platform.render.ShaderPlatform;
-import com.flansmodultimate.util.*;
 import com.flansmodultimate.util.FlansLog;
-import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
+import org.lwjgl.system.MemoryUtil;
 
-import net.minecraft.client.*;
+import net.minecraft.client.GraphicsStatus;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.resources.ResourceLocation;
 
-import java.io.*;
-import java.nio.*;
-import java.util.*;
-import java.util.function.*;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /** Bounded, render-thread-only GPU batches of local rigid geometry with per-draw pose palettes. */
+// Render diagnostics counters and renderer state are deliberately global.
+@SuppressWarnings("java:S2696")
 public final class GpuModelCache
 {
     /**
@@ -81,7 +68,7 @@ public final class GpuModelCache
     /** Automatic growth: an eighth of video memory, at most 1 GiB, keeping 512 MiB of video memory free. */
     private static final int GROWN_VIDEO_MEMORY_SHARE = 8;
     static final long MAX_GROWN_BYTES = 1024 * MIB;
-    private static final long FREE_VIDEO_MEMORY_RESERVE_KIB = 512 * 1024;
+    private static final long FREE_VIDEO_MEMORY_RESERVE_KIB = 512L * 1024L;
     private static final long GROWTH_WINDOW_NANOS = 2_000_000_000L;
     private static final int GROWTH_EVICTIONS = 8;
     private static final int GROWTH_WINDOWS = 2;
@@ -145,27 +132,36 @@ public final class GpuModelCache
     public static String status()
     {
         ModClientConfig config = ModClientConfig.get();
-        String state = config == null || !config.enableGpuModelCache
-            ? "disabled"
-            : shader == null
-                ? "shader unavailable"
-                : failed
-                    ? "failed until reload"
-                    : ShaderPlatform.isOptiFineLoaded()
-                        ? "OptiFine compatibility fallback"
-                        : ShaderPlatform.isShaderPackInUse()
-                            ? ShaderPlatform.shaderModName() + " shader pack fallback"
-                            : Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS ? "Fabulous fallback" : "available for eligible passes";
+        String state = cacheState(config);
         int configured = config == null ? 0 : config.gpuModelCacheMegabytes;
-        String budget = configured > 0
-            ? "configured"
-            : videoMemoryKiB < 0
-                ? "automatic"
-                : videoMemoryKiB == 0
-                    ? "automatic, video memory not reported"
-                    : "automatic" + (grownBytes > 0 ? ", grown from " + budgetBytes(0, videoMemoryKiB) / MIB + " MiB" : "") + ", " + videoMemoryKiB / 1024 + " MiB video memory";
+        String budget = configured > 0 ? "configured" : automaticBudget();
         return String.format(java.util.Locale.ROOT, "GPU cache %s; resident %d of %d meshes, %d of %d KiB (%.0f%%, %s)%s.", state, meshes.size(), meshes.maximumEntries(), meshes.bytes() / 1024,
             meshes.maximumBytes() / 1024, 100D * meshes.bytes() / meshes.maximumBytes(), budget, RenderDiagnostics.peakUsage(meshes.maximumBytes()));
+    }
+
+    private static String cacheState(ModClientConfig config)
+    {
+        if (config == null || !config.enableGpuModelCache)
+            return "disabled";
+        if (shader == null)
+            return "shader unavailable";
+        if (failed)
+            return "failed until reload";
+        if (ShaderPlatform.isOptiFineLoaded())
+            return "OptiFine compatibility fallback";
+        if (ShaderPlatform.isShaderPackInUse())
+            return ShaderPlatform.shaderModName() + " shader pack fallback";
+        return Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS ? "Fabulous fallback" : "available for eligible passes";
+    }
+
+    private static String automaticBudget()
+    {
+        if (videoMemoryKiB < 0)
+            return "automatic";
+        if (videoMemoryKiB == 0)
+            return "automatic, video memory not reported";
+        String grown = grownBytes > 0 ? ", grown from " + budgetBytes(0, videoMemoryKiB) / MIB + " MiB" : "";
+        return "automatic" + grown + ", " + videoMemoryKiB / 1024 + " MiB video memory";
     }
 
     /**
@@ -361,35 +357,6 @@ public final class GpuModelCache
         out.limit(floats * Float.BYTES);
     }
 
-    /** Writes the batch's palette at the ring's next offset and binds the block's range there. */
-    private static void bindPartPalette(RigidBatch batch)
-    {
-        if (paletteRing == 0)
-        {
-            paletteRing = GL15C.glGenBuffers();
-            GL15C.glBindBuffer(GL31C.GL_UNIFORM_BUFFER, paletteRing);
-            GL15C.glBufferData(GL31C.GL_UNIFORM_BUFFER, PALETTE_RING_BYTES, GL15C.GL_STREAM_DRAW);
-            uniformOffsetAlignment = Math.max(1, GL11C.glGetInteger(GL31C.GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
-            paletteBytes = MemoryUtil.memAlloc(PARTS_PER_BATCH * PALETTE_ENTRY_BYTES).order(java.nio.ByteOrder.nativeOrder());
-            paletteRingOffset = 0;
-        }
-        else
-            GL15C.glBindBuffer(GL31C.GL_UNIFORM_BUFFER, paletteRing);
-        if (paletteRingOffset + paletteBlockBytes > PALETTE_RING_BYTES)
-        {
-            // Wrapped: a fresh data store, so no write waits for draws still reading the old one.
-            GL15C.glBufferData(GL31C.GL_UNIFORM_BUFFER, PALETTE_RING_BYTES, GL15C.GL_STREAM_DRAW);
-            paletteRingOffset = 0;
-        }
-        writePartPalette(batch, paletteBytes);
-        GL15C.glBufferSubData(GL31C.GL_UNIFORM_BUFFER, paletteRingOffset, paletteBytes);
-        // The bound range covers the whole block; entries past the batch's are left over and never read.
-        GL30C.glBindBufferRange(GL31C.GL_UNIFORM_BUFFER, PALETTE_BINDING, paletteRing, paletteRingOffset, paletteBlockBytes);
-        GL15C.glBindBuffer(GL31C.GL_UNIFORM_BUFFER, 0);
-        int used = Math.max(paletteBytes.limit(), 1);
-        paletteRingOffset += (used + uniformOffsetAlignment - 1) / uniformOffsetAlignment * uniformOffsetAlignment;
-    }
-
     /**
      * A shader pack replaces vanilla programs and vertex formats and masks writes from shaders it does not know
      * while it renders the world, including its shadow pass. Installed without an active pack, Oculus and Iris keep
@@ -471,116 +438,6 @@ public final class GpuModelCache
         {
             buffer.close();
         }
-    }
-
-    private static Mesh mesh(GeometryKey key)
-    {
-        Mesh cached = meshes.get(key);
-        if (cached != null)
-            return cached;
-
-        long vertices = 0;
-        for (int i = 0; i < key.count; i++)
-            vertices += key.geometries[i].vertexCount();
-        long size = vertices * DefaultVertexFormat.NEW_ENTITY.getVertexSize();
-        long tick = Minecraft.getInstance().level == null ? System.nanoTime() / 50_000_000L : Minecraft.getInstance().level.getGameTime();
-
-        if (tick != uploadTick)
-        {
-            uploadTick = tick;
-            uploadedBytes = 0;
-        }
-
-        if (size == 0 || size > UPLOAD_BYTES_PER_TICK || uploadedBytes + size > UPLOAD_BYTES_PER_TICK)
-        {
-            if (RenderDiagnostics.enabled)
-                RenderDiagnostics.throttled++;
-            return null;
-        }
-
-        applyBudget();
-        meshes.reserve(size);
-        VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        try
-        {
-            BufferBuilder builder = new BufferBuilder(uploadStorage, VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-            boolean batched = EntityVertexBatch.begin(builder);
-            try
-            {
-                for (int i = 0; i < key.count; i++)
-                    // UV1 is the palette index in the cached mesh; real overlay coordinates are uniforms.
-                    key.geometries[i].draw(IDENTITY, builder, 0, key.paletteIndices[i], 1F, 1F, 1F, 1F);
-            }
-            finally
-            {
-                if (batched)
-                    EntityVertexBatch.end();
-            }
-            buffer.bind();
-            try (MeshData meshData = builder.buildOrThrow())
-            {
-                buffer.upload(meshData);
-            }
-            Mesh mesh = new Mesh(buffer, size);
-            meshes.put(key, mesh);
-            uploadedBytes += size;
-            if (RenderDiagnostics.enabled)
-            {
-                RenderDiagnostics.uploads++;
-                RenderDiagnostics.uploadBytes += size;
-            }
-            return mesh;
-        }
-        catch (RuntimeException ex)
-        {
-            buffer.close();
-            throw ex;
-        }
-        finally
-        {
-            uploadStorage.clear();
-            VertexBuffer.unbind();
-        }
-    }
-
-    /** Equivalent vanilla quad draw uniforms, without twelve concatenated sampler names/boxed IDs per draw. */
-    private static void prepareShader(ShaderInstance shader, int[] samplerTextures)
-    {
-        for (int i = 0; i < SAMPLERS.length; i++)
-        {
-            int texture = RenderSystem.getShaderTexture(i);
-            if (samplerTextures[i] != texture)
-            {
-                shader.setSampler(SAMPLERS[i], texture);
-                samplerTextures[i] = texture;
-            }
-        }
-        if (shader.MODEL_VIEW_MATRIX != null)
-            shader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
-        if (shader.PROJECTION_MATRIX != null)
-            shader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
-        if (shader.COLOR_MODULATOR != null)
-            shader.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
-        if (shader.GLINT_ALPHA != null)
-            shader.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
-        if (shader.FOG_START != null)
-            shader.FOG_START.set(RenderSystem.getShaderFogStart());
-        if (shader.FOG_END != null)
-            shader.FOG_END.set(RenderSystem.getShaderFogEnd());
-        if (shader.FOG_COLOR != null)
-            shader.FOG_COLOR.set(RenderSystem.getShaderFogColor());
-        if (shader.FOG_SHAPE != null)
-            shader.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
-        if (shader.TEXTURE_MATRIX != null)
-            shader.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
-        if (shader.GAME_TIME != null)
-            shader.GAME_TIME.set(RenderSystem.getShaderGameTime());
-        if (shader.SCREEN_SIZE != null)
-        {
-            var window = Minecraft.getInstance().getWindow();
-            shader.SCREEN_SIZE.set((float) window.getWidth(), (float) window.getHeight());
-        }
-        RenderSystem.setupShaderLights(shader);
     }
 
     private static final class Context implements RigidBatch.Backend, Supplier<ShaderInstance>
@@ -712,6 +569,145 @@ public final class GpuModelCache
             clear();
             failed = true;
             FlansLog.log.warn("GPU model rendering failed; using standard rendering until reload", exception);
+        }
+
+        /** Writes the batch's palette at the ring's next offset and binds the block's range there. */
+        private static void bindPartPalette(RigidBatch batch)
+        {
+            if (paletteRing == 0)
+            {
+                paletteRing = GL15C.glGenBuffers();
+                GL15C.glBindBuffer(GL31C.GL_UNIFORM_BUFFER, paletteRing);
+                GL15C.glBufferData(GL31C.GL_UNIFORM_BUFFER, PALETTE_RING_BYTES, GL15C.GL_STREAM_DRAW);
+                uniformOffsetAlignment = Math.max(1, GL11C.glGetInteger(GL31C.GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
+                paletteBytes = MemoryUtil.memAlloc(PARTS_PER_BATCH * PALETTE_ENTRY_BYTES).order(java.nio.ByteOrder.nativeOrder());
+                paletteRingOffset = 0;
+            }
+            else
+                GL15C.glBindBuffer(GL31C.GL_UNIFORM_BUFFER, paletteRing);
+            if (paletteRingOffset + paletteBlockBytes > PALETTE_RING_BYTES)
+            {
+                // Wrapped: a fresh data store, so no write waits for draws still reading the old one.
+                GL15C.glBufferData(GL31C.GL_UNIFORM_BUFFER, PALETTE_RING_BYTES, GL15C.GL_STREAM_DRAW);
+                paletteRingOffset = 0;
+            }
+            writePartPalette(batch, paletteBytes);
+            GL15C.glBufferSubData(GL31C.GL_UNIFORM_BUFFER, paletteRingOffset, paletteBytes);
+            // The bound range covers the whole block; entries past the batch's are left over and never read.
+            GL30C.glBindBufferRange(GL31C.GL_UNIFORM_BUFFER, PALETTE_BINDING, paletteRing, paletteRingOffset, paletteBlockBytes);
+            GL15C.glBindBuffer(GL31C.GL_UNIFORM_BUFFER, 0);
+            int used = Math.max(paletteBytes.limit(), 1);
+            paletteRingOffset += (used + uniformOffsetAlignment - 1) / uniformOffsetAlignment * uniformOffsetAlignment;
+        }
+
+        private static Mesh mesh(GeometryKey key)
+        {
+            Mesh cached = meshes.get(key);
+            if (cached != null)
+                return cached;
+
+            long vertices = 0;
+            for (int i = 0; i < key.count; i++)
+                vertices += key.geometries[i].vertexCount();
+            long size = vertices * DefaultVertexFormat.NEW_ENTITY.getVertexSize();
+            long tick = Minecraft.getInstance().level == null ? System.nanoTime() / 50_000_000L : Minecraft.getInstance().level.getGameTime();
+
+            if (tick != uploadTick)
+            {
+                uploadTick = tick;
+                uploadedBytes = 0;
+            }
+
+            if (size == 0 || size > UPLOAD_BYTES_PER_TICK || uploadedBytes + size > UPLOAD_BYTES_PER_TICK)
+            {
+                if (RenderDiagnostics.enabled)
+                    RenderDiagnostics.throttled++;
+                return null;
+            }
+
+            applyBudget();
+            meshes.reserve(size);
+            VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+            try
+            {
+                BufferBuilder builder = new BufferBuilder(uploadStorage, VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+                boolean batched = EntityVertexBatch.begin(builder);
+                try
+                {
+                    for (int i = 0; i < key.count; i++)
+                        // UV1 is the palette index in the cached mesh; real overlay coordinates are uniforms.
+                        key.geometries[i].draw(IDENTITY, builder, 0, key.paletteIndices[i], 1F, 1F, 1F, 1F);
+                }
+                finally
+                {
+                    if (batched)
+                        EntityVertexBatch.end();
+                }
+                buffer.bind();
+                try (MeshData meshData = builder.buildOrThrow())
+                {
+                    buffer.upload(meshData);
+                }
+                Mesh mesh = new Mesh(buffer, size);
+                meshes.put(key, mesh);
+                uploadedBytes += size;
+                if (RenderDiagnostics.enabled)
+                {
+                    RenderDiagnostics.uploads++;
+                    RenderDiagnostics.uploadBytes += size;
+                }
+                return mesh;
+            }
+            catch (RuntimeException ex)
+            {
+                buffer.close();
+                throw ex;
+            }
+            finally
+            {
+                uploadStorage.clear();
+                VertexBuffer.unbind();
+            }
+        }
+
+        /** Equivalent vanilla quad draw uniforms, without twelve concatenated sampler names/boxed IDs per draw. */
+        private static void prepareShader(ShaderInstance shader, int[] samplerTextures)
+        {
+            for (int i = 0; i < SAMPLERS.length; i++)
+            {
+                int texture = RenderSystem.getShaderTexture(i);
+                if (samplerTextures[i] != texture)
+                {
+                    shader.setSampler(SAMPLERS[i], texture);
+                    samplerTextures[i] = texture;
+                }
+            }
+            if (shader.MODEL_VIEW_MATRIX != null)
+                shader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
+            if (shader.PROJECTION_MATRIX != null)
+                shader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
+            if (shader.COLOR_MODULATOR != null)
+                shader.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+            if (shader.GLINT_ALPHA != null)
+                shader.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
+            if (shader.FOG_START != null)
+                shader.FOG_START.set(RenderSystem.getShaderFogStart());
+            if (shader.FOG_END != null)
+                shader.FOG_END.set(RenderSystem.getShaderFogEnd());
+            if (shader.FOG_COLOR != null)
+                shader.FOG_COLOR.set(RenderSystem.getShaderFogColor());
+            if (shader.FOG_SHAPE != null)
+                shader.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
+            if (shader.TEXTURE_MATRIX != null)
+                shader.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
+            if (shader.GAME_TIME != null)
+                shader.GAME_TIME.set(RenderSystem.getShaderGameTime());
+            if (shader.SCREEN_SIZE != null)
+            {
+                var window = Minecraft.getInstance().getWindow();
+                shader.SCREEN_SIZE.set((float) window.getWidth(), (float) window.getHeight());
+            }
+            RenderSystem.setupShaderLights(shader);
         }
     }
 }

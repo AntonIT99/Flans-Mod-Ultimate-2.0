@@ -14,7 +14,13 @@ public final class NpcWeaponOptions
     public enum Feature
     {
         ITEM_ARMOR(true), ITEM_WEAPONS(true), ARMOR_ANIMATIONS(true), WEAPON_ANIMATIONS(true), TYPE_PROPERTIES(true), PROJECTILES(true), GRENADES(true), MODEL_MUZZLES(true), ALTERNATE_BARRELS(
-            true), WEAPON_STATS(true), FLAN_SOUNDS(true), SHOOT_PARTICLES(true), LEAD_TARGET(true), BALLISTIC_AIM(true), SECONDARY_BANK(false);
+            true), WEAPON_STATS(true), FIRE_SOUNDS(true), SHOOT_PARTICLES(true), LEAD_TARGET(true), BALLISTIC_AIM(true), SECONDARY_BANK(false), RELOAD_SOUNDS(true), THROW_SOUNDS(true), MODEL_SOUNDS(
+                true), MELEE_SOUNDS(true), VEHICLE_DAMAGE(true), MODEL_ARMOUR(true), INVULNERABLE(false), FLAN_DAMAGE_TYPES(true), RELOAD_CYCLE(true), DUAL_WIELD(true), GUN_SHOT_ANIMATION(
+                    true), GUN_RELOAD_ANIMATION(true), GUN_MELEE_ANIMATION(true), NATIVE_THROWABLES(true), GRADUAL_AIM(true), FIRE_WHEN_ALIGNED(true), TURRET_LOCKED(false), PASSENGER_GUNS(
+                        true), TURRET_MUZZLES(true), ADVANCED_LEAD(true), HULL_FACES_TRAVEL(true), MISALIGNED_THROTTLE(true), RIDER_AT_SEAT(true), EYE_AT_MUZZLE(true), ANIMATED_MODEL(
+                            true), DOORS_OPEN(false), GEAR_UP(false), WINGS_FOLDED(false), ENGINE_RUNNING(true), FULL_THROTTLE(false), MODEL_CULLING(true), PROGRESSIVE_SEARCH(
+                                true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(true), PATH_DEBUG(false), CONSUME_AMMO(
+                                    false), PART_HITBOXES(true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(true), HITBOX_OUTLINES(false), SOLID_HITBOXES(false);
 
         private final boolean defaultEnabled;
 
@@ -46,7 +52,18 @@ public final class NpcWeaponOptions
     {
         CompoundTag tag = root.getCompound(NBT_KEY);
         for (Feature feature : Feature.values())
-            set(feature, tag.contains(feature.name(), Tag.TAG_BYTE) ? tag.getBoolean(feature.name()) : feature.defaultEnabled);
+        {
+            boolean fallback = feature.defaultEnabled;
+            // Split the former switch without changing saved NPC audio preferences.
+            if (isSoundFeature(feature) && tag.contains("FLAN_SOUNDS", Tag.TAG_BYTE))
+                fallback = tag.getBoolean("FLAN_SOUNDS");
+            set(feature, tag.contains(feature.name(), Tag.TAG_BYTE) ? tag.getBoolean(feature.name()) : fallback);
+        }
+    }
+
+    private static boolean isSoundFeature(Feature feature)
+    {
+        return feature == Feature.FIRE_SOUNDS || feature == Feature.RELOAD_SOUNDS || feature == Feature.THROW_SOUNDS || feature == Feature.MODEL_SOUNDS || feature == Feature.MELEE_SOUNDS;
     }
 
     public void save(CompoundTag root)

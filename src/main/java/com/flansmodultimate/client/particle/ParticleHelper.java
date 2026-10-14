@@ -14,10 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -26,10 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -144,9 +138,7 @@ public final class ParticleHelper
      * its own animation at its own natural speed. Stretching one particle's lifetime instead would
      * slow its animation to a crawl; replacing it as it expires keeps the motion looking right.
      */
-    public static void spawnSustained(String particleType, double x, double y, double z,
-                                      double spread, double drift, float scale, int burstSize,
-                                      int durationTicks, float lifetimeScale)
+    public static void spawnSustained(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
     {
         spawnSustained(particleType, particleType, 0, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
     }
@@ -156,9 +148,8 @@ public final class ParticleHelper
      * but waves emitted before {@code hotTicks} use {@code hotParticleType}. That is how a fireball
      * burns as fire first and then cools to smoke without either sprite being stretched.
      */
-    public static void spawnSustained(String hotParticleType, String particleType, int hotTicks,
-                                      double x, double y, double z, double spread, double drift,
-                                      float scale, int burstSize, int durationTicks, float lifetimeScale)
+    public static void spawnSustained(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize,
+        int durationTicks, float lifetimeScale)
     {
         String opening = hotTicks > 0 ? hotParticleType : particleType;
         int puffLifetime = emitWave(opening, x, y, z, spread, drift, scale, burstSize, lifetimeScale);
@@ -173,8 +164,7 @@ public final class ParticleHelper
         if (durationTicks <= waveInterval)
             return;
 
-        ACTIVE_EMISSIONS.add(new SustainedEmission(hotParticleType, particleType, hotTicks, x, y, z, spread, drift, scale,
-            burstSize, durationTicks, waveInterval, lifetimeScale));
+        ACTIVE_EMISSIONS.add(new SustainedEmission(hotParticleType, particleType, hotTicks, x, y, z, spread, drift, scale, burstSize, durationTicks, waveInterval, lifetimeScale));
     }
 
     /**
@@ -206,11 +196,9 @@ public final class ParticleHelper
     }
 
     /** @return the longest lifetime any particle of this wave got, or {@link #NO_PARTICLE} if none spawned */
-    private static int emitWave(String particleType, double x, double y, double z,
-                                double spread, double drift, float scale, int count, float lifetimeScale)
+    private static int emitWave(String particleType, double x, double y, double z, double spread, double drift, float scale, int count, float lifetimeScale)
     {
-        RandomSource random = Minecraft.getInstance().level == null
-            ? RandomSource.create() : Minecraft.getInstance().level.random;
+        RandomSource random = Minecraft.getInstance().level == null ? RandomSource.create() : Minecraft.getInstance().level.random;
 
         int longestLifetime = NO_PARTICLE;
         for (int i = 0; i < count; i++)
@@ -223,13 +211,11 @@ public final class ParticleHelper
             double vy = Math.abs(random.nextGaussian()) * drift;
             double vz = random.nextGaussian() * drift;
 
-            longestLifetime = Math.max(longestLifetime,
-                spawnMeasured(particleType, ox, oy, oz, vx, vy, vz, scale, lifetimeScale));
+            longestLifetime = Math.max(longestLifetime, spawnMeasured(particleType, ox, oy, oz, vx, vy, vz, scale, lifetimeScale));
         }
         return longestLifetime;
     }
 
-    /** One in-flight sustained emission. */
     /** The flight the server used to simulate for each shell: gravity, drag, a puff every third tick. */
     private static final class SmokeShell
     {
@@ -294,9 +280,8 @@ public final class ParticleHelper
         private int nextWaveAge;
         private int age;
 
-        private SustainedEmission(String hotParticleType, String particleType, int hotTicks,
-                                  double x, double y, double z, double spread, double drift, float scale,
-                                  int waveSize, int durationTicks, int firstWaveInterval, float lifetimeScale)
+        private SustainedEmission(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int waveSize, int durationTicks,
+            int firstWaveInterval, float lifetimeScale)
         {
             this.hotParticleType = hotParticleType;
             this.particleType = particleType;
@@ -329,8 +314,7 @@ public final class ParticleHelper
         }
     }
 
-    public static void spawnFromString(String s, BlockState state, BlockPos sourcePos,
-                                       double x, double y, double z, double vx, double vy, double vz, float scale)
+    public static void spawnFromString(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         if (!shouldSpawn(x, y, z))
             return;
@@ -357,7 +341,8 @@ public final class ParticleHelper
         addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale, 1.0F);
     }
 
-    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
+    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale,
+        float lifetimeScale)
     {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
@@ -366,7 +351,7 @@ public final class ParticleHelper
         ClientLevel level = minecraft.level;
         switch (request.kind())
         {
-            case ICON_CRACK:
+            case ICON_CRACK :
             {
                 Optional<ItemStack> stack = getLegacyItemStack(request.resourceId());
                 if (stack.isEmpty())
@@ -374,7 +359,7 @@ public final class ParticleHelper
                 addParticle(new LegacyItemParticle(level, stack.get(), x, y, z, vx, vy, vz), scale, lifetimeScale);
                 return true;
             }
-            case BLOCK_CRACK, BLOCK_DUST:
+            case BLOCK_CRACK, BLOCK_DUST :
             {
                 Optional<BlockState> state = ModUtils.getBlockState(request.resourceId());
                 if (state.isEmpty())
@@ -446,8 +431,10 @@ public final class ParticleHelper
     /**
      * Whether a particle at this position should be created.
      *
-     * @param naturalRange      how far this kind of effect is drawn at a distance scale of one
-     * @param thinWithDistance  whether the effect loses density toward the edge of its range
+     * @param naturalRange
+     *            how far this kind of effect is drawn at a distance scale of one
+     * @param thinWithDistance
+     *            whether the effect loses density toward the edge of its range
      */
     private static boolean shouldSpawn(double x, double y, double z, double naturalRange, boolean thinWithDistance)
     {
@@ -549,9 +536,7 @@ public final class ParticleHelper
 
     private enum LegacyResourceKind
     {
-        ICON_CRACK(FlanParticles.ICON_CRACK),
-        BLOCK_CRACK(FlanParticles.BLOCK_CRACK),
-        BLOCK_DUST(FlanParticles.BLOCK_DUST);
+        ICON_CRACK(FlanParticles.ICON_CRACK), BLOCK_CRACK(FlanParticles.BLOCK_CRACK), BLOCK_DUST(FlanParticles.BLOCK_DUST);
 
         private final String commandName;
 
@@ -578,6 +563,8 @@ public final class ParticleHelper
         }
     }
 
+    // A flat table of legacy particle names is clearer than splitting it up.
+    @SuppressWarnings("java:S1479")
     private static Optional<ParticleOptions> toNamedOptions(String s)
     {
         return switch (s)
@@ -605,7 +592,7 @@ public final class ParticleHelper
             case FlanParticles.BUBBLE -> Optional.of(ParticleTypes.BUBBLE);
             case FlanParticles.SPLASH -> Optional.of(ParticleTypes.SPLASH);
             case FlanParticles.WAKE -> Optional.of(ParticleTypes.FISHING);
-            case FlanParticles.DROP ->  Optional.of(ParticleTypes.FALLING_WATER); // or RAIN?
+            case FlanParticles.DROP -> Optional.of(ParticleTypes.FALLING_WATER); // or RAIN?
             case FlanParticles.DRIP_WATER -> Optional.of(ParticleTypes.DRIPPING_WATER);
             case FlanParticles.SUSPENDED -> Optional.of(ParticleTypes.UNDERWATER);
             case FlanParticles.DEPTH_SUSPEND -> Optional.of(ParticleTypes.UNDERWATER); // actually removed, no true equivalent
@@ -649,15 +636,9 @@ public final class ParticleHelper
         // Registered particle IDs
         if (s.contains(":"))
         {
-            return Optional.ofNullable(ResourceLocation.tryParse(s))
-                .map(BuiltInRegistries.PARTICLE_TYPE::get)
-                .filter(ParticleOptions.class::isInstance)
-                .map(ParticleOptions.class::cast);
+            return Optional.ofNullable(ResourceLocation.tryParse(s)).map(BuiltInRegistries.PARTICLE_TYPE::get).filter(ParticleOptions.class::isInstance).map(ParticleOptions.class::cast);
         }
 
-        return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", s))
-            .map(BuiltInRegistries.PARTICLE_TYPE::get)
-            .filter(ParticleOptions.class::isInstance)
-            .map(ParticleOptions.class::cast);
+        return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", s)).map(BuiltInRegistries.PARTICLE_TYPE::get).filter(ParticleOptions.class::isInstance).map(ParticleOptions.class::cast);
     }
 }

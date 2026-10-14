@@ -5,6 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 
+// spotless:off: one value per line keeps the record, the writer and the reader comparable, as the wire format depends on their order
 public record CommonConfigSnapshot(
     int version,
 
@@ -89,7 +90,11 @@ public record CommonConfigSnapshot(
     int smokeParticlesCount,
     double smokeParticlesRange,
 
-    float soundRange,
+    float reloadSoundRange,
+    float gunActionSoundRange,
+    float meleeSoundRange,
+    float grenadeThrowSoundRange,
+    float gunLockOnSoundRange,
     float gunFireSoundRange,
     float explosionSoundRange,
     float vehicleSoundRange,
@@ -97,6 +102,10 @@ public record CommonConfigSnapshot(
     float vehicleFlareSoundRange,
     float vehicleLockOnSoundRange,
     float vehicleLockedOnSoundRange,
+    float bulletHitSoundRange,
+    float grenadeStickSoundRange,
+    float grenadeFlashSoundRange,
+    boolean overridePackSoundRanges,
 
     boolean useNewPenetrationSystem,
     boolean enableBlockPenetration,
@@ -147,10 +156,16 @@ public record CommonConfigSnapshot(
     boolean enchantmentModuleEnabled,
 
     List<String> fluidFuelLines,
-    double vehicleThrottleDecayMultiplier
+    double vehicleThrottleDecayMultiplier,
+    boolean nearMissSuppression,
+    double suppressionRangeMultiplier,
+    double suppressionIntensity,
+    boolean suppressionAffectsRiders,
+    boolean bulletFlybySounds,
+    double bulletFlybyRangeMultiplier
 )
 {
-    public static final int CURRENT_VERSION = 41;
+    public static final int CURRENT_VERSION = 42;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -237,7 +252,11 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.smokeParticlesCount);
         buf.writeDouble(s.smokeParticlesRange);
 
-        buf.writeFloat(s.soundRange);
+        buf.writeFloat(s.reloadSoundRange);
+        buf.writeFloat(s.gunActionSoundRange);
+        buf.writeFloat(s.meleeSoundRange);
+        buf.writeFloat(s.grenadeThrowSoundRange);
+        buf.writeFloat(s.gunLockOnSoundRange);
         buf.writeFloat(s.gunFireSoundRange);
         buf.writeFloat(s.explosionSoundRange);
         buf.writeFloat(s.vehicleSoundRange);
@@ -245,6 +264,10 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.vehicleFlareSoundRange);
         buf.writeFloat(s.vehicleLockOnSoundRange);
         buf.writeFloat(s.vehicleLockedOnSoundRange);
+        buf.writeFloat(s.bulletHitSoundRange);
+        buf.writeFloat(s.grenadeStickSoundRange);
+        buf.writeFloat(s.grenadeFlashSoundRange);
+        buf.writeBoolean(s.overridePackSoundRanges);
 
         buf.writeBoolean(s.useNewPenetrationSystem);
         buf.writeBoolean(s.enableBlockPenetration);
@@ -306,6 +329,12 @@ public record CommonConfigSnapshot(
         for (String line : s.fluidFuelLines)
             buf.writeUtf(line, 32767);
         buf.writeDouble(s.vehicleThrottleDecayMultiplier);
+        buf.writeBoolean(s.nearMissSuppression);
+        buf.writeDouble(s.suppressionRangeMultiplier);
+        buf.writeDouble(s.suppressionIntensity);
+        buf.writeBoolean(s.suppressionAffectsRiders);
+        buf.writeBoolean(s.bulletFlybySounds);
+        buf.writeDouble(s.bulletFlybyRangeMultiplier);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -402,56 +431,70 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readBoolean(),
 
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readDouble(),
             buf.readDouble(),
-
-            List.copyOf(readLines(buf)),
-
-            buf.readBoolean(),
-            buf.readVarInt(),
-            buf.readVarInt(),
-            buf.readVarInt(),
-            List.copyOf(readLines(buf)),
-            buf.readVarInt(),
-
-            List.copyOf(readLines(buf)),
-            List.copyOf(readLines(buf)),
-            buf.readBoolean(),
-            buf.readBoolean(),
-            buf.readBoolean(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readBoolean(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-            buf.readDouble(),
-
-            buf.readBoolean(),
-            buf.readDouble(),
-            buf.readVarInt(),
-            buf.readVarInt(),
-            buf.readDouble(),
-            buf.readDouble(),
-
-            buf.readBoolean(),
 
             List.copyOf(readLines(buf)),
+
+            buf.readBoolean(),
+            buf.readVarInt(),
+            buf.readVarInt(),
+            buf.readVarInt(),
+            List.copyOf(readLines(buf)),
+            buf.readVarInt(),
+
+            List.copyOf(readLines(buf)),
+            List.copyOf(readLines(buf)),
+            buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readVarInt(),
+            buf.readVarInt(),
+            buf.readDouble(),
+            buf.readDouble(),
+
+            buf.readBoolean(),
+
+            List.copyOf(readLines(buf)),
+            buf.readDouble(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readBoolean(),
+            buf.readBoolean(),
             buf.readDouble()
         );
     }
@@ -473,3 +516,4 @@ public record CommonConfigSnapshot(
         return lines;
     }
 }
+// spotless:on

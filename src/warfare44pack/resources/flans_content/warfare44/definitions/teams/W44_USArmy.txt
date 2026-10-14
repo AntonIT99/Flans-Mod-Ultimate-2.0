@@ -1,0 +1,27 @@
+// Identity
+Name US Army
+ShortName W44_USArmy
+
+// Appearance
+TextColour Green
+TeamColour 85 130 65
+Hat 44_AmericanM1HelmetNoNetting
+Chest 44_AmericanM1943CombatFieldUniformChest
+Legs 44_AmericanM1943CombatFieldUniformPants
+Shoes 44_AmericanBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Classes
+AddClass W44_USArmyRifleman
+AddClass W44_USArmyAssault
+AddClass W44_USArmySupport
+AddClass W44_USArmyMedic
+AddClass W44_USArmyEngineer
+AddClass W44_USArmyAntiTank
+AddClass W44_USArmyScout
+AddClass W44_USArmySquadLeader
+AddClass W44_USArmyTankCrew
+AddClass W44_USArmyPilot
+AddClass W44_USArmyRifleman1941

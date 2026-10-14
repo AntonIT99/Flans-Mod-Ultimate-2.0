@@ -4,7 +4,9 @@ import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DriveableArmorDebugHud;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
+import com.flansmodultimate.client.gui.TeamsRankUpPopup;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.render.effects.SuppressionOverlay;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
@@ -95,9 +97,11 @@ public final class ClientHudOverlays
         registrar.aboveCameraOverlays("scope", SCOPE);
         registrar.aboveCameraOverlays("armor", ARMOR);
         registrar.aboveCameraOverlays("wounded_flash", WOUNDED_FLASH);
+        registrar.aboveCameraOverlays("near_miss_suppression", SuppressionOverlay::render);
         registrar.aboveCameraOverlays("flash_bang", FLASH_BANG);
         registrar.aboveArmorLevel("damage_absorption", DAMAGE_ABSORPTION);
         registrar.aboveHotbar("hud", HUD);
+        registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
 
@@ -158,8 +162,8 @@ public final class ClientHudOverlays
         renderAAGunHud(g, partialTick, sw);
         renderDeployedGunHud(g, sw);
         renderPlayerAmmo(g, sw, sh);
-        renderDigitalAmmo(g, sw, sh);
-        renderTeamInfo(g, sw, sh);
+        renderDigitalAmmo(g, sh);
+        renderTeamInfo(g, sw);
         renderKillMessages(g, sw, sh);
         renderVehicleDebug(g, sw, sh);
     };
@@ -417,9 +421,8 @@ public final class ClientHudOverlays
             lines.add(new OrdnanceLine(Component.translatable(labelKey + ".reload_time", String.format(Locale.ROOT, "%.1f", reloadTicks / 20F)), HUD_RED));
             return;
         }
-        lines.add(magazineSize > 1
-            ? new OrdnanceLine(Component.translatable(labelKey + ".ready_rounds", magazineLeft, magazineSize), HUD_GREEN)
-            : new OrdnanceLine(Component.translatable(labelKey + ".ready"), HUD_GREEN));
+        Component ready = magazineSize > 1 ? Component.translatable(labelKey + ".ready_rounds", magazineLeft, magazineSize) : Component.translatable(labelKey + ".ready");
+        lines.add(new OrdnanceLine(ready, HUD_GREEN));
     }
 
     private static Component compassDirection(float yaw)
@@ -848,7 +851,7 @@ public final class ClientHudOverlays
         return text;
     }
 
-    public static void renderDigitalAmmo(GuiGraphics g, int sw, int sh)
+    public static void renderDigitalAmmo(GuiGraphics g, int sh)
     {
         if (!ModCommonConfig.get().enableDigitalAmmoSystem())
             return;
@@ -894,8 +897,11 @@ public final class ClientHudOverlays
      * Legacy Teams banner at the top of the screen: both team scores and colours, the map and
      * gametype names, the time left, and the local player's own score, kills and deaths.
      */
-    public static void renderTeamInfo(GuiGraphics g, int sw, int sh)
+    public static void renderTeamInfo(GuiGraphics g, int sw)
     {
+        // Rounds fought over capture points have a banner of their own.
+        if (TeamsObjectiveHud.render(g, sw))
+            return;
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         PacketTeamsState state = TeamsClientState.get();
@@ -903,7 +909,10 @@ public final class ClientHudOverlays
             return;
 
         PacketTeamsState.PlayerScore localScore = findPlayerScore(state, player.getGameProfile().getName());
-        boolean teamGame = state.isSortedByTeam() && state.getTeamScores().size() == 2;
+        // Allied teams share a colour block and a score, so the banner counts sides rather than teams.
+        List<Integer> sideIds = state.isSortedByTeam() ? state.getSideIds() : List.of();
+        PacketTeamsState.TeamScore left = sideIds.size() == 2 ? state.getTeamScore(sideIds.get(0)) : null;
+        PacketTeamsState.TeamScore right = sideIds.size() == 2 ? state.getTeamScore(sideIds.get(1)) : null;
         if (localScore == null || (state.getTeamScores().isEmpty() && state.isSortedByTeam()))
             return;
 
@@ -917,10 +926,8 @@ public final class ClientHudOverlays
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         g.blit(FlansModTextures.TEXTURE_GUI_TEAMSSCORES, centre - TEAM_INFO_HALF_WIDTH, 0, TEAM_INFO_U, TEAM_INFO_V, TEAM_INFO_HALF_WIDTH * 2, TEAM_INFO_HEIGHT, 256, 256);
 
-        if (teamGame)
+        if (left != null && right != null)
         {
-            PacketTeamsState.TeamScore left = state.getTeamScores().get(0);
-            PacketTeamsState.TeamScore right = state.getTeamScores().get(1);
             drawTeamColourBlock(g, centre - TEAM_INFO_HALF_WIDTH, TEAM_COLOUR_LEFT_U, left.colour());
             drawTeamColourBlock(g, centre + TEAM_INFO_HALF_WIDTH - TEAM_COLOUR_WIDTH, TEAM_COLOUR_RIGHT_U, right.colour());
             RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
@@ -930,6 +937,8 @@ public final class ClientHudOverlays
             g.drawString(font, leftScore, centre - 36, 8, HUD_WHITE, true);
             g.drawString(font, rightScore, centre + 34 - font.width(rightScore), 8, HUD_WHITE, true);
         }
+        else if (sideIds.size() > 2)
+            drawSideScores(g, font, state, sideIds, centre);
 
         g.drawString(font, state.getGameType(), centre + 47, 8, HUD_WHITE, true);
         g.drawString(font, state.getMapName(), centre - 48 - font.width(state.getMapName()), 8, HUD_WHITE, true);
@@ -950,6 +959,21 @@ public final class ClientHudOverlays
     {
         int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
         return String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60);
+    }
+
+    /** With more than two sides the banner has no end for each, so their scores go in a row under the clock, each in its colour. */
+    private static void drawSideScores(GuiGraphics g, Font font, PacketTeamsState state, List<Integer> sideIds, int centre)
+    {
+        List<PacketTeamsState.TeamScore> sides = sideIds.stream().map(state::getTeamScore).filter(Objects::nonNull).toList();
+        int gap = 10;
+        int width = sides.stream().mapToInt(side -> font.width(Integer.toString(side.score()))).sum() + gap * Math.max(0, sides.size() - 1);
+        int x = centre - width / 2;
+        for (PacketTeamsState.TeamScore side : sides)
+        {
+            String score = Integer.toString(side.score());
+            g.drawString(font, score, x, 40, 0xFF000000 | side.colour(), true);
+            x += font.width(score) + gap;
+        }
     }
 
     /** Tints one end of the banner with a team's colour. */
@@ -1084,8 +1108,10 @@ public final class ClientHudOverlays
         // their own seat, so read the angles back from whichever seat the local
         // player is actually sitting in.
         Seat gunnerSeat = player.getVehicle() instanceof Seat seat && !seat.isDriverSeat() ? seat : null;
-        float yaw = gunnerSeat != null ? gunnerSeat.getHullAimYaw() : isVehicle ? driveable.getTurretYaw() : driveable.getYaw();
-        float pitch = gunnerSeat != null ? -gunnerSeat.getAimPitch() : isVehicle ? -driveable.getTurretPitch() : -driveable.getPitch();
+        float driveableYaw = isVehicle ? driveable.getTurretYaw() : driveable.getYaw();
+        float driveablePitch = isVehicle ? -driveable.getTurretPitch() : -driveable.getPitch();
+        float yaw = gunnerSeat != null ? gunnerSeat.getHullAimYaw() : driveableYaw;
+        float pitch = gunnerSeat != null ? -gunnerSeat.getAimPitch() : driveablePitch;
         Component yawText = Component.translatable("hud.flansmodultimate.driveable.yaw", Math.round(yaw));
         Component pitchText = Component.translatable("hud.flansmodultimate.driveable.pitch", Math.round(pitch));
         VehicleType vehicleType = isVehicle ? ((Vehicle) driveable).getVehicleType() : null;
@@ -1111,17 +1137,16 @@ public final class ClientHudOverlays
             addAmmoName(ammoNames, ridden.getGunAmmoName());
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
         boolean hasSmoke = atDriverControls && vehicleType != null && vehicleType.isHasFlare() && !vehicleType.getSmokers().isEmpty();
-        Component smokeText = Component.translatable(driveable.isVarFlare()
-            ? "hud.flansmodultimate.driveable.smoke.deploying"
-            : driveable.isCountermeasureReloading() ? "hud.flansmodultimate.driveable.smoke.reloading" : "hud.flansmodultimate.driveable.smoke.ready");
-        int smokeColor = driveable.isVarFlare() ? HUD_RED : driveable.isCountermeasureReloading() ? HUD_GOLD : HUD_GREEN;
+        String idleSmokeKey = driveable.isCountermeasureReloading() ? "hud.flansmodultimate.driveable.smoke.reloading" : "hud.flansmodultimate.driveable.smoke.ready";
+        Component smokeText = Component.translatable(driveable.isVarFlare() ? "hud.flansmodultimate.driveable.smoke.deploying" : idleSmokeKey);
+        int idleSmokeColor = driveable.isCountermeasureReloading() ? HUD_GOLD : HUD_GREEN;
+        int smokeColor = driveable.isVarFlare() ? HUD_RED : idleSmokeColor;
         Component rollText = Component.translatable("hud.flansmodultimate.driveable.roll", Math.round(driveable.getRoll()));
         Component altitudeText = Component.translatable("hud.flansmodultimate.driveable.altitude", Math.round(driveable.getY() - driveable.level().getSeaLevel()));
         Component compassText = Component.translatable("hud.flansmodultimate.driveable.compass", compassDirection(driveable.getYaw()));
         // Vehicles marked ShootWithOpenDoor arm their weapons with the door key, which the HUD reminds of
-        Component weaponArmingText = atDriverControls && vehicleType != null && vehicleType.isShootWithOpenDoor()
-            ? Component.translatable(driveable.isDoorOpen() ? "hud.flansmodultimate.driveable.weapon.ready" : "hud.flansmodultimate.driveable.weapon.disabled", KeyInputHandler.getDoorKeyName())
-            : null;
+        String weaponArmingKey = driveable.isDoorOpen() ? "hud.flansmodultimate.driveable.weapon.ready" : "hud.flansmodultimate.driveable.weapon.disabled";
+        Component weaponArmingText = atDriverControls && vehicleType != null && vehicleType.isShootWithOpenDoor() ? Component.translatable(weaponArmingKey, KeyInputHandler.getDoorKeyName()) : null;
         int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading, rollText, altitudeText, compassText);
         if (weaponArmingText != null)
             rightWidth = Math.max(rightWidth, font.width(weaponArmingText));

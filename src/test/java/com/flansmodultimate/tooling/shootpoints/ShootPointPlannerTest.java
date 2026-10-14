@@ -128,7 +128,7 @@ class ShootPointPlannerTest
     @Test
     void anAuthoredGunOriginIsRewrittenInPlace()
     {
-        DefinitionFile file = parse("Passenger 1 0 30 0 turret -360 360 -10 60 MG34 mg\nGunOrigin 1 0 0 0\n" + "GunOrigin 1 5 5 5\n");
+        DefinitionFile file = parse("Passenger 1 0 30 0 turret -360 360 -10 60 MG34 mg\nGunOrigin 1 0 0 0\nGunOrigin 1 5 5 5\n");
 
         plan(file, new DerivedMuzzle(1, "seat 1 (mg)", new Vector3f(20F, 12F, -3F)));
 

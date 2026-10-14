@@ -7,15 +7,18 @@ import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.gun.PacketGunHolderAnimation;
 import com.flansmodultimate.network.client.gun.PacketGunMuzzleFlash;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -60,7 +63,19 @@ public final class EquipmentSupport
         return Optional.of(new EquippedWeaponProperties(type.isThrowable() || !type.getAmmoTypes().isEmpty(), type.isThrowable(), type.isShield(), damage, type.getMeleeDamage(preview, false), speed,
             type.getSpread(preview), type.getNumBullets(preview, ammo), type.getShootDelay(preview), item.getActualReloadTime(preview, ItemStackData.builtInRegistries(), ItemStack.EMPTY),
             type.getThrowChargeTime(), type.getMeleeTime(), type.getShootSound(preview, false), mode.isAutomaticFire(), mode == EnumFireMode.MINIGUN ? type.getMinigunStartSpeed() : 0F,
-            mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F));
+            mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F, impact(ammo)));
+    }
+
+    private static EquippedWeaponProperties.Impact impact(@Nullable ShootableType ammo)
+    {
+        if (ammo == null)
+            return EquippedWeaponProperties.Impact.NONE;
+        if (!(ammo instanceof com.flansmodultimate.common.types.BulletType bullet))
+            return new EquippedWeaponProperties.Impact(1D, ammo.getHitBoxSize(), ammo.getFallSpeed(), ammo.getExplosionRadius(), "", "", false);
+        // Mirrors ShootingHelper: entity and block impacts are gated separately; blocks fall back to material sounds.
+        String sound = StringUtils.defaultString(bullet.getHitSound());
+        return new EquippedWeaponProperties.Impact(bullet.getKnockbackModifier(), bullet.getHitBoxSize(), bullet.getFallSpeed(), bullet.getExplosionRadius(),
+            bullet.isEntityHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() && sound.isBlank());
     }
 
     public static Optional<EquippedArmorProperties> armor(ItemStack stack)
@@ -68,7 +83,7 @@ public final class EquipmentSupport
         if (!(stack.getItem() instanceof CustomArmorItem item))
             return Optional.empty();
         var type = item.getConfigType();
-        return Optional.of(new EquippedArmorProperties(type.getDefence(), type.getBulletDefence(), type.isNegateFallDamage(), type.isWaterBreathing(), type.isFireResistance()));
+        return Optional.of(new EquippedArmorProperties(type.getDefence(), type.getBulletDefence(), type.isNegateFallDamage(), type.isWaterBreathing(), type.isFireResistance(), type.isInvisible()));
     }
 
     public static boolean hasLoadedRound(ItemStack stack)
@@ -89,6 +104,17 @@ public final class EquipmentSupport
         return loadedAmmunition(stack).map(ShootableItem::getRoundsFired).orElse(0);
     }
 
+    public static boolean deployable(ItemStack weapon)
+    {
+        return weapon.getItem() instanceof GunItem gun && gun.getConfigType().isDeployable();
+    }
+
+    public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
+    {
+        return weapon.getItem() instanceof GunItem gun && ammunition.getItem() instanceof ShootableItem ammo && ShootableItem.hasRoundsLeft(ammunition)
+            && compatible(gun.getConfigType(), weapon, ammo.getConfigType());
+    }
+
     public static boolean loadMagazine(LivingEntity holder, ItemStack weapon, ItemStack spare)
     {
         if (!server(holder) || !(weapon.getItem() instanceof GunItem gun) || !(spare.getItem() instanceof ShootableItem ammo) || !ShootableItem.hasRoundsLeft(spare)
@@ -106,6 +132,39 @@ public final class EquipmentSupport
             reloaded = true;
         }
         return reloaded;
+    }
+
+    /** Raises the gun's aim pose and plays its shot animation for those who see a mob holder, as a native shot does. */
+    public static void animateShot(LivingEntity holder, InteractionHand hand)
+    {
+        if (server(holder) && holder.getItemInHand(hand).getItem() instanceof GunItem)
+            GunArmPoses.onShotFired(holder, hand);
+    }
+
+    /** Plays a mob-held gun's reload animation for those who see the holder. */
+    public static void animateReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        if (server(holder) && !(holder instanceof Player) && Float.isFinite(reloadTicks) && reloadTicks > 0F && holder.getItemInHand(hand).getItem() instanceof GunItem)
+            PacketHandler.sendToTracking(new PacketGunHolderAnimation(holder.getId(), hand, PacketGunHolderAnimation.Kind.RELOAD, reloadTicks), holder);
+    }
+
+    /** Plays a mob-held gun's melee animation for those who see the holder. */
+    public static void animateMelee(LivingEntity holder, InteractionHand hand)
+    {
+        if (server(holder) && !(holder instanceof Player) && holder.getItemInHand(hand).getItem() instanceof GunItem)
+            PacketHandler.sendToTracking(new PacketGunHolderAnimation(holder.getId(), hand, PacketGunHolderAnimation.Kind.MELEE, 0F), holder);
+    }
+
+    /** Plays the held gun's melee sound with its authored range, as a player's gun melee does. */
+    public static boolean meleeSound(LivingEntity holder, InteractionHand hand)
+    {
+        if (!server(holder) || !(holder.getItemInHand(hand).getItem() instanceof GunItem gun))
+            return false;
+        GunType type = gun.getConfigType();
+        if (StringUtils.isBlank(type.getMeleeSound()))
+            return false;
+        PacketPlaySound.sendSoundPacket(holder, type.getMeleeSoundRange(), type.getMeleeSound(), type.isDistortSound());
+        return true;
     }
 
     public static void reloadSound(LivingEntity holder, ItemStack weapon)

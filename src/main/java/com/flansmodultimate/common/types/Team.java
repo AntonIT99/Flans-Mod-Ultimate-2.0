@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -9,14 +10,11 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -26,12 +24,16 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
  * after loading.
  */
 @NoArgsConstructor
-public class Team extends InfoType
+public class Team extends InfoType implements ITeam
 {
     public static final String SPECTATORS_ID = "spectators";
     public static final Team SPECTATORS = new Team(SPECTATORS_ID, "Spectators", 0x404040, ChatFormatting.GRAY);
 
     private static final ItemlessTypeRegistry<Team> TEAMS = new ItemlessTypeRegistry<>("team");
+    /** Sound names of the Labjac fork; silent unless a content pack provides sounds of these names. */
+    public static final String DEFAULT_VICTORY_SOUND = "victory";
+    public static final String DEFAULT_DEFEAT_SOUND = "defeat";
+    public static final String DRAW_SOUND = "draw";
 
     @Getter
     private int teamColour = 0xFFFFFF;
@@ -39,6 +41,21 @@ public class Team extends InfoType
     private ChatFormatting textColour = ChatFormatting.WHITE;
     @Getter
     private boolean allowedForRoundsGenerator;
+    /** Whether a round this team wins is announced with victory and defeat sounds at all. */
+    @Getter
+    private boolean victorySoundEnabled = true;
+    /** Sound the members of this team hear when it wins. */
+    @Getter
+    private String victorySound = DEFAULT_VICTORY_SOUND;
+    /** Sound the members of this team hear when it loses. */
+    @Getter
+    private String defeatSound = DEFAULT_DEFEAT_SOUND;
+    /** Skin flown on the capture points this team holds and shown when it wins; blank for a plain flag in the team colour. */
+    @Getter
+    private String victoryFlagTexture = StringUtils.EMPTY;
+    /** Client-side location of {@link #victoryFlagTexture}, or null when the team has none. */
+    @Getter @Nullable
+    private ResourceLocation victoryFlagTextureLocation;
     private final Map<EquipmentSlot, String> armour = new LinkedHashMap<>();
     private List<String> classIds = List.of();
 
@@ -64,6 +81,10 @@ public class Team extends InfoType
         readIntValues("TeamColour", file, 3).ifPresent(values -> teamColour = (values[0] << 16) | (values[1] << 8) | values[2]);
         textColour = parseFormatting(readValue("TextColour", textColour.getName(), file));
         allowedForRoundsGenerator = readValue("AllowedForRoundsGenerator", allowedForRoundsGenerator, file);
+        victorySoundEnabled = readValue("HasVictorySound", victorySoundEnabled, file);
+        victorySound = readSound("VictorySound", victorySound, file);
+        defeatSound = readSound("DefeatSound", defeatSound, file);
+        victoryFlagTexture = readResource("VictoryFlagTexture", victoryFlagTexture, file);
 
         readArmour(file, EquipmentSlot.HEAD, "Hat", "Helmet");
         readArmour(file, EquipmentSlot.CHEST, "Chest", "Top");
@@ -78,6 +99,13 @@ public class Team extends InfoType
             all.addAll(added);
             classIds = List.copyOf(all);
         }
+    }
+
+    @Override
+    protected void readClient(TypeFile file)
+    {
+        super.readClient(file);
+        victoryFlagTextureLocation = StringUtils.isBlank(victoryFlagTexture) ? null : loadSkinTexture(victoryFlagTexture, this);
     }
 
     private void readArmour(TypeFile file, EquipmentSlot slot, String primary, String alias)
@@ -97,11 +125,13 @@ public class Team extends InfoType
      * The classes this team's {@code AddClass} lines name, resolved against this team's own content
      * pack first so that a shortname another pack also uses cannot pull in the wrong class.
      */
+    @Override
     public List<PlayerClass> getClasses()
     {
         return classIds.stream().map(id -> PlayerClass.getPlayerClass(id, contentPack)).filter(java.util.Objects::nonNull).toList();
     }
 
+    @Override
     public ItemStack getArmour(EquipmentSlot slot)
     {
         String id = armour.get(slot);

@@ -73,7 +73,8 @@ class DriveableTypeSeatTest
         assertEquals(List.of(), type.getShootParticlesPassenger(99));
         assertEquals(List.of(), type.getShootParticlesPrimary());
         assertEquals(List.of(), type.getShootParticlesSecondary());
-        org.junit.jupiter.api.Assertions.assertThrows(UnsupportedOperationException.class, () -> type.getShootParticlesPassenger(1).clear());
+        var passengerParticles = type.getShootParticlesPassenger(1);
+        org.junit.jupiter.api.Assertions.assertThrows(UnsupportedOperationException.class, passengerParticles::clear);
     }
 
     @Test

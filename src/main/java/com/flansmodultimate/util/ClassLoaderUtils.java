@@ -1,32 +1,24 @@
 package com.flansmodultimate.util;
 
 import com.flansmodultimate.content.IContentProvider;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClassLoaderUtils
 {
+    private static final String ADD_BOX = "addBox";
+
     /** A transformed legacy class file together with the OpenGL transforms found inside it. */
     public record ModifiedClass(byte[] classData, List<TransformOp> transforms)
     {
@@ -66,8 +58,8 @@ public final class ClassLoaderUtils
     @Getter
     private static final Map<String, String> minecraftMethodMappings = Map.ofEntries(Map.entry("func_78084_a", "getTextureOffset"), Map.entry("func_78085_a", "setTextureOffset"),
         Map.entry("func_78086_a", "setLivingAnimations"), Map.entry("func_78087_a", "setRotationAngles"), Map.entry("func_78088_a", "render"), Map.entry("func_78784_a", "setTextureOffset"),
-        Map.entry("func_78785_a", "render"), Map.entry("func_78786_a", "addBox"), Map.entry("func_78787_b", "setTextureSize"), Map.entry("func_78788_d", "compileDisplayList"),
-        Map.entry("func_78789_a", "addBox"), Map.entry("func_78790_a", "addBox"), Map.entry("func_78791_b", "renderWithRotation"), Map.entry("func_78792_a", "addChild"),
+        Map.entry("func_78785_a", "render"), Map.entry("func_78786_a", ADD_BOX), Map.entry("func_78787_b", "setTextureSize"), Map.entry("func_78788_d", "compileDisplayList"),
+        Map.entry("func_78789_a", ADD_BOX), Map.entry("func_78790_a", ADD_BOX), Map.entry("func_78791_b", "renderWithRotation"), Map.entry("func_78792_a", "addChild"),
         Map.entry("func_78793_a", "setRotationPoint"), Map.entry("func_78794_c", "postRender"), Map.entry("func_85181_a", "getRandomModelBox"), Map.entry("func_178685_a", "copyModelAngles"),
         Map.entry("func_178686_a", "setModelAttributes"));
 
@@ -235,7 +227,7 @@ public final class ClassLoaderUtils
                 }
                 return objectClassName;
             }
-            catch (Throwable ex)
+            catch (Exception | LinkageError ex)
             {
                 return objectClassName;
             }

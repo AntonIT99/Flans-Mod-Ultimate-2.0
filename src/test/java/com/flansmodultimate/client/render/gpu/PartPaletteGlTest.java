@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.opengl.GL32C.*;
@@ -32,6 +33,8 @@ import static org.lwjgl.opengl.GL32C.*;
 @EnabledIfEnvironmentVariable(named = "FLANS_GPU_TEST", matches = "true")
 class PartPaletteGlTest
 {
+    private static final Pattern VERSION_LINE = Pattern.compile("(?m)^#version.*$");
+
     @Test
     void geometriesFollowTheirPaletteEntriesFromABoundRange() throws IOException
     {
@@ -93,7 +96,7 @@ class PartPaletteGlTest
 
                 @Override
                 public void flushFallback()
-                {}
+                { /* Not needed by this test. */ }
 
                 @Override
                 public void failed(RuntimeException exception)
@@ -203,7 +206,7 @@ class PartPaletteGlTest
     {
         String source = read(getClass().getResource(path));
         for (String include : new String[]{"light.glsl", "fog.glsl"})
-            source = source.replace("#moj_import <" + include + ">", read(getClass().getResource("/assets/minecraft/shaders/include/" + include)).replaceAll("(?m)^#version.*$", ""));
+            source = source.replace("#moj_import <" + include + ">", VERSION_LINE.matcher(read(getClass().getResource("/assets/minecraft/shaders/include/" + include))).replaceAll(""));
         return source;
     }
 

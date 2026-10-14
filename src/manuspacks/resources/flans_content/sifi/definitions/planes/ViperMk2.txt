@@ -11,13 +11,13 @@ Texture SkinPlaneViperMk2
 FuelTankSize 5000
 CargoSlots 0
 BombSlots 0
-AddRecipeParts tail 1 Part_Tail_Jet 15 Mat_Plate_DuraSteel
-AddRecipeParts core 1 Part_Cockpit_Jet 10 Mat_Plate_DuraSteel
-AddRecipeParts leftWing 1 27030_Part_Wing_Jet 10 Mat_Plate_DuraSteel
-AddRecipeParts rightWing 1 27030_Part_Wing_Jet 10 Mat_Plate_DuraSteel
-AddRecipeParts coreWheel 8 Mat_Plate_DuraSteel
-AddRecipeParts leftWingWheel 8 Mat_Plate_DuraSteel
-AddRecipeParts rightWingWheel 8 Mat_Plate_DuraSteel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 15 SMP_Part_Mat_Plate_DuraSteel
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 10 SMP_Part_Mat_Plate_DuraSteel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 10 SMP_Part_Mat_Plate_DuraSteel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 10 SMP_Part_Mat_Plate_DuraSteel
+AddRecipeParts coreWheel 8 SMP_Part_Mat_Plate_DuraSteel
+AddRecipeParts leftWingWheel 8 SMP_Part_Mat_Plate_DuraSteel
+AddRecipeParts rightWingWheel 8 SMP_Part_Mat_Plate_DuraSteel
 AddDye 10 white
 
 // Movement and Physics
@@ -54,8 +54,8 @@ UseRealisticVehicleHealth true
 
 // Parts and Seats
 CameraDistance 15.0
-Propeller 0 0 0 0 core Part_Propeller_TurbineSpace
-Propeller 1 0 0 0 core Part_Propeller_TurbineSpace
+Propeller 0 0 0 0 core SMP_Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 core SMP_Part_Propeller_TurbineSpace
 Pilot 6 8 0 -80 80 -45 45
 Passengers 0
 SetupPart tail 250 -48 3 -19 50 27 38

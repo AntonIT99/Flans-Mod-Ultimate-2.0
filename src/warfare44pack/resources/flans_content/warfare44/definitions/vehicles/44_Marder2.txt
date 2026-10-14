@@ -171,13 +171,10 @@ heliGUI warfare44_gercomm
 // Sounds
 StartSound TankIdle1
 StartSoundLength 41
-StartSoundRange 12
 EngineSound Engine_LT_PzII
 EngineSoundLength 39
-EngineSoundRange 50
 BackSound Engine_LT_PzII
 BackSoundLength 39
-BackSoundRange 25
 YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2

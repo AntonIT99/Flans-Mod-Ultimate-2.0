@@ -3,10 +3,7 @@ package com.flansmodultimate;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.item.BulletItem;
-import com.flansmodultimate.common.item.DriveableItem;
-import com.flansmodultimate.common.item.IFlanItem;
-import com.flansmodultimate.common.item.IPaintableItem;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModApocalypseConfig;
@@ -20,17 +17,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -49,42 +38,40 @@ public final class FlansModCreativeTabs
     public static final String TAB_MECHAS = "mechas";
     public static final String TAB_PLANES = "planes";
     public static final String TAB_VEHICLES = "vehicles";
+    public static final String TAB_SHIPS = "ships";
     public static final String TAB_PARTS = "parts";
 
     @SuppressWarnings("unchecked")
     static void registerCreativeModeTabs()
     {
         ResourceKey<CreativeModeTab> creativeTabMainKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, TAB_GENERAL));
-        ResourceKey<CreativeModeTab>[] creativeTabsFlansModReloadedKey = new ResourceKey[]
-            {
-                ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_guns")),
-                ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_modifiers")),
-                ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_parts")),
-                ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_bullets"))
-            };
+        ResourceKey<CreativeModeTab>[] creativeTabsFlansModReloadedKey = new ResourceKey[]{
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_guns")),
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_modifiers")),
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_parts")),
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "creative_tab_bullets"))};
 
         List<Supplier<? extends Item>> generalItemList = new ArrayList<>();
         generalItemList.add(FlansModItems.gunWorkbenchItem);
         generalItemList.add(FlansModItems.vehicleCraftingTableItem);
         generalItemList.add(FlansModItems.paintjobTableItem);
         generalItemList.add(FlansModItems.rainbowPaintcan);
+        generalItemList.add(FlansModItems.gunpowderBlockItem);
         generalItemList.add(FlansModItems.flagpoleItem);
+        generalItemList.add(FlansModItems.capturePointItem);
         generalItemList.add(FlansModItems.playerSpawnerItem);
         generalItemList.add(FlansModItems.itemSpawnerItem);
         generalItemList.add(FlansModItems.vehicleSpawnerItem);
         generalItemList.add(FlansModItems.opStick);
-        if (ModApocalypseConfig.apocalypseEnabled()) {
+        if (ModApocalypseConfig.apocalypseEnabled())
+        {
             generalItemList.add(ApocalypseContent.SULPHUR);
             generalItemList.add(ApocalypseContent.BLOCK_SULPHUR_ITEM);
             generalItemList.add(ApocalypseContent.BLOCK_LAB_STONE_ITEM);
             generalItemList.add(ApocalypseContent.BLOCK_POWER_CUBE_ITEM);
             generalItemList.add(ApocalypseContent.SULPHURIC_ACID_BUCKET);
         }
-        generalItemList.addAll(FlansMod.getItems(EnumSet.of(
-            EnumType.ITEM_HOLDER,
-            EnumType.ARMOR_BOX,
-            EnumType.GUN_BOX
-        )));
+        generalItemList.addAll(FlansMod.getItems(EnumSet.of(EnumType.ITEM_HOLDER, EnumType.ARMOR_BOX, EnumType.GUN_BOX)));
 
         BiConsumer<String, Supplier<CreativeModeTab>> registerTab = FlansModRegistries.creativeModeTabRegistry::register;
         registerCreativeTab(registerTab, TAB_GENERAL, generalItemList, Collections.emptyList(), CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
@@ -92,43 +79,48 @@ public final class FlansModCreativeTabs
         registerCreativeTab(registerTab, TAB_ATTACHMENTS, FlansMod.getItems(EnumType.ATTACHMENT), List.of(EnumType.ATTACHMENT), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_GUNS, FlansMod.getItems(EnumSet.of(EnumType.GUN, EnumType.BULLET)), List.of(EnumType.GUN), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_GRENADES, FlansMod.getItems(EnumType.GRENADE), List.of(EnumType.GRENADE), creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        registerCreativeTab(registerTab, TAB_TOOLS, FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), List.of(EnumType.TOOL, EnumType.GLOVE), creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        registerCreativeTab(registerTab, TAB_TOOLS, FlansMod.getItems(EnumSet.of(EnumType.TOOL, EnumType.GLOVE)), List.of(EnumType.TOOL, EnumType.GLOVE), creativeTabMainKey,
+            creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_BOMBS_AND_SHELLS, FlansMod.getItems(EnumSet.of(EnumType.BULLET)), List.of(EnumType.BULLET), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_AA_GUNS, FlansMod.getItems(EnumType.AA_GUN), List.of(EnumType.AA_GUN), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_MECHAS, FlansMod.getItems(EnumSet.of(EnumType.MECHA, EnumType.MECHA_ITEM)), List.of(EnumType.MECHA), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_PLANES, FlansMod.getItems(EnumSet.of(EnumType.PLANE)), List.of(EnumType.PLANE), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         registerCreativeTab(registerTab, TAB_VEHICLES, FlansMod.getItems(EnumSet.of(EnumType.VEHICLE)), List.of(EnumType.VEHICLE), creativeTabMainKey, creativeTabsFlansModReloadedKey);
-        registerCreativeTab(registerTab, TAB_PARTS, FlansMod.getItems(EnumSet.of(EnumType.PART)), List.of(EnumType.PART), creativeTabMainKey, creativeTabsFlansModReloadedKey);
+        ResourceKey<CreativeModeTab> vehiclesKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, TAB_VEHICLES));
+        registerCreativeTab(registerTab, TAB_SHIPS, FlansMod.getItems(EnumSet.of(EnumType.VEHICLE, EnumType.PLANE)), List.of(EnumType.VEHICLE, EnumType.PLANE), vehiclesKey,
+            creativeTabsFlansModReloadedKey);
+        ResourceKey<CreativeModeTab> shipsKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, TAB_SHIPS));
+        registerCreativeTab(registerTab, TAB_PARTS, FlansMod.getItems(EnumSet.of(EnumType.PART)), List.of(EnumType.PART), shipsKey, creativeTabsFlansModReloadedKey);
     }
 
     @SafeVarargs
-    private static void registerCreativeTab(BiConsumer<String, Supplier<CreativeModeTab>> tabRegistrar, String tabName, List<? extends Supplier<? extends Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
+    private static void registerCreativeTab(BiConsumer<String, Supplier<CreativeModeTab>> tabRegistrar, String tabName, List<? extends Supplier<? extends Item>> itemsForTab,
+        List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
-        tabRegistrar.accept(tabName, () -> CreativeModeTab.builder()
-            .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
-            .icon(createIcon(tabName, itemsForTab, typesForIcon))
-            .withSearchBar()
-            .withTabsBefore(beforeTab)
-            .withTabsAfter(afterTab)
-            .displayItems(displayItemsWithPaintjobsGenerator(tabName, itemsForTab))
-            .build());
+        tabRegistrar.accept(tabName,
+            () -> CreativeModeTab.builder().title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName)).icon(createIcon(tabName, itemsForTab, typesForIcon)).withSearchBar()
+                .withTabsBefore(beforeTab).withTabsAfter(afterTab).displayItems(displayItemsWithPaintjobsGenerator(tabName, itemsForTab)).build());
     }
 
     private static Supplier<ItemStack> createIcon(String tabName, List<? extends Supplier<? extends Item>> itemsForTab, List<EnumType> typesForIcons)
     {
-        return () -> {
+        return () ->
+        {
             if (tabName.equals(TAB_GENERAL))
                 return new ItemStack(FlansModItems.gunWorkbenchItem.get());
 
-            List<? extends Supplier<? extends Item>> itemsForIcon = itemsForTab.stream()
-                .filter(ro -> {
-                    for (EnumType type: typesForIcons) {
-                        Class<?> itemClass = type.getItemClass();
-                        if (itemClass != null && itemClass.isInstance(ro.get()))
-                            return true;
-                    }
+            List<? extends Supplier<? extends Item>> itemsForIcon = itemsForTab.stream().filter(ro ->
+            {
+                if (!belongsInTab(tabName, ro.get()))
                     return false;
-                }).toList();
+                for (EnumType type : typesForIcons)
+                {
+                    Class<?> itemClass = type.getItemClass();
+                    if (itemClass != null && itemClass.isInstance(ro.get()))
+                        return true;
+                }
+                return false;
+            }).toList();
 
             if (itemsForIcon.isEmpty())
                 return new ItemStack(Items.WHITE_WOOL);
@@ -142,17 +134,17 @@ public final class FlansModCreativeTabs
         boolean onlyGunAmmo = tabName.equals(TAB_GUNS);
         boolean onlyVehicleAmmo = tabName.equals(TAB_BOMBS_AND_SHELLS);
         // The tab's items are fixed once registration ends; the tab is rebuilt on every world join.
-        Supplier<List<Supplier<? extends Item>>> sortedItems = Suppliers.memoize(() -> sortForCreativeTab(itemsForTab));
+        Supplier<List<Supplier<? extends Item>>> sortedItems = Suppliers.memoize(() -> sortForCreativeTab(itemsForTab.stream().filter(ro -> belongsInTab(tabName, ro.get())).toList()));
 
-        return (parameters, output) -> {
+        return (parameters, output) ->
+        {
             for (Supplier<? extends Item> ro : sortedItems.get())
             {
                 Item item = ro.get();
 
-                if (item instanceof BulletItem bi &&
-                    (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType())
+                if (item instanceof BulletItem bi && (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType())
                     || onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType())))
-                        continue;
+                    continue;
 
                 output.accept(createCreativeStack(new ItemStack(item), parameters));
 
@@ -163,6 +155,17 @@ public final class FlansModCreativeTabs
                             output.accept(createCreativeStack(paintableItem.makePaintjobStack(pj), parameters));
                 }
             }
+        };
+    }
+
+    private static boolean belongsInTab(String tabName, Item item)
+    {
+        boolean ship = item instanceof DriveableItem<?, ?> driveable && driveable.getConfigType().isShip();
+        return switch (tabName)
+        {
+            case TAB_SHIPS -> ship;
+            case TAB_VEHICLES, TAB_PLANES -> !ship;
+            default -> true;
         };
     }
 

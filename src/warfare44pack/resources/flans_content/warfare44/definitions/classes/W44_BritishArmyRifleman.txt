@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman
+ShortName W44_BritishArmyRifleman
+Description General infantry with plentiful rifle ammunition and two fragmentation grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_LeeEnfield4
+AddItem 44_LeeEnfieldAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

@@ -1,18 +1,21 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.PlayerClass;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.effects.PacketCancelSound;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
@@ -50,6 +53,8 @@ public class PlayerData
     private float shootTimeRight;
     @Getter @Setter
     private float shootTimeLeft;
+    private int secondarySwitchRight;
+    private int secondarySwitchLeft;
     /** Stops player shooting immediately after swapping weapons */
     @Getter @Setter
     private int shootClickDelay;
@@ -83,6 +88,7 @@ public class PlayerData
     private final List<Grenade> remoteExplosives = new ArrayList<>();
     private final Map<InteractionHand, UUID> idleSoundIds = new EnumMap<>(InteractionHand.class);
     private final Map<InteractionHand, Integer> idleSoundDelays = new EnumMap<>(InteractionHand.class);
+    private final Map<InteractionHand, ItemStack> idleSoundStacks = new EnumMap<>(InteractionHand.class);
 
     /** Sound delay parameters */
     @Getter @Setter
@@ -120,7 +126,11 @@ public class PlayerData
     // Teams related fields
     /** Gametype variables */
     @Getter @Setter
-    private int score, kills, deaths;
+    private int score;
+    @Getter @Setter
+    private int kills;
+    @Getter @Setter
+    private int deaths;
     /** Zombies variables */
     @Getter @Setter
     private int zombieScore;
@@ -229,7 +239,31 @@ public class PlayerData
 
     public float getShootTime(InteractionHand hand)
     {
-        return hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
+        float delay = hand == InteractionHand.OFF_HAND ? shootTimeLeft : shootTimeRight;
+        int switching = getSecondarySwitchRemaining(hand);
+        return switching > 0 ? Math.max(delay, switching) : delay;
+    }
+
+    public int getSecondarySwitchRemaining(InteractionHand hand)
+    {
+        return hand == InteractionHand.OFF_HAND ? secondarySwitchLeft : secondarySwitchRight;
+    }
+
+    public boolean isSecondaryModeSwitching(InteractionHand hand)
+    {
+        return getSecondarySwitchRemaining(hand) > 0;
+    }
+
+    public void beginSecondaryModeSwitch(InteractionHand hand, int ticks)
+    {
+        int duration = Math.max(0, Math.min(1200, ticks));
+        if (hand == InteractionHand.OFF_HAND)
+            secondarySwitchLeft = duration;
+        else
+            secondarySwitchRight = duration;
+        if (duration > 0)
+            setShootTime(hand, Math.max(getShootTime(hand), duration));
+        setBurstRoundsRemaining(hand, 0);
     }
 
     public void setShootTime(InteractionHand hand, float value)
@@ -279,17 +313,24 @@ public class PlayerData
             burstRoundsRemainingRight = value;
     }
 
-    public void tick(Player player)
+    /** Advances transient gun state once per player tick, retaining firing carry and clearing completed reloads. */
+    void tickGunCooldowns()
     {
-        if (shootTimeRight > 0)
-            shootTimeRight--;
-        if (shootTimeRight == 0)
+        secondarySwitchRight = Math.max(0, secondarySwitchRight - 1);
+        secondarySwitchLeft = Math.max(0, secondarySwitchLeft - 1);
+        shootTimeRight = ShotCooldown.tick(shootTimeRight);
+        if (ShotCooldown.isReady(shootTimeRight))
             isReloadingRight = false;
 
-        if (shootTimeLeft > 0)
-            shootTimeLeft--;
-        if (shootTimeLeft == 0)
+        shootTimeLeft = ShotCooldown.tick(shootTimeLeft);
+        if (ShotCooldown.isReady(shootTimeLeft))
             isReloadingLeft = false;
+
+    }
+
+    public void tick(Player player)
+    {
+        tickGunCooldowns();
 
         if (shootClickDelay > 0)
             shootClickDelay--;
@@ -305,6 +346,7 @@ public class PlayerData
 
         if (!player.level().isClientSide)
         {
+            tickIdleSounds((ServerPlayer) player);
             tickRespawnReload((ServerPlayer) player);
             GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
         }
@@ -319,6 +361,37 @@ public class PlayerData
         System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
         // Take new snapshot
         snapshots[0] = new PlayerSnapshot(player);
+    }
+
+    /** Keeps each hand's idle playback tied to its held, powered-on gun, including ticks with no gun held. */
+    private void tickIdleSounds(ServerPlayer player)
+    {
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            ItemStack stack = player.getItemInHand(hand);
+            GunType type = stack.getItem() instanceof GunItem gun ? gun.getConfigType() : null;
+            boolean audible = player.isAlive() && type != null && StringUtils.isNotBlank(type.getIdleSound()) && !type.isPoweredOff(stack);
+            ItemStack previous = idleSoundStacks.get(hand);
+            if (previous != null && (previous != stack || !audible))
+            {
+                PacketHandler.sendToDimension(player.level().dimension(), new PacketCancelSound(getIdleSoundId(hand)));
+                idleSoundStacks.remove(hand);
+                setIdleSoundDelay(hand, 0);
+            }
+            if (!audible)
+                continue;
+
+            idleSoundStacks.put(hand, stack);
+            int delay = getIdleSoundDelay(hand);
+            if (delay <= 0)
+            {
+                UUID soundId = getIdleSoundId(hand);
+                PacketHandler.sendToDimension(player.level().dimension(), new PacketCancelSound(soundId));
+                PacketPlaySound.sendSoundPacket(player, type.getIdleSoundRange(), type.getIdleSound(), false, false, true, soundId);
+                delay = type.getIdleSoundLength();
+            }
+            setIdleSoundDelay(hand, Math.max(0, delay - 1));
+        }
     }
 
     /** Reloads the gun a player respawned holding, as 1.7.10 did five ticks after a Teams respawn. */

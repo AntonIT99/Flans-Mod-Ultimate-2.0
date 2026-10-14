@@ -1,8 +1,10 @@
 package com.wolffsmod.npcs.platform.render;
 
 import com.flansmodultimate.api.client.FlansModelPreviews;
+import com.flansmodultimate.api.client.ModelPose;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.wolffsmod.npcs.client.NpcModelPoses;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import noppes.npcs.client.renderer.RenderCustomNpc;
@@ -60,8 +62,12 @@ public final class NpcRenderBuffers implements MultiBufferSource
         if (!(vertices instanceof NpcRenderBuffers.BodyVertices body) || body.owner().type != type || alpha != 1F)
             return false;
         NpcRenderBuffers context = body.owner();
+        ModelPose modelPose = NpcModelPoses.of(context.npc);
+        if (modelPose == null)
+            return FlansModelPreviews.renderWorld(type.getInfoType(), context.npc, context.partialTick, context.entityPose, context.renderOffset, body.texture, pose, context.source, light, overlay,
+                red, green, blue, alpha);
         return FlansModelPreviews.renderWorld(type.getInfoType(), context.npc, context.partialTick, context.entityPose, context.renderOffset, body.texture, pose, context.source, light, overlay, red,
-            green, blue, alpha);
+            green, blue, alpha, modelPose);
     }
 
     private final class BodyVertices implements VertexConsumer

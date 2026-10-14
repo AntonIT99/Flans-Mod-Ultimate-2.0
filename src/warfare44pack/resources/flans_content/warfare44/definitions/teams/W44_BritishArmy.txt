@@ -1,0 +1,26 @@
+// Identity
+Name British Army
+ShortName W44_BritishArmy
+
+// Appearance
+TextColour Gold
+TeamColour 180 145 65
+Hat 44_BritishBrodieHelmet
+Chest 44_British40PatternChest
+Legs 44_British40PatternPants
+Shoes 44_BritishBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Classes
+AddClass W44_BritishArmyRifleman
+AddClass W44_BritishArmyAssault
+AddClass W44_BritishArmySupport
+AddClass W44_BritishArmyMedic
+AddClass W44_BritishArmyEngineer
+AddClass W44_BritishArmyAntiTank
+AddClass W44_BritishArmyScout
+AddClass W44_BritishArmySquadLeader
+AddClass W44_BritishArmyTankCrew
+AddClass W44_BritishArmyPilot

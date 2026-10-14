@@ -1,0 +1,18 @@
+// Identity
+Name Squad Leader
+ShortName W44_JapaneseArmySquadLeader
+Description Squad leader with a submachine gun, pistol, binoculars and smoke.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Type100
+AddItem 44_Type100Ammo 4
+AddItem 44_Type14Nambu
+AddItem 44_Type14NambuAmmo 2
+AddItem 44_Binoculars
+AddItem 44_SmokeM8Smoke 3
+AddItem 44_Bandage

@@ -45,6 +45,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.*;
 
+// The depth comes from the Minecraft entity hierarchy.
+@SuppressWarnings("java:S110")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 {
@@ -136,7 +138,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             angularVelocity = new Vec3(0, 0, 10);
 
         if (playThrowSound && grenadeType.getThrowSound() != null)
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), grenadeType.getThrowSound(), true);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().grenadeThrowSoundRange(), grenadeType.getThrowSound(), true);
 
         thrower = entity;
         // If this can be remotely detonated, add it to the players detonate list

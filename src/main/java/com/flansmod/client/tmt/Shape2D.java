@@ -2,9 +2,7 @@ package com.flansmod.client.tmt;
 
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings({"unused", "java:S1104"})
 public class Shape2D
@@ -32,6 +30,8 @@ public class Shape2D
         return coords.toArray(new Coord2D[0]);
     }
 
+    // Legacy TMT API called by content pack models.
+    @SuppressWarnings("java:S107")
     public Shape3D extrude(float x, float y, float z, float rotX, float rotY, float rotZ, float depth, int u, int v, float textureWidth, float textureHeight, int shapeTextureWidth,
         int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, float[] faceLengths)
     {

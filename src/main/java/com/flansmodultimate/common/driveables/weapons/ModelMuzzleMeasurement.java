@@ -64,10 +64,12 @@ public final class ModelMuzzleMeasurement
      *
      * @param contentPacks
      *            every loaded content pack, which the cached results are keyed on
+     * @param definitionDigests
+     *            the digest of each pack's definitions as they were read, which spares the key reading them again
      * @param correctFlanFolderPacks
      *            move the muzzles of the flan folder packs onto the measured ones
      */
-    public static void measure(List<InfoType> types, List<IContentProvider> contentPacks, boolean correctFlanFolderPacks)
+    public static void measure(List<InfoType> types, List<IContentProvider> contentPacks, Map<IContentProvider, String> definitionDigests, boolean correctFlanFolderPacks)
     {
         long startTime = System.currentTimeMillis();
         // Which lines are trusted follows from the pack and the option alone, so it is decided afresh every run.
@@ -77,7 +79,7 @@ public final class ModelMuzzleMeasurement
                 aaGunType.setTrustBarrelLines(trustsDefinition(type, correctFlanFolderPacks));
         }
 
-        String key = MuzzleMeasurementCache.key(contentPacks, correctFlanFolderPacks);
+        String key = MuzzleMeasurementCache.key(contentPacks, definitionDigests, correctFlanFolderPacks);
         MuzzleMeasurementCache.Results cached = MuzzleMeasurementCache.load(key);
         if (cached != null)
         {
