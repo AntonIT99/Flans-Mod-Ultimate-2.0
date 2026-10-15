@@ -26,6 +26,6 @@ Accuracy 0
 Damage 0
 
 // Optics
-Scope officialpacks_binoculars
+Scope official_ww2binoculars
 ZoomLevel 6
 FOVZoomLevel 1.0

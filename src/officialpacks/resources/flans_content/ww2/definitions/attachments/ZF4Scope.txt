@@ -5,7 +5,7 @@ AttachmentType sights
 
 // Item and rendering
 Icon ZF4Scope
-ZoomOverlay wwiikar98ksniper
+ZoomOverlay official_ww2_german
 Model ww2.ZF4Scope
 Texture SkinZF4
 ModelScale 1
