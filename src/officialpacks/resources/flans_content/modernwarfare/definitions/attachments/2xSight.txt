@@ -2,7 +2,7 @@
 Name 2x Scope
 ShortName flanMW2xScope
 AttachmentType sights
-Description Sight Attatchment: 2x magnifacation scope.
+Description Sight Attachment: variable magnification x1-x2.
 
 // Item and rendering
 Icon 2xScope
@@ -27,4 +27,8 @@ RecoilMultiplier 1.0
 BulletSpeedMultiplier 1.0
 ReloadTimeMultiplier 1.0
 ZoomLevel 2.0
-FOVZoomLevel 2.0
+HasVariableZoom True
+MinZoom 1
+MaxZoom 2
+ZoomAugment 0.25
+FOVZoomLevel 1.0

@@ -33,6 +33,9 @@ Damage 11
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound Type38Shoot
 ReloadSound kar98kReload

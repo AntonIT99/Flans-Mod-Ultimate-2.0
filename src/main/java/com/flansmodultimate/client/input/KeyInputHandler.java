@@ -63,8 +63,8 @@ public final class KeyInputHandler
     private static final KeyMapping preferredAmmoKey = key("preferred_ammo", InputConstants.KEY_LBRACKET, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping secondaryModeKey = key("secondary_mode", InputConstants.KEY_K, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping toggleKey = key("toggle", InputConstants.KEY_G, KeyContexts.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_UP, KeyContexts.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_DOWN, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_PAGEUP, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_PAGEDOWN, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping debugKey = key("debug", InputConstants.KEY_F10, KeyContexts.UNIVERSAL, CATEGORY_GENERAL);
     private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyContexts.IN_GAME, CATEGORY_GENERAL);

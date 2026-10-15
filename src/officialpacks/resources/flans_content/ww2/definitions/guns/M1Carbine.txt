@@ -40,6 +40,9 @@ Damage 6
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound m1carbineShoot
 ReloadSound m1carbineReload

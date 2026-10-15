@@ -37,6 +37,9 @@ Dispersion 0.13
 // Damage and protection
 Damage 18
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound springfieldShoot
 ReloadSound springfieldReload

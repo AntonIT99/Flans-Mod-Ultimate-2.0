@@ -31,9 +31,12 @@ Dispersion 0.14
 Damage 13
 
 // Optics
-Scope wwiitype38sniper
+Scope official_ww2_japanese
 ZoomLevel 2.5
 FOVZoomLevel 1.0
+
+// Attachments
+NumGenericAttachmentSlots 1
 
 // Sounds
 ShootSound Type38Shoot

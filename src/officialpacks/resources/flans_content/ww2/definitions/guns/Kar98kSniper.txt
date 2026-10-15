@@ -38,9 +38,12 @@ Dispersion 0.15
 Damage 15
 
 // Optics
-Scope wwiikar98ksniper
+Scope official_ww2_german
 ZoomLevel 4.0
 FOVZoomLevel 1.0
+
+// Attachments
+NumGenericAttachmentSlots 1
 
 // Sounds
 ShootSound kar98kSniperShoot

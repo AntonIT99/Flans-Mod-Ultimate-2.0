@@ -2,7 +2,7 @@
 Name 4x Scope
 ShortName flanMW4xScope
 AttachmentType sights
-Description Sight Attatchment: 4x magnifacation scope.
+Description Sight Attachment: variable magnification x1-x4.
 
 // Item and rendering
 Icon 4xScope
@@ -27,4 +27,8 @@ RecoilMultiplier 1.0
 BulletSpeedMultiplier 1.0
 ReloadTimeMultiplier 1.0
 ZoomLevel 4.0
-FOVZoomLevel 2.0
+HasVariableZoom True
+MinZoom 1
+MaxZoom 4
+ZoomAugment 0.5
+FOVZoomLevel 1.0

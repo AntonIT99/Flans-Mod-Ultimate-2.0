@@ -32,9 +32,12 @@ Dispersion 0.14
 Damage 14
 
 // Optics
-Scope wwiileeenfieldsniper
+Scope official_ww2_british
 ZoomLevel 3.5
 FOVZoomLevel 1.0
+
+// Attachments
+NumGenericAttachmentSlots 1
 
 // Sounds
 ShootSound leeEnfieldShoot

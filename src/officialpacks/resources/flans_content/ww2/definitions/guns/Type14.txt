@@ -35,6 +35,9 @@ Damage 4
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound lugerShoot
 ReloadSound lugerReload
