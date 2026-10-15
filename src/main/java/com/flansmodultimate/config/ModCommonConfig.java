@@ -12,8 +12,12 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
@@ -123,8 +127,8 @@ public final class ModCommonConfig
     private static final int MAX_ENTITY_TRACKING_RANGE = 4096;
     private static final String ENTITY_TRACKING_CONFIG_SECTION = "Entity Tracking Settings";
 
-    public static final ForgeConfigSpec.IntValue DRIVEABLE_TRACKING_RANGE;
-    public static final ForgeConfigSpec.IntValue FLAN_NPC_TRACKING_RANGE;
+    public static final IntValue DRIVEABLE_TRACKING_RANGE;
+    public static final IntValue FLAN_NPC_TRACKING_RANGE;
 
     private static final Supplier<Boolean> ADD_ALL_PAINTJOBS_TO_CREATIVE;
     private static final Supplier<Boolean> ADD_GUNPOWDER_RECIPE;
@@ -136,10 +140,10 @@ public final class ModCommonConfig
     private static final Supplier<Double> NAME_TAG_SNEAK_RENDER_RANGE;
     private static final Supplier<Integer> NOTICE_SPAWN_KILL_TIME;
 
-    private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
-    private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
+    private static final BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
+    private static final BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS;
-    private static final ForgeConfigSpec.BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
+    private static final BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
     private static final Supplier<Integer> BONUS_REGEN_AMOUNT;
     private static final Supplier<Integer> BONUS_REGEN_TICK_DELAY;
     private static final Supplier<Integer> BONUS_REGEN_FOOD_LIMIT;
@@ -158,7 +162,7 @@ public final class ModCommonConfig
     private static final Supplier<Double> ARMSHOT_DAMAGE_MODIFIER;
     private static final Supplier<Double> LEGSHOT_MODIFIER;
     private static final Supplier<Double> VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER;
-    private static final ForgeConfigSpec.BooleanValue DRIVEABLE_COLLISIONS_BREAK_BLOCKS;
+    private static final BooleanValue DRIVEABLE_COLLISIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> AUTO_REFILL_VEHICLE_AMMO;
     private static final Supplier<Boolean> GUNS_IN_DESTROYED_PARTS_WORK;
 
@@ -187,16 +191,16 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> ENABLE_SIGHT_DOWNWARD_MOVEMENT;
     private static final Supplier<Boolean> DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT;
     private static final Supplier<Boolean> MUZZLE_FLASH_PARTICLES_DEFAULT;
-    private static final ForgeConfigSpec.EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
-    private static final ForgeConfigSpec.EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
+    private static final EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
+    private static final EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
 
-    private static final ForgeConfigSpec.BooleanValue BULLET_FLYBY_SOUNDS;
-    private static final ForgeConfigSpec.DoubleValue BULLET_FLYBY_RANGE_MULTIPLIER;
-    private static final ForgeConfigSpec.BooleanValue NEAR_MISS_SUPPRESSION;
-    private static final ForgeConfigSpec.DoubleValue SUPPRESSION_RANGE_MULTIPLIER;
-    private static final ForgeConfigSpec.DoubleValue SUPPRESSION_INTENSITY;
-    private static final ForgeConfigSpec.BooleanValue SUPPRESSION_AFFECTS_RIDERS;
-    private static final ForgeConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
+    private static final BooleanValue BULLET_FLYBY_SOUNDS;
+    private static final DoubleValue BULLET_FLYBY_RANGE_MULTIPLIER;
+    private static final BooleanValue NEAR_MISS_SUPPRESSION;
+    private static final DoubleValue SUPPRESSION_RANGE_MULTIPLIER;
+    private static final DoubleValue SUPPRESSION_INTENSITY;
+    private static final BooleanValue SUPPRESSION_AFFECTS_RIDERS;
+    private static final BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
@@ -212,32 +216,32 @@ public final class ModCommonConfig
     private static final Supplier<Integer> SMOKE_PARTICLES_COUNT;
     private static final Supplier<Double> SMOKE_PARTICLES_RANGE;
 
-    private static final ForgeConfigSpec.DoubleValue RELOAD_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue GUN_ACTION_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue MELEE_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue GRENADE_THROW_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue GUN_LOCK_ON_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue GUN_FIRE_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue EXPLOSION_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue VEHICLE_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue VEHICLE_UTILITY_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue VEHICLE_FLARE_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue VEHICLE_LOCK_ON_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue VEHICLE_LOCKED_ON_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue BULLET_HIT_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue GRENADE_STICK_SOUND_RANGE;
-    private static final ForgeConfigSpec.DoubleValue GRENADE_FLASH_SOUND_RANGE;
-    private static final ForgeConfigSpec.BooleanValue OVERRIDE_PACK_SOUND_RANGES;
+    private static final DoubleValue RELOAD_SOUND_RANGE;
+    private static final DoubleValue GUN_ACTION_SOUND_RANGE;
+    private static final DoubleValue MELEE_SOUND_RANGE;
+    private static final DoubleValue GRENADE_THROW_SOUND_RANGE;
+    private static final DoubleValue GUN_LOCK_ON_SOUND_RANGE;
+    private static final DoubleValue GUN_FIRE_SOUND_RANGE;
+    private static final DoubleValue EXPLOSION_SOUND_RANGE;
+    private static final DoubleValue VEHICLE_SOUND_RANGE;
+    private static final DoubleValue VEHICLE_UTILITY_SOUND_RANGE;
+    private static final DoubleValue VEHICLE_FLARE_SOUND_RANGE;
+    private static final DoubleValue VEHICLE_LOCK_ON_SOUND_RANGE;
+    private static final DoubleValue VEHICLE_LOCKED_ON_SOUND_RANGE;
+    private static final DoubleValue BULLET_HIT_SOUND_RANGE;
+    private static final DoubleValue GRENADE_STICK_SOUND_RANGE;
+    private static final DoubleValue GRENADE_FLASH_SOUND_RANGE;
+    private static final BooleanValue OVERRIDE_PACK_SOUND_RANGES;
 
     private static final Supplier<Boolean> USE_NEW_PENETRATION_SYSTEM;
     private static final Supplier<Boolean> ENABLE_BLOCK_PENETRATION;
     private static final Supplier<Double> BLOCK_PENETRATION_MODIFIER;
     private static final Supplier<Double> KINETIC_PENETRATION_REFERENCE;
 
-    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    // Builder#defineList imposes this wildcard type.
     @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> PENETRABLE_BLOCKS_RAW;
-    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    // Builder#defineList imposes this wildcard type.
     @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> FLUID_FUELS_RAW;
     /**
@@ -250,18 +254,18 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DIGITAL_AMMO_DEFAULT_AMOUNT;
     private static final Supplier<Integer> DIGITAL_AMMO_MAX_AMOUNT;
     private static final Supplier<Integer> DIGITAL_AMMO_NUM_TYPES;
-    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    // Builder#defineList imposes this wildcard type.
     @SuppressWarnings("java:S4968")
     private static final Supplier<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
     private static final Supplier<Integer> DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
-    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    // Builder#defineList imposes this wildcard type.
     @SuppressWarnings("java:S4968")
-    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSION_GRAVITY_FACTORS;
-    // ForgeConfigSpec.Builder#defineList imposes this wildcard type.
+    private static final ConfigValue<List<? extends String>> DIMENSION_GRAVITY_FACTORS;
+    // Builder#defineList imposes this wildcard type.
     @SuppressWarnings("java:S4968")
-    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
+    private static final ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
@@ -297,7 +301,7 @@ public final class ModCommonConfig
     /** Config section holding every sound range; each of its entries is a range in blocks that also sets loudness. */
     private static final String SOUND_SETTINGS_SECTION = "Sound Settings";
 
-    private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+    private static final Builder builder = new Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<DimensionFactors> localDimensionFactors = new AtomicReference<>(DimensionFactors.EMPTY);
     private static final AtomicReference<ServerConfigSnapshot> serverOverride = new AtomicReference<>();
@@ -1371,7 +1375,7 @@ public final class ModCommonConfig
         // spotless:on
 
         /** Deferred so that the enum can be loaded before the outer config spec is built. */
-        private final Supplier<? extends ForgeConfigSpec.ConfigValue<?>> configValue;
+        private final Supplier<? extends ConfigValue<?>> configValue;
         /** The quick screen heading this setting is listed under. */
         private final QuickSection section;
     }
@@ -1389,7 +1393,7 @@ public final class ModCommonConfig
     }
 
     /** Whether this entry is one of the sound ranges, which the options screens tune by the block. */
-    public static boolean isSoundRange(ForgeConfigSpec.ConfigValue<?> value)
+    public static boolean isSoundRange(ConfigValue<?> value)
     {
         List<String> path = value.getPath();
         return path.size() == 2 && SOUND_SETTINGS_SECTION.equals(path.get(0));

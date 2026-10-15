@@ -9,6 +9,7 @@ import com.google.gson.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -169,8 +170,8 @@ public final class PackagedContentLoader
 
     private static Set<String> loadEarlySelection(FMLJavaModLoadingContext context, String modId, List<String> packIds, Set<String> enforced)
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-        Map<String, ForgeConfigSpec.BooleanValue> values = new LinkedHashMap<>();
+        Builder builder = new Builder();
+        Map<String, BooleanValue> values = new LinkedHashMap<>();
         builder.comment("Pack selection is applied during item registration and therefore requires a game restart.").push("contentPacks");
         for (String packId : packIds)
         {

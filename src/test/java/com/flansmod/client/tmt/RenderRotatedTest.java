@@ -4,8 +4,8 @@ import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.gpu.RigidGeometry;
 import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
+import com.flansmodultimate.platform.render.TestVertexSink;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import org.junit.jupiter.api.Test;
 
@@ -97,66 +97,16 @@ class RenderRotatedTest
     }
 
     /** Expands every visible submission to vertices, so differently batched paths compare by what they draw. */
-    private static final class Sink implements RigidGeometryConsumer
+    private static final class Sink extends TestVertexSink implements RigidGeometryConsumer
     {
         final List<float[]> vertices = new ArrayList<>();
-        private final VertexConsumer recorder = new VertexConsumer()
+        private final TestVertexSink recorder = new TestVertexSink()
         {
             @Override
-            public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
+            protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
             {
-                vertices.add(new float[]{x, y, z, u, v, nx, ny, nz});
+                vertices.add(new float[]{x, y, z, u, v, normalX, normalY, normalZ});
             }
-
-            @Override
-            public VertexConsumer vertex(double x, double y, double z)
-            {
-                throw new AssertionError();
-            }
-
-            @Override
-            public VertexConsumer color(int r, int g, int b, int a)
-            {
-                throw new AssertionError();
-            }
-
-            @Override
-            public VertexConsumer uv(float u, float v)
-            {
-                throw new AssertionError();
-            }
-
-            @Override
-            public VertexConsumer overlayCoords(int u, int v)
-            {
-                throw new AssertionError();
-            }
-
-            @Override
-            public VertexConsumer uv2(int u, int v)
-            {
-                throw new AssertionError();
-            }
-
-            @Override
-            public VertexConsumer normal(float x, float y, float z)
-            {
-                throw new AssertionError();
-            }
-
-            @Override
-            public void endVertex()
-            {
-                throw new AssertionError();
-            }
-
-            @Override
-            public void defaultColor(int r, int g, int b, int a)
-            { /* Not needed by this test. */ }
-
-            @Override
-            public void unsetDefaultColor()
-            { /* Not needed by this test. */ }
         };
 
         @Override
@@ -180,59 +130,9 @@ class RenderRotatedTest
         }
 
         @Override
-        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
-            vertices.add(new float[]{x, y, z, u, v, nx, ny, nz});
+            vertices.add(new float[]{x, y, z, u, v, normalX, normalY, normalZ});
         }
-
-        @Override
-        public VertexConsumer vertex(double x, double y, double z)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer color(int r, int g, int b, int a)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv(float u, float v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer overlayCoords(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv2(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer normal(float x, float y, float z)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void endVertex()
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void defaultColor(int r, int g, int b, int a)
-        { /* Not needed by this test. */ }
-
-        @Override
-        public void unsetDefaultColor()
-        { /* Not needed by this test. */ }
     }
 }

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui.options;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 
 /**
  * The config the options screen is editing. The client config is written locally; the common config belongs
@@ -11,16 +12,16 @@ public interface ConfigTarget
     ForgeConfigSpec spec();
 
     /** The value in force, which for the common config of a server is the server's, not this client's. */
-    Object get(ForgeConfigSpec.ConfigValue<?> value);
+    Object get(ConfigValue<?> value);
 
     /** Applies a change the player made with a single click. */
-    void set(ForgeConfigSpec.ConfigValue<?> value, Object newValue);
+    void set(ConfigValue<?> value, Object newValue);
 
     /**
      * Records a change from a slider, which fires on every step of a drag. It is applied by
      * {@link #flush()} when the screen closes, so one drag does not write the config a hundred times.
      */
-    void setWhileDragging(ForgeConfigSpec.ConfigValue<?> value, Object newValue);
+    void setWhileDragging(ConfigValue<?> value, Object newValue);
 
     /** Applies everything {@link #setWhileDragging} recorded. */
     void flush();

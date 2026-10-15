@@ -3,6 +3,7 @@ package com.flansmod.client.tmt;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.gpu.RigidGeometry;
 import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
+import com.flansmodultimate.platform.render.TestVertexSink;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -104,7 +105,7 @@ class BakedSizeCullingTest
         }
     }
 
-    private static class Sink implements RigidGeometryConsumer
+    private static class Sink extends TestVertexSink implements RigidGeometryConsumer
     {
         Boolean lastVisible;
         boolean vertices;
@@ -128,119 +129,26 @@ class BakedSizeCullingTest
         }
 
         @Override
-        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
             vertices = true;
         }
-
-        @Override
-        public VertexConsumer vertex(double x, double y, double z)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer color(int r, int g, int b, int a)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv(float u, float v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer overlayCoords(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv2(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer normal(float x, float y, float z)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void endVertex()
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void defaultColor(int r, int g, int b, int a)
-        { /* Not needed by this test. */ }
-
-        @Override
-        public void unsetDefaultColor()
-        { /* Not needed by this test. */ }
     }
 
     /** A plain consumer, so the part takes the composed CPU path. */
-    private record Plain(Sink sink) implements VertexConsumer
+    private static final class Plain extends TestVertexSink
     {
+        private final Sink sink;
+
+        private Plain(Sink sink)
+        {
+            this.sink = sink;
+        }
+
         @Override
-        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int o, int l, float nx, float ny, float nz)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
             sink.vertices = true;
         }
-
-        @Override
-        public VertexConsumer vertex(double x, double y, double z)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer color(int r, int g, int b, int a)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv(float u, float v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer overlayCoords(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv2(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer normal(float x, float y, float z)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void endVertex()
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void defaultColor(int r, int g, int b, int a)
-        { /* Not needed by this test. */ }
-
-        @Override
-        public void unsetDefaultColor()
-        { /* Not needed by this test. */ }
     }
 }

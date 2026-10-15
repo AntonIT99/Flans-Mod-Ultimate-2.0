@@ -3,6 +3,7 @@ package com.flansmodultimate.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import io.netty.buffer.Unpooled;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,21 +29,20 @@ class ConfigSpecValuesTest
 
     private enum Flavour
     {
-        MILD,
-        HOT
+        MILD, HOT
     }
 
     private ForgeConfigSpec spec;
-    private ForgeConfigSpec.BooleanValue flag;
-    private ForgeConfigSpec.IntValue count;
-    private ForgeConfigSpec.DoubleValue ratio;
-    private ForgeConfigSpec.EnumValue<Flavour> flavour;
-    private ForgeConfigSpec.ConfigValue<String> name;
+    private BooleanValue flag;
+    private IntValue count;
+    private DoubleValue ratio;
+    private EnumValue<Flavour> flavour;
+    private ConfigValue<String> name;
 
     @BeforeEach
     void buildSpec()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        Builder builder = new Builder();
         builder.push("Section");
         flag = builder.define("flag", true);
         count = builder.defineInRange("count", 5, 0, 10);

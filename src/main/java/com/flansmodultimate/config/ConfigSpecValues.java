@@ -5,6 +5,7 @@ import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -48,7 +49,7 @@ public final class ConfigSpecValues
         {
             if (child instanceof UnmodifiableConfig section)
                 collect(section, values);
-            else if (child instanceof ForgeConfigSpec.ConfigValue<?> value && isTransferable(value.get()))
+            else if (child instanceof ConfigValue<?> value && isTransferable(value.get()))
                 values.put(joinPath(value.getPath()), wireValue(value.get()));
         }
     }
@@ -77,10 +78,10 @@ public final class ConfigSpecValues
     // The config value type is only known at runtime.
     @SuppressWarnings("java:S1452")
     @Nullable
-    public static ForgeConfigSpec.ConfigValue<?> find(ForgeConfigSpec spec, List<String> path)
+    public static ConfigValue<?> find(ForgeConfigSpec spec, List<String> path)
     {
         Object entry = spec.getValues().get(path);
-        return entry instanceof ForgeConfigSpec.ConfigValue<?> value ? value : null;
+        return entry instanceof ConfigValue<?> value ? value : null;
     }
 
     /**
@@ -90,15 +91,14 @@ public final class ConfigSpecValues
      */
     // Mirrors the NeoForge defineList signature, where newElement is required.
     @SuppressWarnings("java:S1172")
-    public static <T> ForgeConfigSpec.ConfigValue<List<? extends T>> defineList(ForgeConfigSpec.Builder builder, String path, List<? extends T> defaultValue, Supplier<T> newElement,
-        Predicate<Object> elementValidator)
+    public static <T> ConfigValue<List<? extends T>> defineList(Builder builder, String path, List<? extends T> defaultValue, Supplier<T> newElement, Predicate<Object> elementValidator)
     {
         return builder.defineList(path, defaultValue, elementValidator);
     }
 
     /** The type, default and range of the entry at the given path, or null when the spec has no such entry. */
     @Nullable
-    public static ForgeConfigSpec.ValueSpec valueSpec(ForgeConfigSpec spec, List<String> path)
+    public static ValueSpec valueSpec(ForgeConfigSpec spec, List<String> path)
     {
         return spec.get(path);
     }
@@ -112,8 +112,8 @@ public final class ConfigSpecValues
     @SuppressWarnings("unchecked")
     public static boolean apply(ForgeConfigSpec spec, List<String> path, Object newValue)
     {
-        ForgeConfigSpec.ValueSpec valueSpec = valueSpec(spec, path);
-        ForgeConfigSpec.ConfigValue<?> value = find(spec, path);
+        ValueSpec valueSpec = valueSpec(spec, path);
+        ConfigValue<?> value = find(spec, path);
         if (valueSpec == null || value == null || !spec.isLoaded())
         {
             if (FlansLog.log.isWarnEnabled())
@@ -132,7 +132,7 @@ public final class ConfigSpecValues
         if (corrected.equals(value.get()))
             return false;
 
-        ((ForgeConfigSpec.ConfigValue<Object>) value).set(corrected);
+        ((ConfigValue<Object>) value).set(corrected);
         return true;
     }
 

@@ -6,7 +6,7 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -75,7 +75,7 @@ public class FlansOptionsScreen extends Screen
         new QuickSection(DISTANT_HORIZONS_SECTION, List.of(ModClientConfig.DISTANT_HORIZONS_INTEGRATION, ModClientConfig.DISTANT_HORIZONS_RANGEFINDER, ModClientConfig.DISTANT_HORIZONS_CONTACTS,
             ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS, ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));
 
-    private record QuickSection(String name, List<ForgeConfigSpec.ConfigValue<?>> values)
+    private record QuickSection(String name, List<ConfigValue<?>> values)
     {}
 
     @Nullable
@@ -141,7 +141,7 @@ public class FlansOptionsScreen extends Screen
                 continue;
 
             List<OptionInstance<?>> options = new ArrayList<>();
-            for (ForgeConfigSpec.ConfigValue<?> value : section.values())
+            for (ConfigValue<?> value : section.values())
             {
                 OptionInstance<?> option = ConfigOptionFactory.option(clientTarget, value);
                 if (option != null)

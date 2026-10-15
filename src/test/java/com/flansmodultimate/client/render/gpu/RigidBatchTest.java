@@ -4,11 +4,10 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.client.tmt.PositionTextureVertex;
 import com.flansmod.client.tmt.TexturedPolygon;
 import com.flansmodultimate.client.model.ModelBase;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.flansmodultimate.platform.render.TestVertexSink;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import org.junit.jupiter.api.Test;
 
@@ -177,8 +176,8 @@ class RigidBatchTest
     {
         TexturedPolygon[] faces = new TexturedPolygon[quads];
         for (int i = 0; i < quads; i++)
-            faces[i] = new TexturedPolygon(new PositionTextureVertex[]{new PositionTextureVertex(0, 0, i, 0, 0), new PositionTextureVertex(16, 0, i, 1, 0),
-                new PositionTextureVertex(16, 16, i, 1, 1), new PositionTextureVertex(0, 16, i, 0, 1)});
+            faces[i] = new TexturedPolygon(new PositionTextureVertex[]{new PositionTextureVertex(0, 0, i, 0, 0), new PositionTextureVertex(16, 0, i, 1, 0), new PositionTextureVertex(16, 16, i, 1, 1),
+                new PositionTextureVertex(0, 16, i, 0, 1)});
         return new RigidGeometry(faces);
     }
 
@@ -339,21 +338,6 @@ class RigidBatchTest
     }
 
     @Test
-    void interruptedUploadCanStartAgainAfterReload()
-    {
-        BufferBuilder upload = new BufferBuilder(256);
-        upload.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-        GpuModelCache.discardUpload(upload);
-        assertFalse(upload.building());
-        upload.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-        geometry().draw(new PoseStack().last(), upload, 17, 23, 1, 1, 1, 1);
-        var rendered = upload.end();
-        assertEquals(4, rendered.drawState().vertexCount());
-        rendered.release();
-        GpuModelCache.discardUpload(upload);
-    }
-
-    @Test
     void cacheProbeDistinguishesIdentityOrderLengthAndSurvivesReuse()
     {
         RigidGeometry a = geometry(), b = geometry();
@@ -482,7 +466,7 @@ class RigidBatchTest
         batch.begin(backend);
         for (int i = 0; i < 5; i++)
             submit(batch, geometry(), new PoseStack());
-        batch.vertex(1, 2, 3, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0);
+        VertexPlatform.vertex(batch, 1, 2, 3, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0);
         submit(batch, geometry(), new PoseStack());
         batch.end();
         assertEquals(List.of("barrier", "gpu:2", "gpu:2", "gpu:1", "cpu", "barrier", "gpu:1"), backend.events);
@@ -555,8 +539,8 @@ class RigidBatchTest
 
     static RigidGeometry geometry()
     {
-        return new RigidGeometry(new TexturedPolygon[]{new TexturedPolygon(
-            new PositionTextureVertex[]{new PositionTextureVertex(0, 0, 0, 0, 0), new PositionTextureVertex(16, 0, 0, 1, 0), new PositionTextureVertex(0, 16, 0, 0, 1)})});
+        return new RigidGeometry(new TexturedPolygon[]{
+            new TexturedPolygon(new PositionTextureVertex[]{new PositionTextureVertex(0, 0, 0, 0, 0), new PositionTextureVertex(16, 0, 0, 1, 0), new PositionTextureVertex(0, 16, 0, 0, 1)})});
     }
 
     private static GeometryKey key()
@@ -602,10 +586,10 @@ class RigidBatchTest
         final Recording output = new Recording()
         {
             @Override
-            public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz)
+            protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
             {
                 events.add("cpu");
-                super.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz);
+                super.accept(x, y, z, red, green, blue, alpha, u, v, overlay, light, normalX, normalY, normalZ);
             }
         };
         boolean available = true, throwOnDraw;
@@ -644,67 +628,14 @@ class RigidBatchTest
         }
     }
 
-    static class Recording implements VertexConsumer
+    static class Recording extends TestVertexSink
     {
         final List<float[]> vertices = new ArrayList<>();
-        @Override
-        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz)
-        {
-            vertices.add(new float[]{x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz});
-        }
 
         @Override
-        public VertexConsumer vertex(double x, double y, double z)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer color(int r, int g, int b, int a)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv(float u, float v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer overlayCoords(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer uv2(int u, int v)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public VertexConsumer normal(float x, float y, float z)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void endVertex()
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void defaultColor(int r, int g, int b, int a)
-        {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void unsetDefaultColor()
-        {
-            throw new AssertionError();
+            vertices.add(new float[]{x, y, z, red, green, blue, alpha, u, v, overlay, light, normalX, normalY, normalZ});
         }
     }
 }

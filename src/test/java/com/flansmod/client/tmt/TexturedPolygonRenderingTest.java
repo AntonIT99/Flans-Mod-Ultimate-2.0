@@ -32,19 +32,17 @@ class TexturedPolygonRenderingTest
             List<List<Integer>> actual = new ArrayList<>();
             for (int quad = 0; quad < output.vertices.size(); quad += 4)
             {
-                int a = (int)output.vertices.get(quad)[7];
-                int b = (int)output.vertices.get(quad + 1)[7];
-                int c = (int)output.vertices.get(quad + 2)[7];
-                int d = (int)output.vertices.get(quad + 3)[7];
+                int a = (int) output.vertices.get(quad)[7];
+                int b = (int) output.vertices.get(quad + 1)[7];
+                int c = (int) output.vertices.get(quad + 2)[7];
+                int d = (int) output.vertices.get(quad + 3)[7];
                 actual.add(List.of(a, b, c));
                 if (c != d)
                     actual.add(List.of(a, c, d));
             }
             List<List<Integer>> expected = new ArrayList<>();
             for (int i = 1; i < count - 1; i++)
-                expected.add(List.of((int)polygon.vertexPositions[0].texturePositionX,
-                    (int)polygon.vertexPositions[i].texturePositionX,
-                    (int)polygon.vertexPositions[i + 1].texturePositionX));
+                expected.add(List.of((int) polygon.vertexPositions[0].texturePositionX, (int) polygon.vertexPositions[i].texturePositionX, (int) polygon.vertexPositions[i + 1].texturePositionX));
             assertEquals(expected, actual);
             assertEquals(((count - 1) / 2) * 4, output.vertices.size());
         }
@@ -72,8 +70,14 @@ class TexturedPolygonRenderingTest
         // Direct public-list mutation is supported, including removal after a warm cache.
         c.transformGroups.add(new TransformGroup()
         {
-            @Override public double getWeight() { return 1D; }
-            @Override public Vec3 doTransformation(PositionTransformVertex vertex)
+            @Override
+            public double getWeight()
+            {
+                return 1D;
+            }
+
+            @Override
+            public Vec3 doTransformation(PositionTransformVertex vertex)
             {
                 return vertex.neutralVector.add(0, 0, 16);
             }
@@ -128,7 +132,8 @@ class TexturedPolygonRenderingTest
         {
             assertEquals(LightTexture.FULL_BRIGHT, vertex[10]);
             assertEquals(23, vertex[9]);
-            assertEquals(0.5F, vertex[6]);
+            // A 1.21 consumer packs the tint into byte channels.
+            assertEquals(0.5F, vertex[6], 1F / 255F);
             assertArrayEquals(new float[]{0, 1, 0}, new float[]{vertex[11], vertex[12], vertex[13]});
         }
     }

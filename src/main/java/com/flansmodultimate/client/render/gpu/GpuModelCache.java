@@ -5,7 +5,9 @@ import com.flansmodultimate.client.render.*;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.mixin.BufferSourceAccessor;
+import com.flansmodultimate.platform.render.MeshUploadBuffer;
 import com.flansmodultimate.platform.render.ShaderPlatform;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -78,7 +80,7 @@ public final class GpuModelCache
     private static int thrashingWindows;
     private static final List<Context> contexts = new ArrayList<>();
     private static int depth;
-    private static final BufferBuilder builder = new BufferBuilder(256);
+    private static final MeshUploadBuffer upload = new MeshUploadBuffer(256);
     private static final PoseStack.Pose IDENTITY = new PoseStack().last();
     private static ShaderInstance shader;
     private static boolean failed;
@@ -338,7 +340,7 @@ public final class GpuModelCache
         grownBytes = 0;
         thrashingWindows = 0;
         budgetStale = true;
-        discardUpload(builder);
+        upload.discard();
         uploadedBytes = 0;
         uploadTick = Long.MIN_VALUE;
         failed = false;
@@ -438,14 +440,6 @@ public final class GpuModelCache
         {
             buffer.close();
         }
-    }
-
-    static void discardUpload(BufferBuilder upload)
-    {
-        // discard() alone leaves BufferBuilder.building set, poisoning every upload after a failure.
-        if (upload.building())
-            upload.end().release();
-        upload.discard();
     }
 
     private static final class Context implements RigidBatch.Backend, Supplier<ShaderInstance>
@@ -638,7 +632,7 @@ public final class GpuModelCache
             VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
             try
             {
-                builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+                BufferBuilder builder = upload.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
                 boolean batched = EntityVertexBatch.begin(builder);
                 try
                 {
@@ -652,7 +646,7 @@ public final class GpuModelCache
                         EntityVertexBatch.end();
                 }
                 buffer.bind();
-                buffer.upload(builder.end());
+                upload.upload(buffer);
                 Mesh mesh = new Mesh(buffer, size);
                 meshes.put(key, mesh);
                 uploadedBytes += size;
@@ -666,7 +660,7 @@ public final class GpuModelCache
             catch (RuntimeException ex)
             {
                 buffer.close();
-                discardUpload(builder);
+                upload.discard();
                 throw ex;
             }
             finally
@@ -691,8 +685,7 @@ public final class GpuModelCache
                 shader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
             if (shader.PROJECTION_MATRIX != null)
                 shader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
-            if (shader.INVERSE_VIEW_ROTATION_MATRIX != null)
-                shader.INVERSE_VIEW_ROTATION_MATRIX.set(RenderSystem.getInverseViewRotationMatrix());
+            VertexPlatform.setInverseViewRotation(shader);
             if (shader.COLOR_MODULATOR != null)
                 shader.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
             if (shader.GLINT_ALPHA != null)

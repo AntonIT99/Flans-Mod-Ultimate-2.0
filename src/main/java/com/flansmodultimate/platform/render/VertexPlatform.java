@@ -6,6 +6,7 @@ import org.joml.Matrix4f;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.ShaderInstance;
 
 /** Version boundary for emitting vertices, immediate buffers, and the model-view matrix. Client-only. */
 public final class VertexPlatform
@@ -29,6 +30,12 @@ public final class VertexPlatform
         float normalY, float normalZ)
     {
         consumer.vertex(x, y, z, red, green, blue, alpha, u, v, packedOverlay, packedLight, normalX, normalY, normalZ);
+    }
+
+    /** Position-only vertex, as used by position render types. */
+    public static void position(VertexConsumer consumer, float x, float y, float z)
+    {
+        consumer.vertex(x, y, z).endVertex();
     }
 
     /** Position-colour-normal vertex, as used by line render types. */
@@ -66,6 +73,13 @@ public final class VertexPlatform
     public static Matrix4f modelView()
     {
         return RenderSystem.getModelViewStack().last().pose();
+    }
+
+    /** Sets the shader's inverse view-rotation matrix, which 1.20.1 shaders still declare. */
+    public static void setInverseViewRotation(ShaderInstance shader)
+    {
+        if (shader.INVERSE_VIEW_ROTATION_MATRIX != null)
+            shader.INVERSE_VIEW_ROTATION_MATRIX.set(RenderSystem.getInverseViewRotationMatrix());
     }
 
     /** Multiplies the pose stack by the matrix. */

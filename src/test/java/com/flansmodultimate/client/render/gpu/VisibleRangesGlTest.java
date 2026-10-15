@@ -1,9 +1,7 @@
 package com.flansmodultimate.client.render.gpu;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL;
-
+import com.flansmodultimate.platform.render.MeshUploadBuffer;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -11,6 +9,9 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.opengl.GL32C.*;
@@ -35,7 +36,8 @@ class VisibleRangesGlTest
             assertNotEquals(0, window);
             GLFW.glfwMakeContextCurrent(window);
             GL.createCapabilities();
-            if (!RenderSystem.isOnRenderThread()) RenderSystem.initRenderThread();
+            if (!RenderSystem.isOnRenderThread())
+                RenderSystem.initRenderThread();
             program = glCreateProgram();
             int vertex = compile(GL_VERTEX_SHADER, "#version 150\nin vec3 Position; void main(){gl_Position=vec4(Position,1.0);}");
             int fragment = compile(GL_FRAGMENT_SHADER, "#version 150\nout vec4 color; void main(){color=vec4(1.0);}");
@@ -52,20 +54,20 @@ class VisibleRangesGlTest
             glDisable(GL_DEPTH_TEST);
             glClearColor(0, 0, 0, 0);
 
-            try (VertexBuffer mesh = new VertexBuffer(VertexBuffer.Usage.STATIC))
+            try (VertexBuffer mesh = new VertexBuffer(VertexBuffer.Usage.STATIC); MeshUploadBuffer upload = new MeshUploadBuffer(1024))
             {
-                BufferBuilder builder = new BufferBuilder(1024);
-                builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+                BufferBuilder builder = upload.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
                 for (int i = 0; i < 5; i++)
                 {
-                    double left = -0.95 + i * 0.4, right = left + 0.3;
-                    builder.vertex(left, -0.5, 0).endVertex();
-                    builder.vertex(right, -0.5, 0).endVertex();
-                    builder.vertex(right, 0.5, 0).endVertex();
-                    builder.vertex(left, 0.5, 0).endVertex();
+                    float left = -0.95F + i * 0.4F;
+                    float right = left + 0.3F;
+                    VertexPlatform.position(builder, left, -0.5F, 0F);
+                    VertexPlatform.position(builder, right, -0.5F, 0F);
+                    VertexPlatform.position(builder, right, 0.5F, 0F);
+                    VertexPlatform.position(builder, left, 0.5F, 0F);
                 }
                 mesh.bind();
-                mesh.upload(builder.end());
+                upload.upload(mesh);
                 for (boolean grow : new boolean[]{false, true})
                 {
                     if (grow)
@@ -75,12 +77,12 @@ class VisibleRangesGlTest
                     }
                     VisibleRanges ranges = new VisibleRanges(5);
                     // Exercise full draw, separated ranges, adjacent ranges, and no visible parts.
-                    for (boolean[] visibility : new boolean[][]{
-                        {true, true, true, true, true}, {true, false, true, false, true},
-                        {false, true, true, false, false}, {false, false, false, false, false}})
+                    for (boolean[] visibility : new boolean[][]{{true, true, true, true, true}, {true, false, true, false, true}, {false, true, true, false, false},
+                        {false, false, false, false, false}})
                     {
                         ranges.clear();
-                        for (boolean visible : visibility) ranges.add(4, visible);
+                        for (boolean visible : visibility)
+                            ranges.add(4, visible);
                         glClear(GL_COLOR_BUFFER_BIT);
                         mesh.bind();
                         ranges.draw(mesh);
@@ -88,8 +90,7 @@ class VisibleRangesGlTest
                         for (int i = 0; i < 5; i++)
                         {
                             glReadPixels(10 + i * 20, 10, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
-                            assertEquals(visibility[i] ? 255 : 0, Byte.toUnsignedInt(pixel.get(0)),
-                                "part " + i + ", grown indices " + grow);
+                            assertEquals(visibility[i] ? 255 : 0, Byte.toUnsignedInt(pixel.get(0)), "part " + i + ", grown indices " + grow);
                         }
                         assertEquals(GL_NO_ERROR, glGetError());
                     }
@@ -99,9 +100,11 @@ class VisibleRangesGlTest
         }
         finally
         {
-            if (program != 0) glDeleteProgram(program);
+            if (program != 0)
+                glDeleteProgram(program);
             GL.setCapabilities(null);
-            if (window != 0) GLFW.glfwDestroyWindow(window);
+            if (window != 0)
+                GLFW.glfwDestroyWindow(window);
             GLFW.glfwTerminate();
         }
     }

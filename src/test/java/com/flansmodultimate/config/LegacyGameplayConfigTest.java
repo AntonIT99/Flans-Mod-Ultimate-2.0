@@ -2,6 +2,7 @@ package com.flansmodultimate.config;
 
 import io.netty.buffer.Unpooled;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -19,11 +20,9 @@ class LegacyGameplayConfigTest
     void vehicleThrottleDecayMultiplierKeepsTheFasterDefaultAndAcceptsOnlyItsRange()
     {
         assertSetting(ModCommonConfig.configSpec, 4D, "Vehicle Physics Settings", "vehicleThrottleDecayMultiplier");
-        var spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec,
-            List.of("Vehicle Physics Settings", "vehicleThrottleDecayMultiplier"));
+        var spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Vehicle Physics Settings", "vehicleThrottleDecayMultiplier"));
         assertTrue(spec.test(0D) && spec.test(1D) && spec.test(4D) && spec.test(100D));
-        assertFalse(spec.test(-1D) || spec.test(101D) || spec.test(Double.NaN)
-            || spec.test(Double.POSITIVE_INFINITY) || spec.test("4"));
+        assertFalse(spec.test(-1D) || spec.test(101D) || spec.test(Double.NaN) || spec.test(Double.POSITIVE_INFINITY) || spec.test("4"));
     }
 
     @Test
@@ -56,9 +55,9 @@ class LegacyGameplayConfigTest
         assertSetting(ModCommonConfig.configSpec, 0, "Teams Settings", "bulletSnapshotMin");
         assertSetting(ModCommonConfig.configSpec, 50, "Teams Settings", "bulletSnapshotDivisor");
 
-        ForgeConfigSpec.ValueSpec min = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotMin"));
+        ValueSpec min = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotMin"));
         assertTrue(min.test(100) && !min.test(101), "the legacy bltss command accepted 0 to 100");
-        ForgeConfigSpec.ValueSpec divisor = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotDivisor"));
+        ValueSpec divisor = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotDivisor"));
         assertTrue(divisor.test(1000) && !divisor.test(1001), "the legacy bltss command accepted 0 to 1000");
     }
 
@@ -66,8 +65,8 @@ class LegacyGameplayConfigTest
     @Test
     void commonListSettingsAcceptAnEmptyList()
     {
-        for (String path : List.of("Penetration System Settings.blocks", "Digital Ammo System Settings.digitalAmmoSupplyBlocks",
-            "World Physics Settings.dimensionGravityFactors", "World Physics Settings.dimensionDragFactors", "Vehicle Fuel Settings.fluidFuels"))
+        for (String path : List.of("Penetration System Settings.blocks", "Digital Ammo System Settings.digitalAmmoSupplyBlocks", "World Physics Settings.dimensionGravityFactors",
+            "World Physics Settings.dimensionDragFactors", "Vehicle Fuel Settings.fluidFuels"))
         {
             var value = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, ConfigSpecValues.splitPath(path));
             assertNotNull(value, path + " is missing");
@@ -128,7 +127,7 @@ class LegacyGameplayConfigTest
 
     private static void assertSetting(ForgeConfigSpec spec, Object expectedDefault, String... path)
     {
-        ForgeConfigSpec.ValueSpec value = ConfigSpecValues.valueSpec(spec, List.of(path));
+        ValueSpec value = ConfigSpecValues.valueSpec(spec, List.of(path));
         assertNotNull(value, String.join(".", path) + " is missing");
         assertEquals(expectedDefault, value.getDefault(), String.join(".", path));
     }
