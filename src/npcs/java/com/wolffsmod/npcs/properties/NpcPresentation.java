@@ -5,10 +5,10 @@ import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.*;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.registries.ForgeRegistries;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
@@ -71,7 +71,7 @@ public final class NpcPresentation
         if (npc instanceof EntityCustomNpc custom && custom.modelData.getEntityName() != null)
         {
             model = custom.modelData.getEntityName().toString();
-            flan = ForgeRegistries.ENTITY_TYPES.getValue(custom.modelData.getEntityName()) instanceof FlanModelEntityType;
+            flan = BuiltInRegistries.ENTITY_TYPE.get(custom.modelData.getEntityName()) instanceof FlanModelEntityType;
         }
         if (settings.selectModel(model, flan) && !npc.level().isClientSide)
             npc.updateClient = true;

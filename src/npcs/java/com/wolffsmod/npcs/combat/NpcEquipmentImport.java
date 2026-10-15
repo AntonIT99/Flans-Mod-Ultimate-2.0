@@ -11,6 +11,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataMelee;
 import noppes.npcs.entity.data.DataRanged;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
@@ -51,11 +52,11 @@ public final class NpcEquipmentImport
         if (item.isEmpty())
             return false;
         DataMelee melee = npc.stats.melee;
-        melee.setStrength((int) Math.max(0L, Math.round(NpcEquipmentStats.meleeDamage(item))));
+        melee.setStrength((int) Math.max(0L, Math.round(NpcEquipmentStats.meleeDamage(npc, item))));
         melee.setRange((float) Math.max(0D, NpcEquipmentStats.meleeReach(item)));
         melee.setDelay(Math.max(1, NpcEquipment.meleeDelay(item)));
-        melee.setKnockback((int) Math.max(0L, Math.round(NpcEquipmentStats.meleeKnockback(item))));
-        int fire = NpcEquipment.fireSeconds(item);
+        melee.setKnockback((int) Math.max(0L, Math.round(NpcEquipmentStats.meleeKnockback(npc, item))));
+        int fire = NpcEquipment.fireSeconds(item, npc);
         melee.setEffect(fire > 0 ? FIRE_EFFECT : 0, 0, fire);
         return true;
     }
@@ -68,9 +69,9 @@ public final class NpcEquipmentImport
             return false;
         DataRanged ranged = npc.stats.ranged;
         ranged.setStrength((int) Math.max(0L, Math.round(shot.damage())));
-        ranged.setSpeed((int) Math.max(1L, Math.min(100L, Math.round(shot.speed() * 10D))));
+        ranged.setSpeed((int) Mth.clamp(Math.round(shot.speed() * 10D), 1L, 100L));
         ranged.setAccuracy((int) Math.round(NpcEquipmentStats.accuracy(shot.spread())));
-        ranged.setShotCount(Math.max(1, Math.min(10, shot.projectiles())));
+        ranged.setShotCount(Mth.clamp(shot.projectiles(), 1, 10));
         ranged.setHasGravity(shot.impact().gravity() > 0D);
         ranged.setExplodeSize(NpcEquipmentStats.explosionSize(shot.impact().explosionRadius()));
         if (!shot.firingSound().isBlank())
@@ -86,7 +87,7 @@ public final class NpcEquipmentImport
     {
         Optional<EquippedWeaponProperties> flan = NpcEquipment.flan(npc).filter(properties -> !properties.throwable());
         if (flan.isEmpty())
-            return rhythm(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item), 0D, 1);
+            return rhythm(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item, npc), 0D, 1);
         ItemStack ammunition = FlansEquipment.getLoadedAmmunition(item).orElseGet(() -> ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
         return rhythm(flan.get().shotDelay(), flan.get().reloadTime(), ammunition == null ? 1 : FlansProjectiles.getRoundsPerItem(ammunition));
     }
@@ -97,8 +98,8 @@ public final class NpcEquipmentImport
      */
     static Rhythm rhythm(double shotDelay, double reloadTime, int rounds)
     {
-        int shot = (int) Math.max(1L, Math.min(MAX_DELAY, Math.round(Double.isFinite(shotDelay) ? shotDelay : 20D)));
-        int reload = (int) Math.max(0L, Math.min(MAX_DELAY, (long) Math.ceil(Double.isFinite(reloadTime) ? reloadTime : 0D)));
+        int shot = (int) Mth.clamp(Math.round(Double.isFinite(shotDelay) ? shotDelay : 20D), 1L, MAX_DELAY);
+        int reload = (int) Mth.clamp((long) Math.ceil(Double.isFinite(reloadTime) ? reloadTime : 0D), 0L, MAX_DELAY);
         if (rounds > 1 && shot <= MAX_BURST_DELAY)
             return new Rhythm(Math.max(shot, reload), Math.min(MAX_BURST, rounds), shot);
         return new Rhythm(rounds > 1 ? shot : Math.max(shot, reload), 1, 0);
@@ -134,6 +135,6 @@ public final class NpcEquipmentImport
     /** Custom NPCs stores a resistance as 1 plus the share absorbed: 1 is neutral and 2 is immune. */
     static float resistance(float protection)
     {
-        return 1F + Math.max(0F, Math.min(1F, Float.isFinite(protection) ? protection : 0F));
+        return 1F + Mth.clamp(Float.isFinite(protection) ? protection : 0F, 0F, 1F);
     }
 }

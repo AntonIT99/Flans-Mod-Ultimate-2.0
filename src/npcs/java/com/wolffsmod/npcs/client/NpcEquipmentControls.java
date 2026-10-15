@@ -5,6 +5,7 @@ import com.flansmodultimate.api.FlansEquipment;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import noppes.npcs.client.gui.*;
 import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -67,25 +68,26 @@ public final class NpcEquipmentControls
         ItemStack item = npc.getMainHandItem();
         String nativeValue = I18n.get("wolffsmodnpcs.weapons.item_value");
         if (gui instanceof SubGuiNpcMeleeProperties)
-            melee(gui, item, readouts, buttons);
+            melee(gui, npc, item, nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcRangeProperties)
             ranged(gui, npc, item, nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcProjectiles)
             projectiles(gui, npc, nativeValue, readouts, buttons, shown);
     }
 
-    private static void melee(GuiBasic gui, ItemStack item, Map<Integer, String> readouts, Map<Integer, Reason> buttons)
+    private static void melee(GuiBasic gui, EntityNPCInterface npc, ItemStack item, String nativeValue, Map<Integer, String> readouts, Map<Integer, Reason> buttons)
     {
-        readouts.put(1, number(NpcEquipmentStats.meleeDamage(item)));
+        // Minecraft 1.21 damage and knockback enchantments depend on the real target, so the item decides those values.
+        readouts.put(1, NpcPlatform.conditionalEffect(npc, item, NpcPlatform.Effect.DAMAGE) ? nativeValue : number(NpcEquipmentStats.meleeDamage(npc, item)));
         readouts.put(2, number(NpcEquipmentStats.meleeReach(item)));
         readouts.put(3, Integer.toString(NpcEquipment.meleeDelay(item)));
-        readouts.put(4, number(NpcEquipmentStats.meleeKnockback(item)));
-        readouts.put(6, Integer.toString(NpcEquipment.fireSeconds(item)));
+        readouts.put(4, NpcPlatform.conditionalEffect(npc, item, NpcPlatform.Effect.KNOCKBACK) ? nativeValue : number(NpcEquipmentStats.meleeKnockback(npc, item)));
+        readouts.put(6, Integer.toString(NpcEquipment.fireSeconds(item, npc)));
         buttons.put(5, Reason.ITEM_WEAPON);
         buttons.put(7, Reason.ITEM_WEAPON);
         var effect = gui.getButton(5);
         if (effect != null)
-            effect.setDisplay(NpcEquipment.fireSeconds(item) > 0 ? 33 : 0);
+            effect.setDisplay(NpcEquipment.fireSeconds(item, npc) > 0 ? 33 : 0);
     }
 
     private static void ranged(GuiBasic gui, EntityNPCInterface npc, ItemStack item, String nativeValue, Map<Integer, String> readouts, Map<Integer, Reason> buttons)
@@ -102,8 +104,8 @@ public final class NpcEquipmentControls
         var indirect = gui.getButton(13);
         if (indirect != null)
             indirect.setDisplay(0);
-        readouts.put(3, number(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item)));
-        readouts.put(4, number(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item)));
+        readouts.put(3, number(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item, npc)));
+        readouts.put(4, number(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item, npc)));
         readouts.put(5, number(NpcEquipment.shotDelay(item)));
         readouts.put(6, "1");
         NpcEquipmentStats.Shot shot = NpcEquipmentStats.shot(npc, item);

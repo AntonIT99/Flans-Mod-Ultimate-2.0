@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.sim.TargetMotion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 /** Intercepts using Flan's discrete move-then-drag-and-gravity physics, without world access. */
@@ -54,7 +55,7 @@ public final class ProjectileAim
     {
         if (!Double.isFinite(speed) || speed <= 0D || !Double.isFinite(gravity) || !Double.isFinite(drag))
             return new Solution(displacement.normalize(), 0D);
-        double retention = Math.max(0D, Math.min(1D, drag));
+        double retention = Mth.clamp(drag, 0D, 1D);
         double previousTime = 0.01D;
         double previousError = requiredVelocity(displacement, targetVelocity, previousTime, gravity, retention).length() - speed;
         Solution solution = null;

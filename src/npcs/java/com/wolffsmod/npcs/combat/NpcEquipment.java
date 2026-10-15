@@ -1,17 +1,18 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.common.ToolActions;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.Optional;
 
@@ -72,16 +73,16 @@ public final class NpcEquipment
             .orElseGet(() -> EquipmentAttributes.attackDelay(EquipmentAttributes.value(stack, EquipmentSlot.MAINHAND, Attributes.ATTACK_SPEED, 4D)));
     }
 
-    public static int chargeTime(ItemStack stack)
+    public static int chargeTime(ItemStack stack, LivingEntity holder)
     {
         return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(properties -> properties.throwable() ? Math.max(1, properties.chargeTime()) : 0)
-            .orElseGet(() -> vanillaChargeTime(stack));
+            .orElseGet(() -> vanillaChargeTime(stack, holder));
     }
 
-    private static int vanillaChargeTime(ItemStack stack)
+    private static int vanillaChargeTime(ItemStack stack, LivingEntity holder)
     {
         if (stack.getItem() instanceof CrossbowItem)
-            return CrossbowItem.isCharged(stack) ? 0 : CrossbowItem.getChargeDuration(stack);
+            return CrossbowItem.isCharged(stack) ? 0 : EntityPlatform.crossbowChargeDuration(stack, holder);
         if (stack.getItem() instanceof BowItem)
             return 20;
         return stack.getItem() instanceof TridentItem ? 10 : 0;
@@ -94,12 +95,12 @@ public final class NpcEquipment
 
     public static boolean shield(ItemStack stack)
     {
-        return !stack.isEmpty() && stack.canPerformAction(ToolActions.SHIELD_BLOCK);
+        return !stack.isEmpty() && NpcPlatform.canShieldBlock(stack);
     }
 
-    public static int fireSeconds(ItemStack stack)
+    public static int fireSeconds(ItemStack stack, LivingEntity holder)
     {
-        return EnchantmentHelper.getItemEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.FIRE_ASPECT, stack) * 4;
+        return NpcPlatform.fireAspectLevel(holder, stack) * 4;
     }
 
     public static boolean armorProtects(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)

@@ -1,20 +1,17 @@
 package com.wolffsmod.npcs.client;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.diag.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 import java.util.List;
 import java.util.Locale;
@@ -25,7 +22,6 @@ import java.util.Locale;
  * {@code /flansnpcclientbenchmark [seconds]} or from the Server page of the Wolff's Mod tab. Render thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Mod.EventBusSubscriber(modid = NpcsMod.MOD_ID, value = Dist.CLIENT)
 public final class ClientBenchmark
 {
     /** Seconds left out at the start: closing a screen and loading chunks are not what is measured. */
@@ -54,13 +50,11 @@ public final class ClientBenchmark
         }
     }
 
-    @SubscribeEvent
-    public static void registerCommands(RegisterClientCommandsEvent event)
+    public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        event.getDispatcher()
-            .register(Commands.literal("flansnpcclientbenchmark").executes(context -> start(ServerBenchmark.DEFAULT_SECONDS))
-                .then(Commands.argument("seconds", IntegerArgumentType.integer(ServerBenchmark.MIN_SECONDS, ServerBenchmark.MAX_SECONDS))
-                    .executes(context -> start(IntegerArgumentType.getInteger(context, "seconds")))));
+        dispatcher.register(Commands.literal("flansnpcclientbenchmark").executes(context -> start(ServerBenchmark.DEFAULT_SECONDS))
+            .then(Commands.argument("seconds", IntegerArgumentType.integer(ServerBenchmark.MIN_SECONDS, ServerBenchmark.MAX_SECONDS))
+                .executes(context -> start(IntegerArgumentType.getInteger(context, "seconds")))));
     }
 
     /** @return 1 when the run started, 0 when one was already in progress */
@@ -71,18 +65,18 @@ public final class ClientBenchmark
             say(Component.translatable("commands.wolffsmodnpcs.benchmark.busy"));
             return 0;
         }
-        int clamped = Math.max(ServerBenchmark.MIN_SECONDS, Math.min(ServerBenchmark.MAX_SECONDS, seconds));
+        int clamped = Mth.clamp(seconds, ServerBenchmark.MIN_SECONDS, ServerBenchmark.MAX_SECONDS);
         run = new Run(clamped);
         NpcProfiler.setClient(true);
         say(Component.translatable("commands.wolffsmodnpcs.benchmark.client_started", clamped, (int) WARM_UP_SECONDS));
         return 1;
     }
 
-    @SubscribeEvent
-    public static void frame(TickEvent.RenderTickEvent event)
+    /** At the end of every rendered frame. */
+    public static void frame()
     {
         Run current = run;
-        if (current == null || event.phase != TickEvent.Phase.END)
+        if (current == null)
             return;
         long now = System.nanoTime();
         NpcProfiler.ClientSample sample = NpcProfiler.drainClient();

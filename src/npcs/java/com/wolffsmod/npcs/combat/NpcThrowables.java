@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.*;
 import net.minecraft.world.item.*;
@@ -64,7 +65,7 @@ public final class NpcThrowables
     private static boolean launch(EntityNPCInterface npc, ServerLevel level, ItemStack ammunition, Flight flight, Vec3 origin, Vec3 direction)
     {
         float inaccuracy = inaccuracy(npc.stats.ranged.getAccuracy());
-        int shots = Math.max(1, Math.min(10, npc.stats.ranged.getShotCount()));
+        int shots = Mth.clamp(npc.stats.ranged.getShotCount(), 1, 10);
         boolean launched = false;
         for (int i = 0; i < shots; i++)
         {
@@ -89,7 +90,7 @@ public final class NpcThrowables
     /** Custom NPCs accuracy runs from 0 to 100; a fully accurate NPC still throws with a hand's wobble of 1. */
     static float inaccuracy(int accuracy)
     {
-        float miss = 1F - Math.max(0, Math.min(100, accuracy)) / 100F;
+        float miss = 1F - Mth.clamp(accuracy, 0, 100) / 100F;
         return 1F + miss * (MAX_INACCURACY - 1F);
     }
 

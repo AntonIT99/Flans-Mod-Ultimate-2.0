@@ -163,7 +163,7 @@ public final class NpcEquipmentRangedGoal extends Goal
 
     private boolean charge(ItemStack weapon)
     {
-        int chargeTime = NpcEquipment.chargeTime(weapon);
+        int chargeTime = NpcEquipment.chargeTime(weapon, npc);
         if (chargeTime > 0 && charging++ < chargeTime)
         {
             if (!npc.isUsingItem() || npc.getUsedItemHand() != InteractionHand.MAIN_HAND)

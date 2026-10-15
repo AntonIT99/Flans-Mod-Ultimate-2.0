@@ -2,13 +2,12 @@ package com.wolffsmod.npcs.diag;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Mth;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -66,7 +65,7 @@ public final class ServerBenchmark
     {
         if (run != null)
             return false;
-        int clamped = Math.max(MIN_SECONDS, Math.min(MAX_SECONDS, seconds));
+        int clamped = Mth.clamp(seconds, MIN_SECONDS, MAX_SECONDS);
         run = new Run(requester, clamped * 20);
         NpcProfiler.setServer(true);
         requester.sendSuccess(() -> Component.translatable("commands.wolffsmodnpcs.benchmark.started", clamped, WARM_UP_TICKS / 20), true);
@@ -82,16 +81,20 @@ public final class ServerBenchmark
         return true;
     }
 
-    public static void serverTick(TickEvent.ServerTickEvent event)
+    /** At the start of every server tick. */
+    public static void serverTickStart()
+    {
+        Run current = run;
+        if (current != null)
+            current.started = System.nanoTime();
+    }
+
+    /** At the end of every server tick. */
+    public static void serverTickEnd(MinecraftServer server)
     {
         Run current = run;
         if (current == null)
             return;
-        if (event.phase == TickEvent.Phase.START)
-        {
-            current.started = System.nanoTime();
-            return;
-        }
         NpcProfiler.ServerSample sample = NpcProfiler.drainServer();
         if (current.warmUp > 0)
         {
@@ -110,12 +113,12 @@ public final class ServerBenchmark
         current.report.row(String.format(Locale.ROOT, "%d,%.4f,%.4f,%d,%.4f,%d,%d,%.4f", current.tick.count(), millis, sample.npcMillis(), sample.npcTicks(), sample.pathMillis(),
             sample.pathSearches(), sample.pathFailures(), sample.targetMillis()));
         if (current.tick.count() >= current.ticks)
-            finish(event.getServer(), null);
+            finish(server, null);
     }
 
-    public static void serverStopping(ServerStoppingEvent event)
+    public static void serverStopping(MinecraftServer server)
     {
-        stop(event.getServer(), "the server stopped");
+        stop(server, "the server stopped");
     }
 
     private static void finish(MinecraftServer server, @Nullable String abortReason)

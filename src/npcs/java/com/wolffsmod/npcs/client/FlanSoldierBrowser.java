@@ -6,13 +6,13 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.network.ApplyLoadoutPacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
-import net.minecraftforge.registries.ForgeRegistries;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
 import noppes.npcs.shared.client.gui.components.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 
@@ -117,7 +117,7 @@ public final class FlanSoldierBrowser
     {
         ResourceLocation skin = applyClassSkin ? selection.playerClass().getSkinOverrideTexture() : null;
         SkinLayout layout = layout(skin);
-        ResourceLocation legacyModel = ForgeRegistries.ENTITY_TYPES.getKey(CustomEntities.entityNPC64x32);
+        ResourceLocation legacyModel = BuiltInRegistries.ENTITY_TYPE.getKey(CustomEntities.entityNPC64x32);
         boolean legacy = layout == SkinLayout.LEGACY || layout == SkinLayout.NONE && Objects.equals(screen.playerdata.getEntityName(), legacyModel);
         // Selecting a model also empties its extra data, so the choice is recorded afterwards.
         screen.playerdata.setEntity(legacy ? legacyModel : null);

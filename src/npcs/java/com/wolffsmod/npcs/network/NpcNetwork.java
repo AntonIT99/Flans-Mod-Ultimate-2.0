@@ -1,91 +1,61 @@
 package com.wolffsmod.npcs.network;
 
-import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.*;
-import net.minecraftforge.network.simple.SimpleChannel;
 import noppes.npcs.entity.EntityNPCInterface;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 
-import java.util.Optional;
-
-/** The module's own channel. Everything else it sends rides on Custom NPCs' packets. */
+/** The module's own packets. Everything else it sends rides on Custom NPCs' packets. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcNetwork
 {
-    private static final String VERSION = "2";
-    private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
-
+    /** Declares the module's packets; the order numbers them on Forge. */
     public static void register()
     {
-        CHANNEL.registerMessage(0, VehicleStatePacket.class, VehicleStatePacket::write, VehicleStatePacket::read, (packet, context) ->
-        {
-            // The handler class is only loaded on a client.
-            context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.wolffsmod.npcs.client.NpcClientPackets.vehicleState(packet)));
-            context.get().setPacketHandled(true);
-        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-        CHANNEL.registerMessage(1, ServerControlPacket.class, ServerControlPacket::write, ServerControlPacket::read, (packet, context) ->
-        {
-            ServerPlayer sender = context.get().getSender();
-            if (sender != null)
-                context.get().enqueueWork(() -> packet.handle(sender));
-            else
-                context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.wolffsmod.npcs.client.NpcClientPackets.serverSettings(packet)));
-            context.get().setPacketHandled(true);
-        });
-        CHANNEL.registerMessage(2, ApplyLoadoutPacket.class, ApplyLoadoutPacket::write, ApplyLoadoutPacket::read, (packet, context) ->
-        {
-            ServerPlayer sender = context.get().getSender();
-            if (sender != null)
-                context.get().enqueueWork(() -> packet.handle(sender));
-            context.get().setPacketHandled(true);
-        }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
-        CHANNEL.registerMessage(3, PartStatePacket.class, PartStatePacket::write, PartStatePacket::read, (packet, context) ->
-        {
-            context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.wolffsmod.npcs.client.NpcClientPackets.partState(packet)));
-            context.get().setPacketHandled(true);
-        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        // The client handler class is only loaded when a client runs one of these handlers.
+        NpcNetworkPlatform.toClient("vehicle_state", VehicleStatePacket.class, VehicleStatePacket::write, VehicleStatePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::vehicleState);
+        NpcNetworkPlatform.bidirectional("server_control", ServerControlPacket.class, ServerControlPacket::write, ServerControlPacket::read,
+            () -> com.wolffsmod.npcs.client.NpcClientPackets::serverSettings, ServerControlPacket::handle);
+        NpcNetworkPlatform.toServer("apply_loadout", ApplyLoadoutPacket.class, ApplyLoadoutPacket::write, ApplyLoadoutPacket::read, ApplyLoadoutPacket::handle);
+        NpcNetworkPlatform.toClient("part_state", PartStatePacket.class, PartStatePacket::write, PartStatePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::partState);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
     {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
+        NpcNetworkPlatform.sendToPlayer(player, packet);
     }
 
     public static void sendToServer(ServerControlPacket packet)
     {
-        CHANNEL.sendToServer(packet);
+        NpcNetworkPlatform.sendToServer(packet);
     }
 
     public static void sendToServer(ApplyLoadoutPacket packet)
     {
-        CHANNEL.sendToServer(packet);
+        NpcNetworkPlatform.sendToServer(packet);
     }
 
     public static void sendToTracking(EntityNPCInterface npc, VehicleStatePacket packet)
     {
-        CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> npc), packet);
+        NpcNetworkPlatform.sendToTracking(npc, packet);
     }
 
     public static void sendToTracking(EntityNPCInterface npc, PartStatePacket packet)
     {
-        CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> npc), packet);
+        NpcNetworkPlatform.sendToTracking(npc, packet);
     }
 
     /** A client that starts tracking an NPC needs its current state, not just the next change. */
-    public static void startTracking(PlayerEvent.StartTracking event)
+    public static void startTracking(Entity target, ServerPlayer player)
     {
-        if (event.getTarget() instanceof EntityNPCInterface npc && event.getEntity() instanceof ServerPlayer player && NpcVehicleState.of(npc).isActive())
+        if (target instanceof EntityNPCInterface npc && NpcVehicleState.of(npc).isActive())
         {
-            CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), NpcVehicleState.of(npc).packet(npc));
-            NpcVehicleState.of(npc).getParts().packet(npc).ifPresent(packet -> CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet));
+            NpcNetworkPlatform.sendToPlayer(player, NpcVehicleState.of(npc).packet(npc));
+            NpcVehicleState.of(npc).getParts().packet(npc).ifPresent(packet -> NpcNetworkPlatform.sendToPlayer(player, packet));
         }
     }
 }

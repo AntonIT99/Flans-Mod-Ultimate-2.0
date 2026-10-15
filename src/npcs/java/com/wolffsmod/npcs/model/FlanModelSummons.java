@@ -2,10 +2,10 @@ package com.wolffsmod.npcs.model;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.entity.EntityCustomNpc;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 
@@ -18,10 +18,9 @@ final class FlanModelSummons
 {
     static void replace(ServerLevel level, FlanModelEntity summoned)
     {
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(summoned.getType());
+        // The 1.21 entity registry is defaulted, so a registered model type always has a key.
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(summoned.getType());
         summoned.discard();
-        if (id == null)
-            return;
         EntityCustomNpc npc = new EntityCustomNpc(CustomEntities.entityCustomNpc, level);
         npc.moveTo(summoned.getX(), summoned.getY(), summoned.getZ(), summoned.getYRot(), 0F);
         npc.ais.setStartPos(summoned.blockPosition());
