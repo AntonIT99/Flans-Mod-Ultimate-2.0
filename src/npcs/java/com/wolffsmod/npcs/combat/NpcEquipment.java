@@ -1,10 +1,11 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.common.ItemAbilities;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.InteractionHand;
@@ -81,7 +82,7 @@ public final class NpcEquipment
     private static int vanillaChargeTime(ItemStack stack, LivingEntity holder)
     {
         if (stack.getItem() instanceof CrossbowItem)
-            return CrossbowItem.isCharged(stack) ? 0 : CrossbowItem.getChargeDuration(stack, holder);
+            return CrossbowItem.isCharged(stack) ? 0 : EntityPlatform.crossbowChargeDuration(stack, holder);
         if (stack.getItem() instanceof BowItem)
             return 20;
         return stack.getItem() instanceof TridentItem ? 10 : 0;
@@ -94,12 +95,12 @@ public final class NpcEquipment
 
     public static boolean shield(ItemStack stack)
     {
-        return !stack.isEmpty() && stack.canPerformAction(ItemAbilities.SHIELD_BLOCK);
+        return !stack.isEmpty() && NpcPlatform.canShieldBlock(stack);
     }
 
     public static int fireSeconds(ItemStack stack, LivingEntity holder)
     {
-        return stack.getEnchantmentLevel(holder.registryAccess().holderOrThrow(net.minecraft.world.item.enchantment.Enchantments.FIRE_ASPECT)) * 4;
+        return NpcPlatform.fireAspectLevel(holder, stack) * 4;
     }
 
     public static boolean armorProtects(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)

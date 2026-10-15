@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Optional;
@@ -78,7 +79,7 @@ public abstract class EntityAIRangedAttackMixin
         {
             wolffsmodnpcsCadence.reset();
             burstCount = inherited ? 1 : 0;
-            rangedAttackTime = inherited ? Math.clamp(wolffsmodnpcsReloadedAt - npc.level().getGameTime(), 0, Integer.MAX_VALUE) : 0;
+            rangedAttackTime = inherited ? (int) Mth.clamp(wolffsmodnpcsReloadedAt - npc.level().getGameTime(), 0L, Integer.MAX_VALUE) : 0;
             wolffsmodnpcsWasInherited = inherited;
             wolffsmodnpcsLastInterval = interval;
         }

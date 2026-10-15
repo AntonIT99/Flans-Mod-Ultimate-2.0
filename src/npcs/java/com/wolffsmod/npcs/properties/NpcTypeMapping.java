@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.*;
+import net.minecraft.util.Mth;
 
 import java.util.*;
 import java.util.function.ToDoubleFunction;
@@ -82,7 +83,7 @@ public final class NpcTypeMapping
     {
         integer(values, NpcTypeProperty.DAMAGE, common(type, Weapon::damage), 1D, 0, Integer.MAX_VALUE);
         OptionalDouble spread = common(type, Weapon::spread);
-        spread.ifPresent(value -> values.put(NpcTypeProperty.ACCURACY, IntTag.valueOf((int) Math.clamp(Math.round(100D - value * 5D), 1D, 100D))));
+        spread.ifPresent(value -> values.put(NpcTypeProperty.ACCURACY, IntTag.valueOf((int) Mth.clamp(Math.round(100D - value * 5D), 1L, 100L))));
         if (type.weapons().stream().allMatch(weapon -> weapon.speed().isPresent()))
             integer(values, NpcTypeProperty.SPEED, common(type, weapon -> weapon.speed().getAsDouble()), 10D, 0, 100);
         if (!nativeProjectile)
@@ -108,6 +109,6 @@ public final class NpcTypeMapping
 
     private static void integer(Map<NpcTypeProperty, Tag> values, NpcTypeProperty property, OptionalDouble source, double scale, int min, int max)
     {
-        source.ifPresent(value -> values.put(property, IntTag.valueOf((int) Math.clamp(Math.ceil(value * scale), min, max))));
+        source.ifPresent(value -> values.put(property, IntTag.valueOf((int) Mth.clamp(Math.ceil(value * scale), min, max))));
     }
 }

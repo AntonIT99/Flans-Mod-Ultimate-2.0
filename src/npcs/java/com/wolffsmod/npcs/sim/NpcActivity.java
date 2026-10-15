@@ -5,7 +5,6 @@ import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.server.level.ServerLevel;
@@ -36,9 +35,10 @@ public final class NpcActivity
     private static final int TICKET_DISTANCE = 2;
     private static final TicketType<ChunkPos> TICKET = TicketType.create("wolffsmodnpcs_active", Comparator.comparingLong(ChunkPos::toLong), LIFETIME);
 
-    public static void levelTick(LevelTickEvent.Post event)
+    /** At the end of every server level tick. */
+    public static void levelTick(ServerLevel level)
     {
-        if (!(event.getLevel() instanceof ServerLevel level) || level.getGameTime() % INTERVAL != 0 || level.players().isEmpty())
+        if (level.getGameTime() % INTERVAL != 0 || level.players().isEmpty())
             return;
         for (Entity entity : level.getAllEntities())
         {

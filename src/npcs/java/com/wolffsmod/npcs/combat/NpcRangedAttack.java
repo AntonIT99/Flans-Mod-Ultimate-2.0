@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -98,7 +99,7 @@ public final class NpcRangedAttack
             this.target = target;
             state = NpcVehicleState.of(npc);
             damage = npc.stats.ranged.getStrength();
-            shotCount = Math.clamp(npc.stats.ranged.getShotCount(), 1, 10);
+            shotCount = Mth.clamp(npc.stats.ranged.getShotCount(), 1, 10);
         }
 
         /** The yaw the model is drawn at: the hull of a vehicle, which need not be where the NPC looks. */
@@ -134,7 +135,7 @@ public final class NpcRangedAttack
             Vec3 origin = modelMuzzles ? NpcModels.world(npc, model, muzzle.offset(), hullYaw()) : npc.getEyePosition();
             Weapon adjusted = adjustedWeapon(muzzle).orElse(null);
             // A weapon firing with adjusted statistics still throws its own pellets, unless the shot count is adjusted too.
-            int shots = adjusted != null && !own(NpcTypeProperty.SHOT_COUNT) ? Math.clamp(adjusted.projectiles(), 1, 128) : shotCount;
+            int shots = adjusted != null && !own(NpcTypeProperty.SHOT_COUNT) ? Mth.clamp(adjusted.projectiles(), 1, 128) : shotCount;
             for (int shotIndex = 0; shotIndex < shots; shotIndex++)
                 fired = launch(muzzle, origin, shotIndex, adjusted) || fired;
         }

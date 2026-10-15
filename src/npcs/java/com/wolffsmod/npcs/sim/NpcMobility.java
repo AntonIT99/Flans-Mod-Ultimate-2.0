@@ -3,11 +3,11 @@ package com.wolffsmod.npcs.sim;
 import com.flansmodultimate.api.FlansModApi;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Terrain;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.common.NeoForgeMod;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.core.BlockPos;
@@ -52,7 +52,7 @@ public final class NpcMobility
 
     static float landFactor(int tenthsPerSecond, int walkingSpeed)
     {
-        return (float) Math.clamp(tenthsPerSecond / 200D / naturalSpeed(walkingSpeed), 0.05D, 20D);
+        return (float) Mth.clamp(tenthsPerSecond / 200D / naturalSpeed(walkingSpeed), 0.05D, 20D);
     }
 
     /** @return blocks per tick the NPC settles at on land at its full pace: its land speed setting, or what its walking speed comes to */
@@ -88,7 +88,7 @@ public final class NpcMobility
         if (push < 1.0E-5D)
             return original;
         double speed = tenthsPerSecond / 200D;
-        return (float) Math.clamp(speed / (speed + push), 0.5D, 0.995D);
+        return (float) Mth.clamp(speed / (speed + push), 0.5D, 0.995D);
     }
 
     // Terrain
@@ -103,8 +103,7 @@ public final class NpcMobility
     public static void tick(EntityNPCInterface npc)
     {
         Terrain terrain = NpcTuning.of(npc).terrain();
-        if (floats(terrain) && NpcSubmarine.runningDepth(npc) == 0 && npc.isInWater() && npc.getFluidTypeHeight(NeoForgeMod.WATER_TYPE.value()) > npc.getFluidJumpThreshold()
-            && npc.getRandom().nextFloat() < 0.8F)
+        if (floats(terrain) && NpcSubmarine.runningDepth(npc) == 0 && npc.isInWater() && NpcPlatform.waterHeight(npc) > npc.getFluidJumpThreshold() && npc.getRandom().nextFloat() < 0.8F)
             npc.getJumpControl().jump();
         if ((npc.tickCount + npc.getId()) % REFRESH_INTERVAL != 0)
             return;

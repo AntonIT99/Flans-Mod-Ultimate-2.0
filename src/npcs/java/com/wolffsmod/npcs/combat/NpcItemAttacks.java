@@ -1,7 +1,9 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -178,7 +180,7 @@ public final class NpcItemAttacks
         if (!npc.level().addFreshEntity(arrow))
             return false;
         ammo.shrink(usedAmmo);
-        weapon.hurtAndBreak(1, npc, EquipmentSlot.MAINHAND);
+        ItemStackData.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
         npc.playSound(SoundEvents.ARROW_SHOOT, 1F, 1F);
         return true;
     }
@@ -226,7 +228,7 @@ public final class NpcItemAttacks
         if (trident && EnchantmentHelper.getTridentSpinAttackStrength(weapon, npc) > 0)
             return false;
         if (trident)
-            weapon.hurtAndBreak(1, npc, EquipmentSlot.MAINHAND);
+            ItemStackData.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
         Projectile projectile = projectile(npc, weapon);
         if (projectile == null)
             return false;
@@ -236,7 +238,7 @@ public final class NpcItemAttacks
             return false;
         weapon.shrink(1);
         npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
-        npc.playSound(trident ? SoundEvents.TRIDENT_THROW.value() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
+        npc.playSound(trident ? NpcPlatform.tridentThrowSound() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
         return true;
     }
 

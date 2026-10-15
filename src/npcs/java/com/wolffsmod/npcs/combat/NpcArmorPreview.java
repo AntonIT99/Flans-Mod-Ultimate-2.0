@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.combat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.CombatRules;
 
 /** Display-only projection of the damage pipeline: Flan ratio, native armor, then enchantment protection. */
@@ -13,9 +14,9 @@ public final class NpcArmorPreview
     {
         if (incoming <= 0F)
             return 0F;
-        float remaining = incoming * (1F - Math.clamp(defense, 0F, 1F));
+        float remaining = incoming * (1F - Mth.clamp(defense, 0F, 1F));
         // The editor preview has no damage source; project the ordinary vanilla armor curve.
-        float effectiveArmor = net.minecraft.util.Mth.clamp(armor - remaining / (2F + toughness / 4F), armor * 0.2F, 20F);
+        float effectiveArmor = Mth.clamp(armor - remaining / (2F + toughness / 4F), armor * 0.2F, 20F);
         remaining *= 1F - effectiveArmor / 25F;
         remaining = CombatRules.getDamageAfterMagicAbsorb(remaining, enchantments);
         return 1F - remaining / incoming;

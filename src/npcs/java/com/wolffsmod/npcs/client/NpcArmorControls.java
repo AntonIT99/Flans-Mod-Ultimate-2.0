@@ -9,6 +9,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.shared.client.gui.components.GuiBasic;
 
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.util.Mth;
 
 import java.util.Locale;
 
@@ -36,7 +37,7 @@ public final class NpcArmorControls
         if (slider == null)
             return;
         slider.active = false;
-        slider.sliderValue = Math.clamp(protection, 0F, 1F);
+        slider.sliderValue = Mth.clamp(protection, 0F, 1F);
         slider.startValue = slider.sliderValue;
         String healthHint = id == 0 ? "" : "@ 10 HP";
         slider.setString(conditionalEffects ? I18n.get("wolffsmodnpcs.weapons.item_value") : String.format(Locale.ROOT, "%.1f%% %s", protection * 100F, healthHint));

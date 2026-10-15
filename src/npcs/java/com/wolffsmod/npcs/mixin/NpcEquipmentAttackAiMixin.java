@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.wolffsmod.npcs.combat.EquipmentAttributes;
 import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcEquipmentStats;
 import noppes.npcs.ai.EntityAIAttackTarget;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -11,9 +11,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /** Uses weapon reach/cadence in the existing melee AI, keeping editor values as saved fallbacks. */
 @SuppressWarnings("UnresolvedMixinReference")
@@ -38,8 +35,6 @@ public abstract class NpcEquipmentAttackAiMixin
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getRange()I"))
     private int wolffsmodnpcsMeleeReach(DataMelee melee)
     {
-        return NpcEquipment.weaponAuthority(npc)
-            ? (int) Math.round(EquipmentAttributes.value(npc.getMainHandItem(), EquipmentSlot.MAINHAND, Attributes.ENTITY_INTERACTION_RANGE, 3D))
-            : melee.getRange();
+        return NpcEquipment.weaponAuthority(npc) ? (int) Math.round(NpcEquipmentStats.meleeReach(npc.getMainHandItem())) : melee.getRange();
     }
 }

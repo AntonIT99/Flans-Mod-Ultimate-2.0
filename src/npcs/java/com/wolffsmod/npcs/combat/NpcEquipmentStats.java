@@ -2,38 +2,30 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.api.FlansEquipment;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
-
-import java.util.ArrayList;
 
 /**
  * What the NPC's equipment does, as plain numbers. The editor readouts and the one-shot equipment import both read these,
  * so an imported value is the value the readout showed. Safe on either side.
  * <p>
- * Minecraft 1.21 enchantments are data-driven effects that can depend on the real target and damage source, so damage,
- * knockback and protection here are the item's base values; {@link #conditionalEffects} tells the editor when the item's
- * enchantments add to them.
+ * Enchantment bonuses come from {@link NpcPlatform}. Where only the real target and damage source decide one, as for
+ * Minecraft 1.21's data-driven enchantments, the values here are the item's own, and
+ * {@link NpcPlatform#conditionalEffect} and {@link #conditionalProtection} tell the editor that the item decides them.
  * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -67,13 +59,13 @@ public final class NpcEquipmentStats
         String arrowHit = SoundEvents.ARROW_HIT.getLocation().toString();
         if (item.getItem() instanceof BowItem)
         {
-            int power = enchantmentLevel(npc, item, Enchantments.POWER);
+            int power = NpcPlatform.powerLevel(npc, item);
             return vanilla(2D + (power > 0 ? power * 0.5D + 0.5D : 0D), 3D, 1, SoundEvents.ARROW_SHOOT, arrowHit, arrowHit);
         }
         if (item.getItem() instanceof CrossbowItem)
-            return vanilla(2D, NpcItemAttacks.CROSSBOW_VELOCITY, enchantmentLevel(npc, item, Enchantments.MULTISHOT) > 0 ? 3 : 1, SoundEvents.CROSSBOW_SHOOT, arrowHit, arrowHit);
+            return vanilla(2D, NpcItemAttacks.CROSSBOW_VELOCITY, NpcPlatform.multishotLevel(npc, item) > 0 ? 3 : 1, SoundEvents.CROSSBOW_SHOOT, arrowHit, arrowHit);
         if (item.getItem() instanceof TridentItem)
-            return vanilla(8D, 2.5D, 1, SoundEvents.TRIDENT_THROW.value(), SoundEvents.TRIDENT_HIT.getLocation().toString(), SoundEvents.TRIDENT_HIT_GROUND.getLocation().toString());
+            return vanilla(8D, 2.5D, 1, NpcPlatform.tridentThrowSound(), SoundEvents.TRIDENT_HIT.getLocation().toString(), SoundEvents.TRIDENT_HIT_GROUND.getLocation().toString());
         if (item.getItem() instanceof ThrowablePotionItem)
             return vanilla(0D, 0.5D, 1, SoundEvents.SNOWBALL_THROW, "", SoundEvents.SPLASH_POTION_BREAK.getLocation().toString());
         if (item.is(Items.SNOWBALL) || item.is(Items.EGG) || item.is(Items.ENDER_PEARL))
@@ -91,7 +83,7 @@ public final class NpcEquipmentStats
     /** Custom NPCs accuracy (0 to 100) equivalent of a Flan spread. */
     public static double accuracy(double spread)
     {
-        return Math.clamp(100D - spread * 5D, 0D, 100D);
+        return Mth.clamp(100D - spread * 5D, 0D, 100D);
     }
 
     /** Custom NPCs none/small/medium/large explosion choice nearest to a radius in blocks. */
@@ -104,67 +96,48 @@ public final class NpcEquipmentStats
         return radius < 4D ? 2 : 3;
     }
 
-    /** Attack damage of the item; damage enchantments are conditional effects on this version. */
-    public static double meleeDamage(ItemStack item)
+    /** Attack damage plus the enchantment bonus against a generic target. */
+    public static double meleeDamage(LivingEntity holder, ItemStack item)
     {
-        return NpcEquipment.meleeDamage(item);
+        return NpcEquipment.meleeDamage(item) + NpcPlatform.meleeDamageBonus(holder, item);
     }
 
     public static double meleeReach(ItemStack item)
     {
-        return EquipmentAttributes.value(item, EquipmentSlot.MAINHAND, Attributes.ENTITY_INTERACTION_RANGE, 3D);
+        return EquipmentAttributes.value(item, EquipmentSlot.MAINHAND, NpcPlatform.reachAttribute(), 3D);
     }
 
-    /** Attack knockback of the item; knockback enchantments are conditional effects on this version. */
-    public static double meleeKnockback(ItemStack item)
+    /** Attack knockback plus the enchantment bonus. */
+    public static double meleeKnockback(LivingEntity holder, ItemStack item)
     {
-        return EquipmentAttributes.value(item, EquipmentSlot.MAINHAND, Attributes.ATTACK_KNOCKBACK, 0D);
+        return EquipmentAttributes.value(item, EquipmentSlot.MAINHAND, Attributes.ATTACK_KNOCKBACK, 0D) + NpcPlatform.meleeKnockbackBonus(holder, item);
     }
 
-    /**
-     * Whether an enchantment on the item has the given effect. Such effects need the real server target and damage source,
-     * so the editor shows that the item decides the value instead of a number.
-     */
-    public static boolean conditionalEffects(LivingEntity holder, ItemStack item, DataComponentType<?> effect)
-    {
-        return item.getAllEnchantments(holder.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)).keySet().stream().anyMatch(enchantment -> enchantment.value().effects().has(effect));
-    }
-
-    /** Whether any worn armor carries a protection enchantment, whose value depends on the damage source. */
+    /** Whether any worn armor carries a protection enchantment whose value only the damage source decides. */
     public static boolean conditionalProtection(EntityNPCInterface npc)
     {
         for (ItemStack armor : npc.getArmorSlots())
-            if (conditionalEffects(npc, armor, EnchantmentEffectComponents.DAMAGE_PROTECTION))
+            if (NpcPlatform.conditionalEffect(npc, armor, NpcPlatform.Effect.PROTECTION))
                 return true;
         return false;
     }
 
     /**
      * Share of a ten-HP hit the worn armor absorbs, from 0 to 1, or the knockback resistance of the worn armor. Armor is
-     * nonlinear, so the share is a preview at one reference damage. Protection enchantments count only on the server,
-     * where Minecraft 1.21 evaluates them against the damage source.
+     * nonlinear, so the share is a preview at one reference damage.
      */
     public static float protection(EntityNPCInterface npc, Resistance resistance)
     {
         if (resistance == Resistance.KNOCKBACK)
-            return equippedValue(npc, Attributes.KNOCKBACK_RESISTANCE);
-        float enchantmentProtection = 0F;
-        if (npc.level() instanceof ServerLevel level)
+            return NpcPlatform.equippedArmorValue(npc, Attributes.KNOCKBACK_RESISTANCE);
+        DamageSource source = switch (resistance)
         {
-            DamageSource source = switch (resistance)
-            {
-                case PROJECTILE -> new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.ARROW), npc, npc);
-                case EXPLOSION -> npc.damageSources().explosion(npc, npc);
-                default -> npc.damageSources().mobAttack(npc);
-            };
-            enchantmentProtection = EnchantmentHelper.getDamageProtection(level, npc, source);
-        }
-        return NpcArmorPreview.protection(10F, flanDefense(npc), equippedValue(npc, Attributes.ARMOR), equippedValue(npc, Attributes.ARMOR_TOUGHNESS), enchantmentProtection);
-    }
-
-    private static int enchantmentLevel(LivingEntity holder, ItemStack item, ResourceKey<Enchantment> enchantment)
-    {
-        return item.getEnchantmentLevel(holder.registryAccess().holderOrThrow(enchantment));
+            case PROJECTILE -> new DamageSource(npc.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.ARROW), npc, npc);
+            case EXPLOSION -> npc.damageSources().explosion(npc, npc);
+            default -> npc.damageSources().mobAttack(npc);
+        };
+        return NpcArmorPreview.protection(10F, flanDefense(npc), NpcPlatform.equippedArmorValue(npc, Attributes.ARMOR), NpcPlatform.equippedArmorValue(npc, Attributes.ARMOR_TOUGHNESS),
+            NpcPlatform.armorEnchantmentProtection(npc, source));
     }
 
     private static float flanDefense(EntityNPCInterface npc)
@@ -177,21 +150,5 @@ public final class NpcEquipmentStats
                 defense = (float) (defense + properties.get().defense());
         }
         return defense;
-    }
-
-    private static float equippedValue(EntityNPCInterface npc, Holder<Attribute> attribute)
-    {
-        var modifiers = new ArrayList<AttributeModifier>();
-        for (EquipmentSlot slot : EquipmentSlot.values())
-        {
-            if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR)
-                npc.getItemBySlot(slot).forEachModifier(slot, (current, modifier) ->
-                {
-                    if (current.equals(attribute))
-                        modifiers.add(modifier);
-                });
-        }
-        var instance = npc.getAttribute(attribute);
-        return (float) EquipmentAttributes.value(attribute, instance == null ? 0D : instance.getBaseValue(), modifiers);
     }
 }

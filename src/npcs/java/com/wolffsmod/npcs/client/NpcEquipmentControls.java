@@ -5,6 +5,7 @@ import com.flansmodultimate.api.FlansEquipment;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import noppes.npcs.client.gui.*;
 import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -13,7 +14,6 @@ import noppes.npcs.shared.client.gui.components.GuiBasic;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 
 import java.util.*;
 
@@ -78,10 +78,10 @@ public final class NpcEquipmentControls
     private static void melee(GuiBasic gui, EntityNPCInterface npc, ItemStack item, String nativeValue, Map<Integer, String> readouts, Map<Integer, Reason> buttons)
     {
         // Minecraft 1.21 damage and knockback enchantments depend on the real target, so the item decides those values.
-        readouts.put(1, NpcEquipmentStats.conditionalEffects(npc, item, EnchantmentEffectComponents.DAMAGE) ? nativeValue : number(NpcEquipmentStats.meleeDamage(item)));
+        readouts.put(1, NpcPlatform.conditionalEffect(npc, item, NpcPlatform.Effect.DAMAGE) ? nativeValue : number(NpcEquipmentStats.meleeDamage(npc, item)));
         readouts.put(2, number(NpcEquipmentStats.meleeReach(item)));
         readouts.put(3, Integer.toString(NpcEquipment.meleeDelay(item)));
-        readouts.put(4, NpcEquipmentStats.conditionalEffects(npc, item, EnchantmentEffectComponents.KNOCKBACK) ? nativeValue : number(NpcEquipmentStats.meleeKnockback(item)));
+        readouts.put(4, NpcPlatform.conditionalEffect(npc, item, NpcPlatform.Effect.KNOCKBACK) ? nativeValue : number(NpcEquipmentStats.meleeKnockback(npc, item)));
         readouts.put(6, Integer.toString(NpcEquipment.fireSeconds(item, npc)));
         buttons.put(5, Reason.ITEM_WEAPON);
         buttons.put(7, Reason.ITEM_WEAPON);
