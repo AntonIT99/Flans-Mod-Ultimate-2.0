@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.api.IPlayerClass;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.FlansLog;
@@ -78,7 +79,10 @@ public class PlayerClass extends InfoType implements IPlayerClass
         {
             int amount = parsePositive(values, 1, 1);
             int damage = parsePositive(values, 2, 0);
-            parsed.add(new StartingItem(values[0], amount, damage));
+            int paintjob = 0;
+            if (values.length > 3 && values[3].regionMatches(true, 0, "Paintjob=", 0, 9))
+                paintjob = parsePositive(new String[]{values[3].substring(9)}, 0, 0);
+            parsed.add(new StartingItem(values[0], amount, damage, paintjob));
         }
         startingItems = List.copyOf(parsed);
         previewItems = null;
@@ -156,7 +160,17 @@ public class PlayerClass extends InfoType implements IPlayerClass
             ItemStackData.set(stack, gunData);
             gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack).ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
         }
+        applyPaintjob(stack, definition.paintjob());
         return stack;
+    }
+
+    private static void applyPaintjob(ItemStack stack, int paintjob)
+    {
+        if (stack.getItem() instanceof IPaintableItem<?> paintableItem)
+        {
+            PaintableType paintableType = paintableItem.getPaintableType();
+            paintableType.applyPaintjobToStack(stack, paintableType.getPaintjob(paintjob));
+        }
     }
 
     private static String attachmentSlot(EnumAttachmentType type, int generic)
@@ -217,6 +231,6 @@ public class PlayerClass extends InfoType implements IPlayerClass
         }
     }
 
-    private record StartingItem(String itemAndAttachments, int amount, int damage)
+    private record StartingItem(String itemAndAttachments, int amount, int damage, int paintjob)
     {}
 }

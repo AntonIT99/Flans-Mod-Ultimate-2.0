@@ -36,6 +36,9 @@ Damage 6
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound M3A1Shoot
 ReloadSound M3A1Reload

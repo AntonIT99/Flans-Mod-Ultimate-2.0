@@ -35,6 +35,9 @@ Scope wwiitype38sniper
 ZoomLevel 2.5
 FOVZoomLevel 1.0
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound Type38Shoot
 ReloadSound kar98kReload

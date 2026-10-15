@@ -47,6 +47,7 @@ AllowBarrelAttachments true
 AllowScopeAttachments true
 AllowStockAttachments false
 AllowGripAttachments false
+NumGenericAttachmentSlots 1
 
 // Sounds
 ShootSound mp40Shoot

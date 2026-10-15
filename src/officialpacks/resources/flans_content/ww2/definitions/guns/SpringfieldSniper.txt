@@ -42,6 +42,9 @@ Scope wwiispringfieldsniper
 ZoomLevel 2.5
 FOVZoomLevel 1.0
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound springfieldShoot
 ReloadSound springfieldReload

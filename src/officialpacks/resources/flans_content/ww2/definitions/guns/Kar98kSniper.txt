@@ -42,6 +42,9 @@ Scope wwiikar98ksniper
 ZoomLevel 4.0
 FOVZoomLevel 1.0
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound kar98kSniperShoot
 ReloadSound kar98kSniperReload
