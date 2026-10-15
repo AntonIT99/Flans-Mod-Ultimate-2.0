@@ -2,6 +2,9 @@ package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.common.entity.EntityDistancePolicy;
 import com.flansmodultimate.common.entity.EntityTrackingRefresh;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -9,11 +12,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import net.minecraft.server.level.ChunkMap;
-import net.minecraft.server.level.ServerLevel;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(ChunkMap.class)

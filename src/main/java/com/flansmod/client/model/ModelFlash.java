@@ -9,14 +9,15 @@ public class ModelFlash extends ModelBase
 {
     protected ModelRendererTurbo[][] flashModel = new ModelRendererTurbo[0][0];
 
-    public void renderFlash(int flashIndex, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void renderFlash(int flashIndex, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue,
+        float pAlpha, float scale)
     {
         if (flashModel[flashIndex] != null)
             render(flashModel[flashIndex], poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
     }
 
-    public void render(ModelRendererTurbo[] flash, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha,
-        float scale)
+    public void render(ModelRendererTurbo[] flash, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue,
+        float pAlpha, float scale)
     {
         for (ModelRendererTurbo model : flash)
             if (model != null)

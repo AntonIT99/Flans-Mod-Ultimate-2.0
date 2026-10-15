@@ -3,6 +3,7 @@ package com.flansmodultimate.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import io.netty.buffer.Unpooled;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,16 +33,16 @@ class ConfigSpecValuesTest
     }
 
     private ModConfigSpec spec;
-    private ModConfigSpec.BooleanValue flag;
-    private ModConfigSpec.IntValue count;
-    private ModConfigSpec.DoubleValue ratio;
-    private ModConfigSpec.EnumValue<Flavour> flavour;
-    private ModConfigSpec.ConfigValue<String> name;
+    private BooleanValue flag;
+    private IntValue count;
+    private DoubleValue ratio;
+    private EnumValue<Flavour> flavour;
+    private ConfigValue<String> name;
 
     @BeforeEach
     void buildSpec()
     {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        Builder builder = new Builder();
         builder.push("Section");
         flag = builder.define("flag", true);
         count = builder.defineInRange("count", 5, 0, 10);

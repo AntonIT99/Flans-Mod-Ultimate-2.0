@@ -8,6 +8,7 @@ import org.joml.Matrix4f;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.ShaderInstance;
 
 /** Version boundary for emitting vertices, immediate buffers, and the model-view matrix. Client-only. */
 public final class VertexPlatform
@@ -31,6 +32,12 @@ public final class VertexPlatform
         float normalY, float normalZ)
     {
         consumer.addVertex(x, y, z).setColor(red, green, blue, alpha).setUv(u, v).setOverlay(packedOverlay).setLight(packedLight).setNormal(normalX, normalY, normalZ);
+    }
+
+    /** Position-only vertex, as used by position render types. */
+    public static void position(VertexConsumer consumer, float x, float y, float z)
+    {
+        consumer.addVertex(x, y, z);
     }
 
     /** Position-colour-normal vertex, as used by line render types. */
@@ -69,6 +76,13 @@ public final class VertexPlatform
     public static Matrix4f modelView()
     {
         return RenderSystem.getModelViewStack();
+    }
+
+    /** Sets the shader's inverse view-rotation matrix; Minecraft 1.21 removed that uniform, so there is nothing to set. */
+    @SuppressWarnings("java:S1172") // Part of the cross-version platform signature; 1.20.1 uses the shader.
+    public static void setInverseViewRotation(ShaderInstance shader)
+    {
+        // Minecraft 1.21 shaders have no inverse view-rotation uniform.
     }
 
     /** Multiplies the pose stack by the matrix. */

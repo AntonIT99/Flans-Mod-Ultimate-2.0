@@ -51,10 +51,11 @@ public class FiredShot
     private final InfoType platformType;
 
     /** Constructor for living entities shooting with a gun item in hand */
-    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
+    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack,
+        @NotNull LivingEntity shooter)
     {
-        this(withAmmunition(new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType), bulletType, shooter, shooter,
-            ShootableItem.getRoundsFired(shootableStack));
+        this(withAmmunition(new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType), bulletType, shooter,
+            shooter, ShootableItem.getRoundsFired(shootableStack));
     }
 
     /** Folds the round's weapon modifiers into the gun before the shot is composed. */

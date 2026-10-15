@@ -230,7 +230,8 @@ public class ModelApacheAH64 extends ModelPlane // Same as Filename
         bodyModel[22].addShapeBox(0F, -38F, 0F, 10, 25, 28, 0F, 0F, -2.143F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2.143F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 23
         bodyModel[22].setRotationPoint(-113F, -2F, -14F);
 
-        bodyModel[23].addShapeBox(0F, -38F, 0F, 4, 25, 28, 0F, 0F, -3F, -1.5F, 0F, -2.143F, 0F, 0F, -2.143F, 0F, 0F, -3F, -1.5F, 0F, -1F, -1.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -1.5F); // Box 24
+        bodyModel[23].addShapeBox(0F, -38F, 0F, 4, 25, 28, 0F, 0F, -3F, -1.5F, 0F, -2.143F, 0F, 0F, -2.143F, 0F, 0F, -3F, -1.5F, 0F, -1F, -1.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F,
+            -1.5F); // Box 24
         bodyModel[23].setRotationPoint(-117F, -2F, -14F);
 
         bodyModel[24].addBox(0F, -38F, 0F, 60, 16, 2, 0F); // Box 25
@@ -1330,8 +1331,8 @@ public class ModelApacheAH64 extends ModelPlane // Same as Filename
         noseGunModel[2][2].addShapeBox(2F, -3F, -3F, 10, 6, 6, 0F, 0F, 0F, 0F, 0F, -2F, -2F, 0F, -2F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -2F, 0F, -1F, -2F, 0F, 0F, 0F); // Box
                                                                                                                                                                             // 292
 
-        noseGunModel[2][3].addShapeBox(12F, 0F, -1F, 15, 2, 2, 0F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F,
-            -0.25F, 0F, -0.25F, -0.25F); // Box 293
+        noseGunModel[2][3].addShapeBox(12F, 0F, -1F, 15, 2, 2, 0F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F,
+            -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F); // Box 293
 
         noseGunModel[2][4].addBox(27F, 0F, -1F, 5, 2, 2, 0F); // Box 294
 

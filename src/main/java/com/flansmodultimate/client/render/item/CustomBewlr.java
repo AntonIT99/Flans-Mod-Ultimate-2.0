@@ -19,7 +19,8 @@ public class CustomBewlr extends BlockEntityWithoutLevelRenderer
     }
 
     @Override
-    public void renderByItem(ItemStack stack, @NotNull ItemDisplayContext itemDisplayContext, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public void renderByItem(ItemStack stack, @NotNull ItemDisplayContext itemDisplayContext, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight,
+        int packedOverlay)
     {
         poseStack.pushPose();
         // Cancel the offsetting in ItemRenderer.render()

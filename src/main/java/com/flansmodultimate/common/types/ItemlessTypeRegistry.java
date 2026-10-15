@@ -39,6 +39,7 @@ import java.util.Map;
  */
 public final class ItemlessTypeRegistry<T extends InfoType>
 {
+    /** Its own logger rather than the mod's, so the registry stays usable without a loaded mod. */
 
     private final String label;
     /** Unique name to type, in load order, so listings stay in the order the packs were read. */
@@ -65,7 +66,8 @@ public final class ItemlessTypeRegistry<T extends InfoType>
         String existing = packAliases.get(original);
         if (existing != null)
         {
-            FlansLog.log.warn("Detected conflict for {} id '{}' in same content pack: {} and {}. Ignoring {}", label, original, type, byUniqueName.get(existing), type.getFileName());
+            FlansLog.log.warn("Detected conflict for {} id '{}' in same content pack: {} and {}. Ignoring {}", label, original, type, byUniqueName.get(existing),
+                type.getFileName());
             return StringUtils.EMPTY;
         }
 

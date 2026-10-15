@@ -1,12 +1,11 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.client.input.MouseInputHandler;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-import net.minecraft.client.MouseHandler;
-import net.minecraft.client.player.LocalPlayer;
 
 /**
  * Sends free look to the seat a rider occupies instead of to its world rotation.

@@ -151,8 +151,8 @@ public class ModelRenderer implements IModelRenderer
 
     protected void addBox(float offX, float offY, float offZ, int width, int height, int depth, float scaleFactor, boolean mirrored)
     {
-        cubeList
-            .add(new ModelPart.Cube(textureOffsetX, textureOffsetY, offX, offY, offZ, width, height, depth, scaleFactor, scaleFactor, scaleFactor, mirrored, 1.0F, 1.0F, Set.of(Direction.values())));
+        cubeList.add(new ModelPart.Cube(textureOffsetX, textureOffsetY, offX, offY, offZ, width, height, depth, scaleFactor, scaleFactor, scaleFactor, mirrored, 1.0F, 1.0F,
+            Set.of(Direction.values())));
     }
 
     @Override
@@ -163,7 +163,8 @@ public class ModelRenderer implements IModelRenderer
         childModels.add(modelRenderer);
     }
 
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale)
     {
         if (!isVisible() || (cubeList.isEmpty() && childModels.isEmpty()))
             return;

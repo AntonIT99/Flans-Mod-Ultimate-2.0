@@ -3,6 +3,7 @@ package com.flansmod.client.tmt;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.gpu.RigidGeometry;
 import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
+import com.flansmodultimate.platform.render.TestVertexSink;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -104,7 +105,7 @@ class BakedSizeCullingTest
         }
     }
 
-    private static class Sink implements RigidGeometryConsumer
+    private static class Sink extends TestVertexSink implements RigidGeometryConsumer
     {
         Boolean lastVisible;
         boolean vertices;
@@ -127,84 +128,27 @@ class BakedSizeCullingTest
             lastVisible = visible;
         }
 
-        // Minecraft 1.21 writes each CPU vertex as a chain that starts at its position.
         @Override
-        public VertexConsumer addVertex(float x, float y, float z)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
             vertices = true;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setColor(int r, int g, int b, int a)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z)
-        {
-            return this;
         }
     }
 
     /** A plain consumer, so the part takes the composed CPU path. */
-    private record Plain(Sink sink) implements VertexConsumer
+    private static final class Plain extends TestVertexSink
     {
-        // Minecraft 1.21 writes each CPU vertex as a chain that starts at its position.
+        private final Sink sink;
+
+        private Plain(Sink sink)
+        {
+            this.sink = sink;
+        }
+
         @Override
-        public VertexConsumer addVertex(float x, float y, float z)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
             sink.vertices = true;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setColor(int r, int g, int b, int a)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z)
-        {
-            return this;
         }
     }
 }

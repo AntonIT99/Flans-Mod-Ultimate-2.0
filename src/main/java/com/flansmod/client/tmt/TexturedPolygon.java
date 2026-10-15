@@ -4,13 +4,12 @@ import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.flansmodultimate.client.render.gpu.GeometryRevision;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.*;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.Vec3;
 
+import java.lang.Math;
 import java.util.*;
 
 @SuppressWarnings({"unused", "SameParameterValue", "java:S1104"})

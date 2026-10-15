@@ -106,7 +106,9 @@ final class LegacyTextureAliases
                 // Nothing has written to the pack's textures since it was prepared, so its name index
                 // stands as long as no collision asks for a signature it does not hold.
                 Map<String, Map<String, Map<String, String>>> names = prepared.remove(provider);
-                Map<String, Map<String, Map<String, String>>> input = names != null && !PackAssetIndex.needsSignatures(names, signatureNames) ? names : PackAssetIndex.legacy(provider, signatureNames);
+                Map<String, Map<String, Map<String, String>>> input = names != null && !PackAssetIndex.needsSignatures(names, signatureNames)
+                    ? names
+                    : PackAssetIndex.legacy(provider, signatureNames);
                 input.forEach((folder, groups) -> reserved.get(folder).addAll(groups.keySet()));
                 return input;
             }

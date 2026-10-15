@@ -20,6 +20,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.gun.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
 import com.flansmodultimate.platform.client.ClientPlatform;
+import it.unimi.dsi.fastutil.longs.*;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -45,8 +46,6 @@ import net.minecraft.world.phys.HitResult;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-
-import it.unimi.dsi.fastutil.longs.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient

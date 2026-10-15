@@ -12,6 +12,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import net.neoforged.neoforgespi.language.IModFileInfo;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.ApiStatus;
@@ -168,8 +169,8 @@ public final class PackagedContentLoader
 
     private static Set<String> loadEarlySelection(ModContainer context, String modId, List<String> packIds, Set<String> enforced)
     {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-        Map<String, ModConfigSpec.BooleanValue> values = new LinkedHashMap<>();
+        Builder builder = new Builder();
+        Map<String, BooleanValue> values = new LinkedHashMap<>();
         builder.comment("Pack selection is applied during item registration and therefore requires a game restart.").push("contentPacks");
         for (String packId : packIds)
         {

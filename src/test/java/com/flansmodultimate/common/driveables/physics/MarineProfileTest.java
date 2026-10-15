@@ -26,7 +26,8 @@ class MarineProfileTest
     void aCompleteHullNeedsMassSpeedPowerAndADraft()
     {
         assertTrue(hull().hasCompleteMarineProfile());
-        assertFalse(read("RealDisplacementT 16970", "RealMaxSpeedKn 32", "RealEnginePowerPS 132000").spec().hasCompleteMarineProfile(), "no draft means this could be any amphibian, not a hull");
+        assertFalse(read("RealDisplacementT 16970", "RealMaxSpeedKn 32", "RealEnginePowerPS 132000").spec().hasCompleteMarineProfile(),
+            "no draft means this could be any amphibian, not a hull");
         assertFalse(read("RealDisplacementT 16970", "RealDraftM 7.2", "RealMaxSpeedKn 32").spec().hasCompleteMarineProfile(), "no engine power means no propulsion to resolve");
     }
 

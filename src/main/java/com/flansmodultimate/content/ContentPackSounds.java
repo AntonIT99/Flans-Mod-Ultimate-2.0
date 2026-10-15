@@ -54,7 +54,8 @@ final class ContentPackSounds
         List<Path> sourceFiles;
         try (Stream<Path> stream = Files.walk(soundDir))
         {
-            sourceFiles = stream.filter(Files::isRegularFile).filter(FileUtils::isOgg).sorted(Comparator.comparing(path -> soundDir.relativize(path).toString().toLowerCase(Locale.ROOT))).toList();
+            sourceFiles = stream.filter(Files::isRegularFile).filter(FileUtils::isOgg)
+                .sorted(Comparator.comparing(path -> soundDir.relativize(path).toString().toLowerCase(Locale.ROOT))).toList();
         }
         catch (IOException e)
         {
@@ -206,8 +207,8 @@ final class ContentPackSounds
         List<Path> soundDirectories;
         try (Stream<Path> stream = Files.walk(root))
         {
-            soundDirectories = stream.filter(Files::isDirectory).filter(path -> !path.equals(root)).sorted(Comparator.comparing((Path path) -> root.relativize(path).getNameCount()).reversed())
-                .toList();
+            soundDirectories = stream.filter(Files::isDirectory).filter(path -> !path.equals(root))
+                .sorted(Comparator.comparing((Path path) -> root.relativize(path).getNameCount()).reversed()).toList();
         }
         catch (IOException e)
         {

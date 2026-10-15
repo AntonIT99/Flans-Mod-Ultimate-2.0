@@ -114,7 +114,8 @@ public final class TrackLinkLod
 
     private static boolean supported(ModelRendererTurbo part)
     {
-        return part != null && part.getClass() == ModelRendererTurbo.class && part.isVisible() && part.childModels.isEmpty() && !part.glow && !part.glowAdditive && !part.glowNoDepthWrite;
+        return part != null && part.getClass() == ModelRendererTurbo.class && part.isVisible() && part.childModels.isEmpty() && !part.glow && !part.glowAdditive
+            && !part.glowNoDepthWrite;
     }
 
     public boolean select(float projectionPixels, double distance, float modelScale, float threshold, boolean previous)
@@ -140,7 +141,8 @@ public final class TrackLinkLod
 
     static boolean selectDiameter(float diameter, float projectionPixels, double distance, float threshold, boolean previous)
     {
-        if (distance < 32D || threshold <= 0F || projectionPixels <= 0F || diameter <= 0F || !Double.isFinite(distance) || !Float.isFinite(diameter) || !Float.isFinite(projectionPixels))
+        if (distance < 32D || threshold <= 0F || projectionPixels <= 0F || diameter <= 0F || !Double.isFinite(distance) || !Float.isFinite(diameter)
+            || !Float.isFinite(projectionPixels))
             return false;
         double pixels = diameter * projectionPixels / Math.max(0.01D, distance - diameter * 0.5D);
         return pixels <= threshold * (previous ? 1.25F : 1F);

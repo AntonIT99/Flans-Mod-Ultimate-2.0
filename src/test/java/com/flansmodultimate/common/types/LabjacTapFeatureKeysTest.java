@@ -112,7 +112,8 @@ class LabjacTapFeatureKeysTest
         assertEquals(1F, plain.getGrenadeGroundFriction(), EPSILON);
         assertEquals(1F, plain.getGrenadeAirDrag(), EPSILON);
 
-        GrenadeType held = grenade("HoldToThrow true", "OverhandThrowSpeedMultiplier 1.2", "UnderhandThrowSpeedMultiplier 0.5", "GrenadeGroundFriction 0.85", "GrenadeAirDrag 0.99");
+        GrenadeType held = grenade("HoldToThrow true", "OverhandThrowSpeedMultiplier 1.2", "UnderhandThrowSpeedMultiplier 0.5", "GrenadeGroundFriction 0.85",
+            "GrenadeAirDrag 0.99");
         assertTrue(held.isHoldToThrow());
         assertEquals(1.2F, held.getOverhandThrowSpeedMultiplier(), EPSILON);
         assertEquals(0.5F, held.getUnderhandThrowSpeedMultiplier(), EPSILON);

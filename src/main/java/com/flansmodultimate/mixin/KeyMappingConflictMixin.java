@@ -1,12 +1,11 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.client.input.KeyConflictFilter;
+import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import net.minecraft.client.KeyMapping;
 
 /**
  * Stops the controls screen reporting conflicts that cannot happen.

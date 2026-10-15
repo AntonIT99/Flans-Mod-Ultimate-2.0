@@ -398,18 +398,18 @@ public class ModelRendererTurbo extends ModelRenderer
         verts[5] = positionTexturevertex5;
         verts[6] = positionTexturevertex6;
         verts[7] = positionTexturevertex7;
-        poly[0] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex5, positionTexturevertex1, positionTexturevertex2, positionTexturevertex6}, textureOffsetX + d + w,
-            textureOffsetY + d, textureOffsetX + d + w + d, textureOffsetY + d + h, 1F, qParam[7], qParam[10] * qParam[7], qParam[10]);
-        poly[1] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex, positionTexturevertex4, positionTexturevertex7, positionTexturevertex3}, textureOffsetX, textureOffsetY + d,
-            textureOffsetX + d, textureOffsetY + d + h, qParam[9] * qParam[6], qParam[9], 1F, qParam[6]);
-        poly[2] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex5, positionTexturevertex4, positionTexturevertex, positionTexturevertex1}, textureOffsetX + d, textureOffsetY,
-            textureOffsetX + d + w, textureOffsetY + d, 1F, qParam[8], qParam[1] * qParam[8], qParam[1]);
-        poly[3] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex2, positionTexturevertex3, positionTexturevertex7, positionTexturevertex6}, textureOffsetX + d + w, textureOffsetY,
-            textureOffsetX + d + w + w, textureOffsetY + d, qParam[3], qParam[3] * qParam[11], qParam[11], 1F);
-        poly[4] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex1, positionTexturevertex, positionTexturevertex3, positionTexturevertex2}, textureOffsetX + d, textureOffsetY + d,
-            textureOffsetX + d + w, textureOffsetY + d + h, qParam[0], qParam[0] * qParam[4], qParam[4], 1F);
-        poly[5] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex4, positionTexturevertex5, positionTexturevertex6, positionTexturevertex7}, textureOffsetX + d + w + d,
-            textureOffsetY + d, textureOffsetX + d + w + d + w, textureOffsetY + d + h, qParam[2] * qParam[5], qParam[2], 1F, qParam[5]);
+        poly[0] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex5, positionTexturevertex1, positionTexturevertex2, positionTexturevertex6},
+            textureOffsetX + d + w, textureOffsetY + d, textureOffsetX + d + w + d, textureOffsetY + d + h, 1F, qParam[7], qParam[10] * qParam[7], qParam[10]);
+        poly[1] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex, positionTexturevertex4, positionTexturevertex7, positionTexturevertex3}, textureOffsetX,
+            textureOffsetY + d, textureOffsetX + d, textureOffsetY + d + h, qParam[9] * qParam[6], qParam[9], 1F, qParam[6]);
+        poly[2] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex5, positionTexturevertex4, positionTexturevertex, positionTexturevertex1}, textureOffsetX + d,
+            textureOffsetY, textureOffsetX + d + w, textureOffsetY + d, 1F, qParam[8], qParam[1] * qParam[8], qParam[1]);
+        poly[3] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex2, positionTexturevertex3, positionTexturevertex7, positionTexturevertex6},
+            textureOffsetX + d + w, textureOffsetY, textureOffsetX + d + w + w, textureOffsetY + d, qParam[3], qParam[3] * qParam[11], qParam[11], 1F);
+        poly[4] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex1, positionTexturevertex, positionTexturevertex3, positionTexturevertex2}, textureOffsetX + d,
+            textureOffsetY + d, textureOffsetX + d + w, textureOffsetY + d + h, qParam[0], qParam[0] * qParam[4], qParam[4], 1F);
+        poly[5] = addPolygonReturn(new PositionTextureVertex[]{positionTexturevertex4, positionTexturevertex5, positionTexturevertex6, positionTexturevertex7},
+            textureOffsetX + d + w + d, textureOffsetY + d, textureOffsetX + d + w + d + w, textureOffsetY + d + h, qParam[2] * qParam[5], qParam[2], 1F, qParam[5]);
         if (mirror ^ flip)
         {
             for (TexturedPolygon aPoly : poly)
@@ -812,7 +812,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param dir
      *            the side the scaling is applied to
      */
-    public void addFlexTrapezoid(float x, float y, float z, int w, int h, int d, float scale, float bScale1, float bScale2, float bScale3, float bScale4, float fScale1, float fScale2, int dir)
+    public void addFlexTrapezoid(float x, float y, float z, int w, int h, int d, float scale, float bScale1, float bScale2, float bScale3, float bScale4, float fScale1,
+        float fScale2, int dir)
     {
         float f4 = x + w;
         float f5 = y + h;
@@ -990,8 +991,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param x0,y0,z0
      *            - x7,y7,z7 the modifiers of the box corners. each corner can changed seperat by x/y/z values
      */
-    public void addShapeBox(float x, float y, float z, int w, int h, int d, float scale, float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3,
-        float z3, float x4, float y4, float z4, float x5, float y5, float z5, float x6, float y6, float z6, float x7, float y7, float z7)
+    public void addShapeBox(float x, float y, float z, int w, int h, int d, float scale, float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2,
+        float x3, float y3, float z3, float x4, float y4, float z4, float x5, float y5, float z5, float x6, float y6, float z6, float x7, float y7, float z7)
     {
         float f4 = x + w;
         float f5 = y + h;
@@ -1046,7 +1047,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param direction
      *            the direction the starting point of the shape is facing
      */
-    public void addShape3D(float x, float y, float z, Coord2D[] coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, int direction)
+    public void addShape3D(float x, float y, float z, Coord2D[] coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth,
+        int sideTextureHeight, int direction)
     {
         addShape3D(x, y, z, coordinates, depth, shapeTextureWidth, shapeTextureHeight, sideTextureWidth, sideTextureHeight, direction, null);
     }
@@ -1078,8 +1080,8 @@ public class ModelRendererTurbo extends ModelRenderer
      *            An array with the length of each face. Used to set
      *            the texture width of each face on the side manually.
      */
-    public void addShape3D(float x, float y, float z, Coord2D[] coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, int direction,
-        float[] faceLengths)
+    public void addShape3D(float x, float y, float z, Coord2D[] coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth,
+        int sideTextureHeight, int direction, float[] faceLengths)
     {
         addShape3D(x, y, z, new Shape2D(coordinates), depth, shapeTextureWidth, shapeTextureHeight, sideTextureWidth, sideTextureHeight, direction, faceLengths);
     }
@@ -1108,8 +1110,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param direction
      *            the direction the starting point of the shape is facing
      */
-    public void addShape3D(float x, float y, float z, ArrayList<Coord2D> coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight,
-        int direction)
+    public void addShape3D(float x, float y, float z, ArrayList<Coord2D> coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth,
+        int sideTextureHeight, int direction)
     {
         addShape3D(x, y, z, coordinates, depth, shapeTextureWidth, shapeTextureHeight, sideTextureWidth, sideTextureHeight, direction, null);
     }
@@ -1142,8 +1144,8 @@ public class ModelRendererTurbo extends ModelRenderer
      *            the texture width of each face on the side manually.
      */
     @SuppressWarnings("java:S1319")
-    public void addShape3D(float x, float y, float z, ArrayList<Coord2D> coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight,
-        int direction, float[] faceLengths)
+    public void addShape3D(float x, float y, float z, ArrayList<Coord2D> coordinates, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth,
+        int sideTextureHeight, int direction, float[] faceLengths)
     {
         addShape3D(x, y, z, new Shape2D(coordinates), depth, shapeTextureWidth, shapeTextureHeight, sideTextureWidth, sideTextureHeight, direction, faceLengths);
     }
@@ -1172,7 +1174,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param direction
      *            the direction the starting point of the shape is facing
      */
-    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, int direction)
+    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight,
+        int direction)
     {
         addShape3D(x, y, z, shape, depth, shapeTextureWidth, shapeTextureHeight, sideTextureWidth, sideTextureHeight, direction, null);
     }
@@ -1204,8 +1207,8 @@ public class ModelRendererTurbo extends ModelRenderer
      *            An array with the length of each face. Used to set
      *            the texture width of each face on the side manually.
      */
-    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, int direction,
-        float[] faceLengths)
+    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight,
+        int direction, float[] faceLengths)
     {
         float rotX = 0;
         float rotY = 0;
@@ -1261,17 +1264,17 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param rotZ
      *            the rotation around the z-axis
      */
-    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, float rotX, float rotY,
-        float rotZ)
+    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight,
+        float rotX, float rotY, float rotZ)
     {
         addShape3D(x, y, z, shape, depth, shapeTextureWidth, shapeTextureHeight, sideTextureWidth, sideTextureHeight, rotX, rotY, rotZ, null);
     }
 
-    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, float rotX, float rotY,
-        float rotZ, float[] faceLengths)
+    public void addShape3D(float x, float y, float z, Shape2D shape, float depth, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight,
+        float rotX, float rotY, float rotZ, float[] faceLengths)
     {
-        Shape3D shape3D = shape.extrude(x, y, z, rotX, rotY, rotZ, depth, textureOffsetX, textureOffsetY, textureWidth, textureHeight, shapeTextureWidth, shapeTextureHeight, sideTextureWidth,
-            sideTextureHeight, faceLengths);
+        Shape3D shape3D = shape.extrude(x, y, z, rotX, rotY, rotZ, depth, textureOffsetX, textureOffsetY, textureWidth, textureHeight, shapeTextureWidth, shapeTextureHeight,
+            sideTextureWidth, sideTextureHeight, faceLengths);
 
         if (flip)
         {
@@ -1499,7 +1502,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param expansion
      *            the expansion of the sprite. It only increases the size in each direction by that many.
      */
-    public void addSprite(float x, float y, float z, int w, int h, int d, float pixelScale, boolean rotX, boolean rotY, boolean rotZ, boolean mirrorX, boolean mirrorY, float expansion)
+    public void addSprite(float x, float y, float z, int w, int h, int d, float pixelScale, boolean rotX, boolean rotY, boolean rotZ, boolean mirrorX, boolean mirrorY,
+        float expansion)
     {
         String[] mask = new String[h];
         char[] str = new char[w];
@@ -1545,7 +1549,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param expansion
      *            the expansion of the sprite. It only increases the size in each direction by that many.
      */
-    public void addSprite(float x, float y, float z, String[] mask, int d, float pixelScale, boolean rotX, boolean rotY, boolean rotZ, boolean mirrorX, boolean mirrorY, float expansion)
+    public void addSprite(float x, float y, float z, String[] mask, int d, float pixelScale, boolean rotX, boolean rotY, boolean rotZ, boolean mirrorX, boolean mirrorY,
+        float expansion)
     {
         int w = mask[0].length();
         int h = mask.length;
@@ -1857,7 +1862,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * @param textureCircleDiameterH
      *            the diameter height of the circle on the texture
      */
-    public void addCone(float x, float y, float z, float radius, float length, int segments, float baseScale, int baseDirection, int textureCircleDiameterW, int textureCircleDiameterH)
+    public void addCone(float x, float y, float z, float radius, float length, int segments, float baseScale, int baseDirection, int textureCircleDiameterW,
+        int textureCircleDiameterH)
     {
         addCylinder(x, y, z, radius, length, segments, baseScale, 0.0F, baseDirection, textureCircleDiameterW, textureCircleDiameterH, 1);
     }
@@ -2273,7 +2279,8 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public double[] restBounds()
     {
-        double[] bounds = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        double[] bounds = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
+            Double.NEGATIVE_INFINITY};
 
         double cosX = Math.cos(rotateAngleX);
         double sinX = Math.sin(rotateAngleX);
@@ -2707,13 +2714,14 @@ public class ModelRendererTurbo extends ModelRenderer
      *            The scale of the shape. Default is 1.
      */
     @Override
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale)
     {
         render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, false);
     }
 
-    private void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
-        boolean oldRotateOrder)
+    private void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, boolean oldRotateOrder)
     {
         if (!isVisible())
             return;
@@ -2721,8 +2729,8 @@ public class ModelRendererTurbo extends ModelRenderer
         if (visibleFaces.length == 0 && childModels.isEmpty())
             return;
 
-        boolean hasTransform = offsetX != 0F || offsetY != 0F || offsetZ != 0F || rotationPointX != 0F || rotationPointY != 0F || rotationPointZ != 0F || rotateAngleX != 0F || rotateAngleY != 0F
-            || rotateAngleZ != 0F || scale != 1F;
+        boolean hasTransform = offsetX != 0F || offsetY != 0F || offsetZ != 0F || rotationPointX != 0F || rotationPointY != 0F || rotationPointZ != 0F || rotateAngleX != 0F
+            || rotateAngleY != 0F || rotateAngleZ != 0F || scale != 1F;
         // Most legacy parts are leaves. Reuse their local transform and composed
         // pose instead of allocating a Pose plus two matrices on every submission.
         // Parents retain the stack path so children inherit exactly the same pose.
@@ -2770,7 +2778,8 @@ public class ModelRendererTurbo extends ModelRenderer
         if (visibleFaces.length != 0)
         {
             boolean visible = !isBelowScreenSize(poseStack.last());
-            if (vertexConsumer instanceof RigidGeometryConsumer gpu && getClass() == ModelRendererTurbo.class && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler)
+            if (vertexConsumer instanceof RigidGeometryConsumer gpu && getClass() == ModelRendererTurbo.class && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile
+                && !useLegacyCompiler)
             {
                 if (gpuGeometry == null)
                     gpuGeometry = new RigidGeometry(visibleFaces, !externallyMutableGeometry);
@@ -2792,8 +2801,8 @@ public class ModelRendererTurbo extends ModelRenderer
             poseStack.popPose();
     }
 
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
-        EnumRenderPass renderPass)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass, false);
     }
@@ -2802,8 +2811,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * Pass-aware renderer retaining the alternate rotation convention used by a
      * subset of legacy driveable models.
      */
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
-        EnumRenderPass renderPass, boolean oldRotateOrder)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass, boolean oldRotateOrder)
     {
         if ((renderPass == EnumRenderPass.DEFAULT && !glow && !glowAdditive && !glowNoDepthWrite) || (renderPass == EnumRenderPass.GLOW_ALPHA && glow)
             || (renderPass == EnumRenderPass.GLOW_ADDITIVE && glowAdditive) || (renderPass == EnumRenderPass.GLOW_ALPHA_NO_DEPTH_WRITE && glowNoDepthWrite))
@@ -2852,7 +2861,8 @@ public class ModelRendererTurbo extends ModelRenderer
     protected void compile(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         TexturedPolygon[] polygons = getRenderFaces();
-        if (vertexConsumer instanceof RigidGeometryConsumer gpu && getClass() == ModelRendererTurbo.class && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler)
+        if (vertexConsumer instanceof RigidGeometryConsumer gpu && getClass() == ModelRendererTurbo.class && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile
+            && !useLegacyCompiler)
         {
             if (gpuGeometry == null)
                 gpuGeometry = new RigidGeometry(polygons, !externallyMutableGeometry);
@@ -3063,7 +3073,8 @@ public class ModelRendererTurbo extends ModelRenderer
     }
 
     /** With the matrix's {@link #scaleBoundSquared} computed once for several spheres under it. */
-    private static boolean isBelowScreenSize(ScreenSpaceCullingState state, Matrix4f matrix, float boundsCenterX, float boundsCenterY, float boundsCenterZ, float boundsRadius, double scaleSquared)
+    private static boolean isBelowScreenSize(ScreenSpaceCullingState state, Matrix4f matrix, float boundsCenterX, float boundsCenterY, float boundsCenterZ, float boundsRadius,
+        double scaleSquared)
     {
         double radiusSquared = (double) boundsRadius * boundsRadius * scaleSquared;
         if (state.fixedScale)
@@ -3229,8 +3240,9 @@ public class ModelRendererTurbo extends ModelRenderer
         /** Detects changed public transforms; call once per render before choosing a path. */
         private void update(float scale, boolean oldRotateOrder)
         {
-            if (lastOffsetX != offsetX || lastOffsetY != offsetY || lastOffsetZ != offsetZ || lastPivotX != rotationPointX || lastPivotY != rotationPointY || lastPivotZ != rotationPointZ
-                || lastAngleX != rotateAngleX || lastAngleY != rotateAngleY || lastAngleZ != rotateAngleZ || lastScale != scale || lastOldRotateOrder != oldRotateOrder)
+            if (lastOffsetX != offsetX || lastOffsetY != offsetY || lastOffsetZ != offsetZ || lastPivotX != rotationPointX || lastPivotY != rotationPointY
+                || lastPivotZ != rotationPointZ || lastAngleX != rotateAngleX || lastAngleY != rotateAngleY || lastAngleZ != rotateAngleZ || lastScale != scale
+                || lastOldRotateOrder != oldRotateOrder)
             {
                 // Public transforms may be animated or changed by another entity
                 // using this shared model. Never rebuild baked VBOs every frame.
@@ -3246,7 +3258,8 @@ public class ModelRendererTurbo extends ModelRenderer
                 shareRotation(rotateAngleX, rotateAngleY, rotateAngleZ, oldRotateOrder);
                 PoseStack.Pose pose = local.last();
                 // The chained path translates by the offset, then the pivot, as two float additions.
-                pose.pose().set(SHARED_POSE).setTranslation(offsetX + rotationPointX * 0.0625F * scale, offsetY + rotationPointY * 0.0625F * scale, offsetZ + rotationPointZ * 0.0625F * scale);
+                pose.pose().set(SHARED_POSE).setTranslation(offsetX + rotationPointX * 0.0625F * scale, offsetY + rotationPointY * 0.0625F * scale,
+                    offsetZ + rotationPointZ * 0.0625F * scale);
                 if (scale != 1F)
                     pose.pose().scale(scale);
                 pose.normal().set(SHARED_NORMAL);
@@ -3328,8 +3341,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * and the parts' own angles are never touched. Parts the direct path does not cover render as before.
      * Render thread only.
      */
-    public static void renderRotated(ModelRendererTurbo[] parts, float x, float y, float z, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass, boolean oldRotateOrder)
+    public static void renderRotated(ModelRendererTurbo[] parts, float x, float y, float z, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay,
+        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass, boolean oldRotateOrder)
     {
         if (parts == null)
             return;
@@ -3418,8 +3431,8 @@ public class ModelRendererTurbo extends ModelRenderer
      * the part, its faces, pose cache, matrices and geometry, which with tens of thousands of parts per
      * frame is dominated by memory access. Render thread only.
      */
-    public static void renderArray(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-        float scale, EnumRenderPass renderPass, boolean oldRotateOrder)
+    public static void renderArray(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass, boolean oldRotateOrder)
     {
         if (parts == null)
             return;
@@ -3445,11 +3458,13 @@ public class ModelRendererTurbo extends ModelRenderer
     private boolean bakedAndSettled(float scale, boolean oldRotateOrder)
     {
         RenderPoseCache cache = renderPoseCache;
-        return getClass() == ModelRendererTurbo.class && isVisible() && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler && childModels.isEmpty() && scale > 0F
-            && Float.isFinite(scale) && !renderFacesDirty && !externallyMutableGeometry && observedGeometryEpoch == GeometryRevision.current() && renderFaces.length != 0 && gpuGeometry != null
-            && gpuGeometry.supported() && cache != null && cache.canBake() && cache.bakedSource == gpuGeometry && cache.bakedGeometry != null && cache.lastScale == scale
-            && cache.lastOldRotateOrder == oldRotateOrder && cache.lastOffsetX == offsetX && cache.lastOffsetY == offsetY && cache.lastOffsetZ == offsetZ && cache.lastPivotX == rotationPointX
-            && cache.lastPivotY == rotationPointY && cache.lastPivotZ == rotationPointZ && cache.lastAngleX == rotateAngleX && cache.lastAngleY == rotateAngleY && cache.lastAngleZ == rotateAngleZ;
+        return getClass() == ModelRendererTurbo.class && isVisible() && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler
+            && childModels.isEmpty() && scale > 0F && Float.isFinite(scale) && !renderFacesDirty && !externallyMutableGeometry
+            && observedGeometryEpoch == GeometryRevision.current() && renderFaces.length != 0 && gpuGeometry != null && gpuGeometry.supported() && cache != null && cache.canBake()
+            && cache.bakedSource == gpuGeometry && cache.bakedGeometry != null && cache.lastScale == scale && cache.lastOldRotateOrder == oldRotateOrder
+            && cache.lastOffsetX == offsetX && cache.lastOffsetY == offsetY && cache.lastOffsetZ == offsetZ && cache.lastPivotX == rotationPointX
+            && cache.lastPivotY == rotationPointY && cache.lastPivotZ == rotationPointZ && cache.lastAngleX == rotateAngleX && cache.lastAngleY == rotateAngleY
+            && cache.lastAngleZ == rotateAngleZ;
     }
 
     /**
@@ -3458,10 +3473,10 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     private boolean untransformedLeaf(float scale)
     {
-        return renderPoseCache == null && getClass() == ModelRendererTurbo.class && isVisible() && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler
-            && childModels.isEmpty() && scale == 1F && offsetX == 0F && offsetY == 0F && offsetZ == 0F && rotationPointX == 0F && rotationPointY == 0F && rotationPointZ == 0F && rotateAngleX == 0F
-            && rotateAngleY == 0F && rotateAngleZ == 0F && !renderFacesDirty && !externallyMutableGeometry && observedGeometryEpoch == GeometryRevision.current() && renderFaces.length != 0
-            && gpuGeometry != null && gpuGeometry.supported();
+        return renderPoseCache == null && getClass() == ModelRendererTurbo.class && isVisible() && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile
+            && !useLegacyCompiler && childModels.isEmpty() && scale == 1F && offsetX == 0F && offsetY == 0F && offsetZ == 0F && rotationPointX == 0F && rotationPointY == 0F
+            && rotationPointZ == 0F && rotateAngleX == 0F && rotateAngleY == 0F && rotateAngleZ == 0F && !renderFacesDirty && !externallyMutableGeometry
+            && observedGeometryEpoch == GeometryRevision.current() && renderFaces.length != 0 && gpuGeometry != null && gpuGeometry.supported();
     }
 
     /** Why a part cannot be served from a {@link PartArray}; render diagnostics only. */
@@ -3515,9 +3530,9 @@ public class ModelRendererTurbo extends ModelRenderer
     private boolean matchesSnapshot(float[] transforms, int offset, int revision, RigidGeometry source, int children)
     {
         return renderPathRevision == revision && gpuGeometry == source && offsetX == transforms[offset] && offsetY == transforms[offset + 1] && offsetZ == transforms[offset + 2]
-            && rotationPointX == transforms[offset + 3] && rotationPointY == transforms[offset + 4] && rotationPointZ == transforms[offset + 5] && rotateAngleX == transforms[offset + 6]
-            && rotateAngleY == transforms[offset + 7] && rotateAngleZ == transforms[offset + 8] && showModel && !isHidden && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile
-            && !useLegacyCompiler && !renderFacesDirty && !externallyMutableGeometry
+            && rotationPointX == transforms[offset + 3] && rotationPointY == transforms[offset + 4] && rotationPointZ == transforms[offset + 5]
+            && rotateAngleX == transforms[offset + 6] && rotateAngleY == transforms[offset + 7] && rotateAngleZ == transforms[offset + 8] && showModel && !isHidden && !glow
+            && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler && !renderFacesDirty && !externallyMutableGeometry
             // The part had no children when cached; a counter in the part itself saves reading the list.
             && childEdits == children;
     }
@@ -3556,8 +3571,8 @@ public class ModelRendererTurbo extends ModelRenderer
         private int[] vertexCounts;
 
         /** Returns false when the caller must render each part normally instead. */
-        boolean render(ModelRendererTurbo[] current, PoseStack poseStack, RigidGeometryConsumer gpu, int light, int overlay, float red, float green, float blue, float alpha, float scale,
-            boolean oldRotateOrder)
+        boolean render(ModelRendererTurbo[] current, PoseStack poseStack, RigidGeometryConsumer gpu, int light, int overlay, float red, float green, float blue, float alpha,
+            float scale, boolean oldRotateOrder)
         {
             long now = GeometryRevision.current();
             if (built && (epoch != now || this.scale != scale || this.oldRotateOrder != oldRotateOrder || current.length != parts.length

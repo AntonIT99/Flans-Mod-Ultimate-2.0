@@ -2,6 +2,7 @@ package com.flansmodultimate.config;
 
 import io.netty.buffer.Unpooled;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -54,9 +55,9 @@ class LegacyGameplayConfigTest
         assertSetting(ModCommonConfig.configSpec, 0, "Teams Settings", "bulletSnapshotMin");
         assertSetting(ModCommonConfig.configSpec, 50, "Teams Settings", "bulletSnapshotDivisor");
 
-        ModConfigSpec.ValueSpec min = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotMin"));
+        ValueSpec min = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotMin"));
         assertTrue(min.test(100) && !min.test(101), "the legacy bltss command accepted 0 to 100");
-        ModConfigSpec.ValueSpec divisor = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotDivisor"));
+        ValueSpec divisor = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotDivisor"));
         assertTrue(divisor.test(1000) && !divisor.test(1001), "the legacy bltss command accepted 0 to 1000");
     }
 
@@ -126,7 +127,7 @@ class LegacyGameplayConfigTest
 
     private static void assertSetting(ModConfigSpec spec, Object expectedDefault, String... path)
     {
-        ModConfigSpec.ValueSpec value = ConfigSpecValues.valueSpec(spec, List.of(path));
+        ValueSpec value = ConfigSpecValues.valueSpec(spec, List.of(path));
         assertNotNull(value, String.join(".", path) + " is missing");
         assertEquals(expectedDefault, value.getDefault(), String.join(".", path));
     }

@@ -5,6 +5,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.config.PacketSetCommonConfigValue;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 
 import net.minecraft.client.Minecraft;
 
@@ -32,13 +33,13 @@ public class CommonConfigTarget implements ConfigTarget
     }
 
     @Override
-    public Object get(ModConfigSpec.ConfigValue<?> value)
+    public Object get(ConfigValue<?> value)
     {
         return connectedToServer() ? CommonConfigMirror.get(value) : value.get();
     }
 
     @Override
-    public void set(ModConfigSpec.ConfigValue<?> value, Object newValue)
+    public void set(ConfigValue<?> value, Object newValue)
     {
         if (!connectedToServer())
         {
@@ -52,7 +53,7 @@ public class CommonConfigTarget implements ConfigTarget
     }
 
     @Override
-    public void setWhileDragging(ModConfigSpec.ConfigValue<?> value, Object newValue)
+    public void setWhileDragging(ConfigValue<?> value, Object newValue)
     {
         pending.put(value.getPath(), newValue);
         if (connectedToServer())

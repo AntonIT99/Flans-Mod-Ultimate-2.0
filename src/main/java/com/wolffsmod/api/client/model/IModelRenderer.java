@@ -88,5 +88,6 @@ public interface IModelRenderer
 
     IModelRenderer addBox(float offX, float offY, float offZ, int width, int height, int depth, boolean mirrored);
 
-    void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale);
+    void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale);
 }

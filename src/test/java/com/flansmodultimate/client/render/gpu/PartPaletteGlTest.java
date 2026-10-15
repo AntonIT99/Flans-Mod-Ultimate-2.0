@@ -2,9 +2,9 @@ package com.flansmodultimate.client.render.gpu;
 
 import com.flansmod.client.tmt.PositionTextureVertex;
 import com.flansmod.client.tmt.TexturedPolygon;
+import com.flansmodultimate.platform.render.MeshUploadBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
@@ -71,6 +71,8 @@ class PartPaletteGlTest
             float[] identity = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
             glUniformMatrix4fv(glGetUniformLocation(program, "ModelViewMat"), false, identity);
             glUniformMatrix4fv(glGetUniformLocation(program, "ProjMat"), false, identity);
+            // Only 1.20.1 shaders declare it; a missing uniform has location -1, which GL ignores.
+            glUniformMatrix3fv(glGetUniformLocation(program, "IViewRotMat"), false, new float[]{1, 0, 0, 0, 1, 0, 0, 0, 1});
             int block = glGetUniformBlockIndex(program, "PartPalette");
             glUniformBlockBinding(program, block, 3);
             int blockSize = glGetActiveUniformBlocki(program, block, GL_UNIFORM_BLOCK_DATA_SIZE);
@@ -126,17 +128,14 @@ class PartPaletteGlTest
             glDisable(GL_DEPTH_TEST);
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT);
-            try (VertexBuffer mesh = new VertexBuffer(VertexBuffer.Usage.STATIC); ByteBufferBuilder storage = new ByteBufferBuilder(1024))
+            try (VertexBuffer mesh = new VertexBuffer(VertexBuffer.Usage.STATIC); MeshUploadBuffer upload = new MeshUploadBuffer(1024))
             {
                 // Palette index in UV1, as GpuModelCache builds cached meshes.
-                BufferBuilder builder = new BufferBuilder(storage, VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
+                BufferBuilder builder = upload.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
                 first.draw(new PoseStack().last(), builder, 0, 0, 1, 1, 1, 1);
                 second.draw(new PoseStack().last(), builder, 0, 1 | 1 << 16, 1, 1, 1, 1);
                 mesh.bind();
-                try (var meshData = builder.buildOrThrow())
-                {
-                    mesh.upload(meshData);
-                }
+                upload.upload(mesh);
                 mesh.bind();
                 VertexFormat.IndexType type = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS).type();
                 glDrawElements(GL_TRIANGLES, 12, type.asGLType, 0L);

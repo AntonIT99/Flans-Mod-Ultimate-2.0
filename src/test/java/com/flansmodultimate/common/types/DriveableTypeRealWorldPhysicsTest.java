@@ -26,8 +26,8 @@ class DriveableTypeRealWorldPhysicsTest
     void officialMim23HasAnOperableTrackedGroundProfile() throws java.io.IOException
     {
         // Isolate driving directives: crafting and sound registration require Minecraft bootstrap.
-        VehicleType type = vehicle(java.nio.file.Files.readAllLines(java.nio.file.Path.of("src/officialpacks/resources/flans_content/modernwarfare/definitions/vehicles/MIM23.txt")).stream()
-            .filter(line -> line.matches("^(Real\\w+|DriveType|MaxThrottle|MaxNegativeThrottle|TurnLeftSpeed|TurnRightSpeed|Tank|Driver) .+")).toArray(String[]::new));
+        VehicleType type = vehicle(java.nio.file.Files.readAllLines(java.nio.file.Path.of("src/officialpacks/resources/flans_content/modernwarfare/definitions/vehicles/MIM23.txt"))
+            .stream().filter(line -> line.matches("^(Real\\w+|DriveType|MaxThrottle|MaxNegativeThrottle|TurnLeftSpeed|TurnRightSpeed|Tank|Driver) .+")).toArray(String[]::new));
 
         assertTrue(type.getResolvedPhysics().hasGroundPropulsion());
         assertTrue(type.isTank());

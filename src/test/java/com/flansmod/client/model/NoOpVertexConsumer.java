@@ -1,49 +1,20 @@
 package com.flansmod.client.model;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.jetbrains.annotations.NotNull;
+import com.flansmodultimate.platform.render.TestVertexSink;
 
 /** Vertex sink for rendering tests that only inspect pose transforms. */
-final class NoOpVertexConsumer implements VertexConsumer
+final class NoOpVertexConsumer extends TestVertexSink
 {
     static final NoOpVertexConsumer INSTANCE = new NoOpVertexConsumer();
 
     private NoOpVertexConsumer()
-    {}
-
-    @Override
-    public @NotNull VertexConsumer addVertex(float x, float y, float z)
     {
-        return this;
+        super(false);
     }
 
     @Override
-    public @NotNull VertexConsumer setColor(int red, int green, int blue, int alpha)
+    protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
     {
-        return this;
-    }
-
-    @Override
-    public @NotNull VertexConsumer setUv(float u, float v)
-    {
-        return this;
-    }
-
-    @Override
-    public @NotNull VertexConsumer setUv1(int u, int v)
-    {
-        return this;
-    }
-
-    @Override
-    public @NotNull VertexConsumer setUv2(int u, int v)
-    {
-        return this;
-    }
-
-    @Override
-    public @NotNull VertexConsumer setNormal(float x, float y, float z)
-    {
-        return this;
+        // Only the pose transforms are inspected.
     }
 }

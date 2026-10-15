@@ -52,8 +52,8 @@ public final class DriveableInput
     public static final int CYCLE_SIGHT = 1 << 26;
 
     public static final int VALID_MASK = (1 << 27) - 1;
-    public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE | THROTTLE_INCREASE
-        | THROTTLE_DECREASE;
+    public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
+        | THROTTLE_INCREASE | THROTTLE_DECREASE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
 
     /**

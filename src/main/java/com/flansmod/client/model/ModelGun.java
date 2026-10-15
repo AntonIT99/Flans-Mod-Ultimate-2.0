@@ -491,8 +491,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         vector.z -= z / 16F;
     }
 
-    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-        float scale, EnumRenderPass renderPass)
+    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo mod : models)
         {
@@ -500,8 +500,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims,
-        EnumRenderPass renderPass)
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        GunAnimations anims, EnumRenderPass renderPass)
     {
         // This is a placeholder for custom rendering logic that can be implemented in subclasses or specific instances of ModelGun.
         // It allows for more complex rendering behavior based on the provided GunAnimations object, which can contain information about the current state of the gun's animations.

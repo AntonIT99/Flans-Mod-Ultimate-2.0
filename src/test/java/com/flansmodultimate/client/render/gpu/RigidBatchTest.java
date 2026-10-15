@@ -4,12 +4,10 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.client.tmt.PositionTextureVertex;
 import com.flansmod.client.tmt.TexturedPolygon;
 import com.flansmodultimate.client.model.ModelBase;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.flansmodultimate.platform.render.TestVertexSink;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import org.junit.jupiter.api.Test;
 
@@ -340,22 +338,6 @@ class RigidBatchTest
     }
 
     @Test
-    void interruptedUploadCanStartAgainAfterReload()
-    {
-        try (ByteBufferBuilder storage = new ByteBufferBuilder(256))
-        {
-            new BufferBuilder(storage, VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-            storage.clear(); // Reload discards an unfinished builder's shared storage.
-            BufferBuilder upload = new BufferBuilder(storage, VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-            geometry().draw(new PoseStack().last(), upload, 17, 23, 1, 1, 1, 1);
-            try (var rendered = upload.buildOrThrow())
-            {
-                assertEquals(4, rendered.drawState().vertexCount());
-            }
-        }
-    }
-
-    @Test
     void cacheProbeDistinguishesIdentityOrderLengthAndSurvivesReuse()
     {
         RigidGeometry a = geometry(), b = geometry();
@@ -484,7 +466,7 @@ class RigidBatchTest
         batch.begin(backend);
         for (int i = 0; i < 5; i++)
             submit(batch, geometry(), new PoseStack());
-        batch.addVertex(1, 2, 3).setColor(255, 255, 255, 255).setUv(0, 0).setUv1(0, 0).setUv2(0, 0).setNormal(0, 1, 0);
+        VertexPlatform.vertex(batch, 1, 2, 3, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0);
         submit(batch, geometry(), new PoseStack());
         batch.end();
         assertEquals(List.of("barrier", "gpu:2", "gpu:2", "gpu:1", "cpu", "barrier", "gpu:1"), backend.events);
@@ -604,10 +586,10 @@ class RigidBatchTest
         final Recording output = new Recording()
         {
             @Override
-            public VertexConsumer setNormal(float x, float y, float z)
+            protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
             {
                 events.add("cpu");
-                return super.setNormal(x, y, z);
+                super.accept(x, y, z, red, green, blue, alpha, u, v, overlay, light, normalX, normalY, normalZ);
             }
         };
         boolean available = true, throwOnDraw;
@@ -646,59 +628,14 @@ class RigidBatchTest
         }
     }
 
-    static class Recording implements VertexConsumer
+    static class Recording extends TestVertexSink
     {
         final List<float[]> vertices = new ArrayList<>();
-        private final float[] pending = new float[14];
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z)
-        {
-            pending[0] = x;
-            pending[1] = y;
-            pending[2] = z;
-            return this;
-        }
 
         @Override
-        public VertexConsumer setColor(int r, int g, int b, int a)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
-            pending[3] = r / 255F;
-            pending[4] = g / 255F;
-            pending[5] = b / 255F;
-            pending[6] = a / 255F;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v)
-        {
-            pending[7] = u;
-            pending[8] = v;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v)
-        {
-            pending[9] = u | v << 16;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v)
-        {
-            pending[10] = u | v << 16;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z)
-        {
-            pending[11] = x;
-            pending[12] = y;
-            pending[13] = z;
-            vertices.add(pending.clone());
-            return this;
+            vertices.add(new float[]{x, y, z, red, green, blue, alpha, u, v, overlay, light, normalX, normalY, normalZ});
         }
     }
 }

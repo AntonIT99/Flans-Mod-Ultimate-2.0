@@ -1,13 +1,12 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.common.driveables.collision.DriveableCollisionWorld;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.entity.Entity;
 
 /**
  * Counts a driveable deck as something to stand on for the server's floating

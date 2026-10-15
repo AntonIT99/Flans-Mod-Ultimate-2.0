@@ -25,7 +25,8 @@ public class ItemHolderRenderer implements BlockEntityRenderer<ItemHolderBlockEn
     {}
 
     @Override
-    public void render(@NotNull ItemHolderBlockEntity holder, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public void render(@NotNull ItemHolderBlockEntity holder, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight,
+        int packedOverlay)
     {
         ItemHolderType type = holder.getItemHolderType();
         if (type == null)
@@ -103,7 +104,8 @@ public class ItemHolderRenderer implements BlockEntityRenderer<ItemHolderBlockEn
                 poseStack.translate(0F, 0.25F, 0F);
             }
 
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, Minecraft.getInstance().level, 0);
+            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer,
+                Minecraft.getInstance().level, 0);
         }
         finally
         {

@@ -128,7 +128,8 @@ public class MechaType extends DriveableType implements IMechaType
                 continue;
             try
             {
-                legNodes.add(new LegNode(Integer.parseInt(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]), Integer.parseInt(values[3]), Integer.parseInt(values[4])));
+                legNodes.add(
+                    new LegNode(Integer.parseInt(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]), Integer.parseInt(values[3]), Integer.parseInt(values[4])));
             }
             catch (RuntimeException ex)
             {

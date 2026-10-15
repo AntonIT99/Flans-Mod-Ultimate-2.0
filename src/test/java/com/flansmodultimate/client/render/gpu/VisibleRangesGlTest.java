@@ -1,8 +1,9 @@
 package com.flansmodultimate.client.render.gpu;
 
+import com.flansmodultimate.platform.render.MeshUploadBuffer;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -53,22 +54,20 @@ class VisibleRangesGlTest
             glDisable(GL_DEPTH_TEST);
             glClearColor(0, 0, 0, 0);
 
-            try (VertexBuffer mesh = new VertexBuffer(VertexBuffer.Usage.STATIC); ByteBufferBuilder storage = new ByteBufferBuilder(1024))
+            try (VertexBuffer mesh = new VertexBuffer(VertexBuffer.Usage.STATIC); MeshUploadBuffer upload = new MeshUploadBuffer(1024))
             {
-                BufferBuilder builder = new BufferBuilder(storage, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+                BufferBuilder builder = upload.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
                 for (int i = 0; i < 5; i++)
                 {
-                    double left = -0.95 + i * 0.4, right = left + 0.3;
-                    builder.addVertex((float) left, -0.5F, 0);
-                    builder.addVertex((float) right, -0.5F, 0);
-                    builder.addVertex((float) right, 0.5F, 0);
-                    builder.addVertex((float) left, 0.5F, 0);
+                    float left = -0.95F + i * 0.4F;
+                    float right = left + 0.3F;
+                    VertexPlatform.position(builder, left, -0.5F, 0F);
+                    VertexPlatform.position(builder, right, -0.5F, 0F);
+                    VertexPlatform.position(builder, right, 0.5F, 0F);
+                    VertexPlatform.position(builder, left, 0.5F, 0F);
                 }
                 mesh.bind();
-                try (var meshData = builder.buildOrThrow())
-                {
-                    mesh.upload(meshData);
-                }
+                upload.upload(mesh);
                 for (boolean grow : new boolean[]{false, true})
                 {
                     if (grow)

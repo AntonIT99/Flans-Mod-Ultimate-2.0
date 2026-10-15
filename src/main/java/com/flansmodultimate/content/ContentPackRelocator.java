@@ -45,8 +45,8 @@ final class ContentPackRelocator
     private static final int MAX_DESCRIPTOR_BYTES = 64 * 1024;
     private static final long SLOW_SCAN_WARNING_MILLIS = 2_000L;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Set<String> DEFINITION_FOLDERS = Set.of("aaguns", "armorfiles", "armorboxes", "attachments", "bullets", "classes", "gloves", "grenades", "guns", "boxes", "itemholders",
-        "parts", "tools", "mechaitems", "vehicles", "planes", "mechas", "teams", "rewardboxes", "loadouts");
+    private static final Set<String> DEFINITION_FOLDERS = Set.of("aaguns", "armorfiles", "armorboxes", "attachments", "bullets", "classes", "gloves", "grenades", "guns", "boxes",
+        "itemholders", "parts", "tools", "mechaitems", "vehicles", "planes", "mechas", "teams", "rewardboxes", "loadouts");
     private static final Set<String> LEGACY_SUPPORT_FOLDERS = Set.of("armor", "assets", "com", "gui", "models", "skins", "sound", "sounds");
 
     static RelocationResult reconcile(Path modsFolder, Path flanFolder, Path cachePath)
@@ -352,7 +352,8 @@ final class ContentPackRelocator
         }
     }
 
-    private static RelocationResult finish(long startNanos, int movedContentPacks, int movedBundles, int inspectedArchives, Set<Path> excludedFromContentLoading, List<String> warnings)
+    private static RelocationResult finish(long startNanos, int movedContentPacks, int movedBundles, int inspectedArchives, Set<Path> excludedFromContentLoading,
+        List<String> warnings)
     {
         long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000L;
         if (elapsedMillis > SLOW_SCAN_WARNING_MILLIS)

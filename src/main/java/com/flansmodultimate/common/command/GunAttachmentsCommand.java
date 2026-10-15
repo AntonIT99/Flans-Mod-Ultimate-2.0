@@ -55,19 +55,21 @@ public final class GunAttachmentsCommand
         GunType gun = ((GunItem) gunStack.getItem()).getConfigType();
         if (gun.isAllowAllAttachments())
         {
-            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.all", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE), false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.all", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE),
+                false);
             return 1;
         }
 
         List<AttachmentType> attachments = gun.getAllowedAttachments().stream().filter(Objects::nonNull).toList();
         if (attachments.isEmpty())
         {
-            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.none", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE), false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.none", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE),
+                false);
             return 1;
         }
 
-        context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.header", gunStack.getHoverName(), attachments.size()).withStyle(ChatFormatting.BLUE),
-            false);
+        context.getSource().sendSuccess(
+            () -> Component.translatable("commands.flansmodultimate.attachments.header", gunStack.getHoverName(), attachments.size()).withStyle(ChatFormatting.BLUE), false);
         for (int i = 0; i < attachments.size(); i++)
             sendAttachment(context.getSource(), i + 1, attachments.get(i));
         return attachments.size();

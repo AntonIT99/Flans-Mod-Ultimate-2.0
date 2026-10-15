@@ -99,7 +99,8 @@ class ExplosionVisualsTest
     {
         assertEquals(0, ExplosionVisuals.shockwaveCount(blast(TWENTY_MM_KG)), "a 20 mm blast envelope is too small to read as a wave");
         assertTrue(ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)) > 0, "an 88 mm shell reaches far enough past its crater to be worth drawing");
-        assertTrue(ExplosionVisuals.shockwaveCount(blast(STURMTIGER_CHARGE_KG)) > ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)), "a heavier charge drives a wider wave");
+        assertTrue(ExplosionVisuals.shockwaveCount(blast(STURMTIGER_CHARGE_KG)) > ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)),
+            "a heavier charge drives a wider wave");
     }
 
     @Test
@@ -130,7 +131,8 @@ class ExplosionVisualsTest
         assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(TWENTY_MM_KG)));
         assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(EIGHTY_EIGHT_MM_KG)), "ordinary tank gunnery should not raise a column");
         assertTrue(ExplosionVisuals.smokeColumnCount(crater(STURMTIGER_CHARGE_KG)) > 0);
-        assertEquals(0.2F, ExplosionVisuals.smokeColumnLifetimeScale(crater(STURMTIGER_CHARGE_KG)), 0.0001F, "an explosion should use only a brief tail of the smoke-screen particle");
+        assertEquals(0.2F, ExplosionVisuals.smokeColumnLifetimeScale(crater(STURMTIGER_CHARGE_KG)), 0.0001F,
+            "an explosion should use only a brief tail of the smoke-screen particle");
     }
 
     @ParameterizedTest(name = "a crater radius of {0} produces no degenerate visuals")
@@ -265,7 +267,8 @@ class ExplosionVisualsTest
         // so the puffs drawing it must be too.
         float extreme = 200F;
         assertEquals(ExplosionVisuals.fireballStemHeight(extreme), ExplosionVisuals.fireballStemHeight(40F), 0.0001F);
-        assertEquals(ExplosionVisuals.stagedSizingRadius(40F), ExplosionVisuals.stagedSizingRadius(extreme), 0.0001F, "puffs should stop growing at the crater where the stem stops growing");
+        assertEquals(ExplosionVisuals.stagedSizingRadius(40F), ExplosionVisuals.stagedSizingRadius(extreme), 0.0001F,
+            "puffs should stop growing at the crater where the stem stops growing");
     }
 
     @Test

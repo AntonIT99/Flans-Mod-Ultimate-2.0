@@ -115,7 +115,8 @@ class VehicleArmorSpecReaderTest
     @Test
     void heatProtectionRefinesThePlateOfTheSameFaceAndKeepsItsSlope()
     {
-        VehicleArmorSpec spec = read("ArmorFrontMm 600 0", "ArmorFrontVsHeatMm 950", "ArmorSideMm 70", "TurretArmorFrontMm 650 10", "TurretArmorFrontVsHeatMm 1100", "ArmorRearMm 40").spec();
+        VehicleArmorSpec spec = read("ArmorFrontMm 600 0", "ArmorFrontVsHeatMm 950", "ArmorSideMm 70", "TurretArmorFrontMm 650 10", "TurretArmorFrontVsHeatMm 1100",
+            "ArmorRearMm 40").spec();
         assertEquals(new ArmorPlate(600F, 0F, 950F), spec.hull().get(EnumArmorFacing.FRONT));
         assertEquals(new ArmorPlate(650F, 10F, 1100F), spec.turret().get(EnumArmorFacing.FRONT));
         // A face with no HEAT key resists HEAT with its kinetic value.

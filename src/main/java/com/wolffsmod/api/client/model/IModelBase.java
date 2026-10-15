@@ -30,7 +30,8 @@ public interface IModelBase
         return 1F;
     }
 
-    default void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    default void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha)
     {
         forEachModelBox(modelRenderer -> modelRenderer.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, getScale()));
     }

@@ -24,8 +24,9 @@ final class ContentPackDiscovery
         Map<String, Path> selected = new LinkedHashMap<>();
         try (Stream<Path> files = Files.list(root))
         {
-            for (Path path : files.filter(file -> !excluded.contains(file.toAbsolutePath().normalize())).filter(file -> priority(file) < 3).sorted(Comparator
-                .comparingInt(ContentPackDiscovery::priority).thenComparing(file -> file.getFileName().toString(), String.CASE_INSENSITIVE_ORDER).thenComparing(file -> file.getFileName().toString()))
+            for (Path path : files.filter(file -> !excluded.contains(file.toAbsolutePath().normalize())).filter(file -> priority(file) < 3)
+                .sorted(Comparator.comparingInt(ContentPackDiscovery::priority).thenComparing(file -> file.getFileName().toString(), String.CASE_INSENSITIVE_ORDER)
+                    .thenComparing(file -> file.getFileName().toString()))
                 .toList())
             {
                 String basename = Files.isDirectory(path) ? path.getFileName().toString() : FilenameUtils.getBaseName(path.getFileName().toString());

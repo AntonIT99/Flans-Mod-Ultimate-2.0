@@ -204,12 +204,14 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
             // Middles
             for (int s = 1; s < dyesNeeded.size() - 1; s++)
             {
-                gg.blit(FlansModTextures.TEXTURE_GUI_PAINTJOBTABLE, originX + 2 + 18 * s, originY, UV_MID_U, have[s] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_MID_W, STRIP_H, TEX_W, TEX_H);
+                gg.blit(FlansModTextures.TEXTURE_GUI_PAINTJOBTABLE, originX + 2 + 18 * s, originY, UV_MID_U, have[s] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_MID_W, STRIP_H,
+                    TEX_W, TEX_H);
             }
 
             // Last
             int last = dyesNeeded.size() - 1;
-            gg.blit(FlansModTextures.TEXTURE_GUI_PAINTJOBTABLE, originX + 2 + 18 * last, originY, UV_LAST_U, have[last] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_LAST_W, STRIP_H, TEX_W, TEX_H);
+            gg.blit(FlansModTextures.TEXTURE_GUI_PAINTJOBTABLE, originX + 2 + 18 * last, originY, UV_LAST_U, have[last] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_LAST_W, STRIP_H,
+                TEX_W, TEX_H);
         }
 
         // Draw dye items + overlays (counts)

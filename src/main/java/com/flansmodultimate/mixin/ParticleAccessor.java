@@ -1,9 +1,8 @@
 package com.flansmodultimate.mixin;
 
+import net.minecraft.client.particle.Particle;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
-
-import net.minecraft.client.particle.Particle;
 
 /** Read-only use: the interpolated position of a particle drawn into the thermal heat mask. */
 @Mixin(Particle.class)

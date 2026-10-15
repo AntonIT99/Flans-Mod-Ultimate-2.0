@@ -901,12 +901,12 @@ public class ModelChinook extends ModelPlane // Same as Filename
                                                                                                                                                                             // ImportBox210
         bodyModel[137].setRotationPoint(-169F, -17F, 18F);
 
-        bodyModel[138].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.1F, 0F, 0F, -0.35F, 0F, 0F, -0.65F, 0F, 0F, -0.9F, 0F, 0F, -0.1F, 0F, -2F, -0.35F, 0F, -2F, -0.65F, 0F, 0F, -0.9F); // Import
-                                                                                                                                                                                           // ImportBox211
+        bodyModel[138].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.1F, 0F, 0F, -0.35F, 0F, 0F, -0.65F, 0F, 0F, -0.9F, 0F, 0F, -0.1F, 0F, -2F, -0.35F, 0F, -2F, -0.65F, 0F, 0F,
+            -0.9F); // Import ImportBox211
         bodyModel[138].setRotationPoint(-133F, -35F, 21.4F);
 
-        bodyModel[139].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.1F, 0F, -2F, -0.35F, 0F, -2F, -0.65F, 0F, 0F, -0.9F, 0F, 0F, -0.1F, 0F, 0F, -0.35F, 0F, 0F, -0.65F, 0F, 0F, -0.9F); // Import
-                                                                                                                                                                                           // ImportBox212
+        bodyModel[139].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.1F, 0F, -2F, -0.35F, 0F, -2F, -0.65F, 0F, 0F, -0.9F, 0F, 0F, -0.1F, 0F, 0F, -0.35F, 0F, 0F, -0.65F, 0F, 0F,
+            -0.9F); // Import ImportBox212
         bodyModel[139].setRotationPoint(-133F, -30F, 21.4F);
 
         bodyModel[140].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, -2F, -0.75F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, -2F, -0.25F, 0F, 0F, -0.75F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, -0.25F); // Import
@@ -917,12 +917,12 @@ public class ModelChinook extends ModelPlane // Same as Filename
                                                                                                                                                                                  // ImportBox214
         bodyModel[141].setRotationPoint(-128F, -35F, 21.4F);
 
-        bodyModel[142].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.9F, 0F, 0F, -0.65F, 0F, 0F, -0.35F, 0F, 0F, -0.1F, 0F, 0F, -0.9F, 0F, -2F, -0.65F, 0F, -2F, -0.35F, 0F, 0F, -0.1F); // Import
-                                                                                                                                                                                           // ImportBox215
+        bodyModel[142].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.9F, 0F, 0F, -0.65F, 0F, 0F, -0.35F, 0F, 0F, -0.1F, 0F, 0F, -0.9F, 0F, -2F, -0.65F, 0F, -2F, -0.35F, 0F, 0F,
+            -0.1F); // Import ImportBox215
         bodyModel[142].setRotationPoint(-133F, -35F, -23.4F);
 
-        bodyModel[143].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.9F, 0F, -2F, -0.65F, 0F, -2F, -0.35F, 0F, 0F, -0.1F, 0F, 0F, -0.9F, 0F, 0F, -0.65F, 0F, 0F, -0.35F, 0F, 0F, -0.1F); // Import
-                                                                                                                                                                                           // ImportBox216
+        bodyModel[143].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, 0F, -0.9F, 0F, -2F, -0.65F, 0F, -2F, -0.35F, 0F, 0F, -0.1F, 0F, 0F, -0.9F, 0F, 0F, -0.65F, 0F, 0F, -0.35F, 0F, 0F,
+            -0.1F); // Import ImportBox216
         bodyModel[143].setRotationPoint(-133F, -30F, -23.4F);
 
         bodyModel[144].addShapeBox(0F, 0F, 0F, 2, 2, 2, 0F, 0F, -2F, -0.25F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, -2F, -0.75F, 0F, 0F, -0.25F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -0.75F); // Import
@@ -2485,12 +2485,12 @@ public class ModelChinook extends ModelPlane // Same as Filename
         tailModel[122].addShapeBox(0F, 0F, 0F, 12, 4, 4, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import ImportBox373
         tailModel[122].setRotationPoint(40F, 2F, 29F);
 
-        tailModel[123].addShapeBox(0F, 0F, 0F, 10, 3, 4, 0F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, -3F, -0.9F, 0F, -3.3F, 0F, -0.3F, 0F, 0F, 0F, 0F, -0.5F, -1.5F, -3F, -0.5F, -1.5F); // Import
-                                                                                                                                                                                      // ImportBox491
+        tailModel[123].addShapeBox(0F, 0F, 0F, 10, 3, 4, 0F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, -3F, -0.9F, 0F, -3.3F, 0F, -0.3F, 0F, 0F, 0F, 0F, -0.5F, -1.5F, -3F, -0.5F,
+            -1.5F); // Import ImportBox491
         tailModel[123].setRotationPoint(18F, -58F, -25F);
 
-        tailModel[124].addShapeBox(0F, 0F, 0F, 10, 3, 4, 0F, -3F, -0.9F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -3F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, 0F, 0F, -3.3F, 0F, -0.3F); // Import
-                                                                                                                                                                                      // ImportBox492
+        tailModel[124].addShapeBox(0F, 0F, 0F, 10, 3, 4, 0F, -3F, -0.9F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -3F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, 0F, 0F, -3.3F, 0F,
+            -0.3F); // Import ImportBox492
         tailModel[124].setRotationPoint(18F, -58F, 21F);
 
         tailModel[125].addShapeBox(0F, 0F, 0F, 2, 7, 6, 0F, 0F, -4F, -3F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -4F, -3F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F); // Import
@@ -2547,8 +2547,8 @@ public class ModelChinook extends ModelPlane // Same as Filename
         tailDoorCloseModel = new ModelRendererTurbo[1];
         tailDoorCloseModel[0] = new ModelRendererTurbo(this, 0, 617, textureX, textureY); // Import ImportBox343
 
-        tailDoorCloseModel[0].addShapeBox(0F, 0F, 0F, 53, 12, 40, 0F, 0F, 0F, 0F, -2F, -9F, 0F, -2F, -9F, 0F, 0F, 0F, 0F, 0F, -11F, 0F, -4F, -0.35F, -6F, -4F, -0.35F, -6F, 0F, -11F, 0F); // Import
-                                                                                                                                                                                           // ImportBox343
+        tailDoorCloseModel[0].addShapeBox(0F, 0F, 0F, 53, 12, 40, 0F, 0F, 0F, 0F, -2F, -9F, 0F, -2F, -9F, 0F, 0F, 0F, 0F, 0F, -11F, 0F, -4F, -0.35F, -6F, -4F, -0.35F, -6F, 0F,
+            -11F, 0F); // Import ImportBox343
         tailDoorCloseModel[0].setRotationPoint(49F, -9F, -20F);
         tailDoorCloseModel[0].rotateAngleZ = 0.66322512F;
 

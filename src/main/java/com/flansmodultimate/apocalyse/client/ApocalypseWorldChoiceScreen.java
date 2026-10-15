@@ -43,15 +43,17 @@ public class ApocalypseWorldChoiceScreen extends Screen
     /** Asked when a new world is about to be created. */
     public static ApocalypseWorldChoiceScreen forNewWorld(Consumer<Boolean> onChoice, Runnable onCancel)
     {
-        return new ApocalypseWorldChoiceScreen(Component.translatable("gui.flansmodultimate.apocalypse_choice.new_world"), Component.translatable("gui.flansmodultimate.apocalypse_choice.create_with"),
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.create_without"), onChoice, onCancel);
+        return new ApocalypseWorldChoiceScreen(Component.translatable("gui.flansmodultimate.apocalypse_choice.new_world"),
+            Component.translatable("gui.flansmodultimate.apocalypse_choice.create_with"), Component.translatable("gui.flansmodultimate.apocalypse_choice.create_without"), onChoice,
+            onCancel);
     }
 
     /** Asked once when a saved world without the Apocalypse is opened. */
     public static ApocalypseWorldChoiceScreen forExistingWorld(Consumer<Boolean> onChoice, Runnable onCancel)
     {
-        return new ApocalypseWorldChoiceScreen(Component.translatable("gui.flansmodultimate.apocalypse_choice.existing_world"), Component.translatable("gui.flansmodultimate.apocalypse_choice.add"),
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.keep_without"), onChoice, onCancel);
+        return new ApocalypseWorldChoiceScreen(Component.translatable("gui.flansmodultimate.apocalypse_choice.existing_world"),
+            Component.translatable("gui.flansmodultimate.apocalypse_choice.add"), Component.translatable("gui.flansmodultimate.apocalypse_choice.keep_without"), onChoice,
+            onCancel);
     }
 
     @Override

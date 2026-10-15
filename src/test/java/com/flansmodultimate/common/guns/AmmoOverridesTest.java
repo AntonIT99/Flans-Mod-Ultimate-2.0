@@ -31,8 +31,8 @@ class AmmoOverridesTest
     @Test
     void readsEveryScalarKeyAndConvertsVelocityToBlocksPerTick()
     {
-        AmmoOverrides overrides = read("AmmoMass 44_75APShell 6800", "AmmoMuzzleVelocity 44_75APShell 770", "AmmoExplosiveMassTNTg 44_75APShell 29", "AmmoPenetrationAt100m 44_75APShell 143")
-            .overrides();
+        AmmoOverrides overrides = read("AmmoMass 44_75APShell 6800", "AmmoMuzzleVelocity 44_75APShell 770", "AmmoExplosiveMassTNTg 44_75APShell 29",
+            "AmmoPenetrationAt100m 44_75APShell 143").overrides();
 
         AmmoOverride override = overrides.get("44_75APShell");
         assertNotNull(override);

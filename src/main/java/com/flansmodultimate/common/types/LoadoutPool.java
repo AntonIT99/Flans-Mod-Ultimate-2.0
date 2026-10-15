@@ -209,7 +209,8 @@ public final class LoadoutPool extends InfoType
         if (stack.getItem() instanceof GunItem gunItem)
         {
             gunItem.getConfigType().checkForTags(stack);
-            gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack).ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
+            gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack)
+                .ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
         }
         return stack;
     }

@@ -1,10 +1,9 @@
 package com.wolffsmod.npcs.client;
 
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import noppes.npcs.client.layer.LayerHeadwear;
 import noppes.npcs.client.model.ModelPlayer64x32;
 import noppes.npcs.client.renderer.RenderCustomNpc;
-
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
 
 import java.util.List;
 

@@ -6,7 +6,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.config.PacketRequestCommonConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -64,7 +64,7 @@ public final class CommonConfigMirror
      * client's own, which is the config a world started from here would use.
      */
     @Nullable
-    public static Object get(ModConfigSpec.ConfigValue<?> value)
+    public static Object get(ConfigValue<?> value)
     {
         Snapshot snapshot = state.get();
         Map<String, Object> current = snapshot == null ? null : snapshot.values();
@@ -75,9 +75,9 @@ public final class CommonConfigMirror
         return mirrored == null ? value.get() : ConfigSpecValues.coerce(valueType(value), mirrored);
     }
 
-    private static Class<?> valueType(ModConfigSpec.ConfigValue<?> value)
+    private static Class<?> valueType(ConfigValue<?> value)
     {
-        ModConfigSpec.ValueSpec spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, value.getPath());
+        ValueSpec spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, value.getPath());
         return spec == null ? Object.class : spec.getClazz();
     }
 

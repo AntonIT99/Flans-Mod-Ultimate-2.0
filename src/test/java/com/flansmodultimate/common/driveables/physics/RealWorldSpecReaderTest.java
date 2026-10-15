@@ -49,8 +49,8 @@ class RealWorldSpecReaderTest
     @Test
     void readsEveryCommonAndCategoryKey()
     {
-        RealWorldSpecReader.Result result = read("RealMassKg 2890", "RealMaxSpeedKmh 635", "RealEnginePowerKw 993", "RealEngineThrustKn 79.6", "RealWingSpanM 11.23", "RealWingAreaM2 22.48",
-            "RealClimbRateMs 17.0", "DriveType TRACKED", "RealMaxReverseSpeedKmh 8", "RealDraftM 1.5");
+        RealWorldSpecReader.Result result = read("RealMassKg 2890", "RealMaxSpeedKmh 635", "RealEnginePowerKw 993", "RealEngineThrustKn 79.6", "RealWingSpanM 11.23",
+            "RealWingAreaM2 22.48", "RealClimbRateMs 17.0", "DriveType TRACKED", "RealMaxReverseSpeedKmh 8", "RealDraftM 1.5");
 
         assertEquals(2890F, result.spec().massKg());
         assertEquals(635F, result.spec().maxSpeedKmh());
@@ -69,8 +69,8 @@ class RealWorldSpecReaderTest
     @Test
     void unprefixedAliasesReadEveryRealParameter()
     {
-        RealWorldVehicleSpec spec = read("MassKg 1000", "MaxSpeedKmh 100", "EnginePowerKw 200", "EngineThrustKn 30", "WingSpanM 10", "WingAreaM2 20", "ClimbRateMs 5", "AirBrakeAreaM2 2",
-            "RotorDiameterM 8", "RotorCount 2", "MaxReverseSpeedKmh 12", "DraftM 1").spec();
+        RealWorldVehicleSpec spec = read("MassKg 1000", "MaxSpeedKmh 100", "EnginePowerKw 200", "EngineThrustKn 30", "WingSpanM 10", "WingAreaM2 20", "ClimbRateMs 5",
+            "AirBrakeAreaM2 2", "RotorDiameterM 8", "RotorCount 2", "MaxReverseSpeedKmh 12", "DraftM 1").spec();
         assertEquals(1000F, spec.massKg());
         assertEquals(100F, spec.maxSpeedKmh());
         assertEquals(200F, spec.enginePowerKw());

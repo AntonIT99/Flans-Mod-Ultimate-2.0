@@ -15,6 +15,7 @@ import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.apache.commons.lang3.BooleanUtils;
 
 import net.minecraft.client.Minecraft;
@@ -150,79 +151,79 @@ public final class ModClientConfig
 
     private static final Supplier<Boolean> SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     private static final Supplier<Boolean> SHOW_DETAILED_ITEM_DESCRIPTIONS;
-    public static final ModConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
-    public static final ModConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
-    public static final ModConfigSpec.BooleanValue SHOW_FLANS_HUD;
-    public static final ModConfigSpec.BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
+    public static final BooleanValue ENABLE_UNCENSORED_CONTENT;
+    public static final EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
+    public static final BooleanValue SHOW_FLANS_HUD;
+    public static final BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
     private static final Supplier<Boolean> LOAD_ALL_MODELS_IN_CACHE;
     private static final Supplier<Boolean> SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
-    public static final ModConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
-    public static final ModConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
-    public static final ModConfigSpec.BooleanValue SHOW_AMMO_HUD;
-    public static final ModConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
-    public static final ModConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
-    public static final ModConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_VERTICAL_SPEED_UNIT;
-    public static final ModConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_BASE;
-    public static final ModConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_AT_50;
-    public static final ModConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_AT_100;
-    public static final ModConfigSpec.DoubleValue PLANE_ENGINE_PITCH_BASE;
-    public static final ModConfigSpec.DoubleValue PLANE_ENGINE_PITCH_AT_50;
-    public static final ModConfigSpec.DoubleValue PLANE_ENGINE_PITCH_AT_100;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_Y;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_RIGHT_X;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_RIGHT_Y;
+    public static final BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
+    public static final BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
+    public static final BooleanValue SHOW_AMMO_HUD;
+    public static final EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
+    public static final EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
+    public static final EnumValue<EnumSpeedUnit> DRIVEABLE_VERTICAL_SPEED_UNIT;
+    public static final DoubleValue VEHICLE_ENGINE_PITCH_BASE;
+    public static final DoubleValue VEHICLE_ENGINE_PITCH_AT_50;
+    public static final DoubleValue VEHICLE_ENGINE_PITCH_AT_100;
+    public static final DoubleValue PLANE_ENGINE_PITCH_BASE;
+    public static final DoubleValue PLANE_ENGINE_PITCH_AT_50;
+    public static final DoubleValue PLANE_ENGINE_PITCH_AT_100;
+    public static final IntValue VEHICLE_HUD_LEFT_X;
+    public static final IntValue VEHICLE_HUD_LEFT_Y;
+    public static final IntValue VEHICLE_HUD_RIGHT_X;
+    public static final IntValue VEHICLE_HUD_RIGHT_Y;
     private static final int DEFAULT_VEHICLE_HUD_LEFT_X = 2;
     private static final int DEFAULT_VEHICLE_HUD_RIGHT_X = 12;
     private static final int DEFAULT_VEHICLE_HUD_TOP = 2;
     private static final int MAX_VEHICLE_HUD_OFFSET = 500;
-    public static final ModConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
+    public static final EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
     private static final Supplier<Boolean> HD_HIT_MARKER;
-    public static final ModConfigSpec.BooleanValue FANCY_HIT_MARKER;
+    public static final BooleanValue FANCY_HIT_MARKER;
     private static final Supplier<Boolean> SHOW_HIT_MARKER;
     private static final Supplier<Double> HIT_MARKER_RED;
     private static final Supplier<Double> HIT_MARKER_GREEN;
     private static final Supplier<Double> HIT_MARKER_BLUE;
     private static final Supplier<Double> HIT_MARKER_ALPHA;
-    public static final ModConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
-    public static final ModConfigSpec.BooleanValue VEHICLE_SCREEN_SHAKE;
-    public static final ModConfigSpec.BooleanValue GUN_SCREEN_SHAKE;
-    public static final ModConfigSpec.BooleanValue EXPLOSION_SCREEN_SHAKE;
-    public static final ModConfigSpec.DoubleValue EXPLOSION_SHAKE_INTENSITY;
-    public static final ModConfigSpec.DoubleValue EXPLOSION_SHAKE_DURATION;
-    public static final ModConfigSpec.BooleanValue NEAR_MISS_SUPPRESSION;
-    public static final ModConfigSpec.DoubleValue SUPPRESSION_INTENSITY;
-    public static final ModConfigSpec.DoubleValue SUPPRESSION_DURATION;
-    public static final ModConfigSpec.DoubleValue SUPPRESSION_CAMERA_ROLL;
-    public static final ModConfigSpec.DoubleValue SUPPRESSION_VIGNETTE;
-    public static final ModConfigSpec.BooleanValue BULLET_FLYBY_SOUNDS;
-    public static final ModConfigSpec.DoubleValue BULLET_FLYBY_VOLUME;
-    // ModConfigSpec.Builder#defineList imposes this wildcard type.
+    public static final BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
+    public static final BooleanValue VEHICLE_SCREEN_SHAKE;
+    public static final BooleanValue GUN_SCREEN_SHAKE;
+    public static final BooleanValue EXPLOSION_SCREEN_SHAKE;
+    public static final DoubleValue EXPLOSION_SHAKE_INTENSITY;
+    public static final DoubleValue EXPLOSION_SHAKE_DURATION;
+    public static final BooleanValue NEAR_MISS_SUPPRESSION;
+    public static final DoubleValue SUPPRESSION_INTENSITY;
+    public static final DoubleValue SUPPRESSION_DURATION;
+    public static final DoubleValue SUPPRESSION_CAMERA_ROLL;
+    public static final DoubleValue SUPPRESSION_VIGNETTE;
+    public static final BooleanValue BULLET_FLYBY_SOUNDS;
+    public static final DoubleValue BULLET_FLYBY_VOLUME;
+    // Builder#defineList imposes this wildcard type.
     @SuppressWarnings("java:S4968")
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> ADDITIONAL_THERMAL_HOT_PARTICLES;
+    public static final ConfigValue<List<? extends String>> ADDITIONAL_THERMAL_HOT_PARTICLES;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
-    public static final ModConfigSpec.DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;
-    public static final ModConfigSpec.DoubleValue FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
+    public static final DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;
+    public static final DoubleValue FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
     private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
     private static final Supplier<Integer> GRENADE_RENDER_DISTANCE;
     private static final Supplier<Integer> DEPLOYED_GUN_RENDER_DISTANCE;
     private static final Supplier<Integer> AA_GUN_RENDER_DISTANCE;
-    private static final ModConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
-    private static final ModConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
-    public static final ModConfigSpec.BooleanValue ENABLE_GPU_MODEL_CACHE;
-    public static final ModConfigSpec.IntValue GPU_MODEL_CACHE_MEGABYTES;
-    private static final ModConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
-    private static final ModConfigSpec.DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
+    private static final DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
+    private static final BooleanValue ENABLE_DRIVEABLE_LOD;
+    public static final BooleanValue ENABLE_GPU_MODEL_CACHE;
+    public static final IntValue GPU_MODEL_CACHE_MEGABYTES;
+    private static final DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
+    private static final DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
     private static final Supplier<Double> GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
-    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER;
-    private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE;
-    private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE;
-    private static final ModConfigSpec.DoubleValue DRIVEABLE_IMPOSTOR_PIXEL_SIZE;
-    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE;
-    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
-    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
-    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
+    private static final IntValue DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER;
+    private static final DoubleValue DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE;
+    private static final DoubleValue DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE;
+    private static final DoubleValue DRIVEABLE_IMPOSTOR_PIXEL_SIZE;
+    private static final IntValue DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE;
+    private static final IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
+    private static final IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
+    private static final IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
     private static final Supplier<Integer> DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
     private static final Supplier<Double> PARTICLE_DISTANCE_SCALE;
     private static final Supplier<Double> FULL_PARTICLE_DENSITY_SHARE;
@@ -234,20 +235,20 @@ public final class ModClientConfig
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
     private static final Supplier<EnumMouseButton> AIM_BUTTON;
-    public static final ModConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
-    public static final ModConfigSpec.EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
-    public static final ModConfigSpec.BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
+    public static final EnumValue<EnumAimType> AIM_TYPE;
+    public static final EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
+    public static final BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
 
     private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
     private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
 
     private static final Supplier<Boolean> ENABLE_ARMS;
-    public static final ModConfigSpec.EnumValue<EnumAimPose> AIM_POSE;
+    public static final EnumValue<EnumAimPose> AIM_POSE;
     private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
     private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
-    public static final ModConfigSpec.EnumValue<EnumMuzzleFlashStyle> MUZZLE_FLASH_STYLE;
+    public static final EnumValue<EnumMuzzleFlashStyle> MUZZLE_FLASH_STYLE;
 
     private static final Supplier<Boolean> ENABLE_FAST_TRANSLUCENT_RENDERING;
     private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
@@ -270,13 +271,13 @@ public final class ModClientConfig
     private static final Supplier<Boolean> ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
     private static final Supplier<Boolean> ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
 
-    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_INTEGRATION;
-    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_RANGEFINDER;
-    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_CONTACTS;
-    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_EXPLOSIONS;
-    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_DRIVEABLE_RENDERING;
+    public static final BooleanValue DISTANT_HORIZONS_INTEGRATION;
+    public static final BooleanValue DISTANT_HORIZONS_RANGEFINDER;
+    public static final BooleanValue DISTANT_HORIZONS_CONTACTS;
+    public static final BooleanValue DISTANT_HORIZONS_EXPLOSIONS;
+    public static final BooleanValue DISTANT_HORIZONS_DRIVEABLE_RENDERING;
 
-    private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+    private static final Builder builder = new Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
     /** Option changes the options screen has made in memory but not written to the file yet. */
     private static final AtomicBoolean pendingChanges = new AtomicBoolean();
@@ -697,7 +698,7 @@ public final class ModClientConfig
      * Reads a vehicle HUD offset live rather than from the baked snapshot, so the HUD follows an options
      * slider while it is still being dragged.
      */
-    public static int vehicleHudOffset(ModConfigSpec.IntValue value)
+    public static int vehicleHudOffset(IntValue value)
     {
         return configSpec.isLoaded() ? value.get() : value.getDefault();
     }
@@ -786,13 +787,13 @@ public final class ModClientConfig
         };
     }
 
-    private static ModConfigSpec.BooleanValue defineTranslucentDefault(String typeName, String configName, boolean defaultValue)
+    private static BooleanValue defineTranslucentDefault(String typeName, String configName, boolean defaultValue)
     {
         return builder.comment("Render " + typeName + " with translucent render types by default. Content files with TranslucentRendering true remain translucent regardless of this option.")
             .define(configName, defaultValue);
     }
 
-    private static ModConfigSpec.BooleanValue defineCullingDefault(String typeName, String configName, boolean defaultValue)
+    private static BooleanValue defineCullingDefault(String typeName, String configName, boolean defaultValue)
     {
         return builder.comment("Render " + typeName + " with face culling by default. Disable this only for content that needs double-sided model faces.").define(configName, defaultValue);
     }
@@ -801,7 +802,7 @@ public final class ModClientConfig
      * Persist a value the in-game options screen just changed and apply it immediately. The config watcher
      * would re-read the file on its own eventually; baking here makes the change visible on the next frame.
      */
-    public static <T> void setAndSave(ModConfigSpec.ConfigValue<T> value, T newValue)
+    public static <T> void setAndSave(ConfigValue<T> value, T newValue)
     {
         if (set(value, newValue))
             flushPendingChanges();
@@ -813,7 +814,7 @@ public final class ModClientConfig
      *
      * @return whether the value changed
      */
-    public static <T> boolean set(ModConfigSpec.ConfigValue<T> value, T newValue)
+    public static <T> boolean set(ConfigValue<T> value, T newValue)
     {
         if (!configSpec.isLoaded())
         {

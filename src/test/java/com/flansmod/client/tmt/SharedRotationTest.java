@@ -1,8 +1,8 @@
 package com.flansmod.client.tmt;
 
 import com.flansmodultimate.client.model.ModelBase;
+import com.flansmodultimate.platform.render.TestVertexSink;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import org.junit.jupiter.api.Test;
 
@@ -67,54 +67,14 @@ class SharedRotationTest
                 }
     }
 
-    private static final class Recording implements VertexConsumer
+    private static final class Recording extends TestVertexSink
     {
         final List<float[]> vertices = new ArrayList<>();
-        // Minecraft 1.21 writes each vertex as a chain; the normal ends it.
-        private final float[] pending = new float[8];
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z)
-        {
-            pending[0] = x;
-            pending[1] = y;
-            pending[2] = z;
-            return this;
-        }
 
         @Override
-        public VertexConsumer setColor(int r, int g, int b, int a)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v)
-        {
-            pending[3] = u;
-            pending[4] = v;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z)
-        {
-            pending[5] = x;
-            pending[6] = y;
-            pending[7] = z;
-            vertices.add(pending.clone());
-            return this;
+            vertices.add(new float[]{x, y, z, u, v, normalX, normalY, normalZ});
         }
     }
 }

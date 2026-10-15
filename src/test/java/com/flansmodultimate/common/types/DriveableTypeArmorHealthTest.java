@@ -41,8 +41,8 @@ class DriveableTypeArmorHealthTest
     @Test
     void normalizedAllocationIsIdempotentAcrossRepeatedFinalization()
     {
-        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart turret 50 0 16 0 16 16 16", "SetupPart leftTrack 25 -16 0 0 16 16 16", "SetupPart rightTrack 25 16 0 0 16 16 16",
-            "SetupPart barrel 0 0 16 -16 16 16 16", "RealMassKg 1000", "UseRealisticVehicleHealth true");
+        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart turret 50 0 16 0 16 16 16", "SetupPart leftTrack 25 -16 0 0 16 16 16",
+            "SetupPart rightTrack 25 16 0 0 16 16 16", "SetupPart barrel 0 0 16 -16 16 16 16", "RealMassKg 1000", "UseRealisticVehicleHealth true");
         float firstCore = type.getHealth().get(EnumDriveablePart.CORE).getHealth();
         type.finishDerivedValues();
         assertEquals(firstCore, type.getHealth().get(EnumDriveablePart.CORE).getHealth(), 1.0E-4F);
@@ -53,8 +53,8 @@ class DriveableTypeArmorHealthTest
     @Test
     void krishnaPartNamesRetainIndependentHitboxes()
     {
-        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart generic0 10 16 0 0 16 16 16", "SetupPart generic1 20 32 0 0 16 16 16", "SetupPart turretarmor 30 48 0 0 16 16 16",
-            "SetupPart moreturretarmor 40 64 0 0 16 16 16");
+        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart generic0 10 16 0 0 16 16 16", "SetupPart generic1 20 32 0 0 16 16 16",
+            "SetupPart turretarmor 30 48 0 0 16 16 16", "SetupPart moreturretarmor 40 64 0 0 16 16 16");
 
         assertEquals(5, type.getHealth().size());
         assertEquals(10F, type.getHealth().get(EnumDriveablePart.GENERIC_0).getHealth());

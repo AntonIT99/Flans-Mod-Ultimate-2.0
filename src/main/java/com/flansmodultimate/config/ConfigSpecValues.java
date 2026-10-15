@@ -5,6 +5,7 @@ import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -47,7 +48,7 @@ public final class ConfigSpecValues
         {
             if (child instanceof UnmodifiableConfig section)
                 collect(section, values);
-            else if (child instanceof ModConfigSpec.ConfigValue<?> value && isTransferable(value.get()))
+            else if (child instanceof ConfigValue<?> value && isTransferable(value.get()))
                 values.put(joinPath(value.getPath()), wireValue(value.get()));
         }
     }
@@ -76,10 +77,10 @@ public final class ConfigSpecValues
     // The config value type is only known at runtime.
     @SuppressWarnings("java:S1452")
     @Nullable
-    public static ModConfigSpec.ConfigValue<?> find(ModConfigSpec spec, List<String> path)
+    public static ConfigValue<?> find(ModConfigSpec spec, List<String> path)
     {
         Object entry = spec.getValues().get(path);
-        return entry instanceof ModConfigSpec.ConfigValue<?> value ? value : null;
+        return entry instanceof ConfigValue<?> value ? value : null;
     }
 
     /**
@@ -87,15 +88,14 @@ public final class ConfigSpecValues
      * NeoForge's rejects one and restores the default, so the NeoForge side uses {@code defineListAllowEmpty}.
      * {@code newElement} is the value NeoForge's config screen adds to the list; Forge has no such screen.
      */
-    public static <T> ModConfigSpec.ConfigValue<List<? extends T>> defineList(ModConfigSpec.Builder builder, String path, List<? extends T> defaultValue, Supplier<T> newElement,
-        Predicate<Object> elementValidator)
+    public static <T> ConfigValue<List<? extends T>> defineList(Builder builder, String path, List<? extends T> defaultValue, Supplier<T> newElement, Predicate<Object> elementValidator)
     {
         return builder.defineListAllowEmpty(path, defaultValue, newElement, elementValidator);
     }
 
     /** The type, default and range of the entry at the given path, or null when the spec has no such entry. */
     @Nullable
-    public static ModConfigSpec.ValueSpec valueSpec(ModConfigSpec spec, List<String> path)
+    public static ValueSpec valueSpec(ModConfigSpec spec, List<String> path)
     {
         return spec.getSpec().get(path);
     }
@@ -109,8 +109,8 @@ public final class ConfigSpecValues
     @SuppressWarnings("unchecked")
     public static boolean apply(ModConfigSpec spec, List<String> path, Object newValue)
     {
-        ModConfigSpec.ValueSpec valueSpec = valueSpec(spec, path);
-        ModConfigSpec.ConfigValue<?> value = find(spec, path);
+        ValueSpec valueSpec = valueSpec(spec, path);
+        ConfigValue<?> value = find(spec, path);
         if (valueSpec == null || value == null || !spec.isLoaded())
         {
             if (FlansLog.log.isWarnEnabled())
@@ -129,7 +129,7 @@ public final class ConfigSpecValues
         if (corrected.equals(value.get()))
             return false;
 
-        ((ModConfigSpec.ConfigValue<Object>) value).set(corrected);
+        ((ConfigValue<Object>) value).set(corrected);
         return true;
     }
 

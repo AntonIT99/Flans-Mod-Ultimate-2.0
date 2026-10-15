@@ -7,7 +7,7 @@ import com.flansmodultimate.platform.PlatformEnvironment;
 import com.mojang.serialization.Codec;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
@@ -75,7 +75,7 @@ public final class ConfigOptionFactory
         List<OptionInstance<?>> options = new ArrayList<>();
         for (Object child : section.valueMap().values())
         {
-            if (!(child instanceof ModConfigSpec.ConfigValue<?> value))
+            if (!(child instanceof ConfigValue<?> value))
                 continue;
 
             OptionInstance<?> option = option(target, value);
@@ -89,11 +89,11 @@ public final class ConfigOptionFactory
     // The option value type is only known at runtime.
     @SuppressWarnings("java:S1452")
     @Nullable
-    public static OptionInstance<?> option(ConfigTarget target, ModConfigSpec.ConfigValue<?> value)
+    public static OptionInstance<?> option(ConfigTarget target, ConfigValue<?> value)
     {
         if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE) && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
             return null;
-        ModConfigSpec.ValueSpec valueSpec = ConfigSpecValues.valueSpec(target.spec(), value.getPath());
+        ValueSpec valueSpec = ConfigSpecValues.valueSpec(target.spec(), value.getPath());
         if (valueSpec == null)
             return null;
 
@@ -113,18 +113,18 @@ public final class ConfigOptionFactory
         return null;
     }
 
-    private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, boolean current)
+    private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, boolean current)
     {
         return OptionInstance.createBoolean(captionKey(value), tooltip(target, value, valueSpec, CommonComponents::optionStatus), current, newValue -> target.set(value, newValue));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static OptionInstance<?> enumOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, Class<?> type, Object current)
+    private static OptionInstance<?> enumOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, Class<?> type, Object current)
     {
         return enumOption(target, value, valueSpec, (Class) type, (Enum) current);
     }
 
-    private static <T extends Enum<T>> OptionInstance<T> enumOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, Class<T> type, T current)
+    private static <T extends Enum<T>> OptionInstance<T> enumOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, Class<T> type, T current)
     {
         Codec<T> codec = Codec.STRING.xmap(constant -> Enum.valueOf(type, constant), Enum::name);
         Function<T, Component> valueText = constant -> valueLabel(type, constant);
@@ -133,9 +133,9 @@ public final class ConfigOptionFactory
     }
 
     @Nullable
-    private static OptionInstance<Integer> intOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, int current)
+    private static OptionInstance<Integer> intOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, int current)
     {
-        ModConfigSpec.Range<Integer> range = valueSpec.getRange();
+        Range<Integer> range = valueSpec.getRange();
         if (range == null)
             return null;
 
@@ -144,7 +144,7 @@ public final class ConfigOptionFactory
             new OptionInstance.IntRange(range.getMin(), range.getMax()), current, newValue -> target.setWhileDragging(value, newValue));
     }
 
-    private static Component intValueText(ModConfigSpec.ConfigValue<?> value, int number)
+    private static Component intValueText(ConfigValue<?> value, int number)
     {
         if (value == ModCommonConfig.DRIVEABLE_TRACKING_RANGE || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE)
             return Component.translatable("options.flansmodultimate.distance.blocks", number);
@@ -154,9 +154,9 @@ public final class ConfigOptionFactory
     }
 
     @Nullable
-    private static OptionInstance<Double> doubleOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, double current)
+    private static OptionInstance<Double> doubleOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, double current)
     {
-        ModConfigSpec.Range<Double> range = valueSpec.getRange();
+        Range<Double> range = valueSpec.getRange();
         if (range == null)
             return null;
 
@@ -179,7 +179,7 @@ public final class ConfigOptionFactory
      * Sound ranges also set loudness, so they are tuned by the block. The slider stops at a practical
      * hearing distance; larger values remain available in the config file.
      */
-    private static OptionInstance<Double> soundRangeOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, double min, double max, double current)
+    private static OptionInstance<Double> soundRangeOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, double min, double max, double current)
     {
         int lowest = (int) Math.ceil(min);
         int highest = Math.max(lowest + 1, (int) Math.min(max, SOUND_RANGE_SLIDER_MAX));
@@ -189,7 +189,7 @@ public final class ConfigOptionFactory
     }
 
     /** Vanilla builds the caption from a translation key, so every editable entry needs one. */
-    private static String captionKey(ModConfigSpec.ConfigValue<?> value)
+    private static String captionKey(ConfigValue<?> value)
     {
         return KEY_PREFIX + value.getPath().get(value.getPath().size() - 1);
     }
@@ -198,7 +198,7 @@ public final class ConfigOptionFactory
      * Every tooltip opens with the setting's name and its current value, so a row stays readable when its
      * label is cut short or a slider is being dragged; the description follows below.
      */
-    private static <T> OptionInstance.TooltipSupplier<T> tooltip(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, Function<T, Component> valueText)
+    private static <T> OptionInstance.TooltipSupplier<T> tooltip(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, Function<T, Component> valueText)
     {
         Component title = Component.translatable(captionKey(value));
         Component description = description(value, valueSpec);
@@ -227,7 +227,7 @@ public final class ConfigOptionFactory
      * shown, which is the same text the player would read when editing the file by hand.
      */
     @Nullable
-    private static Component description(ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec)
+    private static Component description(ConfigValue<?> value, ValueSpec valueSpec)
     {
         String key = captionKey(value) + ".tooltip";
         if (value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)

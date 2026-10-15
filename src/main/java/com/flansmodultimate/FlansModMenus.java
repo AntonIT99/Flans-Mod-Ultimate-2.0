@@ -30,7 +30,8 @@ public final class FlansModMenus
         () -> MenuPlatform.menuType(PaintjobTableMenu::createFromNetwork));
     public static final Supplier<? extends MenuType<ArmorBoxMenu>> armorBoxMenu = FlansModRegistries.menuRegistry.register("armorbox_menu",
         () -> MenuPlatform.menuType(ArmorBoxMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<GunBoxMenu>> gunBoxMenu = FlansModRegistries.menuRegistry.register("gunbox_menu", () -> MenuPlatform.menuType(GunBoxMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<GunBoxMenu>> gunBoxMenu = FlansModRegistries.menuRegistry.register("gunbox_menu",
+        () -> MenuPlatform.menuType(GunBoxMenu::createFromNetwork));
 
     /** Forces supplier registration without resolving any registry entries. */
     static void initialize()

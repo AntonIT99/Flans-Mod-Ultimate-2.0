@@ -32,8 +32,8 @@ public final class PackagedContentProvider implements IContentProvider
     PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path, Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
         String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot, boolean archiveBacked, boolean indexAssetsForConflicts)
     {
-        this(name, conflictDisplayName, packId, path, developmentContentRoot, developmentAssetsRoot, developmentModelsRoot, archiveContentRoot, archiveAssetsRoot, archiveModelsRoot, archiveBacked,
-            indexAssetsForConflicts, false);
+        this(name, conflictDisplayName, packId, path, developmentContentRoot, developmentAssetsRoot, developmentModelsRoot, archiveContentRoot, archiveAssetsRoot,
+            archiveModelsRoot, archiveBacked, indexAssetsForConflicts, false);
     }
 
     PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path, Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,

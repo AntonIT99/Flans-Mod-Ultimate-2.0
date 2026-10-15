@@ -94,8 +94,8 @@ class ShootableMassUnitsTest
     @Test
     void fragmentConstructionAndDamageCanBeAuthored()
     {
-        BulletType mine = bullet("ExplosiveMassTNTg 182", "FragType PREFORMED", "FragPattern HORIZONTAL_BAND", "FragCount 350", "FragMetalMassg 350", "FragBurstHeight 1", "FragDamage 29",
-            "FragDamageVsPlayer 31");
+        BulletType mine = bullet("ExplosiveMassTNTg 182", "FragType PREFORMED", "FragPattern HORIZONTAL_BAND", "FragCount 350", "FragMetalMassg 350", "FragBurstHeight 1",
+            "FragDamage 29", "FragDamageVsPlayer 31");
         assertTrue(mine.fragRadius > 30F);
         assertEquals(1F, mine.getFragBurstHeight(), 1.0E-3F);
         var fragments = mine.fragmentationFor(mine.getExplosiveMass(), mine.getMass());

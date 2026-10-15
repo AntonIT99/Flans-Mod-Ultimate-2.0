@@ -132,7 +132,8 @@ class TexturedPolygonRenderingTest
         {
             assertEquals(LightTexture.FULL_BRIGHT, vertex[10]);
             assertEquals(23, vertex[9]);
-            assertEquals(0.5F, vertex[6], 1F / 255F); // 1.21 packs vertex tint into byte channels.
+            // A 1.21 consumer packs the tint into byte channels.
+            assertEquals(0.5F, vertex[6], 1F / 255F);
             assertArrayEquals(new float[]{0, 1, 0}, new float[]{vertex[11], vertex[12], vertex[13]});
         }
     }

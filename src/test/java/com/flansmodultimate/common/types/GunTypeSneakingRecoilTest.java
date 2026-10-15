@@ -24,7 +24,8 @@ class GunTypeSneakingRecoilTest
     @Test
     void anAuthoredDivisorDecreasesYawRecoil()
     {
-        assertEquals(1F, GunType.sneakingYawRecoil(2F, 2F, DEFAULT_SNEAKING_YAW), EPSILON, "DecreaseRecoilYaw 2 is half the yaw recoil, which is what the 44 guns stating it ask for");
+        assertEquals(1F, GunType.sneakingYawRecoil(2F, 2F, DEFAULT_SNEAKING_YAW), EPSILON,
+            "DecreaseRecoilYaw 2 is half the yaw recoil, which is what the 44 guns stating it ask for");
     }
 
     @Test

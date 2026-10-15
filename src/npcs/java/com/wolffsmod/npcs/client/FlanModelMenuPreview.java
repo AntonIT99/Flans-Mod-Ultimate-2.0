@@ -4,19 +4,17 @@ import com.flansmodultimate.api.client.FlansModelPreviews;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.math.Axis;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
-import org.joml.Quaternionf;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
+import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
+import org.joml.Quaternionf;
 
 /** Static model-menu preview; its framing never changes the NPC's saved size or world hitbox. */
 public final class FlanModelMenuPreview
 {
-    private FlanModelMenuPreview()
-    {}
+    private FlanModelMenuPreview() {}
 
     public static void render(GuiCreationScreenInterface screen, GuiGraphics graphics, FlanModelEntity model, int rotation)
     {
@@ -26,7 +24,8 @@ public final class FlanModelMenuPreview
             return;
         float lift = modelType.getShape().modelHeight();
         AABB bounds = FlanModelBounds.of(model);
-        ResourceLocation texture = screen.playerdata.simpleRender ? model.getModelTexture() : ResourceLocation.tryParse(screen.npc.display.getSkinTexture());
+        ResourceLocation texture = screen.playerdata.simpleRender ? model.getModelTexture()
+            : ResourceLocation.tryParse(screen.npc.display.getSkinTexture());
         if (texture == null)
             texture = model.getModelTexture();
         if (texture == null)

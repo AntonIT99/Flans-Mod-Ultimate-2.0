@@ -55,8 +55,7 @@ final class ContentFileCache
     /** Snapshots taken while the packs load, by absolute root; null at any other time. */
     private static final AtomicReference<Map<Path, Map<String, Stamp>>> runSnapshots = new AtomicReference<>();
 
-    record Stamp(long size, String modified, String identity)
-    {}
+    record Stamp(long size, String modified, String identity) {}
 
     /** One subfolder per kind of entry, so the cache folder says what each file is for. */
     enum Kind
@@ -76,8 +75,7 @@ final class ContentFileCache
         }
     }
 
-    private ContentFileCache()
-    {}
+    private ContentFileCache() {}
 
     static void configure(Path path)
     {
@@ -242,7 +240,8 @@ final class ContentFileCache
         for (Map.Entry<String, Stamp> entry : new TreeMap<>(files).entrySet())
         {
             Stamp stamp = entry.getValue();
-            digest.update((entry.getKey() + '\0' + stamp.size() + '\0' + stamp.modified() + '\0' + stamp.identity() + '\n').getBytes(StandardCharsets.UTF_8));
+            digest.update((entry.getKey() + '\0' + stamp.size() + '\0' + stamp.modified() + '\0' + stamp.identity() + '\n')
+                .getBytes(StandardCharsets.UTF_8));
         }
         return HexFormat.of().formatHex(digest.digest());
     }
@@ -373,7 +372,8 @@ final class ContentFileCache
         Instant now = Instant.now();
         try
         {
-            if (Files.isRegularFile(marker) && Files.getLastModifiedTime(marker).toInstant().isAfter(now.minus(PRUNE_INTERVAL)))
+            if (Files.isRegularFile(marker)
+                && Files.getLastModifiedTime(marker).toInstant().isAfter(now.minus(PRUNE_INTERVAL)))
                 return;
         }
         catch (IOException e)
@@ -423,7 +423,8 @@ final class ContentFileCache
     @Nullable
     static String readSource(Path file)
     {
-        try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8); JsonReader json = new JsonReader(reader))
+        try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8);
+             JsonReader json = new JsonReader(reader))
         {
             json.beginObject();
             while (json.hasNext())
@@ -455,7 +456,8 @@ final class ContentFileCache
             // A JAR pack converted to ZIP keeps its generation entry.
             String extension = FilenameUtils.getExtension(path.getFileName().toString());
             String base = FilenameUtils.removeExtension(path.getFileName().toString());
-            return (extension.equalsIgnoreCase("jar") && Files.exists(path.resolveSibling(base + ".zip"))) || (extension.equalsIgnoreCase("zip") && Files.exists(path.resolveSibling(base + ".jar")));
+            return (extension.equalsIgnoreCase("jar") && Files.exists(path.resolveSibling(base + ".zip")))
+                || (extension.equalsIgnoreCase("zip") && Files.exists(path.resolveSibling(base + ".jar")));
         }
         catch (InvalidPathException e)
         {

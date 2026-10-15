@@ -113,8 +113,8 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         return ArmorType.class;
     }
 
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-        EnumRenderPass renderPass)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, EnumRenderPass renderPass)
     {
         float modelScale = type != null ? type.getModelScale() : 1F;
 
@@ -144,14 +144,14 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         }
     }
 
-    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale,
-        EnumRenderPass renderPass)
+    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha,
+        float modelScale, EnumRenderPass renderPass)
     {
         render(headModel, head, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
     }
 
-    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale,
-        EnumRenderPass renderPass)
+    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha,
+        float modelScale, EnumRenderPass renderPass)
     {
         render(bodyModel, body, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         render(leftArmModel, leftArm, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
@@ -180,8 +180,8 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         }
     }
 
-    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue,
-        float pAlpha, float scale, EnumRenderPass renderPass)
+    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen,
+        float pBlue, float pAlpha, float scale, EnumRenderPass renderPass)
     {
         if (models.length == 0)
             return;

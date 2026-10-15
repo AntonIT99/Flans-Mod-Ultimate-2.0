@@ -3,8 +3,8 @@ package com.flansmod.client.tmt;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.gpu.RigidGeometry;
 import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
+import com.flansmodultimate.platform.render.TestVertexSink;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ class UnboundShapeVerticesTest
     }
 
     /** Records GPU submissions and CPU vertices. */
-    private static final class Sink implements RigidGeometryConsumer
+    private static final class Sink extends TestVertexSink implements RigidGeometryConsumer
     {
         final List<RigidGeometry> geometries = new ArrayList<>();
         final List<PoseStack.Pose> poses = new ArrayList<>();
@@ -79,94 +79,27 @@ class UnboundShapeVerticesTest
             poses.add(copy);
         }
 
-        // Minecraft 1.21 writes each vertex as a chain; the normal ends it.
-        private final float[] pending = new float[8];
         @Override
-        public VertexConsumer addVertex(float x, float y, float z)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
-            pending[0] = x;
-            pending[1] = y;
-            pending[2] = z;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setColor(int r, int g, int b, int a)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v)
-        {
-            pending[3] = u;
-            pending[4] = v;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z)
-        {
-            pending[5] = x;
-            pending[6] = y;
-            pending[7] = z;
-            cpu.add(pending.clone());
-            return this;
+            cpu.add(new float[]{x, y, z, u, v, normalX, normalY, normalZ});
         }
     }
 
     /** A plain consumer, so the part takes the CPU path. */
-    private record Plain(Sink sink) implements VertexConsumer
+    private static final class Plain extends TestVertexSink
     {
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z)
+        private final Sink sink;
+
+        private Plain(Sink sink)
         {
-            sink.addVertex(x, y, z);
-            return this;
+            this.sink = sink;
         }
 
         @Override
-        public VertexConsumer setColor(int r, int g, int b, int a)
+        protected void accept(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ)
         {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v)
-        {
-            sink.setUv(u, v);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z)
-        {
-            sink.setNormal(x, y, z);
-            return this;
+            sink.cpu.add(new float[]{x, y, z, u, v, normalX, normalY, normalZ});
         }
     }
 }

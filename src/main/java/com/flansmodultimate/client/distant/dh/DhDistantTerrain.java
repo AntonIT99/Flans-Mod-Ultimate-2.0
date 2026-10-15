@@ -90,8 +90,8 @@ public final class DhDistantTerrain implements IDistantTerrain
         int minor = DhApi.getApiMinorVersion();
         if (major < MIN_API_MAJOR || major == MIN_API_MAJOR && minor < MIN_API_MINOR)
         {
-            FlansLog.log.warn("Distant Horizons {} provides API {}.{}; Flan's Mod needs {}.{} or newer, so its integration stays off", DhApi.getModVersion(), major, minor, MIN_API_MAJOR,
-                MIN_API_MINOR);
+            FlansLog.log.warn("Distant Horizons {} provides API {}.{}; Flan's Mod needs {}.{} or newer, so its integration stays off", DhApi.getModVersion(), major, minor,
+                MIN_API_MAJOR, MIN_API_MINOR);
             return NONE;
         }
 
@@ -263,12 +263,13 @@ public final class DhDistantTerrain implements IDistantTerrain
         // Its length limit is a Manhattan distance, longer than the straight one by this factor
         double manhattanFactor = Math.abs(direction.x) + Math.abs(direction.y) + Math.abs(direction.z);
         int maxLength = (int) Math.min(Integer.MAX_VALUE, Math.ceil((maxDistance - skipped) * manhattanFactor) + 2D);
-        DhApiResult<DhApiRaycastResult> result = repo.raycast(level, start.x, start.y, start.z, (float) direction.x, (float) direction.y, (float) direction.z, maxLength, cacheFor(repo, level));
+        DhApiResult<DhApiRaycastResult> result = repo.raycast(level, start.x, start.y, start.z, (float) direction.x, (float) direction.y, (float) direction.z, maxLength,
+            cacheFor(repo, level));
         if (result == null || !result.success || result.payload == null || result.payload.dataPoint == null || result.payload.pos == null)
             return OptionalDouble.empty();
 
-        double distance = skipped
-            + DistantRaycastMath.entryDistance(start, direction, result.payload.pos.x, result.payload.dataPoint.bottomYBlockPos, result.payload.dataPoint.topYBlockPos, result.payload.pos.z);
+        double distance = skipped + DistantRaycastMath.entryDistance(start, direction, result.payload.pos.x, result.payload.dataPoint.bottomYBlockPos,
+            result.payload.dataPoint.topYBlockPos, result.payload.pos.z);
         return distance <= maxDistance ? OptionalDouble.of(distance) : OptionalDouble.empty();
     }
 

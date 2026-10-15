@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui.options;
 
 import com.flansmodultimate.config.ModClientConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 
 /** The client's own config: written straight to its file, with the changes taking effect immediately. */
 public class ClientConfigTarget implements ConfigTarget
@@ -13,23 +14,23 @@ public class ClientConfigTarget implements ConfigTarget
     }
 
     @Override
-    public Object get(ModConfigSpec.ConfigValue<?> value)
+    public Object get(ConfigValue<?> value)
     {
         return value.get();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void set(ModConfigSpec.ConfigValue<?> value, Object newValue)
+    public void set(ConfigValue<?> value, Object newValue)
     {
-        ModClientConfig.setAndSave((ModConfigSpec.ConfigValue<Object>) value, newValue);
+        ModClientConfig.setAndSave((ConfigValue<Object>) value, newValue);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void setWhileDragging(ModConfigSpec.ConfigValue<?> value, Object newValue)
+    public void setWhileDragging(ConfigValue<?> value, Object newValue)
     {
-        ModClientConfig.set((ModConfigSpec.ConfigValue<Object>) value, newValue);
+        ModClientConfig.set((ConfigValue<Object>) value, newValue);
     }
 
     @Override

@@ -1,9 +1,8 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.content.ContentPack;
-import org.junit.jupiter.api.Test;
-
 import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.List;

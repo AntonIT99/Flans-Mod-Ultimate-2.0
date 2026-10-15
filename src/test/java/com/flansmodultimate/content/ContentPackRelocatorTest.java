@@ -37,7 +37,8 @@ class ContentPackRelocatorTest
     @Test
     void recognizesUnprocessedLegacyPackWithoutGeneratedAssets() throws Exception
     {
-        Path archive = createArchive(tempDir.resolve("legacy-pack.jar"), Map.of("guns/LegacyGun.txt", "ShortName LegacyGun", "models/ModelLegacyGun.java", "class ModelLegacyGun {}"));
+        Path archive = createArchive(tempDir.resolve("legacy-pack.jar"),
+            Map.of("guns/LegacyGun.txt", "ShortName LegacyGun", "models/ModelLegacyGun.java", "class ModelLegacyGun {}"));
 
         assertEquals(ContentPackRelocator.ArchiveKind.CONTENT_PACK, ContentPackRelocator.classify(archive));
     }
@@ -81,7 +82,8 @@ class ContentPackRelocatorTest
     {
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path flan = Files.createDirectory(tempDir.resolve("flan"));
-        Path unrelatedMod = createArchive(mods.resolve("unrelated.jar"), Map.of("META-INF/mods.toml", "modLoader=\"javafml\"", "assets/flansmod/textures/items/compatibility.png", "png"));
+        Path unrelatedMod = createArchive(mods.resolve("unrelated.jar"),
+            Map.of("META-INF/mods.toml", "modLoader=\"javafml\"", "assets/flansmod/textures/items/compatibility.png", "png"));
         Path ambiguous = createArchive(mods.resolve("ambiguous.zip"), Map.of("guns/notes.txt", "not enough evidence"));
 
         ContentPackRelocator.RelocationResult result = reconcile(mods, flan);

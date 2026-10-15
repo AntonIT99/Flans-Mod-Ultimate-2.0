@@ -8,6 +8,7 @@ import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,7 +57,7 @@ public final class ModApocalypseConfig
 
     static
     {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        Builder builder = new Builder();
         builder.push(APOCALYPSE_CONFIG_SECTION);
         APOCALYPSE_ENABLED = builder.comment("Master switch for integrated Flan's Mod Apocalypse content and server-side behavior.").define("apocalypseEnabled", true);
         APOCALYPSE_DIMENSION_ENABLED = builder.comment("Register and auto-enable the built-in Apocalypse dimension datapack during world loading.",

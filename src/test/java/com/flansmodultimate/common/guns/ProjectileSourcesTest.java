@@ -150,7 +150,8 @@ class ProjectileSourcesTest
 
         void overrides(String... lines)
         {
-            ammoOverrides = AmmoOverrides.read(new TypeFile("syntheticPlatform", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "sources")), List.of(lines))).overrides();
+            ammoOverrides = AmmoOverrides
+                .read(new TypeFile("syntheticPlatform", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "sources")), List.of(lines))).overrides();
         }
     }
 }
