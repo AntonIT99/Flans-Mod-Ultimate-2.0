@@ -41,6 +41,10 @@ Damage 50
 // Optics
 Scope mwemp4
 ZoomLevel 8.0
+HasVariableZoom True
+MinZoom 2
+MaxZoom 8
+ZoomAugment 1
 FOVZoomLevel 1.0
 
 // Attachments

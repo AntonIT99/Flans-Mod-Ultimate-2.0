@@ -18,6 +18,10 @@ AttachmentType sights
 
 // Weapons
 ZoomLevel 2.5
+HasVariableZoom True
+MinZoom 1
+MaxZoom 2.5
+ZoomAugment 0.5
 
 // Ballistics and Damage
 SpreadMultiplier 0.5

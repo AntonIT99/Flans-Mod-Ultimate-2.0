@@ -29,18 +29,66 @@ class ScopeZoomTest
         assertEquals(4F, ScopeZoom.next(6F, invalidAugment, true));
     }
 
+    @Test
+    void maximumUsesNormalizedFiniteBounds()
+    {
+        assertEquals(40F, ScopeZoom.maximum(scope(1F, 40F, 1F)));
+        assertEquals(8F, ScopeZoom.maximum(scope(8F, 2F, 1F)));
+        assertEquals(2F, ScopeZoom.maximum(scope(2F, Float.NaN, 1F)));
+        assertEquals(1F, ScopeZoom.maximum(scope(Float.NaN, Float.POSITIVE_INFINITY, 1F)));
+    }
+
     private static IScope scope(float min, float max, float augment)
     {
         return new IScope()
         {
-            @Override public float getFovFactor() { return 1F; }
-            @Override public float getZoomFactor() { return min; }
-            @Override public boolean hasVariableZoom() { return true; }
-            @Override public float getMinZoom() { return min; }
-            @Override public float getMaxZoom() { return max; }
-            @Override public float getZoomAugment() { return augment; }
-            @Override public boolean hasZoomOverlay() { return false; }
-            @Override public ResourceLocation getZoomOverlay() { return ResourceLocation.fromNamespaceAndPath("minecraft", "empty"); }
+            @Override
+            public float getFovFactor()
+            {
+                return 1F;
+            }
+
+            @Override
+            public float getZoomFactor()
+            {
+                return min;
+            }
+
+            @Override
+            public boolean hasVariableZoom()
+            {
+                return true;
+            }
+
+            @Override
+            public float getMinZoom()
+            {
+                return min;
+            }
+
+            @Override
+            public float getMaxZoom()
+            {
+                return max;
+            }
+
+            @Override
+            public float getZoomAugment()
+            {
+                return augment;
+            }
+
+            @Override
+            public boolean hasZoomOverlay()
+            {
+                return false;
+            }
+
+            @Override
+            public ResourceLocation getZoomOverlay()
+            {
+                return ResourceLocation.fromNamespaceAndPath("minecraft", "empty");
+            }
         };
     }
 }
