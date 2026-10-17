@@ -789,7 +789,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return scope.getZoomFactor();
 
         CompoundTag tag = ItemStackData.copy(gun);
-        float current = tag.contains(NBT_CURRENT_ZOOM, Tag.TAG_FLOAT) ? tag.getFloat(NBT_CURRENT_ZOOM) : ScopeZoom.minimum(scope);
+        float current = tag.contains(NBT_CURRENT_ZOOM, Tag.TAG_FLOAT) ? tag.getFloat(NBT_CURRENT_ZOOM) : ScopeZoom.maximum(scope);
         return ScopeZoom.clamp(current, scope);
     }
 

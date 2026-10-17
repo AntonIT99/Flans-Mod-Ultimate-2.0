@@ -21,9 +21,7 @@ public final class ScopeZoom
     public static float clamp(float zoom, IScope scope)
     {
         float min = minimum(scope);
-        float first = finitePositive(scope.getMinZoom(), 1F);
-        float second = finitePositive(scope.getMaxZoom(), first);
-        float max = Math.max(first, second);
+        float max = maximum(scope);
         return Mth.clamp(Float.isFinite(zoom) ? zoom : min, min, max);
     }
 
@@ -32,6 +30,13 @@ public final class ScopeZoom
         float first = finitePositive(scope.getMinZoom(), 1F);
         float second = finitePositive(scope.getMaxZoom(), first);
         return Math.min(first, second);
+    }
+
+    public static float maximum(IScope scope)
+    {
+        float first = finitePositive(scope.getMinZoom(), 1F);
+        float second = finitePositive(scope.getMaxZoom(), first);
+        return Math.max(first, second);
     }
 
     private static float finitePositive(float value, float fallback)

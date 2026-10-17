@@ -2313,6 +2313,7 @@
             "ww2binoculars",
             "binoculars",
             "binoculars10x",
+            "wolffbinoculars",
             "dixiebugle",
             "binos"
         ]
@@ -5671,7 +5672,12 @@
             "romanauxiliashield",
             "policeshield",
             "mwriotshield",
-            "zomriotshield"
+            "zomriotshield",
+            "romanscutumrepublican",
+            "romanscutumimperial",
+            "romanscutumoval",
+            "romanparma",
+            "romanparmula"
         ]
     },
 
@@ -5687,7 +5693,10 @@
             "boetianshield",
             "sparabara",
             "romanlegionaryshield",
-            "romanhastatishield"
+            "romanhastatishield",
+            "romanscutumrepublican",
+            "romanscutumimperial",
+            "romanscutumoval"
         ]
     },
 
@@ -5699,7 +5708,8 @@
         "items": [
             "romanauxiliashield",
             "roundshieldslav",
-            "skirmishshield"
+            "skirmishshield",
+            "romanparma"
         ]
     },
 
@@ -5722,7 +5732,8 @@
             "ShieldMaxBlockableMeleeDamage": 10
         },
         "items": [
-            "parma"
+            "parma",
+            "romanparmula"
         ]
     },
 

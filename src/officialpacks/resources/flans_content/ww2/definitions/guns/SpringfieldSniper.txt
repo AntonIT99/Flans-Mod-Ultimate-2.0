@@ -38,9 +38,12 @@ Dispersion 0.13
 Damage 18
 
 // Optics
-Scope wwiispringfieldsniper
+Scope official_ww2_american
 ZoomLevel 2.5
 FOVZoomLevel 1.0
+
+// Attachments
+NumGenericAttachmentSlots 1
 
 // Sounds
 ShootSound springfieldShoot

@@ -26,6 +26,10 @@ Accuracy 0
 Damage 0
 
 // Optics
-Scope officialpacks_binoculars
+Scope official_mwbinoculars
 ZoomLevel 16
+HasVariableZoom True
+MinZoom 2
+MaxZoom 16
+ZoomAugment 1
 FOVZoomLevel 1.0

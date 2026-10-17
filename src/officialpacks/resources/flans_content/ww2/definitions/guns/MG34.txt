@@ -33,6 +33,9 @@ Damage 3
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound MG42Shoot
 DistortSound True

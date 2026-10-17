@@ -43,6 +43,9 @@ Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound TrenchGunShoot
 ReloadSound TrenchGunReload

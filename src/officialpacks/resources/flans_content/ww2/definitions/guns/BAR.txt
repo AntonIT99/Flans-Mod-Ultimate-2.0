@@ -40,6 +40,9 @@ Damage 10
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound BARShoot
 ReloadSound BARReload

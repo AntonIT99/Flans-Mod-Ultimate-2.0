@@ -41,6 +41,9 @@ Damage 7
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 ShootSound m1garandShoot
 ReloadSound m1garandReload

@@ -39,6 +39,10 @@ Damage 21
 // Optics
 Scope winchesterModel70
 ZoomLevel 4.5
+HasVariableZoom True
+MinZoom 1.5
+MaxZoom 4.5
+ZoomAugment 0.5
 FOVZoomLevel 1.0
 
 // Attachments

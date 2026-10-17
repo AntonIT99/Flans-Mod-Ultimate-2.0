@@ -36,6 +36,9 @@ Damage 25
 // Optics
 Scope None
 
+// Attachments
+NumGenericAttachmentSlots 1
+
 // Sounds
 DistortSound False
 ShootSound 50CalShoot

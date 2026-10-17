@@ -26,6 +26,10 @@ Recoil 2
 ReloadTime 40
 Scope GUI_WH40K_M36LasgunScope
 ZoomLevel 3.0
+HasVariableZoom True
+MinZoom 1
+MaxZoom 3
+ZoomAugment 0.5
 FOVZoomLevel 1.0
 RoundsPerMin 600.0
 Dispersion 0.22
