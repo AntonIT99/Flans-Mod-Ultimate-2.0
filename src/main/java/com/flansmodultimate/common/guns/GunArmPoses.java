@@ -192,6 +192,12 @@ public final class GunArmPoses
         return item == HandItem.GUN || item == HandItem.SHIELD;
     }
 
+    /** Main-hand attacks leave a player's held off-hand shield at its pre-attack pose, on both sides. */
+    public static boolean keepsOffhandShieldRaised(LivingEntity entity)
+    {
+        return entity instanceof Player && entity.swingingArm != InteractionHand.OFF_HAND && entity.getOffhandItem().getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield();
+    }
+
     /** Whether the entity's guns are raised only while active, from the server's rules and the player's choice. */
     public static boolean isDynamic(LivingEntity entity)
     {

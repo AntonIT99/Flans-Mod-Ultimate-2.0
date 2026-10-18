@@ -468,13 +468,21 @@ public class PlayerSnapshot
         if (attackArm == HumanoidArm.LEFT)
             body.yRot *= -1F;
 
-        rightArm.z = Mth.sin(body.yRot) * 5F;
-        rightArm.x = -Mth.cos(body.yRot) * 5F;
-        leftArm.z = -Mth.sin(body.yRot) * 5F;
-        leftArm.x = Mth.cos(body.yRot) * 5F;
-        rightArm.yRot += body.yRot;
-        leftArm.yRot += body.yRot;
-        leftArm.xRot += body.yRot;
+        // HumanoidModelMixin restores the non-attacking shield arm after vanilla animates it.
+        boolean keepShieldRaised = GunArmPoses.keepsOffhandShieldRaised(p);
+        if (!keepShieldRaised || attackArm == HumanoidArm.RIGHT)
+        {
+            rightArm.z = Mth.sin(body.yRot) * 5F;
+            rightArm.x = -Mth.cos(body.yRot) * 5F;
+            rightArm.yRot += body.yRot;
+        }
+        if (!keepShieldRaised || attackArm == HumanoidArm.LEFT)
+        {
+            leftArm.z = -Mth.sin(body.yRot) * 5F;
+            leftArm.x = Mth.cos(body.yRot) * 5F;
+            leftArm.yRot += body.yRot;
+            leftArm.xRot += body.yRot;
+        }
 
         float swing = 1F - attackTime;
         swing *= swing;

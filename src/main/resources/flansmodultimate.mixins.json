@@ -21,6 +21,7 @@
     "EntityRendererMixin",
     "ForceDarkLightMixin",
     "HumanoidArmorLayerMixin",
+    "HumanoidModelMixin",
     "KeyMappingConflictMixin",
     "LivingEntityNameTagRangeMixin",
     "MountedRiderTurnMixin",

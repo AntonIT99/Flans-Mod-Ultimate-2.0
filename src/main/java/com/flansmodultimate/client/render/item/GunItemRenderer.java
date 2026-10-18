@@ -232,10 +232,10 @@ public final class GunItemRenderer
 
         poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 
-        // The left arm is placed 1.12 blocks left of the right one, which is +Z here. Its gun keeps its own hip
-        // position and slides across that distance while aiming, ending in the right-hand gun's sight picture.
+        // Vanilla places the arms symmetrically. Reverse the shared lateral offset for the left gun,
+        // keeping the same depth and height and bringing either arm's sights to the center while aiming.
         if (leftHand)
-            poseStack.translate(0.5F * (1F - adsSwitch), 0F, 0.31F + 0.81F * adsSwitch);
+            poseStack.translate(0F, 0F, 0.31F + 0.81F * adsSwitch);
 
         poseStack.mulPose(Axis.ZP.rotationDegrees(-5F * adsSwitch));
         poseStack.translate(-0.25F, -0.05F + 0.175F * adsSwitch, -0.155F - 0.405F * adsSwitch);
