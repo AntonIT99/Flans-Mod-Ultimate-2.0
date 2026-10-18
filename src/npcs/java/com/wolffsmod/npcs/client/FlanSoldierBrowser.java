@@ -42,6 +42,9 @@ public final class FlanSoldierBrowser
     private List<IContentPack> packs = List.of();
     private List<ITeam> teams = List.of();
     private List<? extends IPlayerClass> classes = List.of();
+    @Nullable
+    private IPlayerClass variantClass;
+    private List<SkinOverrideVariant> skins = List.of();
 
     /** How a class skin is laid out, which decides the human model it fits. */
     enum SkinLayout
@@ -57,6 +60,8 @@ public final class FlanSoldierBrowser
     /** @return the rows of the current level, below the back row */
     public List<String> labels()
     {
+        if (variantClass != null)
+            return skins.stream().map(SkinOverrideVariant::name).toList();
         if (team != null)
         {
             classes = team.getClasses();
@@ -76,7 +81,9 @@ public final class FlanSoldierBrowser
     /** @return whether the browser is still inside the folder; false when the back row left it */
     public boolean back()
     {
-        if (team != null)
+        if (variantClass != null)
+            variantClass = null;
+        else if (team != null)
             team = null;
         else if (pack != null)
             pack = null;
@@ -94,8 +101,22 @@ public final class FlanSoldierBrowser
      */
     public Optional<FlanSoldierSelection> open(int row)
     {
+        if (row < 0)
+            return Optional.empty();
+        if (variantClass != null)
+            return row < skins.size() ? Optional.of(new FlanSoldierSelection(team, variantClass, row)) : Optional.empty();
         if (team != null)
-            return row < classes.size() ? Optional.of(new FlanSoldierSelection(team, classes.get(row))) : Optional.empty();
+        {
+            if (row >= classes.size())
+                return Optional.empty();
+            IPlayerClass selected = classes.get(row);
+            if (selected.getSkinOverrideVariants().size() > 1)
+            {
+                variantClass = selected;
+                skins = selected.getSkinOverrideVariants();
+            }
+            return Optional.of(new FlanSoldierSelection(team, selected));
+        }
         if (pack != null && row < teams.size())
             team = teams.get(row);
         else if (pack == null && row < packs.size())
@@ -106,7 +127,17 @@ public final class FlanSoldierBrowser
     /** @return the row of the selected class at the level listing it, or -1 */
     public int selectedRow(@Nullable FlanSoldierSelection selection)
     {
-        return team == null || selection == null || selection.team() != team ? -1 : classes.indexOf(selection.playerClass());
+        if (team == null || selection == null || selection.team() != team)
+            return -1;
+        if (variantClass == null)
+            return classes.indexOf(selection.playerClass());
+        return selection.playerClass() == variantClass ? selection.skin() : -1;
+    }
+
+    /** Whether this level lists the skins of one class, as the vehicle picker lists paintjobs. */
+    public boolean browsingSkins()
+    {
+        return variantClass != null;
     }
 
     /**
@@ -115,7 +146,8 @@ public final class FlanSoldierBrowser
      */
     public static void select(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
     {
-        ResourceLocation skin = applyClassSkin ? selection.playerClass().getSkinOverrideTexture() : null;
+        List<SkinOverrideVariant> variants = selection.playerClass().getSkinOverrideVariants();
+        ResourceLocation skin = applyClassSkin && selection.skin() < variants.size() ? variants.get(selection.skin()).texture() : null;
         SkinLayout layout = layout(skin);
         ResourceLocation legacyModel = BuiltInRegistries.ENTITY_TYPE.getKey(CustomEntities.entityNPC64x32);
         boolean legacy = layout == SkinLayout.LEGACY || layout == SkinLayout.NONE && Objects.equals(screen.playerdata.getEntityName(), legacyModel);

@@ -190,7 +190,7 @@ public final class TeamsManager
     private TeamsSavedData savedData;
     private final Map<UUID, ITeamBase> liveBases = new HashMap<>();
     private final Map<UUID, Integer> outOfBoundsSeconds = new HashMap<>();
-    private Map<UUID, String> lastSyncedPlayerClassSkins = Map.of();
+    private Map<UUID, PlayerClassSkin> lastSyncedPlayerClassSkins = Map.of();
     private final Map<UUID, ITeamObject> liveObjects = new HashMap<>();
     private final Map<String, Integer> teamScores = new LinkedHashMap<>();
     @Getter
@@ -1869,12 +1869,13 @@ public final class TeamsManager
     {
         if (server == null)
             return;
-        Map<UUID, String> current = new HashMap<>();
+        Map<UUID, PlayerClassSkin> current = new HashMap<>();
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
-            PlayerClass playerClass = PlayerData.getInstance(player).getPlayerClass();
-            if (playerClass != null && !playerClass.getSkinOverride().isBlank())
-                current.put(player.getUUID(), playerClass.getShortName());
+            PlayerData data = PlayerData.getInstance(player);
+            PlayerClass playerClass = data.getPlayerClass();
+            if (playerClass != null && data.getPlayerClassSkin() >= 0)
+                current.put(player.getUUID(), new PlayerClassSkin(playerClass.getShortName(), data.getPlayerClassSkin()));
         }
         if (!force && current.equals(lastSyncedPlayerClassSkins))
             return;

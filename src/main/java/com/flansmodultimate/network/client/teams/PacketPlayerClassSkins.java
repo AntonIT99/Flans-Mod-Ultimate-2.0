@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.client.teams;
 
+import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
@@ -15,9 +16,9 @@ import java.util.*;
 @NoArgsConstructor
 public class PacketPlayerClassSkins implements IClientPacket
 {
-    private Map<UUID, String> playerClasses = Map.of();
+    private Map<UUID, PlayerClassSkin> playerClasses = Map.of();
 
-    public PacketPlayerClassSkins(Map<UUID, String> playerClasses)
+    public PacketPlayerClassSkins(Map<UUID, PlayerClassSkin> playerClasses)
     {
         this.playerClasses = playerClasses;
     }
@@ -29,7 +30,8 @@ public class PacketPlayerClassSkins implements IClientPacket
         playerClasses.forEach((uuid, playerClass) ->
         {
             data.writeUUID(uuid);
-            data.writeUtf(playerClass);
+            data.writeUtf(playerClass.playerClass());
+            data.writeVarInt(playerClass.variant());
         });
     }
 
@@ -37,9 +39,9 @@ public class PacketPlayerClassSkins implements IClientPacket
     public void decodeInto(PacketBuffer data)
     {
         int count = data.readVarInt();
-        Map<UUID, String> decoded = new HashMap<>(count);
+        Map<UUID, PlayerClassSkin> decoded = new HashMap<>(count);
         for (int i = 0; i < count; i++)
-            decoded.put(data.readUUID(), data.readUtf());
+            decoded.put(data.readUUID(), new PlayerClassSkin(data.readUtf(), data.readVarInt()));
         playerClasses = decoded;
     }
 

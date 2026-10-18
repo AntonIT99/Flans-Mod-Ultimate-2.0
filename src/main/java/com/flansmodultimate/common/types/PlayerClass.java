@@ -1,13 +1,13 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.api.IPlayerClass;
+import com.flansmodultimate.api.SkinOverrideVariant;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.item.ItemStackData;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.util.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +45,8 @@ public class PlayerClass extends InfoType implements IPlayerClass
     /** Client-side location of the SkinOverride texture, before it is checked against the player model. */
     @Getter @Nullable
     private ResourceLocation skinOverrideTexture;
+    @Getter
+    private List<SkinOverrideVariant> skinOverrideVariants = List.of();
     private final Map<EquipmentSlot, String> armour = new LinkedHashMap<>();
     private List<StartingItem> startingItems = List.of();
     private List<ItemStack> previewItems;
@@ -67,7 +69,9 @@ public class PlayerClass extends InfoType implements IPlayerClass
         classLimitPercent = readValue("ClassLimitPercentage", classLimitPercent, file);
         classLimitPercent = Float.isFinite(classLimitPercent) ? Math.max(-1F, Math.min(100F, classLimitPercent)) : -1F;
         // Legacy packs write skin names like "Zombie"; texture paths must be sanitized
-        skinOverride = readResource("SkinOverride", skinOverride, file);
+        skinOverrideVariants = readValuesInLines("SkinOverride", file, 1).orElse(List.of()).stream().flatMap(Arrays::stream).map(ResourceUtils::sanitize).filter(StringUtils::isNotBlank).distinct()
+            .map(name -> new SkinOverrideVariant(name, null)).toList();
+        skinOverride = skinOverrideVariants.isEmpty() ? StringUtils.EMPTY : skinOverrideVariants.get(0).name();
         readArmour(file, EquipmentSlot.HEAD, "Hat", "Helmet");
         // Body is the spelling ArmorType has always accepted for the chest slot.
         readArmour(file, EquipmentSlot.CHEST, "Chest", "Top", "Body");
@@ -92,7 +96,8 @@ public class PlayerClass extends InfoType implements IPlayerClass
     protected void readClient(TypeFile file)
     {
         super.readClient(file);
-        skinOverrideTexture = StringUtils.isBlank(skinOverride) ? null : loadTexture(skinOverride, this);
+        skinOverrideVariants = skinOverrideVariants.stream().map(skin -> new SkinOverrideVariant(skin.name(), loadTexture(skin.name(), this))).toList();
+        skinOverrideTexture = skinOverrideVariants.isEmpty() ? null : skinOverrideVariants.get(0).texture();
     }
 
     /** Later names win, so a definition listing several spellings keeps the last one authored. */
