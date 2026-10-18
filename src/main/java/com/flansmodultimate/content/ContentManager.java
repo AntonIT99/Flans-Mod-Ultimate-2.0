@@ -66,8 +66,6 @@ public class ContentManager
     @Getter
     private static final Map<IContentProvider, Map<String, DynamicReference>> shortnameReferences = new HashMap<>();
 
-    private static final String CONTENT_STARTUP_LOCK_FILE = ".flansmod-content.lock";
-
     private static final List<IContentProvider> contentPacks = new ArrayList<>();
     private static final Map<IContentProvider, ArrayList<InfoType>> configs = new HashMap<>();
     private static final Map<IContentProvider, String> generationInputs = new HashMap<>();
@@ -100,7 +98,7 @@ public class ContentManager
 
         Path gameDir = PlatformPaths.gameDir().toAbsolutePath().normalize();
         Path normalizedFlanFolder = flanFolder.toAbsolutePath().normalize();
-        FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan cache migration", () -> ModCachePaths.migrate(gameDir));
+        FileUtils.runWithFileLock(ModCachePaths.contentStartupLock(gameDir), "Flan cache migration", () -> ModCachePaths.migrate(gameDir));
         boolean isGameDirectory = normalizedFlanFolder.equals(gameDir);
         try
         {
@@ -176,7 +174,7 @@ public class ContentManager
             return;
         }
 
-        FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan content startup", ContentManager::readContentPacksLocked);
+        FileUtils.runWithFileLock(ModCachePaths.contentStartupLock(PlatformPaths.gameDir()), "Flan content startup", ContentManager::readContentPacksLocked);
     }
 
     public static Path resolveFlanFolderPath()
