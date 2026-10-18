@@ -12,7 +12,8 @@ public final class ModCachePaths
     public static final String DIRECTORY_NAME = ".flansmod-cache";
     public static final String PACK_LOCATIONS_FILE_NAME = "pack-locations.json";
 
-    private ModCachePaths() {}
+    private ModCachePaths()
+    {}
 
     public static Path root()
     {
@@ -22,6 +23,12 @@ public final class ModCachePaths
     public static Path root(Path gameDir)
     {
         return gameDir.resolve(DIRECTORY_NAME);
+    }
+
+    /** Stable coordination file; never move or delete it while content startup may be running. */
+    public static Path contentStartupLock(Path gameDir)
+    {
+        return root(gameDir).resolve("content-startup.lock");
     }
 
     /** Generation state and asset, sound and model-source indexes of the content packs, one subfolder per kind. */
