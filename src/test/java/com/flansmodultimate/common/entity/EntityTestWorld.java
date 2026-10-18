@@ -66,7 +66,7 @@ final class EntityTestWorld implements AutoCloseable
         when(level.getMinBuildHeight()).thenReturn(-64);
         when(level.getMaxBuildHeight()).thenReturn(320);
         when(level.isPositionEntityTicking(any())).thenReturn(true);
-        when(level.getBlockState(any())).thenAnswer(call -> blocks.getOrDefault(call.getArgument(0), Blocks.AIR.defaultBlockState()));
+        when(level.getBlockState(any())).thenAnswer(call -> blocks.getOrDefault(call.getArgument(0, BlockPos.class), Blocks.AIR.defaultBlockState()));
         when(level.getFluidState(any())).thenAnswer(call -> level.getBlockState(call.getArgument(0)).getFluidState());
         doCallRealMethod().when(level).clip(any(ClipContext.class));
         doCallRealMethod().when(level).clipWithInteractionOverride(any(), any(), any(), any(), any());
