@@ -62,11 +62,14 @@ public final class ItemStackData
         return (CompoundTag) stack.save(registries, new CompoundTag());
     }
 
-    // Part of the cross-version platform signature; other loader versions use the parameter.
-    @SuppressWarnings("java:S1172")
+    /** Saves into the supplied tag while preserving caller metadata such as inventory slot indices. */
+    @SuppressWarnings("DataFlowIssue") // Each key comes from the unchanged saved compound, so its value is non-null.
     public static void save(ItemStack stack, HolderLookup.Provider registries, CompoundTag target)
     {
-        stack.save(registries, target);
+        // The 1.21 codec returns a new compound instead of mutating its input.
+        CompoundTag saved = (CompoundTag) stack.save(registries, target);
+        for (String key : saved.getAllKeys())
+            target.put(key, saved.get(key));
     }
 
     // Part of the cross-version platform signature; other loader versions use the parameter.
