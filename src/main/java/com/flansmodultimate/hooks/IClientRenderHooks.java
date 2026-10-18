@@ -2,6 +2,7 @@ package com.flansmodultimate.hooks;
 
 import com.flansmodultimate.client.render.hud.KillMessageData;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
+import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
@@ -121,7 +122,7 @@ public interface IClientRenderHooks
 
     void playBulletFlyby(String sound, Vec3 position);
 
-    void updatePlayerClassSkins(Map<UUID, String> playerClasses);
+    void updatePlayerClassSkins(Map<UUID, PlayerClassSkin> playerClasses);
 
     void addKillMessage(KillMessageData message);
 }

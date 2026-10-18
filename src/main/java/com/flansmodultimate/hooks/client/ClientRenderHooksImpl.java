@@ -17,6 +17,7 @@ import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
+import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.IClientRenderHooks;
@@ -378,7 +379,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
-    public void updatePlayerClassSkins(Map<UUID, String> playerClasses)
+    public void updatePlayerClassSkins(Map<UUID, PlayerClassSkin> playerClasses)
     {
         PlayerSkinOverrides.setPlayerClasses(playerClasses);
     }

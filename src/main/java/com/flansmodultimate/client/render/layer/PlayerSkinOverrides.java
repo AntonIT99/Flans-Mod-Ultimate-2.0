@@ -1,6 +1,8 @@
 package com.flansmodultimate.client.render.layer;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.SkinOverrideVariant;
+import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.FlansLog;
@@ -47,13 +49,13 @@ public final class PlayerSkinOverrides
     private static final int OPAQUE_ALPHA_THRESHOLD = 128;
     private static final int ALPHA_MASK = 0xFF000000;
 
-    private static final AtomicReference<Map<UUID, String>> classByPlayer = new AtomicReference<>(Map.of());
-    private static final Map<String, Optional<ResourceLocation>> VALIDATED = new ConcurrentHashMap<>();
+    private static final AtomicReference<Map<UUID, PlayerClassSkin>> classByPlayer = new AtomicReference<>(Map.of());
+    private static final Map<PlayerClassSkin, Optional<ResourceLocation>> VALIDATED = new ConcurrentHashMap<>();
     /** Locations of the sheets this class generated, so they can be handed back to the texture manager. */
     private static final Set<ResourceLocation> CONVERTED = ConcurrentHashMap.newKeySet();
 
     /** Replaces the known player class assignments with the set just received from the server. */
-    public static void setPlayerClasses(Map<UUID, String> classes)
+    public static void setPlayerClasses(Map<UUID, PlayerClassSkin> classes)
     {
         classByPlayer.set(classes.isEmpty() ? Map.of() : Map.copyOf(classes));
     }
@@ -96,7 +98,7 @@ public final class PlayerSkinOverrides
         if (!ModClientConfig.get().enablePlayerClassSkinOverrides)
             return null;
 
-        String playerClass = classByPlayer.get().get(player.getUUID());
+        PlayerClassSkin playerClass = classByPlayer.get().get(player.getUUID());
         if (playerClass == null || !usesStandardPlayerModel(renderer))
             return null;
         return VALIDATED.computeIfAbsent(playerClass, PlayerSkinOverrides::validate).orElse(null);
@@ -111,20 +113,22 @@ public final class PlayerSkinOverrides
         return renderer != null && renderer.getClass() == PlayerRenderer.class && ((PlayerRenderer) renderer).getModel().getClass() == PlayerModel.class;
     }
 
-    private static Optional<ResourceLocation> validate(String playerClassName)
+    private static Optional<ResourceLocation> validate(PlayerClassSkin assignment)
     {
+        String playerClassName = assignment.playerClass();
         PlayerClass playerClass = PlayerClass.getPlayerClass(playerClassName);
-        if (playerClass == null)
+        if (playerClass == null || assignment.variant() < 0 || assignment.variant() >= playerClass.getSkinOverrideVariants().size())
             return Optional.empty();
 
-        ResourceLocation texture = playerClass.getSkinOverrideTexture();
+        SkinOverrideVariant variant = playerClass.getSkinOverrideVariants().get(assignment.variant());
+        ResourceLocation texture = variant.texture();
         if (texture == null || texture.getPath().isEmpty())
             return Optional.empty();
 
         Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(texture);
         if (resource.isEmpty())
         {
-            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} was not found", playerClass.getSkinOverride(), playerClassName, texture);
+            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} was not found", variant.name(), playerClassName, texture);
             return Optional.empty();
         }
 
@@ -143,12 +147,12 @@ public final class PlayerSkinOverrides
                     return Optional.of(convertLegacySkin(texture, image, scale));
             }
             FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: {}x{} is not a player skin layout" + " (expected a square sheet, or a 2:1 sheet for the old skin format,"
-                + " sized in multiples of {} pixels)", playerClass.getSkinOverride(), playerClassName, width, height, SKIN_WIDTH);
+                + " sized in multiples of {} pixels)", variant.name(), playerClassName, width, height, SKIN_WIDTH);
             return Optional.empty();
         }
         catch (IOException | IllegalArgumentException exception)
         {
-            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} could not be read: {}", playerClass.getSkinOverride(), playerClassName, texture, exception.getMessage());
+            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} could not be read: {}", variant.name(), playerClassName, texture, exception.getMessage());
             return Optional.empty();
         }
     }

@@ -48,8 +48,21 @@ public interface IPlayerClass extends IContentType
      * always answers null. The texture is not checked: it may be missing, and it may use either
      * the square player skin layout or the old 2:1 one.
      *
-     * @return the skin texture the class declares, or null when it declares none
+     * @return the first skin texture the class declares, or null when it declares none
      */
     @Nullable
     ResourceLocation getSkinOverrideTexture();
+
+    /**
+     * The available skins in definition order. Readable on either side after content loading;
+     * texture locations are only resolved on the client and are not validated. The returned
+     * list is unmodifiable. Players receive a random variant on each class application.
+     *
+     * @return all declared skins, or an empty list when none are declared
+     */
+    default List<SkinOverrideVariant> getSkinOverrideVariants()
+    {
+        ResourceLocation texture = getSkinOverrideTexture();
+        return texture == null ? List.of() : List.of(new SkinOverrideVariant(texture.toString(), texture));
+    }
 }

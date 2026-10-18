@@ -26,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class PlayerData
 {
@@ -147,8 +148,11 @@ public class PlayerData
     @Getter @Setter
     private Team newTeam;
     /** The class the player is currently using */
-    @Getter @Setter
+    @Getter
     private PlayerClass playerClass;
+    /** Server-chosen skin index, stable for this life; -1 when the class has no skin. */
+    @Getter
+    private int playerClassSkin = -1;
     /** The class the player will switch to upon respawning */
     @Getter @Setter
     private PlayerClass newPlayerClass;
@@ -428,12 +432,21 @@ public class PlayerData
         score = zombieScore = kills = deaths = 0;
         team = newTeam = null;
         playerClass = newPlayerClass = null;
+        playerClassSkin = -1;
     }
 
     public void applyPendingTeamSelection()
     {
         team = newTeam;
-        playerClass = newPlayerClass;
+        setPlayerClass(newPlayerClass);
+    }
+
+    /** Applies a class and chooses its skin once, including when respawning as the same class. */
+    public void setPlayerClass(PlayerClass selectedClass)
+    {
+        playerClass = selectedClass;
+        int count = selectedClass == null ? 0 : selectedClass.getSkinOverrideVariants().size();
+        playerClassSkin = count == 0 ? -1 : ThreadLocalRandom.current().nextInt(count);
     }
 
     public static void removeServerData(UUID playerId)

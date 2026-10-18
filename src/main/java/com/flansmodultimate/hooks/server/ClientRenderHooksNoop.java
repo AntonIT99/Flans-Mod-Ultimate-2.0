@@ -2,6 +2,7 @@ package com.flansmodultimate.hooks.server;
 
 import com.flansmodultimate.client.render.hud.KillMessageData;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
+import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
@@ -180,7 +181,7 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
-    public void updatePlayerClassSkins(Map<UUID, String> playerClasses)
+    public void updatePlayerClassSkins(Map<UUID, PlayerClassSkin> playerClasses)
     {
         /* no-op */
     }
