@@ -330,6 +330,7 @@ dependencies {
 
     testImplementation platform("org.junit:junit-bom:$version_junit")
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.mockito:mockito-core:$version_mockito"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Optional client integration; the API jar only describes Distant Horizons and never ships.
