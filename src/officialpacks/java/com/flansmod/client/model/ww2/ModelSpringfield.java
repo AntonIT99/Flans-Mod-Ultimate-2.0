@@ -149,7 +149,7 @@ public class ModelSpringfield extends ModelGun {
       this.unloadClipTime = 0.0F;
       this.loadClipTime = 0.35F;
       this.untiltGunTime = 0.4F;
-      this.translateAll(0.0F, -5.0F, -0.15F);
+      this.translateAll(0.0F, -9.0F, 0.0F);
       this.thirdPersonOffset = new Vector3f(-0.2F, -0.2F, 0.01F);
       this.flipAll();
    }

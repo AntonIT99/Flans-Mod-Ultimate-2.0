@@ -9,7 +9,7 @@ DeployedModel None
 Model ww2.Springfield
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
-animMuzzleFlashPoint 1.37329 0.30212 -0.00769
+animMuzzleFlashPoint 1.37329 0.39001 0
 animFlashScale 2.84
 Texture springfield
 Paintjob springfield_acacia springfield_acacia orange 2
