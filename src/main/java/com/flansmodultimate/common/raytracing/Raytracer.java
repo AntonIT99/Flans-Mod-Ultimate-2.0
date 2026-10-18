@@ -23,6 +23,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.*;
 
@@ -315,7 +316,8 @@ public class Raytracer
         // Ray trace the bullet by comparing its next position to its current position
         Vec3 nextPosVec = posVec.add(motion);
 
-        BlockHitResult hit = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity) null));
+        // Unlike Forge 1.20.1, the 1.21.1 entity constructor dereferences a null entity.
+        BlockHitResult hit = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()));
 
         if (hit.getType() == HitResult.Type.BLOCK)
         {
