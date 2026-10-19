@@ -29,7 +29,8 @@ BulletSpeed 10.0
 
 // Damage and protection
 Damage 0
-MeleeDamage 3
+MeleeDamage 2
+MeleeSpeed 1.0
 Shield 1.0 4.0 -20.0 -8.0 1.0 32.0 16.0
 
 // Optics
