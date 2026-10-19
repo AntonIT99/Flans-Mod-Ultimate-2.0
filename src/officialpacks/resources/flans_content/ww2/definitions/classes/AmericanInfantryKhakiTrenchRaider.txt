@@ -1,0 +1,17 @@
+// Identity
+Name Trench Raider (Khaki)
+ShortName OfficialWW2_AmericanInfantryKhakiTrenchRaider
+
+// Armour
+Hat AmericanAssaultHelmet
+Chest AmericanAssaultChestKhaki
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem trenchgun
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem trenchgunAmmo 4
+AddItem coltAmmo 2

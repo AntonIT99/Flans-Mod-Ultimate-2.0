@@ -1,0 +1,18 @@
+// Identity
+Name Paratrooper (FG 42, Pea Dot)
+ShortName OfficialWW2_GermanInfantryPeaParatrooper
+
+// Armour
+Hat GermanAssaultHatPea
+Chest GermanAssaultChestPea
+Legs GermanUniformPantsPea
+Shoes GermanUniformBoots
+
+// Items
+AddItem fg42
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem Fg42Ammo 4
+AddItem lugerAmmo 2

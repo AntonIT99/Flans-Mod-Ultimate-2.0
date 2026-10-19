@@ -1,0 +1,15 @@
+// Identity
+Name Rifleman (Gewehr 43)
+ShortName W44_GermanArmyRiflemanG43
+Description Rifleman (Gewehr 43) with compatible ammunition and the national infantry kit.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_G43
+AddItem 44_G43Ammo 6
+AddItem 44_stielhandgranate 2
+AddItem 44_Bandage
+AddItem 44_C96
+AddItem 44_C96Ammo 2

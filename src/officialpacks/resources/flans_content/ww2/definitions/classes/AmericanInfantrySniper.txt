@@ -1,0 +1,18 @@
+// Identity
+Name Sniper
+ShortName OfficialWW2_AmericanInfantrySniper
+
+// Armour
+Hat AmericanSniperHelmet
+Chest AmericanSniperChest
+Legs AmericanSniperPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem springfield
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem ww2Binoculars
+AddItem springfieldAmmo 3
+AddItem coltAmmo 2

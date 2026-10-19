@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman (Gewehr 43, Leibermuster)
+ShortName OfficialWW2_GermanInfantryLeiberGewehrRifleman
+
+// Armour
+Hat GermanAssaultHat
+Chest GermanAssaultChestLeiber
+Legs GermanUniformPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem G43
+AddItem C96
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem G43Ammo 4
+AddItem C96Ammo 3

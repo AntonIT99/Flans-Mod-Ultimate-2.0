@@ -1,0 +1,14 @@
+// Identity
+Name Machine Gunner (MG 26(t))
+ShortName W44_GermanArmyMachineGunnerMG26t
+Description Machine Gunner (MG 26(t)) with compatible ammunition and an ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Mg26t
+AddItem 44_Mg26tAmmo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage

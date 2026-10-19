@@ -11,7 +11,7 @@ Texture Flamethrower
 ModelScale 1.0
 
 // Ammunition
-Ammo flamethrowerAmmo
+Ammo flamethrowerww2Ammo
 ReloadTime 50
 
 // Operation

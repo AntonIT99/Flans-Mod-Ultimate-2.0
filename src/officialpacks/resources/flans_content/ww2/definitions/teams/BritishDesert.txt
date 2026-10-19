@@ -1,5 +1,5 @@
 // Identity
-Name British
+Name British (Desert)
 ShortName britishDesertTeam
 
 // Appearance

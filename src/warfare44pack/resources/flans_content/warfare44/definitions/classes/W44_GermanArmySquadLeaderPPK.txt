@@ -1,0 +1,25 @@
+// Identity
+Name Squad Leader (PPK)
+ShortName W44_GermanArmySquadLeaderPPK
+Description Squad Leader (PPK) with a submachine gun, pistol, binoculars and smoke.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_GermanOfficerHatFeldgrau
+Chest 44_GermanOfficerChest
+Legs 44_GermanOfficerPants
+Shoes 44_GermanOfficerBoots
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 4
+AddItem 44_PPk
+AddItem 44_PPkAmmo 2
+AddItem 44_Binoculars
+AddItem 44_Smokestielhandgranate 3
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

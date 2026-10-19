@@ -6,6 +6,9 @@ Description Pilot loadout with a pistol and parachute.
 // Availability
 UnlockLevel 0
 
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_GermanFeldgrauSideCap
+
 // Items
 AddItem 44_Luger
 AddItem 44_LugerAmmo 3

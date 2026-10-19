@@ -1,0 +1,13 @@
+// Identity
+Name Automatic Rifleman (Modell 1915)
+ShortName W44_GermanArmyAutomaticRifleman1915
+Description Automatic Rifleman (Modell 1915) with compatible ammunition and the national infantry kit.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Modell1915
+AddItem 44_Modell1915Ammo 6
+AddItem 44_stielhandgranate 2
+AddItem 44_Bandage

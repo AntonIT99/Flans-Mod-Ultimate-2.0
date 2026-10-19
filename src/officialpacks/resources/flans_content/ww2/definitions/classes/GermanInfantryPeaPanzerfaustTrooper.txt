@@ -1,0 +1,18 @@
+// Identity
+Name Anti-Tank (Panzerfaust, Pea Dot)
+ShortName OfficialWW2_GermanInfantryPeaPanzerfaustTrooper
+
+// Armour
+Hat GermanEngineerHelmet
+Chest GermanEngineerChestPea
+Legs GermanUniformPantsPea
+Shoes GermanUniformBoots
+
+// Items
+AddItem kar98k
+AddItem panzerfaust
+AddItem luger
+AddItem ww2Knife
+AddItem kar98kAmmo 3
+AddItem panzerfaustAmmo 2
+AddItem lugerAmmo 2

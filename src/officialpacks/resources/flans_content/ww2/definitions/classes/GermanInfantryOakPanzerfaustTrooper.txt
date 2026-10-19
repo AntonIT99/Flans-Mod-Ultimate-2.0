@@ -1,0 +1,18 @@
+// Identity
+Name Anti-Tank (Panzerfaust, Oak Leaf)
+ShortName OfficialWW2_GermanInfantryOakPanzerfaustTrooper
+
+// Armour
+Hat GermanEngineerHelmet
+Chest GermanEngineerChestOak
+Legs GermanUniformPantsOak
+Shoes GermanUniformBoots
+
+// Items
+AddItem kar98k
+AddItem panzerfaust
+AddItem luger
+AddItem ww2Knife
+AddItem kar98kAmmo 3
+AddItem panzerfaustAmmo 2
+AddItem lugerAmmo 2

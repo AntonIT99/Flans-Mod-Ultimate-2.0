@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman (Lee-Enfield Mk III)
+ShortName W44_BritishArmyRiflemanLeeEnfieldIII
+Description Rifleman (Lee-Enfield Mk III) with compatible ammunition and the national infantry kit.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_LeeEnfield3
+AddItem 44_LeeEnfieldAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

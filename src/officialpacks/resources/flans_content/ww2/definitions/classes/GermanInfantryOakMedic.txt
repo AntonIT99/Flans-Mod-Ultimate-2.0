@@ -1,0 +1,18 @@
+// Identity
+Name Medic (Oak Leaf)
+ShortName OfficialWW2_GermanInfantryOakMedic
+
+// Armour
+Hat GermanMedicHelmet
+Chest GermanMedicChestOak
+Legs GermanUniformPantsOak
+Shoes GermanUniformBoots
+
+// Items
+AddItem kar98k
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2MedKit
+AddItem ww2Knife
+AddItem kar98kAmmo 2
+AddItem lugerAmmo 2

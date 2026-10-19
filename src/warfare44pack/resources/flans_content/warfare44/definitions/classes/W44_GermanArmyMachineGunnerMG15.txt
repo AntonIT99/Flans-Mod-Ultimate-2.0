@@ -1,0 +1,14 @@
+// Identity
+Name Machine Gunner (MG 15)
+ShortName W44_GermanArmyMachineGunnerMG15
+Description Machine Gunner (MG 15) with compatible ammunition and an ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Mg15
+AddItem 44_Mg15Ammo 4
+AddItem 44_AmmoBag
+AddItem 44_Bandage

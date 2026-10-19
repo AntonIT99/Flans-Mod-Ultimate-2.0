@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman (M1 Carbine, Khaki)
+ShortName OfficialWW2_AmericanInfantryKhakiCarbineRifleman
+
+// Armour
+Hat AmericanAssaultHelmet
+Chest AmericanAssaultChestKhaki
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem m1Carbine
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem m1CarbineAmmo 4
+AddItem coltAmmo 2

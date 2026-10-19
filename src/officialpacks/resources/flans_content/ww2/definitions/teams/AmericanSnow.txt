@@ -1,5 +1,5 @@
 // Identity
-Name American
+Name American (Snow)
 ShortName americanSnowTeam
 
 // Appearance

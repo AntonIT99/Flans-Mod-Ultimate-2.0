@@ -1,0 +1,16 @@
+// Identity
+Name Machine Gunner (MG 42, Pea Dot)
+ShortName OfficialWW2_GermanInfantryPeaMG42Gunner
+
+// Armour
+Hat GermanSupportHelmet
+Chest GermanSupportChestPea
+Legs GermanUniformPantsPea
+Shoes GermanUniformBoots
+
+// Items
+AddItem MG42Hand
+AddItem luger
+AddItem ww2Knife
+AddItem mg42Ammo50 3
+AddItem lugerAmmo 2

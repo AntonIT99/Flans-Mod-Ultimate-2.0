@@ -1,5 +1,5 @@
 // Identity
-Name Rifleman - M1941 Uniform
+Name Rifleman (M1941)
 ShortName W44_USArmyRifleman1941
 Description General infantry wearing the alternative M1941 uniform.
 

@@ -1,0 +1,17 @@
+// Identity
+Name SMG Gunner (MP 34, Swamp)
+ShortName OfficialWW2_GermanInfantrySwampMP34Gunner
+
+// Armour
+Hat GermanEngineerHelmet
+Chest GermanEngineerChestSwamp
+Legs GermanUniformPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem mp-34
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem Mp34Ammo 4
+AddItem lugerAmmo 2

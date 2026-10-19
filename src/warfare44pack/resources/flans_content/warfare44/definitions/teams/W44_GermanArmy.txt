@@ -24,3 +24,12 @@ AddClass W44_GermanArmyScout
 AddClass W44_GermanArmySquadLeader
 AddClass W44_GermanArmyTankCrew
 AddClass W44_GermanArmyPilot
+
+// Specialist weapon choices
+AddClass W44_GermanArmyRiflemanG43
+AddClass W44_GermanArmyAssaultStG44
+AddClass W44_GermanArmyMachineGunnerMG15
+AddClass W44_GermanArmyMachineGunnerMG26t
+AddClass W44_GermanArmyAutomaticRifleman1915
+AddClass W44_GermanArmySquadLeaderPPK
+AddClass W44_GermanArmyFieldMedic

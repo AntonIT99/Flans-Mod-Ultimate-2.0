@@ -1,0 +1,14 @@
+// Identity
+Name Machine Gunner (DT 28)
+ShortName W44_SovietArmyMachineGunnerDT28
+Description Machine Gunner (DT 28) with compatible ammunition and an ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_DT28
+AddItem 44_DT28Ammo 4
+AddItem 44_AmmoBag
+AddItem 44_Bandage

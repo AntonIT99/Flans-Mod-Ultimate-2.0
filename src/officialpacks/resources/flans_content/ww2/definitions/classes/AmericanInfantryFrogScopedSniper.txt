@@ -1,0 +1,17 @@
+// Identity
+Name Sniper (Scoped Springfield, Frogskin)
+ShortName OfficialWW2_AmericanInfantryFrogScopedSniper
+
+// Armour
+Hat AmericanSniperHelmet
+Chest AmericanSniperChestFrog
+Legs AmericanSniperPantsFrog
+Shoes AmericanUniformBoots
+
+// Items
+AddItem springfieldSniper
+AddItem colt
+AddItem ww2Knife
+AddItem ww2Binoculars
+AddItem springfieldAmmo 4
+AddItem coltAmmo 2
