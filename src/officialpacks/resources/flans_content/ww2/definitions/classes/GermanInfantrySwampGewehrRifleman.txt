@@ -3,7 +3,7 @@ Name Rifleman (Gewehr 43, Swamp)
 ShortName OfficialWW2_GermanInfantrySwampGewehrRifleman
 
 // Armour
-Hat GermanAssaultHatSwamp
+Hat GermanSupportHelmet
 Chest GermanAssaultChestSwamp
 Legs GermanUniformPants
 Shoes GermanUniformBoots

@@ -3,7 +3,7 @@ Name Rifleman (Gewehr 43, Splinter)
 ShortName OfficialWW2_GermanInfantrySplinterGewehrRifleman
 
 // Armour
-Hat GermanAssaultHatSplinter
+Hat GermanSupportHelmet
 Chest GermanAssaultChestSplinter
 Legs GermanUniformPants
 Shoes GermanUniformBoots

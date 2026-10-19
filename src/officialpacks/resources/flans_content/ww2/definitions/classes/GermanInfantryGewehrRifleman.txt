@@ -3,7 +3,7 @@ Name Rifleman (Gewehr 43)
 ShortName OfficialWW2_GermanInfantryGewehrRifleman
 
 // Armour
-Hat GermanAssaultHat
+Hat GermanSupportHelmet
 Chest GermanAssaultChest
 Legs GermanUniformPants
 Shoes GermanUniformBoots

@@ -3,7 +3,7 @@ Name Rifleman (Gewehr 43, Pea Dot)
 ShortName OfficialWW2_GermanInfantryPeaGewehrRifleman
 
 // Armour
-Hat GermanAssaultHatPea
+Hat GermanSupportHelmet
 Chest GermanAssaultChestPea
 Legs GermanUniformPantsPea
 Shoes GermanUniformBoots

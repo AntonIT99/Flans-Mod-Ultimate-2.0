@@ -3,7 +3,7 @@ Name Rifleman (Gewehr 43, Oak Leaf)
 ShortName OfficialWW2_GermanInfantryOakGewehrRifleman
 
 // Armour
-Hat GermanAssaultHatOak
+Hat GermanSupportHelmet
 Chest GermanAssaultChestOak
 Legs GermanUniformPantsOak
 Shoes GermanUniformBoots

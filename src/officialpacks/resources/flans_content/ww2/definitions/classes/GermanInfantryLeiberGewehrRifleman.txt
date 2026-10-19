@@ -3,7 +3,7 @@ Name Rifleman (Gewehr 43, Leibermuster)
 ShortName OfficialWW2_GermanInfantryLeiberGewehrRifleman
 
 // Armour
-Hat GermanAssaultHat
+Hat GermanSupportHelmet
 Chest GermanAssaultChestLeiber
 Legs GermanUniformPants
 Shoes GermanUniformBoots
