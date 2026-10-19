@@ -2196,7 +2196,8 @@
 
     "Baseball Bat": {
         "properties": {
-            "MeleeDamage": 7
+            "MeleeDamage": 4,
+            "MeleeSpeed": 1.2
         },
         "items": [
             "baseballbat"
@@ -2413,6 +2414,16 @@
         ]
     },
 
+    "Bronze Sword (Generic)": {
+        "properties": {
+            "MeleeDamage": 4,
+            "MeleeSpeed": 1.6
+        },
+        "items": [
+            "aegeansword"
+        ]
+    },
+
     "Browning .303 Mk II": {
         "properties": {
             "MuzzleVelocity": 750.0,
@@ -2501,7 +2512,8 @@
 
     "Cavalry Sabre (Generic)": {
         "properties": {
-            "MeleeDamage": 8
+            "MeleeDamage": 5,
+            "MeleeSpeed": 1.6
         },
         "items": [
             "cavsaber",
@@ -2511,7 +2523,8 @@
             "m1860",
             "prussiansword",
             "artillerysword",
-            "paramerion"
+            "paramerion",
+            "shamshir"
         ]
     },
 
@@ -2630,7 +2643,8 @@
 
     "Combat Knife": {
         "properties": {
-            "MeleeDamage": 6
+            "MeleeDamage": 3,
+            "MeleeSpeed": 2.0
         },
         "items": [
             "44_americankabarknife",
@@ -2948,7 +2962,8 @@
 
     "Entrenching Tool And Improvised Light Weapon (Generic)": {
         "properties": {
-            "MeleeDamage": 4
+            "MeleeDamage": 3,
+            "MeleeSpeed": 1.4
         },
         "items": [
             "etoolww1",
@@ -3348,7 +3363,8 @@
 
     "Hand Axe (Generic)": {
         "properties": {
-            "MeleeDamage": 7
+            "MeleeDamage": 7,
+            "MeleeSpeed": 1.0
         },
         "items": [
             "handaxe",
@@ -3370,7 +3386,8 @@
 
     "Hasta Velitaris": {
         "properties": {
-            "MeleeDamage": 9,
+            "MeleeDamage": 3,
+            "MeleeSpeed": 1.2,
             "ThrowSpeedMs": 35.0,
             "RoundsPerMin": 30.0,
             "Dispersion": 2.0,
@@ -3617,9 +3634,23 @@
         ]
     },
 
+    "Javelin (Generic)": {
+        "properties": {
+            "MeleeDamage": 3,
+            "MeleeSpeed": 1.2,
+            "MuzzleVelocity": 20.0,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 3.0
+        },
+        "items": [
+            "javelin"
+        ]
+    },
+
     "Joke And Debug Melee Item (Generic)": {
         "properties": {
-            "MeleeDamage": 2
+            "MeleeDamage": 1,
+            "MeleeSpeed": 1.6
         },
         "items": [
             "coinminervirustrojan",
@@ -3688,7 +3719,8 @@
 
     "Katana (Generic)": {
         "properties": {
-            "MeleeDamage": 8
+            "MeleeDamage": 5,
+            "MeleeSpeed": 1.6
         },
         "items": [
             "geaw_ija_katana",
@@ -3974,7 +4006,8 @@
 
     "Lightsaber (Fictional)": {
         "properties": {
-            "MeleeDamage": 20
+            "MeleeDamage": 11,
+            "MeleeSpeed": 1.8
         },
         "items": [
             "lightsaberblack",
@@ -4387,7 +4420,8 @@
 
     "Machete": {
         "properties": {
-            "MeleeDamage": 8
+            "MeleeDamage": 5,
+            "MeleeSpeed": 1.4
         },
         "items": [
             "zombiemachete"
@@ -5238,7 +5272,8 @@
 
     "Pilum": {
         "properties": {
-            "MeleeDamage": 9,
+            "MeleeDamage": 8,
+            "MeleeSpeed": 0.9,
             "ThrowSpeedMs": 25.0,
             "RoundsPerMin": 20.0,
             "Dispersion": 2.0,
@@ -5246,6 +5281,19 @@
         },
         "items": [
             "romanpilum"
+        ]
+    },
+
+    "Pilum (Generic)": {
+        "properties": {
+            "MeleeDamage": 8,
+            "MeleeSpeed": 0.9,
+            "MuzzleVelocity": 20.0,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 3.0
+        },
+        "items": [
+            "pilum"
         ]
     },
 
@@ -5276,14 +5324,13 @@
     "Polearm (Generic)": {
         "properties": {
             "MeleeDamage": 9,
+            "MeleeSpeed": 1.0,
             "MuzzleVelocity": 20.0,
             "RoundsPerMin": 15.0,
             "Dispersion": 3.0
         },
         "items": [
             "spear",
-            "pilum",
-            "javelin",
             "kontos",
             "sarissa",
             "romanspear"
@@ -5292,13 +5339,22 @@
 
     "Power Melee Weapon (Fictional)": {
         "properties": {
-            "RoundsPerMin": 80.0,
-            "Dispersion": 0.5
+            "MeleeDamage": 9,
+            "MeleeSpeed": 1.4
         },
         "items": [
             "wh40k_gun_chainsword_1a",
             "wh40k_gun_powersword_1a",
-            "wh40k_gun_powersword_2a",
+            "wh40k_gun_powersword_2a"
+        ]
+    },
+
+    "Powered Hammer (Fictional)": {
+        "properties": {
+            "MeleeDamage": 11,
+            "MeleeSpeed": 0.7
+        },
+        "items": [
             "wh40k_gun_thunderhammer_1a"
         ]
     },
@@ -5495,7 +5551,8 @@
 
     "Rifle Bayonet": {
         "properties": {
-            "MeleeDamage": 6
+            "MeleeDamage": 4,
+            "MeleeSpeed": 1.2
         },
         "items": [
             "ermeysgarand"
@@ -5504,7 +5561,8 @@
 
     "Riot Shield (Fictional)": {
         "properties": {
-            "MeleeDamage": 3
+            "MeleeDamage": 2,
+            "MeleeSpeed": 1.0
         },
         "items": [
             "cloneriotshield"
@@ -5657,7 +5715,8 @@
 
     "Shield Bash (Generic)": {
         "properties": {
-            "MeleeDamage": 3
+            "MeleeDamage": 2,
+            "MeleeSpeed": 1.0
         },
         "items": [
             "parma",
@@ -5750,16 +5809,12 @@
 
     "Short Sword (Generic)": {
         "properties": {
-            "MeleeDamage": 7
+            "MeleeDamage": 4,
+            "MeleeSpeed": 1.8
         },
         "items": [
             "gladius",
             "romangladius",
-            "spatha",
-            "aegeansword",
-            "hunnicsword",
-            "persiansword",
-            "shamshir",
             "wakazashi"
         ]
     },
@@ -5866,7 +5921,8 @@
 
     "Sledgehammer": {
         "properties": {
-            "MeleeDamage": 9
+            "MeleeDamage": 10,
+            "MeleeSpeed": 0.8
         },
         "items": [
             "sledgehammer"
@@ -5976,7 +6032,8 @@
 
     "Standard And Morale Item (Generic)": {
         "properties": {
-            "MeleeDamage": 2
+            "MeleeDamage": 1,
+            "MeleeSpeed": 1.0
         },
         "items": [
             "romanaquila",
@@ -6152,6 +6209,18 @@
         "items": [
             "44_svt40",
             "svt"
+        ]
+    },
+
+    "Sword (Generic)": {
+        "properties": {
+            "MeleeDamage": 5,
+            "MeleeSpeed": 1.6
+        },
+        "items": [
+            "spatha",
+            "hunnicsword",
+            "persiansword"
         ]
     },
 

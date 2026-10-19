@@ -66,6 +66,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public static final String NBT_KNOCKBACK_RESISTANCE_UUID = "knockback_resistance_uuid";
     public static final String NBT_MOVEMENT_SPEED_UUID = "movement_speed_uuid";
     public static final String NBT_ATTACK_DAMAGE_UUID = "attack_damage_uuid";
+    public static final String NBT_ATTACK_SPEED_UUID = "attack_speed_uuid";
 
     @Getter
     protected final GunType configType;
@@ -545,6 +546,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed", configType.getMovementSpeed(stack) - 1F,
             ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
         modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(stack, false),
+            ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ATTACK_SPEED, "attack_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_SPEED_UUID), "Melee speed", configType.getMeleeSpeed() - 4D,
             ItemAttributes.Operation.ADD_VALUE);
     }
 

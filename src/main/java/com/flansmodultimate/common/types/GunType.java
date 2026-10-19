@@ -201,6 +201,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * The damage inflicted upon punching someone with this gun
      */
     protected float meleeDamage = 1F;
+    /** Fully charged ordinary melee attacks per second. Defaults to the vanilla empty-hand rate. */
+    @Getter
+    protected float meleeSpeed = 4F;
     /** Modifier for melee damage against specifically driveable entities. */
     protected float meleeDamageDriveableModifier = 1F;
     /**
@@ -754,6 +757,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         // Damage
         damage = readValue("Damage", damage, file);
         meleeDamage = readValue(KEY_MELEE_DAMAGE, meleeDamage, file);
+        float configuredMeleeSpeed = readValue("MeleeSpeed", meleeSpeed, file);
+        if (Float.isFinite(configuredMeleeSpeed) && configuredMeleeSpeed > 0F)
+            meleeSpeed = configuredMeleeSpeed;
         meleeDamageDriveableModifier = readValue("MeleeDamageDriveableModifier", meleeDamageDriveableModifier, file);
 
         // Reload
