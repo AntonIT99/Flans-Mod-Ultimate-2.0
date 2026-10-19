@@ -36,9 +36,15 @@ public final class NpcEquipmentStats
     /** Arrow, trident and thrown-item hitbox width in blocks. */
     public static final double VANILLA_HITBOX = 0.5D;
 
-    /** Ranged statistics of one shot of the held item. */
+    /** Ranged statistics of one shot of the held item; an absent firing sound is an empty string. */
     public record Shot(double damage, double speed, double spread, int projectiles, String firingSound, EquippedWeaponProperties.Impact impact)
-    {}
+    {
+        public Shot
+        {
+            // Legacy weapons may omit ShootSound. Both the import and editor readouts expect a string.
+            firingSound = firingSound == null ? "" : firingSound;
+        }
+    }
 
     /** The resistances Custom NPCs stores, in the order of its resistance sliders. */
     public enum Resistance
@@ -50,7 +56,7 @@ public final class NpcEquipmentStats
     @Nullable
     public static Shot shot(EntityNPCInterface npc, ItemStack item)
     {
-        var flan = NpcEquipment.flan(npc);
+        var flan = item == npc.getMainHandItem() ? NpcEquipment.flan(npc) : FlansEquipment.getWeaponProperties(item, ItemStack.EMPTY);
         if (flan.isPresent())
         {
             EquippedWeaponProperties properties = flan.get();

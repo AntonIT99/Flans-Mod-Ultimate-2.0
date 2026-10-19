@@ -150,6 +150,17 @@ validation. The installed 20260711 Custom NPCs jar also fails in Forge's
 and returns null on that server subtype. Common NPC equipment mixins load before
 that third-party failure; this harness cannot verify live combat or editor behavior.
 
+Throw presentation on master adds a transient `ITEM_STACK` entity-data accessor
+to the existing `EntityNPCInterfaceMixin`. A client-only branch in its paired
+`getMainHandItem` / `m_21205_` injector exposes that display stack, while the server's
+hand, inventory, saves and drops stay authoritative. The accessor is defined with
+the other synced data and is not written to NBT. Normal entity tracking supplies
+late clients with an active wind-up. `IEquipmentPolicy.flansmodultimateChargingThrow`
+lets the common pose resolver and throwable gun model predicate use the player's
+throw pose without changing the real active-use item. Preserve this separation
+when adapting to render-state extraction on newer branches; do not put temporary
+items into server inventory for rendering.
+
 ### NPC static world-model rendering
 
 The Forge 1.20.1 model picker uses the client-only `NpcModelBrowserMixin` on

@@ -70,7 +70,7 @@ public final class NpcEquipmentControls
         if (gui instanceof SubGuiNpcMeleeProperties)
             melee(gui, npc, item, nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcRangeProperties)
-            ranged(gui, npc, item, nativeValue, readouts, buttons);
+            ranged(gui, npc, NpcEquipment.rangedWeapon(npc), nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcProjectiles)
             projectiles(gui, npc, nativeValue, readouts, buttons, shown);
     }
@@ -127,7 +127,7 @@ public final class NpcEquipmentControls
             readouts.put(id, nativeValue);
         for (int id : new int[]{1, 4, 5, 6, 7, 8, 9, 10})
             buttons.put(id, Reason.ITEM_WEAPON);
-        NpcEquipmentStats.Shot shot = NpcEquipmentStats.shot(npc, npc.getMainHandItem());
+        NpcEquipmentStats.Shot shot = NpcEquipmentStats.shot(npc, NpcEquipment.rangedWeapon(npc));
         if (shot == null)
         {
             buttons.put(0, Reason.ITEM_WEAPON);

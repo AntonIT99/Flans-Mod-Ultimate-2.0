@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +38,7 @@ import java.util.Optional;
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
- * <li>Model and switch changes are resolved before the server runs NPC combat and movement.</li>
+ * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat.</li>
@@ -45,6 +46,7 @@ import java.util.Optional;
  * resists knockback while it is a vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
+ * <li>Throw wind-ups synchronize a temporary displayed main-hand item and the player's throwing pose without moving inventory.</li>
  * <li>Flan armor that makes its wearer invisible makes the NPC invisible to the client: its body is not drawn, its armor is.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
@@ -62,7 +64,15 @@ import java.util.Optional;
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
 // instanceof checks on this are valid, and the overrides keep the target signatures.
 @SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
-public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource, IFlanPartTarget, NpcVehicleStateHolder
+public abstract class EntityNPCInterfaceMixin extends PathfinderMob
+    implements
+        IEquipmentPolicy,
+        IFlanNpcDistance,
+        ILivingVisualEffects,
+        IEngineSoundSource,
+        IFlanPartTarget,
+        NpcVehicleStateHolder,
+        NpcThrowPresentation
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -70,6 +80,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private static final String WOLFFSMODNPCS_DISTANCE_OPT_IN = "FlansDistanceOptIn";
     @Unique
     private static final EntityDataAccessor<Boolean> WOLFFSMODNPCS_DISTANCE_DATA = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.BOOLEAN);
+    @Unique
+    private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_THROW_DISPLAY = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
@@ -94,6 +106,37 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     }
 
     // Presentation
+
+    @Override
+    public ItemStack wolffsmodnpcsThrowDisplay()
+    {
+        return getEntityData().get(WOLFFSMODNPCS_THROW_DISPLAY);
+    }
+
+    @Override
+    public void wolffsmodnpcsThrowDisplay(ItemStack stack)
+    {
+        if (!level().isClientSide)
+        {
+            ItemStack display = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+            if (!ItemStack.matches(wolffsmodnpcsThrowDisplay(), display))
+                getEntityData().set(WOLFFSMODNPCS_THROW_DISPLAY, display);
+        }
+    }
+
+    @Override
+    public boolean flansmodultimateChargingThrow(InteractionHand hand)
+    {
+        return hand == InteractionHand.MAIN_HAND && isAlive() && !((EntityNPCInterface) (Object) this).isKilled() && !wolffsmodnpcsThrowDisplay().isEmpty();
+    }
+
+    @Inject(method = {"getMainHandItem", "m_21205_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsDisplayedThrow(CallbackInfoReturnable<ItemStack> callback)
+    {
+        // Only the client sees the substitute; server combat, saves and drops keep the original inventory.
+        if (level().isClientSide && isAlive() && !((EntityNPCInterface) (Object) this).isKilled() && !wolffsmodnpcsThrowDisplay().isEmpty())
+            callback.setReturnValue(wolffsmodnpcsThrowDisplay());
+    }
 
     @Override
     public float flansmodultimateEnginePitch()
@@ -167,6 +210,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (level().isClientSide)
             return;
+        if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
+            NpcThrowPresentation.clear(npc);
         wolffsmodnpcsEngineAudio.tick(npc);
         wolffsmodnpcsUpdateArmorAttributes();
         NpcProtection.updateKnockback(npc);
@@ -420,7 +465,10 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         // Zero doubles as "not measuring": the clock never reads it in practice.
         wolffsmodnpcsTickStarted = NpcProfiler.server() && !npc.level().isClientSide ? System.nanoTime() : 0L;
         if (!npc.level().isClientSide)
+        {
+            NpcAmmunition.refillEmptySlots(npc);
             NpcTypeProperties.of(npc).refresh(npc);
+        }
     }
 
     @Inject(method = "writeSpawnData()Lnet/minecraft/nbt/CompoundTag;", at = @At("RETURN"))
@@ -532,6 +580,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsDefineDistance(CallbackInfo callback)
     {
         getEntityData().define(WOLFFSMODNPCS_DISTANCE_DATA, false);
+        getEntityData().define(WOLFFSMODNPCS_THROW_DISPLAY, ItemStack.EMPTY);
     }
 
     @Inject(method = {"readAdditionalSaveData", "m_7378_"}, at = @At("TAIL"))

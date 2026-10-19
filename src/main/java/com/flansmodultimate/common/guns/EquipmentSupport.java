@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.EquippedArmorProperties;
-import com.flansmodultimate.api.EquippedWeaponProperties;
+import com.flansmodultimate.api.*;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.item.*;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
@@ -17,14 +17,14 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.LinkedHashSet;
-import java.util.Optional;
+import java.util.*;
 
 /** Native equipment actions shared by living-entity addons; no player or addon state is required. */
 public final class EquipmentSupport
@@ -60,10 +60,13 @@ public final class EquipmentSupport
             gun.applyAmmunition(ammo);
             speed = new FiredShot(gun, bullet, null, null, loaded == null ? 0 : ShootableItem.getRoundsFired(ammunition)).getMuzzleVelocity(false);
         }
+        EquippedWeaponProperties.Impact impact = type.isThrowable()
+            ? new EquippedWeaponProperties.Impact(1D, 0.5D, 1D, 0D, SoundEvents.TRIDENT_HIT.getLocation().toString(), SoundEvents.TRIDENT_HIT_GROUND.getLocation().toString(), false)
+            : impact(ammo);
         return Optional.of(new EquippedWeaponProperties(type.isThrowable() || !type.getAmmoTypes().isEmpty(), type.isThrowable(), type.isShield(), damage, type.getMeleeDamage(preview, false), speed,
             type.getSpread(preview), type.getNumBullets(preview, ammo), type.getShootDelay(preview), item.getActualReloadTime(preview, ItemStackData.builtInRegistries(), ItemStack.EMPTY),
             type.getThrowChargeTime(), type.getMeleeTime(), type.getShootSound(preview, false), mode.isAutomaticFire(), mode == EnumFireMode.MINIGUN ? type.getMinigunStartSpeed() : 0F,
-            mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F, impact(ammo)));
+            mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F, impact));
     }
 
     private static EquippedWeaponProperties.Impact impact(@Nullable ShootableType ammo)
@@ -188,7 +191,7 @@ public final class EquipmentSupport
         if (type.isPoweredOff(stack) || !type.canShootUnderwater() && holder.isUnderWater() || !item.getGunItemHandler().gunCanBeHandled(holder))
             return false;
         if (type.isThrowable())
-            return throwWeapon(holder, hand, stack, type, origin, direction, sounds);
+            return throwWeapon(holder, hand, stack, origin, direction, sounds);
         Loaded loaded = loaded(item, stack);
         if (loaded == null)
             return false;
@@ -238,22 +241,62 @@ public final class EquipmentSupport
             holder.setItemInHand(hand, ItemStack.EMPTY);
     }
 
-    private static boolean throwWeapon(LivingEntity holder, InteractionHand hand, ItemStack stack, GunType type, Vec3 origin, Vec3 direction, boolean sounds)
+    private static boolean throwWeapon(LivingEntity holder, InteractionHand hand, ItemStack stack, Vec3 origin, Vec3 direction, boolean sounds)
     {
-        ItemStack thrownStack = stack.copyWithCount(1);
-        ThrownGun thrown = new ThrownGun(holder.level(), holder, thrownStack, type.getThrowDamage(stack));
-        thrown.setPos(origin);
-        // Convert Flan angular spread to AbstractArrow's vanilla inaccuracy scale.
-        thrown.shoot(direction.x, direction.y, direction.z, type.getBulletSpeed(stack), type.getSpread(stack) * ShootingHelper.ANGULAR_SPREAD_FACTOR / 0.0172275F);
-        thrown.pickup = AbstractArrow.Pickup.ALLOWED;
-        if (!holder.level().addFreshEntity(thrown))
+        Optional<ProjectileShot> prepared = prepareThrow(holder, stack);
+        if (prepared.isEmpty() || prepared.get().launch(origin, direction, sounds).isEmpty())
             return false;
         stack.shrink(1);
         holder.setItemInHand(hand, stack.isEmpty() ? ItemStack.EMPTY : stack);
-        if (sounds && !ExternalProjectileSupport.playShootSound(holder, type, thrownStack, false))
-            holder.playSound(SoundEvents.TRIDENT_THROW, 1F, 1F);
         GunArmPoses.onShotFired(holder, hand);
         return true;
+    }
+
+    public static Optional<ProjectileShot> prepareThrow(LivingEntity holder, ItemStack stack)
+    {
+        if (!server(holder) || !holder.isAlive() || stack.isEmpty() || !(stack.getItem() instanceof GunItem item))
+            return Optional.empty();
+        GunType type = item.getConfigType();
+        if (!type.isThrowable() || type.isPoweredOff(stack) || !type.canShootUnderwater() && holder.isUnderWater() || !item.getGunItemHandler().gunCanBeHandled(holder))
+            return Optional.empty();
+        float speed = type.getBulletSpeed(stack);
+        float spread = type.getSpread(stack, ModUtils.getEnumMovement(holder), !holder.onGround());
+        float damage = type.getThrowDamage(stack);
+        if (!Float.isFinite(speed) || speed <= 0F || !Float.isFinite(spread) || !Float.isFinite(damage))
+            return Optional.empty();
+        return Optional.of(new PreparedThrow(holder, stack.copyWithCount(1), type, speed, spread, damage));
+    }
+
+    private record PreparedThrow(LivingEntity holder, ItemStack stack, GunType type, float speed, float spread, float damage) implements ProjectileShot
+    {
+        @Override
+        public double gravity()
+        {
+            return ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT, holder.level());
+        }
+
+        @Override
+        public double drag()
+        {
+            return ModPhysics.dragRetention(ShootableType.AIR_DEFAULT_DRAG, holder.level());
+        }
+
+        @Override
+        public List<Entity> launch(Vec3 origin, Vec3 direction, boolean throwSound)
+        {
+            if (!server(holder) || !holder.isAlive() || !Double.isFinite(origin.lengthSqr()) || !Double.isFinite(direction.lengthSqr()) || direction.lengthSqr() < 1E-8D)
+                return List.of();
+            ThrownGun thrown = new ThrownGun(holder.level(), holder, stack.copy(), damage);
+            thrown.setPos(origin);
+            // The player's throw uses the same conversion from Flan angular spread to vanilla inaccuracy.
+            thrown.shoot(direction.x, direction.y, direction.z, speed, spread * ShootingHelper.ANGULAR_SPREAD_FACTOR / 0.0172275F);
+            thrown.pickup = AbstractArrow.Pickup.ALLOWED;
+            if (!holder.level().addFreshEntity(thrown))
+                return List.of();
+            if (throwSound && !ExternalProjectileSupport.playShootSound(holder, type, stack, false))
+                holder.playSound(SoundEvents.TRIDENT_THROW, 1F, 1F);
+            return List.of(thrown);
+        }
     }
 
     @Nullable

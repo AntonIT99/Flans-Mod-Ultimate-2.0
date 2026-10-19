@@ -23,6 +23,7 @@ class NpcEquipmentHookContractTest
         assertDoesNotThrow(() ->
         {
             method(read(NPC), "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V", "m_7355_", "playStepSound");
+            method(read(NPC), "()Lnet/minecraft/world/item/ItemStack;", "m_21205_", "getMainHandItem");
             ClassNode renderer = read("noppes/npcs/client/renderer/RenderNPCInterface");
             method(renderer, "(Lnoppes/npcs/entity/EntityNPCInterface;)V", "renderColor");
             method(renderer, "(Lnoppes/npcs/entity/EntityNPCInterface;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", "render");

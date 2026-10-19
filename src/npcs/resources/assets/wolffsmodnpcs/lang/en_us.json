@@ -499,7 +499,7 @@
   "commands.wolffsmodnpcs.benchmark.idle": "No benchmark is running.",
   "commands.wolffsmodnpcs.server.denied": "Only operators may change server-wide NPC settings or run the server benchmark.",
   "wolffsmodnpcs.weapons.consume_ammo": "Use up ammunition",
-  "wolffsmodnpcs.weapons.consume_ammo.help": "Equipped Flan guns reload from the real items in the Projectile slot and use them up. When the slot is empty or holds something the gun does not take, the next ammunition the gun takes is moved there from the NPC's inventory slots. No keeps ammunition infinite. Needs Use equipped weapons; model weapons are not affected.",
+  "wolffsmodnpcs.weapons.consume_ammo.help": "Equipped Flan guns use real ammunition, and Flan throwable guns and grenades use one item per successful throw. Empty main-hand and Projectile slots refill by moving usable guns, compatible ammunition or throwables from inventory in slot order. A held gun's ammunition takes priority. No keeps Flan ammunition and throwables infinite; infinite thrown weapons cannot be picked up in survival. Needs Use equipped weapons; model weapons are not affected.",
   "wolffsmodnpcs.tuning.weapon_switch": "When out of ammunition",
   "wolffsmodnpcs.tuning.weapon_switch.help": "What the NPC does once its main-hand gun has no ammunition left in the Projectile and inventory slots. Guns and melee: take another gun from the inventory that is loaded or has ammunition, and a melee weapon once no gun is usable. Melee only: take the hardest-hitting melee weapon. None: keep the empty gun. The gun put away takes the inventory slot of the weapon taken.",
   "wolffsmodnpcs.tuning.weapon_switch.guns_and_melee": "Guns and melee",

@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.InteractionHand;
@@ -27,12 +28,26 @@ public final class NpcEquipment
 
     public static boolean weaponAuthority(EntityNPCInterface npc)
     {
-        return enabled(npc, Feature.ITEM_WEAPONS) && !npc.getMainHandItem().isEmpty();
+        return enabled(npc, Feature.ITEM_WEAPONS) && !rangedWeapon(npc).isEmpty();
     }
 
     public static boolean ranged(EntityNPCInterface npc)
     {
-        return weaponAuthority(npc) && ranged(npc.getMainHandItem());
+        return weaponAuthority(npc) && ranged(rangedWeapon(npc));
+    }
+
+    /** A held ranged weapon takes precedence; otherwise a Flan throwable in the projectile slot can be thrown. */
+    public static ItemStack rangedWeapon(EntityNPCInterface npc)
+    {
+        ItemStack held = npc.getMainHandItem();
+        if (ranged(held))
+            return held;
+        IItemStack slot = npc.inventory.getProjectile();
+        ItemStack projectile = slot == null ? ItemStack.EMPTY : slot.getMCItemStack();
+        if (projectile != null && (FlansEquipment.getWeaponProperties(projectile, ItemStack.EMPTY).filter(EquippedWeaponProperties::throwable).isPresent()
+            || enabled(npc, Feature.GRENADES) && FlansProjectiles.isGrenade(projectile)))
+            return projectile;
+        return held;
     }
 
     public static boolean ranged(ItemStack stack)
@@ -75,6 +90,9 @@ public final class NpcEquipment
 
     public static int chargeTime(ItemStack stack, LivingEntity holder)
     {
+        // Grenades get a visible half-second wind-up; native throwable guns retain their authored charge time.
+        if (FlansProjectiles.isGrenade(stack))
+            return 10;
         return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(properties -> properties.throwable() ? Math.max(1, properties.chargeTime()) : 0)
             .orElseGet(() -> vanillaChargeTime(stack, holder));
     }

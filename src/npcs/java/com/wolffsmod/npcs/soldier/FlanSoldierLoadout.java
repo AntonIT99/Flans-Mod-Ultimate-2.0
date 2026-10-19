@@ -39,10 +39,14 @@ public final class FlanSoldierLoadout
     {
         /** A Flan gun the NPC fires from a hand. A deployable gun is not one: it is only carried. */
         GUN,
+        /** A melee weapon or a supported non-Flan ranged weapon. */
+        WEAPON,
         /** A shield, raised from the off hand. */
         SHIELD,
-        /** A Flan grenade or thrown weapon. */
+        /** A Flan grenade, reserved for the projectile slot. */
         THROWABLE,
+        /** A throwable Flan gun, eligible for either the projectile slot or the main hand. */
+        THROWN_WEAPON,
         /** Flan ammunition a gun is reloaded with. */
         AMMUNITION, OTHER
     }
@@ -73,30 +77,31 @@ public final class FlanSoldierLoadout
     {}
 
     /**
-     * Distributes the starting items of a class, in the order it lists them. The first gun that is fired from the hand
-     * goes in the main hand. The
+     * Distributes the starting items of a class, in AddItem order. The first throwable is reserved for the projectile slot;
+     * the first remaining handheld gun, melee weapon, throwable gun or supported non-Flan ranged weapon goes in the main hand. The
      * off hand takes a shield, or a second gun only when it is the same weapon as the first, for dual wielding. A gun
      * reloads from the projectile slot, which takes the first ammunition the main-hand gun loads; without any, or
      * without a gun, it takes the first throwable. Everything else goes to the inventory, up to its size.
      */
     public static <T> Slots<T> assign(List<T> items, Items<T> rules)
     {
-        int mainHand = first(items, -1, item -> rules.kind(item) == Kind.GUN);
-        T gun = mainHand < 0 ? null : items.get(mainHand);
-        int offHand = first(items, mainHand, item -> offHand(rules, gun, item));
-        int ammunition = gun == null ? -1 : first(items, -1, item -> rules.kind(item) == Kind.AMMUNITION && rules.loads(gun, item));
-        int projectile = ammunition < 0 ? first(items, -1, item -> rules.kind(item) == Kind.THROWABLE) : ammunition;
+        int throwable = first(items, -1, item -> rules.kind(item) == Kind.THROWABLE || rules.kind(item) == Kind.THROWN_WEAPON);
+        int mainHand = first(items, throwable, item -> rules.kind(item) == Kind.GUN || rules.kind(item) == Kind.WEAPON || rules.kind(item) == Kind.THROWN_WEAPON);
+        T weapon = at(items, mainHand);
+        int offHand = first(items, mainHand, item -> offHand(rules, weapon, item));
+        int ammunition = weapon != null && rules.kind(weapon) == Kind.GUN ? first(items, -1, item -> rules.kind(item) == Kind.AMMUNITION && rules.loads(weapon, item)) : -1;
+        int projectile = ammunition < 0 ? throwable : ammunition;
         List<T> inventory = new ArrayList<>();
         for (int i = 0; i < items.size() && inventory.size() < NpcAmmunition.INVENTORY_SLOTS; i++)
             if (i != mainHand && i != offHand && i != projectile)
                 inventory.add(items.get(i));
-        return new Slots<>(gun, at(items, offHand), at(items, projectile), List.copyOf(inventory));
+        return new Slots<>(weapon, at(items, offHand), at(items, projectile), List.copyOf(inventory));
     }
 
     private static <T> boolean offHand(Items<T> rules, @Nullable T gun, T item)
     {
         Kind kind = rules.kind(item);
-        return kind == Kind.SHIELD || gun != null && kind == Kind.GUN && rules.sameGun(gun, item);
+        return kind == Kind.SHIELD || gun != null && rules.kind(gun) == Kind.GUN && kind == Kind.GUN && rules.sameGun(gun, item);
     }
 
     /** @return the index of the first wanted item, never the skipped index, or -1 */
@@ -146,11 +151,15 @@ public final class FlanSoldierLoadout
         if (NpcEquipment.shield(stack) || weapon.isPresent() && weapon.get().shield())
             return Kind.SHIELD;
         if (weapon.isEmpty())
-            return Kind.OTHER;
+            return NpcEquipment.ranged(stack) || NpcEquipment.meleeDamage(stack) > 1D ? Kind.WEAPON : Kind.OTHER;
         if (weapon.get().throwable())
-            return Kind.THROWABLE;
-        // A deployable gun is fired from where it is set up, so the next gun of the class is the one to hold.
-        return weapon.get().ranged() && !FlansEquipment.isDeployable(stack) ? Kind.GUN : Kind.OTHER;
+            return Kind.THROWN_WEAPON;
+        // A deployable gun is fired from where it is set up, so the next weapon of the class is the one to hold.
+        if (FlansEquipment.isDeployable(stack))
+            return Kind.OTHER;
+        if (weapon.get().ranged())
+            return Kind.GUN;
+        return weapon.get().meleeDamage() > 1D ? Kind.WEAPON : Kind.OTHER;
     }
 
     /**

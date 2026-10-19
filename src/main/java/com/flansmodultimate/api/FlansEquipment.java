@@ -172,4 +172,19 @@ public final class FlansEquipment
     {
         return EquipmentSupport.fire(holder, hand, origin, direction, sounds, particles);
     }
+
+    /**
+     * Prepares a throwable Flan gun from any inventory slot, using its native damage, velocity, spread and recoverable stack.
+     * Server thread only. The returned shot neither consumes nor equips the item; the caller must consume one after a successful launch.
+     *
+     * @param holder
+     *            thrower and damage owner
+     * @param weapon
+     *            throwable gun stack, copied as a single weapon for the projectile
+     * @return resolved throw with its flight physics, or empty for an unusable weapon or a nonserver caller
+     */
+    public static Optional<ProjectileShot> prepareThrow(LivingEntity holder, ItemStack weapon)
+    {
+        return EquipmentSupport.prepareThrow(holder, weapon);
+    }
 }

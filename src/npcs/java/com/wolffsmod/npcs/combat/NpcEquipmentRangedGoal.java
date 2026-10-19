@@ -1,12 +1,14 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.FlansProjectiles;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.EnumSet;
@@ -29,6 +31,8 @@ public final class NpcEquipmentRangedGoal extends Goal
         private final InteractionHand side;
         private final NpcItemCadence cadence = new NpcItemCadence();
         private ItemStack lastWeapon;
+        private Item lastItem;
+        private boolean lastThrowable;
         private float spinSpeed;
         private int reloading;
         /** A finished reload loaded nothing; stop cycling reloads until the weapon changes or the goal restarts. */
@@ -41,10 +45,16 @@ public final class NpcEquipmentRangedGoal extends Goal
 
         private void reset()
         {
+            reset(false);
+        }
+
+        private void reset(boolean keepCadence)
+        {
             spinSpeed = 0F;
             reloading = 0;
             reloadFailed = false;
-            cadence.reset();
+            if (!keepCadence)
+                cadence.reset();
         }
     }
 
@@ -73,7 +83,10 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         LivingEntity target = npc.getTarget();
         if (target == null)
+        {
+            cancelUse();
             return;
+        }
         main.cadence.tick();
         off.cadence.tick();
         main.spinSpeed *= 0.9F;
@@ -104,14 +117,18 @@ public final class NpcEquipmentRangedGoal extends Goal
 
     private void tickMainHand(LivingEntity target)
     {
-        ItemStack weapon = npc.getMainHandItem();
+        ItemStack weapon = NpcEquipment.rangedWeapon(npc);
+        var properties = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
         if (weapon != main.lastWeapon)
         {
             cancelUse();
-            main.reset();
+            // Taking another copy of the same thrown weapon must not bypass its item cooldown.
+            boolean throwable = FlansProjectiles.isGrenade(weapon) || properties.map(value -> value.throwable()).orElse(false);
+            main.reset(throwable && main.lastThrowable && weapon.getItem() == main.lastItem);
             main.lastWeapon = weapon;
+            main.lastItem = weapon.getItem();
+            main.lastThrowable = throwable;
         }
-        var properties = NpcEquipment.flan(npc);
         if (properties.isPresent() && main.spinSpeed < properties.get().spinUpMaximum())
             main.spinSpeed += 2F;
         if (!main.cadence.ready() || reload(main, weapon) || properties.isPresent() && main.spinSpeed < properties.get().spinUpThreshold())
@@ -150,10 +167,11 @@ public final class NpcEquipmentRangedGoal extends Goal
         boolean mainHand = hand == main;
         do
         {
+            // A successful throw can empty the stack, so read its cadence before consuming it.
+            double delay = mainHand && weapon.getItem() instanceof NpcWeaponAdapter adapter ? adapter.npcShotDelay(weapon) : NpcEquipment.shotDelay(weapon);
             boolean fired = mainHand ? NpcItemAttacks.ranged(npc, target) : NpcItemAttacks.fireFlan(npc, target, hand.side);
             if (mainHand)
                 cancelUse();
-            double delay = mainHand && weapon.getItem() instanceof NpcWeaponAdapter adapter ? adapter.npcShotDelay(weapon) : NpcEquipment.shotDelay(weapon);
             hand.cadence.fired(delay);
             if (!fired)
                 break;
@@ -166,7 +184,16 @@ public final class NpcEquipmentRangedGoal extends Goal
         int chargeTime = NpcEquipment.chargeTime(weapon, npc);
         if (chargeTime > 0 && charging++ < chargeTime)
         {
-            if (!npc.isUsingItem() || npc.getUsedItemHand() != InteractionHand.MAIN_HAND)
+            boolean throwable = FlansProjectiles.isGrenade(weapon) || FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).map(value -> value.throwable()).orElse(false);
+            if (throwable)
+            {
+                if (NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.WEAPON_ANIMATIONS))
+                    NpcThrowPresentation.show(npc, weapon);
+                else
+                    NpcThrowPresentation.clear(npc);
+            }
+            // Virtual throws use only the synchronized display; vanilla bow/crossbow use still owns its normal active hand.
+            else if (weapon == npc.getMainHandItem() && (!npc.isUsingItem() || npc.getUsedItemHand() != InteractionHand.MAIN_HAND))
             {
                 npc.stopUsingItem();
                 npc.startUsingItem(InteractionHand.MAIN_HAND);
@@ -185,6 +212,8 @@ public final class NpcEquipmentRangedGoal extends Goal
 
     private boolean reload(Hand hand, ItemStack weapon)
     {
+        if (weapon != npc.getItemInHand(hand.side))
+            return false;
         var flan = NpcEquipment.flan(npc, hand.side);
         if (flan.isEmpty() || flan.get().throwable() || FlansEquipment.hasLoadedRound(weapon))
         {
@@ -226,6 +255,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     private void cancelUse()
     {
         charging = 0;
+        NpcThrowPresentation.clear(npc);
         if (npc.isUsingItem() && !NpcEquipment.shield(npc.getUseItem()))
             npc.stopUsingItem();
     }

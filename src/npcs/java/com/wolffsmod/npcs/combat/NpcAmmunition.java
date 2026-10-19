@@ -6,9 +6,7 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.WeaponSwitch;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import noppes.npcs.api.NpcAPI;
 import noppes.npcs.api.item.IItemStack;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,9 +19,9 @@ import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 
 /**
- * The ammunition supply of an NPC told to use its ammunition up. Its guns then reload from the real stack in the
- * projectile slot, which is refilled from the NPC's inventory slots, and a gun left without ammunition may be put away
- * for another weapon from those slots. Without that setting NPC ammunition is infinite and none of this runs. Server thread.
+ * Supplies an NPC's finite Flan equipment from its real inventory. Guns reload from the projectile slot, empty main-hand
+ * and projectile slots are replenished, and an exhausted gun may be exchanged for another weapon. Without consumption
+ * enabled, Flan ammunition and thrown weapons are infinite and inventory is left alone. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcAmmunition
@@ -85,9 +83,48 @@ public final class NpcAmmunition
     }
 
     /**
+     * Fills empty main-hand and projectile slots from real inventory entries, in inventory order. A replacement gun must
+     * have a loaded round or available compatible ammunition. Occupied slots are preserved; only the reload path exchanges
+     * incompatible ammunition. Empty-slot replenishment is independent of the exhausted-gun switching preference.
+     *
+     * @return whether either slot received an inventory entry; server thread only
+     */
+    public static boolean refillEmptySlots(EntityNPCInterface npc)
+    {
+        if (npc.level().isClientSide || !npc.isAlive() || npc.isKilled() || !NpcEquipment.enabled(npc, Feature.ITEM_WEAPONS) || !NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+            return false;
+        boolean changed = false;
+        if (npc.getMainHandItem().isEmpty())
+        {
+            int slot = find(npc, item -> usableWeapon(npc, item));
+            if (slot >= 0)
+            {
+                swap(npc, MAIN_HAND_INDEX, slot);
+                changed = true;
+            }
+        }
+        if (stack(npc.inventory.getProjectile()).isEmpty())
+        {
+            ItemStack held = npc.getMainHandItem();
+            int slot = find(npc, item -> FlansEquipment.acceptsAmmunition(held, item));
+            if (slot < 0)
+                slot = find(npc, item -> throwable(npc, item));
+            if (slot >= 0)
+            {
+                swap(npc, PROJECTILE_INDEX, slot);
+                changed = true;
+            }
+        }
+        if (changed)
+            npc.updateClient = true;
+        // The item goal resolves its live weapon every tick; rebuilding it here would lose the throw cooldown.
+        return changed;
+    }
+
+    /**
      * Puts the main-hand gun, which has no ammunition left, away for another weapon from the inventory, as the NPC's
-     * setting allows: another gun that is loaded or that the NPC has ammunition for, then the melee weapon that hits
-     * hardest. The gun takes the inventory slot the weapon came from.
+     * setting allows: a gun with loaded or available ammunition, or a throwable, then the melee weapon that hits hardest.
+     * The gun takes the inventory slot the weapon came from.
      *
      * @return whether the NPC now holds another weapon
      */
@@ -96,7 +133,7 @@ public final class NpcAmmunition
         WeaponSwitch mode = NpcTuning.of(npc).weaponSwitch();
         if (mode == WeaponSwitch.NONE || !NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
             return false;
-        int slot = mode == WeaponSwitch.GUNS_AND_MELEE ? find(npc, stack -> usableGun(npc, stack)) : -1;
+        int slot = mode == WeaponSwitch.GUNS_AND_MELEE ? find(npc, stack -> usableWeapon(npc, stack)) : -1;
         if (slot < 0)
             slot = best(inventory(npc), NpcAmmunition::meleeDamage, UNARMED_DAMAGE);
         if (slot < 0)
@@ -106,6 +143,20 @@ public final class NpcAmmunition
         npc.updateAI = true;
         npc.updateClient = true;
         return true;
+    }
+
+    private static boolean usableWeapon(EntityNPCInterface npc, ItemStack stack)
+    {
+        return !stack.isEmpty() && (usableGun(npc, stack) || throwable(npc, stack));
+    }
+
+    private static boolean throwable(EntityNPCInterface npc, ItemStack stack)
+    {
+        if (stack.isEmpty())
+            return false;
+        if (FlansProjectiles.isGrenade(stack))
+            return NpcEquipment.enabled(npc, Feature.GRENADES);
+        return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).filter(weapon -> weapon.throwable() && !weapon.shield()).isPresent() && !FlansEquipment.isDeployable(stack);
     }
 
     private static boolean usableGun(EntityNPCInterface npc, ItemStack stack)
@@ -166,7 +217,8 @@ public final class NpcAmmunition
     /** Exchanges a weapon slot with an inventory slot; an empty weapon slot leaves the inventory slot empty. */
     private static void swap(EntityNPCInterface npc, int weaponSlot, int inventorySlot)
     {
-        ItemStack held = stack(npc.inventory.weapons.get(weaponSlot));
+        IItemStack previous = npc.inventory.weapons.get(weaponSlot);
+        ItemStack held = stack(previous);
         npc.inventory.weapons.put(weaponSlot, npc.inventory.drops.get(inventorySlot));
         if (held.isEmpty())
         {
@@ -174,12 +226,12 @@ public final class NpcAmmunition
             npc.inventory.dropchance.remove(inventorySlot);
         }
         else
-            npc.inventory.drops.put(inventorySlot, NpcAPI.Instance().getIItemStack(held));
+            npc.inventory.drops.put(inventorySlot, previous);
     }
 
     private static ItemStack stack(@Nullable IItemStack item)
     {
-        ItemStack stack = item == null ? null : ItemStackWrapper.MCItem(item);
+        ItemStack stack = item == null ? null : item.getMCItemStack();
         return stack == null ? ItemStack.EMPTY : stack;
     }
 }

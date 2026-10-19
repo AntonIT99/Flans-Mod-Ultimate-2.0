@@ -150,13 +150,13 @@ public final class GunArmPoses
         ItemStack offStack = entity.getOffhandItem();
         HandItem main = classify(mainStack);
         HandItem off = classify(offStack);
-        if (!isGunOrShield(main) && !isGunOrShield(off))
+        InteractionHand throwingHand = chargingThrowHand(entity);
+        if (!isGunOrShield(main) && !isGunOrShield(off) && throwingHand == null)
             return Result.NONE;
 
         boolean aiming = isAiming(entity);
         Result held = resolve(main, off, isDynamic(entity), aiming || isFiring(entity, InteractionHand.MAIN_HAND) || forcesAimPose(main, mainStack),
             aiming || isFiring(entity, InteractionHand.OFF_HAND) || forcesAimPose(off, offStack));
-        InteractionHand throwingHand = chargingThrowHand(entity);
         return throwingHand == null ? held : charging(held, throwingHand);
     }
 
@@ -164,6 +164,10 @@ public final class GunArmPoses
     @Nullable
     public static InteractionHand chargingThrowHand(LivingEntity entity)
     {
+        if (entity instanceof IEquipmentPolicy policy)
+            for (InteractionHand hand : InteractionHand.values())
+                if (policy.flansmodultimateChargingThrow(hand))
+                    return hand;
         if (!entity.isUsingItem())
             return null;
 

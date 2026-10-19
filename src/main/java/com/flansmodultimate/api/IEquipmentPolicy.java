@@ -7,6 +7,8 @@ package com.flansmodultimate.api;
 
 import org.jetbrains.annotations.ApiStatus;
 
+import net.minecraft.world.InteractionHand;
+
 /** Optional living-entity policy for Flan equipment effects and presentation. Read on the entity's own side. */
 @ApiStatus.Experimental
 public interface IEquipmentPolicy
@@ -43,5 +45,18 @@ public interface IEquipmentPolicy
     default boolean flansGunShotAnimations()
     {
         return true;
+    }
+
+    /**
+     * Allows an addon to draw a throw wind-up without changing the entity's real active-use item.
+     * The caller's renderer must expose the displayed item in that hand. Read on the entity's own side.
+     *
+     * @param hand
+     *            hand drawing back for a throw
+     * @return whether the hand uses the player's throw pose, preserving the other arm's held pose
+     */
+    default boolean flansmodultimateChargingThrow(InteractionHand hand)
+    {
+        return false;
     }
 }

@@ -63,7 +63,7 @@ public final class NpcEquipmentImport
 
     private static boolean ranged(EntityNPCInterface npc)
     {
-        ItemStack item = npc.getMainHandItem();
+        ItemStack item = NpcEquipment.rangedWeapon(npc);
         Shot shot = item.isEmpty() ? null : NpcEquipmentStats.shot(npc, item);
         if (shot == null)
             return false;
@@ -85,7 +85,7 @@ public final class NpcEquipmentImport
 
     private static Rhythm rhythm(EntityNPCInterface npc, ItemStack item)
     {
-        Optional<EquippedWeaponProperties> flan = NpcEquipment.flan(npc).filter(properties -> !properties.throwable());
+        Optional<EquippedWeaponProperties> flan = FlansEquipment.getWeaponProperties(item, ItemStack.EMPTY).filter(properties -> !properties.throwable());
         if (flan.isEmpty())
             return rhythm(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item, npc), 0D, 1);
         ItemStack ammunition = FlansEquipment.getLoadedAmmunition(item).orElseGet(() -> ItemStackWrapper.MCItem(npc.inventory.getProjectile()));

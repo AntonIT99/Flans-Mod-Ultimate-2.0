@@ -146,7 +146,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      */
     public boolean isChargingThrow(LivingEntity holder, ItemStack stack)
     {
-        return configType.isThrowable() && holder.isUsingItem() && holder.getUseItem() == stack;
+        if (!getConfigType().isThrowable())
+            return false;
+        InteractionHand hand = GunArmPoses.chargingThrowHand(holder);
+        return hand != null && holder.getItemInHand(hand) == stack;
     }
 
     @Override
