@@ -8,7 +8,8 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
-import noppes.npcs.shared.client.gui.components.*;
+import noppes.npcs.shared.client.gui.components.GuiButtonYesNo;
+import noppes.npcs.shared.client.gui.components.GuiLabel;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -23,15 +24,17 @@ import java.util.*;
 /**
  * The "Flan Soldier" folder of the Custom NPCs model picker: content packs, their teams, then a team's classes.
  * Choosing a class gives the NPC the human model and, unless the builder turned the class skin off, the class skin, and
- * remembers the choice; the NPC's equipment is left alone until the builder presses the loadout button.
+ * remembers the choice; while the loadout toggle is on, which it is by default, the NPC is also given the class's loadout.
  */
 @SuppressWarnings("unused") // Reached only from the model picker mixin, which IntelliJ does not follow.
 public final class FlanSoldierBrowser
 {
     public static final String LABEL = "Flan Soldier";
-    private static final int LOADOUT_BUTTON_ID = 9120;
+    private static final int LOADOUT_TOGGLE_ID = 9120;
     private static final int SKIN_TOGGLE_ID = 9121;
     private static final int SKIN_WIDTH = 64;
+    /** Whether choosing a class also gives the NPC its loadout; the builder's choice lasts for the session. */
+    private static boolean applyClassLoadout = true;
     /** Whether choosing a class or applying its loadout also gives the NPC the class skin; the builder's choice lasts for the session. */
     private static boolean applyClassSkin = true;
 
@@ -159,9 +162,19 @@ public final class FlanSoldierBrowser
     }
 
     /**
-     * Adds the button that gives the NPC the selected class's loadout; without a selected class there is none. The class
-     * skin is applied again with it, in case the skin was changed since the class was chosen. Below it goes the toggle that
-     * turns the class skin off, which is also shown while browsing the folder so that it can be set before a class is chosen.
+     * Gives the NPC the looks of a chosen class and, while the loadout toggle is on, its loadout too.
+     */
+    public static void choose(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
+    {
+        if (applyClassLoadout)
+            applyLoadout(screen, selection);
+        else
+            select(screen, selection);
+    }
+
+    /**
+     * Adds the toggle that makes choosing a class also give the NPC its loadout, and below it the toggle that turns the class
+     * skin off. Both are also shown while browsing the folder so that they can be set before a class is chosen.
      *
      * @param browsing
      *            whether the picker is inside the soldier folder
@@ -169,15 +182,13 @@ public final class FlanSoldierBrowser
     public static void addLoadoutControls(GuiCreationScreenInterface screen, boolean browsing)
     {
         Optional<FlanSoldierSelection> selection = FlanSoldierSelection.read(screen.playerdata.extra);
-        if (browsing || selection.isPresent())
-        {
-            screen.addLabel(new GuiLabel(SKIN_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_skin", screen.guiLeft + 124, screen.guiTop + 51, 0xFF0000));
-            screen.addButton(new GuiButtonYesNo(screen, SKIN_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 46, applyClassSkin, button -> setApplyClassSkin(((GuiButtonYesNo) button).getBoolean())));
-        }
-        if (selection.isEmpty())
+        if (!browsing && selection.isEmpty())
             return;
-        screen.addButton(
-            new GuiButtonNop(screen, LOADOUT_BUTTON_ID, screen.guiLeft + 124, screen.guiTop + 23, 130, 20, "wolffsmodnpcs.soldier.apply_loadout", button -> applyLoadout(screen, selection.get())));
+        screen.addLabel(new GuiLabel(LOADOUT_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_loadout", screen.guiLeft + 124, screen.guiTop + 28, 0xFF0000));
+        screen.addButton(new GuiButtonYesNo(screen, LOADOUT_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 23, applyClassLoadout,
+            button -> setApplyClassLoadout(screen, selection.orElse(null), ((GuiButtonYesNo) button).getBoolean())));
+        screen.addLabel(new GuiLabel(SKIN_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_skin", screen.guiLeft + 124, screen.guiTop + 51, 0xFF0000));
+        screen.addButton(new GuiButtonYesNo(screen, SKIN_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 46, applyClassSkin, button -> setApplyClassSkin(((GuiButtonYesNo) button).getBoolean())));
     }
 
     private static void setApplyClassSkin(boolean apply)
@@ -185,13 +196,24 @@ public final class FlanSoldierBrowser
         applyClassSkin = apply;
     }
 
+    /** Turning the toggle on also equips the NPC with the class already chosen. */
+    private static void setApplyClassLoadout(GuiCreationScreenInterface screen, @Nullable FlanSoldierSelection selection, boolean apply)
+    {
+        applyClassLoadout = apply;
+        if (apply && selection != null)
+        {
+            applyLoadout(screen, selection);
+            screen.init();
+        }
+    }
+
+    /** The class skin is applied again with the loadout, in case the skin was changed since the class was chosen. */
     private static void applyLoadout(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
     {
         select(screen, selection);
         // The server takes the skin and its model from the screen's own save, then equips the NPC.
         screen.save();
         NpcNetwork.sendToServer(ApplyLoadoutPacket.of(screen.npc.getId(), selection));
-        screen.init();
     }
 
     private static SkinLayout layout(@Nullable ResourceLocation skin)

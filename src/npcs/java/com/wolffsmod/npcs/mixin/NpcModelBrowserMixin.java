@@ -25,7 +25,7 @@ import java.util.*;
 /**
  * Groups ships separately, adds content-pack folders and restores parent viewports in the model picker while retaining Custom NPCs' model selection and save logic.
  * Shows full-name hover tooltips for shortened picker entries.
- * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the button that applies that class's loadout and the toggle that keeps the NPC's own skin.
+ * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the toggle that applies that class's loadout on selection and the toggle that keeps the NPC's own skin.
  * Classes with several skins expose a variant folder with saved skin selection, like vehicle paintjobs.
  */
 // Mixin merges this class into the target, so self-casts are valid.
@@ -327,9 +327,9 @@ public abstract class NpcModelBrowserMixin
             }
             if (selection.isPresent())
             {
-                // Only the looks change here; the equipment waits for the loadout button.
+                // The equipment changes too only while the loadout toggle is on.
                 wolffsmodnpcsSelectionScrollY = enteredSkins ? null : scrollY;
-                FlanSoldierBrowser.select((GuiCreationScreenInterface) (Object) this, selection.get());
+                FlanSoldierBrowser.choose((GuiCreationScreenInterface) (Object) this, selection.get());
             }
             else
             {
