@@ -42,6 +42,7 @@ public final class ModClientConfig
     public final EnumOptionsButtonPlacement optionsButtonPlacement;
     public final boolean showFlansHud;
     public final boolean hideCrosshairForGuns;
+    public final boolean showCrosshairWhileScoped;
     public final boolean loadAllModelsInCache;
     public final boolean searchModelsInOtherContentPacks;
     public final boolean preferBuiltInModelClasses;
@@ -155,6 +156,7 @@ public final class ModClientConfig
     public static final EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
     public static final BooleanValue SHOW_FLANS_HUD;
     public static final BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
+    public static final BooleanValue SHOW_CROSSHAIR_WHILE_SCOPED;
     private static final Supplier<Boolean> LOAD_ALL_MODELS_IN_CACHE;
     private static final Supplier<Boolean> SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
@@ -304,6 +306,12 @@ public final class ModClientConfig
             The server's own disableCrosshairForGuns setting hides it for everyone regardless of this
             option, which can only hide the crosshair, never bring it back.
             """).define("hideCrosshairForGuns", false);
+        SHOW_CROSSHAIR_WHILE_SCOPED = builder.comment("""
+            Keep the vanilla crosshair visible while aiming down a gun's sights or scope.
+            In multiplayer, the server's disableCrosshairWhileScoped setting must be false to allow this.
+            Private singleplayer worlds use this preference directly.
+            Server, gun definition, vehicle optics and hideCrosshairForGuns restrictions still apply.
+            """).define("showCrosshairWhileScoped", false);
         LOAD_ALL_MODELS_IN_CACHE = builder.comment("""
             If true, loads and caches ALL models up-front during resource reload.
             ⚠ Warning:
@@ -582,6 +590,7 @@ public final class ModClientConfig
         optionsButtonPlacement = OPTIONS_BUTTON_PLACEMENT.get();
         showFlansHud = SHOW_FLANS_HUD.get();
         hideCrosshairForGuns = HIDE_CROSSHAIR_FOR_GUNS.get();
+        showCrosshairWhileScoped = SHOW_CROSSHAIR_WHILE_SCOPED.get();
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
         searchModelsInOtherContentPacks = SEARCH_MODELS_IN_OTHER_CONTENT_PACKS.get();
         preferBuiltInModelClasses = PREFER_BUILT_IN_MODEL_CLASSES.get();

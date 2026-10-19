@@ -1,7 +1,8 @@
 package com.flansmodultimate.config;
 
 import io.netty.buffer.Unpooled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -14,13 +15,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommonConfigSnapshotRoundTripTest
 {
-    @Test
-    void suppressionOptionsSurviveSynchronizationWithTheRestOfTheServerConfig() throws ReflectiveOperationException
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void crosshairAndSuppressionOptionsSurviveSynchronizationWithTheRestOfTheServerConfig(boolean disableScopedCrosshair) throws ReflectiveOperationException
     {
         RecordComponent[] components = CommonConfigSnapshot.class.getRecordComponents();
         Object[] values = new Object[components.length];
         for (int i = 0; i < components.length; i++)
-            values[i] = sample(components[i]);
+            values[i] = switch (components[i].getName())
+            {
+                case "disableCrosshairWhileScoped" -> disableScopedCrosshair;
+                case "disableCrosshairForGuns" -> !disableScopedCrosshair;
+                default -> sample(components[i]);
+            };
         Class<?>[] signature = Arrays.stream(components).map(RecordComponent::getType).toArray(Class<?>[]::new);
         CommonConfigSnapshot original = CommonConfigSnapshot.class.getDeclaredConstructor(signature).newInstance(values);
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
@@ -29,6 +36,8 @@ class CommonConfigSnapshotRoundTripTest
             CommonConfigSnapshot.write(buffer, original);
             CommonConfigSnapshot decoded = CommonConfigSnapshot.read(buffer);
             assertEquals(original, decoded);
+            assertEquals(disableScopedCrosshair, decoded.disableCrosshairWhileScoped());
+            assertEquals(!disableScopedCrosshair, decoded.disableCrosshairForGuns());
             assertTrue(decoded.nearMissSuppression());
             assertTrue(decoded.suppressionAffectsRiders());
             assertEquals(1.25D, decoded.suppressionIntensity());

@@ -12,12 +12,10 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.*;
+import net.minecraftforge.common.ForgeConfigSpec.Builder;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
@@ -141,6 +139,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> NOTICE_SPAWN_KILL_TIME;
 
     private static final BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
+    private static final BooleanValue DISABLE_CROSSHAIR_WHILE_SCOPED;
     private static final BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS;
     private static final BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
@@ -332,6 +331,13 @@ public final class ModCommonConfig
         NOTICE_SPAWN_KILL_TIME = builder.comment("Warn in the server log when a Flan bullet or grenade explosion kills a player younger than this many seconds.",
             "Set to 0 to disable the spawn-kill warning. Detailed explosion-kill audit records are still written.").defineInRange("noticeSpawnKillTime", 10, 0, 600);
         DISABLE_CROSSHAIR_FOR_GUNS = builder.comment("Disables crosshair for guns except melee weapons").define("disableCrosshairForGuns", false);
+        DISABLE_CROSSHAIR_WHILE_SCOPED = builder.comment("""
+            Hide the vanilla crosshair while aiming down a gun's sights or scope in multiplayer.
+            When true, clients cannot enable the scoped crosshair. When false, each client's
+            showCrosshairWhileScoped preference applies; other crosshair restrictions still apply.
+            Private singleplayer worlds always use the client preference. Open-to-LAN worlds
+            follow this server setting for both the host and joining players.
+            """).define("disableCrosshairWhileScoped", true);
         EXPLOSIONS_BREAK_BLOCKS = builder.comment("Whether explosions can break blocks").define("explosionBreakBlocks", true);
         FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS = builder.comment("Force shootables using the new explosion system to break blocks, ignoring their ExplosionBreaksBlocks property.",
             "The teams rule and explosionBreakBlocks remain higher-priority global gates.").define("forceNewExplosionsBreakBlocks", false);
@@ -685,10 +691,10 @@ public final class ModCommonConfig
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(), VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD.get(), DEFAULT_VEHICLE_ENGINE.get(), DEFAULT_PLANE_ENGINE.get(), DEFAULT_MECHA_ENGINE.get(),
             NAME_TAG_RENDER_RANGE.get().floatValue(), NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(), NOTICE_SPAWN_KILL_TIME.get(),
 
-            DISABLE_CROSSHAIR_FOR_GUNS.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(), BONUS_REGEN_AMOUNT.get(),
-            BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(), BULLET_SNAPSHOT_MIN.get(),
-            BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(),
-            FLAN_NPC_TRACKING_RANGE.get(),
+            DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
+            BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
+            BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(),
+            DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(), CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(), ARMSHOT_DAMAGE_MODIFIER.get().floatValue(), LEGSHOT_MODIFIER.get().floatValue(),
             VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(), DRIVEABLE_COLLISIONS_BREAK_BLOCKS.get(), AUTO_REFILL_VEHICLE_AMMO.get(), GUNS_IN_DESTROYED_PARTS_WORK.get(),
@@ -1342,6 +1348,7 @@ public final class ModCommonConfig
     {
         // spotless:off
         DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS, QuickSection.SERVER),
+        DISABLE_CROSSHAIR_WHILE_SCOPED(() -> ModCommonConfig.DISABLE_CROSSHAIR_WHILE_SCOPED, QuickSection.SERVER),
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS, QuickSection.SERVER),
         FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS, QuickSection.SERVER),
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS, QuickSection.SERVER),

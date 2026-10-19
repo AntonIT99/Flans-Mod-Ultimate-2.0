@@ -4,6 +4,7 @@ import com.flansmod.client.model.*;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.debug.AimOffsetDebugCommand;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
@@ -245,6 +246,9 @@ public final class GunItemRenderer
         }
         poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
         poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
+        Vector3f aimOffset = AimOffsetDebugCommand.resolve(model);
+        float aimOffsetScale = adsSwitch * model.getType().getModelScale() / 16F;
+        poseStack.translate(aimOffset.x * aimOffsetScale, aimOffset.y * aimOffsetScale, aimOffset.z * aimOffsetScale);
 
         renderWeaponSwitchMovement(animations, poseStack);
         if (model.getType().isSecondarySwitchMovement())

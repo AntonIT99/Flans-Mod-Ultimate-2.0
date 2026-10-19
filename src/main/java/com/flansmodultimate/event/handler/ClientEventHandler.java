@@ -289,10 +289,15 @@ public final class ClientEventHandler
         if (player == null)
             return false;
 
+        // A private singleplayer world leaves scoped crosshair visibility to the client.
+        var integratedServer = Minecraft.getInstance().getSingleplayerServer();
+        boolean multiplayer = integratedServer == null || integratedServer.isPublished();
+        boolean serverHidesScopedCrosshair = multiplayer && ModCommonConfig.get().disableCrosshairWhileScoped();
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
-        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair() || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
+        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
+            || (ModClient.getCurrentScope() != null && (serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped)) || gunConfigHidesCrosshair
             || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 

@@ -9,9 +9,7 @@ import com.flansmodultimate.common.types.GunAnimationConfig;
 import com.flansmodultimate.common.types.GunType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Optional;
 
@@ -371,6 +369,9 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** Multiplier for ADS effect (moving gun to middle, e.t.c.) */
     @Getter @Setter
     protected float adsEffectMultiplier = 1;
+    /** Additional first-person translation at full aim, in translateAll model units; blended with aim progress and scaled by ModelScale. */
+    @Getter @Setter
+    protected Vector3f aimOffset = new Vector3f();
     /** This offsets the render position for third person */
     @Getter @Setter
     protected Vector3f thirdPersonOffset = new Vector3f();
@@ -491,8 +492,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         vector.z -= z / 16F;
     }
 
-    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
-        float alpha, float scale, EnumRenderPass renderPass)
+    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo mod : models)
         {
@@ -500,8 +501,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
-        GunAnimations anims, EnumRenderPass renderPass)
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims,
+        EnumRenderPass renderPass)
     {
         // This is a placeholder for custom rendering logic that can be implemented in subclasses or specific instances of ModelGun.
         // It allows for more complex rendering behavior based on the provided GunAnimations object, which can contain information about the current state of the gun's animations.
@@ -648,6 +649,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         setAnimationType(Optional.ofNullable(config.getAnimationType()).orElse(getAnimationType()));
         setMeleeAnimation(Optional.ofNullable(config.getMeleeAnimation()).orElse(getMeleeAnimation()));
 
+        setAimOffset(Optional.ofNullable(config.getAimOffset()).orElse(getAimOffset()));
         setThirdPersonOffset(Optional.ofNullable(config.getThirdPersonOffset()).orElse(getThirdPersonOffset()));
         setItemFrameOffset(Optional.ofNullable(config.getItemFrameOffset()).orElse(getItemFrameOffset()));
         setStillRenderGunWhenScopedOverlay(Optional.ofNullable(config.getStillRenderGunWhenScopedOverlay()).orElse(isStillRenderGunWhenScopedOverlay()));

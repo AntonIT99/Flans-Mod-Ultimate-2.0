@@ -11,6 +11,7 @@ FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.37329 0.39001 0
 animFlashScale 2.84
+animAimOffset 0 -2 0.5
 Texture springfield
 Paintjob springfield_acacia springfield_acacia orange 2
 Paintjob springfield_birch springfield_birch black 1 yellow 1
