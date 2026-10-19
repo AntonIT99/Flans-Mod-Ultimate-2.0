@@ -1,0 +1,56 @@
+{
+  "id": "british",
+  "groups": [
+    {
+      "weight": 8,
+      "male": [
+        "Adam", "Adrian", "Alan", "Albert", "Alexander", "Alfred", "Andrew", "Anthony", "Arthur", "Barry",
+        "Benjamin", "Bernard", "Brian", "Charles", "Christopher", "Clive", "Colin", "Daniel", "David", "Dennis",
+        "Derek", "Donald", "Douglas", "Edward", "Edwin", "Eric", "Ernest", "Frank", "Frederick", "Geoffrey",
+        "George", "Gerald", "Gordon", "Graham", "Harold", "Harry", "Henry", "Howard", "Hugh", "Ian",
+        "Jack", "Jacob", "James", "Jason", "Jeremy", "John", "Jonathan", "Joseph", "Joshua", "Julian",
+        "Keith", "Kenneth", "Kevin", "Laurence", "Leonard", "Lewis", "Liam", "Luke", "Malcolm", "Mark",
+        "Martin", "Matthew", "Michael", "Nathan", "Neil", "Nicholas", "Nigel", "Norman", "Oliver", "Oscar",
+        "Owen", "Patrick", "Paul", "Peter", "Philip", "Ralph", "Raymond", "Reginald", "Richard", "Robert",
+        "Roger", "Ronald", "Roy", "Russell", "Ryan", "Samuel", "Simon", "Stanley", "Stephen", "Steven",
+        "Stuart", "Terence", "Thomas", "Timothy", "Tony", "Trevor", "Victor", "Walter", "Wayne", "William"
+      ],
+      "female": [
+        "Abigail", "Alice", "Alison", "Amanda", "Amy", "Angela", "Ann", "Anna", "Anne", "Audrey",
+        "Barbara", "Brenda", "Caroline", "Catherine", "Charlotte", "Christine", "Claire", "Clare", "Deborah", "Diana",
+        "Diane", "Dorothy", "Edith", "Eleanor", "Elizabeth", "Emily", "Emma", "Evelyn", "Fiona", "Florence",
+        "Frances", "Gillian", "Grace", "Hannah", "Harriet", "Hazel", "Helen", "Hilary", "Irene", "Isabel",
+        "Jacqueline", "Jane", "Janet", "Jean", "Jennifer", "Jessica", "Jill", "Joan", "Joanna", "Josephine",
+        "Joyce", "Judith", "Julia", "Julie", "Karen", "Kate", "Katharine", "Kathleen", "Katie", "Laura",
+        "Lesley", "Linda", "Lisa", "Louise", "Lucy", "Lynne", "Margaret", "Mary", "Maureen", "Melanie",
+        "Michelle", "Nicola", "Olivia", "Pamela", "Patricia", "Pauline", "Rachel", "Rebecca", "Rose", "Rosemary",
+        "Ruth", "Sally", "Samantha", "Sandra", "Sarah", "Sheila", "Shirley", "Sophie", "Susan", "Valerie",
+        "Victoria", "Wendy"
+      ],
+      "surnames": [
+        "Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright",
+        "Thompson", "Evans", "Walker", "White", "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke",
+        "Harris", "Edwards", "Turner", "Martin", "Cooper", "Hill", "Ward", "Hughes", "Moore", "Clark",
+        "King", "Harrison", "Lewis", "Baker", "Lee", "Allen", "Morris", "Khan", "Scott", "Watson",
+        "Davis", "Parker", "James", "Bennett", "Young", "Phillips", "Richardson", "Mitchell", "Bailey", "Carter",
+        "Cook", "Shaw", "Bell", "Collins", "Morgan", "Kelly", "Miller", "Cox", "Richards", "Marshall",
+        "Anderson", "Simpson", "Ellis", "Adams", "Singh", "Begum", "Wilkinson", "Foster", "Chapman", "Powell",
+        "Webb", "Rogers", "Gray", "Mason", "Ali", "Hunt", "Hussain", "Campbell", "Matthews", "Owen",
+        "Palmer", "Holmes", "Mills", "Barnes", "Knight", "Lloyd", "Butler", "Russell", "Barker", "Patel",
+        "Stevens", "Jenkins", "Pearson", "Dixon", "Fletcher", "Harvey", "Hudson", "Spencer", "Howard", "Andrews"
+      ]
+    },
+    {
+      "weight": 1,
+      "male": ["Alasdair", "Alexander", "Angus", "Archibald", "Bruce", "Callum", "Cameron", "Colin", "Craig", "David", "Donald", "Douglas", "Duncan", "Euan", "Ewan", "Finlay", "Fraser", "Gavin", "Gordon", "Graeme", "Hamish", "Ian", "Iain", "James", "John", "Kenneth", "Lachlan", "Malcolm", "Neil", "Niall", "Robert", "Ross", "Rory", "Scott", "Stuart"],
+      "female": ["Aileen", "Ailsa", "Alison", "Catriona", "Eilidh", "Eileen", "Elspeth", "Fiona", "Flora", "Heather", "Iona", "Isla", "Jean", "Kirsty", "Lesley", "Lorna", "Mairi", "Margaret", "Morag", "Rhona", "Shona"],
+      "surnames": ["Anderson", "Armstrong", "Bell", "Black", "Boyd", "Brown", "Bruce", "Cameron", "Campbell", "Davidson", "Douglas", "Duncan", "Ferguson", "Forbes", "Fraser", "Gordon", "Graham", "Grant", "Hamilton", "Henderson", "Hunter", "Johnston", "Kerr", "MacDonald", "MacGregor", "MacKenzie", "MacLean", "MacLeod", "McIntosh", "McKay", "McLean", "Morrison", "Murray", "Reid", "Robertson", "Ross", "Scott", "Sinclair", "Stewart", "Thomson", "Wallace", "Watson", "Wilson"]
+    },
+    {
+      "weight": 1,
+      "male": ["Alun", "Aled", "Arthur", "Bryn", "Carwyn", "Dafydd", "Dai", "David", "Dewi", "Dylan", "Emrys", "Gareth", "Geraint", "Glyn", "Gruffudd", "Guto", "Gwyn", "Huw", "Hywel", "Ieuan", "Iestyn", "Iwan", "Lloyd", "Llywelyn", "Meirion", "Morgan", "Owain", "Owen", "Rhys", "Rhodri", "Steffan", "Tomos", "William"],
+      "female": ["Angharad", "Bethan", "Carys", "Catrin", "Ceri", "Eleri", "Elin", "Ffion", "Glenys", "Gwen", "Gwenllian", "Lowri", "Megan", "Menna", "Nerys", "Nia", "Rhian", "Rhiannon", "Sara", "Seren", "Sian"],
+      "surnames": ["Bevan", "Bowen", "Davies", "Edwards", "Ellis", "Evans", "Griffiths", "Hopkins", "Howells", "Hughes", "James", "Jenkins", "Jones", "Lewis", "Lloyd", "Morgan", "Morris", "Owen", "Owens", "Parry", "Phillips", "Powell", "Price", "Pritchard", "Rees", "Richards", "Roberts", "Rowlands", "Thomas", "Vaughan", "Watkins", "Williams"]
+    }
+  ]
+}

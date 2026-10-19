@@ -1,0 +1,45 @@
+{
+  "id": "german",
+  "groups": [
+    {
+      "weight": 1,
+      "male": [
+        "Alexander", "Andreas", "Anton", "Armin", "Axel", "Benjamin", "Bernd", "Bernhard", "Boris", "Bruno",
+        "Christian", "Christoph", "Clemens", "Daniel", "David", "Dennis", "Dieter", "Dirk", "Dominik", "Emil",
+        "Erik", "Ernst", "Fabian", "Felix", "Florian", "Frank", "Franz", "Friedrich", "Georg", "Gerhard",
+        "Gregor", "Hans", "Harald", "Heiko", "Heinrich", "Heinz", "Helmut", "Henning", "Herbert", "Hermann",
+        "Holger", "Horst", "Jan", "Jens", "Joachim", "Johann", "Johannes", "Jonas", "Jonathan", "Josef",
+        "Julian", "Julius", "Jürgen", "Kai", "Karl", "Karsten", "Klaus", "Konrad", "Kurt", "Lars",
+        "Leon", "Leonhard", "Lothar", "Ludwig", "Lukas", "Manfred", "Marcel", "Marco", "Markus", "Martin",
+        "Matthias", "Max", "Maximilian", "Michael", "Moritz", "Nico", "Niklas", "Norbert", "Oliver", "Otto",
+        "Patrick", "Paul", "Peter", "Philipp", "Rainer", "Ralf", "Reinhard", "René", "Richard", "Robert",
+        "Roland", "Rolf", "Sebastian", "Simon", "Stefan", "Steffen", "Sven", "Thomas", "Tim", "Tobias",
+        "Torsten", "Udo", "Ulrich", "Uwe", "Viktor", "Volker", "Walter", "Werner", "Wilhelm", "Wolfgang"
+      ],
+      "female": [
+        "Alexandra", "Andrea", "Angelika", "Anja", "Anna", "Annika", "Antje", "Barbara", "Beate", "Birgit",
+        "Brigitte", "Christa", "Christiane", "Christina", "Claudia", "Cornelia", "Daniela", "Doris", "Elisabeth", "Elke",
+        "Emma", "Erika", "Eva", "Franziska", "Frieda", "Gabriele", "Gerda", "Gisela", "Hanna", "Heike",
+        "Helga", "Hildegard", "Ilse", "Inge", "Ingrid", "Irene", "Jana", "Johanna", "Julia", "Karin",
+        "Katharina", "Katja", "Kerstin", "Klara", "Laura", "Lena", "Leonie", "Lisa", "Luise", "Manuela",
+        "Margarete", "Maria", "Marianne", "Marie", "Martina", "Melanie", "Monika", "Nadine", "Nicole", "Nina",
+        "Petra", "Renate", "Sabine", "Sandra", "Sarah", "Silke", "Simone", "Sophie", "Stefanie", "Susanne",
+        "Ulrike", "Ursula", "Ute", "Vanessa", "Verena", "Vera", "Waltraud", "Wiebke"
+      ],
+      "surnames": [
+        "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Schulz", "Hoffmann",
+        "Schäfer", "Koch", "Bauer", "Richter", "Klein", "Wolf", "Schröder", "Neumann", "Schwarz", "Zimmermann",
+        "Braun", "Krüger", "Hofmann", "Hartmann", "Lange", "Schmitt", "Werner", "Schmitz", "Krause", "Meier",
+        "Lehmann", "Schmid", "Schulze", "Maier", "Köhler", "Herrmann", "König", "Walter", "Mayer", "Huber",
+        "Kaiser", "Fuchs", "Peters", "Lang", "Scholz", "Möller", "Weiß", "Jung", "Hahn", "Schubert",
+        "Vogel", "Friedrich", "Keller", "Günther", "Frank", "Berger", "Winkler", "Roth", "Beck", "Lorenz",
+        "Baumann", "Franke", "Albrecht", "Schuster", "Simon", "Ludwig", "Böhm", "Winter", "Kraus", "Martin",
+        "Schumacher", "Krämer", "Vogt", "Stein", "Jäger", "Otto", "Sommer", "Groß", "Seidel", "Heinrich",
+        "Brandt", "Haas", "Schreiber", "Graf", "Schulte", "Dietrich", "Ziegler", "Kuhn", "Kühn", "Pohl",
+        "Engel", "Horn", "Busch", "Bergmann", "Thomas", "Voigt", "Sauer", "Arnold", "Wolff", "Pfeiffer",
+        "Seifert", "Ernst", "Lindner", "Sander", "Schröter", "Seitz", "Fritsch", "Kraft", "Klose", "Marx",
+        "Schütz", "Weißbach", "Bach", "Henning", "Riedel", "Ulrich", "Wendt", "Lenz", "Kirchner", "Jansen"
+      ]
+    }
+  ]
+}

@@ -84,8 +84,9 @@ public final class NpcEquipment
 
     public static int meleeDelay(ItemStack stack)
     {
-        return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).filter(properties -> properties.meleeTime() > 1).map(EquippedWeaponProperties::meleeTime)
-            .orElseGet(() -> EquipmentAttributes.attackDelay(EquipmentAttributes.value(stack, EquipmentSlot.MAINHAND, Attributes.ATTACK_SPEED, 4D)));
+        int recovery = EquipmentAttributes.attackDelay(EquipmentAttributes.value(stack, EquipmentSlot.MAINHAND, Attributes.ATTACK_SPEED, 4D));
+        // Custom melee animations must finish, but cannot bypass the equipped weapon's attack recovery.
+        return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(properties -> Math.max(recovery, properties.meleeTime())).orElse(recovery);
     }
 
     public static int chargeTime(ItemStack stack, LivingEntity holder)
