@@ -187,7 +187,6 @@ public final class FlanSoldierLoadout
             return;
         }
         apply(npc, selection.get());
-        player.sendSystemMessage(Component.translatable("wolffsmodnpcs.soldier.loadout.applied", selection.get().playerClass().getName()));
     }
 
     /** Replaces the NPC's armour, weapons and inventory with the class loadout and asks for its statistics to follow them. */
