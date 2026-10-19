@@ -37,10 +37,9 @@ LivingProximityTrigger 0.5
 Fuse 30
 DetonateWhenShot false
 FireRadius 0.0
-ExplosionRadius 4.0
+UseVanillaExplosion true
+ExplosionRadius 3.0
 ExplosionBreaksBlocks true
-ExplosiveMassTNTKg 3
-FragType DEFAULT
 
 // Smoke and effects
 SmokeTime 0

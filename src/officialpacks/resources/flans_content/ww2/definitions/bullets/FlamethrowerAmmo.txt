@@ -5,7 +5,7 @@ ShortName flamethrowerww2Ammo
 // Item and rendering
 Model Null
 Colour 255 255 255
-Icon FlamethrowerAmmo
+Icon flamethrowerww2ammo
 
 // Ammunition
 MaxStackSize 8
