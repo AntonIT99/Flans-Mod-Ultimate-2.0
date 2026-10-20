@@ -69,6 +69,15 @@ public final class NpcVehicleSounds
         movement.resetToVehicle(defaultSound(npc, true), range);
     }
 
+    /**
+     * @return whether a looped sound is the NPC's idle or movement sound: it is drawn as a vehicle or plane, whose engine it
+     *         plays, or it was given a looped sound of its own for that channel
+     */
+    public boolean applies(EntityNPCInterface npc, boolean moving)
+    {
+        return NpcPresentation.vehicleType(npc).isPresent() || !modelDefaults && !(moving ? movement : idle).getSound().isBlank();
+    }
+
     public Optional<EngineSound> resolve(EntityNPCInterface npc, boolean moving)
     {
         if (!(moving ? movementEnabled : idleEnabled))

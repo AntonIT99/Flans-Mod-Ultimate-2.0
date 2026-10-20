@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.wolffsmod.npcs.combat.EquipmentProperty;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
@@ -60,6 +61,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int EDIT_MOVEMENT_ID = 409;
     private static final int OVERRIDE_REPEAT_ID = 410;
     private static final int CLEAR_SOUND_ID = 411;
+    private static final int MODEL_SOUNDS_LINK_ID = 412;
     private static final int ENGINE_SOUND_ID = 500;
     private static final int ENGINE_RANGE_ID = 501;
     private static final int ENGINE_REPEAT_ID = 502;
@@ -91,8 +93,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SWITCH_COLUMN = 156;
     private static final int VALUE_COLUMN = 228;
     private static final int SOUND_COLUMN = 278;
-    /** The tab of the Sounds page that is the engine sound controls rather than a list of rows. */
-    private static final String ENGINE_TAB = "engine";
+    /** The tab of the Sounds page that lists the sound the NPC plays for each use and where it is set. */
+    private static final String OVERVIEW_TAB = "effective";
+    /**
+     * The tab of the Sounds page for the sounds of standing still and moving: the engine controls for a vehicle or plane, the
+     * model idle and step switch for any other NPC.
+     */
+    private static final String IDLE_MOVEMENT_TAB = "idle_movement";
     /** The tabs of the Protection page: its switches, the part hitboxes, and knockback with the minimum hits. */
     private static final String DAMAGE_TAB = "damage";
     private static final String PARTS_TAB = "parts";
@@ -183,9 +190,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         ANIMATIONS(Section.LOOK, Tab.of(Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION)),
         EFFECTS(Section.LOOK, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Feature.SHOOT_PARTICLES)),
         SOUNDS(Section.LOOK,
+            Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
-            Tab.named("model", Feature.MODEL_SOUNDS),
-            Tab.named(ENGINE_TAB)),
+            Tab.named(IDLE_MOVEMENT_TAB)),
         PERFORMANCE(Section.ADVANCED, Tab.of(Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAY_ACTIVE, Value.ACTIVE_RANGE, Feature.MODEL_CULLING,
             Feature.PATH_DEBUG)),
         /** Settings and diagnostics of the whole server rather than of the NPC being edited; its controls are not rows. */
@@ -226,11 +233,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private int tab;
     private NpcEngineSettings editingSound;
     private final CombatPages combat;
+    private final SoundOverview soundOverview;
 
     public GuiWolffsMod(EntityNPCInterface npc)
     {
         super(npc, MENU_ID);
         combat = new CombatPages(this, npc);
+        soundOverview = new SoundOverview(this, npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
     }
 
@@ -300,7 +309,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (combat.active())
             return path + PATH_SEPARATOR + I18n.get(combat.title());
         if (editingSound != null)
-            return path + PATH_SEPARATOR + I18n.get(PRESENTATION + (editingSound == sounds().getIdle() ? "edit_idle" : "edit_movement"));
+            return path + PATH_SEPARATOR + I18n.get(loopKey(editingSound == sounds().getIdle() ? "edit_idle" : "edit_movement"));
         return path;
     }
 
@@ -331,11 +340,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             top = TABBED_TOP;
         }
         Tab shown = tabs.get(tab);
-        if (ENGINE_TAB.equals(shown.name()))
-        {
-            initVehicleSounds(guiTop + top);
+        if (initSoundTab(shown, top))
             return;
-        }
         List<Object> rows = shown.rows().stream().filter(this::visible).toList();
         int control = initRows(rows, top);
         int below = top + rows.size() * ROW_HEIGHT;
@@ -350,6 +356,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             combat.initProtection(loaded, control, below);
         else if (category == Category.PROTECTION && PARTS_TAB.equals(shown.name()))
             combat.initPartsLink(loaded);
+    }
+
+    /** @return whether the tab is one of the Sounds page's tabs that are not a list of rows, which is now laid out */
+    private boolean initSoundTab(Tab shown, int top)
+    {
+        if (OVERVIEW_TAB.equals(shown.name()))
+            soundOverview.init(loaded, top);
+        else if (IDLE_MOVEMENT_TAB.equals(shown.name()))
+            initIdleMovement(guiTop + top);
+        else
+            return false;
+        return true;
     }
 
     /** A row that only means something while another setting is on is left out until then. */
@@ -565,7 +583,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** A switch of the appearance and sound settings, at the given position on screen. */
     private void toggle(int id, String name, boolean value, int control, int y)
     {
-        String key = PRESENTATION + name;
+        switchRow(id, PRESENTATION + name, value, control, y);
+    }
+
+    private void switchRow(int id, String key, boolean value, int control, int y)
+    {
         addLabel(new GuiLabel(id, key, guiLeft + 8, y + 5, key + HELP_SUFFIX));
         GuiButtonNop button = new GuiButtonNop(this, id, control, y, 48, 20, NO_YES, value ? 1 : 0);
         button.setEnabled(loaded);
@@ -577,18 +599,46 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return NpcPresentation.of(npc).getVehicleSounds();
     }
 
-    /** The engine tab of the Sounds page; its two buttons open the editor of one engine sound each. */
-    private void initVehicleSounds(int y)
+    /** @return the key of a looped-sound control: an engine's for a vehicle or plane, a plain loop's for any other NPC */
+    private String loopKey(String name)
+    {
+        return PRESENTATION + (NpcPresentation.vehicleType(npc).isPresent() ? "" : "loop_") + name;
+    }
+
+    /**
+     * The Idle & movement tab: the looped idle and movement sounds, whose two buttons open the editor of one each. A vehicle
+     * or plane loops its engine and may keep its definition's sounds; any other NPC may loop sounds of its own over its
+     * model's idle and step sounds, whose switch takes the place of the vehicle's defaults, with a button to where they are set.
+     */
+    private void initIdleMovement(int y)
     {
         NpcVehicleSounds settings = sounds();
+        boolean vehicle = NpcPresentation.vehicleType(npc).isPresent();
         int control = guiLeft + SOUND_COLUMN;
-        toggle(IDLE_ENABLED_ID, "idle_enabled", settings.isIdleEnabled(), control, y);
-        toggle(MOVEMENT_ENABLED_ID, "movement_enabled", settings.isMovementEnabled(), control, y + 24);
+        loopToggle(IDLE_ENABLED_ID, "idle_enabled", settings.isIdleEnabled(), control, y);
+        loopToggle(MOVEMENT_ENABLED_ID, "movement_enabled", settings.isMovementEnabled(), control, y + 24);
         if (settings.isMovementEnabled())
             toggle(VARIABLE_PITCH_ID, "variable_pitch", settings.isVariablePitch(), control, y + 48);
-        toggle(MODEL_DEFAULTS_ID, "model_defaults", settings.isModelDefaults(), control, y + 72);
-        addButton(new GuiButtonNop(this, EDIT_IDLE_ID, guiLeft + 8, y + 100, 220, 20, new String[]{PRESENTATION + "edit_idle"}, 0));
-        addButton(new GuiButtonNop(this, EDIT_MOVEMENT_ID, guiLeft + 8, y + 124, 220, 20, new String[]{PRESENTATION + "edit_movement"}, 0));
+        if (vehicle)
+            toggle(MODEL_DEFAULTS_ID, "model_defaults", settings.isModelDefaults(), control, y + 72);
+        else
+        {
+            featureRow(Feature.MODEL_SOUNDS, control, y + 72);
+            // The tab is full, so the button sits in the title row, left of Back.
+            String key = PRESENTATION + "model_sounds_link";
+            GuiButtonNop link = new GuiButtonNop(this, MODEL_SOUNDS_LINK_ID, guiLeft + 236, guiTop + 4, 114, 20, new String[]{key}, 0);
+            link.setEnabled(loaded);
+            link.setTooltip(Tooltip.create(Component.translatable(key + HELP_SUFFIX)));
+            addButton(link);
+        }
+        addButton(new GuiButtonNop(this, EDIT_IDLE_ID, guiLeft + 8, y + 100, 220, 20, new String[]{loopKey("edit_idle")}, 0));
+        addButton(new GuiButtonNop(this, EDIT_MOVEMENT_ID, guiLeft + 8, y + 124, 220, 20, new String[]{loopKey("edit_movement")}, 0));
+    }
+
+    /** A switch of a looped sound, named for an engine or a plain loop. */
+    private void loopToggle(int id, String name, boolean value, int control, int y)
+    {
+        switchRow(id, loopKey(name), value, control, y);
     }
 
     private void initSoundEditor()
@@ -633,10 +683,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void subGuiClosed(Screen subgui)
     {
-        if (subgui instanceof GuiSoundSelection picker && picker.selectedResource != null && editingSound != null && !sounds().isModelDefaults())
+        if (subgui instanceof GuiSoundSelection picker)
         {
-            editingSound.setSound(picker.selectedResource.toString());
-            changed = true;
+            if (combat.active())
+                changed |= combat.soundChosen(picker.selectedResource);
+            else if (picker.selectedResource != null && editingSound != null && !sounds().isModelDefaults())
+            {
+                editingSound.setSound(picker.selectedResource.toString());
+                changed = true;
+            }
         }
         init();
     }
@@ -702,6 +757,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             init();
             return;
         }
+        String selection = combat.active() ? combat.soundSelection(button.id) : null;
+        if (selection != null)
+        {
+            openSoundPicker(selection);
+            return;
+        }
         if (button.id >= 0 && button.id < Feature.values().length)
         {
             ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.values()[button.id], button.getValue() == 1);
@@ -716,12 +777,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             changed |= combat.buttonEvent(button);
         else if (button.id == ENGINE_SOUND_ID)
         {
-            String selection = editingSound.getSound();
-            // Select the namespace without committing an empty-path placeholder when the picker closes.
-            GuiSoundSelection picker = new GuiSoundSelection(selection.isBlank() ? "flansmod:" : selection);
-            if (selection.isBlank())
-                picker.selectedResource = null;
-            setSubGui(picker);
+            openSoundPicker(editingSound.getSound());
             return;
         }
         else
@@ -732,11 +788,25 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         init();
     }
 
+    /** Opens the Custom NPCs sound picker on the given sound; the page that asked takes the choice when it closes. */
+    private void openSoundPicker(String selection)
+    {
+        // Select the namespace without committing an empty-path placeholder when the picker closes.
+        GuiSoundSelection picker = new GuiSoundSelection(selection.isBlank() ? "flansmod:" : selection);
+        if (selection.isBlank())
+            picker.selectedResource = null;
+        setSubGui(picker);
+    }
+
     /** @return whether the button only moved between pages */
     private boolean navigate(GuiButtonNop button)
     {
         if (button.id == BACK_BUTTON_ID)
             goBack();
+        else if (category == Category.SOUNDS && !combat.active() && soundOverview.handles(button.id))
+            openSoundSource(soundOverview.target(button.id));
+        else if (button.id == MODEL_SOUNDS_LINK_ID)
+            combat.openPropertySounds();
         else if (button.id >= CATEGORY_BUTTON_ID && button.id < CATEGORY_BUTTON_ID + Category.values().length)
             openCategory(Category.values()[button.id - CATEGORY_BUTTON_ID]);
         else if (category != null && button.id >= TAB_BUTTON_ID && button.id < TAB_BUTTON_ID + category.tabs.size())
@@ -744,6 +814,23 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         else
             return false;
         return true;
+    }
+
+    /** Goes from the Effective sounds tab to the page that sets a sound; Back returns to the tab. */
+    private void openSoundSource(SoundOverview.Target target)
+    {
+        switch (target)
+        {
+            case MAIN_HAND -> combat.openEquipment(CombatPages.Page.MAIN_HAND, EquipmentProperty.Group.FIRING);
+            case OFF_HAND -> combat.openEquipment(CombatPages.Page.OFF_HAND, EquipmentProperty.Group.OFF_HAND_GUN);
+            case PROPERTIES -> combat.openPropertySounds();
+            case ENGINE -> {
+                List<Tab> tabs = Category.SOUNDS.tabs;
+                for (int i = 0; i < tabs.size(); i++)
+                    if (IDLE_MOVEMENT_TAB.equals(tabs.get(i).name()))
+                        tab = i;
+            }
+        }
     }
 
     private void openCategory(Category opened)
@@ -790,10 +877,14 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 }
             }
             case EDIT_IDLE_ID, EDIT_MOVEMENT_ID -> {
-                if (sounds().isModelDefaults())
+                if (sounds().isModelDefaults() && NpcPresentation.vehicleType(npc).isPresent())
                     sounds().useVehicleDefaults(npc);
                 else
+                {
+                    // Without a vehicle there are no defaults to keep: the loops are the NPC's own and edited at once.
+                    sounds().setModelDefaults(false);
                     sounds().initializeCustom(npc);
+                }
                 editingSound = button.id == EDIT_IDLE_ID ? sounds().getIdle() : sounds().getMovement();
             }
             case CLEAR_SOUND_ID -> editingSound.setSound("");

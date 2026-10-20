@@ -13,6 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
@@ -51,10 +53,19 @@ final class CombatPages
     static final int PROPERTY_MODE_ID = 800;
     static final int PROPERTY_IMPORT_ID = 850;
     static final int PROPERTY_VALUE_ID = 900;
+    static final int PROPERTY_SELECT_ID = 950;
+    static final int EQUIPMENT_SELECT_ID = 1650;
     private static final int NOTICE_ID = 990;
     private static final int READ_ONLY_COLOR = 0xA0A0A0;
     private static final int INHERITED_COLOR = 0x408040;
     private static final int MAX_VALUE_LENGTH = 20;
+    /** A value cell's width, and that of a sound's, which shares the room with its Select button. */
+    private static final int VALUE_WIDTH = 112;
+    private static final int SOUND_VALUE_WIDTH = 96;
+    private static final int SELECT_WIDTH = 36;
+    /** The Inherit/Custom button of a row, from the row's left edge, kept narrow so that a sound's value has room. */
+    private static final int MODE_LEFT = 258;
+    private static final int MODE_WIDTH = 60;
     private static final String PREFIX = "wolffsmodnpcs.combat.";
     private static final String HELP_SUFFIX = ".help";
     private static final String IMPORT = PREFIX + "import";
@@ -63,6 +74,8 @@ final class CombatPages
     /** Left edge of Inherit all; Import all follows it and Back follows that. */
     private static final int BULK_LEFT = 226;
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
+    /** The model properties that name a sound, whose rows offer the sound picker. */
+    private static final Set<NpcTypeProperty> SOUND_PROPERTIES = Set.of(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND);
     /** The read-only tooltips of the standard editor already explain how each property is derived. */
     private static final Map<NpcTypeProperty, String> EXPLANATIONS = Map.ofEntries(Map.entry(NpcTypeProperty.HEALTH, "health"), Map.entry(NpcTypeProperty.AGGRO_RANGE, "aggro_range"),
         Map.entry(NpcTypeProperty.CAN_DROWN, "can_drown"), Map.entry(NpcTypeProperty.NO_FALL_DAMAGE, "no_fall_damage"), Map.entry(NpcTypeProperty.DAMAGE, "damage"),
@@ -77,6 +90,9 @@ final class CombatPages
     private Group group = Group.GENERAL;
     private EquipmentProperty.Group equipmentGroup = EquipmentProperty.Group.MELEE;
     private final PartHitboxPage parts;
+    /** The model property or equipment statistic whose Select button opened the sound picker, until the picker closes. */
+    @Nullable
+    private Enum<?> choosingSound;
 
     /** The page shown instead of a category's switches. */
     enum Page
@@ -162,6 +178,20 @@ final class CombatPages
             return false;
         page = Page.NONE;
         return true;
+    }
+
+    /** Opens the model properties page on its Sounds tab, as the Sounds page's overview links to it. */
+    void openPropertySounds()
+    {
+        page = Page.PROPERTIES;
+        group = Group.SOUNDS;
+    }
+
+    /** Opens an equipment page on the given tab, as the Sounds page's overview links to it. */
+    void openEquipment(Page shown, EquipmentProperty.Group tab)
+    {
+        page = shown;
+        equipmentGroup = tab;
     }
 
     private NpcCombatSettings settings()
@@ -268,9 +298,13 @@ final class CombatPages
             loaded && group.properties().stream().anyMatch(inherited::containsKey), INHERIT_ALL + HELP_SUFFIX, IMPORT_ALL + HELP_SUFFIX);
         if (inherited.isEmpty())
             gui.addLabel(new GuiLabel(NOTICE_ID, PREFIX + (options.enabled(Feature.TYPE_PROPERTIES) ? "no_model" : "properties_disabled"), gui.guiLeft + 8, gui.guiTop + 186));
-        List<NpcTypeProperty> rows = group.properties();
+        // A vehicle or plane sounds like its engine; its model offers no idle or step sound, and the engine controls replace both.
+        boolean engine = NpcPresentation.vehicleType(npc).isPresent();
+        List<NpcTypeProperty> rows = group.properties().stream().filter(property -> !engine || property != NpcTypeProperty.IDLE_SOUND && property != NpcTypeProperty.STEP_SOUND).toList();
         for (int i = 0; i < rows.size(); i++)
             propertyRow(rows.get(i), gui.guiTop + 55 + i * 21, loaded, inherited.get(rows.get(i)), readouts.get(rows.get(i)));
+        if (rows.size() < group.properties().size())
+            gui.addLabel(new GuiLabel(NOTICE_ID + 1, PREFIX + "engine_sounds", gui.guiLeft + 8, gui.guiTop + 61 + rows.size() * 21));
     }
 
     /**
@@ -283,8 +317,12 @@ final class CombatPages
         int x = gui.guiLeft + 8;
         int id = property.ordinal();
         String name = property.name().toLowerCase(Locale.ROOT);
-        String explanation = "wolffsmodnpcs.weapons.read_only.type_properties." + EXPLANATIONS.get(property);
-        gui.addLabel(new GuiLabel(PROPERTY_MODE_ID + id, PREFIX + "property." + name, x, y + 5, explanation));
+        String muted = mutedModelSound(property);
+        String explanation = muted != null ? muted : "wolffsmodnpcs.weapons.read_only.type_properties." + EXPLANATIONS.get(property);
+        GuiLabel label = new GuiLabel(PROPERTY_MODE_ID + id, PREFIX + "property." + name, x, y + 5, explanation);
+        if (muted != null)
+            label.setColor(READ_ONLY_COLOR);
+        gui.addLabel(label);
         // Mounts that differ in a value still decide it, though there is no single value to import.
         boolean supplied = NpcTypeProperties.of(npc).supplied().contains(property);
         boolean custom = settings.isCustom(property);
@@ -294,13 +332,44 @@ final class CombatPages
             valueControl(PROPERTY_VALUE_ID + id, y, kind, modelValue(value, readout), Cell.INHERITED, loaded, Component.translatable(PREFIX + "value.inherited"));
         else
             valueControl(PROPERTY_VALUE_ID + id, y, kind, own, Cell.OWN, loaded, Component.translatable(PREFIX + "value.own"));
-        GuiButtonNop mode = new GuiButtonNop(gui, PROPERTY_MODE_ID + id, x + 248, y, 70, 20, new String[]{PREFIX + "mode.inherit", PREFIX + "mode.custom"}, custom ? 1 : 0);
+        if (SOUND_PROPERTIES.contains(property))
+            selectButton(PROPERTY_SELECT_ID + id, PROPERTY_VALUE_ID + id, y, loaded, PREFIX + "select" + HELP_SUFFIX);
+        GuiButtonNop mode = new GuiButtonNop(gui, PROPERTY_MODE_ID + id, x + MODE_LEFT, y, MODE_WIDTH, 20, new String[]{PREFIX + "mode.inherit", PREFIX + "mode.custom"}, custom ? 1 : 0);
         mode.setEnabled(loaded && supplied);
         mode.setTooltip(Tooltip.create(Component.translatable(PREFIX + "mode" + HELP_SUFFIX)));
         gui.addButton(mode);
         // Importing only means something for a single value the NPC keeps as its own.
         if (value != null && custom)
             importButton(PROPERTY_IMPORT_ID + id, y, loaded, IMPORT + HELP_SUFFIX);
+    }
+
+    /**
+     * @return the explanation of a model sound that a switch of the Sounds page keeps from the NPC, which then plays its own,
+     *         or null when the model's sound is not switched off or there is no model
+     */
+    @Nullable
+    private String mutedModelSound(NpcTypeProperty property)
+    {
+        if (NpcTypeProperties.of(npc).type().isEmpty())
+            return null;
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (property == NpcTypeProperty.FIRING_SOUND && !options.enabled(Feature.FIRE_SOUNDS))
+            return PREFIX + "muted.fire_sounds";
+        if ((property == NpcTypeProperty.IDLE_SOUND || property == NpcTypeProperty.STEP_SOUND) && !options.enabled(Feature.MODEL_SOUNDS))
+            return PREFIX + "muted.model_sounds";
+        return null;
+    }
+
+    /** A Select button right of a sound's value cell, which narrows to make room; choosing a sound makes it the NPC's own. */
+    private void selectButton(int id, int valueId, int y, boolean enabled, String help)
+    {
+        GuiTextFieldNop field = gui.getTextField(valueId);
+        if (field != null)
+            field.setWidth(SOUND_VALUE_WIDTH);
+        GuiButtonNop select = new GuiButtonNop(gui, id, gui.guiLeft + 132 + SOUND_VALUE_WIDTH, y, SELECT_WIDTH, 20, new String[]{"wolffsmodnpcs.presentation.select_sound"}, 0);
+        select.setEnabled(enabled);
+        select.setTooltip(Tooltip.create(Component.translatable(help)));
+        gui.addButton(select);
     }
 
     /** @return the model value to show: its readout, which lists each mount's value, unless it is a switch */
@@ -356,7 +425,7 @@ final class CombatPages
             gui.addButton(button);
             return;
         }
-        GuiTextFieldNop field = new GuiTextFieldNop(id, gui, x, y, 112, 20, text(value));
+        GuiTextFieldNop field = new GuiTextFieldNop(id, gui, x, y, VALUE_WIDTH, 20, text(value));
         field.setMaxLength(256);
         field.setEditable(editable);
         field.setTextColorUneditable(cell == Cell.INHERITED ? INHERITED_COLOR : READ_ONLY_COLOR);
@@ -460,20 +529,27 @@ final class CombatPages
         int x = gui.guiLeft + 8;
         int id = property.ordinal();
         String key = PREFIX + "equipment." + property.name().toLowerCase(Locale.ROOT);
-        gui.addLabel(new GuiLabel(EQUIPMENT_MODE_ID + id, key, x, y + 5, key + HELP_SUFFIX));
         boolean custom = settings.isCustom(property);
+        boolean muted = mutedItemSound(property);
+        GuiLabel label = new GuiLabel(EQUIPMENT_MODE_ID + id, key, x, y + 5, muted ? PREFIX + "muted.item_fire_sounds" : key + HELP_SUFFIX);
+        if (muted)
+            label.setColor(READ_ONLY_COLOR);
+        gui.addLabel(label);
         equipmentValue(property, y, loaded, value);
+        if (soundStatistic(property))
+            selectButton(EQUIPMENT_SELECT_ID + id, EQUIPMENT_VALUE_ID + id, y, loaded && !EquipmentValues.modelLocked(npc, property),
+                PREFIX + (EquipmentValues.modelLocked(npc, property) ? "equipment_value.model" : "select" + HELP_SUFFIX));
         GuiButtonNop mode;
         if (property.isSwitchable())
         {
-            mode = new GuiButtonNop(gui, EQUIPMENT_MODE_ID + id, x + 248, y, 70, 20, new String[]{PREFIX + "mode.inherit", PREFIX + "mode.custom"}, custom ? 1 : 0);
+            mode = new GuiButtonNop(gui, EQUIPMENT_MODE_ID + id, x + MODE_LEFT, y, MODE_WIDTH, 20, new String[]{PREFIX + "mode.inherit", PREFIX + "mode.custom"}, custom ? 1 : 0);
             mode.setEnabled(loaded);
             mode.setTooltip(Tooltip.create(Component.translatable(PREFIX + "equipment_mode" + HELP_SUFFIX)));
         }
         else
         {
             // The item always times its own shots and fires its own rounds; the NPC's values only serve without it.
-            mode = new GuiButtonNop(gui, EQUIPMENT_MODE_ID + id, x + 248, y, 70, 20, new String[]{PREFIX + "mode.item"}, 0);
+            mode = new GuiButtonNop(gui, EQUIPMENT_MODE_ID + id, x + MODE_LEFT, y, MODE_WIDTH, 20, new String[]{PREFIX + "mode.item"}, 0);
             mode.setEnabled(false);
             mode.setTooltip(Tooltip.create(Component.translatable(PREFIX + "mode.item" + HELP_SUFFIX)));
         }
@@ -522,6 +598,79 @@ final class CombatPages
             valueControl(id, y, kind, EquipmentValues.read(npc, property), Cell.MODEL_LOCKED, loaded, Component.translatable(PREFIX + "equipment_value.model"));
         else
             valueControl(id, y, kind, EquipmentValues.read(npc, property), Cell.OWN, loaded, Component.translatable(PREFIX + "value.own"));
+    }
+
+    /** Whether the statistic is a firing sound the NPC can keep its own value of, whose row offers the sound picker. */
+    private static boolean soundStatistic(EquipmentProperty property)
+    {
+        return property.isSwitchable() && EquipmentValues.kind(property) == Kind.TEXT;
+    }
+
+    /** Whether the hand's Flan gun gives the statistic's firing sound, but Flan firing sounds are off, so the gun fires silently. */
+    private boolean mutedItemSound(EquipmentProperty property)
+    {
+        if (!soundStatistic(property) || !EquipmentValues.inUse(npc, property) || NpcEquipment.enabled(npc, Feature.FIRE_SOUNDS))
+            return false;
+        InteractionHand hand = property == property.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        return NpcEquipment.flan(npc, hand).isPresent();
+    }
+
+    // Sound picker
+
+    /**
+     * Remembers which row's Select button was clicked.
+     *
+     * @return the sound to open the picker on, the value the row shows, or null when the button is not a Select button
+     */
+    @Nullable
+    String soundSelection(int id)
+    {
+        if (page == Page.PROPERTIES && id >= PROPERTY_SELECT_ID && id < PROPERTY_SELECT_ID + NpcTypeProperty.values().length)
+        {
+            NpcTypeProperty property = NpcTypeProperty.values()[id - PROPERTY_SELECT_ID];
+            choosingSound = property;
+            NpcTypeProperties properties = NpcTypeProperties.of(npc);
+            Tag shown = properties.supplied().contains(property) && !settings().isCustom(property) ? properties.inherited().get(property) : properties.own(npc, property);
+            return shown == null ? "" : shown.getAsString();
+        }
+        if (page.equipment() && id >= EQUIPMENT_SELECT_ID && id < EQUIPMENT_SELECT_ID + EquipmentProperty.values().length)
+        {
+            EquipmentProperty property = EquipmentProperty.values()[id - EQUIPMENT_SELECT_ID];
+            choosingSound = property;
+            Tag own = EquipmentValues.read(npc, property);
+            return own == null ? "" : own.getAsString();
+        }
+        return null;
+    }
+
+    /**
+     * Makes the sound chosen in the picker the NPC's own value of the row that opened it, which then stops inheriting; the
+     * picker closed without a choice changes nothing.
+     *
+     * @return whether a setting changed that has to be saved
+     */
+    boolean soundChosen(@Nullable ResourceLocation sound)
+    {
+        Enum<?> row = choosingSound;
+        choosingSound = null;
+        if (sound == null)
+            return false;
+        StringTag value = StringTag.valueOf(sound.toString());
+        if (row instanceof NpcTypeProperty property)
+        {
+            NpcTypeProperties properties = NpcTypeProperties.of(npc);
+            if (properties.supplied().contains(property))
+                settings().setCustom(property, true);
+            properties.setOwn(npc, property, value);
+            return true;
+        }
+        if (row instanceof EquipmentProperty property && !EquipmentValues.modelLocked(npc, property))
+        {
+            settings().setCustom(property, true);
+            EquipmentValues.write(npc, property, value);
+            return true;
+        }
+        return false;
     }
 
     // Events

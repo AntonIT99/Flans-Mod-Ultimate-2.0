@@ -43,7 +43,8 @@ import java.util.Optional;
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
- * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat.</li>
+ * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
+ * a playing engine sound replaces the Custom NPCs step and idle sounds.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
  * resists knockback while it is a vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
@@ -162,6 +163,15 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsEngineReplacesSteps(BlockPos pos, BlockState state, CallbackInfo callback)
     {
         if (NpcPresentation.of((EntityNPCInterface) (Object) this).getVehicleSounds().resolve((EntityNPCInterface) (Object) this, true).isPresent())
+            callback.cancel();
+    }
+
+    /** A playing engine sound is the NPC's idle sound; the Custom NPCs idle clip would play over it. Its angry sound stays. */
+    @Inject(method = {"playAmbientSound", "m_8032_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsEngineReplacesIdle(CallbackInfo callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (npc.getTarget() == null && NpcPresentation.of(npc).getVehicleSounds().resolve(npc, NpcVehicleSounds.moving(npc)).isPresent())
             callback.cancel();
     }
 
