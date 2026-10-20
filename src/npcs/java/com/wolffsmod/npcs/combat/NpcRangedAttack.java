@@ -64,6 +64,16 @@ public final class NpcRangedAttack
         return options.enabled(Feature.PROJECTILES) && ammo != null && FlansProjectiles.isProjectile(ammo) && (!FlansProjectiles.isGrenade(ammo) || options.enabled(Feature.GRENADES));
     }
 
+    /**
+     * Whether the selected model's weapons fire with their own damage, spread, speed and pellets. They only come from the
+     * model: without one, or while model properties are not inherited, a held gun lends the shot nothing but its sound,
+     * since its statistics are what Use equipped weapons governs.
+     */
+    public static boolean modelWeaponStats(NpcWeaponOptions options, @Nullable IContentType definition)
+    {
+        return definition != null && options.enabled(Feature.TYPE_PROPERTIES) && options.enabled(Feature.MODEL_WEAPON_STATS);
+    }
+
     private static final class Attack
     {
         private final EntityNPCInterface npc;
@@ -151,7 +161,7 @@ public final class NpcRangedAttack
          */
         private Optional<Weapon> adjustedWeapon(WeaponMuzzle muzzle)
         {
-            if (definition == null || !options.enabled(Feature.WEAPON_STATS) || !(own(NpcTypeProperty.DAMAGE) || own(NpcTypeProperty.ACCURACY) || own(NpcTypeProperty.SPEED)))
+            if (!modelWeaponStats(options, definition) || !(own(NpcTypeProperty.DAMAGE) || own(NpcTypeProperty.ACCURACY) || own(NpcTypeProperty.SPEED)))
                 return Optional.empty();
             List<Weapon> weapons = NpcTypeProperties.of(npc).type().map(EntityTypeProperties::weapons).orElse(List.of());
             String name = muzzle.weapon().orElse(definition).getShortName();
@@ -165,7 +175,7 @@ public final class NpcRangedAttack
             float spread = (100F - npc.stats.ranged.getAccuracy()) * 0.2F;
             float speed = Math.max(0.01F, npc.stats.ranged.getSpeed() / 10F);
             if (weapon == null)
-                return new ProjectileParameters(round, options.enabled(Feature.WEAPON_STATS), shotDamage, spread, speed);
+                return new ProjectileParameters(round, modelWeaponStats(options, definition), shotDamage, spread, speed);
             return new ProjectileParameters(round, false, own(NpcTypeProperty.DAMAGE) ? shotDamage : (float) weapon.damage(), own(NpcTypeProperty.ACCURACY) ? spread : (float) weapon.spread(),
                 own(NpcTypeProperty.SPEED) ? speed : (float) weapon.speed().orElse(speed));
         }

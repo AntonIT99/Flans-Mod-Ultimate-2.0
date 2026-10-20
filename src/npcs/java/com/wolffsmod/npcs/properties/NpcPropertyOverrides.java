@@ -86,6 +86,18 @@ public final class NpcPropertyOverrides
         });
     }
 
+    /**
+     * Sets the user's own value. While the property is still overlaid, as for a tick after it stops being inherited, the
+     * stored default is replaced instead, so that the next refresh puts this value back rather than the old one.
+     */
+    public void setStored(NpcTypeProperty property, Tag value, BiConsumer<NpcTypeProperty, Tag> write)
+    {
+        if (defaults.containsKey(property))
+            defaults.put(property, value.copy());
+        else
+            write.accept(property, value);
+    }
+
     public Tag stored(NpcTypeProperty property, Function<NpcTypeProperty, Tag> read)
     {
         Tag stored = defaults.get(property);

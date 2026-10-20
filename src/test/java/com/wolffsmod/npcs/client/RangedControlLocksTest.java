@@ -30,7 +30,7 @@ class RangedControlLocksTest
     {
         var content = new ProjectileSources(Source.WEAPON, Source.WEAPON, Source.WEAPON, true);
         var locks = RangedControlLocks.create(Page.RANGED, true, content, true);
-        assertEquals(Reason.WEAPON_STATS, locks.textFields().get(1));
+        assertEquals(Reason.MODEL_WEAPON_STATS, locks.textFields().get(1));
         assertEquals(Reason.FIRING_SOUND, locks.textFields().get(7));
         assertEquals(Reason.FIRING_SOUND, locks.buttons().get(7));
         for (int id : new int[]{2, 3, 4, 5, 6, 8, 9})
@@ -74,9 +74,9 @@ class RangedControlLocksTest
         var content = new ProjectileSources(Source.AMMUNITION, Source.WEAPON, Source.WEAPON, true);
         var locks = RangedControlLocks.create(Page.PROJECTILE, true, content, true);
         assertEquals(Reason.AMMUNITION, locks.textFields().get(1));
-        assertEquals(Reason.WEAPON_STATS, locks.textFields().get(4));
+        assertEquals(Reason.MODEL_WEAPON_STATS, locks.textFields().get(4));
         assertEquals(Reason.AMMUNITION, locks.labels().get(1));
-        assertEquals(Reason.WEAPON_STATS, locks.labels().get(4));
+        assertEquals(Reason.MODEL_WEAPON_STATS, locks.labels().get(4));
     }
 
     @Test
@@ -108,7 +108,7 @@ class RangedControlLocksTest
         assertFalse(ranged.textFields().containsKey(7));
         var projectile = RangedControlLocks.create(Page.PROJECTILE, true, released, true);
         assertEquals(Reason.AMMUNITION, projectile.textFields().get(1));
-        assertEquals(Reason.WEAPON_STATS, projectile.textFields().get(4));
+        assertEquals(Reason.MODEL_WEAPON_STATS, projectile.textFields().get(4));
         assertEquals(content, RangedControlLocks.release(content, false, false, false, false));
     }
 }

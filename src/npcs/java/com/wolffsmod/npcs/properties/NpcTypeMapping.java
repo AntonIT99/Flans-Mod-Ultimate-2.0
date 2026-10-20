@@ -49,7 +49,7 @@ public final class NpcTypeMapping
         type.worksUnderWater().ifPresent(works -> values.put(NpcTypeProperty.CAN_DROWN, ByteTag.valueOf(!works)));
         type.takesFallDamage().ifPresent(takes -> values.put(NpcTypeProperty.NO_FALL_DAMAGE, ByteTag.valueOf(!takes)));
         timing(values, type, nativeProjectile, cycle);
-        if (options.enabled(Feature.WEAPON_STATS))
+        if (options.enabled(Feature.MODEL_WEAPON_STATS))
             weaponStats(values, type, nativeProjectile);
         sounds(values, type, options);
         return Map.copyOf(values);

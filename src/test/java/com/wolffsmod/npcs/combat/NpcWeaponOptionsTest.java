@@ -31,6 +31,22 @@ class NpcWeaponOptionsTest
     }
 
     @Test
+    void theModelWeaponSwitchKeepsWhatWasSavedUnderItsEarlierName()
+    {
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("WEAPON_STATS", false);
+        CompoundTag npc = new CompoundTag();
+        npc.put(NpcWeaponOptions.NBT_KEY, tag);
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.load(npc);
+        assertFalse(options.enabled(Feature.MODEL_WEAPON_STATS));
+        // Once saved under the current name, that name is what counts.
+        tag.putBoolean("MODEL_WEAPON_STATS", true);
+        options.load(npc);
+        assertTrue(options.enabled(Feature.MODEL_WEAPON_STATS));
+    }
+
+    @Test
     void disabledFeaturesAndSecondarySelectionSurviveSavingAndCloning()
     {
         NpcWeaponOptions options = new NpcWeaponOptions();

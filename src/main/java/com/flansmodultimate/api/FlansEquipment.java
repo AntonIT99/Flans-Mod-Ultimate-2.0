@@ -28,6 +28,12 @@ public final class FlansEquipment
         return EquipmentSupport.weapon(weapon, ammunition);
     }
 
+    /** @return the shield of a held Flan weapon, or empty for an item that is not a Flan shield; either side */
+    public static Optional<EquippedShieldProperties> getShieldProperties(ItemStack weapon)
+    {
+        return EquipmentSupport.shield(weapon);
+    }
+
     /** @return additional Flan armor properties, or empty for another armor item; either side */
     public static Optional<EquippedArmorProperties> getArmorProperties(ItemStack armor)
     {
@@ -170,7 +176,20 @@ public final class FlansEquipment
      */
     public static boolean fire(LivingEntity holder, InteractionHand hand, Vec3 origin, Vec3 direction, boolean sounds, boolean particles)
     {
-        return EquipmentSupport.fire(holder, hand, origin, direction, sounds, particles);
+        return EquipmentSupport.fire(holder, hand, origin, direction, sounds, particles, WeaponOverrides.NONE);
+    }
+
+    /**
+     * Fires one loaded round like {@link #fire(LivingEntity, InteractionHand, Vec3, Vec3, boolean, boolean)}, with some of the
+     * gun's own statistics replaced by the caller's. Throwable guns ignore the overrides. Server thread only.
+     *
+     * @param overrides
+     *            statistics that replace the gun's own; {@link WeaponOverrides#NONE} fires it unchanged
+     * @return whether an attack launched; dry or disabled weapons return false
+     */
+    public static boolean fire(LivingEntity holder, InteractionHand hand, Vec3 origin, Vec3 direction, boolean sounds, boolean particles, WeaponOverrides overrides)
+    {
+        return EquipmentSupport.fire(holder, hand, origin, direction, sounds, particles, overrides);
     }
 
     /**

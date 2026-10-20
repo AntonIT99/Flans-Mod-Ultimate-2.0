@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -85,7 +84,9 @@ class ApocalypseAutonomousEntityTest
         {
             config.when(ModApocalypseConfig::apocalypseNukeDropsEnabled).thenReturn(true);
             config.when(ModApocalypseConfig::apocalypseNukeVisualTicks).thenReturn(3);
-            EntityType<NukeDropEntity> type = EntityType.Builder.<NukeDropEntity>of(NukeDropEntity::new, MobCategory.MISC).sized(1F, 1F).build("test_nuke");
+            // Registries are frozen by the bootstrap, so reuse a vanilla type instead of building a new one.
+            @SuppressWarnings("unchecked")
+            EntityType<NukeDropEntity> type = (EntityType<NukeDropEntity>) (EntityType<?>) EntityType.ARMOR_STAND;
             NukeDropEntity nuke = new NukeDropEntity(type, world.level);
             nuke.setPos(0D, 64D, 0D);
             nuke.setOnGround(true);

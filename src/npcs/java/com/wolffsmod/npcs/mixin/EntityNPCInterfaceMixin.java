@@ -37,7 +37,8 @@ import java.util.Optional;
  * Every hook into the Custom NPCs entity base class.
  *
  * <ul>
- * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data.</li>
+ * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
+ * and each kind of armor protection the NPC keeps its own value for.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
@@ -173,6 +174,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     @Override
+    public boolean flansArmorProtects(DamageSource source)
+    {
+        return NpcEquipment.armorResists((EntityNPCInterface) (Object) this, NpcDamageCategory.of(source));
+    }
+
+    @Override
     public boolean flansWeaponEffects()
     {
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.ITEM_WEAPONS);
@@ -245,12 +252,22 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
                 var instance = getAttribute(attribute);
                 if (instance == null)
                     return;
-                if (!flansArmorEffects())
+                if (!wolffsmodnpcsArmorAttribute(attribute))
                     instance.removeModifier(modifier.getId());
                 else if (!instance.hasModifier(modifier))
                     instance.addTransientModifier(modifier);
             });
         }
+    }
+
+    /** Worn armor lends the NPC its attributes, except a knockback resistance the NPC keeps its own value for. */
+    @Unique
+    private boolean wolffsmodnpcsArmorAttribute(net.minecraft.world.entity.ai.attributes.Attribute attribute)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (attribute == net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE)
+            return NpcEquipment.inherits(npc, EquipmentProperty.ARMOR_KNOCKBACK);
+        return flansArmorEffects();
     }
 
     @Inject(method = {"doHurtTarget", "m_7327_"}, at = @At("HEAD"), cancellable = true)
@@ -265,28 +282,28 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         }
         // A held Flan gun is swung whether the item or the editor decides the damage.
         NpcItemAttacks.meleeFeedback(npc);
-        if (NpcEquipment.weaponAuthority(npc))
+        if (NpcEquipment.itemMelee(npc))
             callback.setReturnValue(NpcItemAttacks.melee(npc, target));
     }
 
     @Inject(method = {"getDamageAfterArmorAbsorb", "m_21161_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsNativeArmor(DamageSource source, float amount, CallbackInfoReturnable<Float> callback)
     {
-        if (flansArmorEffects())
+        if (NpcEquipment.armorResists((EntityNPCInterface) (Object) this, NpcDamageCategory.of(source)))
             callback.setReturnValue(super.getDamageAfterArmorAbsorb(source, amount));
     }
 
     @Inject(method = {"fireImmune", "m_5825_"}, at = @At("RETURN"), cancellable = true)
     private void wolffsmodnpcsArmorFireProtection(CallbackInfoReturnable<Boolean> callback)
     {
-        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquippedArmorProperties::fireResistance))
+        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_FIRE, EquippedArmorProperties::fireResistance))
             callback.setReturnValue(true);
     }
 
     @Inject(method = {"decreaseAirSupply", "m_7302_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsArmorAir(int air, CallbackInfoReturnable<Integer> callback)
     {
-        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquippedArmorProperties::waterBreathing))
+        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_BREATHING, EquippedArmorProperties::waterBreathing))
             callback.setReturnValue(air);
     }
 
@@ -305,20 +322,22 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = {"causeFallDamage", "m_142535_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsArmorFall(float distance, float multiplier, DamageSource source, CallbackInfoReturnable<Boolean> callback)
     {
-        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquippedArmorProperties::negatesFallDamage))
+        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_FALL, EquippedArmorProperties::negatesFallDamage))
             callback.setReturnValue(false);
     }
 
     @Redirect(method = {"hurt", "m_6469_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/Resistances;applyResistance(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
     private float wolffsmodnpcsArmorNotEditor(Resistances resistances, DamageSource source, float amount)
     {
-        return flansArmorEffects() ? amount : NpcProtection.resist((EntityNPCInterface) (Object) this, resistances, source, amount);
+        return NpcEquipment.armorResists((EntityNPCInterface) (Object) this, NpcDamageCategory.of(source))
+            ? amount
+            : NpcProtection.resist((EntityNPCInterface) (Object) this, resistances, source, amount);
     }
 
     @Redirect(method = {"knockback", "m_147240_"}, at = @At(value = "FIELD", target = "Lnoppes/npcs/Resistances;knockback:F", opcode = Opcodes.GETFIELD))
     private float wolffsmodnpcsNativeKnockback(Resistances resistances)
     {
-        return flansArmorEffects() ? 1F : resistances.knockback;
+        return NpcEquipment.inherits((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_KNOCKBACK) ? 1F : resistances.knockback;
     }
 
     // LivingEntity's default equipment wear hooks are empty for ordinary mobs.
@@ -379,7 +398,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         {
             // Scripted ranged triggers use the same item action, never the editor projectile template.
             if (NpcEquipment.ranged(npc) && NpcItemAttacks.ranged(npc, target))
-                NpcItemAttacks.launched(npc, target);
+                NpcItemAttacks.launched(npc, target, NpcEquipment.offHandPrimary(npc) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
             callback.cancel();
             return;
         }

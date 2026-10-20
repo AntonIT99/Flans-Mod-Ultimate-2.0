@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.combat;
 
-import com.wolffsmod.npcs.combat.NpcCombatSettings.EquipmentImport;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,8 @@ class NpcCombatSettingsTest
             assertEquals(0, settings.minimumHit(category));
         for (NpcTypeProperty property : NpcTypeProperty.values())
             assertFalse(settings.isCustom(property));
+        for (EquipmentProperty property : EquipmentProperty.values())
+            assertFalse(settings.isCustom(property));
         assertFalse(settings.hasRequests());
         assertEquals(0, settings.customSignature());
     }
@@ -36,7 +37,8 @@ class NpcCombatSettingsTest
         settings.setMinimumHit(NpcDamageCategory.EXPLOSION, 40);
         settings.setCustom(NpcTypeProperty.HEALTH, true);
         settings.requestImport(NpcTypeProperty.DAMAGE);
-        settings.requestImport(EquipmentImport.ARMOR);
+        settings.requestImport(EquipmentProperty.ARMOR_MELEE);
+        settings.setCustom(EquipmentProperty.MELEE_REACH, true);
         CompoundTag npc = new CompoundTag();
         npc.putInt("MaxHealth", 80);
         settings.save(npc);
@@ -49,8 +51,9 @@ class NpcCombatSettingsTest
         assertEquals(Set.of(NpcTypeProperty.HEALTH, NpcTypeProperty.DAMAGE), clone.customProperties());
         assertTrue(clone.importRequested(NpcTypeProperty.DAMAGE));
         assertFalse(clone.importRequested(NpcTypeProperty.HEALTH));
-        assertTrue(clone.importRequested(EquipmentImport.ARMOR));
-        assertFalse(clone.importRequested(EquipmentImport.MELEE));
+        assertTrue(clone.importRequested(EquipmentProperty.ARMOR_MELEE));
+        assertFalse(clone.importRequested(EquipmentProperty.MELEE_DAMAGE));
+        assertEquals(Set.of(EquipmentProperty.ARMOR_MELEE, EquipmentProperty.MELEE_REACH), clone.customEquipment());
         assertEquals(settings.customSignature(), clone.customSignature());
         assertEquals(80, npc.getInt("MaxHealth"));
     }
@@ -60,11 +63,12 @@ class NpcCombatSettingsTest
     {
         NpcCombatSettings settings = new NpcCombatSettings();
         settings.requestImport(NpcTypeProperty.ACCURACY);
-        settings.requestImport(EquipmentImport.RANGED);
+        settings.requestImport(EquipmentProperty.RANGED_SPEED);
         assertTrue(settings.isCustom(NpcTypeProperty.ACCURACY));
         assertTrue(settings.hasRequests());
         assertEquals(Set.of(NpcTypeProperty.ACCURACY), settings.takePropertyImports());
-        assertEquals(Set.of(EquipmentImport.RANGED), settings.takeEquipmentImports());
+        assertEquals(Set.of(EquipmentProperty.RANGED_SPEED), settings.takeEquipmentImports());
+        assertTrue(settings.isCustom(EquipmentProperty.RANGED_SPEED));
         assertFalse(settings.hasRequests());
         assertTrue(settings.takePropertyImports().isEmpty());
         // The imported value stays custom until inheritance is chosen again.
@@ -85,6 +89,41 @@ class NpcCombatSettingsTest
         settings.clearRequests();
         assertTrue(settings.isCustom(NpcTypeProperty.SPEED));
         assertFalse(settings.hasRequests());
+    }
+
+    @Test
+    void anEquipmentCopyLeavesTheModeAndOnlySwitchableStatisticsBecomeCustom()
+    {
+        NpcCombatSettings settings = new NpcCombatSettings();
+        settings.requestCopy(EquipmentProperty.MELEE_DAMAGE);
+        assertTrue(settings.importRequested(EquipmentProperty.MELEE_DAMAGE));
+        assertFalse(settings.isCustom(EquipmentProperty.MELEE_DAMAGE));
+        // The item always times its own shots, so its rhythm can be imported but never kept instead.
+        settings.requestImport(EquipmentProperty.FIRING_DELAY);
+        assertTrue(settings.importRequested(EquipmentProperty.FIRING_DELAY));
+        assertFalse(settings.isCustom(EquipmentProperty.FIRING_DELAY));
+        settings.setCustom(EquipmentProperty.MELEE_DAMAGE, true);
+        settings.setCustom(EquipmentProperty.MELEE_DAMAGE, false);
+        assertFalse(settings.isCustom(EquipmentProperty.MELEE_DAMAGE));
+    }
+
+    @Test
+    void anEarlierWholeKindImportStillCopiesEveryStatisticOfThatKind()
+    {
+        CompoundTag root = new CompoundTag();
+        CompoundTag tag = new CompoundTag();
+        ListTag imports = new ListTag();
+        imports.add(StringTag.valueOf("RANGED"));
+        imports.add(StringTag.valueOf("ARMOR"));
+        tag.put("EquipmentImports", imports);
+        root.put(NpcCombatSettings.NBT_KEY, tag);
+        NpcCombatSettings settings = new NpcCombatSettings();
+        settings.load(root);
+        for (EquipmentProperty property : EquipmentProperty.values())
+            // The former kinds were the main-hand weapon and the armor; the off hand had none.
+            assertEquals(property.getGroup() != EquipmentProperty.Group.MELEE && property.getGroup().getSlot() != EquipmentProperty.Slot.OFF_HAND, settings.importRequested(property), property.name());
+        // Those imports were copies; they do not make the NPC keep its own values.
+        assertTrue(settings.customEquipment().isEmpty());
     }
 
     @Test

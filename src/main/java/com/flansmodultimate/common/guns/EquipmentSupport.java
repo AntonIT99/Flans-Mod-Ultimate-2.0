@@ -81,6 +81,14 @@ public final class EquipmentSupport
             bullet.isEntityHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() && sound.isBlank());
     }
 
+    public static Optional<EquippedShieldProperties> shield(ItemStack stack)
+    {
+        if (!(stack.getItem() instanceof GunItem item) || !item.getConfigType().isShield())
+            return Optional.empty();
+        GunType type = item.getConfigType();
+        return Optional.of(new EquippedShieldProperties(type.getShieldDamageAbsorption(), type.getShieldBlockChance(), type.getShieldMaxBlockableMeleeDamage()));
+    }
+
     public static Optional<EquippedArmorProperties> armor(ItemStack stack)
     {
         if (!(stack.getItem() instanceof CustomArmorItem item))
@@ -181,7 +189,7 @@ public final class EquipmentSupport
         }
     }
 
-    public static boolean fire(LivingEntity holder, InteractionHand hand, Vec3 origin, Vec3 direction, boolean sounds, boolean particles)
+    public static boolean fire(LivingEntity holder, InteractionHand hand, Vec3 origin, Vec3 direction, boolean sounds, boolean particles, WeaponOverrides overrides)
     {
         ItemStack stack = holder.getItemInHand(hand);
         if (!server(holder) || !holder.isAlive() || !(stack.getItem() instanceof GunItem item) || !Double.isFinite(origin.lengthSqr()) || !Double.isFinite(direction.lengthSqr())
@@ -196,10 +204,11 @@ public final class EquipmentSupport
         if (loaded == null)
             return false;
         ShootableType ammunition = ((ShootableItem) loaded.stack().getItem()).getConfigType();
-        FireableGun gun = new FireableGun(type, stack, holder, holder.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND),
-            ModUtils.getEnumMovement(holder), !holder.onGround());
+        FireableGun gun = overridden(new FireableGun(type, stack, holder, holder.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND),
+            ModUtils.getEnumMovement(holder), !holder.onGround()), overrides);
+        int projectiles = Math.max(1, Math.min(128, overrides.projectiles().orElse(type.getNumBullets(stack, ammunition))));
         // This shared path retains hitscan when no weapon/ammunition velocity is declared.
-        ShootingHelper.fireWeapon(holder.level(), gun, ammunition, type.getNumBullets(stack, ammunition), origin, direction.normalize(), holder, holder, ShootableItem.getRoundsFired(loaded.stack()),
+        ShootingHelper.fireWeapon(holder.level(), gun, ammunition, projectiles, origin, direction.normalize(), holder, holder, ShootableItem.getRoundsFired(loaded.stack()),
             () -> afterShot(holder, hand, stack, item, loaded));
         if (sounds)
             firingSounds(holder, type, stack, !hasLoadedRound(stack));
@@ -207,6 +216,17 @@ public final class EquipmentSupport
             muzzleFlash(holder, hand, type, stack);
         GunArmPoses.onShotFired(holder, hand);
         return true;
+    }
+
+    /** The held gun with the caller's statistics in place of its own; its speed multiplier and spread pattern are kept. */
+    private static FireableGun overridden(FireableGun gun, WeaponOverrides overrides)
+    {
+        if (overrides.isEmpty())
+            return gun;
+        float damage = (float) overrides.damage().stream().filter(Double::isFinite).map(value -> Math.max(0D, value)).findFirst().orElse(gun.getDamage());
+        float spread = (float) overrides.spread().stream().filter(Double::isFinite).map(value -> Math.max(0D, value)).findFirst().orElse(gun.getSpread());
+        float speed = (float) overrides.speed().stream().filter(Double::isFinite).map(value -> Math.max(0.01D, value)).findFirst().orElse(gun.getBulletSpeed());
+        return new FireableGun(gun.getType(), damage, spread, speed, gun.getBulletSpeedMultiplier(), gun.getSpreadPattern());
     }
 
     private static void firingSounds(LivingEntity holder, GunType type, ItemStack stack, boolean lastRound)

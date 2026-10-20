@@ -8,6 +8,7 @@ package com.flansmodultimate.api;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 
 /** Optional living-entity policy for Flan equipment effects and presentation. Read on the entity's own side. */
 @ApiStatus.Experimental
@@ -17,6 +18,19 @@ public interface IEquipmentPolicy
     default boolean flansArmorEffects()
     {
         return true;
+    }
+
+    /**
+     * Narrows {@link #flansArmorEffects()} to one incoming hit: Flan armor defense and bullet defense only reduce it when this
+     * returns true. Read on the server while the hit is resolved.
+     *
+     * @param source
+     *            the damage being resolved
+     * @return whether equipped Flan armor reduces this hit; by default, whether armor effects apply at all
+     */
+    default boolean flansArmorProtects(DamageSource source)
+    {
+        return flansArmorEffects();
     }
 
     /** @return whether Flan held shields may block incoming attacks */

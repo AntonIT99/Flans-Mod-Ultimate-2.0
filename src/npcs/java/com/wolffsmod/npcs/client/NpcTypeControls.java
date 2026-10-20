@@ -2,13 +2,8 @@ package com.wolffsmod.npcs.client;
 
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
-import com.wolffsmod.npcs.properties.NpcTypeProperties;
-import com.wolffsmod.npcs.properties.NpcTypeProperty;
-import com.wolffsmod.npcs.properties.NpcTypeReadouts;
-import noppes.npcs.client.gui.SubGuiNpcMeleeProperties;
-import noppes.npcs.client.gui.SubGuiNpcMovement;
-import noppes.npcs.client.gui.SubGuiNpcProjectiles;
-import noppes.npcs.client.gui.SubGuiNpcRangeProperties;
+import com.wolffsmod.npcs.properties.*;
+import noppes.npcs.client.gui.*;
 import noppes.npcs.client.gui.advanced.GuiNPCSoundsMenu;
 import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -17,8 +12,7 @@ import noppes.npcs.shared.client.gui.components.GuiBasic;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /** Displays converted type values, while the runtime overlay retains the original editable defaults for saves. */
 public final class NpcTypeControls
@@ -47,20 +41,7 @@ public final class NpcTypeControls
         Map<Integer, Reason> fields = new HashMap<>();
         Map<Integer, Reason> buttons = new HashMap<>();
         Map<Integer, Reason> labels = new HashMap<>();
-        fields(gui).forEach((id, property) ->
-        {
-            String value = readouts.get(property);
-            var field = gui.getTextField(id);
-            if (value != null && field != null)
-            {
-                field.setMaxLength(256);
-                field.numbersOnly = false;
-                field.floatsOnly = false;
-                field.setValue(value);
-                fields.put(id, Reason.TYPE_PROPERTIES);
-                labels.put(id, Reason.TYPE_PROPERTIES);
-            }
-        });
+        lockFields(gui, readouts, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().customProperties(), fields, labels);
         buttons(gui).forEach((id, property) ->
         {
             Tag value = values.get(property);
@@ -78,6 +59,25 @@ public final class NpcTypeControls
         RangedControlLocks locks = new RangedControlLocks(fields, buttons, labels);
         NpcRangedControls.markControls(gui, locks);
         return RangedControlLocks.merge(locks, NpcEquipmentControls.apply(gui, npc));
+    }
+
+    /** Shows the model's value in each field it decides, read-only; a property kept as Custom stays editable. */
+    private static void lockFields(GuiBasic gui, Map<NpcTypeProperty, String> readouts, Set<NpcTypeProperty> custom, Map<Integer, Reason> fields, Map<Integer, Reason> labels)
+    {
+        fields(gui).forEach((id, property) ->
+        {
+            // Mounts that differ show their values even when not inherited.
+            String value = custom.contains(property) ? null : readouts.get(property);
+            var field = gui.getTextField(id);
+            if (value == null || field == null)
+                return;
+            field.setMaxLength(256);
+            field.numbersOnly = false;
+            field.floatsOnly = false;
+            field.setValue(value);
+            fields.put(id, Reason.TYPE_PROPERTIES);
+            labels.put(id, Reason.TYPE_PROPERTIES);
+        });
     }
 
     private static Map<Integer, NpcTypeProperty> fields(GuiBasic gui)

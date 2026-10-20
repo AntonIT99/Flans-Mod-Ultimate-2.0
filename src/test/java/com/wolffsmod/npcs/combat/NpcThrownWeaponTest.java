@@ -56,6 +56,7 @@ class NpcThrownWeaponTest
                 ItemStack held = inHand ? throwable : new ItemStack(Items.IRON_SWORD);
                 when(npc.getMainHandItem()).thenReturn(held);
                 when(npc.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(held);
+                when(npc.getOffhandItem()).thenReturn(ItemStack.EMPTY);
                 npc.inventory = new DataInventory(npc);
                 IItemStack wrapped = mock(IItemStack.class);
                 when(wrapped.getMCItemStack()).thenReturn(throwable);
@@ -188,6 +189,7 @@ class NpcThrownWeaponTest
             ItemStack held = new ItemStack(Items.IRON_SWORD);
             when(npc.getMainHandItem()).thenReturn(held);
             when(npc.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(held);
+            when(npc.getOffhandItem()).thenReturn(ItemStack.EMPTY);
             npc.inventory = new DataInventory(npc);
             IItemStack wrapped = mock(IItemStack.class);
             when(wrapped.getMCItemStack()).thenReturn(throwable);
@@ -213,7 +215,7 @@ class NpcThrownWeaponTest
                 options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(false);
                 NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
                 vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
-                attacks.when(() -> NpcItemAttacks.launched(npc, target)).thenAnswer(call -> null);
+                attacks.when(() -> NpcItemAttacks.launched(eq(npc), eq(target), any())).thenAnswer(call -> null);
                 if (grenade)
                 {
                     projectiles.when(() -> FlansProjectiles.isGrenade(throwable)).thenReturn(true);

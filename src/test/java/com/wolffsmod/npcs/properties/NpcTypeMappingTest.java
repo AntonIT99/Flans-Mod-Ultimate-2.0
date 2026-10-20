@@ -39,7 +39,7 @@ class NpcTypeMappingTest
     {
         NpcWeaponOptions options = new NpcWeaponOptions();
         EntityTypeProperties type = type(List.of(weapon(12, 2, 3, "flansmod:fire")));
-        options.set(Feature.WEAPON_STATS, false);
+        options.set(Feature.MODEL_WEAPON_STATS, false);
         options.set(Feature.FIRE_SOUNDS, false);
         var mapped = NpcTypeMapping.create(type, options, true);
         assertTrue(mapped.containsKey(NpcTypeProperty.HEALTH));

@@ -50,7 +50,7 @@ class FlanSoldierLoadoutTest
         @Override
         public boolean loads(String gun, String ammunition)
         {
-            return ammunition.equals(gun.replace("Gun", "Ammo"));
+            return gun.equals("bow") ? ammunition.equals("arrowAmmo") : ammunition.equals(gun.replace("Gun", "Ammo"));
         }
     };
 
@@ -72,6 +72,8 @@ class FlanSoldierLoadoutTest
             assertEquals(Kind.WEAPON, FlanSoldierLoadout.kind(new ItemStack(item)));
         assertEquals(Kind.SHIELD, FlanSoldierLoadout.kind(new ItemStack(Items.SHIELD)));
         assertEquals(Kind.OTHER, FlanSoldierLoadout.kind(new ItemStack(Items.BREAD)));
+        for (var item : List.of(Items.ARROW, Items.SPECTRAL_ARROW, Items.TIPPED_ARROW, Items.FIREWORK_ROCKET))
+            assertEquals(Kind.AMMUNITION, FlanSoldierLoadout.kind(new ItemStack(item)));
     }
 
     @Test
@@ -115,6 +117,9 @@ class FlanSoldierLoadoutTest
         assertEquals(new Slots<>("rifleGun", null, "fragGrenade", List.of("pistolAmmo", "smokeGrenade")), assign("rifleGun", "pistolAmmo", "fragGrenade", "smokeGrenade"));
         // Without a gun nothing is reloaded, so the ammunition is only carried.
         assertEquals(new Slots<>("knife", null, "fragGrenade", List.of("rifleAmmo")), assign("knife", "fragGrenade", "rifleAmmo"));
+        // A bow shoots from the projectile slot as a gun reloads from it.
+        assertEquals(new Slots<>("bow", null, "arrowAmmo", List.of("knife", "arrowAmmo")), assign("bow", "knife", "arrowAmmo", "arrowAmmo"));
+        assertEquals(new Slots<>("bow", null, "arrowAmmo", List.of("fragGrenade")), assign("fragGrenade", "bow", "arrowAmmo"));
     }
 
     @Test

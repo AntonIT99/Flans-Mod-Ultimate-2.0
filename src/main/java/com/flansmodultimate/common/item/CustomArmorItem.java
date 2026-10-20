@@ -393,7 +393,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     public static void applyOldArmorRatioSystem(MutableDamageContext event, LivingEntity entity)
     {
-        if (!effectsEnabled(entity))
+        if (ignoresArmor(entity, event.source()))
             return;
         float incoming = event.amount();
         if (incoming <= 0F)
@@ -472,7 +472,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     public static void applyArmorBulletDefense(MutableDamageContext event, LivingEntity entity)
     {
-        if (!effectsEnabled(entity))
+        if (ignoresArmor(entity, event.source()))
             return;
         float totalNormalDef = 0.0F;
         float totalBulletDef = 0.0F;
@@ -506,5 +506,10 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     private static boolean effectsEnabled(LivingEntity entity)
     {
         return !(entity instanceof IEquipmentPolicy policy) || policy.flansArmorEffects();
+    }
+
+    private static boolean ignoresArmor(LivingEntity entity, DamageSource source)
+    {
+        return entity instanceof IEquipmentPolicy policy && !policy.flansArmorProtects(source);
     }
 }

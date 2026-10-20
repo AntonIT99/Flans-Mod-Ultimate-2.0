@@ -2,7 +2,6 @@ package com.wolffsmod.npcs.soldier;
 
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.*;
-import com.wolffsmod.npcs.combat.NpcCombatSettings.EquipmentImport;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.*;
@@ -14,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -47,7 +46,7 @@ public final class FlanSoldierLoadout
         THROWABLE,
         /** A throwable Flan gun, eligible for either the projectile slot or the main hand. */
         THROWN_WEAPON,
-        /** Flan ammunition a gun is reloaded with. */
+        /** Flan ammunition a gun is reloaded with, or arrows and rockets a bow or crossbow shoots. */
         AMMUNITION, OTHER
     }
 
@@ -79,9 +78,9 @@ public final class FlanSoldierLoadout
     /**
      * Distributes the starting items of a class, in AddItem order. The first throwable is reserved for the projectile slot;
      * the first remaining handheld gun, melee weapon, throwable gun or supported non-Flan ranged weapon goes in the main hand. The
-     * off hand takes a shield, or a second gun only when it is the same weapon as the first, for dual wielding. A gun
-     * reloads from the projectile slot, which takes the first ammunition the main-hand gun loads; without any, or
-     * without a gun, it takes the first throwable. Everything else goes to the inventory, up to its size.
+     * off hand takes a shield, or a second gun only when it is the same weapon as the first, for dual wielding. A gun, bow
+     * or crossbow reloads from the projectile slot, which takes the first ammunition the main-hand weapon loads; without
+     * any, or without such a weapon, it takes the first throwable. Everything else goes to the inventory, up to its size.
      */
     public static <T> Slots<T> assign(List<T> items, Items<T> rules)
     {
@@ -89,7 +88,9 @@ public final class FlanSoldierLoadout
         int mainHand = first(items, throwable, item -> rules.kind(item) == Kind.GUN || rules.kind(item) == Kind.WEAPON || rules.kind(item) == Kind.THROWN_WEAPON);
         T weapon = at(items, mainHand);
         int offHand = first(items, mainHand, item -> offHand(rules, weapon, item));
-        int ammunition = weapon != null && rules.kind(weapon) == Kind.GUN ? first(items, -1, item -> rules.kind(item) == Kind.AMMUNITION && rules.loads(weapon, item)) : -1;
+        int ammunition = weapon != null && (rules.kind(weapon) == Kind.GUN || rules.kind(weapon) == Kind.WEAPON)
+            ? first(items, -1, item -> rules.kind(item) == Kind.AMMUNITION && rules.loads(weapon, item))
+            : -1;
         int projectile = ammunition < 0 ? throwable : ammunition;
         List<T> inventory = new ArrayList<>();
         for (int i = 0; i < items.size() && inventory.size() < NpcAmmunition.INVENTORY_SLOTS; i++)
@@ -137,6 +138,8 @@ public final class FlanSoldierLoadout
         @Override
         public boolean loads(ItemStack gun, ItemStack ammunition)
         {
+            if (gun.getItem() instanceof ProjectileWeaponItem weapon)
+                return weapon.getAllSupportedProjectiles().test(ammunition);
             return FlansEquipment.acceptsAmmunition(gun, ammunition);
         }
     }
@@ -145,7 +148,7 @@ public final class FlanSoldierLoadout
     {
         if (FlansProjectiles.isGrenade(stack))
             return Kind.THROWABLE;
-        if (FlansProjectiles.isProjectile(stack))
+        if (FlansProjectiles.isProjectile(stack) || stack.getItem() instanceof ArrowItem || stack.getItem() instanceof FireworkRocketItem)
             return Kind.AMMUNITION;
         Optional<EquippedWeaponProperties> weapon = FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY);
         if (NpcEquipment.shield(stack) || weapon.isPresent() && weapon.get().shield())
@@ -202,8 +205,8 @@ public final class FlanSoldierLoadout
         npc.inventory.drops.putAll(equipment.inventory());
         // The NPC's next tick imports them, where the new equipment is in place and inherited values are lifted first.
         NpcCombatSettings combat = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
-        for (EquipmentImport kind : EquipmentImport.values())
-            combat.requestImport(kind);
+        for (EquipmentProperty property : EquipmentProperty.values())
+            combat.requestCopy(property);
         npc.updateClient = true;
         npc.updateAI = true;
     }

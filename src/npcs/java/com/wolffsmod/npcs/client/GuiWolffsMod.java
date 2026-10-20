@@ -98,6 +98,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final String PARTS_TAB = "parts";
     private static final String HITS_TAB = "hits";
     private static final String PATH_SEPARATOR = " > ";
+    /** Room for the title of a page, which only Back follows. */
+    private static final int TITLE_WIDTH = 340;
+    /** What stands for the outer parts of a page path that do not fit. */
+    private static final String TRIMMED = "..." + PATH_SEPARATOR;
     private static final String HELP_SUFFIX = ".help";
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
 
@@ -158,7 +162,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         // One page a line, one tab a line: the order here is the order on screen.
         // spotless:off
         EQUIPMENT(Section.COMBAT, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
-        MODEL_STATS(Section.COMBAT, Tab.of(Feature.TYPE_PROPERTIES, Feature.WEAPON_STATS)),
+        MODEL_STATS(Section.COMBAT, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         FIRING(Section.COMBAT, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES, Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE,
             Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES)),
         AIMING(Section.COMBAT, Tab.of(Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE, Feature.EYE_AT_MUZZLE)),
@@ -277,7 +281,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void initCategory()
     {
-        addLabel(new GuiLabel(TITLE_LABEL_ID, pageTitle(), guiLeft + 8, guiTop + 10));
+        addLabel(new GuiLabel(TITLE_LABEL_ID, fitTitle(pageTitle(), combat.active() ? combat.titleWidth() : TITLE_WIDTH), guiLeft + 8, guiTop + 10));
         addButton(new GuiButtonNop(this, BACK_BUTTON_ID, guiLeft + 354, guiTop + 4, 50, 20, new String[]{"gui.back"}, 0));
         if (combat.active())
             combat.init(loaded);
@@ -298,6 +302,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (editingSound != null)
             return path + PATH_SEPARATOR + I18n.get(PRESENTATION + (editingSound == sounds().getIdle() ? "edit_idle" : "edit_movement"));
         return path;
+    }
+
+    /** Drops the outermost parts of a page path until it fits, so the page itself is always named. */
+    static String fitTitle(String path, int width)
+    {
+        String title = path;
+        while (Minecraft.getInstance().font.width(title) > width && title.indexOf(PATH_SEPARATOR) != title.lastIndexOf(PATH_SEPARATOR))
+            title = TRIMMED + title.substring(title.indexOf(PATH_SEPARATOR, title.startsWith(TRIMMED) ? TRIMMED.length() : 0) + PATH_SEPARATOR.length());
+        return title;
     }
 
     /** The tab buttons of a page with several tabs, the rows of the tab shown and what the page adds below them. */
@@ -327,9 +340,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         int control = initRows(rows, top);
         int below = top + rows.size() * ROW_HEIGHT;
         if (category == Category.EQUIPMENT)
-            combat.initImportsLink(loaded, below + 6);
-        else if (category == Category.MODEL_STATS)
+            combat.initEquipmentLink(loaded, below + 6);
+        else if (category == Category.MODEL_STATS && enabled(Feature.TYPE_PROPERTIES))
             combat.initPropertiesLink(loaded, below + 6);
+        else if (category == Category.MODEL_STATS)
+            // Everything else on the page reads the model, so nothing else is offered until inheritance is on.
+            addLabel(new GuiLabel(TITLE_LABEL_ID + 2, "wolffsmodnpcs.combat.properties_disabled", guiLeft + 8, guiTop + below + 6));
         else if (category == Category.PROTECTION && HITS_TAB.equals(shown.name()))
             combat.initProtection(loaded, control, below);
         else if (category == Category.PROTECTION && PARTS_TAB.equals(shown.name()))
@@ -339,7 +355,14 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** A row that only means something while another setting is on is left out until then. */
     private boolean visible(Object row)
     {
-        return row != Value.WEAPON_SWITCH || ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.CONSUME_AMMO);
+        if (row == Value.WEAPON_SWITCH)
+            return enabled(Feature.CONSUME_AMMO);
+        return row != Feature.MODEL_WEAPON_STATS || enabled(Feature.TYPE_PROPERTIES);
+    }
+
+    private boolean enabled(Feature feature)
+    {
+        return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);
     }
 
     /**

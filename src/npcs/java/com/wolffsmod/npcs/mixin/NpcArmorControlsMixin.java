@@ -10,13 +10,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Leaves the stored NPC resistance values intact while equipped armor governs the damage pipeline. */
+import java.util.Set;
+
+/** Leaves the stored NPC resistance values intact for the resistances equipped armor governs in the damage pipeline. */
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(value = SubGuiNpcResistanceProperties.class, remap = false)
 public abstract class NpcArmorControlsMixin extends GuiBasic
 {
     @Unique
-    private boolean wolffsmodnpcsArmorReadOnly;
+    private Set<Integer> wolffsmodnpcsArmorReadOnly = Set.of();
 
     @Inject(method = {"init", "m_7856_"}, at = @At("TAIL"))
     private void wolffsmodnpcsArmorReadouts(CallbackInfo callback)
@@ -27,7 +29,7 @@ public abstract class NpcArmorControlsMixin extends GuiBasic
     @Inject(method = {"mouseDragged", "mouseReleased"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsRetainResistance(GuiSliderNop slider, CallbackInfo callback)
     {
-        if (wolffsmodnpcsArmorReadOnly)
+        if (wolffsmodnpcsArmorReadOnly.contains(slider.id))
             callback.cancel();
     }
 }

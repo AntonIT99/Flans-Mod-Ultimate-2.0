@@ -84,8 +84,9 @@ public final class NpcRangedControls
             muzzles = List.of(new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of()));
         ItemStack held = npc.getMainHandItem();
         // Inspect every barrel so an alternating bank never locks a fallback still used by another mount.
-        return muzzles.stream()
-            .map(muzzle -> FlansProjectiles.getSources(ammunition, held, muzzle.weapon().orElse(null), definition, secondary, options.enabled(Feature.WEAPON_STATS)).orElse(CALLER_SOURCES)).toList();
+        return muzzles.stream().map(
+            muzzle -> FlansProjectiles.getSources(ammunition, held, muzzle.weapon().orElse(null), definition, secondary, NpcRangedAttack.modelWeaponStats(options, definition)).orElse(CALLER_SOURCES))
+            .toList();
     }
 
     static void markControls(GuiBasic gui, RangedControlLocks locks)

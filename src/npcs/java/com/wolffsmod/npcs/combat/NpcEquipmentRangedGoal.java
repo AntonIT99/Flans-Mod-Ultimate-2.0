@@ -16,7 +16,8 @@ import java.util.EnumSet;
 /**
  * Native item charge/reload/cadence while Custom NPCs still selects the combat target. A second Flan gun in the off hand
  * fires on its own cadence and reloads on its own, under the handling rules players have: a two-handed gun does not fire
- * while the other hand is full.
+ * while the other hand is full. A Flan gun in the off hand with no ranged weapon in the main hand is fired as the NPC's
+ * only gun.
  */
 public final class NpcEquipmentRangedGoal extends Goal
 {
@@ -105,9 +106,20 @@ public final class NpcEquipmentRangedGoal extends Goal
             cancelUse();
             return;
         }
+        if (NpcEquipment.offHandPrimary(npc))
+        {
+            // The off-hand gun is the NPC's weapon; what the main hand holds is for melee or blocking.
+            if (main.lastWeapon != null)
+            {
+                main.lastWeapon = null;
+                main.reset();
+            }
+            tickOffHand(target, true);
+            return;
+        }
         tickMainHand(target);
         if (NpcEquipment.offHandGun(npc))
-            tickOffHand(target);
+            tickOffHand(target, false);
         else if (off.lastWeapon != null)
         {
             off.lastWeapon = null;
@@ -140,7 +152,11 @@ public final class NpcEquipmentRangedGoal extends Goal
         fire(main, target, weapon, properties.map(value -> value.automaticFire() && !value.throwable()).orElse(false));
     }
 
-    private void tickOffHand(LivingEntity target)
+    /**
+     * @param alone
+     *            whether the off-hand gun is the only one the NPC fires, rather than a second gun beside the main hand's
+     */
+    private void tickOffHand(LivingEntity target, boolean alone)
     {
         ItemStack weapon = npc.getOffhandItem();
         var properties = NpcEquipment.flan(npc, InteractionHand.OFF_HAND);
@@ -151,14 +167,15 @@ public final class NpcEquipmentRangedGoal extends Goal
             off.reset();
             off.lastWeapon = weapon;
             // Start half a beat behind the main hand, so two guns alternate instead of firing as one.
-            off.cadence.fired(NpcEquipment.shotDelay(weapon) * 0.5D);
+            if (!alone)
+                off.cadence.fired(NpcEquipment.shotDelay(weapon) * 0.5D);
         }
         if (off.spinSpeed < properties.get().spinUpMaximum())
             off.spinSpeed += 2F;
         if (reload(off, weapon) || !off.cadence.ready() || off.spinSpeed < properties.get().spinUpThreshold())
             return;
         // A weapon being drawn or charged in the main hand keeps the NPC's aim.
-        if (!npc.isUsingItem() || NpcEquipment.shield(npc.getUseItem()))
+        if (alone || !npc.isUsingItem() || NpcEquipment.shield(npc.getUseItem()))
             aim(target);
         fire(off, target, weapon, properties.get().automaticFire());
     }
@@ -206,7 +223,7 @@ public final class NpcEquipmentRangedGoal extends Goal
 
     private void launched(LivingEntity target, InteractionHand side)
     {
-        NpcItemAttacks.launched(npc, target);
+        NpcItemAttacks.launched(npc, target, side);
         if (NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.WEAPON_ANIMATIONS))
             npc.swing(side);
     }

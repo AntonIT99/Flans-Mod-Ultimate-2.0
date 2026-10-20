@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.wolffsmod.npcs.combat.NpcEquipment;
-import com.wolffsmod.npcs.combat.NpcEquipmentStats;
+import com.wolffsmod.npcs.combat.*;
 import noppes.npcs.ai.EntityAIAttackTarget;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -29,12 +28,12 @@ public abstract class NpcEquipmentAttackAiMixin
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getDelay()I"))
     private int wolffsmodnpcsMeleeCadence(DataMelee melee)
     {
-        return NpcEquipment.weaponAuthority(npc) ? NpcEquipment.meleeDelay(npc.getMainHandItem()) : melee.getDelay();
+        return NpcEquipment.itemMelee(npc, EquipmentProperty.MELEE_DELAY) ? NpcEquipment.meleeDelay(npc.getMainHandItem()) : melee.getDelay();
     }
 
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getRange()F"))
     private float wolffsmodnpcsMeleeReach(DataMelee melee)
     {
-        return NpcEquipment.weaponAuthority(npc) ? (float) NpcEquipmentStats.meleeReach(npc.getMainHandItem()) : melee.getRange();
+        return NpcEquipment.itemMelee(npc, EquipmentProperty.MELEE_REACH) ? (float) NpcEquipmentStats.meleeReach(npc.getMainHandItem()) : melee.getRange();
     }
 }

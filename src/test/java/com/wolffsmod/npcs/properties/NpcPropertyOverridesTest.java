@@ -36,6 +36,25 @@ class NpcPropertyOverridesTest
     }
 
     @Test
+    void anOwnValueSetWhileStillOverlaidIsWhatTheNextRefreshRestores()
+    {
+        Map<NpcTypeProperty, Tag> live = new EnumMap<>(NpcTypeProperty.class);
+        live.put(NpcTypeProperty.HEALTH, IntTag.valueOf(20));
+        live.put(NpcTypeProperty.DAMAGE, IntTag.valueOf(4));
+        NpcPropertyOverrides overlay = new NpcPropertyOverrides();
+        overlay.refresh(Map.of(NpcTypeProperty.HEALTH, IntTag.valueOf(200)), live::get, live::put);
+        // The property was just switched to Custom: the model's value still sits in the field until the next refresh.
+        overlay.setStored(NpcTypeProperty.HEALTH, IntTag.valueOf(50), live::put);
+        assertEquals(IntTag.valueOf(200), live.get(NpcTypeProperty.HEALTH));
+        assertEquals(IntTag.valueOf(50), overlay.stored(NpcTypeProperty.HEALTH, live::get));
+        overlay.refresh(Map.of(), live::get, live::put);
+        assertEquals(IntTag.valueOf(50), live.get(NpcTypeProperty.HEALTH));
+        // A property the model never covered is written straight through.
+        overlay.setStored(NpcTypeProperty.DAMAGE, IntTag.valueOf(9), live::put);
+        assertEquals(IntTag.valueOf(9), live.get(NpcTypeProperty.DAMAGE));
+    }
+
+    @Test
     void pairedSettersCannotContaminateTheCapturedDefaults()
     {
         Map<NpcTypeProperty, Tag> live = new EnumMap<>(NpcTypeProperty.class);
