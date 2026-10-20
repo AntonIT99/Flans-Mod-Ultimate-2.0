@@ -43,8 +43,11 @@ Nested `AGENTS.md` files add rules for their directories.
   generator or its input instead.
 - Keep the main mod, bundled packs, and official packs as separate artifacts. Run
   `packsManagerJar` and/or `officialPacksJar` when their inputs or packaging change.
-- For every feature or significant change, check whether the locally available wiki
-  repository should be updated too.
+- Create or update documentation only when it adds practical value for users or
+  developers by explaining a new mechanic or a fundamental change. Routine content
+  additions, such as textures, paintjobs, or new items, do not warrant documentation
+  on their own. Do not create wiki pages, audit reports, or other documentation merely
+  to record that work was done, unless explicitly requested.
 - In a mixed worktree, preserve unrelated changes and stage explicit paths only.
 - Some source sets under `src/` (for example `src/wolff*pack/`) are independent git
   repositories with their own `.git` directory and remote. They are excluded from this
@@ -90,7 +93,9 @@ directory. Read them directly when behaviour, formats, or prior implementations 
 checking. They are read-only references: never edit them unless explicitly asked.
 
 - `../Flans-Mod-Ultimate-2.0.wiki` - this project's wiki repository. Consult it for
-  documented behaviour, and update it for every feature or significant change.
+  documented behaviour, and update it when a new mechanic or fundamental change
+  needs explanation that benefits users or developers, following the documentation
+  rule above.
 - `../Flans-Mod-Ultimate-1.7.10` - the original 1.7.10 project. **Primary** reference for
   legacy behaviour, content-pack formats, and expected gameplay semantics.
 - `../FlansMod` - the original 1.12.2 project. **Secondary** reference; use when 1.7.10 is

@@ -6,6 +6,8 @@ import com.flansmodultimate.content.ContentPack;
 import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.world.phys.Vec3;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DriveableTypeArmorHealthTest
 {
+    @Test
+    void labjacCompositeHitboxSeparatesArmourFromCrewDamageAndResolvesBothWarheads()
+    {
+        VehicleType type = vehicle("SetupCompositeArmoredPart core 1000 0 0 0 16 16 16 100 400");
+        var box = type.getHealth().get(EnumDriveablePart.CORE);
+        assertEquals(1000F, box.getHealth());
+        assertEquals(1F, box.getWidth());
+        assertEquals(0F, box.getCrewDamageMultiplier());
+        assertEquals(5F, box.getPenetrationResistance());
+        var armor = type.getResolvedArmor();
+        Vec3 direction = EnumArmorFacing.FRONT.outwardNormal().scale(-1);
+        assertEquals(100F, armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, direction, 80, false).effectiveArmorMm());
+        assertEquals(400F, armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, direction, 80, true).effectiveArmorMm());
+        type.finishDerivedValues();
+        assertEquals(400F, type.getResolvedArmor().plate(EnumDriveablePart.CORE, EnumArmorFacing.REAR).authored().heatThicknessMm());
+    }
+
     @Test
     void legacyDefinitionsKeepAuthoredHealthAndNoArmourGate()
     {
@@ -41,8 +60,8 @@ class DriveableTypeArmorHealthTest
     @Test
     void normalizedAllocationIsIdempotentAcrossRepeatedFinalization()
     {
-        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart turret 50 0 16 0 16 16 16", "SetupPart leftTrack 25 -16 0 0 16 16 16",
-            "SetupPart rightTrack 25 16 0 0 16 16 16", "SetupPart barrel 0 0 16 -16 16 16 16", "RealMassKg 1000", "UseRealisticVehicleHealth true");
+        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart turret 50 0 16 0 16 16 16", "SetupPart leftTrack 25 -16 0 0 16 16 16", "SetupPart rightTrack 25 16 0 0 16 16 16",
+            "SetupPart barrel 0 0 16 -16 16 16 16", "RealMassKg 1000", "UseRealisticVehicleHealth true");
         float firstCore = type.getHealth().get(EnumDriveablePart.CORE).getHealth();
         type.finishDerivedValues();
         assertEquals(firstCore, type.getHealth().get(EnumDriveablePart.CORE).getHealth(), 1.0E-4F);
@@ -53,8 +72,8 @@ class DriveableTypeArmorHealthTest
     @Test
     void krishnaPartNamesRetainIndependentHitboxes()
     {
-        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart generic0 10 16 0 0 16 16 16", "SetupPart generic1 20 32 0 0 16 16 16",
-            "SetupPart turretarmor 30 48 0 0 16 16 16", "SetupPart moreturretarmor 40 64 0 0 16 16 16");
+        VehicleType type = vehicle("SetupPart core 100 0 0 0 16 16 16", "SetupPart generic0 10 16 0 0 16 16 16", "SetupPart generic1 20 32 0 0 16 16 16", "SetupPart turretarmor 30 48 0 0 16 16 16",
+            "SetupPart moreturretarmor 40 64 0 0 16 16 16");
 
         assertEquals(5, type.getHealth().size());
         assertEquals(10F, type.getHealth().get(EnumDriveablePart.GENERIC_0).getHealth());

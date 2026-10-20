@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  * AmmoExplosiveMassTNTg  &lt;ammoShortName&gt; &lt;gTntEquivalent&gt;
  * AmmoExplosiveMassTNTKg &lt;ammoShortName&gt; &lt;kgTntEquivalent&gt;
  * AmmoPenetrationAt100m  &lt;ammoShortName&gt; &lt;millimetres&gt;
- * AddRoundForAmmo        &lt;ammoShortName&gt; &lt;name&gt; &lt;count&gt; &lt;massG&gt; &lt;explG&gt; &lt;mps&gt; &lt;mm&gt;
+ * AddRoundForAmmo        &lt;ammoShortName&gt; &lt;name&gt; &lt;count&gt; &lt;massG&gt; &lt;explG&gt; &lt;mps&gt; &lt;mm&gt; [tracerParticle]
  * </pre>
  */
 public final class AmmoOverrides
@@ -180,7 +180,9 @@ public final class AmmoOverrides
             float explosiveMass = optional(values, 4, KEY_ADD_ROUND, "explosive mass in g TNT equivalent", warnings) / ShootableType.GRAMS_PER_KILOGRAM;
             float speed = optional(values, 5, KEY_ADD_ROUND, "muzzle velocity in m/s", warnings) / 20F;
             float penetration = optional(values, 6, KEY_ADD_ROUND, "penetration at 100 m in millimetres", warnings);
-            builders.computeIfAbsent(key(values[0]), k -> new Builder()).rounds.add(new BulletType.RoundEntry(values[1], count, new BulletType.RoundStats(mass, explosiveMass, speed, penetration)));
+            String tracer = values.length > 7 ? values[7] : "";
+            builders.computeIfAbsent(key(values[0]), k -> new Builder()).rounds
+                .add(new BulletType.RoundEntry(values[1], count, new BulletType.RoundStats(mass, explosiveMass, speed, penetration), tracer));
         }
     }
 

@@ -1053,7 +1053,7 @@
     "13x63mmB": {
         "properties": {
             "AddRound": [
-                "Pzgr.L'Spur 1 38 0 750 30",
+                "Pzgr.L'Spur 1 38 0 750 30 flansmod.fmtracerred",
                 "Sprgr. 1 34 3 710 0"
             ],
             "FallSpeed": 1.0
@@ -1161,7 +1161,7 @@
     "15x96mm Mauser": {
         "properties": {
             "AddRound": [
-                "Pzgr.L'Spur 1 72 0 850 30",
+                "Pzgr.L'Spur 1 72 0 850 30 flansmod.fmtracerred",
                 "Sprgr. 1 57 4.6 960 0"
             ],
             "FallSpeed": 1.0
@@ -1570,9 +1570,9 @@
     "20x138mmB Flak 38 Mixed Belt": {
         "properties": {
             "AddRound": [
-                "Sprgr.L'Spur 7 115 6.2 930 0",
-                "Brsprgr.L'Spur 7 120 2.4 900 0",
-                "Pzgr.L'Spur.Zerl 6 148 0 800 23"
+                "Sprgr.L'Spur 7 115 6.2 930 0 flansmod.fmtracerred",
+                "Brsprgr.L'Spur 7 120 2.4 900 0 flansmod.fmtracerred",
+                "Pzgr.L'Spur.Zerl 6 148 0 800 23 flansmod.fmtracerred"
             ],
             "AddToAmmoGroup": "20mm Flak 38"
         },
@@ -1587,8 +1587,8 @@
     "20x139mm DM63 APDS Belt": {
         "properties": {
             "AddRound": [
-                "DM63_APDS-T 3 108 0 1150 64",
-                "DM81_HEI-T 1 120 7.1 1045 5"
+                "DM63_APDS-T 3 108 0 1150 64 flansmod.fmtracerred",
+                "DM81_HEI-T 1 120 7.1 1045 5 flansmod.fmtracerred"
             ],
             "FallSpeed": 1.0,
             "FragType": "HE_SHELL",

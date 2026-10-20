@@ -253,10 +253,10 @@ line:
 The exact positional format is:
 
 ```text
-<name> <count> <massG> <explosiveMassGTntEq> <muzzleVelocityMps> <penetrationAt100mMm>
+<name> <count> <massG> <explosiveMassGTntEq> <muzzleVelocityMps> <penetrationAt100mMm> [tracerParticle]
 ```
 
-Every entry has exactly six tokens:
+Author all six ballistic tokens; an optional seventh token selects a tracer particle:
 
 - `name`: one-token round abbreviation; exact designations such as
   `Pzgr.L'Spur` and `Sprgr.` are allowed.
@@ -267,6 +267,9 @@ Every entry has exactly six tokens:
 - `muzzleVelocityMps`: exact projectile/load velocity in metres per second.
 - `penetrationAt100mMm`: normal-impact millimetres at 100 m; use `0` only when no
   modeled armour penetration is intended.
+- `tracerParticle`: optional single-token particle name, such as
+  `flansmod.fmtracerred` or `flansmod.fmtracergreen`. Fill every preceding numeric
+  column before adding it; omitted particle tokens retain legacy trail behavior.
 
 Prefer a documented service belt. If none can be established, inspect every gun,
 ground vehicle, and aircraft consuming the item. Bias an inferred belt toward AP
@@ -280,6 +283,51 @@ has category-level `FallSpeed: 1.0`. Because `AddRound` accumulates with lines f
 the definition and other categories, inspect every affected definition and avoid
 accidentally appending a second belt. Validate `RoundsPerItem`, positional fields,
 and the total repeating count.
+
+#### Tracer entries in mixed belts
+
+When researching or maintaining a mixed belt, assess which actual entries contain
+tracers, including aircraft ammunition. Use the exact projectile designation and
+sources: `AP-T`, `API-T`, `HEI-T`, and `L'Spur` are useful research clues, but the
+runtime does not infer a tracer from the name. Add the optional particle token to
+verified tracer entries. If a belt needs a newly introduced tracer loading,
+research that loading's own mass, filler, velocity, and penetration before changing
+the mix. Preserve existing counts and ballistics when only enabling the visuals of
+an already identified tracer round.
+
+Keep tracer placement aligned with the documented belt sequence. All entries may
+be tracers in an all-tracer belt; stealth belts may have none. Do not impose a
+universal one-in-four or one-in-five pattern. Record inferred mixtures and any
+unresolved tracer identities. Choose a documented visible color when available;
+otherwise report the chosen color as a presentation convention, without claiming
+historical certainty or inventing a faction-wide rule.
+
+For example, the following keeps one AP tracer followed by two ordinary HE shots:
+
+```json
+"AddRound": [
+    "AP-T 1 162 0 800 45 flansmod.fmtracerred",
+    "HE 2 135 16 835 0"
+]
+```
+
+The numbers illustrate syntax, not a researched service loading. Each shot in an
+entry's `count` uses that entry's particle. `AddRoundForAmmo` accepts the same
+optional final token after its leading ammunition short name and six belt columns;
+its replacement belt replaces the original per-entry tracers too. A replacement
+entry without a tracer does not inherit the original entry's particle. Scalar
+ammunition overrides keep the original belt's tracer settings.
+
+Inspect existing `TrailParticles`, `AlternateTrailParticles`, and tracer-beam
+settings as well: unmarked entries retain those effects, while per-entry tracers
+replace particle trails on their own shots and beams remain independent. Report
+settings that would unintentionally make ordinary rounds glow. Per-entry tracers
+need no `HasAlternateModel` or `AlternateBulletLoad`; reserve those legacy keys for
+content that actually uses their independent alternate-round pattern. Validate
+particle names against the current particle dispatcher and document the syntax in
+the wiki when the supported format changes. Static validation cannot establish
+in-game tracer visibility, density, or color; report when that visual check remains
+outstanding.
 
 ### Individual cannon shells and ammunition groups
 

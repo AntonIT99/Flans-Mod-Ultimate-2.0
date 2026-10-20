@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Locale;
 
 /**
- * Shows the authored nominal plate on the first part hitbox face under the crosshair: of a driveable, or of an entity
+ * Shows normal and composite (HEAT) protection on the first part hitbox face under the crosshair: of a driveable, or of an entity
  * wearing a driveable's part boxes.
  */
 public final class DriveableArmorDebugHud
@@ -53,14 +53,16 @@ public final class DriveableArmorDebugHud
         if (!armor.isPlateConfigured(closest.part(), closest.facing()))
             return;
         ArmorPlate plate = armor.plate(closest.part(), closest.facing()).authored();
-        String label = String.format(Locale.ROOT, "%s %s: %.1f mm", closest.part().getShortName(), closest.facing().name().toLowerCase(Locale.ROOT), plate.thicknessMm())
-            + (plate.hasDistinctHeatProtection() ? String.format(Locale.ROOT, " | vs HEAT %.1f mm", plate.heatThicknessMm()) : "");
+        String label = String.format(Locale.ROOT, "%s %s | Normal armor: %.1f mm", closest.part().getShortName(), closest.facing().name().toLowerCase(Locale.ROOT), plate.thicknessMm());
         graphics.drawString(mc.font, label, (screenWidth - mc.font.width(label)) / 2, screenHeight / 2 + 14, 0xFFD700, true);
+        String composite = String.format(Locale.ROOT, "Composite armor (HEAT): %.1f mm", plate.heatThicknessMm());
+        graphics.drawString(mc.font, composite, (screenWidth - mc.font.width(composite)) / 2, screenHeight / 2 + 24, 0xFFD700, true);
         if (plate.slopeDeg() > 0F)
         {
             float effective = armor.resolveHit(closest.part(), closest.facing(), closest.facing().outwardNormal().scale(-1D), ModCommonConfig.maxArmorImpactAngleDeg()).effectiveArmorMm();
-            String slope = String.format(Locale.ROOT, "Slope %.1f° | Head-on effective %.1f mm", plate.slopeDeg(), effective);
-            graphics.drawString(mc.font, slope, (screenWidth - mc.font.width(slope)) / 2, screenHeight / 2 + 24, 0xFFD700, true);
+            float effectiveHeat = armor.resolveHit(closest.part(), closest.facing(), closest.facing().outwardNormal().scale(-1D), ModCommonConfig.maxArmorImpactAngleDeg(), true).effectiveArmorMm();
+            String slope = String.format(Locale.ROOT, "Slope %.1f° | Head-on normal %.1f mm | HEAT %.1f mm", plate.slopeDeg(), effective, effectiveHeat);
+            graphics.drawString(mc.font, slope, (screenWidth - mc.font.width(slope)) / 2, screenHeight / 2 + 34, 0xFFD700, true);
         }
     }
 

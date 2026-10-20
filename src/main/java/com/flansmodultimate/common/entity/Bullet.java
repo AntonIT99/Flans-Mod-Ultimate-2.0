@@ -18,6 +18,7 @@ import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.ParticleNameCodec;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.server.gun.PacketManualGuidance;
 import com.flansmodultimate.platform.PlatformEvents;
@@ -28,6 +29,7 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -52,6 +54,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     public static final int RENDER_DISTANCE = 128;
 
     public static final String NBT_SHOT = "shot";
+    public static final String NBT_ROUND_TRACER = "round_tracer";
     public static final String NBT_ATTACKER = "attacker_uuid";
     public static final String NBT_SHOOTER = "shooter_uuid";
     public static final String NBT_FIREABLE_GUN = "fireable_gun";
@@ -65,6 +68,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected BulletType configType;
     @Getter
     protected FiredShot firedShot;
+    /** Server-resolved visual; clients do not have the firing weapon's replacement belt. */
+    protected String roundTracerParticle = "";
     /** Kill bullets after 30 seconds */
     protected int bulletLife = 600;
     protected int ticksInAir;
@@ -134,6 +139,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     {
         super(FlansModEntities.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
+        roundTracerParticle = firedShot.getTracerParticle();
         configType = firedShot.getBulletType();
         initialPenetratingPower = ShootingHelper.getInitialPenetratingPower(firedShot);
         penetratingPower = initialPenetratingPower;
@@ -305,6 +311,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         buf.writeInt(impactX);
         buf.writeInt(impactY);
         buf.writeInt(impactZ);
+        ParticleNameCodec.write(buf, roundTracerParticle);
     }
 
     @Override
@@ -320,6 +327,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             impactX = buf.readInt();
             impactY = buf.readInt();
             impactZ = buf.readInt();
+            roundTracerParticle = ParticleNameCodec.read(buf);
 
             Level level = level();
             Entity shooter = null;
@@ -358,6 +366,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.addAdditionalSaveData(tag);
+        tag.putString(NBT_ROUND_TRACER, roundTracerParticle);
+        tag.putInt(NBT_SHOT, firedShot.getShot());
 
         FireableGun gun = firedShot.getFireableGun();
 
@@ -365,7 +375,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         {
             CompoundTag gunTag = createGunTag(gun);
             tag.put(NBT_FIREABLE_GUN, gunTag);
-            tag.putInt(NBT_SHOT, firedShot.getShot());
             firedShot.getAttacker().ifPresent(livingEntity -> tag.putUUID(NBT_ATTACKER, livingEntity.getUUID()));
             firedShot.getCausingEntity().ifPresent(entity -> tag.putUUID(NBT_SHOOTER, entity.getUUID()));
         }
@@ -395,18 +404,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             configType = bType;
 
             if (tag.contains(NBT_FIREABLE_GUN, Tag.TAG_COMPOUND))
-            {
-                CompoundTag gun = tag.getCompound(NBT_FIREABLE_GUN);
-                float damage = gun.getFloat(NBT_FIREABLE_GUN_DAMAGE);
-                float spread = gun.getFloat(NBT_FIREABLE_GUN_SPREAD);
-                float speed = gun.getFloat(NBT_FIREABLE_GUN_SPEED);
-                float speedMultiplier = gun.contains(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) ? gun.getFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) : 1F;
-                EnumSpreadPattern spreadPattern = EnumSpreadPattern.valueOf(gun.getString(NBT_FIREABLE_GUN_SPREAD_PATTERN));
-
-                InfoType fireableGunInfoType = InfoType.getInfoType(gun.getString(NBT_FIREABLE_GUN_TYPE_NAME));
-                if (fireableGunInfoType != null)
-                    fireableGun = new FireableGun(fireableGunInfoType, damage, spread, speed, speedMultiplier, spreadPattern);
-            }
+                fireableGun = readGunTag(tag.getCompound(NBT_FIREABLE_GUN));
 
             if (tag.hasUUID(NBT_ATTACKER))
             {
@@ -420,11 +418,24 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             }
 
             firedShot = new FiredShot(fireableGun, configType, null, null, tag.contains(NBT_SHOT) ? tag.getInt(NBT_SHOT) : 0);
+            roundTracerParticle = tag.contains(NBT_ROUND_TRACER, Tag.TAG_STRING) ? tag.getString(NBT_ROUND_TRACER) : firedShot.getTracerParticle();
         }
         else
         {
             discard();
         }
+    }
+
+    @Nullable
+    private static FireableGun readGunTag(CompoundTag gun)
+    {
+        float damage = gun.getFloat(NBT_FIREABLE_GUN_DAMAGE);
+        float spread = gun.getFloat(NBT_FIREABLE_GUN_SPREAD);
+        float speed = gun.getFloat(NBT_FIREABLE_GUN_SPEED);
+        float speedMultiplier = gun.contains(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) ? gun.getFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) : 1F;
+        EnumSpreadPattern spreadPattern = EnumSpreadPattern.valueOf(gun.getString(NBT_FIREABLE_GUN_SPREAD_PATTERN));
+        InfoType type = InfoType.getInfoType(gun.getString(NBT_FIREABLE_GUN_TYPE_NAME));
+        return type == null ? null : new FireableGun(type, damage, spread, speed, speedMultiplier, spreadPattern);
     }
 
     @Override
@@ -1240,6 +1251,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected void spawnParticles()
     {
+        if (!roundTracerParticle.isBlank() && ticksInAir > 1)
+        {
+            spawnRoundTracer();
+            return;
+        }
         boolean alternateTrail = configType.isAlternateTrailParticles() && isAlternateRound();
         if (!(configType.isTrailParticles() || alternateTrail) || ticksInAir <= 1)
             return;
@@ -1252,6 +1268,22 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 spawnTrail(configType.getAlternateTrailParticleType(), configType.getAlternateTrailParticleCount());
             else
                 spawnTrail(configType.getTrailParticleType(), 10);
+        }
+    }
+
+    /** Short, straight particle streak with a bounded cost, independent of legacy smoke-trail jitter. */
+    protected void spawnRoundTracer()
+    {
+        Vec3 start = new Vec3(xo, yo, zo);
+        Vec3 segment = position().subtract(start);
+        double distance = segment.length();
+        if (!Double.isFinite(distance) || distance < 1.0E-4D)
+            return;
+        int count = Math.min(24, Math.max(1, (int) Math.ceil(distance / 2D)));
+        for (int i = 1; i <= count; i++)
+        {
+            Vec3 point = start.add(segment.scale((double) i / count));
+            ClientHooks.RENDER.spawnParticle(roundTracerParticle, point.x, point.y, point.z, 0, 0, 0, 0.4F, 1F / 3F);
         }
     }
 

@@ -4,11 +4,7 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.IFlanEntity;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IAmmoOverrideUser;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,9 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Class for creating an object containing all necessary information about a fired shot
@@ -51,11 +45,10 @@ public class FiredShot
     private final InfoType platformType;
 
     /** Constructor for living entities shooting with a gun item in hand */
-    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack,
-        @NotNull LivingEntity shooter)
+    public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(withAmmunition(new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType), bulletType, shooter,
-            shooter, ShootableItem.getRoundsFired(shootableStack));
+        this(withAmmunition(new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType), bulletType, shooter, shooter,
+            ShootableItem.getRoundsFired(shootableStack));
     }
 
     /** Folds the round's weapon modifiers into the gun before the shot is composed. */
@@ -114,6 +107,12 @@ public class FiredShot
     public float getProjectileMass()
     {
         return getAmmoOverride().resolveMass(bulletType, shot);
+    }
+
+    /** Particle attached to the actual belt entry, resolved on the server before projectile spawn. */
+    public String getTracerParticle()
+    {
+        return getAmmoOverride().resolveTracerParticle(bulletType, shot);
     }
 
     /**

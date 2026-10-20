@@ -151,10 +151,14 @@ Scanner-only work validates discovery and coverage without loading domain tables
    that declares the ammunition, not on a driveable whose mounted gun declares it;
    and that an overridden round stays internally coherent rather than mixing one
    shell's velocity with another's mass.
-5. For every `AddRound`, verify `RoundsPerItem > 1`, exactly six positional tokens,
-   positive count, projectile mass, deliberate zero/nonzero filler and penetration,
-   exact velocity, total repeating belt count, and absence of unintended accumulated
-   belts. Confirm category-level `FallSpeed` unless sustained flight applies.
+5. For every `AddRound`, verify `RoundsPerItem > 1`, six ballistic tokens plus an
+   optional seventh tracer-particle token, positive count, projectile mass,
+   deliberate zero/nonzero filler and penetration, exact velocity, total repeating
+   belt count, and absence of unintended accumulated belts. For `AddRoundForAmmo`,
+   include the leading ammunition short name before those same columns. Check
+   tracer identity, particle spelling, placement in the repeating sequence, and
+   replacement-belt behavior using the ammunition reference. Confirm category-level
+   `FallSpeed` unless sustained flight applies.
 6. Check unit conversions explicitly: projectile kg/g, explosive filler/TNT
    equivalent, hp/PS/kW, mph/knots/km/h, metric tonnes versus imperial long tons,
    feet/metres, seconds/ticks, and MOA/degrees. Prefer the naval unit aliases over

@@ -661,8 +661,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 logError("Unknown driveable part in " + key + ": " + values[start], file);
                 return;
             }
-            float resistance = values.length > start + 8 ? parseLegacyFloat(values[start + 8]) : 5F;
-            float crew = values.length > start + 9 ? parseLegacyFloat(values[start + 9]) : defaultCrewMultiplier;
+            // Composite hitboxes store two armour thicknesses here, read by VehicleArmorSpecReader.
+            // They are neither a legacy penetration budget nor a crew damage multiplier.
+            boolean composite = key.equals(VehicleArmorSpecReader.SETUP_COMPOSITE_ARMORED_PART);
+            float resistance = !composite && values.length > start + 8 ? parseLegacyFloat(values[start + 8]) : 5F;
+            float crew = !composite && values.length > start + 9 ? parseLegacyFloat(values[start + 9]) : defaultCrewMultiplier;
             CollisionBox box = new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]), parseLegacyFloat(values[start + 3]), parseLegacyFloat(values[start + 4]),
                 parseLegacyFloat(values[start + 5]), parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew);
             health.put(part, this instanceof PlaneType ? applyPlaneModelFacing(box) : box);
