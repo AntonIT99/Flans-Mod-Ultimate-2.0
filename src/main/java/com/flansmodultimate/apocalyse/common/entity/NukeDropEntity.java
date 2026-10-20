@@ -6,9 +6,7 @@ import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
@@ -23,6 +21,7 @@ public class NukeDropEntity extends FlanEntity
     {
         super(type, level);
         setNoGravity(false);
+        noCulling = true;
     }
 
     @Override
@@ -34,9 +33,12 @@ public class NukeDropEntity extends FlanEntity
         if (explodedTicks > 0)
         {
             setDeltaMovement(0.0D, 0.0D, 0.0D);
-            setExplodedTicks(explodedTicks + 1);
-            if (explodedTicks > ModApocalypseConfig.apocalypseNukeVisualTicks())
-                discard();
+            if (!level().isClientSide)
+            {
+                setExplodedTicks(explodedTicks + 1);
+                if (explodedTicks > ModApocalypseConfig.apocalypseNukeVisualTicks())
+                    discard();
+            }
             return;
         }
 
@@ -47,12 +49,20 @@ public class NukeDropEntity extends FlanEntity
             return;
         }
 
-        impact(level());
+        if (!level().isClientSide)
+            impact(level());
     }
 
     public int getExplodedTicks()
     {
         return entityData.get(DATA_EXPLODED_TICKS);
+    }
+
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distance)
+    {
+        // The blast grows far beyond the falling bomb's one-block bounding box.
+        return true;
     }
 
     private void setExplodedTicks(int ticks)

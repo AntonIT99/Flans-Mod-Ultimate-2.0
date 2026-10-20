@@ -107,10 +107,12 @@ public class AiMechaEntity extends Mecha
             return;
         }
 
-        Vec3 muzzle = getEyePosition();
-        Vec3 aimPoint = target.position().add(0D, target.getBbHeight() * 0.5D, 0D);
-        Vec3 delta = aimPoint.subtract(muzzle);
-        aimAt(delta);
+        Vec3 aimPoint = target.position().add(0D, target.getEyeHeight() * 0.5D, 0D);
+        aimAt(aimPoint.subtract(position()));
+        // Test and aim from the active hand, using the same origin as the actual shot.
+        Vec3 muzzle = handGunOrigin(type, usingLeft);
+        aimAt(aimPoint.subtract(muzzle));
+        muzzle = handGunOrigin(type, usingLeft);
 
         if (hasClearShot(muzzle, aimPoint))
         {
@@ -120,7 +122,7 @@ public class AiMechaEntity extends Mecha
                 usingLeft = !usingLeft;
             return;
         }
-        setInputMask(walkToward(delta));
+        setInputMask(walkToward(aimPoint.subtract(position())));
     }
 
     /**
@@ -145,7 +147,8 @@ public class AiMechaEntity extends Mecha
         ItemStack held = getDriveableData().getMechaAddon(left ? EnumMechaSlotType.LEFT_TOOL : EnumMechaSlotType.RIGHT_TOOL);
         if (!(held.getItem() instanceof GunItem gunItem))
             return false;
-        return gunItem.getConfigType().getFireMode(held) == EnumFireMode.SEMIAUTO;
+        EnumFireMode mode = gunItem.getConfigType().getFireMode(held);
+        return mode == EnumFireMode.SEMIAUTO || mode == EnumFireMode.BURST;
     }
 
     /**
@@ -161,7 +164,7 @@ public class AiMechaEntity extends Mecha
         double horizontal = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
         if (horizontal < 1.0E-4D)
             return;
-        float yaw = (float) (Mth.atan2(-delta.x, delta.z) * (180D / Math.PI));
+        float yaw = MechaPhysics.movementYaw(delta, getYaw());
         float pitch = (float) (-Mth.atan2(delta.y, horizontal) * (180D / Math.PI));
         setOrientation(yaw, 0F, 0F);
         setTurretAim(0F, pitch);

@@ -411,7 +411,7 @@ public class Plane extends Driveable implements PlaneVisual
             clearWheelContact();
         // An aircraft on the ground with nobody flying it, or its engine off, is
         // chocked and braked rather than free to roll away from a push.
-        if (!hasRider() || !isEngineActive())
+        if (!hasFlightController() || !isEngineActive())
             velocity = applyMinimumGroundDeceleration(startVelocity, velocity, VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2);
         moveWithCollisions(velocity);
         handleGroundImpact(type, impactVelocity);
@@ -586,7 +586,7 @@ public class Plane extends Driveable implements PlaneVisual
 
     private void updateThrottle(PlaneType type)
     {
-        boolean powered = hasRider() && isEngineActive() && hasWorkingPropeller(type);
+        boolean powered = hasFlightController() && isEngineActive() && hasWorkingPropeller(type);
         float throttle = getThrottle();
         // Holding the lever moves it progressively faster; a tap is still the
         // authored fine step. Released or reversed, the ramp starts over.
@@ -602,6 +602,12 @@ public class Plane extends Driveable implements PlaneVisual
         if (isUnderWater() && !type.isWorksUnderWater())
             throttle = 0F;
         setThrottle(throttle);
+    }
+
+    /** A live pilot or an autonomous controller can fly an aircraft. */
+    protected boolean hasFlightController()
+    {
+        return isUnderCommand() || hasRider();
     }
 
     private float effectivePropellerThrottle(PlaneType type, float throttle)
@@ -653,7 +659,7 @@ public class Plane extends Driveable implements PlaneVisual
             velocity.z * ModPhysics.dragRetention(drag, level()));
         if (isWingFolded())
             velocity = velocity.multiply(ModPhysics.dragRetention(0.98D, level()), 1D, ModPhysics.dragRetention(0.98D, level()));
-        if (!hasRider())
+        if (!hasFlightController())
             velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type), level()), ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(emptyDrag(type), level()));
         if (type.isNewFlightControl())
             velocity = applyShootDownSequence(type, velocity);
@@ -960,7 +966,7 @@ public class Plane extends Driveable implements PlaneVisual
         // add drag, because neither is expressible in the real-world data.
         if (isWingFolded())
             velocity = velocity.multiply(ModPhysics.dragRetention(0.98D, level()), 1D, ModPhysics.dragRetention(0.98D, level()));
-        if (!hasRider())
+        if (!hasFlightController())
             velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type), level()), ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(emptyDrag(type), level()));
         velocity = applyShootDownSequence(type, velocity, true);
         return velocity;

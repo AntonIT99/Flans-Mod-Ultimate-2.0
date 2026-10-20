@@ -621,7 +621,7 @@ public class Mecha extends Driveable implements MechaVisual
         }
     }
 
-    private Vec3 handGunOrigin(MechaType type, boolean left)
+    protected Vec3 handGunOrigin(MechaType type, boolean left)
     {
         com.flansmod.common.vector.Vector3f arm = left ? type.getLeftArmOrigin() : type.getRightArmOrigin();
         Vec3 localArm = LegacyDriveableCoordinates.toLocal(arm);

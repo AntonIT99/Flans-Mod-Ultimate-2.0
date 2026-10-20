@@ -40,7 +40,7 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(ApocalypseContent.survivor.get(), SurvivorRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.worldgenSpawnMarker.get(), NoopRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.teleporter.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(ApocalypseContent.BLOCK_POWER_CUBE_ITEM.get()), 2.0F));
-        event.registerEntityRenderer(ApocalypseContent.nukeDrop.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(ApocalypseContent.SULPHURIC_ACID_BUCKET.get()), 1.5F));
+        event.registerEntityRenderer(ApocalypseContent.nukeDrop.get(), NukeDropRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.skullDrone.get(), SkullDroneRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.skullBoss.get(), SkullBossRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.inventoryHolder.get(), InventoryHolderRenderer::new);

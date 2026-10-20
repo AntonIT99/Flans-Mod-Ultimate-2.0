@@ -69,6 +69,7 @@ public class FlyByPlaneEntity extends Plane
         if (type != null)
         {
             setFuel(type.getFuelTankSize());
+            setThrottle(1F);
             setInputMask(DriveableInput.FORWARD);
             // The base tick drops stale control input after a timeout; this input is never stale.
             inputTimeout = 0;
@@ -78,6 +79,8 @@ public class FlyByPlaneEntity extends Plane
 
         if (type != null)
             setThrottle(1F);
+        if (level().isClientSide)
+            return;
         seatCrew();
         if (++lifetimeTicks > MAX_LIFETIME_TICKS || level().getNearestPlayer(this, DESPAWN_DISTANCE) == null)
             despawn();

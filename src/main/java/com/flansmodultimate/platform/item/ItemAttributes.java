@@ -2,6 +2,7 @@ package com.flansmodultimate.platform.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.minecraftforge.common.ForgeMod;
 
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -23,6 +24,12 @@ public final class ItemAttributes
     public enum Operation
     {
         ADD_VALUE, ADD_MULTIPLIED_TOTAL
+    }
+
+    /** Entity attack reach attribute used by ordinary melee targeting and server validation. */
+    public static Attribute meleeReachAttribute()
+    {
+        return ForgeMod.ENTITY_REACH.get();
     }
 
     /** Modifiers an item adds on top of its vanilla ones. */
