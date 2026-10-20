@@ -13,8 +13,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +23,9 @@ import java.util.*;
 /** Per-NPC inheritance cache. Only the live NPC owns gameplay state; its selected model supplies definitions. */
 public final class NpcTypeProperties
 {
+    /** Aggro and firing range a vehicle, plane or mecha model offers when its definition states none. */
+    public static final int DRIVEABLE_RANGE = 128;
+
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
     private long lastFlags = -1L;
@@ -85,8 +87,15 @@ public final class NpcTypeProperties
         Map<NpcTypeProperty, Tag> offered = new EnumMap<>(NpcTypeProperty.class);
         if (type != null)
             offered.putAll(NpcTypeMapping.create(type, options, lastNative, maxHealth, cycle));
+        FlanModelKind kind = FlanModelKind.of(selected);
+        // Driveable definitions state no targeting range; vehicles engage at longer distances than infantry.
+        if (type != null && options.enabled(Feature.TYPE_PROPERTIES) && kind != null && kind != FlanModelKind.AA_GUN)
+        {
+            offered.putIfAbsent(NpcTypeProperty.AGGRO_RANGE, IntTag.valueOf(DRIVEABLE_RANGE));
+            offered.putIfAbsent(NpcTypeProperty.RANGE, IntTag.valueOf(DRIVEABLE_RANGE));
+        }
         // Vehicle engines have their own presentation controller; mecha stomps remain ordinary inherited footsteps.
-        if (FlanModelKind.of(selected) == FlanModelKind.VEHICLE || FlanModelKind.of(selected) == FlanModelKind.PLANE)
+        if (kind == FlanModelKind.VEHICLE || kind == FlanModelKind.PLANE)
         {
             offered.remove(NpcTypeProperty.STEP_SOUND);
             offered.remove(NpcTypeProperty.IDLE_SOUND);
