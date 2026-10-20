@@ -429,6 +429,12 @@ public class Mecha extends Driveable implements MechaVisual
             aimMiningTool(tool, index);
     }
 
+    /** Autonomous controllers must finish a burst before pressing its trigger again. */
+    protected boolean hasActiveHandGunBurst(boolean left)
+    {
+        return handGunBurstRemaining[left ? 0 : 1] > 0;
+    }
+
     private void useHandGun(EnumMechaSlotType slot, boolean left, boolean held, GunItem gunItem, ItemStack gunStack)
     {
         int index = left ? 0 : 1;

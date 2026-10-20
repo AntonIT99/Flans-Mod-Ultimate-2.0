@@ -148,7 +148,7 @@ public class AiMechaEntity extends Mecha
         if (!(held.getItem() instanceof GunItem gunItem))
             return false;
         EnumFireMode mode = gunItem.getConfigType().getFireMode(held);
-        return mode == EnumFireMode.SEMIAUTO || mode == EnumFireMode.BURST;
+        return mode == EnumFireMode.SEMIAUTO || mode == EnumFireMode.BURST && !hasActiveHandGunBurst(left);
     }
 
     /**
@@ -162,7 +162,7 @@ public class AiMechaEntity extends Mecha
     private void aimAt(Vec3 delta)
     {
         double horizontal = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
-        if (horizontal < 1.0E-4D)
+        if (delta.lengthSqr() < 1.0E-8D)
             return;
         float yaw = MechaPhysics.movementYaw(delta, getYaw());
         float pitch = (float) (-Mth.atan2(delta.y, horizontal) * (180D / Math.PI));

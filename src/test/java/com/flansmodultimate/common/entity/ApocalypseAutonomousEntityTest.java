@@ -35,7 +35,8 @@ class ApocalypseAutonomousEntityTest
         try (EntityTestWorld world = new EntityTestWorld())
         {
             Guard guard = new Guard(world.level);
-            for (Vec3 target : List.of(new Vec3(10D, 0D, 0D), new Vec3(-10D, 0D, 0D), new Vec3(0D, 0D, 10D), new Vec3(0D, 0D, -10D), new Vec3(10D, 8D, -7D), new Vec3(-3D, -5D, 10D)))
+            for (Vec3 target : List.of(new Vec3(10D, 0D, 0D), new Vec3(-10D, 0D, 0D), new Vec3(0D, 0D, 10D), new Vec3(0D, 0D, -10D), new Vec3(10D, 8D, -7D), new Vec3(-3D, -5D, 10D),
+                new Vec3(0D, 8D, 0D), new Vec3(0D, -8D, 0D)))
             {
                 aim(guard, target);
                 assertEquals(1D, target.normalize().dot(guard.shotDirection()), 1.0E-5D, "The torso's visible direction and actual gun direction must agree");
@@ -63,6 +64,14 @@ class ApocalypseAutonomousEntityTest
             guard.tickCount = 3;
             assertEquals(0, trigger(guard));
             guard.tickCount = 4;
+            assertEquals(DriveableInput.PRIMARY_FIRE, trigger(guard));
+            guard.burstActive = true;
+            guard.tickCount = 5;
+            assertEquals(DriveableInput.PRIMARY_FIRE, trigger(guard), "A new rising edge must not reset a burst that is still firing");
+            guard.burstActive = false;
+            guard.tickCount = 7;
+            assertEquals(0, trigger(guard));
+            guard.tickCount = 8;
             assertEquals(DriveableInput.PRIMARY_FIRE, trigger(guard));
         }
     }
@@ -123,6 +132,8 @@ class ApocalypseAutonomousEntityTest
 
     private static class Guard extends AiMechaEntity
     {
+        private boolean burstActive;
+
         Guard(Level level)
         {
             super(EntityType.ARMOR_STAND, level);
@@ -136,6 +147,12 @@ class ApocalypseAutonomousEntityTest
         void equip(DriveableData data)
         {
             driveableData = data;
+        }
+
+        @Override
+        protected boolean hasActiveHandGunBurst(boolean left)
+        {
+            return burstActive;
         }
     }
 
