@@ -69,6 +69,7 @@ public final class KeyInputHandler
     private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping teamsEditorKey = key("teams_editor", InputConstants.UNKNOWN.getValue(), KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyContexts.IN_GAME, CATEGORY_GENERAL);
 
     // Every driveable: planes, ground vehicles and mechas alike.
@@ -177,6 +178,7 @@ public final class KeyInputHandler
         register.accept(teamsMenuKey);
         register.accept(teamsScoresKey);
         register.accept(teamsClassKey);
+        register.accept(teamsEditorKey);
         register.accept(toggleAimPoseKey);
         register.accept(driveableInventoryKey);
         register.accept(primaryKey);
@@ -406,6 +408,8 @@ public final class KeyInputHandler
             PacketHandler.sendToServer(PacketTeamsAction.openScoreboard());
         if (noScreen && teamsClassKey.consumeClick())
             PacketHandler.sendToServer(PacketTeamsAction.openClassMenu());
+        if (noScreen && teamsEditorKey.consumeClick())
+            PacketHandler.sendToServer(com.flansmodultimate.network.server.teams.PacketEditorAction.open());
         if (noScreen && toggleAimPoseKey.consumeClick())
             AimPoseClient.toggle();
     }

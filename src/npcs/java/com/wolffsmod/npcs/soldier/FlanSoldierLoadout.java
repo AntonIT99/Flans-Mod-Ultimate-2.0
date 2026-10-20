@@ -222,7 +222,7 @@ public final class FlanSoldierLoadout
         for (EquipmentSlot slot : ARMOUR_SLOTS)
         {
             ItemStack stack = selection.playerClass().getArmour(slot);
-            if (stack.isEmpty())
+            if (stack.isEmpty() && selection.team() != null && selection.playerClass().usesTeamArmour(slot))
                 stack = selection.team().getArmour(slot);
             if (!stack.isEmpty())
                 armour.put(HEAD_ARMOUR_INDEX - slot.getIndex(), NpcAPI.Instance().getIItemStack(stack));

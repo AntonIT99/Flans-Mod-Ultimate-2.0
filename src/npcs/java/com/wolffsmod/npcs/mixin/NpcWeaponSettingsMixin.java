@@ -1,11 +1,13 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.combat.*;
+import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataRanged;
 import noppes.npcs.entity.data.DataStats;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,11 +17,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.nbt.CompoundTag;
 
-/** Uses Custom NPCs' existing permission-checked stats menu and normal persistence. */
+/**
+ * Every hook into the Custom NPCs stats data.
+ *
+ * <ul>
+ * <li>The mod's per-NPC settings use Custom NPCs' existing permission-checked stats menu and normal persistence.</li>
+ * <li>A newly created NPC starts with the server's aggro and firing ranges, gunfight distances by default instead of Custom
+ * NPCs' melee-scale ones; a saved NPC keeps the ranges it was saved with until an operator applies the server's ranges to
+ * every NPC, and remembers whether it has taken them.</li>
+ * </ul>
+ */
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(value = DataStats.class, remap = false)
 public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
 {
+    @Unique
+    private static final String WOLFFSMODNPCS_RANGE_GENERATION = "WolffsModRangeGeneration";
+
+    @Shadow
+    public int aggroRange;
+    @Shadow
+    public DataRanged ranged;
     @Shadow
     private EntityNPCInterface npc;
 
@@ -38,6 +56,23 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     private final NpcPartSettings wolffsmodnpcsParts = new NpcPartSettings();
     @Unique
     private final NpcTuning wolffsmodnpcsTuning = new NpcTuning();
+    @Unique
+    private int wolffsmodnpcsRangeGeneration;
+
+    // Defaults
+
+    /** Runs only for a new NPC: loading a saved one overwrites both ranges and the generation with the saved values. */
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void wolffsmodnpcsDefaultRanges(EntityNPCInterface owner, CallbackInfo callback)
+    {
+        NpcServerSettings settings = NpcServerSettings.of(owner);
+        aggroRange = settings == null ? NpcServerSettings.DEFAULT_AGGRO_RANGE : settings.getAggroRange();
+        ranged.setRange(settings == null ? NpcServerSettings.DEFAULT_FIRING_RANGE : settings.getFiringRange());
+        // Off the server thread the settings cannot be read: the NPC then takes the server's ranges at its first tick.
+        wolffsmodnpcsRangeGeneration = settings == null ? -1 : settings.getRangeGeneration();
+    }
+
+    // Persistence
 
     @Inject(method = "readToNBT", at = @At("HEAD"))
     private void wolffsmodnpcsRetainHealth(CompoundTag tag, CallbackInfo callback)
@@ -53,6 +88,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsCombat.load(compound);
         wolffsmodnpcsParts.load(compound);
         wolffsmodnpcsTuning.load(compound);
+        wolffsmodnpcsRangeGeneration = compound.getInt(WOLFFSMODNPCS_RANGE_GENERATION);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
     }
@@ -65,6 +101,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsCombat.save(callback.getReturnValue());
         wolffsmodnpcsParts.save(callback.getReturnValue());
         wolffsmodnpcsTuning.save(callback.getReturnValue());
+        callback.getReturnValue().putInt(WOLFFSMODNPCS_RANGE_GENERATION, wolffsmodnpcsRangeGeneration);
         wolffsmodnpcsProperties.saveDefaults(Component.STATS, callback.getReturnValue());
     }
 
@@ -102,5 +139,17 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     public NpcTuning wolffsmodnpcsTuning()
     {
         return wolffsmodnpcsTuning;
+    }
+
+    @Override
+    public int wolffsmodnpcsRangeGeneration()
+    {
+        return wolffsmodnpcsRangeGeneration;
+    }
+
+    @Override
+    public void wolffsmodnpcsRangeGeneration(int generation)
+    {
+        wolffsmodnpcsRangeGeneration = generation;
     }
 }

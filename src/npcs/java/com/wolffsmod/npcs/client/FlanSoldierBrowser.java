@@ -48,6 +48,7 @@ public final class FlanSoldierBrowser
     @Nullable
     private IPlayerClass variantClass;
     private List<SkinOverrideVariant> skins = List.of();
+    private boolean unassigned;
 
     /** How a class skin is laid out, which decides the human model it fits. */
     enum SkinLayout
@@ -65,6 +66,13 @@ public final class FlanSoldierBrowser
     {
         if (variantClass != null)
             return skins.stream().map(SkinOverrideVariant::name).toList();
+        if (unassigned)
+        {
+            classes = FlansModApi.getPlayerClasses().stream().filter(candidate -> Objects.equals(candidate.getContentPack(), pack))
+                .filter(candidate -> FlansModApi.getTeams().stream().noneMatch(owner -> owner.getClasses().contains(candidate)))
+                .sorted(Comparator.comparing(IPlayerClass::getName, String.CASE_INSENSITIVE_ORDER)).toList();
+            return classes.stream().map(IContentType::getName).toList();
+        }
         if (team != null)
         {
             classes = team.getClasses();
@@ -74,10 +82,15 @@ public final class FlanSoldierBrowser
         {
             teams = FlansModApi.getTeams().stream().filter(candidate -> Objects.equals(candidate.getContentPack(), pack) && !candidate.getClasses().isEmpty())
                 .sorted(Comparator.comparing(ITeam::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(ITeam::getShortName)).toList();
-            return teams.stream().map(IContentType::getName).toList();
+            List<String> labels = new ArrayList<>(teams.stream().map(IContentType::getName).toList());
+            if (hasUnassigned(pack))
+                labels.add(net.minecraft.network.chat.Component.translatable("wolffsmodnpcs.soldier.unassigned_classes").getString());
+            return List.copyOf(labels);
         }
-        packs = FlansModApi.getTeams().stream().filter(candidate -> !candidate.getClasses().isEmpty()).map(IContentType::getContentPack).filter(Objects::nonNull).distinct()
-            .sorted(Comparator.comparing(IContentPack::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(candidate -> candidate.getPath().toString())).toList();
+        packs = java.util.stream.Stream
+            .concat(FlansModApi.getTeams().stream().filter(candidate -> !candidate.getClasses().isEmpty()).map(IContentType::getContentPack),
+                FlansModApi.getPlayerClasses().stream().map(IContentType::getContentPack))
+            .filter(Objects::nonNull).distinct().sorted(Comparator.comparing(IContentPack::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(candidate -> candidate.getPath().toString())).toList();
         return packs.stream().map(IContentPack::getName).toList();
     }
 
@@ -86,6 +99,8 @@ public final class FlanSoldierBrowser
     {
         if (variantClass != null)
             variantClass = null;
+        else if (unassigned)
+            unassigned = false;
         else if (team != null)
             team = null;
         else if (pack != null)
@@ -108,7 +123,7 @@ public final class FlanSoldierBrowser
             return Optional.empty();
         if (variantClass != null)
             return row < skins.size() ? Optional.of(new FlanSoldierSelection(team, variantClass, row)) : Optional.empty();
-        if (team != null)
+        if (team != null || unassigned)
         {
             if (row >= classes.size())
                 return Optional.empty();
@@ -120,9 +135,14 @@ public final class FlanSoldierBrowser
             }
             return Optional.of(new FlanSoldierSelection(team, selected));
         }
-        if (pack != null && row < teams.size())
-            team = teams.get(row);
-        else if (pack == null && row < packs.size())
+        if (pack != null)
+        {
+            if (row < teams.size())
+                team = teams.get(row);
+            else if (row == teams.size() && hasUnassigned(pack))
+                unassigned = true;
+        }
+        else if (row < packs.size())
             pack = packs.get(row);
         return Optional.empty();
     }
@@ -130,7 +150,7 @@ public final class FlanSoldierBrowser
     /** @return the row of the selected class at the level listing it, or -1 */
     public int selectedRow(@Nullable FlanSoldierSelection selection)
     {
-        if (team == null || selection == null || selection.team() != team)
+        if ((!unassigned && team == null) || selection == null || selection.team() != team)
             return -1;
         if (variantClass == null)
             return classes.indexOf(selection.playerClass());
@@ -141,6 +161,12 @@ public final class FlanSoldierBrowser
     public boolean browsingSkins()
     {
         return variantClass != null;
+    }
+
+    private static boolean hasUnassigned(IContentPack pack)
+    {
+        return FlansModApi.getPlayerClasses().stream().filter(candidate -> Objects.equals(candidate.getContentPack(), pack))
+            .anyMatch(candidate -> FlansModApi.getTeams().stream().noneMatch(owner -> owner.getClasses().contains(candidate)));
     }
 
     /**

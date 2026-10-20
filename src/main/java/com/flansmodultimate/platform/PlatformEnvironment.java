@@ -3,6 +3,7 @@ package com.flansmodultimate.platform;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.util.thread.EffectiveSide;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,11 +12,18 @@ import net.minecraft.server.MinecraftServer;
 /** Loader boundary for runtime side, production, loaded-mod, and current-server queries. */
 public final class PlatformEnvironment
 {
-    private PlatformEnvironment() {}
+    private PlatformEnvironment()
+    {}
 
     public static boolean isClient()
     {
         return FMLEnvironment.dist == Dist.CLIENT;
+    }
+
+    /** Logical thread side, including the integrated server in a physical client. */
+    public static boolean isServerThread()
+    {
+        return EffectiveSide.get().isServer();
     }
 
     public static boolean isProduction()

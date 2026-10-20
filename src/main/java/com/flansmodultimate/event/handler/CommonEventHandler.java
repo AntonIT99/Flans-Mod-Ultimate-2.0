@@ -163,6 +163,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event)
     {
+        com.flansmodultimate.common.teams.editor.TeamEditorService.get().start(event.getServer());
         FlansMod.teamsManager.attachServer(event.getServer());
         if (contentReferencesValidated || !ModCommonConfig.get().validateContentReferencesOnWorldLoad())
             return;
@@ -175,6 +176,7 @@ public final class CommonEventHandler
     public static void onServerStopping(ServerStoppingEvent event)
     {
         FlansMod.teamsManager.detachServer();
+        com.flansmodultimate.common.teams.editor.TeamEditorService.get().stop();
         HitboxDebugCommand.clearSession();
         CraterCarver.clear();
         DriveableCollisionBypass.reset();
@@ -259,6 +261,7 @@ public final class CommonEventHandler
             ModCommonConfigSync.syncClientIfServer(sp);
             VehicleCollisionDebugCommand.syncOnLogin(sp);
             HitboxDebugCommand.syncOnLogin(sp);
+            com.flansmodultimate.common.teams.editor.TeamEditorService.get().sync(sp, "", "", "");
             FlansMod.teamsManager.playerLoggedIn(sp);
             applyMaxHealth(sp);
         }

@@ -1432,7 +1432,7 @@ public final class TeamsManager
         for (EquipmentSlot slot : List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET))
         {
             ItemStack stack = playerClass == null ? ItemStack.EMPTY : playerClass.getArmour(slot);
-            if (stack.isEmpty())
+            if (stack.isEmpty() && (playerClass == null || playerClass.usesTeamArmour(slot)))
                 stack = team.getArmour(slot);
             player.setItemSlot(slot, stack.copy());
         }
@@ -1460,11 +1460,16 @@ public final class TeamsManager
         }
         else if (playerClass != null)
         {
-            for (ItemStack stack : playerClass.createStartingItems())
-                if (!player.getInventory().add(stack.copy()))
-                    player.drop(stack.copy(), false);
+            Map<Integer, ItemStack> layout = playerClass.createStartingInventory();
+            if (!layout.isEmpty())
+                layout.forEach((slot, stack) -> player.getInventory().setItem(slot, stack.copy()));
+            else
+                for (ItemStack stack : playerClass.createStartingItems())
+                    if (!player.getInventory().add(stack.copy()))
+                        player.drop(stack.copy(), false);
         }
-        equipMeleeOnlyLoadout(player);
+        if (pool != null || playerClass == null || playerClass.createStartingInventory().isEmpty())
+            equipMeleeOnlyLoadout(player);
         player.getInventory().setChanged();
     }
 
@@ -1875,7 +1880,11 @@ public final class TeamsManager
             PlayerData data = PlayerData.getInstance(player);
             PlayerClass playerClass = data.getPlayerClass();
             if (playerClass != null && data.getPlayerClassSkin() >= 0)
-                current.put(player.getUUID(), new PlayerClassSkin(playerClass.getShortName(), data.getPlayerClassSkin()));
+            {
+                var variant = playerClass.getSkinOverrideVariants().get(data.getPlayerClassSkin());
+                var texture = variant.texture() == null ? InfoType.loadSkinTexture(variant.name(), playerClass) : variant.texture();
+                current.put(player.getUUID(), new PlayerClassSkin(playerClass.getShortName(), data.getPlayerClassSkin(), texture.toString()));
+            }
         }
         if (!force && current.equals(lastSyncedPlayerClassSkins))
             return;

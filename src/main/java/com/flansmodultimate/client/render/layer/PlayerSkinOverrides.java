@@ -51,6 +51,7 @@ public final class PlayerSkinOverrides
 
     private static final AtomicReference<Map<UUID, PlayerClassSkin>> classByPlayer = new AtomicReference<>(Map.of());
     private static final Map<PlayerClassSkin, Optional<ResourceLocation>> VALIDATED = new ConcurrentHashMap<>();
+    private static final Map<ResourceLocation, Optional<ResourceLocation>> PREVIEWS = new ConcurrentHashMap<>();
     /** Locations of the sheets this class generated, so they can be handed back to the texture manager. */
     private static final Set<ResourceLocation> CONVERTED = ConcurrentHashMap.newKeySet();
 
@@ -74,6 +75,7 @@ public final class PlayerSkinOverrides
         Runnable forget = () ->
         {
             VALIDATED.clear();
+            PREVIEWS.clear();
             if (CONVERTED.isEmpty())
                 return;
 
@@ -115,6 +117,11 @@ public final class PlayerSkinOverrides
 
     private static Optional<ResourceLocation> validate(PlayerClassSkin assignment)
     {
+        if (!assignment.texture().isEmpty())
+        {
+            ResourceLocation texture = ResourceLocation.tryParse(assignment.texture());
+            return texture == null ? Optional.empty() : validateTexture(texture, assignment.playerClass(), assignment.texture());
+        }
         String playerClassName = assignment.playerClass();
         PlayerClass playerClass = PlayerClass.getPlayerClass(playerClassName);
         if (playerClass == null || assignment.variant() < 0 || assignment.variant() >= playerClass.getSkinOverrideVariants().size())
@@ -125,10 +132,23 @@ public final class PlayerSkinOverrides
         if (texture == null || texture.getPath().isEmpty())
             return Optional.empty();
 
+        return validateTexture(texture, playerClassName, variant.name());
+    }
+
+    /** Validates draft previews through the same legacy skin conversion as the actual player renderer. */
+    @Nullable
+    public static ResourceLocation previewTexture(@Nullable ResourceLocation texture)
+    {
+        return texture == null ? null : PREVIEWS.computeIfAbsent(texture, location -> validateTexture(location, "editor preview", location.toString())).orElse(null);
+    }
+
+    private static Optional<ResourceLocation> validateTexture(ResourceLocation texture, String playerClassName, String skinName)
+    {
+
         Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(texture);
         if (resource.isEmpty())
         {
-            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} was not found", variant.name(), playerClassName, texture);
+            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} was not found", skinName, playerClassName, texture);
             return Optional.empty();
         }
 
@@ -147,12 +167,12 @@ public final class PlayerSkinOverrides
                     return Optional.of(convertLegacySkin(texture, image, scale));
             }
             FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: {}x{} is not a player skin layout" + " (expected a square sheet, or a 2:1 sheet for the old skin format,"
-                + " sized in multiples of {} pixels)", variant.name(), playerClassName, width, height, SKIN_WIDTH);
+                + " sized in multiples of {} pixels)", skinName, playerClassName, width, height, SKIN_WIDTH);
             return Optional.empty();
         }
         catch (IOException | IllegalArgumentException exception)
         {
-            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} could not be read: {}", variant.name(), playerClassName, texture, exception.getMessage());
+            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} could not be read: {}", skinName, playerClassName, texture, exception.getMessage());
             return Optional.empty();
         }
     }

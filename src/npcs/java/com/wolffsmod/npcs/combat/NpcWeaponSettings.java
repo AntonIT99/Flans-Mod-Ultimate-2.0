@@ -18,4 +18,9 @@ public interface NpcWeaponSettings
     NpcPartSettings wolffsmodnpcsParts();
 
     NpcTuning wolffsmodnpcsTuning();
+
+    /** @return how many times the server had applied its ranges to every NPC when this NPC last took them */
+    int wolffsmodnpcsRangeGeneration();
+
+    void wolffsmodnpcsRangeGeneration(int generation);
 }

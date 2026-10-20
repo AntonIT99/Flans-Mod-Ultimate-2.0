@@ -17,6 +17,10 @@ public final class ClientServerSettings
     private static int farInterval = NpcServerSettings.DEFAULT_FAR_INTERVAL;
     @Getter
     private static boolean profiling;
+    @Getter
+    private static int aggroRange = NpcServerSettings.DEFAULT_AGGRO_RANGE;
+    @Getter
+    private static int firingRange = NpcServerSettings.DEFAULT_FIRING_RANGE;
 
     /** Forgets the copy, so that a page opened later waits for the server again. */
     public static void forget()
@@ -30,5 +34,7 @@ public final class ClientServerSettings
         nearInterval = packet.nearInterval();
         farInterval = packet.farInterval();
         profiling = packet.profiling();
+        aggroRange = packet.aggroRange();
+        firingRange = packet.firingRange();
     }
 }

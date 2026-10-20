@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.common.teams.editor.EditorCatalog;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -143,6 +144,11 @@ public class Team extends InfoType implements ITeam
 
     public static Collection<Team> values()
     {
+        return EditorCatalog.current().teams(TEAMS.values());
+    }
+
+    public static Collection<Team> packValues()
+    {
         return TEAMS.values();
     }
 
@@ -154,7 +160,7 @@ public class Team extends InfoType implements ITeam
             return null;
         if (SPECTATORS_ID.equalsIgnoreCase(id.trim()))
             return SPECTATORS;
-        return TEAMS.get(id);
+        return EditorCatalog.current().team(id, TEAMS.get(id));
     }
 
     /** Resolves a team named inside {@code provider}, so a pack always sees its own teams first. */
@@ -163,7 +169,7 @@ public class Team extends InfoType implements ITeam
     {
         if (StringUtils.isNotBlank(id) && SPECTATORS_ID.equalsIgnoreCase(id.trim()))
             return SPECTATORS;
-        return TEAMS.get(id, provider);
+        return EditorCatalog.current().team(id, TEAMS.get(id, provider));
     }
 
     private static ChatFormatting parseFormatting(@Nullable String value)

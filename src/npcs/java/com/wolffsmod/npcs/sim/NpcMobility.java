@@ -3,7 +3,10 @@ package com.wolffsmod.npcs.sim;
 import com.flansmodultimate.api.FlansModApi;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcTypeProperties;
+import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import com.wolffsmod.npcs.sim.NpcTuning.Terrain;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
@@ -11,6 +14,7 @@ import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
@@ -99,7 +103,10 @@ public final class NpcMobility
         return terrain == Terrain.WATERCRAFT || terrain == Terrain.AMPHIBIOUS;
     }
 
-    /** Applies what a terrain profile needs outside path searches, and keeps saved ranges within the server's limit. */
+    /**
+     * Applies what a terrain profile needs outside path searches, gives the NPC the server's ranges once an operator has
+     * applied them to every NPC, and keeps saved ranges within the server's limit.
+     */
     public static void tick(EntityNPCInterface npc)
     {
         Terrain terrain = NpcTuning.of(npc).terrain();
@@ -112,6 +119,7 @@ public final class NpcMobility
             npc.getNavigation().setCanFloat(true);
             npc.setPathfindingMalus(BlockPathTypes.WATER, 0F);
         }
+        takeServerRanges(npc);
         int limit = rangeLimit();
         if (npc.stats.aggroRange > limit)
             npc.stats.setAggroRange(limit);
@@ -123,6 +131,23 @@ public final class NpcMobility
     public static int rangeLimit()
     {
         return Math.max(EDITOR_RANGE_LIMIT, FlansModApi.getNpcTrackingRange());
+    }
+
+    /**
+     * Gives the NPC the server's aggro and firing ranges when they were applied to every NPC since it last took them, as
+     * its own values: a model that supplies a range keeps covering it.
+     */
+    private static void takeServerRanges(EntityNPCInterface npc)
+    {
+        NpcServerSettings server = npc.getServer() == null ? null : NpcServerSettings.get(npc.getServer());
+        NpcWeaponSettings settings = (NpcWeaponSettings) npc.stats;
+        if (server == null || settings.wolffsmodnpcsRangeGeneration() == server.getRangeGeneration())
+            return;
+        NpcTypeProperties properties = settings.wolffsmodnpcsTypeProperties();
+        properties.setOwn(npc, NpcTypeProperty.AGGRO_RANGE, IntTag.valueOf(server.getAggroRange()));
+        properties.setOwn(npc, NpcTypeProperty.RANGE, IntTag.valueOf(server.getFiringRange()));
+        settings.wolffsmodnpcsRangeGeneration(server.getRangeGeneration());
+        npc.updateAI = true;
     }
 
     /**

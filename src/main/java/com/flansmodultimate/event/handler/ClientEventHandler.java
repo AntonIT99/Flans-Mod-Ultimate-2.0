@@ -544,6 +544,7 @@ public final class ClientEventHandler
         GpuModelCache.clear();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
+        com.flansmodultimate.client.teams.EditorClientState.clear();
         PlayerSkinOverrides.clear();
         KillMessageFeed.clear();
         CommonConfigMirror.clear();

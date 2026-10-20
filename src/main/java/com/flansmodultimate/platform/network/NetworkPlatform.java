@@ -18,7 +18,7 @@ import java.util.*;
 /** Forge transport for the loader-neutral packets listed by {@link PacketHandler}. */
 public final class NetworkPlatform
 {
-    public static final String PROTOCOL = "25";
+    public static final String PROTOCOL = "26";
     private static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder.named(CHANNEL_ID).networkProtocolVersion(() -> PROTOCOL).clientAcceptedVersions(PROTOCOL::equals)
         .serverAcceptedVersions(PROTOCOL::equals).simpleChannel();

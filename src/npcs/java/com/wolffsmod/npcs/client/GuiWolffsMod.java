@@ -99,6 +99,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_PROFILE_ID = 1202;
     private static final int SERVER_BENCHMARK_ID = 1203;
     private static final int CLIENT_BENCHMARK_ID = 1204;
+    private static final int SERVER_AGGRO_ID = 1205;
+    private static final int SERVER_FIRING_ID = 1206;
+    private static final int SERVER_APPLY_RANGES_ID = 1207;
     /** Distance between the left edges of two overview columns; a page button is this wide less the gap. */
     private static final int OVERVIEW_COLUMN = 134;
     private static final int OVERVIEW_GAP = 6;
@@ -359,6 +362,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private Category returnTo;
     /** Which tab of a page with several is shown. */
     private int tab;
+    /** Whether the next press of the button applying the ranges to every NPC carries it out; any other edit asks again. */
+    private boolean confirmApplyRanges;
     private NpcKind kind;
     private NpcEngineSettings editingSound;
     private final CombatPages combat;
@@ -953,8 +958,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         GuiButtonNop toggle = new GuiButtonNop(this, SERVER_PROFILE_ID, guiLeft + 228, guiTop + 71, 48, 20, NO_YES, ClientServerSettings.isProfiling() ? 1 : 0);
         toggle.setEnabled(known);
         addButton(toggle);
-        benchmarkButton(SERVER_BENCHMARK_ID, "server_benchmark", 104);
-        benchmarkButton(CLIENT_BENCHMARK_ID, "client_benchmark", 128);
+        serverField(SERVER_AGGRO_ID, "server_aggro_range", ClientServerSettings.getAggroRange(), NpcMobility.rangeLimit(), 92, known);
+        serverField(SERVER_FIRING_ID, "server_firing_range", ClientServerSettings.getFiringRange(), NpcMobility.rangeLimit(), 113, known);
+        GuiButtonNop apply = serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", 136);
+        apply.setEnabled(known);
+        serverButton(SERVER_BENCHMARK_ID, "server_benchmark", 158);
+        serverButton(CLIENT_BENCHMARK_ID, "client_benchmark", 180);
     }
 
     private void serverField(int id, String name, int current, int maximum, int y, boolean known)
@@ -969,12 +978,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         addTextField(field);
     }
 
-    private void benchmarkButton(int id, String name, int y)
+    private GuiButtonNop serverButton(int id, String name, int y)
     {
         String key = TUNING + name;
         GuiButtonNop button = new GuiButtonNop(this, id, guiLeft + 8, guiTop + y, 268, 20, new String[]{key}, 0);
         button.setTooltip(Tooltip.create(Component.translatable(key + HELP_SUFFIX)));
         addButton(button);
+        return button;
     }
 
     /** @return whether the field or button belonged to the Server page */
@@ -983,11 +993,26 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         int near = ClientServerSettings.getNearInterval();
         int far = ClientServerSettings.getFarInterval();
         boolean profiling = ClientServerSettings.isProfiling();
+        int aggro = ClientServerSettings.getAggroRange();
+        int firing = ClientServerSettings.getFiringRange();
+        boolean confirming = confirmApplyRanges;
+        confirmApplyRanges = false;
         switch (id)
         {
             case SERVER_NEAR_ID -> near = number;
             case SERVER_FAR_ID -> far = number;
             case SERVER_PROFILE_ID -> profiling = number == 1;
+            case SERVER_AGGRO_ID -> aggro = number;
+            case SERVER_FIRING_ID -> firing = number;
+            case SERVER_APPLY_RANGES_ID -> {
+                // The first press only asks for a second one: the ranges of every NPC are overwritten.
+                if (confirming)
+                    NpcNetwork.sendToServer(ServerControlPacket.applyRanges());
+                else
+                    confirmApplyRanges = true;
+                init();
+                return true;
+            }
             case SERVER_BENCHMARK_ID -> {
                 NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
                 return true;
@@ -1002,7 +1027,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 return false;
             }
         }
-        NpcNetwork.sendToServer(new ServerControlPacket(ServerControlPacket.Action.SET, near, far, profiling, 0));
+        NpcNetwork.sendToServer(ServerControlPacket.set(near, far, profiling, aggro, firing));
         return true;
     }
 

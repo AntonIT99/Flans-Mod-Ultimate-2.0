@@ -32,6 +32,7 @@ public class PacketPlayerClassSkins implements IClientPacket
             data.writeUUID(uuid);
             data.writeUtf(playerClass.playerClass());
             data.writeVarInt(playerClass.variant());
+            data.writeUtf(playerClass.texture(), 256);
         });
     }
 
@@ -41,7 +42,7 @@ public class PacketPlayerClassSkins implements IClientPacket
         int count = data.readVarInt();
         Map<UUID, PlayerClassSkin> decoded = new HashMap<>(count);
         for (int i = 0; i < count; i++)
-            decoded.put(data.readUUID(), new PlayerClassSkin(data.readUtf(), data.readVarInt()));
+            decoded.put(data.readUUID(), new PlayerClassSkin(data.readUtf(), data.readVarInt(), data.readUtf(256)));
         playerClasses = decoded;
     }
 
