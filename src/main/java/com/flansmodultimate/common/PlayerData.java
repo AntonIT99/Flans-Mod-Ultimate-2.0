@@ -482,17 +482,13 @@ public class PlayerData
     /**
      * @param reloadTime
      *            how long the reload itself takes, which drives the animation
-     * @param blockTime
-     *            how long the player may not shoot for, which is the reload
-     *            time or the gun's own cadence, whichever is longer: a quick
-     *            reload must not let a slow gun outrun its rate of fire
      */
-    public void doGunReload(InteractionHand hand, float reloadTime, float blockTime)
+    public void doGunReload(InteractionHand hand, float reloadTime)
     {
-        // Set player shoot delay to be the reload delay - Set both gun delays to avoid reloading two guns at once
-        float delay = Math.max(reloadTime, blockTime);
-        shootTimeRight = delay;
-        shootTimeLeft = delay;
+        // Overlap reloading with the cooldown already left from the shot. Do not restart a full cadence.
+        // Block both hands for the reload, preserving any longer cooldown each hand already has.
+        shootTimeRight = Math.max(shootTimeRight, reloadTime);
+        shootTimeLeft = Math.max(shootTimeLeft, reloadTime);
         setReloading(hand, true);
         setBurstRoundsRemaining(hand, 0);
     }

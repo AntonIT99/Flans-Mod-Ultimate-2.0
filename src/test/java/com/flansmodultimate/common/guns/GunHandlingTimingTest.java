@@ -73,6 +73,24 @@ class GunHandlingTimingTest
     }
 
     @Test
+    void delayedReloadOverlapsOnlyTheRemainingShotCooldown()
+    {
+        PlayerData data = PlayerData.getInstance(UUID.randomUUID());
+        // A 300-tick shot cooldown has already elapsed when fire-to-reload is requested.
+        data.setShootTime(InteractionHand.MAIN_HAND, 0F);
+        data.doGunReload(InteractionHand.MAIN_HAND, 80F);
+        assertEquals(80F, data.getShootTime(InteractionHand.MAIN_HAND));
+        assertEquals(80F, data.getShootTime(InteractionHand.OFF_HAND));
+
+        // Reloading immediately cannot bypass the original shot cooldown or the other hand's longer wait.
+        data.setShootTime(InteractionHand.MAIN_HAND, 299F);
+        data.setShootTime(InteractionHand.OFF_HAND, 400F);
+        data.doGunReload(InteractionHand.MAIN_HAND, 80F);
+        assertEquals(299F, data.getShootTime(InteractionHand.MAIN_HAND));
+        assertEquals(400F, data.getShootTime(InteractionHand.OFF_HAND));
+    }
+
+    @Test
     void switchPresentationExpiresWithoutChangingAimOrReloadState()
     {
         GunAnimations animations = new GunAnimations();

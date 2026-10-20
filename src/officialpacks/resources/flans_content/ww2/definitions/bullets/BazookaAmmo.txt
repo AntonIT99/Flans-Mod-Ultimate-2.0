@@ -34,4 +34,4 @@ ExplosiveMassTNTg 420
 FlakParticles 0
 HitSound bullet
 SmokeTrail True
-TrailParticleType flansmod.rocketexhaust
+TrailParticleType smoke

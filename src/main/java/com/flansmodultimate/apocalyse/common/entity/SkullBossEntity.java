@@ -25,6 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -37,6 +38,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -71,7 +73,7 @@ public class SkullBossEntity extends FlanMonster
     private static final double REACQUIRE_RANGE = 128.0D;
     private static final float MAX_DAMAGE = 99.0F;
 
-    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
+    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
     private Action currentAction = Action.IDLE;
     private int actionTicks;
     // The point the boss circles and hovers below.
@@ -83,8 +85,19 @@ public class SkullBossEntity extends FlanMonster
         super(type, level);
         setNoGravity(true);
         setPersistenceRequired();
+        noCulling = true;
         xpReward = 5000;
         bossEvent.setDarkenScreen(true);
+    }
+
+    @Override
+    @Nullable
+    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData,
+        @Nullable CompoundTag dataTag)
+    {
+        SpawnGroupData result = super.finalizeEntitySpawn(level, difficulty, spawnType, spawnData, dataTag);
+        playSound(resolveSound("skullboss_spawn", SoundEvents.WITHER_SPAWN), 8.0F, 1.0F);
+        return result;
     }
 
     @Override
@@ -347,6 +360,13 @@ public class SkullBossEntity extends FlanMonster
     public boolean requiresCustomPersistence()
     {
         return true;
+    }
+
+    @Override
+    protected boolean shouldDespawnInPeaceful()
+    {
+        // The legacy boss was EntityLiving, so changing difficulty did not discard the fight.
+        return false;
     }
 
     @Override

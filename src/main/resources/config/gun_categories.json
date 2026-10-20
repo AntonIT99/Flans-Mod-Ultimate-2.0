@@ -2109,7 +2109,8 @@
     "AT4": {
         "properties": {
             "MuzzleVelocity": 285.0,
-            "RoundsPerMin": 6.0,
+            "RoundsPerMin": 15.0,
+            "ReloadTime": 80,
             "Dispersion": 2.0
         },
         "items": [
@@ -2672,7 +2673,7 @@
     "Crossbow (Generic)": {
         "properties": {
             "MuzzleVelocity": 55,
-            "RoundsPerMin": 2,
+            "RoundsPerMin": 24,
             "Dispersion": 0.5
         },
         "items": [
@@ -3053,7 +3054,8 @@
 
     "FGM-148 Javelin": {
         "properties": {
-            "RoundsPerMin": 2,
+            "RoundsPerMin": 6.0,
+            "ReloadTime": 200,
             "Dispersion": 0.5
         },
         "items": [
@@ -3080,7 +3082,8 @@
 
     "FIM-92 Stinger": {
         "properties": {
-            "RoundsPerMin": 3.0,
+            "RoundsPerMin": 8.0,
+            "ReloadTime": 150,
             "Dispersion": 0.5
         },
         "items": [
@@ -4066,7 +4069,8 @@
     "M1 Bazooka": {
         "properties": {
             "MuzzleVelocity": 80.0,
-            "RoundsPerMin": 10.0,
+            "RoundsPerMin": 15.0,
+            "ReloadTime": 80,
             "Dispersion": 2.10
         },
         "items": [
@@ -4179,7 +4183,8 @@
     "M9A1 Bazooka": {
         "properties": {
             "MuzzleVelocity": 82,
-            "RoundsPerMin": 4,
+            "RoundsPerMin": 15.0,
+            "ReloadTime": 80,
             "Dispersion": 0.8
         },
         "items": [
@@ -4292,7 +4297,8 @@
     "M72A2/A3 LAW": {
         "properties": {
             "MuzzleVelocity": 144.8,
-            "RoundsPerMin": 4,
+            "RoundsPerMin": 15.0,
+            "ReloadTime": 80,
             "Dispersion": 0.8
         },
         "items": [
@@ -5194,7 +5200,8 @@
     "Panzerfaust 3": {
         "properties": {
             "MuzzleVelocity": 165.0,
-            "RoundsPerMin": 5.0,
+            "RoundsPerMin": 12.0,
+            "ReloadTime": 100,
             "Dispersion": 2.0
         },
         "items": [
@@ -5205,7 +5212,8 @@
     "Panzerfaust 60": {
         "properties": {
             "MuzzleVelocity": 45.0,
-            "RoundsPerMin": 10.0,
+            "RoundsPerMin": 20.0,
+            "ReloadTime": 60,
             "Dispersion": 2.30
         },
         "items": [
@@ -5261,7 +5269,8 @@
     "PIAT": {
         "properties": {
             "MuzzleVelocity": 80.0,
-            "RoundsPerMin": 8.0,
+            "RoundsPerMin": 12.0,
+            "ReloadTime": 100,
             "Dispersion": 2.40
         },
         "items": [
@@ -5594,7 +5603,8 @@
     "RPG-7": {
         "properties": {
             "MuzzleVelocity": 115.0,
-            "RoundsPerMin": 4.0,
+            "RoundsPerMin": 15.0,
+            "ReloadTime": 80,
             "Dispersion": 2.0
         },
         "items": [
@@ -5616,7 +5626,8 @@
     "RPzB 54 Panzerschreck": {
         "properties": {
             "MuzzleVelocity": 110.0,
-            "RoundsPerMin": 10.0,
+            "RoundsPerMin": 15.0,
+            "ReloadTime": 80,
             "Dispersion": 2.00
         },
         "items": [
@@ -5683,7 +5694,7 @@
     "Self Bow (Generic)": {
         "properties": {
             "MuzzleVelocity": 45,
-            "RoundsPerMin": 8,
+            "RoundsPerMin": 40,
             "Dispersion": 1.5
         },
         "items": [
@@ -5932,7 +5943,7 @@
     "Sling": {
         "properties": {
             "MuzzleVelocity": 35,
-            "RoundsPerMin": 8,
+            "RoundsPerMin": 30,
             "Dispersion": 2
         },
         "items": [

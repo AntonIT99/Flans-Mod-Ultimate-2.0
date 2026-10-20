@@ -26,7 +26,7 @@ public final class ApocalypseGunHelper
     {
         Optional<GunType> preferred = randomGun(random, preferSemiAuto);
         if (preferred.isPresent())
-            return loadGun(preferred.get(), random, false);
+            return loadGun(preferred.get(), random, preferSemiAuto);
         return randomGun(random, false).flatMap(type -> loadGun(type, random, false));
     }
 
@@ -43,23 +43,23 @@ public final class ApocalypseGunHelper
         List<GunType> guns = new ArrayList<>();
         for (InfoType type : InfoType.getInfoTypes().values())
         {
-            if (!(type instanceof GunType gun))
-                continue;
-            // As 1.12.2, only guns allowed in dungeon loot arm the wasteland, which keeps
-            // novelty weapons such as the Nerf blasters out of it.
-            if (gun.isDeployable() || gun.isShield() || !gun.isUsableByPlayers() || gun.getDungeonChance() == 0)
-                continue;
-            if (preferSemiAuto && gun.getMode() != EnumFireMode.SEMIAUTO)
-                continue;
-            if (combatAmmoTypes(gun, false).isEmpty())
-                continue;
-            if (ModUtils.getItemStack(gun).isEmpty())
-                continue;
-            guns.add(gun);
+            if (type instanceof GunType gun && canArmMob(gun, preferSemiAuto))
+                guns.add(gun);
         }
         if (guns.isEmpty())
             return Optional.empty();
         return Optional.of(guns.get(random.nextInt(guns.size())));
+    }
+
+    private static boolean canArmMob(GunType gun, boolean preferSemiAuto)
+    {
+        // As 1.12.2, only guns allowed in dungeon loot arm the wasteland, which keeps
+        // novelty weapons such as the Nerf blasters out of it.
+        if (gun.isDeployable() || gun.isShield() || !gun.isUsableByPlayers() || gun.getDungeonChance() == 0)
+            return false;
+        if (preferSemiAuto && gun.getMode() != EnumFireMode.SEMIAUTO)
+            return false;
+        return !combatAmmoTypes(gun, preferSemiAuto).isEmpty() && ModUtils.getItemStack(gun).isPresent();
     }
 
     public static Optional<ItemStack> loadGun(GunType gun, RandomSource random, boolean explosivesAllowed)
@@ -85,7 +85,8 @@ public final class ApocalypseGunHelper
             ModUtils.getItemStack(ammoType).ifPresent(ammoStack ->
             {
                 int rounds = Math.max(1, ammoType.getRoundsPerItem());
-                ShootableItem.setRoundsRemaining(ammoStack, rounds);
+                // Scavenged guns start with one to a full magazine's worth of rounds, as in 1.12.2.
+                ShootableItem.setRoundsRemaining(ammoStack, 1 + random.nextInt(rounds));
                 gunItem.setBulletItemStack(gunStack, ammoStack, ammoSlot, com.flansmodultimate.platform.item.ItemStackData.builtInRegistries());
             });
         }
@@ -116,10 +117,15 @@ public final class ApocalypseGunHelper
     /** A spare magazine for {@code gun}, for stocking the cargo of whatever carries it. */
     public static Optional<ItemStack> spareAmmoFor(GunType gun, RandomSource random)
     {
-        List<BulletType> ammo = combatAmmoTypes(gun, false);
+        return spareAmmoFor(gun, random, false);
+    }
+
+    public static Optional<ItemStack> spareAmmoFor(GunType gun, RandomSource random, boolean explosivesAllowed)
+    {
+        List<ShootableType> ammo = combatAmmoTypes(gun, explosivesAllowed);
         if (ammo.isEmpty())
             return Optional.empty();
-        BulletType selected = ammo.get(random.nextInt(ammo.size()));
+        ShootableType selected = ammo.get(random.nextInt(ammo.size()));
         int count = selected.getMaxStackSize() > 1 ? 1 + random.nextInt(Math.min(3, selected.getMaxStackSize())) : 1;
         return ModUtils.getItemStack(selected, count).map(stack ->
         {
@@ -175,18 +181,16 @@ public final class ApocalypseGunHelper
         return null;
     }
 
-    private static List<BulletType> combatAmmoTypes(GunType gun, boolean explosivesAllowed)
+    private static List<ShootableType> combatAmmoTypes(GunType gun, boolean explosivesAllowed)
     {
-        List<BulletType> ammo = new ArrayList<>();
+        List<ShootableType> ammo = new ArrayList<>();
         for (ShootableType shootableType : gun.getAmmoTypes())
         {
-            if (!(shootableType instanceof BulletType bulletType))
-                continue;
-            if (!explosivesAllowed && bulletType.getExplosiveMass() > 0.0F)
-                continue;
-            if (ModUtils.getItemStack(bulletType).isEmpty())
-                continue;
-            ammo.add(bulletType);
+            // Legacy drones could fire non-explosive grenades as well as bullets. Survivors
+            // chose from their gun's whole ammo pool, including explosive bullet variants.
+            boolean allowed = explosivesAllowed || (shootableType.getExplosiveMass() <= 0F && shootableType.getExplosionRadius() <= 0F);
+            if (allowed && ModUtils.getItemStack(shootableType).isPresent())
+                ammo.add(shootableType);
         }
         return ammo;
     }

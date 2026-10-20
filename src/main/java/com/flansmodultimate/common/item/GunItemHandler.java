@@ -103,30 +103,32 @@ public class GunItemHandler
 
     public EnumFireDecision computeFireDecision(PlayerData data, ItemStack gunStack, InteractionHand hand, HolderLookup.Provider registries)
     {
-        GunType type = item.configType;
+        GunType type = item.getConfigType();
         EnumFireMode mode = type.getFireMode(gunStack);
 
         boolean emptyAmmo = hasEmptyAmmo(gunStack, registries);
         boolean shootPressed = data.isShootKeyPressed(hand);
         boolean shootEdgePressed = data.isShootKeyPressed(hand) && !data.isPrevShootKeyPressed(hand);
 
-        boolean actionRequested;
-        if (mode.isAutomaticFire())
-            actionRequested = shootPressed;
-        else if (mode == EnumFireMode.BURST)
-            actionRequested = shootEdgePressed || data.getBurstRoundsRemaining(hand) > 0;
-        else
-            actionRequested = shootEdgePressed;
+        boolean actionRequested = switch (mode)
+        {
+            case FULLAUTO, MINIGUN -> shootPressed;
+            case BURST -> shootEdgePressed || data.getBurstRoundsRemaining(hand) > 0;
+            case SEMIAUTO -> shootEdgePressed;
+        };
 
         if (!actionRequested || type.isPoweredOff(gunStack))
             return EnumFireDecision.NO_ACTION;
         // Stops the player shooting immediately after picking a gun up from the ground
         if (data.getShootClickDelay() > 0)
             return EnumFireDecision.NO_ACTION;
-        if (data.getShootTime(hand) > 0F)
+        if (data.isReloading(hand) || data.isSecondaryModeSwitching(hand) || data.getPendingReload().isPresent())
             return EnumFireDecision.NO_ACTION;
+        // An empty gun can start reloading while the previous shot is still cooling down.
         if (emptyAmmo)
             return ModCommonConfig.reloadOnEmptyFire() ? EnumFireDecision.RELOAD : EnumFireDecision.NO_ACTION;
+        if (data.getShootTime(hand) > 0F)
+            return EnumFireDecision.NO_ACTION;
         if (mode == EnumFireMode.MINIGUN)
             return (data.getMinigunSpeed() >= type.getMinigunStartSpeed()) ? EnumFireDecision.SHOOT : EnumFireDecision.NO_ACTION;
         return EnumFireDecision.SHOOT;
@@ -331,7 +333,7 @@ public class GunItemHandler
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack, level.registryAccess());
 
-            data.doGunReload(hand, reloadTime, item.configType.getShootDelay(gunStack));
+            data.doGunReload(hand, reloadTime);
             PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo), player);
 
             String reloadSound = item.configType.getReloadSound(gunStack);

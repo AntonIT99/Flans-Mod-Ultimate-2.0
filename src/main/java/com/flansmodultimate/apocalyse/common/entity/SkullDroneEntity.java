@@ -179,6 +179,13 @@ public class SkullDroneEntity extends FlanMonster
     }
 
     @Override
+    protected boolean shouldDespawnInPeaceful()
+    {
+        // The legacy drone was EntityLiving, not a monster removed by Peaceful difficulty.
+        return false;
+    }
+
+    @Override
     public boolean causeFallDamage(float fallDistance, float multiplier, @NotNull DamageSource source)
     {
         return false;

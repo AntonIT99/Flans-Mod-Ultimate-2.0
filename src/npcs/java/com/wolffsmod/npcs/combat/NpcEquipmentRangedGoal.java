@@ -131,7 +131,8 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         if (properties.isPresent() && main.spinSpeed < properties.get().spinUpMaximum())
             main.spinSpeed += 2F;
-        if (!main.cadence.ready() || reload(main, weapon) || properties.isPresent() && main.spinSpeed < properties.get().spinUpThreshold())
+        // Reload progress overlaps the previous shot's cooldown instead of waiting for it to expire first.
+        if (reload(main, weapon) || !main.cadence.ready() || properties.isPresent() && main.spinSpeed < properties.get().spinUpThreshold())
             return;
         if (charge(weapon))
             return;
@@ -154,7 +155,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         if (off.spinSpeed < properties.get().spinUpMaximum())
             off.spinSpeed += 2F;
-        if (!off.cadence.ready() || reload(off, weapon) || off.spinSpeed < properties.get().spinUpThreshold())
+        if (reload(off, weapon) || !off.cadence.ready() || off.spinSpeed < properties.get().spinUpThreshold())
             return;
         // A weapon being drawn or charged in the main hand keeps the NPC's aim.
         if (!npc.isUsingItem() || NpcEquipment.shield(npc.getUseItem()))
@@ -233,9 +234,14 @@ public final class NpcEquipmentRangedGoal extends Goal
             hand.reloading = Math.max(1, (int) Math.ceil(flan.get().reloadTime()));
             NpcReloadFeedback.reload(npc, hand.side, hand.reloading);
         }
-        if (--hand.reloading <= 0 && !NpcItemAttacks.loadFlanGun(npc, hand.side))
+        if (--hand.reloading > 0)
+            return true;
+        if (!NpcItemAttacks.loadFlanGun(npc, hand.side))
+        {
             outOfAmmunition(hand);
-        return true;
+            return true;
+        }
+        return false;
     }
 
     /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */
