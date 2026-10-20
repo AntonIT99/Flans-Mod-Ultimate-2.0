@@ -8,6 +8,9 @@ Model manus_modern_warfare.Boxer5
 Texture SkinVehicleBoxer
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Original IconVehicleBoxer5 skinvehicleboxer_original gray 8
+
 // Recipe and Inventory
 AddAmmo ShellNATO35mm
 AddAmmo ShellNATO35mmPMD062AHEAD
@@ -52,7 +55,9 @@ ReadWeaponsFromGunTypes true
 
 // Protection
 ArmorFrontMm 60
+ArmorFrontVsHeatMm 120
 ArmorSideMm 40
+ArmorSideVsHeatMm 100
 ArmorRearMm 30
 ArmorTopMm 20
 ArmorBottomMm 25

@@ -22,6 +22,7 @@ ShellSlots 15
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Alternate 44_M4ShermanT34Calliope 44_m4shermant34calliope_2 gray 8
 AddDye 5 green
 
 // Real-world specifications

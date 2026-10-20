@@ -22,6 +22,7 @@ ShellSlots 3
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Alternate 44_T70 44_t70_2 gray 8
 AddDye 3 green
 
 // Real-world specifications

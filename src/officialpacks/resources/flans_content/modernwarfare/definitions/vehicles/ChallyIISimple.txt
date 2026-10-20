@@ -12,6 +12,9 @@ AddDye 4 brown
 AddDye 5 yellow
 RotateWheels true
 
+// Paintjobs
+AdvPaintJob Destroyed ChallyII challysimple_destroyed black 8
+
 // Recipe
 AddRecipeParts turret 1 heavyTankTurret 2 vehicleSeat
 AddRecipeParts core 1 advancedTankBody
@@ -71,12 +74,15 @@ SetupPart leftTrack 10000 -69 -10 21 136 10 12
 SetupPart turret 21500 -48 23 -27 92 16 54
 BulletDetection 7
 ArmorFrontMm 550
+ArmorFrontVsHeatMm 900
 ArmorSideMm 70
 ArmorRearMm 40
 ArmorTopMm 50
 ArmorBottomMm 35
 TurretArmorFrontMm 800
+TurretArmorFrontVsHeatMm 1300
 TurretArmorSideMm 250
+TurretArmorSideVsHeatMm 500
 TurretArmorRearMm 70
 TurretArmorTopMm 70
 UseRealisticVehicleHealth true

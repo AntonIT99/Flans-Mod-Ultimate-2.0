@@ -23,6 +23,7 @@ FuelTankSize 2000
 
 // Paintjobs
 advpaintjob Winter 44_StuGIV_Winter 44_StuGIV_Winter silver 5
+advpaintjob Dunkelgelb 44_StuGIV 44_stugiv_dunkelgelb yellow 8
 AddDye 5 gray
 
 // Real-world specifications

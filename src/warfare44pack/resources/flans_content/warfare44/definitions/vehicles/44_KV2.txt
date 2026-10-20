@@ -24,6 +24,7 @@ ShellSlots 5
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Alternate 44_KV2 44_kv2_2 gray 8
 AddDye 8 green
 
 // Real-world specifications

@@ -24,6 +24,7 @@ FuelTankSize 2000
 
 // Paintjobs
 advpaintjob Fury 44_M4A3E8Sherman_Fury 44_M4A3E8Sherman_Fury gray 5
+advpaintjob KoreanWar 44_M4A3E8Sherman 44_m4a3e8sherman_korean_war gray 8
 AddDye 5 green
 
 // Real-world specifications

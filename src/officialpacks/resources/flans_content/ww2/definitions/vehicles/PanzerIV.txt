@@ -12,6 +12,10 @@ RotateWheels true
 AddDye 10 gray
 ModelScale 0.9
 
+// Paintjobs
+AdvPaintJob Original Panzer panzer_original gray 8
+AdvPaintJob Snow Panzer panzer_snow white 8
+
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
 AddRecipeParts core 1 mediumTankBody

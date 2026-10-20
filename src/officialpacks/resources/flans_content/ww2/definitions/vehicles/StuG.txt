@@ -12,6 +12,10 @@ RotateWheels True
 AddDye 10 gray
 ModelScale 0.85
 
+// Paintjobs
+AdvPaintJob Original StuG stug_original gray 8
+AdvPaintJob Snow StuG stug_snow white 8
+
 // Recipe
 AddRecipeParts core 1 mediumTankBody 2 vehicleSeat 1 tankBarrel
 AddRecipeParts leftTrack 1 catTrack

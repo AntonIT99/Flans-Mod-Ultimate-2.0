@@ -10,6 +10,9 @@ RotateWheels True
 AddDye 10 gray
 ModelScale 1.1
 
+// Paintjobs
+AdvPaintJob Camouflage B1 b1_camouflage green 8
+
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
 AddRecipeParts core 1 mediumTankBody 1 vehicleSeat

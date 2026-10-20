@@ -22,6 +22,8 @@ ShellSlots 0
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Alternate 44_T20 44_t20_2 gray 8
+advpaintjob Finland 44_T20 44_t20_finland green 8
 AddDye 2 green
 
 // Real-world specifications

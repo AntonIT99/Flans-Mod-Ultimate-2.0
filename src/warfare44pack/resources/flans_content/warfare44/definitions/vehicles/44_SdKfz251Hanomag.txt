@@ -24,6 +24,7 @@ FuelTankSize 1000
 
 // Paintjobs
 advpaintjob Beige 44_SdKfz251Hanomag_Beige 44_SdKfz251Hanomag_Beige yellow 4
+advpaintjob Dunkelgelb 44_SdKfz251Hanomag 44_sdkfz251hanomag_dunkelgelb yellow 8
 AddDye 4 gray
 
 // Real-world specifications

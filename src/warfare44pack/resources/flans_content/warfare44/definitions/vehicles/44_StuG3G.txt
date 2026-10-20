@@ -22,6 +22,7 @@ ShellSlots 4
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Dunkelgelb 44_StuG3G 44_stug3g_dunkelgelb yellow 8
 AddDye 5 gray
 
 // Real-world specifications

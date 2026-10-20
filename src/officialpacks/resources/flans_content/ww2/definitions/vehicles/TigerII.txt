@@ -11,6 +11,10 @@ Texture tigerii
 AddDye 18 gray
 ModelScale 1.1
 
+// Paintjobs
+AdvPaintJob Original TigerII tigerii_original gray 8
+AdvPaintJob Dunkelgelb TigerII tigerii_dunkelgelb yellow 8
+
 // Recipe
 AddRecipeParts turret 1 heavyTankTurret 1 vehicleSeat
 AddRecipeParts core 1 heavyTankBody

@@ -8,6 +8,9 @@ Model manus_modern_warfare.Boxer4
 Texture SkinVehicleBoxer
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Original IconVehicleBoxer4 skinvehicleboxer_original gray 8
+
 // Recipe and Inventory
 AddAmmo ShellNATO20x139mmDM63Belt
 FuelTankSize 2000
@@ -51,7 +54,9 @@ ReadWeaponsFromGunTypes true
 
 // Protection
 ArmorFrontMm 60
+ArmorFrontVsHeatMm 120
 ArmorSideMm 40
+ArmorSideVsHeatMm 100
 ArmorRearMm 30
 ArmorTopMm 20
 ArmorBottomMm 25

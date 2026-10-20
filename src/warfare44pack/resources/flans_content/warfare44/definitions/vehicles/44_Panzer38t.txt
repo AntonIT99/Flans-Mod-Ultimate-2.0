@@ -23,6 +23,7 @@ FuelTankSize 2000
 
 // Paintjobs
 advpaintjob Winter 44_Panzer38t_Winter 44_Panzer38t_Winter silver 3
+advpaintjob Alternate 44_Panzer38t 44_panzer38t_2 gray 8
 AddDye 3 gray
 
 // Real-world specifications

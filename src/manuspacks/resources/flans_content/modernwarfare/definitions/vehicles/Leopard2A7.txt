@@ -60,12 +60,16 @@ ReadWeaponsFromGunTypes true
 
 // Protection
 ArmorFrontMm 700
+ArmorFrontVsHeatMm 1100
 ArmorSideMm 400
+ArmorSideVsHeatMm 650
 ArmorRearMm 60
 ArmorTopMm 80
 ArmorBottomMm 60
 TurretArmorFrontMm 900
+TurretArmorFrontVsHeatMm 1400
 TurretArmorSideMm 400
+TurretArmorSideVsHeatMm 650
 TurretArmorRearMm 80
 TurretArmorTopMm 80
 UseRealisticVehicleHealth true

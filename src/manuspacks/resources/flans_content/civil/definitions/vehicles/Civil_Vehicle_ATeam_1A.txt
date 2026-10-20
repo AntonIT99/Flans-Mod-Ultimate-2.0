@@ -8,6 +8,9 @@ Icon Icon_Civil_Vehicle_ATeam_1A
 Texture Skin_Civil_Vehicle_ATeam_1A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Brynmar Icon_Civil_Vehicle_ATeam_1A skin_civil_vehicle_ateam_1a_brynmar green 8
+
 // Recipe and Inventory
 FuelTankSize 1500
 CargoSlots 18

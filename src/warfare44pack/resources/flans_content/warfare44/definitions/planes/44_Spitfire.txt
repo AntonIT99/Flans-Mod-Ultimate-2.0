@@ -23,6 +23,7 @@ FuelTankSize 6000
 advpaintjob Australian 44_Spitfire_Australian 44_Spitfire_Australian AddDye 4 cyan
 advpaintjob Desert 44_Spitfire_Desert 44_Spitfire_Desert AddDye 4 yellow
 advpaintjob Desert2 44_SpitfireDesert2 44_SpitfireDesert2 AddDye 4 brown
+advpaintjob German 44_Spitfire Skin44_Spitfire_German gray 8
 AddDye 3 cyan
 AddDye 5 green
 

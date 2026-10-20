@@ -11,6 +11,10 @@ Texture pak40
 AddDye 5 gray
 ModelScale 1.1
 
+// Paintjobs
+AdvPaintJob Original Pak40 pak40_original gray 8
+AdvPaintJob Alternate Pak40 pak40_alternate gray 8
+
 // Recipe
 AddRecipeParts core 1 tankBarrel 1 gunShield
 AddRecipeParts frontLeftWheel 1 largeWheel

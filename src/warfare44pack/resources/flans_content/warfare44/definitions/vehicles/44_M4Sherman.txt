@@ -25,6 +25,8 @@ FuelTankSize 2000
 // Paintjobs
 advpaintjob Desert 44_M4Sherman_Desert 44_M4Sherman_Desert yellow 5
 advpaintjob Winter 44_M4Sherman_Winter 44_M4Sherman_Winter white 5
+advpaintjob WinterAlternate 44_M4Sherman 44_m4sherman_winter_2 white 8
+advpaintjob Alternate 44_M4Sherman 44_m4sherman_2 gray 8
 AddDye 5 green
 
 // Real-world specifications

@@ -12,6 +12,10 @@ RotateWheels true
 AddDye 10 green
 ModelScale 1.15
 
+// Paintjobs
+AdvPaintJob Original Sherman sherman_original gray 8
+AdvPaintJob Alternate Sherman sherman_alternate gray 8
+
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
 AddRecipeParts core 1 mediumTankBody

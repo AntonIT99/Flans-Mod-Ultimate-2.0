@@ -23,6 +23,8 @@ ShellSlots 5
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Finland 44_KV1E 44_kv1e_finland green 8
+advpaintjob White 44_KV1E 44_kv1e_white white 8
 AddDye 10 green
 
 // Real-world specifications

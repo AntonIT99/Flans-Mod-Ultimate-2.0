@@ -12,6 +12,10 @@ RotateWheels True
 AddDye 10 green
 ModelScale 1.3
 
+// Paintjobs
+AdvPaintJob Original T3485 t3485_original gray 8
+AdvPaintJob Alternate T3485 t3485_alternate gray 8
+
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
 AddRecipeParts core 1 mediumTankBody
