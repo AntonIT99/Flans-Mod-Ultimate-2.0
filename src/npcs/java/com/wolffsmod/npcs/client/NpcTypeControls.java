@@ -18,6 +18,9 @@ import java.util.*;
 public final class NpcTypeControls
 {
     private static final RangedControlLocks EMPTY = new RangedControlLocks(Map.of(), Map.of(), Map.of());
+    /** The cobweb button of the Custom NPCs stats page, and the label beside each stats button where its id differs. */
+    private static final int COBWEB_BUTTON = 22;
+    private static final Map<Integer, Integer> STATS_BUTTON_LABELS = Map.of(5, 11, 7, 13);
     private static final Map<Integer, NpcTypeProperty> RANGED_FIELDS = Map.ofEntries(Map.entry(1, NpcTypeProperty.ACCURACY), Map.entry(2, NpcTypeProperty.RANGE),
         Map.entry(3, NpcTypeProperty.DELAY_MIN), Map.entry(4, NpcTypeProperty.DELAY_MAX), Map.entry(5, NpcTypeProperty.BURST_DELAY), Map.entry(6, NpcTypeProperty.BURST),
         Map.entry(7, NpcTypeProperty.FIRING_SOUND), Map.entry(8, NpcTypeProperty.SHOT_COUNT));
@@ -48,9 +51,11 @@ public final class NpcTypeControls
             var button = gui.getButton(id);
             if (value != null && button != null)
             {
-                button.setDisplay(((ByteTag) value).getAsByte() != 0 ? 1 : 0);
+                boolean on = ((ByteTag) value).getAsByte() != 0;
+                // The Custom NPCs button asks whether cobwebs affect the NPC, the opposite of the stored value.
+                button.setDisplay(on != (id == COBWEB_BUTTON) ? 1 : 0);
                 buttons.put(id, Reason.TYPE_PROPERTIES);
-                labels.put(id == 5 ? 11 : 13, Reason.TYPE_PROPERTIES);
+                labels.put(STATS_BUTTON_LABELS.getOrDefault(id, id), Reason.TYPE_PROPERTIES);
             }
         });
         for (int id : soundButtons(gui))
@@ -83,7 +88,7 @@ public final class NpcTypeControls
     private static Map<Integer, NpcTypeProperty> fields(GuiBasic gui)
     {
         if (gui instanceof GuiNpcStats)
-            return Map.of(0, NpcTypeProperty.HEALTH, 1, NpcTypeProperty.AGGRO_RANGE);
+            return Map.of(0, NpcTypeProperty.HEALTH, 1, NpcTypeProperty.AGGRO_RANGE, 14, NpcTypeProperty.HEALTH_REGEN, 16, NpcTypeProperty.COMBAT_REGEN);
         if (gui instanceof SubGuiNpcRangeProperties)
             return RANGED_FIELDS;
         if (gui instanceof SubGuiNpcProjectiles)
@@ -99,7 +104,9 @@ public final class NpcTypeControls
 
     private static Map<Integer, NpcTypeProperty> buttons(GuiBasic gui)
     {
-        return gui instanceof GuiNpcStats ? Map.of(5, NpcTypeProperty.CAN_DROWN, 7, NpcTypeProperty.NO_FALL_DAMAGE) : Map.of();
+        return gui instanceof GuiNpcStats
+            ? Map.of(5, NpcTypeProperty.CAN_DROWN, 7, NpcTypeProperty.NO_FALL_DAMAGE, 17, NpcTypeProperty.POTION_IMMUNE, COBWEB_BUTTON, NpcTypeProperty.IGNORE_COBWEB)
+            : Map.of();
     }
 
     private static int[] soundButtons(GuiBasic gui)

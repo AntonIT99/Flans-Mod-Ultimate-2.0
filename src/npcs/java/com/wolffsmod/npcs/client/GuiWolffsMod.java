@@ -775,9 +775,36 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (reason != null)
         {
             label.setColor(READ_ONLY_COLOR);
-            label.setTooltip(Tooltip.create(reason.copy().withStyle(ChatFormatting.RED).append("\n\n").append(Component.translatable(key + HELP_SUFFIX).withStyle(HELP_STYLE))));
+            label.setTooltip(Tooltip.create(withDefault(reason.copy().withStyle(ChatFormatting.RED).append("\n\n").append(Component.translatable(key + HELP_SUFFIX).withStyle(HELP_STYLE)), row)));
         }
+        else if (defaultText(row) != null)
+            label.setTooltip(Tooltip.create(withDefault(Component.translatable(key + HELP_SUFFIX).withStyle(HELP_STYLE), row)));
         addLabel(label);
+    }
+
+    /** @return the help followed by the row's default value, in gold while the row holds another value */
+    private MutableComponent withDefault(MutableComponent help, Object row)
+    {
+        Component value = defaultText(row);
+        if (value == null)
+            return help;
+        return help.append("\n").append(Component.translatable(OVERVIEW + "default", value).withStyle(changed(row) ? ChatFormatting.GOLD : ChatFormatting.GRAY));
+    }
+
+    /** @return the value an NPC gets by default, as its control shows it, or null for a row without a default of the tab's */
+    @Nullable
+    private static Component defaultText(Object row)
+    {
+        if (row instanceof Feature feature)
+            return Component.translatable(NO_YES[feature.isDefaultEnabled() ? 1 : 0]);
+        if (row instanceof Look look)
+            return Component.translatable(NO_YES[look.fallback ? 1 : 0]);
+        if (!(row instanceof Value value))
+            return null;
+        Enum<?>[] choices = choices(value);
+        if (choices.length > value.fallback() && value.fallback() >= 0)
+            return Component.translatable(labelKey(value) + "." + choices[value.fallback()].name().toLowerCase(Locale.ROOT));
+        return Component.literal(Integer.toString(value.fallback()));
     }
 
     /** @return how far the row is moved right: one step for each row above it in the list that it depends on */
@@ -1061,7 +1088,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void switchRow(int id, String key, boolean value, int control, int y)
     {
-        addLabel(new GuiLabel(id, key, guiLeft + 8, y + 5, key + HELP_SUFFIX));
+        GuiLabel label = new GuiLabel(id, key, guiLeft + 8, y + 5, key + HELP_SUFFIX);
+        Arrays.stream(Look.values()).filter(look -> look.id == id).findFirst()
+            .ifPresent(look -> label.setTooltip(Tooltip.create(withDefault(Component.translatable(key + HELP_SUFFIX).withStyle(HELP_STYLE), look))));
+        addLabel(label);
         switchButton(id, value, control, y);
     }
 

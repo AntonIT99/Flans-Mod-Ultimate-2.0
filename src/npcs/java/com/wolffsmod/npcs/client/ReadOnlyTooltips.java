@@ -37,10 +37,10 @@ public final class ReadOnlyTooltips
     private static final Map<Integer, String> MELEE_FIELDS = Map.of(1, "melee_damage", 2, "melee_reach", 3, "melee_delay", 4, "melee_knockback", 6, "melee_effect_duration");
     private static final Map<Integer, String> MELEE_BUTTONS = Map.of(5, "melee_effect", 7, "melee_effect_amplifier");
     private static final Map<Integer, String> MELEE_LABELS = merge(MELEE_FIELDS, MELEE_BUTTONS);
-    private static final Map<Integer, String> STATS_FIELDS = Map.of(0, "health", 1, "aggro_range");
-    private static final Map<Integer, String> STATS_BUTTONS = Map.of(4, "fire_immune", 5, "can_drown", 7, "no_fall_damage");
+    private static final Map<Integer, String> STATS_FIELDS = Map.of(0, "health", 1, "aggro_range", 14, "health_regen", 16, "combat_regen");
+    private static final Map<Integer, String> STATS_BUTTONS = Map.of(4, "fire_immune", 5, "can_drown", 7, "no_fall_damage", 17, "potion_immune", 22, "ignore_cobweb");
     /** Label ID to the toggle it describes. */
-    private static final Map<Integer, String> STATS_LABELS = relabel(STATS_FIELDS, STATS_BUTTONS, Map.of(10, 4, 11, 5, 13, 7));
+    private static final Map<Integer, String> STATS_LABELS = relabel(STATS_FIELDS, STATS_BUTTONS, Map.of(10, 4, 11, 5, 13, 7, 17, 17, 22, 22));
     private static final Map<Integer, String> MOVEMENT = Map.of(14, "walking_speed");
     private static final Map<Integer, String> SOUNDS = Map.of(0, "idle_sound", 5, "step_sound");
     private static final Map<Integer, String> RESISTANCES = Map.of(0, "knockback_resistance", 1, "projectile_resistance", 2, "melee_resistance", 3, "explosion_resistance");

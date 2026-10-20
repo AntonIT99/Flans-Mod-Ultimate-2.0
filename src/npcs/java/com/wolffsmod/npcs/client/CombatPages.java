@@ -56,6 +56,10 @@ final class CombatPages
     static final int PROPERTY_SELECT_ID = 950;
     static final int EQUIPMENT_SELECT_ID = 1650;
     private static final int NOTICE_ID = 990;
+    /** The engine rows of the Sounds tab, idle then movement: Inherit/Custom, value and Select. */
+    private static final int ENGINE_MODE_ID = 1800;
+    private static final int ENGINE_VALUE_ID = 1802;
+    private static final int ENGINE_SELECT_ID = 1804;
     private static final int READ_ONLY_COLOR = 0xA0A0A0;
     private static final int INHERITED_COLOR = 0x408040;
     private static final int MAX_VALUE_LENGTH = 20;
@@ -71,6 +75,9 @@ final class CombatPages
     private static final String IMPORT = PREFIX + "import";
     private static final String IMPORT_ALL = PREFIX + "import_all";
     private static final String INHERIT_ALL = PREFIX + "inherit_all";
+    private static final String VALUE_OWN = PREFIX + "value.own";
+    private static final String SELECT_HELP = PREFIX + "select" + HELP_SUFFIX;
+    private static final String[] MODES = {PREFIX + "mode.inherit", PREFIX + "mode.custom"};
     /** Left edge of Inherit all; Import all follows it and Back follows that. */
     private static final int BULK_LEFT = 226;
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
@@ -82,7 +89,9 @@ final class CombatPages
         Map.entry(NpcTypeProperty.ACCURACY, "accuracy"), Map.entry(NpcTypeProperty.SPEED, "speed"), Map.entry(NpcTypeProperty.RANGE, "range"), Map.entry(NpcTypeProperty.DELAY_MIN, "min_delay"),
         Map.entry(NpcTypeProperty.DELAY_MAX, "max_delay"), Map.entry(NpcTypeProperty.BURST_DELAY, "burst_delay"), Map.entry(NpcTypeProperty.BURST, "burst_count"),
         Map.entry(NpcTypeProperty.SHOT_COUNT, "shot_count"), Map.entry(NpcTypeProperty.FIRING_SOUND, "firing_sound"), Map.entry(NpcTypeProperty.MELEE_REACH, "melee_reach"),
-        Map.entry(NpcTypeProperty.WALKING_SPEED, "walking_speed"), Map.entry(NpcTypeProperty.IDLE_SOUND, "idle_sound"), Map.entry(NpcTypeProperty.STEP_SOUND, "step_sound"));
+        Map.entry(NpcTypeProperty.WALKING_SPEED, "walking_speed"), Map.entry(NpcTypeProperty.IDLE_SOUND, "idle_sound"), Map.entry(NpcTypeProperty.STEP_SOUND, "step_sound"),
+        Map.entry(NpcTypeProperty.POTION_IMMUNE, "potion_immune"), Map.entry(NpcTypeProperty.IGNORE_COBWEB, "ignore_cobweb"), Map.entry(NpcTypeProperty.HEALTH_REGEN, "health_regen"),
+        Map.entry(NpcTypeProperty.COMBAT_REGEN, "combat_regen"));
 
     private final GuiBasic gui;
     private final EntityNPCInterface npc;
@@ -122,9 +131,10 @@ final class CombatPages
     /** Tabs of the model properties page; every property belongs to exactly one. */
     enum Group
     {
-        GENERAL(NpcTypeProperty.HEALTH, NpcTypeProperty.AGGRO_RANGE, NpcTypeProperty.MELEE_REACH, NpcTypeProperty.WALKING_SPEED, NpcTypeProperty.CAN_DROWN, NpcTypeProperty.NO_FALL_DAMAGE), WEAPON(
-            NpcTypeProperty.RANGE, NpcTypeProperty.DAMAGE, NpcTypeProperty.ACCURACY, NpcTypeProperty.SPEED, NpcTypeProperty.SHOT_COUNT), TIMING(NpcTypeProperty.DELAY_MIN, NpcTypeProperty.DELAY_MAX,
-                NpcTypeProperty.BURST_DELAY, NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND);
+        GENERAL(NpcTypeProperty.HEALTH, NpcTypeProperty.AGGRO_RANGE, NpcTypeProperty.MELEE_REACH, NpcTypeProperty.WALKING_SPEED), SURVIVAL(NpcTypeProperty.CAN_DROWN, NpcTypeProperty.NO_FALL_DAMAGE,
+            NpcTypeProperty.POTION_IMMUNE, NpcTypeProperty.IGNORE_COBWEB, NpcTypeProperty.HEALTH_REGEN, NpcTypeProperty.COMBAT_REGEN), WEAPON(NpcTypeProperty.RANGE, NpcTypeProperty.DAMAGE,
+                NpcTypeProperty.ACCURACY, NpcTypeProperty.SPEED, NpcTypeProperty.SHOT_COUNT), TIMING(NpcTypeProperty.DELAY_MIN, NpcTypeProperty.DELAY_MAX, NpcTypeProperty.BURST_DELAY,
+                    NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND);
 
         private final List<NpcTypeProperty> properties;
 
@@ -289,7 +299,7 @@ final class CombatPages
         Group[] groups = Group.values();
         for (int i = 0; i < groups.length; i++)
         {
-            GuiButtonNop tab = new GuiButtonNop(gui, GROUP_ID + i, gui.guiLeft + 8 + i * 84, gui.guiTop + 29, 82, 20, new String[]{PREFIX + "group." + groups[i].name().toLowerCase(Locale.ROOT)}, 0);
+            GuiButtonNop tab = new GuiButtonNop(gui, GROUP_ID + i, gui.guiLeft + 8 + i * 78, gui.guiTop + 29, 76, 20, new String[]{PREFIX + "group." + groups[i].name().toLowerCase(Locale.ROOT)}, 0);
             tab.setEnabled(loaded && groups[i] != group);
             gui.addButton(tab);
         }
@@ -298,13 +308,82 @@ final class CombatPages
             loaded && group.properties().stream().anyMatch(inherited::containsKey), INHERIT_ALL + HELP_SUFFIX, IMPORT_ALL + HELP_SUFFIX);
         if (inherited.isEmpty())
             gui.addLabel(new GuiLabel(NOTICE_ID, PREFIX + (options.enabled(Feature.TYPE_PROPERTIES) ? "no_model" : "properties_disabled"), gui.guiLeft + 8, gui.guiTop + 186));
-        // A vehicle or plane sounds like its engine; its model offers no idle or step sound, and the engine controls replace both.
+        // A vehicle or plane sounds like its engine: its engine rows replace the idle and step sounds a model offers other NPCs.
         boolean engine = NpcPresentation.vehicleType(npc).isPresent();
         List<NpcTypeProperty> rows = group.properties().stream().filter(property -> !engine || property != NpcTypeProperty.IDLE_SOUND && property != NpcTypeProperty.STEP_SOUND).toList();
         for (int i = 0; i < rows.size(); i++)
             propertyRow(rows.get(i), gui.guiTop + 55 + i * 21, loaded, inherited.get(rows.get(i)), readouts.get(rows.get(i)));
         if (rows.size() < group.properties().size())
-            gui.addLabel(new GuiLabel(NOTICE_ID + 1, PREFIX + "engine_sounds", gui.guiLeft + 8, gui.guiTop + 61 + rows.size() * 21));
+        {
+            engineRow(EngineChannel.IDLE, gui.guiTop + 55 + rows.size() * 21, loaded);
+            engineRow(EngineChannel.MOVEMENT, gui.guiTop + 55 + (rows.size() + 1) * 21, loaded);
+        }
+    }
+
+    /** The two engine sounds of a vehicle or plane, which the Idle & movement tab of the Sounds page also edits. */
+    enum EngineChannel
+    {
+        IDLE, MOVEMENT;
+
+        private boolean moving()
+        {
+            return this == MOVEMENT;
+        }
+    }
+
+    /**
+     * A row for one engine sound, on the settings the Idle & movement tab edits: Inherit plays the model's engine sounds, Custom
+     * the NPC's own. The two rows share that choice, as the tab does.
+     */
+    private void engineRow(EngineChannel channel, int y, boolean loaded)
+    {
+        NpcVehicleSounds sounds = NpcPresentation.of(npc).getVehicleSounds();
+        int x = gui.guiLeft + 8;
+        int index = channel.ordinal();
+        String name = PREFIX + "property.engine_" + channel.name().toLowerCase(Locale.ROOT) + "_sound";
+        gui.addLabel(new GuiLabel(ENGINE_MODE_ID + index, name, x, y + 5, name + HELP_SUFFIX));
+        boolean custom = !sounds.isModelDefaults();
+        if (custom)
+            valueControl(ENGINE_VALUE_ID + index, y, Kind.TEXT, StringTag.valueOf(engine(sounds, channel).getSound()), Cell.OWN, loaded, Component.translatable(VALUE_OWN));
+        else
+            valueControl(ENGINE_VALUE_ID + index, y, Kind.TEXT, StringTag.valueOf(NpcVehicleSounds.modelSound(npc, channel.moving())), Cell.INHERITED, loaded,
+                Component.translatable(PREFIX + "value.inherited"));
+        selectButton(ENGINE_SELECT_ID + index, ENGINE_VALUE_ID + index, y, loaded, SELECT_HELP);
+        GuiButtonNop mode = new GuiButtonNop(gui, ENGINE_MODE_ID + index, x + MODE_LEFT, y, MODE_WIDTH, 20, MODES.clone(), custom ? 1 : 0);
+        mode.setEnabled(loaded);
+        mode.setTooltip(Tooltip.create(Component.translatable(PREFIX + "mode.engine" + HELP_SUFFIX)));
+        gui.addButton(mode);
+    }
+
+    private static NpcEngineSettings engine(NpcVehicleSounds sounds, EngineChannel channel)
+    {
+        return channel.moving() ? sounds.getMovement() : sounds.getIdle();
+    }
+
+    /** Plays the NPC's own engine sounds from now on, starting from the model's. */
+    private void customEngineSounds()
+    {
+        NpcVehicleSounds sounds = NpcPresentation.of(npc).getVehicleSounds();
+        if (!sounds.isModelDefaults())
+            return;
+        sounds.setModelDefaults(false);
+        sounds.initializeCustom(npc);
+    }
+
+    /** Inherit or Custom on an engine row; the value cell and Select are handled with the other fields and pickers. */
+    private void engineButton(int id, GuiButtonNop button)
+    {
+        if (id >= ENGINE_MODE_ID + EngineChannel.values().length)
+            return;
+        if (button.getValue() == 1)
+            customEngineSounds();
+        else
+            NpcPresentation.of(npc).getVehicleSounds().useVehicleDefaults(npc);
+    }
+
+    private static boolean engineControl(int id)
+    {
+        return id >= ENGINE_MODE_ID && id < ENGINE_SELECT_ID + EngineChannel.values().length;
     }
 
     /**
@@ -331,10 +410,10 @@ final class CombatPages
         if (supplied && !custom)
             valueControl(PROPERTY_VALUE_ID + id, y, kind, modelValue(value, readout), Cell.INHERITED, loaded, Component.translatable(PREFIX + "value.inherited"));
         else
-            valueControl(PROPERTY_VALUE_ID + id, y, kind, own, Cell.OWN, loaded, Component.translatable(PREFIX + "value.own"));
+            valueControl(PROPERTY_VALUE_ID + id, y, kind, own, Cell.OWN, loaded, Component.translatable(VALUE_OWN));
         if (SOUND_PROPERTIES.contains(property))
-            selectButton(PROPERTY_SELECT_ID + id, PROPERTY_VALUE_ID + id, y, loaded, PREFIX + "select" + HELP_SUFFIX);
-        GuiButtonNop mode = new GuiButtonNop(gui, PROPERTY_MODE_ID + id, x + MODE_LEFT, y, MODE_WIDTH, 20, new String[]{PREFIX + "mode.inherit", PREFIX + "mode.custom"}, custom ? 1 : 0);
+            selectButton(PROPERTY_SELECT_ID + id, PROPERTY_VALUE_ID + id, y, loaded, SELECT_HELP);
+        GuiButtonNop mode = new GuiButtonNop(gui, PROPERTY_MODE_ID + id, x + MODE_LEFT, y, MODE_WIDTH, 20, MODES.clone(), custom ? 1 : 0);
         mode.setEnabled(loaded && supplied);
         mode.setTooltip(Tooltip.create(Component.translatable(PREFIX + "mode" + HELP_SUFFIX)));
         gui.addButton(mode);
@@ -542,7 +621,7 @@ final class CombatPages
         GuiButtonNop mode;
         if (property.isSwitchable())
         {
-            mode = new GuiButtonNop(gui, EQUIPMENT_MODE_ID + id, x + MODE_LEFT, y, MODE_WIDTH, 20, new String[]{PREFIX + "mode.inherit", PREFIX + "mode.custom"}, custom ? 1 : 0);
+            mode = new GuiButtonNop(gui, EQUIPMENT_MODE_ID + id, x + MODE_LEFT, y, MODE_WIDTH, 20, MODES.clone(), custom ? 1 : 0);
             mode.setEnabled(loaded);
             mode.setTooltip(Tooltip.create(Component.translatable(PREFIX + "equipment_mode" + HELP_SUFFIX)));
         }
@@ -597,7 +676,7 @@ final class CombatPages
         else if (EquipmentValues.modelLocked(npc, property))
             valueControl(id, y, kind, EquipmentValues.read(npc, property), Cell.MODEL_LOCKED, loaded, Component.translatable(PREFIX + "equipment_value.model"));
         else
-            valueControl(id, y, kind, EquipmentValues.read(npc, property), Cell.OWN, loaded, Component.translatable(PREFIX + "value.own"));
+            valueControl(id, y, kind, EquipmentValues.read(npc, property), Cell.OWN, loaded, Component.translatable(VALUE_OWN));
     }
 
     /** Whether the statistic is a firing sound the NPC can keep its own value of, whose row offers the sound picker. */
@@ -625,6 +704,13 @@ final class CombatPages
     @Nullable
     String soundSelection(int id)
     {
+        if (page == Page.PROPERTIES && id >= ENGINE_SELECT_ID && id < ENGINE_SELECT_ID + EngineChannel.values().length)
+        {
+            EngineChannel channel = EngineChannel.values()[id - ENGINE_SELECT_ID];
+            choosingSound = channel;
+            NpcVehicleSounds sounds = NpcPresentation.of(npc).getVehicleSounds();
+            return sounds.isModelDefaults() ? NpcVehicleSounds.modelSound(npc, channel.moving()) : engine(sounds, channel).getSound();
+        }
         if (page == Page.PROPERTIES && id >= PROPERTY_SELECT_ID && id < PROPERTY_SELECT_ID + NpcTypeProperty.values().length)
         {
             NpcTypeProperty property = NpcTypeProperty.values()[id - PROPERTY_SELECT_ID];
@@ -656,6 +742,12 @@ final class CombatPages
         if (sound == null)
             return false;
         StringTag value = StringTag.valueOf(sound.toString());
+        if (row instanceof EngineChannel channel)
+        {
+            customEngineSounds();
+            engine(NpcPresentation.of(npc).getVehicleSounds(), channel).setSound(sound.toString());
+            return true;
+        }
         if (row instanceof NpcTypeProperty property)
         {
             NpcTypeProperties properties = NpcTypeProperties.of(npc);
@@ -680,7 +772,7 @@ final class CombatPages
         return id == KNOCKBACK_ID || id == PROPERTIES_PAGE_ID || id == MAIN_HAND_PAGE_ID || id == OFF_HAND_PAGE_ID || id == ARMOR_PAGE_ID || id == PARTS_PAGE_ID || parts.handles(id)
             || id == IMPORT_ALL_ID || id == EQUIPMENT_IMPORT_ALL_ID || id == INHERIT_ALL_ID || id == EQUIPMENT_INHERIT_ALL_ID || id >= GROUP_ID && id < GROUP_ID + Group.values().length
             || id >= EQUIPMENT_GROUP_ID && id < EQUIPMENT_GROUP_ID + EquipmentProperty.Group.values().length || equipmentControl(id)
-            || id >= PROPERTY_MODE_ID && id < PROPERTY_VALUE_ID + NpcTypeProperty.values().length;
+            || id >= PROPERTY_MODE_ID && id < PROPERTY_VALUE_ID + NpcTypeProperty.values().length || engineControl(id);
     }
 
     private static boolean equipmentControl(int id)
@@ -745,6 +837,11 @@ final class CombatPages
             equipmentEvent(settings, button);
             return true;
         }
+        if (engineControl(id))
+        {
+            engineButton(id, button);
+            return true;
+        }
         if (parts.handles(id))
             return parts.buttonEvent(button);
         if (id == KNOCKBACK_ID)
@@ -771,6 +868,14 @@ final class CombatPages
     {
         if (page == Page.PARTS)
             return parts.unFocused(field);
+        if (page == Page.PROPERTIES && field.id >= ENGINE_VALUE_ID && field.id < ENGINE_VALUE_ID + EngineChannel.values().length)
+        {
+            NpcVehicleSounds sounds = NpcPresentation.of(npc).getVehicleSounds();
+            if (sounds.isModelDefaults())
+                return false;
+            engine(sounds, EngineChannel.values()[field.id - ENGINE_VALUE_ID]).setSound(field.getValue());
+            return true;
+        }
         if (page == Page.PROPERTIES && field.id >= PROPERTY_VALUE_ID && field.id < PROPERTY_VALUE_ID + NpcTypeProperty.values().length)
             return propertyEdited(field, NpcTypeProperty.values()[field.id - PROPERTY_VALUE_ID]);
         if (page.equipment() && field.id >= EQUIPMENT_VALUE_ID && field.id < EQUIPMENT_VALUE_ID + EquipmentProperty.values().length)

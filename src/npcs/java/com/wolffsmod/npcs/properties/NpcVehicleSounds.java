@@ -91,6 +91,12 @@ public final class NpcVehicleSounds
             FlansEntitySounds.getSoundLength(ResourceLocation.parse(sound.sound().contains(":") ? sound.sound() : "flansmod:" + sound.sound())).orElse(sound.repeatTicks())));
     }
 
+    /** @return the engine sound the vehicle or plane model plays for the channel, or an empty string without one */
+    public static String modelSound(EntityNPCInterface npc, boolean moving)
+    {
+        return defaultSound(npc, moving).map(EngineSound::sound).orElse("");
+    }
+
     private static Optional<EngineSound> defaultSound(EntityNPCInterface npc, boolean moving)
     {
         return NpcPresentation.vehicleType(npc).flatMap(type -> moving ? FlansEntityTypes.getEngineSound(type) : FlansEntityTypes.getEngineIdleSound(type));
