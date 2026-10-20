@@ -22,9 +22,9 @@ import java.util.*;
 
 /**
  * The combat pages of the Wolff's Mod tab that are more than a list of switches: knockback and minimum hit damage on the
- * Protection page, the model properties page with its Inherit/Custom modes that the Model stats page opens, the
+ * Damage & armour page, the model properties page with its Inherit/Custom modes that the Inherit from model page opens, the
  * weapon and armor properties pages with the same modes that the Equipment page opens, and the part hitbox page that the
- * Protection page opens.
+ * Damage & armour page opens.
  *
  * <p>
  * Everything is edited on the client copy of the NPC's settings; the tab sends them through the Custom NPCs stats menu
@@ -201,7 +201,7 @@ final class CombatPages
 
     // Category extras
 
-    /** The button on the Model stats page that opens the model properties page. */
+    /** The button on the Inherit from model page that opens the model properties page. */
     void initPropertiesLink(boolean loaded, int y)
     {
         link(PROPERTIES_PAGE_ID, "properties", loaded, y);
@@ -215,7 +215,7 @@ final class CombatPages
         link(ARMOR_PAGE_ID, "armor_properties", loaded, y + 42);
     }
 
-    /** The button on the Protection page that opens the part hitbox page. */
+    /** The button on the Damage & armour page that opens the part hitbox page. */
     void initPartsLink(boolean loaded)
     {
         // The tab is full of switches, so the button sits in the title row, left of Back.
@@ -233,7 +233,7 @@ final class CombatPages
         gui.addLabel(new GuiLabel(id, PREFIX + name + ".summary", gui.guiLeft + 176, gui.guiTop + y + 6));
     }
 
-    /** Knockback handling and the minimum hit damage of each kind, below the Protection switches and in their column. */
+    /** Knockback handling and the minimum hit damage of each kind, below the General switches of the Damage & armour page and in their column. */
     void initProtection(boolean loaded, int control, int y)
     {
         NpcCombatSettings settings = settings();

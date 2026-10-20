@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
+import lombok.Getter;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
@@ -22,6 +24,8 @@ public final class NpcWeaponOptions
                                 true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(true), PATH_DEBUG(false), CONSUME_AMMO(
                                     false), PART_HITBOXES(true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(true), HITBOX_OUTLINES(false), SOLID_HITBOXES(false);
 
+        /** Whether the switch is on for an NPC whose save does not mention it. */
+        @Getter
         private final boolean defaultEnabled;
 
         Feature(boolean defaultEnabled)

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The part hitbox page that the Protection page opens: one part of the selected model at a time, with a switch that
+ * The part hitbox page that the Damage & armour page opens: one part of the selected model at a time, with a switch that
  * takes it out of the NPC, and the NPC's own box, hit points and penetration resistance for it in place of the model's.
  *
  * <p>
