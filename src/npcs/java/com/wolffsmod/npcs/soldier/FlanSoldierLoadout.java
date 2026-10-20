@@ -2,6 +2,10 @@ package com.wolffsmod.npcs.soldier;
 
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.*;
+import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.tactics.WeaponRole;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.*;
@@ -192,7 +196,10 @@ public final class FlanSoldierLoadout
         apply(npc, selection.get());
     }
 
-    /** Replaces the NPC's armour, weapons and inventory with the class loadout and asks for its statistics to follow them. */
+    /**
+     * Replaces the NPC's armour, weapons and inventory with the class loadout and asks for its statistics to follow them. An
+     * NPC still on Custom NPCs' tactics takes the tactic its ranged weapon suits.
+     */
     public static void apply(EntityNPCInterface npc, FlanSoldierSelection selection)
     {
         Equipment equipment = equipment(selection);
@@ -207,8 +214,29 @@ public final class FlanSoldierLoadout
         NpcCombatSettings combat = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
         for (EquipmentProperty property : EquipmentProperty.values())
             combat.requestCopy(property);
+        // The class suggests how its weapon is fought with, unless the builder has already chosen a tactic.
+        NpcTuning tuning = NpcTuning.of(npc);
+        if (tuning.tactic() == Tactic.CUSTOM_NPCS)
+            startingTactic(equipment).ifPresent(tactic -> tuning.set(Value.TACTIC, tactic.ordinal()));
         npc.updateClient = true;
         npc.updateAI = true;
+    }
+
+    /** @return the tactic that suits the class's ranged weapon, or nothing for a class that fights in melee */
+    static Optional<Tactic> startingTactic(Equipment equipment)
+    {
+        ItemStack mainHand = stack(equipment.weapons().get(MAIN_HAND_INDEX));
+        ItemStack projectile = stack(equipment.weapons().get(PROJECTILE_INDEX));
+        if (NpcEquipment.ranged(mainHand))
+            return Optional.of(WeaponRole.of(mainHand, projectile).tactic());
+        if (mainHand.isEmpty() && NpcEquipment.ranged(projectile))
+            return Optional.of(WeaponRole.THROWN.tactic());
+        return Optional.empty();
+    }
+
+    private static ItemStack stack(@Nullable IItemStack stack)
+    {
+        return stack == null ? ItemStack.EMPTY : stack.getMCItemStack();
     }
 
     /**

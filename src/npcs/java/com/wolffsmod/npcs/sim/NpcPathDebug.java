@@ -3,6 +3,8 @@ package com.wolffsmod.npcs.sim;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.NpcTactics;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -79,9 +81,10 @@ public final class NpcPathDebug
         Path path = npc.getNavigation().getPath();
         NpcDriving driving = state.getDriving();
         NpcFlight flight = state.getFlight();
-        return String.format(Locale.ROOT, "NPC %s id=%d pos=%.1f,%.1f,%.1f path=%s hull=%.0f throttle=%.2f%s flight=%s terrain=%d clearance=%.1f target=%s aligned=%s", npc.getName().getString(),
-            npc.getId(), npc.getX(), npc.getY(), npc.getZ(), path == null || path.isDone() ? "none" : (path.getNodeCount() - path.getNextNodeIndex()) + " nodes", state.getHullYaw(),
-            driving.getThrottle(), driving.isReversing() ? " reverse" : "", flight.state(npc), flight.getTerrain(), flight.getClearance(),
-            npc.getTarget() == null ? "none" : npc.getTarget().getName().getString(), state.isAligned());
+        NpcTacticState tactic = NpcTacticState.of(npc);
+        return String.format(Locale.ROOT, "NPC %s id=%d pos=%.1f,%.1f,%.1f path=%s hull=%.0f throttle=%.2f%s flight=%s terrain=%d clearance=%.1f target=%s aligned=%s tactic=%s/%s%s",
+            npc.getName().getString(), npc.getId(), npc.getX(), npc.getY(), npc.getZ(), path == null || path.isDone() ? "none" : (path.getNodeCount() - path.getNextNodeIndex()) + " nodes",
+            state.getHullYaw(), driving.getThrottle(), driving.isReversing() ? " reverse" : "", flight.state(npc), flight.getTerrain(), flight.getClearance(),
+            npc.getTarget() == null ? "none" : npc.getTarget().getName().getString(), state.isAligned(), NpcTactics.of(npc), tactic.getPhase(), tactic.getCover() == null ? "" : " cover");
     }
 }

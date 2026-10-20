@@ -69,6 +69,24 @@ public final class EquipmentSupport
             mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F, impact));
     }
 
+    public static Optional<WeaponTraits> traits(ItemStack stack, ItemStack spare)
+    {
+        if (!(stack.getItem() instanceof GunItem item))
+            return Optional.empty();
+        GunType type = item.getConfigType();
+        IScope scope = type.getCurrentScope(stack);
+        Loaded loaded = loaded(item, stack);
+        ShootableType ammo = null;
+        if (loaded != null && loaded.stack().getItem() instanceof ShootableItem shootable)
+            ammo = shootable.getConfigType();
+        else if (spare.getItem() instanceof ShootableItem shootable && compatible(type, stack, shootable.getConfigType()))
+            ammo = shootable.getConfigType();
+        else if (!type.getAmmoTypes().isEmpty())
+            ammo = type.getAmmoTypes().get(0);
+        int capacity = ammo == null ? 0 : type.getNumAmmoItemsInGun(stack) * Math.max(1, ammo.getRoundsPerItem());
+        return Optional.of(new WeaponTraits(Math.max(scope.getZoomFactor(), scope.getFovFactor()), capacity));
+    }
+
     private static EquippedWeaponProperties.Impact impact(@Nullable ShootableType ammo)
     {
         if (ammo == null)

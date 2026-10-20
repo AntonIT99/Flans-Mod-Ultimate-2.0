@@ -22,6 +22,7 @@ class NpcSimulationSettingsTest
             assertEquals(value.fallback(), tuning.get(value), value.name());
         assertEquals(NpcTuning.Terrain.DEFAULT, tuning.terrain());
         assertEquals(NpcTuning.Sight.NORMAL, tuning.sight());
+        assertEquals(NpcTuning.Tactic.CUSTOM_NPCS, tuning.tactic());
     }
 
     @Test

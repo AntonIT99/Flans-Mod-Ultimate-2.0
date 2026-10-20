@@ -28,6 +28,16 @@ public final class FlansEquipment
         return EquipmentSupport.weapon(weapon, ammunition);
     }
 
+    /**
+     * @param ammunition
+     *            ammunition to measure the magazine with when the gun holds none; may be empty
+     * @return the sight magnification and magazine capacity of a Flan gun, or empty for any other item; either side
+     */
+    public static Optional<WeaponTraits> getWeaponTraits(ItemStack weapon, ItemStack ammunition)
+    {
+        return EquipmentSupport.traits(weapon, ammunition);
+    }
+
     /** @return the shield of a held Flan weapon, or empty for an item that is not a Flan shield; either side */
     public static Optional<EquippedShieldProperties> getShieldProperties(ItemStack weapon)
     {

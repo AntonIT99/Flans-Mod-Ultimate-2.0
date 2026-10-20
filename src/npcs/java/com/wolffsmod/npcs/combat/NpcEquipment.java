@@ -66,6 +66,12 @@ public final class NpcEquipment
         return weaponAuthority(npc) && ranged(rangedWeapon(npc));
     }
 
+    /** @return whether the NPC attacks at range: with an equipped ranged weapon, or else with what its projectile slot holds */
+    public static boolean fightsAtRange(EntityNPCInterface npc)
+    {
+        return weaponAuthority(npc) ? ranged(npc) : npc.inventory.getProjectile() != null;
+    }
+
     /**
      * The projectile Custom NPCs' combat AI decides between ranged and melee goals by. An equipped ranged weapon stands in
      * for one, so the NPC gets the ranged attack and the ranged tactics; any other equipped weapon fights in melee whatever

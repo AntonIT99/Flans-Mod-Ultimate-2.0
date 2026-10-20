@@ -5,13 +5,14 @@
   "refmap": "wolffsmodnpcs.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-      "DataInventoryAccessor",
+      "EntityAIDodgeShootMixin",
       "EntityAIRangedAttackMixin",
       "EntityNPCInterfaceMixin",
       "MarkovGeneratorMixin",
       "ModelDataMixin",
       "NpcEquipmentAttackAiMixin",
       "NpcGroundPathNavigatorMixin",
+      "NpcManoeuvreGoalsMixin",
       "NpcNameDataMixin",
       "NpcNameMenuMixin",
       "NpcNearestAttackableTargetGoalMixin",
@@ -23,6 +24,7 @@
       "PathNavigationMixin"
   ],
   "client": [
+      "GuiNpcAIMixin",
       "GuiNpcMobSpawnerMixin",
       "NpcArmorControlsMixin",
       "NpcEditorMenuMixin",

@@ -4,7 +4,9 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.tactics.NpcTactics;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +34,9 @@ public final class NpcTargetSearch
     private static final double[] BANDS = {32D, 64D, 128D, 256D, 384D, 512D};
     /** Tactical manoeuvres carry an NPC at least this far past its aggro range before it gives its target up. */
     private static final int MIN_TACTICAL_MARGIN = 8;
+    /** Custom NPCs' tactical variants that add no manoeuvre of their own. */
+    private static final int RUSH = 0;
+    private static final int NO_TACTIC = 6;
 
     private final long[] searched = new long[BANDS.length];
     private boolean started;
@@ -130,13 +135,25 @@ public final class NpcTargetSearch
 
     /**
      * @return blocks beyond its aggro range at which the NPC keeps the target it has. Left to itself, an NPC that
-     *         circles, stalks or dodges keeps it for as far as its manoeuvre carries it.
+     *         circles, stalks or dodges keeps it for as far as its manoeuvre carries it, and one of the mod's own tactics for
+     *         as far as its tactic distance.
      */
     public static int margin(Mob mob)
     {
         if (!(mob instanceof EntityNPCInterface npc) || npc.getTarget() == null)
             return 0;
-        int tactical = npc.ais.tacticalVariant == 0 ? 0 : Math.max(MIN_TACTICAL_MARGIN, npc.ais.getTacticalRange());
+        Tactic tactic = NpcTactics.of(npc);
+        int tactical;
+        if (tactic != Tactic.CUSTOM_NPCS)
+            tactical = tactic.usesDistance() ? Math.max(MIN_TACTICAL_MARGIN, NpcTactics.reach(npc, tactic)) : 0;
+        else
+            tactical = manoeuvres(npc.ais.tacticalVariant) ? Math.max(MIN_TACTICAL_MARGIN, npc.ais.getTacticalRange()) : 0;
         return Math.max(tactical, NpcTuning.of(npc).get(Value.TARGET_MARGIN));
+    }
+
+    /** @return whether a Custom NPCs tactical variant moves the NPC beyond where it would attack from: not Rush, not None */
+    static boolean manoeuvres(int tacticalVariant)
+    {
+        return tacticalVariant != RUSH && tacticalVariant != NO_TACTIC;
     }
 }

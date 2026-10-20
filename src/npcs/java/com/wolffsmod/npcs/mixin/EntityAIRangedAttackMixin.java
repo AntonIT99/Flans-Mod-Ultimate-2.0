@@ -5,7 +5,11 @@ import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.combat.NpcReloadFeedback;
 import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.NpcTacticSteering;
+import com.wolffsmod.npcs.tactics.NpcTactics;
 import noppes.npcs.ai.EntityAIRangedAttack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataRanged;
@@ -14,7 +18,9 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 
 import java.util.Optional;
 
@@ -30,6 +36,7 @@ import java.util.Optional;
  * <li>When a Custom NPCs burst ends, Flan guns the NPC merely holds play their reload sound and animation.</li>
  * <li>The trigger waits, without spending its cooldown or its burst, until a model's gun is on target and until nothing the NPC
  * must not fire through is in the way; meanwhile the NPC keeps closing in.</li>
+ * <li>With a tactic of the mod's own, the tactic moves the NPC while this goal fires, and learns of its reloads and pauses.</li>
  * </ul>
  */
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
@@ -74,6 +81,32 @@ public abstract class EntityAIRangedAttackMixin
     {
         if (NpcEquipment.weaponAuthority(npc))
             callback.setReturnValue(NpcEquipmentRangedGoal.of(npc).map(NpcEquipmentRangedGoal::isFired).orElse(false));
+    }
+
+    // Tactics. An @At inherits the mixin's remap = false; the navigator is a Minecraft class, whose names are remapped.
+
+    /** A tactic of the mod's own moves the NPC while this goal keeps firing; its own advance and halt then wait. */
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;moveTo(Lnet/minecraft/world/entity/Entity;D)Z", remap = true))
+    private boolean wolffsmodnpcsTacticAdvances(PathNavigation navigation, Entity target, double speed)
+    {
+        return NpcTactics.followsPath(NpcTactics.of(npc)) || navigation.moveTo(target, speed);
+    }
+
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;stop()V", remap = true))
+    private void wolffsmodnpcsTacticHalts(PathNavigation navigation)
+    {
+        if (!NpcTactics.followsPath(NpcTactics.of(npc)))
+            navigation.stop();
+    }
+
+    @Inject(method = {"tick", "m_8037_"}, at = @At("TAIL"))
+    private void wolffsmodnpcsFollowTactic(CallbackInfo callback)
+    {
+        Tactic tactic = NpcTactics.of(npc);
+        if (NpcTactics.followsPath(tactic))
+            NpcTacticSteering.steer(npc, tactic);
     }
 
     // Inherited cadence and reload cycle
@@ -143,6 +176,7 @@ public abstract class EntityAIRangedAttackMixin
             wolffsmodnpcsReloadedAt = npc.level().getGameTime() + pause;
             NpcReloadFeedback.modelReload(npc);
         }
+        NpcTacticState.of(npc).reloading(npc.level().getGameTime(), pause);
         return pause;
     }
 
@@ -173,6 +207,8 @@ public abstract class EntityAIRangedAttackMixin
     {
         int pause = ranged.getDelayRNG();
         NpcReloadFeedback.heldGuns(npc, pause);
+        // The pause after a burst is when an NPC fighting from cover ducks back in.
+        NpcTacticState.of(npc).reloading(npc.level().getGameTime(), pause);
         return pause;
     }
 }

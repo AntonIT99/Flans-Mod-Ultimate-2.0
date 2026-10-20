@@ -7,6 +7,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Per-NPC numbers and choices behind the simulation switches: aim speeds, turn rates, terrain limits, line-of-sight
@@ -95,7 +97,13 @@ public final class NpcTuning
         /** Blocks below the surface a watercraft runs at; 0 floats. */
         SUBMARINE_DEPTH(0, 0, 64),
         /** Index into {@link WeaponSwitch}. */
-        WEAPON_SWITCH(0, 0, WeaponSwitch.values().length - 1);
+        WEAPON_SWITCH(0, 0, WeaponSwitch.values().length - 1),
+        /** Index into {@link Tactic}. */
+        TACTIC(0, 0, Tactic.values().length - 1),
+        /** Blocks from its target a tactic keeps the NPC at; 0 takes a share of its firing range that suits its weapon. */
+        TACTIC_DISTANCE(0, 0, 256),
+        /** Blocks around it in which an NPC fighting from cover looks for some. */
+        COVER_RADIUS(8, 2, 16);
 
         private final int fallback;
         private final int minimum;
@@ -208,6 +216,63 @@ public final class NpcTuning
         NONE
     }
 
+    /**
+     * How an NPC that fights at range, with an equipped ranged weapon or a projectile, moves while it fights. A tactic only
+     * acts on the kinds of NPC it is written for; on any other, and on an NPC that fights in melee, Custom NPCs' tactical
+     * variant applies. Saves hold the index, so a new tactic goes at the end.
+     */
+    public enum Tactic
+    {
+        /** As the tactical variant on Custom NPCs' AI page says. */
+        CUSTOM_NPCS(EnumSet.allOf(TacticKind.class), false),
+        /** Closes in to its tactic distance, or until it sees its target, and stands to fire; it runs while far off. */
+        ADVANCE(EnumSet.of(TacticKind.STANDARD, TacticKind.VEHICLE, TacticKind.MECHA), true),
+        /** Keeps to where it was placed and fires from there, going back when it is pushed away. */
+        HOLD(EnumSet.of(TacticKind.STANDARD, TacticKind.VEHICLE, TacticKind.MECHA, TacticKind.AA_GUN, TacticKind.HELICOPTER), false),
+        /** Fights from cover near it: steps out to fire, and back in to reload or when hit. */
+        COVER(EnumSet.of(TacticKind.STANDARD), true),
+        /** Keeps about its tactic distance from its target, backing away when the target comes closer. */
+        STAND_OFF(EnumSet.of(TacticKind.STANDARD, TacticKind.VEHICLE, TacticKind.MECHA, TacticKind.HELICOPTER), true),
+        /** Fires a burst standing, then dashes a few blocks closer while it reloads or cools down, until it is close enough. */
+        BOUNDING(EnumSet.of(TacticKind.STANDARD), true),
+        /** Swings out to one side of its target and attacks from there. */
+        FLANK(EnumSet.of(TacticKind.STANDARD), true),
+        /** Drives round its target at its tactic distance. */
+        CIRCLE(EnumSet.of(TacticKind.VEHICLE, TacticKind.MECHA), true),
+        /** Flies over its target firing, carries on past it for its tactic distance and comes round for another pass. */
+        STRAFING_RUN(EnumSet.of(TacticKind.PLANE), true),
+        /** Circles its target at its tactic distance, firing whenever its guns bear. */
+        ORBIT(EnumSet.of(TacticKind.PLANE), true),
+        /** Hovers at its tactic distance and side-slips one way and the other while it fires. */
+        STRAFE(EnumSet.of(TacticKind.HELICOPTER), true);
+
+        private final Set<TacticKind> kinds;
+        /** Whether the tactic distance setting means anything to it. */
+        private final boolean distanceMatters;
+
+        Tactic(Set<TacticKind> kinds, boolean distanceMatters)
+        {
+            this.kinds = Set.copyOf(kinds);
+            this.distanceMatters = distanceMatters;
+        }
+
+        public boolean appliesTo(TacticKind kind)
+        {
+            return kinds.contains(kind);
+        }
+
+        public boolean usesDistance()
+        {
+            return distanceMatters;
+        }
+
+        /** @return whether a plane flies the tactic itself rather than following a path */
+        public boolean flown()
+        {
+            return this == STRAFING_RUN || this == ORBIT;
+        }
+    }
+
     /** What an NPC sees and fires through. */
     public enum Sight
     {
@@ -257,6 +322,11 @@ public final class NpcTuning
     public Flight flight()
     {
         return Flight.values()[get(Value.FLIGHT_TYPE)];
+    }
+
+    public Tactic tactic()
+    {
+        return Tactic.values()[get(Value.TACTIC)];
     }
 
     /** Selects a preset and, unless it is Custom, fills in its driving values. */

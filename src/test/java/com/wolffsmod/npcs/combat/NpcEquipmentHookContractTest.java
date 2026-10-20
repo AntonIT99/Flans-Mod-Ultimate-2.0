@@ -167,8 +167,26 @@ class NpcEquipmentHookContractTest
         assertEquals(2, calls(response, "noppes/npcs/entity/data/DataInventory", "getProjectile", projectile));
         for (String tactic : List.of("EntityAIDodgeShoot", "EntityAIOrbitTarget", "EntityAIAvoidTarget"))
             assertEquals(1, calls(method(read("noppes/npcs/ai/" + tactic), "()Z", "m_8036_", "canUse"), "noppes/npcs/entity/data/DataInventory", "getProjectile", projectile), tactic);
-        assertTrue(read("noppes/npcs/entity/data/DataInventory").fields.stream().anyMatch(field -> field.name.equals("npc") && field.desc.equals("L" + NPC + ";")));
+        // Every tactic goal is held back while a tactic of the mod's own runs, through the NPC field its mixin shadows.
+        for (String tactic : List.of("EntityAIOrbitTarget", "EntityAIAvoidTarget", "EntityAIAmbushTarget", "EntityAIStalkTarget", "EntityAIZigZagTarget"))
+            assertTrue(hasNpcField(read("noppes/npcs/ai/" + tactic), "npc"), tactic);
+        assertTrue(hasNpcField(read("noppes/npcs/ai/EntityAIDodgeShoot"), "entity"));
         assertDoesNotThrow(() -> method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()Z", "hasFired"));
+        assertDoesNotThrow(() -> method(read("noppes/npcs/client/gui/mainmenu/GuiNpcAI"), "()V", "m_7856_", "init"));
+    }
+
+    @Test
+    void customNpcsRangedGoalAdvancesAndHaltsOnceEachSoATacticCanTakeItsMovementOver() throws IOException
+    {
+        MethodNode tick = method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()V", "m_8037_", "tick");
+        String navigation = "net/minecraft/world/entity/ai/navigation/PathNavigation";
+        assertEquals(1, calls(tick, navigation, "m_5624_", "(Lnet/minecraft/world/entity/Entity;D)Z"));
+        assertEquals(1, calls(tick, navigation, "m_26573_", "()V"));
+    }
+
+    private static boolean hasNpcField(ClassNode goal, String name)
+    {
+        return goal.fields.stream().anyMatch(field -> field.name.equals(name) && field.desc.equals("L" + NPC + ";"));
     }
 
     @Test

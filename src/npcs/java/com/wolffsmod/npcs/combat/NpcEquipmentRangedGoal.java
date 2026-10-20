@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.FlansProjectiles;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -270,6 +271,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         {
             hand.reloading = Math.max(1, (int) Math.ceil(flan.get().reloadTime()));
             NpcReloadFeedback.reload(npc, hand.side, hand.reloading);
+            NpcTacticState.of(npc).reloading(npc.level().getGameTime(), hand.reloading);
         }
         if (--hand.reloading > 0)
             return true;

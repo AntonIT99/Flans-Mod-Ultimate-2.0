@@ -8,6 +8,8 @@ import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
+import com.wolffsmod.npcs.tactics.NpcTacticGoal;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import noppes.npcs.Resistances;
 import noppes.npcs.ai.EntityAIAttackTarget;
 import noppes.npcs.api.item.IItemStack;
@@ -43,7 +45,8 @@ import java.util.Optional;
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
  * and each kind of armor protection the NPC keeps its own value for. An equipped ranged weapon is fired by a goal of its own,
- * which leaves the NPC's movement to its tactic or else to an approach goal, and it selects the ranged variant of the tactic.</li>
+ * which leaves the NPC's movement to a tactic of the mod's own, to Custom NPCs' tactical variant or else to an approach goal,
+ * and it selects the ranged variant of Custom NPCs' tactic. The entity carries what its tactic remembers.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
@@ -81,7 +84,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IFlanPartTarget,
         NpcVehicleStateHolder,
         NpcThrowPresentation,
-        NpcEquipmentRangedGoal.Holder
+        NpcEquipmentRangedGoal.Holder,
+        NpcTacticState.Holder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -95,7 +99,11 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
     @Unique
+    private NpcTacticGoal wolffsmodnpcsTacticGoal;
+    @Unique
     private NpcCombatApproachGoal wolffsmodnpcsApproachGoal;
+    @Unique
+    private final NpcTacticState wolffsmodnpcsTacticState = new NpcTacticState();
     @Unique
     private int wolffsmodnpcsShieldCooldown;
     @Unique
@@ -227,10 +235,17 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return wolffsmodnpcsItemGoal;
     }
 
+    @Override
+    public NpcTacticState wolffsmodnpcsTacticState()
+    {
+        return wolffsmodnpcsTacticState;
+    }
+
     /**
-     * The firing goal claims no flag, so its priority does not matter. The approach goal takes the priority of Custom NPCs'
-     * attack goal: the tactical movement registered before it then wins the NPC's movement, and melee, which only starts
-     * within melee range where the approach ends, takes over from it there.
+     * The firing goal claims no flag, so its priority does not matter. A tactic of the mod's own comes first, before the
+     * tactical movement Custom NPCs registered. The approach goal takes the priority of Custom NPCs' attack goal: that
+     * tactical movement then wins the NPC's movement, and melee, which only starts within melee range where the approach
+     * ends, takes over from it there.
      */
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
@@ -238,10 +253,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
+        if (wolffsmodnpcsTacticGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsTacticGoal);
         if (wolffsmodnpcsApproachGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
         wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
+        wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
         wolffsmodnpcsApproachGoal = null;
         goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal() instanceof EntityAIAttackTarget).mapToInt(WrappedGoal::getPriority).findFirst().ifPresent(priority ->
         {

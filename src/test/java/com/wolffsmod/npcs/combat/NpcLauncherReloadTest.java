@@ -4,6 +4,7 @@ import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataRanged;
 import noppes.npcs.entity.data.DataStats;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.Sensing;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -69,10 +71,14 @@ class NpcLauncherReloadTest
             var vehicles = mockStatic(NpcVehicleState.class);
             var attacks = mockStatic(NpcItemAttacks.class);
             var ammunition = mockStatic(NpcAmmunition.class);
-            var feedback = mockStatic(NpcReloadFeedback.class))
+            var feedback = mockStatic(NpcReloadFeedback.class);
+            var tactics = mockStatic(NpcTacticState.class))
         {
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
+            tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
+            Level level = mock(Level.class);
+            when(npc.level()).thenReturn(level);
             options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(main);
             options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(true);
             equipment.when(() -> FlansEquipment.getWeaponProperties(main, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
