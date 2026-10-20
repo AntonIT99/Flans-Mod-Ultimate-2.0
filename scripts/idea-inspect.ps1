@@ -33,7 +33,11 @@ if (-not $IdeaHome)
     $candidates = @(
         "$env:LOCALAPPDATA\Programs\IntelliJ IDEA Ultimate",
         "$env:LOCALAPPDATA\Programs\IntelliJ IDEA Community Edition",
-        "$env:LOCALAPPDATA\Programs\IntelliJ IDEA"
+        "$env:LOCALAPPDATA\Programs\IntelliJ IDEA",
+        # Sandboxed shells may redirect LOCALAPPDATA away from the user's installed programs.
+        "$env:USERPROFILE\AppData\Local\Programs\IntelliJ IDEA Ultimate",
+        "$env:USERPROFILE\AppData\Local\Programs\IntelliJ IDEA Community Edition",
+        "$env:USERPROFILE\AppData\Local\Programs\IntelliJ IDEA"
     ) + (Get-ChildItem 'C:\Program Files\JetBrains' -Directory -Filter 'IntelliJ IDEA*' -ErrorAction SilentlyContinue | ForEach-Object FullName)
     $IdeaHome = $candidates | Where-Object { Test-Path "$_\bin\inspect.bat" } | Select-Object -First 1
 }
