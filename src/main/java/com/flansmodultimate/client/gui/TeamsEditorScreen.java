@@ -43,6 +43,7 @@ public final class TeamsEditorScreen extends Screen
     private int tab;
     private String message;
     private String selectedClass = "";
+    private boolean previewClass;
     private ItemStack carried = ItemStack.EMPTY;
     private int left;
     private int top;
@@ -51,6 +52,7 @@ public final class TeamsEditorScreen extends Screen
     private final Map<String, String> errors = new HashMap<>();
     private final Map<String, String> rawInputs = new HashMap<>();
     private final List<EditBox> fields = new ArrayList<>();
+    private final Map<String, Button> membershipButtons = new HashMap<>();
     private final List<ColourSlider> colourSliders = new ArrayList<>();
     private Button saveButton;
     private RemotePlayer preview;
@@ -82,6 +84,7 @@ public final class TeamsEditorScreen extends Screen
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
         fields.clear();
+        membershipButtons.clear();
         colourSliders.clear();
         saveButton = null;
         if (detail)
@@ -226,6 +229,7 @@ public final class TeamsEditorScreen extends Screen
             button(tr(tabs[i]), left + 8 + i * tabWidth, top + 27, tabWidth - 3, () ->
             {
                 tab = target;
+                previewClass = false;
                 page = 0;
                 query = "";
                 rebuild();
@@ -361,6 +365,7 @@ public final class TeamsEditorScreen extends Screen
 
     private void capture()
     {
+        previewClass = false;
         if (minecraft.player == null)
             return;
         JsonObject armour = draft.getAsJsonObject("armour");
@@ -387,9 +392,10 @@ public final class TeamsEditorScreen extends Screen
     private void memberships()
     {
         String needle = query.toLowerCase(Locale.ROOT);
-        List<PlayerClass> available = PlayerClass.values().stream().filter(type -> type.getName().toLowerCase(Locale.ROOT).contains(needle) || type.getShortName().contains(needle))
+        List<PlayerClass> available = PlayerClass.values().stream().filter(type -> membershipIndex(EditorCatalog.key(type)) != Integer.MAX_VALUE)
+            .filter(type -> type.getName().toLowerCase(Locale.ROOT).contains(needle) || type.getShortName().contains(needle))
             .sorted(Comparator.<PlayerClass>comparingInt(type -> membershipIndex(EditorCatalog.key(type))).thenComparing(PlayerClass::getName, String.CASE_INSENSITIVE_ORDER)).toList();
-        EditBox search = new EditBox(font, left + 8, top + 80, panelWidth - 16, 20, tr("search"));
+        EditBox search = new EditBox(font, left + 8, top + 80, panelWidth - 116, 20, tr("search"));
         search.setHint(tr("search"));
         search.setValue(query);
         search.setResponder(text ->
@@ -400,30 +406,37 @@ public final class TeamsEditorScreen extends Screen
             children().stream().filter(EditBox.class::isInstance).findFirst().ifPresent(this::setFocused);
         });
         addRenderableWidget(search);
+        button(tr("add_class"), left + panelWidth - 103, top + 80, 95, () ->
+        {
+            Set<String> assigned = new HashSet<>();
+            draft.getAsJsonArray("classes").forEach(value -> assigned.add(value.getAsString()));
+            minecraft.setScreen(new EditorClassPickerScreen(this, assigned, type ->
+            {
+                selectedClass = EditorCatalog.key(type);
+                draft.getAsJsonArray("classes").add(selectedClass);
+                query = "";
+                page = 0;
+            }));
+        });
         int count = Math.max(1, (panelHeight - 170) / 23);
         for (int index = page * count; index < Math.min(available.size(), (page + 1) * count); index++)
         {
             PlayerClass type = available.get(index);
             String id = EditorCatalog.key(type);
-            boolean included = draft.getAsJsonArray("classes").contains(new JsonPrimitive(id));
             int rowY = top + 105 + index % count * 23;
-            String label = type.getName();
-            if (included)
-                label = (membershipIndex(id) + 1) + ". " + label;
-            button(Component.literal(label), left + 8, rowY, panelWidth - 48, () ->
+            String label = (membershipIndex(id) + 1) + ". " + type.getName();
+            int removeWidth = Math.max(90, font.width(tr("remove_class")) + 12);
+            membershipButtons.put(id, button(Component.literal(label), left + 8, rowY, panelWidth - removeWidth - 20, () ->
             {
                 selectedClass = id;
                 rebuild();
-            });
-            button(Component.literal(included ? "-" : "+"), left + panelWidth - 35, rowY, 27, () ->
+            }));
+            button(tr("remove_class"), left + panelWidth - removeWidth - 8, rowY, removeWidth, () ->
             {
-                JsonArray classes = draft.getAsJsonArray("classes");
-                JsonPrimitive value = new JsonPrimitive(id);
-                if (classes.contains(value))
-                    classes.remove(value);
-                else
-                    classes.add(value);
-                selectedClass = id;
+                draft.getAsJsonArray("classes").remove(new JsonPrimitive(id));
+                if (selectedClass.equals(id))
+                    selectedClass = "";
+                page = Math.min(page, Math.max(0, (available.size() - 2) / count));
                 rebuild();
             });
         }
@@ -445,11 +458,9 @@ public final class TeamsEditorScreen extends Screen
             JsonArray classes = draft.getAsJsonArray("classes");
             if (!classes.isEmpty())
             {
-                int index = 0;
-                for (int i = 0; i < classes.size(); i++)
-                    if (classes.get(i).getAsString().equals(selectedClass))
-                        index = (i + 1) % classes.size();
-                selectedClass = classes.get(index).getAsString();
+                if (membershipIndex(selectedClass) == Integer.MAX_VALUE)
+                    selectedClass = classes.get(0).getAsString();
+                previewClass = true;
                 tab = 1;
                 rebuild();
             }
@@ -730,6 +741,7 @@ public final class TeamsEditorScreen extends Screen
 
     private void quickCopy()
     {
+        previewClass = false;
         EquipmentSlot armour = net.minecraft.world.entity.LivingEntity.getEquipmentSlotForItem(carried);
         if (EditorDescriptions.ARMOUR.contains(armour))
         {
@@ -751,6 +763,7 @@ public final class TeamsEditorScreen extends Screen
 
     private void place(Cell cell)
     {
+        previewClass = false;
         draft.getAsJsonObject(cell.armour() ? "armour" : "items").add(cell.slot(), EditorStacks.save(carried));
         carried = ItemStack.EMPTY;
     }
@@ -783,6 +796,7 @@ public final class TeamsEditorScreen extends Screen
                 }
                 else
                 {
+                    previewClass = false;
                     JsonObject slots = draft.getAsJsonObject(cell.armour() ? "armour" : "items");
                     if (button == 1)
                     {
@@ -837,6 +851,7 @@ public final class TeamsEditorScreen extends Screen
                     ItemStack stack = stack(cell).copy();
                     if (!stack.isEmpty())
                     {
+                        previewClass = false;
                         stack.setCount(Math.max(1, Math.min(stack.getMaxStackSize(), stack.getCount() + (delta > 0 ? 1 : -1))));
                         draft.getAsJsonObject(cell.armour() ? "armour" : "items").add(cell.slot(), EditorStacks.save(stack));
                     }
@@ -858,6 +873,12 @@ public final class TeamsEditorScreen extends Screen
             renderFields(graphics);
         else if (tab == 1)
             renderEquipment(graphics, mouseX, mouseY);
+        else if (tab == 2 && team)
+        {
+            Button selected = membershipButtons.get(selectedClass);
+            if (selected != null)
+                graphics.renderOutline(selected.getX() - 1, selected.getY() - 1, panelWidth - 14, selected.getHeight() + 2, 0xFFFFFF55);
+        }
         String status = errors.isEmpty() ? message : errors.values().iterator().next();
         if (status != null && !status.isEmpty())
             graphics.drawString(font, font.plainSubstrByWidth(status, panelWidth - 16), left + 8, top + panelHeight - 42, errors.isEmpty() ? 0xFFDD77 : 0xFF6666);
@@ -908,7 +929,11 @@ public final class TeamsEditorScreen extends Screen
 
     private void renderEquipment(GuiGraphics graphics, int mouseX, int mouseY)
     {
-        graphics.drawString(font, tr(team ? "uniform" : "kit"), left + 10, top + 79, 0xCCDDEE);
+        PlayerClass previewedClass = team && previewClass ? EditorCatalog.resolveClass(selectedClass) : null;
+        Component equipmentLabel = tr(team ? "uniform" : "kit");
+        if (previewedClass != null)
+            equipmentLabel = Component.literal(tr("preview").getString() + ": " + previewedClass.getName());
+        graphics.drawString(font, font.plainSubstrByWidth(equipmentLabel.getString(), panelWidth >= 390 ? 190 : panelWidth - 20), left + 10, top + 79, 0xCCDDEE);
         if (panelWidth >= 390)
             graphics.drawString(font, tr("inventory"), left + 205, top + 79, 0xCCDDEE);
         for (Cell cell : cells())
@@ -935,9 +960,8 @@ public final class TeamsEditorScreen extends Screen
         if ((panelWidth >= 470 || panelHeight >= 300) && preview != null)
         {
             JsonObject outfit = draft.getAsJsonObject("armour");
-            PlayerClass chosen = team ? EditorCatalog.resolveClass(selectedClass) : null;
-            if (team && chosen == null && !draft.getAsJsonArray("classes").isEmpty())
-                chosen = EditorCatalog.resolveClass(draft.getAsJsonArray("classes").get(0).getAsString());
+            // Team equipment edits preview the uniform itself. Class overrides apply only to an explicit class preview.
+            PlayerClass chosen = previewedClass;
             Team uniform = team ? null : Team.values().stream().filter(owner -> owner.getClasses().stream().anyMatch(type -> EditorCatalog.key(type).equals(key))).findFirst().orElse(null);
             for (EquipmentSlot slot : EditorDescriptions.ARMOUR)
             {
