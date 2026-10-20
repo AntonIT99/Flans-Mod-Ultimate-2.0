@@ -40,8 +40,9 @@ public final class SkullBossRenderer extends EntityRenderer<SkullBossEntity>
     public void render(@NotNull SkullBossEntity entity, float yaw, float partialTick, @NotNull PoseStack pose, @NotNull MultiBufferSource buffer, int light)
     {
         pose.pushPose();
-        pose.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(partialTick, entity.yRotO, entity.getYRot()) + entity.getSpawnSpin(partialTick)));
-        pose.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partialTick, entity.xRotO, entity.getXRot())));
+        // The legacy skull faces +X and pitches around Z; entity look angles use the vanilla basis.
+        pose.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(partialTick, entity.yRotO, entity.getYRot()) - 90F + entity.getSpawnSpin(partialTick)));
+        pose.mulPose(Axis.ZP.rotationDegrees(-Mth.lerp(partialTick, entity.xRotO, entity.getXRot())));
         pose.scale(32F, 32F, 32F);
         head.zRot = entity.getLaughFactor(partialTick) * 15F * Mth.DEG_TO_RAD;
         jaw.zRot = -head.zRot;

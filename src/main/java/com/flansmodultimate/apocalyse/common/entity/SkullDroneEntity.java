@@ -45,7 +45,7 @@ public class SkullDroneEntity extends FlanMonster
     /** Per-tick chance of picking a new hover point around the target. */
     private static final int REPOSITION_CHANCE = 60;
     private static final double ACQUIRE_RANGE = 100.0D;
-    private static final double APPROACH_RATE = 0.06D;
+    private static final double APPROACH_RATE = 0.06F;
 
     private final ApocalypseGunCombat gun = new ApocalypseGunCombat(this, ApocalypseGunCombat.Profile.DRONE, 1);
     private Vec3 offsetFromTarget = Vec3.ZERO;
@@ -54,6 +54,7 @@ public class SkullDroneEntity extends FlanMonster
     {
         super(type, level);
         setNoGravity(true);
+        setNoAi(true);
         setPersistenceRequired();
         xpReward = 50;
     }
@@ -94,19 +95,26 @@ public class SkullDroneEntity extends FlanMonster
             return;
         }
 
+        // Legacy turning used the target vector before the explicit hover movement.
+        double dX = target.getX() - getX();
+        double dY = target.getY() - getY();
+        double dZ = target.getZ() - getZ();
+
         if (random.nextInt(REPOSITION_CHANCE) == 0)
         {
-            offsetFromTarget = new Vec3(offsetFromTarget.x * 0.5D + random.nextGaussian() * 10D, random.nextFloat() * 5D + 5D, offsetFromTarget.z * 0.5D + random.nextGaussian() * 10D);
+            float offsetX = (float) offsetFromTarget.x * 0.5F;
+            float offsetZ = (float) offsetFromTarget.z * 0.5F;
+            offsetX = (float) (offsetX + random.nextGaussian() * 10F);
+            offsetZ = (float) (offsetZ + random.nextGaussian() * 10F);
+            float offsetY = random.nextFloat() * 5F + 5F;
+            offsetFromTarget = new Vec3(offsetX, offsetY, offsetZ);
         }
         Vec3 motion = target.position().add(offsetFromTarget).subtract(position()).scale(APPROACH_RATE);
         setDeltaMovement(motion);
         move(MoverType.SELF, motion);
 
-        double dX = target.getX() - getX();
-        double dY = target.getY() - getY();
-        double dZ = target.getZ() - getZ();
-        float targetYaw = (float) (Mth.atan2(dZ, dX) * Mth.RAD_TO_DEG) - 90F;
-        float targetPitch = (float) (-Mth.atan2(dY, Math.sqrt(dX * dX + dZ * dZ)) * Mth.RAD_TO_DEG);
+        float targetYaw = (float) (Math.atan2(dZ, dX) * 180D / Math.PI) - 90F;
+        float targetPitch = (float) (-Math.atan2(dY, Math.sqrt(dX * dX + dZ * dZ)) * 180D / Math.PI);
         setYRot(getYRot() + Mth.wrapDegrees(targetYaw - getYRot()) / 2F);
         setXRot(getXRot() + (targetPitch - getXRot()) / 2F);
         setYHeadRot(getYRot());
@@ -130,7 +138,7 @@ public class SkullDroneEntity extends FlanMonster
     public void setTarget(@Nullable LivingEntity target)
     {
         super.setTarget(target);
-        offsetFromTarget = new Vec3(offsetFromTarget.x + random.nextGaussian() * 5D, 10D, offsetFromTarget.z + random.nextGaussian() * 5D);
+        offsetFromTarget = new Vec3((float) (offsetFromTarget.x + random.nextGaussian() * 5F), 10D, (float) (offsetFromTarget.z + random.nextGaussian() * 5F));
     }
 
     @Override
@@ -202,6 +210,8 @@ public class SkullDroneEntity extends FlanMonster
     public void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.readAdditionalSaveData(tag);
+        // Older ports saved NoAI=false; restore the legacy flight damping on those entities too.
+        setNoAi(true);
         gun.load(tag);
     }
 }

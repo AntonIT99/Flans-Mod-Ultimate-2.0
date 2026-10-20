@@ -61,14 +61,15 @@ public class SkullBossEntity extends FlanMonster
     private static final String NBT_ACTION = "apocalypse_action";
     private static final String NBT_ACTION_TICKS = "apocalypse_action_ticks";
     private static final String NBT_HOME = "apocalypse_home";
+    private static final String NBT_FLIGHT_VERSION = "apocalypse_flight_version";
     private static final int IDLE_TICKS = 20;
     private static final int ACTION_TICKS = 80;
     private static final float LAUGH_EXPLOSION_POWER = 10.0F;
     /** The 1.12.2 lerp speed of 0.1 spread over twenty ticks. */
-    private static final double HOME_PULL = 0.1D / 20D;
+    private static final double HOME_PULL = 0.1F / 20D;
     /** The boss hovers this far below its spawn point on average: 180 for a spawn at y=220. */
     private static final double HOVER_DROP = 40.0D;
-    private static final double HOVER_SWING = 40.0D;
+    private static final float HOVER_SWING = 40F;
     /** Not in 1.12.2: a boss whose target is gone looks for the nearest player in this range. */
     private static final double REACQUIRE_RANGE = 128.0D;
     private static final float MAX_DAMAGE = 99.0F;
@@ -84,6 +85,7 @@ public class SkullBossEntity extends FlanMonster
     {
         super(type, level);
         setNoGravity(true);
+        setNoAi(true);
         setPersistenceRequired();
         noCulling = true;
         xpReward = 5000;
@@ -140,8 +142,8 @@ public class SkullBossEntity extends FlanMonster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1024.0D).add(Attributes.FLYING_SPEED, 0.35D).add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE)
-            .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D).add(Attributes.ATTACK_DAMAGE, 12.0D);
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1024.0D).add(Attributes.FLYING_SPEED, 0.35D).add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE).add(Attributes.ATTACK_DAMAGE,
+            12.0D);
     }
 
     @Override
@@ -162,17 +164,7 @@ public class SkullBossEntity extends FlanMonster
         if (level.isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
 
-        if (home == null)
-            home = position();
-        Vec3 motion = getDeltaMovement();
-        double hoverY = home.y - HOVER_DROP + Math.sin(tickCount / 200.0D) * HOVER_SWING;
-        motion = new Vec3(motion.x - (getX() - home.x) * HOME_PULL, (hoverY - getY()) * HOME_PULL, motion.z - (getZ() - home.z) * HOME_PULL);
-        setDeltaMovement(motion);
-        move(MoverType.SELF, motion);
-
-        LivingEntity target = validTarget();
-        if (target != null)
-            turnTowards(target);
+        LivingEntity target = moveAndTurn();
 
         actionTicks++;
         switch (currentAction)
@@ -197,6 +189,23 @@ public class SkullBossEntity extends FlanMonster
         }
         if (currentAction != Action.IDLE && actionTicks >= ACTION_TICKS)
             switchAction(Action.IDLE);
+    }
+
+    @Nullable
+    private LivingEntity moveAndTurn()
+    {
+        if (home == null)
+            home = position();
+        Vec3 motion = getDeltaMovement();
+        double hoverY = (float) (home.y - HOVER_DROP) + (float) Math.sin(tickCount / 200F) * HOVER_SWING;
+        motion = new Vec3(motion.x - (getX() - home.x) * HOME_PULL, (hoverY - getY()) * HOME_PULL, motion.z - (getZ() - home.z) * HOME_PULL);
+        setDeltaMovement(motion);
+        move(MoverType.SELF, motion);
+
+        LivingEntity target = validTarget();
+        if (target != null)
+            turnTowards(target);
+        return target;
     }
 
     /**
@@ -225,8 +234,8 @@ public class SkullBossEntity extends FlanMonster
         double dX = target.getX() - getX();
         double dY = target.getY() - getY();
         double dZ = target.getZ() - getZ();
-        float targetYaw = (float) (Mth.atan2(dZ, dX) * Mth.RAD_TO_DEG) - 90F;
-        float targetPitch = (float) (-Mth.atan2(dY, Math.sqrt(dX * dX + dZ * dZ)) * Mth.RAD_TO_DEG);
+        float targetYaw = (float) (Math.atan2(dZ, dX) * 180D / Math.PI) - 90F;
+        float targetPitch = (float) (-Math.atan2(dY, Math.sqrt(dX * dX + dZ * dZ)) * 180D / Math.PI);
         setYRot(getYRot() + Mth.wrapDegrees(targetYaw - getYRot()) / 20F);
         setXRot(getXRot() + (targetPitch - getXRot()) / 20F);
         setYHeadRot(getYRot());
@@ -411,6 +420,10 @@ public class SkullBossEntity extends FlanMonster
     public void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.readAdditionalSaveData(tag);
+        setNoAi(true);
+        var knockback = getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+        if (tag.getInt(NBT_FLIGHT_VERSION) < 1 && knockback != null && knockback.getBaseValue() == 1D)
+            knockback.setBaseValue(0D);
         currentAction = Action.byId(tag.getInt(NBT_ACTION));
         actionTicks = Mth.clamp(tag.getInt(NBT_ACTION_TICKS), 0, ACTION_TICKS);
         syncAction();
@@ -425,6 +438,7 @@ public class SkullBossEntity extends FlanMonster
     public void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.addAdditionalSaveData(tag);
+        tag.putInt(NBT_FLIGHT_VERSION, 1);
         tag.putInt(NBT_ACTION, currentAction.ordinal());
         tag.putInt(NBT_ACTION_TICKS, actionTicks);
         if (home != null)
