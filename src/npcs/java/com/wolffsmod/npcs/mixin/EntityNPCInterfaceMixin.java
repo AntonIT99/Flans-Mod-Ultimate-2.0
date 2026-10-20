@@ -5,6 +5,7 @@ import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import noppes.npcs.Resistances;
@@ -39,7 +40,7 @@ import java.util.Optional;
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
- * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data.</li>
+ * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
@@ -476,6 +477,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         callback.getReturnValue().put(WOLFFSMODNPCS_TYPE_DEFAULTS, NpcTypeProperties.of(npc).syncDefaults(npc));
+    }
+
+    @ModifyVariable(method = "readSpawnData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("HEAD"), argsOnly = true)
+    private CompoundTag wolffsmodnpcsMigrateSpawnRenderer(CompoundTag tag)
+    {
+        return FlanModelRendering.migrateNpc(tag, "ModelData");
     }
 
     @Inject(method = "readSpawnData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("TAIL"))

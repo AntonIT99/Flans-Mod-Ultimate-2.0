@@ -24,7 +24,7 @@ import java.util.*;
 
 /**
  * Groups ships separately, adds content-pack folders and restores parent viewports in the model picker while retaining Custom NPCs' model selection and save logic.
- * Shows full-name hover tooltips for shortened picker entries.
+ * Shows full-name hover tooltips for shortened picker entries and hides the unsupported simple renderer for Flan model entities.
  * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the toggle that applies that class's loadout on selection and the toggle that keeps the NPC's own skin.
  * Classes with several skins expose a variant folder with saved skin selection, like vehicle paintjobs.
  */
@@ -96,6 +96,13 @@ public abstract class NpcModelBrowserMixin
         scroll.setSelectedIndex(selected < 0 ? -1 : selected + offset);
         wolffsmodnpcsRestoreSelectionScroll();
         FlanSoldierBrowser.addLoadoutControls(screen, wolffsmodnpcsSoldiers != null);
+        if (FlanModelRendering.manages(screen.playerdata))
+        {
+            screen.getButton(110).visible = false;
+            screen.getButton(110).active = false;
+            screen.getLabel(110).visible = false;
+            screen.getLabel(110).enabled = false;
+        }
     }
 
     /** The first level: the Flan folders, then every model that is not a Flan one. */

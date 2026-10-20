@@ -8,6 +8,7 @@
       "EntityAIRangedAttackMixin",
       "EntityNPCInterfaceMixin",
       "MarkovGeneratorMixin",
+      "ModelDataMixin",
       "NpcEquipmentAttackAiMixin",
       "NpcGroundPathNavigatorMixin",
       "NpcNameDataMixin",
@@ -20,6 +21,7 @@
       "PathNavigationMixin"
   ],
   "client": [
+      "GuiNpcMobSpawnerMixin",
       "NpcArmorControlsMixin",
       "NpcEditorMenuMixin",
       "NpcEquipmentAnimationMixin",

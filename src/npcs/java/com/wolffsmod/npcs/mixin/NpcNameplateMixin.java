@@ -45,7 +45,7 @@ public abstract class NpcNameplateMixin
     {
         if (!(npc instanceof EntityCustomNpc custom) || !(custom.modelData.getEntity(custom) instanceof FlanModelEntity model))
             return original;
-        float scale = custom.modelData.simpleRender ? 1F : custom.display.getSize() / 5F;
+        float scale = custom.display.getSize() / 5F;
         var renderer = (EntityRenderer<EntityNPCInterface>) (Object) this;
         double offset = renderer.getRenderOffset(npc, 0).y;
         return FlanNameplatePlacement.height(original, npc.getBbHeight(), FlanModelBounds.of(model), scale, offset);
