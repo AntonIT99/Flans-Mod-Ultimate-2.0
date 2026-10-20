@@ -5,6 +5,7 @@
   "refmap": "wolffsmodnpcs.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+      "DataInventoryAccessor",
       "EntityAIRangedAttackMixin",
       "EntityNPCInterfaceMixin",
       "MarkovGeneratorMixin",
@@ -14,6 +15,7 @@
       "NpcNameDataMixin",
       "NpcNameMenuMixin",
       "NpcNearestAttackableTargetGoalMixin",
+      "NpcTacticalGoalsMixin",
       "NpcTypeDataMixin",
       "NpcTypeModelLoadMixin",
       "NpcWalkNodeEvaluatorMixin",

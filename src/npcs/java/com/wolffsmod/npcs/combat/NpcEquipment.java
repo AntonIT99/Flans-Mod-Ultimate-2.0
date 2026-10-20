@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.api.NpcAPI;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataRanged;
@@ -63,6 +64,19 @@ public final class NpcEquipment
     public static boolean ranged(EntityNPCInterface npc)
     {
         return weaponAuthority(npc) && ranged(rangedWeapon(npc));
+    }
+
+    /**
+     * The projectile Custom NPCs' combat AI decides between ranged and melee goals by. An equipped ranged weapon stands in
+     * for one, so the NPC gets the ranged attack and the ranged tactics; any other equipped weapon fights in melee whatever
+     * the projectile slot holds.
+     */
+    @Nullable
+    public static IItemStack combatProjectile(EntityNPCInterface npc)
+    {
+        if (ranged(npc))
+            return NpcAPI.Instance().getIItemStack(rangedWeapon(npc));
+        return weaponAuthority(npc) ? null : npc.inventory.getProjectile();
     }
 
     /**

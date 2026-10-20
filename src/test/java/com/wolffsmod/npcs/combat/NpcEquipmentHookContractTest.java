@@ -112,13 +112,7 @@ class NpcEquipmentHookContractTest
         MethodNode tick = method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()V", "m_8037_", "tick");
         // The reload cycle counts triggers on the interval read and the burst-end reload on the pause read.
         for (String getter : List.of("getBurst", "getBurstDelay", "getDelayRNG"))
-        {
-            long calls = 0;
-            for (var instruction : tick.instructions)
-                if (instruction instanceof MethodInsnNode call && call.owner.equals("noppes/npcs/entity/data/DataRanged") && call.name.equals(getter) && call.desc.equals("()I"))
-                    calls++;
-            assertEquals(1, calls, getter);
-        }
+            assertEquals(1, calls(tick, "noppes/npcs/entity/data/DataRanged", getter, "()I"), getter);
     }
 
     @Test
@@ -162,6 +156,56 @@ class NpcEquipmentHookContractTest
         MethodNode keep = method(goal, "()Z", "m_8045_", "canContinueToUse");
         assertTrue(invokes(keep, "noppes/npcs/ai/target/NpcNearestAttackableTargetGoal", "m_7623_", "()D")
             || invokes(keep, "noppes/npcs/ai/target/NpcNearestAttackableTargetGoal", "getFollowDistance", "()D"));
+    }
+
+    @Test
+    void tacticHooksMatchTheInstalledGoalSetUpAndTactics() throws IOException
+    {
+        String projectile = "()Lnoppes/npcs/api/item/IItemStack;";
+        // Both projectile checks of the set-up, the tactic's variant and the ranged goal, are redirected together.
+        MethodNode response = method(read(NPC), "()V", "setResponse");
+        assertEquals(2, calls(response, "noppes/npcs/entity/data/DataInventory", "getProjectile", projectile));
+        for (String tactic : List.of("EntityAIDodgeShoot", "EntityAIOrbitTarget", "EntityAIAvoidTarget"))
+            assertEquals(1, calls(method(read("noppes/npcs/ai/" + tactic), "()Z", "m_8036_", "canUse"), "noppes/npcs/entity/data/DataInventory", "getProjectile", projectile), tactic);
+        assertTrue(read("noppes/npcs/entity/data/DataInventory").fields.stream().anyMatch(field -> field.name.equals("npc") && field.desc.equals("L" + NPC + ";")));
+        assertDoesNotThrow(() -> method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()Z", "hasFired"));
+    }
+
+    @Test
+    void onlyTheApproachGoalClaimsTheMovementOfAnNpcWithAnEquippedRangedWeapon() throws IOException
+    {
+        // Custom NPCs' tactics need both flags, which a firing goal holding either of them at its priority would keep from them.
+        assertFalse(setsFlags(ownConstructor("NpcEquipmentRangedGoal")));
+        assertTrue(setsFlags(ownConstructor("NpcCombatApproachGoal")));
+    }
+
+    private static long calls(MethodNode method, String owner, String name, String descriptor)
+    {
+        long calls = 0;
+        for (var instruction : method.instructions)
+            if (instruction instanceof MethodInsnNode call && call.owner.equals(owner) && call.name.equals(name) && call.desc.equals(descriptor))
+                calls++;
+        return calls;
+    }
+
+    private static boolean setsFlags(MethodNode method)
+    {
+        for (var instruction : method.instructions)
+            if (instruction instanceof MethodInsnNode call && List.of("setFlags", "m_7021_").contains(call.name) && call.desc.equals("(Ljava/util/EnumSet;)V"))
+                return true;
+        return false;
+    }
+
+    /** Reads a class of this package as bytes, without loading it or the Minecraft and Custom NPCs classes it uses. */
+    private static MethodNode ownConstructor(String simpleName) throws IOException
+    {
+        try (var input = NpcEquipmentHookContractTest.class.getResourceAsStream(simpleName + ".class"))
+        {
+            assertNotNull(input, simpleName);
+            ClassNode node = new ClassNode();
+            new ClassReader(input).accept(node, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            return node.methods.stream().filter(method -> method.name.equals("<init>")).findFirst().orElseThrow(() -> new AssertionError("Missing constructor of " + simpleName));
+        }
     }
 
     private static boolean declares(ClassNode owner, String descriptor, String... names)

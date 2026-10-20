@@ -11,7 +11,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** Uses weapon reach/cadence in the existing melee AI, keeping editor values as saved fallbacks. */
+/**
+ * Uses weapon reach/cadence in the existing melee AI, keeping editor values as saved fallbacks. An equipped ranged weapon
+ * leaves melee to within melee range, as a projectile would; any other equipped weapon fights in melee at any distance.
+ */
 @SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = EntityAIAttackTarget.class, remap = false)
 public abstract class NpcEquipmentAttackAiMixin
@@ -22,7 +25,7 @@ public abstract class NpcEquipmentAttackAiMixin
     @Redirect(method = {"canUse", "m_8036_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataInventory;getProjectile()Lnoppes/npcs/api/item/IItemStack;"))
     private IItemStack wolffsmodnpcsWeaponChoosesAttack(DataInventory inventory)
     {
-        return NpcEquipment.weaponAuthority(npc) ? null : inventory.getProjectile();
+        return NpcEquipment.combatProjectile(npc);
     }
 
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getDelay()I"))

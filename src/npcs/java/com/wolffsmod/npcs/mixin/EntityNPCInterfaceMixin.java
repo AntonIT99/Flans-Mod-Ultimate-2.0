@@ -9,8 +9,11 @@ import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import noppes.npcs.Resistances;
+import noppes.npcs.ai.EntityAIAttackTarget;
+import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataInventory;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,6 +28,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,7 +42,8 @@ import java.util.Optional;
  *
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
- * and each kind of armor protection the NPC keeps its own value for.</li>
+ * and each kind of armor protection the NPC keeps its own value for. An equipped ranged weapon is fired by a goal of its own,
+ * which leaves the NPC's movement to its tactic or else to an approach goal, and it selects the ranged variant of the tactic.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
@@ -75,7 +80,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IEngineSoundSource,
         IFlanPartTarget,
         NpcVehicleStateHolder,
-        NpcThrowPresentation
+        NpcThrowPresentation,
+        NpcEquipmentRangedGoal.Holder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -88,6 +94,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
+    @Unique
+    private NpcCombatApproachGoal wolffsmodnpcsApproachGoal;
     @Unique
     private int wolffsmodnpcsShieldCooldown;
     @Unique
@@ -213,13 +221,40 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.GUN_SHOT_ANIMATION);
     }
 
+    @Override
+    public NpcEquipmentRangedGoal wolffsmodnpcsItemGoal()
+    {
+        return wolffsmodnpcsItemGoal;
+    }
+
+    /**
+     * The firing goal claims no flag, so its priority does not matter. The approach goal takes the priority of Custom NPCs'
+     * attack goal: the tactical movement registered before it then wins the NPC's movement, and melee, which only starts
+     * within melee range where the approach ends, takes over from it there.
+     */
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
     {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
-        wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal((EntityNPCInterface) (Object) this);
+        if (wolffsmodnpcsApproachGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
+        wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
+        wolffsmodnpcsApproachGoal = null;
+        goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal() instanceof EntityAIAttackTarget).mapToInt(WrappedGoal::getPriority).findFirst().ifPresent(priority ->
+        {
+            wolffsmodnpcsApproachGoal = new NpcCombatApproachGoal(npc);
+            goalSelector.addGoal(priority, wolffsmodnpcsApproachGoal);
+        });
+    }
+
+    /** An equipped ranged weapon gets the ranged attack and the ranged variant of the NPC's tactic. */
+    @Redirect(method = "setResponse", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataInventory;getProjectile()Lnoppes/npcs/api/item/IItemStack;"))
+    private IItemStack wolffsmodnpcsWeaponChoosesResponse(DataInventory inventory)
+    {
+        return NpcEquipment.combatProjectile((EntityNPCInterface) (Object) this);
     }
 
     @Inject(method = {"tick", "m_8119_"}, at = @At("TAIL"))

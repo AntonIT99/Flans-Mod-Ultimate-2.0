@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.ReloadCycle;
 import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.combat.NpcReloadFeedback;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
@@ -21,7 +22,8 @@ import java.util.Optional;
  * Custom NPCs' fallback ranged AI.
  *
  * <ul>
- * <li>It never fires synthetic shots alongside an authoritative equipped weapon.</li>
+ * <li>It never fires synthetic shots alongside an authoritative equipped weapon, and reports that weapon's shots to the tactics
+ * that wait for it to have fired.</li>
  * <li>It retains its targeting and movement while letting native inherited banks fire at their authored cadence.</li>
  * <li>With a reload cycle, an inherited bank fires its magazine, reloads for the model's reload time and plays the model's
  * reload and chambering sounds. Losing the target does not cut a reload short.</li>
@@ -64,6 +66,14 @@ public abstract class EntityAIRangedAttackMixin
     {
         if (NpcEquipment.weaponAuthority(npc))
             callback.setReturnValue(false);
+    }
+
+    /** Custom NPCs' dodge and hit-and-run tactics wait for this goal to have fired; with an equipped weapon, its own goal fires. */
+    @Inject(method = "hasFired", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsEquipmentFired(CallbackInfoReturnable<Boolean> callback)
+    {
+        if (NpcEquipment.weaponAuthority(npc))
+            callback.setReturnValue(NpcEquipmentRangedGoal.of(npc).map(NpcEquipmentRangedGoal::isFired).orElse(false));
     }
 
     // Inherited cadence and reload cycle

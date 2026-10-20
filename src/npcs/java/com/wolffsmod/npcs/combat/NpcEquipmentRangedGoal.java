@@ -3,7 +3,9 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.FlansProjectiles;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,13 +13,18 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.EnumSet;
+import java.util.Optional;
 
 /**
  * Native item charge/reload/cadence while Custom NPCs still selects the combat target. A second Flan gun in the off hand
  * fires on its own cadence and reloads on its own, under the handling rules players have: a two-handed gun does not fire
  * while the other hand is full. A Flan gun in the off hand with no ranged weapon in the main hand is fired as the NPC's
  * only gun.
+ *
+ * <p>
+ * The goal only aims and fires, and claims no flag: where the NPC goes meanwhile is up to the tactical movement Custom NPCs
+ * chose for it, or else to {@link NpcCombatApproachGoal}.
+ * </p>
  */
 public final class NpcEquipmentRangedGoal extends Goal
 {
@@ -25,6 +32,9 @@ public final class NpcEquipmentRangedGoal extends Goal
     private final Hand main = new Hand(InteractionHand.MAIN_HAND);
     private final Hand off = new Hand(InteractionHand.OFF_HAND);
     private int charging;
+    /** Whether the NPC has fired since it took up this engagement, which Custom NPCs' tactics wait for. */
+    @Getter
+    private boolean fired;
 
     /** Cadence, spin-up and reload progress of the weapon in one hand. */
     private static final class Hand
@@ -62,15 +72,26 @@ public final class NpcEquipmentRangedGoal extends Goal
     public NpcEquipmentRangedGoal(EntityNPCInterface npc)
     {
         this.npc = npc;
-        setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+    }
+
+    /** @return the goal of the NPC, once Custom NPCs has set up its goals */
+    public static Optional<NpcEquipmentRangedGoal> of(EntityNPCInterface npc)
+    {
+        return Optional.ofNullable(((Holder) npc).wolffsmodnpcsItemGoal());
+    }
+
+    /** @return whether the NPC fights its target with an equipped ranged weapon: it has one, and the target is beyond melee range */
+    public static boolean engages(EntityNPCInterface npc)
+    {
+        LivingEntity target = npc.getTarget();
+        return !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level()
+            && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
     }
 
     @Override
     public boolean canUse()
     {
-        LivingEntity target = npc.getTarget();
-        return !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level()
-            && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
+        return engages(npc);
     }
 
     @Override
@@ -95,11 +116,9 @@ public final class NpcEquipmentRangedGoal extends Goal
         npc.getLookControl().setLookAt(target, 30F, 30F);
         if (!npc.isInRange(target, npc.stats.ranged.getRange()) || !npc.getSensing().hasLineOfSight(target))
         {
-            npc.getNavigation().moveTo(target, 1D);
             cancelUse();
             return;
         }
-        npc.getNavigation().stop();
         // An aircraft below its attack altitude climbs first; it keeps its target and its aim meanwhile.
         if (NpcVehicleState.of(npc).getFlight().holdsFire())
         {
@@ -187,12 +206,13 @@ public final class NpcEquipmentRangedGoal extends Goal
         {
             // A successful throw can empty the stack, so read its cadence before consuming it.
             double delay = mainHand && weapon.getItem() instanceof NpcWeaponAdapter adapter ? adapter.npcShotDelay(weapon) : NpcEquipment.shotDelay(weapon);
-            boolean fired = mainHand ? NpcItemAttacks.ranged(npc, target) : NpcItemAttacks.fireFlan(npc, target, hand.side);
+            boolean shot = mainHand ? NpcItemAttacks.ranged(npc, target) : NpcItemAttacks.fireFlan(npc, target, hand.side);
             if (mainHand)
                 cancelUse();
             hand.cadence.fired(delay);
-            if (!fired)
+            if (!shot)
                 break;
+            fired = true;
             launched(target, hand.side);
         } while (automatic && hand.cadence.ready() && npc.getItemInHand(hand.side) == weapon && FlansEquipment.hasLoadedRound(weapon));
     }
@@ -293,6 +313,13 @@ public final class NpcEquipmentRangedGoal extends Goal
         off.reloading = 0;
         off.reloadFailed = false;
         off.spinSpeed = 0F;
-        npc.getNavigation().stop();
+        fired = false;
+    }
+
+    /** Implemented on the Custom NPCs entity, which keeps the goal it last set up. */
+    public interface Holder
+    {
+        @Nullable
+        NpcEquipmentRangedGoal wolffsmodnpcsItemGoal();
     }
 }
