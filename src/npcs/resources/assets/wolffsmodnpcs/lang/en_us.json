@@ -825,6 +825,8 @@
   "wolffsmodnpcs.weapons.invulnerable": "Invulnerable",
   "wolffsmodnpcs.weapons.invulnerable.help": "Ignore all damage. The /kill command and the void still apply.",
   "wolffsmodnpcs.weapons.item_armor": "Use equipped armor",
+  "wolffsmodnpcs.weapons.armor_potion_effects": "Armor potion effects",
+  "wolffsmodnpcs.weapons.armor_potion_effects.help": "Allow equipped Flan armor to grant potion effects, including Resistance and Regeneration. No removes armor-granted potion effects while keeping armor protection, attributes and movement bonuses. Requires Use equipped armor.",
   "wolffsmodnpcs.weapons.item_armor.help": "Armor slots govern native protection, toughness, enchantments, durability, attributes and Flan armor effects. Choose resistance by resistance in Armor properties which ones the NPC takes from its armor and which it keeps its own values for; inherited resistance controls show a read-only preview. No restores NPC armor behavior.",
   "wolffsmodnpcs.weapons.item_short": "Item",
   "wolffsmodnpcs.weapons.item_value": "Item behavior",

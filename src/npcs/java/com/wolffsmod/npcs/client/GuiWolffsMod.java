@@ -235,6 +235,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final Map<Enum<?>, Need> REQUIREMENTS = Map.ofEntries(
         Map.entry(Feature.DUAL_WIELD, Need.on(Feature.ITEM_WEAPONS)),
         Map.entry(Feature.CONSUME_AMMO, Need.on(Feature.ITEM_WEAPONS)),
+        Map.entry(Feature.ARMOR_POTION_EFFECTS, Need.on(Feature.ITEM_ARMOR)),
         Map.entry(Value.WEAPON_SWITCH, Need.on(Feature.CONSUME_AMMO)),
         Map.entry(Feature.MODEL_WEAPON_STATS, Need.on(Feature.TYPE_PROPERTIES)),
         Map.entry(Feature.TURRET_MUZZLES, Need.on(Feature.MODEL_MUZZLES)),
@@ -296,7 +297,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
         TURRET(Section.MODEL, Scope.MODELS, Tab.of(Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED)),
-        EQUIPMENT(Section.COMBAT, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
+        EQUIPMENT(Section.COMBAT, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.ARMOR_POTION_EFFECTS, Feature.DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
         FIRING(Section.COMBAT, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES)),
         MODEL_WEAPONS(Section.COMBAT, Scope.MODELS, Tab.of(Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES,
             Feature.EYE_AT_MUZZLE)),

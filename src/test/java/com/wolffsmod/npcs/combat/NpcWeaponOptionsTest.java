@@ -54,6 +54,7 @@ class NpcWeaponOptionsTest
         options.set(Feature.TYPE_PROPERTIES, false);
         options.set(Feature.FIRE_SOUNDS, false);
         options.set(Feature.ITEM_ARMOR, false);
+        options.set(Feature.ARMOR_POTION_EFFECTS, false);
         options.set(Feature.WEAPON_ANIMATIONS, false);
         options.set(Feature.SECONDARY_BANK, true);
         CompoundTag npc = new CompoundTag();
@@ -65,6 +66,7 @@ class NpcWeaponOptionsTest
         assertFalse(clone.enabled(Feature.TYPE_PROPERTIES));
         assertFalse(clone.enabled(Feature.FIRE_SOUNDS));
         assertFalse(clone.enabled(Feature.ITEM_ARMOR));
+        assertFalse(clone.enabled(Feature.ARMOR_POTION_EFFECTS));
         assertFalse(clone.enabled(Feature.WEAPON_ANIMATIONS));
         assertTrue(clone.enabled(Feature.ITEM_WEAPONS));
         assertTrue(clone.enabled(Feature.ARMOR_ANIMATIONS));

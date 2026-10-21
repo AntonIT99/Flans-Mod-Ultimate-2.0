@@ -61,7 +61,7 @@ import java.util.Optional;
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
  * <li>Throw wind-ups synchronize a temporary displayed main-hand item and the player's throwing pose without moving inventory.</li>
- * <li>Flan armor that makes its wearer invisible makes the NPC invisible to the client: its body is not drawn, its armor is.</li>
+ * <li>Armor potion effects can be disabled independently of protection. Flan armor invisibility hides the NPC's body on the client, keeping its armor drawn.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
  * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
@@ -207,6 +207,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public boolean flansArmorEffects()
     {
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.ITEM_ARMOR);
+    }
+
+    @Override
+    public boolean flansmodultimateArmorPotionEffects()
+    {
+        return flansArmorEffects() && NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.ARMOR_POTION_EFFECTS);
     }
 
     @Override

@@ -160,7 +160,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     public static void handleMobEffects(LivingEntity entity)
     {
-        if (!effectsEnabled(entity))
+        if (!effectsEnabled(entity) || (entity instanceof IEquipmentPolicy policy && !policy.flansmodultimateArmorPotionEffects()))
         {
             removeNoLongerDesiredArmorEffects(entity, Collections.emptySet());
             return;

@@ -825,6 +825,8 @@
   "wolffsmodnpcs.weapons.invulnerable": "Unverwundbar",
   "wolffsmodnpcs.weapons.invulnerable.help": "Jeden Schaden ignorieren. Der Befehl /kill und die Leere wirken weiterhin.",
   "wolffsmodnpcs.weapons.item_armor": "Ausgerüstete Rüstung verwenden",
+  "wolffsmodnpcs.weapons.armor_potion_effects": "Rüstungstrankeffekte",
+  "wolffsmodnpcs.weapons.armor_potion_effects.help": "Erlaubt getragener Flan-Rüstung, Trankeffekte wie Resistenz und Regeneration zu verleihen. Nein entfernt Rüstungstrankeffekte; Rüstungsschutz, Attribute und Bewegungsboni bleiben erhalten. Erfordert Ausgerüstete Rüstung verwenden.",
   "wolffsmodnpcs.weapons.item_armor.help": "Rüstungsplätze bestimmen Schutz, Härte, Verzauberungen, Haltbarkeit, Attribute und Flan-Rüstungseffekte. Wähle unter Rüstungseigenschaften Resistenz für Resistenz, welche der NPC von seiner Rüstung nimmt und für welche er seine eigenen Werte behält; übernommene Resistenzregler zeigen eine schreibgeschützte Vorschau. Nein stellt das NPC-Rüstungsverhalten wieder her.",
   "wolffsmodnpcs.weapons.item_short": "Gegenstand",
   "wolffsmodnpcs.weapons.item_value": "Gegenstandsverhalten",

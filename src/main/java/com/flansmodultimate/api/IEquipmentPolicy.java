@@ -21,6 +21,17 @@ public interface IEquipmentPolicy
     }
 
     /**
+     * Read on the server when armor potion effects are refreshed. Returning false also removes tracked armor potion effects.
+     * Armor protection, attributes and movement bonuses remain governed by {@link #flansArmorEffects()}.
+     *
+     * @return whether equipped Flan armor may grant potion effects; defaults to the general armor policy
+     */
+    default boolean flansmodultimateArmorPotionEffects()
+    {
+        return flansArmorEffects();
+    }
+
+    /**
      * Narrows {@link #flansArmorEffects()} to one incoming hit: Flan armor defense and bullet defense only reduce it when this
      * returns true. Read on the server while the hit is resolved.
      *
