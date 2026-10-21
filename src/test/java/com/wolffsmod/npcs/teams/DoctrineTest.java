@@ -29,7 +29,7 @@ class DoctrineTest
 
     private static Doctrine.SquadView squad(int id, BotRole role, double x)
     {
-        return new Doctrine.SquadView(id, role, SquadTemplate.Posture.BALANCED, new Vec3(x, 64D, 0D), 4, false);
+        return new Doctrine.SquadView(id, role, SquadTemplate.Posture.BALANCED, new Vec3(x, 64D, 0D), 4, false, null);
     }
 
     @Test
@@ -111,7 +111,7 @@ class DoctrineTest
     {
         List<Doctrine.FlagView> flags = List.of(new Doctrine.FlagView(US, US_FLAG, US_FLAG, true, -1), new Doctrine.FlagView(GERMANY, new Vec3(150D, 66D, 0D), GERMAN_FLAG, false, US));
         Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(), List.of(), List.of(), List.of(), flags);
-        Doctrine.SquadView carrier = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, new Vec3(150D, 64D, 0D), 3, true);
+        Doctrine.SquadView carrier = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, new Vec3(150D, 64D, 0D), 3, true, null);
         SquadTask task = Doctrine.plan(field, List.of(carrier)).get(1);
         assertEquals(SquadTask.Kind.ATTACK, task.kind());
         assertEquals(US_FLAG, task.target());
@@ -128,5 +128,17 @@ class DoctrineTest
         assertEquals(stolen, tasks.get(1).target());
         assertTrue(tasks.values().stream().anyMatch(task -> task.kind() == SquadTask.Kind.ATTACK && task.target().equals(GERMAN_FLAG)));
         assertTrue(tasks.values().stream().anyMatch(task -> task.kind() == SquadTask.Kind.DEFEND && task.target().equals(US_FLAG)));
+    }
+
+    @Test
+    void aSquadKeepsTheObjectiveItIsAlreadyHeadingForWhenAnotherIsAsGood()
+    {
+        List<TeamsCapturePoint> points = List.of(point('B', 100D, -1, -1, false), point('C', 200D, -1, -1, false));
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(), List.of(), List.of(), List.of());
+        for (double kept : new double[]{100D, 200D})
+        {
+            Doctrine.SquadView squad = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, new Vec3(150D, 64D, 0D), 4, false, new Vec3(kept, 64D, 0D));
+            assertEquals(kept, Doctrine.plan(field, List.of(squad)).get(1).target().x);
+        }
     }
 }

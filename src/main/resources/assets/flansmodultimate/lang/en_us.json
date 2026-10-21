@@ -303,6 +303,7 @@
   "message.flansmodultimate.teams.point_captured_reinforced": "%1$s captured %2$s and received fresh reinforcements!",
   "message.flansmodultimate.teams.point_neutralized": "%s has been neutralized",
   "message.flansmodultimate.teams.point_recaptured": "%1$s recaptured %2$s",
+  "message.flansmodultimate.teams.respawn_denied": "You cannot take the field again this round: you watch until it ends",
   "message.flansmodultimate.teams.switched_team": "%1$s switched to %2$s",
   "options.flansmodultimate.aaGunRenderDistance": "AA Gun Render Distance",
   "options.flansmodultimate.aaGunTrackingRange": "AA Gun Tracking Range",

@@ -192,6 +192,20 @@ public final class FlansTeams
         TeamsListeners.remove(listener);
     }
 
+    /**
+     * Registers a rule that may keep players from taking the field again, such as a ticket limit. Registering the same rule
+     * twice has no effect.
+     */
+    public static void addRespawnRule(ITeamsRespawnRule rule)
+    {
+        TeamsListeners.addRespawnRule(rule);
+    }
+
+    public static void removeRespawnRule(ITeamsRespawnRule rule)
+    {
+        TeamsListeners.removeRespawnRule(rule);
+    }
+
     private static Optional<TeamsManager> manager()
     {
         TeamsManager manager = TeamsManager.getInstance();

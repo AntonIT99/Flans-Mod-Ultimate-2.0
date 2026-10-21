@@ -39,6 +39,8 @@ final class BotTransports
     private static final int FALL_TICKS = 30 * 20;
     /** Share of its hit points every part of a wreck keeps. */
     private static final float WRECK_HEALTH = 0.3F;
+    /** Places around a destroyed vehicle tried for its wreck when the vehicle's own spot is taken. */
+    private static final int WRECK_ATTEMPTS = 16;
 
     /** Takes the squad a vehicle entry carries on board a transport that just spawned. */
     static void load(BotRound round, BotSlot slot, BotSquad squad)
@@ -121,8 +123,22 @@ final class BotTransports
         slot.setWreckPending(false);
         FlansModApi.getType(slot.getRole()).ifPresent(type ->
         {
-            if (FlansEntityTypes.spawnDriveable(level, type, position, yaw, WRECK_HEALTH).isEmpty())
-                NpcsMod.log.debug("No room for the wreck of {} at {}", slot.getRole(), position);
+            // Where the vehicle died first, then around it, nearer places before farther ones.
+            for (int attempt = 0; attempt <= WRECK_ATTEMPTS; attempt++)
+            {
+                Vec3 spot = attempt == 0 ? position : wreckSpot(position, attempt);
+                if (FlansEntityTypes.spawnDriveable(level, type, spot, yaw, WRECK_HEALTH).isPresent())
+                    return;
+            }
+            NpcsMod.log.debug("No room for the wreck of {} near {}", slot.getRole(), position);
         });
+    }
+
+    /** One of the places around a destroyed vehicle tried for its wreck: eight directions, at two distances. */
+    private static Vec3 wreckSpot(Vec3 position, int attempt)
+    {
+        double angle = (attempt - 1) % 8 * Math.PI / 4D;
+        double distance = attempt <= 8 ? 4D : 8D;
+        return position.add(Math.cos(angle) * distance, 1D, Math.sin(angle) * distance);
     }
 }

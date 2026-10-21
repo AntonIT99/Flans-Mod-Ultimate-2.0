@@ -140,7 +140,7 @@ final class BotCommander
                 continue;
             BotRole role = squad.getCargo().isEmpty() ? squad.getRole() : BotRole.INFANTRY;
             boolean carrying = members.stream().anyMatch(member -> carriers.contains(member.getUUID()));
-            views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying));
+            views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying, squad.getTask() == null ? null : squad.getTask().target()));
         }
         return views;
     }

@@ -52,4 +52,24 @@ class RoutePlannerTest
         assertEquals(at(RoutePlanner.STEP, 0D), RoutePlanner.towards(at(0D, 0D), at(100D, 0D)));
         assertEquals(at(10D, 0D), RoutePlanner.towards(at(0D, 0D), at(10D, 0D)));
     }
+
+    @Test
+    void detoursAlternateSidesAndWidenUpToALimit()
+    {
+        Vec3 from = at(0D, 0D);
+        Vec3 heading = at(100D, 0D);
+        Vec3 first = RoutePlanner.detour(from, heading, 0);
+        Vec3 second = RoutePlanner.detour(from, heading, 1);
+        assertTrue(first.x > 0D && second.x > 0D, "a detour still leads ahead");
+        assertTrue(first.z * second.z < 0D, "the second try goes round the other side");
+        assertEquals(Math.abs(first.z), Math.abs(second.z), 1.0E-9D);
+        assertTrue(Math.abs(RoutePlanner.detour(from, heading, 2).z) > Math.abs(first.z), "later tries go wider");
+        assertEquals(Math.abs(RoutePlanner.detour(from, heading, 40).z), Math.abs(RoutePlanner.detour(from, heading, 60).z), 1.0E-9D, "the width has a limit");
+    }
+
+    @Test
+    void aDetourWithoutHeadingStillGoesSomewhere()
+    {
+        assertNotEquals(at(0D, 0D), RoutePlanner.detour(at(0D, 0D), at(0D, 0D), 0));
+    }
 }

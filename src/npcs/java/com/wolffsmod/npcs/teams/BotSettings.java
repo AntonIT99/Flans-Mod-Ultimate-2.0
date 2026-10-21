@@ -35,6 +35,8 @@ public final class BotSettings
     private static final String NBT_SQUAD_SIZE = "squad_size";
     private static final String NBT_ABANDON = "abandon_chance";
     private static final String NBT_RUBBER_BAND = "rubber_band";
+    private static final String NBT_DIFFICULTY = "difficulty";
+    private static final String NBT_PLAYER_TICKETS = "player_tickets";
     private static final String NBT_TEAMS = "teams";
 
     /** How the number of loose infantry bots per team is set. */
@@ -65,6 +67,53 @@ public final class BotSettings
         AUTO
     }
 
+    /**
+     * How well bots fight, by scaling what their loadout or clone gives them: aim, how far they notice enemies, health,
+     * and the pause between their shots.
+     */
+    public enum Difficulty
+    {
+        /** Bots fight as their loadout or clone makes them. */
+        DEFAULT(1F, 1F, 1F, 1F), RECRUIT(0.6F, 0.75F, 0.8F, 1.5F), REGULAR(0.85F, 0.9F, 1F, 1.2F), VETERAN(1.15F, 1.15F, 1.25F, 0.85F), ELITE(1.35F, 1.3F, 1.5F, 0.7F);
+
+        private final float accuracy;
+        private final float aggro;
+        private final float health;
+        private final float delay;
+
+        Difficulty(float accuracy, float aggro, float health, float delay)
+        {
+            this.accuracy = accuracy;
+            this.aggro = aggro;
+            this.health = health;
+            this.delay = delay;
+        }
+
+        /** Factor on the ranged accuracy, which stays within 0 to 100. */
+        public float accuracy()
+        {
+            return accuracy;
+        }
+
+        /** Factor on the range within which bots notice enemies. */
+        public float aggro()
+        {
+            return aggro;
+        }
+
+        /** Factor on the most health bots have. */
+        public float health()
+        {
+            return health;
+        }
+
+        /** Factor on the ticks between shots; below 1 is faster. */
+        public float delay()
+        {
+            return delay;
+        }
+    }
+
     private boolean enabled = true;
     private Mode mode = Mode.FIXED;
     /** Bots shared out between the teams in {@link Mode#SHARE}. */
@@ -83,6 +132,9 @@ public final class BotSettings
     private int abandonChance = 25;
     /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
     private int rubberBand;
+    private Difficulty difficulty = Difficulty.DEFAULT;
+    /** Whether players, too, spend their side's tickets when they respawn, once the side has a ticket limit. */
+    private boolean playerTickets = true;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
     /** What one team fields. */
@@ -95,6 +147,7 @@ public final class BotSettings
         private static final String NBT_NAME_LIST = "name_list";
         private static final String NBT_CLONE_TAB = "clone_tab";
         private static final String NBT_CLONE_NAME = "clone_name";
+        private static final String NBT_KEEP_EQUIPMENT = "keep_clone_equipment";
         private static final String NBT_CLASSES = "classes";
         private static final String NBT_SQUADS = "squads";
         private static final String NBT_VEHICLES = "vehicles";
@@ -108,6 +161,8 @@ public final class BotSettings
         /** The Custom NPCs clone bots are made from; tab 0 or an empty name makes plain NPCs. */
         private int cloneTab;
         private String cloneName = "";
+        /** Whether bots made from the clone keep its weapons and armour rather than getting their class's loadout. */
+        private boolean keepCloneEquipment;
         /** Weight of each class bots are given; a class left out weighs 1 when no class is listed, 0 otherwise. */
         private final Map<String, Integer> classWeights = new LinkedHashMap<>();
         private final List<SquadEntry> squads = new ArrayList<>();
@@ -121,6 +176,7 @@ public final class BotSettings
             tag.putString(NBT_NAME_LIST, nameList);
             tag.putInt(NBT_CLONE_TAB, cloneTab);
             tag.putString(NBT_CLONE_NAME, cloneName);
+            tag.putBoolean(NBT_KEEP_EQUIPMENT, keepCloneEquipment);
             CompoundTag classes = new CompoundTag();
             classWeights.forEach(classes::putInt);
             tag.put(NBT_CLASSES, classes);
@@ -141,6 +197,7 @@ public final class BotSettings
             force.nameList = tag.getString(NBT_NAME_LIST);
             force.cloneTab = tag.getInt(NBT_CLONE_TAB);
             force.cloneName = tag.getString(NBT_CLONE_NAME);
+            force.keepCloneEquipment = tag.getBoolean(NBT_KEEP_EQUIPMENT);
             CompoundTag classes = tag.getCompound(NBT_CLASSES);
             for (String name : classes.getAllKeys())
                 force.classWeights.put(name, Math.max(0, classes.getInt(name)));
@@ -269,6 +326,8 @@ public final class BotSettings
         tag.putInt(NBT_SQUAD_SIZE, squadSize);
         tag.putInt(NBT_ABANDON, abandonChance);
         tag.putInt(NBT_RUBBER_BAND, rubberBand);
+        tag.putString(NBT_DIFFICULTY, difficulty.name());
+        tag.putBoolean(NBT_PLAYER_TICKETS, playerTickets);
         CompoundTag teamTag = new CompoundTag();
         teams.forEach((team, force) -> teamTag.put(team, force.save()));
         tag.put(NBT_TEAMS, teamTag);
@@ -296,6 +355,8 @@ public final class BotSettings
         settings.squadSize = tag.contains(NBT_SQUAD_SIZE) ? Math.max(1, tag.getInt(NBT_SQUAD_SIZE)) : settings.squadSize;
         settings.abandonChance = tag.contains(NBT_ABANDON) ? Math.max(0, Math.min(100, tag.getInt(NBT_ABANDON))) : settings.abandonChance;
         settings.rubberBand = Math.max(0, tag.getInt(NBT_RUBBER_BAND));
+        settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.DEFAULT);
+        settings.playerTickets = !tag.contains(NBT_PLAYER_TICKETS) || tag.getBoolean(NBT_PLAYER_TICKETS);
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));

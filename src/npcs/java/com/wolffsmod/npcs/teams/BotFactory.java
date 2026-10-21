@@ -20,10 +20,14 @@ import noppes.npcs.api.NpcAPI;
 import noppes.npcs.api.entity.IEntity;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataRanged;
+import noppes.npcs.entity.data.DataStats;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -44,6 +48,14 @@ public final class BotFactory
     private static final int SHOW_NAME = 0;
     private static final int HIDE_NAME = 1;
     private static final double SPREAD = 1.5D;
+    /** Places tried around a spawn point for a soldier to fit. */
+    private static final int SPOT_ATTEMPTS = 6;
+    private static final double SOLDIER_HALF_WIDTH = 0.3D;
+    private static final double SOLDIER_HEIGHT = 1.95D;
+    /** Inventory slots of a Custom NPC, which hold spare ammunition. */
+    private static final int INVENTORY_SLOTS = 9;
+    /** Custom NPCs' best ranged accuracy. */
+    private static final int MAX_ACCURACY = 100;
 
     /** What a bot is made with. */
     public record Order(BotSlot slot, ITeam team, int factionId, BotSettings settings, BotSettings.TeamForce force, UUID instance, Vec3 position, @Nullable String nameList)
@@ -56,7 +68,7 @@ public final class BotFactory
             .orElse(null);
         if (playerClass == null)
             return Optional.empty();
-        Vec3 position = order.position().add((random.nextDouble() * 2D - 1D) * SPREAD, 0D, (random.nextDouble() * 2D - 1D) * SPREAD);
+        Vec3 position = freeSpot(level, order.position(), random);
         EntityNPCInterface npc = fromClone(level, order.force(), position).orElse(null);
         boolean added = npc != null;
         if (npc == null)
@@ -66,7 +78,9 @@ public final class BotFactory
             npc = plain;
         }
         FlanSoldierSelection selection = new FlanSoldierSelection(order.team(), playerClass);
-        FlanSoldierLoadout.apply(npc, selection);
+        // A clone may keep the weapons and armour its maker gave it instead of the class's loadout.
+        if (!added || !order.force().isKeepCloneEquipment())
+            FlanSoldierLoadout.apply(npc, selection);
         // Only clients know the class skin and whether it needs the 64x32 model, so each client puts it on.
         if (npc instanceof EntityCustomNpc custom && !order.force().usesClone() && !playerClass.getSkinOverrideVariants().isEmpty())
         {
@@ -75,6 +89,7 @@ public final class BotFactory
         }
         name(npc, order, random);
         join(npc, order, position, false);
+        train(npc, order.settings().getDifficulty());
         if (!added)
             level.addFreshEntity(npc);
         npc.setHealth(npc.getMaxHealth());
@@ -112,13 +127,68 @@ public final class BotFactory
         };
         tuning.set(Value.TACTIC, tactic.ordinal());
         if (definition != null)
-            FlansEntityTypes.getMounts(definition).stream().flatMap(mount -> mount.gun().stream()).findFirst().flatMap(FlansEquipment::createDefaultAmmunition)
-                .ifPresent(ammunition -> npc.inventory.setProjectile(NpcAPI.Instance().getIItemStack(ammunition)));
+            stockAmmunition(npc, definition);
         String crew = crewName(order, random);
         npc.display.setName(crew.isEmpty() ? npc.display.getName() : crew);
         join(npc, order, order.position(), true);
+        train(npc, order.settings().getDifficulty());
         npc.setHealth(npc.getMaxHealth());
         return Optional.of(npc);
+    }
+
+    /** Scales how well a bot fights by the round's difficulty: aim, how far it notices enemies, health and rate of fire. */
+    static void train(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    {
+        if (difficulty == BotSettings.Difficulty.DEFAULT)
+            return;
+        DataStats stats = npc.stats;
+        DataRanged ranged = stats.ranged;
+        ranged.setAccuracy(Math.max(0, Math.min(MAX_ACCURACY, Math.round(ranged.getAccuracy() * difficulty.accuracy()))));
+        stats.setAggroRange(Math.max(1, Math.round(stats.getAggroRange() * difficulty.aggro())));
+        stats.setMaxHealth(Math.max(1, Math.round(stats.getMaxHealth() * difficulty.health())));
+        int fastest = Math.max(1, Math.round(ranged.getDelayMin() * difficulty.delay()));
+        ranged.setDelay(fastest, Math.max(fastest, Math.round(ranged.getDelayMax() * difficulty.delay())));
+    }
+
+    /**
+     * A spot near a position where a soldier fits: a few places around it are tried, then the position itself, which a
+     * spawn point keeps clear.
+     */
+    static Vec3 freeSpot(ServerLevel level, Vec3 base, RandomGenerator random)
+    {
+        for (int attempt = 0; attempt < SPOT_ATTEMPTS; attempt++)
+        {
+            Vec3 spot = base.add((random.nextDouble() * 2D - 1D) * SPREAD, 0D, (random.nextDouble() * 2D - 1D) * SPREAD);
+            AABB body = new AABB(spot.x - SOLDIER_HALF_WIDTH, spot.y, spot.z - SOLDIER_HALF_WIDTH, spot.x + SOLDIER_HALF_WIDTH, spot.y + SOLDIER_HEIGHT, spot.z + SOLDIER_HALF_WIDTH);
+            boolean ground = !level.getBlockState(BlockPos.containing(spot.x, spot.y - 0.5D, spot.z)).getCollisionShape(level, BlockPos.containing(spot.x, spot.y - 0.5D, spot.z)).isEmpty();
+            if (level.noCollision(body) && ground)
+                return spot;
+        }
+        return base;
+    }
+
+    /**
+     * Gives a vehicle the default ammunition of every gun it mounts: the first gun's in its projectile slot, the others' in
+     * its inventory, from which it reloads them. The inventory is never dropped.
+     */
+    private static void stockAmmunition(EntityCustomNpc npc, IContentType definition)
+    {
+        List<ItemStack> stocks = new ArrayList<>();
+        for (WeaponMount mount : FlansEntityTypes.getMounts(definition))
+        {
+            mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> ItemStack.isSameItemSameTags(stock, ammunition)))
+                .ifPresent(stocks::add);
+        }
+        for (int i = 0; i < stocks.size() && i <= INVENTORY_SLOTS; i++)
+        {
+            if (i == 0)
+                npc.inventory.setProjectile(NpcAPI.Instance().getIItemStack(stocks.get(0)));
+            else
+            {
+                npc.inventory.drops.put(i - 1, NpcAPI.Instance().getIItemStack(stocks.get(i)));
+                npc.inventory.dropchance.put(i - 1, 0F);
+            }
+        }
     }
 
     /** Places the team's clone, when it has one that exists. */

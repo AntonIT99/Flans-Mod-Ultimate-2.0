@@ -11,7 +11,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -57,9 +59,9 @@ public final class BotGunners
 
     private static void man(ServerLevel level, EntityNPCInterface npc, ISeat seat)
     {
-        LivingEntity target = target(level, npc);
         Optional<Vec3> origin = seat.getGunOrigin();
-        if (target == null || origin.isEmpty())
+        LivingEntity target = origin.map(from -> target(level, npc, from)).orElse(null);
+        if (target == null)
         {
             seat.setAutomatedTriggers(false, false);
             return;
@@ -71,22 +73,37 @@ public final class BotGunners
         seat.setAutomatedTriggers(aligned, false);
     }
 
-    /** The NPC's own target when it has one in range, otherwise the nearest enemy it found on its last search. */
+    /**
+     * The NPC's own target when the gun can see it in range, otherwise the nearest enemy in sight it found on its last
+     * search. A target behind cover is given up rather than shot through the terrain.
+     */
     @Nullable
-    private static LivingEntity target(ServerLevel level, EntityNPCInterface npc)
+    private static LivingEntity target(ServerLevel level, EntityNPCInterface npc, Vec3 gun)
     {
         LivingEntity own = npc.getTarget();
-        if (own != null && own.isAlive() && own.distanceTo(npc) <= FIRE_RANGE)
+        if (own != null && engageable(level, npc, own, gun))
             return own;
         UUID kept = TARGETS.get(npc.getUUID());
         Entity remembered = kept == null ? null : level.getEntity(kept);
-        if (npc.tickCount % SEARCH_INTERVAL != 0 && remembered instanceof LivingEntity living && living.isAlive() && living.distanceTo(npc) <= FIRE_RANGE)
+        if (npc.tickCount % SEARCH_INTERVAL != 0 && remembered instanceof LivingEntity living && engageable(level, npc, living, gun))
             return living;
         AABB area = npc.getBoundingBox().inflate(SEARCH_RANGE);
         Optional<LivingEntity> nearest = level.getEntitiesOfClass(LivingEntity.class, area, candidate -> candidate.isAlive() && FlansTeams.areEnemies(npc, candidate)).stream()
-            .min(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(npc)));
+            .sorted(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(npc))).filter(candidate -> visible(level, npc, candidate, gun)).findFirst();
         nearest.ifPresentOrElse(found -> TARGETS.put(npc.getUUID(), found.getUUID()), () -> TARGETS.remove(npc.getUUID()));
         return nearest.orElse(null);
+    }
+
+    private static boolean engageable(ServerLevel level, EntityNPCInterface npc, LivingEntity target, Vec3 gun)
+    {
+        return target.isAlive() && target.distanceTo(npc) <= FIRE_RANGE && visible(level, npc, target, gun);
+    }
+
+    /** Whether nothing solid stands between the gun and the middle of the target. */
+    private static boolean visible(ServerLevel level, EntityNPCInterface npc, LivingEntity target, Vec3 gun)
+    {
+        ClipContext sight = new ClipContext(gun, target.getBoundingBox().getCenter(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
+        return level.clip(sight).getType() == HitResult.Type.MISS;
     }
 
     /**

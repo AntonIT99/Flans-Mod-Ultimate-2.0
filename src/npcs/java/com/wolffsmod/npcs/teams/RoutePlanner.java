@@ -19,6 +19,12 @@ public final class RoutePlanner
     public static final double LINK_DISTANCE = 64D;
     /** Blocks a bot walks towards a point before it heads for the next one. */
     public static final double STEP = 24D;
+    /** Blocks to the side of its heading the first way round an obstacle goes, how much each second one adds, and the most. */
+    private static final double FIRST_DETOUR = 4D;
+    private static final double DETOUR_GROWTH = 3D;
+    private static final double MAX_DETOUR = 16D;
+    /** Blocks ahead a way round an obstacle still goes. */
+    private static final double DETOUR_AHEAD = 3D;
 
     /**
      * @param nodes
@@ -89,6 +95,33 @@ public final class RoutePlanner
         while (current < route.size() - 1 && from.distanceTo(route.get(current)) <= reached)
             current++;
         return current;
+    }
+
+    /**
+     * A way round whatever stops a bot on its way to a point: a little ahead and off to one side, the side changing with
+     * every attempt and the offset growing every second one, up to {@link #MAX_DETOUR} blocks.
+     *
+     * @param attempt
+     *            how many ways round were tried before, from 0
+     */
+    public static Vec3 detour(Vec3 from, Vec3 heading, int attempt)
+    {
+        double dx = heading.x - from.x;
+        double dz = heading.z - from.z;
+        double length = Math.sqrt(dx * dx + dz * dz);
+        if (length < 1.0E-6D)
+        {
+            dx = 1D;
+            dz = 0D;
+            length = 1D;
+        }
+        dx /= length;
+        dz /= length;
+        double side = attempt % 2 == 0 ? 1D : -1D;
+        // Both sides are tried at one width before the next try goes wider.
+        int widenings = attempt / 2;
+        double offset = Math.min(MAX_DETOUR, FIRST_DETOUR + DETOUR_GROWTH * widenings);
+        return new Vec3(from.x + dx * DETOUR_AHEAD - dz * side * offset, from.y, from.z + dz * DETOUR_AHEAD + dx * side * offset);
     }
 
     /** @return the point a bot walks to next on its way to a target: the target, or {@link #STEP} blocks towards it */

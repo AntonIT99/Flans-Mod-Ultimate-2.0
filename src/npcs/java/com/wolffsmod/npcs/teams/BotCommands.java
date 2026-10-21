@@ -22,6 +22,7 @@ import com.wolffsmod.npcs.names.SoldierNames;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -50,6 +51,7 @@ public final class BotCommands
     private static final String TYPE = "type";
     private static final String MAP = "map";
     private static final String NAME = "name";
+    private static final String NAMES = "names";
     private static final String NONE = "none";
     private static final String CURRENT = "current";
     private static final String CLASS = "class";
@@ -58,11 +60,15 @@ public final class BotCommands
     private static final String MEMBERS = "members";
     private static final String POSTURE = "posture";
     private static final String POINT = "point";
-    private static final SimpleCommandExceptionType NO_ROUND = new SimpleCommandExceptionType(Component.literal("No such round: use 'current' or an index from /teams listRotation"));
-    private static final SimpleCommandExceptionType NO_TEAM = new SimpleCommandExceptionType(Component.literal("That team does not play this round"));
-    private static final SimpleCommandExceptionType NO_TEMPLATE = new SimpleCommandExceptionType(Component.literal("No squad template has that id"));
-    private static final SimpleCommandExceptionType NO_VEHICLE = new SimpleCommandExceptionType(Component.literal("That definition has no NPC model"));
-    private static final SimpleCommandExceptionType NOT_A_PLAYER = new SimpleCommandExceptionType(Component.literal("Only a player can place markers"));
+    private static final String PREFIX = "wolffsmodnpcs.command.";
+    private static final String SET = "set";
+    /** Blocks within which a marker is removed. */
+    private static final double MARKER_REACH = 8D;
+    private static final SimpleCommandExceptionType NO_ROUND = new SimpleCommandExceptionType(text("no_round"));
+    private static final SimpleCommandExceptionType NO_TEAM = new SimpleCommandExceptionType(text("no_team"));
+    private static final SimpleCommandExceptionType NO_TEMPLATE = new SimpleCommandExceptionType(text("no_template"));
+    private static final SimpleCommandExceptionType NO_VEHICLE = new SimpleCommandExceptionType(text("no_vehicle"));
+    private static final SimpleCommandExceptionType NOT_A_PLAYER = new SimpleCommandExceptionType(text("not_a_player"));
 
     private static final SuggestionProvider<CommandSourceStack> ROUNDS = (context, builder) ->
     {
@@ -104,7 +110,7 @@ public final class BotCommands
         ai.then(Commands.literal("clear").requires(source -> source.hasPermission(2)).executes(context ->
         {
             int removed = TeamsBots.clear(context.getSource().getServer());
-            context.getSource().sendSuccess(() -> Component.literal("Removed " + removed + " bots; they come back while bots are enabled"), true);
+            context.getSource().sendSuccess(() -> text("cleared", removed), true);
             return removed;
         }));
         ai.then(Commands.literal(ROUND).requires(source -> source.hasPermission(2)).then(roundSettings()));
@@ -119,11 +125,13 @@ public final class BotCommands
     {
         RequiredArgumentBuilder<CommandSourceStack, String> round = Commands.argument(ROUND, StringArgumentType.word()).suggests(ROUNDS);
         round.then(Commands.literal("show").executes(BotCommands::show));
-        round.then(Commands.literal("enable").executes(context -> edit(context, settings -> settings.setEnabled(true), "Bots enabled")));
-        round.then(Commands.literal("disable").executes(context -> edit(context, settings -> settings.setEnabled(false), "Bots disabled")));
+        round.then(Commands.literal("enable").executes(context -> edit(context, settings -> settings.setEnabled(true), text("enabled"))));
+        round.then(Commands.literal("disable").executes(context -> edit(context, settings -> settings.setEnabled(false), text("disabled"))));
         round.then(enumSetting("mode", BotSettings.Mode.class, BotSettings::setMode));
         round.then(enumSetting("nameplates", BotSettings.Nameplates.class, BotSettings::setNameplates));
         round.then(enumSetting("scoreboard", BotSettings.Scoreboard.class, BotSettings::setScoreboard));
+        round.then(enumSetting("difficulty", BotSettings.Difficulty.class, BotSettings::setDifficulty));
+        round.then(playerTickets());
         round.then(intSetting("total", 0, BotSettings::setTotal));
         round.then(intSetting(RESPAWN, 0, BotSettings::setRespawnSeconds));
         round.then(intSetting("tickets", 0, BotSettings::setTickets));
@@ -133,9 +141,10 @@ public final class BotCommands
         round.then(Commands.literal("capture")
             .then(Commands.literal("infantry")
                 .then(Commands.argument(VALUE, FloatArgumentType.floatArg(0F))
-                    .executes(context -> edit(context, settings -> settings.setInfantryCaptureWeight(FloatArgumentType.getFloat(context, VALUE)), "Infantry capture weight set"))))
-            .then(Commands.literal("vehicles").then(Commands.argument(VALUE, FloatArgumentType.floatArg(0F))
-                .executes(context -> edit(context, settings -> settings.setVehicleCaptureWeight(FloatArgumentType.getFloat(context, VALUE)), "Vehicle capture weight set")))));
+                    .executes(context -> edit(context, settings -> settings.setInfantryCaptureWeight(FloatArgumentType.getFloat(context, VALUE)),
+                        text(SET, "capture infantry", FloatArgumentType.getFloat(context, VALUE))))))
+            .then(Commands.literal("vehicles").then(Commands.argument(VALUE, FloatArgumentType.floatArg(0F)).executes(context -> edit(context,
+                settings -> settings.setVehicleCaptureWeight(FloatArgumentType.getFloat(context, VALUE)), text(SET, "capture vehicles", FloatArgumentType.getFloat(context, VALUE)))))));
         round.then(Commands.literal(TEAM).then(teamSettings()));
         return round;
     }
@@ -144,24 +153,29 @@ public final class BotCommands
     {
         RequiredArgumentBuilder<CommandSourceStack, String> team = Commands.argument(TEAM, StringArgumentType.word()).suggests(TEAMS);
         team.then(Commands.literal(COUNT).then(Commands.argument(VALUE, IntegerArgumentType.integer(0))
-            .executes(context -> editTeam(context, force -> force.setCount(IntegerArgumentType.getInteger(context, VALUE)), "Infantry count set"))));
+            .executes(context -> editTeam(context, force -> force.setCount(IntegerArgumentType.getInteger(context, VALUE)), text(SET, COUNT, IntegerArgumentType.getInteger(context, VALUE))))));
         team.then(Commands.literal(BUDGET).then(Commands.argument(VALUE, IntegerArgumentType.integer(0))
-            .executes(context -> editTeam(context, force -> force.setBudget(IntegerArgumentType.getInteger(context, VALUE)), "Infantry budget set"))));
-        team.then(Commands.literal("names")
-            .then(Commands.argument(NAME, StringArgumentType.word()).suggests(NAME_LISTS).executes(context -> editTeam(context, force -> force.setNameList(word(context, NAME)), "Name list set"))));
-        team.then(Commands.literal("clone").then(Commands.literal(NONE).executes(context -> editTeam(context, force -> force.setCloneTab(0), "Bots are made plain")))
+            .executes(context -> editTeam(context, force -> force.setBudget(IntegerArgumentType.getInteger(context, VALUE)), text(SET, BUDGET, IntegerArgumentType.getInteger(context, VALUE))))));
+        team.then(Commands.literal(NAMES).then(Commands.argument(NAME, StringArgumentType.word()).suggests(NAME_LISTS)
+            .executes(context -> editTeam(context, force -> force.setNameList(word(context, NAME)), text(SET, NAMES, StringArgumentType.getString(context, NAME))))));
+        team.then(Commands.literal("clone").then(Commands.literal(NONE).executes(context -> editTeam(context, force -> force.setCloneTab(0), text("clone_none"))))
             .then(Commands.argument("tab", IntegerArgumentType.integer(1, 15)).then(Commands.argument(NAME, StringArgumentType.greedyString()).executes(context -> editTeam(context, force ->
             {
                 force.setCloneTab(IntegerArgumentType.getInteger(context, "tab"));
                 force.setCloneName(StringArgumentType.getString(context, NAME));
-            }, "Bots are made from that clone")))));
-        team.then(Commands.literal(CLASS).then(Commands.argument(CLASS, StringArgumentType.word()).suggests(CLASSES).then(Commands.argument(VALUE, IntegerArgumentType.integer(0)).executes(
-            context -> editTeam(context, force -> force.getClassWeights().put(StringArgumentType.getString(context, CLASS), IntegerArgumentType.getInteger(context, VALUE)), "Class weight set")))));
+            }, text("clone", StringArgumentType.getString(context, NAME)))))));
+        team.then(Commands.literal("keepequipment").then(Commands.literal("on").executes(context -> editTeam(context, force -> force.setKeepCloneEquipment(true), text("keep_equipment_on"))))
+            .then(Commands.literal("off").executes(context -> editTeam(context, force -> force.setKeepCloneEquipment(false), text("keep_equipment_off")))));
+        team.then(Commands.literal(CLASS)
+            .then(Commands.argument(CLASS, StringArgumentType.word()).suggests(CLASSES)
+                .then(Commands.argument(VALUE, IntegerArgumentType.integer(0))
+                    .executes(context -> editTeam(context, force -> force.getClassWeights().put(StringArgumentType.getString(context, CLASS), IntegerArgumentType.getInteger(context, VALUE)),
+                        text("class_weight", StringArgumentType.getString(context, CLASS), IntegerArgumentType.getInteger(context, VALUE)))))));
         team.then(Commands.literal("squad")
             .then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES).then(Commands.argument(COUNT, IntegerArgumentType.integer(0)).executes(context -> squad(context, 0))
                 .then(Commands.argument(BUDGET, IntegerArgumentType.integer(0)).executes(context -> squad(context, IntegerArgumentType.getInteger(context, BUDGET)))))));
         team.then(Commands.literal("removesquad").then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES)
-            .executes(context -> editTeam(context, force -> force.getSquads().removeIf(entry -> entry.template().equals(word(context, TEMPLATE))), "Squad entry removed"))));
+            .executes(context -> editTeam(context, force -> force.getSquads().removeIf(entry -> entry.template().equals(word(context, TEMPLATE))), text("squad_removed", word(context, TEMPLATE))))));
         team.then(Commands.literal("vehicle")
             .then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
                 .then(Commands.argument(COUNT, IntegerArgumentType.integer(0)).executes(context -> vehicle(context, 0, 0, 1))
@@ -172,8 +186,8 @@ public final class BotCommands
                                 IntegerArgumentType.getInteger(context, RESPAWN), IntegerArgumentType.getInteger(context, TICKET_COST)))))))));
         team.then(Commands.literal("carry")
             .then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES).then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES).executes(BotCommands::carry))));
-        team.then(Commands.literal("removevehicle").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
-            .executes(context -> editTeam(context, force -> force.getVehicles().removeIf(entry -> entry.type().equals(StringArgumentType.getString(context, TYPE))), "Vehicle entry removed"))));
+        team.then(Commands.literal("removevehicle").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES).executes(context -> editTeam(context,
+            force -> force.getVehicles().removeIf(entry -> entry.type().equals(StringArgumentType.getString(context, TYPE))), text("vehicle_removed", StringArgumentType.getString(context, TYPE))))));
         return team;
     }
 
@@ -181,15 +195,21 @@ public final class BotCommands
     {
         LiteralArgumentBuilder<CommandSourceStack> node = Commands.literal(name);
         for (E constant : type.getEnumConstants())
-            node.then(Commands.literal(constant.name().toLowerCase(Locale.ROOT))
-                .executes(context -> edit(context, settings -> setter.accept(settings, constant), name + " set to " + constant.name().toLowerCase(Locale.ROOT))));
+            node.then(Commands.literal(constant.name().toLowerCase(Locale.ROOT)).executes(context -> edit(context, settings -> setter.accept(settings, constant), text(SET, name, lower(constant)))));
         return node;
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> playerTickets()
+    {
+        String name = "playertickets";
+        return Commands.literal(name).then(Commands.literal("on").executes(context -> edit(context, settings -> settings.setPlayerTickets(true), text(SET, name, onOff(true)))))
+            .then(Commands.literal("off").executes(context -> edit(context, settings -> settings.setPlayerTickets(false), text(SET, name, onOff(false)))));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> intSetting(String name, int minimum, ObjIntConsumer<BotSettings> setter)
     {
         return Commands.literal(name).then(Commands.argument(VALUE, IntegerArgumentType.integer(minimum))
-            .executes(context -> edit(context, settings -> setter.accept(settings, IntegerArgumentType.getInteger(context, VALUE)), name + " set")));
+            .executes(context -> edit(context, settings -> setter.accept(settings, IntegerArgumentType.getInteger(context, VALUE)), text(SET, name, IntegerArgumentType.getInteger(context, VALUE)))));
     }
 
     private static int squad(CommandContext<CommandSourceStack> context, int budget) throws CommandSyntaxException
@@ -207,7 +227,7 @@ public final class BotCommands
                 squads.add(entry);
             else
                 squads.set(index, entry);
-        }, "Squad entry set");
+        }, text("squad_set", template, count));
     }
 
     private static int vehicle(CommandContext<CommandSourceStack> context, int budget, int respawn, int ticketCost) throws CommandSyntaxException
@@ -227,7 +247,7 @@ public final class BotCommands
                 vehicles.add(entry);
             else
                 vehicles.set(index, entry);
-        }, "Vehicle entry set");
+        }, text("vehicle_set", type, count));
     }
 
     private static int carry(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
@@ -245,12 +265,12 @@ public final class BotCommands
                 if (entry.type().equals(type))
                     vehicles.set(i, new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), entry.respawnSeconds(), entry.ticketCost(), entry.spawner(), template));
             }
-        }, template.isEmpty() ? "The vehicle carries nobody" : "The vehicle carries that squad");
+        }, template.isEmpty() ? text("carry_none", type) : text("carry", type, template));
     }
 
     // A command reports how many settings it changed, which is always one here.
     @SuppressWarnings("SameReturnValue")
-    private static int edit(CommandContext<CommandSourceStack> context, Consumer<BotSettings> change, String message) throws CommandSyntaxException
+    private static int edit(CommandContext<CommandSourceStack> context, Consumer<BotSettings> change, Component message) throws CommandSyntaxException
     {
         ITeamsRound round = round(context);
         BotSettings settings = BotSettings.load(round.getExtensionData(BotSettings.KEY));
@@ -260,11 +280,11 @@ public final class BotCommands
             settings.setEnabled(true);
         change.accept(settings);
         FlansTeams.setRoundExtensionData(round, BotSettings.KEY, settings.save());
-        context.getSource().sendSuccess(() -> Component.literal(message), true);
+        context.getSource().sendSuccess(() -> message, true);
         return 1;
     }
 
-    private static int editTeam(CommandContext<CommandSourceStack> context, Consumer<BotSettings.TeamForce> change, String message) throws CommandSyntaxException
+    private static int editTeam(CommandContext<CommandSourceStack> context, Consumer<BotSettings.TeamForce> change, Component message) throws CommandSyntaxException
     {
         ITeamsRound round = round(context);
         String team = StringArgumentType.getString(context, TEAM);
@@ -306,38 +326,46 @@ public final class BotCommands
     {
         ITeamsRound round = round(context);
         BotSettings settings = BotSettings.load(round.getExtensionData(BotSettings.KEY));
-        List<String> lines = new ArrayList<>();
-        lines.add("Bots " + (settings.isEnabled() ? "enabled" : "disabled") + " on " + round.getGameTypeId() + " @ " + round.getMapId() + ": mode " + lower(settings.getMode()) + ", total "
-            + settings.getTotal() + ", respawn " + settings.getRespawnSeconds() + "s, tickets " + (settings.getTickets() == 0 ? "unlimited" : settings.getTickets()) + ", squads of "
-            + settings.getSquadSize());
-        lines.add("Name tags " + lower(settings.getNameplates()) + ", scoreboard " + lower(settings.getScoreboard()) + ", capture weight " + settings.getInfantryCaptureWeight() + " / vehicles "
-            + settings.getVehicleCaptureWeight());
+        List<Component> lines = new ArrayList<>();
+        Component tickets = settings.getTickets() == 0 ? text("show.unlimited") : Component.literal(Integer.toString(settings.getTickets()));
+        lines.add(text(settings.isEnabled() ? "show.round_enabled" : "show.round_disabled", round.getGameTypeId(), round.getMapId(), lower(settings.getMode()), settings.getTotal(),
+            settings.getRespawnSeconds(), tickets, settings.getSquadSize()));
+        lines.add(text("show.look", lower(settings.getNameplates()), lower(settings.getScoreboard()), settings.getInfantryCaptureWeight(), settings.getVehicleCaptureWeight(),
+            lower(settings.getDifficulty()), onOff(settings.isPlayerTickets())));
         for (ITeam team : round.getTeams())
             lines.addAll(describe(team, settings.team(team.getShortName())));
-        lines.forEach(line -> context.getSource().sendSuccess(() -> Component.literal(line), false));
+        BotEditor.problems(round, settings).forEach(problem -> lines.add(problem.copy().withStyle(ChatFormatting.YELLOW)));
+        lines.forEach(line -> context.getSource().sendSuccess(() -> line, false));
         return lines.size();
     }
 
     /** One line for a team's infantry, and one for each of its squad and vehicle entries. */
-    private static List<String> describe(ITeam team, BotSettings.TeamForce force)
+    private static List<Component> describe(ITeam team, BotSettings.TeamForce force)
     {
-        List<String> lines = new ArrayList<>();
+        List<Component> lines = new ArrayList<>();
         String names = force.getNameList().isEmpty() ? NONE : force.getNameList();
-        String clone = force.usesClone() ? ", clone " + force.getCloneTab() + "/" + force.getCloneName() : "";
-        String classes = force.getClassWeights().isEmpty() ? "all" : force.getClassWeights().toString();
-        lines.add(team.getShortName() + ": infantry " + force.getCount() + budget(force.getBudget()) + ", names " + names + clone + ", classes " + classes);
-        force.getSquads().forEach(entry -> lines.add("  squad " + entry.template() + " x" + entry.count() + budget(entry.budget())));
+        String cloneKey = force.isKeepCloneEquipment() ? "show.clone_equipped" : "show.clone";
+        Component clone = force.usesClone() ? text(cloneKey, force.getCloneTab(), force.getCloneName()) : Component.empty();
+        Component classes = force.getClassWeights().isEmpty() ? text("show.all_classes") : Component.literal(force.getClassWeights().toString());
+        lines.add(text("show.team", team.getShortName(), force.getCount(), budget(force.getBudget()), names, clone, classes));
+        force.getSquads().forEach(entry -> lines.add(text("show.squad", entry.template(), entry.count(), budget(entry.budget()))));
         for (BotSettings.VehicleEntry entry : force.getVehicles())
         {
-            String respawn = entry.respawnSeconds() > 0 ? ", respawn " + entry.respawnSeconds() + "s" : "";
-            lines.add("  vehicle " + entry.type() + " x" + entry.count() + budget(entry.budget()) + respawn + ", " + entry.ticketCost() + " tickets");
+            Component respawn = entry.respawnSeconds() > 0 ? text("show.respawn", entry.respawnSeconds()) : Component.empty();
+            Component carry = entry.carry().isEmpty() ? Component.empty() : text("show.carry", entry.carry());
+            lines.add(text("show.vehicle", entry.type(), entry.count(), budget(entry.budget()), respawn, entry.ticketCost(), carry));
         }
         return lines;
     }
 
-    private static String budget(int budget)
+    private static Component budget(int budget)
     {
-        return budget > 0 ? " (budget " + budget + ")" : "";
+        return budget > 0 ? text("show.budget", budget) : Component.empty();
+    }
+
+    private static String onOff(boolean value)
+    {
+        return value ? "on" : "off";
     }
 
     private static int status(CommandContext<CommandSourceStack> context)
@@ -345,7 +373,7 @@ public final class BotCommands
         Optional<BotRound> current = TeamsBots.current();
         if (current.isEmpty())
         {
-            context.getSource().sendSuccess(() -> Component.literal("No round is being played"), false);
+            context.getSource().sendSuccess(() -> text("status.none"), false);
             return 0;
         }
         BotRound round = current.get();
@@ -354,10 +382,10 @@ public final class BotCommands
             long alive = round.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && slot.getEntity() != null && slot.getDiedAt() == 0).count();
             long slots = round.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && !slot.isRetired()).count();
             int side = round.getLive().getRound().getSideOf(team);
-            String tickets = round.getSettings().getTickets() > 0 ? ", side tickets " + BotPopulation.ticketsLeft(round, side) : "";
+            Component tickets = round.getSettings().getTickets() > 0 ? text("status.tickets", BotPopulation.ticketsLeft(round, side)) : Component.empty();
             List<String> tasks = round.getSquads().values().stream().filter(squad -> squad.getTeam().equals(team.getShortName()) && squad.getTask() != null)
                 .map(squad -> "#" + squad.getId() + " " + lower(squad.getRole()) + " " + lower(squad.getTask().kind())).toList();
-            context.getSource().sendSuccess(() -> Component.literal(team.getShortName() + ": " + alive + "/" + slots + " bots alive" + tickets + "; squads " + tasks), false);
+            context.getSource().sendSuccess(() -> text("status.team", team.getShortName(), alive, slots, tickets, tasks.toString()), false);
         }
         return round.getSlots().size();
     }
@@ -376,11 +404,11 @@ public final class BotCommands
 
     private static int giveOrder(CommandContext<CommandSourceStack> context, PlayerOrder.Kind kind, int objective) throws CommandSyntaxException
     {
-        int ordered = BotOrders.give(context.getSource().getPlayerOrException(), BotOrders.NEARBY_SQUADS, kind, objective);
+        int ordered = BotOrders.give(context.getSource().getPlayerOrException(), BotOrders.NEARBY_SQUADS, kind, objective, null);
         if (ordered == 0)
-            context.getSource().sendFailure(Component.literal("No allied squad of bots is within " + (int) BotOrders.NEARBY + " blocks"));
+            context.getSource().sendFailure(text("order.nobody", (int) BotOrders.NEARBY));
         else
-            context.getSource().sendSuccess(() -> Component.literal(ordered + " squads: " + lower(kind)), false);
+            context.getSource().sendSuccess(() -> text("order.given", ordered, lower(kind)), false);
         return ordered;
     }
 
@@ -400,10 +428,10 @@ public final class BotCommands
         boolean holds = BotOrders.command(context.getSource().getPlayerOrException(), take);
         String message;
         if (take)
-            message = holds ? "You command your side's bots" : "Another player commands your side, or you play no round with bots";
+            message = holds ? "commander.took" : "commander.refused";
         else
-            message = "You left the command of your side";
-        context.getSource().sendSuccess(() -> Component.literal(message), false);
+            message = "commander.left";
+        context.getSource().sendSuccess(() -> text(message), false);
         return holds ? 1 : 0;
     }
 
@@ -420,9 +448,9 @@ public final class BotCommands
         ServerPlayer player = context.getSource().getPlayerOrException();
         int count = board ? BotGunners.board(player) : BotGunners.dismount(player);
         if (count < 0)
-            context.getSource().sendFailure(Component.literal(board ? "Drive a driveable to have bots board it" : "Ride a driveable to have bots leave it"));
+            context.getSource().sendFailure(text(board ? "board.no_driveable" : "dismount.no_driveable"));
         else
-            context.getSource().sendSuccess(() -> Component.literal(count + (board ? " bots boarded" : " bots got off")), false);
+            context.getSource().sendSuccess(() -> text(board ? "board.done" : "dismount.done", count), false);
         return Math.max(0, count);
     }
 
@@ -450,7 +478,7 @@ public final class BotCommands
             SquadTemplate existing = SquadTemplates.get().find(id).orElse(null);
             SquadTemplates.get().put(new SquadTemplate(id, StringArgumentType.getString(context, NAME), existing == null ? SquadTemplate.Posture.BALANCED : existing.posture(),
                 existing == null ? "" : existing.nameList(), existing == null ? List.of() : existing.members()));
-            context.getSource().sendSuccess(() -> Component.literal("Squad template " + id + " saved"), true);
+            context.getSource().sendSuccess(() -> text("template.saved", id), true);
             return 1;
         }))));
         root.then(Commands.literal(MEMBERS).then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES)
@@ -465,14 +493,14 @@ public final class BotCommands
                     .suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(SquadTemplate.Posture.values()).map(BotCommands::lower).toList(), builder))
                     .executes(context -> editTemplate(context,
                         template -> template.withPosture(BotSettings.parse(SquadTemplate.Posture.class, StringArgumentType.getString(context, POSTURE), SquadTemplate.Posture.BALANCED)))))));
-        root.then(Commands.literal("names").then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES)
+        root.then(Commands.literal(NAMES).then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES)
             .then(Commands.argument(NAME, StringArgumentType.word()).suggests(NAME_LISTS).executes(context -> editTemplate(context, template -> template.withNameList(word(context, NAME)))))));
         root.then(Commands.literal("remove").then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES).executes(context ->
         {
             boolean removed = SquadTemplates.get().remove(StringArgumentType.getString(context, TEMPLATE));
             if (!removed)
                 throw NO_TEMPLATE.create();
-            context.getSource().sendSuccess(() -> Component.literal("Squad template removed"), true);
+            context.getSource().sendSuccess(() -> text("template.removed"), true);
             return 1;
         })));
         return root;
@@ -484,7 +512,7 @@ public final class BotCommands
     {
         SquadTemplate template = SquadTemplates.get().find(StringArgumentType.getString(context, TEMPLATE)).orElseThrow(NO_TEMPLATE::create);
         SquadTemplates.get().put(change.apply(template));
-        context.getSource().sendSuccess(() -> Component.literal("Squad template " + template.id() + " saved"), true);
+        context.getSource().sendSuccess(() -> text("template.saved", template.id()), true);
         return 1;
     }
 
@@ -500,30 +528,45 @@ public final class BotCommands
                 if (!(context.getSource().getEntity() instanceof ServerPlayer player))
                     throw NOT_A_PLAYER.create();
                 BotMarkers.get(context.getSource().getServer()).add(StringArgumentType.getString(context, MAP), new BotMarkers.Marker(type, player.position()));
-                context.getSource().sendSuccess(() -> Component.literal(lower(type) + " marker placed"), true);
+                context.getSource().sendSuccess(() -> text("marker.placed", lower(type)), true);
                 return 1;
             }));
         map.then(add);
         map.then(Commands.literal("remove").executes(context ->
         {
-            Optional<BotMarkers.Marker> removed = BotMarkers.get(context.getSource().getServer()).removeNearest(StringArgumentType.getString(context, MAP), context.getSource().getPosition(), 8D);
-            context.getSource().sendSuccess(() -> Component.literal(removed.map(marker -> lower(marker.type()) + " marker removed").orElse("No marker within 8 blocks")), true);
+            Optional<BotMarkers.Marker> removed = BotMarkers.get(context.getSource().getServer()).removeNearest(StringArgumentType.getString(context, MAP), context.getSource().getPosition(),
+                MARKER_REACH);
+            context.getSource().sendSuccess(() -> removed.map(marker -> text("marker.removed", lower(marker.type()))).orElseGet(() -> text("marker.none_near", (int) MARKER_REACH)), true);
             return removed.isPresent() ? 1 : 0;
         }));
         map.then(Commands.literal("list").executes(context ->
         {
             List<BotMarkers.Marker> markers = BotMarkers.get(context.getSource().getServer()).of(StringArgumentType.getString(context, MAP));
-            markers.forEach(marker -> context.getSource()
-                .sendSuccess(() -> Component.literal(lower(marker.type()) + " at " + (int) marker.position().x + " " + (int) marker.position().y + " " + (int) marker.position().z), false));
+            markers.forEach(
+                marker -> context.getSource().sendSuccess(() -> text("marker.at", lower(marker.type()), (int) marker.position().x, (int) marker.position().y, (int) marker.position().z), false));
             return markers.size();
         }));
         map.then(Commands.literal("clear").executes(context ->
         {
             int removed = BotMarkers.get(context.getSource().getServer()).clear(StringArgumentType.getString(context, MAP));
-            context.getSource().sendSuccess(() -> Component.literal("Removed " + removed + " markers"), true);
+            context.getSource().sendSuccess(() -> text("marker.cleared", removed), true);
             return removed;
         }));
+        map.then(Commands.literal("show").executes(context ->
+        {
+            ServerPlayer player = context.getSource().getPlayerOrException();
+            String mapId = StringArgumentType.getString(context, MAP);
+            BotMarkerDisplay.show(player, mapId);
+            int count = BotMarkers.get(context.getSource().getServer()).of(mapId).size();
+            context.getSource().sendSuccess(() -> text("marker.shown", count, BotMarkerDisplay.SHOW_TICKS / 20), false);
+            return count;
+        }));
         return map;
+    }
+
+    private static Component text(String key, Object... args)
+    {
+        return Component.translatable(PREFIX + key, args);
     }
 
     private static String lower(Enum<?> constant)

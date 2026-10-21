@@ -60,6 +60,7 @@ public final class NpcsGameEvents
     public static void serverStopping(ServerStoppingEvent event)
     {
         ServerBenchmark.serverStopping(event.getServer());
+        TeamsBots.serverStopping(event.getServer());
     }
 
     @SubscribeEvent

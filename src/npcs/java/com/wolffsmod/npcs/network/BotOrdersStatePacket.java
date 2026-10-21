@@ -26,8 +26,10 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
      *            whether it follows an order of this player
      * @param distance
      *            blocks between the player and its leader
+     * @param x
+     *            where its leader is, across the ground
      */
-    public record Squad(int id, String name, int strength, String task, boolean mine, int distance)
+    public record Squad(int id, String name, int strength, String task, boolean mine, int distance, double x, double z)
     {}
 
     /**
@@ -35,8 +37,10 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
      *
      * @param ownerSide
      *            the side that holds it, or -1
+     * @param x
+     *            where it is, across the ground
      */
-    public record Objective(char symbol, String name, int ownerSide)
+    public record Objective(char symbol, String name, int ownerSide, double x, double z)
     {}
 
     public BotOrdersStatePacket
@@ -64,12 +68,16 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
             out.writeUtf(squad.task(), MAX_TEXT);
             out.writeBoolean(squad.mine());
             out.writeVarInt(squad.distance());
+            out.writeDouble(squad.x());
+            out.writeDouble(squad.z());
         });
         buffer.writeCollection(objectives, (out, objective) ->
         {
             out.writeChar(objective.symbol());
             out.writeUtf(objective.name(), MAX_TEXT);
             out.writeVarInt(objective.ownerSide());
+            out.writeDouble(objective.x());
+            out.writeDouble(objective.z());
         });
     }
 
@@ -79,8 +87,9 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
         int side = buffer.readVarInt();
         boolean commander = buffer.readBoolean();
         String commanderName = buffer.readUtf(MAX_TEXT);
-        List<Squad> squads = buffer.readList(in -> new Squad(in.readVarInt(), in.readUtf(MAX_TEXT), in.readVarInt(), in.readUtf(MAX_TEXT), in.readBoolean(), in.readVarInt()));
-        List<Objective> objectives = buffer.readList(in -> new Objective(in.readChar(), in.readUtf(MAX_TEXT), in.readVarInt()));
+        List<Squad> squads = buffer
+            .readList(in -> new Squad(in.readVarInt(), in.readUtf(MAX_TEXT), in.readVarInt(), in.readUtf(MAX_TEXT), in.readBoolean(), in.readVarInt(), in.readDouble(), in.readDouble()));
+        List<Objective> objectives = buffer.readList(in -> new Objective(in.readChar(), in.readUtf(MAX_TEXT), in.readVarInt(), in.readDouble(), in.readDouble()));
         return new BotOrdersStatePacket(playing, side, commander, commanderName, squads, objectives);
     }
 }

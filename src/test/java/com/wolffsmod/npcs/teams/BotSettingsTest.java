@@ -83,4 +83,28 @@ class BotSettingsTest
         Vec3 post = new Vec3(30D, 70D, 5D);
         assertEquals(post, BotFormation.spot(target, 0, 10D, List.of(post)));
     }
+
+    @Test
+    void difficultyPlayerTicketsAndCloneEquipmentSurviveSavingAndLoading()
+    {
+        BotSettings settings = new BotSettings();
+        settings.setDifficulty(BotSettings.Difficulty.ELITE);
+        settings.setPlayerTickets(false);
+        settings.team("Germans").setKeepCloneEquipment(true);
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertEquals(BotSettings.Difficulty.ELITE, loaded.getDifficulty());
+        assertFalse(loaded.isPlayerTickets());
+        assertTrue(loaded.team("Germans").isKeepCloneEquipment());
+    }
+
+    @Test
+    void settingsSavedBeforeTheNewOptionsLetPlayersSpendTicketsAtTheDefaultDifficulty()
+    {
+        CompoundTag old = new BotSettings().save();
+        old.remove("difficulty");
+        old.remove("player_tickets");
+        BotSettings loaded = BotSettings.load(old);
+        assertEquals(BotSettings.Difficulty.DEFAULT, loaded.getDifficulty());
+        assertTrue(loaded.isPlayerTickets());
+    }
 }

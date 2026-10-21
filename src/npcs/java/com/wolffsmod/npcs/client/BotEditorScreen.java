@@ -8,11 +8,14 @@ import com.wolffsmod.npcs.teams.BotSettings;
 import com.wolffsmod.npcs.teams.BotSettingsText;
 import com.wolffsmod.npcs.teams.SquadTemplate;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -23,7 +26,9 @@ import java.util.function.Consumer;
 /**
  * The operator's editor for the bots of each round of the rotation and for the squad templates. It edits a copy of a
  * round's settings and sends it to the server on saving; the server checks the operator's permission, keeps the
- * settings with the round and sends the editor's state back. Lists are edited as one line of text each.
+ * settings with the round and sends the editor's state back. Lists are edited as one line of text each. Unsaved edits
+ * are marked on the save button and kept while the server sends new state for the same round; leaving the round or the
+ * editor with them asks first.
  */
 public final class BotEditorScreen extends Screen
 {
@@ -38,6 +43,8 @@ public final class BotEditorScreen extends Screen
     private static final String PREFIX = "wolffsmodnpcs.editor.";
     private static final String COUNT = "count";
     private static final String SQUADS = "squads";
+    /** Ticks between checks whether the edits differ from what the server holds. */
+    private static final int CHECK_TICKS = 10;
 
     /** The pages of the editor. */
     private enum Tab
@@ -47,6 +54,12 @@ public final class BotEditorScreen extends Screen
 
     private BotEditorStatePacket state;
     private BotSettings settings;
+    /** The round's settings as the server holds them, to tell unsaved edits by. */
+    private CompoundTag saved = new CompoundTag();
+    private boolean unsaved;
+    private int ticks;
+    @Nullable
+    private Button saveButton;
     private List<SquadTemplate> templates;
     private Tab tab = Tab.ROUND;
     private int team;
@@ -67,7 +80,7 @@ public final class BotEditorScreen extends Screen
         accept(state);
     }
 
-    /** Shows new state from the server; edits not saved yet are dropped. */
+    /** Shows new state from the server; edits not saved yet are kept while it is for the same round. */
     public void update(BotEditorStatePacket update)
     {
         accept(update);
@@ -76,9 +89,13 @@ public final class BotEditorScreen extends Screen
 
     private void accept(BotEditorStatePacket update)
     {
+        boolean keep = state != null && roundId(state).equals(roundId(update)) && hasUnsavedEdits();
         state = update;
         // A round without settings opens with bots switched off, ready to be set up.
-        settings = BotSettings.load(update.settings());
+        saved = BotSettings.load(update.settings()).save();
+        if (!keep)
+            settings = BotSettings.load(update.settings());
+        unsaved = keep && !settings.save().equals(saved);
         templates = update.templates().stream().map(SquadTemplate::fromTag).flatMap(Optional::stream).toList();
         template = Math.min(template, templates.size());
         team = Math.min(team, Math.max(0, teams().size() - 1));
@@ -134,6 +151,9 @@ public final class BotEditorScreen extends Screen
         addCompactField(second, 3, "rubberband", Integer.toString(settings.getRubberBand()));
         addCompactField(second, 4, "capture_infantry", Float.toString(settings.getInfantryCaptureWeight()));
         addCompactField(second, 5, "capture_vehicles", Float.toString(settings.getVehicleCaptureWeight()));
+        addRenderableWidget(enumButton(left, y(6), COLUMN_WIDTH, "difficulty", BotSettings.Difficulty.values(), settings.getDifficulty(), settings::setDifficulty));
+        addRenderableWidget(CycleButton.onOffBuilder(settings.isPlayerTickets()).create(second, y(6), COLUMN_WIDTH, 20, Component.translatable("wolffsmodnpcs.editor.player_tickets"),
+            (button, value) -> settings.setPlayerTickets(value)));
     }
 
     private void initTeam(int left)
@@ -146,7 +166,9 @@ public final class BotEditorScreen extends Screen
         addField(left, row++, COUNT, Integer.toString(force.getCount()));
         addField(left, row++, "budget", Integer.toString(force.getBudget()));
         addRenderableWidget(nameListButton(left, row++, force.getNameList(), force::setNameList));
-        addField(left, row++, "clone_tab", Integer.toString(force.getCloneTab()));
+        addField(left, row, "clone_tab", Integer.toString(force.getCloneTab()), FIELD_WIDTH / 3);
+        addRenderableWidget(CycleButton.onOffBuilder(force.isKeepCloneEquipment()).create(left + LABEL_WIDTH + FIELD_WIDTH / 3 + 4, y(row++), FIELD_WIDTH - FIELD_WIDTH / 3 - 4, 20,
+            Component.translatable("wolffsmodnpcs.editor.keep_equipment"), (button, value) -> force.setKeepCloneEquipment(value)));
         addField(left, row++, "clone_name", force.getCloneName());
         addField(left, row, "classes", BotSettingsText.formatClassWeights(force.getClassWeights()));
     }
@@ -192,7 +214,8 @@ public final class BotEditorScreen extends Screen
             Button.builder(Component.literal(">"), button -> openRound(state.round() + 1)).bounds(left + LABEL_WIDTH + FIELD_WIDTH - 20, height - 54, 20, 20).build()).active = state.round() >= 0
                 && state.round() < state.rounds().size() - 1;
         int half = (LABEL_WIDTH + FIELD_WIDTH) / 2 - 2;
-        addRenderableWidget(Button.builder(Component.translatable("wolffsmodnpcs.editor.save"), button -> saveSettings()).bounds(left, height - 30, half, 20).build()).active = state.round() >= 0;
+        saveButton = addRenderableWidget(Button.builder(saveLabel(), button -> saveSettings()).bounds(left, height - 30, half, 20).build());
+        saveButton.active = state.round() >= 0;
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose()).bounds(left + half + 4, height - 30, half, 20).build());
     }
 
@@ -205,7 +228,12 @@ public final class BotEditorScreen extends Screen
 
     private void addField(int left, int row, String key, String value)
     {
-        EditBox box = new EditBox(font, left + LABEL_WIDTH, y(row), FIELD_WIDTH, 20, Component.translatable(PREFIX + key));
+        addField(left, row, key, value, FIELD_WIDTH);
+    }
+
+    private void addField(int left, int row, String key, String value, int boxWidth)
+    {
+        EditBox box = new EditBox(font, left + LABEL_WIDTH, y(row), boxWidth, 20, Component.translatable(PREFIX + key));
         box.setMaxLength(TEXT_LIMIT);
         box.setValue(value);
         fields.put(key, addRenderableWidget(box));
@@ -351,7 +379,61 @@ public final class BotEditorScreen extends Screen
 
     private void openRound(int round)
     {
-        NpcNetwork.sendToServer(BotEditorActionPacket.open(round));
+        confirmLeaving(() -> NpcNetwork.sendToServer(BotEditorActionPacket.open(round)));
+    }
+
+    @Override
+    public void onClose()
+    {
+        confirmLeaving(super::onClose);
+    }
+
+    /** Leaves the round's edits behind, after asking when some are not saved. */
+    private void confirmLeaving(Runnable leave)
+    {
+        if (!hasUnsavedEdits() || minecraft == null)
+        {
+            leave.run();
+            return;
+        }
+        Minecraft game = minecraft;
+        game.setScreen(new ConfirmScreen(discard ->
+        {
+            game.setScreen(this);
+            if (discard)
+            {
+                settings = BotSettings.load(saved);
+                unsaved = false;
+                leave.run();
+            }
+        }, Component.translatable("wolffsmodnpcs.editor.unsaved_title"), Component.translatable("wolffsmodnpcs.editor.unsaved_question")));
+    }
+
+    /** Whether the edits, those still in the page's fields included, differ from the settings the server holds. */
+    private boolean hasUnsavedEdits()
+    {
+        if (settings == null || state == null || state.round() < 0)
+            return false;
+        commit();
+        return !settings.save().equals(saved);
+    }
+
+    @Override
+    public void tick()
+    {
+        if (++ticks % CHECK_TICKS != 0)
+            return;
+        boolean now = hasUnsavedEdits();
+        if (now != unsaved && saveButton != null)
+        {
+            unsaved = now;
+            saveButton.setMessage(saveLabel());
+        }
+    }
+
+    private Component saveLabel()
+    {
+        return Component.translatable(unsaved ? "wolffsmodnpcs.editor.save_unsaved" : "wolffsmodnpcs.editor.save");
     }
 
     private void saveSettings()
@@ -378,7 +460,12 @@ public final class BotEditorScreen extends Screen
 
     private UUID roundId()
     {
-        return state.round() < 0 ? new UUID(0L, 0L) : state.rounds().get(state.round()).id();
+        return roundId(state);
+    }
+
+    private static UUID roundId(BotEditorStatePacket shown)
+    {
+        return shown.round() < 0 ? new UUID(0L, 0L) : shown.rounds().get(shown.round()).id();
     }
 
     @Override

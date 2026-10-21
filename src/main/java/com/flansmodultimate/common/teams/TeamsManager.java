@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.ITeamsRespawnRule;
 import com.flansmodultimate.api.ITeamsRound;
 import com.flansmodultimate.api.TeamsScoreEntry;
 import com.flansmodultimate.api.TeamsSpawner;
@@ -1319,7 +1320,7 @@ public final class TeamsManager
         // Not in play yet, so there is nothing to interrupt: take the field.
         if (!roundRunning || current == null || next == null || current == Team.SPECTATORS)
         {
-            respawnPlayer(player, true);
+            respawnPlayer(player, true, ITeamsRespawnRule.Reason.JOINED);
             Team entered = data.getTeam();
             if (roundRunning && entered != null && entered != Team.SPECTATORS)
                 getCurrentGameType().ifPresent(type -> type.playerEnteredTheGame(this, player, entered, data.getPlayerClass()));
@@ -1343,7 +1344,7 @@ public final class TeamsManager
             player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
         // Creative players, and anyone a game type shields from damage, change over directly.
         if (player.isAlive())
-            respawnPlayer(player, true);
+            respawnPlayer(player, true, ITeamsRespawnRule.Reason.CHANGED_TEAM);
     }
 
     /**
@@ -1467,10 +1468,29 @@ public final class TeamsManager
 
     public void respawnPlayer(ServerPlayer player, boolean immediate)
     {
+        respawnPlayer(player, immediate, null);
+    }
+
+    /**
+     * Places a player for the round: in the field with their loadout at a spawn point of their team, or as a spectator.
+     *
+     * @param reason
+     *            why the player takes the field, for the respawn rules of addons to decide on; null places the player
+     *            without asking them, as when a round starts or the auto-balancer moves someone
+     */
+    public void respawnPlayer(ServerPlayer player, boolean immediate, @Nullable ITeamsRespawnRule.Reason reason)
+    {
         PlayerData data = PlayerData.getInstance(player);
         data.applyPendingTeamSelection();
         if (!roundRunning || data.getTeam() == null)
             return;
+        if (reason != null && data.getTeam() != Team.SPECTATORS && !mayRespawn(player, data.getTeam(), reason))
+        {
+            // Held back by an addon's rule: the player stays on their team, watching until the round ends.
+            player.setGameMode(GameType.SPECTATOR);
+            player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.respawn_denied"));
+            return;
+        }
         if (forceAdventureMode)
             player.setGameMode(data.getTeam() == Team.SPECTATORS ? GameType.SPECTATOR : GameType.ADVENTURE);
         else if (player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR && data.getTeam() != Team.SPECTATORS)
@@ -1493,6 +1513,11 @@ public final class TeamsManager
         if (immediate)
             player.setHealth(player.getMaxHealth());
         getCurrentGameType().ifPresent(type -> type.playerRespawned(this, player));
+    }
+
+    private boolean mayRespawn(ServerPlayer player, Team team, ITeamsRespawnRule.Reason reason)
+    {
+        return getLiveRound().map(round -> TeamsListeners.mayRespawn(round, player, team, reason)).orElse(true);
     }
 
     /**

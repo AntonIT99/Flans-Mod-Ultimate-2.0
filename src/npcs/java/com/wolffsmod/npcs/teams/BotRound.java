@@ -33,7 +33,11 @@ final class BotRound
     private final Map<Integer, UUID> commanders = new HashMap<>();
     /** Sides that have fielded anyone, the only ones that can be worn out. */
     private final Set<Integer> sidesThatFought = new HashSet<>();
+    /** Players who took the field in this playing; joining again later costs them a ticket. */
+    private final Set<UUID> fieldedPlayers = new HashSet<>();
+    @Setter
     private int nextSlot = 1;
+    @Setter
     private int nextSquad = 1;
     /** Whether slots made now belong to the force the round started with, whose first spawn is free. */
     @Setter

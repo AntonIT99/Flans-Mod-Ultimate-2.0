@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.ITeamsRespawnRule;
 import com.flansmodultimate.client.render.hud.KillMessageData;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.command.*;
@@ -335,7 +336,8 @@ public final class CommonEventHandler
             // A player respawning after death starts at full health, including any health the setting added
             if (!event.isEndConquered())
                 player.setHealth(player.getMaxHealth());
-            FlansMod.teamsManager.respawnPlayer(player, false);
+            // Leaving the End is no death, so respawn rules have nothing to decide then.
+            FlansMod.teamsManager.respawnPlayer(player, false, event.isEndConquered() ? null : ITeamsRespawnRule.Reason.DIED);
         }
     }
 

@@ -33,6 +33,8 @@ public final class Doctrine
     private static final double ARMOR_ATTACK_BONUS = 2D;
     /** Value lost for each squad already sent to a point, which spreads squads over the points. */
     private static final double CROWDING = 4D;
+    /** Value a point keeps for a squad already sent there, so squads do not swap between points worth about the same. */
+    private static final double STAY_BONUS = 2D;
     /** Blocks of travel that cost one point of value. */
     private static final double DISTANCE_SCALE = 64D;
     /** Blocks beyond a point's radius within which an enemy counts as closing in on it. */
@@ -51,8 +53,10 @@ public final class Doctrine
      *            its living members
      * @param carrying
      *            whether one of its members carries an enemy flag
+     * @param currentTarget
+     *            where its current task sends it, or null; a squad keeps to it unless another point is clearly worth more
      */
-    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying)
+    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget)
     {}
 
     /**
@@ -260,6 +264,8 @@ public final class Doctrine
             if (squad.posture() == SquadTemplate.Posture.DEFENSE)
                 value += POSTURE_BONUS;
         }
+        if (point.position().equals(squad.currentTarget()))
+            value += STAY_BONUS;
         return value - squad.position().distanceTo(point.position()) / DISTANCE_SCALE;
     }
 

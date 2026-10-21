@@ -6,17 +6,24 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.teams.BotOrders;
 import com.wolffsmod.npcs.teams.PlayerOrder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Orders for the bots of the player's side: the squads around the player, or every squad of the side for the player in
- * its command seat, and the orders they may get. The server checks every order and sends the screen's state back.
+ * its command seat, and the orders they may get. Squads show as a list or on a map of the battlefield, where a click picks
+ * a squad, sends it at an objective, or has it hold the place clicked. The server checks every order and sends the
+ * screen's state back; the screen asks for it again every two seconds while open.
  */
 public final class BotOrdersScreen extends Screen
 {
@@ -26,10 +33,29 @@ public final class BotOrdersScreen extends Screen
     private static final int BUTTON_WIDTH = 96;
     private static final int TOP = 40;
     private static final int GAP = 4;
+    private static final int REFRESH_TICKS = 40;
+    /** Pixels around a squad or an objective on the map within which a click picks it. */
+    private static final int PICK_RADIUS = 6;
+    /** Blocks the map shows beyond the farthest squad, objective or player. */
+    private static final double MAP_MARGIN = 24D;
+    private static final int MAP_BACKGROUND = 0xA0101010;
+    private static final int OWN_COLOUR = 0xFF55FF55;
+    private static final int ENEMY_COLOUR = 0xFFFF5555;
+    private static final int NEUTRAL_COLOUR = 0xFFFFFFFF;
+    private static final int SELECTED_COLOUR = 0xFFFFFF55;
+    private static final int MINE_COLOUR = 0xFF55FFFF;
+    private static final int PLAYER_COLOUR = 0xFFFFFFFF;
+    private static final int HELP_COLOUR = 0xA0A0A0;
 
     private BotOrdersStatePacket state;
     private int selected = BotOrders.NEARBY_SQUADS;
     private int page;
+    private boolean map;
+    private int ticks;
+    /** The corner and the scale of the world area the map shows, fitted again to every new state. */
+    private double minX;
+    private double minZ;
+    private double scale = 1D;
 
     public BotOrdersScreen(BotOrdersStatePacket state)
     {
@@ -47,23 +73,44 @@ public final class BotOrdersScreen extends Screen
     }
 
     @Override
+    public void tick()
+    {
+        if (++ticks % REFRESH_TICKS == 0)
+            send(BotOrderPacket.refresh());
+    }
+
+    @Override
     protected void init()
     {
-        int left = Math.max(GAP, width / 2 - LIST_WIDTH - GAP);
+        int left = left();
         int right = width / 2 + GAP;
         if (!state.playing())
         {
             addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose()).bounds(width / 2 - BUTTON_WIDTH / 2, height - 30, BUTTON_WIDTH, 20).build());
             return;
         }
-        addSquadList(left);
+        if (map)
+            fitMap();
+        else
+            addSquadList(left);
         addOrders(right);
+        Component view = Component.translatable(map ? "wolffsmodnpcs.orders.list" : "wolffsmodnpcs.orders.map");
+        addRenderableWidget(Button.builder(view, button ->
+        {
+            map = !map;
+            rebuildWidgets();
+        }).bounds(left, height - 30, LIST_WIDTH, 20).build());
         Component seat = Component.translatable(state.commander() ? "wolffsmodnpcs.orders.leave_command" : "wolffsmodnpcs.orders.take_command");
         BotOrderPacket.Action action = state.commander() ? BotOrderPacket.Action.LEAVE_COMMAND : BotOrderPacket.Action.TAKE_COMMAND;
-        addRenderableWidget(Button.builder(seat, button -> send(new BotOrderPacket(action, BotOrders.NEARBY_SQUADS, PlayerOrder.Kind.RELEASE, BotOrders.HERE)))
+        addRenderableWidget(Button.builder(seat, button -> send(new BotOrderPacket(action, BotOrders.NEARBY_SQUADS, PlayerOrder.Kind.RELEASE, BotOrders.HERE, null)))
             .bounds(right, height - 54, BUTTON_WIDTH * 2 + GAP, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("wolffsmodnpcs.orders.refresh"), button -> send(BotOrderPacket.refresh())).bounds(right, height - 30, BUTTON_WIDTH, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose()).bounds(right + BUTTON_WIDTH + GAP, height - 30, BUTTON_WIDTH, 20).build());
+    }
+
+    private int left()
+    {
+        return Math.max(GAP, width / 2 - LIST_WIDTH - GAP);
     }
 
     /** The squads the player may order, a page at a time, below the choice of every squad around the player. */
@@ -111,7 +158,7 @@ public final class BotOrdersScreen extends Screen
 
     private void addOrder(int right, int column, int row, PlayerOrder.Kind kind, int objective, Component label)
     {
-        addRenderableWidget(Button.builder(label, button -> send(new BotOrderPacket(BotOrderPacket.Action.ORDER, selected, kind, objective)))
+        addRenderableWidget(Button.builder(label, button -> send(new BotOrderPacket(BotOrderPacket.Action.ORDER, selected, kind, objective, null)))
             .bounds(right + column * (BUTTON_WIDTH + GAP), TOP + row * ROW_HEIGHT, BUTTON_WIDTH, 20).build());
     }
 
@@ -126,10 +173,155 @@ public final class BotOrdersScreen extends Screen
         NpcNetwork.sendToServer(packet);
     }
 
+    // --- Map ---
+
+    private int mapSize()
+    {
+        return Math.max(1, Math.min(LIST_WIDTH, height - TOP - 50));
+    }
+
+    /** Fits the squads, the objectives and the player into the square map, with a margin round them. */
+    private void fitMap()
+    {
+        double lowX = Double.POSITIVE_INFINITY;
+        double lowZ = Double.POSITIVE_INFINITY;
+        double highX = Double.NEGATIVE_INFINITY;
+        double highZ = Double.NEGATIVE_INFINITY;
+        for (Vec3 point : mapPoints())
+        {
+            lowX = Math.min(lowX, point.x);
+            lowZ = Math.min(lowZ, point.z);
+            highX = Math.max(highX, point.x);
+            highZ = Math.max(highZ, point.z);
+        }
+        if (lowX > highX)
+        {
+            lowX = 0D;
+            lowZ = 0D;
+            highX = 0D;
+            highZ = 0D;
+        }
+        double span = Math.max(highX - lowX, highZ - lowZ) + MAP_MARGIN * 2D;
+        minX = (lowX + highX - span) / 2D;
+        minZ = (lowZ + highZ - span) / 2D;
+        scale = mapSize() / span;
+    }
+
+    private List<Vec3> mapPoints()
+    {
+        List<Vec3> points = new ArrayList<>();
+        state.squads().forEach(squad -> points.add(new Vec3(squad.x(), 0D, squad.z())));
+        state.objectives().forEach(objective -> points.add(new Vec3(objective.x(), 0D, objective.z())));
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null)
+            points.add(player.position());
+        return points;
+    }
+
+    private int screenX(double x)
+    {
+        return left() + (int) ((x - minX) * scale);
+    }
+
+    private int screenY(double z)
+    {
+        return TOP + (int) ((z - minZ) * scale);
+    }
+
+    private boolean onMap(double mouseX, double mouseY)
+    {
+        int size = mapSize();
+        return map && state.playing() && mouseX >= left() && mouseX < left() + size && mouseY >= TOP && mouseY < TOP + size;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    {
+        if (super.mouseClicked(mouseX, mouseY, button))
+            return true;
+        if (!onMap(mouseX, mouseY))
+            return false;
+        BotOrdersStatePacket.Squad squad = squadAt(mouseX, mouseY);
+        if (squad != null)
+        {
+            selected = squad.id();
+            return true;
+        }
+        int objective = objectiveAt(mouseX, mouseY);
+        if (objective >= 0)
+        {
+            PlayerOrder.Kind kind = state.objectives().get(objective).ownerSide() == state.side() ? PlayerOrder.Kind.DEFEND : PlayerOrder.Kind.ATTACK;
+            send(new BotOrderPacket(BotOrderPacket.Action.ORDER, selected, kind, objective, null));
+            return true;
+        }
+        Vec3 ground = new Vec3(minX + (mouseX - left()) / scale, 0D, minZ + (mouseY - TOP) / scale);
+        send(new BotOrderPacket(BotOrderPacket.Action.ORDER, selected, PlayerOrder.Kind.HOLD, BotOrders.HERE, ground));
+        return true;
+    }
+
+    @Nullable
+    private BotOrdersStatePacket.Squad squadAt(double mouseX, double mouseY)
+    {
+        return state.squads().stream().filter(squad -> near(mouseX, mouseY, squad.x(), squad.z())).findFirst().orElse(null);
+    }
+
+    /** The objective under the mouse, by play order, or -1. */
+    private int objectiveAt(double mouseX, double mouseY)
+    {
+        List<BotOrdersStatePacket.Objective> objectives = state.objectives();
+        for (int i = 0; i < objectives.size(); i++)
+            if (near(mouseX, mouseY, objectives.get(i).x(), objectives.get(i).z()))
+                return i;
+        return -1;
+    }
+
+    private boolean near(double mouseX, double mouseY, double x, double z)
+    {
+        return Math.abs(mouseX - screenX(x)) <= PICK_RADIUS && Math.abs(mouseY - screenY(z)) <= PICK_RADIUS;
+    }
+
+    private void renderMap(GuiGraphics graphics)
+    {
+        int size = mapSize();
+        graphics.fill(left(), TOP, left() + size, TOP + size, MAP_BACKGROUND);
+        for (BotOrdersStatePacket.Objective objective : state.objectives())
+            graphics.drawCenteredString(font, String.valueOf(objective.symbol()), screenX(objective.x()), screenY(objective.z()) - 4, ownerColour(objective.ownerSide()));
+        for (BotOrdersStatePacket.Squad squad : state.squads())
+        {
+            int x = screenX(squad.x());
+            int y = screenY(squad.z());
+            graphics.fill(x - 2, y - 2, x + 3, y + 3, squadColour(squad));
+        }
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null)
+        {
+            int x = screenX(player.getX());
+            int y = screenY(player.getZ());
+            graphics.fill(x - 1, y - 1, x + 2, y + 2, PLAYER_COLOUR);
+        }
+        graphics.drawString(font, Component.translatable("wolffsmodnpcs.orders.map_help"), left(), TOP + size + 2, HELP_COLOUR);
+    }
+
+    private int ownerColour(int ownerSide)
+    {
+        if (ownerSide < 0)
+            return NEUTRAL_COLOUR;
+        return ownerSide == state.side() ? OWN_COLOUR : ENEMY_COLOUR;
+    }
+
+    private int squadColour(BotOrdersStatePacket.Squad squad)
+    {
+        if (squad.id() == selected)
+            return SELECTED_COLOUR;
+        return squad.mine() ? MINE_COLOUR : OWN_COLOUR;
+    }
+
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         renderBackground(graphics);
+        if (map && state.playing())
+            renderMap(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
         Component status;

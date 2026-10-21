@@ -1,18 +1,23 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.FlansTeams;
+import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.api.ITeamsRound;
+import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.network.BotEditorActionPacket;
 import com.wolffsmod.npcs.network.BotEditorStatePacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /** The server side of the bot editor screen, for operators. Server thread. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,6 +25,7 @@ public final class BotEditor
 {
     /** Permission level an operator needs, as for the {@code /teams ai} settings commands. */
     private static final int PERMISSION = 2;
+    private static final String PREFIX = "wolffsmodnpcs.editor.";
 
     /** Opens the editor on a round of the rotation, the round being played when the index is out of range. */
     public static void open(ServerPlayer player, int round)
@@ -39,17 +45,66 @@ public final class BotEditor
             case OPEN -> {
                 // The state is sent below.
             }
-            case SAVE_SETTINGS -> {
-                if (round == null || !round.getId().equals(packet.roundId()))
-                    player.sendSystemMessage(Component.literal("The rotation changed; the bot settings were not saved"));
-                else
-                    FlansTeams.setRoundExtensionData(round, BotSettings.KEY, BotSettings.load(packet.data()).save());
-            }
+            case SAVE_SETTINGS -> saveSettings(player, round, packet);
             case SAVE_TEMPLATE -> SquadTemplate.fromTag(packet.data()).ifPresentOrElse(SquadTemplates.get()::put,
-                () -> player.sendSystemMessage(Component.literal("A squad template needs an id of lower-case letters, digits, - and _")));
+                () -> player.sendSystemMessage(Component.translatable(PREFIX + "bad_template_id").withStyle(ChatFormatting.RED)));
             case REMOVE_TEMPLATE -> SquadTemplates.get().remove(packet.data().getString("id"));
         }
         NpcNetwork.sendTo(player, state(packet.round()));
+    }
+
+    private static void saveSettings(ServerPlayer player, @Nullable ITeamsRound round, BotEditorActionPacket packet)
+    {
+        if (round == null || !round.getId().equals(packet.roundId()))
+        {
+            player.sendSystemMessage(Component.translatable(PREFIX + "rotation_changed").withStyle(ChatFormatting.RED));
+            return;
+        }
+        BotSettings settings = BotSettings.load(packet.data());
+        FlansTeams.setRoundExtensionData(round, BotSettings.KEY, settings.save());
+        player.sendSystemMessage(Component.translatable(PREFIX + "saved"));
+        problems(round, settings).forEach(problem -> player.sendSystemMessage(problem.copy().withStyle(ChatFormatting.YELLOW)));
+    }
+
+    /**
+     * What in a round's settings will not work as written: classes, squad templates and vehicles that do not exist or that
+     * the team does not offer. Such entries are kept, since content packs or templates may still be added, but skipped.
+     */
+    public static List<Component> problems(ITeamsRound round, BotSettings settings)
+    {
+        List<Component> problems = new ArrayList<>();
+        for (ITeam team : round.getTeams())
+        {
+            BotSettings.TeamForce force = settings.getTeams().get(team.getShortName());
+            if (force == null)
+                continue;
+            String name = team.getShortName();
+            Set<String> classes = team.getClasses().stream().map(IContentType::getShortName).collect(Collectors.toSet());
+            force.getClassWeights().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
+                .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "unknown_class", name, playerClass)));
+            for (BotSettings.SquadEntry entry : force.getSquads())
+                templateProblems(name, classes, entry.template(), problems);
+            for (BotSettings.VehicleEntry entry : force.getVehicles())
+            {
+                if (FlanModelNpcs.type(entry.type()).isEmpty())
+                    problems.add(Component.translatable(PREFIX + "unknown_vehicle", name, entry.type()));
+                if (!entry.carry().isEmpty())
+                    templateProblems(name, classes, entry.carry(), problems);
+            }
+        }
+        return problems;
+    }
+
+    private static void templateProblems(String team, Set<String> classes, String id, List<Component> problems)
+    {
+        Optional<SquadTemplate> template = SquadTemplates.get().find(id);
+        if (template.isEmpty())
+        {
+            problems.add(Component.translatable(PREFIX + "unknown_template", team, id));
+            return;
+        }
+        template.get().members().stream().map(SquadTemplate.Member::playerClass).filter(playerClass -> !classes.contains(playerClass)).distinct()
+            .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "template_class", team, playerClass, id)));
     }
 
     /** The editor's view of a round, the round being played when the index is out of range. */

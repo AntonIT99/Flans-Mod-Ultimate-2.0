@@ -27,7 +27,7 @@ import java.util.random.RandomGenerator;
  * the bots appear on the scoreboard; and when the round ends, they are removed. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class TeamsBots implements ITeamsListener
+public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
 {
     private static final TeamsBots INSTANCE = new TeamsBots();
     /** Bots added to the level each tick at most, so a large force arrives over a few seconds instead of in one tick. */
@@ -41,6 +41,8 @@ public final class TeamsBots implements ITeamsListener
     private static final int LOST_TICKS = 100;
     /** Ticks before a spawn that found no spawn point is tried again. */
     private static final int RETRY_TICKS = 200;
+    /** Spawn points nearest its squad's task a soldier may appear at. */
+    private static final int NEAREST_SPAWNS = 3;
 
     @Nullable
     private BotRound round;
@@ -49,11 +51,50 @@ public final class TeamsBots implements ITeamsListener
     public static void register()
     {
         FlansTeams.addListener(INSTANCE);
+        FlansTeams.addRespawnRule(INSTANCE);
     }
 
     public static void serverTick(MinecraftServer server)
     {
+        BotMarkerDisplay.tick(server);
         INSTANCE.tick(server);
+    }
+
+    /**
+     * Players share their side's tickets with its bots, once the round limits them and lets players spend them: each
+     * respawn costs one, and so does joining again after having fought. A side out of tickets keeps its players watching.
+     */
+    @Override
+    public boolean mayRespawn(ITeamsLiveRound live, ServerPlayer player, ITeam team, Reason reason)
+    {
+        BotRound current = round;
+        if (current == null || !current.getInstance().equals(live.getInstanceId()))
+            return true;
+        boolean first = current.getFieldedPlayers().add(player.getUUID());
+        BotSettings settings = current.getSettings();
+        if (!settings.isEnabled() || !settings.isPlayerTickets() || settings.getTickets() <= 0 || first && reason == Reason.JOINED)
+            return true;
+        int side = live.getRound().getSideOf(team);
+        int left = BotPopulation.ticketsLeft(current, side);
+        if (left <= 0)
+            return false;
+        current.getTickets().put(side, left - 1);
+        current.getSidesThatFought().add(side);
+        return true;
+    }
+
+    /**
+     * Lets go of the round as the server stops. Its bots stay in the world, saved with their chunks and with the round
+     * store, to be taken back when the same playing resumes.
+     */
+    public static void serverStopping(MinecraftServer server)
+    {
+        if (INSTANCE.round != null)
+            BotRoundStore.get(server).setDirty();
+        INSTANCE.round = null;
+        BotGunners.forget();
+        BotFactions.tearDown();
+        BotMarkerDisplay.clear();
     }
 
     /** @return where a bot should go for its squad's task, or empty for an NPC that is no bot of the round or has no task */
@@ -112,6 +153,8 @@ public final class TeamsBots implements ITeamsListener
             BotPopulation.upkeep(server, current, now, random);
             BotTransports.unload(level, current, now, random);
             eliminate(server, level, current);
+            // The world saves the round as it is now, whenever it is saved next.
+            BotRoundStore.get(server).setDirty();
         }
         spawnQueued(level, current, now, random);
         BotGunners.tick(level, current);
@@ -129,9 +172,16 @@ public final class TeamsBots implements ITeamsListener
         if (round != null)
             end(server);
         BotSettings settings = BotSettings.load(live.getRound().getExtensionData(BotSettings.KEY));
-        round = new BotRound(live, settings, settings.isEnabled() ? BotFactions.setUp(live.getRound()) : Map.of());
-        // Bots left over from before a restart are replaced, so every bot belongs to a slot of this round.
-        sweep(server, round);
+        BotRound started = new BotRound(live, settings, settings.isEnabled() ? BotFactions.setUp(live.getRound()) : Map.of());
+        round = started;
+        // Players placed when the round started took the field for free; coming back later costs them a ticket.
+        for (ServerPlayer player : server.getPlayerList().getPlayers())
+            if (FlansTeams.getTeam(player).isPresent())
+                started.getFieldedPlayers().add(player.getUUID());
+        // The same playing resumed after a restart takes back the bots it had; bots of any other playing are removed.
+        ServerLevel level = server.getLevel(live.getDimension());
+        BotRoundStore.get(server).resume(started, level == null ? 0L : level.getGameTime());
+        sweep(server, started);
     }
 
     private void end(MinecraftServer server)
@@ -142,6 +192,7 @@ public final class TeamsBots implements ITeamsListener
             removeAll(server, ended);
         BotFactions.tearDown();
         BotGunners.forget();
+        BotRoundStore.get(server).forget();
         sweep(server, null);
     }
 
@@ -303,7 +354,11 @@ public final class TeamsBots implements ITeamsListener
         BotSquad squad = current.getSquads().get(slot.getSquad());
         SquadTask task = squad == null ? null : squad.getTask();
         if (task != null)
-            return positions.stream().min(Comparator.comparingDouble(position -> position.distanceToSqr(task.target()))).orElse(null);
+        {
+            // Spread over the few spawn points nearest the task, so a whole squad does not appear on one block.
+            List<Vec3> nearest = positions.stream().sorted(Comparator.comparingDouble(position -> position.distanceToSqr(task.target()))).limit(NEAREST_SPAWNS).toList();
+            return nearest.get(random.nextInt(nearest.size()));
+        }
         return positions.get(random.nextInt(positions.size()));
     }
 
@@ -319,8 +374,10 @@ public final class TeamsBots implements ITeamsListener
         if (!settings.isEnabled() || !limited(current))
             return;
         Map<Integer, Integer> players = new HashMap<>();
+        // A player held back as a spectator, out of tickets, no longer fights for the side.
         for (ServerPlayer player : server.getPlayerList().getPlayers())
-            FlansTeams.getTeam(player).ifPresent(team -> players.merge(current.getLive().getRound().getSideOf(team), 1, Integer::sum));
+            if (!player.isSpectator())
+                FlansTeams.getTeam(player).ifPresent(team -> players.merge(current.getLive().getRound().getSideOf(team), 1, Integer::sum));
         players.keySet().forEach(current.getSidesThatFought()::add);
         List<Integer> standing = new ArrayList<>();
         boolean anyOut = false;

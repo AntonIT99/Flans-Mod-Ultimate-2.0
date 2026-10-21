@@ -74,6 +74,7 @@ final class BotPopulation
             slot.setSquad(squad.getId());
         }
         retireExtra(active, target);
+        mergeLooseSquads(round, team.getShortName());
     }
 
     /** The loose infantry squad of a team that still has room, raised when none has. */
@@ -83,6 +84,41 @@ final class BotPopulation
         return round.getSquads().values().stream()
             .filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY && liveMembers(round, squad) < size).findFirst()
             .orElseGet(() -> round.newSquad(team, BotRole.INFANTRY, BotSlot.Source.INFANTRY, -1, ""));
+    }
+
+    /**
+     * Folds loose infantry squads that shrank below half their size into the team's other loose squads with room, so that
+     * players joining and bots leaving do not leave a scatter of one-man squads behind.
+     */
+    private static void mergeLooseSquads(BotRound round, String team)
+    {
+        int size = round.getSettings().getSquadSize();
+        List<BotSquad> loose = round.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY)
+            .sorted(Comparator.comparingInt(BotSquad::getId)).toList();
+        for (int from = loose.size() - 1; from > 0; from--)
+        {
+            BotSquad small = loose.get(from);
+            if (liveMembers(round, small) * 2 >= size)
+                continue;
+            for (int into = 0; into < from && liveMembers(round, small) > 0; into++)
+                moveMembers(round, small, loose.get(into), size);
+        }
+    }
+
+    /** Moves the members of one squad who are still in the force into another, as long as it has room. */
+    private static void moveMembers(BotRound round, BotSquad from, BotSquad into, int size)
+    {
+        Iterator<Integer> members = from.getSlots().iterator();
+        while (members.hasNext() && liveMembers(round, into) < size)
+        {
+            BotSlot slot = round.getSlots().get(members.next());
+            if (slot != null && !slot.isRetired())
+            {
+                members.remove();
+                into.getSlots().add(slot.getId());
+                slot.setSquad(into.getId());
+            }
+        }
     }
 
     private static long liveMembers(BotRound round, BotSquad squad)

@@ -25,6 +25,10 @@ public final class BotObjectiveGoal extends Goal
     private static final double ROUTE_REACHED = 6D;
     /** Blocks a spot may move before the route to it is planned again. */
     private static final double REPLAN_DISTANCE = 4D;
+    /** Blocks a bot has to move between two path searches to count as getting somewhere. */
+    private static final double MOVED = 0.75D;
+    /** Path searches in a row without getting anywhere after which the bot tries another way. */
+    private static final int STALLED_SEARCHES = 3;
 
     private final EntityNPCInterface npc;
     @Nullable
@@ -35,6 +39,13 @@ public final class BotObjectiveGoal extends Goal
     private int routeIndex;
     private int cooldown;
     private int repath;
+    /** Where the bot stood at the last path search, to tell whether it got anywhere since. */
+    @Nullable
+    private Vec3 lastPosition;
+    /** Path searches in a row the bot barely moved over. */
+    private int stalled;
+    /** Ways round an obstacle tried since the bot last made progress; each tries another side and farther out. */
+    private int detours;
 
     public BotObjectiveGoal(EntityNPCInterface npc)
     {
@@ -64,6 +75,9 @@ public final class BotObjectiveGoal extends Goal
     public void start()
     {
         repath = 0;
+        lastPosition = null;
+        stalled = 0;
+        detours = 0;
     }
 
     @Override
@@ -84,6 +98,13 @@ public final class BotObjectiveGoal extends Goal
         }
         routeIndex = RoutePlanner.advance(position, route, routeIndex, ROUTE_REACHED);
         Vec3 step = RoutePlanner.towards(position, route.get(routeIndex));
+        if (stuck(position))
+        {
+            // Skip a route point it cannot reach, then try round the obstacle, on alternate sides and farther out.
+            if (routeIndex < route.size() - 1)
+                routeIndex++;
+            step = RoutePlanner.detour(position, route.get(routeIndex), detours++);
+        }
         double y = step.y;
         if (!order.role().flies() && order.role() != BotRole.NAVAL)
             y = npc.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(step.x), (int) Math.floor(step.z));
@@ -96,6 +117,24 @@ public final class BotObjectiveGoal extends Goal
         npc.getNavigation().stop();
         route = List.of();
         routedTo = null;
+    }
+
+    /**
+     * Whether the bot has hardly moved over the last few path searches. Aircraft never count as stuck: they circle on
+     * their own.
+     */
+    private boolean stuck(Vec3 position)
+    {
+        boolean moved = lastPosition == null || lastPosition.distanceTo(position) >= MOVED;
+        lastPosition = position;
+        if (moved || order == null || order.role().flies())
+        {
+            stalled = 0;
+            if (moved)
+                detours = 0;
+            return false;
+        }
+        return ++stalled >= STALLED_SEARCHES;
     }
 
     /** Whether the bot is free to move: alive, not fighting and not riding. */
