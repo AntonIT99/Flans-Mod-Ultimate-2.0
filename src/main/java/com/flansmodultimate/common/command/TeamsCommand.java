@@ -849,7 +849,8 @@ public final class TeamsCommand
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
         for (ItemStack stack : List.of(new ItemStack(FlansModItems.opStick.get()), new ItemStack(FlansModItems.flagpoleItem.get(), 16), new ItemStack(FlansModItems.capturePointItem.get(), 5),
-            new ItemStack(FlansModItems.playerSpawnerItem.get(), 16), new ItemStack(FlansModItems.itemSpawnerItem.get(), 16), new ItemStack(FlansModItems.vehicleSpawnerItem.get(), 16)))
+            new ItemStack(FlansModItems.teamBannerItem.get(), 16), new ItemStack(FlansModItems.playerSpawnerItem.get(), 16), new ItemStack(FlansModItems.itemSpawnerItem.get(), 16),
+            new ItemStack(FlansModItems.vehicleSpawnerItem.get(), 16)))
             if (!player.getInventory().add(stack))
                 player.drop(stack, false);
         return success(context, "Teams operator kit added to your inventory");

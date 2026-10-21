@@ -59,6 +59,7 @@ public final class FlansModCreativeTabs
         generalItemList.add(FlansModItems.gunpowderBlockItem);
         generalItemList.add(FlansModItems.flagpoleItem);
         generalItemList.add(FlansModItems.capturePointItem);
+        generalItemList.add(FlansModItems.teamBannerItem);
         generalItemList.add(FlansModItems.playerSpawnerItem);
         generalItemList.add(FlansModItems.itemSpawnerItem);
         generalItemList.add(FlansModItems.vehicleSpawnerItem);
