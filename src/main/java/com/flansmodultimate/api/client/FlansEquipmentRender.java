@@ -6,10 +6,15 @@
 package com.flansmodultimate.api.client;
 
 import com.flansmodultimate.client.model.EquipmentAnimationSupport;
+import com.flansmodultimate.client.model.HeldItemTransforms;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 
 /** Client render support for humanoid models with a custom animation pipeline. */
 @ApiStatus.Experimental
@@ -22,6 +27,16 @@ public final class FlansEquipmentRender
     public static void applyWeaponPose(HumanoidModel<?> model, LivingEntity holder)
     {
         EquipmentAnimationSupport.weapons(model, holder);
+    }
+
+    /**
+     * Applies the saved per-hand item transform in a custom held-item layer, after positioning the hand and before drawing
+     * the item. Render thread only. Does nothing for sprites and shields. Vanilla held layers already call this: do not
+     * apply it twice. Offsets are model pixels, rotations are degrees about the local display axes; see HeldItemTransform.
+     */
+    public static void applyHeldItemTransform(PoseStack pose, LivingEntity holder, ItemStack stack, InteractionHand hand, ItemDisplayContext context)
+    {
+        HeldItemTransforms.apply(pose, holder, stack, hand, context);
     }
 
     /**

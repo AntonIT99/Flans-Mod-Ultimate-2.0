@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.properties;
 
+import com.flansmodultimate.api.HeldItemSettings;
 import com.flansmodultimate.api.IContentType;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.*;
@@ -11,6 +12,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.InteractionHand;
 
 import java.util.Optional;
 
@@ -30,6 +32,21 @@ public final class NpcPresentation
     private final NpcVehicleSounds vehicleSounds = new NpcVehicleSounds();
     private String displayModel = "";
     private boolean modelInitialized;
+    private HeldItemSettings mainHand = HeldItemSettings.DEFAULT;
+    private HeldItemSettings offHand = HeldItemSettings.DEFAULT;
+
+    public HeldItemSettings hand(InteractionHand hand)
+    {
+        return hand == InteractionHand.MAIN_HAND ? mainHand : offHand;
+    }
+
+    public void hand(InteractionHand hand, HeldItemSettings settings)
+    {
+        if (hand == InteractionHand.MAIN_HAND)
+            mainHand = settings;
+        else
+            offHand = settings;
+    }
 
     public void load(CompoundTag root)
     {
@@ -39,6 +56,8 @@ public final class NpcPresentation
         displayModel = tag.getString(DISPLAY_MODEL);
         modelInitialized = tag.contains(DISPLAY_MODEL, Tag.TAG_STRING);
         vehicleSounds.load(tag);
+        mainHand = HeldItemSettings.load(tag.getCompound("MainHand"));
+        offHand = HeldItemSettings.load(tag.getCompound("OffHand"));
     }
 
     public void save(CompoundTag root)
@@ -49,6 +68,8 @@ public final class NpcPresentation
         if (modelInitialized)
             tag.putString(DISPLAY_MODEL, displayModel);
         vehicleSounds.save(tag);
+        tag.put("MainHand", mainHand.save());
+        tag.put("OffHand", offHand.save());
         root.put(NBT_KEY, tag);
     }
 

@@ -1,9 +1,11 @@
 package com.flansmodultimate.common.raytracing;
 
+import com.flansmodultimate.api.ArmPoseRule;
 import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
+import com.flansmodultimate.common.guns.HeldItemPresentation;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
@@ -182,6 +184,9 @@ public class PlayerSnapshot
         if (swimAmount > 0F)
             animateSwimming(p, swimAmount, limbSwing, attackTime, rightArm, leftArm, rightLeg, leftLeg);
 
+        customArm(p, InteractionHand.MAIN_HAND, rightHanded ? rightArm : leftArm);
+        customArm(p, InteractionHand.OFF_HAND, rightHanded ? leftArm : rightArm);
+
         Matrix4f root = rootTransform(p, partialTick, bodyYaw, crouching, swimAmount);
 
         addBox(partTransform(root, head), -4F, -8F, -4F, 8F, 8F, 8F, EnumHitboxType.HEAD);
@@ -281,12 +286,28 @@ public class PlayerSnapshot
         return switch (gunPose)
         {
             case NONE -> vanillaPose;
+            case RELAXED -> ArmPose.EMPTY;
             case ONE_ARM -> ArmPose.ONE_AIM;
             case BOW -> ArmPose.AIM;
             case BOTH -> ArmPose.BOTH_AIM;
             case THROW -> ArmPose.THROW;
             case SUPPORT -> ArmPose.SUPPORT;
         };
+    }
+
+    private static void customArm(Player player, InteractionHand hand, Part arm)
+    {
+        ArmPoseRule rule = HeldItemPresentation.rule(player, hand);
+        if (rule.pose() == ArmPoseRule.Pose.RELAXED && GunArmPoses.classify(player.getItemInHand(hand)) != GunArmPoses.HandItem.SHIELD)
+            arm.xRot = arm.yRot = arm.zRot = 0F;
+        if (rule.pose() != ArmPoseRule.Pose.CUSTOM)
+            return;
+        if ((rule.axes() & 1) != 0)
+            arm.xRot = rule.x() * Mth.DEG_TO_RAD;
+        if ((rule.axes() & 2) != 0)
+            arm.yRot = rule.y() * Mth.DEG_TO_RAD;
+        if ((rule.axes() & 4) != 0)
+            arm.zRot = rule.z() * Mth.DEG_TO_RAD;
     }
 
     /**

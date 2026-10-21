@@ -84,6 +84,7 @@ import java.util.Optional;
 public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     implements
         IEquipmentPolicy,
+        IHeldItemPresentation,
         IFlanNpcDistance,
         IFlanSeatOccupant,
         ILivingVisualEffects,
@@ -230,6 +231,27 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public boolean flansWeaponAnimations()
     {
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.WEAPON_ANIMATIONS);
+    }
+
+    @Override
+    public boolean flansmodultimateUsePlayerAimRules()
+    {
+        return true;
+    }
+
+    @Override
+    public HeldItemSettings flansmodultimateHeldItemSettings(InteractionHand hand)
+    {
+        return NpcPresentation.of((EntityNPCInterface) (Object) this).hand(hand);
+    }
+
+    @Override
+    public void flansmodultimateHeldItemSettings(InteractionHand hand, HeldItemSettings settings)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcPresentation.of(npc).hand(hand, settings);
+        if (!level().isClientSide)
+            npc.updateClient = true;
     }
 
     @Override

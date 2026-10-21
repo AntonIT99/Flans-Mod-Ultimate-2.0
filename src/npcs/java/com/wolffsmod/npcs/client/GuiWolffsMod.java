@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
  */
 // Custom NPCs' editor requires the external GUI inheritance chain.
 @SuppressWarnings("java:S110")
-public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfieldListener
+public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfieldListener, ISliderListener
 {
     public static final int MENU_ID = 100;
     private static final int TITLE_LABEL_ID = 100;
@@ -315,7 +315,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE)),
         FLIGHT(Section.MOVEMENT, Scope.PLANES_AND_VEHICLES, Tab.of(Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED, Value.SUBMARINE_DEPTH)),
         PATHFINDING(Section.MOVEMENT, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL)),
-        ANIMATIONS(Section.LOOK, Scope.STANDARD, Tab.of(Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION)),
+        ANIMATIONS(Section.LOOK, Scope.STANDARD,
+            Tab.named("equipment_animation", Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
+            Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
         EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Feature.SHOOT_PARTICLES)),
         SOUNDS(Section.LOOK, Scope.ALL,
             Tab.named(OVERVIEW_TAB),
@@ -371,12 +373,14 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private NpcEngineSettings editingSound;
     private final CombatPages combat;
     private final SoundOverview soundOverview;
+    private final HeldItemAnimationPage heldItems;
 
     public GuiWolffsMod(EntityNPCInterface npc)
     {
         super(npc, MENU_ID);
         combat = new CombatPages(this, npc);
         soundOverview = new SoundOverview(this, npc);
+        heldItems = new HeldItemAnimationPage(this, npc);
         kind = NpcKind.of(npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
     }
@@ -525,6 +529,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private int changes(Tab shown)
     {
         int count = (int) shown.rows().stream().filter(this::changed).count();
+        count += heldItems.changes(shown.name());
         if (GENERAL_TAB.equals(shown.name()))
         {
             NpcCombatSettings settings = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
@@ -645,6 +650,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             top = TABBED_TOP;
         }
         Tab shown = tabs.get(tab);
+        if (HeldItemAnimationPage.ITEMS.equals(shown.name()) || HeldItemAnimationPage.ARMS_TAB.equals(shown.name()))
+        {
+            heldItems.init(shown.name(), loaded, top);
+            return;
+        }
         if (initSoundTab(shown, top))
             return;
         if (category == Category.ESSENTIALS)
@@ -1207,7 +1217,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void unFocused(GuiTextFieldNop field)
     {
-        if (loaded && combat.unFocused(field))
+        if (loaded && editEquipmentField(field))
         {
             changed = true;
             return;
@@ -1236,6 +1246,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         changed = true;
     }
 
+    private boolean editEquipmentField(GuiTextFieldNop field)
+    {
+        return heldItems.field(field) || combat.unFocused(field);
+    }
+
     /** @return whether the field was one of the simulation numbers or ranges */
     private boolean editNumber(GuiTextFieldNop field)
     {
@@ -1258,6 +1273,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (!loaded)
             return;
         GuiTextFieldNop.unfocus();
+        if (heldItems.handles(button.id))
+        {
+            changed |= heldItems.button(button);
+            init();
+            return;
+        }
         if (editServer(button.id, button.getValue()))
             return;
         if (navigate(button))
@@ -1467,5 +1488,26 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             combat.saved();
             changed = false;
         }
+    }
+
+    @Override
+    public void mouseDragged(GuiSliderNop slider)
+    {
+        float value = slider.sliderValue;
+        GuiTextFieldNop.unfocus();
+        slider.sliderValue = value;
+        changed |= heldItems.slider(slider);
+    }
+
+    @Override
+    public void mousePressed(GuiSliderNop slider)
+    {
+        GuiTextFieldNop.unfocus();
+    }
+
+    @Override
+    public void mouseReleased(GuiSliderNop slider)
+    {
+        changed |= heldItems.slider(slider);
     }
 }

@@ -23,6 +23,7 @@
       "ForceDarkLightMixin",
       "HumanoidArmorLayerMixin",
       "HumanoidModelMixin",
+      "ItemInHandLayerMixin",
       "KeyMappingConflictMixin",
       "LivingEntityNameTagRangeMixin",
       "MountedRiderTurnMixin",

@@ -14,6 +14,7 @@ import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.guns.GunArmPoses;
+import com.flansmodultimate.common.guns.HeldItemPresentation;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.teams.TeamsCombatants;
@@ -259,6 +260,7 @@ public final class CommonEventHandler
             // aiming would come back still aiming until they next raised the sights.
             PlayerData.getInstance(sp).setScoped(false);
             GunArmPoses.syncPlayer(sp);
+            HeldItemPresentation.sendTo(sp, sp);
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
             VehicleCollisionDebugCommand.syncOnLogin(sp);
@@ -287,6 +289,8 @@ public final class CommonEventHandler
     {
         if (!(event.getEntity() instanceof ServerPlayer tracker))
             return;
+        if (event.getTarget() instanceof LivingEntity holder)
+            HeldItemPresentation.sendTo(holder, tracker);
         if (event.getTarget() instanceof ServerPlayer target)
             GunArmPoses.sendPlayerState(target, tracker);
         else if (event.getTarget() instanceof Driveable driveable)
@@ -386,6 +390,8 @@ public final class CommonEventHandler
     {
         if (living.level().isClientSide)
             return;
+
+        HeldItemPresentation.tick(living);
 
         if (living instanceof Player || living instanceof Mob)
         {

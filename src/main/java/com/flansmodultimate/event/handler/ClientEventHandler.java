@@ -387,6 +387,7 @@ public final class ClientEventHandler
         return switch (arm)
         {
             case NONE -> null;
+            case RELAXED -> HumanoidModel.ArmPose.EMPTY;
             case ONE_ARM -> ModClient.oneArmAim;
             case BOW -> HumanoidModel.ArmPose.BOW_AND_ARROW;
             case BOTH -> ModClient.bothArmsAim;

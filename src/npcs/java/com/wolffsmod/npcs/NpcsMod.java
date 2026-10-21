@@ -4,9 +4,11 @@ import com.mojang.logging.LogUtils;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
+import com.wolffsmod.npcs.scripting.FlansScriptApi;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
@@ -30,5 +32,6 @@ public class NpcsMod
         NpcNetwork.register();
         NpcNetworkPlatform.init(modEventBus);
         TeamsBots.register();
+        modEventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(FlansScriptApi::register));
     }
 }

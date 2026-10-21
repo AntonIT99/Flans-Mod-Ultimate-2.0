@@ -29,15 +29,15 @@ public abstract class NpcEquipmentAnimationMixin
         CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) entity;
-        if (NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
-            FlansEquipmentRender.applyWeaponPose(model, npc);
-        else if (NpcEquipment.weaponAuthority(npc) && (npc.isUsingItem() || npc.currentAnimation == 6))
+        if (!NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS) && NpcEquipment.weaponAuthority(npc) && (npc.isUsingItem() || npc.currentAnimation == 6))
         {
             model.rightArm.xRot = (float) Math.cos(limbSwing * 0.6662F + Math.PI) * limbSwingAmount;
             model.leftArm.xRot = (float) Math.cos(limbSwing * 0.6662F) * limbSwingAmount;
             model.rightArm.yRot = model.leftArm.yRot = 0F;
             model.rightArm.zRot = model.leftArm.zRot = 0F;
         }
+        // Always runs: shield poses survive disabled animation, and explicit custom axes run last.
+        FlansEquipmentRender.applyWeaponPose(model, npc);
         if (model instanceof PlayerModel<?> player)
         {
             player.rightSleeve.copyFrom(model.rightArm);

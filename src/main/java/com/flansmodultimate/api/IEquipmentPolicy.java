@@ -45,10 +45,21 @@ public interface IEquipmentPolicy
         return true;
     }
 
-    /** @return whether Flan weapons may change the wearer's arm poses */
+    /** @return whether normal Flan weapon animations change arm poses; shield requirements and explicit custom axes remain active */
     default boolean flansWeaponAnimations()
     {
         return true;
+    }
+
+    /**
+     * Lets an addon-controlled non-player inherit the server's enforced player aim rule. With free player choice, the
+     * server's entity rule applies. Read on the entity's own side; false preserves the normal entity policy.
+     *
+     * @return whether this non-player follows enforced player aim rules before the entity fallback
+     */
+    default boolean flansmodultimateUsePlayerAimRules()
+    {
+        return false;
     }
 
     /**
