@@ -6,6 +6,8 @@
 package com.flansmodultimate.api;
 
 import com.flansmodultimate.common.guns.EquipmentSupport;
+import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.world.InteractionHand;
@@ -80,6 +82,19 @@ public final class FlansEquipment
     public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
     {
         return EquipmentSupport.acceptsAmmunition(weapon, ammunition);
+    }
+
+    /**
+     * @param gun
+     *            a gun definition, such as one a driveable mounts
+     * @return a new full stack of the ammunition the gun is issued with by default, or empty for another definition or a
+     *         gun with none; either side after content loading
+     */
+    public static Optional<ItemStack> createDefaultAmmunition(IContentType gun)
+    {
+        if (!(gun instanceof GunType gunType))
+            return Optional.empty();
+        return gunType.getDefaultAmmo().flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
     }
 
     /** @return a detached copy of the first usable loaded magazine, or empty; either side, without consumption */

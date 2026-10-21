@@ -8,6 +8,7 @@
       "EntityAIDodgeShootMixin",
       "EntityAIRangedAttackMixin",
       "EntityNPCInterfaceMixin",
+      "FactionMixin",
       "MarkovGeneratorMixin",
       "ModelDataMixin",
       "NpcEquipmentAttackAiMixin",

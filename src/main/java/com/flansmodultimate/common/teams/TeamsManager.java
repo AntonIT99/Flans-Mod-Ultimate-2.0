@@ -2,6 +2,7 @@ package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.TeamsScoreEntry;
 import com.flansmodultimate.api.TeamsSpawner;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
@@ -242,6 +243,8 @@ public final class TeamsManager
     /** The API view of the playing in progress, made when first asked for. */
     @Nullable
     private TeamsLiveRound liveRound;
+    /** Scoreboard rows addons show beside each team's players in the running round, by team short name. */
+    private final Map<String, List<TeamsScoreEntry>> addonScoreEntries = new HashMap<>();
 
     // The manager registers itself as the server-wide instance when it is created.
     @SuppressWarnings("java:S3010")
@@ -312,6 +315,24 @@ public final class TeamsManager
             return;
         ended.markEnded();
         TeamsListeners.roundEnded(ended, winner);
+    }
+
+    /** Sets the scoreboard rows an addon shows beside a team's players in the running round. */
+    public boolean setScoreboardEntries(Team team, List<TeamsScoreEntry> entries)
+    {
+        if (!roundRunning || getRoundTeamIndex(team) < 0)
+            return false;
+        if (entries.isEmpty())
+            addonScoreEntries.remove(team.getShortName());
+        else
+            addonScoreEntries.put(team.getShortName(), List.copyOf(entries));
+        return true;
+    }
+
+    /** The scoreboard rows addons show beside a team's players. */
+    public List<TeamsScoreEntry> getScoreboardEntries(Team team)
+    {
+        return addonScoreEntries.getOrDefault(team.getShortName(), List.of());
     }
 
     /** Saves an addon's data with a round of the rotation. */
@@ -712,6 +733,7 @@ public final class TeamsManager
         roundRunning = true;
         voteOptionIds.clear();
         resetScores();
+        addonScoreEntries.clear();
         savedData.rounds.forEach(round ->
         {
             if (round == next)
@@ -834,6 +856,7 @@ public final class TeamsManager
         intermissionPhase = IntermissionPhase.NONE;
         voteOptionIds.clear();
         resetScores();
+        addonScoreEntries.clear();
         saveRuntime();
         syncAll(PacketTeamsState.OpenScreen.CLOSE);
     }
@@ -931,12 +954,31 @@ public final class TeamsManager
         player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
     }
 
+    /** Ends the running round at once with the side of {@code winner} as the winner, as an addon decided. */
+    public boolean declareWinner(Team winner)
+    {
+        if (!roundRunning || getRoundTeamIndex(winner) < 0)
+            return false;
+        finishRound(winner);
+        return true;
+    }
+
     private void finishRound()
+    {
+        finishRound(null);
+    }
+
+    /**
+     * @param declaredWinner
+     *            the winner an addon declared, or null for the game type to decide
+     */
+    private void finishRound(@Nullable Team declaredWinner)
     {
         if (!roundRunning)
             return;
         // Decided before anything is cleaned up, while the scores and capture points still tell who won.
-        lastWinnerId = getCurrentGameType().map(type -> type.getWinner(this)).map(Team::getShortName).orElse("");
+        Team winner = declaredWinner == null ? getCurrentGameType().map(type -> type.getWinner(this)).orElse(null) : declaredWinner;
+        lastWinnerId = winner == null ? "" : winner.getShortName();
         lastRoundDecided = true;
         // Announced while the round is still set up, so listeners can read how it ended.
         announceRoundEnded(lastWinnerId.isEmpty() ? null : Team.getTeam(lastWinnerId));

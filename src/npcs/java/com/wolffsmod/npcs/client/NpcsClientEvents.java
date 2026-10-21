@@ -4,6 +4,7 @@ import com.flansmodultimate.api.client.FlansEquipmentRender;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
+import com.wolffsmod.npcs.model.NpcSkins;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,7 +21,11 @@ public final class NpcsClientEvents
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {
-        event.enqueueWork(() -> FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply));
+        event.enqueueWork(() ->
+        {
+            FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply);
+            NpcSkins.setClientResolver(NpcSkinResolver::apply);
+        });
     }
 
     @SubscribeEvent

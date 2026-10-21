@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.ToolActions;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -38,6 +40,12 @@ public final class NpcPlatform
     public static boolean canShieldBlock(ItemStack stack)
     {
         return stack.canPerformAction(ToolActions.SHIELD_BLOCK);
+    }
+
+    /** The folder of the game's configuration files. */
+    public static Path configDir()
+    {
+        return FMLPaths.CONFIGDIR.get();
     }
 
     /** The attribute that extends melee and interaction reach. */

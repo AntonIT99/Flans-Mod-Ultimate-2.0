@@ -6,10 +6,13 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelRendering;
+import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.teams.BotObjectiveGoal;
+import com.wolffsmod.npcs.teams.BotTag;
 import noppes.npcs.Resistances;
 import noppes.npcs.ai.EntityAIAttackTarget;
 import noppes.npcs.api.item.IItemStack;
@@ -65,6 +68,8 @@ import java.util.Optional;
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
+ * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
+ * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
  * </ul>
  *
@@ -104,6 +109,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private NpcTacticGoal wolffsmodnpcsTacticGoal;
     @Unique
     private NpcCombatApproachGoal wolffsmodnpcsApproachGoal;
+    @Unique
+    private BotObjectiveGoal wolffsmodnpcsObjectiveGoal;
     @Unique
     private final NpcTacticState wolffsmodnpcsTacticState = new NpcTacticState();
     @Unique
@@ -257,12 +264,17 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
         if (wolffsmodnpcsTacticGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsTacticGoal);
+        if (wolffsmodnpcsObjectiveGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsObjectiveGoal);
         if (wolffsmodnpcsApproachGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
         wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
         wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
+        // Only a Teams bot uses it: it carries the bot to its squad's task while the bot has nobody to fight.
+        wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
+        goalSelector.addGoal(3, wolffsmodnpcsObjectiveGoal);
         wolffsmodnpcsApproachGoal = null;
         goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal() instanceof EntityAIAttackTarget).mapToInt(WrappedGoal::getPriority).findFirst().ifPresent(priority ->
         {
@@ -562,6 +574,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         callback.getReturnValue().put(WOLFFSMODNPCS_TYPE_DEFAULTS, NpcTypeProperties.of(npc).syncDefaults(npc));
+        BotTag.writeClient(npc, callback.getReturnValue());
     }
 
     @ModifyVariable(method = "readSpawnData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("HEAD"), argsOnly = true)
@@ -574,8 +587,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsReadTypeDefaults(CompoundTag tag, CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        if (npc.level().isClientSide && tag.contains(WOLFFSMODNPCS_TYPE_DEFAULTS))
+        if (!npc.level().isClientSide)
+            return;
+        if (tag.contains(WOLFFSMODNPCS_TYPE_DEFAULTS))
             NpcTypeProperties.of(npc).readSyncedDefaults(npc, tag.getCompound(WOLFFSMODNPCS_TYPE_DEFAULTS));
+        BotTag.readClient(npc, tag);
+        NpcSkins.resolveOnClient(npc);
     }
 
     // Vehicle simulation

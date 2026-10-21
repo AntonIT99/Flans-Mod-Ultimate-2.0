@@ -1,0 +1,203 @@
+package com.wolffsmod.npcs.teams;
+
+import com.flansmodultimate.api.*;
+import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.model.FlanModelEntityType;
+import com.wolffsmod.npcs.model.FlanModelNpcs;
+import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.names.SoldierNames;
+import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
+import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import noppes.npcs.CustomEntities;
+import noppes.npcs.api.NpcAPI;
+import noppes.npcs.api.entity.IEntity;
+import noppes.npcs.entity.EntityCustomNpc;
+import noppes.npcs.entity.EntityNPCInterface;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.*;
+import java.util.random.RandomGenerator;
+
+/**
+ * Makes the NPC of a bot slot: a soldier with a Flan class's loadout, made plain or from the team's Custom NPCs clone, or
+ * a vehicle, plane, mecha or AA gun wearing its definition's model. Either way the NPC joins the team's faction and the
+ * round as a combatant, never respawns by Custom NPCs' own rules, and is marked as a bot. Server thread.
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class BotFactory
+{
+    /** Custom NPCs' respawn setting for an NPC that stays dead. */
+    private static final int NEVER_RESPAWN = 3;
+    /** Custom NPCs' movement setting for an NPC that stands where it is when idle. */
+    private static final int STANDING = 0;
+    private static final int SHOW_NAME = 0;
+    private static final int HIDE_NAME = 1;
+    private static final double SPREAD = 1.5D;
+
+    /** What a bot is made with. */
+    public record Order(BotSlot slot, ITeam team, int factionId, BotSettings settings, BotSettings.TeamForce force, UUID instance, Vec3 position, @Nullable String nameList)
+    {}
+
+    /** @return the new soldier, already in the level, or empty when the team offers no class */
+    public static Optional<EntityNPCInterface> soldier(ServerLevel level, Order order, RandomGenerator random)
+    {
+        IPlayerClass playerClass = order.team().getClasses().stream().filter(candidate -> candidate.getShortName().equals(order.slot().getRole())).findFirst().map(IPlayerClass.class::cast)
+            .orElse(null);
+        if (playerClass == null)
+            return Optional.empty();
+        Vec3 position = order.position().add((random.nextDouble() * 2D - 1D) * SPREAD, 0D, (random.nextDouble() * 2D - 1D) * SPREAD);
+        EntityNPCInterface npc = fromClone(level, order.force(), position).orElse(null);
+        boolean added = npc != null;
+        if (npc == null)
+        {
+            EntityCustomNpc plain = new EntityCustomNpc(CustomEntities.entityCustomNpc, level);
+            plain.moveTo(position.x, position.y, position.z, random.nextFloat() * 360F, 0F);
+            npc = plain;
+        }
+        FlanSoldierSelection selection = new FlanSoldierSelection(order.team(), playerClass);
+        FlanSoldierLoadout.apply(npc, selection);
+        // Only clients know the class skin and whether it needs the 64x32 model, so each client puts it on.
+        if (npc instanceof EntityCustomNpc custom && !order.force().usesClone() && !playerClass.getSkinOverrideVariants().isEmpty())
+        {
+            selection.write(custom.modelData.extra);
+            NpcSkins.markClassSkin(custom);
+        }
+        name(npc, order, random);
+        join(npc, order, position, false);
+        if (!added)
+            level.addFreshEntity(npc);
+        npc.setHealth(npc.getMaxHealth());
+        return Optional.of(npc);
+    }
+
+    /** @return the new vehicle NPC, already in the level, or empty when the definition has no NPC model */
+    public static Optional<EntityNPCInterface> vehicle(ServerLevel level, Order order, float yaw, RandomGenerator random)
+    {
+        Optional<FlanModelEntityType> type = FlanModelNpcs.type(order.slot().getRole());
+        Optional<EntityCustomNpc> spawned = FlanModelNpcs.spawn(level, order.slot().getRole(), order.position(), yaw);
+        if (type.isEmpty() || spawned.isEmpty())
+            return Optional.empty();
+        EntityCustomNpc npc = spawned.get();
+        IContentType definition = type.get().getInfoType();
+        BotRole role = BotRole.of(type.get().getKind(), definition);
+        NpcTuning tuning = NpcTuning.of(npc);
+        switch (role)
+        {
+            case PLANE -> tuning.set(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE.ordinal());
+            case HELICOPTER -> tuning.set(Value.FLIGHT_TYPE, NpcTuning.Flight.HELICOPTER.ordinal());
+            case NAVAL -> tuning.set(Value.TERRAIN, NpcTuning.Terrain.WATERCRAFT.ordinal());
+            case ARMOR -> tuning.set(Value.TERRAIN, NpcTuning.Terrain.GROUND.ordinal());
+            default -> {
+                // AA guns stay where they are placed and need no movement profile.
+            }
+        }
+        Tactic tactic = switch (role)
+        {
+            case ARMOR -> Tactic.ADVANCE;
+            case PLANE -> Tactic.STRAFING_RUN;
+            case HELICOPTER -> Tactic.STRAFE;
+            case AA -> Tactic.HOLD;
+            default -> Tactic.CUSTOM_NPCS;
+        };
+        tuning.set(Value.TACTIC, tactic.ordinal());
+        if (definition != null)
+            FlansEntityTypes.getMounts(definition).stream().flatMap(mount -> mount.gun().stream()).findFirst().flatMap(FlansEquipment::createDefaultAmmunition)
+                .ifPresent(ammunition -> npc.inventory.setProjectile(NpcAPI.Instance().getIItemStack(ammunition)));
+        String crew = crewName(order, random);
+        npc.display.setName(crew.isEmpty() ? npc.display.getName() : crew);
+        join(npc, order, order.position(), true);
+        npc.setHealth(npc.getMaxHealth());
+        return Optional.of(npc);
+    }
+
+    /** Places the team's clone, when it has one that exists. */
+    private static Optional<EntityNPCInterface> fromClone(ServerLevel level, BotSettings.TeamForce force, Vec3 position)
+    {
+        if (!force.usesClone())
+            return Optional.empty();
+        try
+        {
+            IEntity<?> spawned = NpcAPI.Instance().getClones().spawn(position.x, position.y, position.z, force.getCloneTab(), force.getCloneName(), NpcAPI.Instance().getIWorld(level));
+            if (spawned != null && spawned.getMCEntity() instanceof EntityNPCInterface npc)
+                return Optional.of(npc);
+        }
+        // Custom NPCs throws for a clone that does not exist; the bot is then made plain.
+        catch (RuntimeException e)
+        {
+            NpcsMod.log.warn("Cannot spawn clone {} of tab {} for a Teams bot: {}", force.getCloneName(), force.getCloneTab(), e.getMessage());
+        }
+        return Optional.empty();
+    }
+
+    private static void name(EntityNPCInterface npc, Order order, RandomGenerator random)
+    {
+        if (!order.slot().getName().isEmpty())
+        {
+            npc.display.setName(order.slot().getName());
+            return;
+        }
+        String name = generate(order.nameList(), random);
+        if (name.isEmpty())
+            name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
+        order.slot().setName(name);
+        npc.display.setName(name);
+    }
+
+    private static String crewName(Order order, RandomGenerator random)
+    {
+        if (order.slot().getName().isEmpty())
+            order.slot().setName(generate(order.nameList(), random));
+        return order.slot().getName();
+    }
+
+    /** A name from a soldier name list, or empty for a list that does not exist. */
+    static String generate(@Nullable String nameList, RandomGenerator random)
+    {
+        if (nameList == null || nameList.isEmpty())
+            return "";
+        int index = SoldierNames.ids().indexOf(nameList);
+        if (index < 0)
+            return "";
+        // An eighth of the bots get female names, where the list has them.
+        int gender = random.nextInt(8) == 0 ? 1 : 0;
+        return SoldierNames.generate(SoldierNames.FIRST_ID + index, gender);
+    }
+
+    /** Makes the NPC a bot of the round: its faction, name tag, staying dead, standing when idle, its mark and its team. */
+    private static void join(EntityNPCInterface npc, Order order, Vec3 position, boolean vehicle)
+    {
+        BotSettings settings = order.settings();
+        switch (settings.getNameplates())
+        {
+            case ALWAYS, ALLIES -> npc.display.setShowName(SHOW_NAME);
+            case NEVER -> npc.display.setShowName(HIDE_NAME);
+            default -> {
+                // Each NPC keeps its own setting.
+            }
+        }
+        npc.setFaction(order.factionId());
+        npc.stats.spawnCycle = NEVER_RESPAWN;
+        npc.ais.returnToStart = false;
+        npc.ais.movementType = STANDING;
+        npc.ais.setStartPos(BlockPos.containing(position));
+        // Battles away from players carry on, as long as a player is within the NPC's active range.
+        ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);
+        BotTag.write(npc, new BotTag.Data(order.instance(), order.slot().getId(), order.team().getShortName(), vehicle, settings.getNameplates()));
+        float weight = vehicle ? settings.getVehicleCaptureWeight() : settings.getInfantryCaptureWeight();
+        if (!FlansTeams.assignCombatant(npc, order.team(), weight))
+            NpcsMod.log.warn("Teams bot {} could not join team {}", npc.getUUID(), order.team().getShortName());
+        npc.updateClient = true;
+        npc.updateAI = true;
+    }
+}

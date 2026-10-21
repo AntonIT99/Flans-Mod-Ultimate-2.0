@@ -242,7 +242,8 @@ public final class FlanSoldierBrowser
         NpcNetwork.sendToServer(ApplyLoadoutPacket.of(screen.npc.getId(), selection));
     }
 
-    private static SkinLayout layout(@Nullable ResourceLocation skin)
+    /** The layout of a skin image, read from the client's resources. */
+    static SkinLayout layout(@Nullable ResourceLocation skin)
     {
         if (skin == null || skin.getPath().isEmpty())
             return SkinLayout.NONE;

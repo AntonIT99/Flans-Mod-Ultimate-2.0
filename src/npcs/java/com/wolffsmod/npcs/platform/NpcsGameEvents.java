@@ -7,6 +7,8 @@ import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.sim.NpcActivity;
+import com.wolffsmod.npcs.teams.BotCommands;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -51,6 +53,7 @@ public final class NpcsGameEvents
         }
         ServerBenchmark.serverTickEnd(event.getServer());
         NpcServerSettings.serverTick(event.getServer());
+        TeamsBots.serverTick(event.getServer());
     }
 
     @SubscribeEvent
@@ -64,5 +67,6 @@ public final class NpcsGameEvents
     {
         NpcDistanceCommands.register(event.getDispatcher());
         NpcBenchmarkCommands.register(event.getDispatcher());
+        BotCommands.register(event.getDispatcher());
     }
 }

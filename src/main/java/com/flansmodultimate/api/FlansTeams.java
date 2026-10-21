@@ -150,6 +150,36 @@ public final class FlansTeams
     }
 
     /**
+     * Ends the round being played at once, with the side of {@code winner} as the winner, as when a game type decides
+     * it: the end-of-round event, scores and the break that follows all run as usual. For rules an addon adds, such as
+     * a side running out of reinforcements it manages.
+     *
+     * @param winner
+     *            a team of the running round; its allies win with it
+     * @return whether a round was running with that team and has now ended
+     */
+    public static boolean declareWinner(ITeam winner)
+    {
+        return winner instanceof Team internal && manager().map(manager -> manager.declareWinner(internal)).orElse(false);
+    }
+
+    /**
+     * Sets the rows an addon shows for a team on the scoreboard of the round being played, beside the team's players.
+     * They replace the rows set before and are dropped when the round ends. Clients receive them with the next
+     * scoreboard update, every two seconds.
+     *
+     * @param team
+     *            a team of the running round
+     * @param entries
+     *            the rows, copied; empty removes them
+     * @return whether a round was running with that team
+     */
+    public static boolean setScoreboardEntries(ITeam team, List<TeamsScoreEntry> entries)
+    {
+        return team instanceof Team internal && manager().map(manager -> manager.setScoreboardEntries(internal, entries)).orElse(false);
+    }
+
+    /**
      * Registers a listener for Teams events. Registering the same listener twice has no effect.
      */
     public static void addListener(ITeamsListener listener)
