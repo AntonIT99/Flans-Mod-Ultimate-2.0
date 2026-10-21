@@ -107,4 +107,46 @@ class BotSettingsTest
         assertEquals(BotSettings.Difficulty.DEFAULT, loaded.getDifficulty());
         assertTrue(loaded.isPlayerTickets());
     }
+
+    @Test
+    void rulesAndClassRolesSurviveSavingAndLoading()
+    {
+        BotSettings settings = new BotSettings();
+        settings.setRadio(false);
+        settings.setSuppression(false);
+        settings.setRallyPoints(false);
+        settings.setRetreatHealth(45);
+        settings.team("Germans").getClassRoles().put("sani", BotSettings.ClassRole.MEDIC);
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertFalse(loaded.isRadio());
+        assertFalse(loaded.isSuppression());
+        assertFalse(loaded.isRallyPoints());
+        assertEquals(45, loaded.getRetreatHealth());
+        assertEquals(BotSettings.ClassRole.MEDIC, loaded.team("Germans").getClassRoles().get("sani"));
+    }
+
+    @Test
+    void presetsCarryForcesOverByTeamNameThenByPlace()
+    {
+        BotSettings settings = new BotSettings();
+        settings.team("ger").setCount(12);
+        settings.team("us").setCount(20);
+        BotSettings same = BotPresets.carryOver(settings.save(), List.of("ger", "us"), List.of("us", "ger"));
+        assertEquals(20, same.team("us").getCount(), "a team the rounds share keeps its own force");
+        assertEquals(12, same.team("ger").getCount());
+        BotSettings other = BotPresets.carryOver(settings.save(), List.of("ger", "us"), List.of("ita", "uk"));
+        assertEquals(12, other.team("ita").getCount(), "other teams take the force in their place in round order");
+        assertEquals(20, other.team("uk").getCount());
+        assertFalse(other.getTeams().containsKey("ger"));
+    }
+
+    @Test
+    void theMostSpecialisedRoleAKitAllowsWins()
+    {
+        assertEquals(BotSettings.ClassRole.MEDIC, BotRoles.role(true, true, true, true));
+        assertEquals(BotSettings.ClassRole.ENGINEER, BotRoles.role(false, true, true, true));
+        assertEquals(BotSettings.ClassRole.ANTI_TANK, BotRoles.role(false, false, true, true));
+        assertEquals(BotSettings.ClassRole.SUPPORT, BotRoles.role(false, false, false, true));
+        assertEquals(BotSettings.ClassRole.RIFLEMAN, BotRoles.role(false, false, false, false));
+    }
 }

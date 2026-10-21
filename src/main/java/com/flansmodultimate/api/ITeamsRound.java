@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 /**
@@ -79,6 +80,13 @@ public interface ITeamsRound
      * @return the score a side needs to win, or the reinforcements of the attackers in Assault
      */
     int getScoreLimit();
+
+    /**
+     * @return the side, as sides are numbered here, that attacks in a Domination or Conquest round played attacker against
+     *         defender: only it takes capture points, and the defenders cannot take back a point once lost; empty for a
+     *         round every side captures in. Assault has attackers of its own, see {@link ITeamsLiveRound#getAttackingSide}.
+     */
+    OptionalInt getAttackingSide();
 
     /**
      * Reads data an addon saved with this entry under its own key, such as the settings of its own features for the

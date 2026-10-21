@@ -60,6 +60,9 @@ public final class BotCommands
     private static final String MEMBERS = "members";
     private static final String POSTURE = "posture";
     private static final String POINT = "point";
+    private static final String SOURCE = "source";
+    private static final String REMOVE = "remove";
+    private static final String ROLE = "role";
     private static final String PREFIX = "wolffsmodnpcs.command.";
     private static final String SET = "set";
     /** Blocks within which a marker is removed. */
@@ -69,6 +72,9 @@ public final class BotCommands
     private static final SimpleCommandExceptionType NO_TEMPLATE = new SimpleCommandExceptionType(text("no_template"));
     private static final SimpleCommandExceptionType NO_VEHICLE = new SimpleCommandExceptionType(text("no_vehicle"));
     private static final SimpleCommandExceptionType NOT_A_PLAYER = new SimpleCommandExceptionType(text("not_a_player"));
+    private static final SimpleCommandExceptionType NO_PRESET = new SimpleCommandExceptionType(text("preset.unknown"));
+    private static final SimpleCommandExceptionType BAD_PRESET_NAME = new SimpleCommandExceptionType(text("preset.bad_name"));
+    private static final SimpleCommandExceptionType NO_ROLE = new SimpleCommandExceptionType(text("unknown_role"));
 
     private static final SuggestionProvider<CommandSourceStack> ROUNDS = (context, builder) ->
     {
@@ -94,6 +100,9 @@ public final class BotCommands
         builder);
     private static final SuggestionProvider<CommandSourceStack> POINTS = (context, builder) -> SharedSuggestionProvider
         .suggest(FlansTeams.getRunningRound().map(live -> live.getCapturePoints().stream().map(point -> String.valueOf(point.symbol())).toList()).orElse(List.of()), builder);
+    private static final SuggestionProvider<CommandSourceStack> PRESETS = (context, builder) -> SharedSuggestionProvider.suggest(BotPresets.get().names(), builder);
+    private static final SuggestionProvider<CommandSourceStack> ROLES = (context, builder) -> SharedSuggestionProvider
+        .suggest(Arrays.stream(BotSettings.ClassRole.values()).map(BotCommands::lower).toList(), builder);
     private static final SuggestionProvider<CommandSourceStack> MAPS = (context, builder) -> SharedSuggestionProvider
         .suggest(FlansTeams.getRounds().stream().map(ITeamsRound::getMapId).distinct().toList(), builder);
 
@@ -103,6 +112,13 @@ public final class BotCommands
         ai.then(Commands.literal("board").executes(context -> order(context, true)));
         ai.then(Commands.literal("dismount").executes(context -> order(context, false)));
         ai.then(orders());
+        ai.then(Commands.literal("squad").then(Commands.literal("lead").executes(context -> tell(context, BotLeaders.lead(context.getSource().getPlayerOrException(), BotOrders.NEARBY_SQUADS))))
+            .then(Commands.literal("leave").executes(context -> tell(context, BotLeaders.leave(context.getSource().getPlayerOrException())))));
+        ai.then(Commands.literal("rally").executes(context -> tell(context, BotLeaders.rally(context.getSource().getPlayerOrException()))));
+        LiteralArgumentBuilder<CommandSourceStack> spawn = Commands.literal("spawn");
+        for (BotLeaders.SpawnChoice choice : BotLeaders.SpawnChoice.values())
+            spawn.then(Commands.literal(lower(choice)).executes(context -> tell(context, BotLeaders.chooseSpawn(context.getSource().getPlayerOrException(), choice))));
+        ai.then(spawn);
         ai.then(Commands.literal("commander").then(Commands.literal("take").executes(context -> command(context, true))).then(Commands.literal("leave").executes(context -> command(context, false))));
         ai.then(Commands.literal("editor").requires(source -> source.hasPermission(2)).executes(context -> editor(context, -1))
             .then(Commands.argument(ROUND, IntegerArgumentType.integer(0)).executes(context -> editor(context, IntegerArgumentType.getInteger(context, ROUND)))));
@@ -115,6 +131,7 @@ public final class BotCommands
         }));
         ai.then(Commands.literal(ROUND).requires(source -> source.hasPermission(2)).then(roundSettings()));
         ai.then(templates());
+        ai.then(presets());
         ai.then(Commands.literal("marker").requires(source -> source.hasPermission(2)).then(markers()));
         dispatcher.register(Commands.literal("teams").then(ai));
     }
@@ -131,7 +148,12 @@ public final class BotCommands
         round.then(enumSetting("nameplates", BotSettings.Nameplates.class, BotSettings::setNameplates));
         round.then(enumSetting("scoreboard", BotSettings.Scoreboard.class, BotSettings::setScoreboard));
         round.then(enumSetting("difficulty", BotSettings.Difficulty.class, BotSettings::setDifficulty));
-        round.then(playerTickets());
+        round.then(switchSetting("playertickets", BotSettings::setPlayerTickets));
+        round.then(switchSetting("radio", BotSettings::setRadio));
+        round.then(switchSetting("suppression", BotSettings::setSuppression));
+        round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
+        round.then(intSetting("retreat", 0, BotSettings::setRetreatHealth));
+        round.then(Commands.literal("copyfrom").then(Commands.argument(SOURCE, StringArgumentType.word()).suggests(ROUNDS).executes(BotCommands::copyFrom)));
         round.then(intSetting("total", 0, BotSettings::setTotal));
         round.then(intSetting(RESPAWN, 0, BotSettings::setRespawnSeconds));
         round.then(intSetting("tickets", 0, BotSettings::setTickets));
@@ -166,6 +188,11 @@ public final class BotCommands
             }, text("clone", StringArgumentType.getString(context, NAME)))))));
         team.then(Commands.literal("keepequipment").then(Commands.literal("on").executes(context -> editTeam(context, force -> force.setKeepCloneEquipment(true), text("keep_equipment_on"))))
             .then(Commands.literal("off").executes(context -> editTeam(context, force -> force.setKeepCloneEquipment(false), text("keep_equipment_off")))));
+        team.then(Commands.literal("role")
+            .then(Commands.argument(CLASS, StringArgumentType.word()).suggests(CLASSES)
+                .then(Commands.literal("auto").executes(
+                    context -> editTeam(context, force -> force.getClassRoles().remove(StringArgumentType.getString(context, CLASS)), text("role_auto", StringArgumentType.getString(context, CLASS)))))
+                .then(Commands.argument(ROLE, StringArgumentType.word()).suggests(ROLES).executes(BotCommands::role))));
         team.then(Commands.literal(CLASS)
             .then(Commands.argument(CLASS, StringArgumentType.word()).suggests(CLASSES)
                 .then(Commands.argument(VALUE, IntegerArgumentType.integer(0))
@@ -199,17 +226,84 @@ public final class BotCommands
         return node;
     }
 
-    private static LiteralArgumentBuilder<CommandSourceStack> playerTickets()
+    private static LiteralArgumentBuilder<CommandSourceStack> switchSetting(String name, BiConsumer<BotSettings, Boolean> setter)
     {
-        String name = "playertickets";
-        return Commands.literal(name).then(Commands.literal("on").executes(context -> edit(context, settings -> settings.setPlayerTickets(true), text(SET, name, onOff(true)))))
-            .then(Commands.literal("off").executes(context -> edit(context, settings -> settings.setPlayerTickets(false), text(SET, name, onOff(false)))));
+        return Commands.literal(name).then(Commands.literal("on").executes(context -> edit(context, settings -> setter.accept(settings, true), text(SET, name, onOff(true)))))
+            .then(Commands.literal("off").executes(context -> edit(context, settings -> setter.accept(settings, false), text(SET, name, onOff(false)))));
+    }
+
+    /** Copies another round's bot settings over this one's, team by team, as presets carry them over. */
+    // A command reports how many rounds it changed, which is always one here.
+    @SuppressWarnings("SameReturnValue")
+    private static int copyFrom(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        ITeamsRound target = round(context);
+        ITeamsRound source = roundNamed(StringArgumentType.getString(context, SOURCE)).orElseThrow(NO_ROUND::create);
+        BotSettings copied = BotPresets.carryOver(source.getExtensionData(BotSettings.KEY), teams(source), teams(target));
+        FlansTeams.setRoundExtensionData(target, BotSettings.KEY, copied.save());
+        context.getSource().sendSuccess(() -> text("copied", source.getGameTypeId() + " @ " + source.getMapId()), true);
+        return 1;
+    }
+
+    private static List<String> teams(ITeamsRound round)
+    {
+        return round.getTeams().stream().map(ITeam::getShortName).toList();
+    }
+
+    // --- Presets ---
+
+    private static LiteralArgumentBuilder<CommandSourceStack> presets()
+    {
+        LiteralArgumentBuilder<CommandSourceStack> presets = Commands.literal("preset").requires(source -> source.hasPermission(2));
+        presets.then(Commands.literal("list").executes(context ->
+        {
+            Collection<String> names = BotPresets.get().names();
+            context.getSource().sendSuccess(() -> names.isEmpty() ? text("preset.none") : text("preset.list", String.join(", ", names)), false);
+            return names.size();
+        }));
+        presets.then(Commands.literal("save").then(Commands.argument(NAME, StringArgumentType.word()).then(Commands.argument(ROUND, StringArgumentType.word()).suggests(ROUNDS).executes(context ->
+        {
+            String name = StringArgumentType.getString(context, NAME).toLowerCase(Locale.ROOT);
+            if (BotPresets.invalidName(name))
+                throw BAD_PRESET_NAME.create();
+            ITeamsRound round = round(context);
+            BotPresets.get().put(new BotPresets.Preset(name, teams(round), round.getExtensionData(BotSettings.KEY)));
+            context.getSource().sendSuccess(() -> text("preset.saved", name), true);
+            return 1;
+        }))));
+        presets.then(Commands.literal("apply")
+            .then(Commands.argument(NAME, StringArgumentType.word()).suggests(PRESETS).then(Commands.literal("all").executes(context -> applyPreset(context, FlansTeams.getRounds())))
+                .then(Commands.argument(ROUND, StringArgumentType.word()).suggests(ROUNDS).executes(context -> applyPreset(context, List.of(round(context)))))));
+        presets.then(Commands.literal(REMOVE).then(Commands.argument(NAME, StringArgumentType.word()).suggests(PRESETS).executes(context ->
+        {
+            if (!BotPresets.get().remove(StringArgumentType.getString(context, NAME)))
+                throw NO_PRESET.create();
+            context.getSource().sendSuccess(() -> text("preset.removed"), true);
+            return 1;
+        })));
+        return presets;
+    }
+
+    private static int applyPreset(CommandContext<CommandSourceStack> context, List<ITeamsRound> rounds) throws CommandSyntaxException
+    {
+        BotPresets.Preset preset = BotPresets.get().find(StringArgumentType.getString(context, NAME)).orElseThrow(NO_PRESET::create);
+        for (ITeamsRound round : rounds)
+            FlansTeams.setRoundExtensionData(round, BotSettings.KEY, BotPresets.carryOver(preset.settings(), preset.teams(), teams(round)).save());
+        context.getSource().sendSuccess(() -> text("preset.applied", preset.name(), rounds.size()), true);
+        return rounds.size();
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> intSetting(String name, int minimum, ObjIntConsumer<BotSettings> setter)
     {
         return Commands.literal(name).then(Commands.argument(VALUE, IntegerArgumentType.integer(minimum))
             .executes(context -> edit(context, settings -> setter.accept(settings, IntegerArgumentType.getInteger(context, VALUE)), text(SET, name, IntegerArgumentType.getInteger(context, VALUE)))));
+    }
+
+    private static int role(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        String playerClass = StringArgumentType.getString(context, CLASS);
+        BotSettings.ClassRole role = BotSettingsText.role(StringArgumentType.getString(context, ROLE)).orElseThrow(NO_ROLE::create);
+        return editTeam(context, force -> force.getClassRoles().put(playerClass, role), text("role_set", playerClass, lower(role)));
     }
 
     private static int squad(CommandContext<CommandSourceStack> context, int budget) throws CommandSyntaxException
@@ -307,7 +401,12 @@ public final class BotCommands
 
     private static Optional<ITeamsRound> roundOrEmpty(CommandContext<CommandSourceStack> context)
     {
-        String scope = StringArgumentType.getString(context, ROUND);
+        return roundNamed(StringArgumentType.getString(context, ROUND));
+    }
+
+    /** A round by {@code current} or by its index in the rotation. */
+    private static Optional<ITeamsRound> roundNamed(String scope)
+    {
         if (CURRENT.equalsIgnoreCase(scope))
             return FlansTeams.getRunningRound().map(ITeamsLiveRound::getRound);
         try
@@ -332,6 +431,7 @@ public final class BotCommands
             settings.getRespawnSeconds(), tickets, settings.getSquadSize()));
         lines.add(text("show.look", lower(settings.getNameplates()), lower(settings.getScoreboard()), settings.getInfantryCaptureWeight(), settings.getVehicleCaptureWeight(),
             lower(settings.getDifficulty()), onOff(settings.isPlayerTickets())));
+        lines.add(text("show.rules", onOff(settings.isRadio()), onOff(settings.isSuppression()), settings.getRetreatHealth(), onOff(settings.isRallyPoints())));
         for (ITeam team : round.getTeams())
             lines.addAll(describe(team, settings.team(team.getShortName())));
         BotEditor.problems(round, settings).forEach(problem -> lines.add(problem.copy().withStyle(ChatFormatting.YELLOW)));
@@ -348,6 +448,8 @@ public final class BotCommands
         Component clone = force.usesClone() ? text(cloneKey, force.getCloneTab(), force.getCloneName()) : Component.empty();
         Component classes = force.getClassWeights().isEmpty() ? text("show.all_classes") : Component.literal(force.getClassWeights().toString());
         lines.add(text("show.team", team.getShortName(), force.getCount(), budget(force.getBudget()), names, clone, classes));
+        if (!force.getClassRoles().isEmpty())
+            lines.add(text("show.roles", BotSettingsText.formatRoles(force.getClassRoles())));
         force.getSquads().forEach(entry -> lines.add(text("show.squad", entry.template(), entry.count(), budget(entry.budget()))));
         for (BotSettings.VehicleEntry entry : force.getVehicles())
         {
@@ -495,7 +597,7 @@ public final class BotCommands
                         template -> template.withPosture(BotSettings.parse(SquadTemplate.Posture.class, StringArgumentType.getString(context, POSTURE), SquadTemplate.Posture.BALANCED)))))));
         root.then(Commands.literal(NAMES).then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES)
             .then(Commands.argument(NAME, StringArgumentType.word()).suggests(NAME_LISTS).executes(context -> editTemplate(context, template -> template.withNameList(word(context, NAME)))))));
-        root.then(Commands.literal("remove").then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES).executes(context ->
+        root.then(Commands.literal(REMOVE).then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES).executes(context ->
         {
             boolean removed = SquadTemplates.get().remove(StringArgumentType.getString(context, TEMPLATE));
             if (!removed)
@@ -532,7 +634,7 @@ public final class BotCommands
                 return 1;
             }));
         map.then(add);
-        map.then(Commands.literal("remove").executes(context ->
+        map.then(Commands.literal(REMOVE).executes(context ->
         {
             Optional<BotMarkers.Marker> removed = BotMarkers.get(context.getSource().getServer()).removeNearest(StringArgumentType.getString(context, MAP), context.getSource().getPosition(),
                 MARKER_REACH);
@@ -562,6 +664,14 @@ public final class BotCommands
             return count;
         }));
         return map;
+    }
+
+    // A command reports one action done, which is always one here; failures are told in the message.
+    @SuppressWarnings("SameReturnValue")
+    private static int tell(CommandContext<CommandSourceStack> context, Component message)
+    {
+        context.getSource().sendSuccess(() -> message, false);
+        return 1;
     }
 
     private static Component text(String key, Object... args)

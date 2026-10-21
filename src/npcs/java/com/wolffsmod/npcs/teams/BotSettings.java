@@ -37,6 +37,10 @@ public final class BotSettings
     private static final String NBT_RUBBER_BAND = "rubber_band";
     private static final String NBT_DIFFICULTY = "difficulty";
     private static final String NBT_PLAYER_TICKETS = "player_tickets";
+    private static final String NBT_RADIO = "radio";
+    private static final String NBT_RETREAT = "retreat_health";
+    private static final String NBT_SUPPRESSION = "suppression";
+    private static final String NBT_RALLY = "rally_points";
     private static final String NBT_TEAMS = "teams";
 
     /** How the number of loose infantry bots per team is set. */
@@ -65,6 +69,21 @@ public final class BotSettings
         INDIVIDUAL, GROUPED,
         /** Individually up to a dozen bots a team, grouped above that. */
         AUTO
+    }
+
+    /** What a soldier of a class does for its squad besides fighting, decided from its equipment unless set. */
+    public enum ClassRole
+    {
+        /** Fights and nothing else. */
+        RIFLEMAN,
+        /** Heals hurt allies near it, with the heal amount of its class's medical tool. */
+        MEDIC,
+        /** Repairs damaged allied vehicles near it, with the repair amount of its class's repair tool. */
+        ENGINEER,
+        /** Hands out ammunition to allies near it. */
+        SUPPORT,
+        /** Goes after enemy vehicles before anything else. */
+        ANTI_TANK
     }
 
     /**
@@ -135,6 +154,14 @@ public final class BotSettings
     private Difficulty difficulty = Difficulty.DEFAULT;
     /** Whether players, too, spend their side's tickets when they respawn, once the side has a ticket limit. */
     private boolean playerTickets = true;
+    /** Whether bots call out on the radio what happens at the objectives. */
+    private boolean radio = true;
+    /** Share of its health, in percent, below which a soldier falls back to a medic or its spawn; 0 never. */
+    private int retreatHealth = 30;
+    /** Whether rounds passing close by make bots aim worse and stop advancing. */
+    private boolean suppression = true;
+    /** Whether players leading a squad may place a rally point for themselves and their squad to spawn at. */
+    private boolean rallyPoints = true;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
     /** What one team fields. */
@@ -148,6 +175,7 @@ public final class BotSettings
         private static final String NBT_CLONE_TAB = "clone_tab";
         private static final String NBT_CLONE_NAME = "clone_name";
         private static final String NBT_KEEP_EQUIPMENT = "keep_clone_equipment";
+        private static final String NBT_ROLES = "class_roles";
         private static final String NBT_CLASSES = "classes";
         private static final String NBT_SQUADS = "squads";
         private static final String NBT_VEHICLES = "vehicles";
@@ -165,6 +193,8 @@ public final class BotSettings
         private boolean keepCloneEquipment;
         /** Weight of each class bots are given; a class left out weighs 1 when no class is listed, 0 otherwise. */
         private final Map<String, Integer> classWeights = new LinkedHashMap<>();
+        /** The role of each class set by hand; a class left out gets the role its equipment suggests. */
+        private final Map<String, ClassRole> classRoles = new LinkedHashMap<>();
         private final List<SquadEntry> squads = new ArrayList<>();
         private final List<VehicleEntry> vehicles = new ArrayList<>();
 
@@ -180,6 +210,9 @@ public final class BotSettings
             CompoundTag classes = new CompoundTag();
             classWeights.forEach(classes::putInt);
             tag.put(NBT_CLASSES, classes);
+            CompoundTag roles = new CompoundTag();
+            classRoles.forEach((playerClass, role) -> roles.putString(playerClass, role.name()));
+            tag.put(NBT_ROLES, roles);
             ListTag squadList = new ListTag();
             squads.forEach(squad -> squadList.add(squad.save()));
             tag.put(NBT_SQUADS, squadList);
@@ -201,6 +234,9 @@ public final class BotSettings
             CompoundTag classes = tag.getCompound(NBT_CLASSES);
             for (String name : classes.getAllKeys())
                 force.classWeights.put(name, Math.max(0, classes.getInt(name)));
+            CompoundTag roles = tag.getCompound(NBT_ROLES);
+            for (String playerClass : roles.getAllKeys())
+                force.classRoles.put(playerClass, parse(ClassRole.class, roles.getString(playerClass), ClassRole.RIFLEMAN));
             for (Tag entry : tag.getList(NBT_SQUADS, Tag.TAG_COMPOUND))
                 force.squads.add(SquadEntry.load((CompoundTag) entry));
             for (Tag entry : tag.getList(NBT_VEHICLES, Tag.TAG_COMPOUND))
@@ -328,6 +364,10 @@ public final class BotSettings
         tag.putInt(NBT_RUBBER_BAND, rubberBand);
         tag.putString(NBT_DIFFICULTY, difficulty.name());
         tag.putBoolean(NBT_PLAYER_TICKETS, playerTickets);
+        tag.putBoolean(NBT_RADIO, radio);
+        tag.putInt(NBT_RETREAT, retreatHealth);
+        tag.putBoolean(NBT_SUPPRESSION, suppression);
+        tag.putBoolean(NBT_RALLY, rallyPoints);
         CompoundTag teamTag = new CompoundTag();
         teams.forEach((team, force) -> teamTag.put(team, force.save()));
         tag.put(NBT_TEAMS, teamTag);
@@ -357,6 +397,10 @@ public final class BotSettings
         settings.rubberBand = Math.max(0, tag.getInt(NBT_RUBBER_BAND));
         settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.DEFAULT);
         settings.playerTickets = !tag.contains(NBT_PLAYER_TICKETS) || tag.getBoolean(NBT_PLAYER_TICKETS);
+        settings.radio = !tag.contains(NBT_RADIO) || tag.getBoolean(NBT_RADIO);
+        settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;
+        settings.suppression = !tag.contains(NBT_SUPPRESSION) || tag.getBoolean(NBT_SUPPRESSION);
+        settings.rallyPoints = !tag.contains(NBT_RALLY) || tag.getBoolean(NBT_RALLY);
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));

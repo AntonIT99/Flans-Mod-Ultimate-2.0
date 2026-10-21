@@ -141,4 +141,25 @@ class DoctrineTest
             assertEquals(kept, Doctrine.plan(field, List.of(squad)).get(1).target().x);
         }
     }
+
+    @Test
+    void defendersWhoCannotCaptureOnlyHoldTheirPoints()
+    {
+        List<TeamsCapturePoint> points = List.of(point('A', 0D, US, -1, false), point('B', 100D, -1, -1, false), point('C', 200D, GERMANY, -1, false));
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(), List.of(), List.of(), List.of(), false);
+        Map<Integer, SquadTask> tasks = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 100D), squad(2, BotRole.ARMOR, 200D)));
+        for (SquadTask task : tasks.values())
+        {
+            assertEquals(0D, task.target().x, "only the point the side holds is worth anything to it");
+            assertNotEquals(SquadTask.Kind.ATTACK, task.kind());
+        }
+    }
+
+    @Test
+    void defendersWithoutPointsHuntTheEnemy()
+    {
+        List<TeamsCapturePoint> points = List.of(point('A', 0D, GERMANY, -1, false));
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(new Vec3(40D, 64D, 0D)), List.of(), List.of(), List.of(), false);
+        assertEquals(SquadTask.Kind.HUNT, Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D))).get(1).kind());
+    }
 }

@@ -35,6 +35,8 @@ final class BotRound
     private final Set<Integer> sidesThatFought = new HashSet<>();
     /** Players who took the field in this playing; joining again later costs them a ticket. */
     private final Set<UUID> fieldedPlayers = new HashSet<>();
+    /** Where each player leading a squad chose to come back after dying. */
+    private final Map<UUID, BotLeaders.SpawnChoice> spawnChoices = new HashMap<>();
     @Setter
     private int nextSlot = 1;
     @Setter

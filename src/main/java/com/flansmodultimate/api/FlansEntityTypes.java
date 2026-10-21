@@ -17,6 +17,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 /** Read-only AA and driveable property inspection for addons, without creating a live vehicle. */
 @ApiStatus.Experimental
@@ -122,6 +123,36 @@ public final class FlansEntityTypes
     public static List<WeaponMount> getMounts(IContentType type)
     {
         return EntityTypePropertySupport.mounts(type);
+    }
+
+    /** @return the definition of a vehicle, plane or mecha entity, or empty for any other entity; either side */
+    public static Optional<IDriveableType> getDriveableType(Entity entity)
+    {
+        return entity instanceof Driveable driveable ? Optional.ofNullable(driveable.getConfigType()) : Optional.empty();
+    }
+
+    /**
+     * @return the share of its hit points a driveable has left over all of its parts, from 0 to 1, or empty for any other
+     *         entity; server thread
+     */
+    public static OptionalDouble getHealthShare(Entity entity)
+    {
+        return entity instanceof Driveable driveable ? driveable.getHealthShare() : OptionalDouble.empty();
+    }
+
+    /**
+     * Repairs a driveable as a repair tool does, for someone who is no player: the damaged part nearest a point gets hit
+     * points back. Server thread.
+     *
+     * @param from
+     *            where the repair is made from, such as the repairer's eyes
+     * @param amount
+     *            hit points given back
+     * @return whether a part was repaired; false for another entity, a driveable without damage or a destroyed one
+     */
+    public static boolean repair(Entity entity, Vec3 from, int amount)
+    {
+        return entity instanceof Driveable driveable && driveable.repairNearestPart(from, amount);
     }
 
     /**

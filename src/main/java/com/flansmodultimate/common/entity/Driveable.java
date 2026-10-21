@@ -4910,6 +4910,31 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return repairPart(selected, amount);
     }
 
+    /** Repairs the damaged part nearest a point, as a repair tool used from there would, for repairers that are no players. */
+    public boolean repairNearestPart(Vec3 origin, int amount)
+    {
+        if (level().isClientSide || amount <= 0 || driveableData == null || destroyed)
+            return false;
+        return findNearestDamagedPart(origin).map(part -> repairPart(part, amount)).orElse(false);
+    }
+
+    /** The share of its hit points the driveable has left over every part that has any, or empty before its data is known. */
+    public OptionalDouble getHealthShare()
+    {
+        if (driveableData == null)
+            return OptionalDouble.empty();
+        double health = 0D;
+        double maximum = 0D;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            if (part.getMaxHealth() <= 0F)
+                continue;
+            health += Math.max(0F, part.getHealth());
+            maximum += part.getMaxHealth();
+        }
+        return maximum <= 0D ? OptionalDouble.empty() : OptionalDouble.of(Math.min(1D, health / maximum));
+    }
+
     private Optional<EnumDriveablePart> findNearestDamagedPart(Vec3 origin)
     {
         if (driveableData == null)

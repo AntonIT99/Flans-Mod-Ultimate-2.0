@@ -6,6 +6,7 @@
 package com.flansmodultimate.api;
 
 import com.flansmodultimate.common.guns.ExternalProjectileSupport;
+import com.flansmodultimate.common.guns.NearMissHandler;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +24,20 @@ public final class FlansProjectiles
 {
     private FlansProjectiles()
     {}
+
+    /**
+     * Registers a listener for Flan rounds that pass close to mobs, so NPCs can react to being shot at. Registering the
+     * same listener twice has no effect.
+     */
+    public static void addSuppressionListener(ISuppressionListener listener)
+    {
+        NearMissHandler.addListener(listener);
+    }
+
+    public static void removeSuppressionListener(ISuppressionListener listener)
+    {
+        NearMissHandler.removeListener(listener);
+    }
 
     /** @return whether the stack represents a Flan bullet or grenade; readable on either side */
     public static boolean isProjectile(ItemStack stack)

@@ -4,11 +4,14 @@ import com.flansmodultimate.api.FlansTeams;
 import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.api.TeamsCapturePoint;
 import com.wolffsmod.npcs.network.BotOrdersStatePacket;
+import com.wolffsmod.npcs.network.BotWaypointsPacket;
+import com.wolffsmod.npcs.network.NpcNetwork;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -91,6 +94,56 @@ public final class BotOrders
         return new Vec3(at.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(at.x), (int) Math.floor(at.z)), at.z);
     }
 
+    /** Players who were last sent waypoints, who are sent an empty list once they have none left. */
+    private static final Set<UUID> MARKED = new HashSet<>();
+
+    /**
+     * Sends every player of the round the places their orders send squads to, and the rally point of the squad they lead,
+     * for their client to mark in the world.
+     */
+    static void sendWaypoints(MinecraftServer server, BotRound round)
+    {
+        for (ServerPlayer player : server.getPlayerList().getPlayers())
+        {
+            List<BotWaypointsPacket.Waypoint> waypoints = waypoints(round, player);
+            if (!waypoints.isEmpty() || MARKED.contains(player.getUUID()))
+                NpcNetwork.sendTo(player, new BotWaypointsPacket(waypoints));
+            if (waypoints.isEmpty())
+                MARKED.remove(player.getUUID());
+            else
+                MARKED.add(player.getUUID());
+        }
+    }
+
+    /** The places a player's orders send squads to, and the rally point of the squad they lead. */
+    private static List<BotWaypointsPacket.Waypoint> waypoints(BotRound round, ServerPlayer player)
+    {
+        List<BotWaypointsPacket.Waypoint> waypoints = new ArrayList<>();
+        for (BotSquad squad : round.getSquads().values())
+        {
+            PlayerOrder order = squad.getOrder();
+            boolean marked = !squad.isDisbanded() && order != null && order.player().equals(player.getUUID()) && order.kind() != PlayerOrder.Kind.FOLLOW && order.kind() != PlayerOrder.Kind.RELEASE;
+            if (marked)
+                waypoints.add(new BotWaypointsPacket.Waypoint(order.target().x, order.target().y, order.target().z, squad.getId(), lower(order.kind())));
+            Vec3 rally = squad.getRally();
+            if (!squad.isDisbanded() && player.getUUID().equals(squad.getLeader()) && rally != null)
+                waypoints.add(new BotWaypointsPacket.Waypoint(rally.x, rally.y, rally.z, squad.getId(), "rally"));
+        }
+        return waypoints;
+    }
+
+    /** Takes every waypoint down, as the round ends. */
+    static void clearWaypoints(MinecraftServer server)
+    {
+        for (UUID marked : MARKED)
+        {
+            ServerPlayer player = server.getPlayerList().getPlayer(marked);
+            if (player != null)
+                NpcNetwork.sendTo(player, new BotWaypointsPacket(List.of()));
+        }
+        MARKED.clear();
+    }
+
     /** Whether a squad's leader is near enough to hear the player, or the squad already follows the player's orders. */
     private static boolean hears(ServerLevel level, BotRound round, BotSquad squad, ServerPlayer player)
     {
@@ -170,7 +223,10 @@ public final class BotOrders
         squads.sort(Comparator.comparingInt(BotOrdersStatePacket.Squad::distance));
         List<BotOrdersStatePacket.Objective> objectives = round.getLive().getCapturePoints().stream()
             .map(point -> new BotOrdersStatePacket.Objective(point.symbol(), point.name(), point.ownerSide(), point.position().x, point.position().z)).toList();
-        return new BotOrdersStatePacket(true, side, commander, commanderName, squads, objectives);
+        Optional<BotSquad> led = BotLeaders.ledBy(round, player.getUUID());
+        BotOrdersStatePacket.Leading leading = new BotOrdersStatePacket.Leading(led.map(BotSquad::getId).orElse(-1), led.map(squad -> squad.getRally() != null).orElse(false),
+            round.getSpawnChoices().getOrDefault(player.getUUID(), BotLeaders.SpawnChoice.BASE).ordinal(), round.getSettings().isRallyPoints());
+        return new BotOrdersStatePacket(true, side, commander, commanderName, squads, objectives, leading, false);
     }
 
     /** A squad as the order screen lists it, with what it is doing and how far its leader is. */

@@ -636,6 +636,31 @@ public final class TeamsManager
         return round;
     }
 
+    /**
+     * Makes a Domination or Conquest round of the rotation one of attackers against defenders, or one every side captures
+     * in again.
+     *
+     * @param side
+     *            the attacking side by its position in round order, from 0, or -1 for none
+     * @return why the round cannot be played so, or null once it is set
+     */
+    @Nullable
+    public String setRoundAttackingSide(int index, int side)
+    {
+        ensureData();
+        List<TeamsRound> rounds = Objects.requireNonNull(savedData).rounds;
+        if (index < 0 || index >= rounds.size())
+            return "Invalid round index";
+        TeamsRound round = rounds.get(index);
+        if (side >= 0 && !round.canBeAttack())
+            return "Only Domination and Conquest rounds can be played attacker against defender";
+        if (side >= round.getSideCount())
+            return "The round has " + round.getSideCount() + " sides";
+        round.setAttackingSide(side);
+        markDirty();
+        return null;
+    }
+
     public boolean removeRound(int index)
     {
         ensureData();
@@ -1503,7 +1528,7 @@ public final class TeamsManager
             player.connection.send(new ClientboundSetCarriedItemPacket(0));
             data.setRespawnReloadTicks(RESPAWN_RELOAD_DELAY_TICKS);
         }
-        getCurrentGameType().map(type -> type.getSpawnPoint(this, player)).ifPresent(position ->
+        spawnPosition(player, data.getTeam(), reason).ifPresent(position ->
         {
             TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
             ServerLevel level = map == null ? null : getServer().getLevel(map.getDimension());
@@ -1513,6 +1538,18 @@ public final class TeamsManager
         if (immediate)
             player.setHealth(player.getMaxHealth());
         getCurrentGameType().ifPresent(type -> type.playerRespawned(this, player));
+    }
+
+    /** Where a player appears: where an addon's spawn provider puts them, or at the game type's spawn point. */
+    private Optional<Vec3> spawnPosition(ServerPlayer player, Team team, @Nullable ITeamsRespawnRule.Reason reason)
+    {
+        if (reason != null && team != Team.SPECTATORS)
+        {
+            Optional<Vec3> offered = getLiveRound().flatMap(round -> TeamsListeners.spawnPosition(round, player, team, reason));
+            if (offered.isPresent())
+                return offered;
+        }
+        return getCurrentGameType().map(type -> type.getSpawnPoint(this, player));
     }
 
     private boolean mayRespawn(ServerPlayer player, Team team, ITeamsRespawnRule.Reason reason)

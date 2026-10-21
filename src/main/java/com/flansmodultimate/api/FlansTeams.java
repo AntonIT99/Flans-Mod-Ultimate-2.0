@@ -206,6 +206,20 @@ public final class FlansTeams
         TeamsListeners.removeRespawnRule(rule);
     }
 
+    /**
+     * Registers a provider of spawn positions, such as squads or rally points players may spawn on. Registering the same
+     * provider twice has no effect.
+     */
+    public static void addSpawnProvider(ITeamsSpawnProvider provider)
+    {
+        TeamsListeners.addSpawnProvider(provider);
+    }
+
+    public static void removeSpawnProvider(ITeamsSpawnProvider provider)
+    {
+        TeamsListeners.removeSpawnProvider(provider);
+    }
+
     private static Optional<TeamsManager> manager()
     {
         TeamsManager manager = TeamsManager.getInstance();

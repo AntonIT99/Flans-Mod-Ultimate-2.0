@@ -13,7 +13,8 @@ import java.util.function.Function;
 /**
  * How a side's commander deploys its squads, given the state of the round. Objective rounds are fought over their capture
  * points: Assault attackers push the objective in play while its defenders hold it and the next one, and Domination and
- * Conquest squads weigh every point by how much it needs them. Rounds without points send squads hunting the enemy.
+ * Conquest squads weigh every point by how much it needs them. Defenders of a round played attacker against defender,
+ * who cannot take points, hold the ones they have. Rounds without points send squads hunting the enemy.
  * Pure arithmetic, any thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -29,6 +30,8 @@ public final class Doctrine
     private static final double THREATENED_VALUE = 12D;
     /** Value of a held point nobody threatens. */
     private static final double SAFE_VALUE = 3D;
+    /** Extra value of every held point for defenders who cannot take a lost one back. */
+    private static final double DEFENDER_BONUS = 4D;
     private static final double POSTURE_BONUS = 3D;
     private static final double ARMOR_ATTACK_BONUS = 2D;
     /** Value lost for each squad already sent to a point, which spreads squads over the points. */
@@ -85,9 +88,17 @@ public final class Doctrine
      *            the patrol points ships may use
      * @param flags
      *            the flags in Capture the Flag; empty in other game types
+     * @param mayCapture
+     *            whether the side may take points it does not hold; false for the defenders of a round played attacker
+     *            against defender
      */
-    public record Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags)
-    {}
+    public record Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags, boolean mayCapture)
+    {
+        public Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags)
+        {
+            this(side, attackingSide, points, enemies, enemySpawns, navalPoints, flags, true);
+        }
+    }
 
     /** @return a task for every squad that has one; squads left out keep theirs */
     public static Map<Integer, SquadTask> plan(Battlefield field, List<SquadView> squads)
@@ -221,9 +232,17 @@ public final class Doctrine
         }
     }
 
-    /** Domination and Conquest: each squad takes the point worth most to it, worth less the more squads went there. */
+    /**
+     * Domination and Conquest: each squad takes the point worth most to it, worth less the more squads went there.
+     * Defenders who cannot take points only weigh the ones they hold, and hunt the enemy once they hold none.
+     */
     private static void planObjectives(Battlefield field, List<SquadView> squads, Map<Integer, SquadTask> tasks)
     {
+        if (!field.mayCapture() && field.points().stream().noneMatch(point -> point.ownerSide() == field.side()))
+        {
+            planHunt(field, squads, tasks);
+            return;
+        }
         Map<Integer, Integer> assigned = new HashMap<>();
         List<SquadView> ordered = new ArrayList<>(squads);
         ordered.sort(Comparator.comparingInt(SquadView::id));
@@ -233,7 +252,10 @@ public final class Doctrine
             double bestValue = Double.NEGATIVE_INFINITY;
             for (int i = 0; i < field.points().size(); i++)
             {
-                double value = value(field, field.points().get(i), squad) - CROWDING * assigned.getOrDefault(i, 0);
+                TeamsCapturePoint candidate = field.points().get(i);
+                if (!field.mayCapture() && candidate.ownerSide() != field.side())
+                    continue;
+                double value = value(field, candidate, squad) - CROWDING * assigned.getOrDefault(i, 0);
                 if (value > bestValue)
                 {
                     bestValue = value;
@@ -261,6 +283,9 @@ public final class Doctrine
         else
         {
             value = threatened(field, point) ? THREATENED_VALUE : SAFE_VALUE;
+            // A point a defender loses is lost for good, so a quiet one is worth guarding too.
+            if (!field.mayCapture())
+                value += DEFENDER_BONUS;
             if (squad.posture() == SquadTemplate.Posture.DEFENSE)
                 value += POSTURE_BONUS;
         }

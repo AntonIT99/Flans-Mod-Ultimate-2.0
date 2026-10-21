@@ -4,8 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.world.phys.Vec3;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /** Bots of one team that move and fight together, under one task from their side's commander. Server thread. */
 @Getter
@@ -32,6 +35,14 @@ public final class BotSquad
     private PlayerOrder order;
     /** A disbanded squad takes no new members and is dropped once its slots are gone. */
     private boolean disbanded;
+    /** The player leading the squad, whom it follows while they are in the field, or null. */
+    @Nullable
+    private UUID leader;
+    /** Where the squad's leader and its own fallen spawn, or null without a rally point. */
+    @Nullable
+    private Vec3 rally;
+    /** Game time the rally point stands until. */
+    private long rallyUntil;
 
     public BotSquad(int id, String team, BotRole role, BotSlot.Source source, int entry, String template)
     {

@@ -105,4 +105,26 @@ class BotRoundStoreTest
         BotRoundStore.write(played(UUID.randomUUID()), saved);
         assertEquals(saved, BotRoundStore.load(saved).save(new CompoundTag()));
     }
+
+    @Test
+    void leadersRallyPointsAndSpawnChoicesSurviveARestart()
+    {
+        UUID instance = UUID.randomUUID();
+        BotRound before = played(instance);
+        BotSquad squad = before.getSquads().values().iterator().next();
+        UUID leader = UUID.randomUUID();
+        squad.setLeader(leader);
+        squad.setRally(new Vec3(5D, 70D, 6D));
+        squad.setRallyUntil(NOW + 1000L);
+        before.getSpawnChoices().put(leader, BotLeaders.SpawnChoice.RALLY);
+        CompoundTag saved = new CompoundTag();
+        BotRoundStore.write(before, saved);
+        BotRound after = new BotRound(live(instance), new BotSettings(), Map.of());
+        assertTrue(BotRoundStore.load(saved).resume(after, NOW));
+        BotSquad restored = after.getSquads().values().iterator().next();
+        assertEquals(leader, restored.getLeader());
+        assertEquals(new Vec3(5D, 70D, 6D), restored.getRally());
+        assertEquals(NOW + 1000L, restored.getRallyUntil());
+        assertEquals(BotLeaders.SpawnChoice.RALLY, after.getSpawnChoices().get(leader));
+    }
 }

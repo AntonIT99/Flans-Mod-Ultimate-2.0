@@ -77,6 +77,14 @@ public interface ITeamsLiveRound
     OptionalInt getDefendingSide();
 
     /**
+     * @param side
+     *            a side, as sides are numbered here
+     * @return whether the side may take capture points it does not hold; false for the defenders of a round played
+     *         attacker against defender, see {@link ITeamsRound#getAttackingSide}
+     */
+    boolean mayCapture(int side);
+
+    /**
      * @return the loaded capture points of the map in play order, by letter, immutable; empty in game types without
      *         them
      */

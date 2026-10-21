@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.function.IntPredicate;
 
 /**
  * Capture arithmetic shared by Domination, Conquest and Assault, ported from the game types of
@@ -37,6 +38,23 @@ public final class CaptureRules
         {
             return of(state.ownerTeamId(), state.capturingTeamId(), state.progress(), contested, Event.NONE);
         }
+    }
+
+    /**
+     * Holds back a tick's result that would let a side take a point it may not take: a defender of a round played attacker
+     * against defender pushes a point it does not hold, or ends up holding one it did not. Such a point stays as it was,
+     * contested. A defender still pushes back a capture of a point it holds.
+     *
+     * @param mayCapture
+     *            whether a side id may take points it does not hold
+     */
+    public static Result restrict(CaptureState before, Result result, IntPredicate mayCapture)
+    {
+        CaptureState after = result.state();
+        int pushing = after.capturingTeamId();
+        boolean barredPush = pushing != 0 && pushing != before.ownerTeamId() && !mayCapture.test(pushing);
+        boolean barredTake = after.ownerTeamId() != 0 && after.ownerTeamId() != before.ownerTeamId() && !mayCapture.test(after.ownerTeamId());
+        return barredPush || barredTake ? Result.unchanged(before, true) : result;
     }
 
     /** With nobody on the point an unfinished capture drains away at the pace of one player. */

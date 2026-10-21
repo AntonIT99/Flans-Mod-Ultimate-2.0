@@ -69,6 +69,18 @@ public final class EquipmentSupport
             mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F, impact));
     }
 
+    public static OptionalDouble armorPenetration(ItemStack stack, ItemStack spare)
+    {
+        if (!(stack.getItem() instanceof GunItem item))
+            return OptionalDouble.empty();
+        Loaded loaded = loaded(item, stack);
+        ItemStack ammunition = loaded == null ? spare : loaded.stack();
+        ShootableType ammo = ammunition.getItem() instanceof ShootableItem shootable ? shootable.getConfigType() : null;
+        if (ammo instanceof com.flansmodultimate.common.types.BulletType bullet && compatible(item.getConfigType(), stack, ammo))
+            return OptionalDouble.of(Math.max(0F, bullet.getPenetrationAt100m(0)));
+        return OptionalDouble.of(0D);
+    }
+
     public static Optional<WeaponTraits> traits(ItemStack stack, ItemStack spare)
     {
         if (!(stack.getItem() instanceof GunItem item))

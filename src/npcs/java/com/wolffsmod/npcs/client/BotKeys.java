@@ -25,7 +25,7 @@ public final class BotKeys
         while (SQUAD_ORDERS.consumeClick())
         {
             if (minecraft.player != null && minecraft.screen == null)
-                NpcNetwork.sendToServer(BotOrderPacket.refresh());
+                NpcNetwork.sendToServer(BotOrderPacket.of(BotOrderPacket.Action.OPEN));
         }
     }
 }

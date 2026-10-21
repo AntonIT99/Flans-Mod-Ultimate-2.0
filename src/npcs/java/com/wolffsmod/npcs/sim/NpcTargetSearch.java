@@ -15,7 +15,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Looks for a target in distance bands, each on its own schedule, instead of testing everything within aggro range on
@@ -38,8 +41,23 @@ public final class NpcTargetSearch
     private static final int RUSH = 0;
     private static final int NO_TACTIC = 6;
 
+    /** Ranks the candidates of a band ahead of their distance, lower first; set by the Teams bots, which prefer some targets. */
+    @FunctionalInterface
+    public interface Priority
+    {
+        int rank(EntityNPCInterface npc, LivingEntity candidate);
+    }
+
+    private static final AtomicReference<Priority> PRIORITY = new AtomicReference<>((npc, candidate) -> 0);
+
     private final long[] searched = new long[BANDS.length];
     private boolean started;
+
+    /** Sets how candidates are ranked ahead of their distance. */
+    public static void setPriority(Priority priority)
+    {
+        PRIORITY.set(priority);
+    }
 
     public static boolean enabled(Mob mob)
     {
@@ -113,7 +131,10 @@ public final class NpcTargetSearch
             double distance = npc.distanceToSqr(entity);
             return entity != npc && entity.isAlive() && distance > innerSquared && distance <= outerSquared;
         });
-        candidates.sort(Comparator.comparingDouble(npc::distanceToSqr));
+        Priority priority = PRIORITY.get();
+        Map<LivingEntity, Integer> ranks = new HashMap<>();
+        candidates.forEach(candidate -> ranks.put(candidate, priority.rank(npc, candidate)));
+        candidates.sort(Comparator.<LivingEntity, Integer>comparing(ranks::get).thenComparingDouble(npc::distanceToSqr));
         LivingEntity found = null;
         int tested = 0;
         for (int index = 0; index < candidates.size() && found == null; index++)

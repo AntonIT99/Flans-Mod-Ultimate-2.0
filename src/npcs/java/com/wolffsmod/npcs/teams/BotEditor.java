@@ -26,6 +26,10 @@ public final class BotEditor
     /** Permission level an operator needs, as for the {@code /teams ai} settings commands. */
     private static final int PERMISSION = 2;
     private static final String PREFIX = "wolffsmodnpcs.editor.";
+    /** Keys of the data of preset and copy actions. */
+    public static final String NAME = "name";
+    public static final String SETTINGS = "settings";
+    public static final String FROM = "from";
 
     /** Opens the editor on a round of the rotation, the round being played when the index is out of range. */
     public static void open(ServerPlayer player, int round)
@@ -49,8 +53,59 @@ public final class BotEditor
             case SAVE_TEMPLATE -> SquadTemplate.fromTag(packet.data()).ifPresentOrElse(SquadTemplates.get()::put,
                 () -> player.sendSystemMessage(Component.translatable(PREFIX + "bad_template_id").withStyle(ChatFormatting.RED)));
             case REMOVE_TEMPLATE -> SquadTemplates.get().remove(packet.data().getString("id"));
+            case SAVE_PRESET -> savePreset(player, round, packet);
+            case APPLY_PRESET -> applyPreset(player, round, packet);
+            case REMOVE_PRESET -> BotPresets.get().remove(packet.data().getString(NAME));
+            case COPY_ROUND -> copyRound(player, rounds, round, packet);
         }
         NpcNetwork.sendTo(player, state(packet.round()));
+    }
+
+    private static void savePreset(ServerPlayer player, @Nullable ITeamsRound round, BotEditorActionPacket packet)
+    {
+        String name = packet.data().getString(NAME).toLowerCase(Locale.ROOT);
+        if (BotPresets.invalidName(name))
+        {
+            player.sendSystemMessage(Component.translatable("wolffsmodnpcs.command.preset.bad_name").withStyle(ChatFormatting.RED));
+            return;
+        }
+        if (outdated(player, round, packet))
+            return;
+        BotPresets.get().put(new BotPresets.Preset(name, teams(Objects.requireNonNull(round)), packet.data().getCompound(SETTINGS)));
+        player.sendSystemMessage(Component.translatable("wolffsmodnpcs.command.preset.saved", name));
+    }
+
+    private static void applyPreset(ServerPlayer player, @Nullable ITeamsRound round, BotEditorActionPacket packet)
+    {
+        Optional<BotPresets.Preset> preset = BotPresets.get().find(packet.data().getString(NAME));
+        if (preset.isEmpty() || outdated(player, round, packet))
+            return;
+        FlansTeams.setRoundExtensionData(Objects.requireNonNull(round), BotSettings.KEY, BotPresets.carryOver(preset.get().settings(), preset.get().teams(), teams(round)).save());
+        player.sendSystemMessage(Component.translatable("wolffsmodnpcs.command.preset.applied", preset.get().name(), 1));
+    }
+
+    private static void copyRound(ServerPlayer player, List<ITeamsRound> rounds, @Nullable ITeamsRound round, BotEditorActionPacket packet)
+    {
+        int from = packet.data().getInt(FROM);
+        if (from < 0 || from >= rounds.size() || outdated(player, round, packet))
+            return;
+        ITeamsRound source = rounds.get(from);
+        FlansTeams.setRoundExtensionData(Objects.requireNonNull(round), BotSettings.KEY, BotPresets.carryOver(source.getExtensionData(BotSettings.KEY), teams(source), teams(round)).save());
+        player.sendSystemMessage(Component.translatable("wolffsmodnpcs.command.copied", label(from, source)));
+    }
+
+    /** Whether the round the operator edits is no longer the one at its place in the rotation; tells them so. */
+    private static boolean outdated(ServerPlayer player, @Nullable ITeamsRound round, BotEditorActionPacket packet)
+    {
+        if (round != null && round.getId().equals(packet.roundId()))
+            return false;
+        player.sendSystemMessage(Component.translatable(PREFIX + "rotation_changed").withStyle(ChatFormatting.RED));
+        return true;
+    }
+
+    private static List<String> teams(ITeamsRound round)
+    {
+        return round.getTeams().stream().map(ITeam::getShortName).toList();
     }
 
     private static void saveSettings(ServerPlayer player, @Nullable ITeamsRound round, BotEditorActionPacket packet)
@@ -82,6 +137,8 @@ public final class BotEditor
             Set<String> classes = team.getClasses().stream().map(IContentType::getShortName).collect(Collectors.toSet());
             force.getClassWeights().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
                 .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "unknown_class", name, playerClass)));
+            force.getClassRoles().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
+                .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "unknown_role_class", name, playerClass)));
             for (BotSettings.SquadEntry entry : force.getSquads())
                 templateProblems(name, classes, entry.template(), problems);
             for (BotSettings.VehicleEntry entry : force.getVehicles())
@@ -120,7 +177,7 @@ public final class BotEditor
         List<BotEditorStatePacket.Round> entries = rounds.stream()
             .map(entry -> new BotEditorStatePacket.Round(entry.getId(), label(rounds.indexOf(entry), entry), entry.getTeams().stream().map(ITeam::getShortName).toList())).toList();
         BotSettings settings = shown < 0 ? new BotSettings() : BotSettings.load(rounds.get(shown).getExtensionData(BotSettings.KEY));
-        return new BotEditorStatePacket(entries, shown, settings.save(), SquadTemplates.get().all().stream().map(SquadTemplate::toTag).toList());
+        return new BotEditorStatePacket(entries, shown, settings.save(), SquadTemplates.get().all().stream().map(SquadTemplate::toTag).toList(), List.copyOf(BotPresets.get().names()));
     }
 
     private static String label(int index, ITeamsRound round)

@@ -20,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 /** Equipment inspection and native Flan weapon actions for addon-controlled living entities. */
 @ApiStatus.Experimental
@@ -114,6 +115,40 @@ public final class FlansEquipment
         Optional<ToolType> tool = InfoType.getInfoTypes().values().stream().filter(ToolType.class::isInstance).map(ToolType.class::cast).filter(ToolType::isParachute)
             .min(Comparator.comparing(ToolType::getShortName));
         return tool.map(type -> Parachute.spawnAndMount(rider.level(), rider, type) != null).orElse(false);
+    }
+
+    /**
+     * Ammunition for a gun someone holds, as a supply bag would hand it out.
+     *
+     * @param weapon
+     *            a Flan gun stack
+     * @return a new full stack of the gun's default ammunition, or empty for another item or a gun with none; either side
+     */
+    public static Optional<ItemStack> createDefaultAmmunition(ItemStack weapon)
+    {
+        return weapon.getItem() instanceof com.flansmodultimate.common.item.GunItem gun ? createDefaultAmmunition(gun.getConfigType()) : Optional.empty();
+    }
+
+    /** @return what a Flan tool does when used, or empty for another item; either side */
+    public static Optional<ToolProperties> getToolProperties(ItemStack tool)
+    {
+        if (!(tool.getItem() instanceof com.flansmodultimate.common.item.ToolItem item))
+            return Optional.empty();
+        ToolType type = item.getConfigType();
+        return Optional.of(new ToolProperties(type.isHealPlayers(), type.isHealDriveables(), type.getHealAmount(), type.isParachute()));
+    }
+
+    /**
+     * How much armour a gun's round goes through, the measure anti-tank weapons are told apart by.
+     *
+     * @param ammunition
+     *            ammunition to measure with when the gun holds none; may be empty
+     * @return the round's penetration in millimetres of armour at 100 metres, 0 for a round without a stated
+     *         penetration, or empty for an item that is no Flan gun; either side
+     */
+    public static OptionalDouble getArmorPenetration(ItemStack weapon, ItemStack ammunition)
+    {
+        return EquipmentSupport.armorPenetration(weapon, ammunition);
     }
 
     /** @return a detached copy of the first usable loaded magazine, or empty; either side, without consumption */

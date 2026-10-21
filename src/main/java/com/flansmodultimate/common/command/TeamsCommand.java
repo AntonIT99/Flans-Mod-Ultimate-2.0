@@ -201,7 +201,10 @@ public final class TeamsCommand
                     .then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder))
                         .then(Commands.argument(GAMETYPE, StringArgumentType.word())
                             .suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder)).then(sideArgument(1)))))
-                .then(Commands.literal("remove").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::removeRound))))
+                .then(Commands.literal("remove").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::removeRound)))
+                .then(Commands.literal("attackers")
+                    .then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(Commands.literal("none").executes(context -> setAttackers(context, -1))).then(
+                        Commands.argument(SIDE, IntegerArgumentType.integer(1, TeamsRound.MAX_SIDES)).executes(context -> setAttackers(context, IntegerArgumentType.getInteger(context, SIDE) - 1))))))
             .then(Commands.literal("setvariable")
                 .then(Commands.argument("name", StringArgumentType.word()).then(Commands.argument(VALUE, StringArgumentType.word()).executes(TeamsCommand::setVariable))));
     }
@@ -763,10 +766,8 @@ public final class TeamsCommand
         {
             int index = i;
             TeamsRound round = rounds.get(i);
-            context.getSource().sendSuccess(
-                () -> Component
-                    .literal(index + ": " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams() + "] " + round.getTimeLimitMinutes() + "m / " + round.getScoreLimit()),
-                false);
+            context.getSource().sendSuccess(() -> Component.literal(index + ": " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams() + "] " + round.getTimeLimitMinutes()
+                + "m / " + round.getScoreLimit() + (round.getAttackingSide().isPresent() ? ", side " + (round.getAttackingSide().getAsInt() + 1) + " attacks" : "")), false);
         }
         return rounds.size();
     }
@@ -806,6 +807,15 @@ public final class TeamsCommand
         {
             return failure(context, e.getMessage());
         }
+    }
+
+    /** Sets the side that attacks in a round of the rotation, numbered from 1 in the order the round lists its sides. */
+    private static int setAttackers(CommandContext<CommandSourceStack> context, int side)
+    {
+        String refusal = manager().setRoundAttackingSide(IntegerArgumentType.getInteger(context, INDEX), side);
+        if (refusal != null)
+            return failure(context, refusal);
+        return success(context, side < 0 ? "Every side captures in that round" : "Side " + (side + 1) + " attacks in that round; the other sides defend");
     }
 
     private static int removeRound(CommandContext<CommandSourceStack> context)

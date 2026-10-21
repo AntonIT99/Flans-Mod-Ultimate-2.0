@@ -50,6 +50,7 @@ final class BotCommander
         List<Doctrine.FlagView> flagViews = flags.stream().map(flag -> flagView(server, level, round, flag)).toList();
         Set<UUID> carriers = new HashSet<>();
         flags.stream().map(TeamsFlag::carrier).filter(Objects::nonNull).forEach(carriers::add);
+        BotLeaders.tick(server, level, round);
         applyOrders(server, level, round);
         for (int side = 0; side < live.getRound().getSideCount(); side++)
         {
@@ -66,7 +67,7 @@ final class BotCommander
                     enemySpawns.addAll(live.getSpawnPositions(team));
             List<Doctrine.SquadView> views = views(level, round, side, carriers);
             if (!views.isEmpty())
-                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews), views)
+                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, live.mayCapture(side)), views)
                     .forEach((squadId, task) -> Optional.ofNullable(round.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
         }
     }

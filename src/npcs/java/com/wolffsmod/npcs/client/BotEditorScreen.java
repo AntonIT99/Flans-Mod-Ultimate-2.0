@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.network.BotEditorActionPacket;
 import com.wolffsmod.npcs.network.BotEditorStatePacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.teams.BotEditor;
 import com.wolffsmod.npcs.teams.BotSettings;
 import com.wolffsmod.npcs.teams.BotSettingsText;
 import com.wolffsmod.npcs.teams.SquadTemplate;
@@ -43,13 +44,16 @@ public final class BotEditorScreen extends Screen
     private static final String PREFIX = "wolffsmodnpcs.editor.";
     private static final String COUNT = "count";
     private static final String SQUADS = "squads";
+    private static final String ROLES = "roles";
+    private static final String RETREAT = "retreat";
+    private static final String PRESET_NAME = "preset_name";
     /** Ticks between checks whether the edits differ from what the server holds. */
     private static final int CHECK_TICKS = 10;
 
     /** The pages of the editor. */
     private enum Tab
     {
-        ROUND, TEAM, FORCES, TEMPLATES
+        ROUND, RULES, TEAM, FORCES, TEMPLATES, PRESETS
     }
 
     private BotEditorStatePacket state;
@@ -70,6 +74,10 @@ public final class BotEditorScreen extends Screen
     /** Values chosen with cycle buttons on the template page, kept until the template is saved. */
     private SquadTemplate.Posture posture = SquadTemplate.Posture.BALANCED;
     private String templateNames = "";
+    /** The preset chosen on the preset page, as an index into the state's presets. */
+    private int preset;
+    /** The round chosen to copy settings from, as an index into the rotation. */
+    private int copyFrom;
 
     private record Label(Component text, int x, int y)
     {}
@@ -125,9 +133,11 @@ public final class BotEditorScreen extends Screen
         switch (tab)
         {
             case ROUND -> initRound(left);
+            case RULES -> initRules(left);
             case TEAM -> initTeam(left);
             case FORCES -> initForces(left);
             case TEMPLATES -> initTemplates(left);
+            case PRESETS -> initPresets(left);
         }
         addBottomButtons(left);
     }
@@ -151,9 +161,43 @@ public final class BotEditorScreen extends Screen
         addCompactField(second, 3, "rubberband", Integer.toString(settings.getRubberBand()));
         addCompactField(second, 4, "capture_infantry", Float.toString(settings.getInfantryCaptureWeight()));
         addCompactField(second, 5, "capture_vehicles", Float.toString(settings.getVehicleCaptureWeight()));
-        addRenderableWidget(enumButton(left, y(6), COLUMN_WIDTH, "difficulty", BotSettings.Difficulty.values(), settings.getDifficulty(), settings::setDifficulty));
-        addRenderableWidget(CycleButton.onOffBuilder(settings.isPlayerTickets()).create(second, y(6), COLUMN_WIDTH, 20, Component.translatable("wolffsmodnpcs.editor.player_tickets"),
-            (button, value) -> settings.setPlayerTickets(value)));
+    }
+
+    /** How bots fight and what players may do with them. */
+    private void initRules(int left)
+    {
+        int width = LABEL_WIDTH + FIELD_WIDTH;
+        addRenderableWidget(enumButton(left, y(0), width, "difficulty", BotSettings.Difficulty.values(), settings.getDifficulty(), settings::setDifficulty));
+        addRenderableWidget(switchButton(left, y(1), width, "player_tickets", settings.isPlayerTickets(), settings::setPlayerTickets));
+        addRenderableWidget(switchButton(left, y(2), width, "radio", settings.isRadio(), settings::setRadio));
+        addRenderableWidget(switchButton(left, y(3), width, "suppression", settings.isSuppression(), settings::setSuppression));
+        addRenderableWidget(switchButton(left, y(4), width, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
+        addField(left, 5, RETREAT, Integer.toString(settings.getRetreatHealth()));
+    }
+
+    private CycleButton<Boolean> switchButton(int x, int y, int width, String key, boolean value, Consumer<Boolean> setter)
+    {
+        return CycleButton.onOffBuilder(value).create(x, y, width, 20, Component.translatable(PREFIX + key), (button, chosen) -> setter.accept(chosen));
+    }
+
+    /** Presets of bot settings to apply to the round, or save it as, and another round to copy settings from. */
+    private void initPresets(int left)
+    {
+        List<String> presets = state.presets();
+        preset = presets.isEmpty() ? 0 : Math.floorMod(preset, presets.size());
+        String chosen = presets.isEmpty() ? "" : presets.get(preset);
+        addSelector(left, 0, Component.translatable(PREFIX + "preset", chosen.isEmpty() ? NONE : chosen), () -> preset--, () -> preset++);
+        int half = FIELD_WIDTH / 2 - 2;
+        addRenderableWidget(Button.builder(Component.translatable(PREFIX + "apply_preset"), button -> presetAction(BotEditorActionPacket.Action.APPLY_PRESET, chosen))
+            .bounds(left + LABEL_WIDTH, y(1), half, 20).build()).active = !presets.isEmpty();
+        addRenderableWidget(Button.builder(Component.translatable(PREFIX + "remove_preset"), button -> presetAction(BotEditorActionPacket.Action.REMOVE_PRESET, chosen))
+            .bounds(left + LABEL_WIDTH + half + 4, y(1), half, 20).build()).active = !presets.isEmpty();
+        addField(left, 2, PRESET_NAME, chosen);
+        addRenderableWidget(Button.builder(Component.translatable(PREFIX + "save_preset"), button -> savePreset()).bounds(left + LABEL_WIDTH, y(3), FIELD_WIDTH, 20).build());
+        copyFrom = Math.floorMod(copyFrom, state.rounds().size());
+        addSelector(left, 4, Component.translatable(PREFIX + "copy_source", state.rounds().get(copyFrom).label()), () -> copyFrom--, () -> copyFrom++);
+        addRenderableWidget(Button.builder(Component.translatable(PREFIX + "copy_round"), button -> copyRound()).bounds(left + LABEL_WIDTH, y(5), FIELD_WIDTH, 20).build()).active = copyFrom != state
+            .round();
     }
 
     private void initTeam(int left)
@@ -181,10 +225,12 @@ public final class BotEditorScreen extends Screen
         BotSettings.TeamForce force = settings.team(teams().get(team));
         addField(left, 1, SQUADS, BotSettingsText.formatSquads(force.getSquads()));
         addField(left, 2, "vehicles", BotSettingsText.formatVehicles(force.getVehicles()));
+        addField(left, 3, ROLES, BotSettingsText.formatRoles(force.getClassRoles()));
         String available = templates.isEmpty() ? NONE : String.join(", ", templates.stream().map(SquadTemplate::id).toList());
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.squads_help"), left, y(3)));
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.vehicles_help"), left, y(3) + 12));
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.templates_available", available), left, y(3) + 24));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.squads_help"), left, y(4)));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.vehicles_help"), left, y(4) + 12));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.roles_help"), left, y(4) + 24));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.templates_available", available), left, y(4) + 36));
     }
 
     private void initTemplates(int left)
@@ -275,12 +321,26 @@ public final class BotEditorScreen extends Screen
     /** A choice in the first row: arrows on either side of what is chosen. */
     private void addSelector(int left, Component shown, Runnable previous, Runnable next)
     {
-        addRenderableWidget(Button.builder(Component.literal("<"), button -> previous.run()).bounds(left + LABEL_WIDTH, y(0), 20, 20).build());
+        addSelector(left, 0, shown, previous, next);
+    }
+
+    /** A choice in a row: arrows on either side of what is chosen; an arrow that only changes the choice rebuilds the page. */
+    private void addSelector(int left, int row, Component shown, Runnable previous, Runnable next)
+    {
+        addRenderableWidget(Button.builder(Component.literal("<"), button ->
+        {
+            previous.run();
+            rebuildWidgets();
+        }).bounds(left + LABEL_WIDTH, y(row), 20, 20).build());
         addRenderableWidget(Button.builder(shown, button ->
         {
             // The label only names the choice.
-        }).bounds(left + LABEL_WIDTH + 22, y(0), FIELD_WIDTH - 44, 20).build()).active = false;
-        addRenderableWidget(Button.builder(Component.literal(">"), button -> next.run()).bounds(left + LABEL_WIDTH + FIELD_WIDTH - 20, y(0), 20, 20).build());
+        }).bounds(left + LABEL_WIDTH + 22, y(row), FIELD_WIDTH - 44, 20).build()).active = false;
+        addRenderableWidget(Button.builder(Component.literal(">"), button ->
+        {
+            next.run();
+            rebuildWidgets();
+        }).bounds(left + LABEL_WIDTH + FIELD_WIDTH - 20, y(row), 20, 20).build());
     }
 
     // --- Editing ---
@@ -300,10 +360,11 @@ public final class BotEditorScreen extends Screen
                 settings.setInfantryCaptureWeight(Math.max(0F, decimal("capture_infantry", settings.getInfantryCaptureWeight())));
                 settings.setVehicleCaptureWeight(Math.max(0F, decimal("capture_vehicles", settings.getVehicleCaptureWeight())));
             }
+            case RULES -> settings.setRetreatHealth(Math.max(0, Math.min(100, number(RETREAT, settings.getRetreatHealth()))));
             case TEAM -> commitTeam();
             case FORCES -> commitForces();
-            case TEMPLATES -> {
-                // Templates are saved on their own, with their button.
+            case TEMPLATES, PRESETS -> {
+                // Templates and presets are saved on their own, with their buttons.
             }
         }
     }
@@ -331,6 +392,8 @@ public final class BotEditorScreen extends Screen
         force.getSquads().addAll(BotSettingsText.parseSquads(text(SQUADS)));
         force.getVehicles().clear();
         force.getVehicles().addAll(vehicles);
+        force.getClassRoles().clear();
+        force.getClassRoles().putAll(BotSettingsText.parseRoles(text(ROLES)));
     }
 
     private String text(String key)
@@ -441,6 +504,33 @@ public final class BotEditorScreen extends Screen
         commit();
         BotEditorStatePacket.Round round = state.rounds().get(state.round());
         NpcNetwork.sendToServer(new BotEditorActionPacket(BotEditorActionPacket.Action.SAVE_SETTINGS, state.round(), round.id(), settings.save()));
+    }
+
+    private void presetAction(BotEditorActionPacket.Action action, String name)
+    {
+        CompoundTag data = new CompoundTag();
+        data.putString(BotEditor.NAME, name);
+        if (action == BotEditorActionPacket.Action.APPLY_PRESET)
+            confirmLeaving(() -> NpcNetwork.sendToServer(new BotEditorActionPacket(action, state.round(), roundId(), data)));
+        else
+            NpcNetwork.sendToServer(new BotEditorActionPacket(action, state.round(), roundId(), data));
+    }
+
+    /** Saves the settings as they are edited, unsaved changes included, under the name given. */
+    private void savePreset()
+    {
+        commit();
+        CompoundTag data = new CompoundTag();
+        data.putString(BotEditor.NAME, text(PRESET_NAME).strip().toLowerCase(Locale.ROOT));
+        data.put(BotEditor.SETTINGS, settings.save());
+        NpcNetwork.sendToServer(new BotEditorActionPacket(BotEditorActionPacket.Action.SAVE_PRESET, state.round(), roundId(), data));
+    }
+
+    private void copyRound()
+    {
+        CompoundTag data = new CompoundTag();
+        data.putInt(BotEditor.FROM, copyFrom);
+        confirmLeaving(() -> NpcNetwork.sendToServer(new BotEditorActionPacket(BotEditorActionPacket.Action.COPY_ROUND, state.round(), roundId(), data)));
     }
 
     private void saveTemplate()

@@ -296,6 +296,7 @@
   "message.flansmodultimate.teams.class_prestige": "%1$s requires prestige %2$s",
   "message.flansmodultimate.teams.class_rank": "%1$s requires rank %2$s",
   "message.flansmodultimate.teams.class_unavailable": "That class is not available on your team",
+  "message.flansmodultimate.teams.defenders_cannot_capture": "Your side defends: you cannot capture points, only hold the ones you have",
   "message.flansmodultimate.teams.loadout_on_respawn": "You will respawn with the selected loadout",
   "message.flansmodultimate.teams.out_of_bounds": "Return to the combat area! Time left: %s",
   "message.flansmodultimate.teams.out_of_bounds_killed": "You left the combat area",

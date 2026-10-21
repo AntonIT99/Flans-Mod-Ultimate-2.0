@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.client;
 import com.wolffsmod.npcs.network.BotOrderPacket;
 import com.wolffsmod.npcs.network.BotOrdersStatePacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.teams.BotLeaders;
 import com.wolffsmod.npcs.teams.BotOrders;
 import com.wolffsmod.npcs.teams.PlayerOrder;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Orders for the bots of the player's side: the squads around the player, or every squad of the side for the player in
@@ -34,6 +36,9 @@ public final class BotOrdersScreen extends Screen
     private static final int TOP = 40;
     private static final int GAP = 4;
     private static final int REFRESH_TICKS = 40;
+    /** Rows of the order column above the objectives: orders, then leading a squad. */
+    private static final int LEADING_ROWS = 3;
+    private static final BotLeaders.SpawnChoice[] SPAWN_CHOICES = BotLeaders.SpawnChoice.values();
     /** Pixels around a squad or an objective on the map within which a click picks it. */
     private static final int PICK_RADIUS = 6;
     /** Blocks the map shows beyond the farthest squad, objective or player. */
@@ -147,13 +152,39 @@ public final class BotOrdersScreen extends Screen
         addOrder(right, 0, 0, PlayerOrder.Kind.FOLLOW, BotOrders.HERE, Component.translatable("wolffsmodnpcs.orders.follow"));
         addOrder(right, 1, 0, PlayerOrder.Kind.HOLD, BotOrders.HERE, Component.translatable("wolffsmodnpcs.orders.hold"));
         addOrder(right, 0, 1, PlayerOrder.Kind.RELEASE, BotOrders.HERE, Component.translatable("wolffsmodnpcs.orders.release"));
+        addLeading(right);
         List<BotOrdersStatePacket.Objective> objectives = state.objectives();
         for (int i = 0; i < objectives.size(); i++)
         {
             BotOrdersStatePacket.Objective objective = objectives.get(i);
-            addOrder(right, 0, i + 2, PlayerOrder.Kind.ATTACK, i, Component.translatable("wolffsmodnpcs.orders.attack", String.valueOf(objective.symbol())));
-            addOrder(right, 1, i + 2, PlayerOrder.Kind.DEFEND, i, Component.translatable("wolffsmodnpcs.orders.defend", String.valueOf(objective.symbol())));
+            addOrder(right, 0, i + LEADING_ROWS, PlayerOrder.Kind.ATTACK, i, Component.translatable("wolffsmodnpcs.orders.attack", String.valueOf(objective.symbol())));
+            addOrder(right, 1, i + LEADING_ROWS, PlayerOrder.Kind.DEFEND, i, Component.translatable("wolffsmodnpcs.orders.defend", String.valueOf(objective.symbol())));
         }
+    }
+
+    /**
+     * Leading a squad: taking the lead of the squad chosen, or of the nearest one, or giving it up; placing its rally
+     * point; and choosing where to come back after dying.
+     */
+    private void addLeading(int right)
+    {
+        BotOrdersStatePacket.Leading leading = state.leading();
+        boolean leads = leading.squad() >= 0;
+        Component lead = leads ? Component.translatable("wolffsmodnpcs.orders.leave_squad", "#" + leading.squad()) : Component.translatable("wolffsmodnpcs.orders.lead");
+        addRenderableWidget(
+            Button
+                .builder(lead,
+                    button -> send(
+                        leads ? BotOrderPacket.of(BotOrderPacket.Action.LEAVE_SQUAD) : new BotOrderPacket(BotOrderPacket.Action.LEAD, selected, PlayerOrder.Kind.RELEASE, BotOrders.HERE, null)))
+                .bounds(right + BUTTON_WIDTH + GAP, TOP + ROW_HEIGHT, BUTTON_WIDTH, 20).build());
+        Component rally = Component.translatable(leading.rally() ? "wolffsmodnpcs.orders.move_rally" : "wolffsmodnpcs.orders.rally");
+        addRenderableWidget(Button.builder(rally, button -> send(BotOrderPacket.of(BotOrderPacket.Action.RALLY))).bounds(right, TOP + 2 * ROW_HEIGHT, BUTTON_WIDTH, 20).build()).active = leads
+            && leading.rallyPoints();
+        int next = (leading.spawnChoice() + 1) % SPAWN_CHOICES.length;
+        Component spawn = Component.translatable("wolffsmodnpcs.orders.spawn",
+            Component.translatable("wolffsmodnpcs.orders.spawn." + SPAWN_CHOICES[leading.spawnChoice() % SPAWN_CHOICES.length].name().toLowerCase(Locale.ROOT)));
+        addRenderableWidget(Button.builder(spawn, button -> send(new BotOrderPacket(BotOrderPacket.Action.SPAWN_CHOICE, selected, PlayerOrder.Kind.RELEASE, next, null)))
+            .bounds(right + BUTTON_WIDTH + GAP, TOP + 2 * ROW_HEIGHT, BUTTON_WIDTH, 20).build()).active = leads;
     }
 
     private void addOrder(int right, int column, int row, PlayerOrder.Kind kind, int objective, Component label)

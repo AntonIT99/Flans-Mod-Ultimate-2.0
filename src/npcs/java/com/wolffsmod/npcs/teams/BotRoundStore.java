@@ -65,6 +65,10 @@ public final class BotRoundStore extends SavedData
     private static final String NBT_PATROL = "patrol_index";
     private static final String NBT_CARGO = "cargo";
     private static final String NBT_DISBANDED = "disbanded";
+    private static final String NBT_LEADER = "leader";
+    private static final String NBT_RALLY = "rally";
+    private static final String NBT_RALLY_UNTIL = "rally_until";
+    private static final String NBT_SPAWN_CHOICES = "spawn_choices";
 
     /** The round being played, written out whenever the world is saved. */
     @Nullable
@@ -144,6 +148,9 @@ public final class BotRoundStore extends SavedData
         ListTag fielded = new ListTag();
         current.getFieldedPlayers().forEach(player -> fielded.add(NbtUtils.createUUID(player)));
         tag.put(NBT_FIELDED, fielded);
+        CompoundTag choices = new CompoundTag();
+        current.getSpawnChoices().forEach((player, choice) -> choices.putString(player.toString(), choice.name()));
+        tag.put(NBT_SPAWN_CHOICES, choices);
         ListTag slots = new ListTag();
         current.getSlots().values().forEach(slot -> slots.add(write(slot)));
         tag.put(NBT_SLOTS, slots);
@@ -200,6 +207,13 @@ public final class BotRoundStore extends SavedData
         tag.putInt(NBT_PATROL, squad.getPatrolIndex());
         tag.putString(NBT_CARGO, squad.getCargo());
         tag.putBoolean(NBT_DISBANDED, squad.isDisbanded());
+        if (squad.getLeader() != null)
+            tag.putUUID(NBT_LEADER, squad.getLeader());
+        if (squad.getRally() != null)
+        {
+            tag.put(NBT_RALLY, position(squad.getRally()));
+            tag.putLong(NBT_RALLY_UNTIL, squad.getRallyUntil());
+        }
         return tag;
     }
 
@@ -248,6 +262,9 @@ public final class BotRoundStore extends SavedData
         Arrays.stream(tag.getIntArray(NBT_FOUGHT)).forEach(current.getSidesThatFought()::add);
         for (Tag player : tag.getList(NBT_FIELDED, Tag.TAG_INT_ARRAY))
             current.getFieldedPlayers().add(NbtUtils.loadUUID(player));
+        CompoundTag choices = tag.getCompound(NBT_SPAWN_CHOICES);
+        for (String player : choices.getAllKeys())
+            player(player).ifPresent(id -> current.getSpawnChoices().put(id, BotSettings.parse(BotLeaders.SpawnChoice.class, choices.getString(player), BotLeaders.SpawnChoice.BASE)));
         for (Tag element : tag.getList(NBT_SLOTS, Tag.TAG_COMPOUND))
         {
             BotSlot slot = readSlot((CompoundTag) element, now);
@@ -296,6 +313,12 @@ public final class BotRoundStore extends SavedData
         squad.setPatrolIndex(tag.getInt(NBT_PATROL));
         squad.setCargo(tag.getString(NBT_CARGO));
         squad.setDisbanded(tag.getBoolean(NBT_DISBANDED));
+        squad.setLeader(tag.hasUUID(NBT_LEADER) ? tag.getUUID(NBT_LEADER) : null);
+        if (tag.contains(NBT_RALLY, Tag.TAG_LIST))
+        {
+            squad.setRally(readPosition(tag.getList(NBT_RALLY, Tag.TAG_DOUBLE)));
+            squad.setRallyUntil(tag.getLong(NBT_RALLY_UNTIL));
+        }
         return squad;
     }
 
@@ -318,6 +341,18 @@ public final class BotRoundStore extends SavedData
             return Optional.of(Integer.parseInt(key));
         }
         catch (NumberFormatException e)
+        {
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<UUID> player(String key)
+    {
+        try
+        {
+            return Optional.of(UUID.fromString(key));
+        }
+        catch (IllegalArgumentException e)
         {
             return Optional.empty();
         }

@@ -137,10 +137,10 @@ public final class BotObjectiveGoal extends Goal
         return ++stalled >= STALLED_SEARCHES;
     }
 
-    /** Whether the bot is free to move: alive, not fighting and not riding. */
+    /** Whether the bot is free to move: alive, not fighting, not riding and not pinned down by fire. */
     private boolean free()
     {
-        return npc.isAlive() && !npc.isKilled() && npc.getTarget() == null && !npc.isPassenger();
+        return npc.isAlive() && !npc.isKilled() && npc.getTarget() == null && !npc.isPassenger() && !BotSuppression.isPinned(npc);
     }
 
     private boolean away(BotCommander.Order current)

@@ -254,4 +254,35 @@ class CaptureRulesTest
         assertFalse(new CaptureState(FIRST, 0, 0.99F, false).isHeldBy(FIRST));
         assertEquals(SECOND, new CaptureState(0, SECOND, 0.3F, false).displayTeamId());
     }
+
+    @Test
+    void defendersCannotTakeANeutralPointOrOneTheAttackersHold()
+    {
+        java.util.function.IntPredicate onlyFirst = side -> side == FIRST;
+        CaptureRules.Result neutral = CaptureRules.restrict(CaptureState.NEUTRAL, CaptureRules.domination(CaptureState.NEUTRAL, SECOND, 1, false, TICKS), onlyFirst);
+        assertEquals(CaptureState.NEUTRAL.ownerTeamId(), neutral.state().ownerTeamId());
+        assertEquals(0, neutral.state().capturingTeamId(), "a defender does not start taking a neutral point");
+        assertTrue(neutral.state().contested());
+
+        CaptureState held = CaptureState.ownedBy(FIRST);
+        CaptureRules.Result pushed = CaptureRules.restrict(held, CaptureRules.domination(held, SECOND, 1, false, TICKS), onlyFirst);
+        assertTrue(pushed.state().isHeldBy(FIRST), "a defender cannot take a point back from the attackers");
+        assertEquals(CaptureRules.Event.NONE, pushed.event());
+    }
+
+    @Test
+    void defendersStillPushBackTheCaptureOfAPointTheyHold()
+    {
+        CaptureState beingTaken = new CaptureState(SECOND, FIRST, 0.5F, false);
+        CaptureRules.Result result = CaptureRules.restrict(beingTaken, CaptureRules.domination(beingTaken, SECOND, 1, false, TICKS), side -> side == FIRST);
+        assertTrue(result.state().progress() > 0.5F, "the defenders restore their own point");
+    }
+
+    @Test
+    void attackersCaptureAsUsual()
+    {
+        CaptureState held = CaptureState.ownedBy(SECOND);
+        CaptureRules.Result result = CaptureRules.restrict(held, CaptureRules.domination(held, FIRST, 1, false, TICKS), side -> side == FIRST);
+        assertEquals(FIRST, result.state().capturingTeamId());
+    }
 }

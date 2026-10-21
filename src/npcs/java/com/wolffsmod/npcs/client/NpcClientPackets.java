@@ -31,7 +31,7 @@ public final class NpcClientPackets
     {
         if (Minecraft.getInstance().screen instanceof BotOrdersScreen screen)
             screen.update(packet);
-        else
+        else if (packet.open())
             Minecraft.getInstance().setScreen(new BotOrdersScreen(packet));
     }
 
@@ -42,6 +42,11 @@ public final class NpcClientPackets
             screen.update(packet);
         else
             Minecraft.getInstance().setScreen(new BotEditorScreen(packet));
+    }
+
+    public static void waypoints(BotWaypointsPacket packet)
+    {
+        BotWaypoints.receive(packet);
     }
 
     public static void serverSettings(ServerControlPacket packet)

@@ -9,8 +9,8 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.UUID;
 
 /**
- * What an operator does in the bot editor screen: switch to another round, save its settings, or save or remove a squad
- * template. The server checks the operator's permission and that the round is still the one shown, applies the change
+ * What an operator does in the bot editor screen: switch to another round, save its settings, save or remove a squad
+ * template, or save, apply or remove a preset, or copy another round's settings. The server checks the operator's permission and that the round is still the one shown, applies the change
  * and sends the screen's state back.
  *
  * @param round
@@ -25,7 +25,13 @@ public record BotEditorActionPacket(Action action, int round, UUID roundId, Comp
     /** What the operator asks for. */
     public enum Action
     {
-        OPEN, SAVE_SETTINGS, SAVE_TEMPLATE, REMOVE_TEMPLATE
+        OPEN, SAVE_SETTINGS, SAVE_TEMPLATE, REMOVE_TEMPLATE,
+        /** Saving the settings shown, as they are edited, under a preset name. */
+        SAVE_PRESET,
+        /** Applying a preset to the round shown. */
+        APPLY_PRESET, REMOVE_PRESET,
+        /** Copying another round's settings to the round shown. */
+        COPY_ROUND
     }
 
     public static BotEditorActionPacket open(int round)

@@ -54,6 +54,7 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     private static final String NBT_POPULARITY = "popularity";
     private static final String NBT_ROUNDS_SINCE_PLAYED = "rounds_since_played";
     private static final String NBT_EXTENSIONS = "extensions";
+    private static final String NBT_ATTACKING_SIDE = "attacking_side";
 
     private final UUID id;
     private final String mapId;
@@ -65,6 +66,13 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     private int scoreLimit;
     private final float popularity;
     private int roundsSincePlayed;
+    /**
+     * The side, by its position in round order, that attacks in a Domination or Conquest round played attacker against
+     * defender: only it takes capture points, and the other sides defend the points they start with. -1 for a round
+     * every side may capture in.
+     */
+    @Getter(AccessLevel.NONE)
+    private int attackingSide = -1;
     /** Data addons keep with the round, by the string form of their namespaced key. */
     @Getter(AccessLevel.NONE)
     private final Map<String, CompoundTag> extensions = new TreeMap<>();
@@ -127,6 +135,45 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     public int getTimeLimitTicks()
     {
         return timeLimitMinutes * 60 * 20;
+    }
+
+    @Override
+    public OptionalInt getAttackingSide()
+    {
+        return attackingSide >= 0 && attackingSide < getSideCount() ? OptionalInt.of(attackingSide) : OptionalInt.empty();
+    }
+
+    /**
+     * Makes the round one of attackers against defenders, or one every side captures in again.
+     *
+     * @param side
+     *            the attacking side by its position in round order, or -1 for none
+     */
+    public void setAttackingSide(int side)
+    {
+        attackingSide = side >= 0 && side < getSideCount() ? side : -1;
+    }
+
+    /** Whether the round's game type can be played attacker against defender: Domination and Conquest can. */
+    public boolean canBeAttack()
+    {
+        GameType type = getGametype();
+        ObjectiveMode mode = type == null ? ObjectiveMode.NONE : type.getObjectiveMode();
+        return mode == ObjectiveMode.DOMINATION || mode == ObjectiveMode.CONQUEST;
+    }
+
+    /** The side id that attacks in a round played attacker against defender, or 0 in any other round. */
+    public int getAttackingSideId()
+    {
+        OptionalInt side = getAttackingSide();
+        return side.isPresent() ? getSideIds().get(side.getAsInt()) : 0;
+    }
+
+    /** Whether a side may take capture points it does not hold: every side may, except the defenders of an attack. */
+    public boolean mayCapture(int sideId)
+    {
+        int attacker = getAttackingSideId();
+        return attacker == 0 || attacker == sideId;
     }
 
     /** Operators can change the score limit of a round while it is played; it is saved with the round. */
@@ -371,6 +418,8 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
         tag.putInt(NBT_SCORE_LIMIT, scoreLimit);
         tag.putFloat(NBT_POPULARITY, popularity);
         tag.putInt(NBT_ROUNDS_SINCE_PLAYED, roundsSincePlayed);
+        if (attackingSide >= 0)
+            tag.putInt(NBT_ATTACKING_SIDE, attackingSide);
         if (!extensions.isEmpty())
         {
             CompoundTag extensionTag = new CompoundTag();
@@ -388,6 +437,7 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
         UUID id = tag.hasUUID(NBT_ID) ? tag.getUUID(NBT_ID) : UUID.randomUUID();
         TeamsRound round = new TeamsRound(id, tag.getString(NBT_MAP), tag.getString(NBT_GAME_TYPE), teams, sides, tag.getInt(NBT_TIME_LIMIT), tag.getInt(NBT_SCORE_LIMIT), tag.getFloat(NBT_POPULARITY),
             tag.getInt(NBT_ROUNDS_SINCE_PLAYED));
+        round.setAttackingSide(tag.contains(NBT_ATTACKING_SIDE) ? tag.getInt(NBT_ATTACKING_SIDE) : -1);
         CompoundTag extensionTag = tag.getCompound(NBT_EXTENSIONS);
         for (String key : extensionTag.getAllKeys())
         {

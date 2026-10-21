@@ -145,4 +145,29 @@ class TeamsRoundTest
         assertEquals("2 to 8 teams on 2 sides", limits.describe());
         assertEquals("2 teams", GameType.TeamLimits.exactly(2).describe());
     }
+
+    @Test
+    void theAttackingSideIsSavedAndOnlyItMayCapture()
+    {
+        TeamsRound round = new TeamsRound("map", "con", List.of("red", "blue"), 10, 30);
+        assertTrue(round.getAttackingSide().isEmpty());
+        assertTrue(round.mayCapture(2) && round.mayCapture(3));
+        round.setAttackingSide(1);
+        TeamsRound loaded = TeamsRound.load(round.save());
+        assertEquals(1, loaded.getAttackingSide().getAsInt());
+        assertEquals(3, loaded.getAttackingSideId());
+        assertTrue(loaded.mayCapture(3));
+        assertFalse(loaded.mayCapture(2));
+    }
+
+    @Test
+    void anAttackingSideTheRoundDoesNotHaveIsDropped()
+    {
+        TeamsRound round = new TeamsRound("map", "con", List.of("red", "blue"), 10, 30);
+        round.setAttackingSide(5);
+        assertTrue(round.getAttackingSide().isEmpty());
+        round.setAttackingSide(0);
+        round.setAttackingSide(-1);
+        assertTrue(round.getAttackingSide().isEmpty());
+    }
 }

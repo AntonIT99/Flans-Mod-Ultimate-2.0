@@ -2,11 +2,14 @@ package com.wolffsmod.npcs.platform.client;
 
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.client.BotKeys;
+import com.wolffsmod.npcs.client.BotWaypoints;
 import com.wolffsmod.npcs.client.ClientBenchmark;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -28,6 +31,19 @@ public final class NpcsClientGameEvents
     {
         if (event.phase == TickEvent.Phase.END)
             BotKeys.tick();
+    }
+
+    @SubscribeEvent
+    public static void renderLevel(RenderLevelStageEvent event)
+    {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)
+            BotWaypoints.render(event.getPoseStack(), event.getCamera());
+    }
+
+    @SubscribeEvent
+    public static void loggingOut(ClientPlayerNetworkEvent.LoggingOut event)
+    {
+        BotWaypoints.clear();
     }
 
     @SubscribeEvent

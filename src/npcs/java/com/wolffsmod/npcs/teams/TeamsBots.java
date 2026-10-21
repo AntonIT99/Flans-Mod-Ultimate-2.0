@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -27,7 +28,7 @@ import java.util.random.RandomGenerator;
  * the bots appear on the scoreboard; and when the round ends, they are removed. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
+public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeamsSpawnProvider
 {
     private static final TeamsBots INSTANCE = new TeamsBots();
     /** Bots added to the level each tick at most, so a large force arrives over a few seconds instead of in one tick. */
@@ -43,6 +44,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
     private static final int RETRY_TICKS = 200;
     /** Spawn points nearest its squad's task a soldier may appear at. */
     private static final int NEAREST_SPAWNS = 3;
+    /** Blocks from where its duty sends it within which a bot counts as there. */
+    private static final double DUTY_ARRIVAL = 2D;
 
     @Nullable
     private BotRound round;
@@ -52,6 +55,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
     {
         FlansTeams.addListener(INSTANCE);
         FlansTeams.addRespawnRule(INSTANCE);
+        FlansTeams.addSpawnProvider(INSTANCE);
+        FlansProjectiles.addSuppressionListener(BotSuppression.INSTANCE);
+        NpcTargetSearch.setPriority(BotTargeting::rank);
     }
 
     public static void serverTick(MinecraftServer server)
@@ -94,14 +100,37 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
         INSTANCE.round = null;
         BotGunners.forget();
         BotFactions.tearDown();
+        forgetDuties(server);
         BotMarkerDisplay.clear();
+    }
+
+    private static void forgetDuties(MinecraftServer server)
+    {
+        BotRadio.forget();
+        BotDuties.forget();
+        BotSuppression.forget(server);
+        BotRoles.forget();
+    }
+
+    /** A player leading a squad may come back on it, or at its rally point, as they chose. */
+    @Override
+    public Optional<Vec3> spawnPosition(ITeamsLiveRound live, ServerPlayer player, ITeam team, Reason reason)
+    {
+        BotRound current = round;
+        if (current == null || !current.getInstance().equals(live.getInstanceId()) || player.getServer() == null)
+            return Optional.empty();
+        return BotLeaders.spawnFor(player.getServer(), current, player, ThreadLocalRandom.current());
     }
 
     /** @return where a bot should go for its squad's task, or empty for an NPC that is no bot of the round or has no task */
     static Optional<BotCommander.Order> orderFor(EntityNPCInterface npc)
     {
         BotRound current = INSTANCE.round;
-        return current == null || npc.getServer() == null ? Optional.empty() : BotCommander.order(npc.getServer(), current, npc);
+        if (current == null || npc.getServer() == null)
+            return Optional.empty();
+        // A duty, such as healing an ally or falling back, comes before the squad's task.
+        Optional<BotCommander.Order> duty = BotDuties.destination(npc).map(spot -> new BotCommander.Order(spot, DUTY_ARRIVAL, BotRole.INFANTRY, SquadTask.Kind.HOLD));
+        return duty.isPresent() ? duty : BotCommander.order(npc.getServer(), current, npc);
     }
 
     /** @return the bots of the round being played, for commands; empty between rounds */
@@ -152,6 +181,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
             track(level, current, now);
             BotPopulation.upkeep(server, current, now, random);
             BotTransports.unload(level, current, now, random);
+            BotDuties.tick(server, level, current);
+            BotSuppression.tick(level);
             eliminate(server, level, current);
             // The world saves the round as it is now, whenever it is saved next.
             BotRoundStore.get(server).setDirty();
@@ -161,6 +192,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
         if (tick % COMMAND_INTERVAL == 0)
         {
             BotCommander.plan(server, level, current);
+            BotRadio.tick(server, level, current);
+            BotOrders.sendWaypoints(server, current);
             BotCommander.scoreboard(current);
         }
         if (tick % SWEEP_INTERVAL == 0)
@@ -192,7 +225,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
             removeAll(server, ended);
         BotFactions.tearDown();
         BotGunners.forget();
+        forgetDuties(server);
         BotRoundStore.get(server).forget();
+        BotOrders.clearWaypoints(server);
         sweep(server, null);
     }
 
@@ -352,6 +387,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
         if (positions.isEmpty())
             return null;
         BotSquad squad = current.getSquads().get(slot.getSquad());
+        // A squad's fallen come back at its rally point while it has one.
+        if (squad != null && squad.getRally() != null)
+            return squad.getRally();
         SquadTask task = squad == null ? null : squad.getTask();
         if (task != null)
         {
@@ -459,6 +497,13 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule
         // The next tick removes the bots, once the round's end has been handled everywhere.
         if (round != null && round.getInstance().equals(ended.getInstanceId()))
             round.getQueue().clear();
+    }
+
+    @Override
+    public void capturePointChanged(ITeamsLiveRound live, TeamsCapturePoint point, int previousOwnerSide)
+    {
+        if (round != null && round.getInstance().equals(live.getInstanceId()))
+            BotRadio.pointChanged(point, previousOwnerSide);
     }
 
     @Override

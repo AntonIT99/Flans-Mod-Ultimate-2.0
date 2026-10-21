@@ -16,8 +16,10 @@ import java.util.UUID;
  *            that round's bot settings, as they are saved
  * @param templates
  *            every squad template
+ * @param presets
+ *            the names of the saved presets
  */
-public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag settings, List<CompoundTag> templates)
+public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag settings, List<CompoundTag> templates, List<String> presets)
 {
     private static final int MAX_TEXT = 256;
 
@@ -34,6 +36,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
     {
         rounds = List.copyOf(rounds);
         templates = List.copyOf(templates);
+        presets = List.copyOf(presets);
     }
 
     public void write(FriendlyByteBuf buffer)
@@ -47,6 +50,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
         buffer.writeVarInt(round);
         buffer.writeNbt(settings);
         buffer.writeCollection(templates, FriendlyByteBuf::writeNbt);
+        buffer.writeCollection(presets, (out, name) -> out.writeUtf(name, MAX_TEXT));
     }
 
     public static BotEditorStatePacket read(FriendlyByteBuf buffer)
@@ -55,6 +59,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
         int round = buffer.readVarInt();
         CompoundTag settings = buffer.readNbt();
         List<CompoundTag> templates = buffer.readList(FriendlyByteBuf::readNbt);
-        return new BotEditorStatePacket(rounds, round, settings == null ? new CompoundTag() : settings, templates.stream().map(tag -> tag == null ? new CompoundTag() : tag).toList());
+        List<String> presets = buffer.readList(in -> in.readUtf(MAX_TEXT));
+        return new BotEditorStatePacket(rounds, round, settings == null ? new CompoundTag() : settings, templates.stream().map(tag -> tag == null ? new CompoundTag() : tag).toList(), presets);
     }
 }

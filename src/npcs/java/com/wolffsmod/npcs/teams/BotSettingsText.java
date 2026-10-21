@@ -33,6 +33,30 @@ public final class BotSettingsText
         return joiner.toString();
     }
 
+    /** {@code class:role}, as {@code medic_class:medic, at_class:anti_tank}; a role that is not known is left out. */
+    public static Map<String, BotSettings.ClassRole> parseRoles(String text)
+    {
+        Map<String, BotSettings.ClassRole> roles = new LinkedHashMap<>();
+        for (String[] values : entries(text))
+            if (values.length > 1)
+                role(values[1]).ifPresent(role -> roles.put(values[0], role));
+        return roles;
+    }
+
+    public static String formatRoles(Map<String, BotSettings.ClassRole> roles)
+    {
+        StringJoiner joiner = new StringJoiner(JOIN);
+        roles.forEach((playerClass, role) -> joiner.add(playerClass + VALUE_SEPARATOR + role.name().toLowerCase(Locale.ROOT)));
+        return joiner.toString();
+    }
+
+    /** A role by its name, with or without the underscore: {@code anti_tank} and {@code antitank} both name the anti-tank role. */
+    public static Optional<BotSettings.ClassRole> role(String name)
+    {
+        String wanted = name.replace("_", "").toLowerCase(Locale.ROOT);
+        return Arrays.stream(BotSettings.ClassRole.values()).filter(role -> role.name().replace("_", "").toLowerCase(Locale.ROOT).equals(wanted)).findFirst();
+    }
+
     /** {@code template:count[:budget]}, a count left out being 1. */
     public static List<BotSettings.SquadEntry> parseSquads(String text)
     {

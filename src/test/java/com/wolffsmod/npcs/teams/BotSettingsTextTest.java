@@ -47,4 +47,15 @@ class BotSettingsTextTest
         assertEquals(1F, BotSettingsText.parseDecimal("NaN", 1F));
         assertTrue(BotSettingsText.parseClassWeights("  ").isEmpty());
     }
+
+    @Test
+    void classRolesReadWithOrWithoutTheUnderscore()
+    {
+        Map<String, BotSettings.ClassRole> roles = BotSettingsText.parseRoles("medic_ger:medic, panzerschreck:antitank, mg:support, odd:pilot");
+        assertEquals(BotSettings.ClassRole.MEDIC, roles.get("medic_ger"));
+        assertEquals(BotSettings.ClassRole.ANTI_TANK, roles.get("panzerschreck"));
+        assertEquals(BotSettings.ClassRole.SUPPORT, roles.get("mg"));
+        assertFalse(roles.containsKey("odd"), "a role that is not known is left out");
+        assertEquals(roles, BotSettingsText.parseRoles(BotSettingsText.formatRoles(roles)));
+    }
 }

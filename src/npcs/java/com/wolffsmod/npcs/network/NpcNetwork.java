@@ -28,6 +28,7 @@ public final class NpcNetwork
         NpcNetworkPlatform.toServer("bot_editor_action", BotEditorActionPacket.class, BotEditorActionPacket::write, BotEditorActionPacket::read, BotEditorActionPacket::handle);
         NpcNetworkPlatform.toClient("bot_editor_state", BotEditorStatePacket.class, BotEditorStatePacket::write, BotEditorStatePacket::read,
             () -> com.wolffsmod.npcs.client.NpcClientPackets::botEditor);
+        NpcNetworkPlatform.toClient("bot_waypoints", BotWaypointsPacket.class, BotWaypointsPacket::write, BotWaypointsPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::waypoints);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -41,6 +42,11 @@ public final class NpcNetwork
     }
 
     public static void sendTo(ServerPlayer player, BotOrdersStatePacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, BotWaypointsPacket packet)
     {
         NpcNetworkPlatform.sendToPlayer(player, packet);
     }

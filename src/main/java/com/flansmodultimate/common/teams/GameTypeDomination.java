@@ -54,7 +54,8 @@ public final class GameTypeDomination extends GameTypeObjective
         {
             CaptureScan scan = CaptureScan.of(point, level, round);
             int onlyTeam = scan.onlyTeamId();
-            CaptureRules.Result result = CaptureRules.domination(point.getCaptureState(), onlyTeam, scan.count(onlyTeam), scan.isContested(), captureTicks);
+            CaptureRules.Result result = CaptureRules.restrict(point.getCaptureState(),
+                CaptureRules.domination(point.getCaptureState(), onlyTeam, scan.count(onlyTeam), scan.isContested(), captureTicks), round::mayCapture);
             point.setCaptureState(result.state());
             if (result.event() == CaptureRules.Event.CAPTURED)
                 pointCaptured(manager, round, point, scan, result.state().ownerTeamId(), "message.flansmodultimate.teams.point_captured");

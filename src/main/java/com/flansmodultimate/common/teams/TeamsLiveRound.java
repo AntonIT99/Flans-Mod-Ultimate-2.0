@@ -97,6 +97,13 @@ public final class TeamsLiveRound implements ITeamsLiveRound
     }
 
     @Override
+    public boolean mayCapture(int side)
+    {
+        List<Integer> sideIds = round.getSideIds();
+        return side < 0 || side >= sideIds.size() || round.mayCapture(sideIds.get(side));
+    }
+
+    @Override
     public List<TeamsCapturePoint> getCapturePoints()
     {
         GameType type = round.getGametype();

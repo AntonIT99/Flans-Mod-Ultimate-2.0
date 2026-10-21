@@ -65,7 +65,7 @@ public final class GameTypeConquest extends GameTypeObjective
         for (ITeamCapturePoint point : points)
         {
             CaptureScan scan = CaptureScan.of(point, level, round);
-            CaptureRules.Result result = CaptureRules.pressure(point.getCaptureState(), scan.counts(), captureTicks);
+            CaptureRules.Result result = CaptureRules.restrict(point.getCaptureState(), CaptureRules.pressure(point.getCaptureState(), scan.counts(), captureTicks), round::mayCapture);
             point.setCaptureState(result.state());
             if (result.event() == CaptureRules.Event.CAPTURED)
                 pointCaptured(manager, round, point, scan, result.state().ownerTeamId(), "message.flansmodultimate.teams.point_captured");
