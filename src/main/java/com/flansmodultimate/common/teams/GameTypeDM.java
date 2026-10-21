@@ -3,6 +3,7 @@ package com.flansmodultimate.common.teams;
 import com.flansmodultimate.common.types.Team;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 /** Free-for-all deathmatch. */
 public final class GameTypeDM extends GameType
@@ -16,6 +17,13 @@ public final class GameTypeDM extends GameType
     public boolean canPlayerBeAttacked(ServerPlayer victim, ServerPlayer attacker)
     {
         return victim != attacker && getPlayerTeam(victim) != Team.SPECTATORS && getPlayerTeam(attacker) != Team.SPECTATORS;
+    }
+
+    /** Everyone fights everyone here, combatants included. */
+    @Override
+    public boolean canBeAttacked(LivingEntity victim, LivingEntity attacker)
+    {
+        return victim != attacker && TeamsCombatants.getTeam(victim) != Team.SPECTATORS && TeamsCombatants.getTeam(attacker) != Team.SPECTATORS;
     }
 
     @Override

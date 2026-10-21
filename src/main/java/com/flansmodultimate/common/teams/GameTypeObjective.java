@@ -80,8 +80,23 @@ public abstract class GameTypeObjective extends GameTypeTDM
                 point.setRoundId(roundId);
             }
         }
+        int[] ownersBefore = points.stream().mapToInt(point -> point.getCaptureState().ownerTeamId()).toArray();
         tickObjectives(manager, round, level, points);
+        announceOwnerChanges(manager, round, points, ownersBefore);
         syncChangedObjectives(manager, points);
+    }
+
+    /** Tells the addons about every point whose owner this tick changed. */
+    private static void announceOwnerChanges(TeamsManager manager, TeamsRound round, List<ITeamCapturePoint> points, int[] ownersBefore)
+    {
+        for (int i = 0; i < points.size(); i++)
+        {
+            ITeamCapturePoint point = points.get(i);
+            int before = ownersBefore[i];
+            if (point.getCaptureState().ownerTeamId() == before)
+                continue;
+            manager.getLiveRound().ifPresent(live -> TeamsListeners.capturePointChanged(live, live.toApi(point), round.getSideIndex(before)));
+        }
     }
 
     /** Tells clients about the points as soon as one changes hands or its progress moved visibly. */

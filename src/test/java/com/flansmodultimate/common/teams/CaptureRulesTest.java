@@ -206,6 +206,44 @@ class CaptureRulesTest
     }
 
     @Test
+    void aLighterCombatantTakesAPointMoreSlowly()
+    {
+        CaptureRules.Result half = repeat(CaptureState.NEUTRAL, TICKS, state -> CaptureRules.domination(state, FIRST, 0.5F, false, TICKS));
+        assertEquals(0, half.state().ownerTeamId());
+        assertEquals(0.5F, half.state().progress(), 1.0E-4F);
+
+        CaptureRules.Result done = repeat(half.state(), TICKS, state -> CaptureRules.domination(state, FIRST, 0.5F, false, TICKS));
+        assertTrue(done.state().isHeldBy(FIRST));
+    }
+
+    @Test
+    void weightlessPresenceLetsAPointDecayAsAnEmptyOne()
+    {
+        CaptureState partial = new CaptureState(0, FIRST, 0.5F, false);
+        assertEquals(CaptureRules.decay(partial, TICKS), CaptureRules.domination(partial, FIRST, 0F, false, TICKS).state());
+    }
+
+    @Test
+    void fractionalWeightsThatBalanceHoldAPointStill()
+    {
+        CaptureState state = new CaptureState(FIRST, 0, 0.6F, false);
+        // 0.1 + 0.2 is not exactly 0.3 in floating point; the sides still balance.
+        CaptureRules.Result result = CaptureRules.pressure(state, FIRST, 0.1F + 0.2F, SECOND, 0.3F, TICKS);
+        assertEquals(0.6F, result.state().progress());
+        assertTrue(result.state().contested());
+    }
+
+    @Test
+    void weightsByEveryKindOfNumberAreAccepted()
+    {
+        CaptureRules.Result byFloat = CaptureRules.pressure(CaptureState.NEUTRAL, java.util.Map.of(FIRST, 1.5F, SECOND, 0.5F), TICKS);
+        CaptureRules.Result byPair = CaptureRules.pressure(CaptureState.NEUTRAL, FIRST, 1.5F, SECOND, 0.5F, TICKS);
+        assertEquals(byPair, byFloat);
+        assertEquals(FIRST, byFloat.state().capturingTeamId());
+        assertEquals(1F / TICKS, byFloat.state().progress(), 1.0E-6F);
+    }
+
+    @Test
     void captureStateClampsWhatItIsGiven()
     {
         CaptureState state = new CaptureState(-1, -4, 3F, false);

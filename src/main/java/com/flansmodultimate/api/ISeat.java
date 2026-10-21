@@ -10,13 +10,16 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
 /**
  * A seat of a driveable: the driver's position or a passenger's, possibly manning a gun.
  *
- * <p>The gun state is synchronised to clients, so it can be read on both sides.</p>
+ * <p>
+ * The gun state is synchronised to clients, so it can be read on both sides.
+ * </p>
  */
 @ApiStatus.Experimental
 @ApiStatus.NonExtendable
@@ -77,4 +80,55 @@ public interface ISeat
      * @return the name of the ammunition the seat gun is loaded with, empty when it has none
      */
     Component getGunAmmoName();
+
+    /**
+     * @return where the seat gun's first barrel fires from now, in world coordinates; empty when the seat mounts no
+     *         gun of its own. Server side.
+     */
+    Optional<Vec3> getGunOrigin();
+
+    /**
+     * @return the unit world direction the seat gun fires along now; empty when the seat mounts no gun of its own.
+     *         Server side.
+     */
+    Optional<Vec3> getGunDirection();
+
+    /**
+     * Turns the seat for a non-player occupant, such as an NPC gunner, the way a player's input would: at the seat's
+     * aiming speed, within its traverse and elevation limits. Call it once per tick while the occupant aims; turning
+     * that a call cannot finish carries on from the next call. A player's own input always wins: the call is refused
+     * while a player sits in the seat. Server thread.
+     *
+     * @param yaw
+     *            the aim to turn towards, in degrees relative to the driveable, as {@link #getAimYaw()}
+     * @param pitch
+     *            the aim to turn towards, in degrees relative to the driveable, as {@link #getAimPitch()}
+     * @return whether the seat took the request: it is on the server, part of a driveable, and occupied by a living
+     *         entity that is not a player
+     */
+    boolean setAutomatedAim(float yaw, float pitch);
+
+    /**
+     * Turns the seat so its gun points at a world position, under the conditions of {@link #setAutomatedAim}. The seat
+     * aims straight at the position; leading a moving target or dropping for range is up to the caller.
+     *
+     * @param target
+     *            the world position to point at
+     * @return whether the seat took the request; false as well when the seat mounts no gun of its own
+     */
+    boolean aimAt(Vec3 target);
+
+    /**
+     * Holds or releases the seat's triggers for a non-player occupant, under the conditions of
+     * {@link #setAutomatedAim}. The seat gun fires on the primary trigger at its own cadence and fire mode for as long
+     * as it is held, and only with ammunition in the driveable. The triggers stay as set until changed, and are released
+     * when the occupant leaves. Server thread.
+     *
+     * @param primary
+     *            whether the primary trigger is held
+     * @param secondary
+     *            whether the secondary trigger is held
+     * @return whether the seat took the request
+     */
+    boolean setAutomatedTriggers(boolean primary, boolean secondary);
 }

@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -127,7 +128,19 @@ public final class GameTypeAssault extends GameTypeObjective
     {
         Team victimTeam = manager.getPlayerTeam(victim);
         super.playerKilled(manager, victim, source);
-        // Every attacker who dies costs a reinforcement, however it happened.
+        spendReinforcement(manager, victimTeam);
+    }
+
+    @Override
+    public void combatantKilled(TeamsManager manager, LivingEntity victim, Team victimTeam, DamageSource source)
+    {
+        super.combatantKilled(manager, victim, victimTeam, source);
+        spendReinforcement(manager, victimTeam);
+    }
+
+    /** Every attacker who dies, player or combatant, costs a reinforcement, however it happened. */
+    private void spendReinforcement(TeamsManager manager, @Nullable Team victimTeam)
+    {
         TeamsRound round = manager.getCurrentRound().orElse(null);
         Team attackers = round == null ? null : round.getSideLeader(getAttackingTeamId(round));
         if (attackers != null && round.areAllied(attackers, victimTeam))

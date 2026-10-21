@@ -2,6 +2,9 @@ package com.flansmodultimate.common.teams;
 
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,6 +98,40 @@ class TeamsRoundTest
         TeamsRound.Lineup untidy = TeamsRound.parseLineup(List.of("red+,", "+blue"));
         assertEquals(List.of("red", "blue"), untidy.teamIds());
         assertEquals(List.of(0, 1), untidy.sides());
+    }
+
+    @Test
+    void addonDataIsSavedWithTheRoundByKey()
+    {
+        TeamsRound round = new TeamsRound("map", "conquest", List.of("red", "blue"), 10, 30);
+        ResourceLocation npcs = ResourceLocation.fromNamespaceAndPath("wolffsmodnpcs", "bots");
+        ResourceLocation other = ResourceLocation.fromNamespaceAndPath("other", "bots");
+        CompoundTag data = new CompoundTag();
+        data.putInt("count", 24);
+        round.setExtensionData(npcs, data);
+        data.putInt("count", 99);
+
+        TeamsRound loaded = TeamsRound.load(round.save());
+        assertEquals(24, loaded.getExtensionData(npcs).getInt("count"));
+        assertTrue(loaded.getExtensionData(other).isEmpty());
+
+        loaded.getExtensionData(npcs).putInt("count", 1);
+        assertEquals(24, loaded.getExtensionData(npcs).getInt("count"), "readers get a copy");
+
+        loaded.setExtensionData(npcs, new CompoundTag());
+        assertTrue(TeamsRound.load(loaded.save()).getExtensionData(npcs).isEmpty());
+    }
+
+    @Test
+    void sideIndicesFollowTheOrderSidesWereListedIn()
+    {
+        TeamsRound round = new TeamsRound("map", "tdm", List.of("us", "germany", "uk", "italy"), List.of(7, 3, 7, 3), 10, 30);
+        int firstSide = round.getSideId(TeamsRound.FIRST_TEAM_ID);
+        int secondSide = round.getSideId(TeamsRound.FIRST_TEAM_ID + 1);
+        assertEquals(0, round.getSideIndex(firstSide));
+        assertEquals(1, round.getSideIndex(secondSide));
+        assertEquals(-1, round.getSideIndex(0));
+        assertEquals(-1, round.getSideIndex(1));
     }
 
     @Test

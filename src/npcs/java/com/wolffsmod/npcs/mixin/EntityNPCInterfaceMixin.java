@@ -64,6 +64,7 @@ import java.util.Optional;
  * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
+ * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
  * </ul>
  *
@@ -79,6 +80,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     implements
         IEquipmentPolicy,
         IFlanNpcDistance,
+        IFlanSeatOccupant,
         ILivingVisualEffects,
         IEngineSoundSource,
         IFlanPartTarget,

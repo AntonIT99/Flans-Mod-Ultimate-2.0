@@ -9,10 +9,18 @@ import java.util.Map;
  * Capture arithmetic shared by Domination, Conquest and Assault, ported from the game types of
  * the Labjac fork. Each rule advances a point by one server tick and reports whether that tick
  * changed its owner; the game types own everything else.
+ *
+ * <p>
+ * Presence on a point is a weight rather than a head count: a player weighs 1 and a combatant
+ * what its addon gave it, so the pace of a capture follows the summed weights.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CaptureRules
 {
+    /** Weights closer than this count as equal, so sums of fractional weights balance as they should. */
+    private static final float EQUAL_WEIGHT = 1.0E-4F;
+
     public enum Event
     {
         NONE, CAPTURED, NEUTRALIZED
@@ -62,56 +70,56 @@ public final class CaptureRules
     }
 
     /**
-     * Domination: a point only moves while a single team stands on it, at a pace set by how many
-     * of them there are. Any enemy presence freezes it.
+     * Domination: a point only moves while a single team stands on it, at a pace set by its weight
+     * there. Any enemy presence freezes it.
      */
-    public static Result domination(CaptureState state, int onlyTeamId, int playersOnPoint, boolean contested, int captureTicks)
+    public static Result domination(CaptureState state, int onlyTeamId, float weightOnPoint, boolean contested, int captureTicks)
     {
         if (contested)
             return Result.unchanged(state, true);
-        if (onlyTeamId == 0)
+        if (onlyTeamId == 0 || weightOnPoint <= 0F)
             return new Result(decay(state, captureTicks), Event.NONE);
-        return advance(state, onlyTeamId, Math.max(1, playersOnPoint), false, captureTicks);
+        return advance(state, onlyTeamId, weightOnPoint, false, captureTicks);
     }
 
     /**
-     * Conquest: both teams may stand on the point; the side with more players makes progress at
-     * the pace of its head-count advantage, and equal numbers hold it still.
+     * Conquest: both teams may stand on the point; the side with more weight makes progress at
+     * the pace of its advantage, and equal weights hold it still.
      */
-    public static Result pressure(CaptureState state, int firstTeamId, int firstCount, int secondTeamId, int secondCount, int captureTicks)
+    public static Result pressure(CaptureState state, int firstTeamId, float firstWeight, int secondTeamId, float secondWeight, int captureTicks)
     {
-        if (firstCount <= 0 && secondCount <= 0)
+        if (firstWeight <= 0F && secondWeight <= 0F)
             return new Result(decay(state, captureTicks), Event.NONE);
-        boolean contested = firstCount > 0 && secondCount > 0;
-        int net = firstCount - secondCount;
-        if (net == 0)
+        boolean contested = firstWeight > 0F && secondWeight > 0F;
+        float net = firstWeight - secondWeight;
+        if (Math.abs(net) < EQUAL_WEIGHT)
             return Result.unchanged(state, contested);
-        return advance(state, net > 0 ? firstTeamId : secondTeamId, Math.abs(net), contested, captureTicks);
+        return advance(state, net > 0F ? firstTeamId : secondTeamId, Math.abs(net), contested, captureTicks);
     }
 
     /**
-     * Conquest between any number of sides: the side with the most players on the point makes
+     * Conquest between any number of sides: the side with the most weight on the point makes
      * progress at the pace of its lead over the next strongest one, and a shared lead holds it still.
      *
-     * @param counts
-     *            players on the point by side id
+     * @param weights
+     *            weight on the point by side id
      */
-    public static Result pressure(CaptureState state, Map<Integer, Integer> counts, int captureTicks)
+    public static Result pressure(CaptureState state, Map<Integer, ? extends Number> weights, int captureTicks)
     {
         int leadingSideId = 0;
-        int most = 0;
-        int nextBest = 0;
-        for (Map.Entry<Integer, Integer> entry : counts.entrySet())
+        float most = 0F;
+        float nextBest = 0F;
+        for (Map.Entry<Integer, ? extends Number> entry : weights.entrySet())
         {
-            int count = entry.getValue();
-            if (count > most)
+            float weight = entry.getValue().floatValue();
+            if (weight > most)
             {
                 nextBest = most;
-                most = count;
+                most = weight;
                 leadingSideId = entry.getKey();
             }
-            else if (count > nextBest)
-                nextBest = count;
+            else if (weight > nextBest)
+                nextBest = weight;
         }
         return pressure(state, leadingSideId, most, 0, nextBest, captureTicks);
     }
@@ -121,17 +129,17 @@ public final class CaptureRules
      * defenders outnumbering the attackers on a point they still own restore it at once instead
      * of having to win it back tick by tick.
      */
-    public static Result assault(CaptureState state, int attackerTeamId, int attackers, int defenderTeamId, int defenders, int captureTicks)
+    public static Result assault(CaptureState state, int attackerTeamId, float attackers, int defenderTeamId, float defenders, int captureTicks)
     {
-        if (attackers <= 0 && defenders <= 0)
+        if (attackers <= 0F && defenders <= 0F)
             return new Result(decay(state, captureTicks), Event.NONE);
-        boolean contested = attackers > 0 && defenders > 0;
-        int net = attackers - defenders;
-        if (net == 0)
+        boolean contested = attackers > 0F && defenders > 0F;
+        float net = attackers - defenders;
+        if (Math.abs(net) < EQUAL_WEIGHT)
             return Result.unchanged(state, contested);
-        if (net < 0 && state.ownerTeamId() == defenderTeamId)
+        if (net < 0F && state.ownerTeamId() == defenderTeamId)
             return Result.of(defenderTeamId, 0, 1F, contested, Event.NONE);
-        int active = net > 0 ? attackerTeamId : defenderTeamId;
+        int active = net > 0F ? attackerTeamId : defenderTeamId;
         if (state.ownerTeamId() == active)
             return Result.unchanged(state, contested);
         return advance(state, active, Math.abs(net), contested, captureTicks);
@@ -152,13 +160,13 @@ public final class CaptureRules
         return progress >= 1F ? Result.of(activeTeamId, 0, 1F, contested, Event.CAPTURED) : Result.of(0, activeTeamId, progress, contested, Event.NONE);
     }
 
-    /** One tick of {@code activeTeamId} working on the point with the given head-count weight. */
-    private static Result advance(CaptureState state, int activeTeamId, int weight, boolean contested, int captureTicks)
+    /** One tick of {@code activeTeamId} working on the point with the given weight. */
+    private static Result advance(CaptureState state, int activeTeamId, float weight, boolean contested, int captureTicks)
     {
         int owner = state.ownerTeamId();
         int capturing;
         float progress = state.progress();
-        float delta = (float) weight / Math.max(1, captureTicks);
+        float delta = weight / Math.max(1, captureTicks);
         Event event = Event.NONE;
 
         if (owner == activeTeamId)
