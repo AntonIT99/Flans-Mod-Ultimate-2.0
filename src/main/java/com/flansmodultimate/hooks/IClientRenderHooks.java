@@ -1,7 +1,9 @@
 package com.flansmodultimate.hooks;
 
 import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
@@ -62,6 +64,21 @@ public interface IClientRenderHooks
 
     /** A vehicle smoke-launcher shell, flown and burst entirely on the client. */
     void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks);
+
+    /** Gives off the smoke, fire, steam and sparks of the driveable's damage and, once it is a wreck, of its burning out. Client tick. */
+    void tickDriveableDamageEffects(Driveable driveable);
+
+    /** Shows parts being shot off the driveable together: a burst where each was, and each thrown clear with the parts it carries. */
+    void onDriveablePartsDestroyed(Driveable driveable, List<EnumDriveablePart> parts);
+
+    /** Plays the death of the driveable, as it turns into a wreck or just before it is removed. */
+    void onDriveableWrecked(Driveable driveable);
+
+    /** Shows a wreck blown apart by explosives, just before it is removed. */
+    void onDriveableBrokenUp(Driveable driveable);
+
+    /** Leaves a scorch mark on the ground below a point, as a fire or a crash does. */
+    void spawnScorchMark(Vec3 position, float radius);
 
     // Mirrors Level#addParticle: position and velocity, plus the effect options.
     @SuppressWarnings("java:S107")

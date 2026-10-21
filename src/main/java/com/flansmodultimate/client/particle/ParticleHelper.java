@@ -180,6 +180,7 @@ public final class ParticleHelper
     /** Advances every sustained emission, smoke shell and staged explosion. Driven from the client tick. */
     public static void tick()
     {
+        ParticleWind.tick();
         ExplosionSpectacle.tick();
         if (ACTIVE_EMISSIONS.isEmpty() && SMOKE_SHELLS.isEmpty())
             return;
@@ -423,9 +424,18 @@ public final class ParticleHelper
      * of puffs tens of blocks wide is not the swarm of distant specks that thinning exists to remove,
      * and thinning it leaves a column with holes in it. The per-tick budget still applies.
      */
-    static boolean shouldSpawnLandmark(double x, double y, double z, double landmarkRange)
+    public static boolean shouldSpawnLandmark(double x, double y, double z, double landmarkRange)
     {
         return shouldSpawn(x, y, z, Math.max(DEFAULT_PARTICLE_RANGE, landmarkRange), false);
+    }
+
+    /**
+     * As {@link #shouldSpawnLandmark}, for an ordinary effect with its own natural distance: it thins with distance
+     * toward the edge of that range like any other particle.
+     */
+    public static boolean shouldSpawnEffect(double x, double y, double z, double naturalRange)
+    {
+        return shouldSpawn(x, y, z, naturalRange, true);
     }
 
     /**

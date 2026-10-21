@@ -1,7 +1,9 @@
 package com.flansmodultimate.hooks.server;
 
 import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
@@ -49,6 +51,36 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
 
     @Override
     public void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void tickDriveableDamageEffects(Driveable driveable)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void onDriveablePartsDestroyed(Driveable driveable, List<EnumDriveablePart> parts)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void onDriveableWrecked(Driveable driveable)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void onDriveableBrokenUp(Driveable driveable)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void spawnScorchMark(Vec3 position, float radius)
     {
         /* no-op */
     }

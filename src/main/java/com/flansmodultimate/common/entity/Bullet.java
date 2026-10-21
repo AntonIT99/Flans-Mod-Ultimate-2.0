@@ -279,7 +279,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             return false;
         if (entity instanceof Player player && player.isSpectator())
             return false;
-        return !(entity instanceof Driveable driveable) || !driveable.isVarFlare() && driveable.getTicksFlareUsing() <= 0;
+        return !(entity instanceof Driveable driveable) || !driveable.isWreck() && !driveable.isVarFlare() && driveable.getTicksFlareUsing() <= 0;
     }
 
     @Override

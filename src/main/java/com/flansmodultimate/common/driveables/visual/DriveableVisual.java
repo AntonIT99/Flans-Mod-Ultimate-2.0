@@ -16,6 +16,21 @@ public interface DriveableVisual
 
     boolean isPartIntact(@Nullable EnumDriveablePart part);
 
+    /**
+     * Whether the model draws the part. A part is drawn while it is intact; a wreck still draws its hull although its
+     * core is lost, and a piece shot off a driveable draws only itself.
+     */
+    default boolean isPartDrawn(@Nullable EnumDriveablePart part)
+    {
+        return isPartIntact(part);
+    }
+
+    /** @return the multiplier the part's colour is drawn with: 1 for clean, lower for scorched and burnt */
+    default float getPartTint(@Nullable EnumDriveablePart part)
+    {
+        return 1F;
+    }
+
     /** @return the seat's aim, or {@code null} when the seat is not there: its registered gun is then not drawn */
     @Nullable
     SeatVisual getSeat(int index);

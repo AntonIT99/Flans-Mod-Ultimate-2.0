@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.driveables.damage.DriveableExplosion;
+import com.flansmodultimate.common.driveables.damage.PartDamageKind;
 import com.flansmodultimate.common.driveables.optics.VehicleOptics;
 import com.flansmodultimate.common.driveables.optics.VehicleOpticsReader;
 import com.flansmodultimate.common.driveables.physics.*;
@@ -88,6 +89,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Original, unscaled definitions retained so repeated finalization is idempotent. */
     private final Map<EnumDriveablePart, CollisionBox> authoredHealth = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, DriveableExplosion> partDeathExplosions = new EnumMap<>(EnumDriveablePart.class);
+    /** Damage looks a type file gives its parts instead of the defaults their names imply. */
+    @Getter(AccessLevel.NONE)
+    protected final Map<EnumDriveablePart, PartDamageKind> partDamageKinds = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, List<RecipeIngredient>> partwiseRecipe = new EnumMap<>(EnumDriveablePart.class);
     protected final List<RecipeIngredient> driveableRecipe = new ArrayList<>();
 
@@ -301,6 +305,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float deathExplosionDamageVsPlayer = 1F;
     protected float deathExplosionDamageVsPlane = 1F;
     protected float deathExplosionDamageVsVehicle = 1F;
+    /** Whether a destroyed machine with ammunition aboard cooks off; off for machines that carry none worth showing. */
+    protected boolean cookOff = true;
+    /** Chance that a cook-off throws the turret off, or negative for the default. */
+    protected float turretTossChance = -1F;
+    /** Whether the machine leaves no wreck when destroyed, whatever the server allows. */
+    protected boolean noWreck;
 
     protected String lockedOnSound = StringUtils.EMPTY;
     protected int soundTime;
@@ -594,6 +604,16 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             partDeathExplosions.put(part, new DriveableExplosion(Float.parseFloat(values[1]), Float.parseFloat(values[2]), parseBoolean(values[3]), living, player, plane, vehicle));
         });
 
+        forEachLine("PartDamageEffect", file, 2, values ->
+        {
+            EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
+            PartDamageKind kind = PartDamageKind.parse(values[1]).orElse(null);
+            if (part == null || kind == null)
+                logError("PartDamageEffect names an unknown part or damage effect: " + String.join(" ", values), file);
+            else
+                partDamageKinds.put(part, kind);
+        });
+
         readPartRecipes("AddRecipeParts", file);
         readPartRecipes("AddRecipePart", file);
         readPartRecipes("AddRecipieParts", file);
@@ -769,6 +789,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         deathExplosionDamageVsPlayer = readValue("DeathExplosionDamageVsPlayer", deathExplosionDamageVsPlayer, file);
         deathExplosionDamageVsPlane = readValue("DeathExplosionDamageVsPlane", deathExplosionDamageVsPlane, file);
         deathExplosionDamageVsVehicle = readValue("DeathExplosionDamageVsVehicle", deathExplosionDamageVsVehicle, file);
+        cookOff = readValue("CookOff", cookOff, file);
+        turretTossChance = readValue("TurretTossChance", turretTossChance, file);
+        noWreck = readValue("NoWreck", noWreck, file);
         fallDamageFactor = readValue("FallDamageFactor", fallDamageFactor, file);
 
         maxThrottle = readValue("MaxThrottle", maxThrottle, file);
@@ -1195,6 +1218,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public DriveablePosition getWheelPosition(int id)
     {
         return id >= 0 && id < wheelPositions.size() ? wheelPositions.get(id) : null;
+    }
+
+    /** @return what the part shows as it is damaged: the type file's {@code PartDamageEffect}, or the default for its name */
+    public PartDamageKind getPartDamageKind(@Nullable EnumDriveablePart part)
+    {
+        PartDamageKind kind = part == null ? null : partDamageKinds.get(part);
+        return kind != null ? kind : PartDamageKind.defaultFor(part);
     }
 
     /** Water-only hulls qualify; amphibious ground vehicles and aircraft with flight controls do not. */

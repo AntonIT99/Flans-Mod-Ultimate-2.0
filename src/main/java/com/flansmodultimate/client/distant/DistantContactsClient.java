@@ -66,7 +66,8 @@ public final class DistantContactsClient
         // Tracked, but too far away to be drawn as entities
         for (Entity entity : level.entitiesForRendering())
         {
-            if (entity instanceof Driveable driveable && driveable.isAlive() && driveable != ownVehicle && driveable.getConfigType() != null && !driveable.shouldRender(camera.x, camera.y, camera.z))
+            if (entity instanceof Driveable driveable && driveable.isAlive() && !driveable.isWreck() && driveable != ownVehicle && driveable.getConfigType() != null
+                && !driveable.shouldRender(camera.x, camera.y, camera.z))
             {
                 proxies.computeIfAbsent(driveable.getId(), Proxy::new).follow(driveable);
                 live.add(driveable.getId());

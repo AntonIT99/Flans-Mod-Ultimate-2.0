@@ -4,6 +4,7 @@ import com.flansmod.client.model.*;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.model.MuzzleMeasurements;
@@ -13,8 +14,10 @@ import com.flansmodultimate.client.render.hud.KillMessageData;
 import com.flansmodultimate.client.render.hud.KillMessageFeed;
 import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.client.render.layer.PlayerSkinOverrides;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.teams.PlayerClassSkin;
@@ -85,6 +88,36 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks)
     {
         ParticleHelper.launchSmokeShell(x, y, z, vx, vy, vz, fuseTicks);
+    }
+
+    @Override
+    public void tickDriveableDamageEffects(Driveable driveable)
+    {
+        DriveableDamageEffects.tick(driveable);
+    }
+
+    @Override
+    public void onDriveablePartsDestroyed(Driveable driveable, List<EnumDriveablePart> parts)
+    {
+        DriveableDamageEffects.partsDestroyed(driveable, parts);
+    }
+
+    @Override
+    public void onDriveableWrecked(Driveable driveable)
+    {
+        DriveableDamageEffects.wrecked(driveable);
+    }
+
+    @Override
+    public void onDriveableBrokenUp(Driveable driveable)
+    {
+        DriveableDamageEffects.brokenUp(driveable);
+    }
+
+    @Override
+    public void spawnScorchMark(Vec3 position, float radius)
+    {
+        DriveableDamageEffects.scorch(position, radius);
     }
 
     @Override

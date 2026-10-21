@@ -104,6 +104,8 @@ public final class ModClientConfig
     public final int maxFlansParticlesPerTick;
     public final int maxFragSparks;
     public final double fragSparkMultiplier;
+    public final double driveableDamageEffectDensity;
+    public final int maxDetachedDriveablePieces;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -233,6 +235,8 @@ public final class ModClientConfig
     private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
     private static final Supplier<Integer> MAX_FRAG_SPARKS;
     private static final Supplier<Double> FRAG_SPARK_MULTIPLIER;
+    private static final Supplier<Double> DRIVEABLE_DAMAGE_EFFECT_DENSITY;
+    private static final Supplier<Integer> MAX_DETACHED_DRIVEABLE_PIECES;
 
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -473,6 +477,11 @@ public final class ModClientConfig
         FRAG_SPARK_MULTIPLIER = builder.comment(
             "Multiplier applied to the fragmentation spark count after limiting it to the burst's effective fragments. The result still cannot exceed the effective fragment count or maxFragSparks.")
             .defineInRange("fragSparkMultiplier", 0.25D, 0D, 4D);
+        DRIVEABLE_DAMAGE_EFFECT_DENSITY = builder
+            .comment("Multiplies the smoke, fire, steam and sparks damaged driveables, wrecks and NPC vehicles give off. 0 turns these damage effects off; destruction blasts are unaffected.")
+            .defineInRange("driveableDamageEffectDensity", 1.0D, 0D, 3D);
+        MAX_DETACHED_DRIVEABLE_PIECES = builder.comment("Maximum pieces shot off driveables, such as turrets, wings and limbs, drawn tumbling to the ground at once. 0 turns them off.")
+            .defineInRange("maxDetachedDriveablePieces", 24, 0, 128);
         builder.pop();
 
         builder.push("Input Settings");
@@ -651,6 +660,8 @@ public final class ModClientConfig
         maxFlansParticlesPerTick = MAX_FLANS_PARTICLES_PER_TICK.get();
         maxFragSparks = MAX_FRAG_SPARKS.get();
         fragSparkMultiplier = FRAG_SPARK_MULTIPLIER.get();
+        driveableDamageEffectDensity = DRIVEABLE_DAMAGE_EFFECT_DENSITY.get();
+        maxDetachedDriveablePieces = MAX_DETACHED_DRIVEABLE_PIECES.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();

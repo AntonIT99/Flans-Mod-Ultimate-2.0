@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.*;
+import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
@@ -213,6 +214,7 @@ public final class ClientEventHandler
         GunScreenShake.tick();
         ModClient.tick();
         ParticleHelper.tick();
+        DriveableDamageEffects.tickClient();
         DistantHorizonsClient.tick();
     }
 
@@ -258,7 +260,10 @@ public final class ClientEventHandler
     {
         VehicleThermalRenderer.render(event);
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES)
+        {
             DistantBoxRenderer.render(event.getPoseStack(), event.getCamera(), ClientPlatform.partialTick(event));
+            DriveableDamageEffects.render(event.getPoseStack(), event.getCamera(), ClientPlatform.partialTick(event));
+        }
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         float partialTick = ClientPlatform.partialTick(event);
@@ -531,6 +536,7 @@ public final class ClientEventHandler
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
         com.flansmodultimate.network.client.debug.PacketDebugHitboxes.clearSession();
+        DriveableDamageEffects.clear();
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();

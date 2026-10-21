@@ -670,7 +670,9 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return getPassengers().isEmpty() && passenger instanceof LivingEntity && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER));
+        // Nobody boards a wreck, NPC gunners included.
+        return getPassengers().isEmpty() && (driveable == null || !driveable.isWreck()) && passenger instanceof LivingEntity
+            && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER));
     }
 
     @Override

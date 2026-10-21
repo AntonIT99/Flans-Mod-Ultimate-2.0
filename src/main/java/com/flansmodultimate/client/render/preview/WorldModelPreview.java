@@ -2,7 +2,9 @@ package com.flansmodultimate.client.render.preview;
 
 import com.flansmod.client.model.*;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.api.MountAim;
 import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.client.damage.DetachedPieces;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
@@ -10,6 +12,8 @@ import com.flansmodultimate.client.render.entity.*;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
+import com.flansmodultimate.common.driveables.parts.PartBodies;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.render.ShaderPlatform;
@@ -29,6 +33,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -37,6 +42,9 @@ public final class WorldModelPreview
 {
     private static final Map<Entity, History> histories = new WeakHashMap<>();
     private static float viewProjectionPixels;
+
+    /** The model at rest with its engine off: guns forward, doors closed, gear down, nothing turning. */
+    private static final ModelPose STILL = new ModelPose(MountAim.REST, List.of(), 0F, 0F, 0F, false, true, false, false, 0, 0);
 
     private WorldModelPreview()
     {}
@@ -79,8 +87,15 @@ public final class WorldModelPreview
                 ? DriveableImpostorCache.modelRadius(driveableModel, driveableType)
                 : measureRadius(type);
         }
+        // An entity with parts broken off or scorched needs the posed geometry, which can draw them so.
+        PartBody body = PartBodies.of(entity);
+        boolean marked = PosedModelVisual.isMarked(entity, body);
+        // An entity wearing a part body is always posed, still if it gave no pose, so that its pose is known when a part comes off.
+        ModelPose drawnPose = modelPose == null && body != null ? STILL : modelPose;
         // Stepped before any detail decision, so the motion carries on while an impostor is shown.
-        ModelDriveable.RenderState state = modelPose == null ? null : history.animate(type, entity.tickCount, partialTick, modelPose);
+        ModelDriveable.RenderState state = drawnPose == null ? null : history.animate(type, entity.tickCount, partialTick, drawnPose);
+        if (history.visual != null)
+            history.visual.setOwner(entity, body);
         boolean translucent = config.useTranslucentRendering(type);
         boolean cull = config.useCullingRendering(type);
         int colour = type.getColour();
@@ -118,7 +133,7 @@ public final class WorldModelPreview
                     history.billboard.scale(parentScale, parentScale, parentScale);
                     var result = DriveableImpostorCache.renderPosedOrPrepare(driveableModel, driveableType, texture, translucent, cull, typeRed, typeGreen, typeBlue, history.billboard, buffers, light,
                         overlay, red, green, blue, alpha, parentScale, projectionPixels, distance, cameraOffset.scale(1D / parentScale), history.rotation,
-                        !shadow && alpha == 1F && !(type instanceof MechaType), history.usingImpostor);
+                        !shadow && alpha == 1F && !(type instanceof MechaType) && !marked, history.usingImpostor);
                     if (!shadow)
                         history.usingImpostor = result.usingImpostor();
                     if (result.rendered())
@@ -132,11 +147,14 @@ public final class WorldModelPreview
             if (shadow && model instanceof ModelDriveable)
                 RenderDiagnostics.countShadowDriveable(false);
 
-            if (model instanceof ModelDriveable)
+            if (model instanceof ModelDriveable driveableModel)
             {
                 LegacyTransformApplier.applyModelTransform(model, type, pose);
                 float scale = type.getModelScale();
                 pose.scale(scale, scale, scale);
+                if (world && !shadow && state != null)
+                    DetachedPieces.capture(entity, driveableModel, state, history.visual, texture, translucent, cull, red * typeRed, green * typeGreen, blue * typeBlue, entityPose.pose(),
+                        pose.last().pose(), entity.getPosition(partialTick).add(renderOffset));
             }
             int trackGroup = 0;
             if (lod && model instanceof ModelVehicle vehicleModel && type instanceof DriveableType driveableType)

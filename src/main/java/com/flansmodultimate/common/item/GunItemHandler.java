@@ -468,7 +468,8 @@ public class GunItemHandler
         Entity best = null;
         double bestDistSqr = Double.MAX_VALUE;
 
-        List<Entity> candidates = level.getEntities(player, box, e -> e.isAlive() && e != player);
+        // A wreck is no target worth a lock.
+        List<Entity> candidates = level.getEntities(player, box, e -> e.isAlive() && e != player && !(e instanceof Driveable driveable && driveable.isWreck()));
 
         for (Entity e : candidates)
         {

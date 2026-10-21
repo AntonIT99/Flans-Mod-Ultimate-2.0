@@ -164,6 +164,7 @@ public final class ModCommonConfig
     private static final BooleanValue DRIVEABLE_COLLISIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> AUTO_REFILL_VEHICLE_AMMO;
     private static final Supplier<Boolean> GUNS_IN_DESTROYED_PARTS_WORK;
+    private static final Supplier<Integer> DRIVEABLE_WRECK_LIFETIME;
 
     private static final Supplier<Integer> BREAKABLE_ARMOR;
     private static final Supplier<Integer> DEFAULT_ARMOR_DURABILITY;
@@ -392,6 +393,8 @@ public final class ModCommonConfig
             "of the same ammunition, taken from the driveable's cargo first and then from the driver's inventory.").define("autoRefillVehicleAmmo", true);
         GUNS_IN_DESTROYED_PARTS_WORK = builder.comment("Whether an occupied passenger gun remains usable when the driveable part supporting its seat is destroyed.",
             "Disabled by default. Destroyed seats still cannot be newly occupied.").define("gunsInDestroyedPartsWork", false);
+        DRIVEABLE_WRECK_LIFETIME = builder.comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
+            "0 removes destroyed driveables at once, as before.").defineInRange("driveableWreckLifetime", 120, 0, 3600);
         builder.pop();
 
         builder.push("Armor Settings");
@@ -740,7 +743,7 @@ public final class ModCommonConfig
             ENCHANTMENT_MODULE_ENABLED.get(),
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
-            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get());
+            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1009,6 +1012,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.gunsInDestroyedPartsWork();
+    }
+
+    /** @return ticks a destroyed driveable stays as a wreck, or 0 when it is removed at once */
+    public static int driveableWreckLifetimeTicks()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 0 : 20 * Math.max(0, config.driveableWreckLifetime());
     }
 
     public static double maxArmorImpactAngleDeg()

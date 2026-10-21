@@ -1,14 +1,17 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.common.physics.ModPhysics;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A soft puff whose colour, growth, drag, buoyancy and glow are chosen by whoever spawns it.
@@ -30,7 +33,8 @@ public class BlastPuffParticle extends TextureSheetParticle
 
     private final Look look;
     private final float baseSize;
-    private final float spin;
+    /** Turn per tick; a puff lying on the ground keeps still. */
+    protected float spin;
 
     /**
      * How one puff looks over its life.
@@ -89,6 +93,16 @@ public class BlastPuffParticle extends TextureSheetParticle
         return sprites == null ? null : new BlastPuffParticle(level, x, y, z, vx, vy, vz, sprites, look, size, lifetime);
     }
 
+    /**
+     * Creates a puff lying flat on the ground rather than facing the camera, such as a scorch mark, or returns
+     * {@code null} before the particle sprites have loaded. It neither moves nor turns.
+     */
+    @Nullable
+    public static BlastPuffParticle createFlat(ClientLevel level, double x, double y, double z, Look look, float size, int lifetime)
+    {
+        return sprites == null ? null : new Flat(level, x, y, z, sprites, look, size, lifetime);
+    }
+
     @Override
     public void tick()
     {
@@ -104,6 +118,12 @@ public class BlastPuffParticle extends TextureSheetParticle
         }
 
         yd += look.buoyancy();
+        // What rises drifts with the wind, so every column over a battlefield leans the same way.
+        if (look.buoyancy() > 0F)
+        {
+            xd += ParticleWind.x();
+            zd += ParticleWind.z();
+        }
         move(xd, yd, zd);
         xd *= ModPhysics.dragRetention(friction, level);
         yd *= ModPhysics.dragRetention(friction, level);
@@ -161,6 +181,52 @@ public class BlastPuffParticle extends TextureSheetParticle
     public ParticleRenderType getRenderType()
     {
         return look.additive() ? LegacyParticleRenderTypes.PREMULTIPLIED : LegacyParticleRenderTypes.TRANSLUCENT;
+    }
+
+    /** A puff lying flat on the ground, drawn from both sides so that it shows however the quad is wound. */
+    private static final class Flat extends BlastPuffParticle
+    {
+        private static final float[][] CORNERS = {{-1F, -1F}, {-1F, 1F}, {1F, 1F}, {1F, -1F}};
+
+        // Mirrors the vanilla particle constructor shape: level, position and sprites, with the look.
+        @SuppressWarnings("java:S107")
+        private Flat(ClientLevel level, double x, double y, double z, SpriteSet sprites, Look look, float size, int lifetime)
+        {
+            super(level, x, y, z, 0D, 0D, 0D, sprites, look, size, lifetime);
+            spin = 0F;
+            hasPhysics = false;
+        }
+
+        @Override
+        public void render(@NotNull VertexConsumer buffer, Camera camera, float partialTick)
+        {
+            Vec3 view = camera.getPosition();
+            float cx = (float) (Mth.lerp(partialTick, xo, x) - view.x);
+            float cy = (float) (Mth.lerp(partialTick, yo, y) - view.y);
+            float cz = (float) (Mth.lerp(partialTick, zo, z) - view.z);
+            float size = getQuadSize(partialTick);
+            float cos = Mth.cos(roll) * size;
+            float sin = Mth.sin(roll) * size;
+            int light = getLightColor(partialTick);
+            float[] us = {getU0(), getU0(), getU1(), getU1()};
+            float[] vs = {getV1(), getV0(), getV0(), getV1()};
+            for (int pass = 0; pass < 2; pass++)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    int corner = pass == 0 ? i : 3 - i;
+                    float dx = CORNERS[corner][0];
+                    float dz = CORNERS[corner][1];
+                    buffer.vertex(cx + dx * cos - dz * sin, cy, cz + dx * sin + dz * cos).uv(us[corner], vs[corner]).color(rCol, gCol, bCol, alpha).uv2(light).endVertex();
+                }
+            }
+        }
+
+        @Override
+        public boolean shouldCull()
+        {
+            return false;
+        }
     }
 
     /** A plain grey puff, which is what a bare {@code /particle flansmod:blast_puff} gives. */
