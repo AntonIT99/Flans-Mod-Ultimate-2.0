@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.wolffsmod.npcs.crew.CrewPost;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -57,5 +58,16 @@ class BotSettingsTextTest
         assertEquals(BotSettings.ClassRole.SUPPORT, roles.get("mg"));
         assertFalse(roles.containsKey("odd"), "a role that is not known is left out");
         assertEquals(roles, BotSettingsText.parseRoles(BotSettingsText.formatRoles(roles)));
+    }
+
+    @Test
+    void crewClassesShowAnyForAClassPickedByWeight()
+    {
+        BotSettings.TeamForce force = new BotSettings.TeamForce();
+        force.setCrewClass(CrewPost.DRIVER, "tank_crewman");
+        force.setCrewClass(CrewPost.GUNNER, BotSettingsText.parseCrewClass("Any"));
+        force.setCrewClass(CrewPost.PASSENGER, BotSettingsText.parseCrewClass(" none "));
+        assertEquals("driver:tank_crewman, gunner:any, passenger:none", BotSettingsText.formatCrew(force));
+        assertEquals("", force.crewClass(CrewPost.GUNNER));
     }
 }

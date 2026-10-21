@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.wolffsmod.npcs.crew.CrewPost;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,8 @@ public final class BotSettingsText
     private static final String ENTRY_SEPARATOR = "[,\\s]+";
     private static final String VALUE_SEPARATOR = ":";
     private static final String JOIN = ", ";
+    /** The crew class that stands for one picked by the class weights. */
+    public static final String ANY_CLASS = "any";
 
     /** {@code class:weight}, a class without a weight weighing 1. */
     public static Map<String, Integer> parseClassWeights(String text)
@@ -102,6 +105,28 @@ public final class BotSettingsText
             joiner.add(vehicle.carry().isEmpty() ? entry : entry + VALUE_SEPARATOR + vehicle.carry());
         }
         return joiner.toString();
+    }
+
+    /** The class crewing each kind of seat, as {@code driver:crewman, gunner:any, passenger:none}. */
+    public static String formatCrew(BotSettings.TeamForce force)
+    {
+        StringJoiner joiner = new StringJoiner(JOIN);
+        for (CrewPost post : CrewPost.values())
+            joiner.add(post.id() + VALUE_SEPARATOR + crewClass(force.crewClass(post)));
+        return joiner.toString();
+    }
+
+    /** @return the crew class as the editor shows it: {@code any} for a class picked by weight */
+    public static String crewClass(String playerClass)
+    {
+        return playerClass.isEmpty() ? ANY_CLASS : playerClass;
+    }
+
+    /** @return the crew class an editor entry names: empty for {@code any} or nothing */
+    public static String parseCrewClass(String text)
+    {
+        String value = text.strip();
+        return ANY_CLASS.equalsIgnoreCase(value) ? "" : value;
     }
 
     /** {@code class:count} members of a squad template, a count left out being 1. */

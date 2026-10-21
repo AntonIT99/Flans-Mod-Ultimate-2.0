@@ -16,6 +16,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import com.wolffsmod.npcs.names.SoldierNames;
@@ -152,6 +153,7 @@ public final class BotCommands
         round.then(switchSetting("radio", BotSettings::setRadio));
         round.then(switchSetting("suppression", BotSettings::setSuppression));
         round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
+        round.then(switchSetting("vehiclecrews", BotSettings::setVehicleCrews));
         round.then(intSetting("retreat", 0, BotSettings::setRetreatHealth));
         round.then(Commands.literal("copyfrom").then(Commands.argument(SOURCE, StringArgumentType.word()).suggests(ROUNDS).executes(BotCommands::copyFrom)));
         round.then(intSetting("total", 0, BotSettings::setTotal));
@@ -186,6 +188,7 @@ public final class BotCommands
                 force.setCloneTab(IntegerArgumentType.getInteger(context, "tab"));
                 force.setCloneName(StringArgumentType.getString(context, NAME));
             }, text("clone", StringArgumentType.getString(context, NAME)))))));
+        team.then(crewSettings());
         team.then(Commands.literal("keepequipment").then(Commands.literal("on").executes(context -> editTeam(context, force -> force.setKeepCloneEquipment(true), text("keep_equipment_on"))))
             .then(Commands.literal("off").executes(context -> editTeam(context, force -> force.setKeepCloneEquipment(false), text("keep_equipment_off")))));
         team.then(Commands.literal("role")
@@ -216,6 +219,22 @@ public final class BotCommands
         team.then(Commands.literal("removevehicle").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES).executes(context -> editTeam(context,
             force -> force.getVehicles().removeIf(entry -> entry.type().equals(StringArgumentType.getString(context, TYPE))), text("vehicle_removed", StringArgumentType.getString(context, TYPE))))));
         return team;
+    }
+
+    /** The class crewing each kind of seat of the team's vehicle bots: a class, any class by weight, or none. */
+    private static LiteralArgumentBuilder<CommandSourceStack> crewSettings()
+    {
+        LiteralArgumentBuilder<CommandSourceStack> crew = Commands.literal("crew");
+        for (CrewPost post : CrewPost.values())
+        {
+            crew.then(
+                Commands.literal(post.id()).then(Commands.literal(BotSettingsText.ANY_CLASS).executes(context -> editTeam(context, force -> force.setCrewClass(post, ""), text("crew_any", post.id()))))
+                    .then(Commands.literal(BotSettings.TeamForce.NO_CREW)
+                        .executes(context -> editTeam(context, force -> force.setCrewClass(post, BotSettings.TeamForce.NO_CREW), text("crew_none", post.id()))))
+                    .then(Commands.argument(CLASS, StringArgumentType.word()).suggests(CLASSES)
+                        .executes(context -> editTeam(context, force -> force.setCrewClass(post, word(context, CLASS)), text("crew_class", post.id(), word(context, CLASS))))));
+        }
+        return crew;
     }
 
     private static <E extends Enum<E>> LiteralArgumentBuilder<CommandSourceStack> enumSetting(String name, Class<E> type, BiConsumer<BotSettings, E> setter)
@@ -432,6 +451,7 @@ public final class BotCommands
         lines.add(text("show.look", lower(settings.getNameplates()), lower(settings.getScoreboard()), settings.getInfantryCaptureWeight(), settings.getVehicleCaptureWeight(),
             lower(settings.getDifficulty()), onOff(settings.isPlayerTickets())));
         lines.add(text("show.rules", onOff(settings.isRadio()), onOff(settings.isSuppression()), settings.getRetreatHealth(), onOff(settings.isRallyPoints())));
+        lines.add(text("show.crews", onOff(settings.isVehicleCrews())));
         for (ITeam team : round.getTeams())
             lines.addAll(describe(team, settings.team(team.getShortName())));
         BotEditor.problems(round, settings).forEach(problem -> lines.add(problem.copy().withStyle(ChatFormatting.YELLOW)));
@@ -450,6 +470,7 @@ public final class BotCommands
         lines.add(text("show.team", team.getShortName(), force.getCount(), budget(force.getBudget()), names, clone, classes));
         if (!force.getClassRoles().isEmpty())
             lines.add(text("show.roles", BotSettingsText.formatRoles(force.getClassRoles())));
+        lines.add(text("show.crew", BotSettingsText.formatCrew(force)));
         force.getSquads().forEach(entry -> lines.add(text("show.squad", entry.template(), entry.count(), budget(entry.budget()))));
         for (BotSettings.VehicleEntry entry : force.getVehicles())
         {

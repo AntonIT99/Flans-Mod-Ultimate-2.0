@@ -296,7 +296,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         MODEL_STATS(Section.MODEL, Scope.MODELS, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
-        TURRET(Section.MODEL, Scope.MODELS, Tab.of(Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED)),
+        TURRET(Section.MODEL, Scope.MODELS,
+            Tab.named("turret_aim", Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED),
+            Tab.named(CrewPage.TAB, Scope.DRIVEABLES)),
         EQUIPMENT(Section.COMBAT, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.ARMOR_POTION_EFFECTS, Feature.DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
         FIRING(Section.COMBAT, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES)),
         MODEL_WEAPONS(Section.COMBAT, Scope.MODELS, Tab.of(Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES,
@@ -375,6 +377,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private final CombatPages combat;
     private final SoundOverview soundOverview;
     private final HeldItemAnimationPage heldItems;
+    private final CrewPage crew;
 
     public GuiWolffsMod(EntityNPCInterface npc)
     {
@@ -382,6 +385,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         combat = new CombatPages(this, npc);
         soundOverview = new SoundOverview(this, npc);
         heldItems = new HeldItemAnimationPage(this, npc);
+        crew = new CrewPage(this, npc);
         kind = NpcKind.of(npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
     }
@@ -531,6 +535,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         int count = (int) shown.rows().stream().filter(this::changed).count();
         count += heldItems.changes(shown.name());
+        count += crew.changes(shown.name());
         if (GENERAL_TAB.equals(shown.name()))
         {
             NpcCombatSettings settings = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
@@ -654,6 +659,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (HeldItemAnimationPage.ITEMS.equals(shown.name()) || HeldItemAnimationPage.ARMS_TAB.equals(shown.name()))
         {
             heldItems.init(shown.name(), loaded, top);
+            return;
+        }
+        if (CrewPage.TAB.equals(shown.name()))
+        {
+            crew.init(loaded, top);
             return;
         }
         if (initSoundTab(shown, top))
@@ -1249,7 +1259,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private boolean editEquipmentField(GuiTextFieldNop field)
     {
-        return heldItems.field(field) || combat.unFocused(field);
+        return heldItems.field(field) || crew.field(field) || combat.unFocused(field);
     }
 
     /** @return whether the field was one of the simulation numbers or ranges */
@@ -1274,15 +1284,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (!loaded)
             return;
         GuiTextFieldNop.unfocus();
-        if (heldItems.handles(button.id))
-        {
-            changed |= heldItems.button(button);
-            init();
-            return;
-        }
         if (editServer(button.id, button.getValue()))
             return;
-        if (navigate(button))
+        if (ownPageButton(button) || navigate(button))
         {
             init();
             return;
@@ -1334,6 +1338,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (selection.isBlank())
             picker.selectedResource = null;
         setSubGui(picker);
+    }
+
+    /** @return whether the button belongs to a tab that lays out its own controls, which then handled it */
+    private boolean ownPageButton(GuiButtonNop button)
+    {
+        if (heldItems.handles(button.id))
+            changed |= heldItems.button(button);
+        else if (crew.handles(button.id))
+            changed |= crew.button(button);
+        else
+            return false;
+        return true;
     }
 
     /** @return whether the button only moved between pages or changed which pages are listed */

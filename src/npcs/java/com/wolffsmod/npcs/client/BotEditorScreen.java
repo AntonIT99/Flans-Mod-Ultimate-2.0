@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.network.BotEditorActionPacket;
 import com.wolffsmod.npcs.network.BotEditorStatePacket;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -47,6 +49,7 @@ public final class BotEditorScreen extends Screen
     private static final String ROLES = "roles";
     private static final String RETREAT = "retreat";
     private static final String PRESET_NAME = "preset_name";
+    private static final String CREW = "crew_";
     /** Ticks between checks whether the edits differ from what the server holds. */
     private static final int CHECK_TICKS = 10;
 
@@ -173,6 +176,7 @@ public final class BotEditorScreen extends Screen
         addRenderableWidget(switchButton(left, y(3), width, "suppression", settings.isSuppression(), settings::setSuppression));
         addRenderableWidget(switchButton(left, y(4), width, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
         addField(left, 5, RETREAT, Integer.toString(settings.getRetreatHealth()));
+        addRenderableWidget(switchButton(left, y(6), width, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
     }
 
     private CycleButton<Boolean> switchButton(int x, int y, int width, String key, boolean value, Consumer<Boolean> setter)
@@ -226,11 +230,12 @@ public final class BotEditorScreen extends Screen
         addField(left, 1, SQUADS, BotSettingsText.formatSquads(force.getSquads()));
         addField(left, 2, "vehicles", BotSettingsText.formatVehicles(force.getVehicles()));
         addField(left, 3, ROLES, BotSettingsText.formatRoles(force.getClassRoles()));
+        addCrewFields(left, force);
         String available = templates.isEmpty() ? NONE : String.join(", ", templates.stream().map(SquadTemplate::id).toList());
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.squads_help"), left, y(4)));
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.vehicles_help"), left, y(4) + 12));
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.roles_help"), left, y(4) + 24));
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.templates_available", available), left, y(4) + 36));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.squads_help"), left, y(5)));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.vehicles_help"), left, y(5) + 12));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.roles_help"), left, y(5) + 24));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.templates_available", available), left, y(5) + 36));
     }
 
     private void initTemplates(int left)
@@ -284,6 +289,23 @@ public final class BotEditorScreen extends Screen
         box.setValue(value);
         fields.put(key, addRenderableWidget(box));
         labels.add(new Label(Component.translatable(PREFIX + key), left, y(row) + 6));
+    }
+
+    /** The crew class of each kind of seat of the team's vehicles, in one row of three boxes below the vehicles. */
+    private void addCrewFields(int left, BotSettings.TeamForce force)
+    {
+        int row = 4;
+        int boxWidth = (FIELD_WIDTH - 8) / 3;
+        labels.add(new Label(Component.translatable(PREFIX + "crew"), left, y(row) + 6));
+        for (CrewPost post : CrewPost.values())
+        {
+            Component name = Component.translatable(PREFIX + CREW + post.id());
+            EditBox box = new EditBox(font, left + LABEL_WIDTH + post.ordinal() * (boxWidth + 4), y(row), boxWidth, 20, name);
+            box.setMaxLength(TEXT_LIMIT);
+            box.setValue(BotSettingsText.crewClass(force.crewClass(post)));
+            box.setTooltip(Tooltip.create(name.copy().append("\n").append(Component.translatable(PREFIX + "crew_help"))));
+            fields.put(CREW + post.id(), addRenderableWidget(box));
+        }
     }
 
     /** A field of a compact column: its label above-left, the box to the right, half as wide as a full one. */
@@ -394,6 +416,8 @@ public final class BotEditorScreen extends Screen
         force.getVehicles().addAll(vehicles);
         force.getClassRoles().clear();
         force.getClassRoles().putAll(BotSettingsText.parseRoles(text(ROLES)));
+        for (CrewPost post : CrewPost.values())
+            force.setCrewClass(post, BotSettingsText.parseCrewClass(text(CREW + post.id())));
     }
 
     private String text(String key)

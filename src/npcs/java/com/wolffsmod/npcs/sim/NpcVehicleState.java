@@ -528,15 +528,46 @@ public final class NpcVehicleState
         return Optional.of(Mth.clamp(height, 0.2F, Math.max(0.2F, bodyHeight * 1.5F)));
     }
 
-    /** @return where the rider of the driver's seat sits, relative to the NPC's feet, when riders sit in the seat */
-    public Optional<Vec3> riderOffset(EntityNPCInterface npc)
+    // Seats
+
+    /**
+     * @return the seats riders and crew sit in, in seat order, the driver's first; none for an AA gun or an NPC that shows
+     *         no driveable model. Resolves the model when the NPC has not ticked yet, so a vehicle can be crewed as soon as
+     *         it is made.
+     */
+    public List<WeaponMount> crewSeats(EntityNPCInterface npc)
+    {
+        Layout current = active ? layout : resolve(npc);
+        if (current == null)
+            return List.of();
+        if (!active)
+        {
+            layout = current;
+            active = true;
+        }
+        return current.kind() == FlanModelKind.AA_GUN ? List.of() : current.mounts();
+    }
+
+    /** @return where the occupant of a seat sits, relative to the NPC's feet, as the hull and turret stand now */
+    public Optional<Vec3> seatOffset(EntityNPCInterface npc, WeaponMount seat)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        return !active || model == null ? Optional.empty() : Optional.of(NpcModels.local(npc, model, seat.positionAt(turretYaw), hullYaw));
+    }
+
+    /** @return the yaw the occupant of a seat faces: along its gun, or ahead of the hull, or of the turret it sits on */
+    public float seatFacing(WeaponMount seat)
+    {
+        if (!seat.driver() && seat.gun().isPresent())
+            return hullYaw + seatAim(seat.seat()).yaw();
+        return seat.onTurret() ? hullYaw + turretYaw : hullYaw;
+    }
+
+    /** @return blocks from the NPC's middle to the farthest side of its model, across the ground; 0 without a model */
+    public double reach(EntityNPCInterface npc)
     {
         Layout current = layout;
-        if (!active || current == null || current.driver() == null || current.kind() == FlanModelKind.AA_GUN
-            || !((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.RIDER_AT_SEAT))
-            return Optional.empty();
-        FlanModelEntity model = NpcModels.flan(npc);
-        return model == null ? Optional.empty() : Optional.of(NpcModels.local(npc, model, current.driver().positionAt(turretYaw), hullYaw));
+        return active && current != null ? current.reach() * NpcModels.scale(npc) : 0D;
     }
 
     /**

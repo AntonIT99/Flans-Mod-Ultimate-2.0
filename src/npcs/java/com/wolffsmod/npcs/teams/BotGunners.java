@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.FlansTeams;
 import com.flansmodultimate.api.ISeat;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -88,7 +89,8 @@ public final class BotGunners
         if (npc.tickCount % SEARCH_INTERVAL != 0 && remembered instanceof LivingEntity living && engageable(level, npc, living, gun))
             return living;
         AABB area = npc.getBoundingBox().inflate(SEARCH_RANGE);
-        Optional<LivingEntity> nearest = level.getEntitiesOfClass(LivingEntity.class, area, candidate -> candidate.isAlive() && FlansTeams.areEnemies(npc, candidate)).stream()
+        Optional<LivingEntity> nearest = level
+            .getEntitiesOfClass(LivingEntity.class, area, candidate -> candidate.isAlive() && FlansTeams.areEnemies(npc, candidate) && NpcCrew.shieldingVehicle(candidate).isEmpty()).stream()
             .sorted(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(npc))).filter(candidate -> visible(level, npc, candidate, gun)).findFirst();
         nearest.ifPresentOrElse(found -> TARGETS.put(npc.getUUID(), found.getUUID()), () -> TARGETS.remove(npc.getUUID()));
         return nearest.orElse(null);

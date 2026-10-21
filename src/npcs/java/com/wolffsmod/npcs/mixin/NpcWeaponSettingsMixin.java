@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.combat.*;
+import com.wolffsmod.npcs.crew.NpcCrewSettings;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
@@ -57,6 +58,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     @Unique
     private final NpcTuning wolffsmodnpcsTuning = new NpcTuning();
     @Unique
+    private final NpcCrewSettings wolffsmodnpcsCrew = new NpcCrewSettings();
+    @Unique
     private int wolffsmodnpcsRangeGeneration;
 
     // Defaults
@@ -88,6 +91,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsCombat.load(compound);
         wolffsmodnpcsParts.load(compound);
         wolffsmodnpcsTuning.load(compound);
+        wolffsmodnpcsCrew.load(compound);
         wolffsmodnpcsRangeGeneration = compound.getInt(WOLFFSMODNPCS_RANGE_GENERATION);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
@@ -101,6 +105,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsCombat.save(callback.getReturnValue());
         wolffsmodnpcsParts.save(callback.getReturnValue());
         wolffsmodnpcsTuning.save(callback.getReturnValue());
+        wolffsmodnpcsCrew.save(callback.getReturnValue());
         callback.getReturnValue().putInt(WOLFFSMODNPCS_RANGE_GENERATION, wolffsmodnpcsRangeGeneration);
         wolffsmodnpcsProperties.saveDefaults(Component.STATS, callback.getReturnValue());
     }
@@ -139,6 +144,12 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     public NpcTuning wolffsmodnpcsTuning()
     {
         return wolffsmodnpcsTuning;
+    }
+
+    @Override
+    public NpcCrewSettings wolffsmodnpcsCrew()
+    {
+        return wolffsmodnpcsCrew;
     }
 
     @Override

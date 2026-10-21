@@ -3,6 +3,8 @@ package com.wolffsmod.npcs.mixin;
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.NpcCrew;
+import com.wolffsmod.npcs.crew.NpcCrewHolder;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelRendering;
@@ -41,6 +43,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Every hook into the Custom NPCs entity base class.
@@ -68,6 +71,9 @@ import java.util.Optional;
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
+ * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
+ * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
+ * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead.</li>
  * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
@@ -93,7 +99,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcVehicleStateHolder,
         NpcThrowPresentation,
         NpcEquipmentRangedGoal.Holder,
-        NpcTacticState.Holder
+        NpcTacticState.Holder,
+        NpcCrewHolder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -103,6 +110,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private static final EntityDataAccessor<Boolean> WOLFFSMODNPCS_DISTANCE_DATA = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_THROW_DISPLAY = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
+    @Unique
+    private static final EntityDataAccessor<Integer> WOLFFSMODNPCS_CREW_SEAT = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.INT);
+    @Unique
+    private static final String WOLFFSMODNPCS_CREW_SEAT_KEY = "WolffsModCrewSeat";
+    @Unique
+    private static final String WOLFFSMODNPCS_CREWED_AS_KEY = "WolffsModCrewedAs";
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
@@ -128,6 +141,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private NpcVehicleState wolffsmodnpcsVehicle;
     @Unique
     private long wolffsmodnpcsTickStarted;
+    /** The id the NPC had when it was last crewed as a vehicle. */
+    @Unique
+    private UUID wolffsmodnpcsCrewedAs;
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
@@ -409,7 +425,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = {"decreaseAirSupply", "m_7302_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsArmorAir(int air, CallbackInfoReturnable<Integer> callback)
     {
-        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_BREATHING, EquippedArmorProperties::waterBreathing))
+        // Crew breathe inside their vehicle, a diving submarine included.
+        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_BREATHING, EquippedArmorProperties::waterBreathing) || NpcCrew.vehicleOf(this).isPresent())
             callback.setReturnValue(air);
     }
 
@@ -538,7 +555,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = {"hurt", "m_6469_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsIgnoreHit(DamageSource source, float amount, CallbackInfoReturnable<Boolean> callback)
     {
-        if (!level().isClientSide && NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount))
+        if (!level().isClientSide && (NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount) || NpcCrew.shielded(this, source)))
             callback.setReturnValue(false);
     }
 
@@ -650,6 +667,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         {
             NpcMobility.tick(npc);
             NpcPathDebug.tick(npc, state);
+            NpcCrew.tick(npc);
         }
         if (wolffsmodnpcsTickStarted != 0L)
             NpcProfiler.npcTick(System.nanoTime() - wolffsmodnpcsTickStarted);
@@ -683,10 +701,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction move)
     {
-        Optional<Vec3> seat = hasPassenger(passenger) ? wolffsmodnpcsVehicleState().riderOffset((EntityNPCInterface) (Object) this) : Optional.empty();
-        if (seat.isPresent())
-            move.accept(passenger, getX() + seat.get().x, getY() + seat.get().y + passenger.getMyRidingOffset(), getZ() + seat.get().z);
-        else
+        if (!hasPassenger(passenger) || !NpcCrew.positionRider((EntityNPCInterface) (Object) this, passenger, move))
             super.positionRider(passenger, move);
     }
 
@@ -695,6 +710,80 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         return wolffsmodnpcsVehicleState().cullingBox(npc).or(() -> NpcModels.unhitCullingBox(npc)).orElseGet(super::getBoundingBoxForCulling);
+    }
+
+    // Crew
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger)
+    {
+        return NpcCrew.canCarry((EntityNPCInterface) (Object) this).orElseGet(() -> super.canAddPassenger(passenger));
+    }
+
+    /** Crew holding their fire take no target, and attackers aiming at shielded crew aim at their vehicle. */
+    @ModifyVariable(method = {"setTarget", "m_6710_"}, at = @At("HEAD"), argsOnly = true)
+    private LivingEntity wolffsmodnpcsCrewTarget(LivingEntity target)
+    {
+        return NpcCrew.target((EntityNPCInterface) (Object) this, target);
+    }
+
+    @Inject(method = {"die", "m_6667_"}, at = @At("HEAD"))
+    private void wolffsmodnpcsCrewOnDeath(DamageSource source, CallbackInfo callback)
+    {
+        if (!level().isClientSide)
+            NpcCrew.destroyed((EntityNPCInterface) (Object) this);
+    }
+
+    @Inject(method = "delete", at = @At("HEAD"))
+    private void wolffsmodnpcsCrewOnDelete(CallbackInfo callback)
+    {
+        NpcCrew.deleted((EntityNPCInterface) (Object) this);
+    }
+
+    @Inject(method = {"defineSynchedData", "m_8097_"}, at = @At("TAIL"))
+    private void wolffsmodnpcsDefineCrewSeat(CallbackInfo callback)
+    {
+        getEntityData().define(WOLFFSMODNPCS_CREW_SEAT, NpcCrew.NO_SEAT);
+    }
+
+    @Inject(method = {"readAdditionalSaveData", "m_7378_"}, at = @At("TAIL"))
+    private void wolffsmodnpcsReadCrew(CompoundTag tag, CallbackInfo callback)
+    {
+        getEntityData().set(WOLFFSMODNPCS_CREW_SEAT, tag.contains(WOLFFSMODNPCS_CREW_SEAT_KEY) ? tag.getInt(WOLFFSMODNPCS_CREW_SEAT_KEY) : NpcCrew.NO_SEAT);
+        wolffsmodnpcsCrewedAs = tag.hasUUID(WOLFFSMODNPCS_CREWED_AS_KEY) ? tag.getUUID(WOLFFSMODNPCS_CREWED_AS_KEY) : null;
+    }
+
+    @Inject(method = {"addAdditionalSaveData", "m_7380_"}, at = @At("TAIL"))
+    private void wolffsmodnpcsSaveCrew(CompoundTag tag, CallbackInfo callback)
+    {
+        if (wolffsmodnpcsCrewSeat() >= 0)
+            tag.putInt(WOLFFSMODNPCS_CREW_SEAT_KEY, wolffsmodnpcsCrewSeat());
+        if (wolffsmodnpcsCrewedAs != null)
+            tag.putUUID(WOLFFSMODNPCS_CREWED_AS_KEY, wolffsmodnpcsCrewedAs);
+    }
+
+    @Override
+    public int wolffsmodnpcsCrewSeat()
+    {
+        return getEntityData().get(WOLFFSMODNPCS_CREW_SEAT);
+    }
+
+    @Override
+    public void wolffsmodnpcsCrewSeat(int seat)
+    {
+        getEntityData().set(WOLFFSMODNPCS_CREW_SEAT, Math.max(NpcCrew.NO_SEAT, seat));
+    }
+
+    @Override
+    public UUID wolffsmodnpcsCrewedAs()
+    {
+        return wolffsmodnpcsCrewedAs;
+    }
+
+    @Override
+    public void wolffsmodnpcsCrewedAs(UUID id)
+    {
+        wolffsmodnpcsCrewedAs = id;
     }
 
     // Senses

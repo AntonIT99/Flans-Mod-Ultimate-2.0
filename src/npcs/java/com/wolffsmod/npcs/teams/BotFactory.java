@@ -31,12 +31,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
 /**
  * Makes the NPC of a bot slot: a soldier with a Flan class's loadout, made plain or from the team's Custom NPCs clone, or
- * a vehicle, plane, mecha or AA gun wearing its definition's model. Either way the NPC joins the team's faction and the
- * round as a combatant, never respawns by Custom NPCs' own rules, and is marked as a bot. Server thread.
+ * a vehicle, plane, mecha or AA gun wearing its definition's model, or a soldier crewing such a vehicle. Either way the NPC
+ * joins the team's faction and the round as a combatant, never respawns by Custom NPCs' own rules, and is marked as a bot. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BotFactory
@@ -61,14 +62,47 @@ public final class BotFactory
     public record Order(BotSlot slot, ITeam team, int factionId, BotSettings settings, BotSettings.TeamForce force, UUID instance, Vec3 position, @Nullable String nameList)
     {}
 
+    /** What a bot is to its round. */
+    private enum Membership
+    {
+        SOLDIER, VEHICLE,
+        /** A soldier riding in a vehicle bot, which neither fills a place of its own nor counts on capture points. */
+        CREW
+    }
+
     /** @return the new soldier, already in the level, or empty when the team offers no class */
     public static Optional<EntityNPCInterface> soldier(ServerLevel level, Order order, RandomGenerator random)
     {
-        IPlayerClass playerClass = order.team().getClasses().stream().filter(candidate -> candidate.getShortName().equals(order.slot().getRole())).findFirst().map(IPlayerClass.class::cast)
-            .orElse(null);
+        Vec3 position = freeSpot(level, order.position(), random);
+        return soldier(level, order, order.slot().getRole(), position, random, npc ->
+        {
+            name(npc, order, random);
+            join(npc, order, position, Membership.SOLDIER);
+        });
+    }
+
+    /**
+     * Makes a soldier to crew the vehicle bot of an order, as the team's soldiers are made, with a name of its own.
+     *
+     * @return the new soldier, already in the level, or empty when the team offers no such class
+     */
+    public static Optional<EntityNPCInterface> crewman(ServerLevel level, Order order, String playerClass, Vec3 position, RandomGenerator random)
+    {
+        return soldier(level, order, playerClass, position, random, npc ->
+        {
+            String name = generate(order.nameList(), random);
+            if (name.isEmpty())
+                name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
+            npc.display.setName(name);
+            join(npc, order, position, Membership.CREW);
+        });
+    }
+
+    private static Optional<EntityNPCInterface> soldier(ServerLevel level, Order order, String className, Vec3 position, RandomGenerator random, Consumer<EntityNPCInterface> enlist)
+    {
+        IPlayerClass playerClass = order.team().getClasses().stream().filter(candidate -> candidate.getShortName().equals(className)).findFirst().map(IPlayerClass.class::cast).orElse(null);
         if (playerClass == null)
             return Optional.empty();
-        Vec3 position = freeSpot(level, order.position(), random);
         EntityNPCInterface npc = fromClone(level, order.force(), position).orElse(null);
         boolean added = npc != null;
         if (npc == null)
@@ -87,8 +121,7 @@ public final class BotFactory
             selection.write(custom.modelData.extra);
             NpcSkins.markClassSkin(custom);
         }
-        name(npc, order, random);
-        join(npc, order, position, false);
+        enlist.accept(npc);
         train(npc, order.settings().getDifficulty());
         if (!added)
             level.addFreshEntity(npc);
@@ -130,7 +163,7 @@ public final class BotFactory
             stockAmmunition(npc, definition);
         String crew = crewName(order, random);
         npc.display.setName(crew.isEmpty() ? npc.display.getName() : crew);
-        join(npc, order, order.position(), true);
+        join(npc, order, order.position(), Membership.VEHICLE);
         train(npc, order.settings().getDifficulty());
         npc.setHealth(npc.getMaxHealth());
         return Optional.of(npc);
@@ -245,7 +278,7 @@ public final class BotFactory
     }
 
     /** Makes the NPC a bot of the round: its faction, name tag, staying dead, standing when idle, its mark and its team. */
-    private static void join(EntityNPCInterface npc, Order order, Vec3 position, boolean vehicle)
+    private static void join(EntityNPCInterface npc, Order order, Vec3 position, Membership membership)
     {
         BotSettings settings = order.settings();
         switch (settings.getNameplates())
@@ -263,8 +296,15 @@ public final class BotFactory
         npc.ais.setStartPos(BlockPos.containing(position));
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);
-        BotTag.write(npc, new BotTag.Data(order.instance(), order.slot().getId(), order.team().getShortName(), vehicle, settings.getNameplates()));
-        float weight = vehicle ? settings.getVehicleCaptureWeight() : settings.getInfantryCaptureWeight();
+        boolean vehicle = membership == Membership.VEHICLE;
+        BotTag.write(npc, new BotTag.Data(order.instance(), order.slot().getId(), order.team().getShortName(), vehicle, settings.getNameplates(), membership == Membership.CREW));
+        float weight = switch (membership)
+        {
+            case SOLDIER -> settings.getInfantryCaptureWeight();
+            case VEHICLE -> settings.getVehicleCaptureWeight();
+            // The vehicle counts for its crew.
+            case CREW -> 0F;
+        };
         if (!FlansTeams.assignCombatant(npc, order.team(), weight))
             NpcsMod.log.warn("Teams bot {} could not join team {}", npc.getUUID(), order.team().getShortName());
         npc.updateClient = true;

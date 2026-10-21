@@ -363,6 +363,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         current.getSlotOfEntity().put(npc.get().getUUID(), slot.getId());
         if (slot.isVehicle() && squad != null)
             BotTransports.load(current, slot, squad);
+        if (slot.isVehicle())
+            BotCrews.crew(level, current, order, npc.get(), random);
         return npc;
     }
 
@@ -477,10 +479,15 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         }
     }
 
-    /** Whether a bot is the living bot of a slot of the round being played. */
+    /**
+     * Whether a bot is the living bot of a slot of the round being played, or crews the vehicle of a slot of it, aboard or
+     * on foot since the vehicle was lost.
+     */
     private static boolean belongs(@Nullable BotRound current, EntityNPCInterface npc, BotTag.Data data)
     {
-        return current != null && data.instance().equals(current.getInstance()) && current.getSlotOfEntity().containsKey(npc.getUUID());
+        if (current == null || !data.instance().equals(current.getInstance()))
+            return false;
+        return data.crew() ? current.getSlots().containsKey(data.slot()) : current.getSlotOfEntity().containsKey(npc.getUUID());
     }
 
     private static void remove(EntityNPCInterface npc)
@@ -525,6 +532,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         }
         Integer killerSlot = killer == null ? null : current.getSlotOfEntity().get(killer.getUUID());
         BotSlot scorer = killerSlot == null ? null : current.getSlots().get(killerSlot);
+        // A crew member scores for its vehicle.
+        if (scorer == null && killer instanceof EntityNPCInterface crew)
+            scorer = BotCrews.slotOf(current, crew).orElse(null);
         if (scorer != null && FlansTeams.areEnemies(killer, victim))
             scorer.setKills(scorer.getKills() + 1);
     }

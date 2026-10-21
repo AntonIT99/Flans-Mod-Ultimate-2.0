@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.crew.CrewPost;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +43,7 @@ public final class BotSettings
     private static final String NBT_RETREAT = "retreat_health";
     private static final String NBT_SUPPRESSION = "suppression";
     private static final String NBT_RALLY = "rally_points";
+    private static final String NBT_VEHICLE_CREWS = "vehicle_crews";
     private static final String NBT_TEAMS = "teams";
 
     /** How the number of loose infantry bots per team is set. */
@@ -162,6 +165,8 @@ public final class BotSettings
     private boolean suppression = true;
     /** Whether players leading a squad may place a rally point for themselves and their squad to spawn at. */
     private boolean rallyPoints = true;
+    /** Whether vehicle bots spawn with soldiers of their team in their seats. */
+    private boolean vehicleCrews;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
     /** What one team fields. */
@@ -179,6 +184,9 @@ public final class BotSettings
         private static final String NBT_CLASSES = "classes";
         private static final String NBT_SQUADS = "squads";
         private static final String NBT_VEHICLES = "vehicles";
+        private static final String NBT_CREW = "crew";
+        /** The crew class that leaves its seats empty. */
+        public static final String NO_CREW = "none";
 
         /** Loose infantry: a count, a share weight or a fill target, depending on the mode. */
         private int count;
@@ -197,6 +205,12 @@ public final class BotSettings
         private final Map<String, ClassRole> classRoles = new LinkedHashMap<>();
         private final List<SquadEntry> squads = new ArrayList<>();
         private final List<VehicleEntry> vehicles = new ArrayList<>();
+        /**
+         * The class that crews each kind of seat of the team's vehicles: a class of the team, {@link #NO_CREW} for none, or,
+         * left out, a class picked by the class weights.
+         */
+        @Getter(AccessLevel.NONE)
+        private final Map<CrewPost, String> crewClasses = new EnumMap<>(CrewPost.class);
 
         CompoundTag save()
         {
@@ -219,6 +233,9 @@ public final class BotSettings
             ListTag vehicleList = new ListTag();
             vehicles.forEach(vehicle -> vehicleList.add(vehicle.save()));
             tag.put(NBT_VEHICLES, vehicleList);
+            CompoundTag crew = new CompoundTag();
+            crewClasses.forEach((post, playerClass) -> crew.putString(post.id(), playerClass));
+            tag.put(NBT_CREW, crew);
             return tag;
         }
 
@@ -241,7 +258,25 @@ public final class BotSettings
                 force.squads.add(SquadEntry.load((CompoundTag) entry));
             for (Tag entry : tag.getList(NBT_VEHICLES, Tag.TAG_COMPOUND))
                 force.vehicles.add(VehicleEntry.load((CompoundTag) entry));
+            CompoundTag crew = tag.getCompound(NBT_CREW);
+            for (CrewPost post : CrewPost.values())
+                force.setCrewClass(post, crew.getString(post.id()));
             return force;
+        }
+
+        /** @return the class that crews a kind of seat: a short name, {@link #NO_CREW}, or empty for one picked by weight */
+        public String crewClass(CrewPost post)
+        {
+            return crewClasses.getOrDefault(post, "");
+        }
+
+        public void setCrewClass(CrewPost post, String playerClass)
+        {
+            String value = playerClass == null ? "" : playerClass.strip();
+            if (value.isEmpty())
+                crewClasses.remove(post);
+            else
+                crewClasses.put(post, value);
         }
 
         /** Whether bots are made from a Custom NPCs clone rather than as plain NPCs. */
@@ -368,6 +403,7 @@ public final class BotSettings
         tag.putInt(NBT_RETREAT, retreatHealth);
         tag.putBoolean(NBT_SUPPRESSION, suppression);
         tag.putBoolean(NBT_RALLY, rallyPoints);
+        tag.putBoolean(NBT_VEHICLE_CREWS, vehicleCrews);
         CompoundTag teamTag = new CompoundTag();
         teams.forEach((team, force) -> teamTag.put(team, force.save()));
         tag.put(NBT_TEAMS, teamTag);
@@ -401,6 +437,7 @@ public final class BotSettings
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;
         settings.suppression = !tag.contains(NBT_SUPPRESSION) || tag.getBoolean(NBT_SUPPRESSION);
         settings.rallyPoints = !tag.contains(NBT_RALLY) || tag.getBoolean(NBT_RALLY);
+        settings.vehicleCrews = tag.getBoolean(NBT_VEHICLE_CREWS);
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));

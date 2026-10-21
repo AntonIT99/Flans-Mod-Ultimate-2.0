@@ -25,14 +25,17 @@ public final class BotTag
     private static final String NBT_TEAM = "team";
     private static final String NBT_VEHICLE = "vehicle";
     private static final String NBT_NAMEPLATES = "nameplates";
+    private static final String NBT_CREW = "crew";
 
     /**
      * @param instance
      *            the playing of the round the bot was made for
      * @param slot
-     *            the place in the round's force the bot fills
+     *            the place in the round's force the bot fills; for a crew member, the place of the vehicle it crews
+     * @param crew
+     *            whether the bot crews a vehicle bot rather than filling a place of its own
      */
-    public record Data(UUID instance, int slot, String team, boolean vehicle, BotSettings.Nameplates nameplates)
+    public record Data(UUID instance, int slot, String team, boolean vehicle, BotSettings.Nameplates nameplates, boolean crew)
     {}
 
     /** What clients learn about a bot. */
@@ -47,6 +50,7 @@ public final class BotTag
         tag.putString(NBT_TEAM, data.team());
         tag.putBoolean(NBT_VEHICLE, data.vehicle());
         tag.putString(NBT_NAMEPLATES, data.nameplates().name());
+        tag.putBoolean(NBT_CREW, data.crew());
         entity.getPersistentData().put(KEY, tag);
     }
 
@@ -58,7 +62,7 @@ public final class BotTag
         if (!tag.hasUUID(NBT_INSTANCE))
             return Optional.empty();
         return Optional.of(new Data(tag.getUUID(NBT_INSTANCE), tag.getInt(NBT_SLOT), tag.getString(NBT_TEAM), tag.getBoolean(NBT_VEHICLE),
-            BotSettings.parse(BotSettings.Nameplates.class, tag.getString(NBT_NAMEPLATES), BotSettings.Nameplates.DEFAULT)));
+            BotSettings.parse(BotSettings.Nameplates.class, tag.getString(NBT_NAMEPLATES), BotSettings.Nameplates.DEFAULT), tag.getBoolean(NBT_CREW)));
     }
 
     /** Whether the entity carries bot data at all, from any round. */

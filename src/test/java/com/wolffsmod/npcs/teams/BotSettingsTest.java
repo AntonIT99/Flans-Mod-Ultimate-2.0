@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.wolffsmod.npcs.crew.CrewPost;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
@@ -148,5 +149,23 @@ class BotSettingsTest
         assertEquals(BotSettings.ClassRole.ANTI_TANK, BotRoles.role(false, false, true, true));
         assertEquals(BotSettings.ClassRole.SUPPORT, BotRoles.role(false, false, false, true));
         assertEquals(BotSettings.ClassRole.RIFLEMAN, BotRoles.role(false, false, false, false));
+    }
+
+    @Test
+    void vehicleCrewsSurviveSavingAndLoading()
+    {
+        BotSettings settings = new BotSettings();
+        settings.setVehicleCrews(true);
+        BotSettings.TeamForce force = settings.team("germany");
+        force.setCrewClass(CrewPost.DRIVER, "tank_crewman");
+        force.setCrewClass(CrewPost.PASSENGER, BotSettings.TeamForce.NO_CREW);
+        force.setCrewClass(CrewPost.GUNNER, " ");
+
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertTrue(loaded.isVehicleCrews());
+        assertEquals("tank_crewman", loaded.team("germany").crewClass(CrewPost.DRIVER));
+        assertEquals("", loaded.team("germany").crewClass(CrewPost.GUNNER), "a blank class is picked by weight");
+        assertEquals(BotSettings.TeamForce.NO_CREW, loaded.team("germany").crewClass(CrewPost.PASSENGER));
+        assertFalse(BotSettings.load(new BotSettings().save()).isVehicleCrews(), "vehicles spawn empty unless crews are switched on");
     }
 }

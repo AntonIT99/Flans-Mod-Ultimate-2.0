@@ -4,6 +4,7 @@ import com.flansmodultimate.api.FlansTeams;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.api.ITeamsRound;
+import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.network.BotEditorActionPacket;
 import com.wolffsmod.npcs.network.BotEditorStatePacket;
@@ -148,8 +149,20 @@ public final class BotEditor
                 if (!entry.carry().isEmpty())
                     templateProblems(name, classes, entry.carry(), problems);
             }
+            crewProblems(name, classes, force, problems);
         }
         return problems;
+    }
+
+    /** Crew classes the team does not offer, for which a class is picked by weight instead. */
+    private static void crewProblems(String team, Set<String> classes, BotSettings.TeamForce force, List<Component> problems)
+    {
+        for (CrewPost post : CrewPost.values())
+        {
+            String crew = force.crewClass(post);
+            if (!crew.isEmpty() && !BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(crew) && !classes.contains(crew))
+                problems.add(Component.translatable(PREFIX + "unknown_crew_class", team, crew, post.id()));
+        }
     }
 
     private static void templateProblems(String team, Set<String> classes, String id, List<Component> problems)

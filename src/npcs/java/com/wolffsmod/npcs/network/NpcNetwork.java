@@ -29,6 +29,7 @@ public final class NpcNetwork
         NpcNetworkPlatform.toClient("bot_editor_state", BotEditorStatePacket.class, BotEditorStatePacket::write, BotEditorStatePacket::read,
             () -> com.wolffsmod.npcs.client.NpcClientPackets::botEditor);
         NpcNetworkPlatform.toClient("bot_waypoints", BotWaypointsPacket.class, BotWaypointsPacket::write, BotWaypointsPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::waypoints);
+        NpcNetworkPlatform.toServer("crew_action", CrewActionPacket.class, CrewActionPacket::write, CrewActionPacket::read, CrewActionPacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -67,6 +68,11 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(ApplyLoadoutPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(CrewActionPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }
