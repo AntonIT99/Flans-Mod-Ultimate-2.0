@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.teams.editor;
 
+import com.flansmodultimate.common.teams.TeamFlagUrl;
 import com.google.gson.*;
 
 import net.minecraft.ChatFormatting;
@@ -48,11 +49,17 @@ public final class EditorSchema
                     ChatFormatting colour = ChatFormatting.getByName(string(json.get("textColour"), 32));
                     require(colour != null && colour.isColor(), "Unknown text colour");
                 }
-                for (String field : new String[]{"victorySound", "defeatSound", "victoryFlag"})
+                for (String field : new String[]{"victorySound", "defeatSound"})
                     if (json.has(field))
                         string(json.get(field), 256);
-                if (json.has("victoryFlag") && !json.get("victoryFlag").getAsString().isEmpty())
-                    require(ResourceLocation.tryParse(json.get("victoryFlag").getAsString()) != null, "Invalid victory flag texture");
+                if (json.has("victoryFlag"))
+                {
+                    String flag = string(json.get("victoryFlag"), TeamFlagUrl.MAX_LENGTH);
+                    if (TeamFlagUrl.isUrl(flag))
+                        require(TeamFlagUrl.parse(flag) != null, "Invalid flag URL: use an http or https address");
+                    else if (!flag.isEmpty())
+                        require(flag.length() <= 256 && ResourceLocation.tryParse(flag) != null, "Invalid victory flag texture");
+                }
                 if (json.has("classes"))
                 {
                     JsonArray classes = json.getAsJsonArray("classes");

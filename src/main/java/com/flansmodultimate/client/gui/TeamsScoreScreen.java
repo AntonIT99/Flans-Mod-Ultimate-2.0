@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
+import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.client.teams.TeamsRoundResult;
 import com.flansmodultimate.common.types.Team;
@@ -12,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.Comparator;
 import java.util.List;
@@ -79,9 +79,9 @@ public final class TeamsScoreScreen extends Screen
         graphics.drawCenteredString(font, text, 0, 0, 0xFF000000 | colour);
         graphics.pose().popPose();
 
-        ResourceLocation flag = winner == null ? null : winner.getVictoryFlagTextureLocation();
+        TeamFlagTextures.FlagTexture flag = TeamFlagTextures.get(winner);
         if (flag != null)
-            graphics.blit(flag, width / 2 - font.width(text) - RESULT_FLAG_WIDTH - 6, RESULT_TOP - 6, 0F, 0F, RESULT_FLAG_WIDTH, RESULT_FLAG_HEIGHT, RESULT_FLAG_WIDTH, RESULT_FLAG_HEIGHT);
+            TeamFlagTextures.draw(graphics, flag, width / 2 - font.width(text) - RESULT_FLAG_WIDTH - 6, RESULT_TOP - 6, RESULT_FLAG_WIDTH, RESULT_FLAG_HEIGHT);
     }
 
     /** Who won, naming every team of a winning alliance. */

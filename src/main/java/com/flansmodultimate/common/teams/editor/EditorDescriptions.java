@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Shared GUI/command descriptions, using complete effective values for previews and duplication. */
 public final class EditorDescriptions
@@ -27,7 +28,7 @@ public final class EditorDescriptions
         json.addProperty("victorySoundEnabled", team.isVictorySoundEnabled());
         json.addProperty("victorySound", team.getVictorySound());
         json.addProperty("defeatSound", team.getDefeatSound());
-        json.addProperty("victoryFlag", team.getVictoryFlagTextureLocation() == null ? "" : team.getVictoryFlagTextureLocation().toString());
+        json.addProperty("victoryFlag", Objects.requireNonNullElseGet(team.getVictoryFlagUrl(), () -> Objects.toString(team.getVictoryFlagTextureLocation(), "")));
         JsonArray classes = new JsonArray();
         team.getClasses().forEach(type -> classes.add(EditorCatalog.key(type)));
         json.add("classes", classes);

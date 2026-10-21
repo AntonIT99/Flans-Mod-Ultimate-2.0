@@ -122,6 +122,13 @@ public class Team extends InfoType implements ITeam
         return Component.literal(name).withStyle(textColour);
     }
 
+    /** Web address of the flag image, which only the Teams editor sets; null for a flag of a texture. */
+    @Nullable
+    public String getVictoryFlagUrl()
+    {
+        return null;
+    }
+
     /**
      * The classes this team's {@code AddClass} lines name, resolved against this team's own content
      * pack first so that a shortname another pack also uses cannot pull in the wrong class.

@@ -22,9 +22,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Objects;
 import java.util.UUID;
 
-/** A persistent base link with a server-derived colour, synced without exposing Teams runtime state to the renderer. */
+/** A persistent base link with a server-derived colour and team, synced without exposing Teams runtime state to the renderer. */
 public final class TeamBannerBlockEntity extends FlanBlockEntity implements ITeamObject
 {
     public static final int UNOWNED_COLOUR = 0x808080;
@@ -32,6 +33,7 @@ public final class TeamBannerBlockEntity extends FlanBlockEntity implements ITea
     private static final String NBT_OBJECT_ID = "object_id";
     private static final String NBT_BASE_ID = "base_id";
     private static final String NBT_TEAM_COLOUR = "team_colour";
+    private static final String NBT_TEAM_NAME = "team_name";
 
     @Getter
     private UUID objectId = UUID.randomUUID();
@@ -39,6 +41,9 @@ public final class TeamBannerBlockEntity extends FlanBlockEntity implements ITea
     private UUID baseId;
     @Getter
     private int teamColour = UNOWNED_COLOUR;
+    /** Short name of the team holding the base, blank when none does, so that clients can draw its flag image. */
+    @Getter
+    private String teamName = "";
 
     public TeamBannerBlockEntity(BlockPos pos, BlockState state)
     {
@@ -66,9 +71,11 @@ public final class TeamBannerBlockEntity extends FlanBlockEntity implements ITea
         ITeamBase base = baseId == null ? null : manager.getBase(baseId).orElse(null);
         Team team = base == null ? null : manager.getTeamForBase(base);
         int colour = team == null ? UNOWNED_COLOUR : team.getTeamColour();
-        if (teamColour != colour)
+        String name = team == null ? "" : Objects.toString(team.getShortName(), "");
+        if (teamColour != colour || !teamName.equals(name))
         {
             teamColour = colour;
+            teamName = name;
             setChangedAndSync();
         }
     }
@@ -99,6 +106,7 @@ public final class TeamBannerBlockEntity extends FlanBlockEntity implements ITea
         if (baseId != null)
             tag.putUUID(NBT_BASE_ID, baseId);
         tag.putInt(NBT_TEAM_COLOUR, teamColour);
+        tag.putString(NBT_TEAM_NAME, teamName);
     }
 
     @Override
@@ -107,6 +115,7 @@ public final class TeamBannerBlockEntity extends FlanBlockEntity implements ITea
         objectId = tag.hasUUID(NBT_OBJECT_ID) ? tag.getUUID(NBT_OBJECT_ID) : UUID.randomUUID();
         baseId = tag.hasUUID(NBT_BASE_ID) ? tag.getUUID(NBT_BASE_ID) : null;
         teamColour = tag.contains(NBT_TEAM_COLOUR) ? tag.getInt(NBT_TEAM_COLOUR) & 0xFFFFFF : UNOWNED_COLOUR;
+        teamName = tag.getString(NBT_TEAM_NAME);
     }
 
     @Override

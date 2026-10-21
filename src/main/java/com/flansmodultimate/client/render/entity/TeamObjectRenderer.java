@@ -1,7 +1,9 @@
 package com.flansmodultimate.client.render.entity;
 
 import com.flansmodultimate.FlansModTextures;
+import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.common.entity.Flag;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -28,6 +30,9 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
     private static final float RIGHT_ANGLE = Mth.HALF_PI;
     /** Degrees per tick a dropped flag turns on the spot. */
     private static final float CARRIED_SPIN_SPEED = 2F;
+    /** Width bounds, in blocks, of a flag drawn from an image; the legacy flag skins were 3:2. */
+    private static final float MIN_IMAGE_FLAG_WIDTH = 1F;
+    private static final float MAX_IMAGE_FLAG_WIDTH = 2F;
 
     private final ModelPart pole;
     private final ModelPart flag;
@@ -75,9 +80,15 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
                 poseStack.translate(0.5F, 0F, 0F);
             }
 
-            int colour = flagEntity.getColour();
-            poseStack.scale(-1F, -1F, 1F);
-            VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY, (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
+            TeamFlagTextures.FlagTexture image = TeamFlagTextures.get(flagEntity.getTeamName().isBlank() ? null : Team.getTeam(flagEntity.getTeamName()));
+            if (image != null)
+                renderFlagImage(image, poseStack, buffer, packedLight);
+            else
+            {
+                int colour = flagEntity.getColour();
+                poseStack.scale(-1F, -1F, 1F);
+                VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY, (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
+            }
         }
         else
         {
@@ -87,6 +98,21 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
 
         poseStack.popPose();
         super.render(entity, yaw, partialTick, poseStack, buffer, packedLight);
+    }
+
+    /**
+     * A team's flag image on one upright sheet a block tall, seen from both sides, flying from the
+     * pole at the origin as the plain model flag does. Its width follows the image within bounds.
+     */
+    public static void renderFlagImage(TeamFlagTextures.FlagTexture image, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    {
+        float width = Mth.clamp(image.aspect(), MIN_IMAGE_FLAG_WIDTH, MAX_IMAGE_FLAG_WIDTH);
+        VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(image.location()));
+        PoseStack.Pose pose = poseStack.last();
+        VertexPlatform.vertex(vertices, pose, 0F, 0F, 0F, 1F, 1F, 1F, 1F, 0F, 1F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 0F, 1F);
+        VertexPlatform.vertex(vertices, pose, -width, 0F, 0F, 1F, 1F, 1F, 1F, 1F, 1F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 0F, 1F);
+        VertexPlatform.vertex(vertices, pose, -width, 1F, 0F, 1F, 1F, 1F, 1F, 1F, 0F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 0F, 1F);
+        VertexPlatform.vertex(vertices, pose, 0F, 1F, 0F, 1F, 1F, 1F, 1F, 0F, 0F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 0F, 1F);
     }
 
     @NotNull

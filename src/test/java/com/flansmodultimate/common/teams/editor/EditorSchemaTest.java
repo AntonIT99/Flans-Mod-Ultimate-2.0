@@ -34,6 +34,27 @@ class EditorSchemaTest
         }
     }
 
+    private static TeamEditorStore.Document teamDocument(String flag)
+    {
+        JsonObject team = new JsonObject();
+        team.addProperty("victoryFlag", flag);
+        JsonObject teams = new JsonObject();
+        teams.add("custom:red", team);
+        return new TeamEditorStore.Document(teams, new JsonObject());
+    }
+
+    @Test
+    void acceptsATeamFlagAsTextureOrWebAddressOnly()
+    {
+        for (String flag : new String[]{"", "flansmod:textures/skins/flag_red.png", "https://example.com/flags/red.png", "HTTP://cdn.example.org/red?size=large"})
+            assertDoesNotThrow(() -> EditorSchema.validate(teamDocument(flag)), flag);
+        for (String flag : new String[]{"Bad Texture", "https://", "https://user:secret@example.com/red.png", "https://exa mple.com/red.png", "https://example.com/" + "a".repeat(1100)})
+        {
+            TeamEditorStore.Document invalid = teamDocument(flag);
+            assertThrows(IllegalArgumentException.class, () -> EditorSchema.validate(invalid), flag);
+        }
+    }
+
     @Test
     void patchingOneArmourSlotKeepsOtherOverridesAndDoesNotFreezeUnchangedFields()
     {

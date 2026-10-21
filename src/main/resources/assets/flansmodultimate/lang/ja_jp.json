@@ -124,6 +124,7 @@
   "gui.flansmodultimate.editor.unsaved": "Your draft has not been saved to the server.",
   "gui.flansmodultimate.editor.up": "Move up",
   "gui.flansmodultimate.editor.victoryFlag": "Flag texture",
+  "gui.flansmodultimate.editor.victoryFlag_hint": "Texture (namespace:path.png) or https:// link to a PNG",
   "gui.flansmodultimate.editor.victorySound": "Victory sound",
   "gui.flansmodultimate.editor.victorySoundEnabled": "Victory sounds: %s",
   "gui.flansmodultimate.optics.editor": "照準HUDエディター",

@@ -76,6 +76,7 @@ public final class ModClientConfig
     /** Particle type ids, such as {@code somemod:plasma}, that thermal sights also show hot */
     public final List<String> additionalThermalHotParticles;
     public final boolean enablePlayerClassSkinOverrides;
+    public final boolean loadTeamFlagsFromUrls;
     public final double driveableRenderDistanceMultiplier;
     public final double flanNpcRenderDistanceMultiplier;
     public final int bulletRenderDistance;
@@ -207,6 +208,7 @@ public final class ModClientConfig
     @SuppressWarnings("java:S4968")
     public static final ConfigValue<List<? extends String>> ADDITIONAL_THERMAL_HOT_PARTICLES;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
+    private static final Supplier<Boolean> LOAD_TEAM_FLAGS_FROM_URLS;
     public static final DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;
     public static final DoubleValue FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
     private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
@@ -382,6 +384,10 @@ public final class ModClientConfig
             defines a SkinOverride. Overrides are ignored anyway when the texture is missing, is not a
             valid player skin sheet, or when another mod draws that player with its own model.
             """).define("enablePlayerClassSkinOverrides", true);
+        LOAD_TEAM_FLAGS_FROM_URLS = builder.comment("""
+            Download the flag images that the Teams editor of a server sets as a web address. The site
+            hosting an image sees your IP address. When off, those teams fly a plain flag in their colour.
+            """).define("loadTeamFlagsFromUrls", true);
         builder.pop();
 
         builder.push("Ammo HUD Settings");
@@ -632,6 +638,7 @@ public final class ModClientConfig
         bulletFlybyVolume = BULLET_FLYBY_VOLUME.get();
         additionalThermalHotParticles = ADDITIONAL_THERMAL_HOT_PARTICLES.get().stream().map(String::valueOf).map(String::trim).filter(id -> !id.isEmpty()).toList();
         enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
+        loadTeamFlagsFromUrls = LOAD_TEAM_FLAGS_FROM_URLS.get();
         driveableRenderDistanceMultiplier = DRIVEABLE_RENDER_DISTANCE_MULTIPLIER.get();
         flanNpcRenderDistanceMultiplier = FLAN_NPC_RENDER_DISTANCE_MULTIPLIER.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();

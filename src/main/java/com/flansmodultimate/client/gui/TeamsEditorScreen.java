@@ -1,6 +1,8 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.client.teams.EditorClientState;
+import com.flansmodultimate.client.teams.TeamFlagTextures;
+import com.flansmodultimate.common.teams.TeamFlagUrl;
 import com.flansmodultimate.common.teams.editor.*;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.PacketHandler;
@@ -8,6 +10,7 @@ import com.flansmodultimate.network.server.teams.PacketEditorAction;
 import com.google.gson.*;
 import com.mojang.authlib.GameProfile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,6 +32,10 @@ public final class TeamsEditorScreen extends Screen
 {
     private record Row(String key, String name, String pack, String status)
     {}
+
+    private static final String VICTORY_FLAG = "victoryFlag";
+    private static final int FLAG_PREVIEW_WIDTH = 72;
+    private static final int FLAG_PREVIEW_HEIGHT = 48;
 
     private boolean team = true;
     private boolean detail;
@@ -55,6 +62,9 @@ public final class TeamsEditorScreen extends Screen
     private final Map<String, Button> membershipButtons = new HashMap<>();
     private final List<ColourSlider> colourSliders = new ArrayList<>();
     private Button saveButton;
+    /** The flag field of the advanced team tab, while it is shown. */
+    @Nullable
+    private EditBox flagField;
     private RemotePlayer preview;
     private ResourceLocation previewSkin;
 
@@ -84,6 +94,7 @@ public final class TeamsEditorScreen extends Screen
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
         fields.clear();
+        flagField = null;
         membershipButtons.clear();
         colourSliders.clear();
         saveButton = null;
@@ -288,8 +299,13 @@ public final class TeamsEditorScreen extends Screen
     {
         int x = left + Math.min(155, panelWidth / 2);
         EditBox field = new EditBox(font, x, top + 60 + row * 25, panelWidth - (x - left) - 10, 20, tr(name));
-        field.setMaxLength("name".equals(name) ? 128 : 256);
+        field.setMaxLength(maxLength(name));
         field.setValue(rawInputs.getOrDefault(name, draft.has(name) ? draft.get(name).getAsString() : ""));
+        if (VICTORY_FLAG.equals(name))
+        {
+            field.setHint(tr("victoryFlag_hint"));
+            flagField = field;
+        }
         field.setResponder(text ->
         {
             try
@@ -313,13 +329,20 @@ public final class TeamsEditorScreen extends Screen
         addRenderableWidget(field);
     }
 
+    private static int maxLength(String field)
+    {
+        if ("name".equals(field))
+            return 128;
+        return VICTORY_FLAG.equals(field) ? TeamFlagUrl.MAX_LENGTH : 256;
+    }
+
     private void advanced()
     {
         if (team)
         {
             field("victorySound", 0, false);
             field("defeatSound", 1, false);
-            field("victoryFlag", 2, false);
+            field(VICTORY_FLAG, 2, false);
             button(tr("roundsGenerator", draft.get("roundsGenerator").getAsBoolean()), left + 8, top + 140, panelWidth - 16, () ->
             {
                 draft.addProperty("roundsGenerator", !draft.get("roundsGenerator").getAsBoolean());
@@ -915,7 +938,7 @@ public final class TeamsEditorScreen extends Screen
         if (tab == 0)
             labels = team ? new String[]{"name", "colour"} : new String[]{"name"};
         else
-            labels = team ? new String[]{"victorySound", "defeatSound", "victoryFlag"} : new String[]{"unlockLevel", "requiredPrestigeLevel", "classLimit", "classLimitPercent"};
+            labels = team ? new String[]{"victorySound", "defeatSound", VICTORY_FLAG} : new String[]{"unlockLevel", "requiredPrestigeLevel", "classLimit", "classLimitPercent"};
         for (int i = 0; i < labels.length; i++)
             graphics.drawString(font, tr(labels[i]), left + 8, top + 66 + i * 25, 0xCCDDEE);
         if (tab == 0 && team && draft.get("colour").getAsString().matches("#[0-9a-fA-F]{6}"))
@@ -925,6 +948,22 @@ public final class TeamsEditorScreen extends Screen
         }
         if (tab == 0 && !team)
             graphics.drawString(font, font.plainSubstrByWidth(references(), panelWidth - 16), left + 8, top + 145, 0xAABBDD);
+        if (tab == 3 && team)
+            renderFlagPreview(graphics);
+    }
+
+    /**
+     * The flag the draft names, below the advanced team settings. A web address is fetched only once
+     * the field loses focus, so that typing it does not request every partial address.
+     */
+    private void renderFlagPreview(GuiGraphics graphics)
+    {
+        int y = top + 192;
+        if (y + FLAG_PREVIEW_HEIGHT > top + panelHeight - 32 || flagField == null || flagField.isFocused() || errors.containsKey(VICTORY_FLAG))
+            return;
+        TeamFlagTextures.FlagTexture flag = TeamFlagTextures.preview(draft.has(VICTORY_FLAG) ? draft.get(VICTORY_FLAG).getAsString() : "");
+        if (flag != null)
+            TeamFlagTextures.draw(graphics, flag, left + 8, y, FLAG_PREVIEW_WIDTH, FLAG_PREVIEW_HEIGHT);
     }
 
     private void renderEquipment(GuiGraphics graphics, int mouseX, int mouseY)

@@ -135,6 +135,50 @@ class TeamBannerBlockEntityTest
     }
 
     @Test
+    void syncsAndSavesTheHoldingTeamSoClientsCanDrawItsFlagEvenWhenColoursMatch()
+    {
+        TeamBannerBlockEntity banner = banner(bannerBlock.defaultBlockState());
+        ServerLevel level = mock(ServerLevel.class);
+        banner.setLevel(level);
+        UUID baseId = UUID.randomUUID();
+        ITeamBase base = mock(ITeamBase.class);
+        TeamsManager manager = mock(TeamsManager.class);
+        Team first = mock(Team.class);
+        Team second = mock(Team.class);
+        when(first.getTeamColour()).thenReturn(0x2244DD);
+        when(second.getTeamColour()).thenReturn(0x2244DD);
+        when(first.getShortName()).thenReturn("blue");
+        when(second.getShortName()).thenReturn("navy");
+        when(manager.getBase(baseId)).thenReturn(Optional.of(base));
+        when(manager.getTeamForBase(base)).thenReturn(first);
+
+        try (var managers = mockStatic(TeamsManager.class))
+        {
+            managers.when(TeamsManager::getInstance).thenReturn(manager);
+            banner.setBaseId(baseId);
+            assertEquals("blue", banner.getTeamName());
+            clearInvocations(level);
+
+            when(level.getGameTime()).thenReturn(20L);
+            when(manager.getTeamForBase(base)).thenReturn(second);
+            TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
+            assertEquals("navy", banner.getTeamName());
+            verify(level).sendBlockUpdated(POS, banner.getBlockState(), banner.getBlockState(), Block.UPDATE_CLIENTS);
+            assertEquals("navy", banner.createUpdateTag(null).getString("team_name"));
+
+            when(manager.getTeamForBase(base)).thenReturn(null);
+            TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
+            assertEquals("", banner.getTeamName());
+        }
+
+        CompoundTag saved = new CompoundTag();
+        saved.putString("team_name", "blue");
+        TeamBannerBlockEntity restored = banner(bannerBlock.defaultBlockState());
+        restored.loadData(saved, null);
+        assertEquals("blue", restored.getTeamName());
+    }
+
+    @Test
     void unloadKeepsTheLinkWhileLoadRegistersItAgainAndUnlinkTurnsItGrey()
     {
         TeamBannerBlockEntity banner = banner(bannerBlock.defaultBlockState());

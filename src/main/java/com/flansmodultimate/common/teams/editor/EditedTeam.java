@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.teams.editor;
 
+import com.flansmodultimate.common.teams.TeamFlagUrl;
 import com.flansmodultimate.common.types.*;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -16,6 +17,8 @@ import java.util.List;
 /** Effective team whose authored fields override a pack's defaults. */
 public final class EditedTeam extends Team
 {
+    private static final String VICTORY_FLAG = "victoryFlag";
+
     @Nullable
     private final Team original;
     private final JsonObject patch;
@@ -84,15 +87,27 @@ public final class EditedTeam extends Team
     @Override
     public String getVictoryFlagTexture()
     {
-        return text("victoryFlag", original == null ? "" : original.getVictoryFlagTexture());
+        return text(VICTORY_FLAG, original == null ? "" : original.getVictoryFlagTexture());
     }
 
     @Override
     @Nullable
     public ResourceLocation getVictoryFlagTextureLocation()
     {
-        ResourceLocation fallback = original == null ? null : original.getVictoryFlagTextureLocation();
-        return patch.has("victoryFlag") ? ResourceLocation.tryParse(patch.get("victoryFlag").getAsString()) : fallback;
+        if (!patch.has(VICTORY_FLAG))
+            return original == null ? null : original.getVictoryFlagTextureLocation();
+        String flag = patch.get(VICTORY_FLAG).getAsString();
+        return flag.isBlank() || TeamFlagUrl.isUrl(flag) ? null : ResourceLocation.tryParse(flag);
+    }
+
+    @Override
+    @Nullable
+    public String getVictoryFlagUrl()
+    {
+        if (!patch.has(VICTORY_FLAG))
+            return original == null ? null : original.getVictoryFlagUrl();
+        String flag = patch.get(VICTORY_FLAG).getAsString();
+        return TeamFlagUrl.isUrl(flag) ? flag.trim() : null;
     }
 
     @Override

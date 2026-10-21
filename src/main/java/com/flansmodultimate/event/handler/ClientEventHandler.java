@@ -20,6 +20,7 @@ import com.flansmodultimate.client.render.hud.*;
 import com.flansmodultimate.client.render.layer.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.thermal.ThermalHotParticles;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
+import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
 import com.flansmodultimate.common.entity.*;
@@ -553,6 +554,7 @@ public final class ClientEventHandler
         TeamsClientState.clear();
         com.flansmodultimate.client.teams.EditorClientState.clear();
         PlayerSkinOverrides.clear();
+        TeamFlagTextures.clear();
         KillMessageFeed.clear();
         CommonConfigMirror.clear();
     }
