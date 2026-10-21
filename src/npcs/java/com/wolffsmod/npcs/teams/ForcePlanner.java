@@ -29,6 +29,33 @@ public final class ForcePlanner
     }
 
     /**
+     * Gives the teams of a side that trails on score extra infantry, more the further it trails: a side as far behind
+     * the leader as the score limit gets the full share, a side level with the leader none.
+     *
+     * @param sideOfTeam
+     *            the side of each team
+     * @param scores
+     *            the score of each side
+     * @param percent
+     *            the most extra infantry, in percent of a team's force
+     * @return the targets with the extra added, in the order of {@code targets}
+     */
+    public static Map<String, Integer> rubberBand(Map<String, Integer> targets, Map<String, Integer> sideOfTeam, Map<Integer, Integer> scores, int scoreLimit, int percent)
+    {
+        if (percent <= 0 || scores.isEmpty())
+            return targets;
+        int leader = scores.values().stream().mapToInt(Integer::intValue).max().orElse(0);
+        Map<String, Integer> adjusted = new LinkedHashMap<>();
+        targets.forEach((team, target) ->
+        {
+            int behind = leader - scores.getOrDefault(sideOfTeam.getOrDefault(team, -1), leader);
+            double deficit = Math.min(1D, Math.max(0D, behind / (double) Math.max(1, scoreLimit)));
+            adjusted.put(team, (int) Math.round(target * (1D + percent / 100D * deficit)));
+        });
+        return adjusted;
+    }
+
+    /**
      * Shares a total out in proportion to weights, by largest remainders, so the parts always add up to the total. When
      * no team has any weight, every team weighs the same.
      */

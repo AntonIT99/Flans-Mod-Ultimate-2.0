@@ -5,10 +5,15 @@
  */
 package com.flansmodultimate.api;
 
+import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.EntityTypePropertySupport;
 import org.jetbrains.annotations.ApiStatus;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
@@ -117,5 +122,30 @@ public final class FlansEntityTypes
     public static List<WeaponMount> getMounts(IContentType type)
     {
         return EntityTypePropertySupport.mounts(type);
+    }
+
+    /**
+     * Places a vehicle, plane or mecha of a definition in the level, as placing its item would, with every part worn down
+     * to a share of its hit points. It has no fuel and no ammunition. Server thread.
+     *
+     * @param type
+     *            a vehicle, plane or mecha definition
+     * @param position
+     *            where the driveable's origin goes, in world coordinates
+     * @param yaw
+     *            the heading it faces, in degrees as Minecraft measures yaw
+     * @param health
+     *            the share of its hit points every part keeps, from above 0 to 1; a part is never destroyed by it
+     * @return the driveable, or empty for another definition, on a client, or where it does not fit
+     */
+    public static Optional<Entity> spawnDriveable(ServerLevel level, IContentType type, Vec3 position, float yaw, float health)
+    {
+        if (!(type.getItem() instanceof DriveableItem<?, ?> item))
+            return Optional.empty();
+        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, yaw, null, ItemStack.EMPTY);
+        if (driveable == null)
+            return Optional.empty();
+        driveable.wearDown(health);
+        return Optional.of(driveable);
     }
 }

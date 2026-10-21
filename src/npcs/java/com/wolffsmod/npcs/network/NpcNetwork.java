@@ -22,6 +22,12 @@ public final class NpcNetwork
             () -> com.wolffsmod.npcs.client.NpcClientPackets::serverSettings, ServerControlPacket::handle);
         NpcNetworkPlatform.toServer("apply_loadout", ApplyLoadoutPacket.class, ApplyLoadoutPacket::write, ApplyLoadoutPacket::read, ApplyLoadoutPacket::handle);
         NpcNetworkPlatform.toClient("part_state", PartStatePacket.class, PartStatePacket::write, PartStatePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::partState);
+        NpcNetworkPlatform.toServer("bot_order", BotOrderPacket.class, BotOrderPacket::write, BotOrderPacket::read, BotOrderPacket::handle);
+        NpcNetworkPlatform.toClient("bot_orders_state", BotOrdersStatePacket.class, BotOrdersStatePacket::write, BotOrdersStatePacket::read,
+            () -> com.wolffsmod.npcs.client.NpcClientPackets::botOrders);
+        NpcNetworkPlatform.toServer("bot_editor_action", BotEditorActionPacket.class, BotEditorActionPacket::write, BotEditorActionPacket::read, BotEditorActionPacket::handle);
+        NpcNetworkPlatform.toClient("bot_editor_state", BotEditorStatePacket.class, BotEditorStatePacket::write, BotEditorStatePacket::read,
+            () -> com.wolffsmod.npcs.client.NpcClientPackets::botEditor);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -30,6 +36,26 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(ServerControlPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, BotOrdersStatePacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, BotEditorStatePacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(BotOrderPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(BotEditorActionPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }

@@ -5,6 +5,7 @@ import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.api.ITeamsLiveRound;
 import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.TeamsCapturePoint;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -56,6 +57,7 @@ public final class BotCommands
     private static final String TICKET_COST = "ticketcost";
     private static final String MEMBERS = "members";
     private static final String POSTURE = "posture";
+    private static final String POINT = "point";
     private static final SimpleCommandExceptionType NO_ROUND = new SimpleCommandExceptionType(Component.literal("No such round: use 'current' or an index from /teams listRotation"));
     private static final SimpleCommandExceptionType NO_TEAM = new SimpleCommandExceptionType(Component.literal("That team does not play this round"));
     private static final SimpleCommandExceptionType NO_TEMPLATE = new SimpleCommandExceptionType(Component.literal("No squad template has that id"));
@@ -84,6 +86,8 @@ public final class BotCommands
         .suggest(FlanModelEntities.getEntityTypes().stream().map(FlanModelEntityType::getShortName).toList(), builder);
     private static final SuggestionProvider<CommandSourceStack> TEMPLATES = (context, builder) -> SharedSuggestionProvider.suggest(SquadTemplates.get().all().stream().map(SquadTemplate::id).toList(),
         builder);
+    private static final SuggestionProvider<CommandSourceStack> POINTS = (context, builder) -> SharedSuggestionProvider
+        .suggest(FlansTeams.getRunningRound().map(live -> live.getCapturePoints().stream().map(point -> String.valueOf(point.symbol())).toList()).orElse(List.of()), builder);
     private static final SuggestionProvider<CommandSourceStack> MAPS = (context, builder) -> SharedSuggestionProvider
         .suggest(FlansTeams.getRounds().stream().map(ITeamsRound::getMapId).distinct().toList(), builder);
 
@@ -92,6 +96,10 @@ public final class BotCommands
         LiteralArgumentBuilder<CommandSourceStack> ai = Commands.literal("ai");
         ai.then(Commands.literal("board").executes(context -> order(context, true)));
         ai.then(Commands.literal("dismount").executes(context -> order(context, false)));
+        ai.then(orders());
+        ai.then(Commands.literal("commander").then(Commands.literal("take").executes(context -> command(context, true))).then(Commands.literal("leave").executes(context -> command(context, false))));
+        ai.then(Commands.literal("editor").requires(source -> source.hasPermission(2)).executes(context -> editor(context, -1))
+            .then(Commands.argument(ROUND, IntegerArgumentType.integer(0)).executes(context -> editor(context, IntegerArgumentType.getInteger(context, ROUND)))));
         ai.then(Commands.literal("status").requires(source -> source.hasPermission(2)).executes(BotCommands::status));
         ai.then(Commands.literal("clear").requires(source -> source.hasPermission(2)).executes(context ->
         {
@@ -120,6 +128,8 @@ public final class BotCommands
         round.then(intSetting(RESPAWN, 0, BotSettings::setRespawnSeconds));
         round.then(intSetting("tickets", 0, BotSettings::setTickets));
         round.then(intSetting("squadsize", 1, BotSettings::setSquadSize));
+        round.then(intSetting("abandon", 0, BotSettings::setAbandonChance));
+        round.then(intSetting("rubberband", 0, BotSettings::setRubberBand));
         round.then(Commands.literal("capture")
             .then(Commands.literal("infantry")
                 .then(Commands.argument(VALUE, FloatArgumentType.floatArg(0F))
@@ -160,6 +170,8 @@ public final class BotCommands
                             .executes(context -> vehicle(context, IntegerArgumentType.getInteger(context, BUDGET), IntegerArgumentType.getInteger(context, RESPAWN), 1))
                             .then(Commands.argument(TICKET_COST, IntegerArgumentType.integer(0)).executes(context -> vehicle(context, IntegerArgumentType.getInteger(context, BUDGET),
                                 IntegerArgumentType.getInteger(context, RESPAWN), IntegerArgumentType.getInteger(context, TICKET_COST)))))))));
+        team.then(Commands.literal("carry")
+            .then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES).then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES).executes(BotCommands::carry))));
         team.then(Commands.literal("removevehicle").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
             .executes(context -> editTeam(context, force -> force.getVehicles().removeIf(entry -> entry.type().equals(StringArgumentType.getString(context, TYPE))), "Vehicle entry removed"))));
         return team;
@@ -207,13 +219,33 @@ public final class BotCommands
         return editTeam(context, force ->
         {
             List<BotSettings.VehicleEntry> vehicles = force.getVehicles();
-            BotSettings.VehicleEntry entry = new BotSettings.VehicleEntry(type, count, budget, respawn, ticketCost, null);
             int index = vehicles.stream().map(BotSettings.VehicleEntry::type).toList().indexOf(type);
+            // The squad a vehicle carries is set on its own and kept when the rest of the entry changes.
+            String carry = index < 0 ? "" : vehicles.get(index).carry();
+            BotSettings.VehicleEntry entry = new BotSettings.VehicleEntry(type, count, budget, respawn, ticketCost, null, carry);
             if (index < 0)
                 vehicles.add(entry);
             else
                 vehicles.set(index, entry);
         }, "Vehicle entry set");
+    }
+
+    private static int carry(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        String type = StringArgumentType.getString(context, TYPE);
+        String template = word(context, TEMPLATE);
+        if (!template.isEmpty() && SquadTemplates.get().find(template).isEmpty())
+            throw NO_TEMPLATE.create();
+        return editTeam(context, force ->
+        {
+            List<BotSettings.VehicleEntry> vehicles = force.getVehicles();
+            for (int i = 0; i < vehicles.size(); i++)
+            {
+                BotSettings.VehicleEntry entry = vehicles.get(i);
+                if (entry.type().equals(type))
+                    vehicles.set(i, new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), entry.respawnSeconds(), entry.ticketCost(), entry.spawner(), template));
+            }
+        }, template.isEmpty() ? "The vehicle carries nobody" : "The vehicle carries that squad");
     }
 
     // A command reports how many settings it changed, which is always one here.
@@ -330,6 +362,59 @@ public final class BotCommands
         return round.getSlots().size();
     }
 
+    /** {@code order follow|hold|release} and {@code order attack|defend <point>}, for the allied squads around the player. */
+    private static LiteralArgumentBuilder<CommandSourceStack> orders()
+    {
+        LiteralArgumentBuilder<CommandSourceStack> order = Commands.literal("order");
+        for (PlayerOrder.Kind kind : List.of(PlayerOrder.Kind.FOLLOW, PlayerOrder.Kind.HOLD, PlayerOrder.Kind.RELEASE))
+            order.then(Commands.literal(lower(kind)).executes(context -> giveOrder(context, kind, BotOrders.HERE)));
+        for (PlayerOrder.Kind kind : List.of(PlayerOrder.Kind.ATTACK, PlayerOrder.Kind.DEFEND))
+            order.then(Commands.literal(lower(kind)).executes(context -> giveOrder(context, kind, BotOrders.HERE))
+                .then(Commands.argument(POINT, StringArgumentType.word()).suggests(POINTS).executes(context -> giveOrder(context, kind, pointIndex(context)))));
+        return order;
+    }
+
+    private static int giveOrder(CommandContext<CommandSourceStack> context, PlayerOrder.Kind kind, int objective) throws CommandSyntaxException
+    {
+        int ordered = BotOrders.give(context.getSource().getPlayerOrException(), BotOrders.NEARBY_SQUADS, kind, objective);
+        if (ordered == 0)
+            context.getSource().sendFailure(Component.literal("No allied squad of bots is within " + (int) BotOrders.NEARBY + " blocks"));
+        else
+            context.getSource().sendSuccess(() -> Component.literal(ordered + " squads: " + lower(kind)), false);
+        return ordered;
+    }
+
+    /** The capture point a letter names, or the player's own position for a letter no point has. */
+    private static int pointIndex(CommandContext<CommandSourceStack> context)
+    {
+        String letter = StringArgumentType.getString(context, POINT);
+        List<TeamsCapturePoint> points = FlansTeams.getRunningRound().map(ITeamsLiveRound::getCapturePoints).orElse(List.of());
+        for (int i = 0; i < points.size(); i++)
+            if (String.valueOf(points.get(i).symbol()).equalsIgnoreCase(letter))
+                return i;
+        return BotOrders.HERE;
+    }
+
+    private static int command(CommandContext<CommandSourceStack> context, boolean take) throws CommandSyntaxException
+    {
+        boolean holds = BotOrders.command(context.getSource().getPlayerOrException(), take);
+        String message;
+        if (take)
+            message = holds ? "You command your side's bots" : "Another player commands your side, or you play no round with bots";
+        else
+            message = "You left the command of your side";
+        context.getSource().sendSuccess(() -> Component.literal(message), false);
+        return holds ? 1 : 0;
+    }
+
+    // A command reports how many editors it opened, which is always one here.
+    @SuppressWarnings("SameReturnValue")
+    private static int editor(CommandContext<CommandSourceStack> context, int round) throws CommandSyntaxException
+    {
+        BotEditor.open(context.getSource().getPlayerOrException(), round);
+        return 1;
+    }
+
     private static int order(CommandContext<CommandSourceStack> context, boolean board) throws CommandSyntaxException
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
@@ -371,7 +456,7 @@ public final class BotCommands
         root.then(Commands.literal(MEMBERS).then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES)
             .then(Commands.argument(MEMBERS, StringArgumentType.greedyString()).executes(context -> editTemplate(context, template ->
             {
-                List<SquadTemplate.Member> members = parseMembers(StringArgumentType.getString(context, MEMBERS));
+                List<SquadTemplate.Member> members = BotSettingsText.parseMembers(StringArgumentType.getString(context, MEMBERS));
                 return template.withMembers(members);
             })))));
         root.then(Commands.literal(POSTURE)
@@ -401,33 +486,6 @@ public final class BotCommands
         SquadTemplates.get().put(change.apply(template));
         context.getSource().sendSuccess(() -> Component.literal("Squad template " + template.id() + " saved"), true);
         return 1;
-    }
-
-    /** Reads members written as {@code class:count} pairs separated by commas or spaces; a pair without a count counts one. */
-    static List<SquadTemplate.Member> parseMembers(String text)
-    {
-        List<SquadTemplate.Member> members = new ArrayList<>();
-        for (String part : text.split("[,\\s]+"))
-        {
-            if (part.isBlank())
-                continue;
-            String[] pair = part.split(":", 2);
-            members.add(new SquadTemplate.Member(pair[0], pair.length == 2 ? count(pair[1]) : 1));
-        }
-        return members;
-    }
-
-    /** A member count, one when it is not a number. */
-    private static int count(String text)
-    {
-        try
-        {
-            return Integer.parseInt(text);
-        }
-        catch (NumberFormatException e)
-        {
-            return 1;
-        }
     }
 
     // --- Markers ---

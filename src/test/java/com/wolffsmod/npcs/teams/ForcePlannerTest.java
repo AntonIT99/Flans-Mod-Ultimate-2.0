@@ -41,6 +41,16 @@ class ForcePlannerTest
     }
 
     @Test
+    void aSideTrailingOnScoreGetsExtraInfantry()
+    {
+        Map<String, Integer> sides = Map.of("us", 0, "uk", 0, "germany", 1);
+        // Germany trails by half the score limit, so it gets half of the 40 percent: 20 percent more.
+        Map<String, Integer> adjusted = ForcePlanner.rubberBand(ordered("us", 10, "uk", 10, "germany", 20), sides, Map.of(0, 100, 1, 50), 100, 40);
+        assertEquals(ordered("us", 10, "uk", 10, "germany", 24), adjusted);
+        assertEquals(ordered("us", 10), ForcePlanner.rubberBand(ordered("us", 10), sides, Map.of(0, 0, 1, 90), 100, 0), "switched off, nothing changes");
+    }
+
+    @Test
     void fillTopsEachTeamUpToItsTargetWithPlayersCounted()
     {
         Map<String, Integer> targets = ForcePlanner.infantryTargets(BotSettings.Mode.FILL, 0, ordered("us", 20, "germany", 40), Map.of("us", 3, "germany", 45));

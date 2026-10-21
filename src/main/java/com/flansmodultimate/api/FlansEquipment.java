@@ -5,8 +5,11 @@
  */
 package com.flansmodultimate.api;
 
+import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.guns.EquipmentSupport;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -15,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.Optional;
 
 /** Equipment inspection and native Flan weapon actions for addon-controlled living entities. */
@@ -95,6 +99,21 @@ public final class FlansEquipment
         if (!(gun instanceof GunType gunType))
             return Optional.empty();
         return gunType.getDefaultAmmo().flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
+    }
+
+    /**
+     * Opens a parachute over a living entity, as a player's parachute tool does, taking the first parachute tool of the
+     * loaded content packs by short name. The entity drifts down on it until it lands. Server thread.
+     *
+     * @return whether the parachute opened; false without a parachute tool, on a client, or without room above the entity
+     */
+    public static boolean deployParachute(LivingEntity rider)
+    {
+        if (rider.level().isClientSide)
+            return false;
+        Optional<ToolType> tool = InfoType.getInfoTypes().values().stream().filter(ToolType.class::isInstance).map(ToolType.class::cast).filter(ToolType::isParachute)
+            .min(Comparator.comparing(ToolType::getShortName));
+        return tool.map(type -> Parachute.spawnAndMount(rider.level(), rider, type) != null).orElse(false);
     }
 
     /** @return a detached copy of the first usable loaded magazine, or empty; either side, without consumption */

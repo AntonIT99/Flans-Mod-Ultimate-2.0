@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * How a side's commander deploys its squads, given the state of the round. Objective rounds are fought over their capture
@@ -38,14 +39,33 @@ public final class Doctrine
     private static final double THREAT_MARGIN = 8D;
     /** Share of the Assault defenders that holds the objective in play; the rest hold the next one. */
     private static final double FRONT_SHARE = 2D / 3D;
+    /** Blocks around a flag a squad spreads over, close enough for every member to touch it. */
+    private static final double FLAG_RADIUS = 2D;
+    /** Blocks around its own flag a guarding squad spreads over. */
+    private static final double GUARD_RADIUS = 8D;
 
     /**
      * A squad as the commander sees it.
      *
      * @param strength
      *            its living members
+     * @param carrying
+     *            whether one of its members carries an enemy flag
      */
-    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength)
+    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying)
+    {}
+
+    /**
+     * A Capture the Flag flag as a commander sees it.
+     *
+     * @param ownerSide
+     *            the side whose flag it is
+     * @param home
+     *            where it stands at its base
+     * @param carrierSide
+     *            the side of whoever carries it, or -1
+     */
+    public record FlagView(int ownerSide, Vec3 position, Vec3 home, boolean atHome, int carrierSide)
     {}
 
     /**
@@ -59,8 +79,10 @@ public final class Doctrine
      *            where the enemy's players and bots are
      * @param navalPoints
      *            the patrol points ships may use
+     * @param flags
+     *            the flags in Capture the Flag; empty in other game types
      */
-    public record Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints)
+    public record Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags)
     {}
 
     /** @return a task for every squad that has one; squads left out keep theirs */
@@ -79,7 +101,9 @@ public final class Doctrine
                 default -> ground.add(squad);
             }
         }
-        if (field.points().isEmpty())
+        if (!field.flags().isEmpty())
+            planFlags(field, ground, tasks);
+        else if (field.points().isEmpty())
             planHunt(field, ground, tasks);
         else if (field.attackingSide() >= 0)
             planAssault(field, ground, tasks);
@@ -102,6 +126,67 @@ public final class Doctrine
             Vec3 target = nearest(squad.position(), field.enemies()).or(() -> nearest(squad.position(), field.enemySpawns())).orElse(squad.position());
             tasks.put(squad.id(), new SquadTask(SquadTask.Kind.HUNT, target, HUNT_RADIUS));
         }
+    }
+
+    /**
+     * Capture the Flag: a squad carrying an enemy flag takes it home; some squads go after a carrier of the side's own flag,
+     * or bring a dropped one back; half the others go for the nearest enemy flag, and the rest guard their own.
+     */
+    private static void planFlags(Battlefield field, List<SquadView> squads, Map<Integer, SquadTask> tasks)
+    {
+        List<FlagView> own = field.flags().stream().filter(flag -> flag.ownerSide() == field.side()).toList();
+        List<FlagView> enemy = field.flags().stream().filter(flag -> flag.ownerSide() != field.side() && flag.carrierSide() != field.side()).toList();
+        List<SquadView> free = new ArrayList<>();
+        for (SquadView squad : squads)
+        {
+            Optional<FlagView> home = nearestFlag(squad.position(), own, FlagView::home);
+            if (squad.carrying() && home.isPresent())
+                tasks.put(squad.id(), new SquadTask(SquadTask.Kind.ATTACK, home.get().home(), FLAG_RADIUS));
+            else
+                free.add(squad);
+        }
+        free.sort(Comparator.comparingInt(SquadView::id));
+        for (FlagView flag : own)
+        {
+            if (!flag.atHome())
+                recover(flag, free, tasks);
+        }
+        int raiders = enemy.isEmpty() ? 0 : (free.size() + 1) / 2;
+        for (int i = 0; i < free.size(); i++)
+            raidOrGuard(field, free.get(i), i < raiders, own, enemy, tasks);
+    }
+
+    /**
+     * Sends the free squads nearest a flag of the side that left its base after it: a third of them hunt its carrier, or
+     * one brings it back once dropped. The squads sent are taken from the free ones.
+     */
+    private static void recover(FlagView flag, List<SquadView> free, Map<Integer, SquadTask> tasks)
+    {
+        boolean carried = flag.carrierSide() >= 0;
+        int hunters = Math.min(free.size(), carried ? Math.max(1, free.size() / 3) : 1);
+        free.sort(Comparator.comparingDouble(squad -> squad.position().distanceToSqr(flag.position())));
+        List<SquadView> sent = List.copyOf(free.subList(0, hunters));
+        free.removeAll(sent);
+        for (SquadView squad : sent)
+            tasks.put(squad.id(), new SquadTask(carried ? SquadTask.Kind.HUNT : SquadTask.Kind.ATTACK, flag.position(), FLAG_RADIUS));
+    }
+
+    /** A free squad goes for the nearest enemy flag when it is a raider, and guards its own side's flag otherwise. */
+    private static void raidOrGuard(Battlefield field, SquadView squad, boolean raider, List<FlagView> own, List<FlagView> enemy, Map<Integer, SquadTask> tasks)
+    {
+        Optional<FlagView> target = raider ? nearestFlag(squad.position(), enemy, FlagView::position) : Optional.empty();
+        Optional<FlagView> guarded = nearestFlag(squad.position(), own, FlagView::home);
+        if (target.isPresent())
+            tasks.put(squad.id(), new SquadTask(SquadTask.Kind.ATTACK, target.get().position(), FLAG_RADIUS));
+        else if (guarded.isPresent())
+            tasks.put(squad.id(), new SquadTask(SquadTask.Kind.DEFEND, guarded.get().home(), GUARD_RADIUS));
+        else
+            planHunt(field, List.of(squad), tasks);
+    }
+
+    private static Optional<FlagView> nearestFlag(Vec3 from, List<FlagView> flags, Function<FlagView, Vec3> where)
+    {
+        return flags.stream().min(Comparator.comparingDouble(flag -> where.apply(flag).distanceToSqr(from)));
     }
 
     /** Assault: attackers push the objective in play; defenders hold it, and some of them the next one. */

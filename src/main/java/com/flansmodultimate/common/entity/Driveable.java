@@ -3538,6 +3538,25 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             PacketHandler.sendToTracking(new PacketDriveableDamage(getId(), changed), this);
     }
 
+    /**
+     * Wears every part down to a share of its hit points, as a wreck that can still be repaired: no part is destroyed by
+     * it. The next tick sends the parts to clients. Server side.
+     */
+    public void wearDown(float share)
+    {
+        if (level().isClientSide || !Float.isFinite(share))
+            return;
+        float kept = Mth.clamp(share, 0F, 1F);
+        for (DriveablePart part : initializedData().getParts().values())
+        {
+            if (part.getMaxHealth() <= 0F || part.isDestroyed())
+                continue;
+            float target = Math.max(1F, part.getMaxHealth() * kept);
+            if (part.getHealth() > target)
+                part.damage(part.getHealth() - target, false);
+        }
+    }
+
     /** Send the saved server state to a newly tracking player, even if no part changed this tick. */
     public void sendPartStateTo(@NotNull ServerPlayer player)
     {

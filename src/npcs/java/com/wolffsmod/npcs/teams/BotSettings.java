@@ -33,6 +33,8 @@ public final class BotSettings
     private static final String NBT_RESPAWN = "respawn_seconds";
     private static final String NBT_TICKETS = "tickets";
     private static final String NBT_SQUAD_SIZE = "squad_size";
+    private static final String NBT_ABANDON = "abandon_chance";
+    private static final String NBT_RUBBER_BAND = "rubber_band";
     private static final String NBT_TEAMS = "teams";
 
     /** How the number of loose infantry bots per team is set. */
@@ -77,6 +79,10 @@ public final class BotSettings
     private int tickets;
     /** How many loose infantry bots form one squad. */
     private int squadSize = 6;
+    /** Chance, in percent, that a destroyed vehicle bot leaves a damaged vehicle players can repair and use. */
+    private int abandonChance = 25;
+    /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
+    private int rubberBand;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
     /** What one team fields. */
@@ -198,8 +204,11 @@ public final class BotSettings
      *            tickets one costs to bring back
      * @param spawner
      *            the vehicle spawner it appears at, or null for any the team holds
+     * @param carry
+     *            the squad template it carries to the front and unloads there, or drops by parachute from the air; empty
+     *            for none
      */
-    public record VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner)
+    public record VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry)
     {
         private static final String NBT_TYPE = "type";
         private static final String NBT_COUNT = "count";
@@ -207,6 +216,7 @@ public final class BotSettings
         private static final String NBT_RESPAWN = "respawn_seconds";
         private static final String NBT_TICKET_COST = "ticket_cost";
         private static final String NBT_SPAWNER = "spawner";
+        private static final String NBT_CARRY = "carry";
 
         public VehicleEntry
         {
@@ -214,6 +224,7 @@ public final class BotSettings
             budget = Math.max(0, budget);
             respawnSeconds = Math.max(0, respawnSeconds);
             ticketCost = Math.max(0, ticketCost);
+            carry = carry == null ? "" : carry;
         }
 
         CompoundTag save()
@@ -226,13 +237,14 @@ public final class BotSettings
             tag.putInt(NBT_TICKET_COST, ticketCost);
             if (spawner != null)
                 tag.putUUID(NBT_SPAWNER, spawner);
+            tag.putString(NBT_CARRY, carry);
             return tag;
         }
 
         static VehicleEntry load(CompoundTag tag)
         {
             return new VehicleEntry(tag.getString(NBT_TYPE), tag.getInt(NBT_COUNT), tag.getInt(NBT_BUDGET), tag.getInt(NBT_RESPAWN), tag.getInt(NBT_TICKET_COST),
-                tag.hasUUID(NBT_SPAWNER) ? tag.getUUID(NBT_SPAWNER) : null);
+                tag.hasUUID(NBT_SPAWNER) ? tag.getUUID(NBT_SPAWNER) : null, tag.getString(NBT_CARRY));
         }
     }
 
@@ -255,6 +267,8 @@ public final class BotSettings
         tag.putInt(NBT_RESPAWN, respawnSeconds);
         tag.putInt(NBT_TICKETS, tickets);
         tag.putInt(NBT_SQUAD_SIZE, squadSize);
+        tag.putInt(NBT_ABANDON, abandonChance);
+        tag.putInt(NBT_RUBBER_BAND, rubberBand);
         CompoundTag teamTag = new CompoundTag();
         teams.forEach((team, force) -> teamTag.put(team, force.save()));
         tag.put(NBT_TEAMS, teamTag);
@@ -280,6 +294,8 @@ public final class BotSettings
         settings.respawnSeconds = tag.contains(NBT_RESPAWN) ? Math.max(0, tag.getInt(NBT_RESPAWN)) : settings.respawnSeconds;
         settings.tickets = Math.max(0, tag.getInt(NBT_TICKETS));
         settings.squadSize = tag.contains(NBT_SQUAD_SIZE) ? Math.max(1, tag.getInt(NBT_SQUAD_SIZE)) : settings.squadSize;
+        settings.abandonChance = tag.contains(NBT_ABANDON) ? Math.max(0, Math.min(100, tag.getInt(NBT_ABANDON))) : settings.abandonChance;
+        settings.rubberBand = Math.max(0, tag.getInt(NBT_RUBBER_BAND));
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));

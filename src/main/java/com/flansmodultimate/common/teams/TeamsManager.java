@@ -1507,6 +1507,7 @@ public final class TeamsManager
         if (team != null && entity instanceof LivingEntity combatant)
         {
             getCurrentGameType().ifPresent(type -> type.combatantKilled(this, combatant, team, source));
+            dropFlag(combatant);
             announceCombatantKilled(combatant, source);
         }
         else
@@ -1992,14 +1993,20 @@ public final class TeamsManager
     }
 
     @Nullable
-    public Flag getFlagCarriedBy(ServerPlayer player)
+    public Flag getFlagCarriedBy(Entity carrier)
     {
-        return liveBases.values().stream().map(ITeamBase::getFlag).filter(java.util.Objects::nonNull).filter(flag -> flag.isCarriedBy(player)).findFirst().orElse(null);
+        return liveBases.values().stream().map(ITeamBase::getFlag).filter(java.util.Objects::nonNull).filter(flag -> flag.isCarriedBy(carrier)).findFirst().orElse(null);
     }
 
-    private void dropFlag(ServerPlayer player)
+    /** The flags of the bases of the map being played. */
+    public List<Flag> getFlags()
     {
-        Flag flag = getFlagCarriedBy(player);
+        return liveBases.values().stream().filter(this::isBaseInCurrentMap).map(ITeamBase::getFlag).filter(java.util.Objects::nonNull).toList();
+    }
+
+    private void dropFlag(Entity carrier)
+    {
+        Flag flag = getFlagCarriedBy(carrier);
         if (flag != null)
         {
             int returnTicks = getCurrentGameType().filter(GameTypeCTF.class::isInstance).map(GameTypeCTF.class::cast).map(GameTypeCTF::getFlagReturnTimeSeconds).orElse(30) * 20;

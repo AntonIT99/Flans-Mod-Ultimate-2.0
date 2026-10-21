@@ -34,7 +34,7 @@ final class BotPopulation
         Map<String, Integer> counts = new LinkedHashMap<>();
         for (ITeam team : round.getLive().getRound().getTeams())
             counts.put(team.getShortName(), settings.team(team.getShortName()).getCount());
-        Map<String, Integer> targets = ForcePlanner.infantryTargets(settings.getMode(), settings.getTotal(), counts, playersPerTeam(server));
+        Map<String, Integer> targets = rubberBand(round, ForcePlanner.infantryTargets(settings.getMode(), settings.getTotal(), counts, playersPerTeam(server)));
         for (ITeam team : round.getLive().getRound().getTeams())
         {
             BotSettings.TeamForce force = settings.team(team.getShortName());
@@ -246,6 +246,10 @@ final class BotPopulation
                 if (force.getBudget() > 0 && round.getInfantrySpawns().getOrDefault(slot.getTeam(), 0) >= force.getBudget())
                     return false;
             }
+            case CARGO -> {
+                // Transports bring cargo to the front; it never comes back on its own.
+                return false;
+            }
             case SQUAD -> {
                 // A squad with a budget is lost as a whole: its members do not come back one by one.
                 boolean budgeted = slot.getEntry() < force.getSquads().size() && force.getSquads().get(slot.getEntry()).budget() > 0;
@@ -260,8 +264,28 @@ final class BotPopulation
                     return false;
             }
         }
+        return canAfford(round, slot);
+    }
+
+    /** Whether the side has the tickets a spawn of the slot costs. */
+    static boolean canAfford(BotRound round, BotSlot slot)
+    {
         int cost = ticketCost(round, slot);
         return round.getSettings().getTickets() <= 0 || cost <= 0 || ticketsLeft(round, round.sideOf(slot.getTeam())) >= cost;
+    }
+
+    /** Gives the sides that trail on score extra infantry, as the round's rubber band says; never in Assault, scored by losses. */
+    private static Map<String, Integer> rubberBand(BotRound round, Map<String, Integer> targets)
+    {
+        int percent = round.getSettings().getRubberBand();
+        if (percent <= 0 || round.getLive().getAttackingSide().isPresent())
+            return targets;
+        Map<String, Integer> sides = new HashMap<>();
+        targets.keySet().forEach(team -> sides.put(team, round.sideOf(team)));
+        Map<Integer, Integer> scores = new HashMap<>();
+        for (int side = 0; side < round.getLive().getRound().getSideCount(); side++)
+            scores.put(side, round.getLive().getScore(side));
+        return ForcePlanner.rubberBand(targets, sides, scores, round.getLive().getRound().getScoreLimit(), percent);
     }
 
     /** Records a spawn against the budgets and the side's tickets. */

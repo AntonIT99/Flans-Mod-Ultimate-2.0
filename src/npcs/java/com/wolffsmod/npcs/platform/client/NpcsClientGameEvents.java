@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.platform.client;
 
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.client.BotKeys;
 import com.wolffsmod.npcs.client.ClientBenchmark;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,13 @@ public final class NpcsClientGameEvents
     {
         if (event.phase == TickEvent.Phase.END)
             ClientBenchmark.frame();
+    }
+
+    @SubscribeEvent
+    public static void clientTick(TickEvent.ClientTickEvent event)
+    {
+        if (event.phase == TickEvent.Phase.END)
+            BotKeys.tick();
     }
 
     @SubscribeEvent

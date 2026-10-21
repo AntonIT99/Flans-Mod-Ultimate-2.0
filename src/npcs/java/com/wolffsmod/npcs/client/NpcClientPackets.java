@@ -26,6 +26,24 @@ public final class NpcClientPackets
             NpcVehicleState.of(npc).getParts().receive(packet);
     }
 
+    /** Opens the squad order screen, or shows the new state on it. */
+    public static void botOrders(BotOrdersStatePacket packet)
+    {
+        if (Minecraft.getInstance().screen instanceof BotOrdersScreen screen)
+            screen.update(packet);
+        else
+            Minecraft.getInstance().setScreen(new BotOrdersScreen(packet));
+    }
+
+    /** Opens the bot editor, or shows the new state in it. */
+    public static void botEditor(BotEditorStatePacket packet)
+    {
+        if (Minecraft.getInstance().screen instanceof BotEditorScreen screen)
+            screen.update(packet);
+        else
+            Minecraft.getInstance().setScreen(new BotEditorScreen(packet));
+    }
+
     public static void serverSettings(ServerControlPacket packet)
     {
         ClientServerSettings.receive(packet);

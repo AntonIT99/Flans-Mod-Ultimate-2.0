@@ -83,6 +83,11 @@ public interface ITeamsLiveRound
     List<TeamsCapturePoint> getCapturePoints();
 
     /**
+     * @return the flags of the map in Capture the Flag, immutable; empty in other game types
+     */
+    List<TeamsFlag> getFlags();
+
+    /**
      * Where members of a team may come back right now, as players do: the player spawners of the bases the team or,
      * for capture points, its side holds. A base without spawners counts with its own position.
      *

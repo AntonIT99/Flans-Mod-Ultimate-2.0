@@ -39,7 +39,7 @@ class BotSettingsTest
         germany.getClassWeights().put("rifleman", 5);
         germany.getSquads().add(new BotSettings.SquadEntry("panzergrenadiers", 2, 6));
         UUID spawner = UUID.randomUUID();
-        germany.getVehicles().add(new BotSettings.VehicleEntry("tiger", 2, 4, 90, 5, spawner));
+        germany.getVehicles().add(new BotSettings.VehicleEntry("tiger", 2, 4, 90, 5, spawner, "grenadiers"));
 
         BotSettings loaded = BotSettings.load(settings.save());
         assertTrue(loaded.isEnabled());
@@ -56,13 +56,13 @@ class BotSettingsTest
         assertTrue(force.usesClone());
         assertEquals(5, force.getClassWeights().get("rifleman"));
         assertEquals(List.of(new BotSettings.SquadEntry("panzergrenadiers", 2, 6)), force.getSquads());
-        assertEquals(List.of(new BotSettings.VehicleEntry("tiger", 2, 4, 90, 5, spawner)), force.getVehicles());
+        assertEquals(List.of(new BotSettings.VehicleEntry("tiger", 2, 4, 90, 5, spawner, "grenadiers")), force.getVehicles());
     }
 
     @Test
     void templateMembersAreReadAsClassCountPairs()
     {
-        assertEquals(List.of(new SquadTemplate.Member("rifleman", 4), new SquadTemplate.Member("mg", 1), new SquadTemplate.Member("medic", 1)), BotCommands.parseMembers("rifleman:4, mg:1 medic"));
+        assertEquals(List.of(new SquadTemplate.Member("rifleman", 4), new SquadTemplate.Member("mg", 1), new SquadTemplate.Member("medic", 1)), BotSettingsText.parseMembers("rifleman:4, mg:1 medic"));
         SquadTemplate template = new SquadTemplate("squad", "Squad", null, null, List.of(new SquadTemplate.Member("officer", 1), new SquadTemplate.Member("rifleman", 2)));
         assertEquals(List.of("officer", "rifleman", "rifleman"), template.roster());
         assertEquals(SquadTemplate.Posture.BALANCED, template.posture());

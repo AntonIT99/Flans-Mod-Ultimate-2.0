@@ -110,6 +110,7 @@ public final class TeamsBots implements ITeamsListener
                 current.getFactions().putAll(BotFactions.setUp(live.get().getRound()));
             track(level, current, now);
             BotPopulation.upkeep(server, current, now, random);
+            BotTransports.unload(level, current, now, random);
             eliminate(server, level, current);
         }
         spawnQueued(level, current, now, random);
@@ -170,10 +171,7 @@ public final class TeamsBots implements ITeamsListener
             if (dead && slot.getDiedAt() == 0)
                 fallen(current, slot, now);
             if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && slot.isRetired())
-            {
-                remove(npc);
-                forget(current, slot);
-            }
+                removeBody(level, current, slot, npc, dead);
         }
         else if (slot.getDiedAt() > 0)
             forget(current, slot);
@@ -183,6 +181,15 @@ public final class TeamsBots implements ITeamsListener
             fallen(current, slot, now);
             forget(current, slot);
         }
+    }
+
+    /** Removes a fallen bot's body, or a retired bot, leaving the wreck a destroyed vehicle left. */
+    private static void removeBody(ServerLevel level, BotRound current, BotSlot slot, EntityNPCInterface npc, boolean dead)
+    {
+        remove(npc);
+        if (dead && slot.isWreckPending())
+            BotTransports.leaveWreck(level, slot, npc.position(), npc.getYRot());
+        forget(current, slot);
     }
 
     private static void fallen(BotRound current, BotSlot slot, long now)
@@ -196,6 +203,9 @@ public final class TeamsBots implements ITeamsListener
                 seconds = vehicles.get(slot.getEntry()).respawnSeconds();
         }
         slot.setRespawnAt(now + seconds * 20L);
+        // A soldier a transport brought never comes back; a new transport brings others.
+        if (slot.getSource() == BotSlot.Source.CARGO)
+            slot.setRetired(true);
     }
 
     private static void forget(BotRound current, BotSlot slot)
@@ -226,13 +236,24 @@ public final class TeamsBots implements ITeamsListener
 
     private void spawn(ServerLevel level, BotRound current, BotSlot slot, long now, RandomGenerator random)
     {
+        spawnAt(level, current, slot, now, random, null);
+    }
+
+    /**
+     * Makes the NPC of a slot, at a spawn point of its team or at the place given, and records the spawn against the
+     * budgets and tickets.
+     *
+     * @return the new NPC, or empty when it could not be made; the slot then tries again later
+     */
+    static Optional<EntityNPCInterface> spawnAt(ServerLevel level, BotRound current, BotSlot slot, long now, RandomGenerator random, @Nullable Vec3 at)
+    {
         ITeam team = current.team(slot.getTeam()).orElse(null);
-        Vec3 position = team == null ? null : spawnPoint(current, slot, team, random);
+        Vec3 position = team == null || at != null ? at : spawnPoint(current, slot, team, random);
         Integer faction = current.getFactions().get(slot.getTeam());
         if (team == null || position == null || faction == null)
         {
             slot.setRespawnAt(now + RETRY_TICKS);
-            return;
+            return Optional.empty();
         }
         BotSettings.TeamForce force = current.getSettings().team(slot.getTeam());
         BotSquad squad = current.getSquads().get(slot.getSquad());
@@ -245,7 +266,7 @@ public final class TeamsBots implements ITeamsListener
         {
             NpcsMod.log.warn("Teams bot of team {} could not be made as {}", slot.getTeam(), slot.getRole());
             slot.setRespawnAt(now + RETRY_TICKS);
-            return;
+            return npc;
         }
         BotPopulation.charge(current, slot);
         slot.setSpawns(slot.getSpawns() + 1);
@@ -254,6 +275,9 @@ public final class TeamsBots implements ITeamsListener
         slot.setLastSeen(now);
         slot.setLastPosition(npc.get().position());
         current.getSlotOfEntity().put(npc.get().getUUID(), slot.getId());
+        if (slot.isVehicle() && squad != null)
+            BotTransports.load(current, slot, squad);
+        return npc;
     }
 
     /**
@@ -393,6 +417,9 @@ public final class TeamsBots implements ITeamsListener
             fallen.setDeaths(fallen.getDeaths() + 1);
             if (fallen.getDiedAt() == 0)
                 fallen(current, fallen, victim.level().getGameTime());
+            // Some destroyed vehicles leave a wreck players can repair, put in place once the bot's body is gone.
+            if (fallen.isVehicle() && ThreadLocalRandom.current().nextInt(100) < current.getSettings().getAbandonChance())
+                fallen.setWreckPending(true);
         }
         Integer killerSlot = killer == null ? null : current.getSlotOfEntity().get(killer.getUUID());
         BotSlot scorer = killerSlot == null ? null : current.getSlots().get(killerSlot);

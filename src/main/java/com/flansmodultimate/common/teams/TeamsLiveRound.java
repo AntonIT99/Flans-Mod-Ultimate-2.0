@@ -4,7 +4,10 @@ import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.api.ITeamsLiveRound;
 import com.flansmodultimate.api.ITeamsRound;
 import com.flansmodultimate.api.TeamsCapturePoint;
+import com.flansmodultimate.api.TeamsFlag;
 import com.flansmodultimate.api.TeamsSpawner;
+import com.flansmodultimate.common.entity.Flag;
+import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.types.Team;
 import lombok.Getter;
 
@@ -12,6 +15,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.UUID;
@@ -99,6 +103,21 @@ public final class TeamsLiveRound implements ITeamsLiveRound
         if (!isCurrent() || type == null || type.getObjectiveMode() == ObjectiveMode.NONE)
             return List.of();
         return manager.getCapturePoints().stream().map(this::toApi).toList();
+    }
+
+    @Override
+    public List<TeamsFlag> getFlags()
+    {
+        if (!isCurrent() || !(round.getGametype() instanceof GameTypeCTF))
+            return List.of();
+        List<TeamsFlag> flags = new ArrayList<>();
+        for (Flag flag : manager.getFlags())
+        {
+            Flagpole base = flag.getBase();
+            Vec3 home = base == null ? flag.position() : new Vec3(base.getX(), base.getY() + 2D, base.getZ());
+            flags.add(new TeamsFlag(flag.getObjectId(), manager.getTeamForBase(base), flag.position(), home, flag.isHome(), flag.getCarrierId()));
+        }
+        return List.copyOf(flags);
     }
 
     @Override

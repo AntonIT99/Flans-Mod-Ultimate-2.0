@@ -25,6 +25,11 @@ public final class BotSquad
     private SquadTask task;
     /** Index of the next route point, for a squad that follows a patrol of several points. */
     private int patrolIndex;
+    /** The squad template a transport still carries to the front; empty when it carries nobody or has unloaded. */
+    private String cargo = "";
+    /** What a player last told the squad to do, which comes before its commander's task until it runs out. */
+    @Nullable
+    private PlayerOrder order;
     /** A disbanded squad takes no new members and is dropped once its slots are gone. */
     private boolean disbanded;
 

@@ -46,6 +46,11 @@ final class BotCommander
         int attacking = live.getAttackingSide().orElse(-1);
         List<Vec3> naval = BotMarkers.get(server).positions(live.getRound().getMapId(), BotMarkers.Type.NAVAL);
         Map<Integer, List<Vec3>> fighters = fightersBySide(server, level, round);
+        List<TeamsFlag> flags = live.getFlags();
+        List<Doctrine.FlagView> flagViews = flags.stream().map(flag -> flagView(server, level, round, flag)).toList();
+        Set<UUID> carriers = new HashSet<>();
+        flags.stream().map(TeamsFlag::carrier).filter(Objects::nonNull).forEach(carriers::add);
+        applyOrders(server, level, round);
         for (int side = 0; side < live.getRound().getSideCount(); side++)
         {
             int ownSide = side;
@@ -59,12 +64,47 @@ final class BotCommander
             for (ITeam team : live.getRound().getTeams())
                 if (live.getRound().getSideOf(team) != side)
                     enemySpawns.addAll(live.getSpawnPositions(team));
-            List<Doctrine.SquadView> views = views(level, round, side);
-            if (views.isEmpty())
-                continue;
-            Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval), views)
-                .forEach((squadId, task) -> Optional.ofNullable(round.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
+            List<Doctrine.SquadView> views = views(level, round, side, carriers);
+            if (!views.isEmpty())
+                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews), views)
+                    .forEach((squadId, task) -> Optional.ofNullable(round.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
         }
+    }
+
+    /**
+     * Gives squads under a player's order the task of that order, and returns the others to their commander once their order
+     * ran out, was released, or its player left the round.
+     */
+    private static void applyOrders(MinecraftServer server, ServerLevel level, BotRound round)
+    {
+        long now = level.getGameTime();
+        for (BotSquad squad : round.getSquads().values())
+        {
+            PlayerOrder order = squad.getOrder();
+            if (order == null)
+                continue;
+            ServerPlayer player = server.getPlayerList().getPlayer(order.player());
+            boolean playing = player != null && player.isAlive() && FlansTeams.getTeam(player).isPresent();
+            if (now >= order.expiresAt() || order.kind() == PlayerOrder.Kind.RELEASE || order.kind() == PlayerOrder.Kind.FOLLOW && !playing)
+                squad.setOrder(null);
+            else
+                squad.setTask(order.task(player == null ? order.target() : player.position()));
+        }
+    }
+
+    /** A flag as a commander sees it, with the side of whoever carries it. */
+    private static Doctrine.FlagView flagView(MinecraftServer server, ServerLevel level, BotRound round, TeamsFlag flag)
+    {
+        int owner = flag.owner() == null ? -1 : round.getLive().getRound().getSideOf(flag.owner());
+        int carrierSide = -1;
+        if (flag.carrier() != null)
+        {
+            Entity carrier = server.getPlayerList().getPlayer(flag.carrier());
+            if (carrier == null)
+                carrier = level.getEntity(flag.carrier());
+            carrierSide = carrier == null ? -1 : FlansTeams.getTeam(carrier).map(team -> round.getLive().getRound().getSideOf(team)).orElse(-1);
+        }
+        return new Doctrine.FlagView(owner, flag.position(), flag.home(), flag.atHome(), carrierSide);
     }
 
     /** Where every living player and bot of the round is, by side. */
@@ -85,28 +125,36 @@ final class BotCommander
         return fighters;
     }
 
-    private static List<Doctrine.SquadView> views(ServerLevel level, BotRound round, int side)
+    /**
+     * The squads of a side its commander plans for: not those under a player's order. A transport still carrying its
+     * squad is planned as infantry, so that it heads for an objective to unload at.
+     */
+    private static List<Doctrine.SquadView> views(ServerLevel level, BotRound round, int side, Set<UUID> carriers)
     {
         List<Doctrine.SquadView> views = new ArrayList<>();
         for (BotSquad squad : round.getSquads().values())
         {
-            List<Vec3> members = squad.isDisbanded() || round.sideOf(squad.getTeam()) != side ? List.of() : livingMembers(level, round, squad);
-            if (!members.isEmpty())
-                views.add(new Doctrine.SquadView(squad.getId(), squad.getRole(), posture(squad), members.get(0), members.size()));
+            boolean planned = !squad.isDisbanded() && squad.getOrder() == null && round.sideOf(squad.getTeam()) == side;
+            List<Entity> members = planned ? livingMembers(level, round, squad) : List.of();
+            if (members.isEmpty())
+                continue;
+            BotRole role = squad.getCargo().isEmpty() ? squad.getRole() : BotRole.INFANTRY;
+            boolean carrying = members.stream().anyMatch(member -> carriers.contains(member.getUUID()));
+            views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying));
         }
         return views;
     }
 
-    /** Where the living members of a squad are, the leader first. */
-    private static List<Vec3> livingMembers(ServerLevel level, BotRound round, BotSquad squad)
+    /** The living members of a squad, the leader first. */
+    static List<Entity> livingMembers(ServerLevel level, BotRound round, BotSquad squad)
     {
-        List<Vec3> members = new ArrayList<>();
+        List<Entity> members = new ArrayList<>();
         for (int slotId : squad.getSlots())
         {
             BotSlot slot = round.getSlots().get(slotId);
             Entity entity = slot == null || slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
             if (entity != null && entity.isAlive())
-                members.add(entity.position());
+                members.add(entity);
         }
         return members;
     }
@@ -127,6 +175,11 @@ final class BotCommander
         SquadTask task = squad == null ? null : squad.getTask();
         if (task == null)
             return Optional.empty();
+        // A squad told to follow keeps up with its player between two commander passes.
+        PlayerOrder playerOrder = squad.getOrder();
+        ServerPlayer followed = playerOrder != null && playerOrder.kind() == PlayerOrder.Kind.FOLLOW ? server.getPlayerList().getPlayer(playerOrder.player()) : null;
+        if (followed != null)
+            task = playerOrder.task(followed.position());
         int index = Math.max(0, squad.getSlots().indexOf(slot.getId()));
         List<Vec3> posts = List.of();
         if (squad.getRole() == BotRole.INFANTRY && (task.kind() == SquadTask.Kind.DEFEND || task.kind() == SquadTask.Kind.GUARD))

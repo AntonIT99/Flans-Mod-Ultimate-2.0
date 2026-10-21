@@ -29,6 +29,8 @@ final class BotRound
     private final Map<String, Map<Integer, Integer>> vehicleSpawns = new HashMap<>();
     /** Squads raised for each squad entry, by team and entry index. */
     private final Map<String, Map<Integer, Integer>> squadDeployments = new HashMap<>();
+    /** The player commanding each side, by side; a side without one is commanded by its AI alone. */
+    private final Map<Integer, UUID> commanders = new HashMap<>();
     /** Sides that have fielded anyone, the only ones that can be worn out. */
     private final Set<Integer> sidesThatFought = new HashSet<>();
     private int nextSlot = 1;

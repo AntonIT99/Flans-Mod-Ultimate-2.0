@@ -23,6 +23,8 @@ public final class BotSlot
         INFANTRY,
         /** A member of a squad of one of the team's squad entries. */
         SQUAD,
+        /** A soldier a transport of one of the team's vehicle entries brought to the front; it never comes back. */
+        CARGO,
         /** A vehicle of one of the team's vehicle entries. */
         VEHICLE
     }
@@ -54,6 +56,8 @@ public final class BotSlot
     private int spawns;
     private int kills;
     private int deaths;
+    /** Whether the slot's vehicle left a wreck players can use, put in place once its body is gone. */
+    private boolean wreckPending;
 
     public BotSlot(int id, String team, Source source, int entry, boolean initial)
     {
