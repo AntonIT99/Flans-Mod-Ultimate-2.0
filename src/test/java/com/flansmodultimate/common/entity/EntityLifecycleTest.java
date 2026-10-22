@@ -1,8 +1,12 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GrenadeType;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -85,6 +89,61 @@ class EntityLifecycleTest
 
             verify(target).hurt(argThat(source -> source.getDirectEntity() == bullet), floatThat(damage -> damage > 0F && Float.isFinite(damage)));
             assertTrue(bullet.isRemoved());
+        }
+    }
+
+    @Test
+    void loginSpectatorPlaceholderDoesNotMakeSurvivalPlayersBulletproof()
+    {
+        try (EntityTestWorld world = new EntityTestWorld())
+        {
+            Player target = world.target(Player.class, new Vec3(0.5D, 64D, 2D));
+            // TeamsManager.playerLoggedIn assigns this placeholder even with no Teams round running.
+            PlayerData.getInstance(target).setTeam(Team.SPECTATORS);
+            Bullet bullet = bullet(world);
+
+            world.tick(bullet);
+
+            verify(target).hurt(any(), floatThat(damage -> damage > 0F));
+            assertTrue(bullet.isRemoved());
+        }
+    }
+
+    @Test
+    void minecraftSpectatorsAreNotHitByBullets()
+    {
+        try (EntityTestWorld world = new EntityTestWorld())
+        {
+            Player target = world.target(Player.class, new Vec3(0.5D, 64D, 2D));
+            when(target.isSpectator()).thenReturn(true);
+            PlayerData.getInstance(target).setTeam(Team.SPECTATORS);
+
+            world.tick(bullet(world));
+
+            verify(target, never()).hurt(any(), anyFloat());
+        }
+    }
+
+    @Test
+    @SuppressWarnings("java:S3011") // Set only the round state needed by hit detection, without starting a live Teams game.
+    void teamsSpectatorsRemainProtectedDuringAnActiveRound() throws ReflectiveOperationException
+    {
+        var roundRunning = TeamsManager.class.getDeclaredField("roundRunning");
+        roundRunning.setAccessible(true);
+        boolean previous = roundRunning.getBoolean(FlansMod.teamsManager);
+        try (EntityTestWorld world = new EntityTestWorld())
+        {
+            roundRunning.setBoolean(FlansMod.teamsManager, true);
+            Player target = world.target(Player.class, new Vec3(0.5D, 64D, 2D));
+            PlayerData.getInstance(target).setTeam(Team.SPECTATORS);
+
+            world.tick(bullet(world));
+
+            verify(target, never()).hurt(any(), anyFloat());
+        }
+        finally
+        {
+            roundRunning.setBoolean(FlansMod.teamsManager, previous);
         }
     }
 
