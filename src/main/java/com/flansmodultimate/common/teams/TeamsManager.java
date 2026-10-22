@@ -1467,10 +1467,12 @@ public final class TeamsManager
         }
         // The joining client starts with no assignments at all, so resend them in full
         syncPlayerClassSkins(true);
-        if (roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS) && getCurrentLoadoutPool().isPresent())
+        // A stale running flag without a playable round (no rotation, missing map) must not open an empty team screen
+        boolean needsTeam = getLiveRound().isPresent() && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS);
+        if (needsTeam && getCurrentLoadoutPool().isPresent())
             syncLoadouts(player, PacketLoadoutState.OpenScreen.HUB, 0, "");
         else
-            syncPlayer(player, roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS) ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.NONE);
+            syncPlayer(player, needsTeam ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.NONE);
         if (roundRunning)
             getCurrentGameType().ifPresent(type -> type.playerJoined(this, player));
     }
