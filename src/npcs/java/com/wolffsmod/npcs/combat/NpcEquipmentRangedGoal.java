@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.FlansProjectiles;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.Getter;
@@ -121,7 +122,8 @@ public final class NpcEquipmentRangedGoal extends Goal
             return;
         }
         // An aircraft below its attack altitude climbs first; it keeps its target and its aim meanwhile.
-        if (NpcVehicleState.of(npc).getFlight().holdsFire())
+        // An NPC at the wheel of a Flan's driveable fights with the driveable's weapons.
+        if (NpcVehicleState.of(npc).getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
         {
             cancelUse();
             return;

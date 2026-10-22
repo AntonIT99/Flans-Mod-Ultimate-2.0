@@ -280,14 +280,55 @@ public class Mecha extends Driveable implements MechaVisual
     @Override
     public void acceptInput(@NotNull ServerPlayer player, int mask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
-        float oldBodyYaw = getYaw();
-        float relativeAimYaw = MechaPhysics.relativeAimYaw(oldBodyYaw, aimYaw);
+        float relativeAimYaw = MechaPhysics.relativeAimYaw(getYaw(), aimYaw);
         super.acceptInput(player, mask, relativeAimYaw, aimPitch, flightPitch, flightRoll, mouseControl, sequence);
-        MechaType type = getMechaType();
         Seat seat = getSeat(player);
-        if (type == null || seat == null || !seat.isDriverSeat())
-            return;
+        if (seat != null && seat.isDriverSeat())
+            turnTorsoToDriverAim(seat);
+    }
 
+    @Override
+    protected void applyAutomatedDriverAim(@NotNull Seat seat)
+    {
+        super.applyAutomatedDriverAim(seat);
+        turnTorsoToDriverAim(seat);
+    }
+
+    /** Where the torso faces, which the driver's aim turns, is where the mecha walks. */
+    @Override
+    public Vec3 getDriveDirection()
+    {
+        return MechaPhysics.movementIntent(MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), 1F, 0F);
+    }
+
+    /** The primary trigger fires the gun in the left hand and the secondary one the gun in the right. */
+    @Override
+    @Nullable
+    public Vec3 getDriverWeaponOrigin(boolean secondary)
+    {
+        MechaType type = getMechaType();
+        return type != null && handHoldsGun(!secondary) ? handGunOrigin(type, !secondary) : null;
+    }
+
+    @Override
+    @Nullable
+    public Vec3 getDriverWeaponDirection(boolean secondary)
+    {
+        return getMechaType() != null && handHoldsGun(!secondary) ? aimDirection() : null;
+    }
+
+    private boolean handHoldsGun(boolean left)
+    {
+        return driveableData != null && driveableData.getMechaAddon(left ? EnumMechaSlotType.LEFT_TOOL : EnumMechaSlotType.RIGHT_TOOL).getItem() instanceof GunItem;
+    }
+
+    /** Turns the torso to the driver's aim, which then stays relative to the torso. */
+    private void turnTorsoToDriverAim(Seat seat)
+    {
+        MechaType type = getMechaType();
+        if (type == null)
+            return;
+        float oldBodyYaw = getYaw();
         // 1.7.10 consumed driver look yaw into the mecha's torso axes. Keeping it
         // as turret-relative yaw leaves the complete chassis fixed in world space.
         float relativeYaw = getTurretYaw();

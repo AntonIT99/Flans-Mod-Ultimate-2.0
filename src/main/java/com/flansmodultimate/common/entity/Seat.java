@@ -785,6 +785,10 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         automatedOccupant = occupant;
         lastAutomatedAimTime = now;
         turnAim(yaw, pitch, elapsed);
+        // The driver's aim turns the turret, as a player driver's does.
+        Driveable parent = driveable;
+        if (parent != null && parent.isMovementController(this))
+            parent.applyAutomatedDriverAim(this);
         return true;
     }
 
@@ -795,6 +799,12 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         if (refusesAutomation() || parent == null)
             return false;
         Vec3 origin = parent.getPassengerShootOrigin(getSeatIndex(), 0);
+        // A driver without a gun of its own points the driveable's weapons, the primary one first.
+        if (origin == null && parent.isMovementController(this))
+        {
+            Vec3 primary = parent.getDriverWeaponOrigin(false);
+            origin = primary != null ? primary : parent.getDriverWeaponOrigin(true);
+        }
         if (origin == null)
             return false;
         // The driveable aims the gun by hull-relative yaw; the seat stores it relative to its own frame, such as a turret.
@@ -810,7 +820,41 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         int mask = (primary ? DriveableInput.PRIMARY_FIRE : 0) | (secondary ? DriveableInput.SECONDARY_FIRE : 0);
         previousInputMask = getInputMask();
         entityData.set(DATA_INPUT_MASK, mask);
+        // The driver's triggers fire the driveable's own weapons, as a player driver's do.
+        Driveable parent = driveable;
+        if (parent != null && parent.isMovementController(this))
+            parent.acceptAutomatedInput(this, mask, DriveableInput.TRIGGER_MASK);
         return true;
+    }
+
+    @Override
+    public boolean setAutomatedDriving(Set<DriveControl> controls)
+    {
+        Driveable parent = driveable;
+        if (refusesAutomation() || parent == null)
+            return false;
+        return parent.acceptAutomatedInput(this, DriveableInput.forControls(controls), DriveableInput.DRIVE_CONTROL_MASK);
+    }
+
+    @Override
+    public Optional<Vec3> getDriveDirection()
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.of(parent.getDriveDirection());
+    }
+
+    @Override
+    public Optional<Vec3> getDriverWeaponOrigin(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponOrigin(secondary));
+    }
+
+    @Override
+    public Optional<Vec3> getDriverWeaponDirection(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponDirection(secondary));
     }
 
     @Override

@@ -7,6 +7,9 @@ import com.wolffsmod.npcs.crew.CrewGunners;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.crew.NpcCrewHolder;
 import com.wolffsmod.npcs.diag.NpcProfiler;
+import com.wolffsmod.npcs.drivers.NpcBoardingGoal;
+import com.wolffsmod.npcs.drivers.NpcDriver;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.model.NpcSkins;
@@ -77,6 +80,8 @@ import java.util.UUID;
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
  * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
  * vehicle's target.</li>
+ * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle or mecha nearby, before any other goal moves it,
+ * gets in at the wheel and drives it where it would walk. It fights with the driveable's weapons, never with its own.</li>
  * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
@@ -104,7 +109,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcEquipmentRangedGoal.Holder,
         NpcTacticState.Holder,
         NpcCrewHolder,
-        NpcMeleeState.Holder
+        NpcMeleeState.Holder,
+        NpcDriver.Holder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -129,6 +135,10 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private NpcCombatApproachGoal wolffsmodnpcsApproachGoal;
     @Unique
     private BotObjectiveGoal wolffsmodnpcsObjectiveGoal;
+    @Unique
+    private NpcBoardingGoal wolffsmodnpcsBoardingGoal;
+    @Unique
+    private final NpcDriver wolffsmodnpcsDriver = new NpcDriver();
     @Unique
     private final NpcTacticState wolffsmodnpcsTacticState = new NpcTacticState();
     @Unique
@@ -307,12 +317,16 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
      * The firing goal claims no flag, so its priority does not matter. A tactic of the mod's own comes first, before the
      * tactical movement Custom NPCs registered. The approach goal takes the priority of Custom NPCs' attack goal: that
      * tactical movement then wins the NPC's movement, and melee, which only starts within melee range where the approach
-     * ends, takes over from it there.
+     * ends, takes over from it there. Walking to a driveable to board comes before everything else that moves the NPC.
      */
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (wolffsmodnpcsBoardingGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsBoardingGoal);
+        wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
+        goalSelector.addGoal(0, wolffsmodnpcsBoardingGoal);
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
         if (wolffsmodnpcsTacticGoal != null)
@@ -405,8 +419,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsItemMelee(Entity target, CallbackInfoReturnable<Boolean> callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        // An aircraft below its attack altitude attacks with nothing, whatever asks it to.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire())
+        // An aircraft below its attack altitude attacks with nothing, whatever asks it to, nor does an NPC at the wheel.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
         {
             callback.setReturnValue(false);
             return;
@@ -421,6 +435,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public NpcMeleeState wolffsmodnpcsMeleeState()
     {
         return wolffsmodnpcsMelee;
+    }
+
+    @Override
+    public NpcDriver wolffsmodnpcsDriver()
+    {
+        return wolffsmodnpcsDriver;
     }
 
     @Override
@@ -532,8 +552,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
-        // A gun whose turret has been shot off stays silent.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled())
+        // A gun whose turret has been shot off stays silent, and an NPC at the wheel fights with the driveable's weapons.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc))
         {
             callback.cancel();
             return;
@@ -690,6 +710,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             NpcPathDebug.tick(npc, state);
             NpcCrew.tick(npc);
             wolffsmodnpcsGunners.tick(npc);
+            NpcDrivers.tick(npc);
         }
         if (wolffsmodnpcsTickStarted != 0L)
             NpcProfiler.npcTick(System.nanoTime() - wolffsmodnpcsTickStarted);

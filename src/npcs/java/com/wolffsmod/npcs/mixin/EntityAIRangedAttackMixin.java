@@ -4,6 +4,7 @@ import com.flansmodultimate.api.ReloadCycle;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.combat.NpcReloadFeedback;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
@@ -138,8 +139,9 @@ public abstract class EntityAIRangedAttackMixin
     private void wolffsmodnpcsHoldFire(CallbackInfo callback)
     {
         NpcVehicleState state = NpcVehicleState.of(npc);
-        // An aircraft below its attack altitude climbs first; it keeps its target meanwhile.
-        boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire();
+        // An aircraft below its attack altitude climbs first; it keeps its target meanwhile. An NPC at the wheel of a Flan's
+        // driveable fights with the driveable's weapons.
+        boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire() || NpcDrivers.holdsFire(npc);
         LivingEntity target = npc.getTarget();
         if (target != null && state.holdsFire(npc, target))
         {

@@ -158,6 +158,12 @@ public final class FlansEntityTypes
         return entity instanceof Driveable driveable ? driveable.getHealthShare() : OptionalDouble.empty();
     }
 
+    /** @return whether a driveable was destroyed and left as a wreck, which nobody can board; false for any other entity; either side */
+    public static boolean isWreck(Entity entity)
+    {
+        return entity instanceof Driveable driveable && driveable.isWreck();
+    }
+
     /**
      * Repairs a driveable as a repair tool does, for someone who is no player: the damaged part nearest a point gets hit
      * points back. Server thread.

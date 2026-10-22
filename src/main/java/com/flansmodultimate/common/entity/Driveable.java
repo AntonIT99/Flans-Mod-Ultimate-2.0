@@ -273,6 +273,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected int localInputMask;
     protected int previousInputMask;
     protected int inputTimeout;
+    /**
+     * The non-player driver whose controls the driveable holds through the API. They are not timed out as a player's
+     * are, since no packet of theirs can go missing, and are released once it stops being the driver.
+     */
+    @Nullable
+    private Entity automatedDriver;
     protected float primaryShootDelay;
     protected float secondaryShootDelay;
     protected int primaryShootPointIndex;
@@ -1416,12 +1422,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         }
 
-        if (++inputTimeout > INPUT_TIMEOUT_TICKS && (getInputMask() != 0 || getFlightPitchControl() != 0F || getFlightRollControl() != 0F))
-        {
-            previousInputMask = getInputMask();
-            setInputMask(0);
-            setFlightControls(0F, 0F, isMouseControlEnabled());
-        }
+        expireInput();
 
         int previousPrimaryShootDelay = ShotCooldown.displayTicks(primaryShootDelay);
         setPrimaryShootDelay(ShotCooldown.tick(primaryShootDelay));
@@ -4297,6 +4298,81 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             int rising = sanitized & ~previousInputMask;
             handleRisingInputs(seat, player, rising);
         }
+    }
+
+    /**
+     * Holds controls for a non-player driver, as a player's input does, replacing only the controls in {@code affected}.
+     * Actions a player triggers by pressing a key once, such as starting the engine or getting out, are not automated.
+     * Server side.
+     *
+     * @return whether the controls were taken: the seat controls this driveable, which is no wreck, and a living entity
+     *         that is not a player sits in it
+     */
+    public boolean acceptAutomatedInput(@NotNull Seat seat, int mask, int affected)
+    {
+        if (level().isClientSide || !isAlive() || isWreck() || seat.getDriveable() != this || !isMovementController(seat) || !(seat.getRiddenByEntity() instanceof LivingEntity driver)
+            || driver instanceof Player)
+            return false;
+        markUsed();
+        automatedDriver = driver;
+        inputTimeout = 0;
+        int current = getInputMask();
+        // Only the controls set here move on, so setting the movement does not hide a trigger pressed just before.
+        previousInputMask = previousInputMask & ~affected | current & affected;
+        setInputMask(movementControlMask(seat, current & ~affected | mask & affected));
+        return true;
+    }
+
+    /** Lets go of a player's controls once their packets stop coming, and of a non-player driver's once it is gone. */
+    private void expireInput()
+    {
+        if (automatedDriver != null && getControllingEntity() != automatedDriver)
+            releaseAutomatedControls();
+        if (automatedDriver == null && ++inputTimeout > INPUT_TIMEOUT_TICKS && (getInputMask() != 0 || getFlightPitchControl() != 0F || getFlightRollControl() != 0F))
+        {
+            previousInputMask = getInputMask();
+            setInputMask(0);
+            setFlightControls(0F, 0F, isMouseControlEnabled());
+        }
+    }
+
+    private void releaseAutomatedControls()
+    {
+        automatedDriver = null;
+        previousInputMask = getInputMask();
+        setInputMask(0);
+        setFlightControls(0F, 0F, isMouseControlEnabled());
+    }
+
+    /** Turns the turret to the aim a non-player driver set on its seat, as a player driver's input does. Server side. */
+    protected void applyAutomatedDriverAim(@NotNull Seat seat)
+    {
+        setTurretAim(seat.getAimYaw(), seat.getAimPitch());
+    }
+
+    /** @return the horizontal unit direction its driver's forward control moves the driveable in: where its front points */
+    public Vec3 getDriveDirection()
+    {
+        return Vec3.directionFromRotation(0F, getEntityFacingYaw());
+    }
+
+    /**
+     * @return where the weapon bank of the driver's primary or secondary trigger fires from now: its first shoot point,
+     *         or null without one. Server side.
+     */
+    @Nullable
+    public Vec3 getDriverWeaponOrigin(boolean secondary)
+    {
+        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
+        return points.isEmpty() ? null : getShootOrigin(points.get(0));
+    }
+
+    /** @return the direction the weapon bank of {@link #getDriverWeaponOrigin} fires along now, or null without one */
+    @Nullable
+    public Vec3 getDriverWeaponDirection(boolean secondary)
+    {
+        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
+        return points.isEmpty() ? null : getShootDirection(points.get(0), secondary);
     }
 
     // Base implementation of a hook; overriding subclasses use the parameter.

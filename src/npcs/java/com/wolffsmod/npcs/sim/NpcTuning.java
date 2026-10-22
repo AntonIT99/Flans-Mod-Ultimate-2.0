@@ -103,7 +103,9 @@ public final class NpcTuning
         /** Blocks from its target a tactic keeps the NPC at; 0 takes a share of its firing range that suits its weapon. */
         TACTIC_DISTANCE(0, 0, 256),
         /** Blocks around it in which an NPC fighting from cover looks for some. */
-        COVER_RADIUS(8, 2, 16);
+        COVER_RADIUS(8, 2, 16),
+        /** Blocks around it in which an NPC that drives Flan's driveables looks for one to board. */
+        BOARD_RANGE(16, 2, 64);
 
         private final int fallback;
         private final int minimum;
