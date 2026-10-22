@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
+import com.wolffsmod.npcs.teams.SkirmishCommands;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -71,5 +72,6 @@ public final class NpcsGameEvents
         NpcBenchmarkCommands.register(event.getDispatcher());
         BotCommands.register(event.getDispatcher());
         FactionCommands.register(event.getDispatcher());
+        SkirmishCommands.register(event.getDispatcher());
     }
 }

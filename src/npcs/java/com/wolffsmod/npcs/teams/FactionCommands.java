@@ -58,7 +58,7 @@ public final class FactionCommands
     private static final SimpleCommandExceptionType NO_FORCE = new SimpleCommandExceptionType(text("no_force"));
     private static final SimpleCommandExceptionType BAD_ROLE = new SimpleCommandExceptionType(text("bad_role"));
 
-    private static final SuggestionProvider<CommandSourceStack> MANAGED = (context, builder) -> SharedSuggestionProvider
+    static final SuggestionProvider<CommandSourceStack> MANAGED = (context, builder) -> SharedSuggestionProvider
         .suggest(BattleFactions.get(context.getSource().getServer()).all().stream().map(managed -> nameOf(managed.getId())).filter(Objects::nonNull).map(FactionCommands::quoted).toList(), builder);
     private static final SuggestionProvider<CommandSourceStack> ANY_FACTION = (context, builder) -> SharedSuggestionProvider
         .suggest(FactionController.instance.factions.values().stream().filter(faction -> !BotFactions.isRoundFaction(faction.name)).map(faction -> quoted(faction.name)).toList(), builder);
