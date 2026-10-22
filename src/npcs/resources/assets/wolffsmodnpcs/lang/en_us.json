@@ -1088,7 +1088,7 @@
   "wolffsmodnpcs.weapons.passenger_guns": "Passenger guns track",
   "wolffsmodnpcs.weapons.passenger_guns.help": "Seat guns of the model turn toward the target on their own, within each seat's limits. They fire only where a crew member mans the seat and Manned guns fire is Yes. A mecha's arms follow its aim with the turret settings.",
   "wolffsmodnpcs.weapons.path_debug": "Movement debug",
-  "wolffsmodnpcs.weapons.path_debug.help": "Show the remaining path as red dust, the steering target as green sparks and the path end as a flame, and write the NPC's movement state to the server log once a second.",
+  "wolffsmodnpcs.weapons.path_debug.help": "Show the remaining path as red dust, the steering target as green sparks and the path end as a flame, and write the NPC's movement state to the server log once a second. At the controls of a Flan's driveable, the sparks mark the point it steers or flies for, and the log adds what it does there: the keys it holds and, flying, its phase with the pitch, bank, heading and throttle it wants against what it has. Getting in, getting out and giving up a driveable are logged too.",
   "wolffsmodnpcs.weapons.progressive_search": "Progressive target search",
   "wolffsmodnpcs.weapons.progressive_search.help": "Look for targets in distance bands: nearby often and together with other NPCs, farther out more rarely, nearest candidates first. No tests everything in aggro range on every search.",
   "wolffsmodnpcs.weapons.projectiles": "Flan projectiles",

@@ -1088,7 +1088,7 @@
   "wolffsmodnpcs.weapons.passenger_guns": "Passagierwaffen folgen",
   "wolffsmodnpcs.weapons.passenger_guns.help": "Sitzwaffen des Modells drehen sich von selbst zum Ziel, innerhalb der Grenzen jedes Sitzes. Sie feuern nur, wo ein Besatzungsmitglied den Sitz bemannt und Bemannte Waffen feuern Ja ist. Die Arme eines Mechas folgen seinem Zielen mit den Turmeinstellungen.",
   "wolffsmodnpcs.weapons.path_debug": "Bewegungs-Debug",
-  "wolffsmodnpcs.weapons.path_debug.help": "Den verbleibenden Weg als roten Staub, das Lenkziel als grüne Funken und das Wegende als Flamme zeigen und den Bewegungszustand des NPCs einmal pro Sekunde ins Serverprotokoll schreiben.",
+  "wolffsmodnpcs.weapons.path_debug.help": "Den verbleibenden Weg als roten Staub, das Lenkziel als grüne Funken und das Wegende als Flamme zeigen und den Bewegungszustand des NPCs einmal pro Sekunde ins Serverprotokoll schreiben. Am Steuer eines Flan-Fahrzeugs markieren die Funken den Punkt, auf den er zufährt oder zufliegt, und das Protokoll ergänzt, was er dort tut: die gehaltenen Tasten und im Flug seine Phase mit gewünschter gegen tatsächliche Neigung, Querlage, Richtung und Schubstellung. Ein- und Aussteigen sowie das Aufgeben eines Fahrzeugs werden ebenfalls protokolliert.",
   "wolffsmodnpcs.weapons.progressive_search": "Gestufte Zielsuche",
   "wolffsmodnpcs.weapons.progressive_search.help": "Ziele in Entfernungsbändern suchen: nah oft und gemeinsam mit anderen NPCs, weiter draußen seltener, nächste Kandidaten zuerst. Nein prüft bei jeder Suche alles in Aggro-Reichweite.",
   "wolffsmodnpcs.weapons.projectiles": "Flan-Geschosse",

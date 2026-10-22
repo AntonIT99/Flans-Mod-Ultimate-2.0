@@ -19,6 +19,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -110,9 +111,30 @@ final class NpcPilot
     /** Whether the aircraft, still on the ground, is meant to be moving: taxiing, rolling for take-off or lifting off. */
     @Getter(AccessLevel.PACKAGE)
     private boolean rolling;
+    /** What the pilot did last tick and the point it flew for, for the movement debug. */
+    @Getter(AccessLevel.PACKAGE)
+    private Phase phase = Phase.PARKED;
+    @Getter(AccessLevel.PACKAGE) @Nullable
+    private Vec3 point;
+    @Nullable
+    private FlightControl.State lastState;
+    @Nullable
+    private FlightControl.Command lastCommand;
+    private double lastHeight;
+    private double lastSpeed;
+
+    /** What a pilot does. */
+    enum Phase
+    {
+        PARKED, TAXI, TAKEOFF, CRUISE, CIRCLE, ATTACK, DIVE, EXTEND, PULL_UP, TRAVEL, HOVER, LANDING
+    }
 
     /** Where a plane is to head, and the pitch it is to fly at. */
     private record Course(float heading, float pitch)
+    {}
+
+    /** How far a rotorcraft is to pitch and bank. */
+    private record Tilt(float pitch, float bank)
     {}
 
     /** What the pilot sees this tick. */
@@ -133,6 +155,21 @@ final class NpcPilot
         extending = false;
         idleTicks = 0;
         rolling = false;
+        phase = Phase.PARKED;
+        point = null;
+        lastState = null;
+        lastCommand = null;
+    }
+
+    /** @return what the pilot wanted of the aircraft last tick against what it got, for the movement debug log */
+    String describe()
+    {
+        FlightControl.State state = lastState;
+        FlightControl.Command command = lastCommand;
+        if (state == null || command == null)
+            return "";
+        return String.format(Locale.ROOT, "pitch=%.0f/%.0f bank=%.0f/%.0f heading=%.0f/%s throttle=%.2f/%.2f height=%.1f speed=%.2f", state.pitch(), command.pitch(), state.bank(), command.bank(),
+            state.heading(), command.heading() == null ? "-" : String.format(Locale.ROOT, "%.0f", command.heading()), state.throttle(), command.throttle(), lastHeight, lastSpeed);
     }
 
     /**
@@ -157,9 +194,15 @@ final class NpcPilot
             terrain = Math.max(terrain, groundAt(level, position.x + velocity.x * ticks, position.z + velocity.z * ticks, ground));
         Flight flight = new Flight(attitude, (float) FlansEntityTypes.getThrottle(aircraft).orElse(0D), FlansEntityTypes.isGrounded(aircraft), position, velocity, ground, terrain);
         LivingEntity target = npc.getTarget() != null && npc.getTarget().isAlive() ? npc.getTarget() : null;
+        point = target != null ? target.getBoundingBox().getCenter() : goal;
         FlightControl.Command command = mode == AircraftMode.ROTORCRAFT ? rotor(flight, goal, target) : wings(npc, flight, goal, target);
         rolling = flight.grounded() && command.throttle() > 0F;
-        return control.hold(new FlightControl.State(attitude.pitch(), attitude.bank(), attitude.heading(), flight.throttle()), command);
+        FlightControl.State state = new FlightControl.State(attitude.pitch(), attitude.bank(), attitude.heading(), flight.throttle());
+        lastState = state;
+        lastCommand = command;
+        lastHeight = flight.height();
+        lastSpeed = velocity.length();
+        return control.hold(state, command);
     }
 
     // Planes
@@ -175,7 +218,10 @@ final class NpcPilot
         float heading = flight.attitude().heading();
         Course course = target != null ? attack(npc, flight, target) : travel(npc, flight, goal);
         if (tooLow(flight))
+        {
+            phase = Phase.PULL_UP;
             return new FlightControl.Command(PULL_UP_PITCH, 0F, heading, 1F);
+        }
         float pitch = course.pitch();
         if (flight.velocity().length() < STALL_GUARD && flight.height() > CRUISE_HEIGHT * 0.5D)
             pitch = Math.min(pitch, -5F);
@@ -191,13 +237,18 @@ final class NpcPilot
         if (destination == null || target == null && horizontal(flight.position(), destination) <= LOITER_RADIUS)
         {
             runway = null;
+            phase = Phase.PARKED;
             return new FlightControl.Command(0F, 0F, heading, 0F);
         }
         float off = Mth.wrapDegrees(bearing(flight.position(), destination) - heading);
         if (runway == null && Math.abs(off) > TAXI_ANGLE && flight.velocity().horizontalDistance() < STALL_GUARD)
+        {
+            phase = Phase.TAXI;
             return new FlightControl.Command(0F, 0F, heading + off, TAXI_THROTTLE);
+        }
         if (runway == null)
             runway = heading;
+        phase = Phase.TAKEOFF;
         return new FlightControl.Command(TAKEOFF_PITCH, 0F, runway, 1F);
     }
 
@@ -220,9 +271,16 @@ final class NpcPilot
             extendHeading = flight.attitude().heading();
         }
         if (extending)
+        {
+            phase = Phase.EXTEND;
             return new Course(extendHeading, holdHeight(flight, flight.terrain() + CRUISE_HEIGHT));
+        }
         if (!diving)
+        {
+            phase = Phase.ATTACK;
             return new Course(bearing(flight.position(), aim), holdHeight(flight, flight.terrain() + ATTACK_HEIGHT));
+        }
+        phase = Phase.DIVE;
         float elevation = (float) Math.toDegrees(Math.atan2(aim.y - flight.position().y, Math.max(1.0E-3D, distance)));
         return new Course(bearing(flight.position(), aim), Mth.clamp(elevation, -MAX_DIVE, MAX_ATTACK_CLIMB));
     }
@@ -232,7 +290,10 @@ final class NpcPilot
     {
         extending = false;
         Vec3 anchor = goal != null ? goal : new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
-        float heading = horizontal(flight.position(), anchor) > LOITER_RADIUS ? bearing(flight.position(), anchor) : circle(flight.position(), anchor);
+        boolean away = horizontal(flight.position(), anchor) > LOITER_RADIUS;
+        phase = away ? Phase.CRUISE : Phase.CIRCLE;
+        point = anchor;
+        float heading = away ? bearing(flight.position(), anchor) : circle(flight.position(), anchor);
         return new Course(heading, holdHeight(flight, flight.terrain() + CRUISE_HEIGHT));
     }
 
@@ -264,36 +325,54 @@ final class NpcPilot
         boolean landing = idleTicks > IDLE_BEFORE_LANDING;
         // On the ground with nothing to do, it stays there.
         if (flight.grounded() && !travelling && target == null)
+        {
+            phase = Phase.PARKED;
             return new FlightControl.Command(0F, 0F, heading, 0F);
-
-        // It flies nose first to its goal, and faces its target once it is there.
-        float wantedHeading = heading;
+        }
+        if (landing)
+            phase = Phase.LANDING;
+        else
+            phase = travelling ? Phase.TRAVEL : Phase.HOVER;
+        // It flies nose first to its goal, and faces its target once it is there; either way it is not landing.
         if (travelling)
-            wantedHeading = bearing(flight.position(), goal);
-        else if (target != null)
-            wantedHeading = bearing(flight.position(), target.position());
-        float off = Mth.wrapDegrees(wantedHeading - heading);
+        {
+            float wantedHeading = bearing(flight.position(), goal);
+            boolean onCourse = Math.abs(Mth.wrapDegrees(wantedHeading - heading)) < ROTOR_TURN_ANGLE;
+            Tilt tilt = tilt(flight, onCourse ? Math.min(ROTOR_SPEED, distance * ROTOR_SPEED_PER_BLOCK) : 0D);
+            return new FlightControl.Command(tilt.pitch(), tilt.bank(), wantedHeading, collective(flight, false));
+        }
+        Tilt tilt = tilt(flight, 0D);
+        if (target == null)
+            return new FlightControl.Command(tilt.pitch(), tilt.bank(), heading, collective(flight, landing));
+        // Hovering on its target, it points its nose at it for its guns.
+        Vec3 line = target.getBoundingBox().getCenter().subtract(flight.position());
+        float pitch = Mth.clamp((float) Math.toDegrees(Math.atan2(line.y, Math.max(1.0E-3D, line.horizontalDistance()))), -MAX_FORWARD_TILT, 5F);
+        return new FlightControl.Command(pitch, tilt.bank(), bearing(flight.position(), target.position()), collective(flight, false));
+    }
 
+    /**
+     * @return the tilt that brings a rotorcraft to a speed along its nose and holds it from drifting sideways: nose down to
+     *         speed up and up to slow down, rolled against a drift
+     */
+    private static Tilt tilt(Flight flight, double wantedSpeed)
+    {
         Vec3 front = horizontalUnit(flight.attitude().front());
         Vec3 right = new Vec3(-front.z, 0D, front.x);
         double ahead = flight.velocity().dot(front);
         double aside = flight.velocity().dot(right);
-        double wantedSpeed = travelling && Math.abs(off) < ROTOR_TURN_ANGLE ? Math.min(ROTOR_SPEED, distance * ROTOR_SPEED_PER_BLOCK) : 0D;
-        // Nose down to speed up and up to slow down; it rolls against any drift to the side.
-        float pitch = Mth.clamp((float) (ahead - wantedSpeed) * TILT_PER_SPEED, -MAX_FORWARD_TILT, MAX_BACK_TILT);
-        float bank = Mth.clamp((float) -aside * TILT_PER_SPEED, -MAX_SIDE_TILT, MAX_SIDE_TILT);
-        // Hovering on its target, it points its nose at it for its guns.
-        if (target != null && !travelling)
-        {
-            Vec3 line = target.getBoundingBox().getCenter().subtract(flight.position());
-            pitch = Mth.clamp((float) Math.toDegrees(Math.atan2(line.y, Math.max(1.0E-3D, line.horizontalDistance()))), -MAX_FORWARD_TILT, 5F);
-        }
+        return new Tilt(Mth.clamp((float) (ahead - wantedSpeed) * TILT_PER_SPEED, -MAX_FORWARD_TILT, MAX_BACK_TILT), Mth.clamp((float) -aside * TILT_PER_SPEED, -MAX_SIDE_TILT, MAX_SIDE_TILT));
+    }
 
+    /** @return the collective that climbs a rotorcraft to its hover height and holds it there, or lets it down to land */
+    private float collective(Flight flight, boolean landing)
+    {
         double climb = landing ? -LANDING_DESCENT : Mth.clamp((flight.terrain() + ROTOR_HEIGHT - flight.position().y) * CLIMB_PER_BLOCK, -MAX_ROTOR_DESCENT, MAX_ROTOR_CLIMB);
         if (tooLow(flight) && !landing)
+        {
+            phase = Phase.PULL_UP;
             climb = MAX_ROTOR_CLIMB;
-        float collective = HOVER_COLLECTIVE + Mth.clamp((float) (climb - flight.velocity().y) * COLLECTIVE_PER_CLIMB, -HOVER_COLLECTIVE, 1F - HOVER_COLLECTIVE);
-        return new FlightControl.Command(pitch, bank, wantedHeading, collective);
+        }
+        return HOVER_COLLECTIVE + Mth.clamp((float) (climb - flight.velocity().y) * COLLECTIVE_PER_CLIMB, -HOVER_COLLECTIVE, 1F - HOVER_COLLECTIVE);
     }
 
     // Terrain

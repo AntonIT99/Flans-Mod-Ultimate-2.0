@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.*;
+import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
@@ -145,6 +146,8 @@ public final class NpcDrivers
         Entity driveable = npc.getVehicle() instanceof ISeat seat ? seat.getDriveable() : null;
         if (gaveUp && driveable != null)
             driver.refuse(driveable.getUUID(), now + REFUSAL_TICKS);
+        if (driveable != null)
+            note(npc, gaveUp ? "gives up" : "gets out of", driveable);
         npc.stopRiding();
         descend(npc);
         driver.stopDriving();
@@ -207,6 +210,7 @@ public final class NpcDrivers
         if (driveable == null || !npc.startRiding(seat))
             return false;
         NpcDriver.of(npc).setBoarded(driveable.getUUID());
+        note(npc, "gets into", driveable);
         return true;
     }
 
@@ -214,8 +218,17 @@ public final class NpcDrivers
     static void refuse(EntityNPCInterface npc, @Nullable Entity seat)
     {
         Entity driveable = seat instanceof ISeat driverSeat ? driverSeat.getDriveable() : null;
-        if (driveable != null)
-            NpcDriver.of(npc).refuse(driveable.getUUID(), npc.level().getGameTime() + REFUSAL_TICKS);
+        if (driveable == null)
+            return;
+        NpcDriver.of(npc).refuse(driveable.getUUID(), npc.level().getGameTime() + REFUSAL_TICKS);
+        note(npc, "cannot reach", driveable);
+    }
+
+    /** Tells the server log what an NPC with the movement debug switch did with a driveable. */
+    private static void note(EntityNPCInterface npc, String what, Entity driveable)
+    {
+        if (NpcEquipment.enabled(npc, Feature.PATH_DEBUG) && NpcsMod.log.isInfoEnabled())
+            NpcsMod.log.info("NPC {} id={} {} {} at {}", npc.getName().getString(), npc.getId(), what, driveable.getName().getString(), driveable.blockPosition().toShortString());
     }
 
     /** Whether NPCs drive the seat's driveable: any but an aircraft that flies freely in six degrees and a ship built on a plane. */

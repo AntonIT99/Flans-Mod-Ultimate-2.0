@@ -19,6 +19,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Drives the Flan's driveable an NPC sits at the wheel of, and remembers what that takes: how far along its path the
@@ -97,6 +98,20 @@ public final class NpcDriver
     /** Manoeuvres since the driveable last got free. */
     private int recoveries;
     private final NpcPilot pilot = new NpcPilot();
+    /** What the NPC did at the controls last tick, for the movement debug; null while it does not drive. */
+    @Nullable
+    private Report report;
+
+    /**
+     * What the NPC did at the controls, for the movement debug.
+     *
+     * @param point
+     *            where it steered or flew for
+     * @param details
+     *            the rest, worded only when the log asks for it
+     */
+    private record Report(String activity, @Nullable Vec3 point, Set<DriveControl> controls, Supplier<String> details)
+    {}
 
     /** Where the path leads from here. */
     private record Route(Vec3 steer, double distance)
@@ -143,46 +158,66 @@ public final class NpcDriver
     boolean drive(EntityNPCInterface npc, ISeat seat, Entity driveable, Vec3 heading, boolean mecha, boolean tracked)
     {
         long now = npc.level().getGameTime();
-        if (!driving)
-        {
-            stopDriving();
-            driving = true;
-            drivingSince = now;
-        }
+        begin(now);
         Vec3 position = driveable.position();
         double speed = lastPosition == null ? 0D : position.subtract(lastPosition).dot(heading);
         lastPosition = position;
         double arrival = Math.max(MIN_ARRIVAL, driveable.getBbWidth() * 0.5D + 1.5D);
         Route route = route(npc, position, LOOKAHEAD + driveable.getBbWidth() * 0.5D);
-        Float off = null;
-        Set<DriveControl> controls;
         if (route == null)
         {
             anchor = null;
             reversing = false;
-            controls = DriveSteering.brake(speed);
+            Set<DriveControl> controls = DriveSteering.brake(speed);
+            report(mecha, null, controls, 0F, 0D, speed);
+            act(npc, seat, mecha, controls, null);
+            return true;
         }
-        else
-        {
-            float angle = Mth.wrapDegrees(MountMotion.yaw(route.steer().subtract(position)) - MountMotion.yaw(heading));
-            off = angle;
-            controls = recovery > 0 ? recover(angle, route, arrival, speed, mecha, tracked) : steer(angle, route, arrival, speed, mecha, tracked);
-            if (recovery > 0)
-            {
-                recovery--;
-            }
-            else if (stuck(position, pushes(controls, mecha), now))
-            {
-                if (++recoveries > GIVE_UP)
-                    return false;
-                recovery = RECOVERY_TICKS;
-                recoveryBackward = !controls.contains(DriveControl.BACKWARD);
-            }
-        }
-        // A driveable that takes no controls, such as one just wrecked, has no weapons to fire either.
+        float off = Mth.wrapDegrees(MountMotion.yaw(route.steer().subtract(position)) - MountMotion.yaw(heading));
+        Set<DriveControl> controls = recovery > 0 ? recover(off, route, arrival, speed, mecha, tracked) : steer(off, route, arrival, speed, mecha, tracked);
+        if (recovery > 0)
+            recovery--;
+        else if (stuck(position, pushes(controls, mecha), now) && !startRecovery(controls))
+            return false;
+        report(mecha, route.steer(), controls, off, route.distance(), speed);
+        act(npc, seat, mecha, controls, off);
+        return true;
+    }
+
+    /** Starts the NPC driving, unless it already does. */
+    private void begin(long now)
+    {
+        if (driving)
+            return;
+        stopDriving();
+        driving = true;
+        drivingSince = now;
+    }
+
+    /** Starts a manoeuvre out of being stuck. @return false once the NPC has tried too often */
+    private boolean startRecovery(Set<DriveControl> controls)
+    {
+        if (++recoveries > GIVE_UP)
+            return false;
+        recovery = RECOVERY_TICKS;
+        recoveryBackward = !controls.contains(DriveControl.BACKWARD);
+        return true;
+    }
+
+    /** Holds the controls, and fights unless the driveable takes no controls, as one just wrecked does not. */
+    private static void act(EntityNPCInterface npc, ISeat seat, boolean mecha, Set<DriveControl> controls, @Nullable Float off)
+    {
         if (seat.setAutomatedDriving(controls))
             fight(npc, seat, mecha, off);
-        return true;
+    }
+
+    private void report(boolean mecha, @Nullable Vec3 point, Set<DriveControl> controls, float off, double distance, double speed)
+    {
+        boolean backward = reversing;
+        int manoeuvre = recovery;
+        int tries = recoveries;
+        report = new Report(mecha ? "walk" : "drive", point, controls,
+            () -> String.format(Locale.ROOT, "off=%.0f goal=%.1f speed=%.2f%s recovery=%d tries=%d", off, distance, speed, backward ? " reverse" : "", manoeuvre, tries));
     }
 
     /**
@@ -193,13 +228,9 @@ public final class NpcDriver
     boolean fly(EntityNPCInterface npc, ISeat seat, Entity aircraft, AircraftMode mode)
     {
         long now = npc.level().getGameTime();
-        if (!driving)
-        {
-            stopDriving();
-            driving = true;
-            drivingSince = now;
-        }
+        begin(now);
         Set<DriveControl> controls = pilot.fly(npc, aircraft, mode, goal(npc));
+        report = new Report(pilot.getPhase().name().toLowerCase(Locale.ROOT), pilot.getPoint(), controls, pilot::describe);
         // An aircraft that cannot get off the ground, for want of fuel or of room, is given up.
         if (stuck(aircraft.position(), pilot.isRolling(), now) && ++recoveries > GIVE_UP)
             return false;
@@ -386,10 +417,25 @@ public final class NpcDriver
         return Math.sqrt(x * x + z * z);
     }
 
+    /** @return what the NPC does at the controls, for the movement debug log; empty while it does not drive */
+    public Optional<String> describe()
+    {
+        Report last = report;
+        return last == null ? Optional.empty() : Optional.of(last.activity() + " controls=" + last.controls() + " " + last.details().get());
+    }
+
+    /** @return where the NPC steers or flies for, for the movement debug; empty while it does not drive or has nowhere to go */
+    public Optional<Vec3> debugPoint()
+    {
+        Report last = report;
+        return last == null ? Optional.empty() : Optional.ofNullable(last.point());
+    }
+
     /** Forgets how the NPC drove, once it no longer drives. */
     void stopDriving()
     {
         pilot.reset();
+        report = null;
         driving = false;
         lastPosition = null;
         reversing = false;

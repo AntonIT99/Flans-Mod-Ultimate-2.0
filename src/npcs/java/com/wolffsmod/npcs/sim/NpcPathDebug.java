@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.sim;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.drivers.NpcDriver;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcTactics;
 import lombok.AccessLevel;
@@ -20,8 +21,10 @@ import java.util.Locale;
 
 /**
  * Shows where an NPC with the movement debug switch is going: its remaining path as red dust, the point its driving
- * controller steers for as green sparks, and the end of the path as a flame. Once a second it also writes what the NPC
- * is doing to the server log. The particles are sent by the server, so every nearby player sees the same picture.
+ * controller steers for as green sparks, and the end of the path as a flame. For an NPC at the controls of a Flan's
+ * driveable, the sparks mark the point it steers or flies for. Once a second it also writes what the NPC is doing to
+ * the server log, with what it does at the controls. The particles are sent by the server, so every nearby player sees
+ * the same picture.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcPathDebug
@@ -57,6 +60,8 @@ public final class NpcPathDebug
             show(level, ParticleTypes.FLAME, path.getEntityPosAtNode(npc, path.getNodeCount() - 1).add(0D, 0.6D, 0D));
         }
         Vec3 steer = state.getDriving().getSteerPoint();
+        if (steer == null)
+            steer = NpcDriver.of(npc).debugPoint().orElse(null);
         if (steer != null)
             show(level, ParticleTypes.HAPPY_VILLAGER, steer.add(0D, 0.8D, 0D));
     }
@@ -82,9 +87,10 @@ public final class NpcPathDebug
         NpcDriving driving = state.getDriving();
         NpcFlight flight = state.getFlight();
         NpcTacticState tactic = NpcTacticState.of(npc);
-        return String.format(Locale.ROOT, "NPC %s id=%d pos=%.1f,%.1f,%.1f path=%s hull=%.0f throttle=%.2f%s flight=%s terrain=%d clearance=%.1f target=%s aligned=%s tactic=%s/%s%s",
+        return String.format(Locale.ROOT, "NPC %s id=%d pos=%.1f,%.1f,%.1f path=%s hull=%.0f throttle=%.2f%s flight=%s terrain=%d clearance=%.1f target=%s aligned=%s tactic=%s/%s%s%s",
             npc.getName().getString(), npc.getId(), npc.getX(), npc.getY(), npc.getZ(), path == null || path.isDone() ? "none" : (path.getNodeCount() - path.getNextNodeIndex()) + " nodes",
             state.getHullYaw(), driving.getThrottle(), driving.isReversing() ? " reverse" : "", flight.state(npc), flight.getTerrain(), flight.getClearance(),
-            npc.getTarget() == null ? "none" : npc.getTarget().getName().getString(), state.isAligned(), NpcTactics.of(npc), tactic.getPhase(), tactic.getCover() == null ? "" : " cover");
+            npc.getTarget() == null ? "none" : npc.getTarget().getName().getString(), state.isAligned(), NpcTactics.of(npc), tactic.getPhase(), tactic.getCover() == null ? "" : " cover",
+            NpcDriver.of(npc).describe().map(controls -> " driveable=" + controls).orElse(""));
     }
 }
