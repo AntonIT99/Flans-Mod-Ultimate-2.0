@@ -72,8 +72,8 @@ public final class NpcTuning
         DRIVE_BRAKING(250, 5, 2000),
         /** Share of full throttle shed per second while coasting, in percent. */
         DRIVE_COASTING(60, 1, 2000),
-        /** Top speed in reverse as a share of the forward top speed, in percent. */
-        DRIVE_REVERSE_SPEED(40, 5, 100),
+        /** Top speed in reverse as a share of forward speed, in percent; 0 inherits the model or uses 40. */
+        DRIVE_REVERSE_SPEED(0, 0, 100),
         /** Smallest turning circle radius in tenths of a block; 0 takes the radius of the vehicle type. */
         TURN_RADIUS(0, 0, 640),
         /** Blocks of path ahead the vehicle steers for and looks for corners in. */

@@ -1059,6 +1059,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void valueControl(Value value, int control, int y)
     {
+        if (GroundHandlingControls.render(this, npc, value, VALUE_ID + value.ordinal(), control, y, loaded))
+            return;
         int id = VALUE_ID + value.ordinal();
         int current = NpcTuning.of(npc).get(value);
         Enum<?>[] choices = choices(value);
@@ -1383,7 +1385,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (!field.isInteger())
             return false;
         if (field.id >= VALUE_ID && field.id < VALUE_ID + Value.values().length)
-            editValue(Value.values()[field.id - VALUE_ID], field.getInteger());
+        {
+            Value value = Value.values()[field.id - VALUE_ID];
+            if (GroundHandlingControls.inherited(npc, value))
+                return false;
+            editValue(value, field.getInteger());
+        }
         else if (field.id == AGGRO_RANGE_ID)
             npc.stats.aggroRange = Math.max(1, Math.min(NpcMobility.rangeLimit(), field.getInteger()));
         else if (field.id == FIRING_RANGE_ID)
@@ -1462,6 +1469,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             changed |= heldItems.button(button);
         else if (crew.handles(button.id))
             changed |= crew.button(button);
+        else if (GroundHandlingControls.button(npc, button))
+            changed = true;
         else
             return false;
         return true;
