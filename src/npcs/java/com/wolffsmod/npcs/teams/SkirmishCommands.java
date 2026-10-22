@@ -55,6 +55,7 @@ public final class SkirmishCommands
     private static final String VEHICLES = "vehicles";
     private static final String RESPAWN = "respawn";
     private static final String PROTECTION = "protection";
+    private static final String PRESET = "preset";
     private static final double DEFAULT_RADIUS = 16D;
     private static final int QUICK_INFANTRY = 16;
     private static final double QUICK_DISTANCE = 96D;
@@ -69,6 +70,7 @@ public final class SkirmishCommands
     private static final SimpleCommandExceptionType SIDE_TAKEN = new SimpleCommandExceptionType(text("side_taken"));
     private static final SimpleCommandExceptionType NOT_LIVE = new SimpleCommandExceptionType(text("not_live"));
     private static final SimpleCommandExceptionType NO_TEMPLATE = new SimpleCommandExceptionType(BotCommands.text("no_template"));
+    private static final SimpleCommandExceptionType NO_PRESET = new SimpleCommandExceptionType(text("no_preset"));
 
     private static final SuggestionProvider<CommandSourceStack> SKIRMISHES = (context, builder) -> SharedSuggestionProvider
         .suggest(SkirmishStore.get(context.getSource().getServer()).all().stream().map(skirmish -> StringArgumentType.escapeIfRequired(skirmish.getName())).toList(), builder);
@@ -76,6 +78,8 @@ public final class SkirmishCommands
         skirmishOrEmpty(context).map(skirmish -> skirmish.getSides().stream().map(side -> StringArgumentType.escapeIfRequired(Skirmishes.factionName(side.faction()))).toList()).orElse(List.of()),
         builder);
     private static final SuggestionProvider<CommandSourceStack> ROLES = (context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(BotRole.values()).map(BotCommands::lower).toList(),
+        builder);
+    private static final SuggestionProvider<CommandSourceStack> PRESETS = (context, builder) -> SharedSuggestionProvider.suggest(SkirmishStore.get(context.getSource().getServer()).presets().keySet(),
         builder);
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
@@ -95,21 +99,38 @@ public final class SkirmishCommands
         root.then(lifecycle("pause", context -> pause(context, true)));
         root.then(lifecycle("resume", context -> pause(context, false)));
         root.then(lifecycle("status", SkirmishCommands::status));
-        root.then(
-            Commands
-                .literal(
-                    "side")
-                .then(skirmishArgument()
-                    .then(Commands.literal("add")
-                        .then(Commands.argument(FACTION, StringArgumentType.string()).suggests(FactionCommands.MANAGED).executes(context -> addSide(context, false, DEFAULT_RADIUS))
-                            .then(Commands.argument(RADIUS, DoubleArgumentType.doubleArg(2D, 256D)).executes(context -> addSide(context, false, DoubleArgumentType.getDouble(context, RADIUS))))
-                            .then(Commands.literal("at")
-                                .then(Commands.argument(POSITION, Vec3Argument.vec3()).executes(context -> addSide(context, true, DEFAULT_RADIUS)).then(
-                                    Commands.argument(RADIUS, DoubleArgumentType.doubleArg(2D, 256D)).executes(context -> addSide(context, true, DoubleArgumentType.getDouble(context, RADIUS))))))))
-                    .then(Commands.literal("remove").then(sideArgument().executes(SkirmishCommands::removeSide)))));
+        root.then(sides());
         root.then(forces());
         root.then(settings());
+        root.then(presets());
+        SkirmishTroopCommands.addTo(root);
         dispatcher.register(Commands.literal("teams").then(root));
+    }
+
+    /** The sides of a draft: a faction each, coming in within a zone. */
+    private static LiteralArgumentBuilder<CommandSourceStack> sides()
+    {
+        RequiredArgumentBuilder<CommandSourceStack, String> faction = Commands.argument(FACTION, StringArgumentType.string()).suggests(FactionCommands.MANAGED);
+        faction.executes(context -> addSide(context, false, DEFAULT_RADIUS));
+        faction.then(Commands.argument(RADIUS, DoubleArgumentType.doubleArg(2D, 256D)).executes(context -> addSide(context, false, DoubleArgumentType.getDouble(context, RADIUS))));
+        faction.then(Commands.literal("at").then(Commands.argument(POSITION, Vec3Argument.vec3()).executes(context -> addSide(context, true, DEFAULT_RADIUS))
+            .then(Commands.argument(RADIUS, DoubleArgumentType.doubleArg(2D, 256D)).executes(context -> addSide(context, true, DoubleArgumentType.getDouble(context, RADIUS))))));
+        RequiredArgumentBuilder<CommandSourceStack, String> skirmish = skirmishArgument();
+        skirmish.then(Commands.literal("add").then(faction));
+        skirmish.then(Commands.literal("remove").then(sideArgument().executes(SkirmishCommands::removeSide)));
+        return Commands.literal("side").then(skirmish);
+    }
+
+    /** Skirmishes kept set up under a name, to draft alike again, here or where they were. */
+    private static LiteralArgumentBuilder<CommandSourceStack> presets()
+    {
+        LiteralArgumentBuilder<CommandSourceStack> preset = Commands.literal(PRESET);
+        preset.then(Commands.literal("list").executes(SkirmishCommands::listPresets));
+        preset.then(Commands.literal("save").then(skirmishArgument().then(Commands.argument(PRESET, StringArgumentType.word()).executes(SkirmishCommands::savePreset))));
+        preset.then(Commands.literal("remove").then(Commands.argument(PRESET, StringArgumentType.word()).suggests(PRESETS).executes(SkirmishCommands::removePreset)));
+        preset.then(Commands.literal("apply").then(Commands.argument(PRESET, StringArgumentType.word()).suggests(PRESETS).then(
+            Commands.argument(NAME, StringArgumentType.string()).executes(context -> applyPreset(context, false)).then(Commands.literal("here").executes(context -> applyPreset(context, true))))));
+        return preset;
     }
 
     private static RequiredArgumentBuilder<CommandSourceStack, String> skirmishArgument()
@@ -179,6 +200,9 @@ public final class SkirmishCommands
             difficulty
                 .then(Commands.literal(BotCommands.lower(value)).executes(context -> edit(context, true, target -> target.setDifficulty(value), text(SET, "difficulty", BotCommands.lower(value)))));
         skirmish.then(difficulty);
+        skirmish.then(Commands.literal("markers").then(Commands.literal(BotCommands.NONE).executes(context -> edit(context, false, target -> target.setMarkerMap(""), text("markers_none"))))
+            .then(Commands.argument(VALUE, StringArgumentType.word()).executes(
+                context -> edit(context, false, target -> target.setMarkerMap(StringArgumentType.getString(context, VALUE)), text("markers", StringArgumentType.getString(context, VALUE))))));
         skirmish.then(Commands.literal(PROTECTION).then(Commands.literal("on").executes(context -> edit(context, false, target -> target.setProtection(true), text(SET, PROTECTION, "on"))))
             .then(Commands.literal("off").executes(context -> edit(context, false, target -> target.setProtection(false), text(SET, PROTECTION, "off")))));
         return set.then(skirmish);
@@ -305,10 +329,68 @@ public final class SkirmishCommands
             int index = i;
             int standing = battle == null || level == null ? 0 : Skirmishes.strength(level, battle, i);
             int deaths = battle == null ? 0 : battle.getSlots().values().stream().filter(slot -> battle.sideOf(slot.getTeam()) == index).mapToInt(BotSlot::getDeaths).sum();
+            int kills = battle == null ? 0 : battle.getSlots().values().stream().filter(slot -> battle.sideOf(slot.getTeam()) == index).mapToInt(BotSlot::getKills).sum();
             Component tickets = battle != null && skirmish.isRespawn() && skirmish.getTickets() > 0 ? text("status_tickets", BotPopulation.ticketsLeft(battle, i)) : Component.empty();
             String position = String.format(Locale.ROOT, "%.0f %.0f %.0f", side.anchor().x, side.anchor().y, side.anchor().z);
-            context.getSource().sendSuccess(() -> text("status_side", Skirmishes.factionName(side.faction()), position, standing, deaths, tickets), false);
+            context.getSource().sendSuccess(() -> text("status_side", Skirmishes.factionName(side.faction()), position, standing, deaths, kills, tickets), false);
         }
+        return 1;
+    }
+
+    // --- Presets ---
+
+    private static int listPresets(CommandContext<CommandSourceStack> context)
+    {
+        Set<String> presets = SkirmishStore.get(context.getSource().getServer()).presets().keySet();
+        context.getSource().sendSuccess(() -> presets.isEmpty() ? text("preset_none") : text("preset_list", String.join(", ", presets)), false);
+        return presets.size();
+    }
+
+    // A command reports how many presets it saved, which is always one here.
+    @SuppressWarnings("SameReturnValue")
+    private static int savePreset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        Skirmish skirmish = skirmish(context);
+        String preset = StringArgumentType.getString(context, PRESET);
+        SkirmishStore.get(context.getSource().getServer()).savePreset(preset, skirmish);
+        context.getSource().sendSuccess(() -> text("preset_saved", preset.toLowerCase(Locale.ROOT), skirmish.getName()), true);
+        return 1;
+    }
+
+    // A command reports how many presets it removed, which is always one here.
+    @SuppressWarnings("SameReturnValue")
+    private static int removePreset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        String preset = StringArgumentType.getString(context, PRESET);
+        if (!SkirmishStore.get(context.getSource().getServer()).removePreset(preset))
+            throw NO_PRESET.create();
+        context.getSource().sendSuccess(() -> text("preset_removed", preset), true);
+        return 1;
+    }
+
+    /**
+     * Drafts a skirmish from a preset: where the preset's zones were, or, {@code here}, with the middle of its zones moved to
+     * the command's position and each zone set on the ground there.
+     */
+    // A command reports how many skirmishes it drafted, which is always one here.
+    @SuppressWarnings("SameReturnValue")
+    private static int applyPreset(CommandContext<CommandSourceStack> context, boolean here) throws CommandSyntaxException
+    {
+        SkirmishStore store = SkirmishStore.get(context.getSource().getServer());
+        Skirmish preset = store.presets().get(StringArgumentType.getString(context, PRESET).toLowerCase(Locale.ROOT));
+        if (preset == null)
+            throw NO_PRESET.create();
+        String name = StringArgumentType.getString(context, NAME);
+        if (store.named(name).isPresent())
+            throw EXISTS.create();
+        ServerLevel level = context.getSource().getLevel();
+        Vec3 middle = preset.getSides().stream().map(Skirmish.Side::anchor).reduce(Vec3.ZERO, Vec3::add).scale(1D / Math.max(1, preset.getSides().size()));
+        Vec3 shift = here ? context.getSource().getPosition().subtract(middle) : Vec3.ZERO;
+        Skirmish draft = preset.draftCopy(UUID.randomUUID(), name, here ? level.dimension() : preset.getDimension(), shift);
+        if (here)
+            draft.getSides().replaceAll(side -> new Skirmish.Side(side.faction(), SkirmishBattleground.ground(level, side.anchor().x, side.anchor().z), side.radius(), side.request(), side.teams()));
+        store.add(draft);
+        context.getSource().sendSuccess(() -> text("preset_applied", preset.getName(), name), true);
         return 1;
     }
 

@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.teams;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 import java.util.*;
@@ -51,6 +52,20 @@ final class BotBattles
                 return Optional.of(battle);
         }
         return Optional.empty();
+    }
+
+    /**
+     * @return the battle a player fights in: the round being played when they play it, or else the nearest battle of
+     *         their level that their faction fights in; empty for a player who fights in none
+     */
+    static Optional<BotBattle> ofPlayer(ServerPlayer player)
+    {
+        Optional<BotBattle> round = TeamsBots.current().filter(battle -> battle.sideOfPlayer(player).isPresent());
+        if (round.isPresent())
+            return round;
+        return BATTLES.values().stream()
+            .filter(battle -> battle.getGround().round().isEmpty() && battle.getGround().dimension().equals(player.level().dimension()) && battle.sideOfPlayer(player).isPresent())
+            .min(Comparator.comparingDouble(battle -> battle.getGround().centre().map(centre -> centre.distanceToSqr(player.position())).orElse(Double.MAX_VALUE)));
     }
 
     /** @return the slot an entity is the bot of in its battle, or empty for anyone else */

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -94,5 +95,39 @@ class SkirmishTest
         assertTrue(Skirmishes.pushShare(30, 10) > 0.5D, "the first side, stronger, pushes the front toward the second");
         assertTrue(Skirmishes.pushShare(0, 12) < 0.5D);
         assertTrue(Skirmishes.pushShare(100, 0) < 1D, "the front never reaches the weaker side's zone");
+    }
+
+    @Test
+    void aDraftCopyIsSetUpAlikeWithItsZonesMovedAndNoBots()
+    {
+        Skirmish original = elAlamein();
+        original.setMarkerMap("alamein_ridge");
+        original.setState(Skirmish.State.RUNNING);
+        Skirmish copy = original.draftCopy(UUID.randomUUID(), "Second Alamein", Level.OVERWORLD, new Vec3(1000D, 2D, 0D));
+        assertEquals(Skirmish.State.DRAFT, copy.getState());
+        assertEquals(new Vec3(1000D, 66D, 0D), copy.getSides().get(0).anchor());
+        assertEquals(original.getSides().get(1).request(), copy.getSides().get(1).request());
+        assertTrue(copy.getSides().get(0).teams().isEmpty(), "the teams of a side are fixed again when the copy starts");
+        assertEquals(Skirmish.Intent.PUSH, copy.getIntent());
+        assertEquals(150, copy.getTickets());
+        assertEquals("alamein_ridge", copy.getMarkerMap());
+        assertNull(copy.getBattle());
+    }
+
+    @Test
+    void presetsAreKeptWithTheWorldsSkirmishes()
+    {
+        SkirmishStore store = new SkirmishStore();
+        Skirmish skirmish = elAlamein();
+        skirmish.setMarkerMap("alamein_ridge");
+        store.add(skirmish);
+        store.savePreset("Desert", skirmish);
+        SkirmishStore after = SkirmishStore.load(store.save(new CompoundTag()));
+        assertEquals("alamein_ridge", after.named("el alamein").orElseThrow().getMarkerMap());
+        Skirmish preset = after.presets().get("desert");
+        assertNotNull(preset, "a preset is kept by its lower-case name");
+        assertEquals(2, preset.getSides().size());
+        assertTrue(after.removePreset("DESERT"));
+        assertTrue(after.presets().isEmpty());
     }
 }

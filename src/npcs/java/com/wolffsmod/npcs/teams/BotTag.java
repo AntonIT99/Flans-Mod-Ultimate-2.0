@@ -26,6 +26,7 @@ public final class BotTag
     private static final String NBT_VEHICLE = "vehicle";
     private static final String NBT_NAMEPLATES = "nameplates";
     private static final String NBT_CREW = "crew";
+    private static final String NBT_ENLISTED = "enlisted";
 
     /**
      * @param instance
@@ -34,8 +35,10 @@ public final class BotTag
      *            the place in the round's force the bot fills; for a crew member, the place of the vehicle it crews
      * @param crew
      *            whether the bot crews a vehicle bot rather than filling a place of its own
+     * @param enlisted
+     *            whether the NPC was made by hand and joined the battle as it was: it is given back, never removed
      */
-    public record Data(UUID instance, int slot, String team, boolean vehicle, BotSettings.Nameplates nameplates, boolean crew)
+    public record Data(UUID instance, int slot, String team, boolean vehicle, BotSettings.Nameplates nameplates, boolean crew, boolean enlisted)
     {}
 
     /** What clients learn about a bot. */
@@ -51,6 +54,7 @@ public final class BotTag
         tag.putBoolean(NBT_VEHICLE, data.vehicle());
         tag.putString(NBT_NAMEPLATES, data.nameplates().name());
         tag.putBoolean(NBT_CREW, data.crew());
+        tag.putBoolean(NBT_ENLISTED, data.enlisted());
         entity.getPersistentData().put(KEY, tag);
     }
 
@@ -62,7 +66,13 @@ public final class BotTag
         if (!tag.hasUUID(NBT_INSTANCE))
             return Optional.empty();
         return Optional.of(new Data(tag.getUUID(NBT_INSTANCE), tag.getInt(NBT_SLOT), tag.getString(NBT_TEAM), tag.getBoolean(NBT_VEHICLE),
-            BotSettings.parse(BotSettings.Nameplates.class, tag.getString(NBT_NAMEPLATES), BotSettings.Nameplates.DEFAULT), tag.getBoolean(NBT_CREW)));
+            BotSettings.parse(BotSettings.Nameplates.class, tag.getString(NBT_NAMEPLATES), BotSettings.Nameplates.DEFAULT), tag.getBoolean(NBT_CREW), tag.getBoolean(NBT_ENLISTED)));
+    }
+
+    /** Takes the bot data off an NPC, which then is no bot any more. */
+    public static void clear(Entity entity)
+    {
+        entity.getPersistentData().remove(KEY);
     }
 
     /** Whether the entity carries bot data at all, from any round. */

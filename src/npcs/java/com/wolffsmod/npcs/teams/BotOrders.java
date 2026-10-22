@@ -1,7 +1,5 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.ITeam;
 import com.flansmodultimate.api.TeamsCapturePoint;
 import com.wolffsmod.npcs.network.BotOrdersStatePacket;
 import com.wolffsmod.npcs.network.BotWaypointsPacket;
@@ -51,12 +49,11 @@ public final class BotOrders
      */
     public static int give(ServerPlayer player, int squadId, PlayerOrder.Kind kind, int objective, @Nullable Vec3 at)
     {
-        Optional<BotBattle> current = TeamsBots.current();
-        Optional<ITeam> team = FlansTeams.getTeam(player);
-        if (current.isEmpty() || team.isEmpty() || !(player.level() instanceof ServerLevel level))
+        Optional<BotBattle> current = BotBattles.ofPlayer(player);
+        if (current.isEmpty() || !(player.level() instanceof ServerLevel level))
             return 0;
         BotBattle battle = current.get();
-        int side = battle.getGround().sideOf(team.get());
+        int side = battle.sideOfPlayer(player).orElse(-1);
         boolean commander = player.getUUID().equals(battle.getCommanders().get(side));
         Vec3 target = at != null ? ground(level, at) : target(battle, player, objective);
         PlayerOrder order = new PlayerOrder(player.getUUID(), kind, target, level.getGameTime() + PlayerOrder.DURATION);
@@ -98,14 +95,18 @@ public final class BotOrders
     private static final Set<UUID> MARKED = new HashSet<>();
 
     /**
-     * Sends every player of the round the places their orders send squads to, and the rally point of the squad they lead,
-     * for their client to mark in the world.
+     * Sends every player of a battle the places their orders send squads to, and the rally point of the squad they lead,
+     * for their client to mark in the world. A player of another battle hears from that one; a player of none has their
+     * marks taken down.
      */
     static void sendWaypoints(MinecraftServer server, BotBattle battle)
     {
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
-            List<BotWaypointsPacket.Waypoint> waypoints = waypoints(battle, player);
+            Optional<BotBattle> theirs = BotBattles.ofPlayer(player);
+            if (theirs.isPresent() && theirs.get() != battle)
+                continue;
+            List<BotWaypointsPacket.Waypoint> waypoints = theirs.isPresent() ? waypoints(battle, player) : List.of();
             if (!waypoints.isEmpty() || MARKED.contains(player.getUUID()))
                 NpcNetwork.sendTo(player, new BotWaypointsPacket(waypoints));
             if (waypoints.isEmpty())
@@ -161,12 +162,11 @@ public final class BotOrders
      */
     public static boolean command(ServerPlayer player, boolean take)
     {
-        Optional<BotBattle> current = TeamsBots.current();
-        Optional<ITeam> team = FlansTeams.getTeam(player);
-        if (current.isEmpty() || team.isEmpty())
+        Optional<BotBattle> current = BotBattles.ofPlayer(player);
+        if (current.isEmpty())
             return false;
         BotBattle battle = current.get();
-        int side = battle.getGround().sideOf(team.get());
+        int side = battle.sideOfPlayer(player).orElse(-1);
         UUID holder = battle.getCommanders().get(side);
         if (!take)
         {
@@ -203,12 +203,11 @@ public final class BotOrders
     /** What the player's order screen shows: the squads they may order and the objectives they may send them to. */
     public static BotOrdersStatePacket state(ServerPlayer player)
     {
-        Optional<BotBattle> current = TeamsBots.current();
-        Optional<ITeam> team = FlansTeams.getTeam(player);
-        if (current.isEmpty() || team.isEmpty() || !(player.level() instanceof ServerLevel level))
+        Optional<BotBattle> current = BotBattles.ofPlayer(player);
+        if (current.isEmpty() || !(player.level() instanceof ServerLevel level))
             return BotOrdersStatePacket.notPlaying();
         BotBattle battle = current.get();
-        int side = battle.getGround().sideOf(team.get());
+        int side = battle.sideOfPlayer(player).orElse(-1);
         UUID holder = battle.getCommanders().get(side);
         boolean commander = player.getUUID().equals(holder);
         String commanderName = holder == null ? "" : Optional.ofNullable(Objects.requireNonNull(player.getServer()).getPlayerList().getPlayer(holder)).map(ServerPlayer::getScoreboardName).orElse("");

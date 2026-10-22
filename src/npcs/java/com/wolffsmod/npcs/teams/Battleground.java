@@ -68,6 +68,12 @@ interface Battleground
         return Optional.empty();
     }
 
+    /** @return about where the battle is fought, or empty when it is fought over a whole map */
+    default Optional<Vec3> centre()
+    {
+        return front();
+    }
+
     /** @return the Teams round this battle is, or empty for a battle fought outside one */
     Optional<ITeamsLiveRound> round();
 }

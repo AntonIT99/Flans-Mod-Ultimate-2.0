@@ -110,6 +110,7 @@ final class Skirmishes
     private static Optional<Outcome> compose(MinecraftServer server, Skirmish skirmish, List<Component> notes)
     {
         BattleFactions factions = BattleFactions.get(server);
+        ServerLevel level = Objects.requireNonNull(server.getLevel(skirmish.getDimension()));
         BotSettings settings = settings(skirmish);
         Set<String> used = new HashSet<>();
         List<Skirmish.Side> started = new ArrayList<>();
@@ -117,7 +118,7 @@ final class Skirmishes
         {
             String name = factionName(side.faction());
             BattleFactions.Managed managed = factions.managed(side.faction()).orElseThrow();
-            SkirmishComposer.Result result = SkirmishComposer.compose(SkirmishComposer.views(managed), side.request(), SkirmishComposer::roleOfType);
+            SkirmishComposer.Result result = SkirmishComposer.compose(SkirmishComposer.views(serving(level, managed, side.anchor(), name, notes)), side.request(), SkirmishComposer::roleOfType);
             for (Map.Entry<String, BotSettings.TeamForce> force : result.forces().entrySet())
             {
                 if (!used.add(force.getKey()))
@@ -134,6 +135,16 @@ final class Skirmishes
         return Optional.empty();
     }
 
+    /** The branches of a faction that serve where a side comes in by their theatres; every branch, noted, when none does. */
+    private static List<BattleFactions.Branch> serving(ServerLevel level, BattleFactions.Managed managed, Vec3 at, String name, List<Component> notes)
+    {
+        List<BattleFactions.Branch> serving = managed.getBranches().stream().filter(branch -> Theatres.serves(branch.getTheatres(), level, at)).toList();
+        if (!serving.isEmpty())
+            return serving;
+        notes.add(text("no_theatre", name));
+        return managed.getBranches();
+    }
+
     /** Removes a skirmish and all its bots. */
     public static int stop(MinecraftServer server, Skirmish skirmish)
     {
@@ -144,6 +155,7 @@ final class Skirmishes
             removed = TeamsBots.removeAll(server, battle);
             BotBattles.remove(battle);
         }
+        BotOrders.clearWaypoints(server);
         SkirmishStore.get(server).remove(skirmish);
         return removed;
     }
@@ -171,7 +183,8 @@ final class Skirmishes
         settings.setDifficulty(skirmish.getDifficulty());
         settings.setPlayerTickets(false);
         settings.setRadio(false);
-        settings.setRallyPoints(false);
+        // A squad leader's rally point is where the squad's fallen come back; coming back there is for round players only.
+        settings.setRallyPoints(true);
         settings.setVehicleCrews(true);
         return settings;
     }
@@ -275,7 +288,10 @@ final class Skirmishes
         TeamsBots.spawnQueued(level, battle, now, random);
         BotGunners.tick(level, battle);
         if (tick % COMMAND_INTERVAL == 0)
+        {
             BotCommander.plan(server, level, battle);
+            BotOrders.sendWaypoints(server, battle);
+        }
     }
 
     /** Takes up the skirmishes that were fighting when the server stopped, with the bots they had. */
@@ -342,13 +358,20 @@ final class Skirmishes
             if (protection)
                 npc.setInvulnerable(true);
         }
-        else if (!resting && rests)
-        {
-            CompoundTag before = data.getCompound(REST_KEY);
-            npc.setNoAi(before.getBoolean(NBT_NO_AI));
-            npc.setInvulnerable(before.getBoolean(NBT_INVULNERABLE));
-            data.remove(REST_KEY);
-        }
+        else if (!resting)
+            wake(npc);
+    }
+
+    /** Gives a resting bot back what it was before it rested; nothing for one that does not rest. */
+    static void wake(EntityNPCInterface npc)
+    {
+        CompoundTag data = npc.getPersistentData();
+        if (!data.contains(REST_KEY, Tag.TAG_COMPOUND))
+            return;
+        CompoundTag before = data.getCompound(REST_KEY);
+        npc.setNoAi(before.getBoolean(NBT_NO_AI));
+        npc.setInvulnerable(before.getBoolean(NBT_INVULNERABLE));
+        data.remove(REST_KEY);
     }
 
     // --- Fronts and outcomes ---

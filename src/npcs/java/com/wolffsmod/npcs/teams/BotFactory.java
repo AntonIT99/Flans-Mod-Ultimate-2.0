@@ -305,7 +305,7 @@ public final class BotFactory
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);
         boolean vehicle = membership == Membership.VEHICLE;
-        BotTag.write(npc, new BotTag.Data(order.instance(), order.slot().getId(), order.team().getShortName(), vehicle, settings.getNameplates(), membership == Membership.CREW));
+        BotTag.write(npc, new BotTag.Data(order.instance(), order.slot().getId(), order.team().getShortName(), vehicle, settings.getNameplates(), membership == Membership.CREW, false));
         float weight = switch (membership)
         {
             case SOLDIER -> settings.getInfantryCaptureWeight();

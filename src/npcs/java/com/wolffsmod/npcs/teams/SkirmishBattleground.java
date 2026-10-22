@@ -137,7 +137,7 @@ final class SkirmishBattleground implements Battleground
     @Override
     public Optional<String> mapId()
     {
-        return Optional.empty();
+        return skirmish.getMarkerMap().isEmpty() ? Optional.empty() : Optional.of(skirmish.getMarkerMap());
     }
 
     @Override
@@ -150,6 +150,14 @@ final class SkirmishBattleground implements Battleground
     public Optional<Vec3> front()
     {
         return Optional.ofNullable(skirmish.getFront());
+    }
+
+    /** The middle of the sides' zones. */
+    @Override
+    public Optional<Vec3> centre()
+    {
+        List<Skirmish.Side> sides = skirmish.getSides();
+        return sides.isEmpty() ? Optional.empty() : Optional.of(sides.stream().map(Skirmish.Side::anchor).reduce(Vec3.ZERO, Vec3::add).scale(1D / sides.size()));
     }
 
     /** Points spread evenly over a side's zone, on the ground. */

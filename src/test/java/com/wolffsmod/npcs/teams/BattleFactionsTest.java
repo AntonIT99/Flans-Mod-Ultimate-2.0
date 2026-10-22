@@ -26,6 +26,7 @@ class BattleFactionsTest
         BattleFactions.Branch wehrmacht = new BattleFactions.Branch("wehrmacht", force);
         wehrmacht.getRoles().addAll(Set.of(BotRole.INFANTRY, BotRole.ARMOR));
         wehrmacht.setWeight(3);
+        wehrmacht.getTheatres().add("#minecraft:is_badlands");
         managed.getBranches().add(wehrmacht);
         managed.getBranches().add(new BattleFactions.Branch("luftwaffe", new BotSettings.TeamForce()));
         return data;
@@ -46,6 +47,7 @@ class BattleFactionsTest
         BattleFactions.Branch wehrmacht = managed.branch("wehrmacht").orElseThrow();
         assertEquals(Set.of(BotRole.INFANTRY, BotRole.ARMOR), wehrmacht.getRoles());
         assertEquals(3, wehrmacht.getWeight());
+        assertEquals(Set.of("#minecraft:is_badlands"), wehrmacht.getTheatres());
         assertEquals(12, wehrmacht.getForce().getCount());
         assertEquals("tiger", wehrmacht.getForce().getVehicles().get(0).type());
         assertTrue(managed.branch("luftwaffe").orElseThrow().getRoles().isEmpty(), "a branch set to no roles fills every role it can");

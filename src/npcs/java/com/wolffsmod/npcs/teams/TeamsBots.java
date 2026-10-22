@@ -309,7 +309,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         }
         slot.setRespawnAt(now + seconds * 20L);
         // A soldier a transport brought never comes back; a new transport brings others.
-        if (slot.getSource() == BotSlot.Source.CARGO)
+        if (slot.getSource() == BotSlot.Source.CARGO || slot.getSource() == BotSlot.Source.VOLUNTEER)
             slot.setRetired(true);
     }
 
@@ -528,10 +528,39 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return BotBattles.get(data.instance()).filter(battle -> data.crew() ? battle.getSlots().containsKey(data.slot()) : battle.getSlotOfEntity().containsKey(npc.getUUID())).isPresent();
     }
 
+    /** Removes a bot; an NPC that was enlisted as it was is given back instead, awake and no bot any more. */
     private static void remove(EntityNPCInterface npc)
     {
         FlansTeams.releaseCombatant(npc);
+        if (BotTag.read(npc).map(BotTag.Data::enlisted).orElse(false))
+        {
+            Skirmishes.wake(npc);
+            BotTag.clear(npc);
+            return;
+        }
         npc.delete();
+    }
+
+    /**
+     * Credits the bot that killed an enemy in a battle fought outside rounds, a crew member scoring for its vehicle. Rounds
+     * credit their bots as the round reports its kills.
+     */
+    public static void entityDied(LivingEntity victim, DamageSource source)
+    {
+        if (victim.level().isClientSide || !(source.getEntity() instanceof EntityNPCInterface killer))
+            return;
+        for (BotBattle battle : BotBattles.all())
+        {
+            if (battle.getGround().round().isPresent())
+                continue;
+            Optional<BotSlot> scorer = BotBattles.slotOf(battle, killer).or(() -> BotCrews.slotOf(battle, killer));
+            if (scorer.isPresent())
+            {
+                if (battle.getGround().areEnemies(killer, victim))
+                    scorer.get().setKills(scorer.get().getKills() + 1);
+                return;
+            }
+        }
     }
 
     // --- Round events ---

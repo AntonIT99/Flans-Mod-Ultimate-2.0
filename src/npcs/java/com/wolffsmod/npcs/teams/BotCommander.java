@@ -85,7 +85,7 @@ final class BotCommander
             if (order == null)
                 continue;
             ServerPlayer player = server.getPlayerList().getPlayer(order.player());
-            boolean playing = player != null && player.isAlive() && FlansTeams.getTeam(player).isPresent();
+            boolean playing = player != null && player.isAlive() && battle.sideOfPlayer(player).isPresent();
             if (now >= order.expiresAt() || order.kind() == PlayerOrder.Kind.RELEASE || order.kind() == PlayerOrder.Kind.FOLLOW && !playing)
                 squad.setOrder(null);
             else

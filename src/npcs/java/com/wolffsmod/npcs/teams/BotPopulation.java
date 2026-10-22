@@ -287,6 +287,10 @@ final class BotPopulation
                 // Transports bring cargo to the front; it never comes back on its own.
                 return false;
             }
+            case VOLUNTEER -> {
+                // A volunteer joined as it was; the battle has nothing to bring it back with.
+                return false;
+            }
             case SQUAD -> {
                 // A squad with a budget is lost as a whole: its members do not come back one by one.
                 boolean budgeted = slot.getEntry() < force.getSquads().size() && force.getSquads().get(slot.getEntry()).budget() > 0;

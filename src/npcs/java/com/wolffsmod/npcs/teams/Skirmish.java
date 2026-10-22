@@ -53,6 +53,7 @@ final class Skirmish
     private static final String NBT_FRONT = "front";
     private static final String NBT_SETTINGS = "settings";
     private static final String NBT_BATTLE = "battle";
+    private static final String NBT_MARKERS = "markers";
 
     /** Where the sides' ground squads go. */
     public enum Intent
@@ -122,6 +123,8 @@ final class Skirmish
     private BotSettings.Difficulty difficulty = BotSettings.Difficulty.DEFAULT;
     /** Whether its bots cannot be hurt while it rests during a Teams round. */
     private boolean protection = true;
+    /** The map whose markers its bots use, such as route points; empty for none. */
+    private String markerMap = "";
     private State state = State.DRAFT;
     private long startedAt;
     private long endedAt;
@@ -166,6 +169,26 @@ final class Skirmish
         return state == State.RUNNING || state == State.PAUSED;
     }
 
+    /**
+     * @return a draft set up as this skirmish, its zones moved by a shift: its sides with what they field and its settings,
+     *         without its bots
+     */
+    public Skirmish draftCopy(UUID copyId, String copyName, ResourceKey<Level> copyDimension, Vec3 shift)
+    {
+        Skirmish copy = new Skirmish(copyId, copyName, copyDimension);
+        sides.forEach(side -> copy.sides.add(new Side(side.faction(), side.anchor().add(shift), side.radius(), side.request(), List.of())));
+        copy.intent = intent;
+        copy.end = end;
+        copy.timeLimitMinutes = timeLimitMinutes;
+        copy.respawn = respawn;
+        copy.respawnSeconds = respawnSeconds;
+        copy.tickets = tickets;
+        copy.difficulty = difficulty;
+        copy.protection = protection;
+        copy.markerMap = markerMap;
+        return copy;
+    }
+
     // --- Saving ---
 
     public CompoundTag save()
@@ -202,6 +225,7 @@ final class Skirmish
         tag.putInt(NBT_TICKETS, tickets);
         tag.putString(NBT_DIFFICULTY, difficulty.name());
         tag.putBoolean(NBT_PROTECTION, protection);
+        tag.putString(NBT_MARKERS, markerMap);
         tag.putString(NBT_STATE, state.name());
         tag.putLong(NBT_STARTED, startedAt);
         tag.putLong(NBT_ENDED, endedAt);
@@ -243,6 +267,7 @@ final class Skirmish
         skirmish.tickets = Math.max(0, tag.getInt(NBT_TICKETS));
         skirmish.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.DEFAULT);
         skirmish.protection = tag.getBoolean(NBT_PROTECTION);
+        skirmish.markerMap = tag.getString(NBT_MARKERS);
         skirmish.state = BotSettings.parse(State.class, tag.getString(NBT_STATE), State.DRAFT);
         skirmish.startedAt = tag.getLong(NBT_STARTED);
         skirmish.endedAt = tag.getLong(NBT_ENDED);

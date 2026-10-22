@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -56,6 +57,12 @@ public final class NpcsGameEvents
         ServerBenchmark.serverTickEnd(event.getServer());
         NpcServerSettings.serverTick(event.getServer());
         TeamsBots.serverTick(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void livingDeath(LivingDeathEvent event)
+    {
+        TeamsBots.entityDied(event.getEntity(), event.getSource());
     }
 
     @SubscribeEvent

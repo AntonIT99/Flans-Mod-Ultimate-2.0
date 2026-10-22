@@ -225,11 +225,11 @@ final class SkirmishComposer
 
     // --- Branches as the composer sees them ---
 
-    /** The branches of a managed faction, with the roles they fill and the roles of the vehicles they list. */
-    static List<BranchView> views(BattleFactions.Managed faction)
+    /** Branches of a managed faction, with the roles they fill and the roles of the vehicles they list. */
+    static List<BranchView> views(Collection<BattleFactions.Branch> branches)
     {
         List<BranchView> views = new ArrayList<>();
-        for (BattleFactions.Branch branch : faction.getBranches())
+        for (BattleFactions.Branch branch : branches)
         {
             Map<String, BotRole> vehicleRoles = new LinkedHashMap<>();
             for (BotSettings.VehicleEntry entry : branch.getForce().getVehicles())

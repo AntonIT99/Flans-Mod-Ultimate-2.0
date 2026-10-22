@@ -35,6 +35,7 @@ public final class BattleFactions extends SavedData
     private static final String NBT_FORCE = "force";
     private static final String NBT_ROLES = "roles";
     private static final String NBT_WEIGHT = "weight";
+    private static final String NBT_THEATRES = "theatres";
     private static final String NBT_MEMBERS = "members";
 
     /** How a managed faction treats players who belong to no managed faction. */
@@ -78,6 +79,8 @@ public final class BattleFactions extends SavedData
         /** The branch's share of a role several branches fill, against theirs. */
         @Setter
         private int weight = 1;
+        /** The biomes, and biome tags starting with #, the branch serves in; empty for anywhere. */
+        private final Set<String> theatres = new LinkedHashSet<>();
 
         Branch(String team, BotSettings.TeamForce force)
         {
@@ -204,6 +207,9 @@ public final class BattleFactions extends SavedData
                 branch.getRoles().forEach(role -> roles.add(StringTag.valueOf(role.name())));
                 branchTag.put(NBT_ROLES, roles);
                 branchTag.putInt(NBT_WEIGHT, branch.getWeight());
+                ListTag theatres = new ListTag();
+                branch.getTheatres().forEach(theatre -> theatres.add(StringTag.valueOf(theatre)));
+                branchTag.put(NBT_THEATRES, theatres);
                 branches.add(branchTag);
             }
             entry.put(NBT_BRANCHES, branches);
@@ -231,6 +237,7 @@ public final class BattleFactions extends SavedData
                 for (Tag role : branchTag.getList(NBT_ROLES, Tag.TAG_STRING))
                     roleNamed(role.getAsString()).ifPresent(branch.getRoles()::add);
                 branch.setWeight(Math.max(1, branchTag.getInt(NBT_WEIGHT)));
+                branchTag.getList(NBT_THEATRES, Tag.TAG_STRING).forEach(theatre -> branch.getTheatres().add(theatre.getAsString()));
                 managed.getBranches().add(branch);
             }
             data.factions.put(managed.getId(), managed);

@@ -22,8 +22,12 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.biome.Biome;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -46,6 +50,8 @@ public final class FactionCommands
     private static final String PLAYER = "player";
     private static final String KEY = "faction.";
     private static final String AUTO = "auto";
+    private static final String THEATRES = "theatres";
+    private static final String ANYWHERE = "any";
     private static final int DEFAULT_COLOUR = 0xFFFFFF;
     private static final SimpleCommandExceptionType NO_FACTION = new SimpleCommandExceptionType(text("unknown"));
     private static final SimpleCommandExceptionType NOT_MANAGED = new SimpleCommandExceptionType(text("not_managed"));
@@ -57,6 +63,7 @@ public final class FactionCommands
     private static final SimpleCommandExceptionType NO_ROUND = new SimpleCommandExceptionType(BotCommands.text("no_round"));
     private static final SimpleCommandExceptionType NO_FORCE = new SimpleCommandExceptionType(text("no_force"));
     private static final SimpleCommandExceptionType BAD_ROLE = new SimpleCommandExceptionType(text("bad_role"));
+    private static final SimpleCommandExceptionType BAD_THEATRE = new SimpleCommandExceptionType(text("bad_theatre"));
 
     static final SuggestionProvider<CommandSourceStack> MANAGED = (context, builder) -> SharedSuggestionProvider
         .suggest(BattleFactions.get(context.getSource().getServer()).all().stream().map(managed -> nameOf(managed.getId())).filter(Objects::nonNull).map(FactionCommands::quoted).toList(), builder);
@@ -68,6 +75,13 @@ public final class FactionCommands
         .suggest(managedOrEmpty(context).map(managed -> managed.getBranches().stream().map(BattleFactions.Branch::getTeam).toList()).orElse(List.of()), builder);
     private static final SuggestionProvider<CommandSourceStack> ROLE_NAMES = (context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(BotRole.values()).map(BotCommands::lower).toList(),
         builder);
+    private static final SuggestionProvider<CommandSourceStack> BIOMES = (context, builder) ->
+    {
+        Registry<Biome> biomes = context.getSource().getServer().registryAccess().registryOrThrow(Registries.BIOME);
+        List<String> names = new ArrayList<>(biomes.keySet().stream().map(ResourceLocation::toString).toList());
+        biomes.getTagNames().forEach(tag -> names.add("#" + tag.location()));
+        return SharedSuggestionProvider.suggest(names, builder);
+    };
     /** A branch of the faction the command names, whose force is kept with the managed factions. */
     private static final TeamForceCommands.Target BRANCH = new TeamForceCommands.Target()
     {
@@ -126,6 +140,9 @@ public final class FactionCommands
             .then(Commands.argument(ROLES, StringArgumentType.greedyString()).suggests(ROLE_NAMES).executes(FactionCommands::roles)));
         team.then(Commands.literal("weight").then(Commands.argument(VALUE, IntegerArgumentType.integer(1)).executes(context -> editBranch(context,
             branch -> branch.setWeight(IntegerArgumentType.getInteger(context, VALUE)), text("weight", branchTeam(context), IntegerArgumentType.getInteger(context, VALUE))))));
+        team.then(
+            Commands.literal("theatre").then(Commands.literal(ANYWHERE).executes(context -> editBranch(context, branch -> branch.getTheatres().clear(), text("theatre_any", branchTeam(context)))))
+                .then(Commands.argument(THEATRES, StringArgumentType.greedyString()).suggests(BIOMES).executes(FactionCommands::theatres)));
         team.then(Commands.literal("copyfrom").then(Commands.argument(ROUND, StringArgumentType.word()).suggests(BotCommands.ROUNDS).executes(FactionCommands::copyFrom)));
         faction.then(TeamForceCommands.build(team, BRANCH));
         return faction;
@@ -160,8 +177,9 @@ public final class FactionCommands
         {
             String roles = branch.getRoles().isEmpty() ? AUTO : String.join(" ", branch.getRoles().stream().map(BotCommands::lower).toList());
             BotSettings.TeamForce force = branch.getForce();
+            String theatres = branch.getTheatres().isEmpty() ? ANYWHERE : String.join(" ", branch.getTheatres());
             context.getSource().sendSuccess(() -> text("info_branch", branch.getTeam(), roles, branch.getWeight(), force.getCount(), orDash(BotSettingsText.formatSquads(force.getSquads())),
-                orDash(BotSettingsText.formatVehicles(force.getVehicles()))), false);
+                orDash(BotSettingsText.formatVehicles(force.getVehicles())), theatres), false);
         }
         return 1;
     }
@@ -313,6 +331,18 @@ public final class FactionCommands
         BattleFactions.get(context.getSource().getServer()).setDirty();
         context.getSource().sendSuccess(() -> text("branch_removed", team, nameOf(managed.getId())), true);
         return 1;
+    }
+
+    private static int theatres(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        Set<String> theatres = new LinkedHashSet<>();
+        for (String word : StringArgumentType.getString(context, THEATRES).trim().split("\\s+"))
+            theatres.add(Theatres.normalize(word).orElseThrow(BAD_THEATRE::create));
+        return editBranch(context, branch ->
+        {
+            branch.getTheatres().clear();
+            branch.getTheatres().addAll(theatres);
+        }, text("theatres_set", branchTeam(context), String.join(" ", theatres)));
     }
 
     private static int roles(CommandContext<CommandSourceStack> context) throws CommandSyntaxException

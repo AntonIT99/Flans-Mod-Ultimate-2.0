@@ -26,7 +26,9 @@ public final class BotSlot
         /** A soldier a transport of one of the team's vehicle entries brought to the front; it never comes back. */
         CARGO,
         /** A vehicle of one of the team's vehicle entries. */
-        VEHICLE
+        VEHICLE,
+        /** An NPC that joined the battle as it was, enlisted or moved over from another; it never comes back. */
+        VOLUNTEER
     }
 
     private final int id;

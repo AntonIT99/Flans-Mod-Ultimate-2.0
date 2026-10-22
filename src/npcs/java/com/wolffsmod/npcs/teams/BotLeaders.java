@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.ITeam;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -62,12 +61,11 @@ public final class BotLeaders
      */
     public static Component lead(ServerPlayer player, int squadId)
     {
-        Optional<BotBattle> current = TeamsBots.current();
-        Optional<ITeam> team = FlansTeams.getTeam(player);
-        if (current.isEmpty() || team.isEmpty() || !(player.level() instanceof ServerLevel level))
+        Optional<BotBattle> current = BotBattles.ofPlayer(player);
+        if (current.isEmpty() || !(player.level() instanceof ServerLevel level))
             return failure(NOT_PLAYING);
         BotBattle battle = current.get();
-        int side = battle.getGround().sideOf(team.get());
+        int side = battle.sideOfPlayer(player).orElse(-1);
         Optional<BotSquad> chosen = battle.getSquads().values().stream()
             .filter(squad -> !squad.isDisbanded() && squad.getRole() == BotRole.INFANTRY && squad.getCargo().isEmpty() && battle.sideOf(squad.getTeam()) == side)
             .filter(squad -> squadId == BotOrders.NEARBY_SQUADS || squad.getId() == squadId)
@@ -87,7 +85,7 @@ public final class BotLeaders
     /** Gives up the lead of the squad a player leads; the squad returns to its commander. */
     public static Component leave(ServerPlayer player)
     {
-        Optional<BotSquad> squad = TeamsBots.current().flatMap(battle -> ledBy(battle, player.getUUID()));
+        Optional<BotSquad> squad = BotBattles.ofPlayer(player).flatMap(battle -> ledBy(battle, player.getUUID()));
         if (squad.isEmpty())
             return failure("not_leading");
         release(squad.get());
@@ -97,7 +95,7 @@ public final class BotLeaders
     /** Places the rally point of the squad a player leads where the player stands, replacing the one it had. */
     public static Component rally(ServerPlayer player)
     {
-        Optional<BotBattle> current = TeamsBots.current();
+        Optional<BotBattle> current = BotBattles.ofPlayer(player);
         Optional<BotSquad> squad = current.flatMap(battle -> ledBy(battle, player.getUUID()));
         if (current.isEmpty() || squad.isEmpty())
             return failure("not_leading");
@@ -190,7 +188,7 @@ public final class BotLeaders
     private static boolean stillLeads(MinecraftServer server, BotBattle battle, BotSquad squad)
     {
         ServerPlayer leader = squad.getLeader() == null ? null : server.getPlayerList().getPlayer(squad.getLeader());
-        return leader != null && FlansTeams.getTeam(leader).map(team -> battle.getGround().sideOf(team) == battle.sideOf(squad.getTeam())).orElse(false);
+        return leader != null && battle.sideOfPlayer(leader).stream().anyMatch(side -> side == battle.sideOf(squad.getTeam()));
     }
 
     private static void follow(BotSquad squad, ServerPlayer leader)
@@ -220,7 +218,7 @@ public final class BotLeaders
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             if (player.isAlive() && !player.isSpectator() && player.level() == level && player.position().distanceTo(at) <= within
-                && FlansTeams.getTeam(player).map(team -> battle.getGround().sideOf(team) != side).orElse(false))
+                && battle.sideOfPlayer(player).stream().anyMatch(playerSide -> playerSide != side))
                 return true;
         }
         for (BotSlot slot : battle.getSlots().values())

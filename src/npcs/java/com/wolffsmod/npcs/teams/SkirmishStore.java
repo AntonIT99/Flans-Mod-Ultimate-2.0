@@ -7,6 +7,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -18,8 +19,11 @@ final class SkirmishStore extends SavedData
 {
     private static final String ID = "wolffsmodnpcs_skirmishes";
     private static final String NBT_SKIRMISHES = "skirmishes";
+    private static final String NBT_PRESETS = "presets";
 
     private final Map<UUID, Skirmish> skirmishes = new LinkedHashMap<>();
+    /** Skirmishes set up once and kept as drafts, to start alike again; by name, lower case. */
+    private final Map<String, Skirmish> presets = new TreeMap<>();
 
     public static SkirmishStore get(MinecraftServer server)
     {
@@ -49,6 +53,26 @@ final class SkirmishStore extends SavedData
         setDirty();
     }
 
+    public Map<String, Skirmish> presets()
+    {
+        return Collections.unmodifiableMap(presets);
+    }
+
+    /** Keeps a skirmish as a preset of a name, replacing one of the same name. */
+    public void savePreset(String name, Skirmish skirmish)
+    {
+        String key = name.toLowerCase(Locale.ROOT);
+        presets.put(key, skirmish.draftCopy(UUID.randomUUID(), key, skirmish.getDimension(), Vec3.ZERO));
+        setDirty();
+    }
+
+    public boolean removePreset(String name)
+    {
+        boolean removed = presets.remove(name.toLowerCase(Locale.ROOT)) != null;
+        setDirty();
+        return removed;
+    }
+
     @Override
     @NotNull
     public CompoundTag save(@NotNull CompoundTag tag)
@@ -56,6 +80,9 @@ final class SkirmishStore extends SavedData
         ListTag list = new ListTag();
         skirmishes.values().forEach(skirmish -> list.add(skirmish.save()));
         tag.put(NBT_SKIRMISHES, list);
+        ListTag presetList = new ListTag();
+        presets.values().forEach(preset -> presetList.add(preset.save()));
+        tag.put(NBT_PRESETS, presetList);
         return tag;
     }
 
@@ -64,6 +91,8 @@ final class SkirmishStore extends SavedData
         SkirmishStore store = new SkirmishStore();
         for (Tag element : tag.getList(NBT_SKIRMISHES, Tag.TAG_COMPOUND))
             Skirmish.load((CompoundTag) element).ifPresent(skirmish -> store.skirmishes.put(skirmish.getId(), skirmish));
+        for (Tag element : tag.getList(NBT_PRESETS, Tag.TAG_COMPOUND))
+            Skirmish.load((CompoundTag) element).ifPresent(preset -> store.presets.put(preset.getName(), preset));
         return store;
     }
 }
