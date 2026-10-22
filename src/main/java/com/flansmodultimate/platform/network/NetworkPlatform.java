@@ -37,6 +37,7 @@ public final class NetworkPlatform
         if (registered)
             return;
         registered = true;
+        ContentPackLogin.register();
 
         List<Entry> entries = new ArrayList<>();
         PacketHandler.clientPacketTypes().forEach(type -> entries.add(new Entry(type, NetworkDirection.PLAY_TO_CLIENT)));

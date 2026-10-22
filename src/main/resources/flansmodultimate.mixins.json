@@ -6,8 +6,10 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
       "ChunkMapEntityTrackingMixin",
+      "ConnectionMixin",
       "EntityMixin",
       "EntityTrackingDistanceMixin",
+      "HandshakeHandlerMixin",
       "LevelDriveableHullsMixin",
       "LivingEntityWaterWalkingMixin",
       "PlayerDriveableEdgeMixin",

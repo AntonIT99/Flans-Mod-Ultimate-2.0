@@ -65,6 +65,19 @@ and priority above packaged assets. The ordinary Minecraft resource-pack order
 cannot override this configured selection. Changing just the list does not
 invalidate content generation or trigger audio remeasurement.
 
+### Content-pack disconnect diagnostics
+
+Both versions send the server's definition fingerprints before registry synchronization,
+store the comparison on that connection, and replace registry-sync failure reasons with
+a bounded message showing at most three pack names. Full item lists and pack differences
+stay in the log; definition differences alone still do not reject login. The new manifest
+channels are required on both peers. Forge uses a no-response login payload ordered first
+by `HandshakeHandlerMixin`; NeoForge sends a configuration payload at the start of
+`SyncRegistries.run`, before its frozen-registry packets and ordinary configuration tasks.
+`ConnectionMixin` shortens registry failures on both branches. Forge additionally retains
+its safe replacement for the metadata-dependent mismatch screen; NeoForge can keep its
+ordinary disconnect screen.
+
 ### NPC ranged projectile integration on master
 
 Forge 1.20.1 now intercepts Custom NPCs' `EntityNPCInterface.performRangedAttack`
