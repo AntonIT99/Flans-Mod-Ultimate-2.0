@@ -160,6 +160,12 @@ final class SkirmishBattleground implements Battleground
         return sides.isEmpty() ? Optional.empty() : Optional.of(sides.stream().map(Skirmish.Side::anchor).reduce(Vec3.ZERO, Vec3::add).scale(1D / sides.size()));
     }
 
+    /** Forgets where the sides came in, after their zones moved; the spawn points are found again when next needed. */
+    void forgetZones()
+    {
+        spawns.clear();
+    }
+
     /** Points spread evenly over a side's zone, on the ground. */
     private List<Vec3> zone(int side)
     {

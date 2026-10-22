@@ -65,6 +65,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         BotMarkerDisplay.tick(server);
         // Skirmishes are taken back after a restart before the sweep could take their bots for leftovers.
         Skirmishes.tick(server);
+        Wars.tick(server);
         INSTANCE.tick(server);
     }
 
@@ -107,6 +108,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         BotFactions.tearDown();
         forgetDuties(server);
         Skirmishes.serverStopping(server);
+        Wars.serverStopping();
         BotMarkerDisplay.clear();
     }
 

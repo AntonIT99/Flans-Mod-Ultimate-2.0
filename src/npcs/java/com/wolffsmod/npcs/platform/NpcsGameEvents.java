@@ -11,6 +11,7 @@ import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
 import com.wolffsmod.npcs.teams.SkirmishCommands;
 import com.wolffsmod.npcs.teams.TeamsBots;
+import com.wolffsmod.npcs.teams.WarCommands;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -80,5 +81,6 @@ public final class NpcsGameEvents
         BotCommands.register(event.getDispatcher());
         FactionCommands.register(event.getDispatcher());
         SkirmishCommands.register(event.getDispatcher());
+        WarCommands.register(event.getDispatcher());
     }
 }

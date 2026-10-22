@@ -54,6 +54,7 @@ final class Skirmish
     private static final String NBT_SETTINGS = "settings";
     private static final String NBT_BATTLE = "battle";
     private static final String NBT_MARKERS = "markers";
+    private static final String NBT_WAR = "war";
 
     /** Where the sides' ground squads go. */
     public enum Intent
@@ -125,6 +126,9 @@ final class Skirmish
     private boolean protection = true;
     /** The map whose markers its bots use, such as route points; empty for none. */
     private String markerMap = "";
+    /** The war it is an engagement of, or null for a skirmish of its own. */
+    @Nullable
+    private UUID war;
     private State state = State.DRAFT;
     private long startedAt;
     private long endedAt;
@@ -226,6 +230,8 @@ final class Skirmish
         tag.putString(NBT_DIFFICULTY, difficulty.name());
         tag.putBoolean(NBT_PROTECTION, protection);
         tag.putString(NBT_MARKERS, markerMap);
+        if (war != null)
+            tag.putUUID(NBT_WAR, war);
         tag.putString(NBT_STATE, state.name());
         tag.putLong(NBT_STARTED, startedAt);
         tag.putLong(NBT_ENDED, endedAt);
@@ -268,6 +274,7 @@ final class Skirmish
         skirmish.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.DEFAULT);
         skirmish.protection = tag.getBoolean(NBT_PROTECTION);
         skirmish.markerMap = tag.getString(NBT_MARKERS);
+        skirmish.war = tag.hasUUID(NBT_WAR) ? tag.getUUID(NBT_WAR) : null;
         skirmish.state = BotSettings.parse(State.class, tag.getString(NBT_STATE), State.DRAFT);
         skirmish.startedAt = tag.getLong(NBT_STARTED);
         skirmish.endedAt = tag.getLong(NBT_ENDED);

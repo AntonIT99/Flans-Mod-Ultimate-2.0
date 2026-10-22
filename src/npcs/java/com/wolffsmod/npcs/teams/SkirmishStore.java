@@ -41,6 +41,11 @@ final class SkirmishStore extends SavedData
         return skirmishes.values().stream().filter(skirmish -> skirmish.getName().equalsIgnoreCase(name)).findFirst();
     }
 
+    public Optional<Skirmish> byId(UUID id)
+    {
+        return Optional.ofNullable(skirmishes.get(id));
+    }
+
     public void add(Skirmish skirmish)
     {
         skirmishes.put(skirmish.getId(), skirmish);
