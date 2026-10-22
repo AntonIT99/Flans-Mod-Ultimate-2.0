@@ -19,6 +19,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.UUID;
 
 /** Read-only AA and driveable property inspection for addons, without creating a live vehicle. */
 @ApiStatus.Experimental
@@ -163,6 +164,21 @@ public final class FlansEntityTypes
     public static boolean isWreck(Entity entity)
     {
         return entity instanceof Driveable driveable && driveable.isWreck();
+    }
+
+    /**
+     * @return the player who owns a driveable: the one who placed it, or who first locked it with a key; empty for one
+     *         nobody owns and for any other entity. Server side.
+     */
+    public static Optional<UUID> getOwner(Entity entity)
+    {
+        return entity instanceof Driveable driveable ? Optional.ofNullable(driveable.getOwnerId()) : Optional.empty();
+    }
+
+    /** @return whether a driveable is locked with a key, which only its owner and the key's holder may then use; server side */
+    public static boolean isLocked(Entity entity)
+    {
+        return entity instanceof Driveable driveable && driveable.isLocked();
     }
 
     /** @return which way a vehicle, plane or mecha points now, or empty for any other entity; server side */

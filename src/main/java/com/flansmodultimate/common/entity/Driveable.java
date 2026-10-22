@@ -367,6 +367,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected boolean destroyed;
     protected boolean suppressDrops;
     protected boolean isShowedPosition;
+    @Getter
     protected boolean locked;
     protected ItemStack sourceStack = ItemStack.EMPTY;
     protected final EnumSet<EnumDriveablePart> destroyedParts = EnumSet.noneOf(EnumDriveablePart.class);

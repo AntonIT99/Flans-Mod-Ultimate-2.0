@@ -7,6 +7,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Claim;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -187,13 +188,56 @@ public final class NpcDrivers
 
     /**
      * Whether the NPC may take the seat: the free driver seat of a driveable NPCs drive, that is neither a wreck nor about
-     * to be lost, that it did not give up on and that no enemy of it rides.
+     * to be lost, that its choice of driveables allows, that it did not give up on and that no enemy of it rides.
      */
     static boolean boardable(EntityNPCInterface npc, ISeat seat, long now)
     {
         Entity driveable = seat.getDriveable();
         return seat.isDriverSeat() && seat.getRiddenByEntity() == null && driveable != null && driveable.isAlive() && !FlansEntityTypes.isWreck(driveable) && drivable(seat) && !failing(driveable)
-            && !NpcDriver.of(npc).refuses(driveable.getUUID(), now) && noEnemyAboard(npc, driveable);
+            && mayTake(npc, driveable) && !NpcDriver.of(npc).refuses(driveable.getUUID(), now) && noEnemyAboard(npc, driveable);
+    }
+
+    /** Whether the NPC may take the driveable by who owns it and whether it is locked, as its choice of driveables says. */
+    private static boolean mayTake(EntityNPCInterface npc, Entity driveable)
+    {
+        Optional<UUID> owner = FlansEntityTypes.getOwner(driveable);
+        return mayTake(NpcTuning.of(npc).claim(), FlansEntityTypes.isLocked(driveable), owner.isPresent(), owner.map(id -> alliedOwner(npc, id)).orElse(false));
+    }
+
+    /**
+     * The rule alone: a driveable locked with a key is never taken; otherwise it is taken as the choice says, from what is
+     * known of its owner.
+     *
+     * @param owned
+     *            whether a player owns it
+     * @param ownerAllied
+     *            whether its owner is on the NPC's side
+     */
+    static boolean mayTake(Claim claim, boolean locked, boolean owned, boolean ownerAllied)
+    {
+        if (locked)
+            return false;
+        return switch (claim)
+        {
+            case ANY -> true;
+            case UNOWNED -> !owned;
+            case ALLIED -> !owned || ownerAllied;
+        };
+    }
+
+    /**
+     * Whether the player who owns a driveable is on the NPC's side: the NPC follows them, they play on its Teams team, or
+     * its faction is friendly to them. An owner who is not about is not.
+     */
+    private static boolean alliedOwner(EntityNPCInterface npc, UUID owner)
+    {
+        Player player = npc.level().getPlayerByUUID(owner);
+        if (player == null)
+            return false;
+        if (npc.getOwner() == player)
+            return true;
+        Optional<ITeam> team = FlansTeams.getTeam(player);
+        return team.isPresent() && team.equals(FlansTeams.getTeam(npc)) || npc.faction.isFriendlyToPlayer(player);
     }
 
     /** Whether the NPC is close enough to the seat's driveable to get in. */

@@ -105,7 +105,9 @@ public final class NpcTuning
         /** Blocks around it in which an NPC fighting from cover looks for some. */
         COVER_RADIUS(8, 2, 16),
         /** Blocks around it in which an NPC that drives Flan's driveables looks for one to board. */
-        BOARD_RANGE(16, 2, 64);
+        BOARD_RANGE(16, 2, 64),
+        /** Index into {@link Claim}. */
+        TAKE_DRIVEABLES(0, 0, Claim.values().length - 1);
 
         private final int fallback;
         private final int minimum;
@@ -137,6 +139,17 @@ public final class NpcTuning
         {
             return Math.max(minimum, Math.min(maximum, value));
         }
+    }
+
+    /** Which free driveables an NPC that drives them takes; never one locked with a key. */
+    public enum Claim
+    {
+        /** One no player owns, or one whose owner is on the NPC's side. */
+        ALLIED,
+        /** Any no enemy of the NPC rides. */
+        ANY,
+        /** Only one no player owns. */
+        UNOWNED
     }
 
     /** Where an NPC may travel. */
@@ -324,6 +337,11 @@ public final class NpcTuning
     public Flight flight()
     {
         return Flight.values()[get(Value.FLIGHT_TYPE)];
+    }
+
+    public Claim claim()
+    {
+        return Claim.values()[get(Value.TAKE_DRIVEABLES)];
     }
 
     public Tactic tactic()
