@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.guns;
 
+import com.flansmodultimate.api.ArmPoseRule;
 import com.flansmodultimate.api.IEquipmentPolicy;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
@@ -67,6 +68,8 @@ public final class GunArmPoses
     public enum Arm
     {
         NONE,
+        /** Explicit neutral rotations, ignoring native use and attack poses. */
+        RELAXED,
         /** Only this arm is raised towards where the head looks. */
         ONE_ARM,
         /** The bow pose: this arm is raised and the free other arm reaches across to support it. */
@@ -144,26 +147,44 @@ public final class GunArmPoses
     /** The arm poses of an entity, read on the side the entity lives on. */
     public static Result resolve(LivingEntity entity)
     {
-        if (entity instanceof IEquipmentPolicy policy && !policy.flansWeaponAnimations())
-            return Result.NONE;
+        boolean enabled = !(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponAnimations();
         ItemStack mainStack = entity.getMainHandItem();
         ItemStack offStack = entity.getOffhandItem();
         HandItem main = classify(mainStack);
         HandItem off = classify(offStack);
-        if (!isGunOrShield(main) && !isGunOrShield(off))
-            return Result.NONE;
-
+        InteractionHand throwingHand = chargingThrowHand(entity);
         boolean aiming = isAiming(entity);
         Result held = resolve(main, off, isDynamic(entity), aiming || isFiring(entity, InteractionHand.MAIN_HAND) || forcesAimPose(main, mainStack),
             aiming || isFiring(entity, InteractionHand.OFF_HAND) || forcesAimPose(off, offStack));
-        InteractionHand throwingHand = chargingThrowHand(entity);
-        return throwingHand == null ? held : charging(held, throwingHand);
+        Result base = throwingHand == null ? held : charging(held, throwingHand);
+        return new Result(override(entity, InteractionHand.MAIN_HAND, main, off, enabled ? base.mainHand() : Arm.NONE),
+            override(entity, InteractionHand.OFF_HAND, off, main, enabled ? base.offHand() : Arm.NONE));
+    }
+
+    private static Arm override(LivingEntity entity, InteractionHand hand, HandItem item, HandItem other, Arm normal)
+    {
+        // Presets and the animation switch cannot move shields; only explicit custom axes, applied last, may do that.
+        if (item == HandItem.SHIELD)
+            return Arm.ONE_ARM;
+        ArmPoseRule rule = HeldItemPresentation.rule(entity, hand);
+        return switch (rule.pose())
+        {
+            case DEFAULT, CUSTOM -> normal;
+            case RELAXED -> Arm.RELAXED;
+            case ONE_HANDED -> Arm.ONE_ARM;
+            case TWO_HANDED -> other == HandItem.EMPTY ? Arm.BOW : Arm.ONE_ARM;
+            case THROW -> Arm.THROW;
+        };
     }
 
     /** The hand in which the entity charges a throw, or {@code null} when it charges none. */
     @Nullable
     public static InteractionHand chargingThrowHand(LivingEntity entity)
     {
+        if (entity instanceof IEquipmentPolicy policy)
+            for (InteractionHand hand : InteractionHand.values())
+                if (policy.flansmodultimateChargingThrow(hand))
+                    return hand;
         if (!entity.isUsingItem())
             return null;
 
@@ -187,11 +208,6 @@ public final class GunArmPoses
         return HandItem.OTHER;
     }
 
-    private static boolean isGunOrShield(HandItem item)
-    {
-        return item == HandItem.GUN || item == HandItem.SHIELD;
-    }
-
     /** Main-hand attacks leave a player's held off-hand shield at its pre-attack pose, on both sides. */
     public static boolean keepsOffhandShieldRaised(LivingEntity entity)
     {
@@ -210,6 +226,13 @@ public final class GunArmPoses
                 case DYNAMIC -> true;
             };
         }
+        if (entity instanceof IEquipmentPolicy policy && policy.flansmodultimateUsePlayerAimRules())
+            return switch (ModCommonConfig.playerAimPose())
+            {
+                case DYNAMIC -> true;
+                case ENFORCED -> false;
+                case FREE_CHOICE -> ModCommonConfig.entityAimPose() == EnumEntityAimPose.DYNAMIC;
+            };
         return ModCommonConfig.entityAimPose() == EnumEntityAimPose.DYNAMIC;
     }
 
@@ -225,11 +248,16 @@ public final class GunArmPoses
 
     private static boolean isFiring(LivingEntity entity, InteractionHand hand)
     {
+        return isFiring(entity, hand, HeldItemPresentation.get(entity, hand).poses().shotHoldTicks());
+    }
+
+    public static boolean isFiring(LivingEntity entity, InteractionHand hand, int holdTicks)
+    {
         if (entity instanceof Player player && PlayerData.getInstance(player).isShooting(hand))
             return true;
 
         long[] lastShots = shots(entity).get(entity);
-        return lastShots != null && entity.level().getGameTime() - lastShots[hand.ordinal()] < SHOT_HOLD_TICKS;
+        return lastShots != null && entity.level().getGameTime() - lastShots[hand.ordinal()] < holdTicks;
     }
 
     private static Map<LivingEntity, long[]> shots(LivingEntity entity)

@@ -1,0 +1,18 @@
+// Identity
+Name Engineer (Splinter)
+ShortName OfficialWW2_GermanInfantrySplinterEngineer
+
+// Armour
+Hat GermanEngineerHelmet
+Chest GermanEngineerChestSplinter
+Legs GermanUniformPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem mp40
+AddItem luger
+AddItem stielhandgranate 1
+AddItem ww2Mine 2
+AddItem ww2Knife
+AddItem mp40Ammo 4
+AddItem lugerAmmo 2

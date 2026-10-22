@@ -1,0 +1,18 @@
+// Identity
+Name Support (Pea Dot)
+ShortName OfficialWW2_GermanInfantryPeaSupport
+
+// Armour
+Hat GermanSupportHelmet
+Chest GermanSupportChestPea
+Legs GermanUniformPantsPea
+Shoes GermanUniformBoots
+
+// Items
+AddItem mg42
+AddItem panzerschreck
+AddItem luger
+AddItem ww2Knife
+AddItem mg42Ammo250
+AddItem panzerschreckAmmo 2
+AddItem lugerAmmo 3

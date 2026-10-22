@@ -22,5 +22,8 @@ AddClass W44_USAirborneEngineer
 AddClass W44_USAirborneAntiTank
 AddClass W44_USAirborneScout
 AddClass W44_USAirborneSquadLeader
-AddClass W44_USAirborneTankCrew
-AddClass W44_USAirbornePilot
+
+// Specialist weapon choices
+AddClass W44_USAirborneMachineGunnerM1919A6
+AddClass W44_USAirborneAssaultGreaseGun
+AddClass W44_USAirborneFieldMedic

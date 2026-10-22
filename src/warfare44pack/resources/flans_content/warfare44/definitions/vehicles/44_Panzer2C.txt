@@ -23,6 +23,7 @@ FuelTankSize 2000
 
 // Paintjobs
 advpaintjob Beige 44_Panzer2C_Beige 44_Panzer2C_Beige yellow 3
+advpaintjob Alternate 44_Panzer2C 44_panzer2c_2 gray 8
 AddDye 3 gray
 
 // Real-world specifications

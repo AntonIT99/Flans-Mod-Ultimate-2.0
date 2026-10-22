@@ -9,6 +9,7 @@ import net.neoforged.neoforge.common.util.TriState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.RenderType;
@@ -20,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -47,6 +49,20 @@ public final class ClientPlatform
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         screen.renderBackground(graphics, mouseX, mouseY, partialTick);
+    }
+
+    /**
+     * Draws an entity in a screen with its feet at {@code x}, {@code y}, turned towards the look offsets as 1.20.1 does:
+     * each offset is the distance from the entity to the mouse, and 40 pixels turn it by 45 degrees. Minecraft 1.21 centres
+     * the entity in a clipping box instead, so the box is placed to keep the feet where they were.
+     */
+    public static void renderEntityInInventory(GuiGraphics graphics, int x, int y, int scale, float lookX, float lookY, LivingEntity entity)
+    {
+        float height = entity.getBbHeight() * scale;
+        int margin = Math.max(1, scale / 2);
+        int top = Math.round(y - height) - margin;
+        int bottom = top + Math.round(height) + 2 * margin;
+        InventoryScreen.renderEntityInInventoryFollowsAngle(graphics, x - scale, top, x + scale, bottom, scale, 0F, (float) Math.atan(lookX / 40F), (float) Math.atan(lookY / 40F), entity);
     }
 
     public static float partialTick(RenderLevelStageEvent event)

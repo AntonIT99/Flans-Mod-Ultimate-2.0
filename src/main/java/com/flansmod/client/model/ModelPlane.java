@@ -80,8 +80,9 @@ public class ModelPlane extends ModelDriveable
     public void render(DriveableVisual driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
         float alpha, float scale, EnumRenderPass renderPass)
     {
-        if (driveable.isPartIntact(EnumDriveablePart.CORE))
-            super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
+            super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.CORE), green * tint(driveable, EnumDriveablePart.CORE),
+                blue * tint(driveable, EnumDriveablePart.CORE), alpha, scale, renderPass);
 
         renderIfIntact(driveable, EnumDriveablePart.NOSE, noseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderIfIntact(driveable, EnumDriveablePart.BAY, bayModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -90,8 +91,9 @@ public class ModelPlane extends ModelDriveable
         renderIfIntact(driveable, EnumDriveablePart.RIGHT_WING, rightWingModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderIfIntact(driveable, EnumDriveablePart.TOP_WING, topWingModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable.isPartIntact(EnumDriveablePart.TAIL))
-            renderPart(state.doorProgress() >= 0.5F ? tailDoorOpenModel : tailDoorCloseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.TAIL))
+            renderPart(state.doorProgress() >= 0.5F ? tailDoorOpenModel : tailDoorCloseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.TAIL),
+                green * tint(driveable, EnumDriveablePart.TAIL), blue * tint(driveable, EnumDriveablePart.TAIL), alpha, scale, renderPass);
 
         boolean gearVisible = state.gearProgress() > 0.02F;
         if (gearVisible)
@@ -104,23 +106,27 @@ public class ModelPlane extends ModelDriveable
         }
 
         boolean alternateWingPosition = state.modeProgress() >= 0.5F;
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING))
-            renderPart(alternateWingPosition ? leftWingPos1Model : leftWingPos2Model, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_WING))
-            renderPart(alternateWingPosition ? rightWingPos1Model : rightWingPos2Model, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.LEFT_WING))
+            renderPart(alternateWingPosition ? leftWingPos1Model : leftWingPos2Model, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.LEFT_WING),
+                green * tint(driveable, EnumDriveablePart.LEFT_WING), blue * tint(driveable, EnumDriveablePart.LEFT_WING), alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.RIGHT_WING))
+            renderPart(alternateWingPosition ? rightWingPos1Model : rightWingPos2Model, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.RIGHT_WING),
+                green * tint(driveable, EnumDriveablePart.RIGHT_WING), blue * tint(driveable, EnumDriveablePart.RIGHT_WING), alpha, scale, renderPass);
 
         renderControlSurfaces(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPropellers(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderRotors(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderAnimatedParts(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable.isPartIntact(EnumDriveablePart.CORE))
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
             renderPart(driveable instanceof PlaneVisual plane && plane.getPlaneMode() == EnumPlaneMode.HELI ? helicopterModeParts : planeModeParts, poseStack, vertexConsumer, packedLight,
-                packedOverlay, red, green, blue, alpha, scale, renderPass);
+                packedOverlay, red * tint(driveable, EnumDriveablePart.CORE), green * tint(driveable, EnumDriveablePart.CORE), blue * tint(driveable, EnumDriveablePart.CORE), alpha, scale,
+                renderPass);
 
-        renderWithRotation(hudModel, RotationAxis.X, -state.roll() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
+            renderWithRotation(hudModel, RotationAxis.X, -state.roll() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable instanceof PlaneVisual plane && plane.getValkyrieAnimation() != null && valkyrie.length > 0)
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE) && driveable instanceof PlaneVisual plane && plane.getValkyrieAnimation() != null && valkyrie.length > 0)
             renderValkyriePart(plane, state, plane.getValkyrieAnimation().getCore(), null, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.PLANE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
@@ -128,8 +134,9 @@ public class ModelPlane extends ModelDriveable
     private void renderIfIntact(DriveableVisual driveable, EnumDriveablePart part, ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
         float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        if (driveable.isPartIntact(part))
-            renderPart(models, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(part))
+            renderPart(models, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, part), green * tint(driveable, part), blue * tint(driveable, part), alpha, scale,
+                renderPass);
     }
 
     @Override
@@ -193,15 +200,15 @@ public class ModelPlane extends ModelDriveable
             : Mth.clamp(state.steeringAngle(), -30F, 30F) * Mth.DEG_TO_RAD;
         float leftPitch = driveable instanceof PlaneVisual plane ? Mth.lerp(state.partialTick(), plane.getPrevFlapPitchLeft(), plane.getFlapPitchLeft()) * Mth.DEG_TO_RAD : 0F;
         float rightPitch = driveable instanceof PlaneVisual plane ? Mth.lerp(state.partialTick(), plane.getPrevFlapPitchRight(), plane.getFlapPitchRight()) * Mth.DEG_TO_RAD : 0F;
-        if (driveable.isPartIntact(EnumDriveablePart.TAIL))
+        if (driveable.isPartDrawn(EnumDriveablePart.TAIL))
         {
             renderWithRotation(yawFlapModel, RotationAxis.Y, yawControl, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             renderWithRotation(pitchFlapLeftModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             renderWithRotation(pitchFlapRightModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING))
+        if (driveable.isPartDrawn(EnumDriveablePart.LEFT_WING))
             renderWithRotation(pitchFlapLeftWingModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_WING))
+        if (driveable.isPartDrawn(EnumDriveablePart.RIGHT_WING))
             renderWithRotation(pitchFlapRightWingModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
@@ -217,7 +224,7 @@ public class ModelPlane extends ModelDriveable
             ModelRendererTurbo[] propeller = propellerModels[propellerIndex];
             if (propeller == null)
                 continue;
-            if (type != null && propellerIndex < type.getPropellers().size() && !driveable.isPartIntact(type.getPropellers().get(propellerIndex).getPlanePart()))
+            if (type != null && propellerIndex < type.getPropellers().size() && !driveable.isPartDrawn(type.getPropellers().get(propellerIndex).getPlanePart()))
                 continue;
             int count = Math.max(1, propeller.length);
             for (int blade = 0; blade < propeller.length; blade++)
@@ -236,9 +243,9 @@ public class ModelPlane extends ModelDriveable
         // angle makes fractional-speed rotors jump once every base revolution.
         for (int i = 0; i < heliMainRotorModels.length; i++)
         {
-            if (!driveable.isPartIntact(EnumDriveablePart.BLADES))
+            if (!driveable.isPartDrawn(EnumDriveablePart.BLADES))
                 continue;
-            if (type != null && i < type.getHeliPropellers().size() && !driveable.isPartIntact(type.getHeliPropellers().get(i).getPlanePart()))
+            if (type != null && i < type.getHeliPropellers().size() && !driveable.isPartDrawn(type.getHeliPropellers().get(i).getPlanePart()))
                 continue;
             float speed = heliRotorSpeeds != null && i < heliRotorSpeeds.length ? heliRotorSpeeds[i] : 1F;
             float rotorAngle = driveable instanceof PlaneVisual plane ? plane.getRotorRenderAngle(state.partialTick(), speed) : 0F;
@@ -247,9 +254,9 @@ public class ModelPlane extends ModelDriveable
         }
         for (int i = 0; i < heliTailRotorModels.length; i++)
         {
-            if (!driveable.isPartIntact(EnumDriveablePart.TAIL))
+            if (!driveable.isPartDrawn(EnumDriveablePart.TAIL))
                 continue;
-            if (type != null && i < type.getHeliTailPropellers().size() && !driveable.isPartIntact(type.getHeliTailPropellers().get(i).getPlanePart()))
+            if (type != null && i < type.getHeliTailPropellers().size() && !driveable.isPartDrawn(type.getHeliTailPropellers().get(i).getPlanePart()))
                 continue;
             float rotorAngle = driveable instanceof PlaneVisual plane ? plane.getRotorRenderAngle(state.partialTick(), 1F) : 0F;
             renderAround(heliTailRotorModels[i], vectorAt(heliTailRotorOrigins, i), Axis.ZP, rotorAngle, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
@@ -263,26 +270,26 @@ public class ModelPlane extends ModelDriveable
         if (!(driveable.getConfigType() instanceof PlaneType planeType))
             return;
 
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING))
+        if (driveable.isPartDrawn(EnumDriveablePart.LEFT_WING))
             renderConfigured(leftAnimWingModel, leftWingAttach, state.wingTransform(), state.partialTick(), false, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
                 scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_WING))
+        if (driveable.isPartDrawn(EnumDriveablePart.RIGHT_WING))
             renderConfigured(rightAnimWingModel, rightWingAttach, state.wingTransform(), state.partialTick(), true, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
                 alpha, scale, renderPass);
 
-        if (driveable.isPartIntact(EnumDriveablePart.CORE_WHEEL))
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE_WHEEL))
             renderConfigured(bodyAnimWheelModel, bodyWheelAttach, state.bodyWheelTransform(), state.partialTick(), false, false, poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
                 blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.TAIL_WHEEL))
+        if (driveable.isPartDrawn(EnumDriveablePart.TAIL_WHEEL))
             renderConfigured(tailAnimWheelModel, tailWheelAttach, state.tailWheelTransform(), state.partialTick(), false, false, poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
                 blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING_WHEEL))
+        if (driveable.isPartDrawn(EnumDriveablePart.LEFT_WING_WHEEL))
             renderConfigured(leftAnimWingWheelModel, leftWingWheelAttach, state.wingWheelTransform(), state.partialTick(), false, true, poseStack, vertexConsumer, packedLight, packedOverlay, red,
                 green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_WING_WHEEL))
+        if (driveable.isPartDrawn(EnumDriveablePart.RIGHT_WING_WHEEL))
             renderConfigured(rightAnimWingWheelModel, rightWingWheelAttach, state.wingWheelTransform(), state.partialTick(), true, true, poseStack, vertexConsumer, packedLight, packedOverlay, red,
                 green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.CORE))
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
             renderConfigured(doorAnimModel, doorAttach, state.doorTransform(), state.partialTick(), false, false, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
                 renderPass);
     }

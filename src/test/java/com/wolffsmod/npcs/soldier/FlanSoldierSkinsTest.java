@@ -17,6 +17,38 @@ import static org.mockito.Mockito.*;
 class FlanSoldierSkinsTest
 {
     @Test
+    void unassignedServerClassAppearsAndResolvesWithoutATeam()
+    {
+        IPlayerClass playerClass = mock(IPlayerClass.class);
+        IContentPack pack = mock(IContentPack.class);
+        when(pack.getName()).thenReturn("Server editor");
+        when(pack.getPath()).thenReturn(Path.of("server-editor"));
+        when(playerClass.getContentPack()).thenReturn(pack);
+        when(playerClass.getName()).thenReturn("Custom Rifleman");
+        when(playerClass.getShortName()).thenReturn("custom:rifleman");
+        when(playerClass.getSkinOverrideVariants()).thenReturn(List.of());
+        try (MockedStatic<FlansModApi> api = mockStatic(FlansModApi.class))
+        {
+            api.when(FlansModApi::getTeams).thenReturn(List.of());
+            api.when(FlansModApi::getPlayerClasses).thenReturn(List.of(playerClass));
+            api.when(() -> FlansModApi.getPlayerClass("custom:rifleman")).thenReturn(Optional.of(playerClass));
+            FlanSoldierBrowser browser = new FlanSoldierBrowser();
+            assertEquals(List.of("Server editor"), browser.labels());
+            assertTrue(browser.open(0).isEmpty());
+            assertEquals(1, browser.labels().size());
+            assertTrue(browser.open(0).isEmpty());
+            assertEquals(List.of("Custom Rifleman"), browser.labels());
+            FlanSoldierSelection selection = browser.open(0).orElseThrow();
+            assertNull(selection.team());
+            CompoundTag extra = new CompoundTag();
+            selection.write(extra);
+            assertEquals(selection, FlanSoldierSelection.read(extra).orElseThrow());
+            assertTrue(browser.back());
+            assertEquals(1, browser.labels().size());
+        }
+    }
+
+    @Test
     void multiSkinClassesOpenAVariantFolderAndBackReturnsToTheClasses()
     {
         IPlayerClass playerClass = mock(IPlayerClass.class);

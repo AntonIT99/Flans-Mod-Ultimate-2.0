@@ -3,15 +3,15 @@ Name Flamethrower
 ShortName flamethrowerww2
 
 // Item and rendering
-Icon Flamethrower
+Icon flamethrowerww2
 Colour 255 255 255
 DeployedModel None
 Model ww2.Flamethrower
-Texture Flamethrower
+Texture Flamethrower_3
 ModelScale 1.0
 
 // Ammunition
-Ammo flamethrowerAmmo
+Ammo flamethrowerww2Ammo
 ReloadTime 50
 
 // Operation

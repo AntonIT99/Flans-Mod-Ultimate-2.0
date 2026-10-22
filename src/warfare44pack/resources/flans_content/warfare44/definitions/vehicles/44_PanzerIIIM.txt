@@ -25,6 +25,8 @@ FuelTankSize 2000
 // Paintjobs
 advpaintjob Beige 44_PanzerIIIM_Beige 44_PanzerIIIM_Beige yellow 3
 advpaintjob Winter 44_PanzerIIIM_Winter 44_PanzerIIIM_Winter white 3
+advpaintjob Alternate 44_PanzerIIIM 44_panzeriii_2 gray 8
+advpaintjob Dunkelgelb 44_PanzerIIIM 44_panzeriiidunklegelb yellow 8
 AddDye 3 gray
 
 // Real-world specifications

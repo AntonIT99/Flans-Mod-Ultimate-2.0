@@ -9,6 +9,9 @@ FlashModel DefaultFlash
 Texture Cobra
 AddDye 6 green
 
+// Paintjobs
+AdvPaintJob Original Cobra cobra_original green 8
+
 // Recipe
 AddRecipeParts core 1 advancedMetalCockpit
 AddRecipeParts skids 2 helicopterSkid

@@ -21,7 +21,6 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 @EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -49,8 +48,8 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(ApocalypseContent.survivor.get(), SurvivorRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.worldgenSpawnMarker.get(), NoopRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.teleporter.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(ApocalypseContent.BLOCK_POWER_CUBE_ITEM.get()), 2.0F));
-        event.registerEntityRenderer(ApocalypseContent.nukeDrop.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(ApocalypseContent.SULPHURIC_ACID_BUCKET.get()), 1.5F));
-        event.registerEntityRenderer(ApocalypseContent.skullDrone.get(), ctx -> new ItemEntityRenderer<>(ctx, () -> new ItemStack(Items.SKELETON_SKULL), 1.8F));
+        event.registerEntityRenderer(ApocalypseContent.nukeDrop.get(), NukeDropRenderer::new);
+        event.registerEntityRenderer(ApocalypseContent.skullDrone.get(), SkullDroneRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.skullBoss.get(), SkullBossRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.inventoryHolder.get(), InventoryHolderRenderer::new);
         event.registerEntityRenderer(ApocalypseContent.flyByPlane.get(), DriveableRenderer::new);

@@ -9,6 +9,9 @@ Icon Icon_WW2_Vehicle_PanzerhaubitzeHummel_1A
 Texture Skin_WW2_Vehicle_PanzerhaubitzeHummel_1A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Camo Icon_WW2_Vehicle_PanzerhaubitzeHummel_1A skin_ww2_vehicle_panzerhaubitzehummel_1a_camo green 8
+
 // Recipe and Inventory
 FuelTankSize 2000
 CargoSlots 0

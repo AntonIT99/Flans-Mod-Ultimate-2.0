@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman (SKS)
+ShortName W44_SovietArmyRiflemanSKS
+Description Rifleman (SKS) with compatible ammunition and the national infantry kit.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_SKS
+AddItem 44_SKSAmmo 6
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

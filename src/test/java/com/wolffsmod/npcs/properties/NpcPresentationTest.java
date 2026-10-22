@@ -1,9 +1,10 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EngineSound;
+import com.flansmodultimate.api.*;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
 
 import java.util.Optional;
 
@@ -11,6 +12,25 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NpcPresentationTest
 {
+    @Test
+    void handSettingsSurviveStatsReloadAndModelChangesIndependently()
+    {
+        NpcPresentation settings = new NpcPresentation();
+        HeldItemSettings hand = new HeldItemSettings(new HeldItemTransform(4, -2, 0, 10, 20, 30),
+            WeaponPoseRules.DEFAULT.with(WeaponPoseRules.State.IDLE, new ArmPoseRule(ArmPoseRule.Pose.CUSTOM, 3, -90, 45, 0)));
+        settings.hand(InteractionHand.OFF_HAND, hand);
+        settings.selectModel("wolffsmodnpcs:soldier", false);
+        CompoundTag saved = new CompoundTag();
+        settings.save(saved);
+        NpcPresentation loaded = new NpcPresentation();
+        loaded.load(saved);
+        loaded.selectModel("wolffsmodnpcs:mecha", true);
+        assertEquals(hand, loaded.hand(InteractionHand.OFF_HAND));
+        assertEquals(HeldItemSettings.DEFAULT, loaded.hand(InteractionHand.MAIN_HAND));
+        loaded.load(new CompoundTag());
+        assertEquals(HeldItemSettings.DEFAULT, loaded.hand(InteractionHand.OFF_HAND));
+    }
+
     @Test
     void flanSelectionResetsVisualsButExplicitChoicesSurviveTicksAndReloads()
     {

@@ -17,7 +17,8 @@ class PacketPlayerClassSkinsTest
     @Test
     void playersOfTheSameClassKeepTheirIndividualSkinChoicesAcrossTheWire()
     {
-        Map<UUID, PlayerClassSkin> choices = Map.of(UUID.randomUUID(), new PlayerClassSkin("rifleman", 0), UUID.randomUUID(), new PlayerClassSkin("rifleman", 2));
+        Map<UUID, PlayerClassSkin> choices = Map.of(UUID.randomUUID(), new PlayerClassSkin("rifleman", 0, "flansmod:textures/skins/first.png"), UUID.randomUUID(),
+            new PlayerClassSkin("rifleman", 2, "flansmod:textures/skins/old_life.png"));
         assertEquals(choices, roundTrip(choices));
         assertEquals(Map.of(), roundTrip(Map.of()));
     }
@@ -37,7 +38,7 @@ class PacketPlayerClassSkinsTest
             int count = output.readVarInt();
             Map<UUID, PlayerClassSkin> result = new HashMap<>();
             for (int i = 0; i < count; i++)
-                result.put(output.readUUID(), new PlayerClassSkin(output.readUtf(), output.readVarInt()));
+                result.put(output.readUUID(), new PlayerClassSkin(output.readUtf(), output.readVarInt(), output.readUtf(256)));
             assertEquals(0, buffer.readableBytes());
             assertEquals(0, output.readableBytes());
             return result;

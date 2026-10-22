@@ -12,9 +12,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NpcWeaponOptionsTest
 {
-    /** Display states of the model, a frozen turret, extra chunk ticking, running out of ammunition and drawn hitboxes are never what an untouched NPC wants. */
+    /** Display states of the model, a frozen turret, extra chunk ticking, running out of ammunition, drawn hitboxes and taking driveables are never what an untouched NPC wants. */
     private static final Set<Feature> STARTS_DISABLED = EnumSet.of(Feature.SECONDARY_BANK, Feature.INVULNERABLE, Feature.TURRET_LOCKED, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED,
-        Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.SOLID_HITBOXES);
+        Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.MELEE_DUAL_WIELD, Feature.DRIVE_DRIVEABLES);
+
+    @Test
+    void physicalReturnChoiceSurvivesSaveAndReload()
+    {
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.set(Feature.RETURN_HOME_TELEPORT, false);
+        CompoundTag tag = new CompoundTag();
+        options.save(tag);
+        NpcWeaponOptions restored = new NpcWeaponOptions();
+        restored.load(tag);
+        assertFalse(restored.enabled(Feature.RETURN_HOME_TELEPORT));
+    }
 
     @Test
     void oldNpcSavesEnableTheUsefulFeaturesAndSelectThePrimaryBank()
@@ -31,6 +43,22 @@ class NpcWeaponOptionsTest
     }
 
     @Test
+    void theModelWeaponSwitchKeepsWhatWasSavedUnderItsEarlierName()
+    {
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("WEAPON_STATS", false);
+        CompoundTag npc = new CompoundTag();
+        npc.put(NpcWeaponOptions.NBT_KEY, tag);
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.load(npc);
+        assertFalse(options.enabled(Feature.MODEL_WEAPON_STATS));
+        // Once saved under the current name, that name is what counts.
+        tag.putBoolean("MODEL_WEAPON_STATS", true);
+        options.load(npc);
+        assertTrue(options.enabled(Feature.MODEL_WEAPON_STATS));
+    }
+
+    @Test
     void disabledFeaturesAndSecondarySelectionSurviveSavingAndCloning()
     {
         NpcWeaponOptions options = new NpcWeaponOptions();
@@ -38,6 +66,7 @@ class NpcWeaponOptionsTest
         options.set(Feature.TYPE_PROPERTIES, false);
         options.set(Feature.FIRE_SOUNDS, false);
         options.set(Feature.ITEM_ARMOR, false);
+        options.set(Feature.ARMOR_POTION_EFFECTS, false);
         options.set(Feature.WEAPON_ANIMATIONS, false);
         options.set(Feature.SECONDARY_BANK, true);
         CompoundTag npc = new CompoundTag();
@@ -49,6 +78,7 @@ class NpcWeaponOptionsTest
         assertFalse(clone.enabled(Feature.TYPE_PROPERTIES));
         assertFalse(clone.enabled(Feature.FIRE_SOUNDS));
         assertFalse(clone.enabled(Feature.ITEM_ARMOR));
+        assertFalse(clone.enabled(Feature.ARMOR_POTION_EFFECTS));
         assertFalse(clone.enabled(Feature.WEAPON_ANIMATIONS));
         assertTrue(clone.enabled(Feature.ITEM_WEAPONS));
         assertTrue(clone.enabled(Feature.ARMOR_ANIMATIONS));

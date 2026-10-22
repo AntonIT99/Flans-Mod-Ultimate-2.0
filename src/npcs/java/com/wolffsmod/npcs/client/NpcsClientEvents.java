@@ -4,6 +4,7 @@ import com.flansmodultimate.api.client.FlansEquipmentRender;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
+import com.wolffsmod.npcs.model.NpcSkins;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
@@ -11,6 +12,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import noppes.npcs.CustomEntities;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,7 +22,17 @@ public final class NpcsClientEvents
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {
-        event.enqueueWork(() -> FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply));
+        event.enqueueWork(() ->
+        {
+            FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply);
+            NpcSkins.setClientResolver(NpcSkinResolver::apply);
+        });
+    }
+
+    @SubscribeEvent
+    public static void registerKeys(RegisterKeyMappingsEvent event)
+    {
+        event.register(BotKeys.SQUAD_ORDERS);
     }
 
     @SubscribeEvent

@@ -35,6 +35,19 @@ public interface IPlayerClass extends IContentType
     ItemStack getArmour(EquipmentSlot slot);
 
     /**
+     * Whether an empty class armour slot inherits the team's piece. Readable on either side.
+     * Editor definitions may explicitly leave a slot empty instead.
+     *
+     * @param slot
+     *            one of the four armour slots
+     * @return true for normal legacy inheritance
+     */
+    default boolean usesTeamArmour(EquipmentSlot slot)
+    {
+        return true;
+    }
+
+    /**
      * Builds the items the class hands out, in the order the definition lists them. Guns come
      * with the attachments the definition names and loaded with their default ammunition. Items
      * that are not loaded are left out.
@@ -44,8 +57,8 @@ public interface IPlayerClass extends IContentType
     List<ItemStack> createStartingItems();
 
     /**
-     * Client only: the location is resolved while client assets are read, so a dedicated server
-     * always answers null. The texture is not checked: it may be missing, and it may use either
+     * Pack texture locations are resolved while client assets are read; editor-created classes
+     * can also expose their explicit texture location on a dedicated server. The texture is not checked: it may be missing, and it may use either
      * the square player skin layout or the old 2:1 one.
      *
      * @return the first skin texture the class declares, or null when it declares none
@@ -55,7 +68,8 @@ public interface IPlayerClass extends IContentType
 
     /**
      * The available skins in definition order. Readable on either side after content loading;
-     * texture locations are only resolved on the client and are not validated. The returned
+     * pack texture locations are resolved on the client; editor-authored explicit references can also
+     * be available on the server. Locations are not validated. The returned
      * list is unmodifiable. Players receive a random variant on each class application.
      *
      * @return all declared skins, or an empty list when none are declared

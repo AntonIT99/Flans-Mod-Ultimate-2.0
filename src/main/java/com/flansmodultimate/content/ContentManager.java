@@ -246,6 +246,7 @@ public class ContentManager
         boolean preLoadData = false;
         boolean unpackArchive = false;
         ContentProcessingCache processingCache = null;
+        boolean idAliasNeedsUpdate = false;
         long postTypeStart;
         long textureIndexNanos = 0L;
         long idAliasNanos = 0L;
@@ -269,7 +270,7 @@ public class ContentManager
             {
                 processingCache = new ContentProcessingCache(provider, generationInputs.get(provider));
                 long phaseStart = System.nanoTime();
-                boolean idAliasNeedsUpdate = AliasFileManager.shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
+                idAliasNeedsUpdate = AliasFileManager.shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
                 idAliasNanos = System.nanoTime() - phaseStart;
 
                 phaseStart = System.nanoTime();
@@ -311,6 +312,7 @@ public class ContentManager
         if (unpackArchive)
         {
             FlansLog.log.info("Reprocessing {}...", provider.getName());
+            logReprocessingReasons(provider, processingCache, idAliasNeedsUpdate, preLoadAssets);
             FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
             archiveExtracted = FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
         }
@@ -707,6 +709,24 @@ public class ContentManager
     private static void registerBlock(String shortName, InfoType config)
     {
         FlansMod.registerBlock(shortName, config.getType(), () -> BlockFactory.createBlock(config));
+    }
+
+    private static void logReprocessingReasons(IContentProvider provider, ContentProcessingCache cache, boolean idAliasNeedsUpdate, boolean preLoadAssets)
+    {
+        if (!FlansLog.log.isInfoEnabled())
+            return;
+        List<String> reasons = new ArrayList<>();
+        boolean forceRegen = ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds();
+        if (forceRegen)
+            reasons.add("forced regeneration enabled");
+        if (idAliasNeedsUpdate)
+            reasons.add("ID aliases changed");
+        boolean assetsCurrent = cache.assetsCurrent();
+        if (preLoadAssets && !forceRegen && !idAliasNeedsUpdate && assetsCurrent)
+            reasons.add("texture aliases changed");
+        if ((PlatformEnvironment.isClient() && !assetsCurrent) || !cache.dataCurrent())
+            reasons.add(cache.regenerationReason(PlatformEnvironment.isClient()));
+        FlansLog.log.info("{}: Reprocessing reasons: {}", provider.getName(), String.join("; ", reasons));
     }
 
     private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData, boolean idAliasNeedsUpdate)

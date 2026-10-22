@@ -4,8 +4,11 @@ import com.mojang.logging.LogUtils;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
+import com.wolffsmod.npcs.scripting.FlansScriptApi;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 
 /**
@@ -26,5 +29,7 @@ public class NpcsMod
         modEventBus.addListener(FlanModelEntities::registerAttributes);
         NpcNetwork.register();
         NpcNetworkPlatform.init(modEventBus);
+        TeamsBots.register();
+        modEventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(FlansScriptApi::register));
     }
 }

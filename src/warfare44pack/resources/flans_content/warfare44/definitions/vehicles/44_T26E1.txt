@@ -23,6 +23,7 @@ ShellSlots 5
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob China 44_T26E1 44_m26_china green 8
 AddDye 8 green
 
 // Real-world specifications

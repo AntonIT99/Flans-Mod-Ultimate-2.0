@@ -1,0 +1,14 @@
+// Identity
+Name Field Medic (Syringe)
+ShortName W44_USAirborneFieldMedic
+Description Combat medic with a medical bag, bandages and a morphine syringe.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_MedicalBag
+AddItem 44_Bandage 4
+AddItem 44_Parachute
+AddItem 44_Syringe
+AddItem 44_Morphine 5

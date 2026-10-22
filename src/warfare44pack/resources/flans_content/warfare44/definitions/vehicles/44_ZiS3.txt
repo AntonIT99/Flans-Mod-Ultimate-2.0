@@ -17,6 +17,7 @@ ShellSlots 5
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Alternate 44_ZiS3 44_zis23_2 gray 8
 AddDye 3 gray
 
 // Real-world specifications

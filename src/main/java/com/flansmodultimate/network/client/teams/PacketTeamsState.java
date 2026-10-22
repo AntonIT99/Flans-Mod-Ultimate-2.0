@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /** Immutable, per-player view of the Teams runtime used by all legacy-style screens. */
 @NoArgsConstructor
@@ -201,7 +202,10 @@ public final class PacketTeamsState implements IClientPacket
             Team team = Team.getTeam(id);
             if (team == null)
                 continue;
-            List<PlayerScore> players = manager.getPlayersOnTeam(team).stream().map(PacketTeamsState::playerScore)
+            // Rows addons add, such as bots, are ranked with the players.
+            List<PlayerScore> players = Stream
+                .concat(manager.getPlayersOnTeam(team).stream().map(PacketTeamsState::playerScore),
+                    manager.getScoreboardEntries(team).stream().map(entry -> new PlayerScore(entry.name(), entry.score(), entry.kills(), entry.deaths(), 0, entry.label())))
                 .sorted(Comparator.comparingInt(PlayerScore::score).reversed().thenComparing(PlayerScore::name, String.CASE_INSENSITIVE_ORDER)).toList();
             scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), round.getSideId(team), players));
         }

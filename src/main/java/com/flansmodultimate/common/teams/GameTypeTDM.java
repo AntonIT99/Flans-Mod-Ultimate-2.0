@@ -2,10 +2,12 @@ package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.types.Team;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 
 public class GameTypeTDM extends GameType
 {
@@ -28,7 +30,7 @@ public class GameTypeTDM extends GameType
     @Override
     public void playerKilled(TeamsManager manager, ServerPlayer victim, DamageSource source)
     {
-        ServerPlayer attacker = getPlayerFromDamageSource(source);
+        LivingEntity attacker = TeamsCombatants.getAttacker(source);
         PlayerData victimData = PlayerData.getInstance(victim);
         victimData.setDeaths(victimData.getDeaths() + 1);
         PlayerStats victimStats = manager.getStats(victim);
@@ -39,23 +41,37 @@ public class GameTypeTDM extends GameType
             victimData.setScore(victimData.getScore() - 1);
             return;
         }
-        Team attackerTeam = manager.getPlayerTeam(attacker);
-        Team victimTeam = manager.getPlayerTeam(victim);
-        PlayerData attackerData = PlayerData.getInstance(attacker);
+        scoreTeamKill(manager, attacker, victim, manager.getPlayerTeam(victim));
+    }
+
+    @Override
+    public void combatantKilled(TeamsManager manager, LivingEntity victim, Team victimTeam, DamageSource source)
+    {
+        LivingEntity attacker = TeamsCombatants.getAttacker(source);
+        if (attacker != null && attacker != victim)
+            scoreTeamKill(manager, attacker, victim, victimTeam);
+    }
+
+    /**
+     * Scores a kill by a player or a combatant: an ally killed costs a player a point, an enemy killed earns a player
+     * the kill and the killer's team its worth.
+     */
+    private void scoreTeamKill(TeamsManager manager, LivingEntity attacker, LivingEntity victim, @Nullable Team victimTeam)
+    {
+        Team attackerTeam = TeamsCombatants.getTeam(attacker);
         if (attackerTeam == victimTeam || manager.areAllied(attackerTeam, victimTeam))
         {
-            attackerData.setScore(attackerData.getScore() - 1);
+            if (attacker instanceof ServerPlayer player)
+            {
+                PlayerData attackerData = PlayerData.getInstance(player);
+                attackerData.setScore(attackerData.getScore() - 1);
+            }
             return;
         }
         if (attackerTeam == null || attackerTeam == Team.SPECTATORS)
             return;
-        attackerData.setScore(attackerData.getScore() + 1);
-        attackerData.setKills(attackerData.getKills() + 1);
-        PlayerStats attackerStats = manager.getStats(attacker);
-        attackerStats.recordKill(attacker.distanceTo(victim));
-        int xp = manager.getCurrentLoadoutPool().map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
-            .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
-        manager.awardExperience(attacker, xp);
+        if (attacker instanceof ServerPlayer player)
+            creditPlayerKill(manager, player, victim);
         scoreKill(manager, attackerTeam);
     }
 

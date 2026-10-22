@@ -4,8 +4,7 @@ import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
@@ -295,7 +294,11 @@ public abstract class ShootableItem extends Item
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSIVE_MASS_TNT), IFlanItem.formatMassKg(configType.getExplosiveMass())));
         }
 
-        if (configType.getExplosionRadius() > 0F)
+        if (configType instanceof GrenadeType grenade && grenade.isUseVanillaExplosion())
+        {
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_RADIUS), IFlanItem.formatFloat(configType.getExplosionRadius(), 1)));
+        }
+        else if (configType.getExplosionRadius() > 0F)
         {
             // Pulled from a real Stats object rather than the individual raw getters, so the
             // tooltip shows exactly what FlanExplosion will simulate: the crater cap, and the

@@ -1,19 +1,171 @@
-# Feature Gap Analysis — Flan's Mod NPC Vehicles → NPC module
+# Feature Gap Analysis — Wolff's NPCs 1.7.10 → NPC module
 
-- **Reference:** `C:\Users\alpha\Documents\Minecraft-Development\Flans-Mod-NPC-Vehicles` (commit `22c0b0e4`, version 8.2.2, Forge 1.7.10, CustomNPC+ 1.11.1)
-- **Target:** `src/npcs` of Flan's Mod Ultimate 2.0 (`master` @ `ac009a9f1`, Forge 1.20.1, Custom NPCs 1.20.1 GBPort), together with the public API in `src/main/java/com/flansmodultimate/api` that the module uses
-- **Direction:** reference → target only. Target-only features are left out, such as item-driven equipment combat, paintjob browsing, the 64x32 renderer, inherited type properties, model armour, hull-assisted aiming and steering animation.
-- **Scope note:** the reference's ~600 generated `Entity*`/`Model*` classes are per-model data. The target replaces them with `FlanModelEntities`, which registers a model for every loaded AA gun and driveable. That data-driven equivalent is not reported.
+- **Current assessment:** 2026-10-22; merges the later temporary audit into this permanent report.
+- **Reference:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-NPC-Vehicles`, HEAD `19a1d475af1c4729ef43bcb46cd8bc55b631d685`, `ModInfo.VERSION = 8.0.5`, Forge 1.7.10 / CustomNPC+.
+- **Target:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, `master`, Forge 1.20.1 / Custom NPCs GBPort. The audit started at `1e1106a36435a96c827e4ad5e40f4d4d78655072`, including the then-uncommitted projectile API and NPC combat/crew changes. Completion checks use `372d04a73` plus the changes below; concurrent faction work is excluded from this thread's commits.
+- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the five implementation changes described below. No interactive game session was performed.
+- **Historical metadata correction:** the old report labelled reference `22c0b0e4` as version 8.2.2; `ModInfo.java` at that commit actually says 8.0.5. The prior target snapshot was `ac009a9f1`. Historical fixes and recorded checks are retained below and are not current test results.
 
-Reference paths are relative to `src/main/java/com/wolffsmod` in the reference repository, and target paths to `src/npcs/java/com/wolffsmod/npcs/`. "Custom NPCs" below is the 1.20.1 jar in `libs/`, read from the `decompiled/` cache. Vanilla behaviour was read from the Forge 1.20.1 and 1.7.10 source jars.
+**Remaining inventory: 0 MISSING, 5 PARTIAL, 0 UNCERTAIN findings; 5 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The five remaining findings involve design tradeoffs, bounded authoring controls, or content/dependency coverage and are left for the user's decision. The depth finding has been narrowed: the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
 
-**Status.** No finding is open. The third audit (2026-10-12) went through the areas the second audit had left for a deeper look and listed seven PARTIAL findings; all seven were assessed as real gaps and closed the same day, see [Closed after the third audit](#closed-after-the-third-audit). The first audit (reference `7999bb16`, version 7.1.0) listed 35 findings and the second (reference `22c0b0e4`, version 8.2.2) nine; those are closed or not applicable and no longer listed. They are documented in the wiki page `NPC-Vehicles-and-Soldiers.md`.
+The remaining table is a decision list, not an implementation backlog approved by the user. Keep the current default unless a listed capability is requested. A parity status answers whether the reference capability can be expressed. Its assessment separately asks whether losing it worsens the intended product. The criteria are combat/configuration consistency, recovery versus physical movement, content/authoring coverage, tuning complexity, and bounded simulation cost. Better on one criterion does not imply better overall. No comparative client/server performance or visual measurements were taken, so performance and handling benefits are qualified rather than asserted.
 
-The third audit read code and logs, and its fixes were checked by unit tests and by a server start that applies the mixins. Nothing was driven in a client, so everything under [Areas requiring deeper audit](#areas-requiring-deeper-audit) still needs one.
+`R/` paths are relative to REFERENCE and `T/` paths to TARGET. `R/java/` abbreviates `R/src/main/java/com/wolffsmod/`; `T/npcs/` abbreviates `T/src/npcs/java/com/wolffsmod/npcs/`.
 
----
+The systematic audit covered registered mixins/helpers, entity/model registration, equipment imports and combat, damage, ballistics, ground/air/water movement, targeting/pathfinding, rendering/animation, editor controls, effects/audio, packets, persistence, ranges, and diagnostics. Generated per-model classes were scanned for additional behavior. Definition-driven registration itself is an equivalent implementation; only absent source content is counted in the catalog finding.
 
-## Closed after the third audit
+## Navigation and movement
+
+### Independent steering response, tracked tight-turn permission, and traffic stop gap — PARTIAL
+
+Reference: `R/java/customnpc/SubGuiGroundVehicleSettings.java#general,steering,pathing`; `R/java/customnpc/VehicleSteeringController.java#steer`; `R/java/customnpc/GroundVehicleController.java#update,applyLocalSeparation`; `R/java/mixin/MixinDataAI.java`.
+Builders can independently choose steering response rate, maximum turn rate, whether a tracked vehicle is allowed the slow tight-turn maneuver, following distance, and minimum following distance. Steering response changes the rate at which the current turn rate approaches the requested turn rate. Traffic uses a separately configurable hard stop gap and limits speed to the vehicle ahead before that gap.
+
+Target checked: `T/npcs/sim/NpcTuning.java#Value,DriveType`; `T/npcs/sim/NpcDriving.java#Settings.of,drive,updateTraffic,followLimit`; `T/npcs/client/GuiWolffsMod.java` driving controls.
+Driving, turning-radius limits, reversal, corner slowing, and traffic slowing are represented. However, steering applies its turn step directly without a separately tunable turn-rate response. Tight turning is derived from vehicle type, without an independent permission. The traffic stop gap is always half `FOLLOW_DISTANCE`, and slowing is based on distance rather than matching the leader's speed.
+
+Missing: independent steering-response tuning, independently disabling the tracked tight-turn behavior, and independently choosing the traffic hard-stop gap/leader-speed following behavior. Renamed units and different preset values alone are not counted as gaps.
+
+Assessment: **TRADEOFF; simpler controller with real expert-tuning losses.** Fewer dependent controls reduce contradictory configurations and make presets easier to understand. The target also measures traffic separation using vehicle widths and an ahead cone; the reference uses a wider forward-half-plane test and center distances. The target's continuously varying gap-based speed limit avoids the reference's direct switch to the leader's sampled speed, but that alone does not prove smoother or safer queues. The reference independently controls turn-rate response and stop gap, which can tune heavy inertia and close convoys more precisely. In the reference, maximum steering angle only feeds the sign of the requested turn; copying that slider would not restore a meaningful steering-angle limit.
+
+Recommendation: Keep the simpler default and size-aware traffic test. Add independent turn response or standstill gap only for demonstrated handling/convoy requirements. Test speed matching and queue recovery before claiming either follower is superior. Do not reintroduce the ineffective reference steering-angle control.
+
+### Water-depth limits above sixteen blocks — PARTIAL
+
+Reference: `R/java/customnpc/SubGuiVehicleMobility.java#addNumber`; `R/java/mixin/MixinDataAI.java#clampGroundDepth,clampWaterDepth` and submarine minimum-depth settings; `R/java/customnpc/TerrainMobilityRules.java#filterPathNode`.
+Ground maximum water depth and surface-watercraft minimum water depth can be configured up to 64 blocks and constrain where the NPC may navigate. A separate submarine minimum-depth setting also exists, but its implementation is ineffective for the reason assessed below.
+
+Target checked: `T/npcs/sim/NpcTuning.java#Value.MAX_WADE_DEPTH,MIN_WATER_DEPTH,SUBMARINE_DEPTH`; `T/npcs/sim/NpcMobility.java#filter,watercraft,depth`; `T/npcs/sim/NpcSubmarine.java#runningDepth,sample`.
+Terrain filtering and submarine depth holding exist, but both terrain-depth settings clamp at 16. Submarine running depth reaches 64, yet it is not a minimum navigable water-column restriction and deliberately becomes shallower over shallows.
+
+Missing: configuring the working ground wading allowance or surface-watercraft minimum navigable depth in the 17–64 block range. A large running-depth value does not add that routing restriction. The separate broken reference submarine rule is excluded from functional parity counts.
+
+Assessment: **BOUNDED CAPABILITY LOSS; the earlier submarine claim was overstated.** The 16-block caps really restrict ground/surface-watercraft authoring compared with the working reference settings. They also bound the depth scan in the per-node path filter; increasing the cap increases worst-case scan work per footprint column. Most shallow-water use does not require a 17–64 block minimum. Crucially, the reference's separate submarine minimum-depth path rule is broken: 1.7.10 `World.getTopSolidOrLiquidBlock` skips water and returns above the seabed, so checking water below that value rejects submerged routes. Its depth controller has the same error. The target's working depth holding and shallow-water adjustment are better than that behavior.
+
+Recommendation: Keep working submarine depth holding and rising over shallows. Extend the shared depth bound only if a concrete large-watercraft or map requirement needs more than 16 blocks, with path-cost validation. Withdraw the claim that a working separate legacy submarine safety rule was lost; that part was advertised/configurable but ineffective.
+
+## Models and animation
+
+### Full reference NPC model catalog — PARTIAL
+
+Reference: `R/java/ModEntityRegistry.java#registerEntities`; `R/java/ClientProxy.java#registerRenderers`; `R/java/ContentPacks.java`; for concrete examples, `entity/akaku/EntityMeillerwagen*.java`, `model/akaku/ModelMeillerwagen*.java`, `entity/monolith/EntityMorgan.java`, `model/monolith/ModelADFX02Morgan.java`, and `model/baf/ModelWyvern.java` under `R/java/`.
+The reference registers a bundled catalog of named NPC models, with their own entity setup and renderer/model/texture mappings. Registered examples include the lowered/raised Meillerwagen variants, ADFX-02 Morgan, F-15 Galm One, and Westland Wyvern.
+
+Target checked: `T/npcs/model/FlanModelEntities.java#registerEntityTypes`; `T/npcs/model/FlanModelEntityType.java`; `T/npcs/model/FlanModelShape.java`; source definitions and model assets across `T/src/`, including the independent nested pack repositories using searches that bypass ignore rules.
+The target generates NPC models from loaded AA-gun and driveable definitions. That supports the system, but does not supply absent content. The named examples above have no corresponding definitions/model assets in the checked target source content, and the NPC module contains no fallback bundled catalog for them. Category metadata mentioning a vehicle is not a loadable content definition/model.
+
+Missing: the remaining reference catalog entries and their variant assets/setups in the supplied target content. This is a content-coverage finding, not a claim that external packs cannot add equivalent models. No missing-model count is inferred from Java class-name differences.
+
+Assessment: **CONTENT COVERAGE LOSS; target registration architecture is better.** The named absent models reduce the available checked-in catalog for users who need those exact vehicles/variants. That is independent of the registration design: deriving NPC models from loaded content definitions avoids duplicating each model's registration/setup and automatically covers newly loaded types. Restoring hundreds of generated NPC-specific classes would increase maintenance without supplying missing meshes, textures, or definitions by itself.
+
+Recommendation: Keep definition-driven registration and add or port requested missing content in the appropriate pack artifact. Treat this as content coverage, not a broken NPC mechanic. An unexamined external/runtime pack might supply an example; the evidence here concerns the supplied source content.
+
+### CustomNPC+ keyframed Flan armor animation — PARTIAL
+
+Reference: `R/java/mixin/MixinModelCustomArmour.java#applyCustomNpcFullModelTransform,applyCustomAnimationPartTransforms,renderAnimatedTurbo,getActiveCustomAnimationFrame`.
+The reference explicitly supports CustomNPC+ animation frames: full-model pivot/rotation, interpolated per-limb pivots and rotations, and the matching transformation order for Flan armor. It also reads active player animation frames from `ClientCacheHandler.playerAnimations`.
+
+Target checked: `T/npcs/client/NpcArmorParts.java#apply`; `T/npcs/mixin/NpcEquipmentAnimationMixin.java`; `T/src/main/java/com/flansmodultimate/client/render/layer/CustomArmorLayer.java#renderArmorPiece`; `T/src/main/java/com/flansmod/client/model/ModelCustomArmour.java#render`; `EquipmentAnimationSupport` and the installed Custom NPCs JAR's animation classes.
+The target copies ordinary humanoid poses, applies NPC body-part proportions/offsets, and renders armor in the resulting limb transforms. That represents ordinary armor animation. The chosen Custom NPCs dependency supplies its standard animation pipeline, but no CustomNPC+ frame engine; neither the module nor main armor integration supplies the reference frame/player-animation bridge.
+
+Missing: the reference's arbitrary CustomNPC+ keyframe-driven full-model and limb animation compatibility for NPC/player Flan armor. Standard pose copying does not supply the missing keyframe source and playback integration. This does not label ordinary walking, aiming, crawling, or part scaling as missing.
+
+Assessment: **DEPENDENCY CAPABILITY GAP; no demonstrated ordinary-animation regression.** Arbitrary CustomNPC+ full-model/player keyframes are a real creative capability of the reference environment. The selected modern Custom NPCs dependency does not supply that frame engine, so copying the old armor bridge alone would not make the capability available. For ordinary poses, the target copies the final humanoid pose and uses the modern limb transform directly, avoiding much of the reference's special Turbo rotation-order/double-animation handling. That is a sounder integration for the dependency actually installed, but it cannot replace an absent arbitrary-keyframe authoring/playback system.
+
+Recommendation: Keep standard pose copying and part transforms. Add a bridge only for a supported modern keyframe engine if that use case is required; do not classify the absence of a 1.7.10-only frame API as evidence that present walking/aiming armor animations are worse.
+
+## Target search and diagnostics
+
+### Independently configurable target-search distance bands — PARTIAL
+
+Reference: `R/java/config/TargetSearchConfig.java#load,intervalForBand`; `R/java/mixin/MixinEntityAIClosestTargetProgressive.java`.
+All six search bands have independently adjustable tick intervals, each from 1 to 1200: 0–32, 32–64, 64–128, 128–256, 256–384, and 384 blocks to the combat limit. Nearby acquisition synchronization can also be disabled independently of progressive searching.
+
+Target checked: `T/npcs/sim/NpcTargetSearch.java#due,interval`; `T/npcs/diag/NpcServerSettings.java`; `T/npcs/sim/NpcTuning.java#SEARCH_NEAR_INTERVAL,SEARCH_FAR_INTERVAL`; server editor/packet settings.
+Progressive searching and shared nearby acquisition are represented. Only near/far endpoints are configurable; intermediate intervals are linearly interpolated. The first band always uses a shared time-slot cadence while progressive search is active. Near/far bounds are 200/600 rather than 1200.
+
+Missing: arbitrary independent schedules for the middle bands, independently disabling shared nearby acquisition, and the longer reference interval settings. Changing where settings are stored is not itself a gap.
+
+Assessment: **TRADEOFF; easier tuning cannot express all load/latency policies.** Near/far endpoints are simpler to configure, while independent bands can give disproportionately short mid-range or long far-range intervals. For example, the reference's 5/10/20/40/80/160-tick schedule cannot be represented by linear interpolation. Shared nearby cadence intentionally makes formations acquire together, but also groups their near-search work; staggering can spread that work at the cost of less synchronized reactions. No benchmark in this audit establishes that either schedule is faster or better for a particular population.
+
+Recommendation: Keep shared nearby acquisition as the default if coordinated reactions are the goal. Expose advanced per-band/synchronization overrides only when a measured server load or response-time requirement needs them. Settings storage in world data remains a valid improvement and is not a gap.
+
+## Resolved in the current working directory
+
+### Optional physical return home — RESOLVED BY AGREED DESIGN
+
+Reference: `R/java/mixin/MixinEntityAIReturnNoTeleport.java#wolffsmod$replaceAutomaticTeleport,wolffsmod$retryReturnPath`; registration in `R/src/main/resources/wolffsmod.mixins.json`.
+Both automatic return-home teleports are intercepted and replaced with another navigation attempt. NPCs must physically return even after the return goal becomes stuck or times out.
+
+Target: `T/npcs/mixin/EntityAIReturnMixin.java`; `T/npcs/sim/NpcReturnHome.java`; `NpcWeaponOptions.Feature.RETURN_HOME_TELEPORT`; Pathfinding controls in `GuiWolffsMod.java`.
+
+**Allow return-home teleport** defaults to Yes, retaining the dependency’s existing recovery. No replaces the return goal’s tick logic, covering both automatic teleport branches, with physical navigation and a shared 40-game-tick retry budget that survives goal restarts. An active path is retained; completed or failed paths alternate the dependency’s direct/intermediate searches. Existing destination, combat interruption and eligibility rules remain. Unreachable homes may leave NPCs stranded. Scripted teleports are outside this policy.
+
+Assessment: **OPTIONAL CAPABILITY ADDED; recovery default retained.** Builders can enforce physical movement without forcing that policy on old saves. Bounded retries avoid an every-tick failure loop, while preserving the dependency’s eventual teleport recovery when allowed. This is NPC-specific goal policy and requires no public API addition.
+
+Validation: see the current validation section below; interactive blocked-route and editor checks remain outstanding.
+
+### Native projectile-slot launch-speed override with exact item imports — RESOLVED
+
+Reference: `R/java/mixin/MixinEntityNPCInterface.java#shootProjectile,shootThrowable`; `R/java/customnpc/NPCInterfaceUtil.java#setThrowableHeading`. Legacy native potions, experience bottles and eggs use the NPC's ranged speed, allowing custom trajectories.
+
+Target: `T/npcs/combat/NpcThrowables.java#flight,defaultSpeed,ownSpeed`; `NpcCombatSettings.java`; `EquipmentProperty.java#NATIVE_THROW_SPEED`; `EquipmentValues.java`; `NpcEquipmentImport.java`; `T/npcs/client/CombatPages.java`, `EquipmentReadouts.java`, and the Projectiles page link in `GuiWolffsMod.java`.
+
+**Projectiles > Projectile slot properties > Launch speed (blocks/tick)** now supports Inherit/Custom and Import. Inherit remains the default. A first Custom selection initializes from the current item's unmodified default; subsequent toggling retains an edited value. Import always copies the item's default, never the active override. Defaults remain 0.75 for potions, 0.7 for experience bottles, 1.5 for eggs and 1.6 for firework rockets. A separate decimal value preserves fractional tenths such as 0.75, which the existing integer Custom NPCs ranged-speed field cannot represent exactly.
+
+The effective speed is shared by ballistic aiming and actual launch, with existing native effects, accuracy, shot count and firing behavior retained. It is independent of held-item overrides and Use equipped weapons. Powered fire charges keep their original flight and expose no invented launch-speed default/import. Unsupported items and disabled Native throwables keep the ordinary Custom NPCs path. The new value and mode use existing stats persistence/synchronization; old saves still inherit their item speeds.
+
+Assessment: **AUTHORING GAP CLOSED; predictable defaults retained.** Builders can tune native throws without coupling them to generic ranged speed, changing other held weapons, or losing real item effects. Exact default import is preserved instead of rounding a potion's 0.75 to 0.8. Custom speeds are bounded to 0.01–10 blocks/tick; malformed values fall back to the item default.
+
+Validation: focused tests cover all five adjustable item defaults, inheritance/override transitions, exact import while overridden, NBT round trips, bounds/invalid values/old saves, powered and unsupported items, disabled-feature fallback, and the actual launched potion's direction and speed for both inherited and custom settings. Editor-control tests also check the effective speed readout, its lock explanation, and preservation of the generic NPC speed. Runtime editor and trajectory verification remains outstanding.
+
+API assessment: native vanilla-item physics selection and Custom NPCs settings/imports belong inside the NPC module. No main-mod API or packet-schema change was needed.
+
+### Optional melee dual wield and off-hand feedback — RESOLVED BY AGREED DESIGN
+
+Reference: `R/java/mixin/MixinDataInventory.java#setMeleeStats`; `R/java/mixin/MixinEntityNPCInterface.java#animateFlanGunMelee`. The reference combines damage/knockback/timing from either hand into one hit and animates both held Flan guns; it does not implement two independent melee attacks.
+
+Target: `T/npcs/combat/NpcEquipment.java#meleeHand,meleeWeapon`; `NpcMeleeState.java`; `NpcItemAttacks.java#melee,meleeFeedback`; `T/npcs/mixin/NpcEquipmentAttackAiMixin.java`; `EntityNPCInterfaceMixin.java`; `T/npcs/platform/NpcPlatform.java#meleePostDamageEffects`.
+
+The user's chosen replacement is **Melee dual wield**, default **No**, on the Equipment page. With Use equipped weapons enabled, usable melee weapons alternate one strike at a time. The existing AI chooses that weapon's reach and full recovery before its swing/hit, retaining one cooldown rather than independent attack channels. Damage, enchantment knockback/fire, attacking enchantment hooks, durability and gun melee sound/animation belong to the striking weapon. Armor enchantment callbacks still run; the idle weapon's attacking callbacks are excluded. Break feedback follows the hand whose item broke, without moving inventory stacks.
+
+Empty hands, shields and non-weapons are skipped. One usable weapon attacks alone, including an off-hand-only weapon; neither weapon means ordinary NPC melee. The Main hand properties > Melee Inherit/Custom controls apply to both hands, with shared NPC Custom values. The property page compares the two weapon readouts. Copy/Import intentionally still copies the main hand, and ranged dual wield remains a separate setting.
+
+Assessment: **OPTIONAL CAPABILITY ADDED; main-hand default preserved.** This supplies coherent off-hand melee participation and feedback without constructing a synthetic strike from both weapons' strongest properties. It adds no attack-speed multiplier: a slower weapon slows its part of the sequence. Rejected/script-cancelled attempts still consume their turn and recovery. The old maximum-of-both-hands import/aggregation and simultaneous two-hand animation remain deliberately unimplemented, as the user requested a recommended dual-wield design rather than strict 1.7.10 parity.
+
+Validation: focused regression tests cover old-save defaults and persistence, alternating damage/recovery, weapon eligibility (including Flan shields), off-hand-only attacks, shared Custom values, rejected/cancelled turns, selected-hand enchantments/durability/feedback, and correct melee AI selection with projectile-slot ammunition. A fast-to-slow follow-up test reproduced the immunity problem before its fix: an accepted fast hit can now be followed on the same victim after its full recovery and before ten ticks, without clearing immunity for a different victim or a premature attempt. Dependency bytecode checks confirm one delay read, swing and damage call, and the generated refmap maps the swing redirect to the production method. Runtime visual verification remains outstanding.
+
+API assessment: hand selection/alternation belongs to NPC policy; the enchantment helper is a vanilla version boundary. The existing public `FlansEquipment` APIs already accept the striking hand for animation/sound, so no main-mod API addition was needed.
+
+### Rapid melee attacks bypassing target hurt immunity — RESOLVED
+
+Reference: `R/java/mixin/MixinEntityNPCInterface.java#attackEntityAsMob`.
+
+Target: `T/npcs/combat/NpcItemAttacks.java#hurtMelee`; regression tests in `T/src/test/java/com/wolffsmod/npcs/combat/NpcMeleeTest.java`.
+
+The native item-melee path now follows Custom NPCs' existing rapid-hit policy when the effective attack delay is below ten ticks. It uses the weapon's delay only when that statistic is inherited; otherwise it uses the NPC's own delay. The reset happens after the script event accepts the attack. A rejected hit restores the previous immunity, while an accepted hit retains the new immunity established by the damage engine. Ordinary-speed attacks are unaffected.
+
+Validation: the new tests failed on the original fast-item/fast-editor cases and passed after the fix. They cover the ten-tick boundary, inherited versus own cadence, a rejected strike, and script cancellation. These verify the damage-call contract; an interactive damage-rate comparison has not been run.
+
+API assessment: this is NPC-specific attack-policy handling using vanilla entity state. No main-mod API addition or change was needed.
+
+### Benchmark session controls and annotations — RESOLVED
+
+Reference: `R/java/benchmark/BenchmarkCommand.java`, `ServerBenchmarkCommand.java`.
+
+Target: `T/npcs/diag/BenchmarkOptions.java`, `BenchmarkReport.java`, `ServerBenchmark.java`, `NpcBenchmarkCommands.java`; `T/npcs/client/ClientBenchmark.java`.
+
+Both commands accept `[seconds] [warmup] [label]`, with warm-up 0–60 seconds and a bounded, single-line label; naming a run requires the warm-up argument first. Existing duration-only commands and editor actions retain their default warm-ups. Both have `status` and `stop`; the client also has `mark <label>`. Labels/settings/markers appear in the text report, safe label characters are included in filenames, and the raw CSV columns are preserved. Server controls remain operator-only.
+
+Client chat now pauses measurement and its clock instead of aborting the run, so status/stop/mark are usable. Chat frames and the transition back to the world are excluded. Other screens and pausing retain their existing abort behavior after warm-up. A zero-warm-up server run resets pre-existing profiling counters before its first sample.
+
+Validation: focused tests cover command defaults/arguments/permissions, invalid warm-ups, label bounds and filename safety, annotation ordering, a zero-warm-up run excluding earlier profiling samples, and client chat/control/sample lifecycle. In-game timing and output-file acceptance still need a client/server session.
+
+API assessment: benchmark state and commands remain internal to the NPC module. No main-mod API, packet schema, or cross-loader boundary was added. English/German tooltips and the existing wiki benchmark section document the controls.
+
+## Earlier audits: resolved findings
+
+The first audit (reference `7999bb16`, version 7.1.0) recorded 35 findings; the second (reference `22c0b0e4`) recorded nine; the third (2026-10-12) recorded seven PARTIAL findings. The earlier report records those findings as closed or not applicable, with background in the wiki's `NPC-Vehicles-and-Soldiers.md`. The seven fixes below are retained as historical results.
 
 | Subsystem | Feature | What the target does now |
 | --------- | ------- | ------------------------ |
@@ -25,13 +177,13 @@ The third audit read code and logs, and its fixes were checked by unit tests and
 | Diagnostics | Path searches of flying NPCs in the server benchmark | `mixin/PathNavigationMixin` times the search itself in every navigator an NPC uses, and failed searches are counted (`path_failures` in the CSV). A call that keeps its path is no longer counted as a search. |
 | Rendering | Large NPC without a content-pack model and without a hitbox | `sim/NpcModels.unhitCullingBox`: such an NPC is culled by the width its hitbox would have. |
 
-Two parts of those findings were judged legitimate differences and left as they are; they are listed under the deliberate differences below.
+The following historical decisions and validation belong to the 2026-10-12 audit; they are not claims that the current checkout was runtime-tested again.
 
 ---
 
-## Summary
+## Earlier audits: accepted design differences
 
-Totals: 0 MISSING, 0 PARTIAL, 0 UNCERTAIN.
+The earlier report counted no open gaps at its then-audited snapshot. Its deliberate design decisions are preserved below. The current findings reassess their practical costs rather than automatically treating every lost control as a defect.
 
 Not applicable to the target:
 
@@ -40,7 +192,7 @@ Not applicable to the target:
 - **Stat import for Custom NPCs' own weapons:** Custom NPCs 1.20.1 ships no weapon items.
 - **Block-read cache for path searches:** Minecraft 1.20.1 already caches block reads within a search.
 
-Deliberate differences from the reference, which are not gaps:
+Previously accepted differences (several now have a more detailed capability/tradeoff assessment above):
 
 - Every per-NPC setting lives in the Wolff's Mod tab, not in the Custom NPCs AI, display and stats pages.
 - Frustum-culling exemptions are replaced by culling against the whole model's bounds.
@@ -50,9 +202,9 @@ Deliberate differences from the reference, which are not gaps:
 - Server-wide target-search intervals are saved with the world and edited on the tab's Server page, not in a config file. Only the near and the far interval are set; the bands in between scale.
 - Benchmarks time NPC ticks, path searches, target searches and NPC drawing as wholes. The reference's per-phase render and cache timings are not reproduced, because the target's render path is shared with real driveables and has its own diagnostics.
 - A vehicle whose path is taken away while it is at speed, for instance by the ranged AI once its target is in range, rolls out at its coasting rate. The reference brakes there, because its coasting rate is never reached; the target has coasting as a setting of its own. Only a vehicle that was already slowing for the end of its path brakes.
-- A submarine has no minimum water depth of its own beyond the Watercraft profile's 16 blocks. The target does not need one: over water shallower than its running depth it rides higher instead of refusing the route.
+- A submarine uses the Watercraft profile's minimum depth (capped at 16), instead of a second submarine-specific minimum. It rises over shallows relative to its running depth. This improves recoverability, but a stricter deep-water routing requirement would still be a legitimate optional scenario feature.
 
-## Settled by the third audit
+## Earlier audits: validation recorded on 2026-10-12
 
 These were on the deeper-audit list and need no further work, short of the client checks listed below.
 
@@ -64,18 +216,56 @@ These were on the deeper-audit list and need no further work, short of the clien
 - **Flight arithmetic.** Climb and descent limits, the attack-altitude hysteresis, the loiter circle, the plane's turn limit and the helicopter's turn rate match the reference value for value. Flying NPCs have no gravity in Custom NPCs 1.20.1 (`EntityNPCFlying.m_7023_`), so an idle helicopter's vertical speed decays to a hover.
 - **Unit tests.** `com.wolffsmod.npcs.sim.*` and `com.wolffsmod.npcs.diag.*` pass at `ac009a9f1`.
 
-### Reference notes after 8.0.5
+### Reference implementation caveats
 
-The five commits without release notes (`5efc6bdc`, `71af6e1f`, `7bdf6798`, `0e4fda39`, `22c0b0e4`) were read in full, including their editor screens and saved values. They hold nothing beyond what the target has or what is reported above. Four things in them do not work as their names suggest, which matters when a target vehicle is compared with a reference one:
+The five commits without release notes (`5efc6bdc`, `71af6e1f`, `7bdf6798`, `0e4fda39`, `22c0b0e4`) were read in full, including their editor screens and saved values. Their earlier assessment is retained here; the current comparison also covers the subsequent `19a1d475` change. Four things in them do not work as their names suggest, which matters when a target vehicle is compared with a reference one:
 
 - **Submarines do not dive or path in the reference.** `SubmarineController` and `TerrainMobilityRules.hasWaterColumnDepth` find the water surface with `World.getTopSolidOrLiquidBlock`. In 1.7.10 that method skips liquids and returns the block above the sea floor, so the block below it is never water: the controller never engages and every path node of a submarine is rejected. The target follows what the feature was meant to do, so there is no working reference to compare it with.
 - **Reference aircraft measure their height from the sea floor** over water, for the same reason, and are pushed down when more than 5 blocks above the height they aim for. The target measures from the water surface, and counts leaves as terrain.
 - **The reference never coasts.** `advanceSpeed` picks the coasting rate only when the wanted and the current speed are both zero.
 - **A reference plane without a target circles its home only while the NPC is set to wander.** Otherwise it flies straight on. A target plane always circles.
 
-The last commit also sends the hull direction to clients while a vehicle moves, not only while it has a target. The target sends it whenever it changes.
+Commit `22c0b0e4` also sends the hull direction to clients while a vehicle moves, not only while it has a target. The target sends it whenever it changes.
+
+## Earlier combat and benchmark validation
+
+- Focused melee and benchmark tests passed after the reproduced melee failures were fixed. Dual-melee coverage also reproduced and fixed the mixed fast-to-slow immunity failure. Native throw-speed coverage passes all 19 combat cases and both editor-readout cases.
+- Java 17 / Forge 1.20.1: the final `gradlew build sonarlintNpcs sonarlintTest spotlessCheck --offline` passed. The full suite reports 2,183 tests: 2,173 passed, 10 skipped, zero failures/errors. Both SonarLint reports contain zero issues. Scoped `spotlessApply` and repository/wiki `git diff --check` passed.
+- The full build produced the NPC, main, pack-manager, and official-pack artifacts. The NPC JAR contains the benchmark controls, new melee-state classes, native throw-speed implementation, and updated English/German locales. Its swing refmap and item-break override have the expected production names.
+- Headless IntelliJ was run once for the dual-melee task and once for the throwable-speed task. The latest run reported the same 20 pre-existing warnings plus six nullable-flight dereferences in the new test. Those six now use a helper that asserts a flight exists before reading its speed. The remaining warnings concern existing API/projectile, editor, bow-enchantment, crew, platform-helper, readout and benchmark-test code. IntelliJ was not repeated after that correction, following the once-per-task rule.
+- No interactive client/dedicated-server session was run. Actual damage cadence, dual-melee visuals/editor layout/synchronization, native throw trajectories and editor controls, benchmark timing, and written reports still require runtime checks.
+- Existing unrelated source/configuration and wiki changes are preserved. Only the NPC combat/diagnostics implementation, its regression tests/localization, this report, and the relevant existing wiki explanations are in scope.
+- The 1.7.10 water-surface caveat and the prior audit history remain as documented. No content catalog, steering, search-schedule, water-depth bounds, or animation-engine policy was changed. Physical-only return is now optional with teleport recovery enabled by default. Off-hand melee is now an explicit opt-in policy, documented above.
+
+## Physical-return follow-up validation
+
+- Focused retry-budget, option default/save/reload and installed-dependency hook tests pass. The dependency contract confirms both automatic teleports occur in the replaced tick method and verifies the existing navigation/start/eligibility hooks.
+- `gradlew build sonarlintNpcs sonarlintTest -x spotlessJavaCheck --offline` completed. The full suite reported 2,241 tests: 2,231 passed, 10 skipped, zero failures/errors. Final eligibility-hook compilation and focused tests were repeated with `npcsJar` after changing the cooldown gate to run after the dependency's eligibility calculation, preserving its bookkeeping.
+- The unrestricted formatting gate was blocked by concurrent, unrelated `drivers/NpcPilot.java` formatting. All return-home files passed scoped `spotlessApply`; repository and wiki diffs pass `git diff --check`. JSON/misc formatting checks passed during the build.
+- SonarLint reports no issues in the return-home implementation or tests. The shared NPC report contains five unrelated findings: one existing `GuiWolffsMod.navigate` complexity finding and four in concurrent `NpcPilot` landing work; the test report is empty.
+- One headless IntelliJ run reported 45 warnings: 44 in existing or unrelated code and one false positive on the shadowed timeout field. A narrow `FieldCanBeLocal` suppression now explains why that field resets the target's continuation timeout. No inspection rerun was performed.
+- The NPC artifact contains the registered common-side mixin, retry state and both translated labels/tooltips. This is internal Custom NPCs navigation policy; no public Flan API change is needed. No interactive blocked-route, editor or dedicated-server session was run.
+
+## Remaining decisions
+
+| Subsystem | Feature | Status | Confidence | Practical assessment |
+| --------- | ------- | ------ | ---------- | -------------------- |
+| Driving | Independent turn response and traffic controls | PARTIAL | HIGH | Simpler defaults versus expert tuning; measure handling |
+| Mobility | Ground/surface-watercraft depths 17–64 | PARTIAL | HIGH | Bounded authoring restriction; broken submarine rule excluded |
+| Content | Full reference model catalog | PARTIAL | HIGH | Content coverage loss; retain data-driven registration |
+| Animation | CustomNPC+ armor keyframes | PARTIAL | HIGH | Dependency capability gap; standard pose path remains appropriate |
+| Target search | Independent distance-band schedules | PARTIAL | HIGH | Tuning/load-latency tradeoff; benchmark before changing defaults |
 
 ## Areas requiring deeper audit
+
+The earlier checklist below is retained as historical outstanding runtime coverage. The current audit has not resolved it by launching a client.
+
+- **Rapid melee acceptance:** unit coverage now verifies the fix at the damage-call boundary. In game, compare accepted hits as well as swings for native item and editor-controlled melee, including a second attacker.
+- **Dual melee presentation:** enable the option, save/reload the NPC, and check mixed-speed weapons, an off-hand-only weapon, shields, left-handed NPCs, item breaks, and hand-specific gun sounds/animations. Confirm that the editor shows both weapon readouts and that clients see the same attacking hand as the server.
+- **Native throw-speed controls:** check Inherit, first Custom selection, edited values, Import while overridden, save/reload and client synchronization for each supported item. Compare trajectories and the standard projectile-page readout; fire charges should retain powered flight.
+- **Recovery policy:** block the return-home route and compare eventual return, teleport visibility, and repeated path-search cost. Verify the physical-only switch prevents both recovery teleports, retains an active path, and bounds failed searches across goal restarts.
+- **Shared models:** visually compare scale, origin, textures, muzzle/rider positions, and animations for entries available in both source catalogs. Missing source assets and misaligned available assets are different issues.
+- **Controlled comparisons:** measure steering/convoy behavior and per-band target-search cost at the same NPC count, world, and targets. More configuration controls alone do not establish better handling or performance.
 
 All of these need a running client; none could be done in this audit.
 

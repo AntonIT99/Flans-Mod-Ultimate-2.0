@@ -22,6 +22,7 @@ ShellSlots 4
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Alternate 44_T3485 44_t3485_2 gray 8
 AddDye 5 green
 
 // Real-world specifications

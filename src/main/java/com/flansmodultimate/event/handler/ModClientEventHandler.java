@@ -11,6 +11,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.*;
 import com.flansmodultimate.client.render.blockentity.CapturePointRenderer;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
+import com.flansmodultimate.client.render.blockentity.TeamBannerRenderer;
 import com.flansmodultimate.client.render.entity.*;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.hud.ClientHudOverlays;
@@ -190,6 +191,7 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(FlansModEntities.teamItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
         event.registerBlockEntityRenderer(FlansModBlocks.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
         event.registerBlockEntityRenderer(FlansModBlocks.capturePointBlockEntity.get(), CapturePointRenderer::new);
+        event.registerBlockEntityRenderer(FlansModBlocks.teamBannerBlockEntity.get(), context -> new TeamBannerRenderer());
     }
 
     @SubscribeEvent

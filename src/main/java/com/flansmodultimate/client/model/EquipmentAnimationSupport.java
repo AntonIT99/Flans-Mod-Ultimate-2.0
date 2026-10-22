@@ -1,11 +1,14 @@
 package com.flansmodultimate.client.model;
 
+import com.flansmodultimate.api.ArmPoseRule;
 import com.flansmodultimate.api.IEquipmentPolicy;
 import com.flansmodultimate.api.client.ArmorPoseStep;
 import com.flansmodultimate.common.guns.GunArmPoses;
+import com.flansmodultimate.common.guns.HeldItemPresentation;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,11 +21,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /** Resting limb pose for equipment whose wearer disables armor animations. */
 public final class EquipmentAnimationSupport
 {
-    private EquipmentAnimationSupport()
-    {}
-
     /** Steps addons registered for armour models; read on the render thread, written during client setup. */
     private static final List<ArmorPoseStep> armorPoseSteps = new CopyOnWriteArrayList<>();
+
+    private EquipmentAnimationSupport()
+    {}
 
     public static void addArmorPoseStep(ArmorPoseStep step)
     {
@@ -48,18 +51,23 @@ public final class EquipmentAnimationSupport
 
     public static void weapons(HumanoidModel<?> model, LivingEntity entity)
     {
-        if (entity instanceof IEquipmentPolicy policy && !policy.flansWeaponAnimations())
-            return;
         GunArmPoses.Result poses = GunArmPoses.resolve(entity);
         for (InteractionHand hand : InteractionHand.values())
             hand(model, entity, hand, poses.get(hand));
+        // A native two-handed use animation may have moved the other arm after its shield was posed.
+        for (InteractionHand hand : InteractionHand.values())
+            if (GunArmPoses.classify(entity.getItemInHand(hand)) == GunArmPoses.HandItem.SHIELD)
+                hand(model, entity, hand, GunArmPoses.Arm.ONE_ARM);
+        customArms(model, entity);
     }
 
     private static void hand(HumanoidModel<?> model, LivingEntity entity, InteractionHand hand, GunArmPoses.Arm pose)
     {
         boolean right = (hand == InteractionHand.MAIN_HAND) == (entity.getMainArm() == HumanoidArm.RIGHT);
         ModelPart arm = right ? model.rightArm : model.leftArm;
-        if (pose != GunArmPoses.Arm.NONE)
+        if (pose == GunArmPoses.Arm.RELAXED)
+            arm.xRot = arm.yRot = arm.zRot = 0F;
+        else if (pose != GunArmPoses.Arm.NONE)
         {
             arm.xRot = model.head.xRot - (pose == GunArmPoses.Arm.THROW ? (float) Math.PI : (float) Math.PI / 2F);
             arm.yRot = model.head.yRot;
@@ -72,8 +80,33 @@ public final class EquipmentAnimationSupport
                 other.zRot = 0F;
             }
         }
-        if (entity.isUsingItem() && entity.getUsedItemHand() == hand)
+        if (pose == GunArmPoses.Arm.NONE && mayAnimateUse(entity, hand))
             using(model, arm, right, entity.getUseItem().getUseAnimation());
+    }
+
+    private static boolean mayAnimateUse(LivingEntity entity, InteractionHand hand)
+    {
+        return (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponAnimations()) && entity.isUsingItem() && entity.getUsedItemHand() == hand;
+    }
+
+    /** Runs after native animation; the only path allowed to replace a shield's required rotations. */
+    public static void customArms(HumanoidModel<?> model, LivingEntity entity)
+    {
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            ArmPoseRule rule = HeldItemPresentation.rule(entity, hand);
+            ModelPart arm = (hand == InteractionHand.MAIN_HAND) == (entity.getMainArm() == HumanoidArm.RIGHT) ? model.rightArm : model.leftArm;
+            if (rule.pose() == ArmPoseRule.Pose.RELAXED && GunArmPoses.classify(entity.getItemInHand(hand)) != GunArmPoses.HandItem.SHIELD)
+                arm.xRot = arm.yRot = arm.zRot = 0F;
+            if (rule.pose() != ArmPoseRule.Pose.CUSTOM)
+                continue;
+            if ((rule.axes() & 1) != 0)
+                arm.xRot = rule.x() * Mth.DEG_TO_RAD;
+            if ((rule.axes() & 2) != 0)
+                arm.yRot = rule.y() * Mth.DEG_TO_RAD;
+            if ((rule.axes() & 4) != 0)
+                arm.zRot = rule.z() * Mth.DEG_TO_RAD;
+        }
     }
 
     private static void using(HumanoidModel<?> model, ModelPart arm, boolean right, UseAnim animation)

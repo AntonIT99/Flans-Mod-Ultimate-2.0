@@ -2,7 +2,10 @@ package com.wolffsmod.npcs.soldier;
 
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.*;
-import com.wolffsmod.npcs.combat.NpcCombatSettings.EquipmentImport;
+import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.tactics.WeaponRole;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.*;
@@ -14,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -39,11 +42,15 @@ public final class FlanSoldierLoadout
     {
         /** A Flan gun the NPC fires from a hand. A deployable gun is not one: it is only carried. */
         GUN,
+        /** A melee weapon or a supported non-Flan ranged weapon. */
+        WEAPON,
         /** A shield, raised from the off hand. */
         SHIELD,
-        /** A Flan grenade or thrown weapon. */
+        /** A Flan grenade, reserved for the projectile slot. */
         THROWABLE,
-        /** Flan ammunition a gun is reloaded with. */
+        /** A throwable Flan gun, eligible for either the projectile slot or the main hand. */
+        THROWN_WEAPON,
+        /** Flan ammunition a gun is reloaded with, or arrows and rockets a bow or crossbow shoots. */
         AMMUNITION, OTHER
     }
 
@@ -73,30 +80,33 @@ public final class FlanSoldierLoadout
     {}
 
     /**
-     * Distributes the starting items of a class, in the order it lists them. The first gun that is fired from the hand
-     * goes in the main hand. The
-     * off hand takes a shield, or a second gun only when it is the same weapon as the first, for dual wielding. A gun
-     * reloads from the projectile slot, which takes the first ammunition the main-hand gun loads; without any, or
-     * without a gun, it takes the first throwable. Everything else goes to the inventory, up to its size.
+     * Distributes the starting items of a class, in AddItem order. The first throwable is reserved for the projectile slot;
+     * the first remaining handheld gun, melee weapon, throwable gun or supported non-Flan ranged weapon goes in the main hand. The
+     * off hand takes a shield, or a second gun only when it is the same weapon as the first, for dual wielding. A gun, bow
+     * or crossbow reloads from the projectile slot, which takes the first ammunition the main-hand weapon loads; without
+     * any, or without such a weapon, it takes the first throwable. Everything else goes to the inventory, up to its size.
      */
     public static <T> Slots<T> assign(List<T> items, Items<T> rules)
     {
-        int mainHand = first(items, -1, item -> rules.kind(item) == Kind.GUN);
-        T gun = mainHand < 0 ? null : items.get(mainHand);
-        int offHand = first(items, mainHand, item -> offHand(rules, gun, item));
-        int ammunition = gun == null ? -1 : first(items, -1, item -> rules.kind(item) == Kind.AMMUNITION && rules.loads(gun, item));
-        int projectile = ammunition < 0 ? first(items, -1, item -> rules.kind(item) == Kind.THROWABLE) : ammunition;
+        int throwable = first(items, -1, item -> rules.kind(item) == Kind.THROWABLE || rules.kind(item) == Kind.THROWN_WEAPON);
+        int mainHand = first(items, throwable, item -> rules.kind(item) == Kind.GUN || rules.kind(item) == Kind.WEAPON || rules.kind(item) == Kind.THROWN_WEAPON);
+        T weapon = at(items, mainHand);
+        int offHand = first(items, mainHand, item -> offHand(rules, weapon, item));
+        int ammunition = weapon != null && (rules.kind(weapon) == Kind.GUN || rules.kind(weapon) == Kind.WEAPON)
+            ? first(items, -1, item -> rules.kind(item) == Kind.AMMUNITION && rules.loads(weapon, item))
+            : -1;
+        int projectile = ammunition < 0 ? throwable : ammunition;
         List<T> inventory = new ArrayList<>();
         for (int i = 0; i < items.size() && inventory.size() < NpcAmmunition.INVENTORY_SLOTS; i++)
             if (i != mainHand && i != offHand && i != projectile)
                 inventory.add(items.get(i));
-        return new Slots<>(gun, at(items, offHand), at(items, projectile), List.copyOf(inventory));
+        return new Slots<>(weapon, at(items, offHand), at(items, projectile), List.copyOf(inventory));
     }
 
     private static <T> boolean offHand(Items<T> rules, @Nullable T gun, T item)
     {
         Kind kind = rules.kind(item);
-        return kind == Kind.SHIELD || gun != null && kind == Kind.GUN && rules.sameGun(gun, item);
+        return kind == Kind.SHIELD || gun != null && rules.kind(gun) == Kind.GUN && kind == Kind.GUN && rules.sameGun(gun, item);
     }
 
     /** @return the index of the first wanted item, never the skipped index, or -1 */
@@ -132,6 +142,8 @@ public final class FlanSoldierLoadout
         @Override
         public boolean loads(ItemStack gun, ItemStack ammunition)
         {
+            if (gun.getItem() instanceof ProjectileWeaponItem weapon)
+                return weapon.getAllSupportedProjectiles().test(ammunition);
             return FlansEquipment.acceptsAmmunition(gun, ammunition);
         }
     }
@@ -140,17 +152,21 @@ public final class FlanSoldierLoadout
     {
         if (FlansProjectiles.isGrenade(stack))
             return Kind.THROWABLE;
-        if (FlansProjectiles.isProjectile(stack))
+        if (FlansProjectiles.isProjectile(stack) || stack.getItem() instanceof ArrowItem || stack.getItem() instanceof FireworkRocketItem)
             return Kind.AMMUNITION;
         Optional<EquippedWeaponProperties> weapon = FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY);
         if (NpcEquipment.shield(stack) || weapon.isPresent() && weapon.get().shield())
             return Kind.SHIELD;
         if (weapon.isEmpty())
-            return Kind.OTHER;
+            return NpcEquipment.ranged(stack) || NpcEquipment.meleeDamage(stack) > 1D ? Kind.WEAPON : Kind.OTHER;
         if (weapon.get().throwable())
-            return Kind.THROWABLE;
-        // A deployable gun is fired from where it is set up, so the next gun of the class is the one to hold.
-        return weapon.get().ranged() && !FlansEquipment.isDeployable(stack) ? Kind.GUN : Kind.OTHER;
+            return Kind.THROWN_WEAPON;
+        // A deployable gun is fired from where it is set up, so the next weapon of the class is the one to hold.
+        if (FlansEquipment.isDeployable(stack))
+            return Kind.OTHER;
+        if (weapon.get().ranged())
+            return Kind.GUN;
+        return weapon.get().meleeDamage() > 1D ? Kind.WEAPON : Kind.OTHER;
     }
 
     /**
@@ -178,10 +194,12 @@ public final class FlanSoldierLoadout
             return;
         }
         apply(npc, selection.get());
-        player.sendSystemMessage(Component.translatable("wolffsmodnpcs.soldier.loadout.applied", selection.get().playerClass().getName()));
     }
 
-    /** Replaces the NPC's armour, weapons and inventory with the class loadout and asks for its statistics to follow them. */
+    /**
+     * Replaces the NPC's armour, weapons and inventory with the class loadout and asks for its statistics to follow them. An
+     * NPC still on Custom NPCs' tactics takes the tactic its ranged weapon suits.
+     */
     public static void apply(EntityNPCInterface npc, FlanSoldierSelection selection)
     {
         Equipment equipment = equipment(selection);
@@ -194,10 +212,31 @@ public final class FlanSoldierLoadout
         npc.inventory.drops.putAll(equipment.inventory());
         // The NPC's next tick imports them, where the new equipment is in place and inherited values are lifted first.
         NpcCombatSettings combat = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
-        for (EquipmentImport kind : EquipmentImport.values())
-            combat.requestImport(kind);
+        for (EquipmentProperty property : EquipmentProperty.values())
+            combat.requestCopy(property);
+        // The class suggests how its weapon is fought with, unless the builder has already chosen a tactic.
+        NpcTuning tuning = NpcTuning.of(npc);
+        if (tuning.tactic() == Tactic.CUSTOM_NPCS)
+            startingTactic(equipment).ifPresent(tactic -> tuning.set(Value.TACTIC, tactic.ordinal()));
         npc.updateClient = true;
         npc.updateAI = true;
+    }
+
+    /** @return the tactic that suits the class's ranged weapon, or nothing for a class that fights in melee */
+    static Optional<Tactic> startingTactic(Equipment equipment)
+    {
+        ItemStack mainHand = stack(equipment.weapons().get(MAIN_HAND_INDEX));
+        ItemStack projectile = stack(equipment.weapons().get(PROJECTILE_INDEX));
+        if (NpcEquipment.ranged(mainHand))
+            return Optional.of(WeaponRole.of(mainHand, projectile).tactic());
+        if (mainHand.isEmpty() && NpcEquipment.ranged(projectile))
+            return Optional.of(WeaponRole.THROWN.tactic());
+        return Optional.empty();
+    }
+
+    private static ItemStack stack(@Nullable IItemStack stack)
+    {
+        return stack == null ? ItemStack.EMPTY : stack.getMCItemStack();
     }
 
     /**
@@ -211,7 +250,7 @@ public final class FlanSoldierLoadout
         for (EquipmentSlot slot : ARMOUR_SLOTS)
         {
             ItemStack stack = selection.playerClass().getArmour(slot);
-            if (stack.isEmpty())
+            if (stack.isEmpty() && selection.team() != null && selection.playerClass().usesTeamArmour(slot))
                 stack = selection.team().getArmour(slot);
             if (!stack.isEmpty())
                 armour.put(HEAD_ARMOUR_INDEX - slot.getIndex(), NpcAPI.Instance().getIItemStack(stack));

@@ -151,6 +151,7 @@ public class GunAnimationConfig
     private EnumAnimationType animationType = null;
     private EnumMeleeAnimation meleeAnimation = null;
 
+    private Vector3f aimOffset = null;
     private Vector3f thirdPersonOffset = null;
     private Vector3f itemFrameOffset = null;
     private Boolean stillRenderGunWhenScopedOverlay = null;
@@ -222,14 +223,14 @@ public class GunAnimationConfig
         countOnRightHandSide = readBoolean("animCountOnRightHandSide", file);
         isBulletCounterActive = readBoolean("animIsBulletCounterActive", file);
         isAdvBulletCounterActive = readBoolean("animIsAdvBulletCounterActive", file);
-        
+
         tiltGunTime = readFloat("animTiltGunTime", file);
         unloadClipTime = readFloat("animUnloadClipTime", file);
         loadClipTime = readFloat("animLoadClipTime", file);
 
         scopeIsOnSlide = readBoolean("animScopeIsOnSlide", file);
         scopeIsOnBreakAction = readBoolean("animScopeIsOnBreakAction", file);
-        
+
         numBulletsInReloadAnimation = readFloat("animNumBulletsInReloadAnimation", file);
         pumpDelay = readInteger("animPumpDelay", file);
         pumpDelayAfterReload = readInteger("animPumpDelayAfterReload", file);
@@ -289,10 +290,8 @@ public class GunAnimationConfig
         // As in 1.7.10, the Horizontal keys are aliases that also land on the
         // vertical clip rotation, and only when they are actually authored.
         // Reading them unconditionally would wipe out the Vertical keys above.
-        rotateClipVertical = Optional.ofNullable(readFloat("animRotateClipHorizontal", file))
-            .orElse(rotateClipVertical);
-        stagedrotateClipVertical = Optional.ofNullable(readFloat("animStagedRotateClipHorizontal", file))
-            .orElse(stagedrotateClipVertical);
+        rotateClipVertical = Optional.ofNullable(readFloat("animRotateClipHorizontal", file)).orElse(rotateClipVertical);
+        stagedrotateClipVertical = Optional.ofNullable(readFloat("animStagedRotateClipHorizontal", file)).orElse(stagedrotateClipVertical);
         tiltClip = readFloat("animTiltClip", file);
         stagedtiltClip = readFloat("animStagedTiltClip", file);
         translateClip = readVector("animTranslateClip", file);
@@ -302,6 +301,7 @@ public class GunAnimationConfig
         animationType = readAnimationType(file);
         meleeAnimation = readValue("animMeleeAnimation", null, EnumMeleeAnimation.class, file);
 
+        aimOffset = readVector("animAimOffset", file);
         thirdPersonOffset = readVector("animThirdPersonOffset", file);
         itemFrameOffset = readVector("animItemFrameOffset", file);
         stillRenderGunWhenScopedOverlay = readBoolean("animStillRenderGunWhenScopedOverlay", file);

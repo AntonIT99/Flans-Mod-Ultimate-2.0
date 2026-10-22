@@ -72,6 +72,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public static final String NBT_KNOCKBACK_RESISTANCE_UUID = "knockback_resistance_uuid";
     public static final String NBT_MOVEMENT_SPEED_UUID = "movement_speed_uuid";
     public static final String NBT_ATTACK_DAMAGE_UUID = "attack_damage_uuid";
+    public static final String NBT_ATTACK_SPEED_UUID = "attack_speed_uuid";
+    public static final String NBT_MELEE_RANGE_UUID = "melee_range_uuid";
 
     @Getter
     protected final GunType configType;
@@ -146,7 +148,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      */
     public boolean isChargingThrow(LivingEntity holder, ItemStack stack)
     {
-        return configType.isThrowable() && holder.isUsingItem() && holder.getUseItem() == stack;
+        if (!getConfigType().isThrowable())
+            return false;
+        InteractionHand hand = GunArmPoses.chargingThrowHand(holder);
+        return hand != null && holder.getItemInHand(hand) == stack;
     }
 
     @Override
@@ -542,6 +547,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
         modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(stack, false),
             ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ATTACK_SPEED, "attack_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_SPEED_UUID), "Melee speed", configType.getMeleeSpeed() - 4D,
+            ItemAttributes.Operation.ADD_VALUE);
+        if (configType.getMeleeRange() != 3F && (configType.getPrimaryFunction() == EnumFunction.MELEE || configType.getSecondaryFunction() == EnumFunction.MELEE))
+            modifiers.add(ItemAttributes.meleeReachAttribute(), "melee_range", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MELEE_RANGE_UUID), "Melee range", configType.getMeleeRange() - 3D,
+                ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override

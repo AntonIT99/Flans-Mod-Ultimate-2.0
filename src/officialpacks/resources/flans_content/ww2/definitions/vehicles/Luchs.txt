@@ -12,6 +12,10 @@ RotateWheels True
 AddDye 8 gray
 ModelScale 1.1
 
+// Paintjobs
+AdvPaintJob Original Luchs luchs_original gray 8
+AdvPaintJob Snow Luchs luchs_snow white 8
+
 // Recipe
 AddRecipeParts turret 1 lightTankBody 1 vehicleSeat
 AddRecipeParts core 1 lightTankBody

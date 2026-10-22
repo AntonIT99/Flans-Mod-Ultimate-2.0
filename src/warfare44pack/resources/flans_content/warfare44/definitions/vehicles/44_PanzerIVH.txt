@@ -26,6 +26,8 @@ FuelTankSize 2000
 // Paintjobs
 advpaintjob Beige 44_PanzerIVH_Beige 44_PanzerIVH_Beige yellow 5
 advpaintjob Winter 44_PanzerIVH_Winter 44_PanzerIVH_Winter silver 5
+advpaintjob DunkelgelbCamo 44_PanzerIVH 44_panzerivh_dunkelgelbcamo yellow 8
+advpaintjob Finland 44_PanzerIVH 44_panzerivh_finland green 8
 AddDye 5 gray
 
 // Real-world specifications

@@ -1,11 +1,15 @@
 package com.wolffsmod.npcs.mixin;
 
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.client.FlansTeamsClient;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.client.FlanModelBounds;
 import com.wolffsmod.npcs.client.FlanNameplatePlacement;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.NpcPresentation;
+import com.wolffsmod.npcs.teams.BotSettings;
+import com.wolffsmod.npcs.teams.BotTag;
 import noppes.npcs.client.renderer.RenderNPCInterface;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -16,7 +20,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 
-/** Raises Flan labels above their model, preserves tint with hurt flashes disabled and hides killed bodies without death rotation. */
+/**
+ * Raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
+ * and hides the name tags of Teams bots from players of the other sides when only allies should see them.
+ */
 @Mixin(value = RenderNPCInterface.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
 public abstract class NpcNameplateMixin
@@ -39,13 +46,25 @@ public abstract class NpcNameplateMixin
             callback.cancel();
     }
 
+    /** A Teams bot whose name tags only allies see shows none to a player of another side. */
+    @Inject(method = "renderLivingLabel", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsAlliesOnlyLabel(EntityNPCInterface npc, PoseStack pose, MultiBufferSource buffers, int light, CallbackInfo callback)
+    {
+        BotTag.readClient(npc).filter(bot -> bot.nameplates() == BotSettings.Nameplates.ALLIES).ifPresent(bot ->
+        {
+            boolean ally = FlansModApi.getTeam(bot.team()).map(FlansTeamsClient::isAllyOfLocalPlayer).orElse(false);
+            if (FlansTeamsClient.isLocalPlayerPlaying() && !ally)
+                callback.cancel();
+        });
+    }
+
     @SuppressWarnings("unchecked")
     @ModifyVariable(method = "renderLivingLabel", at = @At("STORE"), ordinal = 1)
     private float wolffsmodnpcsNameHeight(float original, EntityNPCInterface npc, PoseStack pose, MultiBufferSource buffers, int light)
     {
         if (!(npc instanceof EntityCustomNpc custom) || !(custom.modelData.getEntity(custom) instanceof FlanModelEntity model))
             return original;
-        float scale = custom.modelData.simpleRender ? 1F : custom.display.getSize() / 5F;
+        float scale = custom.display.getSize() / 5F;
         var renderer = (EntityRenderer<EntityNPCInterface>) (Object) this;
         double offset = renderer.getRenderOffset(npc, 0).y;
         return FlanNameplatePlacement.height(original, npc.getBbHeight(), FlanModelBounds.of(model), scale, offset);

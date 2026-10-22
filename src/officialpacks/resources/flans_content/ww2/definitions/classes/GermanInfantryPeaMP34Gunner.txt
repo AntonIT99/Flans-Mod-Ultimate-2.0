@@ -1,0 +1,17 @@
+// Identity
+Name SMG Gunner (MP 34, Pea Dot)
+ShortName OfficialWW2_GermanInfantryPeaMP34Gunner
+
+// Armour
+Hat GermanEngineerHelmet
+Chest GermanEngineerChestPea
+Legs GermanUniformPantsPea
+Shoes GermanUniformBoots
+
+// Items
+AddItem mp-34
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem Mp34Ammo 4
+AddItem lugerAmmo 2

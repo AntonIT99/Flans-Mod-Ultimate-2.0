@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman (M1 Carbine)
+ShortName OfficialWW2_AmericanInfantryCarbineRifleman
+
+// Armour
+Hat AmericanAssaultHelmet
+Chest AmericanAssaultChest
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem m1Carbine
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem m1CarbineAmmo 4
+AddItem coltAmmo 2

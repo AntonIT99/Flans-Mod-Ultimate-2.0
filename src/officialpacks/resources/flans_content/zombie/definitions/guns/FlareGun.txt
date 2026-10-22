@@ -7,7 +7,7 @@ Icon FlareGun
 Colour 255 255 255
 DeployedModel None
 Model zombie.FlareGun
-Texture FlareGun
+Texture FlareGun_2
 Paintjob FlareGun_Red FlareGun_Red red 1
 
 // Ammunition

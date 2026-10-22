@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render.blockentity;
 
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
+import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.common.block.entity.CapturePointBlockEntity;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.platform.render.VertexPlatform;
@@ -17,7 +18,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.*;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -31,7 +31,6 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
     /** Height of the bottom edge of the flag on a neutral point and on one fully held. */
     private static final float FLAG_LOW = 0.25F;
     private static final float FLAG_HIGH = 2F;
-    private static final float CUSTOM_FLAG_WIDTH = 1.5F;
     private static final double LABEL_RANGE_SQUARED = 48D * 48D;
     private static final float LABEL_HEIGHT = 3.6F;
     private static final float LABEL_SCALE = 0.026F;
@@ -69,9 +68,9 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
         poseStack.popPose();
 
         poseStack.translate(0F, lift, 0F);
-        ResourceLocation custom = team == null ? null : team.getVictoryFlagTextureLocation();
-        if (custom != null)
-            renderCustomFlag(poseStack, buffer.getBuffer(RenderType.entityCutoutNoCull(custom)), packedLight);
+        TeamFlagTextures.FlagTexture image = TeamFlagTextures.get(team);
+        if (image != null)
+            TeamObjectRenderer.renderFlagImage(image, poseStack, buffer, packedLight);
         else
         {
             int colour = team == null ? NEUTRAL_COLOUR : team.getTeamColour();
@@ -83,21 +82,6 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
         renderLabel(point, poseStack, buffer, packedLight);
     }
 
-    /** A flag of a team with its own flag skin: the whole texture on one upright sheet, seen from both sides. */
-    private static void renderCustomFlag(PoseStack poseStack, VertexConsumer vertices, int packedLight)
-    {
-        PoseStack.Pose pose = poseStack.last();
-        vertex(vertices, pose, 0F, 0F, 0F, 1F, packedLight);
-        vertex(vertices, pose, -CUSTOM_FLAG_WIDTH, 0F, 1F, 1F, packedLight);
-        vertex(vertices, pose, -CUSTOM_FLAG_WIDTH, 1F, 1F, 0F, packedLight);
-        vertex(vertices, pose, 0F, 1F, 0F, 0F, packedLight);
-    }
-
-    private static void vertex(VertexConsumer vertices, PoseStack.Pose pose, float x, float y, float u, float v, int packedLight)
-    {
-        VertexPlatform.vertex(vertices, pose, x, y, 0F, 1F, 1F, 1F, 1F, u, v, OverlayTexture.NO_OVERLAY, packedLight, 0F, 0F, 1F);
-    }
-
     private void renderLabel(CapturePointBlockEntity point, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         Vec3 centre = Vec3.atBottomCenterOf(point.getBlockPos());
@@ -106,7 +90,8 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
         poseStack.pushPose();
         poseStack.translate(0.5F, LABEL_HEIGHT, 0.5F);
         poseStack.mulPose(dispatcher.camera.rotation());
-        poseStack.scale(-LABEL_SCALE, -LABEL_SCALE, LABEL_SCALE);
+        // Minecraft 1.21 turns the camera rotation half a turn further than 1.20.1, so the text keeps its X axis, as name tags do.
+        poseStack.scale(LABEL_SCALE, -LABEL_SCALE, LABEL_SCALE);
         Matrix4f pose = poseStack.last().pose();
         String symbol = String.valueOf(point.getSymbol());
         font.drawInBatch(symbol, -font.width(symbol) / 2F, -10F, 0xFFFFFFFF, false, pose, buffer, Font.DisplayMode.SEE_THROUGH, 0x70000000, packedLight);

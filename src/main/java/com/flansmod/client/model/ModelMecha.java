@@ -56,21 +56,23 @@ public class ModelMecha extends ModelDriveable
     public void render(DriveableVisual driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
         float alpha, float scale, EnumRenderPass renderPass)
     {
-        if (driveable.isPartIntact(EnumDriveablePart.CORE))
-            super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
+            super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.CORE), green * tint(driveable, EnumDriveablePart.CORE),
+                blue * tint(driveable, EnumDriveablePart.CORE), alpha, scale, renderPass);
 
-        boolean hipsIntact = driveable.isPartIntact(EnumDriveablePart.HIPS);
+        boolean hipsIntact = driveable.isPartDrawn(EnumDriveablePart.HIPS);
 
         MechaType type = driveable.getConfigType() instanceof MechaType mechaType ? mechaType : null;
-        if (driveable.isPartIntact(EnumDriveablePart.HEAD))
+        if (driveable.isPartDrawn(EnumDriveablePart.HEAD))
         {
             float headYaw = state.turretYaw();
             if (type != null && type.isLimitHeadTurn())
                 headYaw = Mth.clamp(headYaw, -type.getLimitHeadTurnValue(), type.getLimitHeadTurnValue());
             poseStack.pushPose();
             poseStack.mulPose(Axis.YP.rotationDegrees(-headYaw));
-            renderPart(headModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            if (driveable.isPartIntact(EnumDriveablePart.BARREL))
+            renderPart(headModel, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.HEAD), green * tint(driveable, EnumDriveablePart.HEAD),
+                blue * tint(driveable, EnumDriveablePart.HEAD), alpha, scale, renderPass);
+            if (driveable.isPartDrawn(EnumDriveablePart.BARREL))
                 renderWithRotation(barrelModel, 0F, 0F, -state.turretPitch() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
@@ -87,22 +89,26 @@ public class ModelMecha extends ModelDriveable
         {
             poseStack.pushPose();
             poseStack.mulPose(Axis.YP.rotationDegrees(-Mth.wrapDegrees(state.legYaw() - state.yaw())));
-            renderPart(hipsModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderLegs(type, state, leftSwing, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderPart(hipsModel, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.HIPS), green * tint(driveable, EnumDriveablePart.HIPS),
+                blue * tint(driveable, EnumDriveablePart.HIPS), alpha, scale, renderPass);
+            renderLegs(type, state, leftSwing, rightSwing, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.HIPS),
+                green * tint(driveable, EnumDriveablePart.HIPS), blue * tint(driveable, EnumDriveablePart.HIPS), alpha, scale, renderPass);
             poseStack.popPose();
         }
 
         float aimPitch = type == null ? -state.turretPitch() : -Mth.clamp(state.turretPitch(), -type.getUpperArmLimit(), type.getLowerArmLimit());
         float armSpaceScale = configSpaceScale(type);
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_ARM))
+        if (driveable.isPartDrawn(EnumDriveablePart.LEFT_ARM))
         {
             renderArm(leftArmModel, leftHandModel, type == null ? null : type.getLeftArmOrigin(), type == null ? null : type.getLeftHandModifier(), type == null ? 1F : type.getArmLength(),
-                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.LEFT_TOOL), poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.LEFT_ARM),
+                green * tint(driveable, EnumDriveablePart.LEFT_ARM), blue * tint(driveable, EnumDriveablePart.LEFT_ARM), alpha, scale, renderPass);
         }
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM))
+        if (driveable.isPartDrawn(EnumDriveablePart.RIGHT_ARM))
         {
             renderArm(rightArmModel, rightHandModel, type == null ? null : type.getRightArmOrigin(), type == null ? null : type.getRightHandModifier(), type == null ? 1F : type.getArmLength(),
-                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+                armSpaceScale, aimPitch, !hasAddon(driveable, EnumMechaSlotType.RIGHT_TOOL), poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.RIGHT_ARM),
+                green * tint(driveable, EnumDriveablePart.RIGHT_ARM), blue * tint(driveable, EnumDriveablePart.RIGHT_ARM), alpha, scale, renderPass);
         }
 
         renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.VEHICLE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);

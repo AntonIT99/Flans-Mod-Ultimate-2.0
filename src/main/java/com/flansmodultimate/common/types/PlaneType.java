@@ -28,6 +28,12 @@ public class PlaneType extends DriveableType
     }
 
     @Override
+    public boolean isHelicopter()
+    {
+        return mode == EnumPlaneMode.HELI;
+    }
+
+    @Override
     public String getEngineStartupSound()
     {
         return StringUtils.firstNonBlank(startEngineSound, startSound);

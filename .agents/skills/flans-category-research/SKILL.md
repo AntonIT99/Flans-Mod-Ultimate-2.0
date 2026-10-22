@@ -42,7 +42,8 @@ sorting-only work needs no historical research or domain balance tables.
    configuration coherent. Armor/mecha groups may share a balance profile without
    sharing an exact historical model.
 4. Edit minimally, restore documented ordering, and run the applicable format and
-   domain checks. Rerun the scanner after coverage changes.
+   domain checks. For mixed belts, assess tracer entries using the ammunition
+   reference. Rerun the scanner after coverage changes.
 5. Finish the requested batch. Only historical/generic items whose identity **and
    class** remain unknowable may be skipped. Armor and mecha rows remain coverage
    gaps; assign the nearest defensible tier and disclose uncertainty.

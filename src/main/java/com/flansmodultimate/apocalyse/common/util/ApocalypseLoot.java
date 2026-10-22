@@ -9,7 +9,6 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -28,9 +27,18 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
 {
-    private static final String[] JOURNAL_LINES = new String[]{"The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
-        "If you find the power cubes, do not stand between them unless you are ready to leave.", "The survivors stopped trusting anyone with clean armor. They still trade bullets for food.",
-        "Sulphur pits mark the old roads. Keep water away from the acid and keep moving.", "The skull drones patrol at night. Their boss laughs before the nukes fall."};
+    /** The eight 1.12.2 survivor journals, as {title, pages...}. */
+    private static final String[][] SURVIVOR_JOURNALS = new String[][]{{"Help me!", "I have no food. My child has no food. We are going to die. Why did this have to happen?"}, {"The Endtimes",
+        "It's amazing how fast your world can be torn down around you. Just three days ago, I was happily trading emeralds at the village market. Now all that is gone. I am left to wander this wasteland alone. I don't know how long I'll last, or how long I'll stay sane..."},
+        {"Day 5", "We found water today! At the bottom of a village well. We drank and bathed and filled our bottles and left. But for reference, the village was at- *bloodstains*"},
+        {"Day 7",
+            "They got my brother! Just after we left the village, he was snatched by some sort of... robot... Also, I think the water may have been contaminated. I've been sweating an awful lot, and it's not just the heat."},
+        {"Day 10", "I have been violently ill, but have not found a new water source yet. I may have to drink more contaminated water to stay alive. I couldn't get worse, could I?"},
+        {"The Wasteland",
+            "This world is harsh and unforgiving. I've had to make difficult choices, but they are necessary in order to survive. If I hadn't pulled the trigger, they would have done so instead. I'm sure of it."},
+        {"", "We spotted an airstrip in the distance! We're going to head over there under cover of darkness and see if we can acquire ourselves a plane. Let's get out of this terrible place."},
+        {"Time Portal: Instruction Manual", "The Time Portal uses the portal properties of obsidian combined with-",
+            "Beware! The mechas are coming! The time portal is of great importance! You must-"}};
 
     /** The 1.12.2 research lab notes, as {title, page}. */
     private static final String[][] SCIENTIST_JOURNAL = new String[][]{{"Research Journal: Entry 1",
@@ -267,17 +275,22 @@ public final class ApocalypseLoot
     {
         Level level = mob.level();
         RandomSource random = mob.getRandom();
-        for (int i = 0; i < random.nextInt(5); i++)
-            Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), randomFood(random));
+        int foodCount = random.nextInt(5);
+        for (int i = 0; i < foodCount; i++)
+            Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), randomFood(random, 5));
 
         if (random.nextInt(5) == 0)
             Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), new ItemStack(Items.OAK_LOG, 5 + random.nextInt(10)));
+        if (random.nextInt(12) == 0)
+            Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), new ItemStack(Items.BOOK));
         if (random.nextInt(12) == 0)
             Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), new ItemStack(Items.FLINT_AND_STEEL));
         if (random.nextInt(40) == 0)
             Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), new ItemStack(Items.IRON_AXE));
         if (random.nextInt(40) == 0)
             Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), new ItemStack(Items.IRON_PICKAXE));
+        if (random.nextInt(40) == 0)
+            Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), new ItemStack(Items.IRON_SHOVEL));
         if (random.nextInt(4) == 0)
             Containers.dropItemStack(level, mob.getX(), mob.getY(), mob.getZ(), new ItemStack(Items.TORCH, 1 + random.nextInt(5)));
         if (random.nextBoolean())
@@ -287,8 +300,13 @@ public final class ApocalypseLoot
 
     public static ItemStack survivorJournal(RandomSource random)
     {
-        String text = JOURNAL_LINES[random.nextInt(JOURNAL_LINES.length)];
-        return ItemStackData.writtenBook("Survivor Journal", "Unknown Survivor", List.of(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY)));
+        int entry = random.nextInt(SURVIVOR_JOURNALS.length);
+        String[] journal = SURVIVOR_JOURNALS[entry];
+        List<Component> pages = Arrays.stream(journal).skip(1).map(text -> (Component) Component.literal(text)).toList();
+        ItemStack book = ItemStackData.writtenBook(journal[0], "Flan", pages);
+        if (entry == 7)
+            ItemStackData.setBookGeneration(book, 3);
+        return book;
     }
 
     public static Optional<ItemStack> randomPart(RandomSource random)
@@ -359,7 +377,12 @@ public final class ApocalypseLoot
 
     private static ItemStack randomFood(RandomSource random)
     {
-        return switch (random.nextInt(6))
+        return randomFood(random, 6);
+    }
+
+    private static ItemStack randomFood(RandomSource random, int choices)
+    {
+        return switch (random.nextInt(choices))
         {
             case 0 -> new ItemStack(Items.COOKED_BEEF);
             case 1 -> new ItemStack(Items.BREAD);

@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.server.teams;
 
+import com.flansmodultimate.api.ITeamsRespawnRule;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.PlayerClass;
@@ -135,7 +136,7 @@ public final class PacketTeamsAction implements IServerPacket
 
         if (team == Team.SPECTATORS || team.getClasses().isEmpty())
         {
-            manager.respawnPlayer(player, true);
+            manager.respawnPlayer(player, true, ITeamsRespawnRule.Reason.JOINED);
             manager.syncPlayer(player, PacketTeamsState.OpenScreen.CLOSE);
         }
         else if (manager.getCurrentLoadoutPool().isPresent())

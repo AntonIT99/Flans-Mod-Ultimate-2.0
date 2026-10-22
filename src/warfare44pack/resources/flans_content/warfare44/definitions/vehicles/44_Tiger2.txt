@@ -26,6 +26,7 @@ ShellSlots 6
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Dunkelgelb 44_Tiger2H 44_tiger2_dunkelgelb yellow 8
 AddDye 10 gray
 
 // Real-world specifications

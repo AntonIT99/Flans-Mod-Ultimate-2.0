@@ -46,10 +46,16 @@ public final class NpcTypeMapping
         integer(values, NpcTypeProperty.RANGE, type.targetRange(), 1D, 1, 512);
         integer(values, NpcTypeProperty.WALKING_SPEED, type.walkingSpeed(), 20D, 0, 100);
         type.meleeReach().ifPresent(reach -> values.put(NpcTypeProperty.MELEE_REACH, FloatTag.valueOf(Math.round((float) Math.max(0D, reach)))));
-        type.worksUnderWater().ifPresent(works -> values.put(NpcTypeProperty.CAN_DROWN, ByteTag.valueOf(!works)));
+        // A machine has no breath to lose, takes no potions, rolls through cobwebs and does not heal by itself; a flooded
+        // engine is the model's own concern.
+        values.put(NpcTypeProperty.CAN_DROWN, ByteTag.valueOf(false));
+        values.put(NpcTypeProperty.POTION_IMMUNE, ByteTag.valueOf(true));
+        values.put(NpcTypeProperty.IGNORE_COBWEB, ByteTag.valueOf(true));
+        values.put(NpcTypeProperty.HEALTH_REGEN, IntTag.valueOf(0));
+        values.put(NpcTypeProperty.COMBAT_REGEN, IntTag.valueOf(0));
         type.takesFallDamage().ifPresent(takes -> values.put(NpcTypeProperty.NO_FALL_DAMAGE, ByteTag.valueOf(!takes)));
         timing(values, type, nativeProjectile, cycle);
-        if (options.enabled(Feature.WEAPON_STATS))
+        if (options.enabled(Feature.MODEL_WEAPON_STATS))
             weaponStats(values, type, nativeProjectile);
         sounds(values, type, options);
         return Map.copyOf(values);

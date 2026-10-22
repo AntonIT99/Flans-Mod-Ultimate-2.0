@@ -1,0 +1,18 @@
+// Identity
+Name Sniper
+ShortName OfficialWW2_GermanInfantrySniper
+
+// Armour
+Hat GermanSniperHat
+Chest GermanSniperChest
+Legs GermanSniperPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem kar98kSniper
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem ww2Binoculars
+AddItem kar98kAmmo 3
+AddItem lugerAmmo 2

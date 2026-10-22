@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import net.minecraft.nbt.*;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
@@ -101,7 +102,7 @@ public final class ApocalypseGunCombat
             return;
         for (int i = 0; i < count; i++)
         {
-            ApocalypseGunHelper.spareAmmoFor(gunItem.getConfigType(), random).ifPresent(stack ->
+            ApocalypseGunHelper.spareAmmoFor(gunItem.getConfigType(), random, profile == Profile.SURVIVOR).ifPresent(stack ->
             {
                 stack.setCount(1);
                 addReserve(stack);
@@ -119,7 +120,8 @@ public final class ApocalypseGunCombat
             if (loaded.getItem() instanceof ShootableItem shootable)
             {
                 ItemStack spare = loaded.copyWithCount(1);
-                ShootableItem.setRoundsRemaining(spare, Math.max(1, shootable.getConfigType().getRoundsPerItem()));
+                if (!ShootableItem.hasRoundsLeft(spare))
+                    ShootableItem.setRoundsRemaining(spare, Math.max(1, shootable.getConfigType().getRoundsPerItem()));
                 addReserve(spare);
             }
         }
@@ -187,6 +189,13 @@ public final class ApocalypseGunCombat
             gunItem.setBulletItemStack(gunStack, ammoStack, slot, owner.level().registryAccess());
         }))
             return false;
+
+        if (profile == Profile.SURVIVOR)
+        {
+            ModUtils.dropItem(owner.level(), owner, shootableType.getDropItemOnShoot(), shootableType.getContentPack());
+            ModUtils.dropItem(owner.level(), owner, gunType.getDropItemOnShoot(), gunType.getContentPack());
+        }
+        GunArmPoses.onShotFired(owner, InteractionHand.MAIN_HAND);
 
         if (soundDelay <= 0 && playSound(gunType.getShootSound(gunStack, lastBullet), gunType.getGunSoundRange(), gunType.isDistortSound(), gunType.isSilencedSound(gunStack)))
             soundDelay = gunType.getShootSoundLength();

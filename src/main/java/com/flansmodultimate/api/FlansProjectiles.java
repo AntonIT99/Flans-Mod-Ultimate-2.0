@@ -6,6 +6,7 @@
 package com.flansmodultimate.api;
 
 import com.flansmodultimate.common.guns.ExternalProjectileSupport;
+import com.flansmodultimate.common.guns.NearMissHandler;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +24,20 @@ public final class FlansProjectiles
 {
     private FlansProjectiles()
     {}
+
+    /**
+     * Registers a listener for Flan rounds that pass close to mobs, so NPCs can react to being shot at. Registering the
+     * same listener twice has no effect.
+     */
+    public static void addSuppressionListener(ISuppressionListener listener)
+    {
+        NearMissHandler.addListener(listener);
+    }
+
+    public static void removeSuppressionListener(ISuppressionListener listener)
+    {
+        NearMissHandler.removeListener(listener);
+    }
 
     /** @return whether the stack represents a Flan bullet or grenade; readable on either side */
     public static boolean isProjectile(ItemStack stack)
@@ -130,6 +145,28 @@ public final class FlansProjectiles
     public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate, MountAim aim)
     {
         return ExternalProjectileSupport.getMuzzles(model, secondary, sequence, alternate, aim);
+    }
+
+    /**
+     * Selects the muzzle of a seat's own gun on a vehicle, plane or mecha model, without creating a driveable entity. A
+     * twin or quad seat gun fires its barrels in turn, so the trigger index picks one. A seat on the turret is carried round
+     * with the turret; the seat gun's own aim does not move the muzzle, since the pivot it turns round is only known to
+     * clients from the loaded model. Either side after content loading.
+     *
+     * @param model
+     *            vehicle, plane or mecha definition
+     * @param seat
+     *            seat index, as {@link WeaponMount#seat()}
+     * @param sequence
+     *            trigger index, used to take the barrels in turn
+     * @param turretAim
+     *            where the main turret points, relative to the hull; only its yaw is used
+     * @return the muzzle in the frame of {@link #getMuzzles(IContentType, boolean, int, boolean, MountAim)}, naming the seat's
+     *         gun and carrying the seat's shooting particles; empty for another definition or a seat without a gun
+     */
+    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim)
+    {
+        return ExternalProjectileSupport.getSeatMuzzle(model, seat, sequence, turretAim);
     }
 
     /**

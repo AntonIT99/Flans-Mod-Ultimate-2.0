@@ -25,7 +25,7 @@ public final class NpcTypeReadouts
         mapped.forEach((property, value) -> values.put(property, value instanceof NumericTag number ? number.getAsNumber().toString() : value.getAsString()));
         if (!nativeProjectile || !options.enabled(Feature.TYPE_PROPERTIES))
             return values;
-        if (options.enabled(Feature.WEAPON_STATS))
+        if (options.enabled(Feature.MODEL_WEAPON_STATS))
         {
             numbers(values, type, NpcTypeProperty.DAMAGE, weapon -> Math.ceil(weapon.damage()));
             numbers(values, type, NpcTypeProperty.ACCURACY, weapon -> Math.max(1D, Math.min(100D, Math.round(100D - weapon.spread() * 5D))));

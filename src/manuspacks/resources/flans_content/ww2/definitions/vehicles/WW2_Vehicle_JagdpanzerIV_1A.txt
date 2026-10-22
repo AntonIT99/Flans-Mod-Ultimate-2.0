@@ -9,6 +9,9 @@ Icon Icon_WW2_Vehicle_JagdpanzerIV_1A
 Texture Skin_WW2_Vehicle_JagdpanzerIV_1A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Alternate Icon_WW2_Vehicle_JagdpanzerIV_1A skin_ww2_vehicle_jagdpanzeriv_1a_alternate green 8
+
 // Recipe and Inventory
 FuelTankSize 2000
 CargoSlots 0

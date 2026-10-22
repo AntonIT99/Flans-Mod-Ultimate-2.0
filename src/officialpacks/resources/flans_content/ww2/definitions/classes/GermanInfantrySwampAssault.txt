@@ -1,0 +1,17 @@
+// Identity
+Name Assault (Swamp)
+ShortName OfficialWW2_GermanInfantrySwampAssault
+
+// Armour
+Hat GermanAssaultHatSwamp
+Chest GermanAssaultChestSwamp
+Legs GermanUniformPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem mp44
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem mp44Ammo 3
+AddItem lugerAmmo 2

@@ -1,0 +1,17 @@
+// Identity
+Name SMG Gunner (MP 34, Oak Leaf)
+ShortName OfficialWW2_GermanInfantryOakMP34Gunner
+
+// Armour
+Hat GermanEngineerHelmet
+Chest GermanEngineerChestOak
+Legs GermanUniformPantsOak
+Shoes GermanUniformBoots
+
+// Items
+AddItem mp-34
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem Mp34Ammo 4
+AddItem lugerAmmo 2

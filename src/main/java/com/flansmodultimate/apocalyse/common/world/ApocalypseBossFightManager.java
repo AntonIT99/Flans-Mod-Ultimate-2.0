@@ -69,7 +69,7 @@ public final class ApocalypseBossFightManager
 
         BlockPos spawn = BlockPos.containing(0D, Math.min(ApocalypseStructures.BOSS_SPAWN_HEIGHT, level.getMaxBuildHeight() - 10D), 0D);
         // The 1.12.2 arena: the boss circles the origin between y=140 and y=220.
-        spawnBossAt(level, spawn, Vec3.atBottomCenterOf(spawn), placer);
+        spawnBossAt(level, spawn, Vec3.atLowerCornerOf(spawn), placer);
         for (int sx = -1; sx <= 1; sx += 2)
         {
             for (int sz = -1; sz <= 1; sz += 2)
@@ -117,7 +117,7 @@ public final class ApocalypseBossFightManager
         if (boss == null)
             return;
 
-        boss.moveTo(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D, 0.0F, 0.0F);
+        boss.moveTo(home.x, center.getY(), home.z, 0.0F, 0.0F);
         boss.setHome(home);
         if (placer != null)
             boss.setTarget(placer);

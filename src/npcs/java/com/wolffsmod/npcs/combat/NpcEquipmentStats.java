@@ -12,12 +12,15 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
+
+import java.util.Optional;
 
 /**
  * What the NPC's equipment does, as plain numbers. The editor readouts and the one-shot equipment import both read these,
@@ -36,9 +39,15 @@ public final class NpcEquipmentStats
     /** Arrow, trident and thrown-item hitbox width in blocks. */
     public static final double VANILLA_HITBOX = 0.5D;
 
-    /** Ranged statistics of one shot of the held item. */
+    /** Ranged statistics of one shot of the held item; an absent firing sound is an empty string. */
     public record Shot(double damage, double speed, double spread, int projectiles, String firingSound, EquippedWeaponProperties.Impact impact)
-    {}
+    {
+        public Shot
+        {
+            // Legacy weapons may omit ShootSound. Both the import and editor readouts expect a string.
+            firingSound = firingSound == null ? "" : firingSound;
+        }
+    }
 
     /** The resistances Custom NPCs stores, in the order of its resistance sliders. */
     public enum Resistance
@@ -50,7 +59,13 @@ public final class NpcEquipmentStats
     @Nullable
     public static Shot shot(EntityNPCInterface npc, ItemStack item)
     {
-        var flan = NpcEquipment.flan(npc);
+        Optional<EquippedWeaponProperties> flan;
+        if (item == npc.getMainHandItem())
+            flan = NpcEquipment.flan(npc);
+        else if (item == npc.getOffhandItem())
+            flan = NpcEquipment.flan(npc, InteractionHand.OFF_HAND);
+        else
+            flan = FlansEquipment.getWeaponProperties(item, ItemStack.EMPTY);
         if (flan.isPresent())
         {
             EquippedWeaponProperties properties = flan.get();

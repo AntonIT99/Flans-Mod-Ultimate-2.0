@@ -1,0 +1,16 @@
+// Identity
+Name Flamethrower Operator (Green)
+ShortName OfficialWW2_AmericanInfantryGreenFlamethrowerOperator
+
+// Armour
+Hat AmericanEngineerHelmet
+Chest AmericanEngineerChestGreen
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem flamethrowerww2
+AddItem colt
+AddItem ww2Knife
+AddItem flamethrowerww2Ammo 2
+AddItem coltAmmo 3

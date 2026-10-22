@@ -12,7 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -99,10 +99,30 @@ public abstract class GameType
         return victimTeam != Team.SPECTATORS && attackerTeam != null && victimTeam != null && (!manager.areAllied(victimTeam, attackerTeam) || isFriendlyFireEnabled());
     }
 
+    /**
+     * Whether one fighter may hurt another, either of them a player or a combatant. Two players are judged by
+     * {@link #canPlayerBeAttacked}; otherwise by the same rule, with combatants on their team.
+     */
+    public boolean canBeAttacked(LivingEntity victim, LivingEntity attacker)
+    {
+        if (victim instanceof ServerPlayer victimPlayer && attacker instanceof ServerPlayer attackerPlayer)
+            return canPlayerBeAttacked(victimPlayer, attackerPlayer);
+        Team victimTeam = TeamsCombatants.getTeam(victim);
+        Team attackerTeam = TeamsCombatants.getTeam(attacker);
+        return victimTeam != Team.SPECTATORS && attackerTeam != null && victimTeam != null && (!TeamsManager.getInstance().areAllied(victimTeam, attackerTeam) || isFriendlyFireEnabled());
+    }
+
     public boolean playerAttacked(ServerPlayer player, DamageSource source)
     {
-        ServerPlayer attacker = getPlayerFromDamageSource(source);
-        return attacker == null ? getPlayerTeam(player) != Team.SPECTATORS : canPlayerBeAttacked(player, attacker);
+        LivingEntity attacker = TeamsCombatants.getAttacker(source);
+        return attacker == null ? getPlayerTeam(player) != Team.SPECTATORS : canBeAttacked(player, attacker);
+    }
+
+    /** Whether a combatant of the round takes this damage; harm from outside the round always lands. */
+    public boolean combatantAttacked(LivingEntity combatant, DamageSource source)
+    {
+        LivingEntity attacker = TeamsCombatants.getAttacker(source);
+        return attacker == null || canBeAttacked(combatant, attacker);
     }
 
     public void playerKilled(TeamsManager manager, ServerPlayer victim, DamageSource source)
@@ -113,20 +133,43 @@ public abstract class GameType
         victimStats.recordDeath();
         manager.getCurrentLoadoutPool().ifPresent(pool -> manager.awardExperience(victim, pool.getExperienceForDeath()));
 
-        ServerPlayer attacker = getPlayerFromDamageSource(source);
+        LivingEntity attacker = TeamsCombatants.getAttacker(source);
         if (attacker == null || attacker == victim)
         {
             victimData.setScore(victimData.getScore() - 1);
             return;
         }
+        if (attacker instanceof ServerPlayer player)
+            creditPlayerKill(manager, player, victim);
+    }
 
+    /**
+     * A combatant of the round died. Here the player who killed it is credited as for killing a player; game types
+     * with team scores also score the kill and the loss for the teams.
+     *
+     * @param victimTeam
+     *            the team the combatant fought for
+     */
+    // Base implementation of a hook; overriding subclasses use the parameter.
+    @SuppressWarnings("java:S1172")
+    public void combatantKilled(TeamsManager manager, LivingEntity victim, Team victimTeam, DamageSource source)
+    {
+        if (TeamsCombatants.getAttacker(source) instanceof ServerPlayer player)
+            creditPlayerKill(manager, player, victim);
+    }
+
+    /** Gives a player the score, kill, statistics and experience of killing an enemy, player or combatant. */
+    protected static void creditPlayerKill(TeamsManager manager, ServerPlayer attacker, LivingEntity victim)
+    {
         PlayerData attackerData = PlayerData.getInstance(attacker);
         attackerData.setScore(attackerData.getScore() + 1);
         attackerData.setKills(attackerData.getKills() + 1);
         PlayerStats attackerStats = manager.getStats(attacker);
         attackerStats.recordKill(attacker.distanceTo(victim));
+        // A combatant has no rank of its own, so the fallback reward goes by distance alone.
+        int victimRank = victim instanceof ServerPlayer player ? manager.getStats(player).getRank() : 0;
         int xp = manager.getCurrentLoadoutPool().map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
-            .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
+            .orElse(victimRank * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
         manager.awardExperience(attacker, xp);
     }
 
@@ -353,17 +396,6 @@ public abstract class GameType
         Team team = data.getTeam();
         if (team != null && team != Team.SPECTATORS)
             TeamsManager.getInstance().addTeamScore(team, points);
-    }
-
-    @Nullable
-    protected static ServerPlayer getPlayerFromDamageSource(DamageSource source)
-    {
-        Entity entity = source.getEntity();
-        if (entity instanceof ServerPlayer player)
-            return player;
-        if (entity instanceof Projectile projectile && projectile.getOwner() instanceof ServerPlayer player)
-            return player;
-        return source.getDirectEntity() instanceof Projectile projectile && projectile.getOwner() instanceof ServerPlayer player ? player : null;
     }
 
     public static void bootstrap()

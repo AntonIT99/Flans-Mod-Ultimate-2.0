@@ -8,6 +8,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 import java.util.*;
@@ -26,6 +27,12 @@ public final class ItemAttributes
     public enum Operation
     {
         ADD_VALUE, ADD_MULTIPLIED_TOTAL
+    }
+
+    /** Entity attack reach attribute used by ordinary melee targeting and server validation. */
+    public static Holder<Attribute> meleeReachAttribute()
+    {
+        return Attributes.ENTITY_INTERACTION_RANGE;
     }
 
     /** Modifiers an item adds on top of its vanilla ones. */

@@ -22,5 +22,6 @@ AddClass W44_FallschirmjagerEngineer
 AddClass W44_FallschirmjagerAntiTank
 AddClass W44_FallschirmjagerScout
 AddClass W44_FallschirmjagerSquadLeader
-AddClass W44_FallschirmjagerTankCrew
-AddClass W44_FallschirmjagerPilot
+
+// Specialist weapon choices
+AddClass W44_FallschirmjagerAutomaticRiflemanFG42

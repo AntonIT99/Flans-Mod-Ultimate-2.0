@@ -1,0 +1,15 @@
+// Identity
+Name Machine Gunner (M1919A6)
+ShortName W44_USAirborneMachineGunnerM1919A6
+Description Machine Gunner (M1919A6) with compatible ammunition and an ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_M1919A630Cal
+AddItem 44_30CalAmmo 3
+AddItem 44_AmmoBag
+AddItem 44_Bandage
+AddItem 44_Parachute

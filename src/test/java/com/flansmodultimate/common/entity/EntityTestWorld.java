@@ -7,32 +7,22 @@ import com.flansmodultimate.network.PacketHandler;
 import com.mojang.serialization.Lifecycle;
 import org.mockito.MockedStatic;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.damagesource.DamageType;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 
@@ -62,6 +52,8 @@ final class EntityTestWorld implements AutoCloseable
         when(level.registryAccess()).thenReturn(new RegistryAccess.ImmutableRegistryAccess(List.of(damageTypes)));
         when(level.getProfiler()).thenReturn(InactiveProfiler.INSTANCE);
         when(level.getGameRules()).thenReturn(new GameRules());
+        ServerScoreboard scoreboard = mock(ServerScoreboard.class);
+        when(level.getScoreboard()).thenReturn(scoreboard);
         when(level.getWorldBorder()).thenReturn(new WorldBorder());
         when(level.getMinBuildHeight()).thenReturn(-64);
         when(level.getMaxBuildHeight()).thenReturn(320);

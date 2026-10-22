@@ -1,0 +1,18 @@
+// Identity
+Name Support (Black)
+ShortName OfficialWW2_AmericanInfantryBlackSupport
+
+// Armour
+Hat AmericanSupportHelmet
+Chest AmericanSupportChestBlack
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem browning
+AddItem bazooka
+AddItem colt
+AddItem ww2Knife
+AddItem browningAmmo
+AddItem bazookaAmmo 2
+AddItem coltAmmo 3

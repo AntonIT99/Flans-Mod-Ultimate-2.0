@@ -1,0 +1,18 @@
+// Identity
+Name Engineer (Green)
+ShortName OfficialWW2_AmericanInfantryGreenEngineer
+
+// Armour
+Hat AmericanEngineerHelmet
+Chest AmericanEngineerChestGreen
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem thompson
+AddItem colt
+AddItem mk2Frag 1
+AddItem ww2Mine 2
+AddItem ww2Knife
+AddItem thompsonAmmo 4
+AddItem coltAmmo 2

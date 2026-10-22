@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman (Springfield)
+ShortName W44_USArmyRiflemanSpringfield
+Description Rifleman (Springfield) with compatible ammunition and the national infantry kit.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_M1903Springfield
+AddItem 44_M1903SpringfieldAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

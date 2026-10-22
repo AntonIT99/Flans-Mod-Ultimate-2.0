@@ -30,6 +30,7 @@ advpaintjob Beige 44_Tiger1H_Beige 44_Tiger1H_Beige yellow 8
 advpaintjob Winter 44_Tiger1H_Winter 44_Tiger1H_Winter white 8
 advpaintjob Tiger131 44_Tiger1H_Tiger131 44_Tiger1H_Tiger131 yellow 7 red 1
 advpaintjob Tiger 44_Tiger1H_Tiger 44_Tiger1H_Tiger orange 6 black 2
+advpaintjob Dunkelgelb 44_Tiger1H 44_tiger1h_dunkelgelb yellow 8
 AddDye 8 gray
 
 // Real-world specifications

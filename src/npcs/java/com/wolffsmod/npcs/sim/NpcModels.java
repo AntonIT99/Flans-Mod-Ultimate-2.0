@@ -30,7 +30,7 @@ public final class NpcModels
     /** @return the factor the NPC's size setting scales its model by */
     public static float scale(EntityNPCInterface npc)
     {
-        return npc instanceof EntityCustomNpc custom && custom.modelData.simpleRender ? 1F : npc.display.getSize() / 5F;
+        return npc.display.getSize() / 5F;
     }
 
     /**

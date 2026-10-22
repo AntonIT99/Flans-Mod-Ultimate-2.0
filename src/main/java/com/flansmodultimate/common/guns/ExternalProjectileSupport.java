@@ -6,6 +6,7 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.ShootableFactory;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
@@ -250,6 +251,22 @@ public final class ExternalProjectileSupport
             muzzles.addAll(pointMuzzles(type, points.get(i), particles, barrelSequence, alternate, aim));
         }
         return List.copyOf(muzzles);
+    }
+
+    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim)
+    {
+        SeatInfo info = model instanceof DriveableType type ? type.getSeat(seat) : null;
+        if (info == null || info.getGunType() == null)
+            return Optional.empty();
+        DriveableType type = (DriveableType) model;
+        int barrel = Math.floorMod(sequence, info.getGunBarrelCount());
+        // As a crewed driveable lifts its seat guns, so the muzzle clears the gunner's own head.
+        Vec3 position = LegacyDriveableCoordinates.toLocal(info.getGunOrigin(barrel)).add(0D, Driveable.PASSENGER_GUN_MOUNTED_OFFSET, 0D);
+        if (turretAim.yaw() != 0F && EnumDriveablePart.isTurretMounted(info.getPart()))
+            position = aimTurretPoint(type, position, new MountAim(turretAim.yaw(), 0F));
+        List<WeaponMuzzle.Particle> particles = type.getShootParticlesPassenger(seat).stream()
+            .map(particle -> new WeaponMuzzle.Particle(particle.name(), previewVelocity(new Vec3(particle.x(), particle.y(), particle.z())))).toList();
+        return Optional.of(new WeaponMuzzle(position, Optional.of(info.getGunType()), particles));
     }
 
     private static List<WeaponMuzzle> pointMuzzles(DriveableType type, ShootPoint point, List<WeaponMuzzle.Particle> particles, int sequence, boolean alternate, MountAim aim)

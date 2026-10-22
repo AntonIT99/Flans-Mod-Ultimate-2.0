@@ -1,7 +1,9 @@
 package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.sim.NpcTuning.Flight;
+import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.tactics.NpcTactics;
 import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 
@@ -17,7 +19,9 @@ import net.minecraft.world.phys.Vec3;
  * <p>
  * Both keep a minimum altitude above the terrain under and ahead of them and hold their fire, without giving their
  * target up, while they are below it. A plane never stops: it flies along its heading and comes round in a circle,
- * toward its target or about its home while it has none. A helicopter may hover and turns its hull toward its target.
+ * toward its target or about its home while it has none. Its tactic may instead circle its target, or carry it on past
+ * the target after each pass, holding its fire, before it comes round again. A helicopter may hover and turns its hull
+ * toward its target.
  * Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. One instance per
  * NPC, server side.
  * </p>
@@ -35,6 +39,9 @@ public final class NpcFlight
     static final double TOP_SPEED = 0.42D;
     private static final double MIN_LOITER_RADIUS = 16D;
     private static final float HELICOPTER_TURN = 3F;
+    /** Blocks across the ground within which a plane on a strafing run has passed over its target, and the least it carries on past it. */
+    static final double PASS_DISTANCE = 10D;
+    static final double MIN_EXTEND = 24D;
 
     private int sampledAt = Integer.MIN_VALUE;
     /** Height of the highest terrain under and ahead of the aircraft. */
@@ -44,6 +51,8 @@ public final class NpcFlight
     @Getter
     private double clearance;
     private boolean attackAllowed = true;
+    /** Whether a plane on a strafing run carries on past its target, holding its fire, before it comes round again. */
+    private boolean extending;
     private boolean flying;
     private float yaw;
 
@@ -55,7 +64,7 @@ public final class NpcFlight
     /** @return whether the aircraft is too low to attack and climbing back */
     public boolean holdsFire()
     {
-        return flying && !attackAllowed;
+        return flying && (!attackAllowed || extending);
     }
 
     /** @return one word for what the aircraft is doing, for the movement debug log */
@@ -66,7 +75,13 @@ public final class NpcFlight
         if (!attackAllowed)
             return "ALTITUDE_RECOVERY";
         if (type(npc) == Flight.PLANE)
-            return npc.getTarget() == null ? "LOITER" : "ATTACK_RUN";
+        {
+            if (npc.getTarget() == null)
+                return "LOITER";
+            if (extending)
+                return "EXTEND";
+            return NpcTactics.of(npc) == Tactic.ORBIT ? "ORBIT" : "ATTACK_RUN";
+        }
         return npc.getNavigation().isDone() ? "HOVERING" : "REPOSITIONING";
     }
 
@@ -78,6 +93,7 @@ public final class NpcFlight
         {
             flying = false;
             attackAllowed = true;
+            extending = false;
             return;
         }
         if (!flying)
@@ -95,11 +111,9 @@ public final class NpcFlight
         boolean engaged = target != null && target.isAlive();
         if (type == Flight.PLANE)
         {
-            float wanted = yaw;
-            if (engaged && npc.distanceToSqr(target.getX(), npc.getY(), target.getZ()) > 1D)
-                wanted = MountMotion.yaw(target.position().subtract(npc.position()));
-            else if (!engaged)
-                wanted = loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), loiterRadius(npc), (npc.getId() & 1) == 0, yaw);
+            float wanted = engaged ? attackYaw(npc, target) : loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), loiterRadius(npc), (npc.getId() & 1) == 0, yaw);
+            if (!engaged)
+                extending = false;
             double speed = planeSpeed(tuning.get(Value.FLIGHT_SPEED), motion.horizontalDistance());
             yaw = MountMotion.turn(yaw, wanted, planeTurn(speed, loiterRadius(npc)));
             Vec3 forward = Vec3.directionFromRotation(0F, yaw);
@@ -117,6 +131,40 @@ public final class NpcFlight
         }
         npc.setYRot(yaw);
         npc.setYBodyRot(yaw);
+    }
+
+    /**
+     * The heading of a plane with a target, by its tactic: at the target, round it, or straight on past it after a pass.
+     * Custom NPCs' own tactics fly at it.
+     */
+    private float attackYaw(EntityNPCInterface npc, LivingEntity target)
+    {
+        Tactic tactic = NpcTactics.of(npc);
+        double horizontal = Math.sqrt(npc.distanceToSqr(target.getX(), npc.getY(), target.getZ()));
+        if (tactic == Tactic.ORBIT)
+        {
+            extending = false;
+            double radius = Math.max(MIN_LOITER_RADIUS, NpcTactics.engagement(npc).preferred());
+            return loiterYaw(npc.position(), new Vec3(target.getX(), npc.getY(), target.getZ()), radius, (npc.getId() & 1) == 0, yaw);
+        }
+        extending = tactic == Tactic.STRAFING_RUN && extending(extending, horizontal, Math.max(MIN_EXTEND, NpcTactics.engagement(npc).preferred()));
+        if (extending || horizontal <= 1D)
+            return yaw;
+        return MountMotion.yaw(target.position().subtract(npc.position()));
+    }
+
+    /**
+     * @param extending
+     *            whether the plane is carrying on past its target after a pass
+     * @param horizontal
+     *            blocks to the target across the ground
+     * @param extend
+     *            blocks the plane carries on to before it turns back
+     * @return whether it is carrying on past its target now: from the moment it passes over the target until it is far enough beyond
+     */
+    static boolean extending(boolean extending, double horizontal, double extend)
+    {
+        return extending ? horizontal < extend : horizontal < PASS_DISTANCE;
     }
 
     private static double loiterRadius(EntityNPCInterface npc)

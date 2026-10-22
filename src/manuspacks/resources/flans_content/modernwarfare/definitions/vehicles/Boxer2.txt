@@ -8,6 +8,9 @@ Model manus_modern_warfare.Boxer2
 Texture SkinVehicleBoxer
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Original IconVehicleBoxer2 skinvehicleboxer_original gray 8
+
 // Recipe and Inventory
 FuelTankSize 2000
 CargoSlots 18
@@ -42,7 +45,9 @@ ReadWeaponsFromGunTypes true
 
 // Protection
 ArmorFrontMm 60
+ArmorFrontVsHeatMm 120
 ArmorSideMm 40
+ArmorSideVsHeatMm 100
 ArmorRearMm 30
 ArmorTopMm 20
 ArmorBottomMm 25

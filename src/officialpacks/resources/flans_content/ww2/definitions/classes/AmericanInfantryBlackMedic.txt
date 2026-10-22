@@ -1,0 +1,18 @@
+// Identity
+Name Medic (Black)
+ShortName OfficialWW2_AmericanInfantryBlackMedic
+
+// Armour
+Hat AmericanMedicHelmet
+Chest AmericanMedicChestBlack
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem m1Garand
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2MedKit
+AddItem ww2Knife
+AddItem m1GarandAmmo 2
+AddItem coltAmmo 2

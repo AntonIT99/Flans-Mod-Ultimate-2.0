@@ -23,6 +23,7 @@ ShellSlots 4
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob China 44_M4A3E2Sherman 44_m4a3e2sherman_china green 8
 AddDye 5 green
 
 // Real-world specifications

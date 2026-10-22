@@ -1,0 +1,16 @@
+// Identity
+Name Machine Gunner (MG 34)
+ShortName OfficialWW2_GermanInfantryMG34Gunner
+
+// Armour
+Hat GermanSupportHelmet
+Chest GermanSupportChest
+Legs GermanUniformPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem MG34
+AddItem luger
+AddItem ww2Knife
+AddItem MG34Ammo 3
+AddItem lugerAmmo 2

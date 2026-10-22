@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.wolffsmod.npcs.crew.NpcCrewSettings;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -18,4 +19,11 @@ public interface NpcWeaponSettings
     NpcPartSettings wolffsmodnpcsParts();
 
     NpcTuning wolffsmodnpcsTuning();
+
+    NpcCrewSettings wolffsmodnpcsCrew();
+
+    /** @return how many times the server had applied its ranges to every NPC when this NPC last took them */
+    int wolffsmodnpcsRangeGeneration();
+
+    void wolffsmodnpcsRangeGeneration(int generation);
 }

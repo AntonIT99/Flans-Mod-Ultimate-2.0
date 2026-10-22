@@ -1,0 +1,16 @@
+// Identity
+Name Machine Gunner (MG 42, Swamp)
+ShortName OfficialWW2_GermanInfantrySwampMG42Gunner
+
+// Armour
+Hat GermanSupportHelmet
+Chest GermanSupportChestSwamp
+Legs GermanUniformPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem MG42Hand
+AddItem luger
+AddItem ww2Knife
+AddItem mg42Ammo50 3
+AddItem lugerAmmo 2

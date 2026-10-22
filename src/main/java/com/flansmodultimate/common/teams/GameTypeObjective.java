@@ -37,6 +37,8 @@ public abstract class GameTypeObjective extends GameTypeTDM
     private static final int CAPTURE_EXPERIENCE = 25;
     private static final int CAPTURE_SCORE = 5;
     private static final String SETTING_AUTO_BALANCE = "auto_balance";
+    /** Ticks between reminders to defenders standing on a point they cannot take. */
+    private static final int DEFENDER_WARNING_INTERVAL = 40;
 
     private final String settingsPrefix;
     private final int defaultCaptureTicks;
@@ -71,17 +73,76 @@ public abstract class GameTypeObjective extends GameTypeTDM
 
         List<ITeamCapturePoint> points = manager.getCapturePoints();
         UUID roundId = manager.getRoundInstanceId();
+        boolean attack = attackAndDefence(round);
         for (int i = 0; i < points.size(); i++)
         {
             ITeamCapturePoint point = points.get(i);
             if (!Objects.equals(roundId, point.getRoundId()))
             {
-                point.setCaptureState(initialState(round, points, i));
+                // Defenders start with every point, which the attackers have to take from them.
+                point.setCaptureState(attack ? CaptureState.ownedBy(defendingSideId(round)) : initialState(round, points, i));
                 point.setRoundId(roundId);
             }
         }
+        int[] ownersBefore = points.stream().mapToInt(point -> point.getCaptureState().ownerTeamId()).toArray();
         tickObjectives(manager, round, level, points);
+        announceOwnerChanges(manager, round, points, ownersBefore);
         syncChangedObjectives(manager, points);
+        if (attack)
+            tickAttack(manager, round, level, points);
+    }
+
+    /** Whether the round is played attacker against defender: Domination or Conquest with an attacking side set. */
+    private boolean attackAndDefence(TeamsRound round)
+    {
+        ObjectiveMode mode = getObjectiveMode();
+        return (mode == ObjectiveMode.DOMINATION || mode == ObjectiveMode.CONQUEST) && round.getAttackingSideId() != 0;
+    }
+
+    /** The first defending side, which holds every point when the round starts. */
+    private static int defendingSideId(TeamsRound round)
+    {
+        int attacker = round.getAttackingSideId();
+        return round.getSideIds().stream().filter(sideId -> sideId != attacker).findFirst().orElse(0);
+    }
+
+    /**
+     * Reminds defenders standing on a point they cannot take that they defend, and gives the attackers the round once
+     * they hold every point.
+     */
+    private static void tickAttack(TeamsManager manager, TeamsRound round, ServerLevel level, List<ITeamCapturePoint> points)
+    {
+        int attacker = round.getAttackingSideId();
+        if (!points.isEmpty() && points.stream().allMatch(point -> point.getCaptureState().isHeldBy(attacker)) && round.getSideLeader(attacker) != null)
+        {
+            manager.declareWinner(round.getSideLeader(attacker));
+            return;
+        }
+        if (manager.getRoundElapsedTicks() % DEFENDER_WARNING_INTERVAL != 0)
+            return;
+        for (ITeamCapturePoint point : points)
+        {
+            CaptureScan scan = CaptureScan.of(point, level, round);
+            for (int sideId : round.getSideIds())
+            {
+                if (sideId != attacker && !point.getCaptureState().isHeldBy(sideId))
+                    scan.players(sideId)
+                        .forEach(player -> player.displayClientMessage(Component.translatable("message.flansmodultimate.teams.defenders_cannot_capture").withStyle(ChatFormatting.GOLD), true));
+            }
+        }
+    }
+
+    /** Tells the addons about every point whose owner this tick changed. */
+    private static void announceOwnerChanges(TeamsManager manager, TeamsRound round, List<ITeamCapturePoint> points, int[] ownersBefore)
+    {
+        for (int i = 0; i < points.size(); i++)
+        {
+            ITeamCapturePoint point = points.get(i);
+            int before = ownersBefore[i];
+            if (point.getCaptureState().ownerTeamId() == before)
+                continue;
+            manager.getLiveRound().ifPresent(live -> TeamsListeners.capturePointChanged(live, live.toApi(point), round.getSideIndex(before)));
+        }
     }
 
     /** Tells clients about the points as soon as one changes hands or its progress moved visibly. */

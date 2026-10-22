@@ -10,6 +10,7 @@ import java.util.*;
 public final class VehicleArmorSpecReader
 {
     private static final String IGNORING_SUFFIX = "'; ignoring it";
+    private static final String UNKNOWN_PART = " names unknown part '";
     public static final String ARMOR_FRONT = "ArmorFrontMm";
     public static final String ARMOR_REAR = "ArmorRearMm";
     public static final String ARMOR_SIDE = "ArmorSideMm";
@@ -27,6 +28,7 @@ public final class VehicleArmorSpecReader
     // plate's slope; a face without one resists HEAT with its kinetic value.
     public static final String HEAT_SUFFIX = "VsHeatMm";
     public static final String PART_ARMOR_VS_HEAT = "PartArmorVsHeatMm";
+    public static final String SETUP_COMPOSITE_ARMORED_PART = "SetupCompositeArmoredPart";
 
     // Naval semantic keys. Warship armour is published per structure - belt,
     // deck, citadel, conning tower, bulkhead - and one structure is spread over
@@ -85,6 +87,7 @@ public final class VehicleArmorSpecReader
         readFacing(file, TURRET_ARMOR_BOTTOM, turret, EnumArmorFacing.BOTTOM, warnings);
 
         EnumMap<EnumDriveablePart, ArmorPlate> parts = new EnumMap<>(EnumDriveablePart.class);
+        readCompositeParts(file, parts, warnings);
         // Naval families first, so an explicit PartArmorMm override still wins.
         for (Map.Entry<String, List<EnumDriveablePart>> family : NAVAL_FAMILIES.entrySet())
         {
@@ -111,7 +114,7 @@ public final class VehicleArmorSpecReader
                 EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
                 if (part == null)
                 {
-                    warnings.add(PART_ARMOR + " names unknown part '" + values[0] + IGNORING_SUFFIX);
+                    warnings.add(PART_ARMOR + UNKNOWN_PART + values[0] + IGNORING_SUFFIX);
                     continue;
                 }
                 Float thickness = parseThickness(values[1], PART_ARMOR + " " + values[0], warnings);
@@ -121,6 +124,36 @@ public final class VehicleArmorSpecReader
         }
         readHeatProtection(file, hull, turret, parts, warnings);
         return new Result(new VehicleArmorSpec(hull, turret, parts), warnings);
+    }
+
+    /** Labjac hitboxes author uniform kinetic and HEAT protection; modern part keys can refine or replace it. */
+    private static void readCompositeParts(TypeFile file, EnumMap<EnumDriveablePart, ArmorPlate> parts, List<String> warnings)
+    {
+        List<String> lines = file.getConfigLines(SETUP_COMPOSITE_ARMORED_PART);
+        if (lines == null)
+            return;
+        for (String line : lines)
+            readCompositePart(line, parts, warnings);
+    }
+
+    private static void readCompositePart(String line, EnumMap<EnumDriveablePart, ArmorPlate> parts, List<String> warnings)
+    {
+        String[] values = tokens(line);
+        if (values.length < 10)
+        {
+            warnings.add(SETUP_COMPOSITE_ARMORED_PART + " requires <part> <health> <x> <y> <z> <width> <height> <depth> <armorMm> <heatArmorMm>; ignoring its armour");
+            return;
+        }
+        EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
+        if (part == null)
+        {
+            warnings.add(SETUP_COMPOSITE_ARMORED_PART + UNKNOWN_PART + values[0] + IGNORING_SUFFIX);
+            return;
+        }
+        Float kinetic = parseThickness(values[8], SETUP_COMPOSITE_ARMORED_PART, warnings);
+        Float heat = parseThickness(values[9], SETUP_COMPOSITE_ARMORED_PART, warnings);
+        if (kinetic != null && heat != null)
+            parts.put(part, new ArmorPlate(kinetic, 0F, heat));
     }
 
     /** The HEAT key refining a semantic facing key, e.g. {@code ArmorFrontMm} -> {@code ArmorFrontVsHeatMm}. */
@@ -159,13 +192,13 @@ public final class VehicleArmorSpecReader
             EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
             if (part == null)
             {
-                warnings.add(PART_ARMOR_VS_HEAT + " names unknown part '" + values[0] + IGNORING_SUFFIX);
+                warnings.add(PART_ARMOR_VS_HEAT + UNKNOWN_PART + values[0] + IGNORING_SUFFIX);
                 continue;
             }
             ArmorPlate plate = parts.get(part);
             if (plate == null)
             {
-                warnings.add(PART_ARMOR_VS_HEAT + " " + values[0] + " needs a " + PART_ARMOR + " or naval armour line for the same part; ignoring it");
+                warnings.add(PART_ARMOR_VS_HEAT + " " + values[0] + " needs a " + PART_ARMOR + ", composite hitbox or naval armour line for the same part; ignoring it");
                 continue;
             }
             Float thickness = parseThickness(values[1], PART_ARMOR_VS_HEAT + " " + values[0], warnings);

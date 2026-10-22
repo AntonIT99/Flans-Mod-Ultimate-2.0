@@ -12,12 +12,10 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.*;
+import net.neoforged.neoforge.common.ModConfigSpec.Builder;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
@@ -141,6 +139,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> NOTICE_SPAWN_KILL_TIME;
 
     private static final BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
+    private static final BooleanValue DISABLE_CROSSHAIR_WHILE_SCOPED;
     private static final BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS;
     private static final BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
@@ -165,6 +164,7 @@ public final class ModCommonConfig
     private static final BooleanValue DRIVEABLE_COLLISIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> AUTO_REFILL_VEHICLE_AMMO;
     private static final Supplier<Boolean> GUNS_IN_DESTROYED_PARTS_WORK;
+    private static final Supplier<Integer> DRIVEABLE_WRECK_LIFETIME;
 
     private static final Supplier<Integer> BREAKABLE_ARMOR;
     private static final Supplier<Integer> DEFAULT_ARMOR_DURABILITY;
@@ -332,6 +332,13 @@ public final class ModCommonConfig
         NOTICE_SPAWN_KILL_TIME = builder.comment("Warn in the server log when a Flan bullet or grenade explosion kills a player younger than this many seconds.",
             "Set to 0 to disable the spawn-kill warning. Detailed explosion-kill audit records are still written.").defineInRange("noticeSpawnKillTime", 10, 0, 600);
         DISABLE_CROSSHAIR_FOR_GUNS = builder.comment("Disables crosshair for guns except melee weapons").define("disableCrosshairForGuns", false);
+        DISABLE_CROSSHAIR_WHILE_SCOPED = builder.comment("""
+            Hide the vanilla crosshair while aiming down a gun's sights or scope in multiplayer.
+            When true, clients cannot enable the scoped crosshair. When false, each client's
+            showCrosshairWhileScoped preference applies; other crosshair restrictions still apply.
+            Private singleplayer worlds always use the client preference. Open-to-LAN worlds
+            follow this server setting for both the host and joining players.
+            """).define("disableCrosshairWhileScoped", true);
         EXPLOSIONS_BREAK_BLOCKS = builder.comment("Whether explosions can break blocks").define("explosionBreakBlocks", true);
         FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS = builder.comment("Force shootables using the new explosion system to break blocks, ignoring their ExplosionBreaksBlocks property.",
             "The teams rule and explosionBreakBlocks remain higher-priority global gates.").define("forceNewExplosionsBreakBlocks", false);
@@ -386,6 +393,8 @@ public final class ModCommonConfig
             "of the same ammunition, taken from the driveable's cargo first and then from the driver's inventory.").define("autoRefillVehicleAmmo", true);
         GUNS_IN_DESTROYED_PARTS_WORK = builder.comment("Whether an occupied passenger gun remains usable when the driveable part supporting its seat is destroyed.",
             "Disabled by default. Destroyed seats still cannot be newly occupied.").define("gunsInDestroyedPartsWork", false);
+        DRIVEABLE_WRECK_LIFETIME = builder.comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
+            "0 removes destroyed driveables at once, as before.").defineInRange("driveableWreckLifetime", 120, 0, 3600);
         builder.pop();
 
         builder.push("Armor Settings");
@@ -685,10 +694,10 @@ public final class ModCommonConfig
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(), VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD.get(), DEFAULT_VEHICLE_ENGINE.get(), DEFAULT_PLANE_ENGINE.get(), DEFAULT_MECHA_ENGINE.get(),
             NAME_TAG_RENDER_RANGE.get().floatValue(), NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(), NOTICE_SPAWN_KILL_TIME.get(),
 
-            DISABLE_CROSSHAIR_FOR_GUNS.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(), BONUS_REGEN_AMOUNT.get(),
-            BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(), BULLET_SNAPSHOT_MIN.get(),
-            BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(),
-            FLAN_NPC_TRACKING_RANGE.get(),
+            DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
+            BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
+            BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(),
+            DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(), CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(), ARMSHOT_DAMAGE_MODIFIER.get().floatValue(), LEGSHOT_MODIFIER.get().floatValue(),
             VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(), DRIVEABLE_COLLISIONS_BREAK_BLOCKS.get(), AUTO_REFILL_VEHICLE_AMMO.get(), GUNS_IN_DESTROYED_PARTS_WORK.get(),
@@ -734,7 +743,7 @@ public final class ModCommonConfig
             ENCHANTMENT_MODULE_ENABLED.get(),
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
-            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get());
+            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1003,6 +1012,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.gunsInDestroyedPartsWork();
+    }
+
+    /** @return ticks a destroyed driveable stays as a wreck, or 0 when it is removed at once */
+    public static int driveableWreckLifetimeTicks()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 0 : 20 * Math.max(0, config.driveableWreckLifetime());
     }
 
     public static double maxArmorImpactAngleDeg()
@@ -1342,6 +1358,7 @@ public final class ModCommonConfig
     {
         // spotless:off
         DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS, QuickSection.SERVER),
+        DISABLE_CROSSHAIR_WHILE_SCOPED(() -> ModCommonConfig.DISABLE_CROSSHAIR_WHILE_SCOPED, QuickSection.SERVER),
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS, QuickSection.SERVER),
         FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS, QuickSection.SERVER),
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS, QuickSection.SERVER),

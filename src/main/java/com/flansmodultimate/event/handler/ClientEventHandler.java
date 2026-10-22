@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.*;
+import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
@@ -19,6 +20,7 @@ import com.flansmodultimate.client.render.hud.*;
 import com.flansmodultimate.client.render.layer.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.thermal.ThermalHotParticles;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
+import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
 import com.flansmodultimate.common.entity.*;
@@ -30,6 +32,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.driveable.PacketDriveableDamage;
 import com.flansmodultimate.network.server.driveable.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
+import com.flansmodultimate.platform.client.ContentMismatchScreens;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -98,10 +101,13 @@ public final class ClientEventHandler
         event.setFOV(fov);
     }
 
-    /** In Conquest and Assault the dead choose where to come back on the deployment map, not on the death screen. */
+    /** Uses a safe disconnect screen for content mismatches and the deployment screen for Conquest/Assault deaths. */
     @SubscribeEvent
     public static void onScreenOpening(ScreenEvent.Opening event)
     {
+        Screen safeScreen = ContentMismatchScreens.safeScreen(event.getNewScreen());
+        if (safeScreen != null && safeScreen != event.getNewScreen())
+            event.setNewScreen(safeScreen);
         if (event.getNewScreen() instanceof DeathScreen && TeamsClientState.usesDeployment())
             event.setNewScreen(new TeamsDeployScreen());
     }
@@ -224,6 +230,7 @@ public final class ClientEventHandler
         GunScreenShake.tick();
         ModClient.tick();
         ParticleHelper.tick();
+        DriveableDamageEffects.tickClient();
         DistantHorizonsClient.tick();
     }
 
@@ -269,7 +276,10 @@ public final class ClientEventHandler
     {
         VehicleThermalRenderer.render(event);
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES)
+        {
             DistantBoxRenderer.render(event.getPoseStack(), event.getCamera(), ClientPlatform.partialTick(event));
+            DriveableDamageEffects.render(event.getPoseStack(), event.getCamera(), ClientPlatform.partialTick(event));
+        }
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         float partialTick = ClientPlatform.partialTick(event);
@@ -300,10 +310,15 @@ public final class ClientEventHandler
         if (player == null)
             return false;
 
+        // A private singleplayer world leaves scoped crosshair visibility to the client.
+        var integratedServer = Minecraft.getInstance().getSingleplayerServer();
+        boolean multiplayer = integratedServer == null || integratedServer.isPublished();
+        boolean serverHidesScopedCrosshair = multiplayer && ModCommonConfig.get().disableCrosshairWhileScoped();
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
-        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair() || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
+        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
+            || (ModClient.getCurrentScope() != null && (serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped)) || gunConfigHidesCrosshair
             || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 
@@ -388,6 +403,7 @@ public final class ClientEventHandler
         return switch (arm)
         {
             case NONE -> null;
+            case RELAXED -> HumanoidModel.ArmPose.EMPTY;
             case ONE_ARM -> ModClient.oneArmAim;
             case BOW -> HumanoidModel.ArmPose.BOW_AND_ARROW;
             case BOTH -> ModClient.bothArmsAim;
@@ -537,6 +553,7 @@ public final class ClientEventHandler
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
         com.flansmodultimate.network.client.debug.PacketDebugHitboxes.clearSession();
+        DriveableDamageEffects.clear();
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
@@ -550,7 +567,9 @@ public final class ClientEventHandler
         GpuModelCache.clear();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
+        com.flansmodultimate.client.teams.EditorClientState.clear();
         PlayerSkinOverrides.clear();
+        TeamFlagTextures.clear();
         KillMessageFeed.clear();
         CommonConfigMirror.clear();
     }

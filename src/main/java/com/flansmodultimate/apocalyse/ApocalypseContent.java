@@ -104,7 +104,7 @@ public final class ApocalypseContent
     public static final Supplier<? extends EntityType<SurvivorEntity>> survivor = entityRegistry.register("survivor", () -> EntityType.Builder.of(SurvivorEntity::new, MobCategory.CREATURE)
         .sized(0.6F, 1.95F).clientTrackingRange(80).updateInterval(3).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "survivor").toString()));
     public static final Supplier<? extends EntityType<SkullDroneEntity>> skullDrone = entityRegistry.register("autodrone", () -> EntityType.Builder.of(SkullDroneEntity::new, MobCategory.MONSTER)
-        .sized(1.6F, 1.0F).clientTrackingRange(128).updateInterval(2).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "autodrone").toString()));
+        .sized(3.0F, 1.0F).clientTrackingRange(128).updateInterval(2).build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "autodrone").toString()));
     public static final Supplier<? extends EntityType<InventoryHolderEntity>> inventoryHolder = entityRegistry.register("fakeplayer",
         () -> EntityType.Builder.of(InventoryHolderEntity::new, MobCategory.CREATURE).sized(0.6F, 1.95F).clientTrackingRange(80).updateInterval(3)
             .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "fakeplayer").toString()));

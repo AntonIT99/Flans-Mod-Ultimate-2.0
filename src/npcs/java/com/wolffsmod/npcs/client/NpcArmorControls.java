@@ -2,33 +2,44 @@ package com.wolffsmod.npcs.client;
 
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.client.ReadOnlyTooltips.Widget;
-import com.wolffsmod.npcs.combat.NpcEquipment;
-import com.wolffsmod.npcs.combat.NpcEquipmentStats;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.combat.*;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.shared.client.gui.components.GuiBasic;
 
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.util.Mth;
 
-import java.util.Locale;
+import java.util.*;
 
-/** Nonlinear armor protection is previewed at ten incoming damage, never stored as a linear NPC resistance. */
+/**
+ * Nonlinear armor protection is previewed at ten incoming damage, never stored as a linear NPC resistance. Only the
+ * resistances the NPC inherits from its armor are previewed; the others stay the NPC's own and editable.
+ */
 public final class NpcArmorControls
 {
+    /** The armor statistic behind each resistance slider, in the order Custom NPCs numbers them. */
+    private static final EquipmentProperty[] SLIDERS = {EquipmentProperty.ARMOR_KNOCKBACK, EquipmentProperty.ARMOR_PROJECTILE, EquipmentProperty.ARMOR_MELEE, EquipmentProperty.ARMOR_EXPLOSION};
+
     private NpcArmorControls()
     {}
 
-    public static boolean apply(GuiBasic gui)
+    /** @return the IDs of the sliders that show the armor's protection and must not change the saved resistance */
+    public static Set<Integer> apply(GuiBasic gui)
     {
         EntityNPCInterface npc = NpcRangedControls.findNpc(gui);
-        if (npc == null || !NpcEquipment.enabled(npc, Feature.ITEM_ARMOR))
-            return false;
+        Set<Integer> locked = new HashSet<>();
+        if (npc == null)
+            return locked;
         // Minecraft 1.21 protection enchantments depend on the damage source, so the armor decides those values.
         boolean conditionalProtection = NpcEquipmentStats.conditionalProtection(npc);
-        for (int id = 0; id < 4; id++)
+        for (int id = 0; id < SLIDERS.length; id++)
+        {
+            if (!NpcEquipment.inherits(npc, SLIDERS[id]))
+                continue;
             mark(gui, id, NpcEquipmentStats.protection(npc, NpcEquipmentStats.Resistance.values()[id]), id != 0 && conditionalProtection);
-        return true;
+            locked.add(id);
+        }
+        return locked;
     }
 
     private static void mark(GuiBasic gui, int id, float protection, boolean conditionalEffects)

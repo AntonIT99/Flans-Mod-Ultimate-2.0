@@ -1,0 +1,17 @@
+// Identity
+Name Sniper (Scoped Springfield)
+ShortName OfficialWW2_AmericanInfantryScopedSniper
+
+// Armour
+Hat AmericanSniperHelmet
+Chest AmericanSniperChest
+Legs AmericanSniperPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem springfieldSniper
+AddItem colt
+AddItem ww2Knife
+AddItem ww2Binoculars
+AddItem springfieldAmmo 4
+AddItem coltAmmo 2

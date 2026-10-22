@@ -24,3 +24,7 @@ AddClass W44_JapaneseArmyScout
 AddClass W44_JapaneseArmySquadLeader
 AddClass W44_JapaneseArmyTankCrew
 AddClass W44_JapaneseArmyPilot
+
+// Specialist weapon choices
+AddClass W44_JapaneseArmyAssaultType2
+AddClass W44_JapaneseArmyFieldMedic

@@ -1,0 +1,15 @@
+// Identity
+Name Assault (StG 44)
+ShortName W44_GermanArmyAssaultStG44
+Description Assault (StG 44) with compatible ammunition and the national infantry kit.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Stg44
+AddItem 44_Stg44Ammo 4
+AddItem 44_stielhandgranate
+AddItem 44_Smokestielhandgranate 2
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

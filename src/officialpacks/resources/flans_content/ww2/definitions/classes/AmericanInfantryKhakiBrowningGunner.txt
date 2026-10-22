@@ -1,0 +1,16 @@
+// Identity
+Name Machine Gunner (Browning .30, Khaki)
+ShortName OfficialWW2_AmericanInfantryKhakiBrowningGunner
+
+// Armour
+Hat AmericanSupportHelmet
+Chest AmericanSupportChestKhaki
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem BrowningHand
+AddItem colt
+AddItem ww2Knife
+AddItem browningAmmo 2
+AddItem coltAmmo 2

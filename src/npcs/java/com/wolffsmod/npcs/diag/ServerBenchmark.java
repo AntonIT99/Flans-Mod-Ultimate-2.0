@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Mth;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -23,8 +22,8 @@ public final class ServerBenchmark
     public static final int MIN_SECONDS = 5;
     public static final int MAX_SECONDS = 600;
     public static final int DEFAULT_SECONDS = 30;
-    /** Ticks left out at the start, so the run does not measure the server recovering from whatever started it. */
-    private static final int WARM_UP_TICKS = 100;
+    /** Seconds left out by the quick-start command and editor action. */
+    public static final int DEFAULT_WARM_UP_SECONDS = 5;
     private static final int MAX_SLOW_PATHS_LISTED = 15;
     private static final double NANOS_PER_MILLI = 1.0E6D;
     private static final String PER_TICK = "ms per tick";
@@ -36,22 +35,26 @@ public final class ServerBenchmark
     private static final class Run
     {
         private final CommandSourceStack requester;
+        private final BenchmarkOptions options;
         private final int ticks;
         private final BenchmarkStats tick = new BenchmarkStats();
         private final BenchmarkStats npc = new BenchmarkStats();
         private final BenchmarkStats path = new BenchmarkStats();
         private final BenchmarkStats target = new BenchmarkStats();
         private final BenchmarkStats ticking = new BenchmarkStats();
-        private final BenchmarkReport report = new BenchmarkReport("server", "tick,tick_ms,npc_ms,npc_ticks,path_ms,path_searches,path_failures,target_ms");
-        private int warmUp = WARM_UP_TICKS;
+        private final BenchmarkReport report;
+        private int warmUp;
         private long started;
         private int pathSearches;
         private int pathFailures;
 
-        private Run(CommandSourceStack requester, int ticks)
+        private Run(CommandSourceStack requester, BenchmarkOptions options)
         {
             this.requester = requester;
-            this.ticks = ticks;
+            this.options = options;
+            ticks = options.seconds() * 20;
+            warmUp = options.warmUpSeconds() * 20;
+            report = new BenchmarkReport("server", "tick,tick_ms,npc_ms,npc_ticks,path_ms,path_searches,path_failures,target_ms", options);
         }
     }
 
@@ -63,12 +66,30 @@ public final class ServerBenchmark
     /** @return false when a run is already in progress */
     public static boolean start(CommandSourceStack requester, int seconds)
     {
+        return start(requester, new BenchmarkOptions(seconds, DEFAULT_WARM_UP_SECONDS, ""));
+    }
+
+    /** Starts an explicitly configured run on the server thread. */
+    public static boolean start(CommandSourceStack requester, BenchmarkOptions options)
+    {
         if (run != null)
             return false;
-        int clamped = Mth.clamp(seconds, MIN_SECONDS, MAX_SECONDS);
-        run = new Run(requester, clamped * 20);
+        run = new Run(requester, options);
         NpcProfiler.setServer(true);
-        requester.sendSuccess(() -> Component.translatable("commands.wolffsmodnpcs.benchmark.started", clamped, WARM_UP_TICKS / 20), true);
+        // Zero warm-up must also start with fresh counters when profiling was already enabled.
+        NpcProfiler.resetServer();
+        requester.sendSuccess(() -> Component.translatable("commands.wolffsmodnpcs.benchmark.started", options.seconds(), options.warmUpSeconds()), true);
+        return true;
+    }
+
+    /** Reports progress to the operator who requested it, without changing the run or its counters. */
+    public static boolean status(CommandSourceStack requester)
+    {
+        Run current = run;
+        if (current == null)
+            return false;
+        Component label = current.options.label().isEmpty() ? Component.translatable("commands.wolffsmodnpcs.benchmark.unnamed") : Component.literal(current.options.label());
+        requester.sendSuccess(() -> Component.translatable("commands.wolffsmodnpcs.benchmark.status", label, current.tick.count() / 20, current.options.seconds(), (current.warmUp + 19) / 20), false);
         return true;
     }
 
@@ -156,6 +177,7 @@ public final class ServerBenchmark
         report.line("Target searches: " + finished.target.summary(PER_TICK));
         if (finished.ticking.mean() < 0.5D)
             report.line("Note: hardly any NPC was ticking. Stand near the NPCs to be measured, or let them stay active at a distance.");
+        report.describeSession();
         report.line("");
         report.line("Target search bands (0 is nearest):");
         for (int band = 0; band < NpcProfiler.BANDS; band++)

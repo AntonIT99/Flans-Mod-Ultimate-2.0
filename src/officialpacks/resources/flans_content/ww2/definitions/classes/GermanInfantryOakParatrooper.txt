@@ -1,0 +1,18 @@
+// Identity
+Name Paratrooper (FG 42, Oak Leaf)
+ShortName OfficialWW2_GermanInfantryOakParatrooper
+
+// Armour
+Hat GermanAssaultHatOak
+Chest GermanAssaultChestOak
+Legs GermanUniformPantsOak
+Shoes GermanUniformBoots
+
+// Items
+AddItem fg42
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem Fg42Ammo 4
+AddItem lugerAmmo 2

@@ -2,13 +2,8 @@ package com.wolffsmod.npcs.client;
 
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
-import com.wolffsmod.npcs.properties.NpcTypeProperties;
-import com.wolffsmod.npcs.properties.NpcTypeProperty;
-import com.wolffsmod.npcs.properties.NpcTypeReadouts;
-import noppes.npcs.client.gui.SubGuiNpcMeleeProperties;
-import noppes.npcs.client.gui.SubGuiNpcMovement;
-import noppes.npcs.client.gui.SubGuiNpcProjectiles;
-import noppes.npcs.client.gui.SubGuiNpcRangeProperties;
+import com.wolffsmod.npcs.properties.*;
+import noppes.npcs.client.gui.*;
 import noppes.npcs.client.gui.advanced.GuiNPCSoundsMenu;
 import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -17,13 +12,15 @@ import noppes.npcs.shared.client.gui.components.GuiBasic;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /** Displays converted type values, while the runtime overlay retains the original editable defaults for saves. */
 public final class NpcTypeControls
 {
     private static final RangedControlLocks EMPTY = new RangedControlLocks(Map.of(), Map.of(), Map.of());
+    /** The cobweb button of the Custom NPCs stats page, and the label beside each stats button where its id differs. */
+    private static final int COBWEB_BUTTON = 22;
+    private static final Map<Integer, Integer> STATS_BUTTON_LABELS = Map.of(5, 11, 7, 13);
     private static final Map<Integer, NpcTypeProperty> RANGED_FIELDS = Map.ofEntries(Map.entry(1, NpcTypeProperty.ACCURACY), Map.entry(2, NpcTypeProperty.RANGE),
         Map.entry(3, NpcTypeProperty.DELAY_MIN), Map.entry(4, NpcTypeProperty.DELAY_MAX), Map.entry(5, NpcTypeProperty.BURST_DELAY), Map.entry(6, NpcTypeProperty.BURST),
         Map.entry(7, NpcTypeProperty.FIRING_SOUND), Map.entry(8, NpcTypeProperty.SHOT_COUNT));
@@ -47,29 +44,18 @@ public final class NpcTypeControls
         Map<Integer, Reason> fields = new HashMap<>();
         Map<Integer, Reason> buttons = new HashMap<>();
         Map<Integer, Reason> labels = new HashMap<>();
-        fields(gui).forEach((id, property) ->
-        {
-            String value = readouts.get(property);
-            var field = gui.getTextField(id);
-            if (value != null && field != null)
-            {
-                field.setMaxLength(256);
-                field.numbersOnly = false;
-                field.floatsOnly = false;
-                field.setValue(value);
-                fields.put(id, Reason.TYPE_PROPERTIES);
-                labels.put(id, Reason.TYPE_PROPERTIES);
-            }
-        });
+        lockFields(gui, readouts, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().customProperties(), fields, labels);
         buttons(gui).forEach((id, property) ->
         {
             Tag value = values.get(property);
             var button = gui.getButton(id);
             if (value != null && button != null)
             {
-                button.setDisplay(((ByteTag) value).getAsByte() != 0 ? 1 : 0);
+                boolean on = ((ByteTag) value).getAsByte() != 0;
+                // The Custom NPCs button asks whether cobwebs affect the NPC, the opposite of the stored value.
+                button.setDisplay(on != (id == COBWEB_BUTTON) ? 1 : 0);
                 buttons.put(id, Reason.TYPE_PROPERTIES);
-                labels.put(id == 5 ? 11 : 13, Reason.TYPE_PROPERTIES);
+                labels.put(STATS_BUTTON_LABELS.getOrDefault(id, id), Reason.TYPE_PROPERTIES);
             }
         });
         for (int id : soundButtons(gui))
@@ -80,10 +66,29 @@ public final class NpcTypeControls
         return RangedControlLocks.merge(locks, NpcEquipmentControls.apply(gui, npc));
     }
 
+    /** Shows the model's value in each field it decides, read-only; a property kept as Custom stays editable. */
+    private static void lockFields(GuiBasic gui, Map<NpcTypeProperty, String> readouts, Set<NpcTypeProperty> custom, Map<Integer, Reason> fields, Map<Integer, Reason> labels)
+    {
+        fields(gui).forEach((id, property) ->
+        {
+            // Mounts that differ show their values even when not inherited.
+            String value = custom.contains(property) ? null : readouts.get(property);
+            var field = gui.getTextField(id);
+            if (value == null || field == null)
+                return;
+            field.setMaxLength(256);
+            field.numbersOnly = false;
+            field.floatsOnly = false;
+            field.setValue(value);
+            fields.put(id, Reason.TYPE_PROPERTIES);
+            labels.put(id, Reason.TYPE_PROPERTIES);
+        });
+    }
+
     private static Map<Integer, NpcTypeProperty> fields(GuiBasic gui)
     {
         if (gui instanceof GuiNpcStats)
-            return Map.of(0, NpcTypeProperty.HEALTH, 1, NpcTypeProperty.AGGRO_RANGE);
+            return Map.of(0, NpcTypeProperty.HEALTH, 1, NpcTypeProperty.AGGRO_RANGE, 14, NpcTypeProperty.HEALTH_REGEN, 16, NpcTypeProperty.COMBAT_REGEN);
         if (gui instanceof SubGuiNpcRangeProperties)
             return RANGED_FIELDS;
         if (gui instanceof SubGuiNpcProjectiles)
@@ -99,7 +104,9 @@ public final class NpcTypeControls
 
     private static Map<Integer, NpcTypeProperty> buttons(GuiBasic gui)
     {
-        return gui instanceof GuiNpcStats ? Map.of(5, NpcTypeProperty.CAN_DROWN, 7, NpcTypeProperty.NO_FALL_DAMAGE) : Map.of();
+        return gui instanceof GuiNpcStats
+            ? Map.of(5, NpcTypeProperty.CAN_DROWN, 7, NpcTypeProperty.NO_FALL_DAMAGE, 17, NpcTypeProperty.POTION_IMMUNE, COBWEB_BUTTON, NpcTypeProperty.IGNORE_COBWEB)
+            : Map.of();
     }
 
     private static int[] soundButtons(GuiBasic gui)

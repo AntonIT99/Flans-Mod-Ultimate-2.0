@@ -69,6 +69,15 @@ public final class NpcVehicleSounds
         movement.resetToVehicle(defaultSound(npc, true), range);
     }
 
+    /**
+     * @return whether a looped sound is the NPC's idle or movement sound: it is drawn as a vehicle or plane, whose engine it
+     *         plays, or it was given a looped sound of its own for that channel
+     */
+    public boolean applies(EntityNPCInterface npc, boolean moving)
+    {
+        return NpcPresentation.vehicleType(npc).isPresent() || !modelDefaults && !(moving ? movement : idle).getSound().isBlank();
+    }
+
     public Optional<EngineSound> resolve(EntityNPCInterface npc, boolean moving)
     {
         if (!(moving ? movementEnabled : idleEnabled))
@@ -80,6 +89,12 @@ public final class NpcVehicleSounds
         }
         return defaultSound(npc, moving).map(sound -> new EngineSound(sound.sound(), sound.range(),
             FlansEntitySounds.getSoundLength(ResourceLocation.parse(sound.sound().contains(":") ? sound.sound() : "flansmod:" + sound.sound())).orElse(sound.repeatTicks())));
+    }
+
+    /** @return the engine sound the vehicle or plane model plays for the channel, or an empty string without one */
+    public static String modelSound(EntityNPCInterface npc, boolean moving)
+    {
+        return defaultSound(npc, moving).map(EngineSound::sound).orElse("");
     }
 
     private static Optional<EngineSound> defaultSound(EntityNPCInterface npc, boolean moving)

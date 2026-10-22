@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.platform;
 import com.wolffsmod.npcs.combat.EquipmentAttributes;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForgeMod;
 
@@ -26,6 +27,7 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -46,6 +48,12 @@ public final class NpcPlatform
     public static boolean canShieldBlock(ItemStack stack)
     {
         return stack.canPerformAction(ItemAbilities.SHIELD_BLOCK);
+    }
+
+    /** The folder of the game's configuration files. */
+    public static Path configDir()
+    {
+        return FMLPaths.CONFIGDIR.get();
     }
 
     /** The attribute that extends melee and interaction reach. */

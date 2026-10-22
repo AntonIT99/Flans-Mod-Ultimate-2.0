@@ -3,7 +3,7 @@ registerFmuModule(
     modId: 'flansmodultimate_warfare44',
     jarTask: 'warfare44Pack',
     archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Warfare 44 Pack",
-    archiveVersion: '4.1',
+    archiveVersion: '4.2',
     // A blank projectUrl disables this module's CurseForge upload.
     curseforge: [projectUrl: 'https://www.curseforge.com/minecraft/mc-mods/flans-ultimate-2-warfare-44-pack', projectId: '1709050'],
     implementationTitle: 'warfare44',

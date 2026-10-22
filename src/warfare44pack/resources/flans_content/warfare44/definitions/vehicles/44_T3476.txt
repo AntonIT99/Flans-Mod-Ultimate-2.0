@@ -22,6 +22,8 @@ ShellSlots 4
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Alternate 44_T3476Mod1942 44_t3476mod1942_2 gray 8
+advpaintjob Finland 44_T3476Mod1942 44_t3476mod1942_finland green 8
 AddDye 5 green
 
 // Real-world specifications

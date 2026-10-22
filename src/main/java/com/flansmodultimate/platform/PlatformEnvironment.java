@@ -3,6 +3,7 @@ package com.flansmodultimate.platform;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.util.thread.EffectiveSide;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +18,12 @@ public final class PlatformEnvironment
     public static boolean isClient()
     {
         return FMLEnvironment.dist == Dist.CLIENT;
+    }
+
+    /** Logical thread side, including the integrated server in a physical client. */
+    public static boolean isServerThread()
+    {
+        return EffectiveSide.get().isServer();
     }
 
     public static boolean isProduction()

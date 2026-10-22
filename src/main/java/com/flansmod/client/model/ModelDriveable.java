@@ -212,6 +212,12 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             renderPartMatrix(gun, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
+    /** @return the colour multiplier the visual draws the part with, scorched or burnt */
+    protected static float tint(DriveableVisual driveable, EnumDriveablePart part)
+    {
+        return driveable.getPartTint(part);
+    }
+
     public void renderPart(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
         float scale, EnumRenderPass renderPass)
     {
@@ -240,7 +246,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         float gunScale = Math.max(0.001F, driveableType.getVehicleGunModelScale());
         for (SeatInfo seatInfo : driveableType.getSeats())
         {
-            if (seatInfo == null || seatInfo.getGunName().isEmpty() || !driveable.isPartIntact(seatInfo.getPart()))
+            if (seatInfo == null || seatInfo.getGunName().isEmpty() || !driveable.isPartDrawn(seatInfo.getPart()))
                 continue;
 
             boolean turretMounted = seatInfo.getPart() == EnumDriveablePart.TURRET;

@@ -8,6 +8,9 @@ Icon Icon_Civil_Vehicle_PoliceTruck_2A
 Texture Skin_Civil_Vehicle_PoliceTruck_2A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Brynmar Icon_Civil_Vehicle_PoliceTruck_2A skin_civil_vehicle_policetruck_2a_brynmar green 8
+
 // Recipe and Inventory
 FuelTankSize 1000
 CargoSlots 18

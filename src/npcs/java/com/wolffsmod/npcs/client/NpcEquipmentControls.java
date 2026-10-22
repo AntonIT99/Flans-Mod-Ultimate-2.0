@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.api.EquippedArmorProperties;
 import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.FlansEquipment;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -17,9 +17,20 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
 
-/** Item readouts are presentation only: no writes to NPC combat fields, even while the editor saves. */
+/**
+ * Item readouts are presentation only: no writes to NPC combat fields, even while the editor saves. A statistic the NPC
+ * keeps its own value for, in Main hand, Off hand or Armor properties, keeps its control editable.
+ */
 public final class NpcEquipmentControls
 {
+    /** The statistic behind each field and button of a Custom NPCs combat screen; unlisted ones are always the item's. */
+    private static final Map<Integer, EquipmentProperty> MELEE_CONTROLS = Map.of(1, EquipmentProperty.MELEE_DAMAGE, 2, EquipmentProperty.MELEE_REACH, 3, EquipmentProperty.MELEE_DELAY, 4,
+        EquipmentProperty.MELEE_KNOCKBACK, 5, EquipmentProperty.MELEE_EFFECT, 6, EquipmentProperty.MELEE_EFFECT, 7, EquipmentProperty.MELEE_EFFECT);
+    private static final Map<Integer, EquipmentProperty> RANGED_CONTROLS = Map.of(1, EquipmentProperty.RANGED_ACCURACY, 7, EquipmentProperty.FIRING_SOUND, 8, EquipmentProperty.RANGED_SHOT_COUNT);
+    private static final Map<Integer, EquipmentProperty> PROJECTILE_FIELDS = Map.of(1, EquipmentProperty.RANGED_DAMAGE, 4, EquipmentProperty.RANGED_SPEED);
+    /** Each resistance toggle of the stats screen with its label. */
+    private static final int[][] ARMOR_TOGGLES = {{4, 10}, {5, 11}, {7, 13}};
+
     private NpcEquipmentControls()
     {}
 
@@ -30,8 +41,10 @@ public final class NpcEquipmentControls
         Map<Integer, Reason> buttons = new HashMap<>();
         Map<Integer, Reason> labels = new HashMap<>();
         Set<Integer> shown = new HashSet<>();
-        if (NpcEquipment.weaponAuthority(npc))
+        if (gui instanceof SubGuiNpcMeleeProperties ? NpcEquipment.meleeAuthority(npc) : NpcEquipment.weaponAuthority(npc))
             weapon(gui, npc, readouts, buttons, shown);
+        release(npc, gui, readouts, buttons);
+        nativeThrowSpeed(gui, npc, readouts, fields, labels);
         if (gui instanceof SubGuiNpcProjectiles)
             buttons.keySet().stream().filter(id -> !shown.contains(id)).forEach(id ->
             {
@@ -48,8 +61,8 @@ public final class NpcEquipmentControls
                 field.numbersOnly = false;
                 field.floatsOnly = false;
                 field.setValue(text);
-                fields.put(id, Reason.ITEM_WEAPON);
-                labels.put(id, Reason.ITEM_WEAPON);
+                fields.putIfAbsent(id, Reason.ITEM_WEAPON);
+                labels.putIfAbsent(id, Reason.ITEM_WEAPON);
             }
         });
         labels.putAll(buttons);
@@ -63,14 +76,46 @@ public final class NpcEquipmentControls
         return locks;
     }
 
+    private static void nativeThrowSpeed(GuiBasic gui, EntityNPCInterface npc, Map<Integer, String> readouts, Map<Integer, Reason> fields, Map<Integer, Reason> labels)
+    {
+        if (!(gui instanceof SubGuiNpcProjectiles) || NpcEquipment.weaponAuthority(npc) || !NpcEquipment.enabled(npc, Feature.NATIVE_THROWABLES))
+            return;
+        var defaults = NpcThrowables.defaultSpeed(npc);
+        if (defaults.isEmpty())
+            return;
+        double speed = NpcEquipment.inherits(npc, EquipmentProperty.NATIVE_THROW_SPEED) ? defaults.getAsDouble() : NpcThrowables.ownSpeed(npc);
+        readouts.put(4, number(speed * 10D));
+        fields.put(4, Reason.NATIVE_THROW_SPEED);
+        labels.put(4, Reason.NATIVE_THROW_SPEED);
+    }
+
+    /** Leaves out the controls of the statistics the NPC keeps its own value for, so they stay editable. */
+    private static void release(EntityNPCInterface npc, GuiBasic gui, Map<Integer, String> readouts, Map<Integer, Reason> buttons)
+    {
+        Map<Integer, EquipmentProperty> controls;
+        if (gui instanceof SubGuiNpcMeleeProperties)
+            controls = MELEE_CONTROLS;
+        else if (gui instanceof SubGuiNpcRangeProperties)
+            controls = RANGED_CONTROLS;
+        else if (gui instanceof SubGuiNpcProjectiles)
+            controls = PROJECTILE_FIELDS;
+        else
+            return;
+        // The ranged screens show the gun the NPC fires as its weapon, whose own hand decides what it inherits.
+        var hand = gui instanceof SubGuiNpcMeleeProperties ? net.minecraft.world.InteractionHand.MAIN_HAND : NpcEquipment.firingHand(npc);
+        readouts.keySet().removeIf(id -> controls.containsKey(id) && !NpcEquipment.inherits(npc, controls.get(id).inHand(hand)));
+        // The projectile screen's buttons are its own settings, which only fields share IDs with.
+        if (!(gui instanceof SubGuiNpcProjectiles))
+            buttons.keySet().removeIf(id -> controls.containsKey(id) && !NpcEquipment.inherits(npc, controls.get(id).inHand(hand)));
+    }
+
     private static void weapon(GuiBasic gui, EntityNPCInterface npc, Map<Integer, String> readouts, Map<Integer, Reason> buttons, Set<Integer> shown)
     {
-        ItemStack item = npc.getMainHandItem();
         String nativeValue = I18n.get("wolffsmodnpcs.weapons.item_value");
         if (gui instanceof SubGuiNpcMeleeProperties)
-            melee(gui, npc, item, nativeValue, readouts, buttons);
+            melee(gui, npc, NpcEquipment.meleeWeapon(npc), nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcRangeProperties)
-            ranged(gui, npc, item, nativeValue, readouts, buttons);
+            ranged(gui, npc, NpcEquipment.rangedWeapon(npc), nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcProjectiles)
             projectiles(gui, npc, nativeValue, readouts, buttons, shown);
     }
@@ -86,7 +131,8 @@ public final class NpcEquipmentControls
         buttons.put(5, Reason.ITEM_WEAPON);
         buttons.put(7, Reason.ITEM_WEAPON);
         var effect = gui.getButton(5);
-        if (effect != null)
+        // The NPC's own effect stays shown while the NPC keeps it.
+        if (effect != null && NpcEquipment.inherits(npc, EquipmentProperty.MELEE_EFFECT))
             effect.setDisplay(NpcEquipment.fireSeconds(item, npc) > 0 ? 33 : 0);
     }
 
@@ -127,7 +173,7 @@ public final class NpcEquipmentControls
             readouts.put(id, nativeValue);
         for (int id : new int[]{1, 4, 5, 6, 7, 8, 9, 10})
             buttons.put(id, Reason.ITEM_WEAPON);
-        NpcEquipmentStats.Shot shot = NpcEquipmentStats.shot(npc, npc.getMainHandItem());
+        NpcEquipmentStats.Shot shot = NpcEquipmentStats.shot(npc, NpcEquipment.rangedWeapon(npc));
         if (shot == null)
         {
             buttons.put(0, Reason.ITEM_WEAPON);
@@ -164,16 +210,12 @@ public final class NpcEquipmentControls
 
     private static void armor(GuiBasic gui, EntityNPCInterface npc, Map<Integer, Reason> buttons, Map<Integer, Reason> labels)
     {
-        for (ItemStack stack : npc.getArmorSlots())
-            FlansEquipment.getArmorProperties(stack).ifPresent(properties ->
-            {
-                if (properties.fireResistance())
-                    protection(gui, 4, 10, true, buttons, labels);
-                if (properties.waterBreathing())
-                    protection(gui, 5, 11, false, buttons, labels);
-                if (properties.negatesFallDamage())
-                    protection(gui, 7, 13, true, buttons, labels);
-            });
+        if (NpcEquipment.armorProtects(npc, EquipmentProperty.ARMOR_FIRE, EquippedArmorProperties::fireResistance))
+            protection(gui, ARMOR_TOGGLES[0][0], ARMOR_TOGGLES[0][1], true, buttons, labels);
+        if (NpcEquipment.armorProtects(npc, EquipmentProperty.ARMOR_BREATHING, EquippedArmorProperties::waterBreathing))
+            protection(gui, ARMOR_TOGGLES[1][0], ARMOR_TOGGLES[1][1], false, buttons, labels);
+        if (NpcEquipment.armorProtects(npc, EquipmentProperty.ARMOR_FALL, EquippedArmorProperties::negatesFallDamage))
+            protection(gui, ARMOR_TOGGLES[2][0], ARMOR_TOGGLES[2][1], true, buttons, labels);
     }
 
     private static void protection(GuiBasic gui, int id, int label, boolean value, Map<Integer, Reason> buttons, Map<Integer, Reason> labels)

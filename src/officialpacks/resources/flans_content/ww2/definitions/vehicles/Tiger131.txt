@@ -11,6 +11,9 @@ Texture 131
 AddDye 15 yellow
 ModelScale 1.2
 
+// Paintjobs
+AdvPaintJob Grey Tiger131 131_grey gray 8
+
 // Recipe
 AddRecipeParts turret 1 heavyTankTurret 1 vehicleSeat
 AddRecipeParts core 1 heavyTankBody

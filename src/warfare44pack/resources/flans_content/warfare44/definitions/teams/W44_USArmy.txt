@@ -15,6 +15,7 @@ AllowedForRoundsGenerator False
 
 // Classes
 AddClass W44_USArmyRifleman
+AddClass W44_USArmyRifleman1941
 AddClass W44_USArmyAssault
 AddClass W44_USArmySupport
 AddClass W44_USArmyMedic
@@ -24,4 +25,12 @@ AddClass W44_USArmyScout
 AddClass W44_USArmySquadLeader
 AddClass W44_USArmyTankCrew
 AddClass W44_USArmyPilot
-AddClass W44_USArmyRifleman1941
+
+// Specialist weapon choices
+AddClass W44_USArmyMachineGunnerM1919A4
+AddClass W44_USArmyMachineGunnerM1919A6
+AddClass W44_USArmyAssaultGreaseGun
+AddClass W44_USArmyRiflemanSpringfield
+AddClass W44_USArmyTrenchRaider
+AddClass W44_USArmyScoutWinchester
+AddClass W44_USArmyFieldMedic

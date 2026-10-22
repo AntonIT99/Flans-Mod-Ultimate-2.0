@@ -11,6 +11,9 @@ Texture cromwell
 AddDye 10 green
 ModelScale 1
 
+// Paintjobs
+AdvPaintJob Original Cromwell cromwell_original gray 8
+
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
 AddRecipeParts core 1 mediumTankBody

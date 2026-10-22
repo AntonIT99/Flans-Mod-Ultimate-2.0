@@ -94,7 +94,8 @@ public final class NpcSight
         return new AABB(block).clip(to, from).map(face -> face.add(to.subtract(from).normalize().scale(EXIT_MARGIN))).orElse(from);
     }
 
-    static boolean clear(Level level, Vec3 from, Vec3 to, int transparent, Entity viewer)
+    /** @return whether nothing but at most the given number of see-through blocks lies between the two points */
+    public static boolean clear(Level level, Vec3 from, Vec3 to, int transparent, Entity viewer)
     {
         Set<BlockPos> crossed = transparent > 0 ? new HashSet<>() : Set.of();
         ClipContext context = new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, viewer);

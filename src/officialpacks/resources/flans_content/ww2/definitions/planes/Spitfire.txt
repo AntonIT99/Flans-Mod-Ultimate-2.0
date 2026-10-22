@@ -9,6 +9,10 @@ FlashModel DefaultFlash
 Texture spitfire
 AddDye 6 green
 
+// Paintjobs
+AdvPaintJob Yak9 Spitfire spitfire_yak9 gray 8
+AdvPaintJob Zero Spitfire spitfire_zero white 8
+
 // Recipe
 AddRecipeParts core 1 metalCockpit
 AddRecipeParts coreWheel 2 wheel

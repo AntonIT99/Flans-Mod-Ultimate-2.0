@@ -15,7 +15,7 @@ class PlayerGunCooldownTest
     void fractionalReloadCompletesOnTheSameRoundedUpTickAsTheAmmoPlan()
     {
         PlayerData data = PlayerData.getInstance(UUID.randomUUID());
-        data.doGunReload(InteractionHand.MAIN_HAND, 2.4F, 0F);
+        data.doGunReload(InteractionHand.MAIN_HAND, 2.4F);
         data.tickGunCooldowns();
         data.tickGunCooldowns();
         assertTrue(data.isReloading(InteractionHand.MAIN_HAND));

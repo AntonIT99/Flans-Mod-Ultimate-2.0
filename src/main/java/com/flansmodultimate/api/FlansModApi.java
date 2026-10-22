@@ -5,8 +5,7 @@
  */
 package com.flansmodultimate.api;
 
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.PlatformEnvironment;
@@ -82,8 +81,9 @@ public final class FlansModApi
     }
 
     /**
-     * @return every team the loaded content packs define, unmodifiable and in loading order; the
-     *         built-in spectators are not a content team and are left out. Either side.
+     * @return effective pack and server-authored teams, unmodifiable and in loading order; disabled
+     *         entries and built-in spectators are left out. Server-thread queries use server state;
+     *         clients see synchronized definitions after login.
      */
     public static Collection<ITeam> getTeams()
     {
@@ -91,9 +91,28 @@ public final class FlansModApi
     }
 
     /**
+     * @return all effective classes, including server-created classes without a team; unmodifiable.
+     *         Server thread sees server definitions; clients see synchronized definitions after login.
+     */
+    public static Collection<IPlayerClass> getPlayerClasses()
+    {
+        return List.copyOf(PlayerClass.values());
+    }
+
+    /**
+     * @param shortName
+     *            the effective class ID
+     * @return the class, including server-created classes, or empty when unknown or disabled; either side
+     */
+    public static Optional<IPlayerClass> getPlayerClass(String shortName)
+    {
+        return Optional.ofNullable(PlayerClass.getPlayerClass(shortName));
+    }
+
+    /**
      * @param shortName
      *            the team's short name, as {@link ITeam#getShortName()} reports it
-     * @return the content team with that name, or empty for an unknown name and for the built-in
+     * @return the effective team with that name, or empty for an unknown or disabled name and for the built-in
      *         spectators. Either side.
      */
     public static Optional<ITeam> getTeam(String shortName)

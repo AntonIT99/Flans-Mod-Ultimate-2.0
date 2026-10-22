@@ -2,12 +2,7 @@ package com.wolffsmod.npcs.properties;
 
 import noppes.npcs.entity.EntityNPCInterface;
 
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.NumericTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 
 /** Custom NPCs boundary for the reversible inheritance overlay. */
 public final class NpcTypePropertyAccess
@@ -37,6 +32,10 @@ public final class NpcTypePropertyAccess
             case WALKING_SPEED -> IntTag.valueOf(npc.ais.getWalkingSpeed());
             case IDLE_SOUND -> string(npc.advanced.getSound(0));
             case STEP_SOUND -> string(npc.advanced.getSound(4));
+            case POTION_IMMUNE -> ByteTag.valueOf(npc.stats.potionImmune);
+            case IGNORE_COBWEB -> ByteTag.valueOf(npc.stats.ignoreCobweb);
+            case HEALTH_REGEN -> IntTag.valueOf(npc.stats.healthRegen);
+            case COMBAT_REGEN -> IntTag.valueOf(npc.stats.combatRegen);
         };
     }
 
@@ -62,6 +61,10 @@ public final class NpcTypePropertyAccess
             case WALKING_SPEED -> npc.ais.setWalkingSpeed(integer(value));
             case IDLE_SOUND -> npc.advanced.setSound(0, value.getAsString());
             case STEP_SOUND -> npc.advanced.setSound(4, value.getAsString());
+            case POTION_IMMUNE -> npc.stats.potionImmune = bool(value);
+            case IGNORE_COBWEB -> npc.stats.ignoreCobweb = bool(value);
+            case HEALTH_REGEN -> npc.stats.healthRegen = integer(value);
+            case COMBAT_REGEN -> npc.stats.combatRegen = integer(value);
         }
     }
 

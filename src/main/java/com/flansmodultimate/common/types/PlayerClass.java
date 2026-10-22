@@ -5,6 +5,7 @@ import com.flansmodultimate.api.SkinOverrideVariant;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IPaintableItem;
+import com.flansmodultimate.common.teams.editor.EditorCatalog;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.*;
@@ -205,21 +206,32 @@ public class PlayerClass extends InfoType implements IPlayerClass
 
     public static java.util.Collection<PlayerClass> values()
     {
+        return EditorCatalog.current().classes(CLASSES.values());
+    }
+
+    public static Collection<PlayerClass> packValues()
+    {
         return CLASSES.values();
+    }
+
+    /** Explicit slot templates are only used by edited kits; legacy packs keep ordered insertion. */
+    public Map<Integer, ItemStack> createStartingInventory()
+    {
+        return Map.of();
     }
 
     /** Resolves a class by the unique name {@link #getShortName()} reports. */
     @Nullable
     public static PlayerClass getPlayerClass(@Nullable String id)
     {
-        return CLASSES.get(id);
+        return EditorCatalog.current().playerClass(id, CLASSES.get(id));
     }
 
     /** Resolves a class named inside {@code provider}, such as the {@code AddClass} line of a team. */
     @Nullable
     public static PlayerClass getPlayerClass(@Nullable String id, @Nullable IContentProvider provider)
     {
-        return CLASSES.get(id, provider);
+        return EditorCatalog.current().playerClass(id, CLASSES.get(id, provider));
     }
 
     private static int parsePositive(String[] values, int index, int fallback)

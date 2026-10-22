@@ -1,0 +1,17 @@
+// Identity
+Name SMG Gunner (M3A1, Green)
+ShortName OfficialWW2_AmericanInfantryGreenGreaseGunner
+
+// Armour
+Hat AmericanEngineerHelmet
+Chest AmericanEngineerChestGreen
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem M3A1
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem M3A1Ammo 4
+AddItem coltAmmo 2

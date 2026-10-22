@@ -11,6 +11,10 @@ Texture fury
 AddDye 5 green 5 gray
 ModelScale 1.1
 
+// Paintjobs
+AdvPaintJob Sherman Fury fury_sherman green 8
+AdvPaintJob Fury Fury fury_fury green 8
+
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
 AddRecipeParts core 1 mediumTankBody 1

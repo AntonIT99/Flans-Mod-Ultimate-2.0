@@ -112,6 +112,9 @@ public class GrenadeType extends ShootableType
     // Conditions for detonation
     @Getter
     protected boolean detonateWhenShot;
+    /** Use Minecraft's explosion damage, knockback, block destruction and effects instead of the Flan simulation. */
+    @Getter
+    protected boolean useVanillaExplosion;
     /** If true, then this grenade can be detonated by any remote detonator tool */
     @Getter
     protected boolean remote;
@@ -202,6 +205,7 @@ public class GrenadeType extends ShootableType
         flashBang = readValue("FlashBang", flashBang, file);
 
         detonateWhenShot = readValue("DetonateWhenShot", detonateWhenShot, file);
+        useVanillaExplosion = readValue("UseVanillaExplosion", useVanillaExplosion, file);
 
         // Deployable Bag Stuff
         isDeployableBag = readFieldWithOptionalValue("DeployableBag", isDeployableBag, file);
@@ -213,6 +217,12 @@ public class GrenadeType extends ShootableType
         addEffects("PotionEffect", potionEffects, file, false, false);
 
         numClips = readValue("NumClips", numClips, file);
+    }
+
+    @Override
+    public boolean useNewExplosionSystem()
+    {
+        return !useVanillaExplosion && super.useNewExplosionSystem();
     }
 
     private void readHoldToThrow(TypeFile file)

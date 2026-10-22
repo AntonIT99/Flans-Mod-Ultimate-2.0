@@ -1,0 +1,16 @@
+// Identity
+Name Field Medic (Syringe)
+ShortName W44_GermanArmyFieldMedic
+Description Combat medic with a medical bag, bandages and a morphine syringe.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 4
+AddItem 44_MedicalBag
+AddItem 44_Bandage 4
+AddItem 44_Smokestielhandgranate 2
+AddItem 44_Syringe
+AddItem 44_Morphine 5

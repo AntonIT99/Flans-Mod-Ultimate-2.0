@@ -92,7 +92,7 @@ class NpcDiagnosticsTest
     @Test
     void theServerPageRequestsSurviveTheWire()
     {
-        ServerControlPacket sent = new ServerControlPacket(ServerControlPacket.Action.SET, 15, 120, true, 0);
+        ServerControlPacket sent = ServerControlPacket.set(15, 120, true, 96, 72);
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         sent.write(buffer);
         assertEquals(sent, ServerControlPacket.read(buffer));
@@ -103,5 +103,22 @@ class NpcDiagnosticsTest
         assertEquals(ServerControlPacket.Action.BENCHMARK, received.action());
         assertEquals(45, received.seconds());
         assertEquals(ServerControlPacket.Action.GET, ServerControlPacket.request().action());
+        assertEquals(ServerControlPacket.Action.APPLY_RANGES, ServerControlPacket.applyRanges().action());
+    }
+
+    @Test
+    void theRangesOfNewNpcsAreClampedAndApplyingThemCountsUp()
+    {
+        NpcServerSettings settings = new NpcServerSettings();
+        assertEquals(NpcServerSettings.DEFAULT_AGGRO_RANGE, settings.getAggroRange());
+        assertEquals(NpcServerSettings.DEFAULT_FIRING_RANGE, settings.getFiringRange());
+        assertEquals(0, settings.getRangeGeneration());
+        settings.set(NpcServerSettings.DEFAULT_NEAR_INTERVAL, NpcServerSettings.DEFAULT_FAR_INTERVAL, false, 0, 10_000);
+        assertEquals(1, settings.getAggroRange());
+        assertEquals(NpcServerSettings.MAX_RANGE, settings.getFiringRange());
+        assertEquals(0, settings.getRangeGeneration());
+        settings.applyRangesToAll();
+        settings.applyRangesToAll();
+        assertEquals(2, settings.getRangeGeneration());
     }
 }

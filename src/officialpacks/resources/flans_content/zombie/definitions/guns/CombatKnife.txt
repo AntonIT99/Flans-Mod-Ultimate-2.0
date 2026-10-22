@@ -27,7 +27,8 @@ Accuracy 0
 
 // Damage and protection
 Damage 0
-MeleeDamage 6
+MeleeDamage 3
+MeleeSpeed 2.0
 UseCustomMelee True
 MeleeTime 12
 MeleeDamagePoint 12 0 2

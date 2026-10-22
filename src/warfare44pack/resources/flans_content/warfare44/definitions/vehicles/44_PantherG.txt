@@ -27,6 +27,7 @@ FuelTankSize 2000
 advpaintjob Beige 44_PantherG_Beige 44_PantherG_Beige yellow 5
 advpaintjob Winter 44_PantherG_Winter 44_PantherG_Winter white 5
 advpaintjob BlackAce 44_PantherG_Black 44_PantherG_Black black 5
+advpaintjob DunkelgelbCamo 44_PantherG 44_pantherg_dunkelgelbcamo yellow 8
 AddDye 5 gray
 
 // Real-world specifications

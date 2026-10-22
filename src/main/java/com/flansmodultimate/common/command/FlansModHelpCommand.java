@@ -35,6 +35,8 @@ public final class FlansModHelpCommand
         entry(source, "/vehiclephysics", "Report vehicle physics (operator)", "/help vehiclephysics");
         entry(source, "/flansphysics", "Inspect and change dimension physics (operator)", "/help flansphysics");
         source.sendSuccess(() -> Component.literal("/flansrenderstats - Client-only render diagnostics: start, stop, reset, bridge [indices]").withStyle(ChatFormatting.GRAY), false);
+        source.sendSuccess(() -> Component.literal("/flansmodultimate reloadModels - Client-only model cache reload; HotSwap Java changes first").withStyle(ChatFormatting.GRAY), false);
+        source.sendSuccess(() -> Component.literal("/flansdebug aimoffset [x y z | reset | clear] - Client-only held-gun aim offset preview in model units").withStyle(ChatFormatting.GRAY), false);
         source.sendSuccess(() -> Component.literal("Operator commands require permission level 2; their detailed help is available to operators.").withStyle(ChatFormatting.GRAY), false);
         return 1;
     }

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render.thermal;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.render.WhiteTexture;
 import com.flansmodultimate.client.render.hud.VehicleOpticsClient;
@@ -39,6 +40,8 @@ public final class VehicleThermalRenderer
     private static boolean maskReady;
     private static int width;
     private static int height;
+    /** Heat of the entity being drawn into the mask, as its alpha: 255 for full heat, less for a cooling wreck. */
+    private static int maskHeat = 255;
 
     private VehicleThermalRenderer()
     {}
@@ -112,8 +115,12 @@ public final class VehicleThermalRenderer
             float partialTick = ClientPlatform.partialTick(event);
             for (Entity entity : mc.level.entitiesForRendering())
             {
-                if (inMask(entity, occupied, event.getFrustum(), partialTick))
-                    renderEntity(entity, camera, partialTick, event.getPoseStack(), maskBuffers);
+                if (!inMask(entity, occupied, event.getFrustum(), partialTick))
+                    continue;
+                // A wreck cools as it burns out. Heat is written with each vertex, so every entity keeps its own.
+                maskHeat = entity instanceof Driveable driveable ? Math.round(255F * DriveableDamageEffects.thermalHeat(driveable)) : 255;
+                renderEntity(entity, camera, partialTick, event.getPoseStack(), maskBuffers);
+                maskHeat = 255;
             }
             // Driveables too far away to be drawn as entities are just as hot
             DistantBoxRenderer.renderHeatMask(event.getPoseStack(), mask, camera, ClientPlatform.partialTick(event));
@@ -223,7 +230,7 @@ public final class VehicleThermalRenderer
         @Override
         public VertexConsumer setColor(int r, int g, int b, int a)
         {
-            delegate.setColor(255, 255, 255, 255);
+            delegate.setColor(255, 255, 255, maskHeat);
             return this;
         }
 

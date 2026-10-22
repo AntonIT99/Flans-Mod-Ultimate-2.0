@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.wolffsmod.npcs.combat.NpcEquipment;
-import com.wolffsmod.npcs.combat.NpcEquipmentStats;
+import com.wolffsmod.npcs.combat.*;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import noppes.npcs.ai.EntityAIAttackTarget;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -12,7 +12,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** Uses weapon reach/cadence in the existing melee AI, keeping editor values as saved fallbacks. */
+import net.minecraft.world.InteractionHand;
+
+/**
+ * Uses the selected melee hand's reach, cadence and swing in the existing AI, retaining one shared cooldown and editor fallbacks. An equipped ranged weapon
+ * leaves melee to within melee range, as a projectile would; any other equipped weapon fights in melee at any distance.
+ */
 @SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = EntityAIAttackTarget.class, remap = false)
 public abstract class NpcEquipmentAttackAiMixin
@@ -23,18 +28,24 @@ public abstract class NpcEquipmentAttackAiMixin
     @Redirect(method = "canUse", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataInventory;getProjectile()Lnoppes/npcs/api/item/IItemStack;"))
     private IItemStack wolffsmodnpcsWeaponChoosesAttack(DataInventory inventory)
     {
-        return NpcEquipment.weaponAuthority(npc) ? null : inventory.getProjectile();
+        return NpcEquipment.combatProjectile(npc);
     }
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getDelay()I"))
     private int wolffsmodnpcsMeleeCadence(DataMelee melee)
     {
-        return NpcEquipment.weaponAuthority(npc) ? NpcEquipment.meleeDelay(npc.getMainHandItem()) : melee.getDelay();
+        return NpcEquipment.itemMelee(npc, EquipmentProperty.MELEE_DELAY) ? NpcEquipment.meleeDelay(NpcEquipment.meleeWeapon(npc)) : melee.getDelay();
     }
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getRange()I"))
     private int wolffsmodnpcsMeleeReach(DataMelee melee)
     {
-        return NpcEquipment.weaponAuthority(npc) ? (int) Math.round(NpcEquipmentStats.meleeReach(npc.getMainHandItem())) : melee.getRange();
+        return NpcEquipment.itemMelee(npc, EquipmentProperty.MELEE_REACH) ? (int) Math.round(NpcEquipmentStats.meleeReach(NpcEquipment.meleeWeapon(npc))) : melee.getRange();
+    }
+
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/EntityNPCInterface;swing(Lnet/minecraft/world/InteractionHand;)V"))
+    private void wolffsmodnpcsSwingMeleeHand(EntityNPCInterface attacker, InteractionHand original)
+    {
+        attacker.swing(NpcEquipment.enabled(attacker, Feature.MELEE_DUAL_WIELD) ? NpcEquipment.meleeHand(attacker) : original);
     }
 }

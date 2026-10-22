@@ -10,6 +10,12 @@ Texture lancaster
 AddDye 10 green
 AddDye 5 yellow
 
+// Paintjobs
+AdvPaintJob AC130 Lancaster b-24_ac130 gray 8
+AdvPaintJob B24 Lancaster b-24_b24 green 8
+AdvPaintJob B71 Lancaster b-24_b71 green 8
+AdvPaintJob Do17 Lancaster b-24_do17 gray 8
+
 // Recipe
 AddRecipeParts nose 1 vehicleSeat
 AddRecipeParts core 1 metalCockpit 1 bombBay 3 vehicleSeat

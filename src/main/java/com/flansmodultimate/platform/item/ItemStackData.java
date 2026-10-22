@@ -121,4 +121,12 @@ public final class ItemStackData
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(Filterable.passThrough(title), author, 0, pages.stream().map(Filterable::passThrough).toList(), true));
         return book;
     }
+
+    /** Marks a written book as a copy: 0 for the original, 1 for a copy of it, 2 for a copy of a copy, 3 for tattered. */
+    public static void setBookGeneration(ItemStack book, int generation)
+    {
+        WrittenBookContent content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
+        if (content != null)
+            book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(content.title(), content.author(), generation, content.pages(), content.resolved()));
+    }
 }

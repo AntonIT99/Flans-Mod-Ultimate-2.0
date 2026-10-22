@@ -13,6 +13,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.*;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -237,6 +238,50 @@ public final class PartBody implements IPartBody
     {
         DriveablePart state = parts.get(part);
         return state != null && enabled(state) && !state.isDestroyed();
+    }
+
+    /**
+     * Whether the wearer's model draws the part: everything but a part that is broken. A part the body has no box for,
+     * or one switched off as a hitbox, is still drawn.
+     */
+    public boolean isDrawn(@Nullable EnumDriveablePart part)
+    {
+        DriveablePart state = part == null ? null : parts.get(part);
+        return state == null || !enabled(state) || !state.isDestroyed();
+    }
+
+    /** @return the state of the given part, or null when the body has no box for it */
+    @Nullable
+    public DriveablePart partState(@Nullable EnumDriveablePart part)
+    {
+        return part == null ? null : parts.get(part);
+    }
+
+    /** @return the state of every part with a box that is switched on, the core first, as the body holds them */
+    public List<DriveablePart> enabledParts()
+    {
+        List<DriveablePart> enabledParts = new ArrayList<>(parts.size());
+        for (DriveablePart part : parts.values())
+        {
+            if (enabled(part))
+                enabledParts.add(part);
+        }
+        return enabledParts;
+    }
+
+    /**
+     * World position of a point given as shares of a part box's extent, following the turret as hits do.
+     *
+     * @param fx
+     *            share along the box's width, from 0 to 1, like {@code fy} and {@code fz}
+     */
+    public Vec3 partPointToWorld(DriveablePart part, double fx, double fy, double fz)
+    {
+        if (part.getBox() == null)
+            return pose.origin();
+        AABB box = partBoxModelLocal(part);
+        Vec3 local = new Vec3(Mth.lerp(fx, box.minX, box.maxX), Mth.lerp(fy, box.minY, box.maxY), Mth.lerp(fz, box.minZ, box.maxZ));
+        return toWorld(DriveableProjectileCollision.partPointToHullLocal(local, part.getType(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset));
     }
 
     // Health

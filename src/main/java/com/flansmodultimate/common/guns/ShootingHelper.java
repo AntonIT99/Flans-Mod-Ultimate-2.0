@@ -622,7 +622,8 @@ public final class ShootingHelper
 
         playDetonateSound(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);
-        spreadFire(level, type, position, true);
+        if (!(type instanceof GrenadeType grenade && grenade.isUseVanillaExplosion()))
+            spreadFire(level, type, position, true);
         spawnExplosionParticles(level, type, position);
         dropItemsOnDetonate(level, type.getDropItemOnDetonate(), type.getContentPack(), position, shootable);
     }
@@ -668,10 +669,20 @@ public final class ShootingHelper
 
     private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)
     {
-        if (type.getExplosionStats(explosive).explosionRadius() <= 0.1F)
+        boolean vanilla = type instanceof GrenadeType grenade && grenade.isUseVanillaExplosion();
+        if ((vanilla ? type.getExplosionRadius() : type.getExplosionStats(explosive).explosionRadius()) <= 0.1F)
             return;
 
-        new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
+        if (vanilla)
+        {
+            boolean breaksBlocks = type.isExplosionBreaksBlocks() && FlansMod.teamsManager.isExplosionsBreakBlocks() && ModCommonConfig.get().explosionsBreakBlocks();
+            level.explode(explosive, level.damageSources().explosion(explosive, causingEntity), null, position.x, position.y, position.z, type.getExplosionRadius(), type.getFireRadius() > 0F,
+                breaksBlocks ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
+        }
+        else
+        {
+            new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
+        }
         if (!level.isClientSide && type.getPowerShake() > 0F && type.getRangeShake() > 0F)
             PacketHandler.sendToAllAround(new PacketCombatFeedback(true, type.getPowerShake(), 0F), position, type.getRangeShake(), level.dimension());
 

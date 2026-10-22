@@ -7,19 +7,22 @@ import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
+import noppes.npcs.api.constants.PotionEffectType;
 import noppes.npcs.api.event.NpcEvent;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ChargedProjectiles;
@@ -29,7 +32,10 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Executes equipped items rather than copying NPC projectile/effect settings into synthetic projectiles. */
+/**
+ * Executes equipped items rather than copying NPC projectile/effect settings into synthetic projectiles. The statistics the
+ * NPC keeps its own value for, chosen in Main hand and Off hand properties, replace the item's while it attacks.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcItemAttacks
 {
@@ -37,49 +43,168 @@ public final class NpcItemAttacks
     @SuppressWarnings("java:S9133")
     public static final float CROSSBOW_VELOCITY = 3.15F;
 
+    /**
+     * Strikes with the selected hand, alternating only when melee dual wield is enabled. Each custom melee statistic comes from the NPC instead:
+     * damage, knockback, and its effect in place of the item's enchantment and hit effects.
+     */
     public static boolean melee(EntityNPCInterface npc, Entity target)
     {
         if (npc.level().isClientSide || !target.isAlive())
             return false;
-        ItemStack weapon = npc.getMainHandItem();
-        float damage = (float) NpcEquipment.meleeDamage(weapon);
+        InteractionHand hand = NpcEquipment.meleeHand(npc);
+        ItemStack weapon = hand == InteractionHand.OFF_HAND ? npc.getOffhandItem() : npc.getMainHandItem();
+        NpcMeleeState state = NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD) ? ((NpcMeleeState.Holder) npc).wolffsmodnpcsMeleeState() : null;
+        if (state != null)
+            state.begin(hand);
+        try
+        {
+            return melee(npc, target, weapon, hand);
+        }
+        finally
+        {
+            if (state != null)
+                state.finish(hand);
+        }
+    }
+
+    private static boolean melee(EntityNPCInterface npc, Entity target, ItemStack weapon, InteractionHand hand)
+    {
+        boolean itemDamage = NpcEquipment.inherits(npc, EquipmentProperty.MELEE_DAMAGE);
+        float damage = itemDamage ? (float) NpcEquipment.meleeDamage(weapon) : npc.stats.melee.getStrength();
         if (target instanceof LivingEntity living)
         {
-            damage = EnchantmentHelper.modifyDamage((ServerLevel) npc.level(), weapon, living, npc.damageSources().mobAttack(npc), damage);
+            if (itemDamage)
+                damage = EnchantmentHelper.modifyDamage((ServerLevel) npc.level(), weapon, living, npc.damageSources().mobAttack(npc), damage);
             NpcEvent.MeleeAttackEvent event = new NpcEvent.MeleeAttackEvent(npc.wrappedNPC, living, damage);
             if (EventHooks.onNPCAttacksMelee(npc, event))
                 return false;
             damage = event.damage;
         }
-        if (!target.hurt(npc.damageSources().mobAttack(npc), damage))
+        if (!hurtMelee(npc, target, weapon, damage))
             return false;
-        applyMeleeEffects(npc, target, weapon);
+        applyMeleeEffects(npc, target, weapon, hand);
         return true;
     }
 
-    private static void applyMeleeEffects(EntityNPCInterface npc, Entity target, ItemStack weapon)
+    /** Matches Custom NPCs' rapid melee policy using the cadence the attack AI actually chose. */
+    private static boolean hurtMelee(EntityNPCInterface npc, Entity target, ItemStack weapon, float damage)
+    {
+        int delay = NpcEquipment.itemMelee(npc, EquipmentProperty.MELEE_DELAY) ? NpcEquipment.meleeDelay(weapon) : npc.stats.melee.getDelay();
+        NpcMeleeState state = NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD) ? ((NpcMeleeState.Holder) npc).wolffsmodnpcsMeleeState() : null;
+        long tick = npc.level().getGameTime();
+        // The previous hand's recovery controls when this strike arrives, even if this weapon itself is slower.
+        boolean rapid = delay < 10 || state != null && state.followsRapidHit(target.getId(), tick);
+        int previousImmunity = target.invulnerableTime;
+        if (rapid)
+            target.invulnerableTime = 0;
+        boolean accepted = false;
+        try
+        {
+            accepted = target.hurt(npc.damageSources().mobAttack(npc), damage);
+            if (accepted && state != null)
+                state.hit(target.getId(), tick, delay);
+            return accepted;
+        }
+        finally
+        {
+            // A shield, damage hook or other rejection must not expose the victim to another attacker.
+            if (rapid && !accepted)
+                target.invulnerableTime = previousImmunity;
+        }
+    }
+
+    private static void applyMeleeEffects(EntityNPCInterface npc, Entity target, ItemStack weapon, InteractionHand hand)
+    {
+        boolean itemEffect = NpcEquipment.inherits(npc, EquipmentProperty.MELEE_EFFECT);
+        int fire = NpcEquipment.fireSeconds(weapon, npc);
+        if (itemEffect && fire > 0)
+            target.igniteForSeconds(fire);
+        if (target instanceof LivingEntity living)
+        {
+            if (NpcEquipment.inherits(npc, EquipmentProperty.MELEE_KNOCKBACK))
+            {
+                // 1.21 enchantments scale knockback for the struck target instead of adding a flat bonus.
+                double knockback = EnchantmentHelper.modifyKnockback((ServerLevel) npc.level(), weapon, target, npc.damageSources().mobAttack(npc),
+                    (float) EquipmentAttributes.value(weapon, EquipmentSlot.MAINHAND, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_KNOCKBACK, 0D));
+                if (knockback > 0D)
+                    living.knockback(knockback * 0.5D, Math.sin(Math.toRadians(npc.getYRot())), -Math.cos(Math.toRadians(npc.getYRot())));
+            }
+            else
+                npcKnockback(npc, living);
+            if (itemEffect)
+                meleeEnchantmentEffects(npc, living, weapon);
+            else
+                npcEffect(npc, living);
+            hurtWeapon(weapon, living, npc);
+            npc.setItemSlot(hand == InteractionHand.OFF_HAND ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND, weapon);
+        }
+        npc.setLastHurtMob(target);
+    }
+
+    /** Modern weapons split successful-hit handling from durability loss. */
+    private static void hurtWeapon(ItemStack weapon, LivingEntity target, EntityNPCInterface npc)
+    {
+        if (weapon.getItem().hurtEnemy(weapon, target, npc) && !weapon.isEmpty())
+            weapon.getItem().postHurtEnemy(weapon, target, npc);
+    }
+
+    /** 1.21 applies the target's and the striking weapon's post-attack enchantments together; the idle hand never adds its own. */
+    private static void meleeEnchantmentEffects(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
     {
         DamageSource source = npc.damageSources().mobAttack(npc);
         EnchantmentHelper.doPostAttackEffectsWithItemSource((ServerLevel) npc.level(), target, source, weapon);
-        if (target instanceof LivingEntity living)
+    }
+
+    /** The push Custom NPCs gives a target with the NPC's own melee knockback. */
+    private static void npcKnockback(EntityNPCInterface npc, LivingEntity target)
+    {
+        int knockback = npc.stats.melee.getKnockback();
+        if (knockback == 0)
+            return;
+        double yaw = Math.toRadians(npc.getYRot());
+        target.push(-Math.sin(yaw) * knockback * 0.5D, 0.1D + knockback * 0.04D, Math.cos(yaw) * knockback * 0.5D);
+        npc.setDeltaMovement(npc.getDeltaMovement().multiply(0.6D, 1D, 0.6D));
+    }
+
+    /** The effect Custom NPCs applies with the NPC's own melee stats: a potion effect, or fire. */
+    private static void npcEffect(EntityNPCInterface npc, LivingEntity target)
+    {
+        int type = npc.stats.melee.getEffectType();
+        int seconds = npc.stats.melee.getEffectTime();
+        if (type == 0)
+            return;
+        if (type == NpcEquipmentImport.FIRE_EFFECT)
         {
-            double knockback = EnchantmentHelper.modifyKnockback((ServerLevel) npc.level(), weapon, target, source,
-                (float) EquipmentAttributes.value(weapon, EquipmentSlot.MAINHAND, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_KNOCKBACK, 0D));
-            if (knockback > 0D)
-                living.knockback(knockback * 0.5D, Math.sin(Math.toRadians(npc.getYRot())), -Math.cos(Math.toRadians(npc.getYRot())));
-            // Modern weapons split successful-hit handling from durability loss.
-            if (weapon.getItem().hurtEnemy(weapon, living, npc) && !weapon.isEmpty())
-                weapon.getItem().postHurtEnemy(weapon, living, npc);
-            npc.setItemSlot(EquipmentSlot.MAINHAND, weapon);
+            target.igniteForSeconds(seconds);
+            return;
         }
-        npc.setLastHurtMob(target);
+        MobEffect effect = PotionEffectType.getMCType(type);
+        if (effect != null)
+            target.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect), seconds * 20, npc.stats.melee.getEffectStrength()));
     }
 
     public static boolean ranged(EntityNPCInterface npc, LivingEntity target)
     {
         if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
-        ItemStack weapon = npc.getMainHandItem();
+        ItemStack weapon = NpcEquipment.rangedWeapon(npc);
+        boolean fired = ranged(npc, target, weapon);
+        if (fired)
+            NpcAmmunition.refillEmptySlots(npc);
+        return fired;
+    }
+
+    private static boolean ranged(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
+    {
+        if (weapon == npc.getOffhandItem() && weapon != npc.getMainHandItem())
+            return fireFlan(npc, target, InteractionHand.OFF_HAND);
+        if (weapon != npc.getMainHandItem())
+        {
+            boolean thrown = FlansProjectiles.isGrenade(weapon) ? grenade(npc, target, weapon) : throwFlan(npc, target, weapon);
+            if (thrown && weapon.isEmpty())
+                npc.inventory.weapons.remove(1);
+            return thrown;
+        }
         if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isPresent())
             return fireFlan(npc, target, InteractionHand.MAIN_HAND);
         if (FlansProjectiles.isGrenade(weapon))
@@ -102,35 +227,90 @@ public final class NpcItemAttacks
         var flanWeapon = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
         if (flanWeapon.isEmpty())
             return false;
+        if (flanWeapon.get().throwable())
+        {
+            boolean thrown = throwFlan(npc, target, weapon);
+            if (thrown)
+                npc.setItemInHand(hand, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
+            return thrown;
+        }
         Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());
-        Feature soundFeature = flanWeapon.get().throwable() ? Feature.THROW_SOUNDS : Feature.FIRE_SOUNDS;
-        return FlansEquipment.fire(npc, hand, npc.getEyePosition(), flanDirection(npc, target, hand, weapon, aim), NpcEquipment.enabled(npc, soundFeature),
-            NpcEquipment.enabled(npc, Feature.SHOOT_PARTICLES));
+        boolean itemSound = NpcEquipment.inherits(npc, EquipmentProperty.FIRING_SOUND.inHand(hand));
+        boolean fired = FlansEquipment.fire(npc, hand, npc.getEyePosition(), flanDirection(npc, target, hand, weapon, aim), itemSound && NpcEquipment.enabled(npc, Feature.FIRE_SOUNDS),
+            NpcEquipment.enabled(npc, Feature.SHOOT_PARTICLES), NpcEquipment.rangedOverrides(npc, hand));
+        if (fired && !itemSound)
+            playOwnFiringSound(npc);
+        return fired;
+    }
+
+    /** The NPC's own firing sound, played in place of the item's when the NPC keeps its own. */
+    private static void playOwnFiringSound(EntityNPCInterface npc)
+    {
+        SoundEvent sound = npc.stats.ranged.getSoundEvent(0);
+        if (sound != null)
+            npc.playSound(sound, 2F, 1F);
+    }
+
+    private static boolean throwFlan(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
+    {
+        var prepared = FlansEquipment.prepareThrow(npc, weapon);
+        if (prepared.isEmpty())
+            return false;
+        var shot = prepared.get();
+        Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()), NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO,
+            shot.speed(), NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? shot.gravity() : 0D, shot.drag(), false);
+        var launched = shot.launch(npc.getEyePosition(), direction, NpcEquipment.enabled(npc, Feature.THROW_SOUNDS));
+        if (launched.isEmpty())
+            return false;
+        finishThrow(npc, weapon, launched);
+        return true;
+    }
+
+    private static void finishThrow(EntityNPCInterface npc, ItemStack weapon, List<Entity> launched)
+    {
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+            weapon.shrink(1);
+        else
+            for (Entity entity : launched)
+                if (entity instanceof AbstractArrow arrow)
+                    arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+        npc.updateClient = true;
+        NpcThrowPresentation.clear(npc);
     }
 
     /** A held Flan gun swung in melee plays its melee animation and sound; other items have nothing to add. */
     public static void meleeFeedback(EntityNPCInterface npc)
     {
-        if (npc.level().isClientSide || FlansEquipment.getWeaponProperties(npc.getMainHandItem(), ItemStack.EMPTY).isEmpty())
+        if (npc.level().isClientSide)
+            return;
+        InteractionHand hand = NpcEquipment.meleeHand(npc);
+        ItemStack weapon = hand == InteractionHand.OFF_HAND ? npc.getOffhandItem() : npc.getMainHandItem();
+        if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isEmpty())
             return;
         if (NpcEquipment.enabled(npc, Feature.GUN_MELEE_ANIMATION))
-            FlansEquipment.animateMelee(npc, InteractionHand.MAIN_HAND);
+            FlansEquipment.animateMelee(npc, hand);
         if (NpcEquipment.enabled(npc, Feature.MELEE_SOUNDS))
-            FlansEquipment.playMeleeSound(npc, InteractionHand.MAIN_HAND);
+            FlansEquipment.playMeleeSound(npc, hand);
     }
 
-    public static void launched(EntityNPCInterface npc, LivingEntity target)
+    public static void launched(EntityNPCInterface npc, LivingEntity target, InteractionHand hand)
     {
         npc.updateClient = true;
-        EventHooks.onNPCRangedLaunched(npc, new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, NpcEquipment.flan(npc).map(properties -> (float) properties.damage()).orElse(0F)));
+        float damage = NpcEquipment.inherits(npc, EquipmentProperty.RANGED_DAMAGE.inHand(hand))
+            ? NpcEquipment.flan(npc, hand).map(properties -> (float) properties.damage()).orElse(0F)
+            : npc.stats.ranged.getStrength();
+        EventHooks.onNPCRangedLaunched(npc, new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, damage));
     }
 
     private static Vec3 flanDirection(EntityNPCInterface npc, LivingEntity target, InteractionHand hand, ItemStack weapon, Vec3 direct)
     {
-        if (NpcEquipment.flan(npc, hand).map(properties -> properties.speed() <= 0D || properties.throwable()).orElse(true))
+        boolean ownSpeed = !NpcEquipment.inherits(npc, EquipmentProperty.RANGED_SPEED.inHand(hand));
+        if (NpcEquipment.flan(npc, hand).map(properties -> !ownSpeed && properties.speed() <= 0D || properties.throwable()).orElse(true))
             return direct;
-        var shot = FlansEquipment.getLoadedAmmunition(weapon)
-            .flatMap(ammo -> FlansProjectiles.prepare(npc, ammo, weapon, null, null, false, new ProjectileParameters(FlansEquipment.getLoadedRoundIndex(weapon), true, 0F, 0F, 1F)));
+        // The NPC's own speed stands in for the gun's; ammunition that declares a velocity still wins, as when it fires.
+        ProjectileParameters parameters = new ProjectileParameters(FlansEquipment.getLoadedRoundIndex(weapon), !ownSpeed, 0F, 0F,
+            ownSpeed ? (float) NpcEquipment.speed(npc.stats.ranged.getSpeed()) : 1F);
+        var shot = FlansEquipment.getLoadedAmmunition(weapon).flatMap(ammo -> FlansProjectiles.prepare(npc, ammo, weapon, null, null, false, parameters));
         return shot.map(value -> ProjectileAim.direction(direct, NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, value.speed(),
             NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? value.gravity() : 0D, value.drag(), false)).orElse(direct);
     }
@@ -145,10 +325,12 @@ public final class NpcItemAttacks
         var shot = prepared.get();
         Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()), NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO,
             shot.speed(), NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? shot.gravity() : 0D, shot.drag(), false);
-        if (shot.launch(npc.getEyePosition(), direction, NpcEquipment.enabled(npc, Feature.THROW_SOUNDS)).isEmpty())
+        var launched = shot.launch(npc.getEyePosition(), direction, NpcEquipment.enabled(npc, Feature.THROW_SOUNDS));
+        if (launched.isEmpty())
             return false;
-        weapon.shrink(1);
-        npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
+        finishThrow(npc, weapon, launched);
+        if (weapon == npc.getMainHandItem())
+            npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
         return true;
     }
 
@@ -175,7 +357,11 @@ public final class NpcItemAttacks
         // Modern arrows retain the firing weapon and apply its enchantment effects natively.
         AbstractArrow arrow = bow.customArrow(arrowItem.createArrow(npc.level(), projectileAmmo, npc, weapon), projectileAmmo, weapon);
         arrow.setCritArrow(true);
-        shoot(arrow, npc, target, 3F, 1F, 0.05D);
+        float speed = speed(npc, 3F);
+        // An arrow deals its base damage times its speed, so the NPC's own damage is spread over the speed it leaves at.
+        if (!NpcEquipment.inherits(npc, EquipmentProperty.RANGED_DAMAGE))
+            arrow.setBaseDamage(npc.stats.ranged.getStrength() / speed);
+        shoot(arrow, npc, target, speed, inaccuracy(npc), 0.05D);
         arrow.pickup = usedAmmo == 0 ? AbstractArrow.Pickup.CREATIVE_ONLY : AbstractArrow.Pickup.ALLOWED;
         if (!npc.level().addFreshEntity(arrow))
             return false;
@@ -191,12 +377,12 @@ public final class NpcItemAttacks
             return false;
         // Vanilla crossbows accept living shooters and preserve charged ammunition, piercing and multishot.
         boolean rocket = weapon.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).contains(Items.FIREWORK_ROCKET);
-        float speed = rocket ? 1.6F : CROSSBOW_VELOCITY;
+        float speed = speed(npc, rocket ? 1.6F : CROSSBOW_VELOCITY);
         Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()), NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, speed,
             !rocket && NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? 0.05D : 0D, rocket ? 1D : 0.99D, false);
         npc.setXRot((float) -Math.toDegrees(Math.atan2(direction.y, direction.horizontalDistance())));
         npc.setYRot((float) Math.toDegrees(Math.atan2(-direction.x, direction.z)));
-        crossbow.performShooting(npc.level(), npc, InteractionHand.MAIN_HAND, weapon, speed, 1F, null);
+        crossbow.performShooting(npc.level(), npc, InteractionHand.MAIN_HAND, weapon, speed, inaccuracy(npc), null);
         return true;
     }
 
@@ -232,14 +418,28 @@ public final class NpcItemAttacks
         Projectile projectile = projectile(npc, weapon);
         if (projectile == null)
             return false;
-        float velocity = throwableVelocity(weapon);
-        shoot(projectile, npc, target, velocity, 1F, trident || weapon.getItem() instanceof ThrowablePotionItem ? 0.05D : 0.03D);
+        float velocity = speed(npc, throwableVelocity(weapon));
+        shoot(projectile, npc, target, velocity, inaccuracy(npc), trident || weapon.getItem() instanceof ThrowablePotionItem ? 0.05D : 0.03D);
         if (!npc.level().addFreshEntity(projectile))
             return false;
         weapon.shrink(1);
         npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
         npc.playSound(trident ? NpcPlatform.tridentThrowSound() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
         return true;
+    }
+
+    /** The item's launch speed in blocks per tick, or the NPC's own speed when it keeps that. */
+    private static float speed(EntityNPCInterface npc, float item)
+    {
+        return NpcEquipment.inherits(npc, EquipmentProperty.RANGED_SPEED) ? item : (float) NpcEquipment.speed(npc.stats.ranged.getSpeed());
+    }
+
+    /** Vanilla inaccuracy 1, which items shoot with, or the NPC's own accuracy expressed the same way. */
+    private static float inaccuracy(EntityNPCInterface npc)
+    {
+        if (NpcEquipment.inherits(npc, EquipmentProperty.RANGED_ACCURACY))
+            return 1F;
+        return (float) (NpcEquipment.spread(npc.stats.ranged.getAccuracy()) / NpcEquipmentStats.VANILLA_INACCURACY_SPREAD);
     }
 
     private static float throwableVelocity(ItemStack weapon)

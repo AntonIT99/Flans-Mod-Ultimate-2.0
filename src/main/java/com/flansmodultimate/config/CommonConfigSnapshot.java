@@ -19,6 +19,7 @@ public record CommonConfigSnapshot(
     int noticeSpawnKillTime,
 
     boolean disableCrosshairForGuns,
+    boolean disableCrosshairWhileScoped,
     boolean explosionsBreakBlocks,
     boolean forceNewExplosionsBreakBlocks,
     boolean flanExplosionsDropBlocks,
@@ -162,10 +163,11 @@ public record CommonConfigSnapshot(
     double suppressionIntensity,
     boolean suppressionAffectsRiders,
     boolean bulletFlybySounds,
-    double bulletFlybyRangeMultiplier
+    double bulletFlybyRangeMultiplier,
+    int driveableWreckLifetime
 )
 {
-    public static final int CURRENT_VERSION = 42;
+    public static final int CURRENT_VERSION = 44;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -181,6 +183,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.noticeSpawnKillTime);
 
         buf.writeBoolean(s.disableCrosshairForGuns);
+        buf.writeBoolean(s.disableCrosshairWhileScoped);
         buf.writeBoolean(s.explosionsBreakBlocks);
         buf.writeBoolean(s.forceNewExplosionsBreakBlocks);
         buf.writeBoolean(s.flanExplosionsDropBlocks);
@@ -335,6 +338,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.suppressionAffectsRiders);
         buf.writeBoolean(s.bulletFlybySounds);
         buf.writeDouble(s.bulletFlybyRangeMultiplier);
+        buf.writeVarInt(s.driveableWreckLifetime);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -351,6 +355,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readVarInt(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
@@ -495,7 +500,8 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readBoolean(),
             buf.readBoolean(),
-            buf.readDouble()
+            buf.readDouble(),
+            buf.readVarInt()
         );
     }
 

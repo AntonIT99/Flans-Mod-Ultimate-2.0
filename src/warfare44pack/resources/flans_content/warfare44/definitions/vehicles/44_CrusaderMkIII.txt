@@ -22,6 +22,7 @@ ShellSlots 3
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Desert 44_CrusaderMkIII 44_crusadermkiii_desert yellow 8
 AddDye 3 green
 
 // Real-world specifications

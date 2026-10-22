@@ -16,18 +16,14 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static com.flansmodultimate.common.command.TryCommandSupport.*;
@@ -36,16 +32,20 @@ import static com.flansmodultimate.common.command.TryCommandSupport.*;
  * Equips a Teams player class outside of a round, so that a class can be tried without setting
  * up a map, a game type and two teams first.
  *
- * <p>It does what the respawn loadout does for a spawning player, minus the parts only a round
+ * <p>
+ * It does what the respawn loadout does for a spawning player, minus the parts only a round
  * can supply: the carried items are emptied, the class armour is worn, the starting items are
  * handed over and the class is recorded on the player so its SkinOverride is broadcast. No team
- * is joined, so ranked loadout pools are deliberately left out of it.</p>
+ * is joined, so ranked loadout pools are deliberately left out of it.
+ * </p>
  *
- * <p>The armour slots are treated the way a real spawn treats them: a class only writes the
+ * <p>
+ * The armour slots are treated the way a real spawn treats them: a class only writes the
  * pieces it actually defines, and whatever is worn in the other slots stays. That is what makes
  * {@code /tryteam} useful next to this command, since team armour set up there survives trying
  * one class after another. {@code clear} empties the carried items and drops the skin override,
- * again leaving the armour alone.</p>
+ * again leaving the armour alone.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TryClassCommand
@@ -60,25 +60,18 @@ public final class TryClassCommand
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)
     {
-        return Commands.literal(name)
-            .requires(source -> source.hasPermission(2))
-            .executes(TryClassCommand::usage)
-            .then(Commands.literal("clear").executes(TryClassCommand::clearClass))
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).executes(TryClassCommand::usage).then(Commands.literal("clear").executes(TryClassCommand::clearClass))
             .then(Commands.literal("list").executes(context -> list(context, null))
-                .then(Commands.argument("filter", StringArgumentType.greedyString())
-                    .suggests(TryClassCommand::suggestFilters)
+                .then(Commands.argument("filter", StringArgumentType.greedyString()).suggests(TryClassCommand::suggestFilters)
                     .executes(context -> list(context, StringArgumentType.getString(context, "filter")))))
             // Reached only when the first word is neither "clear" nor "list", so a class named
             // after one of those has to be found through the team or content pack listing.
-            .then(Commands.argument("class", StringArgumentType.word())
-                .suggests(TryClassCommand::suggestClasses)
-                .executes(TryClassCommand::equipClass));
+            .then(Commands.argument("class", StringArgumentType.string()).suggests(TryClassCommand::suggestClasses).executes(TryClassCommand::equipClass));
     }
 
     private static int usage(CommandContext<CommandSourceStack> context)
     {
-        send(context, ChatFormatting.GRAY,
-            "/tryclass <class>, /tryclass clear, /tryclass list [<team>|<content pack>]");
+        send(context, ChatFormatting.GRAY, "/tryclass <class>, /tryclass clear, /tryclass list [<team>|<content pack>]");
         return 1;
     }
 
@@ -108,11 +101,18 @@ public final class TryClassCommand
         }
 
         int given = 0;
-        for (ItemStack stack : playerClass.createStartingItems())
+        var layout = playerClass.createStartingInventory();
+        if (!layout.isEmpty())
         {
-            give(player, stack);
-            given++;
+            layout.forEach((slot, stack) -> player.getInventory().setItem(slot, stack.copy()));
+            given = layout.size();
         }
+        else
+            for (ItemStack stack : playerClass.createStartingItems())
+            {
+                give(player, stack);
+                given++;
+            }
         player.getInventory().setChanged();
         player.containerMenu.broadcastChanges();
 
@@ -120,10 +120,10 @@ public final class TryClassCommand
 
         int items = given;
         int pieces = worn;
-        context.getSource().sendSuccess(() -> Component.literal("Equipped class " + playerClass.getName()
-            + " (" + items + (items == 1 ? " item" : " items")
-            + ", " + pieces + (pieces == 1 ? " armour piece" : " armour pieces") + ")")
-            .withStyle(ChatFormatting.GREEN), true);
+        context.getSource()
+            .sendSuccess(() -> Component
+                .literal("Equipped class " + playerClass.getName() + " (" + items + (items == 1 ? " item" : " items") + ", " + pieces + (pieces == 1 ? " armour piece" : " armour pieces") + ")")
+                .withStyle(ChatFormatting.GREEN), true);
         if (playerClass.getSkinOverride().isBlank())
             send(context, ChatFormatting.DARK_GRAY, "This class defines no SkinOverride");
         return 1;
@@ -134,8 +134,7 @@ public final class TryClassCommand
         ServerPlayer player = context.getSource().getPlayerOrException();
         clearCarriedItems(player);
         applyClass(player, null);
-        send(context, ChatFormatting.GREEN,
-            "Class cleared and carried items emptied; your armour was left on. Use /tryteam clear to take it off");
+        send(context, ChatFormatting.GREEN, "Class cleared and carried items emptied; your armour was left on. Use /tryteam clear to take it off");
         return 1;
     }
 
@@ -173,8 +172,7 @@ public final class TryClassCommand
                 String pack = matchingContentPack(filter, PlayerClass.values());
                 if (pack == null)
                 {
-                    context.getSource().sendFailure(Component.literal(
-                        "No team or content pack named " + filter.trim()));
+                    context.getSource().sendFailure(Component.literal("No team or content pack named " + filter.trim()));
                     return 0;
                 }
                 classes = PlayerClass.values().stream().filter(type -> pack.equals(packName(type))).toList();
@@ -196,24 +194,18 @@ public final class TryClassCommand
 
     private static Component classLine(PlayerClass playerClass)
     {
-        MutableComponent line = idPrefix(playerClass)
-            .append(Component.literal(" - ").withStyle(ChatFormatting.GOLD))
-            .append(Component.literal(playerClass.getName()).withStyle(ChatFormatting.WHITE));
+        MutableComponent line = idPrefix(playerClass).append(Component.literal(" - ").withStyle(ChatFormatting.GOLD)).append(Component.literal(playerClass.getName()).withStyle(ChatFormatting.WHITE));
         if (playerClass.getUnlockLevel() > 0)
-            line.append(Component.literal(" (rank " + playerClass.getUnlockLevel() + ")")
-                .withStyle(ChatFormatting.YELLOW));
+            line.append(Component.literal(" (rank " + playerClass.getUnlockLevel() + ")").withStyle(ChatFormatting.YELLOW));
         return line.append(packSuffix(playerClass));
     }
 
-    private static CompletableFuture<Suggestions> suggestClasses(CommandContext<CommandSourceStack> context,
-        SuggestionsBuilder builder)
+    private static CompletableFuture<Suggestions> suggestClasses(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder)
     {
-        return SharedSuggestionProvider.suggest(
-            PlayerClass.values().stream().map(PlayerClass::getShortName), builder);
+        return SharedSuggestionProvider.suggest(PlayerClass.values().stream().map(PlayerClass::getShortName).map(StringArgumentType::escapeIfRequired), builder);
     }
 
-    private static CompletableFuture<Suggestions> suggestFilters(CommandContext<CommandSourceStack> context,
-        SuggestionsBuilder builder)
+    private static CompletableFuture<Suggestions> suggestFilters(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder)
     {
         Set<String> filters = new LinkedHashSet<>();
         Team.values().forEach(team -> filters.add(team.getShortName()));

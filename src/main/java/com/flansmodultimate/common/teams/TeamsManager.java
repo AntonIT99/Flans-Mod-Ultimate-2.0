@@ -1,7 +1,12 @@
 package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.ITeamsRespawnRule;
+import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.TeamsScoreEntry;
+import com.flansmodultimate.api.TeamsSpawner;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
@@ -21,12 +26,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
@@ -234,6 +241,11 @@ public final class TeamsManager
     @Getter
     private String motd = DEFAULT_MOTD;
     private final List<UUID> voteOptionIds = new ArrayList<>();
+    /** The API view of the playing in progress, made when first asked for. */
+    @Nullable
+    private TeamsLiveRound liveRound;
+    /** Scoreboard rows addons show beside each team's players in the running round, by team short name. */
+    private final Map<String, List<TeamsScoreEntry>> addonScoreEntries = new HashMap<>();
 
     // The manager registers itself as the server-wide instance when it is created.
     @SuppressWarnings("java:S3010")
@@ -276,6 +288,62 @@ public final class TeamsManager
         if (server == null)
             throw new IllegalStateException("TeamsManager is not attached to a server");
         return server;
+    }
+
+    /** Whether a server is attached and this is its thread, the only place the API may use the manager. */
+    public boolean isServerThread()
+    {
+        return server != null && savedData != null && server.isSameThread();
+    }
+
+    /** The API view of the playing in progress, or empty when no round runs. */
+    public Optional<TeamsLiveRound> getLiveRound()
+    {
+        TeamsRound round = getCurrentRound().orElse(null);
+        TeamsMap map = round == null ? null : getMap(round.getMapId()).orElse(null);
+        if (!roundRunning || round == null || map == null || roundInstanceId == null)
+            return Optional.empty();
+        if (liveRound == null || !liveRound.getInstanceId().equals(roundInstanceId) || liveRound.getRound() != round)
+            liveRound = new TeamsLiveRound(this, round, roundInstanceId, map.getDimension());
+        return Optional.of(liveRound);
+    }
+
+    /** Tells the addons that the playing in progress is over, before the manager moves on from it. */
+    private void announceRoundEnded(@Nullable Team winner)
+    {
+        TeamsLiveRound ended = getLiveRound().orElse(null);
+        if (ended == null)
+            return;
+        ended.markEnded();
+        TeamsListeners.roundEnded(ended, winner);
+    }
+
+    /** Sets the scoreboard rows an addon shows beside a team's players in the running round. */
+    public boolean setScoreboardEntries(Team team, List<TeamsScoreEntry> entries)
+    {
+        if (!roundRunning || getRoundTeamIndex(team) < 0)
+            return false;
+        if (entries.isEmpty())
+            addonScoreEntries.remove(team.getShortName());
+        else
+            addonScoreEntries.put(team.getShortName(), List.copyOf(entries));
+        return true;
+    }
+
+    /** The scoreboard rows addons show beside a team's players. */
+    public List<TeamsScoreEntry> getScoreboardEntries(Team team)
+    {
+        return addonScoreEntries.getOrDefault(team.getShortName(), List.of());
+    }
+
+    /** Saves an addon's data with a round of the rotation. */
+    public boolean setRoundExtensionData(ITeamsRound round, ResourceLocation key, CompoundTag data)
+    {
+        if (savedData == null || !(round instanceof TeamsRound internal) || !savedData.rounds.contains(internal))
+            return false;
+        internal.setExtensionData(key, data);
+        markDirty();
+        return true;
     }
 
     public List<TeamsRound> getVoteOptions()
@@ -568,6 +636,31 @@ public final class TeamsManager
         return round;
     }
 
+    /**
+     * Makes a Domination or Conquest round of the rotation one of attackers against defenders, or one every side captures
+     * in again.
+     *
+     * @param side
+     *            the attacking side by its position in round order, from 0, or -1 for none
+     * @return why the round cannot be played so, or null once it is set
+     */
+    @Nullable
+    public String setRoundAttackingSide(int index, int side)
+    {
+        ensureData();
+        List<TeamsRound> rounds = Objects.requireNonNull(savedData).rounds;
+        if (index < 0 || index >= rounds.size())
+            return "Invalid round index";
+        TeamsRound round = rounds.get(index);
+        if (side >= 0 && !round.canBeAttack())
+            return "Only Domination and Conquest rounds can be played attacker against defender";
+        if (side >= round.getSideCount())
+            return "The round has " + round.getSideCount() + " sides";
+        round.setAttackingSide(side);
+        markDirty();
+        return null;
+    }
+
     public boolean removeRound(int index)
     {
         ensureData();
@@ -648,6 +741,7 @@ public final class TeamsManager
         if (next.getGametype() == null || getMap(next.getMapId()).isEmpty())
             return false;
 
+        announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
@@ -665,6 +759,7 @@ public final class TeamsManager
         roundRunning = true;
         voteOptionIds.clear();
         resetScores();
+        addonScoreEntries.clear();
         savedData.rounds.forEach(round ->
         {
             if (round == next)
@@ -689,6 +784,7 @@ public final class TeamsManager
             respawnPlayer(player, false);
         }
         next.getGametype().roundStarted(this);
+        getLiveRound().ifPresent(TeamsListeners::roundStarted);
         broadcast(Component.literal("Starting " + next.getGametype().getName() + " on " + getMap(next.getMapId()).orElseThrow().getName()));
         saveRuntime();
         getServer().getPlayerList().getPlayers().forEach(player ->
@@ -769,6 +865,7 @@ public final class TeamsManager
 
     public void stopRound()
     {
+        announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
@@ -785,6 +882,7 @@ public final class TeamsManager
         intermissionPhase = IntermissionPhase.NONE;
         voteOptionIds.clear();
         resetScores();
+        addonScoreEntries.clear();
         saveRuntime();
         syncAll(PacketTeamsState.OpenScreen.CLOSE);
     }
@@ -882,13 +980,34 @@ public final class TeamsManager
         player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
     }
 
+    /** Ends the running round at once with the side of {@code winner} as the winner, as an addon decided. */
+    public boolean declareWinner(Team winner)
+    {
+        if (!roundRunning || getRoundTeamIndex(winner) < 0)
+            return false;
+        finishRound(winner);
+        return true;
+    }
+
     private void finishRound()
+    {
+        finishRound(null);
+    }
+
+    /**
+     * @param declaredWinner
+     *            the winner an addon declared, or null for the game type to decide
+     */
+    private void finishRound(@Nullable Team declaredWinner)
     {
         if (!roundRunning)
             return;
         // Decided before anything is cleaned up, while the scores and capture points still tell who won.
-        lastWinnerId = getCurrentGameType().map(type -> type.getWinner(this)).map(Team::getShortName).orElse("");
+        Team winner = declaredWinner == null ? getCurrentGameType().map(type -> type.getWinner(this)).orElse(null) : declaredWinner;
+        lastWinnerId = winner == null ? "" : winner.getShortName();
         lastRoundDecided = true;
+        // Announced while the round is still set up, so listeners can read how it ended.
+        announceRoundEnded(lastWinnerId.isEmpty() ? null : Team.getTeam(lastWinnerId));
         outOfBoundsSeconds.clear();
         roundRunning = false;
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
@@ -1226,7 +1345,7 @@ public final class TeamsManager
         // Not in play yet, so there is nothing to interrupt: take the field.
         if (!roundRunning || current == null || next == null || current == Team.SPECTATORS)
         {
-            respawnPlayer(player, true);
+            respawnPlayer(player, true, ITeamsRespawnRule.Reason.JOINED);
             Team entered = data.getTeam();
             if (roundRunning && entered != null && entered != Team.SPECTATORS)
                 getCurrentGameType().ifPresent(type -> type.playerEnteredTheGame(this, player, entered, data.getPlayerClass()));
@@ -1250,7 +1369,7 @@ public final class TeamsManager
             player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
         // Creative players, and anyone a game type shields from damage, change over directly.
         if (player.isAlive())
-            respawnPlayer(player, true);
+            respawnPlayer(player, true, ITeamsRespawnRule.Reason.CHANGED_TEAM);
     }
 
     /**
@@ -1369,14 +1488,34 @@ public final class TeamsManager
     {
         getCurrentGameType().ifPresent(type -> type.playerKilled(this, player, source));
         dropFlag(player);
+        announceCombatantKilled(player, source);
     }
 
     public void respawnPlayer(ServerPlayer player, boolean immediate)
+    {
+        respawnPlayer(player, immediate, null);
+    }
+
+    /**
+     * Places a player for the round: in the field with their loadout at a spawn point of their team, or as a spectator.
+     *
+     * @param reason
+     *            why the player takes the field, for the respawn rules of addons to decide on; null places the player
+     *            without asking them, as when a round starts or the auto-balancer moves someone
+     */
+    public void respawnPlayer(ServerPlayer player, boolean immediate, @Nullable ITeamsRespawnRule.Reason reason)
     {
         PlayerData data = PlayerData.getInstance(player);
         data.applyPendingTeamSelection();
         if (!roundRunning || data.getTeam() == null)
             return;
+        if (reason != null && data.getTeam() != Team.SPECTATORS && !mayRespawn(player, data.getTeam(), reason))
+        {
+            // Held back by an addon's rule: the player stays on their team, watching until the round ends.
+            player.setGameMode(GameType.SPECTATOR);
+            player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.respawn_denied"));
+            return;
+        }
         if (forceAdventureMode)
             player.setGameMode(data.getTeam() == Team.SPECTATORS ? GameType.SPECTATOR : GameType.ADVENTURE);
         else if (player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR && data.getTeam() != Team.SPECTATORS)
@@ -1389,7 +1528,7 @@ public final class TeamsManager
             player.connection.send(new ClientboundSetCarriedItemPacket(0));
             data.setRespawnReloadTicks(RESPAWN_RELOAD_DELAY_TICKS);
         }
-        getCurrentGameType().map(type -> type.getSpawnPoint(this, player)).ifPresent(position ->
+        spawnPosition(player, data.getTeam(), reason).ifPresent(position ->
         {
             TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
             ServerLevel level = map == null ? null : getServer().getLevel(map.getDimension());
@@ -1401,11 +1540,48 @@ public final class TeamsManager
         getCurrentGameType().ifPresent(type -> type.playerRespawned(this, player));
     }
 
-    /** Reports a non-player death to the running game type, as the 1.12.2 death handler did. */
+    /** Where a player appears: where an addon's spawn provider puts them, or at the game type's spawn point. */
+    private Optional<Vec3> spawnPosition(ServerPlayer player, Team team, @Nullable ITeamsRespawnRule.Reason reason)
+    {
+        if (reason != null && team != Team.SPECTATORS)
+        {
+            Optional<Vec3> offered = getLiveRound().flatMap(round -> TeamsListeners.spawnPosition(round, player, team, reason));
+            if (offered.isPresent())
+                return offered;
+        }
+        return getCurrentGameType().map(type -> type.getSpawnPoint(this, player));
+    }
+
+    private boolean mayRespawn(ServerPlayer player, Team team, ITeamsRespawnRule.Reason reason)
+    {
+        return getLiveRound().map(round -> TeamsListeners.mayRespawn(round, player, team, reason)).orElse(true);
+    }
+
+    /**
+     * Reports a non-player death to the running game type, as the 1.12.2 death handler did. A combatant of the round
+     * dies as a fighter of its team; any other entity is only reported.
+     */
     public void entityDied(Entity entity, net.minecraft.world.damagesource.DamageSource source)
     {
-        if (roundRunning)
+        if (!roundRunning)
+            return;
+        Team team = TeamsCombatants.getCombatantTeam(this, entity);
+        if (team != null && entity instanceof LivingEntity combatant)
+        {
+            getCurrentGameType().ifPresent(type -> type.combatantKilled(this, combatant, team, source));
+            dropFlag(combatant);
+            announceCombatantKilled(combatant, source);
+        }
+        else
             getCurrentGameType().ifPresent(type -> type.entityKilled(this, entity, source));
+    }
+
+    private void announceCombatantKilled(LivingEntity victim, net.minecraft.world.damagesource.DamageSource source)
+    {
+        if (TeamsCombatants.getPlayingTeam(this, victim) == null)
+            return;
+        LivingEntity killer = TeamsCombatants.getAttacker(source);
+        getLiveRound().ifPresent(round -> TeamsListeners.combatantKilled(round, victim, killer == victim ? null : killer, source));
     }
 
     /** Reports an attempt to damage an invulnerable base or team object to the running game type. */
@@ -1432,7 +1608,7 @@ public final class TeamsManager
         for (EquipmentSlot slot : List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET))
         {
             ItemStack stack = playerClass == null ? ItemStack.EMPTY : playerClass.getArmour(slot);
-            if (stack.isEmpty())
+            if (stack.isEmpty() && (playerClass == null || playerClass.usesTeamArmour(slot)))
                 stack = team.getArmour(slot);
             player.setItemSlot(slot, stack.copy());
         }
@@ -1460,11 +1636,16 @@ public final class TeamsManager
         }
         else if (playerClass != null)
         {
-            for (ItemStack stack : playerClass.createStartingItems())
-                if (!player.getInventory().add(stack.copy()))
-                    player.drop(stack.copy(), false);
+            Map<Integer, ItemStack> layout = playerClass.createStartingInventory();
+            if (!layout.isEmpty())
+                layout.forEach((slot, stack) -> player.getInventory().setItem(slot, stack.copy()));
+            else
+                for (ItemStack stack : playerClass.createStartingItems())
+                    if (!player.getInventory().add(stack.copy()))
+                        player.drop(stack.copy(), false);
         }
-        equipMeleeOnlyLoadout(player);
+        if (pool != null || playerClass == null || playerClass.createStartingInventory().isEmpty())
+            equipMeleeOnlyLoadout(player);
         player.getInventory().setChanged();
     }
 
@@ -1549,26 +1730,60 @@ public final class TeamsManager
 
     public Optional<Vec3> findSpawnPoint(ServerPlayer player, boolean anyTeam)
     {
+        int teamId = getCurrentRound().map(round -> round.getTeamId(PlayerData.getInstance(player).getNewTeam())).orElse(0);
+        List<Vec3> choices = getSpawnPositions(teamId, anyTeam);
+        return choices.isEmpty() ? Optional.empty() : Optional.of(choices.get(random.nextInt(choices.size())));
+    }
+
+    /**
+     * Every place a member of a round team may come back: the player spawners of the bases it may use or, when the map
+     * has none of those, the bases themselves.
+     *
+     * @param anyTeam
+     *            whether the bases of every team count
+     */
+    public List<Vec3> getSpawnPositions(int teamId, boolean anyTeam)
+    {
         TeamsRound round = getCurrentRound().orElse(null);
         TeamsMap map = round == null ? null : getMap(round.getMapId()).orElse(null);
         if (map == null)
-            return Optional.empty();
+            return List.of();
 
-        int teamId = round.getTeamId(PlayerData.getInstance(player).getNewTeam());
         Predicate<ITeamBase> usable = anyTeam ? base -> true : spawnBases(round, map, teamId);
 
-        List<ITeamObject> choices = liveObjects.values().stream().filter(ITeamObject::isSpawnPoint).filter(object -> object.getDimension().equals(map.getDimension())).filter(object ->
+        List<Vec3> choices = liveObjects.values().stream().filter(ITeamObject::isSpawnPoint).filter(object -> object.getDimension().equals(map.getDimension())).filter(object ->
         {
             ITeamBase base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
             return base != null && base.getMapId().equals(map.getShortName()) && usable.test(base);
-        }).toList();
+        }).map(object -> object.getTeamObjectPosition().add(0D, 0.1D, 0D)).toList();
 
         if (!choices.isEmpty())
-            return Optional.of(choices.get(random.nextInt(choices.size())).getTeamObjectPosition().add(0D, 0.1D, 0D));
+            return choices;
 
-        List<ITeamBase> bases = liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName())).filter(usable).toList();
+        return liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName())).filter(usable).map(base -> base.getTeamObjectPosition().add(0D, 1D, 0D)).toList();
+    }
 
-        return bases.isEmpty() ? Optional.empty() : Optional.of(bases.get(random.nextInt(bases.size())).getTeamObjectPosition().add(0D, 1D, 0D));
+    /** The loaded spawners connected to the bases of the map being played, as the API reports them. */
+    public List<TeamsSpawner> getSpawners()
+    {
+        TeamsRound round = getCurrentRound().orElse(null);
+        if (round == null)
+            return List.of();
+        List<TeamsSpawner> spawners = new ArrayList<>();
+        for (ITeamObject object : liveObjects.values())
+        {
+            ITeamBase base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
+            if (!(object instanceof TeamSpawnerBlockEntity spawner) || base == null || !isBaseInCurrentMap(base))
+                continue;
+            TeamsSpawner.Kind kind = switch (spawner.getMode())
+            {
+                case PLAYER -> TeamsSpawner.Kind.PLAYER;
+                case ITEM -> TeamsSpawner.Kind.ITEM;
+                case VEHICLE -> TeamsSpawner.Kind.VEHICLE;
+            };
+            spawners.add(new TeamsSpawner(spawner.getObjectId(), kind, spawner.getDimension(), spawner.getBlockPos(), base.getObjectId(), getTeamForBase(base)));
+        }
+        return List.copyOf(spawners);
     }
 
     /**
@@ -1840,14 +2055,20 @@ public final class TeamsManager
     }
 
     @Nullable
-    public Flag getFlagCarriedBy(ServerPlayer player)
+    public Flag getFlagCarriedBy(Entity carrier)
     {
-        return liveBases.values().stream().map(ITeamBase::getFlag).filter(java.util.Objects::nonNull).filter(flag -> flag.isCarriedBy(player)).findFirst().orElse(null);
+        return liveBases.values().stream().map(ITeamBase::getFlag).filter(java.util.Objects::nonNull).filter(flag -> flag.isCarriedBy(carrier)).findFirst().orElse(null);
     }
 
-    private void dropFlag(ServerPlayer player)
+    /** The flags of the bases of the map being played. */
+    public List<Flag> getFlags()
     {
-        Flag flag = getFlagCarriedBy(player);
+        return liveBases.values().stream().filter(this::isBaseInCurrentMap).map(ITeamBase::getFlag).filter(java.util.Objects::nonNull).toList();
+    }
+
+    private void dropFlag(Entity carrier)
+    {
+        Flag flag = getFlagCarriedBy(carrier);
         if (flag != null)
         {
             int returnTicks = getCurrentGameType().filter(GameTypeCTF.class::isInstance).map(GameTypeCTF.class::cast).map(GameTypeCTF::getFlagReturnTimeSeconds).orElse(30) * 20;
@@ -1875,7 +2096,11 @@ public final class TeamsManager
             PlayerData data = PlayerData.getInstance(player);
             PlayerClass playerClass = data.getPlayerClass();
             if (playerClass != null && data.getPlayerClassSkin() >= 0)
-                current.put(player.getUUID(), new PlayerClassSkin(playerClass.getShortName(), data.getPlayerClassSkin()));
+            {
+                var variant = playerClass.getSkinOverrideVariants().get(data.getPlayerClassSkin());
+                var texture = variant.texture() == null ? InfoType.loadSkinTexture(variant.name(), playerClass) : variant.texture();
+                current.put(player.getUUID(), new PlayerClassSkin(playerClass.getShortName(), data.getPlayerClassSkin(), texture.toString()));
+            }
         }
         if (!force && current.equals(lastSyncedPlayerClassSkins))
             return;

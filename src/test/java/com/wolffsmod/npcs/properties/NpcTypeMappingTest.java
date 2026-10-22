@@ -31,6 +31,10 @@ class NpcTypeMappingTest
         assertEquals(FloatTag.valueOf(10), mapped.get(NpcTypeProperty.MELEE_REACH));
         assertEquals(ByteTag.valueOf(false), mapped.get(NpcTypeProperty.CAN_DROWN));
         assertEquals(ByteTag.valueOf(true), mapped.get(NpcTypeProperty.NO_FALL_DAMAGE));
+        assertEquals(ByteTag.valueOf(true), mapped.get(NpcTypeProperty.POTION_IMMUNE));
+        assertEquals(ByteTag.valueOf(true), mapped.get(NpcTypeProperty.IGNORE_COBWEB));
+        assertEquals(IntTag.valueOf(0), mapped.get(NpcTypeProperty.HEALTH_REGEN));
+        assertEquals(IntTag.valueOf(0), mapped.get(NpcTypeProperty.COMBAT_REGEN));
         assertEquals(IntTag.valueOf(8), NpcTypeMapping.create(type, options, false).get(NpcTypeProperty.SHOT_COUNT));
     }
 
@@ -39,7 +43,7 @@ class NpcTypeMappingTest
     {
         NpcWeaponOptions options = new NpcWeaponOptions();
         EntityTypeProperties type = type(List.of(weapon(12, 2, 3, "flansmod:fire")));
-        options.set(Feature.WEAPON_STATS, false);
+        options.set(Feature.MODEL_WEAPON_STATS, false);
         options.set(Feature.FIRE_SOUNDS, false);
         var mapped = NpcTypeMapping.create(type, options, true);
         assertTrue(mapped.containsKey(NpcTypeProperty.HEALTH));

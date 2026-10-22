@@ -151,6 +151,17 @@ public final class EntityTypePropertySupport
         return Optional.of(new ReloadCycle(magazine, driveable.shootDelay(secondary), reload, chamberSound ? OptionalInt.of(driveable.getReloadSoundTick()) : OptionalInt.empty()));
     }
 
+    /** A seat gun reloads after every item of its ammunition, as a crewed driveable's does, never faster than it fires. */
+    public static Optional<ReloadCycle> seatReloadCycle(IContentType type, int seat, ItemStack ammunition)
+    {
+        SeatInfo info = type instanceof DriveableType driveable ? driveable.getSeat(seat) : null;
+        GunType gun = info == null ? null : info.getGunType();
+        if (gun == null)
+            return Optional.empty();
+        float delay = gun.getShootDelay(null);
+        return Optional.of(new ReloadCycle(ShootableItem.getMaxRounds(ammunition), delay, Math.max(gun.getReloadTime(), delay), OptionalInt.empty()));
+    }
+
     private static List<Weapon> weapons(DriveableType type, boolean secondary)
     {
         Map<String, Weapon> weapons = new LinkedHashMap<>();

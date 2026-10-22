@@ -1,6 +1,9 @@
 package com.flansmodultimate.common.teams;
 
+import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.ITeamsRound;
 import com.flansmodultimate.common.types.Team;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 
@@ -27,7 +31,7 @@ import java.util.*;
  * </p>
  */
 @Getter
-public final class TeamsRound implements Comparable<TeamsRound>
+public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
 {
     /** Most teams a round can hold, whatever its game type allows. */
     public static final int MAX_TEAMS = 8;
@@ -49,6 +53,8 @@ public final class TeamsRound implements Comparable<TeamsRound>
     private static final String NBT_SCORE_LIMIT = "score_limit";
     private static final String NBT_POPULARITY = "popularity";
     private static final String NBT_ROUNDS_SINCE_PLAYED = "rounds_since_played";
+    private static final String NBT_EXTENSIONS = "extensions";
+    private static final String NBT_ATTACKING_SIDE = "attacking_side";
 
     private final UUID id;
     private final String mapId;
@@ -60,6 +66,16 @@ public final class TeamsRound implements Comparable<TeamsRound>
     private int scoreLimit;
     private final float popularity;
     private int roundsSincePlayed;
+    /**
+     * The side, by its position in round order, that attacks in a Domination or Conquest round played attacker against
+     * defender: only it takes capture points, and the other sides defend the points they start with. -1 for a round
+     * every side may capture in.
+     */
+    @Getter(AccessLevel.NONE)
+    private int attackingSide = -1;
+    /** Data addons keep with the round, by the string form of their namespaced key. */
+    @Getter(AccessLevel.NONE)
+    private final Map<String, CompoundTag> extensions = new TreeMap<>();
 
     /** A round in which every team fights for itself. */
     public TeamsRound(String mapId, String gameTypeId, List<String> teamIds, int timeLimitMinutes, int scoreLimit)
@@ -119,6 +135,45 @@ public final class TeamsRound implements Comparable<TeamsRound>
     public int getTimeLimitTicks()
     {
         return timeLimitMinutes * 60 * 20;
+    }
+
+    @Override
+    public OptionalInt getAttackingSide()
+    {
+        return attackingSide >= 0 && attackingSide < getSideCount() ? OptionalInt.of(attackingSide) : OptionalInt.empty();
+    }
+
+    /**
+     * Makes the round one of attackers against defenders, or one every side captures in again.
+     *
+     * @param side
+     *            the attacking side by its position in round order, or -1 for none
+     */
+    public void setAttackingSide(int side)
+    {
+        attackingSide = side >= 0 && side < getSideCount() ? side : -1;
+    }
+
+    /** Whether the round's game type can be played attacker against defender: Domination and Conquest can. */
+    public boolean canBeAttack()
+    {
+        GameType type = getGametype();
+        ObjectiveMode mode = type == null ? ObjectiveMode.NONE : type.getObjectiveMode();
+        return mode == ObjectiveMode.DOMINATION || mode == ObjectiveMode.CONQUEST;
+    }
+
+    /** The side id that attacks in a round played attacker against defender, or 0 in any other round. */
+    public int getAttackingSideId()
+    {
+        OptionalInt side = getAttackingSide();
+        return side.isPresent() ? getSideIds().get(side.getAsInt()) : 0;
+    }
+
+    /** Whether a side may take capture points it does not hold: every side may, except the defenders of an attack. */
+    public boolean mayCapture(int sideId)
+    {
+        int attacker = getAttackingSideId();
+        return attacker == 0 || attacker == sideId;
     }
 
     /** Operators can change the score limit of a round while it is played; it is saved with the round. */
@@ -206,6 +261,46 @@ public final class TeamsRound implements Comparable<TeamsRound>
         return ids;
     }
 
+    /** The position of a side in round order, from 0, as the API numbers sides; -1 for an id that is not a side of this round. */
+    public int getSideIndex(int sideId)
+    {
+        return getSideIds().indexOf(sideId);
+    }
+
+    @Override
+    public int getSideOf(ITeam team)
+    {
+        int index = team instanceof Team internal ? teamIds.indexOf(internal.getShortName()) : -1;
+        return index < 0 ? -1 : sides.get(index);
+    }
+
+    @Override
+    public List<ITeam> getTeams()
+    {
+        List<ITeam> teams = new ArrayList<>();
+        for (int i = 0; i < teamIds.size(); i++)
+        {
+            Team team = getTeam(i);
+            if (team != null)
+                teams.add(team);
+        }
+        return List.copyOf(teams);
+    }
+
+    @Override
+    public List<ITeam> getTeamsOfSide(int side)
+    {
+        List<Integer> sideIds = getSideIds();
+        return side < 0 || side >= sideIds.size() ? List.of() : List.copyOf(getTeamsOnSide(sideIds.get(side)));
+    }
+
+    @Override
+    public boolean areTeamsAllied(ITeam first, ITeam second)
+    {
+        int side = getSideOf(first);
+        return side >= 0 && side == getSideOf(second);
+    }
+
     /** The first team of a side, which is the one the score of the whole side is kept under. */
     @Nullable
     public Team getSideLeader(int sideId)
@@ -291,6 +386,24 @@ public final class TeamsRound implements Comparable<TeamsRound>
         return new Lineup(List.copyOf(teams), List.copyOf(sides));
     }
 
+    // --- Addon data ---
+
+    @Override
+    public CompoundTag getExtensionData(ResourceLocation key)
+    {
+        CompoundTag data = extensions.get(key.toString());
+        return data == null ? new CompoundTag() : data.copy();
+    }
+
+    /** Keeps a copy of an addon's data under its key; an empty tag removes the key. The caller saves the rotation. */
+    void setExtensionData(ResourceLocation key, CompoundTag data)
+    {
+        if (data.isEmpty())
+            extensions.remove(key.toString());
+        else
+            extensions.put(key.toString(), data.copy());
+    }
+
     public CompoundTag save()
     {
         CompoundTag tag = new CompoundTag();
@@ -305,6 +418,14 @@ public final class TeamsRound implements Comparable<TeamsRound>
         tag.putInt(NBT_SCORE_LIMIT, scoreLimit);
         tag.putFloat(NBT_POPULARITY, popularity);
         tag.putInt(NBT_ROUNDS_SINCE_PLAYED, roundsSincePlayed);
+        if (attackingSide >= 0)
+            tag.putInt(NBT_ATTACKING_SIDE, attackingSide);
+        if (!extensions.isEmpty())
+        {
+            CompoundTag extensionTag = new CompoundTag();
+            extensions.forEach((key, data) -> extensionTag.put(key, data.copy()));
+            tag.put(NBT_EXTENSIONS, extensionTag);
+        }
         return tag;
     }
 
@@ -314,8 +435,16 @@ public final class TeamsRound implements Comparable<TeamsRound>
         // Rounds saved before alliances existed have no sides, which reads as an empty array.
         List<Integer> sides = java.util.Arrays.stream(tag.getIntArray(NBT_SIDES)).boxed().toList();
         UUID id = tag.hasUUID(NBT_ID) ? tag.getUUID(NBT_ID) : UUID.randomUUID();
-        return new TeamsRound(id, tag.getString(NBT_MAP), tag.getString(NBT_GAME_TYPE), teams, sides, tag.getInt(NBT_TIME_LIMIT), tag.getInt(NBT_SCORE_LIMIT), tag.getFloat(NBT_POPULARITY),
+        TeamsRound round = new TeamsRound(id, tag.getString(NBT_MAP), tag.getString(NBT_GAME_TYPE), teams, sides, tag.getInt(NBT_TIME_LIMIT), tag.getInt(NBT_SCORE_LIMIT), tag.getFloat(NBT_POPULARITY),
             tag.getInt(NBT_ROUNDS_SINCE_PLAYED));
+        round.setAttackingSide(tag.contains(NBT_ATTACKING_SIDE) ? tag.getInt(NBT_ATTACKING_SIDE) : -1);
+        CompoundTag extensionTag = tag.getCompound(NBT_EXTENSIONS);
+        for (String key : extensionTag.getAllKeys())
+        {
+            if (extensionTag.contains(key, Tag.TAG_COMPOUND))
+                round.extensions.put(key, extensionTag.getCompound(key).copy());
+        }
+        return round;
     }
 
     @Override

@@ -34,8 +34,13 @@ public class BulletType extends ShootableType
     public record RoundStats(float mass, float explosiveMass, float bulletSpeed, float penetrationAt100m)
     {}
 
-    public record RoundEntry(String name, int count, RoundStats stats)
-    {}
+    public record RoundEntry(String name, int count, RoundStats stats, String tracerParticle)
+    {
+        public RoundEntry(String name, int count, RoundStats stats)
+        {
+            this(name, count, stats, "");
+        }
+    }
 
     @Getter
     protected final List<RoundEntry> period = new ArrayList<>();
@@ -380,12 +385,7 @@ public class BulletType extends ShootableType
         if (trailTexture.isBlank())
             trailTexture = FlansModTextures.DEFAULT_BULLET_TRAIL_TEXTURE;
 
-        if (roundsPerItem > 1)
-        {
-            // AddRound [name] [count] [mass in g] [explosive mass in kg TNT equivalent] [muzzle velocity in m/s]
-            readValuesInLines("AddRound", file, 3).ifPresent(rounds -> rounds.forEach(round -> period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), readRoundStats(round, file)))));
-            periodLength = period.stream().mapToInt(RoundEntry::count).sum();
-        }
+        readBelt(file);
 
         // Mass-based ammunition always uses the kinetic penetration system. Legacy packs commonly mark shells as
         // non-penetrating to disable entity pass-through, but retaining that flag would also bypass their kinetic
@@ -394,6 +394,24 @@ public class BulletType extends ShootableType
             penetrates = true;
         else if (!penetrates)
             penetratingPower = DEFAULT_PENETRATING_POWER;
+    }
+
+    private void readBelt(TypeFile file)
+    {
+        if (roundsPerItem <= 1)
+            return;
+        // Optional tracer follows all six ballistic columns; explosive mass is authored in grams TNT equivalent.
+        for (String[] round : readValuesInLines("AddRound", file, 3).orElse(List.of()))
+        {
+            int count = Integer.parseInt(round[1]);
+            if (count <= 0)
+            {
+                logError("AddRound count must be greater than zero; ignoring the line", file);
+                continue;
+            }
+            period.add(new RoundEntry(round[0], count, readRoundStats(round, file), round.length > 6 ? round[6] : ""));
+        }
+        periodLength = period.stream().mapToInt(RoundEntry::count).sum();
     }
 
     private void readTracerBeamsAndAlternateRounds(TypeFile file)
@@ -663,16 +681,22 @@ public class BulletType extends ShootableType
 
     public RoundStats statsForShot(int shotsFired)
     {
+        return roundForShot(shotsFired).stats();
+    }
+
+    /** The belt entry used by both ballistics and visuals. Requires {@link #hasDifferentRounds()}. */
+    public RoundEntry roundForShot(int shotsFired)
+    {
         int k = Math.floorMod(shotsFired, periodLength);
         for (RoundEntry r : period)
         {
             if (k < r.count())
-                return r.stats();
+                return r;
             k -= r.count();
         }
 
         // unreachable if periodLen computed correctly
-        return period.get(period.size() - 1).stats();
+        return period.get(period.size() - 1);
     }
 
     public float getBlockPenetrationModifier()

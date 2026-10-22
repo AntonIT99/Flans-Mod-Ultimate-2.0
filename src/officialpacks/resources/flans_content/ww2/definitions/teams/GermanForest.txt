@@ -1,5 +1,5 @@
 // Identity
-Name German
+Name German (Forest)
 ShortName germanForestTeam
 
 // Appearance

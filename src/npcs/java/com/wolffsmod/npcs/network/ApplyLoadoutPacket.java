@@ -25,7 +25,7 @@ public record ApplyLoadoutPacket(int entityId, String team, String playerClass)
 
     public static ApplyLoadoutPacket of(int entityId, FlanSoldierSelection selection)
     {
-        return new ApplyLoadoutPacket(entityId, selection.team().getShortName(), selection.playerClass().getShortName());
+        return new ApplyLoadoutPacket(entityId, selection.team() == null ? "" : selection.team().getShortName(), selection.playerClass().getShortName());
     }
 
     public void write(FriendlyByteBuf buffer)

@@ -48,6 +48,15 @@ public interface IDriveableType extends IContentType
     }
 
     /**
+     * @return whether the driveable is a plane that flies as a helicopter: it hovers and climbs on its rotors rather
+     *         than its wings
+     */
+    default boolean isHelicopter()
+    {
+        return false;
+    }
+
+    /**
      * @return the height of the origin above level ground when the driveable rests on its wheels,
      *         as its suspension places it, or its {@code YOffset} when it has no wheels. Negative
      *         when the wheels sit above the origin, as with some flying boats.

@@ -17,6 +17,7 @@ ShellSlots 5
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Dunkelgelb 44_Pak40 44_pak40_dunkelgelb yellow 8
 AddDye 3 gray
 
 // Real-world specifications

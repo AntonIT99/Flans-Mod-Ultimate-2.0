@@ -18,12 +18,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,6 +38,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
     private static final String NBT_HOME = "home";
     private static final String NBT_TEAM = "team";
     private static final String NBT_COLOUR = "colour";
+    private static final String NBT_TEAM_NAME = "team_name";
     private static final String NBT_RETURN_TICKS = "return_ticks";
 
     private static final EntityDataAccessor<Optional<UUID>> DATA_BASE = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.OPTIONAL_UUID);
@@ -42,6 +46,8 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
     private static final EntityDataAccessor<Boolean> DATA_HOME = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_TEAM = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_COLOUR = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.INT);
+    /** Short name of the team the flag belongs to, so that clients can draw that team's flag image. */
+    private static final EntityDataAccessor<String> DATA_TEAM_NAME = SynchedEntityData.defineId(Flag.class, EntityDataSerializers.STRING);
     private int returnTicks;
 
     public Flag(EntityType<?> type, Level level)
@@ -66,6 +72,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         data.define(DATA_HOME, true);
         data.define(DATA_TEAM, 0);
         data.define(DATA_COLOUR, 0xFFFFFF);
+        data.define(DATA_TEAM_NAME, "");
     }
 
     @Override
@@ -79,8 +86,8 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         UUID carrierId = getCarrierId();
         if (carrierId != null)
         {
-            ServerPlayer carrier = serverLevel.getServer().getPlayerList().getPlayer(carrierId);
-            if (carrier == null || !carrier.isAlive() || carrier.level() != level())
+            Entity carrier = findCarrier(serverLevel, carrierId);
+            if (!(carrier instanceof LivingEntity living) || !living.isAlive() || carrier.level() != level())
                 drop(30 * 20);
             else
                 setPos(carrier.getX(), carrier.getEyeY() + 0.25D, carrier.getZ());
@@ -95,8 +102,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
             if (base != null)
             {
                 setTeamId(base.getOwnerId());
-                com.flansmodultimate.common.types.Team team = TeamsManager.getInstance().getTeamForBase(base);
-                setColour(team == null ? 0xFFFFFF : team.getTeamColour());
+                showTeam(TeamsManager.getInstance().getTeamForBase(base));
                 setPos(base.getX(), base.getY() + 2D, base.getZ());
             }
         }
@@ -120,9 +126,17 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         return InteractionResult.CONSUME;
     }
 
-    public void pickUp(ServerPlayer player)
+    /** The flag's carrier: a player, or a combatant of the round, which a bot of an addon can be. */
+    @Nullable
+    private static Entity findCarrier(ServerLevel level, UUID carrierId)
     {
-        entityData.set(DATA_CARRIER, Optional.of(player.getUUID()));
+        Entity player = level.getServer().getPlayerList().getPlayer(carrierId);
+        return player != null ? player : level.getEntity(carrierId);
+    }
+
+    public void pickUp(LivingEntity carrier)
+    {
+        entityData.set(DATA_CARRIER, Optional.of(carrier.getUUID()));
         entityData.set(DATA_HOME, false);
         returnTicks = 0;
     }
@@ -154,9 +168,9 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         return getCarrierId() != null;
     }
 
-    public boolean isCarriedBy(Player player)
+    public boolean isCarriedBy(Entity carrier)
     {
-        return player.getUUID().equals(getCarrierId());
+        return carrier.getUUID().equals(getCarrierId());
     }
 
     @Nullable
@@ -185,6 +199,19 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         entityData.set(DATA_COLOUR, colour & 0xFFFFFF);
     }
 
+    /** Shows the colour and flag image of {@code team}, or a plain white flag for none. */
+    private void showTeam(@Nullable com.flansmodultimate.common.types.Team team)
+    {
+        setColour(team == null ? 0xFFFFFF : team.getTeamColour());
+        entityData.set(DATA_TEAM_NAME, team == null ? "" : Objects.toString(team.getShortName(), ""));
+    }
+
+    /** Short name of the team owning the flag, blank when none does. */
+    public String getTeamName()
+    {
+        return entityData.get(DATA_TEAM_NAME);
+    }
+
     @Nullable
     public Flagpole getBase()
     {
@@ -200,6 +227,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         entityData.set(DATA_HOME, tag.getBoolean(NBT_HOME));
         setTeamId(tag.getInt(NBT_TEAM));
         setColour(tag.contains(NBT_COLOUR) ? tag.getInt(NBT_COLOUR) : 0xFFFFFF);
+        entityData.set(DATA_TEAM_NAME, tag.getString(NBT_TEAM_NAME));
         returnTicks = tag.getInt(NBT_RETURN_TICKS);
     }
 
@@ -217,6 +245,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         tag.putBoolean(NBT_HOME, isHome());
         tag.putInt(NBT_TEAM, getTeamId());
         tag.putInt(NBT_COLOUR, getColour());
+        tag.putString(NBT_TEAM_NAME, getTeamName());
         tag.putInt(NBT_RETURN_TICKS, returnTicks);
     }
 

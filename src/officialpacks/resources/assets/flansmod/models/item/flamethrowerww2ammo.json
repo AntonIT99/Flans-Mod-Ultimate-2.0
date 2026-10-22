@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "flansmod:item/flamethrowerammo"
+    "layer0": "flansmod:item/flamethrowerww2ammo"
   }
 }

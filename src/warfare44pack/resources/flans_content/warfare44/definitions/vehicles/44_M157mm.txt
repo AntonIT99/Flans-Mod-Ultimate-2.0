@@ -17,6 +17,7 @@ ShellSlots 5
 FuelTankSize 2000
 
 // Paintjobs
+advpaintjob Soviet 44_M157mm 44_m42_45mm_soviet green 8
 AddDye 3 green
 
 // Real-world specifications

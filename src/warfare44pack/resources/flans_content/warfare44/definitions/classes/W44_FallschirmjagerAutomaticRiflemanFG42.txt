@@ -1,0 +1,15 @@
+// Identity
+Name Automatic Rifleman (FG 42)
+ShortName W44_FallschirmjagerAutomaticRiflemanFG42
+Description Automatic Rifleman (FG 42) with compatible ammunition and an ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Fg42
+AddItem 44_Fg42Ammo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage
+AddItem 44_Parachute

@@ -72,12 +72,15 @@ SetupPart rightTrack 10000 -81 -10 -34 154 20 13
 SetupPart leftTrack 10000 -81 -10 21 154 21 13
 BulletDetection 7
 ArmorFrontMm 600
+ArmorFrontVsHeatMm 900
 ArmorSideMm 60
 ArmorRearMm 32
 ArmorTopMm 50
 ArmorBottomMm 32
 TurretArmorFrontMm 800
+TurretArmorFrontVsHeatMm 1200
 TurretArmorSideMm 200
+TurretArmorSideVsHeatMm 400
 TurretArmorRearMm 60
 TurretArmorTopMm 70
 UseRealisticVehicleHealth true

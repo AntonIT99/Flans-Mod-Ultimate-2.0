@@ -18,11 +18,23 @@ class NpcEquipmentHookContractTest
     private static final String NPC = "noppes/npcs/entity/EntityNPCInterface";
 
     @Test
+    void physicalReturnReplacesTheTickContainingBothAutomaticTeleports() throws IOException
+    {
+        ClassNode goal = read("noppes/npcs/ai/EntityAIReturn");
+        assertEquals(2, calls(method(goal, "()V", "tick", "m_8037_"), NPC, "setPos", "(DDD)V"));
+        assertDoesNotThrow(() -> method(goal, "(Z)V", "navigate"));
+        assertDoesNotThrow(() -> method(goal, "()V", "start", "m_8056_"));
+        assertDoesNotThrow(() -> method(goal, "()Z", "canUse", "m_8036_"));
+        assertTrue(goal.fields.stream().anyMatch(field -> field.name.equals("totalTicks") && field.desc.equals("I")));
+    }
+
+    @Test
     void presentationHooksMatchInstalledEntityAndRenderers()
     {
         assertDoesNotThrow(() ->
         {
             method(read(NPC), "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V", "m_7355_", "playStepSound");
+            method(read(NPC), "()Lnet/minecraft/world/item/ItemStack;", "m_21205_", "getMainHandItem");
             ClassNode renderer = read("noppes/npcs/client/renderer/RenderNPCInterface");
             method(renderer, "(Lnoppes/npcs/entity/EntityNPCInterface;)V", "renderColor");
             method(renderer, "(Lnoppes/npcs/entity/EntityNPCInterface;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", "render");
@@ -87,6 +99,10 @@ class NpcEquipmentHookContractTest
         MethodNode tick = method(goal, "()V", "m_8037_", "tick");
         assertTrue(invokes(tick, "noppes/npcs/entity/data/DataMelee", "getDelay", "()I"));
         assertTrue(invokes(tick, "noppes/npcs/entity/data/DataMelee", "getRange", "()I"));
+        // Delay is chosen once before the one swing/hit, so alternating hands cannot create another cooldown channel.
+        assertEquals(1, calls(tick, "noppes/npcs/entity/data/DataMelee", "getDelay", "()I"));
+        assertEquals(1, calls(tick, NPC, "swing", "(Lnet/minecraft/world/InteractionHand;)V"));
+        assertEquals(1, calls(tick, NPC, "doHurtTarget", "(Lnet/minecraft/world/entity/Entity;)Z"));
         MethodNode start = method(goal, "()Z", "m_8036_", "canUse");
         assertTrue(invokes(start, "noppes/npcs/entity/data/DataInventory", "getProjectile", "()Lnoppes/npcs/api/item/IItemStack;"));
     }
@@ -111,13 +127,7 @@ class NpcEquipmentHookContractTest
         MethodNode tick = method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()V", "m_8037_", "tick");
         // The reload cycle counts triggers on the interval read and the burst-end reload on the pause read.
         for (String getter : List.of("getBurst", "getBurstDelay", "getDelayRNG"))
-        {
-            long calls = 0;
-            for (var instruction : tick.instructions)
-                if (instruction instanceof MethodInsnNode call && call.owner.equals("noppes/npcs/entity/data/DataRanged") && call.name.equals(getter) && call.desc.equals("()I"))
-                    calls++;
-            assertEquals(1, calls, getter);
-        }
+            assertEquals(1, calls(tick, "noppes/npcs/entity/data/DataRanged", getter, "()I"), getter);
     }
 
     @Test
@@ -165,6 +175,73 @@ class NpcEquipmentHookContractTest
             || invokes(keep, "noppes/npcs/ai/target/NpcNearestAttackableTargetGoal", "getFollowDistance", "()D"));
     }
 
+    @Test
+    void tacticHooksMatchTheInstalledGoalSetUpAndAvoidGoal() throws IOException
+    {
+        String projectile = "()Lnoppes/npcs/api/item/IItemStack;";
+        // The NeoForge build has no tactical variants: the set-up checks the projectile once, for the ranged goal.
+        MethodNode response = method(read(NPC), "()V", "setResponse");
+        assertEquals(1, calls(response, "noppes/npcs/entity/data/DataInventory", "getProjectile", projectile));
+        for (String tactic : List.of("EntityAIDodgeShoot", "EntityAIOrbitTarget", "EntityAIAmbushTarget", "EntityAIStalkTarget", "EntityAIZigZagTarget"))
+            assertFalse(installed("noppes/npcs/ai/" + tactic), tactic);
+        // The avoid-target goal is held back while a tactic of the mod's own runs, through the NPC field its mixin shadows.
+        ClassNode avoid = read("noppes/npcs/ai/EntityAIAvoidTarget");
+        assertTrue(hasNpcField(avoid, "npc"));
+        assertEquals(0, calls(method(avoid, "()Z", "canUse"), "noppes/npcs/entity/data/DataInventory", "getProjectile", projectile));
+        assertDoesNotThrow(() -> method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()Z", "hasFired"));
+    }
+
+    @Test
+    void customNpcsRangedGoalAdvancesAndHaltsOnceEachSoATacticCanTakeItsMovementOver() throws IOException
+    {
+        MethodNode tick = method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()V", "m_8037_", "tick");
+        String navigation = "net/minecraft/world/entity/ai/navigation/PathNavigation";
+        assertEquals(1, calls(tick, navigation, "moveTo", "(Lnet/minecraft/world/entity/Entity;D)Z"));
+        assertEquals(1, calls(tick, navigation, "stop", "()V"));
+    }
+
+    private static boolean hasNpcField(ClassNode goal, String name)
+    {
+        return goal.fields.stream().anyMatch(field -> field.name.equals(name) && field.desc.equals("L" + NPC + ";"));
+    }
+
+    @Test
+    void onlyTheApproachGoalClaimsTheMovementOfAnNpcWithAnEquippedRangedWeapon() throws IOException
+    {
+        // Custom NPCs' tactics need both flags, which a firing goal holding either of them at its priority would keep from them.
+        assertFalse(setsFlags(ownConstructor("NpcEquipmentRangedGoal")));
+        assertTrue(setsFlags(ownConstructor("NpcCombatApproachGoal")));
+    }
+
+    private static long calls(MethodNode method, String owner, String name, String descriptor)
+    {
+        long calls = 0;
+        for (var instruction : method.instructions)
+            if (instruction instanceof MethodInsnNode call && call.owner.equals(owner) && call.name.equals(name) && call.desc.equals(descriptor))
+                calls++;
+        return calls;
+    }
+
+    private static boolean setsFlags(MethodNode method)
+    {
+        for (var instruction : method.instructions)
+            if (instruction instanceof MethodInsnNode call && List.of("setFlags", "m_7021_").contains(call.name) && call.desc.equals("(Ljava/util/EnumSet;)V"))
+                return true;
+        return false;
+    }
+
+    /** Reads a class of this package as bytes, without loading it or the Minecraft and Custom NPCs classes it uses. */
+    private static MethodNode ownConstructor(String simpleName) throws IOException
+    {
+        try (var input = NpcEquipmentHookContractTest.class.getResourceAsStream(simpleName + ".class"))
+        {
+            assertNotNull(input, simpleName);
+            ClassNode node = new ClassNode();
+            new ClassReader(input).accept(node, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            return node.methods.stream().filter(method -> method.name.equals("<init>")).findFirst().orElseThrow(() -> new AssertionError("Missing constructor of " + simpleName));
+        }
+    }
+
     private static boolean declares(ClassNode owner, String descriptor, String... names)
     {
         return owner.methods.stream().anyMatch(method -> List.of(names).contains(method.name) && method.desc.equals(descriptor));
@@ -182,6 +259,14 @@ class NpcEquipmentHookContractTest
     {
         return owner.methods.stream().filter(method -> List.of(names).contains(method.name) && method.desc.equals(descriptor)).findFirst()
             .orElseThrow(() -> new AssertionError("Missing equipment hook: " + owner.name + " " + List.of(names) + descriptor));
+    }
+
+    private static boolean installed(String name) throws IOException
+    {
+        try (ZipFile jar = new ZipFile(CUSTOM_NPCS.toFile()))
+        {
+            return jar.getEntry(name + ".class") != null;
+        }
     }
 
     private static ClassNode read(String name) throws IOException

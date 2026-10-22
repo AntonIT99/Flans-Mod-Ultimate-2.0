@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.event.NpcEvent;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
+import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +17,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.OptionalDouble;
 
 /**
  * Fires vanilla throwables from the projectile slot as the real thing: potions splash, experience bottles burst,
@@ -31,6 +33,8 @@ import net.minecraft.world.phys.Vec3;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcThrowables
 {
+    public static final float MIN_SPEED = 0.01F;
+    public static final float MAX_SPEED = 10F;
     /** Vanilla inaccuracy of a perfectly inaccurate NPC; a witch throws at 8. */
     private static final float MAX_INACCURACY = 12F;
 
@@ -41,10 +45,10 @@ public final class NpcThrowables
     /** @return whether the ammunition was handled here instead of by Custom NPCs */
     public static boolean fire(EntityNPCInterface npc, LivingEntity target, boolean highArc)
     {
-        ItemStack ammunition = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
+        ItemStack ammunition = ammunition(npc);
         if (ammunition == null || !NpcEquipment.enabled(npc, Feature.NATIVE_THROWABLES))
             return false;
-        Flight flight = flight(ammunition);
+        Flight flight = flight(npc, ammunition);
         if (flight == null)
             return false;
         // The item is recognized, so Custom NPCs must not launch its own copy even when nothing can be thrown now.
@@ -110,6 +114,39 @@ public final class NpcThrowables
         if (ammunition.is(Items.FIRE_CHARGE))
             return new Flight(1F, 0D, SoundEvents.BLAZE_SHOOT);
         return null;
+    }
+
+    /** The supported item's unmodified launch speed, also used by readouts and imports. Powered fire charges have no throw speed. */
+    public static OptionalDouble defaultSpeed(EntityNPCInterface npc)
+    {
+        ItemStack ammunition = ammunition(npc);
+        if (ammunition == null || ammunition.is(Items.FIRE_CHARGE))
+            return OptionalDouble.empty();
+        Flight defaults = flight(ammunition);
+        return defaults == null ? OptionalDouble.empty() : OptionalDouble.of(defaults.speed());
+    }
+
+    @Nullable
+    private static ItemStack ammunition(EntityNPCInterface npc)
+    {
+        IItemStack slot = npc.inventory.getProjectile();
+        return slot == null ? null : slot.getMCItemStack();
+    }
+
+    /** The stored Custom value; until one is edited/imported it starts at the current item's default. */
+    public static float ownSpeed(EntityNPCInterface npc)
+    {
+        float own = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().getNativeThrowSpeed();
+        return Float.isFinite(own) ? own : (float) defaultSpeed(npc).orElse(1D);
+    }
+
+    @Nullable
+    static Flight flight(EntityNPCInterface npc, ItemStack ammunition)
+    {
+        Flight defaults = flight(ammunition);
+        if (defaults == null || ammunition.is(Items.FIRE_CHARGE) || NpcEquipment.inherits(npc, EquipmentProperty.NATIVE_THROW_SPEED))
+            return defaults;
+        return new Flight(ownSpeed(npc), defaults.gravity(), defaults.sound());
     }
 
     @Nullable

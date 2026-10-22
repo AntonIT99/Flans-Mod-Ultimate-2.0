@@ -7,11 +7,17 @@ import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.sim.NpcActivity;
+import com.wolffsmod.npcs.teams.BotCommands;
+import com.wolffsmod.npcs.teams.FactionCommands;
+import com.wolffsmod.npcs.teams.SkirmishCommands;
+import com.wolffsmod.npcs.teams.TeamsBots;
+import com.wolffsmod.npcs.teams.WarCommands;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
@@ -53,12 +59,20 @@ public final class NpcsGameEvents
     {
         ServerBenchmark.serverTickEnd(event.getServer());
         NpcServerSettings.serverTick(event.getServer());
+        TeamsBots.serverTick(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void livingDeath(LivingDeathEvent event)
+    {
+        TeamsBots.entityDied(event.getEntity(), event.getSource());
     }
 
     @SubscribeEvent
     public static void serverStopping(ServerStoppingEvent event)
     {
         ServerBenchmark.serverStopping(event.getServer());
+        TeamsBots.serverStopping(event.getServer());
     }
 
     @SubscribeEvent
@@ -66,5 +80,9 @@ public final class NpcsGameEvents
     {
         NpcDistanceCommands.register(event.getDispatcher());
         NpcBenchmarkCommands.register(event.getDispatcher());
+        BotCommands.register(event.getDispatcher());
+        FactionCommands.register(event.getDispatcher());
+        SkirmishCommands.register(event.getDispatcher());
+        WarCommands.register(event.getDispatcher());
     }
 }

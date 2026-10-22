@@ -13,8 +13,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +23,9 @@ import java.util.*;
 /** Per-NPC inheritance cache. Only the live NPC owns gameplay state; its selected model supplies definitions. */
 public final class NpcTypeProperties
 {
+    /** Aggro and firing range a vehicle, plane or mecha model offers when its definition states none. */
+    public static final int DRIVEABLE_RANGE = 128;
+
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
     private long lastFlags = -1L;
@@ -35,6 +37,11 @@ public final class NpcTypeProperties
     private Map<NpcTypeProperty, Tag> inherited = Map.of();
     /** The inherited values actually applied to the NPC. */
     private Map<NpcTypeProperty, Tag> mapped = Map.of();
+    /**
+     * Every property the model decides while inherited: those it offers a value for, and those its mounts fire with values
+     * of their own, too different for one Custom NPCs value.
+     */
+    private Set<NpcTypeProperty> supplied = Set.of();
     @Nullable
     private ReloadCycle cycle;
     private float loadingHealthFraction = -1F;
@@ -80,13 +87,21 @@ public final class NpcTypeProperties
         Map<NpcTypeProperty, Tag> offered = new EnumMap<>(NpcTypeProperty.class);
         if (type != null)
             offered.putAll(NpcTypeMapping.create(type, options, lastNative, maxHealth, cycle));
+        FlanModelKind kind = FlanModelKind.of(selected);
+        // Driveable definitions state no targeting range; vehicles engage at longer distances than infantry.
+        if (type != null && options.enabled(Feature.TYPE_PROPERTIES) && kind != null && kind != FlanModelKind.AA_GUN)
+        {
+            offered.putIfAbsent(NpcTypeProperty.AGGRO_RANGE, IntTag.valueOf(DRIVEABLE_RANGE));
+            offered.putIfAbsent(NpcTypeProperty.RANGE, IntTag.valueOf(DRIVEABLE_RANGE));
+        }
         // Vehicle engines have their own presentation controller; mecha stomps remain ordinary inherited footsteps.
-        if (FlanModelKind.of(selected) == FlanModelKind.VEHICLE || FlanModelKind.of(selected) == FlanModelKind.PLANE)
+        if (kind == FlanModelKind.VEHICLE || kind == FlanModelKind.PLANE)
         {
             offered.remove(NpcTypeProperty.STEP_SOUND);
             offered.remove(NpcTypeProperty.IDLE_SOUND);
         }
         inherited = Map.copyOf(offered);
+        supplied = Set.copyOf(type == null ? inherited.keySet() : NpcTypeReadouts.create(type, inherited, options, lastNative).keySet());
         offered.keySet().removeAll(combat.customProperties());
         mapped = Map.copyOf(offered);
     }
@@ -105,11 +120,11 @@ public final class NpcTypeProperties
             if (value != null)
                 overrides.adopt(property, value, key -> NpcTypePropertyAccess.read(npc, key), (key, tag) -> NpcTypePropertyAccess.write(npc, key, tag));
         }
-        Set<NpcCombatSettings.EquipmentImport> equipment = combat.takeEquipmentImports();
+        Set<EquipmentProperty> equipment = combat.takeEquipmentImports();
         if (!equipment.isEmpty())
         {
             overrides.suspend((key, tag) -> NpcTypePropertyAccess.write(npc, key, tag));
-            equipment.forEach(kind -> NpcEquipmentImport.apply(npc, kind));
+            equipment.forEach(property -> NpcEquipmentImport.apply(npc, property));
         }
         return true;
     }
@@ -117,6 +132,43 @@ public final class NpcTypeProperties
     public Map<NpcTypeProperty, Tag> values()
     {
         return overrides.values();
+    }
+
+    /** @return the NPC's own saved value, which the model's value may currently cover */
+    public Tag own(EntityNPCInterface npc, NpcTypeProperty property)
+    {
+        return overrides.stored(property, key -> NpcTypePropertyAccess.read(npc, key));
+    }
+
+    /** Sets the NPC's own saved value without writing into a value the model still covers. */
+    public void setOwn(EntityNPCInterface npc, NpcTypeProperty property, Tag value)
+    {
+        overrides.setStored(property, value, (key, tag) -> NpcTypePropertyAccess.write(npc, key, tag));
+    }
+
+    /**
+     * Copies the model's value into the NPC's own and makes the property custom, at once. The editor calls this on its copy
+     * of the NPC, which it sends to the server like any other edit. A property the model does not offer is left alone.
+     */
+    public void importNow(EntityNPCInterface npc, NpcTypeProperty property)
+    {
+        Tag value = inherited.get(property);
+        if (value == null)
+            return;
+        ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().setCustom(property, true);
+        overrides.adopt(property, value, key -> NpcTypePropertyAccess.read(npc, key), (key, tag) -> NpcTypePropertyAccess.write(npc, key, tag));
+    }
+
+    /**
+     * Copies what the equipment offers for the statistic into the NPC's own values at once, with the model's overlay lifted
+     * so that the copy is not written into a value the model covers; the next refresh lays the overlay again. A statistic
+     * the equipment does not offer is left alone.
+     */
+    public void importNow(EntityNPCInterface npc, EquipmentProperty property)
+    {
+        overrides.suspend((key, tag) -> NpcTypePropertyAccess.write(npc, key, tag));
+        if (NpcEquipmentImport.apply(npc, property))
+            ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().setCustom(property, true);
     }
 
     /** @return every value the selected model offers, whether or not the NPC currently inherits it */
@@ -129,7 +181,13 @@ public final class NpcTypeProperties
     public static boolean usesOwnValue(EntityNPCInterface npc, NpcTypeProperty property)
     {
         NpcWeaponSettings settings = (NpcWeaponSettings) npc.stats;
-        return settings.wolffsmodnpcsCombat().isCustom(property) && settings.wolffsmodnpcsTypeProperties().inherited.containsKey(property);
+        return settings.wolffsmodnpcsCombat().isCustom(property) && settings.wolffsmodnpcsTypeProperties().supplied.contains(property);
+    }
+
+    /** @return every property the model decides while inherited, including values its mounts differ in */
+    public Set<NpcTypeProperty> supplied()
+    {
+        return supplied;
     }
 
     public Optional<EntityTypeProperties> type()

@@ -5,6 +5,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.damage.DetachedPieces;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
@@ -14,6 +15,7 @@ import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.*;
@@ -28,6 +30,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -119,6 +122,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         DriveableType type = driveable.getConfigType();
         if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
             return;
+        // The pose the entity was handed over with, so the drawn model can be placed relative to the entity.
+        Matrix4f entryPose = new Matrix4f(poseStack.last().pose());
 
         float yaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw());
         float pitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
@@ -151,10 +156,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha ? 180F - yaw : -yaw;
         boolean locallyControlled = Minecraft.getInstance().player != null && Minecraft.getInstance().player.getVehicle() == driveable;
-        boolean intact = true;
+        boolean intact = !driveable.isWreck();
         for (EnumDriveablePart part : type.getHealth().keySet())
         {
-            if (!driveable.isPartIntact(part))
+            // An impostor shows the clean, whole model, so anything shot off or scorched needs the real geometry.
+            if (!intact || !driveable.isPartDrawn(part) || driveable.getPartTint(part) < 0.999F)
             {
                 intact = false;
                 break;
@@ -198,6 +204,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.mulPose(Axis.YP.rotationDegrees(entityYawRotation));
         poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
+        if (driveable instanceof Mecha && driveable.isWreck())
+            applyMechaCollapse(driveable, partialTick, poseStack);
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
 
         // Legacy driveable renderers applied ModelScale to the complete model
@@ -205,6 +213,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         // under the same transform instead of scaling every mesh independently.
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
+        if (!preview && !shadowPass)
+            DetachedPieces.capture(driveable, model, state, driveable, texture, translucent, cull, red, green, blue, entryPose, poseStack.last().pose(), driveable.getPosition(partialTick));
         float minimumPartPixels = preview ? 0F : (float) ModClientConfig.get().minimumDriveablePartPixelSize;
         if (!preview && !locallyControlled && ModClientConfig.get().enableDriveableLod)
         {
@@ -269,6 +279,19 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.popPose();
         if (!thermalMask && !preview)
             DriveableMuzzleFlashes.render(driveable, poseStack, buffer);
+    }
+
+    /**
+     * Topples a wrecked mecha over its feet, the way a walker with nothing left holding it up comes down, and leaves it
+     * lying where it fell. The side it falls to is fixed by its identity, so every player sees the same fall.
+     */
+    private static void applyMechaCollapse(Driveable driveable, float partialTick, PoseStack poseStack)
+    {
+        int age = driveable.getWreckAge();
+        float fallen = DamageVisualCurves.collapse(age + partialTick);
+        boolean backwards = (driveable.getUUID().getLeastSignificantBits() & 1L) != 0L;
+        poseStack.mulPose(Axis.ZP.rotationDegrees(DetachedPieces.mechaCollapseDegrees(fallen) * (backwards ? 1F : -1F)));
+        poseStack.mulPose(Axis.XP.rotationDegrees(12F * fallen * (backwards ? -1F : 1F)));
     }
 
     private static double modelOriginDistance(PoseStack pose)
@@ -420,7 +443,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         if (data == null)
             return;
 
-        if (driveable.isPartIntact(EnumDriveablePart.HIPS))
+        if (driveable.isPartDrawn(EnumDriveablePart.HIPS))
         {
             poseStack.pushPose();
             poseStack.scale(mechaType.getModelScale(), mechaType.getModelScale(), mechaType.getModelScale());
@@ -431,9 +454,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
 
         float armPitch = Mth.clamp(state.turretPitch(), -mechaType.getUpperArmLimit(), mechaType.getLowerArmLimit());
-        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL), true, driveable.isPartIntact(EnumDriveablePart.LEFT_ARM), mechaType, armPitch,
+        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL), true, driveable.isPartDrawn(EnumDriveablePart.LEFT_ARM), mechaType, armPitch,
             DriveableInput.isDown(state.inputMask(), DriveableInput.PRIMARY_FIRE), state.animationTime(), history.leftGunAnimations, poseStack, buffer, packedLight);
-        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL), false, driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM), mechaType, armPitch,
+        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL), false, driveable.isPartDrawn(EnumDriveablePart.RIGHT_ARM), mechaType, armPitch,
             DriveableInput.isDown(state.inputMask(), DriveableInput.SECONDARY_FIRE), state.animationTime(), history.rightGunAnimations, poseStack, buffer, packedLight);
     }
 

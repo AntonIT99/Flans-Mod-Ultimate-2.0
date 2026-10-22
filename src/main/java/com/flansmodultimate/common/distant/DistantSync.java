@@ -97,7 +97,7 @@ public final class DistantSync
                 continue;
 
             List<Driveable> driveables = enabled
-                ? new ArrayList<>(level.getEntities(EntityTypeTest.forClass(Driveable.class), driveable -> driveable.isAlive() && driveable.getConfigType() != null))
+                ? new ArrayList<>(level.getEntities(EntityTypeTest.forClass(Driveable.class), driveable -> driveable.isAlive() && !driveable.isWreck() && driveable.getConfigType() != null))
                 : List.of();
             Map<Driveable, PacketDistantContacts.Contact> contacts = new HashMap<>();
             for (ServerPlayer player : receivers)

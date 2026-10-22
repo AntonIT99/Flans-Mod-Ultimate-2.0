@@ -49,7 +49,7 @@ public final class NpcRenderBuffers implements MultiBufferSource
     {
         VertexConsumer vertices = source.getBuffer(renderType);
         var infoType = type.getInfoType();
-        ResourceLocation texture = npc.modelData.simpleRender && npc.modelData.getEntity(npc) instanceof FlanModelEntity model ? model.getModelTexture() : npc.textureLocation;
+        ResourceLocation texture = npc.textureLocation;
         // Only the normal body buffer opts in. Glow overlays, invisibility and outlines retain their exact consumer.
         if (source.getClass() == MultiBufferSource.BufferSource.class && texture != null && infoType != null && renderType == FlansModelPreviews.getRenderType(infoType, texture))
             return new BodyVertices(vertices, texture);
@@ -57,6 +57,7 @@ public final class NpcRenderBuffers implements MultiBufferSource
     }
 
     /** Called after the model has restored the Flan origin and coordinate basis. */
+    @SuppressWarnings("java:S107") // Mirrors the entity-model render call so light, overlay and tint retain their supplied values.
     public static boolean renderWorld(FlanModelEntityType type, PoseStack pose, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha)
     {
         if (!(vertices instanceof NpcRenderBuffers.BodyVertices body) || body.owner().type != type || alpha != 1F)

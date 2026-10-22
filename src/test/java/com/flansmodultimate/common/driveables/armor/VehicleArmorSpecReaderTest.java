@@ -8,14 +8,52 @@ import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class VehicleArmorSpecReaderTest
 {
+    @Test
+    void compositeHitboxesUseLastValidDeclarationAndModernOverridesWin()
+    {
+        VehicleArmorSpecReader.Result result = read("setupcompositearmoredpart core 100 0 0 0 16 16 16 80 300", "SetupCompositeArmoredPart core 100 0 0 0 16 16 16 100 400",
+            "PartArmorVsHeatMm core 600");
+        assertTrue(result.warnings().isEmpty());
+        assertEquals(new ArmorPlate(100F, 0F, 600F), result.spec().partOverrides().get(EnumDriveablePart.CORE));
+        VehicleArmorSpec spec = read("PartArmorMm core 150", "SetupCompositeArmoredPart core 100 0 0 0 16 16 16 100 400").spec();
+        assertEquals(new ArmorPlate(150F, 0F, 150F), spec.partOverrides().get(EnumDriveablePart.CORE));
+    }
+
+    @Test
+    void invalidCompositeArmourWarnsWithoutCreatingAnArmourGate()
+    {
+        for (String suffix : List.of("100", "-1 400", "100 NaN", "Infinity 400"))
+        {
+            VehicleArmorSpecReader.Result result = read("SetupCompositeArmoredPart core 100 0 0 0 16 16 16 " + suffix);
+            assertTrue(result.spec().isEmpty());
+            assertFalse(result.warnings().isEmpty());
+        }
+    }
+
+    @Test
+    void everyHullAndTurretFacingAcceptsCompositeProtection()
+    {
+        for (String prefix : List.of("Armor", "TurretArmor"))
+        {
+            for (String face : List.of("Front", "Rear", "Side", "Top", "Bottom"))
+            {
+                String key = prefix + face + "Mm";
+                VehicleArmorSpecReader.Result result = read(key + " 100 20", VehicleArmorSpecReader.heatKey(key) + " 400");
+                assertTrue(result.warnings().isEmpty());
+                var plates = prefix.equals("Armor") ? result.spec().hull() : result.spec().turret();
+                assertEquals(face.equals("Side") ? 2 : 1, plates.size());
+                for (ArmorPlate plate : plates.values())
+                    assertEquals(new ArmorPlate(100F, 20F, 400F), plate);
+            }
+        }
+    }
+
     @Test
     void readsThicknessAndOptionalVirtualSlopeFromOneSemanticLine()
     {
@@ -115,8 +153,7 @@ class VehicleArmorSpecReaderTest
     @Test
     void heatProtectionRefinesThePlateOfTheSameFaceAndKeepsItsSlope()
     {
-        VehicleArmorSpec spec = read("ArmorFrontMm 600 0", "ArmorFrontVsHeatMm 950", "ArmorSideMm 70", "TurretArmorFrontMm 650 10", "TurretArmorFrontVsHeatMm 1100",
-            "ArmorRearMm 40").spec();
+        VehicleArmorSpec spec = read("ArmorFrontMm 600 0", "ArmorFrontVsHeatMm 950", "ArmorSideMm 70", "TurretArmorFrontMm 650 10", "TurretArmorFrontVsHeatMm 1100", "ArmorRearMm 40").spec();
         assertEquals(new ArmorPlate(600F, 0F, 950F), spec.hull().get(EnumArmorFacing.FRONT));
         assertEquals(new ArmorPlate(650F, 10F, 1100F), spec.turret().get(EnumArmorFacing.FRONT));
         // A face with no HEAT key resists HEAT with its kinetic value.

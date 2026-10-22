@@ -197,6 +197,11 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     /** The rider's client predicts the driveable's movement and wants the server's reports. */
     @Getter @Setter
     private boolean inputPredicted;
+    /** Game time of the last automated aim, which budgets how far a non-player occupant may turn the seat. */
+    private long lastAutomatedAimTime;
+    /** The occupant that last aimed the seat by automation, so a new one starts with a fresh budget. */
+    @Nullable
+    private Entity automatedOccupant;
 
     public Seat(EntityType<?> entityType, Level level)
     {
@@ -665,7 +670,9 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return getPassengers().isEmpty() && passenger instanceof LivingEntity && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER));
+        // Nobody boards a wreck, NPC gunners included.
+        return getPassengers().isEmpty() && (driveable == null || !driveable.isWreck()) && passenger instanceof LivingEntity
+            && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER));
     }
 
     @Override
@@ -685,7 +692,9 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
 
     public double getPassengerRidingOffset(@NotNull Entity passenger)
     {
-        if (!(passenger instanceof Player))
+        // A player-shaped occupant, such as an NPC gunner, sits as a player does.
+        boolean seatsLikePlayer = passenger instanceof Player || passenger instanceof IFlanSeatOccupant occupant && occupant.flansmodultimateSeatsLikePlayer();
+        if (!seatsLikePlayer)
             return 0D;
         return LEGACY_PLAYER_RIDING_OFFSET + (driveable instanceof Mecha ? MECHA_COCKPIT_RIDING_OFFSET : 0D);
     }
@@ -723,6 +732,16 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         lastInputSequence = sequence;
         receivedInputSequence = true;
 
+        turnAim(requestedYaw, requestedPitch, elapsed);
+        previousInputMask = getInputMask();
+        entityData.set(DATA_INPUT_MASK, DriveableInput.sanitize(mask));
+        updateOptics(isInputRising(DriveableInput.TOGGLE_SCOPE), isInputRising(DriveableInput.CYCLE_SIGHT));
+        return true;
+    }
+
+    /** Turns the aim towards a request, as far as the seat's aiming speed allows in the elapsed ticks and within its limits. */
+    private void turnAim(float requestedYaw, float requestedPitch, long elapsed)
+    {
         SeatInfo info = seatInfo;
         float yawSpeed = info == null ? 8F : Mth.clamp(Math.abs(info.getAimingSpeed().x), 0.25F, 45F);
         float pitchSpeed = info == null ? 8F : Mth.clamp(Math.abs(info.getAimingSpeed().y), 0.25F, 45F);
@@ -744,10 +763,117 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
 
         entityData.set(DATA_AIM_YAW, yaw);
         entityData.set(DATA_AIM_PITCH, pitch);
-        previousInputMask = getInputMask();
-        entityData.set(DATA_INPUT_MASK, DriveableInput.sanitize(mask));
-        updateOptics(isInputRising(DriveableInput.TOGGLE_SCOPE), isInputRising(DriveableInput.CYCLE_SIGHT));
+    }
+
+    // --- Automation, for occupants that are not players ---
+
+    /** Whether the seat refuses automation: it is not on the server, part of a driveable and occupied by a living entity that is not a player. */
+    private boolean refusesAutomation()
+    {
+        return level().isClientSide || driveable == null || !(getFirstPassenger() instanceof LivingEntity occupant) || occupant instanceof Player || !occupant.isAlive();
+    }
+
+    @Override
+    public boolean setAutomatedAim(float yaw, float pitch)
+    {
+        if (refusesAutomation() || !Float.isFinite(yaw) || !Float.isFinite(pitch))
+            return false;
+        // Aim authority is budgeted by elapsed ticks, as for players: calling more often does not turn faster.
+        long now = level().getGameTime();
+        Entity occupant = getFirstPassenger();
+        long elapsed = automatedOccupant == occupant ? Math.max(0L, Math.min(10L, now - lastAutomatedAimTime)) : 1L;
+        automatedOccupant = occupant;
+        lastAutomatedAimTime = now;
+        turnAim(yaw, pitch, elapsed);
+        // The driver's aim turns the turret, as a player driver's does.
+        Driveable parent = driveable;
+        if (parent != null && parent.isMovementController(this))
+            parent.applyAutomatedDriverAim(this);
         return true;
+    }
+
+    @Override
+    public boolean aimAt(Vec3 target)
+    {
+        Driveable parent = driveable;
+        if (refusesAutomation() || parent == null)
+            return false;
+        Vec3 origin = parent.getPassengerShootOrigin(getSeatIndex(), 0);
+        // A driver without a gun of its own points the driveable's weapons, the primary one first.
+        if (origin == null && parent.isMovementController(this))
+        {
+            Vec3 primary = parent.getDriverWeaponOrigin(false);
+            origin = primary != null ? primary : parent.getDriverWeaponOrigin(true);
+        }
+        if (origin == null)
+            return false;
+        // The driveable aims the gun by hull-relative yaw; the seat stores it relative to its own frame, such as a turret.
+        SeatAimSolver.Aim aim = SeatAimSolver.solve(parent::aimedDirection, target.subtract(origin), getHullAimYaw(), getAimPitch());
+        return setAutomatedAim(Mth.wrapDegrees(aim.yaw() - parent.getSeatAimFrameYaw(this, 1F)), aim.pitch());
+    }
+
+    @Override
+    public boolean setAutomatedTriggers(boolean primary, boolean secondary)
+    {
+        if (refusesAutomation())
+            return false;
+        int mask = (primary ? DriveableInput.PRIMARY_FIRE : 0) | (secondary ? DriveableInput.SECONDARY_FIRE : 0);
+        previousInputMask = getInputMask();
+        entityData.set(DATA_INPUT_MASK, mask);
+        // The driver's triggers fire the driveable's own weapons, as a player driver's do.
+        Driveable parent = driveable;
+        if (parent != null && parent.isMovementController(this))
+            parent.acceptAutomatedInput(this, mask, DriveableInput.TRIGGER_MASK);
+        return true;
+    }
+
+    @Override
+    public boolean setAutomatedDriving(Set<DriveControl> controls)
+    {
+        Driveable parent = driveable;
+        if (refusesAutomation() || parent == null)
+            return false;
+        return parent.acceptAutomatedInput(this, DriveableInput.forControls(controls), DriveableInput.DRIVE_CONTROL_MASK);
+    }
+
+    @Override
+    public Optional<Vec3> getDriveDirection()
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.of(parent.getDriveDirection());
+    }
+
+    @Override
+    public Optional<Vec3> getDriverWeaponOrigin(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponOrigin(secondary));
+    }
+
+    @Override
+    public Optional<Vec3> getDriverWeaponDirection(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponDirection(secondary));
+    }
+
+    @Override
+    public Optional<WeaponBallistics> getDriverWeaponBallistics(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponBallistics(secondary));
+    }
+
+    @Override
+    public Optional<Vec3> getGunOrigin()
+    {
+        return driveable == null ? Optional.empty() : Optional.ofNullable(driveable.getPassengerShootOrigin(getSeatIndex(), 0));
+    }
+
+    @Override
+    public Optional<Vec3> getGunDirection()
+    {
+        return driveable == null ? Optional.empty() : Optional.ofNullable(driveable.getPassengerShootDirection(getSeatIndex()));
     }
 
     private boolean isNewSequence(int sequence)

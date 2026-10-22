@@ -42,6 +42,7 @@ public final class ModClientConfig
     public final EnumOptionsButtonPlacement optionsButtonPlacement;
     public final boolean showFlansHud;
     public final boolean hideCrosshairForGuns;
+    public final boolean showCrosshairWhileScoped;
     public final boolean loadAllModelsInCache;
     public final boolean searchModelsInOtherContentPacks;
     public final boolean preferBuiltInModelClasses;
@@ -75,6 +76,7 @@ public final class ModClientConfig
     /** Particle type ids, such as {@code somemod:plasma}, that thermal sights also show hot */
     public final List<String> additionalThermalHotParticles;
     public final boolean enablePlayerClassSkinOverrides;
+    public final boolean loadTeamFlagsFromUrls;
     public final double driveableRenderDistanceMultiplier;
     public final double flanNpcRenderDistanceMultiplier;
     public final int bulletRenderDistance;
@@ -103,6 +105,8 @@ public final class ModClientConfig
     public final int maxFlansParticlesPerTick;
     public final int maxFragSparks;
     public final double fragSparkMultiplier;
+    public final double driveableDamageEffectDensity;
+    public final int maxDetachedDriveablePieces;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -155,6 +159,7 @@ public final class ModClientConfig
     public static final EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
     public static final BooleanValue SHOW_FLANS_HUD;
     public static final BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
+    public static final BooleanValue SHOW_CROSSHAIR_WHILE_SCOPED;
     private static final Supplier<Boolean> LOAD_ALL_MODELS_IN_CACHE;
     private static final Supplier<Boolean> SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
@@ -203,6 +208,7 @@ public final class ModClientConfig
     @SuppressWarnings("java:S4968")
     public static final ConfigValue<List<? extends String>> ADDITIONAL_THERMAL_HOT_PARTICLES;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
+    private static final Supplier<Boolean> LOAD_TEAM_FLAGS_FROM_URLS;
     public static final DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;
     public static final DoubleValue FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
     private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
@@ -231,6 +237,8 @@ public final class ModClientConfig
     private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
     private static final Supplier<Integer> MAX_FRAG_SPARKS;
     private static final Supplier<Double> FRAG_SPARK_MULTIPLIER;
+    private static final Supplier<Double> DRIVEABLE_DAMAGE_EFFECT_DENSITY;
+    private static final Supplier<Integer> MAX_DETACHED_DRIVEABLE_PIECES;
 
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -304,6 +312,12 @@ public final class ModClientConfig
             The server's own disableCrosshairForGuns setting hides it for everyone regardless of this
             option, which can only hide the crosshair, never bring it back.
             """).define("hideCrosshairForGuns", false);
+        SHOW_CROSSHAIR_WHILE_SCOPED = builder.comment("""
+            Keep the vanilla crosshair visible while aiming down a gun's sights or scope.
+            In multiplayer, the server's disableCrosshairWhileScoped setting must be false to allow this.
+            Private singleplayer worlds use this preference directly.
+            Server, gun definition, vehicle optics and hideCrosshairForGuns restrictions still apply.
+            """).define("showCrosshairWhileScoped", false);
         LOAD_ALL_MODELS_IN_CACHE = builder.comment("""
             If true, loads and caches ALL models up-front during resource reload.
             ⚠ Warning:
@@ -370,6 +384,10 @@ public final class ModClientConfig
             defines a SkinOverride. Overrides are ignored anyway when the texture is missing, is not a
             valid player skin sheet, or when another mod draws that player with its own model.
             """).define("enablePlayerClassSkinOverrides", true);
+        LOAD_TEAM_FLAGS_FROM_URLS = builder.comment("""
+            Download the flag images that the Teams editor of a server sets as a web address. The site
+            hosting an image sees your IP address. When off, those teams fly a plain flag in their colour.
+            """).define("loadTeamFlagsFromUrls", true);
         builder.pop();
 
         builder.push("Ammo HUD Settings");
@@ -465,6 +483,11 @@ public final class ModClientConfig
         FRAG_SPARK_MULTIPLIER = builder.comment(
             "Multiplier applied to the fragmentation spark count after limiting it to the burst's effective fragments. The result still cannot exceed the effective fragment count or maxFragSparks.")
             .defineInRange("fragSparkMultiplier", 0.25D, 0D, 4D);
+        DRIVEABLE_DAMAGE_EFFECT_DENSITY = builder
+            .comment("Multiplies the smoke, fire, steam and sparks damaged driveables, wrecks and NPC vehicles give off. 0 turns these damage effects off; destruction blasts are unaffected.")
+            .defineInRange("driveableDamageEffectDensity", 1.0D, 0D, 3D);
+        MAX_DETACHED_DRIVEABLE_PIECES = builder.comment("Maximum pieces shot off driveables, such as turrets, wings and limbs, drawn tumbling to the ground at once. 0 turns them off.")
+            .defineInRange("maxDetachedDriveablePieces", 24, 0, 128);
         builder.pop();
 
         builder.push("Input Settings");
@@ -582,6 +605,7 @@ public final class ModClientConfig
         optionsButtonPlacement = OPTIONS_BUTTON_PLACEMENT.get();
         showFlansHud = SHOW_FLANS_HUD.get();
         hideCrosshairForGuns = HIDE_CROSSHAIR_FOR_GUNS.get();
+        showCrosshairWhileScoped = SHOW_CROSSHAIR_WHILE_SCOPED.get();
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
         searchModelsInOtherContentPacks = SEARCH_MODELS_IN_OTHER_CONTENT_PACKS.get();
         preferBuiltInModelClasses = PREFER_BUILT_IN_MODEL_CLASSES.get();
@@ -614,6 +638,7 @@ public final class ModClientConfig
         bulletFlybyVolume = BULLET_FLYBY_VOLUME.get();
         additionalThermalHotParticles = ADDITIONAL_THERMAL_HOT_PARTICLES.get().stream().map(String::valueOf).map(String::trim).filter(id -> !id.isEmpty()).toList();
         enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
+        loadTeamFlagsFromUrls = LOAD_TEAM_FLAGS_FROM_URLS.get();
         driveableRenderDistanceMultiplier = DRIVEABLE_RENDER_DISTANCE_MULTIPLIER.get();
         flanNpcRenderDistanceMultiplier = FLAN_NPC_RENDER_DISTANCE_MULTIPLIER.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();
@@ -642,6 +667,8 @@ public final class ModClientConfig
         maxFlansParticlesPerTick = MAX_FLANS_PARTICLES_PER_TICK.get();
         maxFragSparks = MAX_FRAG_SPARKS.get();
         fragSparkMultiplier = FRAG_SPARK_MULTIPLIER.get();
+        driveableDamageEffectDensity = DRIVEABLE_DAMAGE_EFFECT_DENSITY.get();
+        maxDetachedDriveablePieces = MAX_DETACHED_DRIVEABLE_PIECES.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();

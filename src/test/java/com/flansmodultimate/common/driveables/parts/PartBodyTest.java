@@ -207,4 +207,31 @@ class PartBodyTest
         body.setPose(new PartBodyPose(ORIGIN, 0F, 2F, MountAim.REST));
         assertEquals(reach * 2D, body.reach(), 1.0E-9D);
     }
+
+    @Test
+    void brokenPartsAreNoLongerDrawnButSwitchedOffAndBoxlessOnesAre()
+    {
+        PartBody body = body();
+        assertTrue(body.isDrawn(EnumDriveablePart.TURRET));
+        body.damage("turret", 1000F, false);
+        assertFalse(body.isDrawn(EnumDriveablePart.TURRET), "a broken part is shot off the model");
+        body.setEnabled("rightSkirt", false);
+        assertTrue(body.isDrawn(EnumDriveablePart.RIGHT_SKIRT), "a part switched off as a hitbox is still drawn");
+        assertTrue(body.isDrawn(EnumDriveablePart.BLADES), "a part the body has no box for is drawn as the model has it");
+        assertTrue(body.enabledParts().stream().noneMatch(part -> part.getType() == EnumDriveablePart.RIGHT_SKIRT));
+        assertEquals(EnumDriveablePart.CORE, body.enabledParts().get(0).getType(), "the core comes first");
+        assertNull(body.partState(EnumDriveablePart.BLADES));
+    }
+
+    @Test
+    void pointsInAPartStandWhereItsBoxIsDrawn()
+    {
+        PartBody body = body();
+        Vec3 centre = body.partPointToWorld(Objects.requireNonNull(body.partState(EnumDriveablePart.CORE)), 0.5D, 0.5D, 0.5D);
+        assertEquals(ORIGIN.x, centre.x, 1.0E-6D);
+        assertEquals(ORIGIN.y + 0.5D, centre.y, 1.0E-6D);
+        assertEquals(ORIGIN.z, centre.z, 1.0E-6D);
+        Vec3 bottom = body.partPointToWorld(Objects.requireNonNull(body.partState(EnumDriveablePart.CORE)), 0.5D, 0D, 0.5D);
+        assertEquals(ORIGIN.y, bottom.y, 1.0E-6D);
+    }
 }

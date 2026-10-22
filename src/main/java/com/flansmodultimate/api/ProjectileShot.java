@@ -35,7 +35,7 @@ public interface ProjectileShot
      * @param direction
      *            nonzero world direction, normalized internally
      * @param throwSound
-     *            whether a grenade may play its throw sound
+     *            whether a grenade or thrown weapon may play its throw sound
      * @return immutable list of successfully spawned entities; empty on invalid input or the wrong side
      */
     List<Entity> launch(Vec3 origin, Vec3 direction, boolean throwSound);

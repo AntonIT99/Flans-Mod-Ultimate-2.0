@@ -140,7 +140,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         PlayerData data = PlayerData.getInstance(player);
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
 
-        data.doGunReload(hand, reloadTime, gunItem.getConfigType().getShootDelay(player.getItemInHand(hand)));
+        data.doGunReload(hand, reloadTime);
 
         int pumpDelay = 0;
         int pumpTime = 1;

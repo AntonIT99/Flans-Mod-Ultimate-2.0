@@ -1,7 +1,12 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.api.DriveControl;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Compact input flags shared by driveable controllers and the server runtime.
@@ -52,8 +57,8 @@ public final class DriveableInput
     public static final int CYCLE_SIGHT = 1 << 26;
 
     public static final int VALID_MASK = (1 << 27) - 1;
-    public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
-        | THROTTLE_INCREASE | THROTTLE_DECREASE;
+    public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE | THROTTLE_INCREASE
+        | THROTTLE_DECREASE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
 
     /**
@@ -61,6 +66,21 @@ public final class DriveableInput
      * Weapon and auxiliary controls deliberately stay with their authored seat.
      */
     public static final int AIRCRAFT_FALLBACK_CONTROL_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | ROLL_LEFT | ROLL_RIGHT;
+    /** The controls a non-player driver holds through the API, one for each {@link DriveControl}. */
+    public static final int DRIVE_CONTROL_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | ROLL_LEFT | ROLL_RIGHT | BRAKE;
+    public static final int TRIGGER_MASK = PRIMARY_FIRE | SECONDARY_FIRE;
+    // spotless:off
+    private static final Map<DriveControl, Integer> DRIVE_CONTROLS = new EnumMap<>(Map.of(
+        DriveControl.FORWARD, FORWARD,
+        DriveControl.BACKWARD, BACKWARD,
+        DriveControl.LEFT, LEFT,
+        DriveControl.RIGHT, RIGHT,
+        DriveControl.ASCEND, ASCEND,
+        DriveControl.DESCEND, DESCEND,
+        DriveControl.ROLL_LEFT, ROLL_LEFT,
+        DriveControl.ROLL_RIGHT, ROLL_RIGHT,
+        DriveControl.BRAKE, BRAKE));
+    // spotless:on
 
     public static int sanitize(int mask)
     {
@@ -75,6 +95,15 @@ public final class DriveableInput
     public static boolean isDown(int mask, int input)
     {
         return (mask & input) != 0;
+    }
+
+    /** @return the input mask of the API's drive controls */
+    public static int forControls(Set<DriveControl> controls)
+    {
+        int mask = 0;
+        for (DriveControl control : controls)
+            mask |= DRIVE_CONTROLS.getOrDefault(control, 0);
+        return mask;
     }
 
     /** Maps the legacy controller key IDs retained by {@code IControllable}. */

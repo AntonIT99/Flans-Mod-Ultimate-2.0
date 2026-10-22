@@ -1,0 +1,17 @@
+// Identity
+Name Assault
+ShortName OfficialWW2_GermanInfantryAssault
+
+// Armour
+Hat GermanAssaultHat
+Chest GermanAssaultChest
+Legs GermanUniformPants
+Shoes GermanUniformBoots
+
+// Items
+AddItem mp44
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem mp44Ammo 3
+AddItem lugerAmmo 2

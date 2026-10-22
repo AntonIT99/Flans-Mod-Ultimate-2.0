@@ -25,7 +25,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -56,39 +55,39 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
         noCulling = true;
     }
 
-    public Parachute(Level level, ToolType type, Player player)
+    public Parachute(Level level, ToolType type, LivingEntity rider)
     {
         this(FlansModEntities.parachuteEntity.get(), level);
         configType = type;
         setShortName(type.getShortName());
-        setPos(player.getX(), player.getY() + START_Y_OFFSET, player.getZ());
-        setYRot(player.getYRot());
+        setPos(rider.getX(), rider.getY() + START_Y_OFFSET, rider.getZ());
+        setYRot(rider.getYRot());
         yRotO = getYRot();
     }
 
-    public static boolean canUseParachute(Player player)
+    public static boolean canUseParachute(LivingEntity rider)
     {
-        if (!player.isAlive())
+        if (!rider.isAlive())
             return false;
 
-        AABB clearanceBox = player.getBoundingBox().inflate(0.0D, 3.0D, 0.0D);
-        return player.level().noCollision(player, clearanceBox);
+        AABB clearanceBox = rider.getBoundingBox().inflate(0.0D, 3.0D, 0.0D);
+        return rider.level().noCollision(rider, clearanceBox);
     }
 
     @Nullable
-    public static Parachute spawnAndMount(Level level, Player player, ToolType type)
+    public static Parachute spawnAndMount(Level level, LivingEntity rider, ToolType type)
     {
-        if (level.isClientSide || !canUseParachute(player))
+        if (level.isClientSide || !canUseParachute(rider))
             return null;
 
-        Parachute parachute = new Parachute(level, type, player);
+        Parachute parachute = new Parachute(level, type, rider);
         if (!level.addFreshEntity(parachute))
             return null;
 
-        if (player.getVehicle() != null)
-            player.stopRiding();
+        if (rider.getVehicle() != null)
+            rider.stopRiding();
 
-        if (!player.startRiding(parachute, true))
+        if (!rider.startRiding(parachute, true))
         {
             parachute.discard();
             return null;

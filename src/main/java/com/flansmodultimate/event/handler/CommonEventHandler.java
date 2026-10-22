@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.ITeamsRespawnRule;
 import com.flansmodultimate.client.render.hud.KillMessageData;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.command.*;
@@ -13,8 +14,10 @@ import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.guns.GunArmPoses;
+import com.flansmodultimate.common.guns.HeldItemPresentation;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.sync.ContentFingerprint;
+import com.flansmodultimate.common.teams.TeamsCombatants;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.*;
@@ -169,6 +172,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event)
     {
+        com.flansmodultimate.common.teams.editor.TeamEditorService.get().start(event.getServer());
         FlansMod.teamsManager.attachServer(event.getServer());
         if (contentReferencesValidated || !ModCommonConfig.get().validateContentReferencesOnWorldLoad())
             return;
@@ -181,6 +185,7 @@ public final class CommonEventHandler
     public static void onServerStopping(ServerStoppingEvent event)
     {
         FlansMod.teamsManager.detachServer();
+        com.flansmodultimate.common.teams.editor.TeamEditorService.get().stop();
         HitboxDebugCommand.clearSession();
         CraterCarver.clear();
         DriveableCollisionBypass.reset();
@@ -261,10 +266,12 @@ public final class CommonEventHandler
             // aiming would come back still aiming until they next raised the sights.
             PlayerData.getInstance(sp).setScoped(false);
             GunArmPoses.syncPlayer(sp);
+            HeldItemPresentation.sendTo(sp, sp);
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
             VehicleCollisionDebugCommand.syncOnLogin(sp);
             HitboxDebugCommand.syncOnLogin(sp);
+            com.flansmodultimate.common.teams.editor.TeamEditorService.get().sync(sp, "", "", "");
             FlansMod.teamsManager.playerLoggedIn(sp);
             applyMaxHealth(sp);
         }
@@ -288,6 +295,8 @@ public final class CommonEventHandler
     {
         if (!(event.getEntity() instanceof ServerPlayer tracker))
             return;
+        if (event.getTarget() instanceof LivingEntity holder)
+            HeldItemPresentation.sendTo(holder, tracker);
         if (event.getTarget() instanceof ServerPlayer target)
             GunArmPoses.sendPlayerState(target, tracker);
         else if (event.getTarget() instanceof Driveable driveable)
@@ -337,7 +346,8 @@ public final class CommonEventHandler
             // A player respawning after death starts at full health, including any health the setting added
             if (!event.isEndConquered())
                 player.setHealth(player.getMaxHealth());
-            FlansMod.teamsManager.respawnPlayer(player, false);
+            // Leaving the End is no death, so respawn rules have nothing to decide then.
+            FlansMod.teamsManager.respawnPlayer(player, false, event.isEndConquered() ? null : ITeamsRespawnRule.Reason.DIED);
         }
     }
 
@@ -387,6 +397,8 @@ public final class CommonEventHandler
         if (living.level().isClientSide)
             return;
 
+        HeldItemPresentation.tick(living);
+
         if (living instanceof Player || living instanceof Mob)
         {
             CustomArmorItem.handleSpecialEffects(living);
@@ -412,12 +424,23 @@ public final class CommonEventHandler
     {
         boolean cancel = entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat;
 
-        if (!entity.level().isClientSide && entity instanceof ServerPlayer player && FlansMod.teamsManager.getCurrentGameType().map(type -> !type.playerAttacked(player, source)).orElse(false))
+        if (!entity.level().isClientSide && isRejectedByTeams(entity, source))
             cancel = true;
 
         if (!cancel && !entity.level().isClientSide && (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponEffects()) && tryShieldBlock(entity, source, amount))
             cancel = true;
         return cancel;
+    }
+
+    /** Whether the running Teams game type spares a player or a combatant this damage, as it spares allies. Server side. */
+    private static boolean isRejectedByTeams(LivingEntity entity, DamageSource source)
+    {
+        return FlansMod.teamsManager.getCurrentGameType().map(type ->
+        {
+            if (entity instanceof ServerPlayer player)
+                return !type.playerAttacked(player, source);
+            return TeamsCombatants.getCombatantTeam(FlansMod.teamsManager, entity) != null && !type.combatantAttacked(entity, source);
+        }).orElse(false);
     }
 
     /**
@@ -582,7 +605,11 @@ public final class CommonEventHandler
         }
         else if (!entity.level().isClientSide)
         {
+            // Read before the death is scored, while the combatant's team still answers for it.
+            boolean combatant = TeamsCombatants.getCombatantTeam(FlansMod.teamsManager, entity) != null;
             FlansMod.teamsManager.entityDied(entity, event.getSource());
+            if (combatant)
+                sendKillMessage(entity, event.getSource());
         }
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
@@ -591,17 +618,30 @@ public final class CommonEventHandler
             GunArmPoses.syncPlayer(player);
     }
 
-    /** Announces a player killed by another player's Flan's weapon to the kill feed. */
-    private static void sendKillMessage(ServerPlayer victim, DamageSource source)
+    /**
+     * Announces to the kill feed a player or Teams combatant killed by another one's Flan's weapon. Combatants are
+     * named as they are displayed, players by their profile name.
+     */
+    private static void sendKillMessage(LivingEntity victim, DamageSource source)
     {
-        if (!ModCommonConfig.enableKillMessages() || !(source.getEntity() instanceof ServerPlayer killer) || killer == victim)
+        if (!ModCommonConfig.enableKillMessages() || !(source.getEntity() instanceof LivingEntity killer) || killer == victim || !isKillFeedFighter(killer))
             return;
         InfoType weapon = findKillingWeapon(source, killer);
         if (weapon == null)
             return;
 
-        PacketHandler.sendToDimension(victim.level().dimension(), new PacketKillMessage(new KillMessageData(source.is(FlanDamageSources.HEADSHOT), weapon.getOriginalShortName(),
-            killer.getGameProfile().getName(), teamColour(killer), victim.getGameProfile().getName(), teamColour(victim))));
+        PacketHandler.sendToDimension(victim.level().dimension(), new PacketKillMessage(
+            new KillMessageData(source.is(FlanDamageSources.HEADSHOT), weapon.getOriginalShortName(), killFeedName(killer), teamColour(killer), killFeedName(victim), teamColour(victim))));
+    }
+
+    private static boolean isKillFeedFighter(LivingEntity entity)
+    {
+        return entity instanceof ServerPlayer || TeamsCombatants.getCombatantTeam(FlansMod.teamsManager, entity) != null;
+    }
+
+    private static String killFeedName(LivingEntity entity)
+    {
+        return entity instanceof ServerPlayer player ? player.getGameProfile().getName() : entity.getName().getString();
     }
 
     /**
@@ -609,7 +649,7 @@ public final class CommonEventHandler
      * melee kills fall back to the weapon the killer is holding.
      */
     @Nullable
-    private static InfoType findKillingWeapon(DamageSource source, ServerPlayer killer)
+    private static InfoType findKillingWeapon(DamageSource source, LivingEntity killer)
     {
         if (source.getDirectEntity() instanceof Bullet bullet && bullet.getFiredShot() != null && bullet.getFiredShot().getFireableGun() != null)
             return bullet.getFiredShot().getFireableGun().getType();
@@ -622,9 +662,9 @@ public final class CommonEventHandler
         return killer.getMainHandItem().getItem() instanceof GunItem gunItem ? gunItem.getConfigType() : null;
     }
 
-    private static ChatFormatting teamColour(ServerPlayer player)
+    private static ChatFormatting teamColour(LivingEntity entity)
     {
-        Team team = PlayerData.getInstance(player).getTeam();
+        Team team = TeamsCombatants.getTeam(entity);
         return team == null ? ChatFormatting.WHITE : team.getTextColour();
     }
 }

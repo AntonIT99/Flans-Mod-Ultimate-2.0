@@ -1,13 +1,10 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.FlansModParticles;
-
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
@@ -40,11 +37,18 @@ public class FmTracerParticle extends ParticleBase
     }
 
     @Override
+    @NotNull
+    public Particle scale(float factor)
+    {
+        return applyScale(factor);
+    }
+
+    @Override
     protected void updateVisuals()
     {
         float scale = 0.6F - age * 0.1F;
         quadSize = scaleMultiplier * Math.max(scale, 0.0F);
-        
+
         float gb = Mth.clamp(1.0F - age * 0.2F, 0.0F, 1.0F);
         rCol = 1.0F;
         gCol = gb;

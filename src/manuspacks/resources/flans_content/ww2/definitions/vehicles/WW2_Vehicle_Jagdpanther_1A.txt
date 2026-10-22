@@ -9,6 +9,9 @@ Icon Icon_WW2_Vehicle_Jagdpanther_1A
 Texture Skin_WW2_Vehicle_Jagdpanther_1A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Panzergrau Icon_WW2_Vehicle_Jagdpanther_1A skin_ww2_vehicle_jagdpanther_1a_panzergrau gray 8
+
 // Recipe and Inventory
 FuelTankSize 2500
 CargoSlots 0

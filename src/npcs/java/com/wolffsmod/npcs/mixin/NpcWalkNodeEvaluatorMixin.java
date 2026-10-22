@@ -1,7 +1,9 @@
 package com.wolffsmod.npcs.mixin;
 
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import noppes.npcs.ai.NpcWalkNodeEvaluator;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -9,17 +11,26 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
 /**
- * Custom NPCs' path node evaluator, taught the NPC's terrain profile: a ground vehicle does not enter water deeper than it
- * wades, and a watercraft accepts nothing but water deep enough to float in.
+ * Custom NPCs' path node evaluator.
+ *
+ * <ul>
+ * <li>Terrain profile: a ground vehicle does not enter water deeper than it wades, and a watercraft accepts nothing but
+ * water deep enough to float in.</li>
+ * <li>Driveable paths: an NPC at the wheel of a Flan's vehicle or mecha searches a path as wide and high as the driveable,
+ * rather than one it would fit along on foot.</li>
+ * </ul>
  */
 @Mixin(value = NpcWalkNodeEvaluator.class, remap = false)
 @SuppressWarnings({"UnresolvedMixinReference", "AddedMixinMembersNamePattern"})
 public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator
 {
+    // Terrain profile
+
     @Inject(method = "getCachedBlockType", at = @At("RETURN"), cancellable = true)
     @SuppressWarnings("ConstantValue") // The pathfinding context is null between searches, whatever its declaration promises.
     private void wolffsmodnpcsTerrainProfile(Mob mob, int x, int y, int z, CallbackInfoReturnable<PathType> callback)
@@ -38,5 +49,19 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator
     private boolean wolffsmodnpcsOutsideSearch()
     {
         return currentContext == null;
+    }
+
+    // Driveable paths
+
+    @Override
+    public void prepare(@NotNull PathNavigationRegion region, @NotNull Mob mob)
+    {
+        super.prepare(region, mob);
+        NpcDrivers.pathSize(mob).ifPresent(size ->
+        {
+            entityWidth = Math.max(entityWidth, size.width());
+            entityDepth = Math.max(entityDepth, size.width());
+            entityHeight = Math.max(entityHeight, size.height());
+        });
     }
 }

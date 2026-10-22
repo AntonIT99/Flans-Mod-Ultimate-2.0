@@ -2,13 +2,17 @@ package com.flansmodultimate.client.render.preview;
 
 import com.flansmodultimate.api.MountAim;
 import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.driveables.visual.*;
 import com.flansmodultimate.common.types.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 
 import java.util.List;
 
@@ -57,6 +61,11 @@ public final class PosedModelVisual implements VehicleVisual, PlaneVisual, Mecha
     private int recoilTicksRemaining;
     private float recoilProgress;
     private float[] barrelRecoil = new float[0];
+    /** The entity drawn, whose part body decides what is drawn broken off or scorched; null for a plain preview. */
+    @Nullable
+    private Entity owner;
+    @Nullable
+    private PartBody body;
 
     /**
      * Takes the owner's pose for the given game tick. Calls for a tick already seen change nothing, so this is safe to
@@ -224,6 +233,50 @@ public final class PosedModelVisual implements VehicleVisual, PlaneVisual, Mecha
     public boolean isPartIntact(@Nullable EnumDriveablePart part)
     {
         return true;
+    }
+
+    /** Takes the entity drawn and its part body, if it wears one. Render thread, each frame. */
+    public void setOwner(@Nullable Entity entity, @Nullable PartBody partBody)
+    {
+        owner = entity;
+        body = partBody;
+    }
+
+    /** @return whether anything of the entity is drawn broken off or scorched, which a static or distant model cannot show */
+    public static boolean isMarked(Entity entity, @Nullable PartBody partBody)
+    {
+        if (partBody == null)
+            return false;
+        for (DriveablePart part : partBody.enabledParts())
+        {
+            if (!partBody.isDrawn(part.getType()) || DriveableDamageEffects.isCosmeticallyDetached(entity, part.getType()) || tint(part) < 0.999F)
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isPartDrawn(@Nullable EnumDriveablePart part)
+    {
+        if (part == null)
+            return true;
+        if (owner != null && DriveableDamageEffects.isCosmeticallyDetached(owner, part))
+            return false;
+        return body == null || body.isDrawn(part);
+    }
+
+    @Override
+    public float getPartTint(@Nullable EnumDriveablePart part)
+    {
+        DriveablePart state = body == null ? null : body.partState(part);
+        return state == null ? 1F : tint(state);
+    }
+
+    private static float tint(DriveablePart state)
+    {
+        if (state.getMaxHealth() <= 0F)
+            return 1F;
+        return DamageVisualCurves.tint(state.getHealth() / state.getMaxHealth(), state.isOnFire(), -1);
     }
 
     @Nullable

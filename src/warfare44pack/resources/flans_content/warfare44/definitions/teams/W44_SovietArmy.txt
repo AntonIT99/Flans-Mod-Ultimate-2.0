@@ -24,3 +24,8 @@ AddClass W44_SovietArmyScout
 AddClass W44_SovietArmySquadLeader
 AddClass W44_SovietArmyTankCrew
 AddClass W44_SovietArmyPilot
+
+// Specialist weapon choices
+AddClass W44_SovietArmyRiflemanSKS
+AddClass W44_SovietArmyMachineGunnerDT28
+AddClass W44_SovietArmyFieldMedic

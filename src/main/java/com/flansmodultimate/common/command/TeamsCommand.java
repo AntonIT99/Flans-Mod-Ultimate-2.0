@@ -53,11 +53,13 @@ public final class TeamsCommand
     {
         com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(TEAMS).executes(TeamsCommand::help).then(Commands.literal("help").executes(TeamsCommand::help))
             .then(Commands.literal("join")
-                .then(Commands.argument("team", StringArgumentType.word()).suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().map(Team::getShortName), builder))
+                .then(Commands.argument("team", StringArgumentType.string())
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().map(Team::getShortName).map(StringArgumentType::escapeIfRequired), builder))
                     .executes(TeamsCommand::joinTeam)))
             .then(Commands.literal(CLASS)
-                .then(Commands.argument(CLASS, StringArgumentType.word())
-                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(PlayerClass.values().stream().map(PlayerClass::getShortName), builder)).executes(TeamsCommand::selectClass)))
+                .then(Commands.argument(CLASS, StringArgumentType.string())
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(PlayerClass.values().stream().map(PlayerClass::getShortName).map(StringArgumentType::escapeIfRequired), builder))
+                    .executes(TeamsCommand::selectClass)))
             .then(Commands.literal(SCORE).executes(TeamsCommand::score))
             .then(Commands.literal("motd").executes(TeamsCommand::showMotd)
                 .then(Commands.argument("text", StringArgumentType.greedyString()).requires(source -> source.hasPermission(2)).executes(TeamsCommand::setMotd)))
@@ -106,6 +108,7 @@ public final class TeamsCommand
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getShortName), builder)).executes(TeamsCommand::giveRewardBox))))
             .then(addMapAdminCommands(adminCommands()));
         addLabjacCommands(root);
+        TeamsEditorCommand.addTo(root);
 
         com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> node = dispatcher.register(root);
         // The Labjac fork keeps rank commands under /ranks; the same handlers serve both spellings.
@@ -198,7 +201,10 @@ public final class TeamsCommand
                     .then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder))
                         .then(Commands.argument(GAMETYPE, StringArgumentType.word())
                             .suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder)).then(sideArgument(1)))))
-                .then(Commands.literal("remove").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::removeRound))))
+                .then(Commands.literal("remove").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::removeRound)))
+                .then(Commands.literal("attackers")
+                    .then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(Commands.literal("none").executes(context -> setAttackers(context, -1))).then(
+                        Commands.argument(SIDE, IntegerArgumentType.integer(1, TeamsRound.MAX_SIDES)).executes(context -> setAttackers(context, IntegerArgumentType.getInteger(context, SIDE) - 1))))))
             .then(Commands.literal("setvariable")
                 .then(Commands.argument("name", StringArgumentType.word()).then(Commands.argument(VALUE, StringArgumentType.word()).executes(TeamsCommand::setVariable))));
     }
@@ -292,8 +298,8 @@ public final class TeamsCommand
      */
     private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> sideArgument(int index)
     {
-        com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> side = Commands.argument(SIDE + index, StringArgumentType.string())
-            .suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().filter(team -> team != Team.SPECTATORS).map(Team::getShortName), builder));
+        com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> side = Commands.argument(SIDE + index, StringArgumentType.string()).suggests((context,
+            builder) -> SharedSuggestionProvider.suggest(Team.values().stream().filter(team -> team != Team.SPECTATORS).map(Team::getShortName).map(StringArgumentType::escapeIfRequired), builder));
         side.then(Commands.argument(MINUTES, IntegerArgumentType.integer(1, 1440)).then(Commands.argument(SCORE, IntegerArgumentType.integer(1)).executes(TeamsCommand::addRound)));
         if (index < TeamsRound.MAX_SIDES)
             side.then(Commands.literal("vs").then(sideArgument(index + 1)));
@@ -760,10 +766,8 @@ public final class TeamsCommand
         {
             int index = i;
             TeamsRound round = rounds.get(i);
-            context.getSource().sendSuccess(
-                () -> Component
-                    .literal(index + ": " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams() + "] " + round.getTimeLimitMinutes() + "m / " + round.getScoreLimit()),
-                false);
+            context.getSource().sendSuccess(() -> Component.literal(index + ": " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams() + "] " + round.getTimeLimitMinutes()
+                + "m / " + round.getScoreLimit() + (round.getAttackingSide().isPresent() ? ", side " + (round.getAttackingSide().getAsInt() + 1) + " attacks" : "")), false);
         }
         return rounds.size();
     }
@@ -803,6 +807,15 @@ public final class TeamsCommand
         {
             return failure(context, e.getMessage());
         }
+    }
+
+    /** Sets the side that attacks in a round of the rotation, numbered from 1 in the order the round lists its sides. */
+    private static int setAttackers(CommandContext<CommandSourceStack> context, int side)
+    {
+        String refusal = manager().setRoundAttackingSide(IntegerArgumentType.getInteger(context, INDEX), side);
+        if (refusal != null)
+            return failure(context, refusal);
+        return success(context, side < 0 ? "Every side captures in that round" : "Side " + (side + 1) + " attacks in that round; the other sides defend");
     }
 
     private static int removeRound(CommandContext<CommandSourceStack> context)
@@ -846,7 +859,8 @@ public final class TeamsCommand
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
         for (ItemStack stack : List.of(new ItemStack(FlansModItems.opStick.get()), new ItemStack(FlansModItems.flagpoleItem.get(), 16), new ItemStack(FlansModItems.capturePointItem.get(), 5),
-            new ItemStack(FlansModItems.playerSpawnerItem.get(), 16), new ItemStack(FlansModItems.itemSpawnerItem.get(), 16), new ItemStack(FlansModItems.vehicleSpawnerItem.get(), 16)))
+            new ItemStack(FlansModItems.teamBannerItem.get(), 16), new ItemStack(FlansModItems.playerSpawnerItem.get(), 16), new ItemStack(FlansModItems.itemSpawnerItem.get(), 16),
+            new ItemStack(FlansModItems.vehicleSpawnerItem.get(), 16)))
             if (!player.getInventory().add(stack))
                 player.drop(stack, false);
         return success(context, "Teams operator kit added to your inventory");

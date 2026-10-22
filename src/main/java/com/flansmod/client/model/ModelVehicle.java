@@ -405,8 +405,9 @@ public class ModelVehicle extends ModelDriveable
     public void render(DriveableVisual driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
         float alpha, float scale, EnumRenderPass renderPass)
     {
-        if (driveable.isPartIntact(EnumDriveablePart.CORE))
-            super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
+            super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.CORE), green * tint(driveable, EnumDriveablePart.CORE),
+                blue * tint(driveable, EnumDriveablePart.CORE), alpha, scale, renderPass);
 
         float wheelSpin = -state.wheelAngle();
         float steering = -state.steeringAngle() * 3F * Mth.DEG_TO_RAD;
@@ -422,36 +423,30 @@ public class ModelVehicle extends ModelDriveable
             renderPass);
         renderWheelIfIntact(driveable, EnumDriveablePart.BACK_WHEEL, backWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable.isPartIntact(trackPartForDrawnSide(driveable.getConfigType(), true, true)))
-        {
-            renderPart(leftTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWheel(leftTrackWheelModels, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
-        if (driveable.isPartIntact(trackPartForDrawnSide(driveable.getConfigType(), false, true)))
-        {
-            renderPart(rightTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWheel(rightTrackWheelModels, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
+        renderTrackSide(driveable, true, leftTrackModel, leftTrackWheelModels, wheelSpin, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderTrackSide(driveable, false, rightTrackModel, rightTrackWheelModels, wheelSpin, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderTrackFrame(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (driveable.getConfigType() instanceof VehicleType vehicleType)
             renderFancyTracks(driveable, vehicleType, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable.isPartIntact(EnumDriveablePart.CORE))
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
         {
             renderLegs(state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             boolean hugeBoat = driveable.getConfigType() instanceof VehicleType vehicleType && vehicleType.isFloatOnWater() && vehicleType.getWheelStepHeight() == 0F;
             float steeringWheelAngle = state.steeringAngle() * 3F * Mth.DEG_TO_RAD * (hugeBoat ? -1F : 1F);
             renderSteeringWheel(steeringWheelAngle, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
-        if (driveable.isPartIntact(EnumDriveablePart.TRAILER))
-            renderPart(trailerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.TRAILER))
+            renderPart(trailerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.TRAILER), green * tint(driveable, EnumDriveablePart.TRAILER),
+                blue * tint(driveable, EnumDriveablePart.TRAILER), alpha, scale, renderPass);
 
-        if (driveable.isPartIntact(EnumDriveablePart.TURRET))
-            renderTurret(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.HARVESTER))
+        if (driveable.isPartDrawn(EnumDriveablePart.TURRET))
+            renderTurret(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, EnumDriveablePart.TURRET), green * tint(driveable, EnumDriveablePart.TURRET),
+                blue * tint(driveable, EnumDriveablePart.TURRET), alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.HARVESTER))
             renderAround(drillHeadModel, drillHeadOrigin, Axis.XP, state.animationTime() * (24F + 48F * Math.abs(state.throttle())), poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
                 blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.CORE) && driveable.getConfigType() instanceof VehicleType vehicleType)
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE) && driveable.getConfigType() instanceof VehicleType vehicleType)
         {
             renderDoor(doorAnimModel, doorAttach, state.doorTransform(), state.partialTick(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             renderDoor(door2AnimModel, door2Attach, state.door2Transform(), state.partialTick(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -747,17 +742,17 @@ public class ModelVehicle extends ModelDriveable
         animFrameLeft = leftFrame;
         animFrameRight = rightFrame;
         DriveableType type = driveable.getConfigType();
-        if (leftFrame >= 0 && driveable.isPartIntact(trackPartForDrawnSide(type, true, true)))
+        if (leftFrame >= 0 && driveable.isPartDrawn(trackPartForDrawnSide(type, true, true)))
             renderPart(leftAnimTrackModel[leftFrame], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (rightFrame >= 0 && driveable.isPartIntact(trackPartForDrawnSide(type, false, true)))
+        if (rightFrame >= 0 && driveable.isPartDrawn(trackPartForDrawnSide(type, false, true)))
             renderPart(rightAnimTrackModel[rightFrame], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         int legacyFrameLeft = Mth.clamp((int) Math.floor(leftPhase * 3F), 0, 2);
         int legacyFrameRight = Mth.clamp((int) Math.floor(rightPhase * 3F), 0, 2);
-        if (driveable.isPartIntact(trackPartForDrawnSide(type, true, true)))
+        if (driveable.isPartDrawn(trackPartForDrawnSide(type, true, true)))
             renderPart(selectFrame(legacyFrameLeft, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
                 scale, renderPass);
-        if (driveable.isPartIntact(trackPartForDrawnSide(type, false, true)))
+        if (driveable.isPartDrawn(trackPartForDrawnSide(type, false, true)))
             renderPart(selectFrame(legacyFrameRight, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
                 scale, renderPass);
     }
@@ -769,10 +764,10 @@ public class ModelVehicle extends ModelDriveable
         // A live vehicle carries eased per-link angles that FixTrackLink steers
         // without them the links fall back to the static pose.
         TrackLinkAnimation links = state.trackLinks() != null && state.trackLinks().isActive() ? state.trackLinks() : null;
-        if (driveable.isPartIntact(trackPartForDrawnSide(type, true, false)))
+        if (driveable.isPartDrawn(trackPartForDrawnSide(type, true, false)))
             renderFancyTrackPath(type, leftTrackPath, state.leftTrackProgress() * leftTrackPath.length(), links == null ? null : links.angles(true), poseStack, vertexConsumer, packedLight,
                 packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(trackPartForDrawnSide(type, false, false)))
+        if (driveable.isPartDrawn(trackPartForDrawnSide(type, false, false)))
             renderFancyTrackPath(type, rightTrackPath, state.rightTrackProgress() * rightTrackPath.length(), links == null ? null : links.angles(false), poseStack, vertexConsumer, packedLight,
                 packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
@@ -876,11 +871,26 @@ public class ModelVehicle extends ModelDriveable
         renderWithRotation(parts, 0F, steering, spin, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
+    /** One side's static track and its road wheels, while that side's track is drawn, in its own scorch. */
+    // Mirrors the model render call shape: the side, its geometry, pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
+    private void renderTrackSide(DriveableVisual driveable, boolean left, ModelRendererTurbo[] track, ModelRendererTurbo[] trackWheels, float wheelSpin, PoseStack poseStack,
+        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        EnumDriveablePart part = trackPartForDrawnSide(driveable.getConfigType(), left, true);
+        if (!driveable.isPartDrawn(part))
+            return;
+        float shade = tint(driveable, part);
+        renderPart(track, poseStack, vertexConsumer, packedLight, packedOverlay, red * shade, green * shade, blue * shade, alpha, scale, renderPass);
+        renderWheel(trackWheels, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red * shade, green * shade, blue * shade, alpha, scale, renderPass);
+    }
+
     private void renderWheelIfIntact(DriveableVisual driveable, EnumDriveablePart part, ModelRendererTurbo[] models, float spin, float steering, PoseStack poseStack, VertexConsumer vertexConsumer,
         int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        if (driveable.isPartIntact(part))
-            renderWheel(models, spin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (driveable.isPartDrawn(part))
+            renderWheel(models, spin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red * tint(driveable, part), green * tint(driveable, part), blue * tint(driveable, part), alpha,
+                scale, renderPass);
     }
 
     private void renderWithRotation(ModelRendererTurbo[][] matrix, float x, float y, float z, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,

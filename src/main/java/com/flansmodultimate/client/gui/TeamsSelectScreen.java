@@ -1,7 +1,9 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
+import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.client.teams.TeamsClientState;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketTeamsState;
 import com.flansmodultimate.network.server.teams.PacketTeamsAction;
@@ -20,6 +22,10 @@ import java.util.List;
 /** Modern recreation of the legacy team and class selection window. */
 public final class TeamsSelectScreen extends Screen
 {
+    /** Box of the team flag drawn inside a team button. */
+    private static final int TEAM_FLAG_WIDTH = 24;
+    private static final int TEAM_FLAG_HEIGHT = 16;
+
     private final boolean classMenu;
     private int panelHeight;
     private int page;
@@ -126,6 +132,20 @@ public final class TeamsSelectScreen extends Screen
 
         if (classMenu)
             renderLoadouts(graphics, state, left, top, mouseX, mouseY);
+        else
+            renderTeamFlags(graphics, state, left, top);
+    }
+
+    /** The flag of each team at the left end of its button. */
+    private void renderTeamFlags(GuiGraphics graphics, PacketTeamsState state, int left, int top)
+    {
+        List<PacketTeamsState.TeamChoice> choices = state.getTeamChoices();
+        for (int i = 0; i < visibleRows && firstRow + i < choices.size(); i++)
+        {
+            TeamFlagTextures.FlagTexture flag = TeamFlagTextures.get(Team.getTeam(choices.get(firstRow + i).id()));
+            if (flag != null)
+                TeamFlagTextures.draw(graphics, flag, left + 14, top + 26 + 24 * i, TEAM_FLAG_WIDTH, TEAM_FLAG_HEIGHT);
+        }
     }
 
     private void renderLoadouts(GuiGraphics graphics, PacketTeamsState state, int left, int top, int mouseX, int mouseY)

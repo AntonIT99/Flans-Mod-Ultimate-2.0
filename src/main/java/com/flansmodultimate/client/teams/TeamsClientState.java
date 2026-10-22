@@ -71,6 +71,25 @@ public final class TeamsClientState
         return viewerTeam.isPresent() && otherTeam.isPresent() && snapshot.areAllied(viewerTeam.get(), otherTeam.get());
     }
 
+    /**
+     * Whether a team plays on the local player's side in the running Teams round. False between rounds, for a
+     * spectating local player and for a team outside the round.
+     */
+    public static boolean isAllyOfLocalPlayer(String team)
+    {
+        Player viewer = Minecraft.getInstance().player;
+        if (!hasActiveRound() || viewer == null || isTeamsSpectator(viewer))
+            return false;
+        return findTeam(viewer).map(viewerTeam -> snapshot.areAllied(viewerTeam, team)).orElse(false);
+    }
+
+    /** Whether the local player takes part in a running Teams round on a team, rather than watching or waiting. */
+    public static boolean isLocalPlayerPlaying()
+    {
+        Player viewer = Minecraft.getInstance().player;
+        return hasActiveRound() && viewer != null && !isTeamsSpectator(viewer) && findTeam(viewer).isPresent();
+    }
+
     private static boolean hasActiveRound()
     {
         return snapshot != null && snapshot.isEnabled() && snapshot.isRoundRunning();

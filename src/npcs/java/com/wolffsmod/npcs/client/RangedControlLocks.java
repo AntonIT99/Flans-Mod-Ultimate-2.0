@@ -16,7 +16,7 @@ public record RangedControlLocks(Map<Integer, Reason> textFields, Map<Integer, R
 
     public enum Reason
     {
-        WEAPON_STATS, AMMUNITION, FIRING_SOUND, TYPE_PROPERTIES, ITEM_WEAPON, ITEM_ARMOR
+        MODEL_WEAPON_STATS, AMMUNITION, FIRING_SOUND, TYPE_PROPERTIES, ITEM_WEAPON, ITEM_ARMOR, NATIVE_THROW_SPEED
     }
 
     public RangedControlLocks
@@ -108,6 +108,6 @@ public record RangedControlLocks(Map<Integer, Reason> textFields, Map<Integer, R
     private static void lockSource(Map<Integer, Reason> fields, int id, Source source)
     {
         if (source != Source.CALLER)
-            fields.put(id, source == Source.WEAPON ? Reason.WEAPON_STATS : Reason.AMMUNITION);
+            fields.put(id, source == Source.WEAPON ? Reason.MODEL_WEAPON_STATS : Reason.AMMUNITION);
     }
 }

@@ -68,6 +68,8 @@ public class PacketDriveableCrashFireball implements IClientPacket
             return;
         float size = Math.min(radius, MAX_RADIUS);
         RandomSource random = level.random;
+        // The ground where it went in stays burnt.
+        ClientHooks.RENDER.spawnScorchMark(position, size * 0.6F);
 
         // Several emitters across the wreck rather than one at its centre: a
         // single emitter always looks the same size however big the crash was.

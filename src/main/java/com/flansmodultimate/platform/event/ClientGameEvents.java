@@ -1,7 +1,7 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.debug.RenderDiagnosticsCommand;
+import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.neoforged.api.distmarker.Dist;
@@ -31,6 +31,8 @@ public final class ClientGameEvents
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event)
     {
         RenderDiagnosticsCommand.register(event.getDispatcher());
+        AimOffsetDebugCommand.register(event.getDispatcher());
+        ReloadModelsCommand.register(event.getDispatcher());
     }
 
     @SubscribeEvent

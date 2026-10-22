@@ -5,7 +5,12 @@
  */
 package com.flansmodultimate.api;
 
+import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.guns.EquipmentSupport;
+import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.world.InteractionHand;
@@ -13,7 +18,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 /** Equipment inspection and native Flan weapon actions for addon-controlled living entities. */
 @ApiStatus.Experimental
@@ -26,6 +33,22 @@ public final class FlansEquipment
     public static Optional<EquippedWeaponProperties> getWeaponProperties(ItemStack weapon, ItemStack ammunition)
     {
         return EquipmentSupport.weapon(weapon, ammunition);
+    }
+
+    /**
+     * @param ammunition
+     *            ammunition to measure the magazine with when the gun holds none; may be empty
+     * @return the sight magnification and magazine capacity of a Flan gun, or empty for any other item; either side
+     */
+    public static Optional<WeaponTraits> getWeaponTraits(ItemStack weapon, ItemStack ammunition)
+    {
+        return EquipmentSupport.traits(weapon, ammunition);
+    }
+
+    /** @return the shield of a held Flan weapon, or empty for an item that is not a Flan shield; either side */
+    public static Optional<EquippedShieldProperties> getShieldProperties(ItemStack weapon)
+    {
+        return EquipmentSupport.shield(weapon);
     }
 
     /** @return additional Flan armor properties, or empty for another armor item; either side */
@@ -64,6 +87,68 @@ public final class FlansEquipment
     public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
     {
         return EquipmentSupport.acceptsAmmunition(weapon, ammunition);
+    }
+
+    /**
+     * @param gun
+     *            a gun definition, such as one a driveable mounts
+     * @return a new full stack of the ammunition the gun is issued with by default, or empty for another definition or a
+     *         gun with none; either side after content loading
+     */
+    public static Optional<ItemStack> createDefaultAmmunition(IContentType gun)
+    {
+        if (!(gun instanceof GunType gunType))
+            return Optional.empty();
+        return gunType.getDefaultAmmo().flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
+    }
+
+    /**
+     * Opens a parachute over a living entity, as a player's parachute tool does, taking the first parachute tool of the
+     * loaded content packs by short name. The entity drifts down on it until it lands. Server thread.
+     *
+     * @return whether the parachute opened; false without a parachute tool, on a client, or without room above the entity
+     */
+    public static boolean deployParachute(LivingEntity rider)
+    {
+        if (rider.level().isClientSide)
+            return false;
+        Optional<ToolType> tool = InfoType.getInfoTypes().values().stream().filter(ToolType.class::isInstance).map(ToolType.class::cast).filter(ToolType::isParachute)
+            .min(Comparator.comparing(ToolType::getShortName));
+        return tool.map(type -> Parachute.spawnAndMount(rider.level(), rider, type) != null).orElse(false);
+    }
+
+    /**
+     * Ammunition for a gun someone holds, as a supply bag would hand it out.
+     *
+     * @param weapon
+     *            a Flan gun stack
+     * @return a new full stack of the gun's default ammunition, or empty for another item or a gun with none; either side
+     */
+    public static Optional<ItemStack> createDefaultAmmunition(ItemStack weapon)
+    {
+        return weapon.getItem() instanceof com.flansmodultimate.common.item.GunItem gun ? createDefaultAmmunition(gun.getConfigType()) : Optional.empty();
+    }
+
+    /** @return what a Flan tool does when used, or empty for another item; either side */
+    public static Optional<ToolProperties> getToolProperties(ItemStack tool)
+    {
+        if (!(tool.getItem() instanceof com.flansmodultimate.common.item.ToolItem item))
+            return Optional.empty();
+        ToolType type = item.getConfigType();
+        return Optional.of(new ToolProperties(type.isHealPlayers(), type.isHealDriveables(), type.getHealAmount(), type.isParachute()));
+    }
+
+    /**
+     * How much armour a gun's round goes through, the measure anti-tank weapons are told apart by.
+     *
+     * @param ammunition
+     *            ammunition to measure with when the gun holds none; may be empty
+     * @return the round's penetration in millimetres of armour at 100 metres, 0 for a round without a stated
+     *         penetration, or empty for an item that is no Flan gun; either side
+     */
+    public static OptionalDouble getArmorPenetration(ItemStack weapon, ItemStack ammunition)
+    {
+        return EquipmentSupport.armorPenetration(weapon, ammunition);
     }
 
     /** @return a detached copy of the first usable loaded magazine, or empty; either side, without consumption */
@@ -170,6 +255,34 @@ public final class FlansEquipment
      */
     public static boolean fire(LivingEntity holder, InteractionHand hand, Vec3 origin, Vec3 direction, boolean sounds, boolean particles)
     {
-        return EquipmentSupport.fire(holder, hand, origin, direction, sounds, particles);
+        return EquipmentSupport.fire(holder, hand, origin, direction, sounds, particles, WeaponOverrides.NONE);
+    }
+
+    /**
+     * Fires one loaded round like {@link #fire(LivingEntity, InteractionHand, Vec3, Vec3, boolean, boolean)}, with some of the
+     * gun's own statistics replaced by the caller's. Throwable guns ignore the overrides. Server thread only.
+     *
+     * @param overrides
+     *            statistics that replace the gun's own; {@link WeaponOverrides#NONE} fires it unchanged
+     * @return whether an attack launched; dry or disabled weapons return false
+     */
+    public static boolean fire(LivingEntity holder, InteractionHand hand, Vec3 origin, Vec3 direction, boolean sounds, boolean particles, WeaponOverrides overrides)
+    {
+        return EquipmentSupport.fire(holder, hand, origin, direction, sounds, particles, overrides);
+    }
+
+    /**
+     * Prepares a throwable Flan gun from any inventory slot, using its native damage, velocity, spread and recoverable stack.
+     * Server thread only. The returned shot neither consumes nor equips the item; the caller must consume one after a successful launch.
+     *
+     * @param holder
+     *            thrower and damage owner
+     * @param weapon
+     *            throwable gun stack, copied as a single weapon for the projectile
+     * @return resolved throw with its flight physics, or empty for an unusable weapon or a nonserver caller
+     */
+    public static Optional<ProjectileShot> prepareThrow(LivingEntity holder, ItemStack weapon)
+    {
+        return EquipmentSupport.prepareThrow(holder, weapon);
     }
 }
