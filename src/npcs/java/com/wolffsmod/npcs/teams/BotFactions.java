@@ -68,6 +68,12 @@ public final class BotFactions
         return ids;
     }
 
+    /** Whether a faction name is that of a team's faction in Teams rounds, which only rounds may use. */
+    public static boolean isRoundFaction(String name)
+    {
+        return name.regionMatches(true, 0, NAME_PREFIX, 0, NAME_PREFIX.length());
+    }
+
     /** Forgets the factions of a round that ended; they keep their saved names for the next one. */
     public static void tearDown()
     {
