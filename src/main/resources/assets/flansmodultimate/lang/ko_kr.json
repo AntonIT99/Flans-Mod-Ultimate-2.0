@@ -23,6 +23,8 @@
   "death.attack.shootable": "%1$s이(가) 총에 맞았습니다",
   "death.attack.shootable.player": "%1$s이(가) %2$s에게 총에 맞았습니다",
   "death.flansmodultimate.distance": "%1$s (%2$s m 거리에서)",
+  "disconnect.flansmodultimate.content_mismatch": "클라이언트에 서버가 요구하는 Flan's 콘텐츠가 없거나 호환되지 않습니다. 서버와 동일한 콘텐츠 팩과 버전을 설치하고 Minecraft를 다시 시작한 후 접속하세요. 누락된 등록 항목은 logs/latest.log에서 확인하세요.",
+  "disconnect.flansmodultimate.registry_mismatch": "서버의 모드 또는 등록 데이터가 클라이언트와 일치하지 않습니다. 일치하는 모드와 콘텐츠 팩을 설치하고 Minecraft를 다시 시작한 후 접속하세요. 자세한 내용은 logs/latest.log에서 확인하세요.",
   "enchantment.flansmodultimate.duelist": "결투가",
   "enchantment.flansmodultimate.juggernaut": "저거너트",
   "enchantment.flansmodultimate.lumberjack": "벌목꾼",

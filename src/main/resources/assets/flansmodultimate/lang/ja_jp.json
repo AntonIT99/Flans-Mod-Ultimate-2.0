@@ -23,6 +23,8 @@
   "death.attack.shootable": "%1$s は撃たれた",
   "death.attack.shootable.player": "%1$s は %2$s に撃たれた",
   "death.flansmodultimate.distance": "%1$s（%2$s m先から）",
+  "disconnect.flansmodultimate.content_mismatch": "サーバーが必要とする Flan's のコンテンツがクライアントにないか、互換性がありません。サーバーと同じコンテンツパックとバージョンを導入し、Minecraft を再起動して再接続してください。不足する登録情報は logs/latest.log を確認してください。",
+  "disconnect.flansmodultimate.registry_mismatch": "サーバーの MOD または登録情報がクライアントと一致しません。同じ MOD とコンテンツパックを導入し、Minecraft を再起動して再接続してください。詳細は logs/latest.log を確認してください。",
   "enchantment.flansmodultimate.duelist": "デュエリスト",
   "enchantment.flansmodultimate.juggernaut": "ジャガーノート",
   "enchantment.flansmodultimate.lumberjack": "木こり",

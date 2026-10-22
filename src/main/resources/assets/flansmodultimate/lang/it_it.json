@@ -23,6 +23,8 @@
   "death.attack.shootable": "%1$s è stato colpito",
   "death.attack.shootable.player": "%1$s è stato colpito da %2$s",
   "death.flansmodultimate.distance": "%1$s da %2$s m di distanza",
+  "disconnect.flansmodultimate.content_mismatch": "Alcuni contenuti di Flan's richiesti dal server sono assenti o incompatibili sul client. Installa gli stessi pacchetti e versioni del server, riavvia Minecraft e riconnettiti. Le voci mancanti sono in logs/latest.log.",
+  "disconnect.flansmodultimate.registry_mismatch": "Le mod o i dati di registro del server non corrispondono al client. Installa le stesse mod e pacchetti, riavvia Minecraft e riconnettiti. Consulta logs/latest.log.",
   "enchantment.flansmodultimate.duelist": "Duellante",
   "enchantment.flansmodultimate.juggernaut": "Juggernaut",
   "enchantment.flansmodultimate.lumberjack": "Boscaiolo",

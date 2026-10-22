@@ -23,6 +23,8 @@
   "death.attack.shootable": "%1$s 被射杀了",
   "death.attack.shootable.player": "%1$s 被 %2$s 射杀了",
   "death.flansmodultimate.distance": "%1$s（距离 %2$s 米）",
+  "disconnect.flansmodultimate.content_mismatch": "客户端缺少服务器所需的 Flan's 内容，或内容不兼容。请安装与服务器相同的内容包和版本，重启 Minecraft 后重新连接。缺失的注册表条目请查看 logs/latest.log。",
+  "disconnect.flansmodultimate.registry_mismatch": "服务器的模组或注册表数据与客户端不匹配。请安装匹配的模组和内容包，重启 Minecraft 后重新连接。详情请查看 logs/latest.log。",
   "enchantment.flansmodultimate.duelist": "决斗者",
   "enchantment.flansmodultimate.juggernaut": "重装巨兽",
   "enchantment.flansmodultimate.lumberjack": "伐木工",

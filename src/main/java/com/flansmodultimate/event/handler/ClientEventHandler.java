@@ -32,6 +32,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.driveable.PacketDriveableDamage;
 import com.flansmodultimate.network.server.driveable.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
+import com.flansmodultimate.platform.client.ContentMismatchScreens;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -89,10 +90,13 @@ public final class ClientEventHandler
         event.setFOV(fov);
     }
 
-    /** In Conquest and Assault the dead choose where to come back on the deployment map, not on the death screen. */
+    /** Uses a safe disconnect screen for content mismatches and the deployment screen for Conquest/Assault deaths. */
     @SubscribeEvent
     public static void onScreenOpening(ScreenEvent.Opening event)
     {
+        Screen safeScreen = ContentMismatchScreens.safeScreen(event.getNewScreen());
+        if (safeScreen != null && safeScreen != event.getNewScreen())
+            event.setNewScreen(safeScreen);
         if (event.getNewScreen() instanceof DeathScreen && TeamsClientState.usesDeployment())
             event.setNewScreen(new TeamsDeployScreen());
     }
