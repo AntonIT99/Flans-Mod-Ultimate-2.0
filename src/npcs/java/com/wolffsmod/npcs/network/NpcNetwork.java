@@ -30,6 +30,8 @@ public final class NpcNetwork
             () -> com.wolffsmod.npcs.client.NpcClientPackets::botEditor);
         NpcNetworkPlatform.toClient("bot_waypoints", BotWaypointsPacket.class, BotWaypointsPacket::write, BotWaypointsPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::waypoints);
         NpcNetworkPlatform.toServer("crew_action", CrewActionPacket.class, CrewActionPacket::write, CrewActionPacket::read, CrewActionPacket::handle);
+        NpcNetworkPlatform.bidirectional("npc_preset", NpcPresetPacket.class, NpcPresetPacket::write, NpcPresetPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::presetState,
+            NpcPresetPacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -38,6 +40,16 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(ServerControlPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, NpcPresetPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(NpcPresetPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }
