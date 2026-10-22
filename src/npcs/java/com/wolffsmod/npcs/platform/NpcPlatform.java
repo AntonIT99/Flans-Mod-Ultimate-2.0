@@ -103,6 +103,14 @@ public final class NpcPlatform
         return item.getEnchantmentLevel(Enchantments.KNOCKBACK);
     }
 
+    /** Attacking enchantments come from armor and the striking weapon, never from the idle hand as well. */
+    public static void meleePostDamageEffects(LivingEntity holder, Entity target, ItemStack weapon)
+    {
+        for (ItemStack armor : holder.getArmorSlots())
+            armor.getAllEnchantments().forEach((enchantment, level) -> enchantment.doPostAttack(holder, target, level));
+        weapon.getAllEnchantments().forEach((enchantment, level) -> enchantment.doPostAttack(holder, target, level));
+    }
+
     /** Whether the item's enchantments have the effect but only the real target decides its value; never on 1.20.1. */
     // Part of the cross-version platform signature; 1.21 inspects the enchantments' effects.
     @SuppressWarnings({"java:S1172", "unused", "SameReturnValue"})

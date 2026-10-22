@@ -4,6 +4,7 @@ import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
 import noppes.npcs.entity.data.DataStats;
@@ -88,6 +89,23 @@ class NpcEquipmentPropertiesTest
         combat.setCustom(EquipmentProperty.MELEE_EFFECT, true);
         assertFalse(NpcEquipment.itemMelee(armed));
         assertTrue(NpcEquipment.itemMelee(armed, EquipmentProperty.MELEE_REACH));
+    }
+
+    @Test
+    void anOffHandMeleeWeaponChoosesMeleeInsteadOfTheProjectileSlotOnlyWhenOptedIn()
+    {
+        EntityNPCInterface npc = npc(ItemStack.EMPTY, new ItemStack(Items.IRON_SWORD));
+        npc.inventory = mock(DataInventory.class);
+        IItemStack projectile = mock(IItemStack.class);
+        when(projectile.getMCItemStack()).thenReturn(new ItemStack(Items.ARROW));
+        when(npc.inventory.getProjectile()).thenReturn(projectile);
+        assertSame(projectile, NpcEquipment.combatProjectile(npc));
+        options.set(Feature.MELEE_DUAL_WIELD, true);
+        assertTrue(NpcEquipment.weaponAuthority(npc));
+        assertFalse(NpcEquipment.fightsAtRange(npc));
+        assertNull(NpcEquipment.combatProjectile(npc));
+        options.set(Feature.ITEM_WEAPONS, false);
+        assertSame(projectile, NpcEquipment.combatProjectile(npc));
     }
 
     @Test

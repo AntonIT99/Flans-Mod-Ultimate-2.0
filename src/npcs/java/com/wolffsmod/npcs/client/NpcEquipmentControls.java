@@ -44,6 +44,7 @@ public final class NpcEquipmentControls
         if (gui instanceof SubGuiNpcMeleeProperties ? NpcEquipment.meleeAuthority(npc) : NpcEquipment.weaponAuthority(npc))
             weapon(gui, npc, readouts, buttons, shown);
         release(npc, gui, readouts, buttons);
+        nativeThrowSpeed(gui, npc, readouts, fields, labels);
         if (gui instanceof SubGuiNpcProjectiles)
             buttons.keySet().stream().filter(id -> !shown.contains(id)).forEach(id ->
             {
@@ -60,8 +61,8 @@ public final class NpcEquipmentControls
                 field.numbersOnly = false;
                 field.floatsOnly = false;
                 field.setValue(text);
-                fields.put(id, Reason.ITEM_WEAPON);
-                labels.put(id, Reason.ITEM_WEAPON);
+                fields.putIfAbsent(id, Reason.ITEM_WEAPON);
+                labels.putIfAbsent(id, Reason.ITEM_WEAPON);
             }
         });
         labels.putAll(buttons);
@@ -73,6 +74,19 @@ public final class NpcEquipmentControls
         RangedControlLocks locks = new RangedControlLocks(fields, buttons, labels);
         NpcRangedControls.markControls(gui, locks);
         return locks;
+    }
+
+    private static void nativeThrowSpeed(GuiBasic gui, EntityNPCInterface npc, Map<Integer, String> readouts, Map<Integer, Reason> fields, Map<Integer, Reason> labels)
+    {
+        if (!(gui instanceof SubGuiNpcProjectiles) || NpcEquipment.weaponAuthority(npc) || !NpcEquipment.enabled(npc, Feature.NATIVE_THROWABLES))
+            return;
+        var defaults = NpcThrowables.defaultSpeed(npc);
+        if (defaults.isEmpty())
+            return;
+        double speed = NpcEquipment.inherits(npc, EquipmentProperty.NATIVE_THROW_SPEED) ? defaults.getAsDouble() : NpcThrowables.ownSpeed(npc);
+        readouts.put(4, number(speed * 10D));
+        fields.put(4, Reason.NATIVE_THROW_SPEED);
+        labels.put(4, Reason.NATIVE_THROW_SPEED);
     }
 
     /** Leaves out the controls of the statistics the NPC keeps its own value for, so they stay editable. */
@@ -97,10 +111,9 @@ public final class NpcEquipmentControls
 
     private static void weapon(GuiBasic gui, EntityNPCInterface npc, Map<Integer, String> readouts, Map<Integer, Reason> buttons, Set<Integer> shown)
     {
-        ItemStack item = npc.getMainHandItem();
         String nativeValue = I18n.get("wolffsmodnpcs.weapons.item_value");
         if (gui instanceof SubGuiNpcMeleeProperties)
-            melee(gui, npc, item, nativeValue, readouts, buttons);
+            melee(gui, npc, NpcEquipment.meleeWeapon(npc), nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcRangeProperties)
             ranged(gui, npc, NpcEquipment.rangedWeapon(npc), nativeValue, readouts, buttons);
         else if (gui instanceof SubGuiNpcProjectiles)

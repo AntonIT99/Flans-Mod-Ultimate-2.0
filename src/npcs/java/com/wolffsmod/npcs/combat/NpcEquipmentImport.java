@@ -39,6 +39,7 @@ public final class NpcEquipmentImport
     {
         return switch (property.getGroup())
         {
+            case NATIVE_THROWABLE -> nativeThrowSpeed(npc);
             case MELEE -> melee(npc, property);
             case RANGED, FIRING, PROJECTILE -> ranged(npc, property, NpcEquipment.mainRangedWeapon(npc));
             // An off-hand gun's values go to the same ranged values the NPC fires either hand with.
@@ -47,6 +48,15 @@ public final class NpcEquipmentImport
             case ARMOR -> resistance(npc, property);
             case ARMOR_EFFECTS -> armorEffect(npc, property);
         };
+    }
+
+    private static boolean nativeThrowSpeed(EntityNPCInterface npc)
+    {
+        var speed = NpcThrowables.defaultSpeed(npc);
+        if (speed.isEmpty())
+            return false;
+        ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().setNativeThrowSpeed((float) speed.getAsDouble());
+        return true;
     }
 
     private static boolean melee(EntityNPCInterface npc, EquipmentProperty property)

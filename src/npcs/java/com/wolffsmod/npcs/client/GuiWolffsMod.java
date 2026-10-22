@@ -234,6 +234,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     // spotless:off
     private static final Map<Enum<?>, Need> REQUIREMENTS = Map.ofEntries(
         Map.entry(Feature.DUAL_WIELD, Need.on(Feature.ITEM_WEAPONS)),
+        Map.entry(Feature.MELEE_DUAL_WIELD, Need.on(Feature.ITEM_WEAPONS)),
         Map.entry(Feature.CONSUME_AMMO, Need.on(Feature.ITEM_WEAPONS)),
         Map.entry(Feature.ARMOR_POTION_EFFECTS, Need.on(Feature.ITEM_ARMOR)),
         Map.entry(Value.WEAPON_SWITCH, Need.on(Feature.CONSUME_AMMO)),
@@ -301,7 +302,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("turret_aim", Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.MANNED_GUNS_FIRE,
                 Feature.TURRET_LOCKED),
             Tab.named(CrewPage.TAB, Scope.DRIVEABLES)),
-        EQUIPMENT(Section.COMBAT, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.ARMOR_POTION_EFFECTS, Feature.DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
+        EQUIPMENT(Section.COMBAT, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.ARMOR_POTION_EFFECTS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
         FIRING(Section.COMBAT, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES)),
         MODEL_WEAPONS(Section.COMBAT, Scope.MODELS, Tab.of(Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES,
             Feature.EYE_AT_MUZZLE)),
@@ -702,6 +703,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         if (category == Category.EQUIPMENT)
             combat.initEquipmentLink(loaded, below + 6);
+        else if (category == Category.FIRING)
+            combat.initProjectileSlotLink(loaded, below + 6);
         else if (category == Category.MODEL_STATS && enabled(Feature.TYPE_PROPERTIES))
             combat.initPropertiesLink(loaded, below + 6);
         else if (category == Category.MODEL_STATS)

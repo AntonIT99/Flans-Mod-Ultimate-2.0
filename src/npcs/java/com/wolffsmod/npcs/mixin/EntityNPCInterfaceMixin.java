@@ -63,7 +63,8 @@ import java.util.UUID;
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
  * resists knockback while it is a vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
- * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
+ * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.
+ * Optional melee dual wield alternates striking hands on one AI cooldown and sends item break feedback for the attacking hand.</li>
  * <li>Throw wind-ups synchronize a temporary displayed main-hand item and the player's throwing pose without moving inventory.</li>
  * <li>Armor potion effects can be disabled independently of protection. Flan armor invisibility hides the NPC's body on the client, keeping its armor drawn.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
@@ -102,7 +103,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcThrowPresentation,
         NpcEquipmentRangedGoal.Holder,
         NpcTacticState.Holder,
-        NpcCrewHolder
+        NpcCrewHolder,
+        NpcMeleeState.Holder
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -149,6 +151,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     /** The seat guns the crew man, while the NPC is a vehicle. */
     @Unique
     private final CrewGunners wolffsmodnpcsGunners = new CrewGunners();
+    @Unique
+    private final NpcMeleeState wolffsmodnpcsMelee = new NpcMeleeState();
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
@@ -411,6 +415,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcItemAttacks.meleeFeedback(npc);
         if (NpcEquipment.itemMelee(npc))
             callback.setReturnValue(NpcItemAttacks.melee(npc, target));
+    }
+
+    @Override
+    public NpcMeleeState wolffsmodnpcsMeleeState()
+    {
+        return wolffsmodnpcsMelee;
+    }
+
+    @Override
+    public void broadcastBreakEvent(EquipmentSlot slot)
+    {
+        super.broadcastBreakEvent(wolffsmodnpcsMelee.breakSlot(slot));
     }
 
     @Inject(method = {"getDamageAfterArmorAbsorb", "m_21161_"}, at = @At("HEAD"), cancellable = true)

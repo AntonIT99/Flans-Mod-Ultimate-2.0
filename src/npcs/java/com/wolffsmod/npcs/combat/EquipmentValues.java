@@ -34,7 +34,7 @@ public final class EquipmentValues
         return switch (property.mainHand())
         {
             case MELEE_DAMAGE, MELEE_DELAY, MELEE_KNOCKBACK, RANGED_DAMAGE, RANGED_ACCURACY, RANGED_SPEED, RANGED_SHOT_COUNT -> Kind.INTEGER;
-            case MELEE_REACH, ARMOR_PROJECTILE, ARMOR_MELEE, ARMOR_EXPLOSION, ARMOR_KNOCKBACK -> Kind.DECIMAL;
+            case MELEE_REACH, ARMOR_PROJECTILE, ARMOR_MELEE, ARMOR_EXPLOSION, ARMOR_KNOCKBACK, NATIVE_THROW_SPEED -> Kind.DECIMAL;
             case ARMOR_FIRE, ARMOR_BREATHING, ARMOR_FALL -> Kind.FLAG;
             case FIRING_SOUND -> Kind.TEXT;
             default -> Kind.NONE;
@@ -48,6 +48,7 @@ public final class EquipmentValues
         {
             case MELEE_DELAY, RANGED_SHOT_COUNT -> 1D;
             case MELEE_KNOCKBACK -> -10D;
+            case NATIVE_THROW_SPEED -> NpcThrowables.MIN_SPEED;
             case ARMOR_PROJECTILE, ARMOR_MELEE, ARMOR_EXPLOSION, ARMOR_KNOCKBACK -> -100D;
             default -> 0D;
         };
@@ -60,6 +61,7 @@ public final class EquipmentValues
             case MELEE_DELAY -> 1000D;
             case MELEE_KNOCKBACK, RANGED_SHOT_COUNT -> 10D;
             case MELEE_REACH -> 64D;
+            case NATIVE_THROW_SPEED -> NpcThrowables.MAX_SPEED;
             case RANGED_ACCURACY, RANGED_SPEED, ARMOR_PROJECTILE, ARMOR_MELEE, ARMOR_EXPLOSION, ARMOR_KNOCKBACK -> 100D;
             default -> 100_000D;
         };
@@ -96,6 +98,7 @@ public final class EquipmentValues
         return switch (property.getGroup())
         {
             case MELEE -> NpcEquipment.itemMelee(npc, property);
+            case NATIVE_THROWABLE -> NpcEquipment.inherits(npc, property) && NpcThrowables.defaultSpeed(npc).isPresent();
             // The main hand's ranged weapon only fires while an off-hand gun is not the NPC's only one.
             case RANGED, FIRING, PROJECTILE ->
                 NpcEquipment.inherits(npc, property) && NpcEquipment.weaponAuthority(npc) && !NpcEquipment.offHandPrimary(npc) && NpcEquipment.ranged(NpcEquipment.mainRangedWeapon(npc));
@@ -141,6 +144,7 @@ public final class EquipmentValues
             case ARMOR_EXPLOSION -> percent(resistances.explosion);
             case ARMOR_KNOCKBACK -> percent(resistances.knockback);
             case ARMOR_FIRE -> ByteTag.valueOf(npc.stats.immuneToFire);
+            case NATIVE_THROW_SPEED -> FloatTag.valueOf(NpcThrowables.ownSpeed(npc));
             default -> null;
         };
     }
@@ -168,6 +172,7 @@ public final class EquipmentValues
             case ARMOR_EXPLOSION -> resistances.explosion = resistance(clamped);
             case ARMOR_KNOCKBACK -> resistances.knockback = resistance(clamped);
             case ARMOR_FIRE -> npc.stats.immuneToFire = ((NumericTag) clamped).getAsByte() != 0;
+            case NATIVE_THROW_SPEED -> ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat().setNativeThrowSpeed(((NumericTag) clamped).getAsFloat());
             default -> {
                 /* Several fields at once, edited in the standard editor. */ }
         }

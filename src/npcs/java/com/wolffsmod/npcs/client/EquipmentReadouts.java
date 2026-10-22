@@ -4,6 +4,7 @@ import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcEquipmentStats.Resistance;
 import com.wolffsmod.npcs.combat.NpcEquipmentStats.Shot;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.constants.PotionEffectType;
@@ -34,6 +35,10 @@ final class EquipmentReadouts
     {
         return switch (property.getGroup())
         {
+            case NATIVE_THROWABLE -> {
+                var speed = NpcThrowables.defaultSpeed(npc);
+                yield speed.isPresent() ? number(speed.getAsDouble()) : null;
+            }
             case MELEE -> melee(npc, property);
             case RANGED, FIRING, PROJECTILE -> ranged(npc, property, NpcEquipment.mainRangedWeapon(npc));
             case OFF_HAND_GUN -> offHandGun(npc, property);
@@ -69,7 +74,19 @@ final class EquipmentReadouts
     @Nullable
     private static String melee(EntityNPCInterface npc, EquipmentProperty property)
     {
-        ItemStack item = npc.getMainHandItem();
+        ItemStack main = npc.getMainHandItem();
+        ItemStack off = npc.getOffhandItem();
+        if (NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD) && NpcEquipment.meleeWeapon(off))
+        {
+            String offValue = melee(npc, property, off);
+            return NpcEquipment.meleeWeapon(main) ? I18n.get(PREFIX + "both_hands", melee(npc, property, main), offValue) : I18n.get(PREFIX + "off_hand", offValue);
+        }
+        return melee(npc, property, main);
+    }
+
+    @Nullable
+    private static String melee(EntityNPCInterface npc, EquipmentProperty property, ItemStack item)
+    {
         if (item.isEmpty())
             return null;
         return switch (property)

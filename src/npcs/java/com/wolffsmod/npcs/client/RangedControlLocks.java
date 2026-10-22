@@ -16,7 +16,7 @@ public record RangedControlLocks(Map<Integer, Reason> textFields, Map<Integer, R
 
     public enum Reason
     {
-        MODEL_WEAPON_STATS, AMMUNITION, FIRING_SOUND, TYPE_PROPERTIES, ITEM_WEAPON, ITEM_ARMOR
+        MODEL_WEAPON_STATS, AMMUNITION, FIRING_SOUND, TYPE_PROPERTIES, ITEM_WEAPON, ITEM_ARMOR, NATIVE_THROW_SPEED
     }
 
     public RangedControlLocks

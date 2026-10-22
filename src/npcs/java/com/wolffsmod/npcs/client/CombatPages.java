@@ -40,6 +40,7 @@ final class CombatPages
     static final int MAIN_HAND_PAGE_ID = 721;
     static final int ARMOR_PAGE_ID = 723;
     static final int OFF_HAND_PAGE_ID = 724;
+    static final int PROJECTILE_SLOT_PAGE_ID = 725;
     static final int PARTS_PAGE_ID = 722;
     static final int GROUP_ID = 730;
     static final int EQUIPMENT_GROUP_ID = 740;
@@ -106,7 +107,7 @@ final class CombatPages
     /** The page shown instead of a category's switches. */
     enum Page
     {
-        NONE, PROPERTIES, MAIN_HAND, OFF_HAND, ARMOR, PARTS;
+        NONE, PROPERTIES, MAIN_HAND, OFF_HAND, ARMOR, PARTS, PROJECTILE_SLOT;
 
         /** Whether the page lists equipment statistics, those of the weapons in hand or of the worn armor. */
         boolean equipment()
@@ -123,6 +124,7 @@ final class CombatPages
                 case MAIN_HAND -> EquipmentProperty.Slot.MAIN_HAND;
                 case OFF_HAND -> EquipmentProperty.Slot.OFF_HAND;
                 case ARMOR -> EquipmentProperty.Slot.ARMOR;
+                case PROJECTILE_SLOT -> EquipmentProperty.Slot.PROJECTILE_SLOT;
                 default -> null;
             };
         }
@@ -169,6 +171,7 @@ final class CombatPages
             case PARTS -> PREFIX + "parts";
             case ARMOR -> PREFIX + "armor_properties";
             case OFF_HAND -> PREFIX + "off_hand_properties";
+            case PROJECTILE_SLOT -> PREFIX + "projectile_slot_properties";
             default -> PREFIX + "main_hand_properties";
         };
     }
@@ -223,6 +226,12 @@ final class CombatPages
         link(MAIN_HAND_PAGE_ID, "main_hand_properties", loaded, y);
         link(OFF_HAND_PAGE_ID, "off_hand_properties", loaded, y + 21);
         link(ARMOR_PAGE_ID, "armor_properties", loaded, y + 42);
+    }
+
+    /** Native projectile-slot overrides have their own page, independent of weapons in hand. */
+    void initProjectileSlotLink(boolean loaded, int y)
+    {
+        link(PROJECTILE_SLOT_PAGE_ID, "projectile_slot_properties", loaded, y);
     }
 
     /** The button on the Damage & armour page that opens the part hitbox page. */
@@ -769,9 +778,9 @@ final class CombatPages
 
     boolean handles(int id)
     {
-        return id == KNOCKBACK_ID || id == PROPERTIES_PAGE_ID || id == MAIN_HAND_PAGE_ID || id == OFF_HAND_PAGE_ID || id == ARMOR_PAGE_ID || id == PARTS_PAGE_ID || parts.handles(id)
-            || id == IMPORT_ALL_ID || id == EQUIPMENT_IMPORT_ALL_ID || id == INHERIT_ALL_ID || id == EQUIPMENT_INHERIT_ALL_ID || id >= GROUP_ID && id < GROUP_ID + Group.values().length
-            || id >= EQUIPMENT_GROUP_ID && id < EQUIPMENT_GROUP_ID + EquipmentProperty.Group.values().length || equipmentControl(id)
+        return id == KNOCKBACK_ID || id == PROPERTIES_PAGE_ID || id == MAIN_HAND_PAGE_ID || id == OFF_HAND_PAGE_ID || id == ARMOR_PAGE_ID || id == PROJECTILE_SLOT_PAGE_ID || id == PARTS_PAGE_ID
+            || parts.handles(id) || id == IMPORT_ALL_ID || id == EQUIPMENT_IMPORT_ALL_ID || id == INHERIT_ALL_ID || id == EQUIPMENT_INHERIT_ALL_ID
+            || id >= GROUP_ID && id < GROUP_ID + Group.values().length || id >= EQUIPMENT_GROUP_ID && id < EQUIPMENT_GROUP_ID + EquipmentProperty.Group.values().length || equipmentControl(id)
             || id >= PROPERTY_MODE_ID && id < PROPERTY_VALUE_ID + NpcTypeProperty.values().length || engineControl(id);
     }
 
@@ -800,7 +809,15 @@ final class CombatPages
         else if (id >= EQUIPMENT_IMPORT_ID)
             properties.importNow(npc, EquipmentProperty.values()[id - EQUIPMENT_IMPORT_ID]);
         else
-            settings.setCustom(EquipmentProperty.values()[id - EQUIPMENT_MODE_ID], button.getValue() == 1);
+            equipmentMode(settings, EquipmentProperty.values()[id - EQUIPMENT_MODE_ID], button.getValue() == 1);
+    }
+
+    private void equipmentMode(NpcCombatSettings settings, EquipmentProperty property, boolean custom)
+    {
+        // A first native-speed override starts with the exact item default, including fractional tenths such as 0.75.
+        if (property == EquipmentProperty.NATIVE_THROW_SPEED && custom && !Float.isFinite(settings.getNativeThrowSpeed()))
+            NpcEquipmentImport.apply(npc, property);
+        settings.setCustom(property, custom);
     }
 
     /** @return whether the button only moved to another page or tab */
@@ -814,6 +831,8 @@ final class CombatPages
             page = Page.OFF_HAND;
         else if (id == ARMOR_PAGE_ID)
             page = Page.ARMOR;
+        else if (id == PROJECTILE_SLOT_PAGE_ID)
+            page = Page.PROJECTILE_SLOT;
         else if (id == PARTS_PAGE_ID)
             page = Page.PARTS;
         else if (id >= EQUIPMENT_GROUP_ID && id < EQUIPMENT_GROUP_ID + EquipmentProperty.Group.values().length)

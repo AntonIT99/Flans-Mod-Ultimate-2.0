@@ -40,14 +40,31 @@ public final class NpcItemAttacks
     public static final float CROSSBOW_VELOCITY = 3.15F;
 
     /**
-     * Swings the main-hand item. Each melee statistic the NPC keeps its own value for comes from its melee stats instead:
+     * Strikes with the selected hand, alternating only when melee dual wield is enabled. Each custom melee statistic comes from the NPC instead:
      * damage, knockback, and its effect in place of the item's enchantment and hit effects.
      */
     public static boolean melee(EntityNPCInterface npc, Entity target)
     {
         if (npc.level().isClientSide || !target.isAlive())
             return false;
-        ItemStack weapon = npc.getMainHandItem();
+        InteractionHand hand = NpcEquipment.meleeHand(npc);
+        ItemStack weapon = hand == InteractionHand.OFF_HAND ? npc.getOffhandItem() : npc.getMainHandItem();
+        NpcMeleeState state = NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD) ? ((NpcMeleeState.Holder) npc).wolffsmodnpcsMeleeState() : null;
+        if (state != null)
+            state.begin(hand);
+        try
+        {
+            return melee(npc, target, weapon, hand);
+        }
+        finally
+        {
+            if (state != null)
+                state.finish(hand);
+        }
+    }
+
+    private static boolean melee(EntityNPCInterface npc, Entity target, ItemStack weapon, InteractionHand hand)
+    {
         boolean itemDamage = NpcEquipment.inherits(npc, EquipmentProperty.MELEE_DAMAGE);
         float damage = itemDamage ? (float) NpcEquipment.meleeDamage(weapon) : npc.stats.melee.getStrength();
         if (target instanceof LivingEntity living)
@@ -59,13 +76,40 @@ public final class NpcItemAttacks
                 return false;
             damage = event.damage;
         }
-        if (!target.hurt(npc.damageSources().mobAttack(npc), damage))
+        if (!hurtMelee(npc, target, weapon, damage))
             return false;
-        applyMeleeEffects(npc, target, weapon);
+        applyMeleeEffects(npc, target, weapon, hand);
         return true;
     }
 
-    private static void applyMeleeEffects(EntityNPCInterface npc, Entity target, ItemStack weapon)
+    /** Matches Custom NPCs' rapid melee policy using the cadence the attack AI actually chose. */
+    private static boolean hurtMelee(EntityNPCInterface npc, Entity target, ItemStack weapon, float damage)
+    {
+        int delay = NpcEquipment.itemMelee(npc, EquipmentProperty.MELEE_DELAY) ? NpcEquipment.meleeDelay(weapon) : npc.stats.melee.getDelay();
+        NpcMeleeState state = NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD) ? ((NpcMeleeState.Holder) npc).wolffsmodnpcsMeleeState() : null;
+        long tick = npc.level().getGameTime();
+        // The previous hand's recovery controls when this strike arrives, even if this weapon itself is slower.
+        boolean rapid = delay < 10 || state != null && state.followsRapidHit(target.getId(), tick);
+        int previousImmunity = target.invulnerableTime;
+        if (rapid)
+            target.invulnerableTime = 0;
+        boolean accepted = false;
+        try
+        {
+            accepted = target.hurt(npc.damageSources().mobAttack(npc), damage);
+            if (accepted && state != null)
+                state.hit(target.getId(), tick, delay);
+            return accepted;
+        }
+        finally
+        {
+            // A shield, damage hook or other rejection must not expose the victim to another attacker.
+            if (rapid && !accepted)
+                target.invulnerableTime = previousImmunity;
+        }
+    }
+
+    private static void applyMeleeEffects(EntityNPCInterface npc, Entity target, ItemStack weapon, InteractionHand hand)
     {
         boolean itemEffect = NpcEquipment.inherits(npc, EquipmentProperty.MELEE_EFFECT);
         int fire = NpcEquipment.fireSeconds(weapon, npc);
@@ -76,23 +120,29 @@ public final class NpcItemAttacks
             if (NpcEquipment.inherits(npc, EquipmentProperty.MELEE_KNOCKBACK))
             {
                 double knockback = EquipmentAttributes.value(weapon, EquipmentSlot.MAINHAND, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_KNOCKBACK, 0D)
-                    + EnchantmentHelper.getKnockbackBonus(npc);
+                    + NpcPlatform.meleeKnockbackBonus(npc, weapon);
                 if (knockback > 0D)
                     living.knockback(knockback * 0.5D, Math.sin(Math.toRadians(npc.getYRot())), -Math.cos(Math.toRadians(npc.getYRot())));
             }
             else
                 npcKnockback(npc, living);
             if (itemEffect)
-            {
-                EnchantmentHelper.doPostHurtEffects(living, npc);
-                EnchantmentHelper.doPostDamageEffects(npc, living);
-            }
+                meleeEnchantmentEffects(npc, living, weapon);
             else
                 npcEffect(npc, living);
             weapon.getItem().hurtEnemy(weapon, living, npc);
-            npc.setItemSlot(EquipmentSlot.MAINHAND, weapon);
+            npc.setItemSlot(hand == InteractionHand.OFF_HAND ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND, weapon);
         }
         npc.setLastHurtMob(target);
+    }
+
+    private static void meleeEnchantmentEffects(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
+    {
+        EnchantmentHelper.doPostHurtEffects(target, npc);
+        if (NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD))
+            NpcPlatform.meleePostDamageEffects(npc, target, weapon);
+        else
+            EnchantmentHelper.doPostDamageEffects(npc, target);
     }
 
     /** The push Custom NPCs gives a target with the NPC's own melee knockback. */
@@ -221,12 +271,16 @@ public final class NpcItemAttacks
     /** A held Flan gun swung in melee plays its melee animation and sound; other items have nothing to add. */
     public static void meleeFeedback(EntityNPCInterface npc)
     {
-        if (npc.level().isClientSide || FlansEquipment.getWeaponProperties(npc.getMainHandItem(), ItemStack.EMPTY).isEmpty())
+        if (npc.level().isClientSide)
+            return;
+        InteractionHand hand = NpcEquipment.meleeHand(npc);
+        ItemStack weapon = hand == InteractionHand.OFF_HAND ? npc.getOffhandItem() : npc.getMainHandItem();
+        if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isEmpty())
             return;
         if (NpcEquipment.enabled(npc, Feature.GUN_MELEE_ANIMATION))
-            FlansEquipment.animateMelee(npc, InteractionHand.MAIN_HAND);
+            FlansEquipment.animateMelee(npc, hand);
         if (NpcEquipment.enabled(npc, Feature.MELEE_SOUNDS))
-            FlansEquipment.playMeleeSound(npc, InteractionHand.MAIN_HAND);
+            FlansEquipment.playMeleeSound(npc, hand);
     }
 
     public static void launched(EntityNPCInterface npc, LivingEntity target, InteractionHand hand)

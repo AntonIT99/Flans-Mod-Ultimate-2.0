@@ -88,6 +88,10 @@ class NpcEquipmentHookContractTest
         MethodNode tick = method(goal, "()V", "m_8037_", "tick");
         assertTrue(invokes(tick, "noppes/npcs/entity/data/DataMelee", "getDelay", "()I"));
         assertTrue(invokes(tick, "noppes/npcs/entity/data/DataMelee", "getRange", "()F"));
+        // Delay is chosen once before the one swing/hit, so alternating hands cannot create another cooldown channel.
+        assertEquals(1, calls(tick, "noppes/npcs/entity/data/DataMelee", "getDelay", "()I"));
+        assertEquals(1, calls(tick, NPC, "m_6674_", "(Lnet/minecraft/world/InteractionHand;)V"));
+        assertEquals(1, calls(tick, NPC, "m_7327_", "(Lnet/minecraft/world/entity/Entity;)Z"));
         MethodNode start = method(goal, "()Z", "m_8036_", "canUse");
         assertTrue(invokes(start, "noppes/npcs/entity/data/DataInventory", "getProjectile", "()Lnoppes/npcs/api/item/IItemStack;"));
     }

@@ -31,25 +31,54 @@ public final class NpcEquipment
 
     public static boolean weaponAuthority(EntityNPCInterface npc)
     {
-        return enabled(npc, Feature.ITEM_WEAPONS) && !rangedWeapon(npc).isEmpty();
+        return enabled(npc, Feature.ITEM_WEAPONS) && (!rangedWeapon(npc).isEmpty() || enabled(npc, Feature.MELEE_DUAL_WIELD) && meleeWeapon(npc.getOffhandItem()));
     }
 
-    /** Whether the main-hand item, rather than the NPC's melee stats, swings in melee: an empty hand leaves melee to the NPC. */
+    /** Whether the selected melee hand holds an item while Use equipped weapons is enabled. */
     public static boolean meleeAuthority(EntityNPCInterface npc)
     {
-        return enabled(npc, Feature.ITEM_WEAPONS) && !npc.getMainHandItem().isEmpty();
+        if (!enabled(npc, Feature.ITEM_WEAPONS))
+            return false;
+        ItemStack weapon = meleeWeapon(npc);
+        return !weapon.isEmpty() && (!enabled(npc, Feature.MELEE_DUAL_WIELD) || meleeWeapon(weapon));
     }
 
-    /** Whether a melee hit goes through the item; with every hit statistic the NPC's own, Custom NPCs strikes as usual. */
+    /** Whether a melee hit goes through the item; dual melee retains this path even with every hit statistic set to Custom. */
     public static boolean itemMelee(EntityNPCInterface npc)
     {
-        return meleeAuthority(npc) && (inherits(npc, EquipmentProperty.MELEE_DAMAGE) || inherits(npc, EquipmentProperty.MELEE_KNOCKBACK) || inherits(npc, EquipmentProperty.MELEE_EFFECT));
+        return meleeAuthority(npc) && (enabled(npc, Feature.MELEE_DUAL_WIELD) || inherits(npc, EquipmentProperty.MELEE_DAMAGE) || inherits(npc, EquipmentProperty.MELEE_KNOCKBACK)
+            || inherits(npc, EquipmentProperty.MELEE_EFFECT));
     }
 
-    /** Whether the main-hand item decides this melee statistic. */
+    /** Whether the selected weapon decides this melee statistic; Custom values are shared by both hands. */
     public static boolean itemMelee(EntityNPCInterface npc, EquipmentProperty property)
     {
         return meleeAuthority(npc) && inherits(npc, property);
+    }
+
+    /** The next striking hand. Dual melee alternates weapons, skipping empty hands, shields and non-weapons. */
+    public static InteractionHand meleeHand(EntityNPCInterface npc)
+    {
+        if (!enabled(npc, Feature.ITEM_WEAPONS) || !enabled(npc, Feature.MELEE_DUAL_WIELD) || !meleeWeapon(npc.getOffhandItem()))
+            return InteractionHand.MAIN_HAND;
+        if (!meleeWeapon(npc.getMainHandItem()))
+            return InteractionHand.OFF_HAND;
+        return ((NpcMeleeState.Holder) npc).wolffsmodnpcsMeleeState().getNextHand();
+    }
+
+    /** The weapon the AI's next reach, cooldown and damage attempt refer to. */
+    public static ItemStack meleeWeapon(EntityNPCInterface npc)
+    {
+        return meleeHand(npc) == InteractionHand.OFF_HAND ? npc.getOffhandItem() : npc.getMainHandItem();
+    }
+
+    /** A damaging melee item, including tools and Flan gun melee; shields and decorative/ordinary throwable items are excluded. */
+    public static boolean meleeWeapon(ItemStack item)
+    {
+        if (item.isEmpty() || shield(item))
+            return false;
+        Optional<EquippedWeaponProperties> flan = FlansEquipment.getWeaponProperties(item, ItemStack.EMPTY);
+        return flan.filter(EquippedWeaponProperties::shield).isEmpty() && (flan.filter(properties -> properties.meleeDamage() > 0D).isPresent() || meleeDamage(item) > 1D);
     }
 
     /**

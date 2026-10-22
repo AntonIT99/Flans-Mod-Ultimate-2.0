@@ -26,6 +26,7 @@ public final class NpcCombatSettings
     private static final String PROPERTY_IMPORTS_KEY = "PropertyImports";
     private static final String CUSTOM_EQUIPMENT_KEY = "CustomEquipment";
     private static final String EQUIPMENT_IMPORTS_KEY = "EquipmentImports";
+    private static final String NATIVE_THROW_SPEED_KEY = "NativeThrowSpeed";
 
     @Getter
     private Knockback knockback = Knockback.MODEL;
@@ -34,6 +35,9 @@ public final class NpcCombatSettings
     private final Set<NpcTypeProperty> propertyImports = EnumSet.noneOf(NpcTypeProperty.class);
     private final Set<EquipmentProperty> customEquipment = EnumSet.noneOf(EquipmentProperty.class);
     private final Set<EquipmentProperty> equipmentImports = EnumSet.noneOf(EquipmentProperty.class);
+    /** Blocks per tick; absent until first edited/imported, so Custom can initially use the current item's exact default. */
+    @Getter
+    private float nativeThrowSpeed = Float.NaN;
 
     /** How the NPC reacts to being knocked back. */
     public enum Knockback
@@ -49,6 +53,11 @@ public final class NpcCombatSettings
     public void setKnockback(Knockback mode)
     {
         knockback = mode == null ? Knockback.MODEL : mode;
+    }
+
+    public void setNativeThrowSpeed(float speed)
+    {
+        nativeThrowSpeed = Float.isFinite(speed) ? Math.max(NpcThrowables.MIN_SPEED, Math.min(NpcThrowables.MAX_SPEED, speed)) : Float.NaN;
     }
 
     /** @return the damage below which a hit of this kind is ignored; 0 accepts every hit */
@@ -178,6 +187,7 @@ public final class NpcCombatSettings
     public void load(CompoundTag root)
     {
         CompoundTag tag = root.getCompound(NBT_KEY);
+        setNativeThrowSpeed(tag.contains(NATIVE_THROW_SPEED_KEY, Tag.TAG_ANY_NUMERIC) ? tag.getFloat(NATIVE_THROW_SPEED_KEY) : Float.NaN);
         knockback = named(Knockback.class, tag.getString(KNOCKBACK_KEY)).orElse(Knockback.MODEL);
         minimumHits.clear();
         CompoundTag hits = tag.getCompound(MINIMUM_HITS_KEY);
@@ -196,6 +206,8 @@ public final class NpcCombatSettings
     public void save(CompoundTag root)
     {
         CompoundTag tag = new CompoundTag();
+        if (Float.isFinite(nativeThrowSpeed))
+            tag.putFloat(NATIVE_THROW_SPEED_KEY, nativeThrowSpeed);
         tag.putString(KNOCKBACK_KEY, knockback.name());
         CompoundTag hits = new CompoundTag();
         minimumHits.forEach((category, damage) -> hits.putInt(category.name(), damage));

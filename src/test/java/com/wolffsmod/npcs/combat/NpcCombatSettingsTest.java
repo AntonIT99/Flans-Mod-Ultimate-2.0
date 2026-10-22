@@ -121,7 +121,8 @@ class NpcCombatSettingsTest
         settings.load(root);
         for (EquipmentProperty property : EquipmentProperty.values())
             // The former kinds were the main-hand weapon and the armor; the off hand had none.
-            assertEquals(property.getGroup() != EquipmentProperty.Group.MELEE && property.getGroup().getSlot() != EquipmentProperty.Slot.OFF_HAND, settings.importRequested(property), property.name());
+            assertEquals(property.getGroup() != EquipmentProperty.Group.MELEE && property.getGroup().getSlot() != EquipmentProperty.Slot.OFF_HAND
+                && property.getGroup().getSlot() != EquipmentProperty.Slot.PROJECTILE_SLOT, settings.importRequested(property), property.name());
         // Those imports were copies; they do not make the NPC keep its own values.
         assertTrue(settings.customEquipment().isEmpty());
     }

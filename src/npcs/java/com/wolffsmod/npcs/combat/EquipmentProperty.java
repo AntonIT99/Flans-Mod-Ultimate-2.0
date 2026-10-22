@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A statistic the NPC's equipment supplies. While its Use equipped switch is on, the NPC either inherits the statistic
+ * A statistic the NPC's equipment supplies. While its matching feature switch is on, the NPC either inherits the statistic
  * from the slot, live, or keeps its own saved value for it; either way the slot's value can be imported into the saved one.
  * A statistic that cannot be switched is always the item's while the switch is on, and can only be imported.
  */
@@ -28,13 +28,13 @@ public enum EquipmentProperty
     SHIELD_KIND(Group.OFF_HAND_SHIELD, false), SHIELD_ABSORPTION(Group.OFF_HAND_SHIELD, false), SHIELD_BLOCK_CHANCE(Group.OFF_HAND_SHIELD, false),
     SHIELD_MAX_BLOCK(Group.OFF_HAND_SHIELD, false),
     ARMOR_PROJECTILE(Group.ARMOR, true), ARMOR_MELEE(Group.ARMOR, true), ARMOR_EXPLOSION(Group.ARMOR, true), ARMOR_KNOCKBACK(Group.ARMOR, true),
-    ARMOR_FIRE(Group.ARMOR_EFFECTS, true), ARMOR_BREATHING(Group.ARMOR_EFFECTS, true), ARMOR_FALL(Group.ARMOR_EFFECTS, true);
+    ARMOR_FIRE(Group.ARMOR_EFFECTS, true), ARMOR_BREATHING(Group.ARMOR_EFFECTS, true), ARMOR_FALL(Group.ARMOR_EFFECTS, true), NATIVE_THROW_SPEED(Group.NATIVE_THROWABLE, true);
     // spotless:on
 
     /** The slots with a page of their own, each listing the statistics read from them. */
     public enum Slot
     {
-        MAIN_HAND, OFF_HAND, ARMOR
+        MAIN_HAND, OFF_HAND, ARMOR, PROJECTILE_SLOT
     }
 
     /** The tabs of the slot pages, each the statistics of one kind of use of the slot. */
@@ -42,14 +42,16 @@ public enum EquipmentProperty
     public enum Group
     {
         MELEE(Slot.MAIN_HAND), RANGED(Slot.MAIN_HAND), FIRING(Slot.MAIN_HAND), PROJECTILE(Slot.MAIN_HAND), OFF_HAND_GUN(Slot.OFF_HAND), OFF_HAND_SHIELD(Slot.OFF_HAND), ARMOR(
-            Slot.ARMOR), ARMOR_EFFECTS(Slot.ARMOR);
+            Slot.ARMOR), ARMOR_EFFECTS(Slot.ARMOR), NATIVE_THROWABLE(Slot.PROJECTILE_SLOT);
 
         @Getter
         private final Slot slot;
 
-        /** @return the switch that hands this group's statistics to the equipment */
+        /** @return the switch that gives this equipment or native-projectile group authority */
         public Feature feature()
         {
+            if (this == NATIVE_THROWABLE)
+                return Feature.NATIVE_THROWABLES;
             return slot == Slot.ARMOR ? Feature.ITEM_ARMOR : Feature.ITEM_WEAPONS;
         }
 
