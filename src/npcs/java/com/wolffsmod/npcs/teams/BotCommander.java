@@ -67,7 +67,7 @@ final class BotCommander
                     enemySpawns.addAll(ground.spawnPositions(team));
             List<Doctrine.SquadView> views = views(level, battle, side, carriers);
             if (!views.isEmpty())
-                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side)), views)
+                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null)), views)
                     .forEach((squadId, task) -> Optional.ofNullable(battle.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
         }
     }
@@ -115,7 +115,7 @@ final class BotCommander
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             if (player.isAlive() && !player.isSpectator() && player.level() == level)
-                FlansTeams.getTeam(player).ifPresent(team -> fighters.computeIfAbsent(battle.getGround().sideOf(team), ignored -> new ArrayList<>()).add(player.position()));
+                battle.sideOfPlayer(player).ifPresent(side -> fighters.computeIfAbsent(side, ignored -> new ArrayList<>()).add(player.position()));
         }
         for (BotSlot slot : battle.getSlots().values())
         {

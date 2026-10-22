@@ -1,8 +1,11 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.FlansTeams;
 import com.flansmodultimate.api.ITeam;
 import lombok.Getter;
 import lombok.Setter;
+
+import net.minecraft.world.entity.player.Player;
 
 import java.util.*;
 
@@ -77,6 +80,18 @@ final class BotBattle
     int sideOf(String team)
     {
         return team(team).map(ground::sideOf).orElse(-1);
+    }
+
+    /**
+     * @return the side a player fights on: in a round, the side of the team they play, as the round sees it; in any other
+     *         battle, the side of the faction they belong to. Empty for a player who does not fight.
+     */
+    OptionalInt sideOfPlayer(Player player)
+    {
+        if (ground.round().isPresent())
+            return FlansTeams.getTeam(player).map(team -> OptionalInt.of(ground.sideOf(team))).orElse(OptionalInt.empty());
+        int side = ground.sideOf(player);
+        return side < 0 ? OptionalInt.empty() : OptionalInt.of(side);
     }
 
     int count(Map<String, Map<Integer, Integer>> counts, String team, int entry)

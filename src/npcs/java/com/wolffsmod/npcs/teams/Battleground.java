@@ -62,6 +62,12 @@ interface Battleground
     /** @return the map whose markers the bots use, or empty for a battle on no map */
     Optional<String> mapId();
 
+    /** @return where the sides' ground squads meet in a battle without objectives, or empty for them to hunt each other */
+    default Optional<Vec3> front()
+    {
+        return Optional.empty();
+    }
+
     /** @return the Teams round this battle is, or empty for a battle fought outside one */
     Optional<ITeamsLiveRound> round();
 }

@@ -48,6 +48,10 @@ public final class Doctrine
     private static final double FLAG_RADIUS = 2D;
     /** Blocks around its own flag a guarding squad spreads over. */
     private static final double GUARD_RADIUS = 8D;
+    /** Blocks from a squad within which an enemy draws it off its way to the front. */
+    private static final double ENGAGE_RANGE = 48D;
+    /** Blocks around the front a squad spreads over. */
+    private static final double FRONT_RADIUS = 16D;
 
     /**
      * A squad as the commander sees it.
@@ -91,9 +95,18 @@ public final class Doctrine
      * @param mayCapture
      *            whether the side may take points it does not hold; false for the defenders of a round played attacker
      *            against defender
+     * @param front
+     *            where the side's ground squads meet the enemy in a battle without objectives, or null to hunt the enemy
+     *            wherever it is
      */
-    public record Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags, boolean mayCapture)
+    public record Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags, boolean mayCapture,
+        @Nullable Vec3 front)
     {
+        public Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags, boolean mayCapture)
+        {
+            this(side, attackingSide, points, enemies, enemySpawns, navalPoints, flags, mayCapture, null);
+        }
+
         public Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags)
         {
             this(side, attackingSide, points, enemies, enemySpawns, navalPoints, flags, true);
@@ -133,12 +146,21 @@ public final class Doctrine
         return tasks;
     }
 
-    /** Without objectives, squads seek out the nearest enemy, or the enemy's spawn when none is seen. */
+    /**
+     * Without objectives, squads seek out the nearest enemy, or the enemy's spawn when none is seen. With a front, they
+     * head for it instead and only turn to an enemy that comes near them, so the two sides meet there.
+     */
     private static void planHunt(Battlefield field, List<SquadView> squads, Map<Integer, SquadTask> tasks)
     {
         for (SquadView squad : squads)
         {
-            Vec3 target = nearest(squad.position(), field.enemies()).or(() -> nearest(squad.position(), field.enemySpawns())).orElse(squad.position());
+            Optional<Vec3> enemy = nearest(squad.position(), field.enemies());
+            if (field.front() != null && enemy.map(found -> found.distanceTo(squad.position()) > ENGAGE_RANGE).orElse(true))
+            {
+                tasks.put(squad.id(), new SquadTask(SquadTask.Kind.HUNT, field.front(), FRONT_RADIUS));
+                continue;
+            }
+            Vec3 target = enemy.or(() -> nearest(squad.position(), field.enemySpawns())).orElse(squad.position());
             tasks.put(squad.id(), new SquadTask(SquadTask.Kind.HUNT, target, HUNT_RADIUS));
         }
     }

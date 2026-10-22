@@ -63,6 +63,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     public static void serverTick(MinecraftServer server)
     {
         BotMarkerDisplay.tick(server);
+        // Skirmishes are taken back after a restart before the sweep could take their bots for leftovers.
+        Skirmishes.tick(server);
         INSTANCE.tick(server);
     }
 
@@ -104,6 +106,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         BotGunners.forget();
         BotFactions.tearDown();
         forgetDuties(server);
+        Skirmishes.serverStopping(server);
         BotMarkerDisplay.clear();
     }
 
@@ -148,7 +151,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         BotBattle current = INSTANCE.round;
         if (current == null)
             return 0;
-        int removed = INSTANCE.removeAll(server, current);
+        int removed = removeAll(server, current);
         current.getSlots().clear();
         current.getSquads().clear();
         current.getQueue().clear();
@@ -271,7 +274,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             slot.setLastPosition(npc.position());
             boolean dead = !npc.isAlive() || npc.isKilled();
             if (dead && slot.getDiedAt() == 0)
-                fallen(current, slot, now);
+                fallenUnreported(current, slot, now);
             if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && slot.isRetired())
                 removeBody(level, current, slot, npc, dead);
         }
@@ -308,6 +311,25 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         // A soldier a transport brought never comes back; a new transport brings others.
         if (slot.getSource() == BotSlot.Source.CARGO)
             slot.setRetired(true);
+    }
+
+    /**
+     * A bot found dead that no kill reported. A round counts the deaths and leaves the wrecks of its bots as their kills are
+     * reported; other battles do it here.
+     */
+    private static void fallenUnreported(BotBattle current, BotSlot slot, long now)
+    {
+        fallen(current, slot, now);
+        if (current.getGround().round().isEmpty())
+            died(current, slot);
+    }
+
+    /** Counts a bot's death; some destroyed vehicles leave a wreck players can repair, put in place once the bot's body is gone. */
+    private static void died(BotBattle current, BotSlot slot)
+    {
+        slot.setDeaths(slot.getDeaths() + 1);
+        if (slot.isVehicle() && ThreadLocalRandom.current().nextInt(100) < current.getSettings().getAbandonChance())
+            slot.setWreckPending(true);
     }
 
     private static void forget(BotBattle current, BotSlot slot)
@@ -363,7 +385,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         String nameList = squad == null || squad.getTemplate().isEmpty()
             ? force.getNameList()
             : SquadTemplates.get().find(squad.getTemplate()).map(SquadTemplate::nameList).filter(list -> !list.isEmpty()).orElse(force.getNameList());
-        BotFactory.Order order = new BotFactory.Order(slot, team, faction, current.getSettings(), force, current.getInstance(), position, nameList);
+        BotFactory.Order order = new BotFactory.Order(slot, team, faction, current.getSettings(), force, current.getInstance(), position, nameList, current.getGround().round().isPresent());
         Optional<EntityNPCInterface> npc = slot.isVehicle() ? BotFactory.vehicle(level, order, random.nextFloat() * 360F, random) : BotFactory.soldier(level, order, random);
         if (npc.isEmpty())
         {
@@ -465,7 +487,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
 
     // --- Removing bots ---
 
-    private int removeAll(MinecraftServer server, BotBattle current)
+    /** Removes every bot of a battle in its level now. */
+    static int removeAll(MinecraftServer server, BotBattle current)
     {
         ServerLevel level = server.getLevel(current.getGround().dimension());
         int removed = 0;
@@ -538,12 +561,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         BotSlot fallen = victimSlot == null ? null : current.getSlots().get(victimSlot);
         if (fallen != null)
         {
-            fallen.setDeaths(fallen.getDeaths() + 1);
             if (fallen.getDiedAt() == 0)
                 fallen(current, fallen, victim.level().getGameTime());
-            // Some destroyed vehicles leave a wreck players can repair, put in place once the bot's body is gone.
-            if (fallen.isVehicle() && ThreadLocalRandom.current().nextInt(100) < current.getSettings().getAbandonChance())
-                fallen.setWreckPending(true);
+            died(current, fallen);
         }
         Integer killerSlot = killer == null ? null : current.getSlotOfEntity().get(killer.getUUID());
         BotSlot scorer = killerSlot == null ? null : current.getSlots().get(killerSlot);

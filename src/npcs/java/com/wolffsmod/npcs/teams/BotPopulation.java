@@ -357,6 +357,7 @@ final class BotPopulation
     }
 
     /** Whether the side can still put a bot in the field, now or once a respawn timer runs out. */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted") // Reads as the rule asks it; both endings by attrition test the opposite.
     static boolean canStillField(BotBattle battle, int side)
     {
         boolean slotsLeft = battle.getSlots().values().stream().anyMatch(slot -> battle.sideOf(slot.getTeam()) == side && (slot.getEntity() != null || canSpawn(battle, slot)));

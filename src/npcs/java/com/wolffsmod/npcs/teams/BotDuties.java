@@ -124,7 +124,7 @@ final class BotDuties
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             if (player.isAlive() && !player.isSpectator() && player.level() == level)
-                FlansTeams.getTeam(player).ifPresent(team -> fighters.add(new Fighter(player, battle.getGround().sideOf(team), null)));
+                battle.sideOfPlayer(player).ifPresent(side -> fighters.add(new Fighter(player, side, null)));
         }
         for (BotSlot slot : battle.getSlots().values())
         {

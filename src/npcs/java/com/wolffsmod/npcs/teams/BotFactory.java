@@ -37,7 +37,7 @@ import java.util.random.RandomGenerator;
 /**
  * Makes the NPC of a bot slot: a soldier with a Flan class's loadout, made plain or from the team's Custom NPCs clone, or
  * a vehicle, plane, mecha or AA gun wearing its definition's model, or a soldier crewing such a vehicle. Either way the NPC
- * joins the team's faction and the round as a combatant, never respawns by Custom NPCs' own rules, and is marked as a bot. Server thread.
+ * joins the team's faction, and the round as a combatant when it fights one, never respawns by Custom NPCs' own rules, and is marked as a bot. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BotFactory
@@ -58,8 +58,14 @@ public final class BotFactory
     /** Custom NPCs' best ranged accuracy. */
     private static final int MAX_ACCURACY = 100;
 
-    /** What a bot is made with. */
-    public record Order(BotSlot slot, ITeam team, int factionId, BotSettings settings, BotSettings.TeamForce force, UUID instance, Vec3 position, @Nullable String nameList)
+    /**
+     * What a bot is made with.
+     *
+     * @param combatant
+     *            whether the bot fights in the Teams round being played, which judges it as one of a team's players; false
+     *            for a battle outside rounds
+     */
+    public record Order(BotSlot slot, ITeam team, int factionId, BotSettings settings, BotSettings.TeamForce force, UUID instance, Vec3 position, @Nullable String nameList, boolean combatant)
     {}
 
     /** What a bot is to its round. */
@@ -307,7 +313,7 @@ public final class BotFactory
             // The vehicle counts for its crew.
             case CREW -> 0F;
         };
-        if (!FlansTeams.assignCombatant(npc, order.team(), weight))
+        if (order.combatant() && !FlansTeams.assignCombatant(npc, order.team(), weight))
             NpcsMod.log.warn("Teams bot {} could not join team {}", npc.getUUID(), order.team().getShortName());
         npc.updateClient = true;
         npc.updateAI = true;

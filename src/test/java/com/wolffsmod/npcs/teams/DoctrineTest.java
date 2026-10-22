@@ -162,4 +162,21 @@ class DoctrineTest
         Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(new Vec3(40D, 64D, 0D)), List.of(), List.of(), List.of(), false);
         assertEquals(SquadTask.Kind.HUNT, Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D))).get(1).kind());
     }
+
+    @Test
+    void withAFrontSquadsMeetTheEnemyThereRatherThanHuntingIt()
+    {
+        Vec3 front = new Vec3(150D, 64D, 0D);
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(), List.of(new Vec3(300D, 64D, 0D)), List.of(), List.of(), List.of(), false, front);
+        SquadTask task = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D))).get(1);
+        assertEquals(SquadTask.Kind.HUNT, task.kind());
+        assertEquals(front, task.target());
+    }
+
+    @Test
+    void anEnemyCloseByDrawsASquadOffItsWayToTheFront()
+    {
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(), List.of(new Vec3(30D, 64D, 0D)), List.of(), List.of(), List.of(), false, new Vec3(150D, 64D, 0D));
+        assertEquals(30D, Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D))).get(1).target().x);
+    }
 }
