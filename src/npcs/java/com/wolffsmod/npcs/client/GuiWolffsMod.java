@@ -239,6 +239,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.WEAPON_SWITCH, Need.on(Feature.CONSUME_AMMO)),
         Map.entry(Feature.MODEL_WEAPON_STATS, Need.on(Feature.TYPE_PROPERTIES)),
         Map.entry(Feature.TURRET_MUZZLES, Need.on(Feature.MODEL_MUZZLES)),
+        Map.entry(Feature.MANNED_GUNS_FIRE, Need.on(Feature.PASSENGER_GUNS)),
         Map.entry(Feature.ADVANCED_LEAD, Need.on(Feature.LEAD_TARGET)),
         Map.entry(Value.ALIGN_TOLERANCE, Need.on(Feature.FIRE_WHEN_ALIGNED)),
         Map.entry(Value.AIM_SPEED_YAW, Need.on(Feature.GRADUAL_AIM)),
@@ -297,7 +298,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
         TURRET(Section.MODEL, Scope.MODELS,
-            Tab.named("turret_aim", Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED),
+            Tab.named("turret_aim", Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.MANNED_GUNS_FIRE,
+                Feature.TURRET_LOCKED),
             Tab.named(CrewPage.TAB, Scope.DRIVEABLES)),
         EQUIPMENT(Section.COMBAT, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.ARMOR_POTION_EFFECTS, Feature.DUAL_WIELD, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH)),
         FIRING(Section.COMBAT, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES)),
@@ -897,7 +899,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case TYPE_PROPERTIES, MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM,
                     PASSENGER_GUNS, TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING ->
                     Scope.MODELS;
-                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES -> Scope.DRIVEABLES;
+                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE -> Scope.DRIVEABLES;
                 case HULL_ASSISTS_AIM, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
                 default -> Scope.ALL;

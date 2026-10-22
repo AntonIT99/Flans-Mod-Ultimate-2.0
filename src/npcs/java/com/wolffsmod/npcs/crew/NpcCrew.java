@@ -140,6 +140,12 @@ public final class NpcCrew
         return Optional.of(vehicle);
     }
 
+    /** @return the living crew member sitting in a seat of the vehicle */
+    public static Optional<EntityNPCInterface> occupant(EntityNPCInterface vehicle, int seat)
+    {
+        return crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled() && seatOf(vehicle, member).map(WeaponMount::seat).orElse(NO_SEAT) == seat).findFirst();
+    }
+
     /** @return whether the vehicle has room for another rider; empty for an NPC without seats, which takes one rider */
     public static Optional<Boolean> canCarry(EntityNPCInterface vehicle)
     {

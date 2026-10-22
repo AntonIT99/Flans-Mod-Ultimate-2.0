@@ -148,6 +148,28 @@ public final class FlansProjectiles
     }
 
     /**
+     * Selects the muzzle of a seat's own gun on a vehicle, plane or mecha model, without creating a driveable entity. A
+     * twin or quad seat gun fires its barrels in turn, so the trigger index picks one. A seat on the turret is carried round
+     * with the turret; the seat gun's own aim does not move the muzzle, since the pivot it turns round is only known to
+     * clients from the loaded model. Either side after content loading.
+     *
+     * @param model
+     *            vehicle, plane or mecha definition
+     * @param seat
+     *            seat index, as {@link WeaponMount#seat()}
+     * @param sequence
+     *            trigger index, used to take the barrels in turn
+     * @param turretAim
+     *            where the main turret points, relative to the hull; only its yaw is used
+     * @return the muzzle in the frame of {@link #getMuzzles(IContentType, boolean, int, boolean, MountAim)}, naming the seat's
+     *         gun and carrying the seat's shooting particles; empty for another definition or a seat without a gun
+     */
+    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim)
+    {
+        return ExternalProjectileSupport.getSeatMuzzle(model, seat, sequence, turretAim);
+    }
+
+    /**
      * Plays the selected weapon's content-pack firing sound. Server thread only.
      *
      * @param shooter

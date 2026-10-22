@@ -113,6 +113,24 @@ public final class FlansEntityTypes
     }
 
     /**
+     * Describes the firing and reloading rhythm of a seat's own gun with this ammunition, as a crewed driveable keeps it:
+     * the gun's cadence, and a reload after each item of ammunition, never shorter than the pause between shots. Either
+     * side after content loading; does not mutate gameplay state.
+     *
+     * @param type
+     *            vehicle, plane or mecha definition
+     * @param seat
+     *            seat index, as {@link WeaponMount#seat()}
+     * @param ammunition
+     *            ammunition being fired, whose rounds per item set the volleys; empty counts one round
+     * @return the reload cycle, or empty for another definition or a seat without a gun
+     */
+    public static Optional<ReloadCycle> getSeatReloadCycle(IContentType type, int seat, ItemStack ammunition)
+    {
+        return EntityTypePropertySupport.seatReloadCycle(type, seat, ammunition);
+    }
+
+    /**
      * Lists what a definition can aim: every seat of a driveable, the driver first, or the single gun of an AA gun.
      * Either side after content loading.
      *

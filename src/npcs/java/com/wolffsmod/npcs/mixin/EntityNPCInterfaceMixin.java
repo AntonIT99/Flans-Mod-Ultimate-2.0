@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.mixin;
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.CrewGunners;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.crew.NpcCrewHolder;
 import com.wolffsmod.npcs.diag.NpcProfiler;
@@ -73,7 +74,8 @@ import java.util.UUID;
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
- * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead.</li>
+ * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
+ * vehicle's target.</li>
  * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
@@ -144,6 +146,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     /** The id the NPC had when it was last crewed as a vehicle. */
     @Unique
     private UUID wolffsmodnpcsCrewedAs;
+    /** The seat guns the crew man, while the NPC is a vehicle. */
+    @Unique
+    private final CrewGunners wolffsmodnpcsGunners = new CrewGunners();
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
@@ -668,6 +673,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             NpcMobility.tick(npc);
             NpcPathDebug.tick(npc, state);
             NpcCrew.tick(npc);
+            wolffsmodnpcsGunners.tick(npc);
         }
         if (wolffsmodnpcsTickStarted != 0L)
             NpcProfiler.npcTick(System.nanoTime() - wolffsmodnpcsTickStarted);
