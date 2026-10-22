@@ -242,6 +242,37 @@ class NpcEquipmentHookContractTest
         }
     }
 
+    @Test
+    void restoredNativeTacticsHaveStableDataEditorAndRegistrationHooks() throws IOException
+    {
+        ClassNode ai = read("noppes/npcs/entity/data/DataAI");
+        method(ai, "(Lnet/minecraft/nbt/CompoundTag;)V", "readToNBT");
+        method(ai, "(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;", "save");
+        ClassNode gui = read("noppes/npcs/client/gui/mainmenu/GuiNpcAI");
+        method(gui, "()V", "init");
+        method(gui, "(Lnoppes/npcs/shared/client/gui/components/GuiButtonNop;)V", "buttonEvent");
+        method(gui, "(Lnoppes/npcs/shared/client/gui/components/GuiTextFieldNop;)V", "unFocused");
+        MethodNode response = method(read(NPC), "()V", "setResponse");
+        int attack = -1;
+        int inventory = -1;
+        int inventories = 0;
+        for (int index = 0; index < response.instructions.size(); index++)
+        {
+            var instruction = response.instructions.get(index);
+            if (instruction instanceof TypeInsnNode type && type.desc.equals("noppes/npcs/ai/EntityAIAttackTarget"))
+                attack = index;
+            if (instruction instanceof FieldInsnNode field && field.owner.equals(NPC) && field.name.equals("inventory"))
+            {
+                inventory = index;
+                inventories++;
+            }
+        }
+        // This dependency adds melee before checking the slot: the restored goal has to lower its priority too.
+        assertEquals(1, inventories);
+        assertTrue(attack >= 0 && inventory > attack);
+        assertTrue(read(NPC).fields.stream().anyMatch(field -> field.name.equals("taskCount") && field.desc.equals("I")));
+    }
+
     private static boolean declares(ClassNode owner, String descriptor, String... names)
     {
         return owner.methods.stream().anyMatch(method -> List.of(names).contains(method.name) && method.desc.equals(descriptor));

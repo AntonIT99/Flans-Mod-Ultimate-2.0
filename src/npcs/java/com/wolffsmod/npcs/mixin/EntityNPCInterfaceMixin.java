@@ -15,6 +15,7 @@ import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
+import com.wolffsmod.npcs.tactics.CustomNpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.teams.BotObjectiveGoal;
@@ -27,6 +28,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -113,6 +115,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcMeleeState.Holder,
         NpcDriver.Holder
 {
+    @Shadow
+    private int taskCount;
+
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
     @Unique
@@ -351,7 +356,22 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         });
     }
 
-    /** An equipped ranged weapon gets the ranged attack; the NeoForge Custom NPCs build has no tactic variants. */
+    /** Register the restored manoeuvre before normal attacks, retaining sprint/leap priority. */
+    @Inject(method = "setResponse", at = @At(value = "FIELD", target = "Lnoppes/npcs/entity/EntityNPCInterface;inventory:Lnoppes/npcs/entity/data/DataInventory;", ordinal = 0))
+    private void wolffsmodnpcsRestoreTactics(CallbackInfo callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // This build registers melee immediately before checking its projectile slot. Move it down one priority so
+        // the restored manoeuvre wins movement; subsequent ranged/wander registrations use the incremented count.
+        goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal() instanceof EntityAIAttackTarget).findFirst().ifPresent(attack ->
+        {
+            goalSelector.removeGoal(attack.getGoal());
+            goalSelector.addGoal(taskCount + 1, attack.getGoal());
+        });
+        goalSelector.addGoal(taskCount++, new CustomNpcTacticGoal(npc));
+    }
+
+    /** An equipped ranged weapon gets the ranged attack and the ranged form of the restored tactical movement. */
     @Redirect(method = "setResponse", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataInventory;getProjectile()Lnoppes/npcs/api/item/IItemStack;"))
     private IItemStack wolffsmodnpcsWeaponChoosesResponse(DataInventory inventory)
     {
