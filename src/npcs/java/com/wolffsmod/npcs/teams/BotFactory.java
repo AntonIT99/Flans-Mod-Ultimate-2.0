@@ -290,6 +290,8 @@ public final class BotFactory
             }
         }
         npc.setFaction(order.factionId());
+        // Custom NPCs only targets the NPCs of factions its faction attacks when this is on: bots seek out enemy bots.
+        npc.advanced.attackOtherFactions = true;
         npc.stats.spawnCycle = NEVER_RESPAWN;
         npc.ais.returnToStart = false;
         npc.ais.movementType = STANDING;
