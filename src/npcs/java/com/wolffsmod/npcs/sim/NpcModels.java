@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -45,7 +46,7 @@ public final class NpcModels
         if (box.getXsize() >= UNHIT_WIDTH)
             return Optional.empty();
         Entity model = npc instanceof EntityCustomNpc custom ? custom.modelData.getEntity(custom) : null;
-        double half = (model == null ? npc.baseSize.width : model.getBbWidth()) * npc.display.getSize() / 10D;
+        double half = (model == null ? EntityPlatform.width(npc.baseSize) : model.getBbWidth()) * npc.display.getSize() / 10D;
         return Optional.of(box.inflate(half, 0D, half));
     }
 

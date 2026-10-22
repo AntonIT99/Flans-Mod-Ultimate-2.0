@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcTactics;
@@ -184,7 +185,7 @@ public final class NpcTargetSearch
         if (tactic != Tactic.CUSTOM_NPCS)
             tactical = tactic.usesDistance() ? Math.max(MIN_TACTICAL_MARGIN, NpcTactics.reach(npc, tactic)) : 0;
         else
-            tactical = manoeuvres(npc.ais.tacticalVariant) ? Math.max(MIN_TACTICAL_MARGIN, npc.ais.getTacticalRange()) : 0;
+            tactical = manoeuvres(CustomNpcsPlatform.tacticalVariant(npc)) ? Math.max(MIN_TACTICAL_MARGIN, CustomNpcsPlatform.tacticalRange(npc)) : 0;
         return Math.max(tactical, NpcTuning.of(npc).get(Value.TARGET_MARGIN));
     }
 

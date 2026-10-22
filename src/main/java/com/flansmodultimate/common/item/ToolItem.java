@@ -7,12 +7,14 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketFlak;
+import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -27,7 +29,7 @@ import net.minecraft.world.phys.*;
 
 import java.util.List;
 
-public class ToolItem extends Item implements IFlanItem<ToolType>
+public class ToolItem extends FlanItem implements IFlanItem<ToolType>
 {
     public static final String NBT_KEY_STRING = "key";
 
@@ -51,7 +53,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 

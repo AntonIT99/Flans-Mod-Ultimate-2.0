@@ -53,7 +53,7 @@ public final class ContentLoadingConfig
         Path file = configDir.resolve(FILE_NAME);
 
         FileUtils.tryCreateDirectories(configDir);
-        try (CommentedFileConfig config = CommentedFileConfig.of(file, TomlFormat.instance()))
+        try (CommentedFileConfig config = CommentedFileConfig.builder(file, TomlFormat.instance()).sync().build())
         {
             if (Files.isRegularFile(file))
                 config.load();
@@ -86,7 +86,7 @@ public final class ContentLoadingConfig
 
     private static void writeDefaults(Path file)
     {
-        try (CommentedFileConfig config = CommentedFileConfig.of(file, TomlFormat.instance()))
+        try (CommentedFileConfig config = CommentedFileConfig.builder(file, TomlFormat.instance()).sync().build())
         {
             save(config);
         }

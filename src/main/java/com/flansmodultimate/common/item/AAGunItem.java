@@ -5,6 +5,7 @@ import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
@@ -31,7 +33,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AAGunItem extends Item implements IFlanItem<AAGunType>
+public class AAGunItem extends FlanItem implements IFlanItem<AAGunType>
 {
     @Getter
     protected final AAGunType configType;
@@ -93,7 +95,7 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         if (!IFlanItem.showDetailedDescriptions())

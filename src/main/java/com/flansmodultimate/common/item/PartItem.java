@@ -2,17 +2,17 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.platform.item.FlanItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class PartItem extends Item implements IFlanItem<PartType>
+public class PartItem extends FlanItem implements IFlanItem<PartType>
 {
     @Getter
     protected final PartType configType;
@@ -33,7 +33,7 @@ public class PartItem extends Item implements IFlanItem<PartType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 

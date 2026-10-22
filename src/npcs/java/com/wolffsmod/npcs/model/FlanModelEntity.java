@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.model;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -83,7 +84,7 @@ public class FlanModelEntity extends Mob implements ILivingVisualEffects
     {
         super.tick();
         // A model entity of an NPC is never added to a level; one that is was summoned.
-        if (isAddedToWorld() && level() instanceof ServerLevel level && !isRemoved())
+        if (EntityPlatform.isAddedToLevel(this) && level() instanceof ServerLevel level && !isRemoved())
             FlanModelSummons.replace(level, this);
     }
 

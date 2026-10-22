@@ -6,6 +6,7 @@ import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
 import com.flansmodultimate.common.driveables.damage.PartDamageKind;
 import com.flansmodultimate.common.driveables.damage.PartPieces;
 import com.flansmodultimate.common.driveables.damage.WreckLoad;
+import com.flansmodultimate.platform.PlatformSounds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -500,7 +501,7 @@ final class DestructionSequences
 
     private static void explosionSound(Entity entity, float volume, float pitch)
     {
-        entity.level().playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.NEUTRAL, volume, pitch, false);
+        entity.level().playLocalSound(entity.getX(), entity.getY(), entity.getZ(), PlatformSounds.genericExplode(), SoundSource.NEUTRAL, volume, pitch, false);
     }
 
     /** Forgets every death being played, as when leaving a world. */

@@ -59,7 +59,8 @@ import java.util.stream.Collectors;
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ModClientEventHandler
 {
-    private static final int CAPTURE_POINT_ITEM_TINT = 0xFFD966;
+    /** Opaque ARGB: the 1.21 item renderer reads the tint's alpha byte. */
+    private static final int CAPTURE_POINT_ITEM_TINT = 0xFFFFD966;
     private static boolean isSoundEngineInitialized;
 
     @SubscribeEvent
@@ -211,8 +212,8 @@ public final class ModClientEventHandler
     public static void registerItemColors(RegisterColorHandlersEvent.Item event)
     {
         // A spawner in the inventory belongs to no team yet
-        event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF, FlansModItems.playerSpawnerItem.get(), FlansModItems.itemSpawnerItem.get(),
-            FlansModItems.vehicleSpawnerItem.get());
+        event.register((stack, tintIndex) -> tintIndex == 0 ? 0xFF000000 | TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF, FlansModItems.playerSpawnerItem.get(),
+            FlansModItems.itemSpawnerItem.get(), FlansModItems.vehicleSpawnerItem.get());
         // The capture point shares the flagpole icon; a gold tint tells the two apart
         event.register((stack, tintIndex) -> CAPTURE_POINT_ITEM_TINT, FlansModItems.capturePointItem.get());
 

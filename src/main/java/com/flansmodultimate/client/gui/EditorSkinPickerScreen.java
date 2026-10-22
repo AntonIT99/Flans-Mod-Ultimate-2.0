@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.client.render.layer.PlayerSkinOverrides;
 import com.flansmodultimate.common.types.PlayerClass;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -99,7 +100,7 @@ public final class EditorSkinPickerScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, 15, 0xFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
         List<ResourceLocation> choices = filtered();

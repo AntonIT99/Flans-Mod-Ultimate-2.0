@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.model;
 
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.ModelData;
@@ -39,7 +40,7 @@ public final class FlanModelRendering
         if (manages(data))
         {
             if (tag.getBoolean(SIMPLE_RENDER))
-                data.npc.display.setSize(5F);
+                CustomNpcsPlatform.setDisplaySize(data.npc.display, 5);
             data.simpleRender = false;
         }
     }

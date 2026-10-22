@@ -6,22 +6,23 @@ import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntFunction;
 
-public abstract class ShootableItem extends Item
+public abstract class ShootableItem extends FlanItem
 {
     protected final String shortname;
     private static final String NBT_ROUNDS = "rounds";
@@ -201,7 +202,7 @@ public abstract class ShootableItem extends Item
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         ShootableType configType = getConfigType();
 

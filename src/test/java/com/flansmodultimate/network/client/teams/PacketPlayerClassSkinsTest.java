@@ -2,10 +2,8 @@ package com.flansmodultimate.network.client.teams;
 
 import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.platform.network.PacketBuffer;
-import io.netty.buffer.Unpooled;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import org.junit.jupiter.api.Test;
-
-import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.*;
 
@@ -24,8 +22,8 @@ class PacketPlayerClassSkinsTest
 
     private static Map<UUID, PlayerClassSkin> roundTrip(Map<UUID, PlayerClassSkin> choices)
     {
-        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-        FriendlyByteBuf output = new FriendlyByteBuf(Unpooled.buffer());
+        var buffer = TestPacketBuffers.buffer();
+        var output = TestPacketBuffers.buffer();
         try
         {
             new PacketPlayerClassSkins(choices).encodeInto(new PacketBuffer(buffer));

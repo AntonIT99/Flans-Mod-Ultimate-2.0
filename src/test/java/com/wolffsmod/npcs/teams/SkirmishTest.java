@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -122,7 +123,7 @@ class SkirmishTest
         skirmish.setMarkerMap("alamein_ridge");
         store.add(skirmish);
         store.savePreset("Desert", skirmish);
-        SkirmishStore after = SkirmishStore.load(store.save(new CompoundTag()));
+        SkirmishStore after = SkirmishStore.load(store.save(new CompoundTag(), ItemStackData.builtInRegistries()), ItemStackData.builtInRegistries());
         assertEquals("alamein_ridge", after.named("el alamein").orElseThrow().getMarkerMap());
         Skirmish preset = after.presets().get("desert");
         assertNotNull(preset, "a preset is kept by its lower-case name");

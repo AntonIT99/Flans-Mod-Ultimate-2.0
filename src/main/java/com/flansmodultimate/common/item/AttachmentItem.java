@@ -3,18 +3,18 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.platform.item.FlanItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class AttachmentItem extends Item implements IPaintableItem<AttachmentType>
+public class AttachmentItem extends FlanItem implements IPaintableItem<AttachmentType>
 {
     @Getter
     protected final AttachmentType configType;
@@ -32,7 +32,7 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         if (!IFlanItem.showDetailedDescriptions())

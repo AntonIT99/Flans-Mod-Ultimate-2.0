@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
@@ -39,7 +40,7 @@ class BattleFactionsTest
         UUID player = UUID.randomUUID();
         before.setMember(player, GERMANY);
 
-        BattleFactions after = BattleFactions.load(before.save(new CompoundTag()));
+        BattleFactions after = BattleFactions.load(before.save(new CompoundTag(), ItemStackData.builtInRegistries()), ItemStackData.builtInRegistries());
 
         BattleFactions.Managed managed = after.managed(GERMANY).orElseThrow();
         assertEquals(BattleFactions.Outsiders.POINTS, managed.getOutsiders());

@@ -3,11 +3,10 @@ package com.flansmodultimate.network.client.driveable;
 import com.flansmodultimate.network.IPacket;
 import com.flansmodultimate.network.client.effects.PacketDistantExplosion;
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -53,7 +52,7 @@ class PacketDistantContactsTest
     @Test
     void anImplausibleContactCountIsRejected()
     {
-        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        var buf = TestPacketBuffers.buffer();
         buf.writeVarInt(5);
         buf.writeVarInt(1_000_000);
         PacketDistantContacts packet = new PacketDistantContacts();
@@ -76,12 +75,12 @@ class PacketDistantContactsTest
 
     private static PacketBuffer buffer(byte[] bytes)
     {
-        return new PacketBuffer(new FriendlyByteBuf(Unpooled.wrappedBuffer(bytes)));
+        return new PacketBuffer(TestPacketBuffers.wrap(bytes));
     }
 
     private static byte[] encode(IPacket packet)
     {
-        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        var buffer = TestPacketBuffers.buffer();
         packet.encodeInto(new PacketBuffer(buffer));
         return ByteBufUtil.getBytes(buffer);
     }

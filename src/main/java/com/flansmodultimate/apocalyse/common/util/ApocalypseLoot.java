@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.util;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModUtils;
@@ -305,7 +306,7 @@ public final class ApocalypseLoot
         List<Component> pages = Arrays.stream(journal).skip(1).map(text -> (Component) Component.literal(text)).toList();
         ItemStack book = ItemStackData.writtenBook(journal[0], "Flan", pages);
         if (entry == 7)
-            book.getOrCreateTag().putInt("generation", 3);
+            ItemStackData.setBookGeneration(book, 3);
         return book;
     }
 
@@ -343,7 +344,7 @@ public final class ApocalypseLoot
         PlayerClass playerClass = classes.isEmpty() ? null : classes.get(random.nextInt(classes.size()));
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (slot.getType() != EquipmentSlot.Type.ARMOR)
+            if (!EntityPlatform.isHumanoidArmor(slot))
                 continue;
             ItemStack armor = playerClass == null ? ItemStack.EMPTY : playerClass.getArmour(slot);
             if (armor.isEmpty())

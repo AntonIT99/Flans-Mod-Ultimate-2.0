@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.CrewGunners;
@@ -390,7 +391,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (slot.getType() != EquipmentSlot.Type.ARMOR)
+            if (!EntityPlatform.isHumanoidArmor(slot))
                 continue;
             ItemStack armor = getItemBySlot(slot);
             armor.getAttributeModifiers(slot).forEach((attribute, modifier) ->
@@ -514,7 +515,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         int wear = Math.max(1, (int) (amount / 4F));
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (slot.getType() == EquipmentSlot.Type.ARMOR)
+            if (EntityPlatform.isHumanoidArmor(slot))
             {
                 ItemStack stack = getItemBySlot(slot);
                 if (stack.getItem() instanceof net.minecraft.world.item.ArmorItem && (!source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE) || !stack.getItem().isFireResistant()))

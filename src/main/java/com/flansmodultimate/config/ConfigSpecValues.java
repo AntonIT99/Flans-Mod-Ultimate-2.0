@@ -28,7 +28,6 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ConfigSpecValues
 {
-    /** Its own logger: this runs before, and without, the mod class being loaded. */
     private static final String PATH_SEPARATOR = ".";
     private static final byte TYPE_BOOLEAN = 0;
     private static final byte TYPE_INT = 1;

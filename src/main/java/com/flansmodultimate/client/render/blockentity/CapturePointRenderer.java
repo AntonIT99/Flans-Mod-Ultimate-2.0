@@ -5,6 +5,7 @@ import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
 import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.common.block.entity.CapturePointBlockEntity;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -90,7 +91,7 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
         poseStack.pushPose();
         poseStack.translate(0.5F, LABEL_HEIGHT, 0.5F);
         poseStack.mulPose(dispatcher.camera.rotation());
-        poseStack.scale(-LABEL_SCALE, -LABEL_SCALE, LABEL_SCALE);
+        ClientPlatform.scaleCameraFacingLabel(poseStack, LABEL_SCALE);
         Matrix4f pose = poseStack.last().pose();
         String symbol = String.valueOf(point.getSymbol());
         font.drawInBatch(symbol, -font.width(symbol) / 2F, -10F, 0xFFFFFFFF, false, pose, buffer, Font.DisplayMode.SEE_THROUGH, 0x70000000, packedLight);

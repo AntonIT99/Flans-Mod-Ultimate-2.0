@@ -32,6 +32,12 @@ public final class ItemAttributes
         return ForgeMod.ENTITY_REACH.get();
     }
 
+    /** Translation key of the melee reach attribute. */
+    public static String meleeReachDescriptionId()
+    {
+        return meleeReachAttribute().getDescriptionId();
+    }
+
     /** Modifiers an item adds on top of its vanilla ones. */
     public static final class Modifiers
     {
@@ -68,6 +74,8 @@ public final class ItemAttributes
 
         Modifiers modifiers = new Modifiers();
         additions.accept(modifiers);
+        if (modifiers.entries.isEmpty())
+            return vanilla;
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
         builder.putAll(vanilla);
         modifiers.entries.forEach(entry -> builder.put(entry.attribute(), entry.modifier()));

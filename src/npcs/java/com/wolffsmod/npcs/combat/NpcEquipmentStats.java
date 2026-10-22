@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.platform.PlatformSounds;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -80,7 +81,7 @@ public final class NpcEquipmentStats
         if (item.getItem() instanceof CrossbowItem)
             return vanilla(2D, NpcItemAttacks.CROSSBOW_VELOCITY, NpcPlatform.multishotLevel(npc, item) > 0 ? 3 : 1, SoundEvents.CROSSBOW_SHOOT, arrowHit, arrowHit);
         if (item.getItem() instanceof TridentItem)
-            return vanilla(8D, 2.5D, 1, NpcPlatform.tridentThrowSound(), SoundEvents.TRIDENT_HIT.getLocation().toString(), SoundEvents.TRIDENT_HIT_GROUND.getLocation().toString());
+            return vanilla(8D, 2.5D, 1, PlatformSounds.tridentThrow(), SoundEvents.TRIDENT_HIT.getLocation().toString(), SoundEvents.TRIDENT_HIT_GROUND.getLocation().toString());
         if (item.getItem() instanceof ThrowablePotionItem)
             return vanilla(0D, 0.5D, 1, SoundEvents.SNOWBALL_THROW, "", SoundEvents.SPLASH_POTION_BREAK.getLocation().toString());
         if (item.is(Items.SNOWBALL) || item.is(Items.EGG) || item.is(Items.ENDER_PEARL))

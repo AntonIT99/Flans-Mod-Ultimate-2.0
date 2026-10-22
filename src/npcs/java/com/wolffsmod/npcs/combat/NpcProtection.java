@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.combat;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.Resistances;
@@ -13,15 +14,10 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.*;
 
-import java.util.UUID;
-
 /** Per-NPC damage gates and knockback handling, applied on the server before Custom NPCs resolves a hit. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcProtection
 {
-    private static final UUID KNOCKBACK_IMMUNITY = UUID.fromString("5b0f7a52-6f0b-4c0e-9d1f-0c2c6f7a3e41");
-    private static final String KNOCKBACK_IMMUNITY_NAME = "Wolff's Mod knockback immunity";
-
     public static NpcCombatSettings settings(EntityNPCInterface npc)
     {
         return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
@@ -88,11 +84,6 @@ public final class NpcProtection
         AttributeInstance resistance = npc.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
         if (resistance == null)
             return;
-        boolean immune = knockbackImmune(npc);
-        boolean applied = resistance.getModifier(KNOCKBACK_IMMUNITY) != null;
-        if (immune && !applied)
-            resistance.addTransientModifier(new AttributeModifier(KNOCKBACK_IMMUNITY, KNOCKBACK_IMMUNITY_NAME, 1D, AttributeModifier.Operation.ADDITION));
-        else if (!immune && applied)
-            resistance.removeModifier(KNOCKBACK_IMMUNITY);
+        NpcPlatform.setKnockbackImmunity(resistance, knockbackImmune(npc));
     }
 }

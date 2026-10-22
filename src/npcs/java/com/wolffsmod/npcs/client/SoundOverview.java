@@ -4,9 +4,9 @@ import com.flansmodultimate.api.EngineSound;
 import com.flansmodultimate.api.FlansEntityTypes;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.properties.*;
 import lombok.RequiredArgsConstructor;
-import noppes.npcs.client.CustomNpcResourceListener;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.shared.client.gui.components.*;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +63,7 @@ final class SoundOverview
 
         private int color()
         {
-            return color < 0 ? CustomNpcResourceListener.getDefaultTextColor() : color;
+            return color < 0 ? CustomNpcsPlatform.defaultTextColor() : color;
         }
     }
 
@@ -96,7 +96,7 @@ final class SoundOverview
             Effective effective = resolve(row);
             gui.addLabel(new GuiLabel(ROW_LABEL_ID + row.ordinal(), PREFIX + "row." + name, x, y + 5, PREFIX + "row." + name + HELP_SUFFIX));
             String sound = effective.sound() == null ? "-" : effective.sound();
-            GuiLabel value = new GuiLabel(VALUE_ID + row.ordinal(), Component.literal(CombatPages.shorten(sound)), CustomNpcResourceListener.getDefaultTextColor(), x + 96, y + 5, 40, 0);
+            GuiLabel value = new GuiLabel(VALUE_ID + row.ordinal(), Component.literal(CombatPages.shorten(sound)), CustomNpcsPlatform.defaultTextColor(), x + 96, y + 5, 40, 0);
             value.setTooltip(Tooltip.create(Component.literal(sound)));
             gui.addLabel(value);
             String source = effective.source().name().toLowerCase(Locale.ROOT);

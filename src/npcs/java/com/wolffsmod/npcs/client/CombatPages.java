@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.EquipmentValues.Kind;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -15,8 +16,6 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
 import java.util.*;
 
@@ -944,7 +943,7 @@ final class CombatPages
             return value;
         double max = switch (property)
         {
-            case HEALTH -> Attributes.MAX_HEALTH instanceof RangedAttribute attribute ? attribute.getMaxValue() : Integer.MAX_VALUE;
+            case HEALTH -> NpcPlatform.maxHealthLimit();
             case AGGRO_RANGE, RANGE -> NpcMobility.rangeLimit();
             case ACCURACY, SPEED, WALKING_SPEED -> 100D;
             case SHOT_COUNT -> 10D;

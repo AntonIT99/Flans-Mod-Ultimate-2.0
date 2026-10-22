@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
@@ -215,7 +216,7 @@ public final class BotFactory
         List<ItemStack> stocks = new ArrayList<>();
         for (WeaponMount mount : FlansEntityTypes.getMounts(definition))
         {
-            mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> ItemStack.isSameItemSameTags(stock, ammunition)))
+            mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> ItemStackData.isSameItemSameData(stock, ammunition)))
                 .ifPresent(stocks::add);
         }
         for (int i = 0; i < stocks.size() && i <= INVENTORY_SLOTS; i++)

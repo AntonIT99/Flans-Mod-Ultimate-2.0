@@ -117,4 +117,10 @@ public final class ItemStackData
         tag.put(WrittenBookItem.TAG_PAGES, pageList);
         return book;
     }
+
+    /** Marks a written book as a copy: 0 for the original, 1 for a copy of it, 2 for a copy of a copy, 3 for tattered. */
+    public static void setBookGeneration(ItemStack book, int generation)
+    {
+        book.getOrCreateTag().putInt(WrittenBookItem.TAG_GENERATION, generation);
+    }
 }

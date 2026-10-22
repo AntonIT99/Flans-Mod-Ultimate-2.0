@@ -1,18 +1,20 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.platform.world.FlanSavedData;
+import com.flansmodultimate.platform.world.SavedDataPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.SavedData;
 
 /**
  * Keeps the bots of the round being played with the world, so a server that stops in the middle of a round picks them
  * up again where they were, as {@link BotBattleCodec} stores them. The NPCs themselves are saved with their chunks; the
  * round adopts them again when the same playing resumes. Server thread.
  */
-public final class BotRoundStore extends SavedData
+public final class BotRoundStore extends FlanSavedData
 {
     private static final String ID = "wolffsmodnpcs_bot_round";
 
@@ -24,7 +26,7 @@ public final class BotRoundStore extends SavedData
 
     public static BotRoundStore get(MinecraftServer server)
     {
-        return server.overworld().getDataStorage().computeIfAbsent(BotRoundStore::load, BotRoundStore::new, ID);
+        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, BotRoundStore::new, BotRoundStore::load);
     }
 
     /**
@@ -56,7 +58,7 @@ public final class BotRoundStore extends SavedData
 
     @Override
     @NotNull
-    public CompoundTag save(@NotNull CompoundTag tag)
+    public CompoundTag save(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
         BotBattle current = round;
         if (current != null)
@@ -66,7 +68,9 @@ public final class BotRoundStore extends SavedData
         return tag;
     }
 
-    static BotRoundStore load(CompoundTag tag)
+    // SavedDataPlatform passes the registries; this store holds no registry data.
+    @SuppressWarnings("unused")
+    static BotRoundStore load(CompoundTag tag, HolderLookup.Provider registries)
     {
         BotRoundStore store = new BotRoundStore();
         store.pending = tag.copy();

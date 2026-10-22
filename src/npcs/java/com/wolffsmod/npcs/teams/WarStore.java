@@ -1,17 +1,19 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.platform.world.FlanSavedData;
+import com.flansmodultimate.platform.world.SavedDataPlatform;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.*;
 
 /** The wars of the world with their territories and engagements, written out whenever the world is saved. Server thread. */
-final class WarStore extends SavedData
+final class WarStore extends FlanSavedData
 {
     private static final String ID = "wolffsmodnpcs_wars";
     private static final String NBT_WARS = "wars";
@@ -20,7 +22,7 @@ final class WarStore extends SavedData
 
     static WarStore get(MinecraftServer server)
     {
-        return server.overworld().getDataStorage().computeIfAbsent(WarStore::load, WarStore::new, ID);
+        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, WarStore::new, WarStore::load);
     }
 
     Collection<War> all()
@@ -48,7 +50,7 @@ final class WarStore extends SavedData
 
     @Override
     @NotNull
-    public CompoundTag save(@NotNull CompoundTag tag)
+    public CompoundTag save(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
         ListTag list = new ListTag();
         wars.values().forEach(war -> list.add(war.save()));
@@ -56,7 +58,9 @@ final class WarStore extends SavedData
         return tag;
     }
 
-    static WarStore load(CompoundTag tag)
+    // SavedDataPlatform passes the registries; this store holds no registry data.
+    @SuppressWarnings("unused")
+    static WarStore load(CompoundTag tag, HolderLookup.Provider registries)
     {
         WarStore store = new WarStore();
         for (Tag element : tag.getList(NBT_WARS, Tag.TAG_COMPOUND))

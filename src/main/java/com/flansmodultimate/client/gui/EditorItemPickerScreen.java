@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.common.teams.editor.EditorStacks;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -120,7 +121,7 @@ public final class EditorItemPickerScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         for (int cell = 0; cell < rows * 9; cell++)
         {

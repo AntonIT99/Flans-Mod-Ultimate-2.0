@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.NpcPresetPacket;
 import com.wolffsmod.npcs.network.ServerControlPacket;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.presets.NpcPreset;
 import com.wolffsmod.npcs.presets.NpcPresetSetting;
 import com.wolffsmod.npcs.properties.*;
@@ -16,7 +17,6 @@ import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.RequiredArgsConstructor;
-import noppes.npcs.client.CustomNpcResourceListener;
 import noppes.npcs.client.NoppesUtil;
 import noppes.npcs.client.gui.select.GuiSoundSelection;
 import noppes.npcs.client.gui.util.GuiNPCInterface2;
@@ -577,7 +577,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         String text = title.getString();
         if (font().width(text) > OVERVIEW_TITLE_WIDTH)
             text = font().plainSubstrByWidth(text, OVERVIEW_TITLE_WIDTH - font().width("...")) + "...";
-        GuiLabel label = new GuiLabel(TITLE_LABEL_ID, Component.literal(text), CustomNpcResourceListener.getDefaultTextColor(), guiLeft + 8, guiTop + 10, 40, 10);
+        GuiLabel label = new GuiLabel(TITLE_LABEL_ID, Component.literal(text), CustomNpcsPlatform.defaultTextColor(), guiLeft + 8, guiTop + 10, 40, 10);
         label.setTooltip(Tooltip.create(title.copy().append("\n").append(Component.translatable(kind.key() + HELP_SUFFIX).withStyle(HELP_STYLE))));
         addLabel(label);
         titleButton(ESSENTIALS_BUTTON_ID, ESSENTIALS_LEFT, 64, Component.translatable(Category.ESSENTIALS.key()), Component.translatable(Category.ESSENTIALS.key() + HELP_SUFFIX), loaded);

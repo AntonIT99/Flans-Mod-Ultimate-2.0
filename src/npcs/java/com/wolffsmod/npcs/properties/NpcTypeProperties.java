@@ -5,6 +5,7 @@ import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
@@ -14,8 +15,6 @@ import noppes.npcs.entity.data.DataAI;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.*;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
@@ -83,7 +82,7 @@ public final class NpcTypeProperties
         type = Optional.ofNullable(selected).flatMap(value -> FlansEntityTypes.getProperties(value, secondary, options.enabled(Feature.MODEL_MUZZLES))).orElse(null);
         boolean followsCycle = type != null && lastNative && options.enabled(Feature.RELOAD_CYCLE) && type.shootDelay().isPresent();
         cycle = followsCycle ? FlansEntityTypes.getReloadCycle(selected, secondary, ammunition).orElse(null) : null;
-        double maxHealth = Attributes.MAX_HEALTH instanceof RangedAttribute attribute ? attribute.getMaxValue() : Integer.MAX_VALUE;
+        double maxHealth = NpcPlatform.maxHealthLimit();
         Map<NpcTypeProperty, Tag> offered = new EnumMap<>(NpcTypeProperty.class);
         if (type != null)
             offered.putAll(NpcTypeMapping.create(type, options, lastNative, maxHealth, cycle));

@@ -5,7 +5,6 @@ import com.wolffsmod.npcs.client.FlanSoldierBrowser;
 import com.wolffsmod.npcs.client.NpcModelNameScroll;
 import com.wolffsmod.npcs.model.*;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
-import net.minecraftforge.registries.ForgeRegistries;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
@@ -17,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
@@ -267,8 +267,8 @@ public abstract class NpcModelBrowserMixin
         wolffsmodnpcsSelectionScrollY = ((NpcModelScrollAccessor) clicked).wolffsmodnpcsGetScrollY();
         PaintjobVariant job = wolffsmodnpcsPaintjobs.get(index - 1);
         GuiCreationScreenInterface screen = (GuiCreationScreenInterface) (Object) this;
-        if (!Objects.equals(screen.playerdata.getEntityName(), ForgeRegistries.ENTITY_TYPES.getKey(wolffsmodnpcsVariantModel)))
-            screen.playerdata.setEntity(ForgeRegistries.ENTITY_TYPES.getKey(wolffsmodnpcsVariantModel));
+        if (!Objects.equals(screen.playerdata.getEntityName(), BuiltInRegistries.ENTITY_TYPE.getKey(wolffsmodnpcsVariantModel)))
+            screen.playerdata.setEntity(BuiltInRegistries.ENTITY_TYPE.getKey(wolffsmodnpcsVariantModel));
         else
             screen.playerdata.clearEntity();
         // Custom NPCs saves and synchronizes ExtraData with the selected model and presets.

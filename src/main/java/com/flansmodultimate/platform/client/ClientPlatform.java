@@ -1,12 +1,15 @@
 package com.flansmodultimate.platform.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.RenderType;
@@ -17,6 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -44,6 +48,24 @@ public final class ClientPlatform
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         screen.renderBackground(graphics);
+    }
+
+    /** Draws a living entity in a screen, turned towards the given look offset from its position. */
+    public static void renderEntityInInventory(GuiGraphics graphics, int x, int y, int scale, float lookX, float lookY, LivingEntity entity)
+    {
+        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x, y, scale, lookX, lookY, entity);
+    }
+
+    /** Advances a text field's cursor blink; later versions blink by time and need no tick. */
+    public static void tick(EditBox box)
+    {
+        box.tick();
+    }
+
+    /** Scales a label already turned to the camera so its text reads left to right, as name tags do. */
+    public static void scaleCameraFacingLabel(PoseStack pose, float scale)
+    {
+        pose.scale(-scale, -scale, scale);
     }
 
     public static float partialTick(RenderLevelStageEvent event)

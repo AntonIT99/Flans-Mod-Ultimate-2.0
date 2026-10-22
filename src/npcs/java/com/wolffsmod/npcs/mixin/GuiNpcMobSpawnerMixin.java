@@ -1,13 +1,13 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.model.FlanModelEntityType;
-import net.minecraftforge.registries.ForgeRegistries;
 import noppes.npcs.client.EntityUtil;
 import noppes.npcs.client.gui.GuiNpcMobSpawner;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
@@ -21,7 +21,7 @@ public abstract class GuiNpcMobSpawnerMixin
     private HashMap<String, ResourceLocation> wolffsmodnpcsClonableEntities(Level level, boolean includeNpcs)
     {
         HashMap<String, ResourceLocation> entities = EntityUtil.getAllEntities(level, includeNpcs);
-        entities.values().removeIf(id -> ForgeRegistries.ENTITY_TYPES.getValue(id) instanceof FlanModelEntityType);
+        entities.values().removeIf(id -> BuiltInRegistries.ENTITY_TYPE.get(id) instanceof FlanModelEntityType);
         return entities;
     }
 }

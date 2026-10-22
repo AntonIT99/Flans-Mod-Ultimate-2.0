@@ -1,12 +1,14 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.platform.world.FlanSavedData;
+import com.flansmodultimate.platform.world.SavedDataPlatform;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -15,7 +17,7 @@ import java.util.*;
  * The places operators marked on Teams maps for bots: route points paths are strung through, garrison and sniper posts
  * for defenders, positions for AA and patrol points for ships. Saved with the world, per map. Server thread.
  */
-public final class BotMarkers extends SavedData
+public final class BotMarkers extends FlanSavedData
 {
     private static final String ID = "wolffsmodnpcs_bot_markers";
     private static final String NBT_MAPS = "maps";
@@ -46,7 +48,7 @@ public final class BotMarkers extends SavedData
 
     public static BotMarkers get(MinecraftServer server)
     {
-        return server.overworld().getDataStorage().computeIfAbsent(BotMarkers::load, BotMarkers::new, ID);
+        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, BotMarkers::new, BotMarkers::load);
     }
 
     public List<Marker> of(String mapId)
@@ -91,7 +93,7 @@ public final class BotMarkers extends SavedData
 
     @Override
     @NotNull
-    public CompoundTag save(@NotNull CompoundTag tag)
+    public CompoundTag save(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
         CompoundTag maps = new CompoundTag();
         markersByMap.forEach((mapId, markers) ->
@@ -112,7 +114,9 @@ public final class BotMarkers extends SavedData
         return tag;
     }
 
-    static BotMarkers load(CompoundTag tag)
+    // SavedDataPlatform passes the registries; this store holds no registry data.
+    @SuppressWarnings("unused")
+    static BotMarkers load(CompoundTag tag, HolderLookup.Provider registries)
     {
         BotMarkers markers = new BotMarkers();
         CompoundTag maps = tag.getCompound(NBT_MAPS);

@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
@@ -55,7 +56,7 @@ class BotRoundStoreTest
         CompoundTag saved = new CompoundTag();
         BotBattleCodec.write(before, saved);
 
-        BotRoundStore store = BotRoundStore.load(saved);
+        BotRoundStore store = BotRoundStore.load(saved, ItemStackData.builtInRegistries());
         BotBattle after = battle(instance);
         assertTrue(store.resume(after, NOW));
 
@@ -90,7 +91,7 @@ class BotRoundStoreTest
         CompoundTag saved = new CompoundTag();
         BotBattleCodec.write(played(UUID.randomUUID()), saved);
         BotBattle other = battle(UUID.randomUUID());
-        assertFalse(BotRoundStore.load(saved).resume(other, NOW));
+        assertFalse(BotRoundStore.load(saved, ItemStackData.builtInRegistries()).resume(other, NOW));
         assertTrue(other.getSlots().isEmpty());
         assertTrue(other.getTickets().isEmpty());
     }
@@ -100,7 +101,7 @@ class BotRoundStoreTest
     {
         CompoundTag saved = new CompoundTag();
         BotBattleCodec.write(played(UUID.randomUUID()), saved);
-        assertEquals(saved, BotRoundStore.load(saved).save(new CompoundTag()));
+        assertEquals(saved, BotRoundStore.load(saved, ItemStackData.builtInRegistries()).save(new CompoundTag(), ItemStackData.builtInRegistries()));
     }
 
     @Test
@@ -117,7 +118,7 @@ class BotRoundStoreTest
         CompoundTag saved = new CompoundTag();
         BotBattleCodec.write(before, saved);
         BotBattle after = battle(instance);
-        assertTrue(BotRoundStore.load(saved).resume(after, NOW));
+        assertTrue(BotRoundStore.load(saved, ItemStackData.builtInRegistries()).resume(after, NOW));
         BotSquad restored = after.getSquads().values().iterator().next();
         assertEquals(leader, restored.getLeader());
         assertEquals(new Vec3(5D, 70D, 6D), restored.getRally());

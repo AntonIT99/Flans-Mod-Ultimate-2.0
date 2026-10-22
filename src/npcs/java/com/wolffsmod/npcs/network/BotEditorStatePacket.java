@@ -39,6 +39,8 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
         presets = List.copyOf(presets);
     }
 
+    // A method reference to writeNbt is ambiguous on 1.21, whose buffer overloads it; the lambda is shared.
+    @SuppressWarnings("java:S1612")
     public void write(FriendlyByteBuf buffer)
     {
         buffer.writeCollection(rounds, (out, entry) ->
@@ -49,7 +51,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
         });
         buffer.writeVarInt(round);
         buffer.writeNbt(settings);
-        buffer.writeCollection(templates, FriendlyByteBuf::writeNbt);
+        buffer.writeCollection(templates, (out, template) -> out.writeNbt(template));
         buffer.writeCollection(presets, (out, name) -> out.writeUtf(name, MAX_TEXT));
     }
 
@@ -58,7 +60,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
         List<Round> rounds = buffer.readList(in -> new Round(in.readUUID(), in.readUtf(MAX_TEXT), in.readList(teamIn -> teamIn.readUtf(MAX_TEXT))));
         int round = buffer.readVarInt();
         CompoundTag settings = buffer.readNbt();
-        List<CompoundTag> templates = buffer.readList(FriendlyByteBuf::readNbt);
+        List<CompoundTag> templates = buffer.readList(in -> in.readNbt());
         List<String> presets = buffer.readList(in -> in.readUtf(MAX_TEXT));
         return new BotEditorStatePacket(rounds, round, settings == null ? new CompoundTag() : settings, templates.stream().map(tag -> tag == null ? new CompoundTag() : tag).toList(), presets);
     }

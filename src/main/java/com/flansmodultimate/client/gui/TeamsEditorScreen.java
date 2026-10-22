@@ -7,6 +7,8 @@ import com.flansmodultimate.common.teams.editor.*;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.teams.PacketEditorAction;
+import com.flansmodultimate.platform.client.ClientPlatform;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.google.gson.*;
 import com.mojang.authlib.GameProfile;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +19,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -651,7 +652,7 @@ public final class TeamsEditorScreen extends Screen
             @Override
             public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
             {
-                renderBackground(graphics);
+                ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
                 super.render(graphics, mouseX, mouseY, partialTick);
                 graphics.drawCenteredString(font, title, width / 2, height / 2 - 72, 0xFFFFFF);
             }
@@ -722,7 +723,7 @@ public final class TeamsEditorScreen extends Screen
     @Override
     public void tick()
     {
-        fields.forEach(EditBox::tick);
+        fields.forEach(ClientPlatform::tick);
         if (saveButton != null && detail)
             saveButton.active = errors.isEmpty();
     }
@@ -765,7 +766,7 @@ public final class TeamsEditorScreen extends Screen
     private void quickCopy()
     {
         previewClass = false;
-        EquipmentSlot armour = net.minecraft.world.entity.LivingEntity.getEquipmentSlotForItem(carried);
+        EquipmentSlot armour = preview == null ? EquipmentSlot.MAINHAND : EntityPlatform.equipmentSlotFor(preview, carried);
         if (EditorDescriptions.ARMOUR.contains(armour))
         {
             draft.getAsJsonObject("armour").add(armour.getName(), EditorStacks.save(carried));
@@ -886,7 +887,7 @@ public final class TeamsEditorScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         graphics.fill(left, top, left + panelWidth, top + panelHeight, 0xF01A202B);
         graphics.drawString(font, detail ? font.plainSubstrByWidth(draft.get("name").getAsString() + " · " + key, panelWidth - 16) : title.getString(), left + 8, top + 9, 0xFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -1022,7 +1023,7 @@ public final class TeamsEditorScreen extends Screen
             previewSkin = skins.isEmpty() ? null : com.flansmodultimate.client.render.layer.PlayerSkinOverrides.previewTexture(ResourceLocation.tryParse(skins.get(0).getAsString()));
             int previewY = panelWidth >= 470 ? top + 190 : top + panelHeight - 55;
             int scale = panelWidth >= 470 ? 40 : 28;
-            InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, left + panelWidth - 45, previewY, scale, left + panelWidth - 45 - mouseX, previewY - 40 - mouseY, preview);
+            ClientPlatform.renderEntityInInventory(graphics, left + panelWidth - 45, previewY, scale, (float) left + panelWidth - 45 - mouseX, (float) previewY - 40 - mouseY, preview);
         }
         if (panelHeight >= 270)
             graphics.drawString(font, tr("equipment_hint"), left + 8, top + 210, 0xAABBDD);

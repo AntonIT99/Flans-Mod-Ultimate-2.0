@@ -7,16 +7,16 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -31,10 +31,9 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.*;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 /** Common, server-authoritative placement item for every driveable family. */
-public abstract class DriveableItem<T extends DriveableType, D extends Driveable> extends Item implements IPaintableItem<T>, ICustomRendereredItem<T>
+public abstract class DriveableItem<T extends DriveableType, D extends Driveable> extends FlanItem implements IPaintableItem<T>, ICustomRendereredItem<T>
 {
     private static final double PLACEMENT_REACH = 5D;
 
@@ -105,12 +104,6 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     protected abstract D createDriveable(Level level, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack);
 
     @Override
-    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer)
-    {
-        ICustomRendereredItem.super.initializeClient(consumer);
-    }
-
-    @Override
     public boolean useCustomRendererInHand()
     {
         return true;
@@ -135,12 +128,12 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
         if (!IFlanItem.showDetailedDescriptions())
             return;
-        DriveableData data = DriveableData.fromStack(configType, stack, ItemStackData.builtInRegistries());
+        DriveableData data = DriveableData.fromStack(configType, stack, registries);
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {

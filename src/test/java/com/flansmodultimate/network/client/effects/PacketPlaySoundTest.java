@@ -1,11 +1,10 @@
 package com.flansmodultimate.network.client.effects;
 
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -29,7 +28,7 @@ class PacketPlaySoundTest
                 PacketPlaySound original = new PacketPlaySound(new Vec3(1.5D, 64D, -3.25D), 48D, TEXT_SOUND, distort, !distort, cancellable, instance, null);
                 byte[] first = encode(original);
                 PacketPlaySound decoded = new PacketPlaySound();
-                decoded.decodeInto(new PacketBuffer(new FriendlyByteBuf(Unpooled.wrappedBuffer(first))));
+                decoded.decodeInto(new PacketBuffer(TestPacketBuffers.wrap(first)));
                 // A plain sound keeps only the pitch seed; encoding it again must give the same bytes.
                 assertArrayEquals(first, encode(decoded));
             }
@@ -43,7 +42,7 @@ class PacketPlaySoundTest
         original.setVariableEnginePitch(true);
         byte[] first = encode(original);
         PacketPlaySound decoded = new PacketPlaySound();
-        decoded.decodeInto(new PacketBuffer(new FriendlyByteBuf(Unpooled.wrappedBuffer(first))));
+        decoded.decodeInto(new PacketBuffer(TestPacketBuffers.wrap(first)));
         assertArrayEquals(first, encode(decoded));
         original.setVariableEnginePitch(false);
         assertTrue(!java.util.Arrays.equals(first, encode(original)));
@@ -60,7 +59,7 @@ class PacketPlaySoundTest
 
     private static byte[] encode(PacketPlaySound packet)
     {
-        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        var buffer = TestPacketBuffers.buffer();
         packet.encodeInto(new PacketBuffer(buffer));
         return ByteBufUtil.getBytes(buffer);
     }

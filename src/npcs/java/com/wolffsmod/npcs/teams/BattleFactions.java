@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.FlansTeams;
+import com.flansmodultimate.platform.world.FlanSavedData;
+import com.flansmodultimate.platform.world.SavedDataPlatform;
 import lombok.Getter;
 import lombok.Setter;
 import noppes.npcs.controllers.FactionController;
@@ -8,13 +10,13 @@ import noppes.npcs.controllers.data.Faction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.*;
 
@@ -24,7 +26,7 @@ import java.util.*;
  * names, colours and hostilities, stay Custom NPCs' own, so its faction menu shows and edits them; any NPC set to one in
  * that menu fights for it. Saved with the world. Server thread.
  */
-public final class BattleFactions extends SavedData
+public final class BattleFactions extends FlanSavedData
 {
     private static final String ID = "wolffsmodnpcs_battle_factions";
     private static final String NBT_FACTIONS = "factions";
@@ -95,7 +97,7 @@ public final class BattleFactions extends SavedData
 
     public static BattleFactions get(MinecraftServer server)
     {
-        return server.overworld().getDataStorage().computeIfAbsent(BattleFactions::load, BattleFactions::new, ID);
+        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, BattleFactions::new, BattleFactions::load);
     }
 
     public Optional<Managed> managed(int id)
@@ -189,7 +191,7 @@ public final class BattleFactions extends SavedData
 
     @Override
     @NotNull
-    public CompoundTag save(@NotNull CompoundTag tag)
+    public CompoundTag save(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
         ListTag list = new ListTag();
         for (Managed managed : factions.values())
@@ -222,7 +224,9 @@ public final class BattleFactions extends SavedData
         return tag;
     }
 
-    static BattleFactions load(CompoundTag tag)
+    // SavedDataPlatform passes the registries; this store holds no registry data.
+    @SuppressWarnings("unused")
+    static BattleFactions load(CompoundTag tag, HolderLookup.Provider registries)
     {
         BattleFactions data = new BattleFactions();
         for (Tag element : tag.getList(NBT_FACTIONS, Tag.TAG_COMPOUND))

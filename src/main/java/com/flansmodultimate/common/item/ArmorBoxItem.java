@@ -2,19 +2,18 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorBoxType;
+import com.flansmodultimate.platform.item.FlanBlockItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class ArmorBoxItem extends BlockItem implements IFlanItem<ArmorBoxType>
+public class ArmorBoxItem extends FlanBlockItem implements IFlanItem<ArmorBoxType>
 {
     @Getter
     protected final ArmorBoxType configType;
@@ -28,7 +27,7 @@ public class ArmorBoxItem extends BlockItem implements IFlanItem<ArmorBoxType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
     }

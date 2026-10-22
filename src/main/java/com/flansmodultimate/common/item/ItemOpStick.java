@@ -5,11 +5,12 @@ import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketBaseEditState;
 import com.flansmodultimate.network.client.teams.PacketCapturePointEditState;
+import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
-public final class ItemOpStick extends Item
+public final class ItemOpStick extends FlanItem
 {
     /** Vanilla operator level 2, the same gate the teams commands use. */
     public static final int PERMISSION_LEVEL = 2;
@@ -223,7 +224,7 @@ public final class ItemOpStick extends Item
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag)
     {
         tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_MODE, Component.translatable("tooltip.flansmodultimate.operator_stick.mode." + getMode(stack).name().toLowerCase(Locale.ROOT)))
             .withStyle(ChatFormatting.YELLOW));

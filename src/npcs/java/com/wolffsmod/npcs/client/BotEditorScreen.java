@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.network.BotEditorActionPacket;
@@ -585,7 +586,7 @@ public final class BotEditorScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
         for (Label label : labels)

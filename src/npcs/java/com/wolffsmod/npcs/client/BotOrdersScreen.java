@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.wolffsmod.npcs.network.BotOrderPacket;
 import com.wolffsmod.npcs.network.BotOrdersStatePacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
@@ -350,7 +351,7 @@ public final class BotOrdersScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         if (map && state.playing())
             renderMap(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
