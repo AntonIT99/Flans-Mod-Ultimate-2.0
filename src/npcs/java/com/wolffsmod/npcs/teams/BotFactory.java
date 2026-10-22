@@ -44,7 +44,7 @@ public final class BotFactory
 {
     /** Custom NPCs' respawn setting for an NPC that stays dead. */
     private static final int NEVER_RESPAWN = 3;
-    /** Custom NPCs' movement setting for an NPC that stands where it is when idle. */
+    /** Custom NPCs' moving type (not its navigation type) for an NPC that stands where it is when idle. */
     private static final int STANDING = 0;
     private static final int SHOW_NAME = 0;
     private static final int HIDE_NAME = 1;
@@ -300,7 +300,7 @@ public final class BotFactory
         npc.advanced.attackOtherFactions = true;
         npc.stats.spawnCycle = NEVER_RESPAWN;
         npc.ais.returnToStart = false;
-        npc.ais.movementType = STANDING;
+        npc.ais.setMovingType(STANDING);
         npc.ais.setStartPos(BlockPos.containing(position));
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);

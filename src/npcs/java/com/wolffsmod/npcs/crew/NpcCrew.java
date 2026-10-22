@@ -51,7 +51,7 @@ public final class NpcCrew
     public static final int NO_SEAT = -1;
     /** Custom NPCs' respawn setting for an NPC that stays dead. */
     private static final int STAYS_DEAD = 3;
-    /** Custom NPCs' movement setting for an NPC that stands where it is when idle. */
+    /** Custom NPCs' moving type (not its navigation type) for an NPC that stands where it is when idle. */
     private static final int STANDING = 0;
     /** Ticks between checks whether a vehicle that crews itself needs a crew. */
     private static final int AUTO_INTERVAL = 10;
@@ -318,7 +318,7 @@ public final class NpcCrew
         npc.setFaction(vehicle.faction.id);
         npc.stats.spawnCycle = STAYS_DEAD;
         npc.ais.returnToStart = false;
-        npc.ais.movementType = STANDING;
+        npc.ais.setMovingType(STANDING);
         npc.ais.setStartPos(vehicle.blockPosition());
         npc.updateClient = true;
         npc.updateAI = true;
