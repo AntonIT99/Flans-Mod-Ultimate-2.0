@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.raytracing;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.parts.PartBodies;
 import com.flansmodultimate.common.driveables.parts.PartBody;
@@ -116,7 +117,8 @@ public class Raytracer
         PlayerData data = PlayerData.getInstance(player);
         boolean shouldDoNormalHitDetect = false;
 
-        if (Team.SPECTATORS.equals(data.getTeam()))
+        // Login uses the Teams spectator placeholder even outside a round; it must not grant survival immunity.
+        if (player.isSpectator() || FlansMod.teamsManager.isRoundRunning() && Team.SPECTATORS.equals(data.getTeam()))
             return;
 
         SnapshotSelection selection = SnapshotSelection.selectSnapshotForPing(data, pingOfShooter);
