@@ -4,8 +4,10 @@ import com.flansmodultimate.FlansModTextures;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.client.particle.ParticleRenderType;
@@ -33,7 +35,7 @@ public final class LegacyParticleRenderTypes
         @Override
         public void end(Tesselator tesselator)
         {
-            tesselator.end();
+            drawWithDepth(tesselator);
             RenderSystem.depthMask(true);
         }
 
@@ -49,6 +51,33 @@ public final class LegacyParticleRenderTypes
 
     private LegacyParticleRenderTypes()
     {}
+
+    /**
+     * Draws the batch's colour without writing depth, so overlapping puffs blend in any order, then draws it again into
+     * depth only. Clouds and weather render after particles, and without that depth they were drawn over the smoke.
+     */
+    private static void drawWithDepth(Tesselator tesselator)
+    {
+        BufferBuilder.RenderedBuffer rendered = tesselator.getBuilder().end();
+        if (rendered.isEmpty())
+        {
+            rendered.release();
+            return;
+        }
+
+        // Bind the immediate buffer ourselves so it can be drawn twice; reset() makes BufferUploader rebind afterwards.
+        BufferUploader.reset();
+        VertexBuffer buffer = rendered.drawState().format().getImmediateDrawVertexBuffer();
+        buffer.bind();
+        buffer.upload(rendered);
+        buffer.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+
+        RenderSystem.colorMask(false, false, false, false);
+        RenderSystem.depthMask(true);
+        buffer.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+        RenderSystem.colorMask(true, true, true, true);
+        VertexBuffer.unbind();
+    }
 
     /** Premultiplied blending like {@link #PREMULTIPLIED}, but bound to a single texture file. */
     private static ParticleRenderType createForTexture(String name, ResourceLocation texture)
@@ -68,7 +97,7 @@ public final class LegacyParticleRenderTypes
             @Override
             public void end(Tesselator tesselator)
             {
-                tesselator.end();
+                drawWithDepth(tesselator);
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.depthMask(true);
             }
@@ -101,7 +130,7 @@ public final class LegacyParticleRenderTypes
             @Override
             public void end(Tesselator tesselator)
             {
-                tesselator.end();
+                drawWithDepth(tesselator);
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.depthMask(true);
             }
