@@ -24,6 +24,7 @@
   "death.attack.shootable.player": "%1$s был застрелен игроком %2$s",
   "death.flansmodultimate.distance": "%1$s с расстояния %2$s м",
   "disconnect.flansmodultimate.content_mismatch": "На клиенте отсутствует или несовместим контент Flan's, необходимый серверу. Установите те же контент-паки и версии, что и на сервере, перезапустите Minecraft и подключитесь снова. Недостающие записи указаны в logs/latest.log.",
+  "disconnect.flansmodultimate.pack_summary": "Контент-паки для проверки (%1$s): %2$s",
   "disconnect.flansmodultimate.registry_mismatch": "Моды или данные реестра сервера не совпадают с клиентом. Установите соответствующие моды и контент-паки, перезапустите Minecraft и подключитесь снова. Подробности в logs/latest.log.",
   "enchantment.flansmodultimate.duelist": "Дуэлянт",
   "enchantment.flansmodultimate.juggernaut": "Джаггернаут",

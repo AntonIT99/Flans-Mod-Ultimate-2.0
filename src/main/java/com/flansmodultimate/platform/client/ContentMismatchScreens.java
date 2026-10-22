@@ -7,8 +7,8 @@ import net.minecraft.client.gui.screens.Screen;
 
 /**
  * Failed-login screens. Forge 1.20.1 dereferences mod metadata for every mismatched namespace, so legacy registry
- * namespaces such as {@code flansmod} need a replacement screen there. NeoForge reports missing registry entries in its own
- * disconnect message and its mismatch screen tolerates namespaces without a mod, so every screen is kept.
+ * namespaces such as {@code flansmod} need a replacement screen there. NeoForge's registry failure reason is shortened
+ * by ConnectionMixin before its ordinary disconnect screen is constructed, so its screens need no replacement.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ContentMismatchScreens

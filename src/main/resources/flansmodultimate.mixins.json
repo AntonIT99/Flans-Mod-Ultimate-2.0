@@ -5,13 +5,15 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ChunkMapEntityTrackingMixin",
+    "ConnectionMixin",
     "EntityMixin",
     "EntityTrackingDistanceMixin",
     "LevelDriveableHullsMixin",
     "LivingEntityWaterWalkingMixin",
     "PlayerDriveableEdgeMixin",
     "ProjectileUtilAAGunHullMixin",
-    "ServerGamePacketListenerDriveableMixin"
+    "ServerGamePacketListenerDriveableMixin",
+    "SyncRegistriesMixin"
   ],
   "client": [
     "BufferSourceAccessor",

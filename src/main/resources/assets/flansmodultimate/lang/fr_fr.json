@@ -24,6 +24,7 @@
   "death.attack.shootable.player": "%1$s a été abattu par %2$s",
   "death.flansmodultimate.distance": "%1$s à %2$s m de distance",
   "disconnect.flansmodultimate.content_mismatch": "Des contenus Flan's requis par le serveur sont absents ou incompatibles sur votre client. Installez les mêmes packs et versions que le serveur, puis redémarrez Minecraft et reconnectez-vous. Consultez logs/latest.log pour les entrées manquantes.",
+  "disconnect.flansmodultimate.pack_summary": "Packs de contenu à vérifier (%1$s) : %2$s",
   "disconnect.flansmodultimate.registry_mismatch": "Les mods ou les données de registre du serveur ne correspondent pas à votre client. Installez les mêmes mods et packs, puis redémarrez Minecraft et reconnectez-vous. Consultez logs/latest.log.",
   "enchantment.flansmodultimate.duelist": "Duelliste",
   "enchantment.flansmodultimate.juggernaut": "Colosse",

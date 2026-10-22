@@ -44,6 +44,7 @@ public final class NetworkPlatform
 
     public static void register(RegisterPayloadHandlersEvent event)
     {
+        ContentPackLogin.register(event);
         preparePacketIds();
         PayloadRegistrar registrar = event.registrar(PROTOCOL);
         registrar.playToClient(ClientboundPayload.TYPE, ClientboundPayload.STREAM_CODEC, NetworkPlatform::handleClientPayload);
