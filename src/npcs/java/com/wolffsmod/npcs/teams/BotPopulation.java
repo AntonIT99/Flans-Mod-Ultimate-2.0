@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.api.FlansTeams;
 import com.flansmodultimate.api.IPlayerClass;
 import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.ITeamsLiveRound;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -22,33 +23,33 @@ import java.util.random.RandomGenerator;
 final class BotPopulation
 {
     /** Brings every team's force in line with the settings, then queues the fallen bots that may come back. */
-    static void upkeep(MinecraftServer server, BotRound round, long now, RandomGenerator random)
+    static void upkeep(MinecraftServer server, BotBattle battle, long now, RandomGenerator random)
     {
-        BotSettings settings = round.getSettings();
+        BotSettings settings = battle.getSettings();
         if (!settings.isEnabled())
         {
-            round.getSlots().values().forEach(slot -> slot.setRetired(true));
-            round.getSquads().values().forEach(squad -> squad.setDisbanded(true));
+            battle.getSlots().values().forEach(slot -> slot.setRetired(true));
+            battle.getSquads().values().forEach(squad -> squad.setDisbanded(true));
             return;
         }
         Map<String, Integer> counts = new LinkedHashMap<>();
-        for (ITeam team : round.getLive().getRound().getTeams())
+        for (ITeam team : battle.getGround().teams())
             counts.put(team.getShortName(), settings.team(team.getShortName()).getCount());
-        Map<String, Integer> targets = rubberBand(round, ForcePlanner.infantryTargets(settings.getMode(), settings.getTotal(), counts, playersPerTeam(server)));
-        for (ITeam team : round.getLive().getRound().getTeams())
+        Map<String, Integer> targets = rubberBand(battle, ForcePlanner.infantryTargets(settings.getMode(), settings.getTotal(), counts, playersPerTeam(server)));
+        for (ITeam team : battle.getGround().teams())
         {
             BotSettings.TeamForce force = settings.team(team.getShortName());
-            keepInfantry(round, team, force, targets.getOrDefault(team.getShortName(), 0), random);
-            keepSquads(round, team, force, random);
-            keepVehicles(round, team, force);
+            keepInfantry(battle, team, force, targets.getOrDefault(team.getShortName(), 0), random);
+            keepSquads(battle, team, force, random);
+            keepVehicles(battle, team, force);
         }
-        round.setOpening(false);
-        for (BotSlot slot : round.getSlots().values())
+        battle.setOpening(false);
+        for (BotSlot slot : battle.getSlots().values())
         {
-            if (!slot.isRetired() && slot.getEntity() == null && !slot.isQueued() && now >= slot.getRespawnAt() && canSpawn(round, slot))
+            if (!slot.isRetired() && slot.getEntity() == null && !slot.isQueued() && now >= slot.getRespawnAt() && canSpawn(battle, slot))
             {
                 slot.setQueued(true);
-                round.getQueue().add(slot.getId());
+                battle.getQueue().add(slot.getId());
             }
         }
     }
@@ -62,56 +63,56 @@ final class BotPopulation
         return players;
     }
 
-    private static void keepInfantry(BotRound round, ITeam team, BotSettings.TeamForce force, int target, RandomGenerator random)
+    private static void keepInfantry(BotBattle battle, ITeam team, BotSettings.TeamForce force, int target, RandomGenerator random)
     {
-        List<BotSlot> active = active(round, team.getShortName(), BotSlot.Source.INFANTRY, -1);
+        List<BotSlot> active = active(battle, team.getShortName(), BotSlot.Source.INFANTRY, -1);
         for (int i = active.size(); i < target; i++)
         {
-            BotSlot slot = round.newSlot(team.getShortName(), BotSlot.Source.INFANTRY, -1);
+            BotSlot slot = battle.newSlot(team.getShortName(), BotSlot.Source.INFANTRY, -1);
             slot.setRole(pickClass(team, force, random));
-            BotSquad squad = looseSquad(round, team.getShortName());
+            BotSquad squad = looseSquad(battle, team.getShortName());
             squad.getSlots().add(slot.getId());
             slot.setSquad(squad.getId());
         }
         retireExtra(active, target);
-        mergeLooseSquads(round, team.getShortName());
+        mergeLooseSquads(battle, team.getShortName());
     }
 
     /** The loose infantry squad of a team that still has room, raised when none has. */
-    private static BotSquad looseSquad(BotRound round, String team)
+    private static BotSquad looseSquad(BotBattle battle, String team)
     {
-        int size = round.getSettings().getSquadSize();
-        return round.getSquads().values().stream()
-            .filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY && liveMembers(round, squad) < size).findFirst()
-            .orElseGet(() -> round.newSquad(team, BotRole.INFANTRY, BotSlot.Source.INFANTRY, -1, ""));
+        int size = battle.getSettings().getSquadSize();
+        return battle.getSquads().values().stream()
+            .filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY && liveMembers(battle, squad) < size).findFirst()
+            .orElseGet(() -> battle.newSquad(team, BotRole.INFANTRY, BotSlot.Source.INFANTRY, -1, ""));
     }
 
     /**
      * Folds loose infantry squads that shrank below half their size into the team's other loose squads with room, so that
      * players joining and bots leaving do not leave a scatter of one-man squads behind.
      */
-    private static void mergeLooseSquads(BotRound round, String team)
+    private static void mergeLooseSquads(BotBattle battle, String team)
     {
-        int size = round.getSettings().getSquadSize();
-        List<BotSquad> loose = round.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY)
+        int size = battle.getSettings().getSquadSize();
+        List<BotSquad> loose = battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY)
             .sorted(Comparator.comparingInt(BotSquad::getId)).toList();
         for (int from = loose.size() - 1; from > 0; from--)
         {
             BotSquad small = loose.get(from);
-            if (liveMembers(round, small) * 2 >= size)
+            if (liveMembers(battle, small) * 2 >= size)
                 continue;
-            for (int into = 0; into < from && liveMembers(round, small) > 0; into++)
-                moveMembers(round, small, loose.get(into), size);
+            for (int into = 0; into < from && liveMembers(battle, small) > 0; into++)
+                moveMembers(battle, small, loose.get(into), size);
         }
     }
 
     /** Moves the members of one squad who are still in the force into another, as long as it has room. */
-    private static void moveMembers(BotRound round, BotSquad from, BotSquad into, int size)
+    private static void moveMembers(BotBattle battle, BotSquad from, BotSquad into, int size)
     {
         Iterator<Integer> members = from.getSlots().iterator();
-        while (members.hasNext() && liveMembers(round, into) < size)
+        while (members.hasNext() && liveMembers(battle, into) < size)
         {
-            BotSlot slot = round.getSlots().get(members.next());
+            BotSlot slot = battle.getSlots().get(members.next());
             if (slot != null && !slot.isRetired())
             {
                 members.remove();
@@ -121,9 +122,9 @@ final class BotPopulation
         }
     }
 
-    private static long liveMembers(BotRound round, BotSquad squad)
+    private static long liveMembers(BotBattle battle, BotSquad squad)
     {
-        return squad.getSlots().stream().map(round.getSlots()::get).filter(slot -> slot != null && !slot.isRetired()).count();
+        return squad.getSlots().stream().map(battle.getSlots()::get).filter(slot -> slot != null && !slot.isRetired()).count();
     }
 
     /**
@@ -131,59 +132,59 @@ final class BotPopulation
      * one of an entry with a budget fights until it is wiped out, and the next squad takes its place while the budget
      * lasts.
      */
-    private static void keepSquads(BotRound round, ITeam team, BotSettings.TeamForce force, RandomGenerator random)
+    private static void keepSquads(BotBattle battle, ITeam team, BotSettings.TeamForce force, RandomGenerator random)
     {
         String name = team.getShortName();
-        for (BotSquad squad : round.getSquads().values())
+        for (BotSquad squad : battle.getSquads().values())
         {
             boolean outdated = squad.getSource() == BotSlot.Source.SQUAD && squad.getTeam().equals(name)
                 && (squad.getEntry() >= force.getSquads().size() || !force.getSquads().get(squad.getEntry()).template().equals(squad.getTemplate()));
             if (outdated)
-                disband(round, squad);
+                disband(battle, squad);
         }
         for (int entry = 0; entry < force.getSquads().size(); entry++)
         {
             int index = entry;
-            SquadTemplates.get().find(force.getSquads().get(entry).template()).ifPresent(template -> keepSquadEntry(round, team, force, index, template, random));
+            SquadTemplates.get().find(force.getSquads().get(entry).template()).ifPresent(template -> keepSquadEntry(battle, team, force, index, template, random));
         }
     }
 
-    private static void keepSquadEntry(BotRound round, ITeam team, BotSettings.TeamForce force, int entry, SquadTemplate template, RandomGenerator random)
+    private static void keepSquadEntry(BotBattle battle, ITeam team, BotSettings.TeamForce force, int entry, SquadTemplate template, RandomGenerator random)
     {
         String name = team.getShortName();
         BotSettings.SquadEntry setting = force.getSquads().get(entry);
         if (setting.budget() > 0)
-            squadsOf(round, name, entry).stream().filter(squad -> wipedOut(round, squad)).forEach(squad -> disband(round, squad));
-        List<BotSquad> squads = squadsOf(round, name, entry);
+            squadsOf(battle, name, entry).stream().filter(squad -> wipedOut(battle, squad)).forEach(squad -> disband(battle, squad));
+        List<BotSquad> squads = squadsOf(battle, name, entry);
         int raised = squads.size();
-        while (raised < setting.count() && (setting.budget() == 0 || round.count(round.getSquadDeployments(), name, entry) < setting.budget()))
+        while (raised < setting.count() && (setting.budget() == 0 || battle.count(battle.getSquadDeployments(), name, entry) < setting.budget()))
         {
-            raise(round, team, force, entry, template, random);
+            raise(battle, team, force, entry, template, random);
             raised++;
         }
         for (int i = setting.count(); i < squads.size(); i++)
-            disband(round, squads.get(i));
+            disband(battle, squads.get(i));
     }
 
-    private static void raise(BotRound round, ITeam team, BotSettings.TeamForce force, int entry, SquadTemplate template, RandomGenerator random)
+    private static void raise(BotBattle battle, ITeam team, BotSettings.TeamForce force, int entry, SquadTemplate template, RandomGenerator random)
     {
-        BotSquad squad = round.newSquad(team.getShortName(), BotRole.INFANTRY, BotSlot.Source.SQUAD, entry, template.id());
+        BotSquad squad = battle.newSquad(team.getShortName(), BotRole.INFANTRY, BotSlot.Source.SQUAD, entry, template.id());
         Set<String> offered = new HashSet<>();
         team.getClasses().forEach(playerClass -> offered.add(playerClass.getShortName()));
         for (String playerClass : template.roster())
         {
-            BotSlot slot = round.newSlot(team.getShortName(), BotSlot.Source.SQUAD, entry);
+            BotSlot slot = battle.newSlot(team.getShortName(), BotSlot.Source.SQUAD, entry);
             slot.setRole(offered.contains(playerClass) ? playerClass : pickClass(team, force, random));
             slot.setSquad(squad.getId());
             squad.getSlots().add(slot.getId());
         }
-        round.increment(round.getSquadDeployments(), team.getShortName(), entry);
+        battle.increment(battle.getSquadDeployments(), team.getShortName(), entry);
     }
 
-    private static void keepVehicles(BotRound round, ITeam team, BotSettings.TeamForce force)
+    private static void keepVehicles(BotBattle battle, ITeam team, BotSettings.TeamForce force)
     {
         String name = team.getShortName();
-        for (BotSlot slot : round.getSlots().values())
+        for (BotSlot slot : battle.getSlots().values())
         {
             boolean outdated = slot.getSource() == BotSlot.Source.VEHICLE && slot.getTeam().equals(name)
                 && (slot.getEntry() >= force.getVehicles().size() || !force.getVehicles().get(slot.getEntry()).type().equals(slot.getRole()));
@@ -196,12 +197,12 @@ final class BotPopulation
             Optional<BotRole> role = FlanModelNpcs.type(setting.type()).map(type -> BotRole.of(type.getKind(), type.getInfoType()));
             if (role.isEmpty())
                 continue;
-            List<BotSlot> active = active(round, name, BotSlot.Source.VEHICLE, entry);
+            List<BotSlot> active = active(battle, name, BotSlot.Source.VEHICLE, entry);
             for (int i = active.size(); i < setting.count(); i++)
             {
-                BotSlot slot = round.newSlot(name, BotSlot.Source.VEHICLE, entry);
+                BotSlot slot = battle.newSlot(name, BotSlot.Source.VEHICLE, entry);
                 slot.setRole(setting.type());
-                BotSquad squad = round.newSquad(name, role.get(), BotSlot.Source.VEHICLE, entry, "");
+                BotSquad squad = battle.newSquad(name, role.get(), BotSlot.Source.VEHICLE, entry, "");
                 squad.getSlots().add(slot.getId());
                 slot.setSquad(squad.getId());
             }
@@ -209,14 +210,14 @@ final class BotPopulation
         }
     }
 
-    private static List<BotSlot> active(BotRound round, String team, BotSlot.Source source, int entry)
+    private static List<BotSlot> active(BotBattle battle, String team, BotSlot.Source source, int entry)
     {
-        return round.getSlots().values().stream().filter(slot -> !slot.isRetired() && slot.getTeam().equals(team) && slot.getSource() == source && slot.getEntry() == entry).toList();
+        return battle.getSlots().values().stream().filter(slot -> !slot.isRetired() && slot.getTeam().equals(team) && slot.getSource() == source && slot.getEntry() == entry).toList();
     }
 
-    private static List<BotSquad> squadsOf(BotRound round, String team, int entry)
+    private static List<BotSquad> squadsOf(BotBattle battle, String team, int entry)
     {
-        return round.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.SQUAD && squad.getEntry() == entry)
+        return battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.SQUAD && squad.getEntry() == entry)
             .toList();
     }
 
@@ -231,16 +232,16 @@ final class BotPopulation
             order.get(i).setRetired(true);
     }
 
-    private static void disband(BotRound round, BotSquad squad)
+    private static void disband(BotBattle battle, BotSquad squad)
     {
         squad.setDisbanded(true);
-        squad.getSlots().stream().map(round.getSlots()::get).filter(Objects::nonNull).forEach(slot -> slot.setRetired(true));
+        squad.getSlots().stream().map(battle.getSlots()::get).filter(Objects::nonNull).forEach(slot -> slot.setRetired(true));
     }
 
     /** Whether every member of a squad has fallen and none is about to come back. */
-    private static boolean wipedOut(BotRound round, BotSquad squad)
+    private static boolean wipedOut(BotBattle battle, BotSquad squad)
     {
-        return squad.getSlots().stream().map(round.getSlots()::get).filter(Objects::nonNull).allMatch(slot -> slot.getSpawns() > 0 && slot.getEntity() == null && !slot.isQueued());
+        return squad.getSlots().stream().map(battle.getSlots()::get).filter(Objects::nonNull).allMatch(slot -> slot.getSpawns() > 0 && slot.getEntity() == null && !slot.isQueued());
     }
 
     /** A class of the team by the settings' weights; every class weighs the same while none is listed. */
@@ -271,15 +272,15 @@ final class BotPopulation
     // --- Spending ---
 
     /** Whether the budgets and tickets let a slot spawn now. */
-    static boolean canSpawn(BotRound round, BotSlot slot)
+    static boolean canSpawn(BotBattle battle, BotSlot slot)
     {
         if (slot.isRetired())
             return false;
-        BotSettings.TeamForce force = round.getSettings().team(slot.getTeam());
+        BotSettings.TeamForce force = battle.getSettings().team(slot.getTeam());
         switch (slot.getSource())
         {
             case INFANTRY -> {
-                if (force.getBudget() > 0 && round.getInfantrySpawns().getOrDefault(slot.getTeam(), 0) >= force.getBudget())
+                if (force.getBudget() > 0 && battle.getInfantrySpawns().getOrDefault(slot.getTeam(), 0) >= force.getBudget())
                     return false;
             }
             case CARGO -> {
@@ -296,78 +297,79 @@ final class BotPopulation
                 if (slot.getEntry() >= force.getVehicles().size())
                     return false;
                 int budget = force.getVehicles().get(slot.getEntry()).budget();
-                if (budget > 0 && round.count(round.getVehicleSpawns(), slot.getTeam(), slot.getEntry()) >= budget)
+                if (budget > 0 && battle.count(battle.getVehicleSpawns(), slot.getTeam(), slot.getEntry()) >= budget)
                     return false;
             }
         }
-        return canAfford(round, slot);
+        return canAfford(battle, slot);
     }
 
     /** Whether the side has the tickets a spawn of the slot costs. */
-    static boolean canAfford(BotRound round, BotSlot slot)
+    static boolean canAfford(BotBattle battle, BotSlot slot)
     {
-        int cost = ticketCost(round, slot);
-        return round.getSettings().getTickets() <= 0 || cost <= 0 || ticketsLeft(round, round.sideOf(slot.getTeam())) >= cost;
+        int cost = ticketCost(battle, slot);
+        return battle.getSettings().getTickets() <= 0 || cost <= 0 || ticketsLeft(battle, battle.sideOf(slot.getTeam())) >= cost;
     }
 
     /** Gives the sides that trail on score extra infantry, as the round's rubber band says; never in Assault, scored by losses. */
-    private static Map<String, Integer> rubberBand(BotRound round, Map<String, Integer> targets)
+    private static Map<String, Integer> rubberBand(BotBattle battle, Map<String, Integer> targets)
     {
-        int percent = round.getSettings().getRubberBand();
-        if (percent <= 0 || round.getLive().getAttackingSide().isPresent())
+        int percent = battle.getSettings().getRubberBand();
+        Optional<ITeamsLiveRound> live = battle.getGround().round();
+        if (percent <= 0 || live.isEmpty() || live.get().getAttackingSide().isPresent())
             return targets;
         Map<String, Integer> sides = new HashMap<>();
-        targets.keySet().forEach(team -> sides.put(team, round.sideOf(team)));
+        targets.keySet().forEach(team -> sides.put(team, battle.sideOf(team)));
         Map<Integer, Integer> scores = new HashMap<>();
-        for (int side = 0; side < round.getLive().getRound().getSideCount(); side++)
-            scores.put(side, round.getLive().getScore(side));
-        return ForcePlanner.rubberBand(targets, sides, scores, round.getLive().getRound().getScoreLimit(), percent);
+        for (int side = 0; side < battle.getGround().sideCount(); side++)
+            scores.put(side, live.get().getScore(side));
+        return ForcePlanner.rubberBand(targets, sides, scores, live.get().getRound().getScoreLimit(), percent);
     }
 
     /** Records a spawn against the budgets and the side's tickets. */
-    static void charge(BotRound round, BotSlot slot)
+    static void charge(BotBattle battle, BotSlot slot)
     {
-        int cost = ticketCost(round, slot);
-        int side = round.sideOf(slot.getTeam());
-        if (round.getSettings().getTickets() > 0 && cost > 0)
-            round.getTickets().put(side, ticketsLeft(round, side) - cost);
+        int cost = ticketCost(battle, slot);
+        int side = battle.sideOf(slot.getTeam());
+        if (battle.getSettings().getTickets() > 0 && cost > 0)
+            battle.getTickets().put(side, ticketsLeft(battle, side) - cost);
         if (slot.getSource() == BotSlot.Source.INFANTRY)
-            round.getInfantrySpawns().merge(slot.getTeam(), 1, Integer::sum);
+            battle.getInfantrySpawns().merge(slot.getTeam(), 1, Integer::sum);
         else if (slot.getSource() == BotSlot.Source.VEHICLE)
-            round.increment(round.getVehicleSpawns(), slot.getTeam(), slot.getEntry());
-        round.getSidesThatFought().add(side);
+            battle.increment(battle.getVehicleSpawns(), slot.getTeam(), slot.getEntry());
+        battle.getSidesThatFought().add(side);
     }
 
     /** Tickets a spawn costs: none for the first spawn of the force the round started with. */
-    static int ticketCost(BotRound round, BotSlot slot)
+    static int ticketCost(BotBattle battle, BotSlot slot)
     {
         if (slot.isInitial() && slot.getSpawns() == 0)
             return 0;
         if (slot.getSource() != BotSlot.Source.VEHICLE)
             return 1;
-        List<BotSettings.VehicleEntry> vehicles = round.getSettings().team(slot.getTeam()).getVehicles();
+        List<BotSettings.VehicleEntry> vehicles = battle.getSettings().team(slot.getTeam()).getVehicles();
         return slot.getEntry() < vehicles.size() ? vehicles.get(slot.getEntry()).ticketCost() : 1;
     }
 
-    static int ticketsLeft(BotRound round, int side)
+    static int ticketsLeft(BotBattle battle, int side)
     {
-        return round.getTickets().computeIfAbsent(side, ignored -> round.getSettings().getTickets());
+        return battle.getTickets().computeIfAbsent(side, ignored -> battle.getSettings().getTickets());
     }
 
     /** Whether the side can still put a bot in the field, now or once a respawn timer runs out. */
-    static boolean canStillField(BotRound round, int side)
+    static boolean canStillField(BotBattle battle, int side)
     {
-        boolean slotsLeft = round.getSlots().values().stream().anyMatch(slot -> round.sideOf(slot.getTeam()) == side && (slot.getEntity() != null || canSpawn(round, slot)));
+        boolean slotsLeft = battle.getSlots().values().stream().anyMatch(slot -> battle.sideOf(slot.getTeam()) == side && (slot.getEntity() != null || canSpawn(battle, slot)));
         if (slotsLeft)
             return true;
         // A squad entry with budget left raises another squad as soon as the last one is lost.
-        for (ITeam team : round.getLive().getRound().getTeamsOfSide(side))
+        for (ITeam team : battle.getGround().teamsOfSide(side))
         {
-            List<BotSettings.SquadEntry> entries = round.getSettings().team(team.getShortName()).getSquads();
+            List<BotSettings.SquadEntry> entries = battle.getSettings().team(team.getShortName()).getSquads();
             for (int entry = 0; entry < entries.size(); entry++)
             {
                 BotSettings.SquadEntry setting = entries.get(entry);
-                if (setting.count() > 0 && (setting.budget() == 0 || round.count(round.getSquadDeployments(), team.getShortName(), entry) < setting.budget()))
+                if (setting.count() > 0 && (setting.budget() == 0 || battle.count(battle.getSquadDeployments(), team.getShortName(), entry) < setting.budget()))
                     return true;
             }
         }

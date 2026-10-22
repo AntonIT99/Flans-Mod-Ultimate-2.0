@@ -20,9 +20,9 @@ import java.util.random.RandomGenerator;
 final class BotCrews
 {
     /** Puts a crew into the seats of a vehicle bot that has just spawned. */
-    static void crew(ServerLevel level, BotRound round, BotFactory.Order order, EntityNPCInterface vehicle, RandomGenerator random)
+    static void crew(ServerLevel level, BotBattle battle, BotFactory.Order order, EntityNPCInterface vehicle, RandomGenerator random)
     {
-        if (!round.getSettings().isVehicleCrews())
+        if (!battle.getSettings().isVehicleCrews())
             return;
         NpcCrew.fill(level, vehicle, (crewLevel, crewed, seat) ->
         {
@@ -45,8 +45,8 @@ final class BotCrews
     }
 
     /** @return the place in the force a crew member's vehicle fills, for scoring the crew's kills to the vehicle */
-    static Optional<BotSlot> slotOf(BotRound round, EntityNPCInterface crew)
+    static Optional<BotSlot> slotOf(BotBattle battle, EntityNPCInterface crew)
     {
-        return BotTag.read(crew).filter(data -> data.crew() && data.instance().equals(round.getInstance())).map(data -> round.getSlots().get(data.slot()));
+        return BotTag.read(crew).filter(data -> data.crew() && data.instance().equals(battle.getInstance())).map(data -> battle.getSlots().get(data.slot()));
     }
 }

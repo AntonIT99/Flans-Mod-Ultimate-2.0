@@ -87,30 +87,30 @@ final class BotDuties
         RETREATING.clear();
     }
 
-    static void tick(MinecraftServer server, ServerLevel level, BotRound round)
+    static void tick(MinecraftServer server, ServerLevel level, BotBattle battle)
     {
         DESTINATIONS.clear();
         long now = level.getGameTime();
-        List<Fighter> fighters = fighters(server, level, round);
+        List<Fighter> fighters = fighters(server, level, battle);
         for (Fighter fighter : fighters)
         {
-            if (fighter.slot() != null && !fighter.vehicle() && fighter.entity() instanceof EntityNPCInterface npc && !retreats(round, npc, fighter, fighters, now))
-                serve(level, round, npc, fighter, fighters, now);
+            if (fighter.slot() != null && !fighter.vehicle() && fighter.entity() instanceof EntityNPCInterface npc && !retreats(battle, npc, fighter, fighters, now))
+                serve(level, battle, npc, fighter, fighters, now);
         }
         LAST_ACTION.values().removeIf(tick -> now - tick > SUPPLY_TICKS);
         SUPPLIED.values().removeIf(tick -> now - tick > SUPPLY_TICKS);
     }
 
     /** Carries out a soldier's duty, as its class's role says. */
-    private static void serve(ServerLevel level, BotRound round, EntityNPCInterface npc, Fighter fighter, List<Fighter> fighters, long now)
+    private static void serve(ServerLevel level, BotBattle battle, EntityNPCInterface npc, Fighter fighter, List<Fighter> fighters, long now)
     {
-        BotSettings.TeamForce force = round.getSettings().team(Objects.requireNonNull(fighter.slot()).getTeam());
+        BotSettings.TeamForce force = battle.getSettings().team(Objects.requireNonNull(fighter.slot()).getTeam());
         switch (BotRoles.of(force, fighter.slot().getRole()))
         {
             case MEDIC -> heal(level, npc, fighter, fighters, now);
-            case ENGINEER -> repair(level, round, npc, fighter, fighters, now);
+            case ENGINEER -> repair(level, battle, npc, fighter, fighters, now);
             case SUPPORT -> supply(npc, fighter, fighters, now);
-            case ANTI_TANK -> engageArmour(round, npc, fighter, fighters);
+            case ANTI_TANK -> engageArmour(battle, npc, fighter, fighters);
             case RIFLEMAN -> {
                 // A rifleman only fights.
             }
@@ -118,19 +118,19 @@ final class BotDuties
     }
 
     /** Everyone alive who fights in the round in the level: its players and its bots. */
-    private static List<Fighter> fighters(MinecraftServer server, ServerLevel level, BotRound round)
+    private static List<Fighter> fighters(MinecraftServer server, ServerLevel level, BotBattle battle)
     {
         List<Fighter> fighters = new ArrayList<>();
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             if (player.isAlive() && !player.isSpectator() && player.level() == level)
-                FlansTeams.getTeam(player).ifPresent(team -> fighters.add(new Fighter(player, round.getLive().getRound().getSideOf(team), null)));
+                FlansTeams.getTeam(player).ifPresent(team -> fighters.add(new Fighter(player, battle.getGround().sideOf(team), null)));
         }
-        for (BotSlot slot : round.getSlots().values())
+        for (BotSlot slot : battle.getSlots().values())
         {
             Entity entity = slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
             if (entity instanceof LivingEntity living && living.isAlive() && slot.getDiedAt() == 0)
-                fighters.add(new Fighter(living, round.sideOf(slot.getTeam()), slot));
+                fighters.add(new Fighter(living, battle.sideOf(slot.getTeam()), slot));
         }
         return fighters;
     }
@@ -143,9 +143,9 @@ final class BotDuties
      *
      * @return whether the soldier falls back, which comes before its duty
      */
-    private static boolean retreats(BotRound round, EntityNPCInterface npc, Fighter self, List<Fighter> fighters, long now)
+    private static boolean retreats(BotBattle battle, EntityNPCInterface npc, Fighter self, List<Fighter> fighters, long now)
     {
-        int threshold = round.getSettings().getRetreatHealth();
+        int threshold = battle.getSettings().getRetreatHealth();
         double share = npc.getHealth() / Math.max(1F, npc.getMaxHealth());
         Long since = RETREATING.get(npc.getUUID());
         if (since == null && threshold > 0 && share * 100D < threshold)
@@ -160,24 +160,24 @@ final class BotDuties
         }
         if (since == null)
             return false;
-        Optional<Fighter> medic = fighters.stream().filter(other -> other != self && other.side() == self.side() && isMedic(round, other))
+        Optional<Fighter> medic = fighters.stream().filter(other -> other != self && other.side() == self.side() && isMedic(battle, other))
             .filter(other -> other.entity().distanceTo(npc) <= MEDIC_SEARCH).min(Comparator.comparingDouble(other -> other.entity().distanceToSqr(npc)));
-        Vec3 refuge = medic.map(other -> other.entity().position()).orElseGet(() -> spawnRefuge(round, npc, self));
+        Vec3 refuge = medic.map(other -> other.entity().position()).orElseGet(() -> spawnRefuge(battle, npc, self));
         if (refuge != null && refuge.distanceTo(npc.position()) > HEAL_REACH)
             DESTINATIONS.put(npc.getUUID(), refuge);
         return true;
     }
 
-    private static boolean isMedic(BotRound round, Fighter fighter)
+    private static boolean isMedic(BotBattle battle, Fighter fighter)
     {
-        return fighter.slot() != null && !fighter.vehicle() && BotRoles.of(round.getSettings().team(fighter.slot().getTeam()), fighter.slot().getRole()) == BotSettings.ClassRole.MEDIC;
+        return fighter.slot() != null && !fighter.vehicle() && BotRoles.of(battle.getSettings().team(fighter.slot().getTeam()), fighter.slot().getRole()) == BotSettings.ClassRole.MEDIC;
     }
 
     @Nullable
-    private static Vec3 spawnRefuge(BotRound round, Entity npc, Fighter self)
+    private static Vec3 spawnRefuge(BotBattle battle, Entity npc, Fighter self)
     {
-        Optional<ITeam> team = self.slot() == null ? Optional.empty() : round.team(self.slot().getTeam());
-        return team.flatMap(found -> round.getLive().getSpawnPositions(found).stream().min(Comparator.comparingDouble(spawn -> spawn.distanceToSqr(npc.position())))).orElse(null);
+        Optional<ITeam> team = self.slot() == null ? Optional.empty() : battle.team(self.slot().getTeam());
+        return team.flatMap(found -> battle.getGround().spawnPositions(found).stream().min(Comparator.comparingDouble(spawn -> spawn.distanceToSqr(npc.position())))).orElse(null);
     }
 
     // --- Medics ---
@@ -209,9 +209,9 @@ final class BotDuties
 
     // --- Engineers ---
 
-    private static void repair(ServerLevel level, BotRound round, EntityNPCInterface engineer, Fighter self, List<Fighter> fighters, long now)
+    private static void repair(ServerLevel level, BotBattle battle, EntityNPCInterface engineer, Fighter self, List<Fighter> fighters, long now)
     {
-        Entity damaged = damagedVehicle(level, round, engineer, self, fighters);
+        Entity damaged = damagedVehicle(level, battle, engineer, self, fighters);
         if (damaged == null)
             return;
         if (damaged.distanceTo(engineer) > REPAIR_REACH + damaged.getBbWidth() / 2F)
@@ -244,7 +244,7 @@ final class BotDuties
      * its side, such as a wreck players could take.
      */
     @Nullable
-    private static Entity damagedVehicle(ServerLevel level, BotRound round, Entity engineer, Fighter self, List<Fighter> fighters)
+    private static Entity damagedVehicle(ServerLevel level, BotBattle battle, Entity engineer, Fighter self, List<Fighter> fighters)
     {
         List<Entity> candidates = new ArrayList<>();
         fighters.stream().filter(other -> other.vehicle() && other.side() == self.side() && other.entity().getHealth() < other.entity().getMaxHealth())
@@ -252,7 +252,7 @@ final class BotDuties
         for (Entity entity : level.getEntities((Entity) null, new AABB(engineer.blockPosition()).inflate(ENGINEER_RANGE), entity -> FlansEntityTypes.getDriveableType(entity).isPresent()))
         {
             boolean damaged = FlansEntityTypes.getHealthShare(entity).orElse(1D) < DAMAGED;
-            boolean friendly = entity.getPassengers().stream().allMatch(rider -> FlansTeams.getTeam(rider).map(team -> round.getLive().getRound().getSideOf(team) == self.side()).orElse(true));
+            boolean friendly = entity.getPassengers().stream().allMatch(rider -> FlansTeams.getTeam(rider).map(team -> battle.getGround().sideOf(team) == self.side()).orElse(true));
             if (damaged && friendly)
                 candidates.add(entity);
         }
@@ -328,12 +328,12 @@ final class BotDuties
     // --- Anti-tank soldiers ---
 
     /** Turns an anti-tank soldier on the nearest enemy armour it can see, unless it already fights armour. */
-    private static void engageArmour(BotRound round, EntityNPCInterface soldier, Fighter self, List<Fighter> fighters)
+    private static void engageArmour(BotBattle battle, EntityNPCInterface soldier, Fighter self, List<Fighter> fighters)
     {
         LivingEntity target = soldier.getTarget();
-        if (target != null && BotTargeting.armoured(round, target))
+        if (target != null && BotTargeting.armoured(battle, target))
             return;
-        fighters.stream().filter(other -> other.side() != self.side() && BotTargeting.armoured(round, other.entity())).filter(other -> other.entity().distanceTo(soldier) <= ARMOUR_RANGE)
+        fighters.stream().filter(other -> other.side() != self.side() && BotTargeting.armoured(battle, other.entity())).filter(other -> other.entity().distanceTo(soldier) <= ARMOUR_RANGE)
             .filter(other -> soldier.hasLineOfSight(other.entity())).min(Comparator.comparingDouble(other -> other.entity().distanceToSqr(soldier)))
             .ifPresent(other -> soldier.setTarget(other.entity()));
     }

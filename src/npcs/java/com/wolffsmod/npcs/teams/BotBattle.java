@@ -1,18 +1,20 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsLiveRound;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
 
-/** The bots of one playing of a Teams round: its slots, squads, spending and spawn queue. Server thread. */
+/**
+ * The bots of one battle, such as a playing of a Teams round: its slots, squads, spending and spawn queue. Its bots are
+ * tagged with its instance. Server thread.
+ */
 @Getter
-final class BotRound
+final class BotBattle
 {
     private final UUID instance;
-    private final ITeamsLiveRound live;
+    private final Battleground ground;
     @Setter
     private BotSettings settings;
     /** Custom NPCs faction id of each team, by short name. */
@@ -45,10 +47,10 @@ final class BotRound
     @Setter
     private boolean opening = true;
 
-    BotRound(ITeamsLiveRound live, BotSettings settings, Map<String, Integer> factions)
+    BotBattle(UUID instance, Battleground ground, BotSettings settings, Map<String, Integer> factions)
     {
-        this.instance = live.getInstanceId();
-        this.live = live;
+        this.instance = instance;
+        this.ground = ground;
         this.settings = settings;
         this.factions = new HashMap<>(factions);
     }
@@ -69,12 +71,12 @@ final class BotRound
 
     Optional<ITeam> team(String shortName)
     {
-        return live.getRound().getTeams().stream().filter(team -> team.getShortName().equals(shortName)).findFirst();
+        return ground.team(shortName);
     }
 
     int sideOf(String team)
     {
-        return team(team).map(found -> live.getRound().getSideOf(found)).orElse(-1);
+        return team(team).map(ground::sideOf).orElse(-1);
     }
 
     int count(Map<String, Map<Integer, Integer>> counts, String team, int entry)

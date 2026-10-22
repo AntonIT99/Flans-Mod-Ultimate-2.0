@@ -493,24 +493,24 @@ public final class BotCommands
 
     private static int status(CommandContext<CommandSourceStack> context)
     {
-        Optional<BotRound> current = TeamsBots.current();
+        Optional<BotBattle> current = TeamsBots.current();
         if (current.isEmpty())
         {
             context.getSource().sendSuccess(() -> text("status.none"), false);
             return 0;
         }
-        BotRound round = current.get();
-        for (ITeam team : round.getLive().getRound().getTeams())
+        BotBattle battle = current.get();
+        for (ITeam team : battle.getGround().teams())
         {
-            long alive = round.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && slot.getEntity() != null && slot.getDiedAt() == 0).count();
-            long slots = round.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && !slot.isRetired()).count();
-            int side = round.getLive().getRound().getSideOf(team);
-            Component tickets = round.getSettings().getTickets() > 0 ? text("status.tickets", BotPopulation.ticketsLeft(round, side)) : Component.empty();
-            List<String> tasks = round.getSquads().values().stream().filter(squad -> squad.getTeam().equals(team.getShortName()) && squad.getTask() != null)
+            long alive = battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && slot.getEntity() != null && slot.getDiedAt() == 0).count();
+            long slots = battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && !slot.isRetired()).count();
+            int side = battle.getGround().sideOf(team);
+            Component tickets = battle.getSettings().getTickets() > 0 ? text("status.tickets", BotPopulation.ticketsLeft(battle, side)) : Component.empty();
+            List<String> tasks = battle.getSquads().values().stream().filter(squad -> squad.getTeam().equals(team.getShortName()) && squad.getTask() != null)
                 .map(squad -> "#" + squad.getId() + " " + lower(squad.getRole()) + " " + lower(squad.getTask().kind())).toList();
             context.getSource().sendSuccess(() -> text("status.team", team.getShortName(), alive, slots, tickets, tasks.toString()), false);
         }
-        return round.getSlots().size();
+        return battle.getSlots().size();
     }
 
     /** {@code order follow|hold|release} and {@code order attack|defend <point>}, for the allied squads around the player. */

@@ -43,21 +43,21 @@ final class BotTransports
     private static final int WRECK_ATTEMPTS = 16;
 
     /** Takes the squad a vehicle entry carries on board a transport that just spawned. */
-    static void load(BotRound round, BotSlot slot, BotSquad squad)
+    static void load(BotBattle battle, BotSlot slot, BotSquad squad)
     {
-        List<BotSettings.VehicleEntry> vehicles = round.getSettings().team(slot.getTeam()).getVehicles();
+        List<BotSettings.VehicleEntry> vehicles = battle.getSettings().team(slot.getTeam()).getVehicles();
         String carry = slot.getEntry() < vehicles.size() ? vehicles.get(slot.getEntry()).carry() : "";
         squad.setCargo(SquadTemplates.get().find(carry).isPresent() ? carry : "");
     }
 
     /** Puts down the squads of the transports that reached their objective. */
-    static void unload(ServerLevel level, BotRound round, long now, RandomGenerator random)
+    static void unload(ServerLevel level, BotBattle battle, long now, RandomGenerator random)
     {
-        for (BotSquad squad : List.copyOf(round.getSquads().values()))
+        for (BotSquad squad : List.copyOf(battle.getSquads().values()))
         {
-            Entity vehicle = squad.getCargo().isEmpty() || squad.isDisbanded() ? null : BotCommander.livingMembers(level, round, squad).stream().findFirst().orElse(null);
+            Entity vehicle = squad.getCargo().isEmpty() || squad.isDisbanded() ? null : BotCommander.livingMembers(level, battle, squad).stream().findFirst().orElse(null);
             if (vehicle != null && arrived(squad, vehicle))
-                putDown(level, round, squad, vehicle, now, random);
+                putDown(level, battle, squad, vehicle, now, random);
         }
     }
 
@@ -73,27 +73,27 @@ final class BotTransports
         return Math.sqrt(dx * dx + dz * dz) <= task.radius() + margin;
     }
 
-    private static void putDown(ServerLevel level, BotRound round, BotSquad transport, Entity vehicle, long now, RandomGenerator random)
+    private static void putDown(ServerLevel level, BotBattle battle, BotSquad transport, Entity vehicle, long now, RandomGenerator random)
     {
         String templateId = transport.getCargo();
         transport.setCargo("");
         Optional<SquadTemplate> template = SquadTemplates.get().find(templateId);
-        Optional<ITeam> team = round.team(transport.getTeam());
+        Optional<ITeam> team = battle.team(transport.getTeam());
         if (template.isEmpty() || team.isEmpty())
             return;
         double ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, vehicle.getBlockX(), vehicle.getBlockZ());
         boolean jump = vehicle.getY() - ground > JUMP_HEIGHT;
-        BotSquad cargo = round.newSquad(transport.getTeam(), BotRole.INFANTRY, BotSlot.Source.CARGO, transport.getEntry(), template.get().id());
+        BotSquad cargo = battle.newSquad(transport.getTeam(), BotRole.INFANTRY, BotSlot.Source.CARGO, transport.getEntry(), template.get().id());
         Set<String> offered = new HashSet<>();
         team.get().getClasses().forEach(playerClass -> offered.add(playerClass.getShortName()));
         List<String> roster = template.get().roster();
         for (int i = 0; i < roster.size(); i++)
         {
-            BotSlot slot = round.newSlot(transport.getTeam(), BotSlot.Source.CARGO, transport.getEntry());
-            slot.setRole(offered.contains(roster.get(i)) ? roster.get(i) : BotPopulation.pickClass(team.get(), round.getSettings().team(transport.getTeam()), random));
+            BotSlot slot = battle.newSlot(transport.getTeam(), BotSlot.Source.CARGO, transport.getEntry());
+            slot.setRole(offered.contains(roster.get(i)) ? roster.get(i) : BotPopulation.pickClass(team.get(), battle.getSettings().team(transport.getTeam()), random));
             slot.setSquad(cargo.getId());
             cargo.getSlots().add(slot.getId());
-            if (!BotPopulation.canAfford(round, slot))
+            if (!BotPopulation.canAfford(battle, slot))
             {
                 slot.setRetired(true);
                 continue;
@@ -101,7 +101,7 @@ final class BotTransports
             Vec3 at = jump
                 ? vehicle.position().add((random.nextDouble() - 0.5D) * 4D, -3D, (random.nextDouble() - 0.5D) * 4D)
                 : BotFormation.spot(new Vec3(vehicle.getX(), ground, vehicle.getZ()), i + 1, UNLOAD_RADIUS, List.of());
-            TeamsBots.spawnAt(level, round, slot, now, random, at).ifPresent(npc ->
+            TeamsBots.spawnAt(level, battle, slot, now, random, at).ifPresent(npc ->
             {
                 if (jump)
                     parachute(npc);

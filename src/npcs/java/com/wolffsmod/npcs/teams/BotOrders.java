@@ -51,20 +51,20 @@ public final class BotOrders
      */
     public static int give(ServerPlayer player, int squadId, PlayerOrder.Kind kind, int objective, @Nullable Vec3 at)
     {
-        Optional<BotRound> current = TeamsBots.current();
+        Optional<BotBattle> current = TeamsBots.current();
         Optional<ITeam> team = FlansTeams.getTeam(player);
         if (current.isEmpty() || team.isEmpty() || !(player.level() instanceof ServerLevel level))
             return 0;
-        BotRound round = current.get();
-        int side = round.getLive().getRound().getSideOf(team.get());
-        boolean commander = player.getUUID().equals(round.getCommanders().get(side));
-        Vec3 target = at != null ? ground(level, at) : target(round, player, objective);
+        BotBattle battle = current.get();
+        int side = battle.getGround().sideOf(team.get());
+        boolean commander = player.getUUID().equals(battle.getCommanders().get(side));
+        Vec3 target = at != null ? ground(level, at) : target(battle, player, objective);
         PlayerOrder order = new PlayerOrder(player.getUUID(), kind, target, level.getGameTime() + PlayerOrder.DURATION);
         int ordered = 0;
-        for (BotSquad squad : round.getSquads().values())
+        for (BotSquad squad : battle.getSquads().values())
         {
-            boolean chosen = squadId == NEARBY_SQUADS ? hears(level, round, squad, player) : squad.getId() == squadId && (commander || hears(level, round, squad, player));
-            if (!chosen || squad.isDisbanded() || round.sideOf(squad.getTeam()) != side || squad.getRole() == BotRole.AA)
+            boolean chosen = squadId == NEARBY_SQUADS ? hears(level, battle, squad, player) : squad.getId() == squadId && (commander || hears(level, battle, squad, player));
+            if (!chosen || squad.isDisbanded() || battle.sideOf(squad.getTeam()) != side || squad.getRole() == BotRole.AA)
                 continue;
             if (kind == PlayerOrder.Kind.RELEASE)
                 squad.setOrder(null);
@@ -79,9 +79,9 @@ public final class BotOrders
     }
 
     /** Where an order sends a squad: the capture point chosen, or the block the player looks at, or the player's position. */
-    private static Vec3 target(BotRound round, ServerPlayer player, int objective)
+    private static Vec3 target(BotBattle battle, ServerPlayer player, int objective)
     {
-        List<TeamsCapturePoint> points = round.getLive().getCapturePoints();
+        List<TeamsCapturePoint> points = battle.getGround().capturePoints();
         if (objective >= 0 && objective < points.size())
             return points.get(objective).position();
         HitResult look = player.pick(LOOK_RANGE, 1F, false);
@@ -101,11 +101,11 @@ public final class BotOrders
      * Sends every player of the round the places their orders send squads to, and the rally point of the squad they lead,
      * for their client to mark in the world.
      */
-    static void sendWaypoints(MinecraftServer server, BotRound round)
+    static void sendWaypoints(MinecraftServer server, BotBattle battle)
     {
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
-            List<BotWaypointsPacket.Waypoint> waypoints = waypoints(round, player);
+            List<BotWaypointsPacket.Waypoint> waypoints = waypoints(battle, player);
             if (!waypoints.isEmpty() || MARKED.contains(player.getUUID()))
                 NpcNetwork.sendTo(player, new BotWaypointsPacket(waypoints));
             if (waypoints.isEmpty())
@@ -116,10 +116,10 @@ public final class BotOrders
     }
 
     /** The places a player's orders send squads to, and the rally point of the squad they lead. */
-    private static List<BotWaypointsPacket.Waypoint> waypoints(BotRound round, ServerPlayer player)
+    private static List<BotWaypointsPacket.Waypoint> waypoints(BotBattle battle, ServerPlayer player)
     {
         List<BotWaypointsPacket.Waypoint> waypoints = new ArrayList<>();
-        for (BotSquad squad : round.getSquads().values())
+        for (BotSquad squad : battle.getSquads().values())
         {
             PlayerOrder order = squad.getOrder();
             boolean marked = !squad.isDisbanded() && order != null && order.player().equals(player.getUUID()) && order.kind() != PlayerOrder.Kind.FOLLOW && order.kind() != PlayerOrder.Kind.RELEASE;
@@ -145,11 +145,11 @@ public final class BotOrders
     }
 
     /** Whether a squad's leader is near enough to hear the player, or the squad already follows the player's orders. */
-    private static boolean hears(ServerLevel level, BotRound round, BotSquad squad, ServerPlayer player)
+    private static boolean hears(ServerLevel level, BotBattle battle, BotSquad squad, ServerPlayer player)
     {
         if (squad.getOrder() != null && squad.getOrder().player().equals(player.getUUID()))
             return true;
-        List<Entity> members = BotCommander.livingMembers(level, round, squad);
+        List<Entity> members = BotCommander.livingMembers(level, battle, squad);
         return !members.isEmpty() && members.get(0).distanceTo(player) <= NEARBY;
     }
 
@@ -161,71 +161,71 @@ public final class BotOrders
      */
     public static boolean command(ServerPlayer player, boolean take)
     {
-        Optional<BotRound> current = TeamsBots.current();
+        Optional<BotBattle> current = TeamsBots.current();
         Optional<ITeam> team = FlansTeams.getTeam(player);
         if (current.isEmpty() || team.isEmpty())
             return false;
-        BotRound round = current.get();
-        int side = round.getLive().getRound().getSideOf(team.get());
-        UUID holder = round.getCommanders().get(side);
+        BotBattle battle = current.get();
+        int side = battle.getGround().sideOf(team.get());
+        UUID holder = battle.getCommanders().get(side);
         if (!take)
         {
             if (player.getUUID().equals(holder))
             {
-                round.getCommanders().remove(side);
-                tellSide(player, round, side, Component.translatable("wolffsmodnpcs.orders.commander_left", player.getDisplayName()));
+                battle.getCommanders().remove(side);
+                tellSide(player, battle, side, Component.translatable("wolffsmodnpcs.orders.commander_left", player.getDisplayName()));
             }
             return false;
         }
-        if (holder != null && !holder.equals(player.getUUID()) && holdsSeat(player, round, side, holder))
+        if (holder != null && !holder.equals(player.getUUID()) && holdsSeat(player, battle, side, holder))
             return false;
         if (!player.getUUID().equals(holder))
-            tellSide(player, round, side, Component.translatable("wolffsmodnpcs.orders.new_commander", player.getDisplayName()));
-        round.getCommanders().put(side, player.getUUID());
+            tellSide(player, battle, side, Component.translatable("wolffsmodnpcs.orders.new_commander", player.getDisplayName()));
+        battle.getCommanders().put(side, player.getUUID());
         return true;
     }
 
     /** Tells every player of a side, the one who changed the seat included, who commands the side now. */
-    private static void tellSide(ServerPlayer source, BotRound round, int side, Component message)
+    private static void tellSide(ServerPlayer source, BotBattle battle, int side, Component message)
     {
         for (ServerPlayer player : Objects.requireNonNull(source.getServer()).getPlayerList().getPlayers())
-            if (FlansTeams.getTeam(player).map(team -> round.getLive().getRound().getSideOf(team) == side).orElse(false))
+            if (battle.getGround().sideOf(player) == side)
                 player.sendSystemMessage(message);
     }
 
     /** Whether the holder of a side's seat still plays for that side. */
-    private static boolean holdsSeat(ServerPlayer asking, BotRound round, int side, UUID holder)
+    private static boolean holdsSeat(ServerPlayer asking, BotBattle battle, int side, UUID holder)
     {
         ServerPlayer player = Objects.requireNonNull(asking.getServer()).getPlayerList().getPlayer(holder);
-        return player != null && FlansTeams.getTeam(player).map(team -> round.getLive().getRound().getSideOf(team) == side).orElse(false);
+        return player != null && battle.getGround().sideOf(player) == side;
     }
 
     /** What the player's order screen shows: the squads they may order and the objectives they may send them to. */
     public static BotOrdersStatePacket state(ServerPlayer player)
     {
-        Optional<BotRound> current = TeamsBots.current();
+        Optional<BotBattle> current = TeamsBots.current();
         Optional<ITeam> team = FlansTeams.getTeam(player);
         if (current.isEmpty() || team.isEmpty() || !(player.level() instanceof ServerLevel level))
             return BotOrdersStatePacket.notPlaying();
-        BotRound round = current.get();
-        int side = round.getLive().getRound().getSideOf(team.get());
-        UUID holder = round.getCommanders().get(side);
+        BotBattle battle = current.get();
+        int side = battle.getGround().sideOf(team.get());
+        UUID holder = battle.getCommanders().get(side);
         boolean commander = player.getUUID().equals(holder);
         String commanderName = holder == null ? "" : Optional.ofNullable(Objects.requireNonNull(player.getServer()).getPlayerList().getPlayer(holder)).map(ServerPlayer::getScoreboardName).orElse("");
         List<BotOrdersStatePacket.Squad> squads = new ArrayList<>();
-        for (BotSquad squad : round.getSquads().values())
+        for (BotSquad squad : battle.getSquads().values())
         {
-            boolean listed = !squad.isDisbanded() && round.sideOf(squad.getTeam()) == side && squad.getRole() != BotRole.AA && (commander || hears(level, round, squad, player));
-            List<Entity> members = listed ? BotCommander.livingMembers(level, round, squad) : List.of();
+            boolean listed = !squad.isDisbanded() && battle.sideOf(squad.getTeam()) == side && squad.getRole() != BotRole.AA && (commander || hears(level, battle, squad, player));
+            List<Entity> members = listed ? BotCommander.livingMembers(level, battle, squad) : List.of();
             if (!members.isEmpty())
                 squads.add(line(squad, members, player));
         }
         squads.sort(Comparator.comparingInt(BotOrdersStatePacket.Squad::distance));
-        List<BotOrdersStatePacket.Objective> objectives = round.getLive().getCapturePoints().stream()
+        List<BotOrdersStatePacket.Objective> objectives = battle.getGround().capturePoints().stream()
             .map(point -> new BotOrdersStatePacket.Objective(point.symbol(), point.name(), point.ownerSide(), point.position().x, point.position().z)).toList();
-        Optional<BotSquad> led = BotLeaders.ledBy(round, player.getUUID());
+        Optional<BotSquad> led = BotLeaders.ledBy(battle, player.getUUID());
         BotOrdersStatePacket.Leading leading = new BotOrdersStatePacket.Leading(led.map(BotSquad::getId).orElse(-1), led.map(squad -> squad.getRally() != null).orElse(false),
-            round.getSpawnChoices().getOrDefault(player.getUUID(), BotLeaders.SpawnChoice.BASE).ordinal(), round.getSettings().isRallyPoints());
+            battle.getSpawnChoices().getOrDefault(player.getUUID(), BotLeaders.SpawnChoice.BASE).ordinal(), battle.getSettings().isRallyPoints());
         return new BotOrdersStatePacket(true, side, commander, commanderName, squads, objectives, leading, false);
     }
 

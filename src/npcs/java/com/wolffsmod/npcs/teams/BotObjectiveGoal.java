@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.teams;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
@@ -158,7 +159,7 @@ public final class BotObjectiveGoal extends Goal
 
     private List<Vec3> routePoints()
     {
-        return TeamsBots.current().filter(round -> npc.getServer() != null).map(round -> BotMarkers.get(npc.getServer()).positions(round.getLive().getRound().getMapId(), BotMarkers.Type.ROUTE))
-            .orElse(List.of());
+        MinecraftServer server = npc.getServer();
+        return server == null ? List.of() : BotBattles.of(npc).map(battle -> BotCommander.markers(server, battle, BotMarkers.Type.ROUTE)).orElse(List.of());
     }
 }

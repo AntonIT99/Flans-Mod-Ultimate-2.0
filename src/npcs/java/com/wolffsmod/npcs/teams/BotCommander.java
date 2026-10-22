@@ -39,36 +39,36 @@ final class BotCommander
     {}
 
     /** Gives every squad of every side a task. */
-    static void plan(MinecraftServer server, ServerLevel level, BotRound round)
+    static void plan(MinecraftServer server, ServerLevel level, BotBattle battle)
     {
-        ITeamsLiveRound live = round.getLive();
-        List<TeamsCapturePoint> points = live.getCapturePoints();
-        int attacking = live.getAttackingSide().orElse(-1);
-        List<Vec3> naval = BotMarkers.get(server).positions(live.getRound().getMapId(), BotMarkers.Type.NAVAL);
-        Map<Integer, List<Vec3>> fighters = fightersBySide(server, level, round);
-        List<TeamsFlag> flags = live.getFlags();
-        List<Doctrine.FlagView> flagViews = flags.stream().map(flag -> flagView(server, level, round, flag)).toList();
+        Battleground ground = battle.getGround();
+        List<TeamsCapturePoint> points = ground.capturePoints();
+        int attacking = ground.attackingSide().orElse(-1);
+        List<Vec3> naval = markers(server, battle, BotMarkers.Type.NAVAL);
+        Map<Integer, List<Vec3>> fighters = fightersBySide(server, level, battle);
+        List<TeamsFlag> flags = ground.flags();
+        List<Doctrine.FlagView> flagViews = flags.stream().map(flag -> flagView(server, level, battle, flag)).toList();
         Set<UUID> carriers = new HashSet<>();
         flags.stream().map(TeamsFlag::carrier).filter(Objects::nonNull).forEach(carriers::add);
-        BotLeaders.tick(server, level, round);
-        applyOrders(server, level, round);
-        for (int side = 0; side < live.getRound().getSideCount(); side++)
+        BotLeaders.tick(server, level, battle);
+        applyOrders(server, level, battle);
+        for (int side = 0; side < ground.sideCount(); side++)
         {
             int ownSide = side;
             List<Vec3> enemies = new ArrayList<>();
             fighters.forEach((fighterSide, positions) ->
             {
-                if (fighterSide != ownSide)
+                if (ground.hostile(ownSide, fighterSide))
                     enemies.addAll(positions);
             });
             List<Vec3> enemySpawns = new ArrayList<>();
-            for (ITeam team : live.getRound().getTeams())
-                if (live.getRound().getSideOf(team) != side)
-                    enemySpawns.addAll(live.getSpawnPositions(team));
-            List<Doctrine.SquadView> views = views(level, round, side, carriers);
+            for (ITeam team : ground.teams())
+                if (ground.hostile(side, ground.sideOf(team)))
+                    enemySpawns.addAll(ground.spawnPositions(team));
+            List<Doctrine.SquadView> views = views(level, battle, side, carriers);
             if (!views.isEmpty())
-                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, live.mayCapture(side)), views)
-                    .forEach((squadId, task) -> Optional.ofNullable(round.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
+                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side)), views)
+                    .forEach((squadId, task) -> Optional.ofNullable(battle.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
         }
     }
 
@@ -76,10 +76,10 @@ final class BotCommander
      * Gives squads under a player's order the task of that order, and returns the others to their commander once their order
      * ran out, was released, or its player left the round.
      */
-    private static void applyOrders(MinecraftServer server, ServerLevel level, BotRound round)
+    private static void applyOrders(MinecraftServer server, ServerLevel level, BotBattle battle)
     {
         long now = level.getGameTime();
-        for (BotSquad squad : round.getSquads().values())
+        for (BotSquad squad : battle.getSquads().values())
         {
             PlayerOrder order = squad.getOrder();
             if (order == null)
@@ -94,34 +94,34 @@ final class BotCommander
     }
 
     /** A flag as a commander sees it, with the side of whoever carries it. */
-    private static Doctrine.FlagView flagView(MinecraftServer server, ServerLevel level, BotRound round, TeamsFlag flag)
+    private static Doctrine.FlagView flagView(MinecraftServer server, ServerLevel level, BotBattle battle, TeamsFlag flag)
     {
-        int owner = flag.owner() == null ? -1 : round.getLive().getRound().getSideOf(flag.owner());
+        int owner = flag.owner() == null ? -1 : battle.getGround().sideOf(flag.owner());
         int carrierSide = -1;
         if (flag.carrier() != null)
         {
             Entity carrier = server.getPlayerList().getPlayer(flag.carrier());
             if (carrier == null)
                 carrier = level.getEntity(flag.carrier());
-            carrierSide = carrier == null ? -1 : FlansTeams.getTeam(carrier).map(team -> round.getLive().getRound().getSideOf(team)).orElse(-1);
+            carrierSide = carrier == null ? -1 : battle.getGround().sideOf(carrier);
         }
         return new Doctrine.FlagView(owner, flag.position(), flag.home(), flag.atHome(), carrierSide);
     }
 
     /** Where every living player and bot of the round is, by side. */
-    private static Map<Integer, List<Vec3>> fightersBySide(MinecraftServer server, ServerLevel level, BotRound round)
+    private static Map<Integer, List<Vec3>> fightersBySide(MinecraftServer server, ServerLevel level, BotBattle battle)
     {
         Map<Integer, List<Vec3>> fighters = new HashMap<>();
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             if (player.isAlive() && !player.isSpectator() && player.level() == level)
-                FlansTeams.getTeam(player).ifPresent(team -> fighters.computeIfAbsent(round.getLive().getRound().getSideOf(team), ignored -> new ArrayList<>()).add(player.position()));
+                FlansTeams.getTeam(player).ifPresent(team -> fighters.computeIfAbsent(battle.getGround().sideOf(team), ignored -> new ArrayList<>()).add(player.position()));
         }
-        for (BotSlot slot : round.getSlots().values())
+        for (BotSlot slot : battle.getSlots().values())
         {
             Entity entity = slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
             if (entity != null && entity.isAlive())
-                fighters.computeIfAbsent(round.sideOf(slot.getTeam()), ignored -> new ArrayList<>()).add(entity.position());
+                fighters.computeIfAbsent(battle.sideOf(slot.getTeam()), ignored -> new ArrayList<>()).add(entity.position());
         }
         return fighters;
     }
@@ -130,13 +130,13 @@ final class BotCommander
      * The squads of a side its commander plans for: not those under a player's order. A transport still carrying its
      * squad is planned as infantry, so that it heads for an objective to unload at.
      */
-    private static List<Doctrine.SquadView> views(ServerLevel level, BotRound round, int side, Set<UUID> carriers)
+    private static List<Doctrine.SquadView> views(ServerLevel level, BotBattle battle, int side, Set<UUID> carriers)
     {
         List<Doctrine.SquadView> views = new ArrayList<>();
-        for (BotSquad squad : round.getSquads().values())
+        for (BotSquad squad : battle.getSquads().values())
         {
-            boolean planned = !squad.isDisbanded() && squad.getOrder() == null && round.sideOf(squad.getTeam()) == side;
-            List<Entity> members = planned ? livingMembers(level, round, squad) : List.of();
+            boolean planned = !squad.isDisbanded() && squad.getOrder() == null && battle.sideOf(squad.getTeam()) == side;
+            List<Entity> members = planned ? livingMembers(level, battle, squad) : List.of();
             if (members.isEmpty())
                 continue;
             BotRole role = squad.getCargo().isEmpty() ? squad.getRole() : BotRole.INFANTRY;
@@ -147,12 +147,12 @@ final class BotCommander
     }
 
     /** The living members of a squad, the leader first. */
-    static List<Entity> livingMembers(ServerLevel level, BotRound round, BotSquad squad)
+    static List<Entity> livingMembers(ServerLevel level, BotBattle battle, BotSquad squad)
     {
         List<Entity> members = new ArrayList<>();
         for (int slotId : squad.getSlots())
         {
-            BotSlot slot = round.getSlots().get(slotId);
+            BotSlot slot = battle.getSlots().get(slotId);
             Entity entity = slot == null || slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
             if (entity != null && entity.isAlive())
                 members.add(entity);
@@ -168,11 +168,11 @@ final class BotCommander
     }
 
     /** @return where a bot should be for its squad's task, or empty for an NPC that is no bot of the round or has none */
-    static Optional<Order> order(MinecraftServer server, BotRound round, EntityNPCInterface npc)
+    static Optional<Order> order(MinecraftServer server, BotBattle battle, EntityNPCInterface npc)
     {
-        Integer slotId = round.getSlotOfEntity().get(npc.getUUID());
-        BotSlot slot = slotId == null ? null : round.getSlots().get(slotId);
-        BotSquad squad = slot == null ? null : round.getSquads().get(slot.getSquad());
+        Integer slotId = battle.getSlotOfEntity().get(npc.getUUID());
+        BotSlot slot = slotId == null ? null : battle.getSlots().get(slotId);
+        BotSquad squad = slot == null ? null : battle.getSquads().get(slot.getSquad());
         SquadTask task = squad == null ? null : squad.getTask();
         if (task == null)
             return Optional.empty();
@@ -184,7 +184,7 @@ final class BotCommander
         int index = Math.max(0, squad.getSlots().indexOf(slot.getId()));
         List<Vec3> posts = List.of();
         if (squad.getRole() == BotRole.INFANTRY && (task.kind() == SquadTask.Kind.DEFEND || task.kind() == SquadTask.Kind.GUARD))
-            posts = posts(server, round, task);
+            posts = posts(server, battle, task);
         Vec3 spot = BotFormation.spot(task.target(), index, task.radius(), posts);
         double arrival = 2.5D;
         if (squad.getRole() == BotRole.PLANE || squad.getRole() == BotRole.HELICOPTER)
@@ -198,26 +198,30 @@ final class BotCommander
     }
 
     /** The sniper posts, then the garrison posts, around a defended objective, nearest first. */
-    private static List<Vec3> posts(MinecraftServer server, BotRound round, SquadTask task)
+    private static List<Vec3> posts(MinecraftServer server, BotBattle battle, SquadTask task)
     {
-        String map = round.getLive().getRound().getMapId();
         double reach = task.radius() + POST_MARGIN;
         Comparator<Vec3> nearest = Comparator.comparingDouble(post -> post.distanceToSqr(task.target()));
         List<Vec3> posts = new ArrayList<>();
-        BotMarkers markers = BotMarkers.get(server);
-        markers.positions(map, BotMarkers.Type.SNIPER).stream().filter(post -> post.distanceTo(task.target()) <= reach).sorted(nearest).forEach(posts::add);
-        markers.positions(map, BotMarkers.Type.GARRISON).stream().filter(post -> post.distanceTo(task.target()) <= reach).sorted(nearest).forEach(posts::add);
+        markers(server, battle, BotMarkers.Type.SNIPER).stream().filter(post -> post.distanceTo(task.target()) <= reach).sorted(nearest).forEach(posts::add);
+        markers(server, battle, BotMarkers.Type.GARRISON).stream().filter(post -> post.distanceTo(task.target()) <= reach).sorted(nearest).forEach(posts::add);
         return posts;
     }
 
-    /** Shows each team's bots on the scoreboard, one by one or summed up, as the round's settings say. */
-    static void scoreboard(BotRound round)
+    /** The markers of a type on the map of the battle; none for a battle on no map. */
+    static List<Vec3> markers(MinecraftServer server, BotBattle battle, BotMarkers.Type type)
     {
-        for (ITeam team : round.getLive().getRound().getTeams())
+        return battle.getGround().mapId().map(map -> BotMarkers.get(server).positions(map, type)).orElse(List.of());
+    }
+
+    /** Shows each team's bots on the scoreboard, one by one or summed up, as the round's settings say. */
+    static void scoreboard(BotBattle battle)
+    {
+        for (ITeam team : battle.getGround().teams())
         {
-            List<BotSlot> slots = round.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && (!slot.isRetired() || slot.getKills() > 0 || slot.getDeaths() > 0))
+            List<BotSlot> slots = battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && (!slot.isRetired() || slot.getKills() > 0 || slot.getDeaths() > 0))
                 .toList();
-            BotSettings.Scoreboard mode = round.getSettings().getScoreboard();
+            BotSettings.Scoreboard mode = battle.getSettings().getScoreboard();
             boolean individual = mode == BotSettings.Scoreboard.INDIVIDUAL || mode == BotSettings.Scoreboard.AUTO && slots.size() <= INDIVIDUAL_ROWS;
             List<TeamsScoreEntry> rows = new ArrayList<>();
             if (individual)

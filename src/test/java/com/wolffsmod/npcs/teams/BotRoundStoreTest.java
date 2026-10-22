@@ -1,12 +1,10 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.ITeamsLiveRound;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 
-import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,16 +14,15 @@ class BotRoundStoreTest
 {
     private static final long NOW = 50_000L;
 
-    /** A live round that only knows its instance, which is all a stored round is matched by. */
-    private static ITeamsLiveRound live(UUID instance)
+    /** A battle of a round that is only its instance, which is all a stored battle is matched by. */
+    private static BotBattle battle(UUID instance)
     {
-        return (ITeamsLiveRound) Proxy.newProxyInstance(BotRoundStoreTest.class.getClassLoader(), new Class<?>[]{ITeamsLiveRound.class},
-            (proxy, method, args) -> "getInstanceId".equals(method.getName()) ? instance : null);
+        return new BotBattle(instance, new RoundBattleground(null), new BotSettings(), Map.of());
     }
 
-    private static BotRound played(UUID instance)
+    private static BotBattle played(UUID instance)
     {
-        BotRound round = new BotRound(live(instance), new BotSettings(), Map.of());
+        BotBattle round = battle(instance);
         round.setOpening(false);
         BotSquad squad = round.newSquad("Germans", BotRole.INFANTRY, BotSlot.Source.SQUAD, 0, "panzergrenadiere");
         squad.setTask(new SquadTask(SquadTask.Kind.ATTACK, new Vec3(10D, 64D, -20D), 8D));
@@ -54,12 +51,12 @@ class BotRoundStoreTest
     void aResumedPlayingGetsBackItsBotsSquadsAndSpending()
     {
         UUID instance = UUID.randomUUID();
-        BotRound before = played(instance);
+        BotBattle before = played(instance);
         CompoundTag saved = new CompoundTag();
-        BotRoundStore.write(before, saved);
+        BotBattleCodec.write(before, saved);
 
         BotRoundStore store = BotRoundStore.load(saved);
-        BotRound after = new BotRound(live(instance), new BotSettings(), Map.of());
+        BotBattle after = battle(instance);
         assertTrue(store.resume(after, NOW));
 
         BotSlot slot = after.getSlots().values().iterator().next();
@@ -70,7 +67,7 @@ class BotRoundStoreTest
         assertEquals(3, slot.getDeaths());
         assertEquals(4, slot.getSpawns());
         assertEquals(original.getLastPosition(), slot.getLastPosition());
-        assertTrue(slot.getLastSeen() >= NOW + BotRoundStore.RESTORE_GRACE, "a restored bot gets time to be loaded before it counts as lost");
+        assertTrue(slot.getLastSeen() >= NOW + BotBattleCodec.RESTORE_GRACE, "a restored bot gets time to be loaded before it counts as lost");
         assertEquals(slot.getId(), after.getSlotOfEntity().get(slot.getEntity()));
         BotSquad squad = after.getSquads().values().iterator().next();
         assertEquals("panzergrenadiere", squad.getTemplate());
@@ -91,8 +88,8 @@ class BotRoundStoreTest
     void anotherPlayingStartsAfresh()
     {
         CompoundTag saved = new CompoundTag();
-        BotRoundStore.write(played(UUID.randomUUID()), saved);
-        BotRound other = new BotRound(live(UUID.randomUUID()), new BotSettings(), Map.of());
+        BotBattleCodec.write(played(UUID.randomUUID()), saved);
+        BotBattle other = battle(UUID.randomUUID());
         assertFalse(BotRoundStore.load(saved).resume(other, NOW));
         assertTrue(other.getSlots().isEmpty());
         assertTrue(other.getTickets().isEmpty());
@@ -102,7 +99,7 @@ class BotRoundStoreTest
     void aStoredRoundNotYetResumedIsSavedAgainUnchanged()
     {
         CompoundTag saved = new CompoundTag();
-        BotRoundStore.write(played(UUID.randomUUID()), saved);
+        BotBattleCodec.write(played(UUID.randomUUID()), saved);
         assertEquals(saved, BotRoundStore.load(saved).save(new CompoundTag()));
     }
 
@@ -110,7 +107,7 @@ class BotRoundStoreTest
     void leadersRallyPointsAndSpawnChoicesSurviveARestart()
     {
         UUID instance = UUID.randomUUID();
-        BotRound before = played(instance);
+        BotBattle before = played(instance);
         BotSquad squad = before.getSquads().values().iterator().next();
         UUID leader = UUID.randomUUID();
         squad.setLeader(leader);
@@ -118,8 +115,8 @@ class BotRoundStoreTest
         squad.setRallyUntil(NOW + 1000L);
         before.getSpawnChoices().put(leader, BotLeaders.SpawnChoice.RALLY);
         CompoundTag saved = new CompoundTag();
-        BotRoundStore.write(before, saved);
-        BotRound after = new BotRound(live(instance), new BotSettings(), Map.of());
+        BotBattleCodec.write(before, saved);
+        BotBattle after = battle(instance);
         assertTrue(BotRoundStore.load(saved).resume(after, NOW));
         BotSquad restored = after.getSquads().values().iterator().next();
         assertEquals(leader, restored.getLeader());

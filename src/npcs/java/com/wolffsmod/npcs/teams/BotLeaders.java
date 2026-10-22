@@ -49,9 +49,9 @@ public final class BotLeaders
     }
 
     /** @return the squad a player leads, if any */
-    static Optional<BotSquad> ledBy(BotRound round, UUID player)
+    static Optional<BotSquad> ledBy(BotBattle battle, UUID player)
     {
-        return round.getSquads().values().stream().filter(squad -> player.equals(squad.getLeader()) && !squad.isDisbanded()).findFirst();
+        return battle.getSquads().values().stream().filter(squad -> player.equals(squad.getLeader()) && !squad.isDisbanded()).findFirst();
     }
 
     /**
@@ -62,23 +62,23 @@ public final class BotLeaders
      */
     public static Component lead(ServerPlayer player, int squadId)
     {
-        Optional<BotRound> current = TeamsBots.current();
+        Optional<BotBattle> current = TeamsBots.current();
         Optional<ITeam> team = FlansTeams.getTeam(player);
         if (current.isEmpty() || team.isEmpty() || !(player.level() instanceof ServerLevel level))
             return failure(NOT_PLAYING);
-        BotRound round = current.get();
-        int side = round.getLive().getRound().getSideOf(team.get());
-        Optional<BotSquad> chosen = round.getSquads().values().stream()
-            .filter(squad -> !squad.isDisbanded() && squad.getRole() == BotRole.INFANTRY && squad.getCargo().isEmpty() && round.sideOf(squad.getTeam()) == side)
+        BotBattle battle = current.get();
+        int side = battle.getGround().sideOf(team.get());
+        Optional<BotSquad> chosen = battle.getSquads().values().stream()
+            .filter(squad -> !squad.isDisbanded() && squad.getRole() == BotRole.INFANTRY && squad.getCargo().isEmpty() && battle.sideOf(squad.getTeam()) == side)
             .filter(squad -> squadId == BotOrders.NEARBY_SQUADS || squad.getId() == squadId)
-            .filter(squad -> !BotCommander.livingMembers(level, round, squad).isEmpty() && BotCommander.livingMembers(level, round, squad).get(0).distanceTo(player) <= BotOrders.NEARBY)
-            .min(Comparator.comparingDouble(squad -> BotCommander.livingMembers(level, round, squad).get(0).distanceToSqr(player)));
+            .filter(squad -> !BotCommander.livingMembers(level, battle, squad).isEmpty() && BotCommander.livingMembers(level, battle, squad).get(0).distanceTo(player) <= BotOrders.NEARBY)
+            .min(Comparator.comparingDouble(squad -> BotCommander.livingMembers(level, battle, squad).get(0).distanceToSqr(player)));
         if (chosen.isEmpty())
             return failure("no_squad");
         BotSquad squad = chosen.get();
-        if (squad.getLeader() != null && !squad.getLeader().equals(player.getUUID()) && stillLeads(player.server, round, squad))
+        if (squad.getLeader() != null && !squad.getLeader().equals(player.getUUID()) && stillLeads(player.server, battle, squad))
             return failure("taken");
-        ledBy(round, player.getUUID()).filter(other -> other != squad).ifPresent(BotLeaders::release);
+        ledBy(battle, player.getUUID()).filter(other -> other != squad).ifPresent(BotLeaders::release);
         squad.setLeader(player.getUUID());
         follow(squad, player);
         return Component.translatable(PREFIX + "leading", "#" + squad.getId());
@@ -87,7 +87,7 @@ public final class BotLeaders
     /** Gives up the lead of the squad a player leads; the squad returns to its commander. */
     public static Component leave(ServerPlayer player)
     {
-        Optional<BotSquad> squad = TeamsBots.current().flatMap(round -> ledBy(round, player.getUUID()));
+        Optional<BotSquad> squad = TeamsBots.current().flatMap(battle -> ledBy(battle, player.getUUID()));
         if (squad.isEmpty())
             return failure("not_leading");
         release(squad.get());
@@ -97,8 +97,8 @@ public final class BotLeaders
     /** Places the rally point of the squad a player leads where the player stands, replacing the one it had. */
     public static Component rally(ServerPlayer player)
     {
-        Optional<BotRound> current = TeamsBots.current();
-        Optional<BotSquad> squad = current.flatMap(round -> ledBy(round, player.getUUID()));
+        Optional<BotBattle> current = TeamsBots.current();
+        Optional<BotSquad> squad = current.flatMap(battle -> ledBy(battle, player.getUUID()));
         if (current.isEmpty() || squad.isEmpty())
             return failure("not_leading");
         if (!current.get().getSettings().isRallyPoints())
@@ -116,7 +116,7 @@ public final class BotLeaders
     /** Chooses where a player comes back after dying. */
     public static Component chooseSpawn(ServerPlayer player, SpawnChoice choice)
     {
-        Optional<BotRound> current = TeamsBots.current();
+        Optional<BotBattle> current = TeamsBots.current();
         if (current.isEmpty() || FlansTeams.getTeam(player).isEmpty())
             return failure(NOT_PLAYING);
         current.get().getSpawnChoices().put(player.getUUID(), choice);
@@ -124,17 +124,17 @@ public final class BotLeaders
     }
 
     /** Where the player chose to come back, if that place is there and safe; empty leaves it to the game type. */
-    static Optional<Vec3> spawnFor(MinecraftServer server, BotRound round, ServerPlayer player, RandomGenerator random)
+    static Optional<Vec3> spawnFor(MinecraftServer server, BotBattle battle, ServerPlayer player, RandomGenerator random)
     {
-        SpawnChoice choice = round.getSpawnChoices().getOrDefault(player.getUUID(), SpawnChoice.BASE);
-        Optional<BotSquad> squad = ledBy(round, player.getUUID());
-        ServerLevel level = server.getLevel(round.getLive().getDimension());
+        SpawnChoice choice = battle.getSpawnChoices().getOrDefault(player.getUUID(), SpawnChoice.BASE);
+        Optional<BotSquad> squad = ledBy(battle, player.getUUID());
+        ServerLevel level = server.getLevel(battle.getGround().dimension());
         if (choice == SpawnChoice.BASE || squad.isEmpty() || level == null)
             return Optional.empty();
         if (choice == SpawnChoice.RALLY)
             return Optional.ofNullable(squad.get().getRally()).map(rally -> BotFactory.freeSpot(level, rally, random));
-        int side = round.sideOf(squad.get().getTeam());
-        return BotCommander.livingMembers(level, round, squad.get()).stream().filter(member -> !enemyWithin(server, level, round, side, member.position(), SPAWN_CLEAR)).findFirst()
+        int side = battle.sideOf(squad.get().getTeam());
+        return BotCommander.livingMembers(level, battle, squad.get()).stream().filter(member -> !enemyWithin(server, level, battle, side, member.position(), SPAWN_CLEAR)).findFirst()
             .map(member -> BotFactory.freeSpot(level, member.position().add(random.nextDouble() * SPAWN_SPREAD - 1D, 0D, random.nextDouble() * SPAWN_SPREAD - 1D), random));
     }
 
@@ -142,20 +142,20 @@ public final class BotLeaders
      * Keeps the leaders and rally points up to date: a leader who left the side loses the squad, a squad follows its leader
      * again once they are back in the field, and a rally point runs out or is overrun.
      */
-    static void tick(MinecraftServer server, ServerLevel level, BotRound round)
+    static void tick(MinecraftServer server, ServerLevel level, BotBattle battle)
     {
         long now = level.getGameTime();
-        for (BotSquad squad : round.getSquads().values())
+        for (BotSquad squad : battle.getSquads().values())
         {
             if (squad.getLeader() != null)
-                tickLeader(server, level, round, squad, now);
+                tickLeader(server, level, battle, squad, now);
         }
     }
 
-    private static void tickLeader(MinecraftServer server, ServerLevel level, BotRound round, BotSquad squad, long now)
+    private static void tickLeader(MinecraftServer server, ServerLevel level, BotBattle battle, BotSquad squad, long now)
     {
         ServerPlayer leader = server.getPlayerList().getPlayer(Objects.requireNonNull(squad.getLeader()));
-        if (!stillLeads(server, round, squad) || leader == null)
+        if (!stillLeads(server, battle, squad) || leader == null)
         {
             release(squad);
             return;
@@ -166,10 +166,10 @@ public final class BotLeaders
             follow(squad, leader);
         else if (!inField && order != null && order.player().equals(leader.getUUID()) && order.kind() == PlayerOrder.Kind.FOLLOW)
             squad.setOrder(null);
-        tickRally(server, level, round, squad, leader, now);
+        tickRally(server, level, battle, squad, leader, now);
     }
 
-    private static void tickRally(MinecraftServer server, ServerLevel level, BotRound round, BotSquad squad, ServerPlayer leader, long now)
+    private static void tickRally(MinecraftServer server, ServerLevel level, BotBattle battle, BotSquad squad, ServerPlayer leader, long now)
     {
         Vec3 rally = squad.getRally();
         if (rally == null)
@@ -179,7 +179,7 @@ public final class BotLeaders
             squad.setRally(null);
             leader.sendSystemMessage(Component.translatable(PREFIX + "rally_expired").withStyle(ChatFormatting.YELLOW));
         }
-        else if (enemyWithin(server, level, round, round.sideOf(squad.getTeam()), rally, OVERRUN))
+        else if (enemyWithin(server, level, battle, battle.sideOf(squad.getTeam()), rally, OVERRUN))
         {
             squad.setRally(null);
             leader.sendSystemMessage(Component.translatable(PREFIX + "rally_overrun").withStyle(ChatFormatting.RED));
@@ -187,10 +187,10 @@ public final class BotLeaders
     }
 
     /** Whether the squad's leader is online and still plays for the squad's side. */
-    private static boolean stillLeads(MinecraftServer server, BotRound round, BotSquad squad)
+    private static boolean stillLeads(MinecraftServer server, BotBattle battle, BotSquad squad)
     {
         ServerPlayer leader = squad.getLeader() == null ? null : server.getPlayerList().getPlayer(squad.getLeader());
-        return leader != null && FlansTeams.getTeam(leader).map(team -> round.getLive().getRound().getSideOf(team) == round.sideOf(squad.getTeam())).orElse(false);
+        return leader != null && FlansTeams.getTeam(leader).map(team -> battle.getGround().sideOf(team) == battle.sideOf(squad.getTeam())).orElse(false);
     }
 
     private static void follow(BotSquad squad, ServerPlayer leader)
@@ -209,24 +209,24 @@ public final class BotLeaders
         squad.setRally(null);
     }
 
-    private static int sideOf(BotRound round, ServerPlayer player)
+    private static int sideOf(BotBattle battle, ServerPlayer player)
     {
-        return FlansTeams.getTeam(player).map(team -> round.getLive().getRound().getSideOf(team)).orElse(-1);
+        return battle.getGround().sideOf(player);
     }
 
     /** Whether a living enemy of a side, player or bot, is within some blocks of a place. */
-    static boolean enemyWithin(MinecraftServer server, ServerLevel level, BotRound round, int side, Vec3 at, double within)
+    static boolean enemyWithin(MinecraftServer server, ServerLevel level, BotBattle battle, int side, Vec3 at, double within)
     {
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             if (player.isAlive() && !player.isSpectator() && player.level() == level && player.position().distanceTo(at) <= within
-                && FlansTeams.getTeam(player).map(team -> round.getLive().getRound().getSideOf(team) != side).orElse(false))
+                && FlansTeams.getTeam(player).map(team -> battle.getGround().sideOf(team) != side).orElse(false))
                 return true;
         }
-        for (BotSlot slot : round.getSlots().values())
+        for (BotSlot slot : battle.getSlots().values())
         {
             Entity entity = slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
-            if (entity instanceof EntityNPCInterface npc && npc.isAlive() && round.sideOf(slot.getTeam()) != side && npc.position().distanceTo(at) <= within)
+            if (entity instanceof EntityNPCInterface npc && npc.isAlive() && battle.sideOf(slot.getTeam()) != side && npc.position().distanceTo(at) <= within)
                 return true;
         }
         return false;

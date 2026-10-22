@@ -48,7 +48,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     private static final double DUTY_ARRIVAL = 2D;
 
     @Nullable
-    private BotRound round;
+    private BotBattle round;
 
     /** Hooks the bots into Teams rounds; called once while the module is constructed. */
     public static void register()
@@ -73,7 +73,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     @Override
     public boolean mayRespawn(ITeamsLiveRound live, ServerPlayer player, ITeam team, Reason reason)
     {
-        BotRound current = round;
+        BotBattle current = round;
         if (current == null || !current.getInstance().equals(live.getInstanceId()))
             return true;
         boolean first = current.getFieldedPlayers().add(player.getUUID());
@@ -96,7 +96,10 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     public static void serverStopping(MinecraftServer server)
     {
         if (INSTANCE.round != null)
+        {
             BotRoundStore.get(server).setDirty();
+            BotBattles.remove(INSTANCE.round);
+        }
         INSTANCE.round = null;
         BotGunners.forget();
         BotFactions.tearDown();
@@ -116,25 +119,25 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     @Override
     public Optional<Vec3> spawnPosition(ITeamsLiveRound live, ServerPlayer player, ITeam team, Reason reason)
     {
-        BotRound current = round;
+        BotBattle current = round;
         if (current == null || !current.getInstance().equals(live.getInstanceId()) || player.getServer() == null)
             return Optional.empty();
         return BotLeaders.spawnFor(player.getServer(), current, player, ThreadLocalRandom.current());
     }
 
-    /** @return where a bot should go for its squad's task, or empty for an NPC that is no bot of the round or has no task */
+    /** @return where a bot should go for its squad's task, or empty for an NPC that is no bot of a battle or has no task */
     static Optional<BotCommander.Order> orderFor(EntityNPCInterface npc)
     {
-        BotRound current = INSTANCE.round;
-        if (current == null || npc.getServer() == null)
+        MinecraftServer server = npc.getServer();
+        if (BotBattles.isEmpty() || server == null)
             return Optional.empty();
         // A duty, such as healing an ally or falling back, comes before the squad's task.
         Optional<BotCommander.Order> duty = BotDuties.destination(npc).map(spot -> new BotCommander.Order(spot, DUTY_ARRIVAL, BotRole.INFANTRY, SquadTask.Kind.HOLD));
-        return duty.isPresent() ? duty : BotCommander.order(npc.getServer(), current, npc);
+        return duty.isPresent() ? duty : BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
     }
 
     /** @return the bots of the round being played, for commands; empty between rounds */
-    static Optional<BotRound> current()
+    static Optional<BotBattle> current()
     {
         return Optional.ofNullable(INSTANCE.round);
     }
@@ -142,7 +145,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     /** Removes every bot of the round now; the force is raised again by the next upkeep while bots are enabled. */
     static int clear(MinecraftServer server)
     {
-        BotRound current = INSTANCE.round;
+        BotBattle current = INSTANCE.round;
         if (current == null)
             return 0;
         int removed = INSTANCE.removeAll(server, current);
@@ -162,12 +165,12 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             if (round != null)
                 end(server);
             else if (tick % SWEEP_INTERVAL == 0)
-                sweep(server, null);
+                sweep(server);
             return;
         }
         if (round == null || !round.getInstance().equals(live.get().getInstanceId()))
             begin(server, live.get());
-        BotRound current = Objects.requireNonNull(round);
+        BotBattle current = Objects.requireNonNull(round);
         ServerLevel level = server.getLevel(live.get().getDimension());
         if (level == null)
             return;
@@ -178,10 +181,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             current.setSettings(BotSettings.load(live.get().getRound().getExtensionData(BotSettings.KEY)));
             if (current.getSettings().isEnabled() && current.getFactions().isEmpty())
                 current.getFactions().putAll(BotFactions.setUp(live.get().getRound()));
-            track(level, current, now);
-            BotPopulation.upkeep(server, current, now, random);
-            BotTransports.unload(level, current, now, random);
-            BotDuties.tick(server, level, current);
+            upkeep(server, level, current, now, random);
             BotSuppression.tick(level);
             eliminate(server, level, current);
             // The world saves the round as it is now, whenever it is saved next.
@@ -197,7 +197,19 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             BotCommander.scoreboard(current);
         }
         if (tick % SWEEP_INTERVAL == 0)
-            sweep(server, current);
+            sweep(server);
+    }
+
+    /**
+     * Keeps the force of a battle going: notes who fell or went missing, brings the force in line with the settings, puts
+     * down the squads transports carried to the front, and gives soldiers their duties.
+     */
+    static void upkeep(MinecraftServer server, ServerLevel level, BotBattle battle, long now, RandomGenerator random)
+    {
+        track(level, battle, now);
+        BotPopulation.upkeep(server, battle, now, random);
+        BotTransports.unload(level, battle, now, random);
+        BotDuties.tick(server, level, battle);
     }
 
     private void begin(MinecraftServer server, ITeamsLiveRound live)
@@ -205,8 +217,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         if (round != null)
             end(server);
         BotSettings settings = BotSettings.load(live.getRound().getExtensionData(BotSettings.KEY));
-        BotRound started = new BotRound(live, settings, settings.isEnabled() ? BotFactions.setUp(live.getRound()) : Map.of());
+        BotBattle started = new BotBattle(live.getInstanceId(), new RoundBattleground(live), settings, settings.isEnabled() ? BotFactions.setUp(live.getRound()) : Map.of());
         round = started;
+        BotBattles.add(started);
         // Players placed when the round started took the field for free; coming back later costs them a ticket.
         for (ServerPlayer player : server.getPlayerList().getPlayers())
             if (FlansTeams.getTeam(player).isPresent())
@@ -214,27 +227,30 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         // The same playing resumed after a restart takes back the bots it had; bots of any other playing are removed.
         ServerLevel level = server.getLevel(live.getDimension());
         BotRoundStore.get(server).resume(started, level == null ? 0L : level.getGameTime());
-        sweep(server, started);
+        sweep(server);
     }
 
     private void end(MinecraftServer server)
     {
-        BotRound ended = round;
+        BotBattle ended = round;
         round = null;
         if (ended != null)
+        {
+            BotBattles.remove(ended);
             removeAll(server, ended);
+        }
         BotFactions.tearDown();
         BotGunners.forget();
         forgetDuties(server);
         BotRoundStore.get(server).forget();
         BotOrders.clearWaypoints(server);
-        sweep(server, null);
+        sweep(server);
     }
 
     // --- Following the bots ---
 
     /** Notes which bots died, went missing or left the force, and removes the bodies of the fallen. */
-    private void track(ServerLevel level, BotRound current, long now)
+    private static void track(ServerLevel level, BotBattle current, long now)
     {
         for (BotSlot slot : current.getSlots().values())
         {
@@ -246,7 +262,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         current.getSquads().values().removeIf(squad -> squad.getSlots().stream().noneMatch(current.getSlots()::containsKey));
     }
 
-    private static void track(ServerLevel level, BotRound current, BotSlot slot, long now)
+    private static void track(ServerLevel level, BotBattle current, BotSlot slot, long now)
     {
         Entity entity = level.getEntity(Objects.requireNonNull(slot.getEntity()));
         if (entity instanceof EntityNPCInterface npc)
@@ -270,7 +286,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     }
 
     /** Removes a fallen bot's body, or a retired bot, leaving the wreck a destroyed vehicle left. */
-    private static void removeBody(ServerLevel level, BotRound current, BotSlot slot, EntityNPCInterface npc, boolean dead)
+    private static void removeBody(ServerLevel level, BotBattle current, BotSlot slot, EntityNPCInterface npc, boolean dead)
     {
         remove(npc);
         if (dead && slot.isWreckPending())
@@ -278,7 +294,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         forget(current, slot);
     }
 
-    private static void fallen(BotRound current, BotSlot slot, long now)
+    private static void fallen(BotBattle current, BotSlot slot, long now)
     {
         slot.setDiedAt(now);
         int seconds = current.getSettings().getRespawnSeconds();
@@ -294,7 +310,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             slot.setRetired(true);
     }
 
-    private static void forget(BotRound current, BotSlot slot)
+    private static void forget(BotBattle current, BotSlot slot)
     {
         if (slot.getEntity() != null)
             current.getSlotOfEntity().remove(slot.getEntity());
@@ -303,7 +319,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
 
     // --- Spawning ---
 
-    private void spawnQueued(ServerLevel level, BotRound current, long now, RandomGenerator random)
+    /** Brings in the next bots waiting in a battle's spawn queue, a few a tick. */
+    static void spawnQueued(ServerLevel level, BotBattle current, long now, RandomGenerator random)
     {
         int spawned = 0;
         while (spawned < SPAWNS_PER_TICK && !current.getQueue().isEmpty())
@@ -320,7 +337,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         }
     }
 
-    private void spawn(ServerLevel level, BotRound current, BotSlot slot, long now, RandomGenerator random)
+    private static void spawn(ServerLevel level, BotBattle current, BotSlot slot, long now, RandomGenerator random)
     {
         spawnAt(level, current, slot, now, random, null);
     }
@@ -331,7 +348,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
      *
      * @return the new NPC, or empty when it could not be made; the slot then tries again later
      */
-    static Optional<EntityNPCInterface> spawnAt(ServerLevel level, BotRound current, BotSlot slot, long now, RandomGenerator random, @Nullable Vec3 at)
+    static Optional<EntityNPCInterface> spawnAt(ServerLevel level, BotBattle current, BotSlot slot, long now, RandomGenerator random, @Nullable Vec3 at)
     {
         ITeam team = current.team(slot.getTeam()).orElse(null);
         Vec3 position = team == null || at != null ? at : spawnPoint(current, slot, team, random);
@@ -373,19 +390,19 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
      * soldier at the team's spawn point nearest its squad's task. Null when the team has no spawn point.
      */
     @Nullable
-    private static Vec3 spawnPoint(BotRound current, BotSlot slot, ITeam team, RandomGenerator random)
+    private static Vec3 spawnPoint(BotBattle current, BotSlot slot, ITeam team, RandomGenerator random)
     {
         if (slot.isVehicle())
         {
             List<BotSettings.VehicleEntry> vehicles = current.getSettings().team(slot.getTeam()).getVehicles();
             UUID wanted = slot.getEntry() < vehicles.size() ? vehicles.get(slot.getEntry()).spawner() : null;
-            List<TeamsSpawner> spawners = current.getLive().getSpawners().stream()
+            List<TeamsSpawner> spawners = current.getGround().spawners().stream()
                 .filter(spawner -> spawner.kind() == TeamsSpawner.Kind.VEHICLE && spawner.owner() != null && spawner.owner().getShortName().equals(slot.getTeam()))
                 .filter(spawner -> wanted == null || wanted.equals(spawner.id())).toList();
             if (!spawners.isEmpty())
                 return Vec3.atBottomCenterOf(spawners.get(random.nextInt(spawners.size())).position().above());
         }
-        List<Vec3> positions = current.getLive().getSpawnPositions(team);
+        List<Vec3> positions = current.getGround().spawnPositions(team);
         if (positions.isEmpty())
             return null;
         BotSquad squad = current.getSquads().get(slot.getSquad());
@@ -408,7 +425,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
      * Ends the round once only one side can still fight, when tickets or budgets are set: a side is worn out when it has
      * fought, has no player in the round, no bot alive, and nothing left to bring in.
      */
-    private static void eliminate(MinecraftServer server, ServerLevel level, BotRound current)
+    private static void eliminate(MinecraftServer server, ServerLevel level, BotBattle current)
     {
         BotSettings settings = current.getSettings();
         if (!settings.isEnabled() || !limited(current))
@@ -417,11 +434,11 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         // A player held back as a spectator, out of tickets, no longer fights for the side.
         for (ServerPlayer player : server.getPlayerList().getPlayers())
             if (!player.isSpectator())
-                FlansTeams.getTeam(player).ifPresent(team -> players.merge(current.getLive().getRound().getSideOf(team), 1, Integer::sum));
+                FlansTeams.getTeam(player).ifPresent(team -> players.merge(current.getGround().sideOf(team), 1, Integer::sum));
         players.keySet().forEach(current.getSidesThatFought()::add);
         List<Integer> standing = new ArrayList<>();
         boolean anyOut = false;
-        for (int side = 0; side < current.getLive().getRound().getSideCount(); side++)
+        for (int side = 0; side < current.getGround().sideCount(); side++)
         {
             int checked = side;
             boolean alive = current.getSlots().values().stream()
@@ -433,11 +450,11 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
                 standing.add(side);
         }
         if (anyOut && standing.size() == 1)
-            current.getLive().getRound().getTeamsOfSide(standing.get(0)).stream().findFirst().ifPresent(FlansTeams::declareWinner);
+            current.getGround().teamsOfSide(standing.get(0)).stream().findFirst().ifPresent(FlansTeams::declareWinner);
     }
 
     /** Whether the round limits respawns at all, by tickets or by a budget. */
-    private static boolean limited(BotRound current)
+    private static boolean limited(BotBattle current)
     {
         BotSettings settings = current.getSettings();
         if (settings.getTickets() > 0)
@@ -448,9 +465,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
 
     // --- Removing bots ---
 
-    private int removeAll(MinecraftServer server, BotRound current)
+    private int removeAll(MinecraftServer server, BotBattle current)
     {
-        ServerLevel level = server.getLevel(current.getLive().getDimension());
+        ServerLevel level = server.getLevel(current.getGround().dimension());
         int removed = 0;
         for (BotSlot slot : current.getSlots().values())
         {
@@ -464,15 +481,15 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return removed;
     }
 
-    /** Removes every bot in the loaded levels that is not the living bot of a slot of the round being played. */
-    private static void sweep(MinecraftServer server, @Nullable BotRound current)
+    /** Removes every bot in the loaded levels that is not the living bot of a slot of a battle being fought. */
+    private static void sweep(MinecraftServer server)
     {
         for (ServerLevel level : server.getAllLevels())
         {
             List<EntityNPCInterface> stale = new ArrayList<>();
             for (Entity entity : level.getAllEntities())
             {
-                if (entity instanceof EntityNPCInterface npc && BotTag.read(npc).filter(data -> belongs(current, npc, data)).isEmpty() && BotTag.isBot(npc))
+                if (entity instanceof EntityNPCInterface npc && BotTag.read(npc).filter(data -> belongs(npc, data)).isEmpty() && BotTag.isBot(npc))
                     stale.add(npc);
             }
             stale.forEach(TeamsBots::remove);
@@ -480,14 +497,12 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     }
 
     /**
-     * Whether a bot is the living bot of a slot of the round being played, or crews the vehicle of a slot of it, aboard or
-     * on foot since the vehicle was lost.
+     * Whether a bot is the living bot of a slot of the battle it was made for, or crews the vehicle of a slot of it, aboard
+     * or on foot since the vehicle was lost.
      */
-    private static boolean belongs(@Nullable BotRound current, EntityNPCInterface npc, BotTag.Data data)
+    private static boolean belongs(EntityNPCInterface npc, BotTag.Data data)
     {
-        if (current == null || !data.instance().equals(current.getInstance()))
-            return false;
-        return data.crew() ? current.getSlots().containsKey(data.slot()) : current.getSlotOfEntity().containsKey(npc.getUUID());
+        return BotBattles.get(data.instance()).filter(battle -> data.crew() ? battle.getSlots().containsKey(data.slot()) : battle.getSlotOfEntity().containsKey(npc.getUUID())).isPresent();
     }
 
     private static void remove(EntityNPCInterface npc)
@@ -516,7 +531,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     @Override
     public void combatantKilled(ITeamsLiveRound live, LivingEntity victim, @Nullable LivingEntity killer, DamageSource source)
     {
-        BotRound current = round;
+        BotBattle current = round;
         if (current == null || !current.getInstance().equals(live.getInstanceId()))
             return;
         Integer victimSlot = current.getSlotOfEntity().get(victim.getUUID());

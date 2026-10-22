@@ -46,7 +46,7 @@ public final class BotGunners
     }
 
     /** Aims and fires the seat guns manned by bots of the round. */
-    static void tick(ServerLevel level, BotRound round)
+    static void tick(ServerLevel level, BotBattle round)
     {
         for (BotSlot slot : round.getSlots().values())
         {
@@ -90,7 +90,7 @@ public final class BotGunners
             return living;
         AABB area = npc.getBoundingBox().inflate(SEARCH_RANGE);
         Optional<LivingEntity> nearest = level
-            .getEntitiesOfClass(LivingEntity.class, area, candidate -> candidate.isAlive() && FlansTeams.areEnemies(npc, candidate) && NpcCrew.shieldingVehicle(candidate).isEmpty()).stream()
+            .getEntitiesOfClass(LivingEntity.class, area, candidate -> candidate.isAlive() && BotRelations.areEnemies(npc, candidate) && NpcCrew.shieldingVehicle(candidate).isEmpty()).stream()
             .sorted(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(npc))).filter(candidate -> visible(level, npc, candidate, gun)).findFirst();
         nearest.ifPresentOrElse(found -> TARGETS.put(npc.getUUID(), found.getUUID()), () -> TARGETS.remove(npc.getUUID()));
         return nearest.orElse(null);

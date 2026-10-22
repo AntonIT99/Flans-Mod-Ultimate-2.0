@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
 import com.flansmodultimate.api.ISuppressionListener;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -54,11 +53,10 @@ final class BotSuppression implements ISuppressionListener
     @Override
     public void suppressed(Mob target, @Nullable LivingEntity shooter, float intensity)
     {
-        Optional<BotRound> current = TeamsBots.current();
+        Optional<BotBattle> current = BotBattles.of(target);
         if (current.isEmpty() || !current.get().getSettings().isSuppression() || !(target instanceof EntityNPCInterface npc) || shooter != null && !hostile(target, shooter))
             return;
-        Integer slotId = current.get().getSlotOfEntity().get(target.getUUID());
-        BotSlot slot = slotId == null ? null : current.get().getSlots().get(slotId);
+        BotSlot slot = BotBattles.slotOf(current.get(), target).orElse(null);
         if (slot == null || slot.isVehicle())
             return;
         long now = target.level().getGameTime();
@@ -73,7 +71,7 @@ final class BotSuppression implements ISuppressionListener
     /** A bot is only suppressed by the enemy; its own side's fire passing by does not count. */
     private static boolean hostile(Entity target, LivingEntity shooter)
     {
-        return FlansTeams.areEnemies(target, shooter);
+        return BotRelations.areEnemies(target, shooter);
     }
 
     private static void aim(EntityNPCInterface npc, int accuracy, double level)
