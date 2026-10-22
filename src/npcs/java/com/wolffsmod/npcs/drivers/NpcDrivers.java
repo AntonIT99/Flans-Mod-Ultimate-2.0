@@ -71,10 +71,13 @@ public final class NpcDrivers
         return npc.getVehicle() instanceof ISeat seat && seat.isDriverSeat() && seat.getDriveable() != null && drivable(seat) ? Optional.of(seat) : Optional.empty();
     }
 
-    /** Whether the NPC leaves its own weapons be because it drives: the driveable's weapons are what it fights with. */
+    /**
+     * Whether the NPC leaves its own weapons be because it drives or mans a seat gun: the driveable's weapons are what it
+     * fights with.
+     */
     public static boolean holdsFire(Entity entity)
     {
-        return entity instanceof EntityNPCInterface npc && !npc.level().isClientSide && enabled(npc) && drivenSeat(npc).isPresent();
+        return entity instanceof EntityNPCInterface npc && !npc.level().isClientSide && (enabled(npc) && drivenSeat(npc).isPresent() || DriveableCrew.mansGun(npc));
     }
 
     /** Drives for an NPC at the wheel, or gets it out once its switch is turned off. Runs on the NPC's server tick. */
@@ -83,12 +86,25 @@ public final class NpcDrivers
         NpcDriver driver = NpcDriver.of(npc);
         ISeat seat = drivenSeat(npc).orElse(null);
         Entity driveable = seat == null ? null : seat.getDriveable();
-        if (seat == null || driveable == null || !npc.isAlive() || npc.isKilled())
+        ISeat crewed = seat == null ? DriveableCrew.crewSeat(npc).orElse(null) : null;
+        if (crewed != null && crewed.getDriveable() != null && npc.isAlive() && !npc.isKilled())
+            crew(npc, crewed, crewed.getDriveable(), driver);
+        else if (seat == null || driveable == null || !npc.isAlive() || npc.isKilled())
             stopped(npc, driver);
         else if (!enabled(npc))
             switchedOff(npc, seat, driveable, driver);
         else if (!operate(npc, seat, driveable, driver))
             leave(npc, true);
+    }
+
+    /** Crews a seat that is no driver's: gets out once the switch is off or the NPC has no reason left to stay aboard. */
+    private static void crew(EntityNPCInterface npc, ISeat seat, Entity driveable, NpcDriver driver)
+    {
+        if (!enabled(npc) || !DriveableCrew.tick(npc, seat, driveable, driver))
+        {
+            seat.setAutomatedTriggers(false, false);
+            leave(npc, false);
+        }
     }
 
     /** Forgets driving once the NPC no longer sits at the controls; thrown out of an aircraft that broke up, it opens its parachute. */
@@ -196,13 +212,30 @@ public final class NpcDrivers
 
     // Boarding
 
-    /** @return the free driver seat, within the NPC's boarding range, of the nearest driveable it may take */
+    /**
+     * @return the seat, within the NPC's boarding range, it gets into: for an NPC that follows a player, a seat of the
+     *         driveable its owner rides first; otherwise the free driver seat of the nearest driveable it may take, or else
+     *         a gun seat of one an ally drives
+     */
     static Optional<Entity> findSeat(EntityNPCInterface npc)
     {
         long now = npc.level().getGameTime();
         double range = NpcTuning.of(npc).get(Value.BOARD_RANGE);
-        return npc.level().getEntities(npc, npc.getBoundingBox().inflate(range), entity -> entity instanceof ISeat seat && boardable(npc, seat, now)).stream()
+        if (npc.getOwner() != null)
+        {
+            Optional<Entity> owners = DriveableCrew.findSeat(npc, range, now);
+            if (owners.isPresent())
+                return owners;
+        }
+        Optional<Entity> wheel = npc.level().getEntities(npc, npc.getBoundingBox().inflate(range), entity -> entity instanceof ISeat seat && boardable(npc, seat, now)).stream()
             .min(Comparator.comparingDouble(npc::distanceToSqr));
+        return wheel.isPresent() || npc.getOwner() != null ? wheel : DriveableCrew.findSeat(npc, range, now);
+    }
+
+    /** Whether the NPC may get into the seat, at the wheel or as crew. */
+    static boolean mayTakeSeat(EntityNPCInterface npc, ISeat seat, long now)
+    {
+        return boardable(npc, seat, now) || DriveableCrew.crewable(npc, seat, now);
     }
 
     /**
@@ -252,12 +285,41 @@ public final class NpcDrivers
     private static boolean alliedOwner(EntityNPCInterface npc, UUID owner)
     {
         Player player = npc.level().getPlayerByUUID(owner);
-        if (player == null)
-            return false;
-        if (npc.getOwner() == player)
+        return player != null && ally(npc, player);
+    }
+
+    /**
+     * Whether another entity is on the NPC's side: the player it follows, one on its Teams team or one its faction is
+     * friendly to, or an NPC of its faction or Teams team.
+     */
+    static boolean ally(EntityNPCInterface npc, Entity other)
+    {
+        if (other == npc.getOwner())
             return true;
-        Optional<ITeam> team = FlansTeams.getTeam(player);
-        return team.isPresent() && team.equals(FlansTeams.getTeam(npc)) || npc.faction.isFriendlyToPlayer(player);
+        Optional<ITeam> team = FlansTeams.getTeam(other);
+        if (team.isPresent() && team.equals(FlansTeams.getTeam(npc)))
+            return true;
+        if (other instanceof Player player)
+            return npc.faction.isFriendlyToPlayer(player);
+        return other instanceof EntityNPCInterface fellow && fellow.faction.id == npc.faction.id;
+    }
+
+    /** @return who sits in the driveable's driver seat, or null */
+    @Nullable
+    static Entity driverOf(Entity driveable)
+    {
+        for (Entity entity : seatsOf(driveable))
+        {
+            if (((ISeat) entity).isDriverSeat())
+                return ((ISeat) entity).getRiddenByEntity();
+        }
+        return null;
+    }
+
+    /** @return the seat entities of a driveable */
+    private static List<Entity> seatsOf(Entity driveable)
+    {
+        return driveable.level().getEntities(driveable, driveable.getBoundingBox().inflate(SEAT_SEARCH), candidate -> candidate instanceof ISeat seat && seat.getDriveable() == driveable);
     }
 
     /** Whether the NPC is close enough to the seat's driveable to get in. */
@@ -312,10 +374,9 @@ public final class NpcDrivers
         return !type.isShip() && FlansEntityTypes.getAircraftMode(driveable).map(mode -> mode != AircraftMode.SIX_DOF).orElse(false);
     }
 
-    private static boolean noEnemyAboard(EntityNPCInterface npc, Entity driveable)
+    static boolean noEnemyAboard(EntityNPCInterface npc, Entity driveable)
     {
-        for (Entity entity : driveable.level().getEntities(driveable, driveable.getBoundingBox().inflate(SEAT_SEARCH),
-            candidate -> candidate instanceof ISeat seat && seat.getDriveable() == driveable))
+        for (Entity entity : seatsOf(driveable))
         {
             Entity rider = ((ISeat) entity).getRiddenByEntity();
             if (rider != null && hostile(npc, rider))

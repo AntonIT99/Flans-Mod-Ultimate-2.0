@@ -79,6 +79,9 @@ public final class NpcDriver
     /** The driveable the NPC got into by itself, which it leaves again when its switch is turned off. */
     @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) @Nullable
     private UUID boarded;
+    /** Ticks the driveable the NPC crews has gone without a driver. */
+    @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE)
+    private int driverless;
     /** Whether the NPC drove last tick. */
     @Getter(AccessLevel.PACKAGE)
     private boolean driving;
@@ -194,6 +197,13 @@ public final class NpcDriver
         report(mecha, route.steer(), controls, off, route.distance(), speed);
         act(npc, seat, driveable, mecha, controls, off);
         return true;
+    }
+
+    /** Records that the NPC crews a driveable this tick, for the movement debug and to notice when it is thrown out. */
+    void crew(String activity, @Nullable Vec3 point, long now)
+    {
+        begin(now);
+        report = new Report(activity, point, Set.of(), () -> "driverless=" + driverless);
     }
 
     /** Starts the NPC driving, unless it already does. */
@@ -493,6 +503,7 @@ public final class NpcDriver
     {
         pilot.reset();
         report = null;
+        driverless = 0;
         motion.reset();
         tracked = null;
         driving = false;

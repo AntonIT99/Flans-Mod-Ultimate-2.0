@@ -10,8 +10,8 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import java.util.EnumSet;
 
 /**
- * Walks an NPC that drives Flan's driveables to the free driver seat of a vehicle, mecha or aircraft nearby and gets it
- * in. It comes before every other goal that moves the NPC, those of a fight included, and gives a driveable it cannot
+ * Walks an NPC that drives Flan's driveables to the seat it takes, at the wheel of a vehicle, mecha or aircraft nearby or
+ * as its crew, and gets it in. It comes before every other goal that moves the NPC, those of a fight included, and gives a driveable it cannot
  * reach in time up for a while. Server thread.
  */
 @SuppressWarnings("unused") // Made only by the Custom NPCs entity mixin, which IntelliJ does not follow.
@@ -51,7 +51,7 @@ public final class NpcBoardingGoal extends Goal
     @Override
     public boolean canContinueToUse()
     {
-        return seat != null && !boarded && ticks < REACH_TICKS && NpcDrivers.mayBoard(npc) && seat.isAlive() && NpcDrivers.boardable(npc, (ISeat) seat, npc.level().getGameTime());
+        return seat != null && !boarded && ticks < REACH_TICKS && NpcDrivers.mayBoard(npc) && seat.isAlive() && NpcDrivers.mayTakeSeat(npc, (ISeat) seat, npc.level().getGameTime());
     }
 
     @Override
