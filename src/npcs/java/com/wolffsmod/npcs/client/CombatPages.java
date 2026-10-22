@@ -61,6 +61,8 @@ final class CombatPages
     private static final int ENGINE_VALUE_ID = 1802;
     private static final int ENGINE_SELECT_ID = 1804;
     private static final int READ_ONLY_COLOR = 0xA0A0A0;
+    /** Width of each of the three property buttons that share a row of the Equipment page. */
+    private static final int EQUIPMENT_LINK_WIDTH = 130;
     private static final int INHERITED_COLOR = 0x408040;
     private static final int MAX_VALUE_LENGTH = 20;
     /** A value cell's width, and that of a sound's, which shares the room with its Select button. */
@@ -219,12 +221,18 @@ final class CombatPages
         link(PROPERTIES_PAGE_ID, "properties", loaded, y);
     }
 
-    /** The buttons on the Equipment page that open the weapon and the armor properties pages. */
+    /** The buttons on the Equipment page that open the weapon and the armor properties pages, side by side with what they do as tooltips. */
     void initEquipmentLink(boolean loaded, int y)
     {
-        link(MAIN_HAND_PAGE_ID, "main_hand_properties", loaded, y);
-        link(OFF_HAND_PAGE_ID, "off_hand_properties", loaded, y + 21);
-        link(ARMOR_PAGE_ID, "armor_properties", loaded, y + 42);
+        int[] ids = {MAIN_HAND_PAGE_ID, OFF_HAND_PAGE_ID, ARMOR_PAGE_ID};
+        String[] names = {"main_hand_properties", "off_hand_properties", "armor_properties"};
+        for (int i = 0; i < ids.length; i++)
+        {
+            GuiButtonNop button = new GuiButtonNop(gui, ids[i], gui.guiLeft + 8 + i * (EQUIPMENT_LINK_WIDTH + 2), gui.guiTop + y, EQUIPMENT_LINK_WIDTH, 20, new String[]{PREFIX + names[i]}, 0);
+            button.setEnabled(loaded);
+            button.setTooltip(Tooltip.create(Component.translatable(PREFIX + names[i] + ".summary")));
+            gui.addButton(button);
+        }
     }
 
     /** Native projectile-slot overrides have their own page, independent of weapons in hand. */
