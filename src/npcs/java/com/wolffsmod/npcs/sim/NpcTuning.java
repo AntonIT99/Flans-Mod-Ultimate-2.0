@@ -109,7 +109,21 @@ public final class NpcTuning
         /** Index into {@link Claim}. */
         TAKE_DRIVEABLES(0, 0, Claim.values().length - 1),
         /** Blocks a vehicle an NPC drives keeps to a driveable ahead; 0 ignores them. */
-        KEEP_DISTANCE(5, 0, 32);
+        KEEP_DISTANCE(5, 0, 32),
+        /** Blocks above the terrain a plane an NPC flies cruises and circles at. */
+        CRUISE_HEIGHT(32, 16, 128),
+        /** Blocks above the terrain a plane an NPC flies makes for its target at, before it dives on it. */
+        ATTACK_HEIGHT(24, 12, 128),
+        /** Blocks round where it has nowhere further to go that a plane an NPC flies circles at. */
+        CIRCLE_RADIUS(48, 16, 160),
+        /** Seconds a plane an NPC flies circles with nothing to do before it lands; 0 keeps it in the air. */
+        PLANE_LANDING_DELAY(30, 0, 600),
+        /** Blocks above the terrain a helicopter an NPC flies flies and hovers at. */
+        HOVER_HEIGHT(16, 10, 64),
+        /** Seconds a helicopter an NPC flies hovers with nothing to do before it lands; 0 keeps it in the air. */
+        HELICOPTER_LANDING_DELAY(10, 0, 600),
+        /** Percent of its tank under which an aircraft an NPC flies heads home to land; 0 flies on to the last drop. */
+        LOW_FUEL(15, 0, 50);
 
         private final int fallback;
         private final int minimum;

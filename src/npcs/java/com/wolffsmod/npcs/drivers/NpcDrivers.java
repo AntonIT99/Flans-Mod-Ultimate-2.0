@@ -171,7 +171,7 @@ public final class NpcDrivers
             return driver.drive(npc, seat, driveable, heading.get(), type.getDriveableKind() == DriveableKind.MECHA, type.isTracked());
         boolean bailOut = failing(driveable) && height(npc) > JUMP_HEIGHT;
         // An aircraft brought down short of fuel is left where it came to a stop.
-        boolean stranded = shortOfFuel(driveable) && FlansEntityTypes.isGrounded(driveable) && driveable.getDeltaMovement().horizontalDistance() < STOPPED;
+        boolean stranded = shortOfFuel(npc, driveable) && FlansEntityTypes.isGrounded(driveable) && driveable.getDeltaMovement().horizontalDistance() < STOPPED;
         return !bailOut && !stranded && driver.fly(npc, seat, driveable, FlansEntityTypes.getAircraftMode(driveable).orElse(AircraftMode.FIXED_WING));
     }
 
@@ -217,10 +217,10 @@ public final class NpcDrivers
         return entity.getY() - entity.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, entity.getBlockX(), entity.getBlockZ());
     }
 
-    /** Whether a driveable needs fuel and has too little left to fly on. */
-    private static boolean shortOfFuel(Entity driveable)
+    /** Whether a driveable needs fuel and has too little left for the NPC to fly on. */
+    private static boolean shortOfFuel(EntityNPCInterface npc, Entity driveable)
     {
-        return FlansEntityTypes.getFuelShare(driveable).orElse(1D) < NpcPilot.LOW_FUEL;
+        return NpcPilot.Settings.of(npc).shortOfFuel(FlansEntityTypes.getFuelShare(driveable).orElse(1D));
     }
 
     /** Whether a driveable needs fuel and its tank has run dry. */
@@ -272,7 +272,7 @@ public final class NpcDrivers
     {
         Entity driveable = seat.getDriveable();
         return seat.isDriverSeat() && seat.getRiddenByEntity() == null && driveable != null && driveable.isAlive() && !FlansEntityTypes.isWreck(driveable) && drivable(seat) && !failing(driveable)
-            && !dry(driveable) && !(aircraft(seat) && shortOfFuel(driveable)) && mayTake(npc, driveable) && !NpcDriver.of(npc).refuses(driveable.getUUID(), now) && noEnemyAboard(npc, driveable);
+            && !dry(driveable) && !(aircraft(seat) && shortOfFuel(npc, driveable)) && mayTake(npc, driveable) && !NpcDriver.of(npc).refuses(driveable.getUUID(), now) && noEnemyAboard(npc, driveable);
     }
 
     /** Whether the NPC may take the driveable by who owns it and whether it is locked, as its choice of driveables says. */
