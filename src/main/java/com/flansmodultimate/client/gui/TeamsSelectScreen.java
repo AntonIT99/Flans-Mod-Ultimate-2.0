@@ -27,6 +27,12 @@ public final class TeamsSelectScreen extends Screen
     private static final int TEAM_FLAG_HEIGHT = 16;
 
     private final boolean classMenu;
+    /**
+     * Choices of the update that opened this screen. Only that update carries them; the periodic syncs that follow send
+     * empty lists, so the screen keeps its own copy.
+     */
+    private final List<PacketTeamsState.TeamChoice> teamChoices;
+    private final List<PacketTeamsState.ClassChoice> classChoices;
     private int panelHeight;
     private int page;
     private int pageCount;
@@ -37,6 +43,9 @@ public final class TeamsSelectScreen extends Screen
     {
         super(Component.translatable(classMenu ? "gui.flansmod.teams.choose_class" : "gui.flansmod.teams.choose_team"));
         this.classMenu = classMenu;
+        PacketTeamsState state = TeamsClientState.get();
+        teamChoices = state == null ? List.of() : state.getTeamChoices();
+        classChoices = state == null ? List.of() : state.getClassChoices();
     }
 
     @Override
@@ -48,7 +57,7 @@ public final class TeamsSelectScreen extends Screen
             onClose();
             return;
         }
-        int count = classMenu ? state.getClassChoices().size() : state.getTeamChoices().size();
+        int count = classMenu ? classChoices.size() : teamChoices.size();
         // Leave eight pixels above and below the panel, reserving one row for navigation when needed.
         int availableRows = Math.max(1, (height - 45) / 24);
         int rowsPerPage = count > availableRows ? Math.max(1, (height - 69) / 24) : availableRows;
@@ -62,10 +71,9 @@ public final class TeamsSelectScreen extends Screen
 
         if (classMenu)
         {
-            List<PacketTeamsState.ClassChoice> choices = state.getClassChoices();
             for (int i = 0; i < visibleRows; i++)
             {
-                PacketTeamsState.ClassChoice choice = choices.get(firstRow + i);
+                PacketTeamsState.ClassChoice choice = classChoices.get(firstRow + i);
                 Button button = Button.builder(Component.literal(choice.name()), ignored -> chooseClass(choice.id())).bounds(left + 9, top + 24 + 24 * i, 73, 20).build();
                 button.active = state.getPlayerRank() >= choice.unlockLevel() && state.getPlayerPrestige() >= choice.requiredPrestige() && !choice.isFull();
                 addRenderableWidget(button);
@@ -73,10 +81,9 @@ public final class TeamsSelectScreen extends Screen
         }
         else
         {
-            List<PacketTeamsState.TeamChoice> choices = state.getTeamChoices();
             for (int i = 0; i < visibleRows; i++)
             {
-                PacketTeamsState.TeamChoice choice = choices.get(firstRow + i);
+                PacketTeamsState.TeamChoice choice = teamChoices.get(firstRow + i);
                 Component label = Component.literal(choice.name()).withStyle(style -> style.withColor(choice.colour()));
                 addRenderableWidget(Button.builder(label, ignored -> chooseTeam(choice.id())).bounds(left + 10, top + 24 + 24 * i, 236, 20).build());
             }
@@ -115,8 +122,7 @@ public final class TeamsSelectScreen extends Screen
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
-        PacketTeamsState state = TeamsClientState.get();
-        if (state == null)
+        if (TeamsClientState.get() == null)
             return;
         int left = width / 2 - 128;
         int top = height / 2 - panelHeight / 2;
@@ -131,28 +137,27 @@ public final class TeamsSelectScreen extends Screen
         super.render(graphics, mouseX, mouseY, partialTick);
 
         if (classMenu)
-            renderLoadouts(graphics, state, left, top, mouseX, mouseY);
+            renderLoadouts(graphics, left, top, mouseX, mouseY);
         else
-            renderTeamFlags(graphics, state, left, top);
+            renderTeamFlags(graphics, left, top);
     }
 
     /** The flag of each team at the left end of its button. */
-    private void renderTeamFlags(GuiGraphics graphics, PacketTeamsState state, int left, int top)
+    private void renderTeamFlags(GuiGraphics graphics, int left, int top)
     {
-        List<PacketTeamsState.TeamChoice> choices = state.getTeamChoices();
-        for (int i = 0; i < visibleRows && firstRow + i < choices.size(); i++)
+        for (int i = 0; i < visibleRows; i++)
         {
-            TeamFlagTextures.FlagTexture flag = TeamFlagTextures.get(Team.getTeam(choices.get(firstRow + i).id()));
+            TeamFlagTextures.FlagTexture flag = TeamFlagTextures.get(Team.getTeam(teamChoices.get(firstRow + i).id()));
             if (flag != null)
                 TeamFlagTextures.draw(graphics, flag, left + 14, top + 26 + 24 * i, TEAM_FLAG_WIDTH, TEAM_FLAG_HEIGHT);
         }
     }
 
-    private void renderLoadouts(GuiGraphics graphics, PacketTeamsState state, int left, int top, int mouseX, int mouseY)
+    private void renderLoadouts(GuiGraphics graphics, int left, int top, int mouseX, int mouseY)
     {
         for (int row = 0; row < visibleRows; row++)
         {
-            PacketTeamsState.ClassChoice choice = state.getClassChoices().get(firstRow + row);
+            PacketTeamsState.ClassChoice choice = classChoices.get(firstRow + row);
             List<ItemStack> loadout = choice.loadout();
             for (int slot = 0; slot < Math.min(9, loadout.size()); slot++)
             {
