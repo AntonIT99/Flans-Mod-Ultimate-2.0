@@ -14,9 +14,11 @@ import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -53,6 +55,12 @@ public final class NpcDrivers
     private static final double BAIL_OUT_HEALTH = 0.2D;
     /** Speed under which a driveable on the ground has stopped, in blocks a tick. */
     private static final double STOPPED = 0.05D;
+    /** Widest and highest path, in blocks, searched for a driveable: a wider one costs too much to search. */
+    private static final int MAX_PATH_SIZE = 3;
+
+    /** Blocks wide and high a path has to be to take a driveable along it. */
+    public record PathSize(int width, int height)
+    {}
 
     public static boolean enabled(EntityNPCInterface npc)
     {
@@ -69,6 +77,23 @@ public final class NpcDrivers
     static Optional<ISeat> drivenSeat(EntityNPCInterface npc)
     {
         return npc.getVehicle() instanceof ISeat seat && seat.isDriverSeat() && seat.getDriveable() != null && drivable(seat) ? Optional.of(seat) : Optional.empty();
+    }
+
+    /**
+     * @return how wide and high the path of an NPC at the wheel of a vehicle or mecha has to be for the driveable to fit
+     *         along it; empty while the NPC walks, crews or flies
+     */
+    public static Optional<PathSize> pathSize(Mob mob)
+    {
+        if (!(mob instanceof EntityNPCInterface npc) || npc.level().isClientSide || !enabled(npc))
+            return Optional.empty();
+        return drivenSeat(npc).filter(seat -> !aircraft(seat)).map(ISeat::getDriveable).map(driveable -> new PathSize(pathSize(driveable.getBbWidth()), pathSize(driveable.getBbHeight())));
+    }
+
+    /** @return blocks of path that a driveable so many blocks across needs, counted as vanilla does for a mob, within the bounds searched */
+    static int pathSize(double size)
+    {
+        return Mth.clamp(Mth.floor(size + 1D), 1, MAX_PATH_SIZE);
     }
 
     /**

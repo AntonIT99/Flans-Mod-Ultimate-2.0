@@ -107,7 +107,9 @@ public final class NpcTuning
         /** Blocks around it in which an NPC that drives Flan's driveables looks for one to board. */
         BOARD_RANGE(16, 2, 64),
         /** Index into {@link Claim}. */
-        TAKE_DRIVEABLES(0, 0, Claim.values().length - 1);
+        TAKE_DRIVEABLES(0, 0, Claim.values().length - 1),
+        /** Blocks a vehicle an NPC drives keeps to a driveable ahead; 0 ignores them. */
+        KEEP_DISTANCE(5, 0, 32);
 
         private final int fallback;
         private final int minimum;

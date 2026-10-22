@@ -2,12 +2,17 @@ package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.AircraftMode;
 import com.flansmodultimate.api.DriveControl;
+import com.flansmodultimate.api.FlansEntityTypes;
 import com.flansmodultimate.api.ISeat;
 import com.flansmodultimate.api.WeaponBallistics;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.sim.MountMotion;
+import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.sim.TargetMotion;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,6 +20,7 @@ import lombok.Setter;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -67,6 +73,12 @@ public final class NpcDriver
     private static final double BOMB_RADIUS = 4D;
     /** Every so many ticks the triggers are let go for a tick, so that a semi-automatic weapon fires again. */
     private static final int TRIGGER_RELEASE = 30;
+    /** Ticks between looks for a driveable ahead to keep a distance to, and degrees off the heading within which one is ahead. */
+    private static final int FOLLOW_INTERVAL = 10;
+    private static final float FOLLOW_CONE = 35F;
+    /** Ticks a vehicle waits behind a driveable that stands in its way, and ticks it then drives on to find its way round. */
+    private static final int WAIT_TICKS = 100;
+    private static final int PASS_TICKS = 200;
 
     /** Driveables the NPC gave up on, with the game time from which it may try them again. */
     private final Map<UUID, Long> refused = new HashMap<>();
@@ -108,6 +120,11 @@ public final class NpcDriver
     private boolean recoveryBackward;
     /** Manoeuvres since the driveable last got free. */
     private int recoveries;
+    /** The driveable ahead the vehicle keeps its distance to, as last looked for. */
+    private DriveSteering.Traffic ahead = DriveSteering.Traffic.NONE;
+    /** Ticks the vehicle has stood waiting behind it, and the game time until which it drives on regardless. */
+    private int waited;
+    private long passUntil;
     private final NpcPilot pilot = new NpcPilot();
     /** How the target fired at moves, to lead it, and which target that is. */
     private final TargetMotion motion = new TargetMotion();
@@ -178,7 +195,7 @@ public final class NpcDriver
         double speed = lastPosition == null ? 0D : position.subtract(lastPosition).dot(heading);
         lastPosition = position;
         double arrival = Math.max(MIN_ARRIVAL, driveable.getBbWidth() * 0.5D + 1.5D);
-        Route route = route(npc, position, LOOKAHEAD + driveable.getBbWidth() * 0.5D);
+        Route route = route(npc, position, LOOKAHEAD + driveable.getBbWidth() * 0.5D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
         if (route == null)
         {
             anchor = null;
@@ -190,6 +207,8 @@ public final class NpcDriver
         }
         float off = Mth.wrapDegrees(MountMotion.yaw(route.steer().subtract(position)) - MountMotion.yaw(heading));
         Set<DriveControl> controls = recovery > 0 ? recover(off, route, arrival, speed, mecha, tracked) : steer(off, route, arrival, speed, mecha, tracked);
+        if (recovery == 0 && !mecha)
+            controls = keepDistance(npc, driveable, heading, speed, controls, now);
         if (recovery > 0)
             recovery--;
         else if (stuck(position, pushes(controls, mecha), now) && !startRecovery(controls))
@@ -271,7 +290,53 @@ public final class NpcDriver
     private static Vec3 goal(EntityNPCInterface npc)
     {
         Path current = npc.getNavigation().getPath();
-        return current == null || current.isDone() || current.getNodeCount() == 0 ? null : node(current, current.getNodeCount() - 1);
+        return current == null || current.isDone() || current.getNodeCount() == 0 ? null : node(current, current.getNodeCount() - 1, 0.5D);
+    }
+
+    /**
+     * Keeps a vehicle its distance to a driveable ahead. One that has stood waiting too long drives on for a while, to find
+     * its way round what blocks it as it would round any obstacle.
+     */
+    private Set<DriveControl> keepDistance(EntityNPCInterface npc, Entity driveable, Vec3 heading, double speed, Set<DriveControl> controls, long now)
+    {
+        int distance = NpcTuning.of(npc).get(Value.KEEP_DISTANCE);
+        if (distance <= 0 || now < passUntil)
+        {
+            ahead = DriveSteering.Traffic.NONE;
+            return controls;
+        }
+        if ((now + npc.getId()) % FOLLOW_INTERVAL == 0)
+            ahead = traffic(driveable, heading, speed, distance);
+        Set<DriveControl> kept = DriveSteering.keepDistance(controls, ahead, distance, speed);
+        waited = !kept.equals(controls) && Math.abs(speed) < DriveSteering.STOPPED ? waited + 1 : 0;
+        if (waited <= WAIT_TICKS)
+            return kept;
+        waited = 0;
+        passUntil = now + PASS_TICKS;
+        return controls;
+    }
+
+    /** @return the nearest driveable with a driver, or vehicle NPC, ahead of the vehicle within twice the distance */
+    private static DriveSteering.Traffic traffic(Entity driveable, Vec3 heading, double speed, int distance)
+    {
+        float yaw = MountMotion.yaw(heading);
+        DriveSteering.Traffic nearest = DriveSteering.Traffic.NONE;
+        for (Entity other : driveable.level().getEntities(driveable, driveable.getBoundingBox().inflate(distance * 2D, 2D, distance * 2D), NpcDriver::traffic))
+        {
+            Vec3 offset = other.position().subtract(driveable.position());
+            double gap = offset.horizontalDistance() - (driveable.getBbWidth() + other.getBbWidth()) * 0.5D;
+            if (gap < nearest.gap() && Math.abs(Mth.wrapDegrees(MountMotion.yaw(offset) - yaw)) <= FOLLOW_CONE)
+                nearest = new DriveSteering.Traffic(gap, speed - other.position().subtract(other.xo, other.yo, other.zo).dot(heading));
+        }
+        return nearest;
+    }
+
+    /** Whether an entity is traffic to keep a distance to: a driveable someone drives that is no wreck, or an NPC drawn as a vehicle. */
+    private static boolean traffic(Entity entity)
+    {
+        if (entity instanceof EntityNPCInterface npc)
+            return NpcVehicleState.of(npc).kind() == FlanModelKind.VEHICLE;
+        return FlansEntityTypes.getDriveableType(entity).isPresent() && !FlansEntityTypes.isWreck(entity) && NpcDrivers.driverOf(entity) != null;
     }
 
     private Set<DriveControl> steer(float off, Route route, double arrival, double speed, boolean mecha, boolean tracked)
@@ -425,9 +490,14 @@ public final class NpcDriver
         return horizontal(impact, target.position()) <= BOMB_RADIUS;
     }
 
-    /** Reads the point to steer for and the distance to the goal off the NPC's path; none without a path. */
+    /**
+     * Reads the point to steer for and the distance to the goal off the NPC's path; none without a path.
+     *
+     * @param middle
+     *            blocks from a node's corner to the middle of the path: half the width it was searched for
+     */
     @Nullable
-    private Route route(EntityNPCInterface npc, Vec3 position, double lookahead)
+    private Route route(EntityNPCInterface npc, Vec3 position, double lookahead, double middle)
     {
         Path current = npc.getNavigation().getPath();
         if (current == null || current.isDone() || current.getNodeCount() == 0)
@@ -440,29 +510,29 @@ public final class NpcDriver
             path = current;
             progress = 0;
         }
-        progress = nearest(current, position, Math.min(progress, current.getNodeCount() - 1));
+        progress = nearest(current, position, Math.min(progress, current.getNodeCount() - 1), middle);
         // Steering for a node further along keeps the driveable from turning back to one it has just passed.
-        Vec3 steer = node(current, progress);
+        Vec3 steer = node(current, progress, middle);
         double travelled = horizontal(position, steer);
         for (int index = progress + 1; index < current.getNodeCount(); index++)
         {
-            Vec3 next = node(current, index);
+            Vec3 next = node(current, index, middle);
             travelled += horizontal(steer, next);
             if (travelled > lookahead)
                 break;
             steer = next;
         }
-        return new Route(steer, horizontal(position, node(current, current.getNodeCount() - 1)));
+        return new Route(steer, horizontal(position, node(current, current.getNodeCount() - 1, middle)));
     }
 
-    private static int nearest(Path path, Vec3 position, int from)
+    private static int nearest(Path path, Vec3 position, int from, double middle)
     {
         int best = from;
         double bestDistance = Double.MAX_VALUE;
         int last = Math.min(path.getNodeCount() - 1, from + PROGRESS_WINDOW);
         for (int index = from; index <= last; index++)
         {
-            double distance = horizontal(position, node(path, index));
+            double distance = horizontal(position, node(path, index, middle));
             if (distance < bestDistance)
             {
                 best = index;
@@ -472,9 +542,11 @@ public final class NpcDriver
         return best;
     }
 
-    private static Vec3 node(Path path, int index)
+    /** @return the middle of the path at the node: a wide path is searched for room from each node's corner on */
+    private static Vec3 node(Path path, int index, double middle)
     {
-        return Vec3.atBottomCenterOf(path.getNodePos(index));
+        BlockPos node = path.getNodePos(index);
+        return new Vec3(node.getX() + middle, node.getY(), node.getZ() + middle);
     }
 
     private static double horizontal(Vec3 from, Vec3 to)
@@ -515,5 +587,8 @@ public final class NpcDriver
         stuckAt = null;
         recovery = 0;
         recoveries = 0;
+        ahead = DriveSteering.Traffic.NONE;
+        waited = 0;
+        passUntil = 0L;
     }
 }

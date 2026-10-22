@@ -27,4 +27,13 @@ class NpcDriversTest
         for (Claim claim : Claim.values())
             assertFalse(NpcDrivers.mayTake(claim, true, false, true), claim.name());
     }
+
+    @Test
+    void aDriveablesPathIsSearchedAsWideAsTheDriveableUpToThreeBlocks()
+    {
+        assertEquals(1, NpcDrivers.pathSize(0.6D));
+        assertEquals(2, NpcDrivers.pathSize(1.5D));
+        assertEquals(3, NpcDrivers.pathSize(2D));
+        assertEquals(3, NpcDrivers.pathSize(4D));
+    }
 }

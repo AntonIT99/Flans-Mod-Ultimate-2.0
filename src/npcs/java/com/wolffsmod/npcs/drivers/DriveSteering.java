@@ -58,6 +58,20 @@ final class DriveSteering
     record Decision(Set<DriveControl> controls, boolean reversing)
     {}
 
+    /**
+     * A driveable ahead of a vehicle.
+     *
+     * @param gap
+     *            blocks between the two
+     * @param closing
+     *            how fast the vehicle closes in on it, negative while it draws away
+     */
+    record Traffic(double gap, double closing)
+    {
+        /** No driveable ahead. */
+        static final Traffic NONE = new Traffic(Double.MAX_VALUE, 0D);
+    }
+
     /** Drives a vehicle toward its goal: forward, steering for it, or in reverse to a goal close behind, and brakes there. */
     static Decision vehicle(Situation situation)
     {
@@ -117,6 +131,25 @@ final class DriveSteering
         else if (side < -STEP_SHARE)
             controls.add(DriveControl.LEFT);
         return controls;
+    }
+
+    /**
+     * Keeps a vehicle its distance to a driveable ahead: it stops accelerating while it closes in within that distance,
+     * brakes for it within half of it, and waits there until it draws away.
+     *
+     * @param distance
+     *            blocks to keep
+     */
+    static Set<DriveControl> keepDistance(Set<DriveControl> controls, Traffic ahead, int distance, double speed)
+    {
+        boolean close = ahead.gap() <= distance * 0.5D;
+        if (!controls.contains(DriveControl.FORWARD) || ahead.gap() > distance || !close && ahead.closing() <= 0D)
+            return controls;
+        Set<DriveControl> kept = EnumSet.copyOf(controls);
+        kept.remove(DriveControl.FORWARD);
+        if (close)
+            kept.addAll(brake(speed));
+        return kept;
     }
 
     /** @return the brake, while the driveable still moves */

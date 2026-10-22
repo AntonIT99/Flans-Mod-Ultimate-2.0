@@ -299,7 +299,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.SEARCH_FAR_INTERVAL, Need.on(Feature.PROGRESSIVE_SEARCH)),
         Map.entry(Value.ACTIVE_RANGE, Need.on(Feature.STAY_ACTIVE)),
         Map.entry(Value.BOARD_RANGE, Need.on(Feature.DRIVE_DRIVEABLES)),
-        Map.entry(Value.TAKE_DRIVEABLES, Need.on(Feature.DRIVE_DRIVEABLES)));
+        Map.entry(Value.TAKE_DRIVEABLES, Need.on(Feature.DRIVE_DRIVEABLES)),
+        Map.entry(Value.KEEP_DISTANCE, Need.on(Feature.DRIVE_DRIVEABLES)));
     // spotless:on
 
     /** A page of the tab, listed on the overview under its section in the order given here; one without a section opens from the title row. */
@@ -335,7 +336,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE)),
         FLIGHT(Section.MOVEMENT, Scope.PLANES_AND_VEHICLES, Tab.of(Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED, Value.SUBMARINE_DEPTH)),
         PATHFINDING(Section.MOVEMENT, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
-        DRIVEABLES(Section.MOVEMENT, Scope.STANDARD, Tab.of(Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES)),
+        DRIVEABLES(Section.MOVEMENT, Scope.STANDARD, Tab.of(Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES, Value.KEEP_DISTANCE)),
         ANIMATIONS(Section.LOOK, Scope.STANDARD,
             Tab.named("equipment_animation", Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
             Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
@@ -1014,7 +1015,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case DRIVE_PRESET, DRIVE_TYPE, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING, TURN_RADIUS, THROTTLE_FLOOR, DRIVE_LOOKAHEAD, CORNER_SPEED, DRIVE_REVERSE_SPEED, REVERSE_ANGLE,
                     REVERSE_DISTANCE, STOP_DISTANCE, FOLLOW_DISTANCE -> Scope.VEHICLES;
                 case HULL_TURN_RATE -> Scope.HULLS;
-                case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES -> Scope.STANDARD;
+                case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }

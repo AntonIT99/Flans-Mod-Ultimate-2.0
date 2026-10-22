@@ -99,4 +99,20 @@ class DriveSteeringTest
         assertEquals(controls(BACKWARD, LEFT), DriveSteering.mecha(-135F, 20D, ARRIVAL));
         assertEquals(controls(), DriveSteering.mecha(90F, ARRIVAL, ARRIVAL));
     }
+
+    @Test
+    void aVehicleKeepsItsDistanceToADriveableAhead()
+    {
+        Set<DriveControl> driving = controls(FORWARD, RIGHT);
+        // Far ahead, or drawing away within the distance: it drives on.
+        assertEquals(driving, DriveSteering.keepDistance(driving, DriveSteering.Traffic.NONE, 6, 0.4D));
+        assertEquals(driving, DriveSteering.keepDistance(driving, new DriveSteering.Traffic(8D, 0.2D), 6, 0.4D));
+        assertEquals(driving, DriveSteering.keepDistance(driving, new DriveSteering.Traffic(5D, -0.1D), 6, 0.4D));
+        // Closing in within the distance, it stops accelerating; within half of it, it brakes and waits.
+        assertEquals(controls(RIGHT), DriveSteering.keepDistance(driving, new DriveSteering.Traffic(5D, 0.1D), 6, 0.4D));
+        assertEquals(controls(RIGHT, BRAKE), DriveSteering.keepDistance(driving, new DriveSteering.Traffic(2D, -0.1D), 6, 0.4D));
+        assertEquals(controls(RIGHT), DriveSteering.keepDistance(driving, new DriveSteering.Traffic(2D, 0D), 6, 0D));
+        // Reversing, or braking already, it has nothing to hold back.
+        assertEquals(controls(BACKWARD), DriveSteering.keepDistance(controls(BACKWARD), new DriveSteering.Traffic(2D, 0.3D), 6, -0.3D));
+    }
 }
