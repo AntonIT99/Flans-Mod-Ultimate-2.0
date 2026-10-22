@@ -7,7 +7,10 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.network.NpcPresetPacket;
 import com.wolffsmod.npcs.network.ServerControlPacket;
+import com.wolffsmod.npcs.presets.NpcPreset;
+import com.wolffsmod.npcs.presets.NpcPresetSetting;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -37,6 +40,7 @@ import net.minecraft.network.chat.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +70,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SHOW_ALL_ID = 302;
     private static final int SERVER_BUTTON_ID = 303;
     private static final int ESSENTIAL_LINK_ID = 310;
+    private static final int PRESET_ID = 320;
+    private static final int PRESET_APPLY_ID = 321;
     private static final int HURT_FLASH_ID = 400;
     private static final int DEATH_ROTATION_ID = 401;
     private static final int HIDE_BODY_ID = 402;
@@ -111,6 +117,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int ESSENTIALS_LEFT = 184;
     private static final int SHOW_ALL_LEFT = 250;
     private static final int SERVER_LEFT = 344;
+    /** The preset row of the overview: below the Movement column, whose six pages with Show all end above it, and above the hint. */
+    private static final int PRESET_TOP = 173;
+    private static final int PRESET_SELECT_WIDTH = 84;
     /** The title row of the Essentials page: its title, then a link to each full page, then Back. */
     private static final int LINK_WIDTH = 110;
     /** Where the content of a page starts, and where it starts below a row of tab buttons. */
@@ -145,6 +154,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
     /** Whether the overview lists every page rather than those meant for the NPC's kind; kept while the game runs. */
     private static final AtomicBoolean SHOW_ALL = new AtomicBoolean();
+    /** The preset the overview offers to apply; kept while the game runs. */
+    private static final AtomicInteger SELECTED_PRESET = new AtomicInteger();
+    private static final String PRESET = "wolffsmodnpcs.preset.";
 
     /** A heading of the overview. The pages under the headings of one column follow each other in it. */
     @RequiredArgsConstructor
@@ -366,6 +378,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     }
 
     private boolean loaded;
+    /** Whether the server has sent the settings presets set, which the tab does not otherwise receive. */
+    private boolean presetsLoaded;
     private boolean changed;
     private Category category;
     /** The page that linked to the open one, which Back returns to instead of the overview. */
@@ -391,6 +405,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         crew = new CrewPage(this, npc);
         kind = NpcKind.of(npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
+        NpcNetwork.sendToServer(NpcPresetPacket.request(npc.getId()));
     }
 
     @Override
@@ -449,6 +464,85 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             }
             nextRow.put(section.column, y);
         }
+        initPresets();
+    }
+
+    // Presets
+
+    /** The preset row: a button choosing the preset, whose tooltip lists what it sets, and Apply. */
+    private void initPresets()
+    {
+        NpcPreset preset = selectedPreset();
+        boolean matches = presetsLoaded && preset.matches(npc);
+        Tooltip tooltip = Tooltip.create(presetTooltip(preset, matches));
+        int x = guiLeft + 8 + Section.MOVEMENT.column * OVERVIEW_COLUMN;
+        String[] names = Arrays.stream(NpcPreset.values()).map(NpcPreset::key).toArray(String[]::new);
+        GuiButtonNop select = new GuiButtonNop(this, PRESET_ID, x, guiTop + PRESET_TOP, PRESET_SELECT_WIDTH, 20, names, preset.ordinal());
+        MutableComponent label = Component.translatable(preset.key());
+        if (matches)
+            label.append(Component.literal(" \u2714").withStyle(ChatFormatting.GREEN));
+        select.setMessage(label);
+        select.setTooltip(tooltip);
+        select.setEnabled(loaded);
+        addButton(select);
+        int applyWidth = OVERVIEW_COLUMN - OVERVIEW_GAP - PRESET_SELECT_WIDTH - 2;
+        GuiButtonNop apply = new GuiButtonNop(this, PRESET_APPLY_ID, x + PRESET_SELECT_WIDTH + 2, guiTop + PRESET_TOP, applyWidth, 20, new String[]{PRESET + "apply"}, 0);
+        apply.setTooltip(tooltip);
+        apply.setEnabled(loaded && presetsLoaded && !matches);
+        addButton(apply);
+    }
+
+    private static NpcPreset selectedPreset()
+    {
+        NpcPreset[] presets = NpcPreset.values();
+        return presets[Math.floorMod(SELECTED_PRESET.get(), presets.length)];
+    }
+
+    /**
+     * What the preset is for, then one line per setting it sets, saying what the NPC has, what it gets, what that does and
+     * where Custom NPCs edits it, greyed where the NPC already has it, then what can still work against it.
+     */
+    private Component presetTooltip(NpcPreset preset, boolean matches)
+    {
+        MutableComponent tooltip = Component.empty().append(Component.translatable(preset.key()).withStyle(ChatFormatting.BOLD));
+        tooltip.append("\n").append(Component.translatable(preset.key() + HELP_SUFFIX));
+        if (!presetsLoaded)
+            return tooltip.append("\n").append(Component.translatable(PRESET + "loading").withStyle(ChatFormatting.GRAY));
+        for (NpcPreset.Target target : preset.getTargets())
+        {
+            NpcPresetSetting setting = target.setting();
+            int current = setting.get(npc);
+            Component name = Component.translatable(setting.key());
+            Component effect = Component.translatable(setting.key() + ".effect");
+            Component where = Component.translatable(setting.key() + ".where");
+            MutableComponent line = current == target.value()
+                ? Component.translatable(PRESET + "line_set", name, presetValue(setting, current), effect, where).withStyle(ChatFormatting.GRAY)
+                : Component.translatable(PRESET + "line", name, presetValue(setting, current), presetValue(setting, target.value()), effect, where);
+            tooltip.append("\n").append(line);
+        }
+        if (preset.sets(NpcPresetSetting.HIDE_BODY) && NpcPresentation.of(npc).isDeathRotation())
+            tooltip.append("\n").append(Component.translatable(PRESET + "warning.death_rotation").withStyle(ChatFormatting.YELLOW));
+        if (preset.sets(NpcPresetSetting.MOVING_TYPE) && NpcTuning.of(npc).get(Value.TACTIC) == NpcTuning.Tactic.HOLD.ordinal())
+            tooltip.append("\n").append(Component.translatable(PRESET + "warning.hold").withStyle(ChatFormatting.YELLOW));
+        tooltip.append("\n").append(Component.translatable(PRESET + "unchanged").withStyle(ChatFormatting.GRAY));
+        tooltip.append("\n").append(Component.translatable(PRESET + (matches ? "matches" : "choose")).withStyle(matches ? ChatFormatting.GREEN : ChatFormatting.GRAY));
+        return tooltip;
+    }
+
+    /** @return the value as the Custom NPCs screen names it, or the number for a range */
+    private static Component presetValue(NpcPresetSetting setting, int value)
+    {
+        List<String> keys = setting.getValueKeys();
+        return value >= 0 && value < keys.size() ? Component.translatable(keys.get(value)) : Component.literal(Integer.toString(value));
+    }
+
+    /** Shows the preset settings the server sent for the NPC, if this tab edits it. */
+    public void presetsReceived(EntityNPCInterface received)
+    {
+        if (received != npc)
+            return;
+        presetsLoaded = true;
+        init();
     }
 
     /** The kind of NPC, with its model, and the buttons of the title row. */
@@ -1375,6 +1469,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             openCategory(Category.SERVER);
         else if (id == SHOW_ALL_ID)
             SHOW_ALL.set(!SHOW_ALL.get());
+        else if (id == PRESET_ID)
+            SELECTED_PRESET.set(button.getValue());
+        else if (id == PRESET_APPLY_ID)
+            NpcNetwork.sendToServer(NpcPresetPacket.apply(npc.getId(), selectedPreset()));
         else if (category == Category.ESSENTIALS && id >= ESSENTIAL_LINK_ID && id < ESSENTIAL_LINK_ID + essentialLinks().size())
         {
             openCategory(essentialLinks().get(id - ESSENTIAL_LINK_ID));
