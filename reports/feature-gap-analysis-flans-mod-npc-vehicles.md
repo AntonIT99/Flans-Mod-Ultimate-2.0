@@ -2,11 +2,11 @@
 
 - **Current assessment:** 2026-10-22; merges the later temporary audit into this permanent report.
 - **Reference:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-NPC-Vehicles`, HEAD `19a1d475af1c4729ef43bcb46cd8bc55b631d685`, `ModInfo.VERSION = 8.0.5`, Forge 1.7.10 / CustomNPC+.
-- **Target:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, `master`, Forge 1.20.1 / Custom NPCs GBPort. The audit started at `1e1106a36435a96c827e4ad5e40f4d4d78655072`, including the then-uncommitted projectile API and NPC combat/crew changes. Completion checks use `372d04a73` plus the changes below; concurrent faction work is excluded from this thread's commits.
-- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the five implementation changes described below. No interactive game session was performed.
+- **Target:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, `master`, Forge 1.20.1 / Custom NPCs GBPort. The audit started at `1e1106a36435a96c827e4ad5e40f4d4d78655072`, including the then-uncommitted projectile API and NPC combat/crew changes. The initial combat completion checks used `372d04a73` plus their scoped changes; later follow-up validation is recorded separately below. Unrelated concurrent work is excluded from this thread's commits.
+- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the six implementation changes described below. No interactive game session was performed.
 - **Historical metadata correction:** the old report labelled reference `22c0b0e4` as version 8.2.2; `ModInfo.java` at that commit actually says 8.0.5. The prior target snapshot was `ac009a9f1`. Historical fixes and recorded checks are retained below and are not current test results.
 
-**Remaining inventory: 0 MISSING, 5 PARTIAL, 0 UNCERTAIN findings; 5 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The five remaining findings involve design tradeoffs, bounded authoring controls, or content/dependency coverage and are left for the user's decision. The depth finding has been narrowed: the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
+**Remaining inventory: 0 MISSING, 4 PARTIAL, 0 UNCERTAIN findings; 6 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The four remaining findings involve design tradeoffs, bounded authoring controls, or content/dependency coverage and are left for the user's decision. The working depth limits now reach 64; the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
 
 The remaining table is a decision list, not an implementation backlog approved by the user. Keep the current default unless a listed capability is requested. A parity status answers whether the reference capability can be expressed. Its assessment separately asks whether losing it worsens the intended product. The criteria are combat/configuration consistency, recovery versus physical movement, content/authoring coverage, tuning complexity, and bounded simulation cost. Better on one criterion does not imply better overall. No comparative client/server performance or visual measurements were taken, so performance and handling benefits are qualified rather than asserted.
 
@@ -32,19 +32,17 @@ Follow-up agreed with the user: vehicle-model NPCs now inherit compatible physic
 
 Recommendation: Keep the simpler default and size-aware traffic test. Add independent turn response or standstill gap only for demonstrated handling/convoy requirements. Test speed matching and queue recovery before claiming either follower is superior. Do not reintroduce the ineffective reference steering-angle control.
 
-### Water-depth limits above sixteen blocks — PARTIAL
+### Water-depth authoring through 64 blocks — RESOLVED
 
-Reference: `R/java/customnpc/SubGuiVehicleMobility.java#addNumber`; `R/java/mixin/MixinDataAI.java#clampGroundDepth,clampWaterDepth` and submarine minimum-depth settings; `R/java/customnpc/TerrainMobilityRules.java#filterPathNode`.
-Ground maximum water depth and surface-watercraft minimum water depth can be configured up to 64 blocks and constrain where the NPC may navigate. A separate submarine minimum-depth setting also exists, but its implementation is ineffective for the reason assessed below.
+Reference: `R/java/customnpc/SubGuiVehicleMobility.java#addNumber`; `R/java/mixin/MixinDataAI.java#clampGroundDepth,clampWaterDepth`; `R/java/customnpc/TerrainMobilityRules.java#filterPathNode`. The working reference Ground and surface-watercraft depth settings reach 64. The reference's separate submarine safety rule remains excluded because its water-surface calculation is ineffective, as documented below.
 
-Target checked: `T/npcs/sim/NpcTuning.java#Value.MAX_WADE_DEPTH,MIN_WATER_DEPTH,SUBMARINE_DEPTH`; `T/npcs/sim/NpcMobility.java#filter,watercraft,depth`; `T/npcs/sim/NpcSubmarine.java#runningDepth,sample`.
-Terrain filtering and submarine depth holding exist, but both terrain-depth settings clamp at 16. Submarine running depth reaches 64, yet it is not a minimum navigable water-column restriction and deliberately becomes shallower over shallows.
+Target: `T/npcs/sim/NpcTuning.java#Value.MAX_WADE_DEPTH,MIN_WATER_DEPTH`; `T/npcs/sim/NpcMobility.java#filter,watercraft,hasWaterDepth,depth`. Ground wading now accepts 0–64 and Watercraft minimum depth 1–64. Both retain default 1; the existing settings save/sync path and editor bounds use those same definitions. Submarine running depth and its shallows adjustment are unchanged.
 
-Missing: configuring the working ground wading allowance or surface-watercraft minimum navigable depth in the 17–64 block range. A large running-depth value does not add that routing restriction. The separate broken reference submarine rule is excluded from functional parity counts.
+Assessment: **AUTHORING GAP CLOSED; existing defaults retained.** Large-watercraft and map builders can now express the 17–64 range. Watercraft depth still applies under every hull column, and rejects a node as soon as any one column is too shallow. Ground still rejects on the first column exceeding its allowance. No persistent world cache was added, so route checks continue to observe current water.
 
-Assessment: **BOUNDED CAPABILITY LOSS; the earlier submarine claim was overstated.** The 16-block caps really restrict ground/surface-watercraft authoring compared with the working reference settings. They also bound the depth scan in the per-node path filter; increasing the cap increases worst-case scan work per footprint column. Most shallow-water use does not require a 17–64 block minimum. Crucially, the reference's separate submarine minimum-depth path rule is broken: 1.7.10 `World.getTopSolidOrLiquidBlock` skips water and returns above the seabed, so checking water below that value rejects submerged routes. Its depth controller has the same error. The target's working depth holding and shallow-water adjustment are better than that behavior.
+Cost assessment: scanning stops when the requested threshold is proven. Default settings retain their previous scan limits. At the new maximum, a watercraft column needs at most 64 water reads to prove sufficient depth, or up to 65 reads to reject a finite shallower column including both dry boundaries. Ground needs at most 66 reads per column to distinguish 64 from deeper water. Work also scales with footprint area; increasing the configured depth increases the bounded worst case, rather than affecting every NPC by default. Regression tests count these reads and check early rejection across the hull. These are deterministic operation counts, not an in-game timing benchmark.
 
-Recommendation: Keep working submarine depth holding and rising over shallows. Extend the shared depth bound only if a concrete large-watercraft or map requirement needs more than 16 blocks, with path-cost validation. Withdraw the claim that a working separate legacy submarine safety rule was lost; that part was advertised/configurable but ineffective.
+API assessment: this is Custom NPCs terrain-policy configuration and filtering; no public Flan API change is needed. Runtime pathfinding validation remains outstanding.
 
 ## Models and animation
 
@@ -204,7 +202,7 @@ Previously accepted differences (several now have a more detailed capability/tra
 - Server-wide target-search intervals are saved with the world and edited on the tab's Server page, not in a config file. Only the near and the far interval are set; the bands in between scale.
 - Benchmarks time NPC ticks, path searches, target searches and NPC drawing as wholes. The reference's per-phase render and cache timings are not reproduced, because the target's render path is shared with real driveables and has its own diagnostics.
 - A vehicle whose path is taken away while it is at speed, for instance by the ranged AI once its target is in range, rolls out at its coasting rate. The reference brakes there, because its coasting rate is never reached; the target has coasting as a setting of its own. Only a vehicle that was already slowing for the end of its path brakes.
-- A submarine uses the Watercraft profile's minimum depth (capped at 16), instead of a second submarine-specific minimum. It rises over shallows relative to its running depth. This improves recoverability, but a stricter deep-water routing requirement would still be a legitimate optional scenario feature.
+- A submarine uses the Watercraft profile's minimum depth (now configurable through 64), instead of a second submarine-specific minimum. It rises over shallows relative to its running depth. This improves recoverability, but a stricter deep-water routing requirement would still be a legitimate optional scenario feature.
 
 ## Earlier audits: validation recorded on 2026-10-12
 
@@ -257,12 +255,19 @@ Commit `22c0b0e4` also sends the hull direction to clients while a vehicle moves
 - API 0.26 adds `GroundHandling` and `FlansEntityTypes.getGroundHandling`; runtime policy and Inherit/Custom controls remain in the NPC module. The API and NPC JARs contain the new contract, editor controls and both translated help texts. No API release/publication was performed. This change is on Forge 1.20.1; the separate NeoForge branch was not edited.
 - No interactive editor, convoy, steering or dedicated-server acceptance session was run. Independent steering response, tracked tight-turn permission and traffic stop-gap/leader-speed policies remain design decisions; this inheritance follow-up does not claim to close that entire partial finding.
 
+## Water-depth follow-up validation
+
+- All 15 new depth regression cases pass. They exercise the actual terrain filter at 16/17 and 63/64/65 boundaries, whole-hull rejection, old defaults, save/reload and bounded values, open-air handling, and deterministic fluid-read budgets. Existing simulation-settings and flight/submarine tests also pass.
+- The full `gradlew build sonarlintNpcs sonarlintTest spotlessCheck --offline` completed with 2,286 tests: 2,276 passed, 10 skipped, zero failures/errors. NPC/test SonarLint reports are empty. Scoped `spotlessApply` and main/wiki diff checks passed.
+- One headless IntelliJ run found only the obsolete `deepest` flag, now always true after watercraft moved to its early-rejection check. The flag and unused shallowest branch were removed; the final helper was rebuilt and regression-tested. No inspection rerun was performed.
+- API assessment: settings and footprint filtering are internal Custom NPCs terrain policy; no public API addition or version bump was needed. No content-pack definition, submarine running-depth behavior or default terrain value was changed.
+- Cost validation counts fluid reads, rather than timing a running game. A two-by-two watercraft footprint over sufficiently deep water uses 256 reads at minimum depth 64; a shallow first column rejects after at most 65 reads and skips the other columns. Ground checks at allowance 64 stop after 65 reads on a too-deep first column, or at most 264 reads when all four columns are exactly 64 deep. Larger footprints multiply the bounded work by their area. Live pathfinding/convoy performance and editor acceptance remain unverified.
+
 ## Remaining decisions
 
 | Subsystem | Feature | Status | Confidence | Practical assessment |
 | --------- | ------- | ------ | ---------- | -------------------- |
 | Driving | Independent turn response and traffic controls | PARTIAL | HIGH | Simpler defaults versus expert tuning; measure handling |
-| Mobility | Ground/surface-watercraft depths 17–64 | PARTIAL | HIGH | Bounded authoring restriction; broken submarine rule excluded |
 | Content | Full reference model catalog | PARTIAL | HIGH | Content coverage loss; retain data-driven registration |
 | Animation | CustomNPC+ armor keyframes | PARTIAL | HIGH | Dependency capability gap; standard pose path remains appropriate |
 | Target search | Independent distance-band schedules | PARTIAL | HIGH | Tuning/load-latency tradeoff; benchmark before changing defaults |

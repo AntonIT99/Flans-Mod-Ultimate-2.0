@@ -37,9 +37,9 @@ public final class NpcTuning
         /** Index into {@link Terrain}. */
         TERRAIN(0, 0, Terrain.values().length - 1),
         /** Deepest water, in blocks, a ground profile wades through. */
-        MAX_WADE_DEPTH(1, 0, 16),
+        MAX_WADE_DEPTH(1, 0, 64),
         /** Shallowest water, in blocks, a watercraft floats in. */
-        MIN_WATER_DEPTH(1, 1, 16),
+        MIN_WATER_DEPTH(1, 1, 64),
         /** Speed on land in tenths of a block per second; 0 keeps the NPC's walking speed. */
         LAND_SPEED(0, 0, 600),
         /** Speed in water in tenths of a block per second; 0 keeps the default swimming speed. */
