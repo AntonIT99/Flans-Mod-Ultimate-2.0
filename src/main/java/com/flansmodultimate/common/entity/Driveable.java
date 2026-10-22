@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.WeaponBallistics;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.distant.DistantRenderRange;
@@ -4388,6 +4389,29 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
         return points.isEmpty() ? null : getShootDirection(points.get(0), secondary);
+    }
+
+    /**
+     * @return how the round the bank of the driver's trigger would fire now flies, resolved as {@link #fireFromPoint}
+     *         resolves the shot, or null with no round of a bullet type loaded. Server side.
+     */
+    @Nullable
+    public WeaponBallistics getDriverWeaponBallistics(boolean secondary)
+    {
+        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
+        EnumWeaponType weapon = configType == null ? EnumWeaponType.NONE : configType.weaponType(secondary);
+        if (points.isEmpty() || weapon == EnumWeaponType.NONE || driveableData == null)
+            return null;
+        AmmoSelection selection = selectAmmo(points.get(0), weapon, secondary);
+        if (selection == null || !(selection.stack().getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bullet))
+            return null;
+        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * bullet.getFallSpeed(), level());
+        double drag = ModPhysics.dragRetention(bullet.getDragInAir(), level());
+        if (weapon == EnumWeaponType.BOMB)
+            return new WeaponBallistics(0D, gravity, drag, true);
+        LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
+        float speed = new FiredShot(resolveFireableGun(selection, secondary), bullet, this, attacker, ShootableItem.getRoundsFired(selection.stack())).getMuzzleVelocity(false);
+        return new WeaponBallistics(Math.max(0F, speed), gravity, drag, false);
     }
 
     // Base implementation of a hook; overriding subclasses use the parameter.

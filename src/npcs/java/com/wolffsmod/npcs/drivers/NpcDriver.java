@@ -3,7 +3,12 @@ package com.wolffsmod.npcs.drivers;
 import com.flansmodultimate.api.AircraftMode;
 import com.flansmodultimate.api.DriveControl;
 import com.flansmodultimate.api.ISeat;
+import com.flansmodultimate.api.WeaponBallistics;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.MountMotion;
+import com.wolffsmod.npcs.sim.TargetMotion;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,6 +62,9 @@ public final class NpcDriver
     /** Fewest blocks at which the driveable's weapons engage, whatever the NPC's firing range; more for an aircraft's. */
     private static final double MIN_FIRE_RANGE = 16D;
     private static final double MIN_AIR_FIRE_RANGE = 96D;
+    /** Blocks above its target from which a bomb is dropped, and from its target within which it has to come down. */
+    private static final double MIN_BOMB_HEIGHT = 4D;
+    private static final double BOMB_RADIUS = 4D;
     /** Every so many ticks the triggers are let go for a tick, so that a semi-automatic weapon fires again. */
     private static final int TRIGGER_RELEASE = 30;
 
@@ -98,6 +106,10 @@ public final class NpcDriver
     /** Manoeuvres since the driveable last got free. */
     private int recoveries;
     private final NpcPilot pilot = new NpcPilot();
+    /** How the target fired at moves, to lead it, and which target that is. */
+    private final TargetMotion motion = new TargetMotion();
+    @Nullable
+    private UUID tracked;
     /** What the NPC did at the controls last tick, for the movement debug; null while it does not drive. */
     @Nullable
     private Report report;
@@ -170,7 +182,7 @@ public final class NpcDriver
             reversing = false;
             Set<DriveControl> controls = DriveSteering.brake(speed);
             report(mecha, null, controls, 0F, 0D, speed);
-            act(npc, seat, mecha, controls, null);
+            act(npc, seat, driveable, mecha, controls, null);
             return true;
         }
         float off = Mth.wrapDegrees(MountMotion.yaw(route.steer().subtract(position)) - MountMotion.yaw(heading));
@@ -180,7 +192,7 @@ public final class NpcDriver
         else if (stuck(position, pushes(controls, mecha), now) && !startRecovery(controls))
             return false;
         report(mecha, route.steer(), controls, off, route.distance(), speed);
-        act(npc, seat, mecha, controls, off);
+        act(npc, seat, driveable, mecha, controls, off);
         return true;
     }
 
@@ -205,10 +217,10 @@ public final class NpcDriver
     }
 
     /** Holds the controls, and fights unless the driveable takes no controls, as one just wrecked does not. */
-    private static void act(EntityNPCInterface npc, ISeat seat, boolean mecha, Set<DriveControl> controls, @Nullable Float off)
+    private void act(EntityNPCInterface npc, ISeat seat, Entity driveable, boolean mecha, Set<DriveControl> controls, @Nullable Float off)
     {
         if (seat.setAutomatedDriving(controls))
-            fight(npc, seat, mecha, off);
+            fight(npc, seat, driveable, mecha, off);
     }
 
     private void report(boolean mecha, @Nullable Vec3 point, Set<DriveControl> controls, float off, double distance, double speed)
@@ -240,7 +252,7 @@ public final class NpcDriver
         if (target == null || !target.isAlive())
             seat.setAutomatedTriggers(false, false);
         else
-            fire(npc, seat, target.getBoundingBox().getCenter(), MIN_AIR_FIRE_RANGE);
+            fire(npc, seat, aircraft, target, MIN_AIR_FIRE_RANGE);
         return true;
     }
 
@@ -315,7 +327,7 @@ public final class NpcDriver
      * @param off
      *            degrees the driveable's way lies off its heading, or null while it stays where it is
      */
-    private static void fight(EntityNPCInterface npc, ISeat seat, boolean mecha, @Nullable Float off)
+    private void fight(EntityNPCInterface npc, ISeat seat, Entity driveable, boolean mecha, @Nullable Float off)
     {
         LivingEntity target = npc.getTarget();
         if (target == null || !target.isAlive())
@@ -327,35 +339,80 @@ public final class NpcDriver
                 seat.setAutomatedAim(seat.getAimYaw() + off, 0F);
             return;
         }
-        fire(npc, seat, target.getBoundingBox().getCenter(), MIN_FIRE_RANGE);
+        fire(npc, seat, driveable, target, MIN_FIRE_RANGE);
     }
 
     /**
-     * Aims the driveable's weapons at a point and fires each one that points there, within firing range and with nothing
-     * solid in the way.
+     * Aims the driveable's weapons at the target, leading it and allowing for the drop of their rounds as the NPC's aiming
+     * switches say, and fires each one that points where it has to, within firing range and with nothing solid in the
+     * way. A bomb is dropped once it would come down by the target.
      *
      * @param reach
      *            fewest blocks at which the weapons engage, whatever the NPC's firing range
      */
-    private static void fire(EntityNPCInterface npc, ISeat seat, Vec3 aimPoint, double reach)
+    private void fire(EntityNPCInterface npc, ISeat seat, Entity driveable, LivingEntity target, double reach)
     {
-        seat.aimAt(aimPoint);
+        track(target, npc.level().getGameTime());
+        Vec3 aimPoint = target.getBoundingBox().getCenter();
+        // The turret, or a mecha's arms, follows the main weapon, or the other one without it.
+        boolean secondary = seat.getDriverWeaponOrigin(false).isEmpty();
+        Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
+        Optional<Vec3> launch = origin.map(from -> launch(npc, seat, secondary, aimPoint.subtract(from)));
+        if (origin.isPresent() && launch.isPresent())
+            seat.aimAt(origin.get().add(launch.get().scale(aimPoint.distanceTo(origin.get()))));
+        else
+            seat.aimAt(aimPoint);
         boolean release = npc.level().getGameTime() % TRIGGER_RELEASE == 0;
         double range = Math.max(reach, npc.stats.ranged.getRange());
-        seat.setAutomatedTriggers(!release && readyToFire(npc, seat, false, aimPoint, range), !release && readyToFire(npc, seat, true, aimPoint, range));
+        seat.setAutomatedTriggers(!release && readyToFire(npc, seat, driveable, false, target, range), !release && readyToFire(npc, seat, driveable, true, target, range));
     }
 
-    private static boolean readyToFire(EntityNPCInterface npc, ISeat seat, boolean secondary, Vec3 aimPoint, double range)
+    /** Follows how the target moves, to lead it; a new target starts afresh. */
+    private void track(LivingEntity target, long now)
+    {
+        if (!target.getUUID().equals(tracked))
+        {
+            motion.reset();
+            tracked = target.getUUID();
+        }
+        motion.observe(target.position(), now);
+    }
+
+    /** @return the direction a weapon launches along to meet the target, or straight at it when what it fires is not known */
+    private Vec3 launch(EntityNPCInterface npc, ISeat seat, boolean secondary, Vec3 displacement)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        return seat.getDriverWeaponBallistics(secondary).filter(ballistics -> !ballistics.dropped())
+            .map(ballistics -> WeaponAim.launch(displacement, motion, ballistics, options.enabled(Feature.LEAD_TARGET), options.enabled(Feature.ADVANCED_LEAD), options.enabled(Feature.BALLISTIC_AIM)))
+            .orElse(displacement.normalize());
+    }
+
+    private boolean readyToFire(EntityNPCInterface npc, ISeat seat, Entity driveable, boolean secondary, LivingEntity target, double range)
     {
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         Optional<Vec3> direction = seat.getDriverWeaponDirection(secondary);
         if (origin.isEmpty() || direction.isEmpty())
             return false;
+        Vec3 aimPoint = target.getBoundingBox().getCenter();
         Vec3 line = aimPoint.subtract(origin.get());
-        if (line.lengthSqr() > range * range || direction.get().dot(line.normalize()) < FIRE_CONE)
+        if (line.lengthSqr() > range * range)
+            return false;
+        Optional<WeaponBallistics> ballistics = seat.getDriverWeaponBallistics(secondary);
+        if (ballistics.isPresent() && ballistics.get().dropped())
+            return bombsAway(origin.get(), driveable.getDeltaMovement(), ballistics.get(), target);
+        if (direction.get().dot(launch(npc, seat, secondary, line)) < FIRE_CONE)
             return false;
         ClipContext sight = new ClipContext(origin.get(), aimPoint, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
         return npc.level().clip(sight).getType() == HitResult.Type.MISS;
+    }
+
+    /** Whether a bomb dropped now, from above the target, would come down within reach of it. */
+    private static boolean bombsAway(Vec3 origin, Vec3 velocity, WeaponBallistics ballistics, LivingEntity target)
+    {
+        if (origin.y < target.getY() + MIN_BOMB_HEIGHT)
+            return false;
+        Vec3 impact = WeaponAim.impact(origin, velocity, ballistics.gravity(), ballistics.drag(), target.getY());
+        return horizontal(impact, target.position()) <= BOMB_RADIUS;
     }
 
     /** Reads the point to steer for and the distance to the goal off the NPC's path; none without a path. */
@@ -436,6 +493,8 @@ public final class NpcDriver
     {
         pilot.reset();
         report = null;
+        motion.reset();
+        tracked = null;
         driving = false;
         lastPosition = null;
         reversing = false;

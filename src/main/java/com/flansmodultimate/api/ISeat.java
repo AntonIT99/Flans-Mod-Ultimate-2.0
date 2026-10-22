@@ -175,4 +175,13 @@ public interface ISeat
      *         when {@link #getDriverWeaponOrigin} is. Server side.
      */
     Optional<Vec3> getDriverWeaponDirection(boolean secondary);
+
+    /**
+     * @param secondary
+     *            whether to describe the weapon of the secondary trigger rather than the primary one
+     * @return how what the driveable's weapon of the driver's trigger has loaded now flies, to lead a target and allow
+     *         for the drop; empty for a seat that does not control the driveable, for a weapon with nothing loaded, and
+     *         for a mecha's hand guns. Server side.
+     */
+    Optional<WeaponBallistics> getDriverWeaponBallistics(boolean secondary);
 }

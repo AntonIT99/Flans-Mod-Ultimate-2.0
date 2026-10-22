@@ -858,6 +858,13 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     }
 
     @Override
+    public Optional<WeaponBallistics> getDriverWeaponBallistics(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponBallistics(secondary));
+    }
+
+    @Override
     public Optional<Vec3> getGunOrigin()
     {
         return driveable == null ? Optional.empty() : Optional.ofNullable(driveable.getPassengerShootOrigin(getSeatIndex(), 0));
