@@ -1,12 +1,12 @@
 # Feature Gap Analysis — Wolff's NPCs 1.7.10 → NPC module
 
-- **Current assessment:** 2026-10-22; merges the later temporary audit into this permanent report.
+- **Current assessment:** 2026-10-23; merges the later temporary audit into this permanent report.
 - **Reference:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-NPC-Vehicles`, HEAD `19a1d475af1c4729ef43bcb46cd8bc55b631d685`, `ModInfo.VERSION = 8.0.5`, Forge 1.7.10 / CustomNPC+.
 - **Target:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, `master`, Forge 1.20.1 / Custom NPCs GBPort. The audit started at `1e1106a36435a96c827e4ad5e40f4d4d78655072`, including the then-uncommitted projectile API and NPC combat/crew changes. The initial combat completion checks used `372d04a73` plus their scoped changes; later follow-up validation is recorded separately below. Unrelated concurrent work is excluded from this thread's commits.
-- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the six implementation changes described below. No interactive game session was performed.
+- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the seven implementation changes described below. No interactive game session was performed.
 - **Historical metadata correction:** the old report labelled reference `22c0b0e4` as version 8.2.2; `ModInfo.java` at that commit actually says 8.0.5. The prior target snapshot was `ac009a9f1`. Historical fixes and recorded checks are retained below and are not current test results.
 
-**Remaining inventory: 0 MISSING, 4 PARTIAL, 0 UNCERTAIN findings; 6 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The four remaining findings involve design tradeoffs, bounded authoring controls, or content/dependency coverage and are left for the user's decision. The working depth limits now reach 64; the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
+**Remaining inventory: 0 MISSING, 3 PARTIAL, 0 UNCERTAIN findings; 7 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The three remaining findings concern independent driving controls and content/dependency coverage. The user deferred the model catalog and CustomNPC+ armor keyframes. Target-search overrides are now opt-in, retaining the existing defaults. The working depth limits now reach 64; the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
 
 The remaining table is a decision list, not an implementation backlog approved by the user. Keep the current default unless a listed capability is requested. A parity status answers whether the reference capability can be expressed. Its assessment separately asks whether losing it worsens the intended product. The criteria are combat/configuration consistency, recovery versus physical movement, content/authoring coverage, tuning complexity, and bounded simulation cost. Better on one criterion does not imply better overall. No comparative client/server performance or visual measurements were taken, so performance and handling benefits are qualified rather than asserted.
 
@@ -76,19 +76,19 @@ Recommendation: Keep standard pose copying and part transforms. Add a bridge onl
 
 ## Target search and diagnostics
 
-### Independently configurable target-search distance bands — PARTIAL
+### Independently configurable target-search distance bands — RESOLVED BY AGREED DESIGN
 
 Reference: `R/java/config/TargetSearchConfig.java#load,intervalForBand`; `R/java/mixin/MixinEntityAIClosestTargetProgressive.java`.
 All six search bands have independently adjustable tick intervals, each from 1 to 1200: 0–32, 32–64, 64–128, 128–256, 256–384, and 384 blocks to the combat limit. Nearby acquisition synchronization can also be disabled independently of progressive searching.
 
-Target checked: `T/npcs/sim/NpcTargetSearch.java#due,interval`; `T/npcs/diag/NpcServerSettings.java`; `T/npcs/sim/NpcTuning.java#SEARCH_NEAR_INTERVAL,SEARCH_FAR_INTERVAL`; server editor/packet settings.
-Progressive searching and shared nearby acquisition are represented. Only near/far endpoints are configurable; intermediate intervals are linearly interpolated. The first band always uses a shared time-slot cadence while progressive search is active. Near/far bounds are 200/600 rather than 1200.
+Target: `T/npcs/sim/NpcTargetSearch.java#find,interval,due`; `T/npcs/sim/NpcTuning.java`; `T/npcs/combat/NpcWeaponOptions.java`; Performance & debug controls in `GuiWolffsMod.java`.
+The default near/far settings, server inheritance, interpolation and shared nearby cadence remain unchanged. **Advanced search intervals**, off by default, enables six independent per-NPC band overrides. Each accepts 1–1200 ticks, or 0 to retain that band's near/far interpolation. Explicit values need not rise with distance; the legacy 5/10/20/40/80/160 schedule can now be expressed. The last target band ends at the existing 512-block limit, and each search remains capped by the NPC's aggro range.
 
-Missing: arbitrary independent schedules for the middle bands, independently disabling shared nearby acquisition, and the longer reference interval settings. Changing where settings are stored is not itself a gap.
+**Stagger nearby searches**, also off by default, disables shared near-band timing independently of advanced intervals. Its first search and later searches use the same per-NPC staggering policy as distant bands. Leaving it off preserves the immediate first nearby search and subsequent shared time slots. All controls require Progressive target search; switching them off retains their saved values. The named settings use the existing validated/clamped Custom NPCs stats persistence and editor transport, without a new packet layout.
 
-Assessment: **TRADEOFF; easier tuning cannot express all load/latency policies.** Near/far endpoints are simpler to configure, while independent bands can give disproportionately short mid-range or long far-range intervals. For example, the reference's 5/10/20/40/80/160-tick schedule cannot be represented by linear interpolation. Shared nearby cadence intentionally makes formations acquire together, but also groups their near-search work; staggering can spread that work at the cost of less synchronized reactions. No benchmark in this audit establishes that either schedule is faster or better for a particular population.
+Assessment: **OPTIONAL TUNING COVERAGE ADDED; defaults retained.** Independent bands can express nonlinear load/latency policies, while interpolation stays simpler for ordinary use. Staggering can spread simultaneous near-search opportunities, but may delay initial acquisition and no longer aligns formations. Actual scan times also depend on available targets, early acquisition, goal invocation frequency and NPC start times; distinct phases can collide. No live benchmark establishes a performance improvement.
 
-Recommendation: Keep shared nearby acquisition as the default if coordinated reactions are the goal. Expose advanced per-band/synchronization overrides only when a measured server load or response-time requirement needs them. Settings storage in world data remains a valid improvement and is not a gap.
+Agreed design: keep existing defaults and expose advanced intervals plus the opt-in staggering toggle. These are internal Custom NPCs scheduling controls, with no new public Flan API dependency or version bump. The separate NeoForge checkout was not changed.
 
 ## Resolved in the current working directory
 
@@ -263,14 +263,21 @@ Commit `22c0b0e4` also sends the hull direction to clients while a vehicle moves
 - API assessment: settings and footprint filtering are internal Custom NPCs terrain policy; no public API addition or version bump was needed. No content-pack definition, submarine running-depth behavior or default terrain value was changed.
 - Cost validation counts fluid reads, rather than timing a running game. A two-by-two watercraft footprint over sufficiently deep water uses 256 reads at minimum depth 64; a shallow first column rejects after at most 65 reads and skips the other columns. Ground checks at allowance 64 stop after 65 reads on a too-deep first column, or at most 264 reads when all four columns are exactly 64 deep. Larger footprints multiply the bounded work by their area. Live pathfinding/convoy performance and editor acceptance remain unverified.
 
+## Target-search follow-up validation
+
+- Eight new regression tests exercise observed search times for all six default bands, the nonlinear legacy schedule and non-monotonic overrides, 1200-tick intervals, inherited bands, shared versus staggered near timing, mode changes, aggro-range caps, early acquisition and Progressive target search gating. NBT transport coverage checks retained options, old defaults, malformed values and bounds. The existing default-options test now explicitly expects both new opt-in switches to start disabled.
+- The full build completed with 2,294 tests: 2,284 passed, 10 skipped, zero failures/errors. After extracting schedule initialization to resolve the new complexity finding, focused and full tests passed again and the NPC JAR was rebuilt/reobfuscated. Final NPC SonarLint contains only the pre-existing `GuiWolffsMod.navigate` complexity finding (16 versus 15); test SonarLint is empty. Scoped formatting and main/wiki diff checks passed.
+- One headless IntelliJ run reported four warnings. Its unused test import was removed. The three retained pre-existing warnings concern the editor's large `Map.ofEntries` call, an existing Unicode escape and the default target-priority callback's constant return. No inspection rerun was performed.
+- API assessment: the schedule and editor controls are internal Custom NPCs policy; no public Flan API addition or version bump is needed. Runtime and editor controls and both English/German locale sets were verified in the NPC JAR. The existing stats save/load mixin handles named settings, and the dependency's stats transport retains its existing NPC/tool/permission checks; no packet layout was added or changed.
+- No interactive editor, dedicated-server acceptance or live target-search timing benchmark was run. Unit scan counts/timestamps establish scheduling behavior, rather than a measured server-performance gain. Models and CustomNPC+ armor animation remain deferred by the user; independent driving-policy choices remain open.
+
 ## Remaining decisions
 
 | Subsystem | Feature | Status | Confidence | Practical assessment |
 | --------- | ------- | ------ | ---------- | -------------------- |
 | Driving | Independent turn response and traffic controls | PARTIAL | HIGH | Simpler defaults versus expert tuning; measure handling |
-| Content | Full reference model catalog | PARTIAL | HIGH | Content coverage loss; retain data-driven registration |
-| Animation | CustomNPC+ armor keyframes | PARTIAL | HIGH | Dependency capability gap; standard pose path remains appropriate |
-| Target search | Independent distance-band schedules | PARTIAL | HIGH | Tuning/load-latency tradeoff; benchmark before changing defaults |
+| Content | Full reference model catalog | PARTIAL | HIGH | Deferred by user; retain data-driven registration |
+| Animation | CustomNPC+ armor keyframes | PARTIAL | HIGH | Deferred by user; standard pose path remains appropriate |
 
 ## Areas requiring deeper audit
 

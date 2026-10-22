@@ -123,7 +123,10 @@ public final class NpcTuning
         /** Seconds a helicopter an NPC flies hovers with nothing to do before it lands; 0 keeps it in the air. */
         HELICOPTER_LANDING_DELAY(10, 0, 600),
         /** Percent of its tank under which an aircraft an NPC flies heads home to land; 0 flies on to the last drop. */
-        LOW_FUEL(15, 0, 50);
+        LOW_FUEL(15, 0, 50),
+        /** Optional search intervals by distance band; 0 retains the interpolated near/far interval for that band. */
+        SEARCH_BAND_0_INTERVAL(0, 0, 1200), SEARCH_BAND_1_INTERVAL(0, 0, 1200), SEARCH_BAND_2_INTERVAL(0, 0, 1200), SEARCH_BAND_3_INTERVAL(0, 0, 1200), SEARCH_BAND_4_INTERVAL(0, 0,
+            1200), SEARCH_BAND_5_INTERVAL(0, 0, 1200);
 
         private final int fallback;
         private final int minimum;
