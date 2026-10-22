@@ -96,7 +96,7 @@ public final class EntityPlatform
 
     /** Offset from a vehicle seat position to where the passenger stands. */
     // Part of the cross-version platform signature; 1.21 asks the passenger for its attachment point on the vehicle.
-    @SuppressWarnings("java:S1172")
+    @SuppressWarnings({"java:S1172", "unused"})
     public static Vec3 riderOffset(Entity passenger, Entity vehicle)
     {
         return new Vec3(0D, passenger.getMyRidingOffset(), 0D);
