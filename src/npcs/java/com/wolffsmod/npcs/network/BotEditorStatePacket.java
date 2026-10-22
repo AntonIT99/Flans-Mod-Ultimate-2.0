@@ -39,6 +39,8 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
         presets = List.copyOf(presets);
     }
 
+    // A method reference to writeNbt is ambiguous on 1.21, whose buffer overloads it; the lambda is shared.
+    @SuppressWarnings("java:S1612")
     public void write(FriendlyByteBuf buffer)
     {
         buffer.writeCollection(rounds, (out, entry) ->

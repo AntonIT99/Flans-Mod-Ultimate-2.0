@@ -3,6 +3,7 @@ package com.flansmodultimate.common.driveables.collision;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
@@ -82,7 +83,7 @@ public final class DriveableCollisionHelper
     public Vec3 findTopDismount(LivingEntity passenger, Vec3 preferred)
     {
         var dimensions = passenger.getDimensions(Pose.STANDING);
-        return geometry.findTopDismount(preferred, dimensions.width(), dimensions.height(), feet ->
+        return geometry.findTopDismount(preferred, EntityPlatform.width(dimensions), EntityPlatform.height(dimensions), feet ->
         {
             AABB box = dimensions.makeBoundingBox(feet);
             return passenger.level().noCollision(passenger, box) && !DriveableCollisionWorld.intersectsAnyHull(passenger.level(), box);

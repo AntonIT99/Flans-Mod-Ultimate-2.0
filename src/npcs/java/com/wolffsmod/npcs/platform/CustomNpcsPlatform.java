@@ -1,0 +1,48 @@
+package com.wolffsmod.npcs.platform;
+
+import com.wolffsmod.npcs.tactics.CustomNpcTactics;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import noppes.npcs.client.CustomNpcResourceListener;
+import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataDisplay;
+import noppes.npcs.entity.data.DataMelee;
+
+/** Version boundary for the API differences between the Forge and NeoForge Custom NPCs builds. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class CustomNpcsPlatform
+{
+    /** The editor's default label colour. */
+    public static int defaultTextColor()
+    {
+        return CustomNpcResourceListener.DefaultTextColor;
+    }
+
+    /** A melee reach in the unit this build stores: whole blocks, rounded to the nearest. */
+    public static float meleeRange(double reach)
+    {
+        return Math.round((float) reach);
+    }
+
+    public static void setMeleeRange(DataMelee melee, double reach)
+    {
+        melee.setRange(Math.round((float) reach));
+    }
+
+    public static void setDisplaySize(DataDisplay display, int size)
+    {
+        display.setSize(size);
+    }
+
+    /** The NPC's Custom NPCs tactical variant, which this build lacks and the module restores. */
+    public static int tacticalVariant(EntityNPCInterface npc)
+    {
+        return CustomNpcTactics.of(npc).getVariant();
+    }
+
+    /** The distance setting of the NPC's Custom NPCs tactical variant. */
+    public static int tacticalRange(EntityNPCInterface npc)
+    {
+        return CustomNpcTactics.of(npc).getRange();
+    }
+}

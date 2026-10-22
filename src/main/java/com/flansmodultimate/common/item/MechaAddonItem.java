@@ -1,17 +1,18 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.types.MechaItemType;
+import com.flansmodultimate.platform.item.FlanItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
 
-public final class MechaAddonItem extends Item implements ICustomRendereredItem<MechaItemType>
+public final class MechaAddonItem extends FlanItem implements ICustomRendereredItem<MechaItemType>
 {
     @Getter
     private final MechaItemType configType;
@@ -47,7 +48,7 @@ public final class MechaAddonItem extends Item implements ICustomRendereredItem<
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
     }

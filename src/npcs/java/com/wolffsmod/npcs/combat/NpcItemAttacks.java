@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.platform.PlatformSounds;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -424,7 +424,7 @@ public final class NpcItemAttacks
             return false;
         weapon.shrink(1);
         npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
-        npc.playSound(trident ? NpcPlatform.tridentThrowSound() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
+        npc.playSound(trident ? PlatformSounds.tridentThrow() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
         return true;
     }
 

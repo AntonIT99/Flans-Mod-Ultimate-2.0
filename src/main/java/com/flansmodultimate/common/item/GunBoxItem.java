@@ -2,17 +2,18 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.GunBoxType;
+import com.flansmodultimate.platform.item.FlanBlockItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
 
-public class GunBoxItem extends BlockItem implements IFlanItem<GunBoxType>
+public class GunBoxItem extends FlanBlockItem implements IFlanItem<GunBoxType>
 {
     @Getter
     protected final GunBoxType configType;
@@ -26,7 +27,7 @@ public class GunBoxItem extends BlockItem implements IFlanItem<GunBoxType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
     }

@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.util;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModUtils;
@@ -343,7 +344,7 @@ public final class ApocalypseLoot
         PlayerClass playerClass = classes.isEmpty() ? null : classes.get(random.nextInt(classes.size()));
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR)
+            if (!EntityPlatform.isHumanoidArmor(slot))
                 continue;
             ItemStack armor = playerClass == null ? ItemStack.EMPTY : playerClass.getArmour(slot);
             if (armor.isEmpty())

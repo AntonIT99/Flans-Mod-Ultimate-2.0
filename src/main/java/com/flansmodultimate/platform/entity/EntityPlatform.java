@@ -14,6 +14,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 
 /** Version boundary for small entity API calls whose names or signatures changed. */
 public final class EntityPlatform
@@ -72,6 +73,35 @@ public final class EntityPlatform
     public static EquipmentSlot equipmentSlotFor(LivingEntity entity, ItemStack stack)
     {
         return entity.getEquipmentSlotForItem(stack);
+    }
+
+    /** Whether the slot is one of the four worn armor slots, not a hand or a body slot. */
+    public static boolean isHumanoidArmor(EquipmentSlot slot)
+    {
+        return slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR;
+    }
+
+    public static float width(EntityDimensions dimensions)
+    {
+        return dimensions.width();
+    }
+
+    public static float height(EntityDimensions dimensions)
+    {
+        return dimensions.height();
+    }
+
+    /** Whether the entity has been added to a level, as opposed to only constructed. */
+    public static boolean isAddedToLevel(Entity entity)
+    {
+        return entity.isAddedToLevel();
+    }
+
+    /** Offset from a vehicle seat position to where the passenger stands. */
+    public static Vec3 riderOffset(Entity passenger, Entity vehicle)
+    {
+        // Minecraft 1.21 replaced the rider's own riding offset with its attachment point on the vehicle.
+        return passenger.getVehicleAttachmentPoint(vehicle).reverse();
     }
 
     /** Ticks a crossbow takes to charge for the entity. */

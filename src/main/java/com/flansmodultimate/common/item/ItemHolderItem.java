@@ -3,18 +3,18 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.ItemHolderType;
+import com.flansmodultimate.platform.item.FlanBlockItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 
 import java.util.List;
 
-public class ItemHolderItem extends BlockItem implements IFlanItem<ItemHolderType>
+public class ItemHolderItem extends FlanBlockItem implements IFlanItem<ItemHolderType>
 {
     @Getter
     protected final ItemHolderType configType;
@@ -28,7 +28,7 @@ public class ItemHolderItem extends BlockItem implements IFlanItem<ItemHolderTyp
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.translatable(TooltipKeys.ITEM_HOLDER).withStyle(ChatFormatting.DARK_AQUA));

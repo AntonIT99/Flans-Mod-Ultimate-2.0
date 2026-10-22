@@ -1,16 +1,15 @@
 package com.wolffsmod.npcs.combat;
 
-import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.Resistances;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.*;
@@ -19,8 +18,6 @@ import net.minecraft.world.entity.ai.attributes.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcProtection
 {
-    private static final ResourceLocation KNOCKBACK_IMMUNITY = ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "knockback_immunity");
-
     public static NpcCombatSettings settings(EntityNPCInterface npc)
     {
         return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsCombat();
@@ -87,11 +84,6 @@ public final class NpcProtection
         AttributeInstance resistance = npc.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
         if (resistance == null)
             return;
-        boolean immune = knockbackImmune(npc);
-        boolean applied = resistance.getModifier(KNOCKBACK_IMMUNITY) != null;
-        if (immune && !applied)
-            resistance.addTransientModifier(new AttributeModifier(KNOCKBACK_IMMUNITY, 1D, AttributeModifier.Operation.ADD_VALUE));
-        else if (!immune && applied)
-            resistance.removeModifier(KNOCKBACK_IMMUNITY);
+        NpcPlatform.setKnockbackImmunity(resistance, knockbackImmune(npc));
     }
 }

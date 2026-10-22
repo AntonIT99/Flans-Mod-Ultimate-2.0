@@ -4,9 +4,9 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
-import com.wolffsmod.npcs.tactics.CustomNpcTactics;
 import com.wolffsmod.npcs.tactics.NpcTactics;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +40,7 @@ public final class NpcTargetSearch
         Value.SEARCH_BAND_5_INTERVAL};
     /** Tactical manoeuvres carry an NPC at least this far past its aggro range before it gives its target up. */
     private static final int MIN_TACTICAL_MARGIN = 8;
-    /** Custom NPCs tactical variants without a manoeuvre of their own. */
+    /** Custom NPCs' tactical variants that add no manoeuvre of their own. */
     private static final int RUSH = 0;
     private static final int NO_TACTIC = 6;
 
@@ -185,7 +185,7 @@ public final class NpcTargetSearch
         if (tactic != Tactic.CUSTOM_NPCS)
             tactical = tactic.usesDistance() ? Math.max(MIN_TACTICAL_MARGIN, NpcTactics.reach(npc, tactic)) : 0;
         else
-            tactical = manoeuvres(CustomNpcTactics.of(npc).getVariant()) ? Math.max(MIN_TACTICAL_MARGIN, CustomNpcTactics.of(npc).getRange()) : 0;
+            tactical = manoeuvres(CustomNpcsPlatform.tacticalVariant(npc)) ? Math.max(MIN_TACTICAL_MARGIN, CustomNpcsPlatform.tacticalRange(npc)) : 0;
         return Math.max(tactical, NpcTuning.of(npc).get(Value.TARGET_MARGIN));
     }
 

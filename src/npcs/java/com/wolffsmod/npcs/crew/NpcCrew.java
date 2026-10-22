@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.crew;
 
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.WeaponMount;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
@@ -168,10 +169,8 @@ public final class NpcCrew
         Optional<Vec3> offset = seat.flatMap(mount -> state.seatOffset(vehicle, mount));
         if (offset.isEmpty())
             return false;
-        Vec3 at = offset.get();
-        // Minecraft 1.21 replaced the rider's own riding offset with its vehicle attachment point.
-        Vec3 attachment = passenger.getVehicleAttachmentPoint(vehicle);
-        move.accept(passenger, vehicle.getX() + at.x - attachment.x, vehicle.getY() + at.y - attachment.y, vehicle.getZ() + at.z - attachment.z);
+        Vec3 at = offset.get().add(EntityPlatform.riderOffset(passenger, vehicle));
+        move.accept(passenger, vehicle.getX() + at.x, vehicle.getY() + at.y, vehicle.getZ() + at.z);
         if (crew && passenger instanceof LivingEntity living)
             face(living, state.seatFacing(seat.get()));
         return true;

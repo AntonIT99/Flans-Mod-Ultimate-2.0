@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.NpcEquipmentStats.Resistance;
 import com.wolffsmod.npcs.combat.NpcEquipmentStats.Shot;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
@@ -68,8 +69,7 @@ public final class NpcEquipmentImport
         switch (property)
         {
             case MELEE_DAMAGE -> melee.setStrength((int) Math.max(0L, Math.round(NpcEquipmentStats.meleeDamage(npc, item))));
-            // The NeoForge Custom NPCs build stores melee range as whole blocks.
-            case MELEE_REACH -> melee.setRange((int) Math.round(Math.max(0D, NpcEquipmentStats.meleeReach(item))));
+            case MELEE_REACH -> CustomNpcsPlatform.setMeleeRange(melee, Math.max(0D, NpcEquipmentStats.meleeReach(item)));
             case MELEE_DELAY -> melee.setDelay(Math.max(1, NpcEquipment.meleeDelay(item)));
             case MELEE_KNOCKBACK -> melee.setKnockback((int) Math.max(0L, Math.round(NpcEquipmentStats.meleeKnockback(npc, item))));
             default -> {

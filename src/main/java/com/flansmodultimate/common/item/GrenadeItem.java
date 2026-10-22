@@ -13,16 +13,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -65,7 +65,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         if (!IFlanItem.showDetailedDescriptions())
@@ -82,24 +82,19 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         }
         else
         {
-            super.appendHoverText(stack, context, tooltipComponents, isAdvanced);
+            super.appendTooltip(stack, registries, tooltipComponents, isAdvanced);
         }
     }
 
     @Override
-    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack)
-    {
-        return ItemAttributes.mainHand(super.getDefaultAttributeModifiers(stack), modifiers -> addAttributeModifiers(stack, modifiers));
-    }
-
-    private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
+    protected void addMainHandModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
     {
         modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(),
             ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand)
+    protected boolean onSwing(ItemStack stack, LivingEntity entity)
     {
         return configType.isHoldToThrow() || configType.getMeleeDamage() == 0;
     }

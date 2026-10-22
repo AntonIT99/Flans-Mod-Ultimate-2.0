@@ -9,6 +9,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.gun.PacketGunHolderAnimation;
 import com.flansmodultimate.network.client.gun.PacketGunMuzzleFlash;
+import com.flansmodultimate.platform.PlatformSounds;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -344,7 +345,7 @@ public final class EquipmentSupport
             if (!holder.level().addFreshEntity(thrown))
                 return List.of();
             if (throwSound && !ExternalProjectileSupport.playShootSound(holder, type, stack, false))
-                holder.playSound(SoundEvents.TRIDENT_THROW.value(), 1F, 1F);
+                holder.playSound(PlatformSounds.tridentThrow(), 1F, 1F);
             return List.of(thrown);
         }
     }

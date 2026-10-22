@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.network.BotWaypointsPacket;
 import lombok.AccessLevel;
@@ -69,8 +70,7 @@ public final class BotWaypoints
             pose.pushPose();
             pose.translate(offset.x, offset.y, offset.z);
             pose.mulPose(camera.rotation());
-            // Minecraft 1.21 turns the camera rotation half a turn further than 1.20.1, so the text keeps its X axis, as name tags do.
-            pose.scale(scale, -scale, scale);
+            ClientPlatform.scaleCameraFacingLabel(pose, scale);
             Matrix4f matrix = pose.last().pose();
             int colour = "rally".equals(waypoint.kind()) ? RALLY_COLOUR : COLOUR;
             font.drawInBatch(label, -font.width(label) / 2F, 0F, colour, false, matrix, buffers, Font.DisplayMode.SEE_THROUGH, BACKGROUND, LightTexture.FULL_BRIGHT);

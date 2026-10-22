@@ -6,6 +6,7 @@ import com.flansmodultimate.api.EntityTypeProperties.Weapon;
 import com.flansmodultimate.api.ReloadCycle;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.*;
@@ -45,7 +46,7 @@ public final class NpcTypeMapping
         // Beyond the 256 blocks of the Custom NPCs editor; the server limit is applied to the NPC afterwards.
         integer(values, NpcTypeProperty.RANGE, type.targetRange(), 1D, 1, 512);
         integer(values, NpcTypeProperty.WALKING_SPEED, type.walkingSpeed(), 20D, 0, 100);
-        type.meleeReach().ifPresent(reach -> values.put(NpcTypeProperty.MELEE_REACH, FloatTag.valueOf(Math.round((float) Math.max(0D, reach)))));
+        type.meleeReach().ifPresent(reach -> values.put(NpcTypeProperty.MELEE_REACH, FloatTag.valueOf(CustomNpcsPlatform.meleeRange(Math.max(0D, reach)))));
         // A machine has no breath to lose, takes no potions, rolls through cobwebs and does not heal by itself; a flooded
         // engine is the model's own concern.
         values.put(NpcTypeProperty.CAN_DROWN, ByteTag.valueOf(false));

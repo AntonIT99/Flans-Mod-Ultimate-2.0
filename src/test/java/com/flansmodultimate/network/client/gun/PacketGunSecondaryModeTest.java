@@ -2,12 +2,10 @@ package com.flansmodultimate.network.client.gun;
 
 import com.flansmodultimate.network.server.gun.PacketGunSecondaryMode;
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,9 +15,9 @@ class PacketGunSecondaryModeTest
     @Test
     void requestCarriesOnlyTheHandAndAcknowledgmentCarriesServerTiming()
     {
-        RegistryFriendlyByteBuf request = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-        RegistryFriendlyByteBuf acknowledgment = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-        RegistryFriendlyByteBuf roundTrip = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        var request = TestPacketBuffers.buffer();
+        var acknowledgment = TestPacketBuffers.buffer();
+        var roundTrip = TestPacketBuffers.buffer();
         try
         {
             new PacketGunSecondaryMode(InteractionHand.OFF_HAND).encodeInto(new PacketBuffer(request));

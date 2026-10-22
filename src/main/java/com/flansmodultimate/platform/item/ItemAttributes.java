@@ -36,6 +36,12 @@ public final class ItemAttributes
         return Attributes.ENTITY_INTERACTION_RANGE;
     }
 
+    /** Translation key of the melee reach attribute. */
+    public static String meleeReachDescriptionId()
+    {
+        return meleeReachAttribute().value().getDescriptionId();
+    }
+
     /** Modifiers an item adds on top of its vanilla ones. */
     public static final class Modifiers
     {
@@ -76,6 +82,8 @@ public final class ItemAttributes
     {
         Modifiers modifiers = new Modifiers();
         additions.accept(modifiers);
+        if (modifiers.entries.isEmpty())
+            return vanilla;
         ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
         for (ItemAttributeModifiers.Entry entry : vanilla.modifiers())
             builder.add(entry.attribute(), entry.modifier(), entry.slot());

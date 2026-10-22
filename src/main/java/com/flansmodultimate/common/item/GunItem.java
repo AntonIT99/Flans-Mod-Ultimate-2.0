@@ -11,6 +11,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.gun.PacketGunShootClient;
+import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.platform.item.ItemAttributes;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
@@ -28,27 +29,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
-public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendereredItem<GunType>
+public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICustomRendereredItem<GunType>
 {
     public static final String NBT_AMMO = "ammo";
     public static final String NBT_SECONDARY_AMMO = "secondary_ammo";
@@ -127,7 +119,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public int getUseDuration(@NotNull ItemStack stack, @NotNull LivingEntity entity)
+    protected int useDuration(@NotNull ItemStack stack, @Nullable LivingEntity user)
     {
         // A throw is charged for as long as the key is held, like a trident
         return configType.isThrowable() ? 72000 : 100;
@@ -157,7 +149,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         if (!configType.isThrowable() || !(entity instanceof Player player))
             return;
-        if (getUseDuration(stack, entity) - timeLeft < configType.getThrowChargeTime())
+        if (useDuration(stack, entity) - timeLeft < configType.getThrowChargeTime())
             return;
 
         if (!level.isClientSide)
@@ -166,7 +158,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
@@ -205,7 +197,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
 
             // Ammo info
-            for (ItemStack bulletStack : getBulletItemStackList(stack, context.registries()))
+            for (ItemStack bulletStack : getBulletItemStackList(stack, registries))
             {
                 if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
                 {
@@ -253,8 +245,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BOX), originGunbox));
 
             List<ShootableType> ammoTypes = new ArrayList<>(configType.getAmmoTypes());
-            getBulletItemStackList(stack, context.registries()).stream().map(ItemStack::getItem).filter(ShootableItem.class::isInstance).map(ShootableItem.class::cast)
-                .map(ShootableItem::getConfigType).findFirst().ifPresent(loadedAmmoType ->
+            getBulletItemStackList(stack, registries).stream().map(ItemStack::getItem).filter(ShootableItem.class::isInstance).map(ShootableItem.class::cast).map(ShootableItem::getConfigType)
+                .findFirst().ifPresent(loadedAmmoType ->
                 {
                     for (int i = 0; i < ammoTypes.size(); i++)
                     {
@@ -330,7 +322,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
             {
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(ItemAttributes.meleeReachAttribute().value().getDescriptionId()), IFlanItem.formatFloat(configType.getMeleeRange())));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(ItemAttributes.meleeReachDescriptionId()), IFlanItem.formatFloat(configType.getMeleeRange())));
             }
 
             if (configType.isThrowable())
@@ -463,7 +455,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      * Return true to cancel further processing (and client-side breaking animation).
      * We bounce a block update on the server to ensure proper visuals in creative.
      */
-    public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player)
+    @Override
+    protected boolean startBreakingBlock(ItemStack stack, BlockPos pos, Player player)
     {
         Level level = player.level();
         if (!level.isClientSide)
@@ -535,27 +528,20 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     @Override
-    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack)
-    {
-        return ItemAttributes.mainHand(super.getDefaultAttributeModifiers(stack), modifiers -> addAttributeModifiers(stack, modifiers));
-    }
-
-    private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
+    protected void addMainHandModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
     {
         modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID), "Knockback resistance",
             configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_VALUE);
         modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed", configType.getMovementSpeed(stack) - 1F,
             ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
-        // 1.21 uses resource ids; ItemAttributes does not evaluate the legacy UUID suppliers.
-        modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> null, "Weapon modifier", configType.getMeleeDamage(stack, false), ItemAttributes.Operation.ADD_VALUE);
-        modifiers.add(Attributes.ATTACK_SPEED, "attack_speed", () -> null, "Melee speed", configType.getMeleeSpeed() - 4D, ItemAttributes.Operation.ADD_VALUE);
+        addBaseAttack(modifiers, configType.getMeleeDamage(stack, false), configType.getMeleeSpeed() - 4D);
         if (configType.getMeleeRange() != 3F && (configType.getPrimaryFunction() == EnumFunction.MELEE || configType.getSecondaryFunction() == EnumFunction.MELEE))
             modifiers.add(ItemAttributes.meleeReachAttribute(), "melee_range", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MELEE_RANGE_UUID), "Melee range", configType.getMeleeRange() - 3D,
                 ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand)
+    protected boolean onSwing(ItemStack stack, LivingEntity entity)
     {
         // The swing hook also runs on clients; only the server may broadcast its sound.
         if (!entity.level().isClientSide && StringUtils.isNotBlank(configType.getMeleeSound()) && !configType.isPoweredOff(stack))

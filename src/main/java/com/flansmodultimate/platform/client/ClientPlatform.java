@@ -1,5 +1,6 @@
 package com.flansmodultimate.platform.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
@@ -8,6 +9,7 @@ import net.neoforged.neoforge.common.util.TriState;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -63,6 +65,21 @@ public final class ClientPlatform
         int top = Math.round(y - height) - margin;
         int bottom = top + Math.round(height) + 2 * margin;
         InventoryScreen.renderEntityInInventoryFollowsAngle(graphics, x - scale, top, x + scale, bottom, scale, 0F, (float) Math.atan(lookX / 40F), (float) Math.atan(lookY / 40F), entity);
+    }
+
+    /** Advances a text field's cursor blink on versions that tick it; 1.21 edit boxes blink by time. */
+    // Part of the cross-version platform signature; 1.20.1 ticks the box.
+    @SuppressWarnings({"java:S1172", "unused", "EmptyMethod"})
+    public static void tick(EditBox box)
+    {
+        // Nothing to advance: the cursor blink follows the clock.
+    }
+
+    /** Scales a label already turned to the camera so its text reads left to right, as name tags do. */
+    public static void scaleCameraFacingLabel(PoseStack pose, float scale)
+    {
+        // Minecraft 1.21 turns the camera rotation half a turn further than 1.20.1, so the text keeps its X axis.
+        pose.scale(scale, -scale, scale);
     }
 
     public static float partialTick(RenderLevelStageEvent event)

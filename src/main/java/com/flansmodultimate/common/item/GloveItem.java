@@ -2,18 +2,18 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.GloveType;
+import com.flansmodultimate.platform.item.FlanItem;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 
 import java.util.List;
 
-public class GloveItem extends Item implements IFlanItem<GloveType>
+public class GloveItem extends FlanItem implements IFlanItem<GloveType>
 {
     @Getter
     protected final GloveType configType;
@@ -53,7 +53,7 @@ public class GloveItem extends Item implements IFlanItem<GloveType>
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
+    protected void appendTooltip(@NotNull ItemStack stack, @NotNull HolderLookup.Provider registries, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         tooltipComponents.add(Component.translatable(TooltipKeys.GLOVE_HANDLING).withStyle(ChatFormatting.DARK_AQUA));

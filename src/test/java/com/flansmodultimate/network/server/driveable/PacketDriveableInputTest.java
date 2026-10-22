@@ -1,13 +1,11 @@
 package com.flansmodultimate.network.server.driveable;
 
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +22,7 @@ class PacketDriveableInputTest
 
         byte[] bytes = encode(original);
         PacketDriveableInput decoded = new PacketDriveableInput();
-        decoded.decodeInto(new PacketBuffer(new RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(bytes), RegistryAccess.EMPTY)));
+        decoded.decodeInto(new PacketBuffer(TestPacketBuffers.wrap(bytes)));
 
         assertArrayEquals(primary, decoded.getPrimaryPitchPivots());
         assertEquals(3, decoded.getSecondaryPitchPivots().length);
@@ -37,7 +35,7 @@ class PacketDriveableInputTest
     void anInputWithoutPivotsDecodesToEmptyBanks()
     {
         PacketDriveableInput decoded = new PacketDriveableInput();
-        decoded.decodeInto(new PacketBuffer(new RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(encode(new PacketDriveableInput(7, 0, 0F, 0F, 0F, 0F, false, 1))), RegistryAccess.EMPTY)));
+        decoded.decodeInto(new PacketBuffer(TestPacketBuffers.wrap(encode(new PacketDriveableInput(7, 0, 0F, 0F, 0F, 0F, false, 1)))));
 
         assertEquals(0, decoded.getPrimaryPitchPivots().length);
         assertEquals(0, decoded.getSecondaryPitchPivots().length);
@@ -46,7 +44,7 @@ class PacketDriveableInputTest
     @Test
     void anImplausiblePivotCountIsRejected()
     {
-        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        var buffer = TestPacketBuffers.buffer();
         PacketBuffer data = new PacketBuffer(buffer);
         new PacketDriveableInput(7, 0, 0F, 0F, 0F, 0F, false, 1).encodeInto(data);
         // Replace the empty primary bank count with a hostile one.
@@ -60,7 +58,7 @@ class PacketDriveableInputTest
 
     private static byte[] encode(PacketDriveableInput packet)
     {
-        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        var buffer = TestPacketBuffers.buffer();
         packet.encodeInto(new PacketBuffer(buffer));
         return ByteBufUtil.getBytes(buffer);
     }

@@ -1,12 +1,10 @@
 package com.flansmodultimate.network.client.effects;
 
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -16,8 +14,8 @@ class PacketCombatFeedbackTest
     @Test
     void flybySoundAndClosestPointSurviveTheWireFormat()
     {
-        RegistryFriendlyByteBuf original = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-        RegistryFriendlyByteBuf encoded = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        var original = TestPacketBuffers.buffer();
+        var encoded = TestPacketBuffers.buffer();
         try
         {
             // The text fallback can be exercised without a running Forge sound registry.
@@ -40,8 +38,8 @@ class PacketCombatFeedbackTest
     {
         for (boolean explosion : new boolean[]{false, true})
         {
-            RegistryFriendlyByteBuf original = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-            RegistryFriendlyByteBuf encoded = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+            var original = TestPacketBuffers.buffer();
+            var encoded = TestPacketBuffers.buffer();
             try
             {
                 new PacketCombatFeedback(explosion, 0.78F, -2.3F).encodeInto(new PacketBuffer(original));

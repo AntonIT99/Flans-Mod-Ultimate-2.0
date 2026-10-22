@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.properties;
 
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.nbt.*;
@@ -57,7 +58,7 @@ public final class NpcTypePropertyAccess
             case BURST -> npc.stats.ranged.setBurst(integer(value));
             case SHOT_COUNT -> npc.stats.ranged.setShotCount(integer(value));
             case FIRING_SOUND -> npc.stats.ranged.setSound(0, value.getAsString());
-            case MELEE_REACH -> npc.stats.melee.setRange(Math.round(((NumericTag) value).getAsFloat()));
+            case MELEE_REACH -> CustomNpcsPlatform.setMeleeRange(npc.stats.melee, ((NumericTag) value).getAsFloat());
             case WALKING_SPEED -> npc.ais.setWalkingSpeed(integer(value));
             case IDLE_SOUND -> npc.advanced.setSound(0, value.getAsString());
             case STEP_SOUND -> npc.advanced.setSound(4, value.getAsString());

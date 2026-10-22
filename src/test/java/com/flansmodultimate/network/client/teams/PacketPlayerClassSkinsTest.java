@@ -2,11 +2,8 @@ package com.flansmodultimate.network.client.teams;
 
 import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.platform.network.PacketBuffer;
-import io.netty.buffer.Unpooled;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import org.junit.jupiter.api.Test;
-
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import java.util.*;
 
@@ -23,12 +20,10 @@ class PacketPlayerClassSkinsTest
         assertEquals(Map.of(), roundTrip(Map.of()));
     }
 
-    // Plain JUnit has no connection-specific registry decorator; empty registries cover this payload.
-    @SuppressWarnings("deprecation")
     private static Map<UUID, PlayerClassSkin> roundTrip(Map<UUID, PlayerClassSkin> choices)
     {
-        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-        RegistryFriendlyByteBuf output = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        var buffer = TestPacketBuffers.buffer();
+        var output = TestPacketBuffers.buffer();
         try
         {
             new PacketPlayerClassSkins(choices).encodeInto(new PacketBuffer(buffer));

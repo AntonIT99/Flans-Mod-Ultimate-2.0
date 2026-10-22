@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -174,7 +175,7 @@ public final class NpcThrowables
             // Fireballs fly straight under their own power, so the NPC's inaccuracy is applied to the aim instead.
             double wobble = 0.0172275D * inaccuracy;
             Vec3 aim = direction.normalize().add(npc.getRandom().triangle(0D, wobble), npc.getRandom().triangle(0D, wobble), npc.getRandom().triangle(0D, wobble));
-            SmallFireball fireball = new SmallFireball(npc.level(), npc, aim);
+            SmallFireball fireball = NpcPlatform.smallFireball(npc.level(), npc, aim);
             fireball.setPos(origin.x, origin.y - 0.25D, origin.z);
             fireball.setItem(round);
             return fireball;

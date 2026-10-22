@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.model;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.NpcsMod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -64,7 +65,8 @@ public final class FlanModelEntities
                     return;
                 }
                 FlanModelShape shape = FlanModelShape.of(type, kind);
-                NpcsMod.log.debug("NPC model {}: {} x {} hitbox, model origin {} above the feet", id, shape.dimensions().width(), shape.dimensions().height(), shape.modelHeight());
+                NpcsMod.log.debug("NPC model {}: {} x {} hitbox, model origin {} above the feet", id, EntityPlatform.width(shape.dimensions()), EntityPlatform.height(shape.dimensions()),
+                    shape.modelHeight());
                 FlanModelEntityType entityType = new FlanModelEntityType(shortName, kind, shape);
                 helper.register(id, entityType);
                 entityTypes.add(entityType);

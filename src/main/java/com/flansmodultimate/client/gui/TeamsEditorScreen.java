@@ -725,6 +725,7 @@ public final class TeamsEditorScreen extends Screen
     @Override
     public void tick()
     {
+        fields.forEach(ClientPlatform::tick);
         if (saveButton != null && detail)
             saveButton.active = errors.isEmpty();
     }
@@ -1024,7 +1025,7 @@ public final class TeamsEditorScreen extends Screen
             previewSkin = skins.isEmpty() ? null : com.flansmodultimate.client.render.layer.PlayerSkinOverrides.previewTexture(ResourceLocation.tryParse(skins.get(0).getAsString()));
             int previewY = panelWidth >= 470 ? top + 190 : top + panelHeight - 55;
             int scale = panelWidth >= 470 ? 40 : 28;
-            ClientPlatform.renderEntityInInventory(graphics, left + panelWidth - 45, previewY, scale, left + panelWidth - 45 - mouseX, previewY - 40 - mouseY, preview);
+            ClientPlatform.renderEntityInInventory(graphics, left + panelWidth - 45, previewY, scale, (float) left + panelWidth - 45 - mouseX, (float) previewY - 40 - mouseY, preview);
         }
         if (panelHeight >= 270)
             graphics.drawString(font, tr("equipment_hint"), left + 8, top + 210, 0xAABBDD);

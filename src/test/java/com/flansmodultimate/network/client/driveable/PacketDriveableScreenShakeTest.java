@@ -3,24 +3,21 @@ package com.flansmodultimate.network.client.driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
-
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class PacketDriveableScreenShakeTest
 {
     @Test
-    void cameraKickSurvivesTheRegistryAwarePacketRoundTrip()
+    void cameraKickSurvivesThePacketRoundTrip()
     {
         PacketDriveableScreenShake original = new PacketDriveableScreenShake(new DriveableType.ScreenShake(2.5F, 0.18F));
         byte[] bytes = encode(original);
         assertEquals(8, bytes.length);
-        RegistryFriendlyByteBuf input = new RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(bytes), RegistryAccess.EMPTY);
+        var input = TestPacketBuffers.wrap(bytes);
         try
         {
             assertEquals(2.5F, input.getFloat(0));
@@ -40,7 +37,7 @@ class PacketDriveableScreenShakeTest
 
     private static byte[] encode(PacketDriveableScreenShake packet)
     {
-        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        var buffer = TestPacketBuffers.buffer();
         try
         {
             packet.encodeInto(new PacketBuffer(buffer));

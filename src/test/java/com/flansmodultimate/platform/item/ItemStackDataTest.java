@@ -1,40 +1,27 @@
 package com.flansmodultimate.platform.item;
 
-import net.neoforged.fml.loading.LoadingModList;
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.SharedConstants;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ItemStackDataTest
 {
     @BeforeAll
-    @SuppressWarnings("UnstableApiUsage") // Vanilla bootstrap needs NeoForge's discovery list outside a running loader.
-    static void bootstrapRegistries()
+    static void bootstrapRegistries() throws ReflectiveOperationException
     {
-        // NeoForge loads optional feature flags from its discovery list during vanilla bootstrap.
-        if (LoadingModList.get() == null)
-            LoadingModList.of(List.of(), List.of(), List.of(), List.of(), Map.of());
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
+        EntityTestBootstrap.initialize();
     }
 
     @Test
     void savesAttachmentStackIntoNestedGunTag()
     {
         ItemStack attachment = new ItemStack(Items.SPYGLASS);
-        attachment.set(DataComponents.CUSTOM_NAME, Component.literal("Scope"));
         ItemStackData.update(attachment, tag -> tag.putInt("Paint", 2));
         CompoundTag attachmentTag = new CompoundTag();
 
@@ -46,7 +33,8 @@ class ItemStackDataTest
 
         ItemStack restored = ItemStackData.parseBuiltIn(gunTag.getCompound("attachments").getCompound("scope"));
         assertFalse(restored.isEmpty());
-        assertTrue(ItemStack.isSameItemSameComponents(attachment, restored));
+        assertTrue(ItemStackData.isSameItemSameData(attachment, restored));
+        assertEquals(2, ItemStackData.copy(restored).getInt("Paint"));
         assertEquals(attachment.getCount(), restored.getCount());
     }
 
@@ -61,13 +49,13 @@ class ItemStackDataTest
 
         assertEquals(3, entry.getInt("slot"));
         ItemStack restored = ItemStackData.parseBuiltIn(entry);
-        assertTrue(ItemStack.isSameItemSameComponents(stack, restored));
+        assertTrue(ItemStackData.isSameItemSameData(stack, restored));
         assertEquals(7, restored.getCount());
         assertEquals(7, stack.getCount());
     }
 
     @Test
-    void replacesExistingSerializedComponents()
+    void replacesExistingSerializedData()
     {
         ItemStack previous = new ItemStack(Items.IRON_INGOT);
         ItemStackData.update(previous, tag -> tag.putBoolean("old", true));
@@ -80,7 +68,7 @@ class ItemStackDataTest
 
         assertEquals(3, entry.getInt("slot"));
         ItemStack restored = ItemStackData.parseBuiltIn(entry);
-        assertTrue(ItemStack.isSameItemSameComponents(replacement, restored));
+        assertTrue(ItemStackData.isSameItemSameData(replacement, restored));
         assertEquals(2, restored.getCount());
         assertFalse(ItemStackData.copy(restored).contains("old"));
     }

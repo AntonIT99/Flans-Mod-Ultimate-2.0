@@ -18,6 +18,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.gun.*;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.PlatformSounds;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.flansmodultimate.util.JomlUtils;
@@ -29,7 +30,6 @@ import org.joml.Vector3f;
 
 import net.minecraft.core.*;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -186,7 +186,7 @@ public class GunItemHandler
         if (StringUtils.isNotBlank(type.getShootSound()))
             PacketPlaySound.sendSoundPacket(player, type.getGunSoundRange(), type.getShootSound(), type.isDistortSound(), type.isSilencedSound(gunStack));
         else
-            level.playSound(null, thrown, SoundEvents.TRIDENT_THROW.value(), SoundSource.PLAYERS, 1F, 1F);
+            level.playSound(null, thrown, PlatformSounds.tridentThrow(), SoundSource.PLAYERS, 1F, 1F);
 
         if (!player.getAbilities().instabuild)
             player.getInventory().removeItem(gunStack);
