@@ -16,6 +16,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.nio.file.Path;
@@ -77,6 +78,8 @@ class GunTypeMeleeSpeedTest
 
         assertEquals(1, first.size());
         assertEquals(-3D, first.get(0).amount());
+        assertEquals(Item.BASE_ATTACK_SPEED_ID, first.getFirst().id(), "Vanilla uses the base id to display total attack speed");
+        assertEquals(Item.BASE_ATTACK_DAMAGE_ID, modifiers(item, stack, EquipmentSlot.MAINHAND, Attributes.ATTACK_DAMAGE).getFirst().id(), "Vanilla uses the base id to display total attack damage");
         assertEquals(first.get(0).id(), second.get(0).id());
         assertTrue(modifiers(item, stack, EquipmentSlot.OFFHAND, Attributes.ATTACK_SPEED).isEmpty());
 

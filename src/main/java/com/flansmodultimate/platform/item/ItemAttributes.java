@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 import java.util.*;
@@ -48,7 +49,7 @@ public final class ItemAttributes
 
         /**
          * @param idPath
-         *            1.21 modifier id, in the Flan's Mod Ultimate namespace
+         *            1.21 modifier id; gun attack paths use vanilla base ids, others use the Flan's Mod Ultimate namespace
          * @param legacyUuid
          *            1.20.1 modifier UUID; only requested on 1.20.1
          * @param legacyName
@@ -59,7 +60,13 @@ public final class ItemAttributes
         public void add(Holder<Attribute> attribute, String idPath, Supplier<UUID> legacyUuid, String legacyName, double amount, Operation operation)
         {
             AttributeModifier.Operation modernOperation = operation == Operation.ADD_VALUE ? AttributeModifier.Operation.ADD_VALUE : AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, idPath);
+            // Vanilla recognizes these base ids when showing total attack damage/speed in the tooltip.
+            ResourceLocation id = switch (idPath)
+            {
+                case "attack_damage" -> Item.BASE_ATTACK_DAMAGE_ID;
+                case "attack_speed" -> Item.BASE_ATTACK_SPEED_ID;
+                default -> ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, idPath);
+            };
             entries.add(new Entry(attribute, new AttributeModifier(id, amount, modernOperation)));
         }
     }
