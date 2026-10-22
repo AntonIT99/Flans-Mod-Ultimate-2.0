@@ -263,8 +263,8 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         if (hand.reloadFailed)
             return true;
-        // An NPC that uses up its ammunition does not go through the motions of a reload it has nothing for.
-        if (hand.reloading <= 0 && NpcAmmunition.exhausted(npc, weapon))
+        // An NPC does not go through the motions of a reload it has nothing for, which it would repeat whenever the goal restarts.
+        if (hand.reloading <= 0 && NpcAmmunition.nothingToLoad(npc, weapon))
         {
             outOfAmmunition(hand);
             return true;

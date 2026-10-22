@@ -9,6 +9,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataRanged;
 import noppes.npcs.entity.data.DataStats;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -40,22 +41,8 @@ class NpcLauncherReloadTest
     @CsvSource({"MAIN_HAND,80,80", "MAIN_HAND,120,80", "MAIN_HAND,40,80", "OFF_HAND,80,80", "OFF_HAND,120,80", "OFF_HAND,40,80"})
     void reloadOverlapsCadenceInEitherHand(InteractionHand testedHand, double shotDelay, double reloadTime)
     {
-        EntityNPCInterface npc = mock(EntityNPCInterface.class);
         LivingEntity target = mock(LivingEntity.class);
-        when(npc.getTarget()).thenReturn(target);
-        LookControl look = mock(LookControl.class);
-        PathNavigation navigation = mock(PathNavigation.class);
-        when(npc.getLookControl()).thenReturn(look);
-        when(npc.getNavigation()).thenReturn(navigation);
-        Sensing sensing = mock(Sensing.class);
-        when(npc.getSensing()).thenReturn(sensing);
-        when(sensing.hasLineOfSight(target)).thenReturn(true);
-        when(npc.getEyePosition()).thenReturn(Vec3.ZERO);
-        when(target.getEyePosition()).thenReturn(new Vec3(12D, 0D, 0D));
-        npc.stats = mock(DataStats.class);
-        npc.stats.ranged = mock(DataRanged.class);
-        when(npc.stats.ranged.getRange()).thenReturn(32);
-        when(npc.isInRange(target, 32D)).thenReturn(true);
+        EntityNPCInterface npc = engagedNpc(target);
         ItemStack main = new ItemStack(Items.STICK);
         ItemStack off = new ItemStack(Items.BLAZE_ROD);
         when(npc.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(main);
@@ -77,8 +64,6 @@ class NpcLauncherReloadTest
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
             tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
-            Level level = mock(Level.class);
-            when(npc.level()).thenReturn(level);
             options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(main);
             options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(true);
             equipment.when(() -> FlansEquipment.getWeaponProperties(main, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
@@ -122,5 +107,66 @@ class NpcLauncherReloadTest
             }
             feedback.verify(() -> NpcReloadFeedback.reload(npc, testedHand, (int) reloadTime), atLeast(2));
         }
+    }
+
+    @Test
+    void gunWithNothingToLoadDoesNotReloadAcrossEngagements()
+    {
+        LivingEntity target = mock(LivingEntity.class);
+        EntityNPCInterface npc = engagedNpc(target);
+        ItemStack gun = new ItemStack(Items.STICK);
+        when(npc.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(gun);
+        EquippedWeaponProperties properties = mock(EquippedWeaponProperties.class);
+        when(properties.reloadTime()).thenReturn(40D);
+        try (var equipment = mockStatic(FlansEquipment.class);
+            var options = mockStatic(NpcEquipment.class);
+            var vehicles = mockStatic(NpcVehicleState.class);
+            var attacks = mockStatic(NpcItemAttacks.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var feedback = mockStatic(NpcReloadFeedback.class);
+            var tactics = mockStatic(NpcTacticState.class))
+        {
+            NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
+            vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
+            tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
+            options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(gun);
+            options.when(() -> NpcEquipment.flan(npc, InteractionHand.MAIN_HAND)).thenReturn(Optional.of(properties));
+            equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            ammunition.when(() -> NpcAmmunition.nothingToLoad(npc, gun)).thenReturn(true);
+            NpcEquipmentRangedGoal goal = new NpcEquipmentRangedGoal(npc);
+            // Each engagement restarts the goal, which forgets that the last reload failed.
+            for (int engagement = 0; engagement < 5; engagement++)
+            {
+                for (int tick = 0; tick < 100; tick++)
+                    goal.tick();
+                goal.stop();
+            }
+            feedback.verify(() -> NpcReloadFeedback.reload(any(), any(), anyInt()), never());
+            attacks.verify(() -> NpcItemAttacks.loadFlanGun(any(), any()), never());
+            attacks.verify(() -> NpcItemAttacks.ranged(any(), any()), never());
+        }
+    }
+
+    /** An NPC whose target is in range and in sight. */
+    private static EntityNPCInterface engagedNpc(LivingEntity target)
+    {
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        when(npc.getTarget()).thenReturn(target);
+        LookControl look = mock(LookControl.class);
+        when(npc.getLookControl()).thenReturn(look);
+        PathNavigation navigation = mock(PathNavigation.class);
+        when(npc.getNavigation()).thenReturn(navigation);
+        Sensing sensing = mock(Sensing.class);
+        when(npc.getSensing()).thenReturn(sensing);
+        when(sensing.hasLineOfSight(target)).thenReturn(true);
+        when(npc.getEyePosition()).thenReturn(Vec3.ZERO);
+        when(target.getEyePosition()).thenReturn(new Vec3(12D, 0D, 0D));
+        npc.stats = mock(DataStats.class);
+        npc.stats.ranged = mock(DataRanged.class);
+        when(npc.stats.ranged.getRange()).thenReturn(32);
+        when(npc.isInRange(target, 32D)).thenReturn(true);
+        Level level = mock(Level.class);
+        when(npc.level()).thenReturn(level);
+        return npc;
     }
 }

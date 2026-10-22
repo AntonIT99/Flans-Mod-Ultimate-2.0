@@ -61,6 +61,29 @@ public final class NpcAmmunition
         return NpcEquipment.enabled(npc, Feature.CONSUME_AMMO) && !hasAmmunition(npc, weapon);
     }
 
+    /**
+     * @return whether a reload of the gun would load nothing: ammunition that is used up has none left, and infinite
+     *         ammunition has no template to copy
+     */
+    public static boolean nothingToLoad(EntityNPCInterface npc, ItemStack weapon)
+    {
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+            return !hasAmmunition(npc, weapon);
+        return infiniteTemplate(npc, weapon).isEmpty();
+    }
+
+    /**
+     * @return what infinite ammunition copies to reload the gun: the projectile slot when the gun takes what it holds, or
+     *         else the ammunition the gun is issued with by default; never a stack to use up
+     */
+    public static Optional<ItemStack> infiniteTemplate(EntityNPCInterface npc, ItemStack weapon)
+    {
+        ItemStack projectile = stack(npc.inventory.getProjectile());
+        if (FlansEquipment.acceptsAmmunition(weapon, projectile))
+            return Optional.of(projectile);
+        return FlansEquipment.createDefaultAmmunition(weapon).filter(ammunition -> FlansEquipment.acceptsAmmunition(weapon, ammunition));
+    }
+
     private static boolean hasAmmunition(EntityNPCInterface npc, ItemStack weapon)
     {
         return FlansEquipment.acceptsAmmunition(weapon, stack(npc.inventory.getProjectile())) || find(npc, stack -> FlansEquipment.acceptsAmmunition(weapon, stack)) >= 0;
