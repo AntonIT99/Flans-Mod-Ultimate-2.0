@@ -37,9 +37,9 @@ public final class NpcTuning
         /** Index into {@link Terrain}. */
         TERRAIN(0, 0, Terrain.values().length - 1),
         /** Deepest water, in blocks, a ground profile wades through. */
-        MAX_WADE_DEPTH(1, 0, 16),
+        MAX_WADE_DEPTH(1, 0, 64),
         /** Shallowest water, in blocks, a watercraft floats in. */
-        MIN_WATER_DEPTH(1, 1, 16),
+        MIN_WATER_DEPTH(1, 1, 64),
         /** Speed on land in tenths of a block per second; 0 keeps the NPC's walking speed. */
         LAND_SPEED(0, 0, 600),
         /** Speed in water in tenths of a block per second; 0 keeps the default swimming speed. */
@@ -72,8 +72,8 @@ public final class NpcTuning
         DRIVE_BRAKING(250, 5, 2000),
         /** Share of full throttle shed per second while coasting, in percent. */
         DRIVE_COASTING(60, 1, 2000),
-        /** Top speed in reverse as a share of the forward top speed, in percent. */
-        DRIVE_REVERSE_SPEED(40, 5, 100),
+        /** Top speed in reverse as a share of forward speed, in percent; 0 inherits the model or uses 40. */
+        DRIVE_REVERSE_SPEED(0, 0, 100),
         /** Smallest turning circle radius in tenths of a block; 0 takes the radius of the vehicle type. */
         TURN_RADIUS(0, 0, 640),
         /** Blocks of path ahead the vehicle steers for and looks for corners in. */
@@ -123,7 +123,10 @@ public final class NpcTuning
         /** Seconds a helicopter an NPC flies hovers with nothing to do before it lands; 0 keeps it in the air. */
         HELICOPTER_LANDING_DELAY(10, 0, 600),
         /** Percent of its tank under which an aircraft an NPC flies heads home to land; 0 flies on to the last drop. */
-        LOW_FUEL(15, 0, 50);
+        LOW_FUEL(15, 0, 50),
+        /** Optional search intervals by distance band; 0 retains the interpolated near/far interval for that band. */
+        SEARCH_BAND_0_INTERVAL(0, 0, 1200), SEARCH_BAND_1_INTERVAL(0, 0, 1200), SEARCH_BAND_2_INTERVAL(0, 0, 1200), SEARCH_BAND_3_INTERVAL(0, 0, 1200), SEARCH_BAND_4_INTERVAL(0, 0,
+            1200), SEARCH_BAND_5_INTERVAL(0, 0, 1200);
 
         private final int fallback;
         private final int minimum;

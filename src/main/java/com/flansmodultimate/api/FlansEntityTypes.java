@@ -29,6 +29,20 @@ public final class FlansEntityTypes
     {}
 
     /**
+     * Reads ground-vehicle steering and reverse limits without creating an entity. Either side after content loading.
+     * Values reflect the current force-legacy and speed-scale configuration. Legacy steering coefficients and pedal
+     * response are not absolute movement limits and are deliberately not exposed as such.
+     *
+     * @param type
+     *            selected definition
+     * @return available handling, with empty fields for unsupported or unspecified properties
+     */
+    public static GroundHandling getGroundHandling(IContentType type)
+    {
+        return EntityTypePropertySupport.groundHandling(type);
+    }
+
+    /**
      * Inspects movement-engine audio independently of living-entity stat inheritance. Either side after content loading.
      * Mecha stomps retain their footstep cadence and are not engine loops.
      *

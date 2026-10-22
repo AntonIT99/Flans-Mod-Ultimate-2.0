@@ -25,6 +25,8 @@ tasks.withType(SonarLint).configureEach {
 // SonarLint analyses only files changed against origin/master (committed or not, including nested pack repositories)
 // unless -PsonarlintAll is given.
 def sonarlintChangedFiles = null
+// Captured during configuration: the configuration cache rejects script references at execution time.
+def sonarlintRootDir = rootDir
 def sonarlintGitFiles = { File repo, List<String> args ->
     def process = (['git', '-C', repo.absolutePath] + args).execute()
     def output = process.inputStream.text
@@ -35,9 +37,9 @@ def sonarlintIsChanged = { File candidate ->
     if (sonarlintChangedFiles == null)
     {
         def changed = [] as Set
-        changed.addAll(sonarlintGitFiles(rootDir, ['diff', '--name-only', 'origin/master']))
-        changed.addAll(sonarlintGitFiles(rootDir, ['ls-files', '--others', '--exclude-standard']))
-        new File(rootDir, 'src').listFiles().findAll { new File(it, '.git').exists() }.each { repo ->
+        changed.addAll(sonarlintGitFiles(sonarlintRootDir, ['diff', '--name-only', 'origin/master']))
+        changed.addAll(sonarlintGitFiles(sonarlintRootDir, ['ls-files', '--others', '--exclude-standard']))
+        new File(sonarlintRootDir, 'src').listFiles().findAll { new File(it, '.git').exists() }.each { repo ->
             changed.addAll(sonarlintGitFiles(repo, ['diff', '--name-only', 'HEAD']))
             changed.addAll(sonarlintGitFiles(repo, ['ls-files', '--others', '--exclude-standard']))
         }

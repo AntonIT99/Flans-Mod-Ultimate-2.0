@@ -297,6 +297,14 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Feature.FULL_THROTTLE, Need.on(Feature.ENGINE_RUNNING)),
         Map.entry(Value.SEARCH_NEAR_INTERVAL, Need.on(Feature.PROGRESSIVE_SEARCH)),
         Map.entry(Value.SEARCH_FAR_INTERVAL, Need.on(Feature.PROGRESSIVE_SEARCH)),
+        Map.entry(Feature.ADVANCED_SEARCH_INTERVALS, Need.on(Feature.PROGRESSIVE_SEARCH)),
+        Map.entry(Feature.STAGGER_NEAR_SEARCH, Need.on(Feature.PROGRESSIVE_SEARCH)),
+        Map.entry(Value.SEARCH_BAND_0_INTERVAL, Need.on(Feature.ADVANCED_SEARCH_INTERVALS)),
+        Map.entry(Value.SEARCH_BAND_1_INTERVAL, Need.on(Feature.ADVANCED_SEARCH_INTERVALS)),
+        Map.entry(Value.SEARCH_BAND_2_INTERVAL, Need.on(Feature.ADVANCED_SEARCH_INTERVALS)),
+        Map.entry(Value.SEARCH_BAND_3_INTERVAL, Need.on(Feature.ADVANCED_SEARCH_INTERVALS)),
+        Map.entry(Value.SEARCH_BAND_4_INTERVAL, Need.on(Feature.ADVANCED_SEARCH_INTERVALS)),
+        Map.entry(Value.SEARCH_BAND_5_INTERVAL, Need.on(Feature.ADVANCED_SEARCH_INTERVALS)),
         Map.entry(Value.ACTIVE_RANGE, Need.on(Feature.STAY_ACTIVE)),
         Map.entry(Value.BOARD_RANGE, Need.on(Feature.DRIVE_DRIVEABLES)),
         Map.entry(Value.TAKE_DRIVEABLES, Need.on(Feature.DRIVE_DRIVEABLES)),
@@ -354,8 +362,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
             Tab.named(IDLE_MOVEMENT_TAB)),
-        PERFORMANCE(Section.ADVANCED, Scope.ALL, Tab.of(Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAY_ACTIVE, Value.ACTIVE_RANGE,
-            Feature.PATH_DEBUG)),
+        PERFORMANCE(Section.ADVANCED, Scope.ALL,
+            Tab.named(GENERAL_TAB, Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAGGER_NEAR_SEARCH, Feature.STAY_ACTIVE, Value.ACTIVE_RANGE,
+                Feature.PATH_DEBUG),
+            Tab.named("search_bands", Feature.ADVANCED_SEARCH_INTERVALS, Value.SEARCH_BAND_0_INTERVAL, Value.SEARCH_BAND_1_INTERVAL, Value.SEARCH_BAND_2_INTERVAL,
+                Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL)),
         /** Settings and diagnostics of the whole server rather than of the NPC being edited; its controls are not rows. */
         SERVER(null, Scope.ALL, Tab.of());
         // spotless:on
@@ -1059,6 +1070,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void valueControl(Value value, int control, int y)
     {
+        if (GroundHandlingControls.render(this, npc, value, VALUE_ID + value.ordinal(), control, y, loaded))
+            return;
         int id = VALUE_ID + value.ordinal();
         int current = NpcTuning.of(npc).get(value);
         Enum<?>[] choices = choices(value);
@@ -1383,7 +1396,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (!field.isInteger())
             return false;
         if (field.id >= VALUE_ID && field.id < VALUE_ID + Value.values().length)
-            editValue(Value.values()[field.id - VALUE_ID], field.getInteger());
+        {
+            Value value = Value.values()[field.id - VALUE_ID];
+            if (GroundHandlingControls.inherited(npc, value))
+                return false;
+            editValue(value, field.getInteger());
+        }
         else if (field.id == AGGRO_RANGE_ID)
             npc.stats.aggroRange = Math.max(1, Math.min(NpcMobility.rangeLimit(), field.getInteger()));
         else if (field.id == FIRING_RANGE_ID)
@@ -1462,6 +1480,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             changed |= heldItems.button(button);
         else if (crew.handles(button.id))
             changed |= crew.button(button);
+        else if (GroundHandlingControls.button(npc, button))
+            changed = true;
         else
             return false;
         return true;

@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * every search.
  *
  * <p>
- * The surroundings up to 32 blocks are searched often and on a cadence shared by all NPCs, so a formation reacts
- * together. Each band farther out is searched more rarely and at a moment of its own per NPC, so a crowd does not
+ * By default the surroundings up to 32 blocks are searched often and on a cadence shared by all NPCs, so a formation reacts
+ * together. Optional overrides give each band its own interval and stagger nearby searches too. Each band farther out is searched at a moment of its own per NPC, so a crowd does not
  * search the horizon in the same tick. Within a band the nearest candidates are tested first and the search stops at
  * the first one that qualifies, which saves the line-of-sight checks on everything behind it.
  * </p>
@@ -36,6 +36,8 @@ public final class NpcTargetSearch
 {
     /** Outer edge of each band, in blocks. */
     private static final double[] BANDS = {32D, 64D, 128D, 256D, 384D, 512D};
+    private static final Value[] BAND_INTERVALS = {Value.SEARCH_BAND_0_INTERVAL, Value.SEARCH_BAND_1_INTERVAL, Value.SEARCH_BAND_2_INTERVAL, Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL,
+        Value.SEARCH_BAND_5_INTERVAL};
     /** Tactical manoeuvres carry an NPC at least this far past its aggro range before it gives its target up. */
     private static final int MIN_TACTICAL_MARGIN = 8;
     /** Custom NPCs tactical variants without a manoeuvre of their own. */
@@ -82,20 +84,18 @@ public final class NpcTargetSearch
         NpcServerSettings server = npc.getServer() == null ? null : NpcServerSettings.get(npc.getServer());
         int near = interval(tuning.get(Value.SEARCH_NEAR_INTERVAL), server == null ? NpcServerSettings.DEFAULT_NEAR_INTERVAL : server.getSearchNearInterval());
         int far = Math.max(near, interval(tuning.get(Value.SEARCH_FAR_INTERVAL), server == null ? NpcServerSettings.DEFAULT_FAR_INTERVAL : server.getSearchFarInterval()));
+        var options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        boolean advanced = options.enabled(Feature.ADVANCED_SEARCH_INTERVALS);
+        boolean synchronizedNear = !options.enabled(Feature.STAGGER_NEAR_SEARCH);
         long now = npc.level().getGameTime();
         if (!started)
-        {
-            started = true;
-            searched[0] = Long.MIN_VALUE;
-            for (int band = 1; band < BANDS.length; band++)
-                searched[band] = now - Math.floorMod(npc.getId() * 7919L, interval(band, near, far));
-        }
+            initialize(npc, now, near, far, advanced, synchronizedNear);
         conditions.range(range);
         double inner = 0D;
         for (int band = 0; band < BANDS.length && inner < range; band++)
         {
             double outer = Math.min(BANDS[band], range);
-            if (due(band, now, near, far))
+            if (due(band, now, interval(band, near, far, tuning, advanced), synchronizedNear))
             {
                 searched[band] = now;
                 LivingEntity found = scan(npc, conditions, band, inner, outer);
@@ -107,12 +107,28 @@ public final class NpcTargetSearch
         return null;
     }
 
-    private boolean due(int band, long now, int near, int far)
+    /** Shared nearby searches start immediately; other bands begin at their per-NPC phase. */
+    private void initialize(EntityNPCInterface npc, long now, int near, int far, boolean advanced, boolean synchronizedNear)
+    {
+        started = true;
+        searched[0] = Long.MIN_VALUE;
+        NpcTuning tuning = NpcTuning.of(npc);
+        for (int band = synchronizedNear ? 1 : 0; band < BANDS.length; band++)
+            searched[band] = now - Math.floorMod(npc.getId() * 7919L, interval(band, near, far, tuning, advanced));
+    }
+
+    private boolean due(int band, long now, int ticks, boolean synchronizedNear)
     {
         // The near band runs once per shared time slot rather than at a fixed age, so every NPC searches it together.
-        if (band == 0)
-            return searched[0] == Long.MIN_VALUE || Math.floorDiv(now, (long) near) != Math.floorDiv(searched[0], (long) near);
-        return now - searched[band] >= interval(band, near, far);
+        if (band == 0 && synchronizedNear)
+            return searched[0] == Long.MIN_VALUE || Math.floorDiv(now, (long) ticks) != Math.floorDiv(searched[0], (long) ticks);
+        return searched[band] == Long.MIN_VALUE || now - searched[band] >= ticks;
+    }
+
+    /** Zero inherits this band's interpolation; explicit intervals need not rise with distance. */
+    static int interval(int band, int near, int far, NpcTuning tuning, boolean advanced)
+    {
+        return advanced ? interval(tuning.get(BAND_INTERVALS[band]), interval(band, near, far)) : interval(band, near, far);
     }
 
     /** @return ticks between searches of a band: the near interval for the first, rising evenly to the far one */

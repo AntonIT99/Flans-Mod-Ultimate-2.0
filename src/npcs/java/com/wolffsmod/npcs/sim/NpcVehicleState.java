@@ -310,7 +310,7 @@ public final class NpcVehicleState
         MountAim wanted = engaged ? MountMotion.relative(solve(npc, target, options), hullYaw) : null;
         float tolerance = tuning.get(Value.ALIGN_TOLERANCE);
         if (held && wanted != null && current.kind() == FlanModelKind.VEHICLE && options.enabled(Feature.HULL_ASSISTS_AIM) && !driving(npc))
-            wanted = assistWithHull(current, tuning, wanted, tolerance);
+            wanted = assistWithHull(npc, current, tuning, wanted, tolerance);
         aimTurret(current, options, tuning, wanted, tolerance, held);
         aimSeats(npc, current, options, engaged ? target : null);
         sync(npc, held);
@@ -327,7 +327,7 @@ public final class NpcVehicleState
      *
      * @return the wanted aim relative to the turned hull
      */
-    private MountAim assistWithHull(Layout current, NpcTuning tuning, MountAim wanted, float tolerance)
+    private MountAim assistWithHull(EntityNPCInterface npc, Layout current, NpcTuning tuning, MountAim wanted, float tolerance)
     {
         WeaponMount driver = current.driver();
         float rest = current.turreted() && driver != null ? driver.restYaw() : 0F;
@@ -335,7 +335,7 @@ public final class NpcVehicleState
         if (reachable)
             return wanted;
         float before = hullYaw;
-        hullYaw = MountMotion.turn(hullYaw, hullYaw + wanted.yaw() - rest, hullStep(tuning));
+        hullYaw = MountMotion.turn(hullYaw, hullYaw + wanted.yaw() - rest, hullStep(npc, tuning));
         return new MountAim(Mth.wrapDegrees(wanted.yaw() - Mth.wrapDegrees(hullYaw - before)), wanted.pitch());
     }
 
@@ -411,10 +411,11 @@ public final class NpcVehicleState
         return perSecond > 0 ? perSecond / 20F : modelStep;
     }
 
-    private static float hullStep(NpcTuning tuning)
+    private static float hullStep(EntityNPCInterface npc, NpcTuning tuning)
     {
         int perSecond = tuning.get(Value.HULL_TURN_RATE);
-        return perSecond > 0 ? perSecond / 20F : DEFAULT_HULL_STEP;
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        return perSecond > 0 ? perSecond / 20F : (float) NpcDriving.handling(npc, options).turnRate().orElse(DEFAULT_HULL_STEP * 20D) / 20F;
     }
 
     /** @return the world direction a shot at the target has to leave in, refreshed every few ticks */
@@ -501,7 +502,7 @@ public final class NpcVehicleState
         if (npc.zza == 0F && npc.xxa == 0F)
             return travel;
         float desired = npc.getYRot();
-        hullYaw = MountMotion.turn(hullYaw, desired, hullStep(tuning));
+        hullYaw = MountMotion.turn(hullYaw, desired, hullStep(npc, tuning));
         if (options.enabled(Feature.MISALIGNED_THROTTLE))
             speedFactor = MountMotion.throttle(desired - hullYaw, tuning.get(Value.THROTTLE_FLOOR) / 100F);
         npc.setYRot(hullYaw);

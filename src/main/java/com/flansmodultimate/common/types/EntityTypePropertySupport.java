@@ -6,10 +6,12 @@ import com.flansmodultimate.api.EntityTypeProperties.Weapon;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.physics.MechaPhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.config.ModCommonConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.util.Mth;
@@ -21,11 +23,45 @@ import java.util.*;
 /** Type inspection shared by addons; no Custom NPCs, entity creation or client dependencies. */
 public final class EntityTypePropertySupport
 {
+    /** Traverse and elevation speed, in degrees per tick, of a mount whose definition states none. */
+    private static final float DEFAULT_AIM_SPEED = 8F;
+
     private EntityTypePropertySupport()
     {}
 
-    /** Traverse and elevation speed, in degrees per tick, of a mount whose definition states none. */
-    private static final float DEFAULT_AIM_SPEED = 8F;
+    @SuppressWarnings("unused") // Headless IntelliJ loses this public API delegation across source sets.
+    public static GroundHandling groundHandling(IContentType type)
+    {
+        if (!(type instanceof VehicleType vehicle))
+            return GroundHandling.EMPTY;
+        boolean legacy = ModCommonConfig.forceLegacyVehiclePhysics();
+        OptionalDouble rate = OptionalDouble.empty();
+        OptionalDouble radius = OptionalDouble.empty();
+        if (vehicle.usesRealTurnRate(legacy, vehicle.getPushSpeedKmh() > 0F, vehicle.isTracked()))
+        {
+            rate = OptionalDouble.of(vehicle.getRealTurnRateDegPerSec());
+            Float reference = vehicle.getRealWorldSpec().maxSpeedKmh();
+            if (!vehicle.isTracked() && reference != null)
+            {
+                double speed = VehiclePhysicsUnits.kmhToBlocksPerTick(reference) * ModCommonConfig.realisticSpeedScale(vehicle.getResolvedPhysics().category());
+                radius = OptionalDouble.of(speed / Math.toRadians(rate.getAsDouble() / 20D));
+            }
+        }
+        return new GroundHandling(rate, radius, reverseShare(vehicle, legacy));
+    }
+
+    private static OptionalDouble reverseShare(VehicleType vehicle, boolean legacy)
+    {
+        if (vehicle.getMaxNegativeThrottle() <= 0F)
+            return OptionalDouble.of(0D);
+        if (legacy)
+            return OptionalDouble.empty();
+        Float forward = vehicle.getRealWorldSpec().maxSpeedKmh();
+        Float backward = vehicle.getRealWorldSpec().ground().maxReverseSpeedKmh();
+        return forward != null && Float.isFinite(forward) && forward > 0F && backward != null && Float.isFinite(backward) && backward > 0F
+            ? OptionalDouble.of(backward / (double) forward)
+            : OptionalDouble.empty();
+    }
 
     public static List<WeaponMount> mounts(IContentType type)
     {

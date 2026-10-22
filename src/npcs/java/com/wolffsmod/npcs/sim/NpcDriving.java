@@ -1,8 +1,11 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.api.FlansEntityTypes;
+import com.flansmodultimate.api.GroundHandling;
 import com.flansmodultimate.api.IDriveableType;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.sim.NpcTuning.DriveType;
@@ -93,26 +96,40 @@ public final class NpcDriving
      *            degrees off the hull beyond which a goal counts as behind
      * @param reverseDistance
      *            blocks within which a goal behind is reached in reverse
+     * @param widenRadius
+     *            whether the custom/fallback radius widens with throttle; false for the definition-derived rolling radius
      */
     public record Settings(boolean pivot, float turnStep, float radius, float accelerate, float brake, float coast, float reverseShare, float cornerShare, float floor, boolean reverse,
-        float reverseAngle, double reverseDistance)
+        float reverseAngle, double reverseDistance, boolean widenRadius)
     {
-        static Settings of(NpcTuning tuning, NpcWeaponOptions options, boolean tracked)
+        public Settings(boolean pivot, float turnStep, float radius, float accelerate, float brake, float coast, float reverseShare, float cornerShare, float floor, boolean reverse,
+            float reverseAngle, double reverseDistance)
+        {
+            this(pivot, turnStep, radius, accelerate, brake, coast, reverseShare, cornerShare, floor, reverse, reverseAngle, reverseDistance, true);
+        }
+
+        static Settings of(NpcTuning tuning, NpcWeaponOptions options, boolean tracked, GroundHandling model)
         {
             DriveType type = tuning.driveType();
             if (type == DriveType.AUTO)
                 type = tracked ? DriveType.TRACKED : DriveType.WHEELED;
             boolean pivot = type != DriveType.WHEELED;
             int rate = tuning.get(Value.HULL_TURN_RATE);
-            float turnStep = (rate > 0 ? rate : 90F) / 20F * (type == DriveType.HEAVY_TRACKED ? HEAVY_TURN_SHARE : 1F);
+            boolean inheritedTurn = rate == 0 && model.turnRate().isPresent();
+            float fallbackRate = rate > 0 ? rate : 90F;
+            float fallbackStep = fallbackRate / 20F * (type == DriveType.HEAVY_TRACKED ? HEAVY_TURN_SHARE : 1F);
+            float turnStep = inheritedTurn ? (float) model.turnRate().getAsDouble() / 20F : fallbackStep;
             int tenths = tuning.get(Value.TURN_RADIUS);
-            float radius = tenths > 0 ? tenths / 10F : DEFAULT_WHEELED_RADIUS;
+            boolean inheritedRadius = tenths == 0 && model.turningRadius().isPresent();
+            float radius = tenths > 0 ? tenths / 10F : (float) model.turningRadius().orElse(DEFAULT_WHEELED_RADIUS);
+            int reversePercent = tuning.get(Value.DRIVE_REVERSE_SPEED);
+            float reverseShare = reversePercent > 0 ? reversePercent / 100F : (float) model.reverseShare().orElse(0.4D);
             float floor = options.enabled(Feature.MISALIGNED_THROTTLE) ? tuning.get(Value.THROTTLE_FLOOR) / 100F : 1F;
             if (type == DriveType.HEAVY_TRACKED)
                 floor = 0F;
-            return new Settings(pivot, turnStep, radius, tuning.get(Value.DRIVE_ACCELERATION) / 2000F, tuning.get(Value.DRIVE_BRAKING) / 2000F, tuning.get(Value.DRIVE_COASTING) / 2000F,
-                tuning.get(Value.DRIVE_REVERSE_SPEED) / 100F, tuning.get(Value.CORNER_SPEED) / 100F, floor, options.enabled(Feature.DRIVE_REVERSE), tuning.get(Value.REVERSE_ANGLE),
-                tuning.get(Value.REVERSE_DISTANCE));
+            return new Settings(pivot, turnStep, radius, tuning.get(Value.DRIVE_ACCELERATION) / 2000F, tuning.get(Value.DRIVE_BRAKING) / 2000F, tuning.get(Value.DRIVE_COASTING) / 2000F, reverseShare,
+                tuning.get(Value.CORNER_SPEED) / 100F, floor, options.enabled(Feature.DRIVE_REVERSE) && reverseShare > 0F, tuning.get(Value.REVERSE_ANGLE), tuning.get(Value.REVERSE_DISTANCE),
+                !inheritedRadius);
         }
     }
 
@@ -172,7 +189,7 @@ public final class NpcDriving
         if (!settings.pivot())
         {
             // A wheeled vehicle turns only as fast as it rolls round its turning circle, which widens with speed.
-            double widened = Math.max(0.5D, settings.radius()) * (1D + Math.abs(throttle));
+            double widened = (settings.widenRadius() ? Math.max(0.5D, settings.radius()) * (1D + Math.abs(throttle)) : Math.max(0.01D, settings.radius()));
             step = (float) Math.min(step, Math.toDegrees(situation.speed() / widened));
         }
         float hull = MountMotion.turn(situation.hullYaw(), situation.hullYaw() + steer, step);
@@ -260,7 +277,7 @@ public final class NpcDriving
      */
     public Command travel(EntityNPCInterface npc, float hullYaw, double speed, NpcTuning tuning, NpcWeaponOptions options)
     {
-        Settings settings = Settings.of(tuning, options, tracked(npc));
+        Settings settings = Settings.of(tuning, options, tracked(npc), handling(npc, options));
         Route route = route(npc, tuning.get(Value.DRIVE_LOOKAHEAD), tuning.get(Value.STOP_DISTANCE));
         steerPoint = route == null ? null : route.steer();
         if (route != null && stopsShort(npc, route, tuning.get(Value.STOP_DISTANCE)))
@@ -297,6 +314,19 @@ public final class NpcDriving
         // The move control scales its input by the pace a goal asks for; without one the plain speed applies.
         float base = npc.zza != 0F ? Math.abs(npc.zza) : (float) npc.getAttributeValue(Attributes.MOVEMENT_SPEED);
         return base * throttle;
+    }
+
+    /** Effective model handling for runtime movement and editor readouts; does not mutate the NPC. */
+    public static Settings settings(EntityNPCInterface npc)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        return Settings.of(NpcTuning.of(npc), options, tracked(npc), handling(npc, options));
+    }
+
+    static GroundHandling handling(EntityNPCInterface npc, NpcWeaponOptions options)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        return model != null && options.enabled(Feature.TYPE_PROPERTIES) ? FlansEntityTypes.getGroundHandling(model.getInfoType()) : GroundHandling.EMPTY;
     }
 
     private static boolean tracked(EntityNPCInterface npc)

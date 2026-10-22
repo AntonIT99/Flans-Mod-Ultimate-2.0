@@ -1,12 +1,12 @@
 # Feature Gap Analysis — Wolff's NPCs 1.7.10 → NPC module
 
-- **Current assessment:** 2026-10-22; merges the later temporary audit into this permanent report.
+- **Current assessment:** 2026-10-23; merges the later temporary audit into this permanent report.
 - **Reference:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-NPC-Vehicles`, HEAD `19a1d475af1c4729ef43bcb46cd8bc55b631d685`, `ModInfo.VERSION = 8.0.5`, Forge 1.7.10 / CustomNPC+.
-- **Target:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, `master`, Forge 1.20.1 / Custom NPCs GBPort. The audit started at `1e1106a36435a96c827e4ad5e40f4d4d78655072`, including the then-uncommitted projectile API and NPC combat/crew changes. Completion checks use `372d04a73` plus the changes below; concurrent faction work is excluded from this thread's commits.
-- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the five implementation changes described below. No interactive game session was performed.
+- **Target:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, `master`, Forge 1.20.1 / Custom NPCs GBPort. The audit started at `1e1106a36435a96c827e4ad5e40f4d4d78655072`, including the then-uncommitted projectile API and NPC combat/crew changes. The initial combat completion checks used `372d04a73` plus their scoped changes; later follow-up validation is recorded separately below. Unrelated concurrent work is excluded from this thread's commits.
+- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the seven implementation changes described below. No interactive game session was performed.
 - **Historical metadata correction:** the old report labelled reference `22c0b0e4` as version 8.2.2; `ModInfo.java` at that commit actually says 8.0.5. The prior target snapshot was `ac009a9f1`. Historical fixes and recorded checks are retained below and are not current test results.
 
-**Remaining inventory: 0 MISSING, 5 PARTIAL, 0 UNCERTAIN findings; 5 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The five remaining findings involve design tradeoffs, bounded authoring controls, or content/dependency coverage and are left for the user's decision. The depth finding has been narrowed: the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
+**Remaining inventory: 0 MISSING, 3 PARTIAL, 0 UNCERTAIN findings; 7 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The three remaining findings concern independent driving controls and content/dependency coverage. The user deferred the model catalog and CustomNPC+ armor keyframes. Target-search overrides are now opt-in, retaining the existing defaults. The working depth limits now reach 64; the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
 
 The remaining table is a decision list, not an implementation backlog approved by the user. Keep the current default unless a listed capability is requested. A parity status answers whether the reference capability can be expressed. Its assessment separately asks whether losing it worsens the intended product. The criteria are combat/configuration consistency, recovery versus physical movement, content/authoring coverage, tuning complexity, and bounded simulation cost. Better on one criterion does not imply better overall. No comparative client/server performance or visual measurements were taken, so performance and handling benefits are qualified rather than asserted.
 
@@ -28,21 +28,21 @@ Missing: independent steering-response tuning, independently disabling the track
 
 Assessment: **TRADEOFF; simpler controller with real expert-tuning losses.** Fewer dependent controls reduce contradictory configurations and make presets easier to understand. The target also measures traffic separation using vehicle widths and an ahead cone; the reference uses a wider forward-half-plane test and center distances. The target's continuously varying gap-based speed limit avoids the reference's direct switch to the leader's sampled speed, but that alone does not prove smoother or safer queues. The reference independently controls turn-rate response and stop gap, which can tune heavy inertia and close convoys more precisely. In the reference, maximum steering angle only feeds the sign of the requested turn; copying that slider would not restore a meaningful steering-angle limit.
 
+Follow-up agreed with the user: vehicle-model NPCs now inherit compatible physical limits from their definitions before any additional expert controls are considered. Zero-valued hull turn rate and radius resolve active absolute steering and its rolling radius; reverse-speed zero inherits the real reverse/forward ratio or reverse prohibition. Positive saved overrides remain Custom, with explicit mode/readout controls. Missing/inactive definitions retain existing fallbacks. This does not copy incompatible power/mass acceleration or pedal response into the NPC speed-fraction controller. Acceleration/braking/coasting and traffic policy stay explicit NPC controls. Existing tracked classification still comes from the definition. The partial parity finding remains open for the independent expert steering/traffic choices above.
+
 Recommendation: Keep the simpler default and size-aware traffic test. Add independent turn response or standstill gap only for demonstrated handling/convoy requirements. Test speed matching and queue recovery before claiming either follower is superior. Do not reintroduce the ineffective reference steering-angle control.
 
-### Water-depth limits above sixteen blocks — PARTIAL
+### Water-depth authoring through 64 blocks — RESOLVED
 
-Reference: `R/java/customnpc/SubGuiVehicleMobility.java#addNumber`; `R/java/mixin/MixinDataAI.java#clampGroundDepth,clampWaterDepth` and submarine minimum-depth settings; `R/java/customnpc/TerrainMobilityRules.java#filterPathNode`.
-Ground maximum water depth and surface-watercraft minimum water depth can be configured up to 64 blocks and constrain where the NPC may navigate. A separate submarine minimum-depth setting also exists, but its implementation is ineffective for the reason assessed below.
+Reference: `R/java/customnpc/SubGuiVehicleMobility.java#addNumber`; `R/java/mixin/MixinDataAI.java#clampGroundDepth,clampWaterDepth`; `R/java/customnpc/TerrainMobilityRules.java#filterPathNode`. The working reference Ground and surface-watercraft depth settings reach 64. The reference's separate submarine safety rule remains excluded because its water-surface calculation is ineffective, as documented below.
 
-Target checked: `T/npcs/sim/NpcTuning.java#Value.MAX_WADE_DEPTH,MIN_WATER_DEPTH,SUBMARINE_DEPTH`; `T/npcs/sim/NpcMobility.java#filter,watercraft,depth`; `T/npcs/sim/NpcSubmarine.java#runningDepth,sample`.
-Terrain filtering and submarine depth holding exist, but both terrain-depth settings clamp at 16. Submarine running depth reaches 64, yet it is not a minimum navigable water-column restriction and deliberately becomes shallower over shallows.
+Target: `T/npcs/sim/NpcTuning.java#Value.MAX_WADE_DEPTH,MIN_WATER_DEPTH`; `T/npcs/sim/NpcMobility.java#filter,watercraft,hasWaterDepth,depth`. Ground wading now accepts 0–64 and Watercraft minimum depth 1–64. Both retain default 1; the existing settings save/sync path and editor bounds use those same definitions. Submarine running depth and its shallows adjustment are unchanged.
 
-Missing: configuring the working ground wading allowance or surface-watercraft minimum navigable depth in the 17–64 block range. A large running-depth value does not add that routing restriction. The separate broken reference submarine rule is excluded from functional parity counts.
+Assessment: **AUTHORING GAP CLOSED; existing defaults retained.** Large-watercraft and map builders can now express the 17–64 range. Watercraft depth still applies under every hull column, and rejects a node as soon as any one column is too shallow. Ground still rejects on the first column exceeding its allowance. No persistent world cache was added, so route checks continue to observe current water.
 
-Assessment: **BOUNDED CAPABILITY LOSS; the earlier submarine claim was overstated.** The 16-block caps really restrict ground/surface-watercraft authoring compared with the working reference settings. They also bound the depth scan in the per-node path filter; increasing the cap increases worst-case scan work per footprint column. Most shallow-water use does not require a 17–64 block minimum. Crucially, the reference's separate submarine minimum-depth path rule is broken: 1.7.10 `World.getTopSolidOrLiquidBlock` skips water and returns above the seabed, so checking water below that value rejects submerged routes. Its depth controller has the same error. The target's working depth holding and shallow-water adjustment are better than that behavior.
+Cost assessment: scanning stops when the requested threshold is proven. Default settings retain their previous scan limits. At the new maximum, a watercraft column needs at most 64 water reads to prove sufficient depth, or up to 65 reads to reject a finite shallower column including both dry boundaries. Ground needs at most 66 reads per column to distinguish 64 from deeper water. Work also scales with footprint area; increasing the configured depth increases the bounded worst case, rather than affecting every NPC by default. Regression tests count these reads and check early rejection across the hull. These are deterministic operation counts, not an in-game timing benchmark.
 
-Recommendation: Keep working submarine depth holding and rising over shallows. Extend the shared depth bound only if a concrete large-watercraft or map requirement needs more than 16 blocks, with path-cost validation. Withdraw the claim that a working separate legacy submarine safety rule was lost; that part was advertised/configurable but ineffective.
+API assessment: this is Custom NPCs terrain-policy configuration and filtering; no public Flan API change is needed. Runtime pathfinding validation remains outstanding.
 
 ## Models and animation
 
@@ -76,19 +76,19 @@ Recommendation: Keep standard pose copying and part transforms. Add a bridge onl
 
 ## Target search and diagnostics
 
-### Independently configurable target-search distance bands — PARTIAL
+### Independently configurable target-search distance bands — RESOLVED BY AGREED DESIGN
 
 Reference: `R/java/config/TargetSearchConfig.java#load,intervalForBand`; `R/java/mixin/MixinEntityAIClosestTargetProgressive.java`.
 All six search bands have independently adjustable tick intervals, each from 1 to 1200: 0–32, 32–64, 64–128, 128–256, 256–384, and 384 blocks to the combat limit. Nearby acquisition synchronization can also be disabled independently of progressive searching.
 
-Target checked: `T/npcs/sim/NpcTargetSearch.java#due,interval`; `T/npcs/diag/NpcServerSettings.java`; `T/npcs/sim/NpcTuning.java#SEARCH_NEAR_INTERVAL,SEARCH_FAR_INTERVAL`; server editor/packet settings.
-Progressive searching and shared nearby acquisition are represented. Only near/far endpoints are configurable; intermediate intervals are linearly interpolated. The first band always uses a shared time-slot cadence while progressive search is active. Near/far bounds are 200/600 rather than 1200.
+Target: `T/npcs/sim/NpcTargetSearch.java#find,interval,due`; `T/npcs/sim/NpcTuning.java`; `T/npcs/combat/NpcWeaponOptions.java`; Performance & debug controls in `GuiWolffsMod.java`.
+The default near/far settings, server inheritance, interpolation and shared nearby cadence remain unchanged. **Advanced search intervals**, off by default, enables six independent per-NPC band overrides. Each accepts 1–1200 ticks, or 0 to retain that band's near/far interpolation. Explicit values need not rise with distance; the legacy 5/10/20/40/80/160 schedule can now be expressed. The last target band ends at the existing 512-block limit, and each search remains capped by the NPC's aggro range.
 
-Missing: arbitrary independent schedules for the middle bands, independently disabling shared nearby acquisition, and the longer reference interval settings. Changing where settings are stored is not itself a gap.
+**Stagger nearby searches**, also off by default, disables shared near-band timing independently of advanced intervals. Its first search and later searches use the same per-NPC staggering policy as distant bands. Leaving it off preserves the immediate first nearby search and subsequent shared time slots. All controls require Progressive target search; switching them off retains their saved values. The named settings use the existing validated/clamped Custom NPCs stats persistence and editor transport, without a new packet layout.
 
-Assessment: **TRADEOFF; easier tuning cannot express all load/latency policies.** Near/far endpoints are simpler to configure, while independent bands can give disproportionately short mid-range or long far-range intervals. For example, the reference's 5/10/20/40/80/160-tick schedule cannot be represented by linear interpolation. Shared nearby cadence intentionally makes formations acquire together, but also groups their near-search work; staggering can spread that work at the cost of less synchronized reactions. No benchmark in this audit establishes that either schedule is faster or better for a particular population.
+Assessment: **OPTIONAL TUNING COVERAGE ADDED; defaults retained.** Independent bands can express nonlinear load/latency policies, while interpolation stays simpler for ordinary use. Staggering can spread simultaneous near-search opportunities, but may delay initial acquisition and no longer aligns formations. Actual scan times also depend on available targets, early acquisition, goal invocation frequency and NPC start times; distinct phases can collide. No live benchmark establishes a performance improvement.
 
-Recommendation: Keep shared nearby acquisition as the default if coordinated reactions are the goal. Expose advanced per-band/synchronization overrides only when a measured server load or response-time requirement needs them. Settings storage in world data remains a valid improvement and is not a gap.
+Agreed design: keep existing defaults and expose advanced intervals plus the opt-in staggering toggle. These are internal Custom NPCs scheduling controls, with no new public Flan API dependency or version bump. The separate NeoForge checkout was not changed.
 
 ## Resolved in the current working directory
 
@@ -202,7 +202,7 @@ Previously accepted differences (several now have a more detailed capability/tra
 - Server-wide target-search intervals are saved with the world and edited on the tab's Server page, not in a config file. Only the near and the far interval are set; the bands in between scale.
 - Benchmarks time NPC ticks, path searches, target searches and NPC drawing as wholes. The reference's per-phase render and cache timings are not reproduced, because the target's render path is shared with real driveables and has its own diagnostics.
 - A vehicle whose path is taken away while it is at speed, for instance by the ranged AI once its target is in range, rolls out at its coasting rate. The reference brakes there, because its coasting rate is never reached; the target has coasting as a setting of its own. Only a vehicle that was already slowing for the end of its path brakes.
-- A submarine uses the Watercraft profile's minimum depth (capped at 16), instead of a second submarine-specific minimum. It rises over shallows relative to its running depth. This improves recoverability, but a stricter deep-water routing requirement would still be a legitimate optional scenario feature.
+- A submarine uses the Watercraft profile's minimum depth (now configurable through 64), instead of a second submarine-specific minimum. It rises over shallows relative to its running depth. This improves recoverability, but a stricter deep-water routing requirement would still be a legitimate optional scenario feature.
 
 ## Earlier audits: validation recorded on 2026-10-12
 
@@ -246,15 +246,38 @@ Commit `22c0b0e4` also sends the hull direction to clients while a vehicle moves
 - One headless IntelliJ run reported 45 warnings: 44 in existing or unrelated code and one false positive on the shadowed timeout field. A narrow `FieldCanBeLocal` suppression now explains why that field resets the target's continuation timeout. No inspection rerun was performed.
 - The NPC artifact contains the registered common-side mixin, retry state and both translated labels/tooltips. This is internal Custom NPCs navigation policy; no public Flan API change is needed. No interactive blocked-route, editor or dedicated-server session was run.
 
+## Vehicle-model handling follow-up validation
+
+- The revised implementation inherits only compatible definition limits: absolute yaw rate, derived wheeled rolling radius and real reverse/forward speed ratio or reverse prohibition. Existing positive saved values remain Custom. Missing/inactive data and disabling Use model properties retain the documented simulation fallbacks. No engine-dependent acceleration/braking values are copied into the speed-fraction controller.
+- Regression coverage checks API inspection for wheeled/tracked/legacy/pushed/unsupported types, active speed scaling and force-legacy configuration, runtime feature gating, fractional values reaching actual steering, inherited versus custom radius behavior, reverse prohibition, saved overrides, and editor readout/mode transitions. The editor-copy test reproduced a floating-point half-rounding failure before its correction.
+- `gradlew build apiJavadoc sonarlintMain sonarlintNpcs sonarlintTest spotlessCheck --offline` passed. The full suite reports 2,271 tests: 2,261 passed, 10 skipped, zero failures/errors. Main/test SonarLint reports are empty; the NPC report contains only the pre-existing `GuiWolffsMod.navigate` complexity finding (16 versus 15). Scoped formatting and repository/wiki diff checks passed.
+- One headless IntelliJ run reported 49 warnings, mainly existing unused/analysis findings in type inspection and the editor. The new nullable-reference warning and redundant test import were corrected, the new method's false unused report was narrowly suppressed, and its extraction suggestion was addressed. IntelliJ was not repeated after these corrections.
+- API 0.26 adds `GroundHandling` and `FlansEntityTypes.getGroundHandling`; runtime policy and Inherit/Custom controls remain in the NPC module. The API and NPC JARs contain the new contract, editor controls and both translated help texts. No API release/publication was performed. This change is on Forge 1.20.1; the separate NeoForge branch was not edited.
+- No interactive editor, convoy, steering or dedicated-server acceptance session was run. Independent steering response, tracked tight-turn permission and traffic stop-gap/leader-speed policies remain design decisions; this inheritance follow-up does not claim to close that entire partial finding.
+
+## Water-depth follow-up validation
+
+- All 15 new depth regression cases pass. They exercise the actual terrain filter at 16/17 and 63/64/65 boundaries, whole-hull rejection, old defaults, save/reload and bounded values, open-air handling, and deterministic fluid-read budgets. Existing simulation-settings and flight/submarine tests also pass.
+- The full `gradlew build sonarlintNpcs sonarlintTest spotlessCheck --offline` completed with 2,286 tests: 2,276 passed, 10 skipped, zero failures/errors. NPC/test SonarLint reports are empty. Scoped `spotlessApply` and main/wiki diff checks passed.
+- One headless IntelliJ run found only the obsolete `deepest` flag, now always true after watercraft moved to its early-rejection check. The flag and unused shallowest branch were removed; the final helper was rebuilt and regression-tested. No inspection rerun was performed.
+- API assessment: settings and footprint filtering are internal Custom NPCs terrain policy; no public API addition or version bump was needed. No content-pack definition, submarine running-depth behavior or default terrain value was changed.
+- Cost validation counts fluid reads, rather than timing a running game. A two-by-two watercraft footprint over sufficiently deep water uses 256 reads at minimum depth 64; a shallow first column rejects after at most 65 reads and skips the other columns. Ground checks at allowance 64 stop after 65 reads on a too-deep first column, or at most 264 reads when all four columns are exactly 64 deep. Larger footprints multiply the bounded work by their area. Live pathfinding/convoy performance and editor acceptance remain unverified.
+
+## Target-search follow-up validation
+
+- Eight new regression tests exercise observed search times for all six default bands, the nonlinear legacy schedule and non-monotonic overrides, 1200-tick intervals, inherited bands, shared versus staggered near timing, mode changes, aggro-range caps, early acquisition and Progressive target search gating. NBT transport coverage checks retained options, old defaults, malformed values and bounds. The existing default-options test now explicitly expects both new opt-in switches to start disabled.
+- The full build completed with 2,294 tests: 2,284 passed, 10 skipped, zero failures/errors. After extracting schedule initialization to resolve the new complexity finding, focused and full tests passed again and the NPC JAR was rebuilt/reobfuscated. Final NPC SonarLint contains only the pre-existing `GuiWolffsMod.navigate` complexity finding (16 versus 15); test SonarLint is empty. Scoped formatting and main/wiki diff checks passed.
+- One headless IntelliJ run reported four warnings. Its unused test import was removed. The three retained pre-existing warnings concern the editor's large `Map.ofEntries` call, an existing Unicode escape and the default target-priority callback's constant return. No inspection rerun was performed.
+- API assessment: the schedule and editor controls are internal Custom NPCs policy; no public Flan API addition or version bump is needed. Runtime and editor controls and both English/German locale sets were verified in the NPC JAR. The existing stats save/load mixin handles named settings, and the dependency's stats transport retains its existing NPC/tool/permission checks; no packet layout was added or changed.
+- No interactive editor, dedicated-server acceptance or live target-search timing benchmark was run. Unit scan counts/timestamps establish scheduling behavior, rather than a measured server-performance gain. Models and CustomNPC+ armor animation remain deferred by the user; independent driving-policy choices remain open.
+
 ## Remaining decisions
 
 | Subsystem | Feature | Status | Confidence | Practical assessment |
 | --------- | ------- | ------ | ---------- | -------------------- |
 | Driving | Independent turn response and traffic controls | PARTIAL | HIGH | Simpler defaults versus expert tuning; measure handling |
-| Mobility | Ground/surface-watercraft depths 17–64 | PARTIAL | HIGH | Bounded authoring restriction; broken submarine rule excluded |
-| Content | Full reference model catalog | PARTIAL | HIGH | Content coverage loss; retain data-driven registration |
-| Animation | CustomNPC+ armor keyframes | PARTIAL | HIGH | Dependency capability gap; standard pose path remains appropriate |
-| Target search | Independent distance-band schedules | PARTIAL | HIGH | Tuning/load-latency tradeoff; benchmark before changing defaults |
+| Content | Full reference model catalog | PARTIAL | HIGH | Deferred by user; retain data-driven registration |
+| Animation | CustomNPC+ armor keyframes | PARTIAL | HIGH | Deferred by user; standard pose path remains appropriate |
 
 ## Areas requiring deeper audit
 

@@ -1,7 +1,6 @@
 package com.flansmodultimate.platform.entity;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLLoader;
+import com.flansmodultimate.platform.LoaderSideExtension;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.common.BooleanAttribute;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -29,10 +28,7 @@ public final class EntityTestBootstrap
     public static void initialize() throws ReflectiveOperationException
     {
         // Enchantment iteration asks FMLEnvironment for the side, which the loader would have set; no server runs here.
-        var dist = FMLLoader.class.getDeclaredField("dist");
-        dist.setAccessible(true);
-        if (dist.get(null) == null)
-            dist.set(null, Dist.DEDICATED_SERVER);
+        LoaderSideExtension.ensureDedicatedServer();
         if (LoadingModList.get() == null)
             LoadingModList.of(List.of(), List.of(), List.of(), List.of(), Map.of());
         SharedConstants.tryDetectVersion();

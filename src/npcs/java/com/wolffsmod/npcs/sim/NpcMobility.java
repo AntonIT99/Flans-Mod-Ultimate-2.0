@@ -165,7 +165,7 @@ public final class NpcMobility
         return switch (tuning.terrain())
         {
             case DEFAULT, AMPHIBIOUS -> type;
-            case GROUND -> type == PathType.WATER && depth(level, x, y, z, footprint(mob), tuning.get(Value.MAX_WADE_DEPTH) + 1, true) > tuning.get(Value.MAX_WADE_DEPTH) ? PathType.BLOCKED : type;
+            case GROUND -> type == PathType.WATER && depth(level, x, y, z, footprint(mob), tuning.get(Value.MAX_WADE_DEPTH) + 1) > tuning.get(Value.MAX_WADE_DEPTH) ? PathType.BLOCKED : type;
             case WATERCRAFT -> watercraft(level, x, y, z, footprint(mob), type, tuning.get(Value.MIN_WATER_DEPTH));
         };
     }
@@ -175,7 +175,16 @@ public final class NpcMobility
         // Open air has to stay open: the search drops through it to find the water below.
         if (type == PathType.OPEN)
             return type;
-        return type == PathType.WATER && depth(level, x, y, z, footprint, minimumDepth, false) >= minimumDepth ? type : PathType.BLOCKED;
+        return type == PathType.WATER && hasWaterDepth(level, x, y, z, footprint, minimumDepth) ? type : PathType.BLOCKED;
+    }
+
+    /** Every hull column must meet the minimum; one shallow column rejects the node without scanning the rest. */
+    static boolean hasWaterDepth(BlockGetter level, int x, int y, int z, int footprint, int minimumDepth)
+    {
+        for (int column = 0; column < footprint * footprint; column++)
+            if (depth(level, x + column / footprint, y, z + column % footprint, minimumDepth) < minimumDepth)
+                return false;
+        return true;
     }
 
     /** @return how many blocks wide the path search takes the mob to be, as vanilla does */
@@ -189,19 +198,16 @@ public final class NpcMobility
      *
      * @param footprint
      *            blocks the mob covers east and south of the position
-     * @param deepest
-     *            whether the deepest column counts, rather than the shallowest
-     * @return how many water blocks are stacked through that column, counted no further than the given limit
+     * @return the deepest water column under the footprint, counted no further than the given limit
      */
-    static int depth(BlockGetter level, int x, int y, int z, int footprint, int limit, boolean deepest)
+    static int depth(BlockGetter level, int x, int y, int z, int footprint, int limit)
     {
-        // Nothing is deeper than the limit and nothing shallower than dry, so the search ends there.
-        int bound = deepest ? limit : 0;
-        int result = deepest ? 0 : limit;
-        for (int column = 0; column < footprint * footprint && result != bound; column++)
+        // A column reaching the limit already proves that the ground profile cannot wade here.
+        int result = 0;
+        for (int column = 0; column < footprint * footprint && result < limit; column++)
         {
             int found = depth(level, x + column / footprint, y, z + column % footprint, limit);
-            result = deepest ? Math.max(result, found) : Math.min(result, found);
+            result = Math.max(result, found);
         }
         return result;
     }
