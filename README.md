@@ -61,6 +61,14 @@ Run the development client or server (`runClientDebug` logs at DEBUG, the others
 .\gradlew.bat runServer
 ```
 
+For multiplayer testing, run `runClient` (`Player1`) and `runClient2` (`Player2`)
+in separate terminals, or refresh the Gradle project in IntelliJ and use the two
+client run configurations. The second client stores its settings, saves, and
+content in `run/second-client`; put matching external packs in
+`run/second-client/flan` as well as `run/flan`. Bundled packs load in both clients.
+These offline development identities need a local test server with
+`online-mode=false`; an authenticated LAN host rejects them as invalid sessions.
+
 Generate data:
 
 ```powershell

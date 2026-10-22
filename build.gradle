@@ -123,6 +123,7 @@ def modsTomlPath = 'META-INF/neoforge.mods.toml'
 // Typed values for the run blocks, where 'project' and properties resolve against RunModel.
 String mainModId = mod_id
 File dataRunDirectory = file('run-data')
+File secondClientRunDirectory = file('run/second-client')
 // runData output is only for inspection; it is not packaged.
 String dataOutputPath = layout.buildDirectory.dir('datagen').get().asFile.absolutePath
 String mainResourcesPath = file('src/main/resources/').absolutePath
@@ -146,6 +147,15 @@ neoForge {
 
         client {
             client()
+            programArguments.addAll('--username', 'Player1')
+            systemProperty 'neoforge.enabledGameTestNamespaces', mainModId
+        }
+
+        // A separate identity and game directory let this run alongside the primary client.
+        client2 {
+            client()
+            gameDirectory = secondClientRunDirectory
+            programArguments.addAll('--username', 'Player2')
             systemProperty 'neoforge.enabledGameTestNamespaces', mainModId
         }
 
