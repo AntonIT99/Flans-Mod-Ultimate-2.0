@@ -10,9 +10,9 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import java.util.EnumSet;
 
 /**
- * Walks an NPC that drives Flan's driveables to the free driver seat of a vehicle or mecha nearby and gets it in. It
- * comes before every other goal that moves the NPC, those of a fight included, and gives a driveable it cannot reach in
- * time up for a while. Server thread.
+ * Walks an NPC that drives Flan's driveables to the free driver seat of a vehicle, mecha or aircraft nearby and gets it
+ * in. It comes before every other goal that moves the NPC, those of a fight included, and gives a driveable it cannot
+ * reach in time up for a while. Server thread.
  */
 @SuppressWarnings("unused") // Made only by the Custom NPCs entity mixin, which IntelliJ does not follow.
 public final class NpcBoardingGoal extends Goal

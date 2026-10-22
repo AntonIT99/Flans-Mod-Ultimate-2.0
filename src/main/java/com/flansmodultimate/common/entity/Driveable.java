@@ -4314,6 +4314,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             || driver instanceof Player)
             return false;
         markUsed();
+        // A new driver takes the stick centred, on the keys alone, whatever mouse flight its predecessor left.
+        if (automatedDriver != driver)
+            setFlightControls(0F, 0F, false);
         automatedDriver = driver;
         inputTimeout = 0;
         int current = getInputMask();
@@ -4354,6 +4357,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public Vec3 getDriveDirection()
     {
         return Vec3.directionFromRotation(0F, getEntityFacingYaw());
+    }
+
+    /** @return the unit direction the front of the model, a plane's nose, points in, pitch included */
+    public Vec3 getFrontVector()
+    {
+        return modelLocalDirectionToWorld(configuredModelLocal(new Vec3(1D, 0D, 0D))).normalize();
+    }
+
+    /** @return the unit direction the roof of the model points in, roll included */
+    public Vec3 getRoofVector()
+    {
+        return modelLocalDirectionToWorld(configuredModelLocal(new Vec3(0D, 1D, 0D))).normalize();
     }
 
     /**

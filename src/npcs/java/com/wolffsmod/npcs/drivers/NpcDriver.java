@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
+import com.flansmodultimate.api.AircraftMode;
 import com.flansmodultimate.api.DriveControl;
 import com.flansmodultimate.api.ISeat;
 import com.wolffsmod.npcs.sim.MountMotion;
@@ -27,7 +28,8 @@ import java.util.*;
  * <p>
  * The NPC goes where it would walk: its goals still choose where and the path search still chooses the way, and the
  * driveable is steered along that path. A rider's own path follower hardly advances, so the driveable's progress along
- * the path is counted here. The driveable's weapons are aimed at the NPC's target and fired once they point at it.
+ * the path is counted here. An aircraft flies straight to where the path ends, its {@link NpcPilot} at the controls. The
+ * driveable's weapons are aimed at the NPC's target and fired once they point at it.
  * </p>
  */
 @SuppressWarnings("unused") // Made only by the Custom NPCs entity mixin, which IntelliJ does not follow.
@@ -51,8 +53,9 @@ public final class NpcDriver
     private static final int GIVE_UP = 5;
     /** Cosine of the 3 degrees a weapon may point off its target and still fire. */
     private static final double FIRE_CONE = Math.cos(Math.toRadians(3D));
-    /** Fewest blocks at which the driveable's weapons engage, whatever the NPC's firing range. */
+    /** Fewest blocks at which the driveable's weapons engage, whatever the NPC's firing range; more for an aircraft's. */
     private static final double MIN_FIRE_RANGE = 16D;
+    private static final double MIN_AIR_FIRE_RANGE = 96D;
     /** Every so many ticks the triggers are let go for a tick, so that a semi-automatic weapon fires again. */
     private static final int TRIGGER_RELEASE = 30;
 
@@ -93,6 +96,7 @@ public final class NpcDriver
     private boolean recoveryBackward;
     /** Manoeuvres since the driveable last got free. */
     private int recoveries;
+    private final NpcPilot pilot = new NpcPilot();
 
     /** Where the path leads from here. */
     private record Route(Vec3 steer, double distance)
@@ -181,6 +185,42 @@ public final class NpcDriver
         return true;
     }
 
+    /**
+     * Flies for one tick.
+     *
+     * @return whether the NPC keeps the aircraft; false once it gives up getting it off the ground
+     */
+    boolean fly(EntityNPCInterface npc, ISeat seat, Entity aircraft, AircraftMode mode)
+    {
+        long now = npc.level().getGameTime();
+        if (!driving)
+        {
+            stopDriving();
+            driving = true;
+            drivingSince = now;
+        }
+        Set<DriveControl> controls = pilot.fly(npc, aircraft, mode, goal(npc));
+        // An aircraft that cannot get off the ground, for want of fuel or of room, is given up.
+        if (stuck(aircraft.position(), pilot.isRolling(), now) && ++recoveries > GIVE_UP)
+            return false;
+        if (!seat.setAutomatedDriving(controls))
+            return true;
+        LivingEntity target = npc.getTarget();
+        if (target == null || !target.isAlive())
+            seat.setAutomatedTriggers(false, false);
+        else
+            fire(npc, seat, target.getBoundingBox().getCenter(), MIN_AIR_FIRE_RANGE);
+        return true;
+    }
+
+    /** @return where the NPC's path ends, or null without one */
+    @Nullable
+    private static Vec3 goal(EntityNPCInterface npc)
+    {
+        Path current = npc.getNavigation().getPath();
+        return current == null || current.isDone() || current.getNodeCount() == 0 ? null : node(current, current.getNodeCount() - 1);
+    }
+
     private Set<DriveControl> steer(float off, Route route, double arrival, double speed, boolean mecha, boolean tracked)
     {
         if (mecha)
@@ -256,20 +296,31 @@ public final class NpcDriver
                 seat.setAutomatedAim(seat.getAimYaw() + off, 0F);
             return;
         }
-        Vec3 aimPoint = target.getBoundingBox().getCenter();
-        seat.aimAt(aimPoint);
-        boolean release = npc.level().getGameTime() % TRIGGER_RELEASE == 0;
-        seat.setAutomatedTriggers(!release && readyToFire(npc, seat, false, aimPoint), !release && readyToFire(npc, seat, true, aimPoint));
+        fire(npc, seat, target.getBoundingBox().getCenter(), MIN_FIRE_RANGE);
     }
 
-    private static boolean readyToFire(EntityNPCInterface npc, ISeat seat, boolean secondary, Vec3 aimPoint)
+    /**
+     * Aims the driveable's weapons at a point and fires each one that points there, within firing range and with nothing
+     * solid in the way.
+     *
+     * @param reach
+     *            fewest blocks at which the weapons engage, whatever the NPC's firing range
+     */
+    private static void fire(EntityNPCInterface npc, ISeat seat, Vec3 aimPoint, double reach)
+    {
+        seat.aimAt(aimPoint);
+        boolean release = npc.level().getGameTime() % TRIGGER_RELEASE == 0;
+        double range = Math.max(reach, npc.stats.ranged.getRange());
+        seat.setAutomatedTriggers(!release && readyToFire(npc, seat, false, aimPoint, range), !release && readyToFire(npc, seat, true, aimPoint, range));
+    }
+
+    private static boolean readyToFire(EntityNPCInterface npc, ISeat seat, boolean secondary, Vec3 aimPoint, double range)
     {
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         Optional<Vec3> direction = seat.getDriverWeaponDirection(secondary);
         if (origin.isEmpty() || direction.isEmpty())
             return false;
         Vec3 line = aimPoint.subtract(origin.get());
-        double range = Math.max(MIN_FIRE_RANGE, npc.stats.ranged.getRange());
         if (line.lengthSqr() > range * range || direction.get().dot(line.normalize()) < FIRE_CONE)
             return false;
         ClipContext sight = new ClipContext(origin.get(), aimPoint, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
@@ -338,6 +389,7 @@ public final class NpcDriver
     /** Forgets how the NPC drove, once it no longer drives. */
     void stopDriving()
     {
+        pilot.reset();
         driving = false;
         lastPosition = null;
         reversing = false;

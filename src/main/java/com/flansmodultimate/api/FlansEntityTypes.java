@@ -6,6 +6,7 @@
 package com.flansmodultimate.api;
 
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.EntityTypePropertySupport;
 import org.jetbrains.annotations.ApiStatus;
@@ -162,6 +163,40 @@ public final class FlansEntityTypes
     public static boolean isWreck(Entity entity)
     {
         return entity instanceof Driveable driveable && driveable.isWreck();
+    }
+
+    /** @return which way a vehicle, plane or mecha points now, or empty for any other entity; server side */
+    public static Optional<DriveableAttitude> getAttitude(Entity entity)
+    {
+        return entity instanceof Driveable driveable ? Optional.of(new DriveableAttitude(driveable.getFrontVector(), driveable.getRoofVector())) : Optional.empty();
+    }
+
+    /**
+     * @return where a driveable's throttle lever stands, from -1 in full reverse to 1 at full throttle, or empty for any
+     *         other entity. A rotorcraft's lever is its collective. Server side.
+     */
+    public static OptionalDouble getThrottle(Entity entity)
+    {
+        return entity instanceof Driveable driveable ? OptionalDouble.of(driveable.getThrottle()) : OptionalDouble.empty();
+    }
+
+    /** @return how a plane flies at the moment, or empty for any other entity; either side */
+    public static Optional<AircraftMode> getAircraftMode(Entity entity)
+    {
+        if (!(entity instanceof Plane plane))
+            return Optional.empty();
+        return Optional.of(switch (plane.getPlaneMode())
+        {
+            case HELI, VTOL -> AircraftMode.ROTORCRAFT;
+            case SIXDOF -> AircraftMode.SIX_DOF;
+            case PLANE -> AircraftMode.FIXED_WING;
+        });
+    }
+
+    /** @return whether a driveable rests on the ground, its wheels included; false for any other entity; server side */
+    public static boolean isGrounded(Entity entity)
+    {
+        return entity instanceof Driveable driveable && driveable.isSupportedByGround();
     }
 
     /**

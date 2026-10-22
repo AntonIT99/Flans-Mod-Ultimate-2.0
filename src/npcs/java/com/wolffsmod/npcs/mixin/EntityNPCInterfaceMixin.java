@@ -80,8 +80,9 @@ import java.util.UUID;
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
  * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
  * vehicle's target.</li>
- * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle or mecha nearby, before any other goal moves it,
- * gets in at the wheel and drives it where it would walk. It fights with the driveable's weapons, never with its own.</li>
+ * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
+ * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
+ * its own.</li>
  * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>

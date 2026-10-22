@@ -14,21 +14,24 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.Experimental
 public enum DriveControl
 {
-    /** Accelerates a vehicle, opens a plane's throttle, walks a mecha forward. */
+    /**
+     * Accelerates a vehicle and walks a mecha forward. It moves an aircraft's throttle lever up, which stays where it is
+     * left; a rotorcraft's lever is its collective.
+     */
     FORWARD,
-    /** Slows a vehicle down and then reverses it, closes a plane's throttle, walks a mecha backward. */
+    /** Slows a vehicle down and then reverses it, walks a mecha backward and moves an aircraft's throttle lever down. */
     BACKWARD,
-    /** Steers a vehicle or plane to its left, which a wheeled vehicle only does while rolling; a mecha steps to its left. */
+    /** Steers a vehicle, which a wheeled one only does while rolling, or yaws an aircraft to its left; a mecha steps to its left. */
     LEFT,
-    /** Steers a vehicle or plane to its right, which a wheeled vehicle only does while rolling; a mecha steps to its right. */
+    /** Steers a vehicle, which a wheeled one only does while rolling, or yaws an aircraft to its right; a mecha steps to its right. */
     RIGHT,
-    /** As a player's ascend key: a plane climbs or pulls up, a mecha jumps or fires its rocket pack, a vehicle brakes. */
+    /** Pulls an aircraft's nose up; a mecha jumps or fires its rocket pack, and a vehicle brakes. */
     ASCEND,
-    /** As a player's descend key: a plane descends or pushes down. */
+    /** Pushes an aircraft's nose down. */
     DESCEND,
-    /** Rolls a plane to its left. */
+    /** Rolls an aircraft to its left. */
     ROLL_LEFT,
-    /** Rolls a plane to its right. */
+    /** Rolls an aircraft to its right. */
     ROLL_RIGHT,
     /** Brakes. */
     BRAKE
