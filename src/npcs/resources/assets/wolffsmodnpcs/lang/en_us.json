@@ -1,4 +1,6 @@
 {
+  "wolffsmodnpcs.weapons.return_home_teleport": "Allow return-home teleport",
+  "wolffsmodnpcs.weapons.return_home_teleport.help": "Yes keeps Custom NPCs automatic teleport recovery when returning home. No requires physical travel and retries a finished or failed path at most every 40 game ticks (about 2 seconds). An unreachable NPC can remain stranded. Requires Custom NPCs Return to start; does not affect scripted teleports.",
   "commands.wolffsmodnpcs.benchmark.busy": "A benchmark is already running.",
   "commands.wolffsmodnpcs.benchmark.client_started": "NPC client benchmark: measuring %s seconds after a %s second warm-up. Keep the NPCs in view.",
   "commands.wolffsmodnpcs.benchmark.idle": "No benchmark is running.",

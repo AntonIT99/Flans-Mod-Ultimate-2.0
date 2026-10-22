@@ -7,6 +7,7 @@
   "mixins": [
       "EntityAIDodgeShootMixin",
       "EntityAIRangedAttackMixin",
+      "EntityAIReturnMixin",
       "EntityNPCInterfaceMixin",
       "FactionMixin",
       "MarkovGeneratorMixin",

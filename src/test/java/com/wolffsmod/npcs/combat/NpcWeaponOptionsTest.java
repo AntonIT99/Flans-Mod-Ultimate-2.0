@@ -17,6 +17,18 @@ class NpcWeaponOptionsTest
         Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.MELEE_DUAL_WIELD, Feature.DRIVE_DRIVEABLES);
 
     @Test
+    void physicalReturnChoiceSurvivesSaveAndReload()
+    {
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.set(Feature.RETURN_HOME_TELEPORT, false);
+        CompoundTag tag = new CompoundTag();
+        options.save(tag);
+        NpcWeaponOptions restored = new NpcWeaponOptions();
+        restored.load(tag);
+        assertFalse(restored.enabled(Feature.RETURN_HOME_TELEPORT));
+    }
+
+    @Test
     void oldNpcSavesEnableTheUsefulFeaturesAndSelectThePrimaryBank()
     {
         NpcWeaponOptions options = new NpcWeaponOptions();

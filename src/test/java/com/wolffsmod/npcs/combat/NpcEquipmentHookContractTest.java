@@ -18,6 +18,17 @@ class NpcEquipmentHookContractTest
     private static final String NPC = "noppes/npcs/entity/EntityNPCInterface";
 
     @Test
+    void physicalReturnReplacesTheTickContainingBothAutomaticTeleports() throws IOException
+    {
+        ClassNode goal = read("noppes/npcs/ai/EntityAIReturn");
+        assertEquals(2, calls(method(goal, "()V", "tick", "m_8037_"), NPC, "m_6034_", "(DDD)V"));
+        assertDoesNotThrow(() -> method(goal, "(Z)V", "navigate"));
+        assertDoesNotThrow(() -> method(goal, "()V", "start", "m_8056_"));
+        assertDoesNotThrow(() -> method(goal, "()Z", "canUse", "m_8036_"));
+        assertTrue(goal.fields.stream().anyMatch(field -> field.name.equals("totalTicks") && field.desc.equals("I")));
+    }
+
+    @Test
     void presentationHooksMatchInstalledEntityAndRenderers()
     {
         assertDoesNotThrow(() ->

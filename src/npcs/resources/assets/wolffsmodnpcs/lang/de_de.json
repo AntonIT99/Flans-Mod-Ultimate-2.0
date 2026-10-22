@@ -1,4 +1,6 @@
 {
+  "wolffsmodnpcs.weapons.return_home_teleport": "Teleport bei Heimkehr erlauben",
+  "wolffsmodnpcs.weapons.return_home_teleport.help": "Ja behält die automatische Teleport-Rückkehr von Custom NPCs. Nein verlangt physische Bewegung und versucht einen beendeten oder fehlgeschlagenen Weg höchstens alle 40 Spielticks erneut (etwa 2 Sekunden). Ein unerreichbares Ziel kann den NPC stranden lassen. Erfordert die Rückkehr zum Start in Custom NPCs; Skript-Teleports bleiben unverändert.",
   "commands.wolffsmodnpcs.benchmark.busy": "Es läuft bereits ein Benchmark.",
   "commands.wolffsmodnpcs.benchmark.client_started": "NPC-Client-Benchmark: misst %s Sekunden nach %s Sekunden Aufwärmzeit. Behalte die NPCs im Blick.",
   "commands.wolffsmodnpcs.benchmark.idle": "Es läuft kein Benchmark.",

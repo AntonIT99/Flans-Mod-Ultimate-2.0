@@ -3,10 +3,10 @@
 - **Current assessment:** 2026-10-22; merges the later temporary audit into this permanent report.
 - **Reference:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-NPC-Vehicles`, HEAD `19a1d475af1c4729ef43bcb46cd8bc55b631d685`, `ModInfo.VERSION = 8.0.5`, Forge 1.7.10 / CustomNPC+.
 - **Target:** `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, `master`, Forge 1.20.1 / Custom NPCs GBPort. The audit started at `1e1106a36435a96c827e4ad5e40f4d4d78655072`, including the then-uncommitted projectile API and NPC combat/crew changes. Completion checks use `372d04a73` plus the changes below; concurrent faction work is excluded from this thread's commits.
-- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the four implementation changes described below. No interactive game session was performed.
+- **Direction:** reference → target. This is source/dependency analysis of this working directory, not a released-JAR audit or the separate 1.21.1 checkout. The current working directory includes the five implementation changes described below. No interactive game session was performed.
 - **Historical metadata correction:** the old report labelled reference `22c0b0e4` as version 8.2.2; `ModInfo.java` at that commit actually says 8.0.5. The prior target snapshot was `ac009a9f1`. Historical fixes and recorded checks are retained below and are not current test results.
 
-**Remaining inventory: 1 MISSING, 5 PARTIAL, 0 UNCERTAIN findings; 4 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield and native projectile-slot speed overrides retaining exact item defaults. The six remaining findings involve design tradeoffs, bounded authoring controls, or content/dependency coverage and are left for the user's decision. The depth finding has been narrowed: the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
+**Remaining inventory: 0 MISSING, 5 PARTIAL, 0 UNCERTAIN findings; 5 findings resolved or addressed by an agreed design.** Rapid item-melee hurt-immunity handling and benchmark session controls are fixed in the current working directory. The user also chose optional melee dual wield, native projectile-slot speed overrides retaining exact item defaults, and physical-only return with teleport recovery still enabled by default. The five remaining findings involve design tradeoffs, bounded authoring controls, or content/dependency coverage and are left for the user's decision. The depth finding has been narrowed: the earlier temporary report incorrectly treated the broken legacy submarine minimum-depth rule as a working capability.
 
 The remaining table is a decision list, not an implementation backlog approved by the user. Keep the current default unless a listed capability is requested. A parity status answers whether the reference capability can be expressed. Its assessment separately asks whether losing it worsens the intended product. The criteria are combat/configuration consistency, recovery versus physical movement, content/authoring coverage, tuning complexity, and bounded simulation cost. Better on one criterion does not imply better overall. No comparative client/server performance or visual measurements were taken, so performance and handling benefits are qualified rather than asserted.
 
@@ -15,20 +15,6 @@ The remaining table is a decision list, not an implementation backlog approved b
 The systematic audit covered registered mixins/helpers, entity/model registration, equipment imports and combat, damage, ballistics, ground/air/water movement, targeting/pathfinding, rendering/animation, editor controls, effects/audio, packets, persistence, ranges, and diagnostics. Generated per-model classes were scanned for additional behavior. Definition-driven registration itself is an equivalent implementation; only absent source content is counted in the catalog finding.
 
 ## Navigation and movement
-
-### Return-home path retry instead of automatic teleport — MISSING
-
-Reference: `R/java/mixin/MixinEntityAIReturnNoTeleport.java#wolffsmod$replaceAutomaticTeleport,wolffsmod$retryReturnPath`; registration in `R/src/main/resources/wolffsmod.mixins.json`.
-Both automatic return-home teleports are intercepted and replaced with another navigation attempt. NPCs must physically return even after the return goal becomes stuck or times out.
-
-Target checked: `T/src/npcs/resources/wolffsmodnpcs.mixins.json`; all target NPC movement/entity mixins; `T/npcs/sim/NpcDriving.java#watchProgress`; `T/npcs/mixin/NpcGroundPathNavigatorMixin.java`; installed Custom NPCs JAR, `noppes.npcs.ai.EntityAIReturn` bytecode.
-No target hook replaces the return goal's teleports. The installed dependency's tick method still calls `EntityNPCInterface.m_6034_(DDD)` (`setPos`) at bytecode offsets 36 and 146, followed by navigation stop; the first branch follows the 600-tick timeout. Driving recovery and pursuit-path reuse do not intercept those calls. Bots/crew disabling `returnToStart` for their own generated NPCs is not equivalent for editor-created NPCs using return-home.
-
-Missing: suppressing both automatic return-home teleports and retrying a path for the ordinary return-home goal.
-
-Assessment: **TRADEOFF; current fallback favors recovery, reference favors immersion.** Teleporting can visibly move an NPC through barriers and break a physical battle scenario. Conversely, suppressing every automatic teleport does not make an unreachable home reachable: the reference may keep retrying failed/expensive paths and never recover. The target's timeout/stuck fallback is objectively better at eventually restoring the home position; the reference is better at guaranteeing that an NPC never returns by teleport. Neither guarantee dominates the other.
-
-Recommendation: Keep recovery available and make physical-return-only behavior an explicit option if scenarios require it. A bounded path retry/recovery policy is preferable to treating either unconditional teleport or endless retries as universally correct. The reference added this after the permanent report's previous reference snapshot (`19a1d475` follows `22c0b0e4`), so this was not a gap in that earlier audit.
 
 ### Independent steering response, tracked tight-turn permission, and traffic stop gap — PARTIAL
 
@@ -105,6 +91,19 @@ Assessment: **TRADEOFF; easier tuning cannot express all load/latency policies.*
 Recommendation: Keep shared nearby acquisition as the default if coordinated reactions are the goal. Expose advanced per-band/synchronization overrides only when a measured server load or response-time requirement needs them. Settings storage in world data remains a valid improvement and is not a gap.
 
 ## Resolved in the current working directory
+
+### Optional physical return home — RESOLVED BY AGREED DESIGN
+
+Reference: `R/java/mixin/MixinEntityAIReturnNoTeleport.java#wolffsmod$replaceAutomaticTeleport,wolffsmod$retryReturnPath`; registration in `R/src/main/resources/wolffsmod.mixins.json`.
+Both automatic return-home teleports are intercepted and replaced with another navigation attempt. NPCs must physically return even after the return goal becomes stuck or times out.
+
+Target: `T/npcs/mixin/EntityAIReturnMixin.java`; `T/npcs/sim/NpcReturnHome.java`; `NpcWeaponOptions.Feature.RETURN_HOME_TELEPORT`; Pathfinding controls in `GuiWolffsMod.java`.
+
+**Allow return-home teleport** defaults to Yes, retaining the dependency’s existing recovery. No replaces the return goal’s tick logic, covering both automatic teleport branches, with physical navigation and a shared 40-game-tick retry budget that survives goal restarts. An active path is retained; completed or failed paths alternate the dependency’s direct/intermediate searches. Existing destination, combat interruption and eligibility rules remain. Unreachable homes may leave NPCs stranded. Scripted teleports are outside this policy.
+
+Assessment: **OPTIONAL CAPABILITY ADDED; recovery default retained.** Builders can enforce physical movement without forcing that policy on old saves. Bounded retries avoid an every-tick failure loop, while preserving the dependency’s eventual teleport recovery when allowed. This is NPC-specific goal policy and requires no public API addition.
+
+Validation: see the current validation section below; interactive blocked-route and editor checks remain outstanding.
 
 ### Native projectile-slot launch-speed override with exact item imports — RESOLVED
 
@@ -228,7 +227,7 @@ The five commits without release notes (`5efc6bdc`, `71af6e1f`, `7bdf6798`, `0e4
 
 Commit `22c0b0e4` also sends the hull direction to clients while a vehicle moves, not only while it has a target. The target sends it whenever it changes.
 
-## Validation of the current fixes
+## Earlier combat and benchmark validation
 
 - Focused melee and benchmark tests passed after the reproduced melee failures were fixed. Dual-melee coverage also reproduced and fixed the mixed fast-to-slow immunity failure. Native throw-speed coverage passes all 19 combat cases and both editor-readout cases.
 - Java 17 / Forge 1.20.1: the final `gradlew build sonarlintNpcs sonarlintTest spotlessCheck --offline` passed. The full suite reports 2,183 tests: 2,173 passed, 10 skipped, zero failures/errors. Both SonarLint reports contain zero issues. Scoped `spotlessApply` and repository/wiki `git diff --check` passed.
@@ -236,13 +235,21 @@ Commit `22c0b0e4` also sends the hull direction to clients while a vehicle moves
 - Headless IntelliJ was run once for the dual-melee task and once for the throwable-speed task. The latest run reported the same 20 pre-existing warnings plus six nullable-flight dereferences in the new test. Those six now use a helper that asserts a flight exists before reading its speed. The remaining warnings concern existing API/projectile, editor, bow-enchantment, crew, platform-helper, readout and benchmark-test code. IntelliJ was not repeated after that correction, following the once-per-task rule.
 - No interactive client/dedicated-server session was run. Actual damage cadence, dual-melee visuals/editor layout/synchronization, native throw trajectories and editor controls, benchmark timing, and written reports still require runtime checks.
 - Existing unrelated source/configuration and wiki changes are preserved. Only the NPC combat/diagnostics implementation, its regression tests/localization, this report, and the relevant existing wiki explanations are in scope.
-- The 1.7.10 water-surface caveat and the prior audit history remain as documented. No content catalog, steering, search-schedule, return-home, water-depth bounds, or animation-engine policy was changed. Off-hand melee is now an explicit opt-in policy, documented above.
+- The 1.7.10 water-surface caveat and the prior audit history remain as documented. No content catalog, steering, search-schedule, water-depth bounds, or animation-engine policy was changed. Physical-only return is now optional with teleport recovery enabled by default. Off-hand melee is now an explicit opt-in policy, documented above.
+
+## Physical-return follow-up validation
+
+- Focused retry-budget, option default/save/reload and installed-dependency hook tests pass. The dependency contract confirms both automatic teleports occur in the replaced tick method and verifies the existing navigation/start/eligibility hooks.
+- `gradlew build sonarlintNpcs sonarlintTest -x spotlessJavaCheck --offline` completed. The full suite reported 2,241 tests: 2,231 passed, 10 skipped, zero failures/errors. Final eligibility-hook compilation and focused tests were repeated with `npcsJar` after changing the cooldown gate to run after the dependency's eligibility calculation, preserving its bookkeeping.
+- The unrestricted formatting gate was blocked by concurrent, unrelated `drivers/NpcPilot.java` formatting. All return-home files passed scoped `spotlessApply`; repository and wiki diffs pass `git diff --check`. JSON/misc formatting checks passed during the build.
+- SonarLint reports no issues in the return-home implementation or tests. The shared NPC report contains five unrelated findings: one existing `GuiWolffsMod.navigate` complexity finding and four in concurrent `NpcPilot` landing work; the test report is empty.
+- One headless IntelliJ run reported 45 warnings: 44 in existing or unrelated code and one false positive on the shadowed timeout field. A narrow `FieldCanBeLocal` suppression now explains why that field resets the target's continuation timeout. No inspection rerun was performed.
+- The NPC artifact contains the registered common-side mixin, retry state and both translated labels/tooltips. This is internal Custom NPCs navigation policy; no public Flan API change is needed. No interactive blocked-route, editor or dedicated-server session was run.
 
 ## Remaining decisions
 
 | Subsystem | Feature | Status | Confidence | Practical assessment |
 | --------- | ------- | ------ | ---------- | -------------------- |
-| Navigation | Physical return-home without teleport | MISSING | HIGH | Immersion versus eventual recovery; optional policy |
 | Driving | Independent turn response and traffic controls | PARTIAL | HIGH | Simpler defaults versus expert tuning; measure handling |
 | Mobility | Ground/surface-watercraft depths 17–64 | PARTIAL | HIGH | Bounded authoring restriction; broken submarine rule excluded |
 | Content | Full reference model catalog | PARTIAL | HIGH | Content coverage loss; retain data-driven registration |
@@ -256,7 +263,7 @@ The earlier checklist below is retained as historical outstanding runtime covera
 - **Rapid melee acceptance:** unit coverage now verifies the fix at the damage-call boundary. In game, compare accepted hits as well as swings for native item and editor-controlled melee, including a second attacker.
 - **Dual melee presentation:** enable the option, save/reload the NPC, and check mixed-speed weapons, an off-hand-only weapon, shields, left-handed NPCs, item breaks, and hand-specific gun sounds/animations. Confirm that the editor shows both weapon readouts and that clients see the same attacking hand as the server.
 - **Native throw-speed controls:** check Inherit, first Custom selection, edited values, Import while overridden, save/reload and client synchronization for each supported item. Compare trajectories and the standard projectile-page readout; fire charges should retain powered flight.
-- **Recovery policy:** block the return-home route and compare eventual return, teleport visibility, and repeated path-search cost. A no-teleport option should be assessed against a bounded retry policy.
+- **Recovery policy:** block the return-home route and compare eventual return, teleport visibility, and repeated path-search cost. Verify the physical-only switch prevents both recovery teleports, retains an active path, and bounds failed searches across goal restarts.
 - **Shared models:** visually compare scale, origin, textures, muzzle/rider positions, and animations for entries available in both source catalogs. Missing source assets and misaligned available assets are different issues.
 - **Controlled comparisons:** measure steering/convoy behavior and per-band target-search cost at the same NPC count, world, and targets. More configuration controls alone do not establish better handling or performance.
 
