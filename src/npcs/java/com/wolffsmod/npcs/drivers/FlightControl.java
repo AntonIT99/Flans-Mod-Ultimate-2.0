@@ -46,9 +46,16 @@ final class FlightControl
      *            the heading to yaw to; null leaves the rudder to hold the yaw steady
      * @param throttle
      *            where the throttle lever should stand, from -1 to 1
+     * @param brake
+     *            whether to hold the wheel brakes, rolling out on the ground
      */
-    record Command(float pitch, float bank, @Nullable Float heading, float throttle)
-    {}
+    record Command(float pitch, float bank, @Nullable Float heading, float throttle, boolean brake)
+    {
+        Command(float pitch, float bank, @Nullable Float heading, float throttle)
+        {
+            this(pitch, bank, heading, throttle, false);
+        }
+    }
 
     /** @return the controls that bring the aircraft toward the command */
     Set<DriveControl> hold(State state, Command command)
@@ -68,6 +75,8 @@ final class FlightControl
             controls.add(DriveControl.FORWARD);
         else if (state.throttle() > command.throttle() + THROTTLE_SLACK)
             controls.add(DriveControl.BACKWARD);
+        if (command.brake())
+            controls.add(DriveControl.BRAKE);
         return controls;
     }
 

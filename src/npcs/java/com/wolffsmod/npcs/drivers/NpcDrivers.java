@@ -51,6 +51,8 @@ public final class NpcDrivers
     private static final int FALL_TICKS = 30 * 20;
     /** Share of its hit points under which a driveable is about to be lost: none boards it, and an aircraft's pilot bails out. */
     private static final double BAIL_OUT_HEALTH = 0.2D;
+    /** Speed under which a driveable on the ground has stopped, in blocks a tick. */
+    private static final double STOPPED = 0.05D;
 
     public static boolean enabled(EntityNPCInterface npc)
     {
@@ -121,10 +123,15 @@ public final class NpcDrivers
         IDriveableType type = seat.getDriveableType().orElse(null);
         if (heading.isEmpty() || type == null)
             return true;
+        // One whose tank has run dry is given up once it stands on the ground; an aircraft glides in to land first.
+        if (dry(driveable) && FlansEntityTypes.isGrounded(driveable))
+            return false;
         if (type.getDriveableKind() != DriveableKind.PLANE)
             return driver.drive(npc, seat, driveable, heading.get(), type.getDriveableKind() == DriveableKind.MECHA, type.isTracked());
         boolean bailOut = failing(driveable) && height(npc) > JUMP_HEIGHT;
-        return !bailOut && driver.fly(npc, seat, driveable, FlansEntityTypes.getAircraftMode(driveable).orElse(AircraftMode.FIXED_WING));
+        // An aircraft brought down short of fuel is left where it came to a stop.
+        boolean stranded = shortOfFuel(driveable) && FlansEntityTypes.isGrounded(driveable) && driveable.getDeltaMovement().horizontalDistance() < STOPPED;
+        return !bailOut && !stranded && driver.fly(npc, seat, driveable, FlansEntityTypes.getAircraftMode(driveable).orElse(AircraftMode.FIXED_WING));
     }
 
     private static void release(ISeat seat, NpcDriver driver)
@@ -169,6 +176,18 @@ public final class NpcDrivers
         return entity.getY() - entity.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, entity.getBlockX(), entity.getBlockZ());
     }
 
+    /** Whether a driveable needs fuel and has too little left to fly on. */
+    private static boolean shortOfFuel(Entity driveable)
+    {
+        return FlansEntityTypes.getFuelShare(driveable).orElse(1D) < NpcPilot.LOW_FUEL;
+    }
+
+    /** Whether a driveable needs fuel and its tank has run dry. */
+    private static boolean dry(Entity driveable)
+    {
+        return FlansEntityTypes.getFuelShare(driveable).orElse(1D) <= 0D;
+    }
+
     /** Whether a driveable has so few hit points left that it is about to be lost. */
     private static boolean failing(Entity driveable)
     {
@@ -188,13 +207,14 @@ public final class NpcDrivers
 
     /**
      * Whether the NPC may take the seat: the free driver seat of a driveable NPCs drive, that is neither a wreck nor about
-     * to be lost, that its choice of driveables allows, that it did not give up on and that no enemy of it rides.
+     * to be lost, that has fuel when it needs some, enough to fly on for an aircraft, that its choice of driveables allows, that it did not give up on and
+     * that no enemy of it rides.
      */
     static boolean boardable(EntityNPCInterface npc, ISeat seat, long now)
     {
         Entity driveable = seat.getDriveable();
         return seat.isDriverSeat() && seat.getRiddenByEntity() == null && driveable != null && driveable.isAlive() && !FlansEntityTypes.isWreck(driveable) && drivable(seat) && !failing(driveable)
-            && mayTake(npc, driveable) && !NpcDriver.of(npc).refuses(driveable.getUUID(), now) && noEnemyAboard(npc, driveable);
+            && !dry(driveable) && !(aircraft(seat) && shortOfFuel(driveable)) && mayTake(npc, driveable) && !NpcDriver.of(npc).refuses(driveable.getUUID(), now) && noEnemyAboard(npc, driveable);
     }
 
     /** Whether the NPC may take the driveable by who owns it and whether it is locked, as its choice of driveables says. */
@@ -273,6 +293,11 @@ public final class NpcDrivers
     {
         if (NpcEquipment.enabled(npc, Feature.PATH_DEBUG) && NpcsMod.log.isInfoEnabled())
             NpcsMod.log.info("NPC {} id={} {} {} at {}", npc.getName().getString(), npc.getId(), what, driveable.getName().getString(), driveable.blockPosition().toShortString());
+    }
+
+    private static boolean aircraft(ISeat seat)
+    {
+        return seat.getDriveableType().map(type -> type.getDriveableKind() == DriveableKind.PLANE).orElse(false);
     }
 
     /** Whether NPCs drive the seat's driveable: any but an aircraft that flies freely in six degrees and a ship built on a plane. */

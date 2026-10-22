@@ -748,6 +748,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return entityData.get(DATA_FUEL);
     }
 
+    /** @return the share of the fuel tank still filled, from 0 to 1; empty without a tank, or while driveables need no fuel */
+    public OptionalDouble getFuelShare()
+    {
+        if (configType == null || configType.getFuelTankSize() <= 0F || !FlansMod.teamsManager.isVehiclesNeedFuel())
+            return OptionalDouble.empty();
+        return OptionalDouble.of(Mth.clamp(getFuel() / configType.getFuelTankSize(), 0F, 1F));
+    }
+
     /**
      * Ticks of <em>reload</em> a bank still owes, which is not the whole wait
      * before it may fire: the ordinary delay between shots is excluded, so a crew

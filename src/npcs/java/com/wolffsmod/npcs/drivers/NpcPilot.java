@@ -94,8 +94,20 @@ final class NpcPilot
     private static final float COLLECTIVE_PER_CLIMB = 3F;
     /** Ticks a rotorcraft hovers idle before it lands. */
     private static final int IDLE_BEFORE_LANDING = 200;
+    /** Ticks a plane circles with nothing to do before it lands. */
+    private static final int PLANE_IDLE_BEFORE_LANDING = 600;
+    /** Share of its tank under which an aircraft heads home to land, and stays on the ground. */
+    static final double LOW_FUEL = 0.15D;
+    /** A plane glides in at this share of the speed it cruises at, and never slower than the least approach speed. */
+    private static final double APPROACH_SHARE = 0.7D;
+    private static final double MIN_APPROACH_SPEED = 0.45D;
+    /** Share of each tick's speed taken into the cruising speed a plane learns. */
+    private static final double CRUISE_LEARNING = 0.02D;
 
     private final FlightControl control = new FlightControl();
+    private final PlaneLanding landing = new PlaneLanding();
+    /** The speed a plane cruises at, learnt as it cruises; 0 until it has. */
+    private double cruiseSpeed;
     /** Where the aircraft was last tick. */
     @Nullable
     private Vec3 lastPosition;
@@ -126,7 +138,7 @@ final class NpcPilot
     /** What a pilot does. */
     enum Phase
     {
-        PARKED, TAXI, TAKEOFF, CRUISE, CIRCLE, ATTACK, DIVE, EXTEND, PULL_UP, TRAVEL, HOVER, LANDING
+        PARKED, TAXI, TAKEOFF, CRUISE, CIRCLE, ATTACK, DIVE, EXTEND, PULL_UP, APPROACH, FINAL, FLARE, ROLLOUT, TRAVEL, HOVER, LANDING
     }
 
     /** Where a plane is to head, and the pitch it is to fly at. */
@@ -137,9 +149,21 @@ final class NpcPilot
     private record Tilt(float pitch, float bank)
     {}
 
-    /** What the pilot sees this tick. */
-    private record Flight(DriveableAttitude attitude, float throttle, boolean grounded, Vec3 position, Vec3 velocity, double ground, double terrain)
+    /**
+     * What the pilot sees this tick.
+     *
+     * @param fuel
+     *            share of its tank still filled; 1 for an aircraft that needs no fuel
+     * @param resting
+     *            blocks its origin is above level ground when it stands on its wheels
+     */
+    private record Flight(DriveableAttitude attitude, float throttle, boolean grounded, Vec3 position, Vec3 velocity, double ground, double terrain, double fuel, double resting)
     {
+        boolean lowOnFuel()
+        {
+            return fuel < LOW_FUEL;
+        }
+
         double height()
         {
             return position.y - ground;
@@ -155,6 +179,8 @@ final class NpcPilot
         extending = false;
         idleTicks = 0;
         rolling = false;
+        landing.abort();
+        cruiseSpeed = 0D;
         phase = Phase.PARKED;
         point = null;
         lastState = null;
@@ -192,10 +218,15 @@ final class NpcPilot
         double terrain = ground;
         for (int ticks : TERRAIN_LOOKAHEAD)
             terrain = Math.max(terrain, groundAt(level, position.x + velocity.x * ticks, position.z + velocity.z * ticks, ground));
-        Flight flight = new Flight(attitude, (float) FlansEntityTypes.getThrottle(aircraft).orElse(0D), FlansEntityTypes.isGrounded(aircraft), position, velocity, ground, terrain);
-        LivingEntity target = npc.getTarget() != null && npc.getTarget().isAlive() ? npc.getTarget() : null;
-        point = target != null ? target.getBoundingBox().getCenter() : goal;
-        FlightControl.Command command = mode == AircraftMode.ROTORCRAFT ? rotor(flight, goal, target) : wings(npc, flight, goal, target);
+        double resting = FlansEntityTypes.getDriveableType(aircraft).map(type -> (double) type.getRestingHeight()).orElse(0D);
+        Flight flight = new Flight(attitude, (float) FlansEntityTypes.getThrottle(aircraft).orElse(0D), FlansEntityTypes.isGrounded(aircraft), position, velocity, ground, terrain,
+            FlansEntityTypes.getFuelShare(aircraft).orElse(1D), resting);
+        Vec3 home = new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
+        // Short of fuel, an aircraft gives up its target and its goal and heads home to land.
+        LivingEntity target = !flight.lowOnFuel() && npc.getTarget() != null && npc.getTarget().isAlive() ? npc.getTarget() : null;
+        Vec3 destination = flight.lowOnFuel() ? home : goal;
+        point = target != null ? target.getBoundingBox().getCenter() : destination;
+        FlightControl.Command command = mode == AircraftMode.ROTORCRAFT ? rotor(flight, destination, target) : wings(level, flight, destination, target, home);
         rolling = flight.grounded() && command.throttle() > 0F;
         FlightControl.State state = new FlightControl.State(attitude.pitch(), attitude.bank(), attitude.heading(), flight.throttle());
         lastState = state;
@@ -207,16 +238,37 @@ final class NpcPilot
 
     // Planes
 
-    private FlightControl.Command wings(EntityNPCInterface npc, Flight flight, @Nullable Vec3 goal, @Nullable LivingEntity target)
+    private FlightControl.Command wings(Level level, Flight flight, @Nullable Vec3 goal, @Nullable LivingEntity target, Vec3 home)
     {
+        Vec3 place = goal != null ? goal : home;
+        // With nothing to do for a while, or short of fuel, a plane lands, where it is going or at home.
+        if (wantsDown(flight, goal, target) && (!flight.grounded() || landing.active()))
+            return land(level, flight, place);
         if (flight.grounded())
         {
             extending = false;
-            return ground(flight, goal, target);
+            return ground(flight, flight.lowOnFuel() ? null : goal, target);
         }
+        return airborne(level, flight, place, target);
+    }
+
+    /** @return whether a plane is to land: it is short of fuel, or has had nothing to do for a while; otherwise the landing is given up */
+    private boolean wantsDown(Flight flight, @Nullable Vec3 goal, @Nullable LivingEntity target)
+    {
+        boolean idle = target == null && (goal == null || horizontal(flight.position(), goal) <= LOITER_RADIUS);
+        idleTicks = idle ? idleTicks + 1 : 0;
+        boolean down = flight.lowOnFuel() || idleTicks > PLANE_IDLE_BEFORE_LANDING;
+        if (!down)
+            landing.abort();
+        return down;
+    }
+
+    /** Flies a plane in the air: on its target, or to a place and round it, keeping clear of the ground and above a stall. */
+    private FlightControl.Command airborne(Level level, Flight flight, Vec3 place, @Nullable LivingEntity target)
+    {
         runway = null;
         float heading = flight.attitude().heading();
-        Course course = target != null ? attack(npc, flight, target) : travel(npc, flight, goal);
+        Course course = target != null ? attack(level, flight, target) : travel(flight, place);
         if (tooLow(flight))
         {
             phase = Phase.PULL_UP;
@@ -226,7 +278,34 @@ final class NpcPilot
         if (flight.velocity().length() < STALL_GUARD && flight.height() > CRUISE_HEIGHT * 0.5D)
             pitch = Math.min(pitch, -5F);
         float bank = Mth.clamp(Mth.wrapDegrees(course.heading() - heading) * BANK_PER_DEGREE, -MAX_BANK, MAX_BANK);
+        if (phase == Phase.CRUISE || phase == Phase.CIRCLE)
+            cruiseSpeed = cruiseSpeed <= 0D ? flight.velocity().length() : Mth.lerp(CRUISE_LEARNING, cruiseSpeed, flight.velocity().length());
         return new FlightControl.Command(pitch, bank, course.heading(), 1F);
+    }
+
+    /** Brings the plane down at the site, unless the ground ahead rises into its way, when it climbs away to try again. */
+    private FlightControl.Command land(Level level, Flight flight, Vec3 site)
+    {
+        double siteGround = groundAt(level, site.x, site.z, site.y);
+        if (tooLow(flight) && flight.terrain() > siteGround + 3D)
+        {
+            landing.abort();
+            phase = Phase.PULL_UP;
+            return new FlightControl.Command(PULL_UP_PITCH, 0F, flight.attitude().heading(), 1F);
+        }
+        double approachSpeed = Math.max(MIN_APPROACH_SPEED, cruiseSpeed * APPROACH_SHARE);
+        PlaneLanding.Step step = landing
+            .land(new PlaneLanding.View(flight.position(), flight.velocity(), flight.attitude().heading(), flight.grounded(), flight.height(), siteGround, flight.resting(), approachSpeed), site);
+        phase = switch (step.stage())
+        {
+            case APPROACH -> Phase.APPROACH;
+            case FINAL -> Phase.FINAL;
+            case FLARE -> Phase.FLARE;
+            case ROLLOUT -> Phase.ROLLOUT;
+            case LANDED -> Phase.PARKED;
+        };
+        point = site;
+        return new FlightControl.Command(step.pitch(), step.bank(), step.heading(), step.throttle(), step.brake());
     }
 
     /** On the ground: parked with nowhere further to go, otherwise taxiing round toward its goal and rolling for take-off. */
@@ -256,11 +335,11 @@ final class NpcPilot
      * A strafing run: the plane flies at its target, dives on it from close enough, breaks off short of it or of the
      * ground, flies on for a while and comes round for another pass.
      */
-    private Course attack(EntityNPCInterface npc, Flight flight, LivingEntity target)
+    private Course attack(Level level, Flight flight, LivingEntity target)
     {
         Vec3 aim = target.getBoundingBox().getCenter();
         double distance = horizontal(flight.position(), aim);
-        long now = npc.level().getGameTime();
+        long now = level.getGameTime();
         if (extending && now >= extendUntil && distance > REENGAGE_DISTANCE)
             extending = false;
         boolean diving = distance < DIVE_DISTANCE;
@@ -285,11 +364,10 @@ final class NpcPilot
         return new Course(bearing(flight.position(), aim), Mth.clamp(elevation, -MAX_DIVE, MAX_ATTACK_CLIMB));
     }
 
-    /** Flies to the goal at cruising height and circles there, or circles the NPC's home without one. */
-    private Course travel(EntityNPCInterface npc, Flight flight, @Nullable Vec3 goal)
+    /** Flies to a place at cruising height and circles there. */
+    private Course travel(Flight flight, Vec3 anchor)
     {
         extending = false;
-        Vec3 anchor = goal != null ? goal : new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
         boolean away = horizontal(flight.position(), anchor) > LOITER_RADIUS;
         phase = away ? Phase.CRUISE : Phase.CIRCLE;
         point = anchor;
@@ -300,7 +378,19 @@ final class NpcPilot
     /** @return the pitch that brings a plane to a height and holds it there */
     private static float holdHeight(Flight flight, double height)
     {
-        return Mth.clamp((float) (height - flight.position().y) * HEIGHT_GAIN - (float) flight.velocity().y * CLIMB_DAMPING, -MAX_DESCENT, MAX_CLIMB);
+        return holdHeight(flight.position().y, flight.velocity().y, height);
+    }
+
+    /**
+     * @param y
+     *            the height the plane is at
+     * @param climb
+     *            blocks it climbs per tick
+     * @return the pitch that brings a plane to a height and holds it there
+     */
+    static float holdHeight(double y, double climb, double height)
+    {
+        return Mth.clamp((float) (height - y) * HEIGHT_GAIN - (float) climb * CLIMB_DAMPING, -MAX_DESCENT, MAX_CLIMB);
     }
 
     /**
@@ -322,17 +412,10 @@ final class NpcPilot
         double distance = goal == null ? 0D : horizontal(flight.position(), goal);
         boolean travelling = goal != null && distance > ROTOR_ARRIVAL;
         idleTicks = travelling || target != null ? 0 : idleTicks + 1;
-        boolean landing = idleTicks > IDLE_BEFORE_LANDING;
-        // On the ground with nothing to do, it stays there.
-        if (flight.grounded() && !travelling && target == null)
-        {
-            phase = Phase.PARKED;
+        phase = rotorPhase(flight, travelling, target != null);
+        if (phase == Phase.PARKED)
             return new FlightControl.Command(0F, 0F, heading, 0F);
-        }
-        if (landing)
-            phase = Phase.LANDING;
-        else
-            phase = travelling ? Phase.TRAVEL : Phase.HOVER;
+        boolean settling = phase == Phase.LANDING;
         // It flies nose first to its goal, and faces its target once it is there; either way it is not landing.
         if (travelling)
         {
@@ -343,11 +426,24 @@ final class NpcPilot
         }
         Tilt tilt = tilt(flight, 0D);
         if (target == null)
-            return new FlightControl.Command(tilt.pitch(), tilt.bank(), heading, collective(flight, landing));
+            return new FlightControl.Command(tilt.pitch(), tilt.bank(), heading, collective(flight, settling));
         // Hovering on its target, it points its nose at it for its guns.
         Vec3 line = target.getBoundingBox().getCenter().subtract(flight.position());
         float pitch = Mth.clamp((float) Math.toDegrees(Math.atan2(line.y, Math.max(1.0E-3D, line.horizontalDistance()))), -MAX_FORWARD_TILT, 5F);
         return new FlightControl.Command(pitch, tilt.bank(), bearing(flight.position(), target.position()), collective(flight, false));
+    }
+
+    /**
+     * @return what a rotorcraft does: stays parked on the ground with nothing to do or short of fuel, lands once it has hovered
+     *         idle a while or is home short of fuel, or else travels or hovers
+     */
+    private Phase rotorPhase(Flight flight, boolean travelling, boolean fighting)
+    {
+        if (flight.grounded() && (!travelling && !fighting || flight.lowOnFuel()))
+            return Phase.PARKED;
+        if (idleTicks > IDLE_BEFORE_LANDING || flight.lowOnFuel() && !travelling)
+            return Phase.LANDING;
+        return travelling ? Phase.TRAVEL : Phase.HOVER;
     }
 
     /**
@@ -364,10 +460,10 @@ final class NpcPilot
     }
 
     /** @return the collective that climbs a rotorcraft to its hover height and holds it there, or lets it down to land */
-    private float collective(Flight flight, boolean landing)
+    private float collective(Flight flight, boolean settling)
     {
-        double climb = landing ? -LANDING_DESCENT : Mth.clamp((flight.terrain() + ROTOR_HEIGHT - flight.position().y) * CLIMB_PER_BLOCK, -MAX_ROTOR_DESCENT, MAX_ROTOR_CLIMB);
-        if (tooLow(flight) && !landing)
+        double climb = settling ? -LANDING_DESCENT : Mth.clamp((flight.terrain() + ROTOR_HEIGHT - flight.position().y) * CLIMB_PER_BLOCK, -MAX_ROTOR_DESCENT, MAX_ROTOR_CLIMB);
+        if (tooLow(flight) && !settling)
         {
             phase = Phase.PULL_UP;
             climb = MAX_ROTOR_CLIMB;

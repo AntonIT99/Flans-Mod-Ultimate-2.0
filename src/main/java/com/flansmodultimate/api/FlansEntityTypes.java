@@ -181,6 +181,15 @@ public final class FlansEntityTypes
         return entity instanceof Driveable driveable && driveable.isLocked();
     }
 
+    /**
+     * @return the share of a driveable's fuel tank still filled, from 0 to 1; empty for one without a tank, while
+     *         driveables need no fuel, and for any other entity. Server side.
+     */
+    public static OptionalDouble getFuelShare(Entity entity)
+    {
+        return entity instanceof Driveable driveable ? driveable.getFuelShare() : OptionalDouble.empty();
+    }
+
     /** @return which way a vehicle, plane or mecha points now, or empty for any other entity; server side */
     public static Optional<DriveableAttitude> getAttitude(Entity entity)
     {
