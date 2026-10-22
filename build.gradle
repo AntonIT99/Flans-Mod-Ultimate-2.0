@@ -117,6 +117,7 @@ def modsTomlPath = 'META-INF/mods.toml'
 String mainModId = mod_id
 SourceSet mainSourceSet = sourceSets.main
 String runDirectoryPath = file('run').absolutePath
+String secondClientRunDirectoryPath = file('run/second-client').absolutePath
 String dataRunDirectoryPath = file('run-data').absolutePath
 // runData output is only for inspection; it is not packaged.
 String dataOutputPath = layout.buildDirectory.dir('datagen').get().asFile.absolutePath
@@ -144,7 +145,16 @@ minecraft {
         }
 
         client {
+            token 'dev_username', 'Player1'
+            args '--username', '{dev_username}'
             property 'forge.enabledGameTestNamespaces', mainModId
+        }
+
+        // Inherit the client launch arguments, resolving its username token for the second identity.
+        client2 {
+            parent((RunConfig) minecraft.runs.getByName('client'))
+            workingDirectory secondClientRunDirectoryPath
+            token 'dev_username', 'Player2'
         }
 
         clientDebug {
