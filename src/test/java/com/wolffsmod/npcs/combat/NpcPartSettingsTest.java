@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.PartArmor;
 import com.flansmodultimate.api.PartBox;
 import com.flansmodultimate.api.PartState;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -35,6 +36,7 @@ class NpcPartSettingsTest
         assertTrue(settings.isEmpty());
         assertTrue(settings.get("turret").enabled());
         assertNull(settings.get("turret").box());
+        assertNull(settings.get("turret").armor());
         PartBody body = body();
         int before = body.signature();
         settings.apply(body);
@@ -103,5 +105,52 @@ class NpcPartSettingsTest
         root.getCompound(NpcPartSettings.NBT_KEY).getCompound("core").remove("MaxZ");
         settings.load(root);
         assertNull(settings.get("core").box());
+    }
+
+    @Test
+    void armorOverridesSurviveSavingIndependentlyOfBoxAndCanBeCleared()
+    {
+        NpcPartSettings settings = new NpcPartSettings();
+        PartArmor armor = new PartArmor(120F, 600F);
+        settings.setArmor("TURRET", armor);
+        settings.setBox("turret", new PartBox(new AABB(0D, 0D, 0D, 1D, 1D, 1D), 90F, 5F));
+        settings.setBox("turret", null);
+        settings.setEnabled("turret", false);
+        CompoundTag saved = new CompoundTag();
+        settings.save(saved);
+        NpcPartSettings clone = new NpcPartSettings();
+        clone.load(saved);
+        assertEquals(settings.signature(), clone.signature());
+        assertEquals(armor, clone.get("turret").armor());
+        assertNull(clone.get("turret").box());
+        PartBody body = body();
+        clone.apply(body);
+        assertEquals(armor, body.getArmor("turret").orElseThrow());
+        assertFalse(body.getPart("turret").orElseThrow().enabled());
+        assertFalse(body.getPart("turret").orElseThrow().custom());
+        assertTrue(body.getArmor("core").isEmpty());
+        clone.clear();
+        clone.apply(body);
+        assertTrue(body.getArmor("turret").isEmpty());
+        assertTrue(body.getPart("turret").orElseThrow().enabled());
+    }
+
+    @Test
+    void zeroArmorIsAnExplicitOverrideAndInvalidOrExcessiveValuesAreLimited()
+    {
+        NpcPartSettings settings = new NpcPartSettings();
+        settings.setArmor("core", new PartArmor(0F, 0F));
+        assertFalse(settings.isEmpty());
+        settings.setArmor("turret", new PartArmor(Float.MAX_VALUE, Float.NaN));
+        assertEquals(new PartArmor(NpcPartSettings.MAX_ARMOR_MM, 0F), settings.get("turret").armor());
+        CompoundTag saved = new CompoundTag();
+        settings.save(saved);
+        settings.load(saved);
+        assertEquals(new PartArmor(0F, 0F), settings.get("core").armor());
+        saved.getCompound(NpcPartSettings.NBT_KEY).getCompound("core").remove("ArmorVsHeatMm");
+        settings.load(saved);
+        assertNull(settings.get("core").armor());
+        settings.setArmor("turret", null);
+        assertTrue(settings.isEmpty());
     }
 }

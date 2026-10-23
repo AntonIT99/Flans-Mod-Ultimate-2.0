@@ -2,8 +2,7 @@ package com.flansmodultimate.common.driveables.parts;
 
 import com.flansmodultimate.api.*;
 import com.flansmodultimate.common.driveables.*;
-import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
-import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
+import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PartBodyHit;
@@ -43,6 +42,9 @@ public final class PartBody implements IPartBody
     private final Map<EnumDriveablePart, CollisionBox> definition = new EnumMap<>(EnumDriveablePart.class);
     private final Set<EnumDriveablePart> custom = EnumSet.noneOf(EnumDriveablePart.class);
     private final Set<EnumDriveablePart> disabled = EnumSet.noneOf(EnumDriveablePart.class);
+    private final Map<EnumDriveablePart, PartArmor> armorOverrides = new EnumMap<>(EnumDriveablePart.class);
+    @Nullable
+    private ResolvedVehicleArmor resolvedArmor;
     private final Vec3 turretPivot;
     private final Vec3 turretOffset;
     @Getter
@@ -202,6 +204,38 @@ public final class PartBody implements IPartBody
         else
             disabled.add(part.getType());
         reach = -1D;
+    }
+
+    @Override
+    public void setArmor(String name, @Nullable PartArmor armor)
+    {
+        DriveablePart part = find(name);
+        if (part == null)
+            return;
+        PartArmor previous = armor == null ? armorOverrides.remove(part.getType()) : armorOverrides.put(part.getType(), armor);
+        if (!Objects.equals(previous, armor))
+            resolvedArmor = null;
+    }
+
+    @Override
+    public Optional<PartArmor> getArmor(String name)
+    {
+        DriveablePart part = find(name);
+        return part == null ? Optional.empty() : Optional.ofNullable(armorOverrides.get(part.getType()));
+    }
+
+    /** The model's plates with this body's per-part replacements, shared by rounds, blasts and debug readouts. */
+    public ResolvedVehicleArmor armor()
+    {
+        if (resolvedArmor == null)
+        {
+            VehicleArmorSpec model = type instanceof DriveableType driveable ? driveable.getResolvedArmor().source() : VehicleArmorSpec.EMPTY;
+            Map<EnumDriveablePart, ArmorPlate> overrides = new EnumMap<>(EnumDriveablePart.class);
+            overrides.putAll(model.partOverrides());
+            armorOverrides.forEach((part, armor) -> overrides.put(part, new ArmorPlate(armor.thicknessMm(), 0F, armor.heatThicknessMm())));
+            resolvedArmor = VehicleArmorResolver.resolve(new VehicleArmorSpec(model.hull(), model.turret(), overrides), parts.keySet());
+        }
+        return resolvedArmor;
     }
 
     @Override
@@ -394,7 +428,7 @@ public final class PartBody implements IPartBody
     @Override
     public int signature()
     {
-        int signature = Boolean.hashCode(brokenPartsSolid) * 31 + Boolean.hashCode(outlined);
+        int signature = (Boolean.hashCode(brokenPartsSolid) * 31 + Boolean.hashCode(outlined)) * 31 + armorOverrides.hashCode();
         for (DriveablePart part : parts.values())
         {
             CollisionBox box = Objects.requireNonNull(part.getBox());

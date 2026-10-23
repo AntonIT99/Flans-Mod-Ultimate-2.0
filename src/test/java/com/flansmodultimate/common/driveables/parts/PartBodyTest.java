@@ -2,11 +2,11 @@ package com.flansmodultimate.common.driveables.parts;
 
 import com.flansmodultimate.api.*;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
-import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
+import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PartBodyHit;
+import com.flansmodultimate.common.types.DriveableType;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.AABB;
@@ -15,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class PartBodyTest
 {
@@ -233,5 +234,37 @@ class PartBodyTest
         assertEquals(ORIGIN.z, centre.z, 1.0E-6D);
         Vec3 bottom = body.partPointToWorld(Objects.requireNonNull(body.partState(EnumDriveablePart.CORE)), 0.5D, 0D, 0.5D);
         assertEquals(ORIGIN.y, bottom.y, 1.0E-6D);
+    }
+
+    @Test
+    void armorOverridesChangeKineticHeatAndBlastPlatesWithoutChangingTheModelOrOtherParts()
+    {
+        DriveableType type = mock(DriveableType.class);
+        VehicleArmorSpec spec = new VehicleArmorSpec(Map.of(EnumArmorFacing.FRONT, new ArmorPlate(40F, 30F, 80F)), Map.of(EnumArmorFacing.FRONT, new ArmorPlate(100F, 20F, 200F)), Map.of());
+        ResolvedVehicleArmor model = VehicleArmorResolver.resolve(spec, List.of(EnumDriveablePart.CORE, EnumDriveablePart.TURRET));
+        when(type.getResolvedArmor()).thenReturn(model);
+        Map<EnumDriveablePart, CollisionBox> boxes = Map.of(EnumDriveablePart.CORE, box(100F, -1F, 0F, -2F, 2F, 1F, 4F), EnumDriveablePart.TURRET, box(40F, -1F, 1F, -1F, 2F, 1F, 2F));
+        PartBody body = new PartBody(type, boxes, Vec3.ZERO, Vec3.ZERO);
+        int original = body.signature();
+        assertEquals(new ArmorPlate(100F, 20F, 200F), body.armor().plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT).authored());
+        body.setArmor("turret", new PartArmor(120F, 600F));
+        assertNotEquals(original, body.signature());
+        for (EnumArmorFacing face : EnumArmorFacing.values())
+        {
+            assertEquals(new ArmorPlate(120F, 0F, 600F), body.armor().plate(EnumDriveablePart.TURRET, face).authored());
+            Vec3 direction = face.outwardNormal().scale(-1D);
+            assertEquals(120F, body.armor().resolveHit(EnumDriveablePart.TURRET, face, direction, 80D, false).effectiveArmorMm(), 0.001F);
+            assertEquals(600F, body.armor().resolveHit(EnumDriveablePart.TURRET, face, direction, 80D, true).effectiveArmorMm(), 0.001F);
+        }
+        assertEquals(new ArmorPlate(40F, 30F, 80F), body.armor().plate(EnumDriveablePart.CORE, EnumArmorFacing.FRONT).authored());
+        assertEquals(new ArmorPlate(100F, 20F, 200F), model.plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT).authored());
+        body.setArmor("turret", new PartArmor(0F, 0F));
+        assertEquals(ArmorPlate.UNARMOURED, body.armor().plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT).authored());
+        body.setArmor("turret", null);
+        assertEquals(original, body.signature());
+        assertEquals(model.plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT), body.armor().plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT));
+        body.setArmor("missing", new PartArmor(20F, 40F));
+        assertTrue(body.getArmor("missing").isEmpty());
+        assertEquals(original, body.signature());
     }
 }
