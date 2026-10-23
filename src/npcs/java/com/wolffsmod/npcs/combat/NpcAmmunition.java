@@ -90,6 +90,24 @@ public final class NpcAmmunition
     }
 
     /**
+     * Ammunition template for a model's driver gun: the projectile slot, then real inventory slots in order, then the
+     * gun's default. Model weapons do not consume these stacks or exchange any inventory entries. Server thread.
+     */
+    public static ItemStack driverGunTemplate(EntityNPCInterface npc, IContentType gun)
+    {
+        if (gun.getItem() == null)
+            return ItemStack.EMPTY;
+        ItemStack weapon = new ItemStack(gun.getItem());
+        ItemStack projectile = stack(npc.inventory.getProjectile());
+        if (FlansEquipment.acceptsAmmunition(weapon, projectile))
+            return projectile;
+        for (ItemStack candidate : inventory(npc))
+            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
+                return candidate;
+        return FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY);
+    }
+
+    /**
      * Makes sure the projectile slot holds ammunition the gun takes, fetching it from the inventory. Whatever the slot
      * held instead takes the place the ammunition came from.
      */

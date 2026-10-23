@@ -80,7 +80,7 @@ import java.util.UUID;
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
  * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
- * vehicle's target.</li>
+ * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
@@ -163,6 +163,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     /** The seat guns the crew man, while the NPC is a vehicle. */
     @Unique
     private final CrewGunners wolffsmodnpcsGunners = new CrewGunners();
+    @Unique
+    private final NpcDriverGuns wolffsmodnpcsDriverGuns = new NpcDriverGuns();
     @Unique
     private final NpcMeleeState wolffsmodnpcsMelee = new NpcMeleeState();
 
@@ -712,6 +714,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             NpcPathDebug.tick(npc, state);
             NpcCrew.tick(npc);
             wolffsmodnpcsGunners.tick(npc);
+            wolffsmodnpcsDriverGuns.tick(npc);
             NpcDrivers.tick(npc);
         }
         if (wolffsmodnpcsTickStarted != 0L)

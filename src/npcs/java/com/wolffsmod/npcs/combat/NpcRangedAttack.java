@@ -56,7 +56,8 @@ public final class NpcRangedAttack
             return Optional.empty();
         Attack attack = new Attack(npc, null, ammo, options, false, 0);
         WeaponMuzzle muzzle = attack.muzzles().stream().findFirst().orElse(EYE_MUZZLE);
-        return FlansProjectiles.prepare(npc, ammo, attack.held, muzzle.weapon().orElse(null), attack.definition, attack.secondary, attack.parameters(0, attack.adjustedWeapon(muzzle).orElse(null)));
+        return FlansProjectiles.prepare(npc, attack.ammunition(muzzle), attack.held, muzzle.weapon().orElse(null), attack.definition, attack.secondary,
+            attack.parameters(0, attack.adjustedWeapon(muzzle).orElse(null)));
     }
 
     public static boolean usesFlanProjectile(NpcWeaponOptions options, ItemStack ammo)
@@ -155,6 +156,13 @@ public final class NpcRangedAttack
             return NpcTypeProperties.usesOwnValue(npc, property);
         }
 
+        private ItemStack ammunition(WeaponMuzzle muzzle)
+        {
+            return definition instanceof IDriveableType && options.enabled(Feature.DRIVER_GUNS) && muzzle.weapon().isPresent()
+                ? NpcAmmunition.driverGunTemplate(npc, muzzle.weapon().orElseThrow())
+                : ammo;
+        }
+
         /**
          * The model weapon behind this muzzle, when the NPC keeps its own damage, accuracy or speed instead of the model's.
          * The shot then uses the NPC's values for those and the weapon's for the rest.
@@ -182,7 +190,8 @@ public final class NpcRangedAttack
 
         private boolean launch(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, @Nullable Weapon adjusted)
         {
-            var prepared = FlansProjectiles.prepare(npc, ammo, held, muzzle.weapon().orElse(null), definition, secondary, parameters(shotIndex, adjusted));
+            ItemStack selectedAmmo = ammunition(muzzle);
+            var prepared = FlansProjectiles.prepare(npc, selectedAmmo, held, muzzle.weapon().orElse(null), definition, secondary, parameters(shotIndex, adjusted));
             if (prepared.isEmpty())
                 return false;
             var shot = prepared.get();
@@ -193,7 +202,7 @@ public final class NpcRangedAttack
             Vec3 direction = state.lead(NpcVehicleState.aimPoint(aimed).subtract(from), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
             if (shot.launch(from, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
-            playLaunchEffects(muzzle, origin, shotIndex);
+            playLaunchEffects(muzzle, origin, shotIndex, selectedAmmo);
             return true;
         }
 
@@ -204,16 +213,16 @@ public final class NpcRangedAttack
             return tuning.sight() == NpcTuning.Sight.SEE_AND_FIRE_THROUGH ? NpcSight.launchPoint(npc, origin, aimPoint, tuning.get(NpcTuning.Value.FIRE_LIMIT)) : origin;
         }
 
-        private void playLaunchEffects(WeaponMuzzle muzzle, Vec3 origin, int shotIndex)
+        private void playLaunchEffects(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, ItemStack selectedAmmo)
         {
             if (!soundPlayed)
             {
-                if (FlansProjectiles.isGrenade(ammo))
+                if (FlansProjectiles.isGrenade(selectedAmmo))
                     soundPlayed = options.enabled(Feature.THROW_SOUNDS);
                 else if (options.enabled(Feature.FIRE_SOUNDS) && !own(NpcTypeProperty.FIRING_SOUND))
                     soundPlayed = FlansProjectiles.playShootSound(npc, muzzle.weapon().orElse(definition), held, secondary);
             }
-            if (shotIndex == 0 && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(ammo) || modelMuzzles))
+            if (shotIndex == 0 && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(selectedAmmo) || modelMuzzles))
                 FlansProjectiles.shootParticles(npc, muzzle, origin, hullYaw() + (state.isActive() ? state.turretAim().yaw() : 0F), NpcModels.scale(npc));
         }
 
