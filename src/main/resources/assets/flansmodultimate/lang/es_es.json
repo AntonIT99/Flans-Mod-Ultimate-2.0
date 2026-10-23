@@ -325,6 +325,7 @@
   "options.flansmodultimate.showDetailedItemDescriptions": "Mostrar descripciones detalladas de objetos",
   "options.flansmodultimate.showDistanceInKillMessage": "Mostrar distancia en mensajes de bajas",
   "options.flansmodultimate.showHitMarker": "Mostrar marcador de impacto",
+  "options.flansmodultimate.showTeamsControls": "Mostrar controles de equipos",
   "options.flansmodultimate.suppressionAffectsRiders": "Supresión de pasajeros",
   "options.flansmodultimate.suppressionCameraRoll": "Balanceo por supresión",
   "options.flansmodultimate.suppressionDuration": "Tiempo de recuperación",

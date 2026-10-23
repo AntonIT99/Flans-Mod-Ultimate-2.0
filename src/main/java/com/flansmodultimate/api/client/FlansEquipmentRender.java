@@ -23,7 +23,7 @@ public final class FlansEquipmentRender
     private FlansEquipmentRender()
     {}
 
-    /** Applies held Flan weapon and native use poses after the model's own animation; render thread only. Honors the entity's equipment policy. */
+    /** Applies held Flan weapon and native use poses, preserving melee swings, after the model's own animation; render thread only. Honors the entity's equipment policy. */
     public static void applyWeaponPose(HumanoidModel<?> model, LivingEntity holder)
     {
         EquipmentAnimationSupport.weapons(model, holder);

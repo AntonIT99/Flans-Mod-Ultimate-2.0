@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.tactics;
 
 import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +20,7 @@ import java.util.EnumSet;
 /**
  * Server-side replacement for the tactical movements absent from the NeoForge Custom NPCs build. The selected movement
  * precedes its attack goals, as on Forge; equipped weapons fire independently. A Flan tactic takes precedence without
- * changing the stored Custom NPCs choice. Rush and None leave the ordinary attack movement in place.
+ * changing the stored Custom NPCs choice. A throwable gun's cooldown leaves movement to its melee attack. Rush and None leave the ordinary attack movement in place.
  */
 public final class CustomNpcTacticGoal extends Goal
 {
@@ -47,7 +48,7 @@ public final class CustomNpcTacticGoal extends Goal
 
     private boolean ineligible()
     {
-        return npc.isKilled() || npc.ais.onAttack != 0 || NpcTactics.of(npc) != Tactic.CUSTOM_NPCS;
+        return npc.isKilled() || npc.ais.onAttack != 0 || NpcEquipmentRangedGoal.rushes(npc) || NpcTactics.of(npc) != Tactic.CUSTOM_NPCS;
     }
 
     @Override

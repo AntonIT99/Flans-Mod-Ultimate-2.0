@@ -49,6 +49,7 @@ public final class ModClientConfig
     public final boolean showShootableDurabilityBars;
     public final boolean showArmorDamageAbsorptionBar;
     public final boolean showAmmoHud;
+    public final boolean showTeamsControls;
     public final EnumAmmoHudLayout ammoHudLayout;
     public final EnumSpeedUnit driveableSpeedUnit;
     public final EnumSpeedUnit driveableVerticalSpeedUnit;
@@ -166,6 +167,7 @@ public final class ModClientConfig
     public static final BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     public static final BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
     public static final BooleanValue SHOW_AMMO_HUD;
+    public static final BooleanValue SHOW_TEAMS_CONTROLS;
     public static final EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
     public static final EnumValue<EnumSpeedUnit> DRIVEABLE_VERTICAL_SPEED_UNIT;
@@ -307,6 +309,7 @@ public final class ModClientConfig
             Show Flan's Mod's own in-world HUD: gun and vehicle ammunition, AA gun and deployed gun
             readouts, team information and the kill feed. The vanilla HUD is not affected.
             """).define("showFlansHud", true);
+        SHOW_TEAMS_CONTROLS = builder.comment("Show compact reminders of the current teams key bindings during an active round.").define("showTeamsControls", true);
         HIDE_CROSSHAIR_FOR_GUNS = builder.comment("""
             Personal preference: hide the vanilla crosshair while holding a non-melee Flan gun.
             The server's own disableCrosshairForGuns setting hides it for everyone regardless of this
@@ -612,6 +615,7 @@ public final class ModClientConfig
         showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
         showArmorDamageAbsorptionBar = SHOW_ARMOR_DAMAGE_ABSORPTION_BAR.get();
         showAmmoHud = SHOW_AMMO_HUD.get();
+        showTeamsControls = SHOW_TEAMS_CONTROLS.get();
         ammoHudLayout = AMMO_HUD_LAYOUT.get();
         driveableSpeedUnit = DRIVEABLE_SPEED_UNIT.get();
         driveableVerticalSpeedUnit = DRIVEABLE_VERTICAL_SPEED_UNIT.get();

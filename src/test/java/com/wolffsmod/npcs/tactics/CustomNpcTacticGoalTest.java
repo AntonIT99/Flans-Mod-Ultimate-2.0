@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.tactics;
 
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import noppes.npcs.ai.EntityAIRangedAttack;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -53,7 +54,7 @@ class CustomNpcTacticGoalTest
     @Test
     void aFlanTacticOrANonRetaliatingResponseStopsTheNativeManoeuvreWithoutChangingItsSavedChoice() throws ReflectiveOperationException
     {
-        try (var tactics = mockStatic(NpcTactics.class); var equipment = mockStatic(NpcEquipment.class))
+        try (var tactics = mockStatic(NpcTactics.class); var equipment = mockStatic(NpcEquipment.class); var ranged = mockStatic(NpcEquipmentRangedGoal.class))
         {
             EntityNPCInterface npc = npc();
             equipment.when(() -> NpcEquipment.fightsAtRange(npc)).thenReturn(false);
@@ -68,6 +69,12 @@ class CustomNpcTacticGoalTest
             assertFalse(goal.canUse());
             assertEquals(CustomNpcTactics.STALK, settings.getVariant());
             tactics.when(() -> NpcTactics.of(npc)).thenReturn(Tactic.CUSTOM_NPCS);
+            ranged.when(() -> NpcEquipmentRangedGoal.rushes(npc)).thenReturn(true);
+            assertFalse(goal.canUse());
+            assertFalse(goal.canContinueToUse());
+            assertEquals(CustomNpcTactics.STALK, settings.getVariant());
+            ranged.when(() -> NpcEquipmentRangedGoal.rushes(npc)).thenReturn(false);
+            assertTrue(goal.canUse());
             npc.ais.onAttack = 2;
             assertFalse(goal.canUse());
         }

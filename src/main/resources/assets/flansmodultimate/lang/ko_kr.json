@@ -325,6 +325,7 @@
   "options.flansmodultimate.showDetailedItemDescriptions": "아이템 상세 설명 표시",
   "options.flansmodultimate.showDistanceInKillMessage": "처치 메시지에 거리 표시",
   "options.flansmodultimate.showHitMarker": "명중 표시 보기",
+  "options.flansmodultimate.showTeamsControls": "팀 조작 안내 표시",
   "options.flansmodultimate.suppressionAffectsRiders": "탑승자 제압",
   "options.flansmodultimate.suppressionCameraRoll": "제압 카메라 기울기",
   "options.flansmodultimate.suppressionDuration": "제압 회복 시간",

@@ -10,7 +10,6 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.client.gui.SubGuiNpcRangeProperties;
 import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.client.gui.util.GuiNPCInterface;
@@ -44,7 +43,7 @@ public final class NpcRangedControls
             return EMPTY;
         RangedControlLocks inherited = NpcTypeControls.apply(gui, npc);
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        ItemStack ammunition = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
+        ItemStack ammunition = NpcAmmunition.modelTemplate(npc);
         if (!NpcRangedAttack.usesFlanProjectile(options, ammunition))
             return inherited;
         List<ProjectileSources> sources = sources(npc, options, ammunition);

@@ -157,6 +157,12 @@ alongside other runs).
 
 ## Build and Validation
 
+For small, low-risk changes (for example a localized UI layout fix, typo, or simple
+data correction), skip SonarLint and IntelliJ inspections unless explicitly requested
+or a specific concern warrants them. This exception overrides the requirements above
+and below to run those two checks. Keep formatting checks, scoped diff review, and
+validation appropriate to the change; mention skipped inspections in the final response.
+
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
 `officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Run focused
 tests first. Run a full build after loader setup, registries, networking, entities,

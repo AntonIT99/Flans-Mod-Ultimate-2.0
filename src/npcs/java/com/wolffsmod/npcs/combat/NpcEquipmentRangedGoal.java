@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.FlansProjectiles;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
@@ -79,21 +80,30 @@ public final class NpcEquipmentRangedGoal extends Goal
     /** @return the goal of the NPC, once Custom NPCs has set up its goals */
     public static Optional<NpcEquipmentRangedGoal> of(EntityNPCInterface npc)
     {
-        return Optional.ofNullable(((Holder) npc).wolffsmodnpcsItemGoal());
+        return npc instanceof Holder holder ? Optional.ofNullable(holder.wolffsmodnpcsItemGoal()) : Optional.empty();
     }
 
     /** @return whether the NPC fights its target with an equipped ranged weapon: it has one, and the target is beyond melee range */
     public static boolean engages(EntityNPCInterface npc)
     {
         LivingEntity target = npc.getTarget();
-        return !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level()
+        return !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level() && !rushes(npc)
             && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
+    }
+
+    /** A throwable gun with a melee attack closes in while it waits for its next throw. */
+    public static boolean rushes(EntityNPCInterface npc)
+    {
+        return of(npc)
+            .map(goal -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.ITEM_WEAPONS) && goal.main.lastThrowable && !goal.main.cadence.ready() && NpcEquipment.meleeWeapon(npc.getMainHandItem())
+                && FlansEquipment.getWeaponProperties(NpcEquipment.rangedWeapon(npc), ItemStack.EMPTY).filter(EquippedWeaponProperties::throwable).isPresent())
+            .orElse(false);
     }
 
     @Override
     public boolean canUse()
     {
-        return engages(npc);
+        return !npc.isKilled() && (main.reloading > 0 || off.reloading > 0 || !main.cadence.ready() || !off.cadence.ready() || engages(npc));
     }
 
     @Override
@@ -105,20 +115,25 @@ public final class NpcEquipmentRangedGoal extends Goal
     @Override
     public void tick()
     {
-        LivingEntity target = npc.getTarget();
-        if (target == null)
-        {
-            cancelUse();
-            return;
-        }
         main.cadence.tick();
         off.cadence.tick();
+        LivingEntity target = npc.getTarget();
+        if (target == null || !engages(npc))
+        {
+            cancelUse();
+            continueReload(main);
+            continueReload(off);
+            return;
+        }
         main.spinSpeed *= 0.9F;
         off.spinSpeed *= 0.9F;
         npc.getLookControl().setLookAt(target, 30F, 30F);
         if (!npc.isInRange(target, npc.stats.ranged.getRange()) || !npc.getSensing().hasLineOfSight(target))
         {
             cancelUse();
+            // A reload goes on out of sight, which is where an NPC fighting from cover goes to reload.
+            continueReload(main);
+            continueReload(off);
             return;
         }
         // An aircraft below its attack altitude climbs first; it keeps its target and its aim meanwhile.
@@ -126,6 +141,8 @@ public final class NpcEquipmentRangedGoal extends Goal
         if (NpcVehicleState.of(npc).getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
         {
             cancelUse();
+            continueReload(main);
+            continueReload(off);
             return;
         }
         if (NpcEquipment.offHandPrimary(npc))
@@ -157,7 +174,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         {
             cancelUse();
             // Taking another copy of the same thrown weapon must not bypass its item cooldown.
-            boolean throwable = FlansProjectiles.isGrenade(weapon) || properties.map(value -> value.throwable()).orElse(false);
+            boolean throwable = FlansProjectiles.isGrenade(weapon) || properties.map(EquippedWeaponProperties::throwable).orElse(false);
             main.reset(throwable && main.lastThrowable && weapon.getItem() == main.lastItem);
             main.lastWeapon = weapon;
             main.lastItem = weapon.getItem();
@@ -225,7 +242,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         int chargeTime = NpcEquipment.chargeTime(weapon, npc);
         if (chargeTime > 0 && charging++ < chargeTime)
         {
-            boolean throwable = FlansProjectiles.isGrenade(weapon) || FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).map(value -> value.throwable()).orElse(false);
+            boolean throwable = FlansProjectiles.isGrenade(weapon) || FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).map(EquippedWeaponProperties::throwable).orElse(false);
             if (throwable)
             {
                 if (NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.WEAPON_ANIMATIONS))
@@ -247,7 +264,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     private void launched(LivingEntity target, InteractionHand side)
     {
         NpcItemAttacks.launched(npc, target, side);
-        if (NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.WEAPON_ANIMATIONS))
+        // Gunfire has its own shot animation. A native arm swing is reserved for throws and melee attacks.
+        if (main.lastThrowable && side == InteractionHand.MAIN_HAND && NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.WEAPON_ANIMATIONS))
             npc.swing(side);
     }
 
@@ -258,13 +276,14 @@ public final class NpcEquipmentRangedGoal extends Goal
         var flan = NpcEquipment.flan(npc, hand.side);
         if (flan.isEmpty() || flan.get().throwable() || FlansEquipment.hasLoadedRound(weapon))
         {
+            hand.reloading = 0;
             hand.reloadFailed = false;
             return false;
         }
         if (hand.reloadFailed)
             return true;
-        // An NPC that uses up its ammunition does not go through the motions of a reload it has nothing for.
-        if (hand.reloading <= 0 && NpcAmmunition.exhausted(npc, weapon))
+        // An NPC does not go through the motions of a reload it has nothing for, which it would repeat whenever the goal restarts.
+        if (hand.reloading <= 0 && NpcAmmunition.nothingToLoad(npc, weapon))
         {
             outOfAmmunition(hand);
             return true;
@@ -283,6 +302,17 @@ public final class NpcEquipmentRangedGoal extends Goal
             return true;
         }
         return false;
+    }
+
+    /** Carries on a reload the hand has started, as long as it still holds the weapon it started it for. */
+    private void continueReload(Hand hand)
+    {
+        if (hand.reloading <= 0)
+            return;
+        if (hand.lastWeapon != null && hand.lastWeapon == npc.getItemInHand(hand.side))
+            reload(hand, hand.lastWeapon);
+        else
+            hand.reset();
     }
 
     /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */
@@ -311,10 +341,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     public void stop()
     {
         cancelUse();
-        main.reloading = 0;
         main.reloadFailed = false;
         main.spinSpeed = 0F;
-        off.reloading = 0;
         off.reloadFailed = false;
         off.spinSpeed = 0F;
         fired = false;

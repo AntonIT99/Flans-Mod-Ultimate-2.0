@@ -562,6 +562,7 @@
   "options.flansmodultimate.showHitMarker": "Show Hit Marker",
   "options.flansmodultimate.showPackNameInItemDescriptions": "Show Pack Names",
   "options.flansmodultimate.showShootableDurabilityBars": "Ammo Durability Bars",
+  "options.flansmodultimate.showTeamsControls": "Show Teams Control Reminders",
   "options.flansmodultimate.smokeParticlesCount": "Smoke Particles Count",
   "options.flansmodultimate.smokeParticlesRange": "Smoke Particles Range",
   "options.flansmodultimate.suppressionAffectsRiders": "Suppression Affects Riders",

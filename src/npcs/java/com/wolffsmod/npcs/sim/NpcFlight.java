@@ -111,7 +111,7 @@ public final class NpcFlight
         boolean engaged = target != null && target.isAlive();
         if (type == Flight.PLANE)
         {
-            float wanted = engaged ? attackYaw(npc, target) : loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), loiterRadius(npc), (npc.getId() & 1) == 0, yaw);
+            float wanted = engaged ? attackYaw(npc, target) : idleYaw(npc, motion, yaw);
             if (!engaged)
                 extending = false;
             double speed = planeSpeed(tuning.get(Value.FLIGHT_SPEED), motion.horizontalDistance());
@@ -131,6 +131,14 @@ public final class NpcFlight
         }
         npc.setYRot(yaw);
         npc.setYBodyRot(yaw);
+    }
+
+    /** Unlimited roaming follows the local wander direction instead of steering back toward home. */
+    static float idleYaw(EntityNPCInterface npc, Vec3 motion, float heading)
+    {
+        if (npc.ais.walkingRange == 0 && !npc.ais.returnToStart)
+            return motion.horizontalDistanceSqr() > 4.0E-4D ? MountMotion.yaw(motion) : heading;
+        return loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), loiterRadius(npc), (npc.getId() & 1) == 0, heading);
     }
 
     /**

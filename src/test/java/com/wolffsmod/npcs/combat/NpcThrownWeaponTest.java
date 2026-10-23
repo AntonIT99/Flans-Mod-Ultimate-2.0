@@ -151,11 +151,15 @@ class NpcThrownWeaponTest
     }
 
     @Test
-    void aProjectileSlotThrowDisplaysItsItemDuringWindupAndClearsItOnThrowOrCancellation()
+    @SuppressWarnings("java:S3011") // Mockito skips construction; install the final AI settings that the combat goal reads.
+    void aProjectileSlotThrowDisplaysItsItemDuringWindupAndClearsItOnThrowOrCancellation() throws ReflectiveOperationException
     {
         for (boolean grenade : List.of(false, true))
         {
-            EntityNPCInterface npc = mock(EntityNPCInterface.class, withSettings().extraInterfaces(NpcThrowPresentation.class));
+            EntityNPCInterface npc = mock(EntityNPCInterface.class, withSettings().extraInterfaces(NpcThrowPresentation.class, NpcEquipmentRangedGoal.Holder.class));
+            var aiField = EntityNPCInterface.class.getField("ais");
+            aiField.setAccessible(true);
+            aiField.set(npc, new DataAI(npc));
             AtomicReference<ItemStack> display = new AtomicReference<>(ItemStack.EMPTY);
             NpcThrowPresentation presentation = (NpcThrowPresentation) npc;
             doAnswer(call ->
@@ -231,6 +235,7 @@ class NpcThrownWeaponTest
                     equipment.when(() -> FlansEquipment.prepareThrow(npc, spare)).thenReturn(Optional.of(shot));
                 }
                 NpcEquipmentRangedGoal goal = new NpcEquipmentRangedGoal(npc);
+                when(((NpcEquipmentRangedGoal.Holder) npc).wolffsmodnpcsItemGoal()).thenReturn(goal);
                 goal.tick();
                 assertSame(throwable, display.get());
                 assertSame(held, npc.getMainHandItem());
@@ -252,6 +257,7 @@ class NpcThrownWeaponTest
                 assertTrue(npc.inventory.drops.isEmpty());
                 for (int tick = 0; tick < 19; tick++)
                 {
+                    assertEquals(!grenade, NpcEquipmentRangedGoal.rushes(npc));
                     goal.tick();
                     assertTrue(display.get().isEmpty());
                     assertEquals(1, spare.getCount());

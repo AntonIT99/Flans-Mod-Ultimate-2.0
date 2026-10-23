@@ -18,6 +18,18 @@ class NpcWeaponOptionsTest
         Feature.ADVANCED_SEARCH_INTERVALS, Feature.STAGGER_NEAR_SEARCH);
 
     @Test
+    void driverGunChoiceSurvivesSaveAndReload()
+    {
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.set(Feature.DRIVER_GUNS, false);
+        CompoundTag tag = new CompoundTag();
+        options.save(tag);
+        NpcWeaponOptions restored = new NpcWeaponOptions();
+        restored.load(tag);
+        assertFalse(restored.enabled(Feature.DRIVER_GUNS));
+    }
+
+    @Test
     void physicalReturnChoiceSurvivesSaveAndReload()
     {
         NpcWeaponOptions options = new NpcWeaponOptions();

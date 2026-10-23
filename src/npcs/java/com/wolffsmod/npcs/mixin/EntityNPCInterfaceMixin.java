@@ -53,7 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Every hook into the Custom NPCs entity base class.
+ * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed.
  *
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
@@ -76,13 +76,14 @@ import java.util.UUID;
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
  * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
+ * <li>Solid part boxes replace the NPC's rectangular entity collision and pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
  * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
- * vehicle's target.</li>
+ * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
@@ -169,11 +170,22 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private final CrewGunners wolffsmodnpcsGunners = new CrewGunners();
     @Unique
+    private final NpcDriverGuns wolffsmodnpcsDriverGuns = new NpcDriverGuns();
+    @Unique
     private final NpcMeleeState wolffsmodnpcsMelee = new NpcMeleeState();
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
         super(type, level);
+    }
+
+    /** Non-respawning machines retain an inert wreck instead of vanilla's timed corpse removal. */
+    @Inject(method = "tickDeath", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsKeepWreck(CallbackInfo callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (npc.stats.spawnCycle == 3 && !npc.stats.hideKilledBody && NpcPresentation.of(npc).isKeepWreck())
+            callback.cancel();
     }
 
     // Presentation
@@ -282,9 +294,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     @Override
-    public boolean flansmodultimateUsePlayerAimRules()
+    public Optional<Boolean> flansmodultimateDynamicAimPose()
     {
-        return true;
+        return switch (NpcTuning.AimPose.values()[NpcTuning.of((EntityNPCInterface) (Object) this).get(NpcTuning.Value.AIM_POSE)])
+        {
+            case SERVER -> Optional.empty();
+            case DYNAMIC -> Optional.of(true);
+            case ENFORCED -> Optional.of(false);
+        };
     }
 
     @Override
@@ -342,7 +359,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             goalSelector.removeGoal(wolffsmodnpcsObjectiveGoal);
         if (wolffsmodnpcsApproachGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
-        wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
+        // Rebuilding Custom NPCs' tasks must not discard an ongoing reload or a throwable's cooldown.
+        if (wolffsmodnpcsItemGoal == null)
+            wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
         wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
@@ -705,6 +724,27 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
 
     // Vehicle simulation
 
+    @Inject(method = "canBeCollidedWith", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsUseHullCollision(CallbackInfoReturnable<Boolean> callback)
+    {
+        if (wolffsmodnpcsHasSolidHull())
+            callback.setReturnValue(false);
+    }
+
+    @Inject(method = "isPushable", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsNoHullPushing(CallbackInfoReturnable<Boolean> callback)
+    {
+        if (wolffsmodnpcsHasSolidHull())
+            callback.setReturnValue(false);
+    }
+
+    @Unique
+    private boolean wolffsmodnpcsHasSolidHull()
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        return NpcEquipment.enabled(npc, Feature.PART_HITBOXES) && NpcEquipment.enabled(npc, Feature.SOLID_HITBOXES) && flansmodultimatePartBody().isPresent();
+    }
+
     @Override
     public NpcVehicleState wolffsmodnpcsVehicleState()
     {
@@ -732,6 +772,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             NpcPathDebug.tick(npc, state);
             NpcCrew.tick(npc);
             wolffsmodnpcsGunners.tick(npc);
+            wolffsmodnpcsDriverGuns.tick(npc);
             NpcDrivers.tick(npc);
         }
         if (wolffsmodnpcsTickStarted != 0L)

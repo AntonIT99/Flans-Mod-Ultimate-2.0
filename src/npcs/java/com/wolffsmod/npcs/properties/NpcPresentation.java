@@ -29,6 +29,8 @@ public final class NpcPresentation
     private boolean hurtFlash = true;
     @Setter
     private boolean deathRotation = true;
+    @Setter
+    private boolean keepWreck;
     private final NpcVehicleSounds vehicleSounds = new NpcVehicleSounds();
     private String displayModel = "";
     private boolean modelInitialized;
@@ -55,6 +57,7 @@ public final class NpcPresentation
         deathRotation = !tag.contains(DEATH_ROTATION, Tag.TAG_BYTE) || tag.getBoolean(DEATH_ROTATION);
         displayModel = tag.getString(DISPLAY_MODEL);
         modelInitialized = tag.contains(DISPLAY_MODEL, Tag.TAG_STRING);
+        keepWreck = tag.getBoolean("KeepWreck");
         vehicleSounds.load(tag);
         mainHand = HeldItemSettings.load(tag.getCompound("MainHand"));
         offHand = HeldItemSettings.load(tag.getCompound("OffHand"));
@@ -67,6 +70,7 @@ public final class NpcPresentation
         tag.putBoolean(DEATH_ROTATION, deathRotation);
         if (modelInitialized)
             tag.putString(DISPLAY_MODEL, displayModel);
+        tag.putBoolean("KeepWreck", keepWreck);
         vehicleSounds.save(tag);
         tag.put("MainHand", mainHand.save());
         tag.put("OffHand", offHand.save());

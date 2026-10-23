@@ -40,6 +40,12 @@ public final class CustomNpcsPlatform
         return CustomNpcTactics.of(npc).getVariant();
     }
 
+    /** Changes the restored tactical variant using the same validated state as the AI editor and scripts. */
+    public static void setTacticalVariant(EntityNPCInterface npc, int variant)
+    {
+        CustomNpcTactics.of(npc).setVariant(variant);
+    }
+
     /** The distance setting of the NPC's Custom NPCs tactical variant. */
     public static int tacticalRange(EntityNPCInterface npc)
     {

@@ -129,7 +129,7 @@ public final class TeamsSelectScreen extends Screen
         graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top, 0, 0, 256, 22, 256, 256);
         int count = visibleRows + (pageCount > 1 ? 1 : 0);
         for (int row = 0; row < count; row++)
-            graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * row, 0, classMenu ? 23 : 48, 256, 24, 256, 256);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * row, 0, classMenu && row < visibleRows ? 23 : 48, 256, 24, 256, 256);
         graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * count, 0, 73, 256, 7, 256, 256);
         graphics.drawString(font, title, left + 8, top + 7, 0xFFFFFF, true);
         if (pageCount > 1)

@@ -117,6 +117,31 @@ class NpcEquipmentRefillTest
     }
 
     @Test
+    void infiniteAmmunitionCopiesTheProjectileSlotOrElseTheGunsDefaultAmmunition()
+    {
+        try (Inventory inventory = new Inventory())
+        {
+            inventory.options.when(() -> NpcEquipment.enabled(inventory.npc, Feature.CONSUME_AMMO)).thenReturn(false);
+            ItemStack gun = inventory.weapon("rifle", false);
+            ItemStack slotted = new ItemStack(Items.IRON_NUGGET);
+            ItemStack issued = new ItemStack(Items.GOLD_NUGGET, 16);
+            inventory.equipped(1, slotted);
+            inventory.equipment.when(() -> FlansEquipment.createDefaultAmmunition(gun)).thenReturn(Optional.of(issued));
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, issued)).thenReturn(true);
+            assertSame(issued, NpcAmmunition.infiniteTemplate(inventory.npc, gun).orElseThrow());
+            assertFalse(NpcAmmunition.nothingToLoad(inventory.npc, gun));
+
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted)).thenReturn(true);
+            assertSame(slotted, NpcAmmunition.infiniteTemplate(inventory.npc, gun).orElseThrow());
+
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted)).thenReturn(false);
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, issued)).thenReturn(false);
+            assertTrue(NpcAmmunition.infiniteTemplate(inventory.npc, gun).isEmpty());
+            assertTrue(NpcAmmunition.nothingToLoad(inventory.npc, gun));
+        }
+    }
+
+    @Test
     void theProjectileSlotRefillsAThrowableWithoutReplacingTheHeldSwordOrShield()
     {
         try (Inventory inventory = new Inventory())

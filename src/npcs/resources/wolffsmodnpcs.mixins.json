@@ -24,9 +24,12 @@
       "PathNavigationMixin"
   ],
   "client": [
+      "GuiNPCInvMixin",
       "GuiNpcAIMixin",
       "GuiNpcMobSpawnerMixin",
       "NpcArmorControlsMixin",
+      "NpcBorrowedLayersMixin",
+      "NpcBorrowedModelMixin",
       "NpcEditorMenuMixin",
       "NpcEquipmentAnimationMixin",
       "NpcModelBrowserMixin",

@@ -3,7 +3,10 @@ package com.wolffsmod.npcs.mixin;
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.client.FlanSoldierBrowser;
 import com.wolffsmod.npcs.client.NpcModelNameScroll;
+import com.wolffsmod.npcs.client.NpcPresetControls;
 import com.wolffsmod.npcs.model.*;
+import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.network.NpcPresetPacket;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationEntities;
@@ -26,6 +29,7 @@ import java.util.*;
  * Groups ships separately, adds content-pack folders and restores parent viewports in the model picker while retaining Custom NPCs' model selection and save logic.
  * Shows full-name hover tooltips for shortened picker entries and hides the unsupported simple renderer for Flan model entities.
  * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the toggle that applies that class's loadout on selection and the toggle that keeps the NPC's own skin.
+ * Offers shared behaviour presets and Undo alongside the selected model.
  * Classes with several skins expose a variant folder with saved skin selection, like vehicle paintjobs.
  */
 // Mixin merges this class into the target, so self-casts are valid.
@@ -33,6 +37,9 @@ import java.util.*;
 @Mixin(value = GuiCreationEntities.class, remap = false)
 public abstract class NpcModelBrowserMixin
 {
+    @Unique
+    private boolean wolffsmodnpcsPresetsRequested;
+
     @Shadow @SuppressWarnings("MismatchedCollectionQueryUpdate") // Shadowed target list, populated by the target.
     private List<EntityType<? extends Entity>> types;
     @Shadow
@@ -95,6 +102,12 @@ public abstract class NpcModelBrowserMixin
         scroll.setSelectedIndex(selected < 0 ? -1 : selected + offset);
         wolffsmodnpcsRestoreSelectionScroll();
         FlanSoldierBrowser.addLoadoutControls(screen, wolffsmodnpcsSoldiers != null);
+        NpcPresetControls.addPicker(screen);
+        if (!wolffsmodnpcsPresetsRequested)
+        {
+            wolffsmodnpcsPresetsRequested = true;
+            NpcNetwork.sendToServer(NpcPresetPacket.request(screen.npc.getId()));
+        }
         if (FlanModelRendering.manages(screen.playerdata))
         {
             screen.getButton(110).visible = false;

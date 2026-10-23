@@ -98,7 +98,7 @@ public final class NpcEquipment
     /** @return whether the NPC attacks at range: with an equipped ranged weapon, or else with what its projectile slot holds */
     public static boolean fightsAtRange(EntityNPCInterface npc)
     {
-        return weaponAuthority(npc) ? ranged(npc) : npc.inventory.getProjectile() != null;
+        return weaponAuthority(npc) ? ranged(npc) : !NpcAmmunition.modelTemplate(npc).isEmpty();
     }
 
     /**
@@ -111,7 +111,12 @@ public final class NpcEquipment
     {
         if (ranged(npc))
             return NpcAPI.Instance().getIItemStack(rangedWeapon(npc));
-        return weaponAuthority(npc) ? null : npc.inventory.getProjectile();
+        if (weaponAuthority(npc))
+            return null;
+        if (npc.inventory.getProjectile() != null)
+            return npc.inventory.getProjectile();
+        ItemStack projectile = NpcAmmunition.modelTemplate(npc);
+        return projectile.isEmpty() ? null : NpcAPI.Instance().getIItemStack(projectile);
     }
 
     /**

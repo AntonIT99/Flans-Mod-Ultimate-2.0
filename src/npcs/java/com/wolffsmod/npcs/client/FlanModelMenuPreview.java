@@ -20,22 +20,25 @@ public final class FlanModelMenuPreview
 
     public static void render(GuiCreationScreenInterface screen, GuiGraphics graphics, FlanModelEntity model, int rotation)
     {
+        render(graphics, model, screen.npc.display.getSkinTexture(), rotation, screen.guiLeft + 128, screen.guiTop + 32, screen.guiLeft + screen.imageWidth - 12, screen.guiTop + 184);
+    }
+
+    /** Draws the model fitted inside the given screen box, clipped to it. */
+    @SuppressWarnings("java:S107") // Shared editor entry point: model, skin, rotation and the four edges of its preview rectangle.
+    public static void render(GuiGraphics graphics, FlanModelEntity model, String skin, int rotation, int left, int top, int right, int bottom)
+    {
         var type = model.getInfoType();
         var modelType = model.getModelType();
         if (type == null || modelType == null)
             return;
         float lift = modelType.getShape().modelHeight();
         AABB bounds = FlanModelBounds.of(model);
-        ResourceLocation texture = ResourceLocation.tryParse(screen.npc.display.getSkinTexture());
+        ResourceLocation texture = ResourceLocation.tryParse(skin);
         if (texture == null)
             texture = model.getModelTexture();
         if (texture == null)
             return;
-        int left = screen.guiLeft + 128;
-        int right = screen.guiLeft + screen.imageWidth - 12;
-        int top = screen.guiTop + 32;
-        int bottom = screen.guiTop + 194;
-        Quaternionf orientation = Axis.XP.rotationDegrees(20).mul(Axis.YP.rotationDegrees(rotation));
+        Quaternionf orientation = Axis.XP.rotationDegrees(20).mul(Axis.YP.rotationDegrees(rotation + 180F));
         float scale = FlanPreviewFraming.pixelsPerBlock(bounds, orientation, (right - left), (bottom - top));
         var center = bounds.getCenter();
         graphics.flush();

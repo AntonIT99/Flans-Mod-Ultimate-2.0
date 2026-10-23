@@ -36,7 +36,7 @@ public record NpcPresetPacket(int entityId, Action action, String preset, Compou
         /** Client to server: apply the preset. */
         APPLY,
         /** Server to client: these are the settings. */
-        STATE
+        STATE, UNDO
     }
 
     public static NpcPresetPacket request(int entityId)
@@ -49,11 +49,17 @@ public record NpcPresetPacket(int entityId, Action action, String preset, Compou
         return new NpcPresetPacket(entityId, Action.APPLY, preset.name(), new CompoundTag());
     }
 
+    public static NpcPresetPacket undo(int entityId)
+    {
+        return new NpcPresetPacket(entityId, Action.UNDO, "", new CompoundTag());
+    }
+
     public static NpcPresetPacket state(EntityNPCInterface npc)
     {
         CompoundTag values = new CompoundTag();
         for (NpcPresetSetting setting : NpcPresetSetting.values())
             values.putInt(setting.name(), setting.get(npc));
+        values.putBoolean("CanUndo", NpcPresetRequests.canUndo(npc));
         return new NpcPresetPacket(npc.getId(), Action.STATE, "", values);
     }
 
@@ -87,6 +93,7 @@ public record NpcPresetPacket(int entityId, Action action, String preset, Compou
     {
         switch (action)
         {
+            case UNDO -> NpcPresetRequests.undo(player, entityId);
             case GET -> NpcPresetRequests.sendState(player, entityId);
             case APPLY -> named().ifPresent(chosen -> NpcPresetRequests.apply(player, entityId, chosen));
             default -> {

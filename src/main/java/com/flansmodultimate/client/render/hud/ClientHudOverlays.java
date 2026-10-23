@@ -164,6 +164,7 @@ public final class ClientHudOverlays
         renderPlayerAmmo(g, sw, sh);
         renderDigitalAmmo(g, sh);
         renderTeamInfo(g, sw);
+        renderTeamsControls(g, sw, sh);
         renderKillMessages(g, sw, sh);
         renderVehicleDebug(g, sw, sh);
     };
@@ -891,6 +892,29 @@ public final class ClientHudOverlays
         }
 
         RenderSystem.disableBlend();
+    }
+
+    /** Small binding reminders on the left, below the vehicle readouts and above chat. */
+    private static void renderTeamsControls(GuiGraphics g, int sw, int sh)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        PacketTeamsState state = TeamsClientState.get();
+        if (!ModClientConfig.get().showTeamsControls || mc.player == null || mc.screen != null || state == null || !state.isEnabled() || !state.isRoundRunning())
+            return;
+
+        List<Component> hints = KeyInputHandler.teamsControlHints();
+        if (hints.isEmpty())
+            return;
+        float scale = 0.75F;
+        int width = hints.stream().mapToInt(mc.font::width).max().orElse(0);
+        scale = Math.min(scale, (sw - 8F) / Math.max(1, width));
+        g.pose().pushPose();
+        g.pose().translate(4, sh / 2F, 0);
+        g.pose().scale(scale, scale, 1);
+        g.fill(-2, -2, width + 2, hints.size() * LEGACY_HUD_LINE_HEIGHT, 0x66000000);
+        for (int i = 0; i < hints.size(); i++)
+            g.drawString(mc.font, hints.get(i), 0, i * LEGACY_HUD_LINE_HEIGHT, 0xFFCCCCCC, true);
+        g.pose().popPose();
     }
 
     /**

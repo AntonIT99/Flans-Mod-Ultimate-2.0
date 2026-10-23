@@ -2,6 +2,8 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.WeaponSwitch;
 import lombok.AccessLevel;
@@ -61,9 +63,63 @@ public final class NpcAmmunition
         return NpcEquipment.enabled(npc, Feature.CONSUME_AMMO) && !hasAmmunition(npc, weapon);
     }
 
+    /**
+     * @return whether a reload of the gun would load nothing: ammunition that is used up has none left, and infinite
+     *         ammunition has no template to copy
+     */
+    public static boolean nothingToLoad(EntityNPCInterface npc, ItemStack weapon)
+    {
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+            return !hasAmmunition(npc, weapon);
+        return infiniteTemplate(npc, weapon).isEmpty();
+    }
+
+    /**
+     * @return what infinite ammunition copies to reload the gun: the projectile slot when the gun takes what it holds, or
+     *         else the ammunition the gun is issued with by default; never a stack to use up
+     */
+    public static Optional<ItemStack> infiniteTemplate(EntityNPCInterface npc, ItemStack weapon)
+    {
+        ItemStack projectile = stack(npc.inventory.getProjectile());
+        if (FlansEquipment.acceptsAmmunition(weapon, projectile))
+            return Optional.of(projectile);
+        return FlansEquipment.createDefaultAmmunition(weapon).filter(ammunition -> FlansEquipment.acceptsAmmunition(weapon, ammunition));
+    }
+
+    /** Projectile-slot ammunition, or the selected vehicle bank's default when the slot is empty and consumption is off. */
+    public static ItemStack modelTemplate(EntityNPCInterface npc)
+    {
+        ItemStack projectile = stack(npc.inventory.getProjectile());
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (!projectile.isEmpty() || !options.enabled(Feature.PROJECTILES) || options.enabled(Feature.CONSUME_AMMO))
+            return projectile;
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (model == null || !(model.getInfoType() instanceof IDriveableType))
+            return projectile;
+        return FlansEquipment.createDefaultAmmunition(model.getInfoType(), options.enabled(Feature.SECONDARY_BANK)).orElse(ItemStack.EMPTY);
+    }
+
     private static boolean hasAmmunition(EntityNPCInterface npc, ItemStack weapon)
     {
         return FlansEquipment.acceptsAmmunition(weapon, stack(npc.inventory.getProjectile())) || find(npc, stack -> FlansEquipment.acceptsAmmunition(weapon, stack)) >= 0;
+    }
+
+    /**
+     * Ammunition template for a model's driver gun: the projectile slot, then real inventory slots in order, then the
+     * gun's default. Model weapons do not consume these stacks or exchange any inventory entries. Server thread.
+     */
+    public static ItemStack driverGunTemplate(EntityNPCInterface npc, IContentType gun)
+    {
+        if (gun.getItem() == null)
+            return ItemStack.EMPTY;
+        ItemStack weapon = new ItemStack(gun.getItem());
+        ItemStack projectile = stack(npc.inventory.getProjectile());
+        if (FlansEquipment.acceptsAmmunition(weapon, projectile))
+            return projectile;
+        for (ItemStack candidate : inventory(npc))
+            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
+                return candidate;
+        return FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY);
     }
 
     /**

@@ -1,15 +1,35 @@
 package com.flansmodultimate.common.driveables.weapons;
 
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.types.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.*;
 
 class DriveableAmmoLoaderTest
 {
+    @Test
+    void defaultOrdnanceStaysInTheSelectedWeaponBank()
+    {
+        DriveableType type = mock(DriveableType.class);
+        BulletType shell = mock(BulletType.class);
+        BulletType bomb = mock(BulletType.class);
+        when(type.weaponType(false)).thenReturn(EnumWeaponType.SHELL);
+        when(type.weaponType(true)).thenReturn(EnumWeaponType.BOMB);
+        when(shell.getWeaponType()).thenReturn(EnumWeaponType.SHELL);
+        when(bomb.getWeaponType()).thenReturn(EnumWeaponType.BOMB);
+        when(type.getAmmoTypes()).thenReturn(List.of(bomb, shell));
+        assertSame(shell, DriveableAmmoLoader.defaultBankAmmo(type, false).orElseThrow());
+        assertSame(bomb, DriveableAmmoLoader.defaultBankAmmo(type, true).orElseThrow());
+        when(type.weaponType(true)).thenReturn(EnumWeaponType.NONE);
+        assertFalse(DriveableAmmoLoader.defaultBankAmmo(type, true).isPresent());
+    }
+
     @Test
     void prefersTheWeaponTypeTheDefinitionDeclaresForEachBank()
     {

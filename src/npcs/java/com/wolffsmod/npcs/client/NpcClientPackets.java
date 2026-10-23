@@ -56,8 +56,11 @@ public final class NpcClientPackets
         if (level == null || !(level.getEntity(packet.entityId()) instanceof EntityNPCInterface npc))
             return;
         packet.copyTo(npc);
+        NpcPresetControls.receive(npc, packet);
         if (Minecraft.getInstance().screen instanceof GuiWolffsMod tab)
             tab.presetsReceived(npc);
+        else if (Minecraft.getInstance().screen instanceof noppes.npcs.client.gui.model.GuiCreationEntities picker && picker.npc == npc)
+            picker.init();
     }
 
     public static void serverSettings(ServerControlPacket packet)
