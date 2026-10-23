@@ -6,12 +6,14 @@ import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataAI;
 import noppes.npcs.entity.data.DataRanged;
 import noppes.npcs.entity.data.DataStats;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,7 +41,7 @@ class NpcLauncherReloadTest
 
     @ParameterizedTest
     @CsvSource({"MAIN_HAND,80,80", "MAIN_HAND,120,80", "MAIN_HAND,40,80", "OFF_HAND,80,80", "OFF_HAND,120,80", "OFF_HAND,40,80"})
-    void reloadOverlapsCadenceInEitherHand(InteractionHand testedHand, double shotDelay, double reloadTime)
+    void reloadOverlapsCadenceInEitherHand(InteractionHand testedHand, double shotDelay, double reloadTime) throws ReflectiveOperationException
     {
         LivingEntity target = mock(LivingEntity.class);
         EntityNPCInterface npc = engagedNpc(target);
@@ -65,6 +67,7 @@ class NpcLauncherReloadTest
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
             tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
             options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(main);
+            options.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
             options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(true);
             equipment.when(() -> FlansEquipment.getWeaponProperties(main, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
             for (InteractionHand hand : InteractionHand.values())
@@ -110,7 +113,7 @@ class NpcLauncherReloadTest
     }
 
     @Test
-    void gunWithNothingToLoadDoesNotReloadAcrossEngagements()
+    void gunWithNothingToLoadDoesNotReloadAcrossEngagements() throws ReflectiveOperationException
     {
         LivingEntity target = mock(LivingEntity.class);
         EntityNPCInterface npc = engagedNpc(target);
@@ -130,6 +133,7 @@ class NpcLauncherReloadTest
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
             tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
             options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(gun);
+            options.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
             options.when(() -> NpcEquipment.flan(npc, InteractionHand.MAIN_HAND)).thenReturn(Optional.of(properties));
             equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
             ammunition.when(() -> NpcAmmunition.nothingToLoad(npc, gun)).thenReturn(true);
@@ -147,9 +151,10 @@ class NpcLauncherReloadTest
         }
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {"HIDDEN", "DEAD", "LOST", "MELEE", "DISARMED", "FLEE"})
     @SuppressWarnings("unused") // The ammunition mock only has to be open, so that the goal does not reach a real inventory.
-    void aReloadStartedInSightFinishesOutOfSight()
+    void aReloadFinishesOnceWhenTheEngagementEnds(String reason) throws ReflectiveOperationException
     {
         LivingEntity target = mock(LivingEntity.class);
         EntityNPCInterface npc = engagedNpc(target);
@@ -170,6 +175,7 @@ class NpcLauncherReloadTest
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
             tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
             options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(gun);
+            options.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
             options.when(() -> NpcEquipment.flan(npc, InteractionHand.MAIN_HAND)).thenReturn(Optional.of(properties));
             equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
             boolean[] loaded = {false};
@@ -182,19 +188,34 @@ class NpcLauncherReloadTest
             NpcEquipmentRangedGoal goal = new NpcEquipmentRangedGoal(npc);
             goal.tick();
             feedback.verify(() -> NpcReloadFeedback.reload(npc, InteractionHand.MAIN_HAND, 40));
-            // The NPC ducks into cover.
-            when(sensing.hasLineOfSight(target)).thenReturn(false);
+            switch (reason)
+            {
+                case "DEAD" -> when(target.isAlive()).thenReturn(false);
+                case "LOST" -> when(npc.getTarget()).thenReturn(null);
+                case "MELEE" -> when(npc.isInRange(target, 0D)).thenReturn(true);
+                case "DISARMED" -> options.when(() -> NpcEquipment.ranged(npc)).thenReturn(false);
+                case "FLEE" -> npc.ais.onAttack = 1;
+                default -> when(sensing.hasLineOfSight(target)).thenReturn(false);
+            }
+            goal.stop();
+            assertTrue(goal.canUse(), "The reload keeps the goal ticking without a ranged engagement");
             for (int tick = 0; tick < 40; tick++)
                 goal.tick();
             assertTrue(loaded[0]);
+            feedback.verify(() -> NpcReloadFeedback.reload(npc, InteractionHand.MAIN_HAND, 40), times(1));
+            attacks.verify(() -> NpcItemAttacks.loadFlanGun(npc, InteractionHand.MAIN_HAND), times(1));
             attacks.verify(() -> NpcItemAttacks.ranged(any(), any()), never());
         }
     }
 
     /** An NPC whose target is in range and in sight. */
-    private static EntityNPCInterface engagedNpc(LivingEntity target)
+    @SuppressWarnings("java:S3011") // Mockito skips construction; the goal also reads the NPC's final AI container.
+    private static EntityNPCInterface engagedNpc(LivingEntity target) throws ReflectiveOperationException
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        var aiField = EntityNPCInterface.class.getField("ais");
+        aiField.setAccessible(true);
+        aiField.set(npc, new DataAI(npc));
         when(npc.getTarget()).thenReturn(target);
         LookControl look = mock(LookControl.class);
         when(npc.getLookControl()).thenReturn(look);
@@ -211,6 +232,8 @@ class NpcLauncherReloadTest
         when(npc.isInRange(target, 32D)).thenReturn(true);
         Level level = mock(Level.class);
         when(npc.level()).thenReturn(level);
+        when(target.level()).thenReturn(level);
+        when(target.isAlive()).thenReturn(true);
         return npc;
     }
 }

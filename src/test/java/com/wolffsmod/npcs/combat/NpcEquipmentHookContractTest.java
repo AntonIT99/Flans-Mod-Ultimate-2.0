@@ -122,6 +122,28 @@ class NpcEquipmentHookContractTest
     }
 
     @Test
+    void borrowedSkinModelAndHullCollisionHooksMatchTheInstalledDependency() throws IOException
+    {
+        ClassNode npc = read(NPC);
+        assertDoesNotThrow(() -> method(npc, "()Z", "m_5829_", "canBeCollidedWith"));
+        assertDoesNotThrow(() -> method(npc, "()Z", "m_6094_", "isPushable"));
+        MethodNode animate = method(read("noppes/npcs/client/renderer/RenderCustomNpc$2"), "(Lnet/minecraft/world/entity/Entity;FFFFF)V", "m_6973_", "setupAnim");
+        assertEquals(1, calls(animate, "net/minecraft/client/model/EntityModel", "m_6973_", "(Lnet/minecraft/world/entity/Entity;FFFFF)V"));
+        String layerSignature = "(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/Entity;FFFFFF)V";
+        MethodNode layer = method(read("noppes/npcs/client/renderer/RenderCustomNpc$1"), layerSignature, "m_6494_", "render");
+        assertEquals(1, calls(layer, "net/minecraft/client/renderer/entity/layers/RenderLayer", "m_6494_", layerSignature));
+        ClassNode melee = read("noppes/npcs/ai/EntityAIAttackTarget");
+        for (String name : List.of("m_8036_", "m_8045_"))
+            assertEquals(1, calls(method(melee, "()Z", name), "noppes/npcs/entity/data/DataRanged", "getMeleeRange", "()I"));
+        for (String tactic : List.of("EntityAIOrbitTarget", "EntityAIAvoidTarget", "EntityAIDodgeShoot", "EntityAIAmbushTarget"))
+        {
+            ClassNode goal = read("noppes/npcs/ai/" + tactic);
+            assertDoesNotThrow(() -> method(goal, "()Z", "m_8036_", "canUse"));
+            assertDoesNotThrow(() -> method(goal, "()Z", "m_8045_", "canContinueToUse"));
+        }
+    }
+
+    @Test
     void rangedGoalReadsItsBurstItsIntervalAndItsPauseExactlyOnceEach() throws IOException
     {
         MethodNode tick = method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()V", "m_8037_", "tick");

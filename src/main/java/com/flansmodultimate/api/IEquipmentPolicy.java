@@ -10,6 +10,8 @@ import org.jetbrains.annotations.ApiStatus;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 
+import java.util.Optional;
+
 /** Optional living-entity policy for Flan equipment effects and presentation. Read on the entity's own side. */
 @ApiStatus.Experimental
 public interface IEquipmentPolicy
@@ -68,9 +70,20 @@ public interface IEquipmentPolicy
      *
      * @return whether this non-player follows enforced player aim rules before the entity fallback
      */
+    @SuppressWarnings("SameReturnValue") // Extension point: external addons may opt in to the enforced player rule.
     default boolean flansmodultimateUsePlayerAimRules()
     {
         return false;
+    }
+
+    /**
+     * Read on the entity's own side before the general aim rules. Addons must synchronize their preference to clients.
+     *
+     * @return an explicit aim preference (true for dynamic, false for always raised), or empty to inherit the general rules
+     */
+    default Optional<Boolean> flansmodultimateDynamicAimPose()
+    {
+        return Optional.empty();
     }
 
     /**

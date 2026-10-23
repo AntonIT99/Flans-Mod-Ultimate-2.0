@@ -97,8 +97,8 @@ class NpcPresetApplicationTest
         assertTrue(NpcPresetRequests.canUndo(npc));
         assertEquals(0, npc.stats.healthRegen);
         assertFalse(npc.stats.canDrown);
-        assertTrue(combat.isCustom(NpcTypeProperty.NO_FALL_DAMAGE));
-        assertTrue(npc.stats.noFallDamage);
+        assertFalse(combat.isCustom(NpcTypeProperty.NO_FALL_DAMAGE));
+        assertFalse(npc.stats.noFallDamage);
         assertTrue(presentation.isKeepWreck());
         // Already-matching fields are excluded from Undo, preserving later manual edits to them.
         npc.ais.returnToStart = true;
@@ -112,6 +112,19 @@ class NpcPresetApplicationTest
         assertTrue(npc.ais.returnToStart);
         assertTrue(options.enabled(Feature.CONSUME_AMMO));
         assertFalse(NpcPresetRequests.canUndo(npc));
+    }
+
+    @Test
+    void vehiclePresetsPreserveBothInheritedAndExplicitCustomModes()
+    {
+        EntityNPCInterface npc = npc();
+        combat.setCustom(NpcTypeProperty.POTION_IMMUNE, true);
+        NpcPreset.VEHICLE.apply(npc);
+        assertTrue(combat.isCustom(NpcTypeProperty.POTION_IMMUNE));
+        assertFalse(combat.isCustom(NpcTypeProperty.CAN_DROWN));
+        assertFalse(combat.isCustom(NpcTypeProperty.NO_FALL_DAMAGE));
+        assertFalse(combat.isCustom(NpcTypeProperty.HEALTH_REGEN));
+        assertTrue(options.enabled(Feature.DRIVER_GUNS));
     }
 
     @Test

@@ -15,18 +15,18 @@ class NpcWeaponOptionsTest
     /** Display states of the model, a frozen turret, extra chunk ticking, running out of ammunition, drawn hitboxes and taking driveables are never what an untouched NPC wants. */
     private static final Set<Feature> STARTS_DISABLED = EnumSet.of(Feature.SECONDARY_BANK, Feature.INVULNERABLE, Feature.TURRET_LOCKED, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED,
         Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.MELEE_DUAL_WIELD, Feature.DRIVE_DRIVEABLES,
-        Feature.ADVANCED_SEARCH_INTERVALS, Feature.STAGGER_NEAR_SEARCH, Feature.DRIVER_GUNS);
+        Feature.ADVANCED_SEARCH_INTERVALS, Feature.STAGGER_NEAR_SEARCH);
 
     @Test
     void driverGunChoiceSurvivesSaveAndReload()
     {
         NpcWeaponOptions options = new NpcWeaponOptions();
-        options.set(Feature.DRIVER_GUNS, true);
+        options.set(Feature.DRIVER_GUNS, false);
         CompoundTag tag = new CompoundTag();
         options.save(tag);
         NpcWeaponOptions restored = new NpcWeaponOptions();
         restored.load(tag);
-        assertTrue(restored.enabled(Feature.DRIVER_GUNS));
+        assertFalse(restored.enabled(Feature.DRIVER_GUNS));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.tactics.NpcTactics;
 import noppes.npcs.ai.EntityAIAvoidTarget;
@@ -21,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <ul>
  * <li>An equipped ranged weapon counts as a projectile for them, as it does when the NPC's goals are set up.</li>
  * <li>They wait while a tactic of the mod's own moves the NPC.</li>
+ * <li>They yield while a throwable weapon's cooldown sends the NPC into melee.</li>
  * </ul>
  */
 @SuppressWarnings("UnresolvedMixinReference")
@@ -31,10 +33,10 @@ public abstract class NpcTacticalGoalsMixin
     @Shadow(remap = false)
     private EntityNPCInterface npc;
 
-    @Inject(method = {"canUse", "m_8036_"}, at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"canUse", "m_8036_", "canContinueToUse", "m_8045_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsYieldToTactic(CallbackInfoReturnable<Boolean> callback)
     {
-        if (NpcTactics.of(npc) != Tactic.CUSTOM_NPCS)
+        if (NpcEquipmentRangedGoal.rushes(npc) || NpcTactics.of(npc) != Tactic.CUSTOM_NPCS)
             callback.setReturnValue(false);
     }
 

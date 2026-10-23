@@ -158,6 +158,20 @@ class NpcDriverGunsTest
     }
 
     @Test
+    void aDriverSeatGunAlsoFiresWhenItBelongsToNeitherBank()
+    {
+        try (Battle battle = new Battle())
+        {
+            battle.options.set(Feature.ALTERNATE_BARRELS, true);
+            battle.projectiles.when(() -> FlansProjectiles.getMuzzles(battle.definition, true, 0, false, MountAim.REST)).thenReturn(List.of());
+            WeaponMuzzle driver = new WeaponMuzzle(Vec3.ZERO, Optional.of(battle.weapon), List.of());
+            battle.projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(battle.definition), eq(0), anyInt(), eq(MountAim.REST))).thenReturn(Optional.of(driver));
+            battle.advance(8);
+            assertEquals(List.of(0, 2, 5, 7), battle.fired);
+        }
+    }
+
+    @Test
     void disabledGunsAndDamagedOrUnalignedVehiclesHoldFire()
     {
         try (Battle battle = new Battle())

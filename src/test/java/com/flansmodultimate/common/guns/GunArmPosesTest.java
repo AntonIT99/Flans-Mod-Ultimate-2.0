@@ -1,16 +1,40 @@
 package com.flansmodultimate.common.guns;
 
+import com.flansmodultimate.api.IEquipmentPolicy;
 import com.flansmodultimate.common.guns.GunArmPoses.Arm;
 import com.flansmodultimate.common.guns.GunArmPoses.HandItem;
 import com.flansmodultimate.common.guns.GunArmPoses.Result;
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class GunArmPosesTest
 {
+    @BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    void anExplicitEntityPreferenceOverridesTheGeneralRules()
+    {
+        LivingEntity entity = mock(LivingEntity.class, withSettings().extraInterfaces(IEquipmentPolicy.class));
+        IEquipmentPolicy policy = (IEquipmentPolicy) entity;
+        when(policy.flansmodultimateDynamicAimPose()).thenReturn(Optional.of(false));
+        assertFalse(GunArmPoses.isDynamic(entity));
+        when(policy.flansmodultimateDynamicAimPose()).thenReturn(Optional.of(true));
+        assertTrue(GunArmPoses.isDynamic(entity));
+    }
+
     private static Result enforced(HandItem main, HandItem off)
     {
         return GunArmPoses.resolve(main, off, false, false, false);

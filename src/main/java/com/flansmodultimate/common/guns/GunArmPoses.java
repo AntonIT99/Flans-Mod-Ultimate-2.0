@@ -217,6 +217,12 @@ public final class GunArmPoses
     /** Whether the entity's guns are raised only while active, from the server's rules and the player's choice. */
     public static boolean isDynamic(LivingEntity entity)
     {
+        if (entity instanceof IEquipmentPolicy policy)
+        {
+            var preference = policy.flansmodultimateDynamicAimPose();
+            if (preference.isPresent())
+                return preference.get();
+        }
         if (entity instanceof Player player)
         {
             return switch (ModCommonConfig.playerAimPose())

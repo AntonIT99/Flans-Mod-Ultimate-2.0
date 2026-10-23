@@ -383,7 +383,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("boarding", Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES, Value.KEEP_DISTANCE),
             Tab.named("flying", Value.CRUISE_HEIGHT, Value.ATTACK_HEIGHT, Value.CIRCLE_RADIUS, Value.PLANE_LANDING_DELAY, Value.HOVER_HEIGHT, Value.HELICOPTER_LANDING_DELAY, Value.LOW_FUEL)),
         ANIMATIONS(Section.LOOK, Scope.STANDARD,
-            Tab.named("equipment_animation", Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
+            Tab.named("equipment_animation", Value.AIM_POSE, Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
             Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
         EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES)),
         SOUNDS(Section.LOOK, Scope.ALL,
@@ -1168,6 +1168,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         return switch (value)
         {
+            case AIM_POSE -> NpcTuning.AimPose.values();
             case TERRAIN -> NpcTuning.Terrain.values();
             case SIGHT -> NpcTuning.Sight.values();
             case DRIVE_PRESET -> NpcTuning.DrivePreset.values();

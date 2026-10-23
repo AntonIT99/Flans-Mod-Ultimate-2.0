@@ -24,6 +24,7 @@ public final class FlanModelMenuPreview
     }
 
     /** Draws the model fitted inside the given screen box, clipped to it. */
+    @SuppressWarnings("java:S107") // Shared editor entry point: model, skin, rotation and the four edges of its preview rectangle.
     public static void render(GuiGraphics graphics, FlanModelEntity model, String skin, int rotation, int left, int top, int right, int bottom)
     {
         var type = model.getInfoType();
@@ -37,7 +38,7 @@ public final class FlanModelMenuPreview
             texture = model.getModelTexture();
         if (texture == null)
             return;
-        Quaternionf orientation = Axis.XP.rotationDegrees(20).mul(Axis.YP.rotationDegrees(rotation));
+        Quaternionf orientation = Axis.XP.rotationDegrees(20).mul(Axis.YP.rotationDegrees(rotation + 180F));
         float scale = FlanPreviewFraming.pixelsPerBlock(bounds, orientation, (right - left), (bottom - top));
         var center = bounds.getCenter();
         graphics.flush();

@@ -54,6 +54,7 @@ public final class EquipmentAnimationSupport
         GunArmPoses.Result poses = GunArmPoses.resolve(entity);
         for (InteractionHand hand : InteractionHand.values())
             hand(model, entity, hand, poses.get(hand));
+        attack(model, entity, poses);
         // A native two-handed use animation may have moved the other arm after its shield was posed.
         for (InteractionHand hand : InteractionHand.values())
             if (GunArmPoses.classify(entity.getItemInHand(hand)) == GunArmPoses.HandItem.SHIELD)
@@ -68,20 +69,45 @@ public final class EquipmentAnimationSupport
         if (pose == GunArmPoses.Arm.RELAXED)
             arm.xRot = arm.yRot = arm.zRot = 0F;
         else if (pose != GunArmPoses.Arm.NONE)
-        {
-            arm.xRot = model.head.xRot - (pose == GunArmPoses.Arm.THROW ? (float) Math.PI : (float) Math.PI / 2F);
-            arm.yRot = model.head.yRot;
-            arm.zRot = 0F;
-            if (pose == GunArmPoses.Arm.BOW)
-            {
-                ModelPart other = right ? model.leftArm : model.rightArm;
-                other.xRot = model.head.xRot - (float) Math.PI / 2F;
-                other.yRot = model.head.yRot + (right ? 0.4F : -0.4F);
-                other.zRot = 0F;
-            }
-        }
+            aiming(model, arm, right, pose);
         if (pose == GunArmPoses.Arm.NONE && mayAnimateUse(entity, hand))
             using(model, arm, right, entity.getUseItem().getUseAnimation());
+    }
+
+    private static void aiming(HumanoidModel<?> model, ModelPart arm, boolean right, GunArmPoses.Arm pose)
+    {
+        arm.xRot = model.head.xRot - (pose == GunArmPoses.Arm.THROW ? Mth.PI : Mth.HALF_PI);
+        arm.yRot = model.head.yRot;
+        arm.zRot = 0F;
+        if (pose == GunArmPoses.Arm.BOTH)
+        {
+            arm.xRot = -Mth.HALF_PI;
+            arm.yRot = right ? -0.05F : 0.05F;
+        }
+        if (pose == GunArmPoses.Arm.BOW)
+        {
+            ModelPart other = right ? model.leftArm : model.rightArm;
+            other.xRot = model.head.xRot - Mth.HALF_PI;
+            other.yRot = model.head.yRot + (right ? 0.4F : -0.4F);
+            other.zRot = 0F;
+        }
+    }
+
+    /** Restores vanilla's striking-arm stroke after a late equipment pose has replaced its rotations. */
+    private static void attack(HumanoidModel<?> model, LivingEntity entity, GunArmPoses.Result poses)
+    {
+        InteractionHand hand = entity.swingingArm == InteractionHand.OFF_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+        if (model.attackTime <= 0F || poses.get(hand) == GunArmPoses.Arm.NONE || poses.get(hand) == GunArmPoses.Arm.RELAXED || poses.get(hand) == GunArmPoses.Arm.THROW)
+            return;
+        ModelPart arm = (hand == InteractionHand.MAIN_HAND) == (entity.getMainArm() == HumanoidArm.RIGHT) ? model.rightArm : model.leftArm;
+        float eased = 1F - model.attackTime;
+        eased *= eased;
+        eased *= eased;
+        float stroke = Mth.sin((1F - eased) * Mth.PI);
+        float swing = Mth.sin(model.attackTime * Mth.PI);
+        arm.xRot -= stroke * 1.2F + swing * -(model.head.xRot - 0.7F) * 0.75F;
+        arm.yRot += model.body.yRot * 2F;
+        arm.zRot -= swing * 0.4F;
     }
 
     private static boolean mayAnimateUse(LivingEntity entity, InteractionHand hand)

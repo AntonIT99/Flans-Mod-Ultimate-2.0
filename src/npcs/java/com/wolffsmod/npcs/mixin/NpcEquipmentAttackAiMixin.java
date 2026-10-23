@@ -7,6 +7,7 @@ import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
 import noppes.npcs.entity.data.DataMelee;
+import noppes.npcs.entity.data.DataRanged;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,7 +29,13 @@ public abstract class NpcEquipmentAttackAiMixin
     @Redirect(method = {"canUse", "m_8036_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataInventory;getProjectile()Lnoppes/npcs/api/item/IItemStack;"))
     private IItemStack wolffsmodnpcsWeaponChoosesAttack(DataInventory inventory)
     {
-        return NpcEquipment.combatProjectile(npc);
+        return NpcEquipmentRangedGoal.rushes(npc) ? null : NpcEquipment.combatProjectile(npc);
+    }
+
+    @Redirect(method = {"canUse", "m_8036_", "canContinueToUse", "m_8045_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataRanged;getMeleeRange()I"))
+    private int wolffsmodnpcsPursueBetweenThrows(DataRanged ranged)
+    {
+        return NpcEquipmentRangedGoal.rushes(npc) ? 0 : ranged.getMeleeRange();
     }
 
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getDelay()I"))

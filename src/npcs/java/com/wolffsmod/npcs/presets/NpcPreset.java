@@ -4,7 +4,6 @@ import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.IDriveableType;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelFolder;
-import com.wolffsmod.npcs.presets.NpcPresetSetting.Values;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import lombok.Getter;
 import noppes.npcs.entity.EntityCustomNpc;
@@ -34,8 +33,8 @@ public enum NpcPreset
     PLAYER(HUMAN.targets, new Target(RESPAWN, 0), new Target(CONSUME_AMMO, 1)),
     /** Ground vehicles and mechas, with machine protections and persistent wrecks. */
     VEHICLE(MOB.targets, new Target(TERRAIN, 1), new Target(HIDE_BODY, 0), new Target(KEEP_WRECK, 1), new Target(HURT_FLASH, 0), new Target(DEATH_ROTATION, 0), new Target(CAN_DROWN, 1),
-        new Target(NO_FALL_DAMAGE, 3), new Target(POTION_IMMUNE, 3), new Target(IGNORE_COBWEB, 3), new Target(HEALTH_REGEN, 1), new Target(COMBAT_REGEN, 1), new Target(MODEL_WEAPON_STATS, 1),
-        new Target(MODEL_SOUNDS, 1), new Target(DRIVING, 1), new Target(ENGINE_IDLE, 1), new Target(ENGINE_MOVEMENT, 1)),
+        new Target(NO_FALL_DAMAGE, 1), new Target(POTION_IMMUNE, 3), new Target(IGNORE_COBWEB, 3), new Target(HEALTH_REGEN, 1), new Target(COMBAT_REGEN, 1), new Target(MODEL_WEAPON_STATS, 1),
+        new Target(MODEL_SOUNDS, 1), new Target(DRIVING, 1), new Target(ENGINE_IDLE, 1), new Target(ENGINE_MOVEMENT, 1), new Target(DRIVER_GUNS, 1)),
     /** Aircraft flight, automatically adapted to helicopters. */
     PLANE(VEHICLE.targets, new Target(MOVEMENT, 1), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 1), new Target(TACTIC, NpcTuning.Tactic.STRAFING_RUN.ordinal())),
     /** Surface watercraft. */
@@ -91,7 +90,7 @@ public enum NpcPreset
         }
         if (this == VEHICLE && target.setting() == DRIVING && FlanModelFolder.of(model(npc)) == FlanModelFolder.MECHA)
             return 0;
-        return target.value();
+        return target.setting().presetValue(npc, target.value());
     }
 
     @Nullable

@@ -16,18 +16,22 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 /**
- * Driver-controlled gun mounts in the bank the NPC is not using as its main weapon. They fire independently of the main
+ * Driver-controlled gun mounts in the other bank, plus a separate driver-seat gun. They fire independently of the main
  * attack, using compatible inventory ammunition as templates, or their own default ammunition. One instance per NPC;
  * all firing and timing run on the server thread. The selected bank remains owned by the ordinary ranged attack.
  */
 public final class NpcDriverGuns
 {
     private static final int MAX_SHOTS_PER_TICK = 8;
-    private final Map<IContentType, Gun> guns = new LinkedHashMap<>();
+    private final Map<Mount, Gun> guns = new LinkedHashMap<>();
     private IContentType definition;
     private boolean secondary;
 
     private record Context(EntityNPCInterface npc, LivingEntity target, FlanModelEntity model, NpcVehicleState state, NpcWeaponOptions options, MountAim aim)
+    {}
+
+    /** A bank gun and a driver's seat gun retain independent firing and reload progress. */
+    private record Mount(IContentType weapon, int seat)
     {}
 
     private static final class Gun
@@ -80,7 +84,14 @@ public final class NpcDriverGuns
         for (WeaponMuzzle muzzle : FlansProjectiles.getMuzzles(current, secondary, 0, false, aim))
             muzzle.weapon().ifPresent(weapon -> muzzles.computeIfAbsent(weapon, key -> new ArrayList<>()).add(muzzle));
         Context context = new Context(npc, target, model, state, options, aim);
-        muzzles.forEach((weapon, points) -> fire(context, weapon, points));
+        muzzles.forEach((weapon, points) -> fire(context, new Mount(weapon, -1), points));
+        // A DriverGun/PilotGun on seat zero is separate from the primary/secondary shoot-point banks.
+        FlansProjectiles.getSeatMuzzle(current, 0, 0, aim).filter(muzzle -> muzzle.weapon().isPresent()).ifPresent(muzzle ->
+        {
+            boolean inBank = FlansProjectiles.getMuzzles(current, !secondary, 0, false, aim).contains(muzzle) || muzzles.values().stream().anyMatch(points -> points.contains(muzzle));
+            if (!inBank)
+                fire(context, new Mount(muzzle.weapon().orElseThrow(), 0), List.of(muzzle));
+        });
     }
 
     private static boolean engages(EntityNPCInterface npc, LivingEntity target, NpcVehicleState state, NpcWeaponOptions options)
@@ -90,11 +101,12 @@ public final class NpcDriverGuns
             && !NpcCrew.holdsFire(npc) && (!options.enabled(Feature.FIRE_WHEN_ALIGNED) || state.isAligned());
     }
 
-    private void fire(Context context, IContentType weapon, List<WeaponMuzzle> points)
+    private void fire(Context context, Mount mount, List<WeaponMuzzle> points)
     {
         EntityNPCInterface npc = context.npc();
         NpcWeaponOptions options = context.options();
-        Gun gun = guns.computeIfAbsent(weapon, key -> new Gun());
+        IContentType weapon = mount.weapon();
+        Gun gun = guns.computeIfAbsent(mount, key -> new Gun());
         if (gun.cooldown >= 1D || weapon.getItem() == null)
             return;
         ItemStack ammo = NpcAmmunition.driverGunTemplate(npc, weapon);
@@ -103,7 +115,7 @@ public final class NpcDriverGuns
             return;
         for (int trigger = 0; trigger < MAX_SHOTS_PER_TICK && gun.cooldown < 1D; trigger++)
         {
-            List<WeaponMuzzle> selected = selectedMuzzles(context, weapon, gun, points);
+            List<WeaponMuzzle> selected = selectedMuzzles(context, mount, gun, points);
             boolean fired = false;
             for (WeaponMuzzle muzzle : selected)
                 fired = launch(context, muzzle, ammo, gun.fired) || fired;
@@ -115,8 +127,11 @@ public final class NpcDriverGuns
         }
     }
 
-    private List<WeaponMuzzle> selectedMuzzles(Context context, IContentType weapon, Gun gun, List<WeaponMuzzle> points)
+    private List<WeaponMuzzle> selectedMuzzles(Context context, Mount mount, Gun gun, List<WeaponMuzzle> points)
     {
+        if (mount.seat() >= 0)
+            return FlansProjectiles.getSeatMuzzle(definition, mount.seat(), gun.sequence, context.aim()).map(List::of).orElse(List.of());
+        IContentType weapon = mount.weapon();
         if (!context.options().enabled(Feature.ALTERNATE_BARRELS))
             return points;
         // A bank may alternate between different gun types. Skip the other types' turns without starving this gun.

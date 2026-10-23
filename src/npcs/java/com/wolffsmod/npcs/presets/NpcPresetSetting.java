@@ -76,6 +76,8 @@ public enum NpcPresetSetting
     MODEL_SOUNDS(Feature.MODEL_SOUNDS),
     /** Driving. */
     DRIVING(Feature.DRIVING),
+    /** Driver guns beside the main weapon. */
+    DRIVER_GUNS(Feature.DRIVER_GUNS),
     /** Drive driveables. */
     DRIVE_DRIVEABLES(Feature.DRIVE_DRIVEABLES),
     /** Hurt flash. */
@@ -156,6 +158,16 @@ public enum NpcPresetSetting
     public int get(EntityNPCInterface npc)
     {
         return getter.applyAsInt(npc);
+    }
+
+    /** Presets change stored survival defaults while preserving the builder's inheritance choice. */
+    public int presetValue(EntityNPCInterface npc, int value)
+    {
+        return switch (this)
+        {
+            case CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> value / 2 * 2 + get(npc) % 2;
+            default -> value;
+        };
     }
 
     public void set(EntityNPCInterface npc, int value)

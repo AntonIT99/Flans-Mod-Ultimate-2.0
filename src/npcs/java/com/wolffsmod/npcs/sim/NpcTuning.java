@@ -126,7 +126,9 @@ public final class NpcTuning
         LOW_FUEL(15, 0, 50),
         /** Optional search intervals by distance band; 0 retains the interpolated near/far interval for that band. */
         SEARCH_BAND_0_INTERVAL(0, 0, 1200), SEARCH_BAND_1_INTERVAL(0, 0, 1200), SEARCH_BAND_2_INTERVAL(0, 0, 1200), SEARCH_BAND_3_INTERVAL(0, 0, 1200), SEARCH_BAND_4_INTERVAL(0, 0,
-            1200), SEARCH_BAND_5_INTERVAL(0, 0, 1200);
+            1200), SEARCH_BAND_5_INTERVAL(0, 0, 1200),
+        /** Index into {@link AimPose}; by default the server's mob aim rule applies. */
+        AIM_POSE(0, 0, AimPose.values().length - 1);
 
         private final int fallback;
         private final int minimum;
@@ -158,6 +160,12 @@ public final class NpcTuning
         {
             return Math.max(minimum, Math.min(maximum, value));
         }
+    }
+
+    /** Per-NPC preference for raising held guns. */
+    public enum AimPose
+    {
+        SERVER, DYNAMIC, ENFORCED
     }
 
     /** Which free driveables an NPC that drives them takes; never one locked with a key. */
