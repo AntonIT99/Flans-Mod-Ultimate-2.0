@@ -20,7 +20,7 @@ public final class FlanModelMenuPreview
 
     public static void render(GuiCreationScreenInterface screen, GuiGraphics graphics, FlanModelEntity model, int rotation)
     {
-        render(graphics, model, screen.npc.display.getSkinTexture(), rotation, screen.guiLeft + 128, screen.guiTop + 32, screen.guiLeft + screen.imageWidth - 12, screen.guiTop + 194);
+        render(graphics, model, screen.npc.display.getSkinTexture(), rotation, screen.guiLeft + 128, screen.guiTop + 32, screen.guiLeft + screen.imageWidth - 12, screen.guiTop + 184);
     }
 
     /** Draws the model fitted inside the given screen box, clipped to it. */

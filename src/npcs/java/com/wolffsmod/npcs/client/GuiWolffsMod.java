@@ -11,7 +11,6 @@ import com.wolffsmod.npcs.network.NpcPresetPacket;
 import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.presets.NpcPreset;
-import com.wolffsmod.npcs.presets.NpcPresetSetting;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -39,7 +38,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.*;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -70,10 +68,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int ESSENTIAL_LINK_ID = 310;
     private static final int PRESET_ID = 320;
     private static final int PRESET_APPLY_ID = 321;
+    private static final int PRESET_UNDO_ID = 322;
     private static final int HUB_BUTTON_ID = 330;
     private static final int HURT_FLASH_ID = 400;
     private static final int DEATH_ROTATION_ID = 401;
     private static final int HIDE_BODY_ID = 402;
+    private static final int KEEP_WRECK_ID = 403;
     private static final int IDLE_ENABLED_ID = 404;
     private static final int MOVEMENT_ENABLED_ID = 405;
     private static final int VARIABLE_PITCH_ID = 406;
@@ -152,8 +152,6 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
     /** The hub tab the overview shows; kept while the game runs. */
     private static final AtomicReference<Hub> HUB = new AtomicReference<>(Hub.GENERAL);
-    /** The preset the overview offers to apply; kept while the game runs. */
-    private static final AtomicInteger SELECTED_PRESET = new AtomicInteger();
     private static final String PRESET = "wolffsmodnpcs.preset.";
 
     /** A tab of the overview, in the row along its top. Server holds the settings of the whole server instead of pages. */
@@ -201,7 +199,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @RequiredArgsConstructor
     private enum Look
     {
-        HURT_FLASH(HURT_FLASH_ID, true), DEATH_ROTATION(DEATH_ROTATION_ID, true), HIDE_BODY(HIDE_BODY_ID, false);
+        HURT_FLASH(HURT_FLASH_ID, true), DEATH_ROTATION(DEATH_ROTATION_ID, true), HIDE_BODY(HIDE_BODY_ID, false), KEEP_WRECK(KEEP_WRECK_ID, false);
 
         private final int id;
         private final boolean fallback;
@@ -387,7 +385,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         ANIMATIONS(Section.LOOK, Scope.STANDARD,
             Tab.named("equipment_animation", Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
             Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
-        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Feature.SHOOT_PARTICLES)),
+        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES)),
         SOUNDS(Section.LOOK, Scope.ALL,
             Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
@@ -575,9 +573,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** The presets below the Start here pages: a button choosing the preset, whose tooltip lists what it sets, and Apply. */
     private void initPresets(int x, int y)
     {
-        NpcPreset preset = selectedPreset();
+        NpcPreset preset = NpcPresetControls.selected(npc);
         boolean matches = presetsLoaded && preset.matches(npc);
-        Tooltip tooltip = Tooltip.create(presetTooltip(preset, matches));
+        Tooltip tooltip = Tooltip.create(NpcPresetControls.tooltip(npc, preset, presetsLoaded));
         int width = OVERVIEW_COLUMN - OVERVIEW_GAP;
         String[] names = Arrays.stream(NpcPreset.values()).map(NpcPreset::key).toArray(String[]::new);
         GuiButtonNop select = new GuiButtonNop(this, PRESET_ID, x, y, width, 20, names, preset.ordinal());
@@ -588,54 +586,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         select.setTooltip(tooltip);
         select.setEnabled(loaded);
         addButton(select);
-        GuiButtonNop apply = new GuiButtonNop(this, PRESET_APPLY_ID, x, y + ROW_HEIGHT, width, 20, new String[]{PRESET + "apply"}, 0);
+        GuiButtonNop apply = new GuiButtonNop(this, PRESET_APPLY_ID, x, y + ROW_HEIGHT, (width - 4) / 2, 20, new String[]{PRESET + "apply"}, 0);
         apply.setTooltip(tooltip);
         apply.setEnabled(loaded && presetsLoaded && !matches);
         addButton(apply);
+        GuiButtonNop undo = new GuiButtonNop(this, PRESET_UNDO_ID, x + (width + 4) / 2, y + ROW_HEIGHT, (width - 4) / 2, 20, new String[]{PRESET + "undo"}, 0);
+        undo.setEnabled(loaded && NpcPresetControls.canUndo(npc));
+        addButton(undo);
     }
 
-    private static NpcPreset selectedPreset()
+    private NpcPreset selectedPreset()
     {
-        NpcPreset[] presets = NpcPreset.values();
-        return presets[Math.floorMod(SELECTED_PRESET.get(), presets.length)];
-    }
-
-    /**
-     * What the preset is for, then one line per setting it sets, saying what the NPC has, what it gets, what that does and
-     * where Custom NPCs edits it, greyed where the NPC already has it, then what can still work against it.
-     */
-    private Component presetTooltip(NpcPreset preset, boolean matches)
-    {
-        MutableComponent tooltip = Component.empty().append(Component.translatable(preset.key()).withStyle(ChatFormatting.BOLD));
-        tooltip.append("\n").append(Component.translatable(preset.key() + HELP_SUFFIX));
-        if (!presetsLoaded)
-            return tooltip.append("\n").append(Component.translatable(PRESET + "loading").withStyle(ChatFormatting.GRAY));
-        for (NpcPreset.Target target : preset.getTargets())
-        {
-            NpcPresetSetting setting = target.setting();
-            int current = setting.get(npc);
-            Component name = Component.translatable(setting.key());
-            Component effect = Component.translatable(setting.key() + ".effect");
-            Component where = Component.translatable(setting.key() + ".where");
-            MutableComponent line = current == target.value()
-                ? Component.translatable(PRESET + "line_set", name, presetValue(setting, current), effect, where).withStyle(ChatFormatting.GRAY)
-                : Component.translatable(PRESET + "line", name, presetValue(setting, current), presetValue(setting, target.value()), effect, where);
-            tooltip.append("\n").append(line);
-        }
-        if (preset.sets(NpcPresetSetting.HIDE_BODY) && NpcPresentation.of(npc).isDeathRotation())
-            tooltip.append("\n").append(Component.translatable(PRESET + "warning.death_rotation").withStyle(ChatFormatting.YELLOW));
-        if (preset.sets(NpcPresetSetting.MOVING_TYPE) && NpcTuning.of(npc).get(Value.TACTIC) == NpcTuning.Tactic.HOLD.ordinal())
-            tooltip.append("\n").append(Component.translatable(PRESET + "warning.hold").withStyle(ChatFormatting.YELLOW));
-        tooltip.append("\n").append(Component.translatable(PRESET + "unchanged").withStyle(ChatFormatting.GRAY));
-        tooltip.append("\n").append(Component.translatable(PRESET + (matches ? "matches" : "choose")).withStyle(matches ? ChatFormatting.GREEN : ChatFormatting.GRAY));
-        return tooltip;
-    }
-
-    /** @return the value as the Custom NPCs screen names it, or the number for a range */
-    private static Component presetValue(NpcPresetSetting setting, int value)
-    {
-        List<String> keys = setting.getValueKeys();
-        return value >= 0 && value < keys.size() ? Component.translatable(keys.get(value)) : Component.literal(Integer.toString(value));
+        return NpcPresetControls.selected(npc);
     }
 
     /** Shows the preset settings the server sent for the NPC, if this tab edits it. */
@@ -1162,6 +1124,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case HURT_FLASH -> settings.isHurtFlash();
             case DEATH_ROTATION -> settings.isDeathRotation();
             case HIDE_BODY -> npc.stats.hideKilledBody;
+            case KEEP_WRECK -> settings.isKeepWreck();
         };
     }
 
@@ -1612,10 +1575,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             openCategory(Category.values()[id - CATEGORY_BUTTON_ID]);
         else if (category == null && id >= HUB_BUTTON_ID && id < HUB_BUTTON_ID + Hub.values().length)
             selectHub(Hub.values()[id - HUB_BUTTON_ID]);
-        else if (id == PRESET_ID)
-            SELECTED_PRESET.set(button.getValue());
-        else if (id == PRESET_APPLY_ID)
-            NpcNetwork.sendToServer(NpcPresetPacket.apply(npc.getId(), selectedPreset()));
+        else if (presetButton(button))
+            return true;
         else if (category == Category.ESSENTIALS && id >= ESSENTIAL_LINK_ID && id < ESSENTIAL_LINK_ID + essentialLinks().size())
         {
             openCategory(essentialLinks().get(id - ESSENTIAL_LINK_ID));
@@ -1625,6 +1586,20 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             tab = id - TAB_BUTTON_ID;
         else
             return false;
+        return true;
+    }
+
+    private boolean presetButton(GuiButtonNop button)
+    {
+        switch (button.id)
+        {
+            case PRESET_ID -> NpcPresetControls.select(npc, button.getValue());
+            case PRESET_UNDO_ID -> NpcNetwork.sendToServer(NpcPresetPacket.undo(npc.getId()));
+            case PRESET_APPLY_ID -> NpcNetwork.sendToServer(NpcPresetPacket.apply(npc.getId(), selectedPreset()));
+            default -> {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -1677,6 +1652,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case HURT_FLASH_ID -> settings.setHurtFlash(yes);
             case DEATH_ROTATION_ID -> settings.setDeathRotation(yes);
             case HIDE_BODY_ID -> npc.stats.hideKilledBody = yes;
+            case KEEP_WRECK_ID -> settings.setKeepWreck(yes);
             case IDLE_ENABLED_ID -> sounds().setIdleEnabled(yes);
             case MOVEMENT_ENABLED_ID -> sounds().setMovementEnabled(yes);
             case VARIABLE_PITCH_ID -> sounds().setVariablePitch(yes);

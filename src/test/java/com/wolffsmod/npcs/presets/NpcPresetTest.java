@@ -21,14 +21,16 @@ class NpcPresetTest
     private static final Path LANG = Path.of("src", "npcs", "resources", "assets", "wolffsmodnpcs", "lang");
 
     @Test
-    void thePlayerPresetSetsEverythingTheMobPresetSetsFirst()
+    void presetsHaveExplicitLifecycleAndMovementWithoutChangingAmmunitionExceptForPlayers()
     {
-        List<Target> mob = NpcPreset.MOB.getTargets();
-        List<Target> player = NpcPreset.PLAYER.getTargets();
-        assertEquals(mob, player.subList(0, mob.size()));
-        assertTrue(NpcPreset.PLAYER.sets(NpcPresetSetting.DOOR_INTERACT));
-        assertTrue(NpcPreset.PLAYER.sets(NpcPresetSetting.CAN_SPRINT));
-        assertFalse(NpcPreset.MOB.sets(NpcPresetSetting.DOOR_INTERACT));
+        for (NpcPreset preset : NpcPreset.values())
+        {
+            assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.WALKING_RANGE, 0)));
+            assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.RESPAWN, preset == NpcPreset.PLAYER ? 0 : 3)));
+            assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.RETURN_TO_START, preset == NpcPreset.TURRET ? 1 : 0)));
+            assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.MOVING_TYPE, preset == NpcPreset.TURRET ? 0 : 1)));
+            assertEquals(preset == NpcPreset.PLAYER, preset.sets(NpcPresetSetting.CONSUME_AMMO));
+        }
     }
 
     @Test
@@ -63,7 +65,7 @@ class NpcPresetTest
         for (NpcPreset preset : NpcPreset.values())
             keys.addAll(List.of(preset.key(), preset.key() + ".help"));
         for (NpcPresetSetting setting : NpcPresetSetting.values())
-            keys.addAll(List.of(setting.key(), setting.key() + ".effect", setting.key() + ".where"));
+            keys.add(setting.key());
         for (String file : List.of("en_us.json", "de_de.json"))
         {
             JsonObject lang = JsonParser.parseString(Files.readString(LANG.resolve(file), StandardCharsets.UTF_8)).getAsJsonObject();

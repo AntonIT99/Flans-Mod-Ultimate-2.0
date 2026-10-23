@@ -1,10 +1,18 @@
 package com.wolffsmod.npcs.presets;
 
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
+
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.NumericTag;
 
 import java.util.List;
 import java.util.Locale;
@@ -37,13 +45,113 @@ public enum NpcPresetSetting
     /** AI > Door interact: Break, Open or Disabled. */
     DOOR_INTERACT(npc -> npc.ais.doorInteract, (npc, value) -> npc.ais.doorInteract = value, List.of("gui.break", "gui.open", "gui.disabled")),
     /** AI > Can sprint. */
-    CAN_SPRINT(npc -> yes(npc.ais.canSprint), (npc, value) -> npc.ais.canSprint = value != 0, Values.NO_YES);
+    CAN_SPRINT(npc -> yes(npc.ais.canSprint), (npc, value) -> npc.ais.canSprint = value != 0, Values.NO_YES),
+    /** Movement. */
+    MOVEMENT(npc -> npc.ais.movementType, (npc, value) -> npc.ais.movementType = value,
+        List.of("wolffsmodnpcs.preset.value.ground", "wolffsmodnpcs.preset.value.flying", "wolffsmodnpcs.preset.value.swimming")),
+    /** On attack. */
+    ON_ATTACK(npc -> npc.ais.onAttack, (npc, value) -> npc.ais.onAttack = value,
+        List.of("wolffsmodnpcs.preset.value.retaliate", "wolffsmodnpcs.preset.value.flee", "wolffsmodnpcs.preset.value.avoid", "wolffsmodnpcs.preset.value.nothing")),
+    /** Tactical variant. */
+    TACTICAL_VARIANT(npc -> npc.ais.tacticalVariant, (npc, value) -> npc.ais.tacticalVariant = value, List.of()),
+    /** Terrain. */
+    TERRAIN(Value.TERRAIN),
+    /** Flight type. */
+    FLIGHT_TYPE(Value.FLIGHT_TYPE),
+    /** Tactic. */
+    TACTIC(Value.TACTIC),
+    /** Submarine depth. */
+    SUBMARINE_DEPTH(Value.SUBMARINE_DEPTH),
+    /** Land speed. */
+    LAND_SPEED(Value.LAND_SPEED),
+    /** Water speed. */
+    WATER_SPEED(Value.WATER_SPEED),
+    /** Consume ammo. */
+    CONSUME_AMMO(Feature.CONSUME_AMMO),
+    /** Item weapons. */
+    ITEM_WEAPONS(Feature.ITEM_WEAPONS),
+    /** Model weapon stats. */
+    MODEL_WEAPON_STATS(Feature.MODEL_WEAPON_STATS),
+    /** Model sounds. */
+    MODEL_SOUNDS(Feature.MODEL_SOUNDS),
+    /** Driving. */
+    DRIVING(Feature.DRIVING),
+    /** Drive driveables. */
+    DRIVE_DRIVEABLES(Feature.DRIVE_DRIVEABLES),
+    /** Hurt flash. */
+    HURT_FLASH(npc -> yes(NpcPresentation.of(npc).isHurtFlash()), (npc, value) -> NpcPresentation.of(npc).setHurtFlash(value != 0), Values.NO_YES),
+    /** Death rotation. */
+    DEATH_ROTATION(npc -> yes(NpcPresentation.of(npc).isDeathRotation()), (npc, value) -> NpcPresentation.of(npc).setDeathRotation(value != 0), Values.NO_YES),
+    /** Keep wreck. */
+    KEEP_WRECK(npc -> yes(NpcPresentation.of(npc).isKeepWreck()), (npc, value) -> NpcPresentation.of(npc).setKeepWreck(value != 0), Values.NO_YES),
+    /** Can drown. */
+    CAN_DROWN(NpcTypeProperty.CAN_DROWN),
+    /** No fall damage. */
+    NO_FALL_DAMAGE(NpcTypeProperty.NO_FALL_DAMAGE),
+    /** Potion immune. */
+    POTION_IMMUNE(NpcTypeProperty.POTION_IMMUNE),
+    /** Ignore cobweb. */
+    IGNORE_COBWEB(NpcTypeProperty.IGNORE_COBWEB),
+    /** Health regen. */
+    HEALTH_REGEN(NpcTypeProperty.HEALTH_REGEN),
+    /** Combat regen. */
+    COMBAT_REGEN(NpcTypeProperty.COMBAT_REGEN),
+    /** Engine idle. */
+    ENGINE_IDLE(npc -> yes(NpcPresentation.of(npc).getVehicleSounds().isIdleEnabled()), (npc, value) -> NpcPresentation.of(npc).getVehicleSounds().setIdleEnabled(value != 0), Values.NO_YES),
+    /** Engine movement. */
+    ENGINE_MOVEMENT(npc -> yes(NpcPresentation.of(npc).getVehicleSounds().isMovementEnabled()), (npc, value) -> NpcPresentation.of(npc).getVehicleSounds().setMovementEnabled(value != 0),
+        Values.NO_YES);
 
     private final ToIntFunction<EntityNPCInterface> getter;
     private final ObjIntConsumer<EntityNPCInterface> setter;
     /** The Custom NPCs translation key of each value, by number; empty for a setting whose value is shown as a number. */
     @Getter
     private final List<String> valueKeys;
+
+    NpcPresetSetting(Value tuning)
+    {
+        this(npc -> NpcTuning.of(npc).get(tuning), (npc, value) -> NpcTuning.of(npc).set(tuning, value), List.of());
+    }
+
+    NpcPresetSetting(Feature feature)
+    {
+        this(npc -> yes(settings(npc).wolffsmodnpcsWeaponOptions().enabled(feature)), (npc, value) -> settings(npc).wolffsmodnpcsWeaponOptions().set(feature, value != 0), Values.NO_YES);
+    }
+
+    /** Packs the own value and inheritance mode together so Undo restores both. */
+    NpcPresetSetting(NpcTypeProperty property)
+    {
+        this(npc -> ((NumericTag) settings(npc).wolffsmodnpcsTypeProperties().own(npc, property)).getAsInt() * 2 + yes(settings(npc).wolffsmodnpcsCombat().isCustom(property)), (npc, value) ->
+        {
+            settings(npc).wolffsmodnpcsTypeProperties().setOwn(npc, property, IntTag.valueOf(value / 2));
+            settings(npc).wolffsmodnpcsCombat().setCustom(property, value % 2 != 0);
+        }, List.of());
+    }
+
+    private static NpcWeaponSettings settings(EntityNPCInterface npc)
+    {
+        return (NpcWeaponSettings) npc.stats;
+    }
+
+    public String group()
+    {
+        return switch (this)
+        {
+            case RESPAWN, CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> "survival";
+            case KEEP_WRECK, HIDE_BODY, HURT_FLASH, DEATH_ROTATION, MODEL_SOUNDS, ENGINE_IDLE, ENGINE_MOVEMENT -> "appearance";
+            case CONSUME_AMMO, ITEM_WEAPONS, MODEL_WEAPON_STATS, ON_ATTACK -> "combat";
+            default -> "movement";
+        };
+    }
+
+    public int displayValue(int value)
+    {
+        return switch (this)
+        {
+            case CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> value / 2;
+            default -> value;
+        };
+    }
 
     public int get(EntityNPCInterface npc)
     {

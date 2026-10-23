@@ -51,7 +51,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Every hook into the Custom NPCs entity base class.
+ * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed.
  *
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
@@ -171,6 +171,15 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
         super(type, level);
+    }
+
+    /** Non-respawning machines retain an inert wreck instead of vanilla's timed corpse removal. */
+    @Inject(method = {"tickDeath", "m_6153_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsKeepWreck(CallbackInfo callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (npc.stats.spawnCycle == 3 && !npc.stats.hideKilledBody && NpcPresentation.of(npc).isKeepWreck())
+            callback.cancel();
     }
 
     // Presentation
