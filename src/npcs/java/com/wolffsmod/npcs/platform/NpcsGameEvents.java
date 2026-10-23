@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.platform;
 
 import com.wolffsmod.npcs.NpcDistanceCommands;
+import com.wolffsmod.npcs.NpcFactionCommands;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.diag.NpcBenchmarkCommands;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
@@ -77,6 +78,7 @@ public final class NpcsGameEvents
     public static void registerCommands(RegisterCommandsEvent event)
     {
         NpcDistanceCommands.register(event.getDispatcher());
+        NpcFactionCommands.register(event.getDispatcher());
         NpcBenchmarkCommands.register(event.getDispatcher());
         BotCommands.register(event.getDispatcher());
         FactionCommands.register(event.getDispatcher());

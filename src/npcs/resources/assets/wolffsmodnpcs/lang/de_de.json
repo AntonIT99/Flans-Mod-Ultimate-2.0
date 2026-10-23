@@ -1,4 +1,7 @@
 {
+  "wolffsmodnpcs.creation_faction.unknown": "Unbekannte NPC-Fraktion. Wähle eine vorhandene Custom-NPCs-Fraktion.",
+  "wolffsmodnpcs.creation_faction.set": "NPCs, die du mit Werkzeugen oder Befehlen erstellst, erhalten jetzt die Fraktion %s.",
+  "wolffsmodnpcs.creation_faction.reset": "NPC-Fraktionsvorgabe gelöscht. Neue NPCs verwenden wieder ihre normale Fraktion bei der Erstellung.",
   "wolffsmodnpcs.remote.all": "Alle",
   "wolffsmodnpcs.remote.radius": "Radius: %s",
   "wolffsmodnpcs.remote.radius.help": "Maximale Entfernung in Blöcken in alle Richtungen zum Scanzeitpunkt. Zum Wechseln klicken. Ergebnisse sind nach aufsteigender Entfernung sortiert. Alle umfasst geladene NPCs dieser Dimension.",

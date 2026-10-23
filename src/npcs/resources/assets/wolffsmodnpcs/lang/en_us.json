@@ -1,4 +1,7 @@
 {
+  "wolffsmodnpcs.creation_faction.unknown": "Unknown NPC faction. Choose an existing Custom NPCs faction.",
+  "wolffsmodnpcs.creation_faction.set": "NPCs you create with tools or commands will now use faction %s.",
+  "wolffsmodnpcs.creation_faction.reset": "NPC faction override cleared. New NPCs use their normal creation faction again.",
   "wolffsmodnpcs.remote.all": "All",
   "wolffsmodnpcs.remote.radius": "Radius: %s",
   "wolffsmodnpcs.remote.radius.help": "Maximum distance in blocks, measured in all directions at scan time. Click to cycle. Results are nearest first. All includes loaded NPCs in this dimension.",
