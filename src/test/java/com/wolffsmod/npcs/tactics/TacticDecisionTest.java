@@ -4,9 +4,7 @@ import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.TacticKind;
 import com.wolffsmod.npcs.tactics.NpcCover.Cover;
 import com.wolffsmod.npcs.tactics.NpcTacticState.Phase;
-import com.wolffsmod.npcs.tactics.TacticDecision.Move;
-import com.wolffsmod.npcs.tactics.TacticDecision.Order;
-import com.wolffsmod.npcs.tactics.TacticDecision.Situation;
+import com.wolffsmod.npcs.tactics.TacticDecision.*;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.core.BlockPos;
@@ -84,6 +82,21 @@ class TacticDecisionTest
         coverOrder(memory, cover.peekPoint(), true, false, TacticDecision.HIDE_TICKS + 2L);
         assertEquals(Phase.HIDE, memory.getPhase(), "a reload sends it back in");
         assertEquals(Phase.HIDE, peekAndGetHit(memory, cover).getPhase());
+    }
+
+    @Test
+    void aCoverNpcStepsIntoAPeekSpotTheNextBlockOverAndBackIntoCover()
+    {
+        NpcTacticState memory = new NpcTacticState();
+        Cover cover = new Cover(new BlockPos(30, 0, 0), new BlockPos(30, 0, 1));
+        memory.cover(cover, 0L);
+        coverOrder(memory, cover.standPoint(), false, false, 0L);
+        Order out = coverOrder(memory, cover.standPoint(), false, false, TacticDecision.HIDE_TICKS);
+        assertEquals(Phase.PEEK, memory.getPhase());
+        assertEquals(new Order(Move.GO_TO, TacticDecision.WALK, cover.peekPoint()), out, "the cover block is not the peek spot");
+        assertEquals(Move.STAND, coverOrder(memory, cover.peekPoint(), false, false, TacticDecision.HIDE_TICKS + 1L).move());
+        Order back = coverOrder(memory, cover.peekPoint(), true, false, TacticDecision.HIDE_TICKS + 2L);
+        assertEquals(new Order(Move.GO_TO, TacticDecision.WALK, cover.standPoint()), back, "the peek spot is not cover");
     }
 
     @Test

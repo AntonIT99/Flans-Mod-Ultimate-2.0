@@ -119,6 +119,9 @@ public final class NpcEquipmentRangedGoal extends Goal
         if (!npc.isInRange(target, npc.stats.ranged.getRange()) || !npc.getSensing().hasLineOfSight(target))
         {
             cancelUse();
+            // A reload goes on out of sight, which is where an NPC fighting from cover goes to reload.
+            continueReload(main);
+            continueReload(off);
             return;
         }
         // An aircraft below its attack altitude climbs first; it keeps its target and its aim meanwhile.
@@ -283,6 +286,13 @@ public final class NpcEquipmentRangedGoal extends Goal
             return true;
         }
         return false;
+    }
+
+    /** Carries on a reload the hand has started, as long as it still holds the weapon it started it for. */
+    private void continueReload(Hand hand)
+    {
+        if (hand.reloading > 0 && hand.lastWeapon != null && hand.lastWeapon == npc.getItemInHand(hand.side))
+            reload(hand, hand.lastWeapon);
     }
 
     /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */

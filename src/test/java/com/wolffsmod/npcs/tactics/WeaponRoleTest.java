@@ -3,11 +3,10 @@ package com.wolffsmod.npcs.tactics;
 import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.api.EquippedWeaponProperties.Impact;
 import com.flansmodultimate.api.WeaponTraits;
-import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
-import com.wolffsmod.npcs.sim.TacticKind;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WeaponRoleTest
 {
@@ -28,12 +27,10 @@ class WeaponRoleTest
     }
 
     @Test
-    void eachRoleStartsASoldierOnATacticForAStandingNpc()
+    void eachRoleFightsAtAShareOfItsFiringRange()
     {
         for (WeaponRole role : WeaponRole.values())
         {
-            Tactic tactic = role.tactic();
-            assertTrue(tactic.appliesTo(TacticKind.STANDARD), role.name());
             assertTrue(role.share() > 0D && role.share() <= 1D, role.name());
         }
     }

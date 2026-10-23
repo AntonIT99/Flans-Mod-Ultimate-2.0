@@ -23,6 +23,8 @@ public final class TacticDecision
     static final double RUN = 1.3D;
     /** Blocks from a point within which the NPC has got there. */
     static final double ARRIVED = 1.2D;
+    /** Blocks from its cover or peek spot within which the NPC is in it; less than the block between the two, or it never steps out. */
+    static final double COVER_ARRIVED = 0.3D;
     /** Blocks beyond the near edge of its band a stand-off NPC backs away to, so it does not hover at the edge. */
     static final double RETREAT_MARGIN = 3D;
     /** Ticks a bounding NPC stands and fires before it dashes on, and the longest a dash lasts. */
@@ -89,10 +91,10 @@ public final class TacticDecision
             return new Order(Move.CLOSE_IN, speed, null);
         }
 
-        /** @return an order to go to the point, or to stand once the NPC is there */
-        static Order goTo(Situation situation, Vec3 point, double speed)
+        /** @return an order to go to the point, or to stand once the NPC is within the given blocks of it */
+        static Order goTo(Situation situation, Vec3 point, double speed, double arrived)
         {
-            return horizontal(situation.position(), point) <= ARRIVED ? STAND : new Order(Move.GO_TO, speed, point);
+            return horizontal(situation.position(), point) <= arrived ? STAND : new Order(Move.GO_TO, speed, point);
         }
     }
 
@@ -129,7 +131,7 @@ public final class TacticDecision
         if (!situation.inSight() || distance > engagement.far())
             return Order.closeIn(distance > engagement.far() * 2D ? RUN : WALK);
         if (distance < engagement.near())
-            return Order.goTo(situation, away(situation.position(), situation.target(), engagement.near() - distance + RETREAT_MARGIN), RUN);
+            return Order.goTo(situation, away(situation.position(), situation.target(), engagement.near() - distance + RETREAT_MARGIN), RUN, ARRIVED);
         return Order.STAND;
     }
 
@@ -147,7 +149,8 @@ public final class TacticDecision
         else if (memory.getPhase() != Phase.HIDE && memory.getPhase() != Phase.PEEK)
             memory.enter(Phase.HIDE, now);
         Vec3 spot = memory.getPhase() == Phase.PEEK ? cover.peekPoint() : cover.standPoint();
-        return Order.goTo(situation, spot, horizontal(situation.position(), spot) > DASH_LENGTH ? RUN : WALK);
+        // A peek spot is often the very next block, so the NPC has to stand in it, not merely near it, to see past the cover.
+        return Order.goTo(situation, spot, horizontal(situation.position(), spot) > DASH_LENGTH ? RUN : WALK, COVER_ARRIVED);
     }
 
     /** Fires standing, then dashes closer while it reloads or cools down, until it is as close as it wants. */

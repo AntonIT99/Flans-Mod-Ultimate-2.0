@@ -147,6 +147,50 @@ class NpcLauncherReloadTest
         }
     }
 
+    @Test
+    @SuppressWarnings("unused") // The ammunition mock only has to be open, so that the goal does not reach a real inventory.
+    void aReloadStartedInSightFinishesOutOfSight()
+    {
+        LivingEntity target = mock(LivingEntity.class);
+        EntityNPCInterface npc = engagedNpc(target);
+        Sensing sensing = npc.getSensing();
+        ItemStack gun = new ItemStack(Items.STICK);
+        when(npc.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(gun);
+        EquippedWeaponProperties properties = mock(EquippedWeaponProperties.class);
+        when(properties.reloadTime()).thenReturn(40D);
+        try (var equipment = mockStatic(FlansEquipment.class);
+            var options = mockStatic(NpcEquipment.class);
+            var vehicles = mockStatic(NpcVehicleState.class);
+            var attacks = mockStatic(NpcItemAttacks.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var feedback = mockStatic(NpcReloadFeedback.class);
+            var tactics = mockStatic(NpcTacticState.class))
+        {
+            NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
+            vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
+            tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
+            options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(gun);
+            options.when(() -> NpcEquipment.flan(npc, InteractionHand.MAIN_HAND)).thenReturn(Optional.of(properties));
+            equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            boolean[] loaded = {false};
+            equipment.when(() -> FlansEquipment.hasLoadedRound(gun)).thenAnswer(call -> loaded[0]);
+            attacks.when(() -> NpcItemAttacks.loadFlanGun(npc, InteractionHand.MAIN_HAND)).thenAnswer(call ->
+            {
+                loaded[0] = true;
+                return true;
+            });
+            NpcEquipmentRangedGoal goal = new NpcEquipmentRangedGoal(npc);
+            goal.tick();
+            feedback.verify(() -> NpcReloadFeedback.reload(npc, InteractionHand.MAIN_HAND, 40));
+            // The NPC ducks into cover.
+            when(sensing.hasLineOfSight(target)).thenReturn(false);
+            for (int tick = 0; tick < 40; tick++)
+                goal.tick();
+            assertTrue(loaded[0]);
+            attacks.verify(() -> NpcItemAttacks.ranged(any(), any()), never());
+        }
+    }
+
     /** An NPC whose target is in range and in sight. */
     private static EntityNPCInterface engagedNpc(LivingEntity target)
     {
