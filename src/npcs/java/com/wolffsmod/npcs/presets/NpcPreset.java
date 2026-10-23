@@ -60,7 +60,13 @@ public enum NpcPreset
     /** @return whether the NPC already has every setting of the preset */
     public boolean matches(EntityNPCInterface npc)
     {
-        return targets.stream().allMatch(target -> target.setting().get(npc) == value(npc, target));
+        return (!clearsLines() || NpcPresetLines.isEmpty(npc)) && targets.stream().allMatch(target -> target.setting().get(npc) == value(npc, target));
+    }
+
+    /** Animals, mobs and machines do not speak; human and player presets preserve their dialogue. */
+    public boolean clearsLines()
+    {
+        return this != HUMAN && this != PLAYER;
     }
 
     /** @return whether the preset sets this setting */
@@ -74,6 +80,8 @@ public enum NpcPreset
     {
         for (Target target : targets)
             target.setting().set(npc, value(npc, target));
+        if (clearsLines())
+            NpcPresetLines.clear(npc);
         npc.updateAI = true;
         npc.updateClient = true;
     }

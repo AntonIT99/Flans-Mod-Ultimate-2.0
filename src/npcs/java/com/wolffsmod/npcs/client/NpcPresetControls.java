@@ -112,6 +112,8 @@ public final class NpcPresetControls
         text.append("\n").append(Component.translatable(preset.key() + ".help").withStyle(ChatFormatting.RESET));
         if (!loaded)
             return text.append("\n").append(Component.translatable(PREFIX + "loading"));
+        if (preset.clearsLines())
+            text.append("\n").append(Component.translatable(PREFIX + "clear_lines").withStyle(NpcPresetLines.isEmpty(npc) ? ChatFormatting.GRAY : ChatFormatting.YELLOW));
         for (String group : List.of("movement", "combat", "survival", "appearance"))
         {
             List<NpcPreset.Target> targets = preset.getTargets().stream().filter(target -> target.setting().group().equals(group)).toList();

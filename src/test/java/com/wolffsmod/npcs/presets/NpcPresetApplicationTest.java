@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import io.netty.buffer.Unpooled;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
+import noppes.npcs.entity.data.DataAdvanced;
 import noppes.npcs.entity.data.DataStats;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class NpcPresetApplicationTest
     private EntityNPCInterface npc()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        installAI(npc);
+        installContainers(npc);
         npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
         NpcWeaponSettings settings = (NpcWeaponSettings) npc.stats;
         when(settings.wolffsmodnpcsTuning()).thenReturn(tuning);
@@ -51,19 +52,72 @@ class NpcPresetApplicationTest
         return npc;
     }
 
-    @SuppressWarnings("java:S3011") // Mockito skips construction; install the real final AI container for integration tests.
-    private static void installAI(EntityNPCInterface npc)
+    @SuppressWarnings("java:S3011") // Mockito skips construction; install the real final data containers for integration tests.
+    private static void installContainers(EntityNPCInterface npc)
     {
         try
         {
             var field = EntityNPCInterface.class.getField("ais");
             field.setAccessible(true);
             field.set(npc, new DataAI(npc));
+            var advanced = EntityNPCInterface.class.getField("advanced");
+            advanced.setAccessible(true);
+            advanced.set(npc, new DataAdvanced(npc));
         }
         catch (ReflectiveOperationException exception)
         {
             throw new AssertionError(exception);
         }
+    }
+
+    @Test
+    void nonSpeakingPresetsClearEveryLineGroupWhilePeopleKeepTheirDialogue()
+    {
+        for (NpcPreset preset : NpcPreset.values())
+        {
+            EntityNPCInterface npc = npc();
+            for (int type = 0; type < 6; type++)
+                npc.advanced.setLine(type, 0, "Hello", "minecraft:entity.villager.ambient");
+            preset.apply(npc);
+            boolean speaking = preset == NpcPreset.HUMAN || preset == NpcPreset.PLAYER;
+            for (int type = 0; type < 6; type++)
+                assertEquals(speaking ? 1 : 0, npc.advanced.getLineCount(type), preset + " line group " + type);
+            assertTrue(preset.matches(npc));
+        }
+    }
+
+    @Test
+    void dialogueAloneCanReapplyAPresetAndUndoRestoresTextSlotsAndSounds()
+    {
+        EntityNPCInterface npc = npc();
+        NpcPreset.MOB.apply(npc);
+        npc.advanced.setLine(0, 3, "Hello", "minecraft:entity.villager.ambient");
+        assertFalse(NpcPreset.MOB.matches(npc));
+        NpcPresetRequests.apply(npc, NpcPreset.MOB);
+        assertTrue(NpcPresetLines.isEmpty(npc));
+        assertTrue(NpcPresetRequests.canUndo(npc));
+        npc.advanced.setLine(1, 2, "A later edit", "");
+        NpcPresetRequests.undo(npc);
+        assertEquals("Hello", npc.advanced.getLine(0, 3));
+        assertEquals("minecraft:entity.villager.ambient", npc.advanced.interactLines.lines.get(3).getSound());
+        assertEquals("A later edit", npc.advanced.getLine(1, 2));
+    }
+
+    @Test
+    void presetStateSynchronizesClearedAndRestoredLinesWithTheEditor()
+    {
+        EntityNPCInterface server = npc();
+        EntityNPCInterface client = npc();
+        server.advanced.setLine(0, 0, "Hello", "");
+        client.advanced.setLine(0, 0, "Hello", "");
+        NpcPresetRequests.apply(server, NpcPreset.SHIP);
+        NpcPresetPacket.state(server).copyTo(client);
+        assertTrue(NpcPresetLines.isEmpty(client));
+        assertTrue(NpcPreset.SHIP.matches(client));
+        NpcPresetRequests.undo(server);
+        NpcPresetPacket.state(server).copyTo(client);
+        assertEquals("Hello", client.advanced.getLine(0, 0));
+        assertFalse(NpcPreset.SHIP.matches(client));
     }
 
     @Test
