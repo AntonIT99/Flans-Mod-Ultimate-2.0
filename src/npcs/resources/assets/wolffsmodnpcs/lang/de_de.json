@@ -1,4 +1,10 @@
 {
+  "wolffsmodnpcs.remote.all": "Alle",
+  "wolffsmodnpcs.remote.radius": "Radius: %s",
+  "wolffsmodnpcs.remote.radius.help": "Maximale Entfernung in Blöcken in alle Richtungen zum Scanzeitpunkt. Zum Wechseln klicken. Ergebnisse sind nach aufsteigender Entfernung sortiert. Alle umfasst geladene NPCs dieser Dimension.",
+  "wolffsmodnpcs.remote.faction": "Fraktion: %s",
+  "wolffsmodnpcs.remote.refresh": "Aktualisieren",
+  "wolffsmodnpcs.remote.refresh.help": "Erneut von deiner aktuellen Position aus scannen. Radius-, Fraktions- und Namensfilter bleiben erhalten.",
   "wolffsmodnpcs.tab.search_bands": "Suchbänder",
   "wolffsmodnpcs.weapons.advanced_search_intervals": "Erweiterte Suchintervalle",
   "wolffsmodnpcs.weapons.advanced_search_intervals.help": "Die sechs unabhängigen Bandintervalle unten verwenden. Standardmäßig aus: Nah-/Fern-Interpolation bleibt erhalten. Jedes Band erlaubt 1–1200 Ticks; 0 behält sein berechnetes Intervall. Benötigt Gestufte Zielsuche.",

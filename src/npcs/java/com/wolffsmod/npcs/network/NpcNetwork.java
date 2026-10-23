@@ -32,9 +32,15 @@ public final class NpcNetwork
         NpcNetworkPlatform.toServer("crew_action", CrewActionPacket.class, CrewActionPacket::write, CrewActionPacket::read, CrewActionPacket::handle);
         NpcNetworkPlatform.bidirectional("npc_preset", NpcPresetPacket.class, NpcPresetPacket::write, NpcPresetPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::presetState,
             NpcPresetPacket::handle);
+        NpcNetworkPlatform.toClient("npc_remote", NpcRemotePacket.class, NpcRemotePacket::write, NpcRemotePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::remoteNpcs);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, NpcRemotePacket packet)
     {
         NpcNetworkPlatform.sendToPlayer(player, packet);
     }

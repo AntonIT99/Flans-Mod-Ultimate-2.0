@@ -23,12 +23,14 @@
       "NpcTypeModelLoadMixin",
       "NpcWalkNodeEvaluatorMixin",
       "NpcWeaponSettingsMixin",
-      "PathNavigationMixin"
+      "PathNavigationMixin",
+      "SPacketRemoteNpcsGetMixin"
   ],
   "client": [
       "GuiNPCInvMixin",
       "GuiNpcAIMixin",
       "GuiNpcMobSpawnerMixin",
+      "GuiNpcRemoteEditorMixin",
       "NpcArmorControlsMixin",
       "NpcBorrowedLayersMixin",
       "NpcBorrowedModelMixin",

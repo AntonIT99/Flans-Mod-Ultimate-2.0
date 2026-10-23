@@ -12,6 +12,12 @@ import net.minecraft.client.Minecraft;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcClientPackets
 {
+    public static void remoteNpcs(NpcRemotePacket packet)
+    {
+        if (Minecraft.getInstance().screen instanceof NpcRemoteReceiver receiver)
+            receiver.wolffsmodnpcsReceive(packet);
+    }
+
     public static void vehicleState(VehicleStatePacket packet)
     {
         var level = Minecraft.getInstance().level;
