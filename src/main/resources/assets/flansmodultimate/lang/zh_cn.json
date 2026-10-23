@@ -325,6 +325,7 @@
   "options.flansmodultimate.showDetailedItemDescriptions": "显示详细物品说明",
   "options.flansmodultimate.showDistanceInKillMessage": "在击杀消息中显示距离",
   "options.flansmodultimate.showHitMarker": "显示命中标记",
+  "options.flansmodultimate.showTeamsControls": "显示团队按键提示",
   "options.flansmodultimate.suppressionAffectsRiders": "压制影响乘员",
   "options.flansmodultimate.suppressionCameraRoll": "压制镜头侧倾",
   "options.flansmodultimate.suppressionDuration": "压制恢复时间",

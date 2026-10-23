@@ -564,6 +564,7 @@
   "options.flansmodultimate.showHitMarker": "Treffermarkierung anzeigen",
   "options.flansmodultimate.showPackNameInItemDescriptions": "Paketnamen zeigen",
   "options.flansmodultimate.showShootableDurabilityBars": "Haltbarkeitsleisten für Munition",
+  "options.flansmodultimate.showTeamsControls": "Teams-Tastenhinweise anzeigen",
   "options.flansmodultimate.smokeParticlesCount": "Anzahl Rauchpartikel",
   "options.flansmodultimate.smokeParticlesRange": "Reichweite Rauchpartikel",
   "options.flansmodultimate.suppressionAffectsRiders": "Unterdrückung für Mitfahrer",

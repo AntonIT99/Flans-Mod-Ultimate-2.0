@@ -325,6 +325,7 @@
   "options.flansmodultimate.showDetailedItemDescriptions": "アイテムの詳細説明を表示",
   "options.flansmodultimate.showDistanceInKillMessage": "キルメッセージに距離を表示",
   "options.flansmodultimate.showHitMarker": "ヒットマーカーを表示",
+  "options.flansmodultimate.showTeamsControls": "チーム操作のヒントを表示",
   "options.flansmodultimate.suppressionAffectsRiders": "搭乗者への制圧",
   "options.flansmodultimate.suppressionCameraRoll": "制圧時のカメラ傾き",
   "options.flansmodultimate.suppressionDuration": "制圧からの回復時間",

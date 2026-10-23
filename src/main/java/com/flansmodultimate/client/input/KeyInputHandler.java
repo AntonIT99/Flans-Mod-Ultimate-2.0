@@ -164,6 +164,13 @@ public final class KeyInputHandler
         return doorKey.getTranslatedKeyMessage();
     }
 
+    /** Current bindings and localized action names for the compact Teams HUD. */
+    public static List<Component> teamsControlHints()
+    {
+        return java.util.stream.Stream.of(teamsScoresKey, teamsClassKey, teamsMenuKey).filter(key -> !key.isUnbound())
+            .map(key -> (Component) Component.empty().append(key.getTranslatedKeyMessage()).append(": ").append(Component.translatable(key.getName()))).toList();
+    }
+
     public static void registerKeys(Consumer<KeyMapping> register)
     {
         register.accept(reloadKey);

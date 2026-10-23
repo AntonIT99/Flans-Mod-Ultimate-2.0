@@ -325,6 +325,7 @@
   "options.flansmodultimate.showDetailedItemDescriptions": "Подробные описания предметов",
   "options.flansmodultimate.showDistanceInKillMessage": "Показывать дистанцию в сообщениях об убийствах",
   "options.flansmodultimate.showHitMarker": "Показывать маркер попадания",
+  "options.flansmodultimate.showTeamsControls": "Показывать подсказки управления командами",
   "options.flansmodultimate.suppressionAffectsRiders": "Подавление пассажиров",
   "options.flansmodultimate.suppressionCameraRoll": "Крен камеры при подавлении",
   "options.flansmodultimate.suppressionDuration": "Время восстановления",

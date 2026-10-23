@@ -325,6 +325,7 @@
   "options.flansmodultimate.showDetailedItemDescriptions": "Mostrar descrições detalhadas dos itens",
   "options.flansmodultimate.showDistanceInKillMessage": "Mostrar distância nas mensagens de abate",
   "options.flansmodultimate.showHitMarker": "Mostrar marcador de acerto",
+  "options.flansmodultimate.showTeamsControls": "Mostrar controles de equipes",
   "options.flansmodultimate.suppressionAffectsRiders": "Supressão de passageiros",
   "options.flansmodultimate.suppressionCameraRoll": "Inclinação por supressão",
   "options.flansmodultimate.suppressionDuration": "Tempo de recuperação",
