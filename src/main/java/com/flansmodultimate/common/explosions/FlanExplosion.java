@@ -476,8 +476,8 @@ public class FlanExplosion extends Explosion
         @Override
         public ArmorPlate plate(VehicleExplosionTarget struck)
         {
-            if (target.flansmodultimateModelArmour() && target.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type)
-                return type.getResolvedArmor().plate(struck.part(), struck.facing()).authored();
+            if (target.flansmodultimateModelArmour() && target.flansmodultimateDamageModel().orElse(null) instanceof DriveableType)
+                return body.armor().plate(struck.part(), struck.facing()).authored();
             return ResolvedArmorPlate.unarmoured(struck.facing()).authored();
         }
 

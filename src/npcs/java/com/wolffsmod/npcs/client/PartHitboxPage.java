@@ -19,7 +19,7 @@ import java.util.Locale;
 
 /**
  * The part hitbox page that the Damage & armour page opens: one part of the selected model at a time, with a switch that
- * takes it out of the NPC, and the NPC's own box, hit points and penetration resistance for it in place of the model's.
+ * takes it out of the NPC, and the NPC's own box, hit points, penetration resistance and optional armour in place of the model's.
  *
  * <p>
  * Boxes are shown as type files give them, in model pixels of a sixteenth of a block, from the model origin: X to the
@@ -35,6 +35,9 @@ final class PartHitboxPage
     static final int RESET_ALL_ID = 1403;
     static final int ENABLED_ID = 1404;
     static final int MODE_ID = 1405;
+    static final int ARMOR_MODE_ID = 1406;
+    static final int ARMOR_ID = 1407;
+    static final int HEAT_ARMOR_ID = 1408;
     static final int FIELD_ID = 1410;
     private static final int LABEL_ID = 1430;
     private static final int READ_ONLY_COLOR = 0xA0A0A0;
@@ -118,14 +121,37 @@ final class PartHitboxPage
         row(Field.CORNER_X, "corner", x, y, 3, part, editable);
         y += 23;
         row(Field.SIZE_X, "size", x, y, 3, part, editable);
+        armor(loaded, x, y + 23, part);
 
         PartBox model = part.definition();
         AABB bounds = model.bounds();
         gui.addLabel(
             new GuiLabel(LABEL_ID + 1, I18n.get(PREFIX + "definition", number(model.health()), number(model.penetrationResistance()), number(bounds.minX * PIXELS), number(bounds.minY * PIXELS),
-                number(bounds.minZ * PIXELS), number(bounds.getXsize() * PIXELS), number(bounds.getYsize() * PIXELS), number(bounds.getZsize() * PIXELS)), x, gui.guiTop + 148, READ_ONLY_COLOR));
-        gui.addLabel(new GuiLabel(LABEL_ID + 2, share(part), x, gui.guiTop + 162, READ_ONLY_COLOR));
-        gui.addLabel(new GuiLabel(LABEL_ID + 3, PREFIX + (part.turretMounted() ? "frame_turret" : "frame"), x, gui.guiTop + 176, READ_ONLY_COLOR));
+                number(bounds.minZ * PIXELS), number(bounds.getXsize() * PIXELS), number(bounds.getYsize() * PIXELS), number(bounds.getZsize() * PIXELS)), x, gui.guiTop + 169, READ_ONLY_COLOR));
+        gui.addLabel(new GuiLabel(LABEL_ID + 2, share(part), x, gui.guiTop + 181, READ_ONLY_COLOR));
+        gui.addLabel(new GuiLabel(LABEL_ID + 3, PREFIX + (part.turretMounted() ? "frame_turret" : "frame"), x, gui.guiTop + 193, READ_ONLY_COLOR));
+    }
+
+    private void armor(boolean loaded, int x, int y, PartState part)
+    {
+        PartArmor armor = body == null ? null : body.getArmor(part.name()).orElse(null);
+        gui.addLabel(new GuiLabel(ARMOR_MODE_ID, PREFIX + "armor_override", x, y + 5, PREFIX + "armor_override" + HELP_SUFFIX));
+        GuiButtonNop mode = new GuiButtonNop(gui, ARMOR_MODE_ID, x + 122, y, 48, 20, NO_YES, armor == null ? 0 : 1);
+        mode.setEnabled(loaded);
+        gui.addButton(mode);
+        armorField(ARMOR_ID, "armor", x + 184, x + 204, y, armor == null ? 0F : armor.thicknessMm(), loaded && armor != null);
+        armorField(HEAT_ARMOR_ID, "armor_heat", x + 274, x + 330, y, armor == null ? 0F : armor.heatThicknessMm(), loaded && armor != null);
+    }
+
+    private void armorField(int id, String name, int x, int controlX, int y, float value, boolean editable)
+    {
+        gui.addLabel(new GuiLabel(id, PREFIX + name, x, y + 5, PREFIX + name + HELP_SUFFIX));
+        GuiTextFieldNop text = new GuiTextFieldNop(id, gui, controlX, y, 60, 20, number(value));
+        text.setEditable(editable);
+        text.setTextColorUneditable(READ_ONLY_COLOR);
+        text.floatsOnly = true;
+        text.setMinMaxDefault(0F, NpcPartSettings.MAX_ARMOR_MM, value);
+        gui.addTextField(text);
     }
 
     private void navigation(boolean loaded, int x, PartState part, int count)
@@ -139,7 +165,7 @@ final class PartHitboxPage
         gui.addButton(next);
         gui.addLabel(new GuiLabel(LABEL_ID, I18n.get(PREFIX + "selected", selected + 1, count, part.displayName(), part.name()), x + 48, y + 6));
         GuiButtonNop reset = new GuiButtonNop(gui, RESET_ID, x + 258, y, 66, 20, new String[]{PREFIX + "reset"}, 0);
-        reset.setEnabled(loaded && (part.custom() || !part.enabled()));
+        reset.setEnabled(loaded && (part.custom() || !part.enabled() || settings().get(part.name()).armor() != null));
         reset.setTooltip(Tooltip.create(Component.translatable(PREFIX + "reset" + HELP_SUFFIX)));
         gui.addButton(reset);
         GuiButtonNop all = new GuiButtonNop(gui, RESET_ALL_ID, x + 326, y, 70, 20, new String[]{PREFIX + "reset_all"}, 0);
@@ -232,7 +258,7 @@ final class PartHitboxPage
 
     boolean handles(int id)
     {
-        return id >= PREVIOUS_ID && id <= MODE_ID;
+        return id >= PREVIOUS_ID && id <= ARMOR_MODE_ID;
     }
 
     /** @return whether the click changed a setting that has to be saved */
@@ -256,11 +282,13 @@ final class PartHitboxPage
             case RESET_ID -> {
                 settings().setEnabled(part.name(), true);
                 settings().setBox(part.name(), null);
+                settings().setArmor(part.name(), null);
             }
             case RESET_ALL_ID -> settings().clear();
             case ENABLED_ID -> settings().setEnabled(part.name(), button.getValue() == 1);
             // The NPC's own box starts as the model's.
             case MODE_ID -> settings().setBox(part.name(), button.getValue() == 1 ? part.definition() : null);
+            case ARMOR_MODE_ID -> settings().setArmor(part.name(), button.getValue() == 1 ? new PartArmor(0F, 0F) : null);
             default -> {
                 return false;
             }
@@ -271,6 +299,8 @@ final class PartHitboxPage
     /** @return whether the field belongs to this page and its value was stored */
     boolean unFocused(GuiTextFieldNop text)
     {
+        if (text.id == ARMOR_ID || text.id == HEAT_ARMOR_ID)
+            return armorUnFocused(text);
         int index = text.id - FIELD_ID;
         if (index < 0 || index >= Field.values().length)
             return false;
@@ -281,6 +311,19 @@ final class PartHitboxPage
         if (!part.custom())
             return false;
         settings().setBox(part.name(), with(Field.values()[index], part.box(), text.getFloat()));
+        return true;
+    }
+
+    private boolean armorUnFocused(GuiTextFieldNop text)
+    {
+        List<PartState> parts = parts();
+        if (parts.isEmpty() || !text.isFloat())
+            return false;
+        PartState part = parts.get(Math.floorMod(selected, parts.size()));
+        PartArmor armor = settings().get(part.name()).armor();
+        if (armor == null)
+            return false;
+        settings().setArmor(part.name(), new PartArmor(text.id == ARMOR_ID ? text.getFloat() : armor.thicknessMm(), text.id == HEAT_ARMOR_ID ? text.getFloat() : armor.heatThicknessMm()));
         return true;
     }
 }

@@ -52,7 +52,8 @@ public final class ModelArmourDamage
         // The face struck is the one turned towards where the round came from.
         EnumArmorFacing facing = EnumArmorFacing.fromOutwardNormal(local.scale(-1D));
         CollisionBox core = type.getHealth().get(EnumDriveablePart.CORE);
-        return Optional.of(resolve(type, target, EnumDriveablePart.CORE, facing, local, core == null ? 1F : core.getPenetrationResistance(), shot, bulletType, penetratingPower));
+        return Optional
+            .of(resolve(type, type.getResolvedArmor(), target, EnumDriveablePart.CORE, facing, local, core == null ? 1F : core.getPenetrationResistance(), shot, bulletType, penetratingPower));
     }
 
     /**
@@ -66,17 +67,17 @@ public final class ModelArmourDamage
         Entity target = hit.getEntity();
         if (!(target instanceof IFlanDamageModel stand) || !stand.flansmodultimateModelArmour() || !(stand.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type))
             return Optional.empty();
-        return Optional
-            .of(resolve(type, target, hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), hit.getBody().penetrationResistance(hit.getPart()), shot, bulletType, penetratingPower));
+        return Optional.of(resolve(type, hit.getBody().armor(), target, hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), hit.getBody().penetrationResistance(hit.getPart()), shot,
+            bulletType, penetratingPower));
     }
 
     // Every argument is one fact of the hit; a holder would only be built to be taken apart again.
     @SuppressWarnings("java:S107")
-    private static Result resolve(DriveableType type, Entity target, EnumDriveablePart part, EnumArmorFacing facing, Vec3 local, float partResistance, FiredShot shot, BulletType bulletType,
-        float penetratingPower)
+    private static Result resolve(DriveableType type, ResolvedVehicleArmor plates, Entity target, EnumDriveablePart part, EnumArmorFacing facing, Vec3 local, float partResistance, FiredShot shot,
+        BulletType bulletType, float penetratingPower)
     {
         boolean heat = bulletType.isHeat();
-        ResolvedArmorHit armour = type.getResolvedArmor().resolveHit(part, facing, local, ModCommonConfig.maxArmorImpactAngleDeg(), heat);
+        ResolvedArmorHit armour = plates.resolveHit(part, facing, local, ModCommonConfig.maxArmorImpactAngleDeg(), heat);
         float previousPower = Math.max(0F, penetratingPower);
         boolean normalizedHealth = type.getResolvedHealth().enabled();
         float fixedDamage = bulletType.getDamage().getDamageAgainstEntity(target);

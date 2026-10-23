@@ -58,6 +58,33 @@ public interface IPartBody
     void setBox(String part, @Nullable PartBox box);
 
     /**
+     * Replaces every face's armour for one part, independently of its box, or restores the definition's armour. The
+     * replacement has no virtual slope; impact angle still applies. Used by rounds and blasts only while the wearer's
+     * {@link IFlanDamageModel#flansmodultimateModelArmour()} is enabled. Call on the server to decide gameplay and on
+     * clients to keep their projectile prediction in agreement; the owner must synchronize these settings separately
+     * from {@link #saveState()}.
+     *
+     * @param part
+     *            part name as in type files, in any letter case; unknown parts are ignored
+     * @param armor
+     *            replacement kinetic and HEAT protection in millimetres, or null to restore the model's plates
+     */
+    default void setArmor(String part, @Nullable PartArmor armor)
+    {}
+
+    /**
+     * Reads the explicit armour replacement on either side, on the body's level thread.
+     *
+     * @param part
+     *            part name as in type files, in any letter case
+     * @return the replacement, or empty when the part uses model armour or does not exist
+     */
+    default Optional<PartArmor> getArmor(String part)
+    {
+        return Optional.empty();
+    }
+
+    /**
      * Takes a part out of the body or puts it back. A disabled part is not hit, holds no hit points and is never
      * broken.
      */
@@ -144,6 +171,6 @@ public interface IPartBody
      */
     void loadState(CompoundTag state);
 
-    /** @return a number that changes whenever a box, a switch or the hit points of a part change */
+    /** @return a number that changes whenever a box, armour, a switch or the hit points of a part change */
     int signature();
 }

@@ -11,7 +11,7 @@ import java.util.*;
 
 /**
  * What an NPC changes about the part hitboxes of its model: parts it leaves out, and parts whose box, hit points or
- * penetration resistance it replaces. A part the settings do not mention is the model's.
+ * penetration resistance or armour it replaces. A part the settings do not mention is the model's.
  *
  * <p>
  * Parts are named as in type files, in any letter case. Settings for a part the selected model does not have are kept
@@ -25,11 +25,14 @@ public final class NpcPartSettings
     public static final float MAX_EXTENT = 512F;
     public static final float MAX_HEALTH = 10_000_000F;
     public static final float MAX_RESISTANCE = 100_000F;
+    public static final float MAX_ARMOR_MM = 100_000F;
     private static final String ENABLED_KEY = "Enabled";
     private static final String HEALTH_KEY = "Health";
     private static final String RESISTANCE_KEY = "Resistance";
+    private static final String ARMOR_KEY = "ArmorMm";
+    private static final String HEAT_ARMOR_KEY = "ArmorVsHeatMm";
     private static final String[] BOUNDS_KEYS = {"MinX", "MinY", "MinZ", "MaxX", "MaxY", "MaxZ"};
-    private static final Entry MODEL = new Entry(true, null);
+    private static final Entry MODEL = new Entry(true, null, null);
 
     private final Map<String, Entry> entries = new TreeMap<>();
 
@@ -38,8 +41,10 @@ public final class NpcPartSettings
      *            whether the part is hit and holds hit points at all
      * @param box
      *            the NPC's own box and hit points for the part, or null for the model's
+     * @param armor
+     *            the NPC's own uniform armour for the part, or null for the model's plates
      */
-    public record Entry(boolean enabled, @Nullable PartBox box)
+    public record Entry(boolean enabled, @Nullable PartBox box, @Nullable PartArmor armor)
     {}
 
     public Entry get(String part)
@@ -49,7 +54,8 @@ public final class NpcPartSettings
 
     public void setEnabled(String part, boolean enabled)
     {
-        put(part, new Entry(enabled, get(part).box()));
+        Entry entry = get(part);
+        put(part, new Entry(enabled, entry.box(), entry.armor()));
     }
 
     /**
@@ -58,7 +64,16 @@ public final class NpcPartSettings
      */
     public void setBox(String part, @Nullable PartBox box)
     {
-        put(part, new Entry(get(part).enabled(), box == null ? null : limit(box)));
+        Entry entry = get(part);
+        put(part, new Entry(entry.enabled(), box == null ? null : limit(box), entry.armor()));
+    }
+
+    /** Sets uniform kinetic and HEAT armour in millimetres, or null to restore the model's; independent of the box. */
+    public void setArmor(String part, @Nullable PartArmor armor)
+    {
+        Entry entry = get(part);
+        PartArmor limited = armor == null ? null : new PartArmor(Math.min(MAX_ARMOR_MM, armor.thicknessMm()), Math.min(MAX_ARMOR_MM, armor.heatThicknessMm()));
+        put(part, new Entry(entry.enabled(), entry.box(), limited));
     }
 
     private void put(String part, Entry entry)
@@ -94,6 +109,7 @@ public final class NpcPartSettings
             Entry entry = get(part.name());
             body.setEnabled(part.name(), entry.enabled());
             body.setBox(part.name(), entry.box());
+            body.setArmor(part.name(), entry.armor());
         }
     }
 
@@ -131,7 +147,11 @@ public final class NpcPartSettings
         {
             CompoundTag saved = tag.getCompound(part);
             boolean enabled = !saved.contains(ENABLED_KEY, Tag.TAG_BYTE) || saved.getBoolean(ENABLED_KEY);
-            put(part, new Entry(enabled, readBox(saved)));
+            PartArmor armor = saved.contains(ARMOR_KEY, Tag.TAG_ANY_NUMERIC) && saved.contains(HEAT_ARMOR_KEY, Tag.TAG_ANY_NUMERIC)
+                ? new PartArmor(saved.getFloat(ARMOR_KEY), saved.getFloat(HEAT_ARMOR_KEY))
+                : null;
+            put(part, new Entry(enabled, readBox(saved), null));
+            setArmor(part, armor);
         }
     }
 
@@ -155,6 +175,12 @@ public final class NpcPartSettings
         {
             CompoundTag saved = new CompoundTag();
             saved.putBoolean(ENABLED_KEY, entry.enabled());
+            PartArmor armor = entry.armor();
+            if (armor != null)
+            {
+                saved.putFloat(ARMOR_KEY, armor.thicknessMm());
+                saved.putFloat(HEAT_ARMOR_KEY, armor.heatThicknessMm());
+            }
             PartBox box = entry.box();
             if (box != null)
             {

@@ -99,13 +99,12 @@ public final class DriveableArmorDebugHud
         for (Entity wearer : PartBodies.wearers(level))
         {
             PartBody body = PartBodies.of(wearer);
-            if (body == null || !(wearer instanceof IFlanDamageModel stand) || !stand.flansmodultimateModelArmour()
-                || !(stand.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type))
+            if (body == null || !(wearer instanceof IFlanDamageModel stand) || !stand.flansmodultimateModelArmour() || !(stand.flansmodultimateDamageModel().orElse(null) instanceof DriveableType))
                 continue;
             for (BulletHit hit : body.trace(wearer, origin, motion, true))
             {
                 if (hit instanceof PartBodyHit partHit)
-                    closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), type.getResolvedArmor()));
+                    closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), body.armor()));
             }
         }
         return closest;
