@@ -171,6 +171,18 @@ public final class DriveableAmmoLoader
         return ammo;
     }
 
+    /** Default round of exactly the selected driver bank, without creating or filling an inventory. */
+    public static Optional<ShootableType> defaultBankAmmo(DriveableType type, boolean secondary)
+    {
+        EnumWeaponType weapon = type.weaponType(secondary);
+        if (weapon == EnumWeaponType.NONE)
+            return Optional.empty();
+        if (weapon == EnumWeaponType.GUN)
+            return type.shootPoints(secondary).stream().filter(point -> point.getRootPos() instanceof PilotGun).map(point -> ((PilotGun) point.getRootPos()).getType()).filter(Objects::nonNull)
+                .map(GunType::getDefaultAmmo).flatMap(Optional::stream).findFirst();
+        return Optional.ofNullable(resolveBankAmmo(type, List.of(weapon)));
+    }
+
     /** One report line per distinct mounted gun, however many slots feed it. */
     private static void loadGunSlots(DriveableType type, DriveableData data, @Nullable ShootableType requested, List<BankReport> banks, List<ItemStack> displaced)
     {

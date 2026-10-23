@@ -12,7 +12,9 @@ import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcTacticSteering;
 import com.wolffsmod.npcs.tactics.NpcTactics;
 import noppes.npcs.ai.EntityAIRangedAttack;
+import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataInventory;
 import noppes.npcs.entity.data.DataRanged;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -31,6 +33,7 @@ import java.util.Optional;
  * <ul>
  * <li>It never fires synthetic shots alongside an authoritative equipped weapon, and reports that weapon's shots to the tactics
  * that wait for it to have fired.</li>
+ * <li>A vehicle with ammunition consumption disabled starts its ranged attack using default ammunition even with an empty inventory.</li>
  * <li>It retains its targeting and movement while letting native inherited banks fire at their authored cadence.</li>
  * <li>With a reload cycle, an inherited bank fires its magazine, reloads for the model's reload time and plays the model's
  * reload and chambering sounds. Losing the target does not cut a reload short.</li>
@@ -74,6 +77,13 @@ public abstract class EntityAIRangedAttackMixin
     {
         if (NpcEquipment.weaponAuthority(npc))
             callback.setReturnValue(false);
+    }
+
+    /** A vehicle with infinite default ammunition can start its ranged goal with an empty projectile slot. */
+    @Redirect(method = {"canUse", "m_8036_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataInventory;getProjectile()Lnoppes/npcs/api/item/IItemStack;"))
+    private IItemStack wolffsmodnpcsModelProjectile(DataInventory inventory)
+    {
+        return NpcEquipment.combatProjectile(npc);
     }
 
     /** Custom NPCs' dodge and hit-and-run tactics wait for this goal to have fired; with an equipped weapon, its own goal fires. */

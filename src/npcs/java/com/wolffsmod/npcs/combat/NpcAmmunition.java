@@ -2,6 +2,8 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.WeaponSwitch;
 import lombok.AccessLevel;
@@ -82,6 +84,19 @@ public final class NpcAmmunition
         if (FlansEquipment.acceptsAmmunition(weapon, projectile))
             return Optional.of(projectile);
         return FlansEquipment.createDefaultAmmunition(weapon).filter(ammunition -> FlansEquipment.acceptsAmmunition(weapon, ammunition));
+    }
+
+    /** Projectile-slot ammunition, or the selected vehicle bank's default when the slot is empty and consumption is off. */
+    public static ItemStack modelTemplate(EntityNPCInterface npc)
+    {
+        ItemStack projectile = stack(npc.inventory.getProjectile());
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (!projectile.isEmpty() || !options.enabled(Feature.PROJECTILES) || options.enabled(Feature.CONSUME_AMMO))
+            return projectile;
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (model == null || !(model.getInfoType() instanceof IDriveableType))
+            return projectile;
+        return FlansEquipment.createDefaultAmmunition(model.getInfoType(), options.enabled(Feature.SECONDARY_BANK)).orElse(ItemStack.EMPTY);
     }
 
     private static boolean hasAmmunition(EntityNPCInterface npc, ItemStack weapon)

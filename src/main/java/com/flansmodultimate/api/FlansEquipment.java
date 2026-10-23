@@ -5,8 +5,10 @@
  */
 package com.flansmodultimate.api;
 
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
 import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.guns.EquipmentSupport;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
@@ -100,6 +102,23 @@ public final class FlansEquipment
         if (!(gun instanceof GunType gunType))
             return Optional.empty();
         return gunType.getDefaultAmmo().flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
+    }
+
+    /**
+     * Creates ammunition for the selected driver bank without changing an inventory. Either side after content loading.
+     * Uses the first mounted gun's default or the bank's declared ordnance, with the fallback used by default-ammo loading.
+     *
+     * @param vehicle
+     *            the driveable definition
+     * @param secondary
+     *            whether to select the secondary bank rather than the primary bank
+     * @return a new full stack, or empty for an unsupported definition or a bank without ammunition
+     */
+    public static Optional<ItemStack> createDefaultAmmunition(IContentType vehicle, boolean secondary)
+    {
+        if (!(vehicle instanceof DriveableType type))
+            return Optional.empty();
+        return DriveableAmmoLoader.defaultBankAmmo(type, secondary).flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
     }
 
     /**

@@ -11,7 +11,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.event.NpcEvent;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +33,7 @@ public final class NpcRangedAttack
     public static boolean fire(EntityNPCInterface npc, LivingEntity target, boolean highArc, int sequence)
     {
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        ItemStack ammo = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
+        ItemStack ammo = NpcAmmunition.modelTemplate(npc);
         if (!usesFlanProjectile(options, ammo))
             return false;
         // A recognized Flan round is handled even when the call originates on the client.
@@ -51,7 +50,7 @@ public final class NpcRangedAttack
     public static Optional<ProjectileShot> preview(EntityNPCInterface npc)
     {
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        ItemStack ammo = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
+        ItemStack ammo = NpcAmmunition.modelTemplate(npc);
         if (!usesFlanProjectile(options, ammo) || !(npc.level() instanceof ServerLevel))
             return Optional.empty();
         Attack attack = new Attack(npc, null, ammo, options, false, 0);

@@ -8,7 +8,6 @@ import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
 import com.wolffsmod.npcs.sim.NpcTuning;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
@@ -53,7 +52,7 @@ public final class NpcTypeProperties
         IContentType selected = options.enabled(Feature.TYPE_PROPERTIES) && npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity model
             ? model.getInfoType()
             : null;
-        ItemStack ammunition = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
+        ItemStack ammunition = NpcAmmunition.modelTemplate(npc);
         boolean nativeAttack = NpcRangedAttack.usesFlanProjectile(options, ammunition);
         // There are more switches than fit beside the signature, so the two are mixed rather than packed side by side.
         long flags = flags(options) * 31L + combat.customSignature();
