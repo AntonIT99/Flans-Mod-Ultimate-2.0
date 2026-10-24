@@ -39,8 +39,8 @@ public final class NpcTypeControls
         NpcTypeProperties properties = NpcTypeProperties.of(npc);
         properties.refresh(npc);
         Map<NpcTypeProperty, Tag> values = properties.values();
-        Map<NpcTypeProperty, String> readouts = properties.type()
-            .map(type -> NpcTypeReadouts.create(type, values, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), properties.usesNativeProjectile())).orElse(Map.of());
+        Map<NpcTypeProperty, String> readouts = NpcTypeReadouts.create(properties.type().orElse(null), values, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(),
+            properties.usesNativeProjectile());
         Map<Integer, Reason> fields = new HashMap<>();
         Map<Integer, Reason> buttons = new HashMap<>();
         Map<Integer, Reason> labels = new HashMap<>();

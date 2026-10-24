@@ -4,6 +4,7 @@ import com.flansmodultimate.api.EntityTypeProperties;
 import com.flansmodultimate.api.EntityTypeProperties.Weapon;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
@@ -19,11 +20,11 @@ public final class NpcTypeReadouts
     private NpcTypeReadouts()
     {}
 
-    public static Map<NpcTypeProperty, String> create(EntityTypeProperties type, Map<NpcTypeProperty, Tag> mapped, NpcWeaponOptions options, boolean nativeProjectile)
+    public static Map<NpcTypeProperty, String> create(@Nullable EntityTypeProperties type, Map<NpcTypeProperty, Tag> mapped, NpcWeaponOptions options, boolean nativeProjectile)
     {
         Map<NpcTypeProperty, String> values = new EnumMap<>(NpcTypeProperty.class);
         mapped.forEach((property, value) -> values.put(property, value instanceof NumericTag number ? number.getAsNumber().toString() : value.getAsString()));
-        if (!nativeProjectile || !options.enabled(Feature.TYPE_PROPERTIES))
+        if (type == null || !nativeProjectile || !options.enabled(Feature.TYPE_PROPERTIES))
             return values;
         if (options.enabled(Feature.MODEL_WEAPON_STATS))
         {

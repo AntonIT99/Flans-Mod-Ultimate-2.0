@@ -323,7 +323,7 @@ final class CombatPages
         NpcTypeProperties properties = NpcTypeProperties.of(npc);
         properties.refresh(npc);
         Map<NpcTypeProperty, Tag> inherited = properties.inherited();
-        Map<NpcTypeProperty, String> readouts = properties.type().map(type -> NpcTypeReadouts.create(type, inherited, options, properties.usesNativeProjectile())).orElse(Map.of());
+        Map<NpcTypeProperty, String> readouts = NpcTypeReadouts.create(properties.type().orElse(null), inherited, options, properties.usesNativeProjectile());
         initGroupTabs(loaded);
         if (ModelTuningRows.holds(group))
         {

@@ -14,6 +14,7 @@ import noppes.npcs.entity.data.DataAI;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.*;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
@@ -26,6 +27,7 @@ public final class NpcTypeProperties
 
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
+    private LivingEntity lastModel;
     private long lastFlags = -1L;
     private boolean lastNative;
     private int nextInspection;
@@ -49,20 +51,21 @@ public final class NpcTypeProperties
         NpcWeaponSettings settings = (NpcWeaponSettings) npc.stats;
         NpcWeaponOptions options = settings.wolffsmodnpcsWeaponOptions();
         NpcCombatSettings combat = settings.wolffsmodnpcsCombat();
-        IContentType selected = options.enabled(Feature.TYPE_PROPERTIES) && npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity model
-            ? model.getInfoType()
-            : null;
+        LivingEntity model = options.enabled(Feature.TYPE_PROPERTIES) && npc instanceof EntityCustomNpc custom ? custom.modelData.getEntity(npc) : null;
+        IContentType selected = model instanceof FlanModelEntity flan ? flan.getInfoType() : null;
         ItemStack ammunition = NpcAmmunition.modelTemplate(npc);
         boolean nativeAttack = NpcRangedAttack.usesFlanProjectile(options, ammunition);
         // There are more switches than fit beside the signature, so the two are mixed rather than packed side by side.
         long flags = flags(options) * 31L + combat.customSignature();
-        if (selected != lastType || flags != lastFlags || nativeAttack != lastNative || npc.tickCount >= nextInspection)
+        if (model != lastModel || selected != lastType || flags != lastFlags || nativeAttack != lastNative || npc.tickCount >= nextInspection)
         {
+            lastModel = model;
             lastType = selected;
             lastFlags = flags;
             lastNative = nativeAttack;
             nextInspection = npc.tickCount + 20;
-            inspect(options, combat, selected, ammunition);
+            double modelHealth = model != null && !(model instanceof FlanModelEntity) ? ((NpcModelHealth) ((EntityCustomNpc) npc).modelData).wolffsmodnpcsModelMaxHealth() : Double.NaN;
+            inspect(options, combat, selected, ammunition, modelHealth);
         }
         boolean server = !npc.level().isClientSide;
         boolean changed = server && carryOutImports(npc, combat);
@@ -75,7 +78,7 @@ public final class NpcTypeProperties
     }
 
     /** Reads what the selected model offers with the NPC's switches and ammunition, and which of it the NPC inherits. */
-    private void inspect(NpcWeaponOptions options, NpcCombatSettings combat, @Nullable IContentType selected, ItemStack ammunition)
+    private void inspect(NpcWeaponOptions options, NpcCombatSettings combat, @Nullable IContentType selected, ItemStack ammunition, double modelHealth)
     {
         boolean secondary = options.enabled(Feature.SECONDARY_BANK);
         type = Optional.ofNullable(selected).flatMap(value -> FlansEntityTypes.getProperties(value, secondary, options.enabled(Feature.MODEL_MUZZLES))).orElse(null);
@@ -85,6 +88,8 @@ public final class NpcTypeProperties
         Map<NpcTypeProperty, Tag> offered = new EnumMap<>(NpcTypeProperty.class);
         if (type != null)
             offered.putAll(NpcTypeMapping.create(type, options, lastNative, maxHealth, cycle));
+        else if (Double.isFinite(modelHealth) && modelHealth > 0D)
+            offered.put(NpcTypeProperty.HEALTH, IntTag.valueOf((int) Math.max(1D, Math.min(Math.ceil(modelHealth), Math.min(Integer.MAX_VALUE, maxHealth)))));
         FlanModelKind kind = FlanModelKind.of(selected);
         // Driveable definitions state no targeting range; vehicles engage at longer distances than infantry.
         if (type != null && options.enabled(Feature.TYPE_PROPERTIES) && kind != null && kind != FlanModelKind.AA_GUN)

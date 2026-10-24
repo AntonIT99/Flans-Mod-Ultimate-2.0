@@ -356,7 +356,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         // spotless:off
         /** The settings most NPCs of the edited kind need, with links to the pages they come from; its rows depend on the kind. */
         ESSENTIALS(Section.START, Scope.ALL),
-        MODEL_STATS(Section.MODEL, Scope.MODELS, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
+        MODEL_STATS(Section.MODEL, Scope.ALL, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Layout.COLUMN, Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
         TURRET(Section.MODEL, Scope.MODELS,
@@ -929,7 +929,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         if (row == Value.WEAPON_SWITCH)
             return enabled(Feature.CONSUME_AMMO);
-        return row != Feature.MODEL_WEAPON_STATS || enabled(Feature.TYPE_PROPERTIES);
+        return row != Feature.MODEL_WEAPON_STATS || kind != NpcKind.STANDARD && enabled(Feature.TYPE_PROPERTIES);
     }
 
     private boolean enabled(Feature feature)
@@ -1095,9 +1095,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         {
             return switch (feature)
             {
-                case TYPE_PROPERTIES, MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM,
-                    PASSENGER_GUNS, TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING ->
-                    Scope.MODELS;
+                case MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM, PASSENGER_GUNS,
+                    TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING -> Scope.MODELS;
                 case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, DRIVER_GUNS, MUZZLE_FLASHES -> Scope.DRIVEABLES;
                 case HULL_ASSISTS_AIM, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;

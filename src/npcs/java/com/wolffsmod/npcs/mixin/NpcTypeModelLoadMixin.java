@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.nbt.CompoundTag;
 
-/** Migrates legacy Flan rendering, applies hull HP after model loading and restores the actual saved damage state. */
+/** Migrates legacy Flan rendering, applies inherited HP after model loading and restores the actual saved damage state. */
 // Mixin merges this class into the target, so self-casts are valid.
 @SuppressWarnings({"UnresolvedMixinReference", "DataFlowIssue"})
 @Mixin(value = EntityCustomNpc.class, remap = false)

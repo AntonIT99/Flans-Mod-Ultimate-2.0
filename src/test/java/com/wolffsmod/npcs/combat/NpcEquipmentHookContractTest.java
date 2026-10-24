@@ -227,6 +227,28 @@ class NpcEquipmentHookContractTest
     }
 
     @Test
+    void modelHealthIsCopiedOnceAfterLoadingExtraDataAndBeforeCopyingEquipment() throws IOException
+    {
+        MethodNode create = method(read("noppes/npcs/ModelData"), "(Lnoppes/npcs/entity/EntityNPCInterface;)Lnet/minecraft/world/entity/LivingEntity;", "getEntity");
+        String attribute = "net/minecraft/world/entity/ai/attributes/AttributeInstance";
+        assertEquals(1, calls(create, attribute, "m_22100_", "(D)V"));
+        int loaded = -1;
+        int copied = -1;
+        int equipped = -1;
+        for (int i = 0; i < create.instructions.size(); i++)
+            if (create.instructions.get(i) instanceof MethodInsnNode call)
+            {
+                if (call.name.equals("m_7378_"))
+                    loaded = i;
+                if (call.owner.equals(attribute) && call.name.equals("m_22100_"))
+                    copied = i;
+                if (call.name.equals("m_8061_"))
+                    equipped = i;
+            }
+        assertTrue(loaded >= 0 && loaded < copied && copied < equipped);
+    }
+
+    @Test
     void onlyTheApproachGoalClaimsTheMovementOfAnNpcWithAnEquippedRangedWeapon() throws IOException
     {
         // Custom NPCs' tactics need both flags, which a firing goal holding either of them at its priority would keep from them.
