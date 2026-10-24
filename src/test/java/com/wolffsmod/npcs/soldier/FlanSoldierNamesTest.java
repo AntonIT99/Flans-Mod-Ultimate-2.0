@@ -58,8 +58,8 @@ class FlanSoldierNamesTest
         npc.display = mock(DataDisplay.class);
         ITeam team = mock(ITeam.class);
         IPlayerClass playerClass = mock(IPlayerClass.class);
-        when(team.getShortName()).thenReturn("WolffRome_Empire");
-        when(playerClass.getShortName()).thenReturn("WolffRome_LegionaryHamata");
+        when(team.getShortName()).thenReturn(com.flansmodultimate.util.ResourceUtils.sanitize("WolffRome_Empire"));
+        when(playerClass.getShortName()).thenReturn(com.flansmodultimate.util.ResourceUtils.sanitize("WolffRome_LegionaryHamata"));
         SoldierNameAssociations associations = new SoldierNameAssociations(Map.of("WolffRome_Empire", SoldierNames.ROMAN_ID), Map.of());
         try (var config = mockStatic(SoldierNameAssociations.class); var generator = mockStatic(nikedemos.markovnames.generators.MarkovGenerator.class))
         {

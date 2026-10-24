@@ -64,7 +64,7 @@ from the bundled `data/wolffsmodnpcs/soldier-names.json` on first startup. Edit
 that config and restart the server (or reopen the single-player world) to change
 the associations. Existing files replace the defaults and are never overwritten.
 
-`teams` and `classes` map exact, case-sensitive Flan `ShortName` IDs to stable
+`teams` and `classes` map case-insensitive Flan `ShortName` IDs to stable
 name-list IDs, such as `wolffsmodnpcs:german_20th`. For example:
 
 ```json
@@ -191,3 +191,7 @@ model picker's Male/Female choice overrides them when Apply is pressed. They do 
 NPC Name menu's own gender selection. Serial and fixed-name generators ignore
 gender. GIGN now inherits the bundled modern `french` pool; existing server
 configs need its association merged manually, followed by a restart.
+
+Team/class IDs and gender-map keys are matched without case sensitivity, as Flan
+normalizes loaded shortnames to lowercase. Existing mixed-case source IDs remain
+valid. Entries that differ only by case within the same map are rejected as duplicates.

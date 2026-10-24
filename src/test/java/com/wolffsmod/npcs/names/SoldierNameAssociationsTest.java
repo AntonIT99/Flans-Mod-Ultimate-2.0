@@ -19,6 +19,26 @@ import static org.mockito.Mockito.mockStatic;
 class SoldierNameAssociationsTest
 {
     @Test
+    void runtimeNormalizedIdsResolveMixedCaseListsGenderOverridesAndDisabledClasses()
+    {
+        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of("WolffStarWars_RepublicStandardP1", "wolffsmodnpcs:clone_ct"),
+            Map.of("WolffStarWars_RepublicStandardP1Commander", "wolffsmodnpcs:clone_cc", "DisabledClass", ""), Map.of("WolffStarWars_RepublicStandardP1", "mixed"),
+            Map.of("WolffStarWars_RepublicStandardP1Commander", "female"));
+        String team = com.flansmodultimate.util.ResourceUtils.sanitize("WolffStarWars_RepublicStandardP1");
+        String playerClass = com.flansmodultimate.util.ResourceUtils.sanitize("WolffStarWars_RepublicStandardP1Commander");
+        assertEquals(47, associations.find(team, playerClass).orElseThrow());
+        assertEquals(46, associations.find(team, "ordinary").orElseThrow());
+        assertEquals(2, associations.gender(team, playerClass));
+        assertEquals(0, associations.gender(team, "ordinary"));
+        assertTrue(associations.find(team, "disabledclass").isEmpty());
+        Map<String, String> duplicate = Map.of("Team", "wolffsmodnpcs:german", "team", "wolffsmodnpcs:british");
+        Map<String, String> empty = Map.of();
+        assertThrows(IllegalArgumentException.class, () -> new SoldierNameAssociations(duplicate, empty));
+        Map<String, String> duplicateGenders = Map.of("Class", "male", "class", "female");
+        assertThrows(IllegalArgumentException.class, () -> new SoldierNameAssociations(empty, empty, empty, duplicateGenders));
+    }
+
+    @Test
     void genderDefaultsToMaleAndClassOverridesTeamWithoutChangingListInheritance()
     {
         SoldierNameAssociations defaults = new SoldierNameAssociations(Map.of(), Map.of());
@@ -48,7 +68,7 @@ class SoldierNameAssociationsTest
         assertEquals(15, associations.find("", "override").orElseThrow());
         assertTrue(associations.find("team", "disabled").isEmpty());
         assertTrue(associations.find("unknown", "unknown").isEmpty());
-        assertTrue(associations.find("TEAM", "ordinary").isEmpty());
+        assertEquals(14, associations.find("TEAM", "ordinary").orElseThrow());
     }
 
     @Test
@@ -132,7 +152,7 @@ class SoldierNameAssociationsTest
                 Set<String> target = path.getParent().endsWith("teams") ? teams : classes;
                 try (var lines = Files.lines(path))
                 {
-                    lines.filter(line -> line.startsWith("ShortName ")).map(line -> line.substring("ShortName ".length()).strip()).forEach(target::add);
+                    lines.filter(line -> line.startsWith("ShortName ")).map(line -> line.substring("ShortName ".length()).strip().toLowerCase(java.util.Locale.ROOT)).forEach(target::add);
                 }
             }
         }
