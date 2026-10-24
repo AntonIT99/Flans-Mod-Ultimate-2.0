@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.FlansMelee;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.equipment.FlansMelee;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;

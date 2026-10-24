@@ -1,6 +1,9 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.ArmPoseRule;
+import com.flansmodultimate.api.equipment.HeldItemSettings;
+import com.flansmodultimate.api.equipment.HeldItemTransform;
+import com.flansmodultimate.api.equipment.WeaponPoseRules;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.shared.client.gui.components.*;

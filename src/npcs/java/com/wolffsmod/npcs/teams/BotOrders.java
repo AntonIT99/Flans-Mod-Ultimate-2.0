@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.wolffsmod.npcs.network.BotOrdersStatePacket;
 import com.wolffsmod.npcs.network.BotWaypointsPacket;
 import com.wolffsmod.npcs.network.NpcNetwork;

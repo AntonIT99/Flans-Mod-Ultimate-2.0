@@ -1,6 +1,10 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.entity.EngineSound;
+import com.flansmodultimate.api.equipment.ArmPoseRule;
+import com.flansmodultimate.api.equipment.HeldItemSettings;
+import com.flansmodultimate.api.equipment.HeldItemTransform;
+import com.flansmodultimate.api.equipment.WeaponPoseRules;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;

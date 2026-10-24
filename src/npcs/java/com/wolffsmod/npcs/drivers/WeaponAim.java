@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.WeaponBallistics;
+import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.wolffsmod.npcs.combat.ProjectileAim;
 import com.wolffsmod.npcs.sim.TargetMotion;
 import lombok.AccessLevel;

@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
+import com.flansmodultimate.api.teams.FlansTeams;
 import com.flansmodultimate.platform.world.FlanSavedData;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
 import lombok.Getter;

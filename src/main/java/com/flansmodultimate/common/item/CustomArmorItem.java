@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.ArmorType;

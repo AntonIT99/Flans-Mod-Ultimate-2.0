@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.soldier;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;

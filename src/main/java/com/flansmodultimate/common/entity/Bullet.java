@@ -2,8 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.api.IBullet;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.projectiles.IBullet;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;

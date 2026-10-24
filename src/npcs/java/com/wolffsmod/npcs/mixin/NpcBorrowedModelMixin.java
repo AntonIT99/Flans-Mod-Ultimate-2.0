@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.client.FlansEquipmentRender;
+import com.flansmodultimate.api.client.equipment.FlansEquipmentRender;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import noppes.npcs.entity.EntityCustomNpc;
 import org.spongepowered.asm.mixin.Mixin;

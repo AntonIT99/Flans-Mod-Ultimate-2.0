@@ -2,7 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModTextures;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.content.*;

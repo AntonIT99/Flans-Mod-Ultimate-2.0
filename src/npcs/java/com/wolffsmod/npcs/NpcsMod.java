@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs;
 
-import com.flansmodultimate.api.FlansCommandCentre;
+import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.mojang.logging.LogUtils;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;

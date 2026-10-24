@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.api.ILivingVisualEffects;
+import com.flansmodultimate.api.entity.ILivingVisualEffects;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;

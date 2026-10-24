@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client.centre;
 
-import com.flansmodultimate.api.client.ICommandCentrePage;
-import com.flansmodultimate.api.client.ICommandCentreView;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentrePage;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.teams.BattlesSection;

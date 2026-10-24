@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

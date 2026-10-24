@@ -2,8 +2,8 @@ package com.flansmodultimate.client.render.preview;
 
 import com.flansmod.client.model.*;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.api.client.model.ModelPose;
+import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.client.damage.DetachedPieces;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;

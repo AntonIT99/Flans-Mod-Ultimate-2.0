@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.teams.centre;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.common.types.LoadoutPool;
 import com.flansmodultimate.common.types.Team;

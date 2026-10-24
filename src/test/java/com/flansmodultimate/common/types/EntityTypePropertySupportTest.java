@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.EntityTypeProperties.Sound;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;

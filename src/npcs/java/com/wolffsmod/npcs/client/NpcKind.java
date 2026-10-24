@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import lombok.RequiredArgsConstructor;

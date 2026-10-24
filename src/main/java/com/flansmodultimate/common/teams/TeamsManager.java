@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.ITeamsRespawnRule;
-import com.flansmodultimate.api.ITeamsRound;
-import com.flansmodultimate.api.TeamsScoreEntry;
-import com.flansmodultimate.api.TeamsSpawner;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule;
+import com.flansmodultimate.api.teams.ITeamsRound;
+import com.flansmodultimate.api.teams.TeamsScoreEntry;
+import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.entity.Flag;

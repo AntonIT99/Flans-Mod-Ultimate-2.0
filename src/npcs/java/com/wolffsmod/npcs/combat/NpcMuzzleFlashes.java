@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.FlansProjectiles;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.IDriveableType;
-import com.flansmodultimate.api.WeaponMuzzle;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.network.MuzzleFlashPacket;
 import com.wolffsmod.npcs.network.NpcNetwork;

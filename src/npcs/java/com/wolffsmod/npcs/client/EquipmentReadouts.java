@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.EquippedArmorProperties;
+import com.flansmodultimate.api.equipment.EquippedShieldProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcEquipmentStats.Resistance;
 import com.wolffsmod.npcs.combat.NpcEquipmentStats.Shot;

@@ -1,6 +1,9 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponOverrides;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
@@ -274,19 +277,19 @@ public final class NpcEquipment
     }
 
     /** Whether worn Flan armor grants the protection behind this statistic and the NPC inherits it rather than keeping its own. */
-    public static boolean armorProtects(EntityNPCInterface npc, EquipmentProperty property, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)
+    public static boolean armorProtects(EntityNPCInterface npc, EquipmentProperty property, java.util.function.Predicate<com.flansmodultimate.api.equipment.EquippedArmorProperties> protection)
     {
         return inherits(npc, property) && worn(npc, protection);
     }
 
     /** Whether worn Flan armor has an effect the NPC has no statistic of its own for, while Use equipped armor is on. */
-    public static boolean armorProtects(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)
+    public static boolean armorProtects(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.equipment.EquippedArmorProperties> protection)
     {
         return enabled(npc, Feature.ITEM_ARMOR) && worn(npc, protection);
     }
 
     /** Whether a worn Flan armor piece has this property. */
-    public static boolean worn(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)
+    public static boolean worn(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.equipment.EquippedArmorProperties> protection)
     {
         for (ItemStack stack : npc.getArmorSlots())
             if (FlansEquipment.getArmorProperties(stack).filter(protection).isPresent())

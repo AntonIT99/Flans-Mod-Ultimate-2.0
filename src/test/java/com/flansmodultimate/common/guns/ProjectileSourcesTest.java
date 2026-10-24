@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.ProjectileSources;
-import com.flansmodultimate.api.ProjectileSources.Source;
+import com.flansmodultimate.api.projectiles.ProjectileSources;
+import com.flansmodultimate.api.projectiles.ProjectileSources.Source;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.EnumType;
@@ -150,8 +150,7 @@ class ProjectileSourcesTest
 
         void overrides(String... lines)
         {
-            ammoOverrides = AmmoOverrides
-                .read(new TypeFile("syntheticPlatform", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "sources")), List.of(lines))).overrides();
+            ammoOverrides = AmmoOverrides.read(new TypeFile("syntheticPlatform", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "sources")), List.of(lines))).overrides();
         }
     }
 }

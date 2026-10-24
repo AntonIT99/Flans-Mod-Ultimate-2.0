@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EntityTypeProperties;
-import com.flansmodultimate.api.EntityTypeProperties.Weapon;
+import com.flansmodultimate.api.entity.EntityTypeProperties;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import org.jetbrains.annotations.Nullable;

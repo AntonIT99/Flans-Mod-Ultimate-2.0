@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.client.FlansTeamsClient;
+import com.flansmodultimate.api.client.teams.FlansTeamsClient;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.client.FlanModelBounds;

@@ -1,7 +1,12 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.*;
-import com.flansmodultimate.api.ProjectileSources.Source;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.ProjectileParameters;
+import com.flansmodultimate.api.projectiles.ProjectileShot;
+import com.flansmodultimate.api.projectiles.ProjectileSources;
+import com.flansmodultimate.api.projectiles.ProjectileSources.Source;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;

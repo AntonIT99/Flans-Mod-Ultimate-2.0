@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import org.jetbrains.annotations.Nullable;
 

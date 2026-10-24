@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.crew;
 
-import com.flansmodultimate.api.FlansEquipment;
-import com.flansmodultimate.api.FlansMelee;
-import com.flansmodultimate.api.WeaponMount;
+import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.FlansMelee;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;

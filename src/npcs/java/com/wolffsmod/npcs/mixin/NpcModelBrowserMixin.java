@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentPack;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.content.PaintjobVariant;
 import com.wolffsmod.npcs.client.FlanSoldierBrowser;
 import com.wolffsmod.npcs.client.NpcModelNameScroll;
 import com.wolffsmod.npcs.client.NpcPresetControls;

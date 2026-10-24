@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.FlansEquipment;
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.ITeam;
 import com.wolffsmod.npcs.combat.NpcAmmunition;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

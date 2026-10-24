@@ -1,6 +1,11 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.EquippedArmorProperties;
+import com.flansmodultimate.api.equipment.EquippedShieldProperties;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.WeaponOverrides;
+import com.flansmodultimate.api.equipment.WeaponTraits;
+import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.physics.ModPhysics;

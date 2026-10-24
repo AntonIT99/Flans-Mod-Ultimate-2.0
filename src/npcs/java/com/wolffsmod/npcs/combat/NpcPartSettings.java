@@ -1,6 +1,9 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.parts.IPartBody;
+import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.api.parts.PartBox;
+import com.flansmodultimate.api.parts.PartState;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;

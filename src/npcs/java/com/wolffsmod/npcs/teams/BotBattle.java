@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.ITeam;
 import lombok.Getter;
 import lombok.Setter;
 

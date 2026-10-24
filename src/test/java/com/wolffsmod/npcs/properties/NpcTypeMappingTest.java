@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EntityTypeProperties;
-import com.flansmodultimate.api.EntityTypeProperties.Sound;
-import com.flansmodultimate.api.EntityTypeProperties.Weapon;
-import com.flansmodultimate.api.ReloadCycle;
+import com.flansmodultimate.api.driveables.ReloadCycle;
+import com.flansmodultimate.api.entity.EntityTypeProperties;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import org.junit.jupiter.api.Test;

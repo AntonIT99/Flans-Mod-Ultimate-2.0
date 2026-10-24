@@ -1,9 +1,9 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.FlansMelee;
-import com.flansmodultimate.api.IEquipmentPolicy;
-import com.flansmodultimate.api.ITeamsRespawnRule;
+import com.flansmodultimate.api.equipment.FlansMelee;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule;
 import com.flansmodultimate.client.render.hud.KillMessageData;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.command.*;

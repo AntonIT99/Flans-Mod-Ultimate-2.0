@@ -1,6 +1,12 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.TeamsFlag;
+import com.flansmodultimate.api.teams.TeamsScoreEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;

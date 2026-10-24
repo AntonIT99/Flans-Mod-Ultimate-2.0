@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.GroundPropulsion;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.GroundPropulsion;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.client.CombatPages.Group;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;

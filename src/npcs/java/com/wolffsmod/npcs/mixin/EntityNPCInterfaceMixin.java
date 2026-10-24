@@ -1,6 +1,18 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
+import com.flansmodultimate.api.entity.IEngineSoundSource;
+import com.flansmodultimate.api.entity.IFlanNpcDistance;
+import com.flansmodultimate.api.entity.ILivingVisualEffects;
+import com.flansmodultimate.api.equipment.EquippedArmorProperties;
+import com.flansmodultimate.api.equipment.FlansMelee;
+import com.flansmodultimate.api.equipment.HeldItemSettings;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IHeldItemPresentation;
+import com.flansmodultimate.api.parts.IFlanPartTarget;
+import com.flansmodultimate.api.parts.IPartBody;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;

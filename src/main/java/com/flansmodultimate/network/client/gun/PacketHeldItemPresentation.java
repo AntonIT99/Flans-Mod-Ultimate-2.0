@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client.gun;
 
-import com.flansmodultimate.api.HeldItemSettings;
+import com.flansmodultimate.api.equipment.HeldItemSettings;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;

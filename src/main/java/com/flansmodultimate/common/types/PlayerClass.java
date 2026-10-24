@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.IPlayerClass;
-import com.flansmodultimate.api.SkinOverrideVariant;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IPaintableItem;

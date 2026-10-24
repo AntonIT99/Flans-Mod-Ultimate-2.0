@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.render.preview;
 
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.api.client.model.ModelPose;
+import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;

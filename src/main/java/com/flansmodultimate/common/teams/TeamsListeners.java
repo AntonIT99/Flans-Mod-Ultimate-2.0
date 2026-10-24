@@ -1,11 +1,11 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsListener;
-import com.flansmodultimate.api.ITeamsLiveRound;
-import com.flansmodultimate.api.ITeamsRespawnRule;
-import com.flansmodultimate.api.ITeamsSpawnProvider;
-import com.flansmodultimate.api.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsListener;
+import com.flansmodultimate.api.teams.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule;
+import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

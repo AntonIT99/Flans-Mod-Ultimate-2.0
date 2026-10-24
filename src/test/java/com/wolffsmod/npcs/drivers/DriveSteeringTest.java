@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.DriveControl;
+import com.flansmodultimate.api.driveables.DriveControl;
 import com.wolffsmod.npcs.drivers.DriveSteering.Decision;
 import com.wolffsmod.npcs.drivers.DriveSteering.Situation;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.EnumSet;
 import java.util.Set;
 
-import static com.flansmodultimate.api.DriveControl.*;
+import static com.flansmodultimate.api.driveables.DriveControl.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DriveSteeringTest

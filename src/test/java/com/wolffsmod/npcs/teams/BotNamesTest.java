@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.names.SoldierNames;

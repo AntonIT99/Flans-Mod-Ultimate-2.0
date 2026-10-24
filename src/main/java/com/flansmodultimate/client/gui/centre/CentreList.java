@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.gui.centre;
 
-import com.flansmodultimate.api.client.CommandCentreRow;
+import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;

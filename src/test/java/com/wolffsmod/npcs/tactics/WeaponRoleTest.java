@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.tactics;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.EquippedWeaponProperties.Impact;
-import com.flansmodultimate.api.WeaponTraits;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties.Impact;
+import com.flansmodultimate.api.equipment.WeaponTraits;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

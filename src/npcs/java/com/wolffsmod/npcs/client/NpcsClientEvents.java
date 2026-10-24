@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.client.FlansEquipmentRender;
+import com.flansmodultimate.api.client.equipment.FlansEquipmentRender;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.client.centre.CommandCentrePages;
 import com.wolffsmod.npcs.model.FlanModelEntities;

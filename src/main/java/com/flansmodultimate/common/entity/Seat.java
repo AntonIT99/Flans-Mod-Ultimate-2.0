@@ -1,7 +1,12 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
+import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.optics.*;

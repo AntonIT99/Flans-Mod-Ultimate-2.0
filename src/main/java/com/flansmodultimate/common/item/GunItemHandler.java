@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.FlansMelee;
+import com.flansmodultimate.api.equipment.FlansMelee;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.*;

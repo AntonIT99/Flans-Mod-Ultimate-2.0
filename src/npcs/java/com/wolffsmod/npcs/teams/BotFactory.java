@@ -1,6 +1,12 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;

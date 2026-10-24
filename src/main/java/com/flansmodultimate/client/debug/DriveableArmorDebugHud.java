@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.debug;
 
-import com.flansmodultimate.api.IFlanDamageModel;
+import com.flansmodultimate.api.parts.IFlanDamageModel;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.*;

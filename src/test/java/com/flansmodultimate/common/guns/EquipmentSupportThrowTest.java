@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;

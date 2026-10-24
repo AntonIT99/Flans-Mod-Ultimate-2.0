@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.client.centre;
 
-import com.flansmodultimate.api.client.FlansCommandCentreClient;
+import com.flansmodultimate.api.client.commandcentre.FlansCommandCentreClient;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.AircraftMode;
-import com.flansmodultimate.api.DriveControl;
-import com.flansmodultimate.api.DriveableAttitude;
-import com.flansmodultimate.api.FlansEntityTypes;
+import com.flansmodultimate.api.driveables.AircraftMode;
+import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.DriveableAttitude;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.sim.MountMotion;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;

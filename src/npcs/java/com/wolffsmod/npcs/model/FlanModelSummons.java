@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.model;
 
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.CustomEntities;

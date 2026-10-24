@@ -2,7 +2,7 @@ package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
-import com.flansmodultimate.api.IFlanPartTarget;
+import com.flansmodultimate.api.parts.IFlanPartTarget;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;

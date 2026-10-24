@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.client;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.client.FlansMuzzleFlashes;
+import com.flansmodultimate.api.client.equipment.FlansMuzzleFlashes;
+import com.flansmodultimate.api.content.IContentType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.network.MuzzleFlashPacket;

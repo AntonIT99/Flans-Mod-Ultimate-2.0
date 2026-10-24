@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.driveables.collision;
 
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.PartBodyPose;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.parts.PartBodyPose;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.parts.PartBody;
 import org.junit.jupiter.api.Test;

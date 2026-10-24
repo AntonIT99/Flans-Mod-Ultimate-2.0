@@ -1,8 +1,8 @@
 package com.flansmodultimate.client.gui.centre;
 
-import com.flansmodultimate.api.client.CommandCentreRow;
-import com.flansmodultimate.api.client.ICommandCentrePage;
-import com.flansmodultimate.api.client.ICommandCentreView;
+import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentrePage;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.common.teams.centre.CommandCentre;
 import com.flansmodultimate.common.teams.centre.TeamsSection;

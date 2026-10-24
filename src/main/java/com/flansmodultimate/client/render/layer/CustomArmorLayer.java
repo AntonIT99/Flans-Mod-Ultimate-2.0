@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.render.layer;
 
 import com.flansmod.client.model.ModelCustomArmour;
-import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.item.CustomArmorItem;

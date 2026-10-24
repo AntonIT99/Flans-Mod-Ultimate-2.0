@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.crew;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.WeaponMount;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMount;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 

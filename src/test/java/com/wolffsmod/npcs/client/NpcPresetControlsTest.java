@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.presets.*;

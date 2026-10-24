@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.gui.centre;
 
-import com.flansmodultimate.api.client.ICommandCentrePage;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentrePage;
 import com.flansmodultimate.common.teams.centre.CommandCentre;
 import com.flansmodultimate.common.teams.centre.TeamsSection;
 import com.flansmodultimate.network.PacketHandler;

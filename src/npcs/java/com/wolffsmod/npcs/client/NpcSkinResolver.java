@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.SkinOverrideVariant;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;

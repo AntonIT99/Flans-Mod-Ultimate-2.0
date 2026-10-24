@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.resources.ResourceKey;

@@ -1,8 +1,8 @@
 package com.flansmodultimate.client.gui.centre;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.client.ICommandCentrePage;
-import com.flansmodultimate.api.client.ICommandCentreView;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentrePage;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.flansmodultimate.common.teams.centre.CommandLines;
 import org.jetbrains.annotations.Nullable;
 

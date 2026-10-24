@@ -1,11 +1,11 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsLiveRound;
-import com.flansmodultimate.api.ITeamsRound;
-import com.flansmodultimate.api.TeamsCapturePoint;
-import com.flansmodultimate.api.TeamsFlag;
-import com.flansmodultimate.api.TeamsSpawner;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.ITeamsRound;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.TeamsFlag;
+import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.types.Team;

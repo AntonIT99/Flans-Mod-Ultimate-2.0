@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.DriveableKind;
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;

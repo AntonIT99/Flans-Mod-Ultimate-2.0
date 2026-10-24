@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.soldier;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.IPlayerClass;
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.names.SoldierNames;

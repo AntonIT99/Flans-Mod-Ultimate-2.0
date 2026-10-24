@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.gui.centre;
 
-import com.flansmodultimate.api.client.ICommandCentreView;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.flansmodultimate.common.teams.centre.TeamsSection;
 
 import net.minecraft.client.gui.GuiGraphics;

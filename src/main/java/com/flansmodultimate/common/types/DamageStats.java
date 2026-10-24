@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.IFlanDamageModel;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.parts.IFlanDamageModel;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import lombok.*;

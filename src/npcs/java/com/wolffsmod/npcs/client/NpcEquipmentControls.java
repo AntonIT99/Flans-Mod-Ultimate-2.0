@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.EquippedArmorProperties;
-import com.flansmodultimate.api.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.EquippedArmorProperties;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;

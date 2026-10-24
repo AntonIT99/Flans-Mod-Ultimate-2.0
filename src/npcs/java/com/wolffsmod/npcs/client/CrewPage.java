@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.WeaponMount;
+import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.crew.CrewSource;
 import com.wolffsmod.npcs.crew.NpcCrew;

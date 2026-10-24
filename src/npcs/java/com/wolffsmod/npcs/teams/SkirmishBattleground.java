@@ -1,6 +1,11 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.TeamsFlag;
+import com.flansmodultimate.api.teams.TeamsSpawner;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.resources.ResourceKey;

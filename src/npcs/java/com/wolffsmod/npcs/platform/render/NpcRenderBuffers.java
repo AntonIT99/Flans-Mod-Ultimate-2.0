@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.platform.render;
 
-import com.flansmodultimate.api.client.FlansModelPreviews;
-import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.api.client.model.FlansModelPreviews;
+import com.flansmodultimate.api.client.model.ModelPose;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.npcs.client.NpcModelPoses;

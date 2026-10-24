@@ -1,6 +1,11 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.content.IContentPack;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.network.ApplyLoadoutPacket;

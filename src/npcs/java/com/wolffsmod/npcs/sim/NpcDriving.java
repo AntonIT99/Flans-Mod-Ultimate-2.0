@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.sim;
 
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.GroundHandling;
-import com.flansmodultimate.api.GroundPropulsion;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.driveables.GroundHandling;
+import com.flansmodultimate.api.driveables.GroundPropulsion;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;

@@ -3,7 +3,7 @@ package com.flansmodultimate.client.render.effects;
 import com.flansmod.client.model.*;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansModTextures;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.CustomRenderType;

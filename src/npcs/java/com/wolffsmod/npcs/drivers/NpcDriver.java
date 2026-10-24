@@ -1,10 +1,10 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.AircraftMode;
-import com.flansmodultimate.api.DriveControl;
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.ISeat;
-import com.flansmodultimate.api.WeaponBallistics;
+import com.flansmodultimate.api.driveables.AircraftMode;
+import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;

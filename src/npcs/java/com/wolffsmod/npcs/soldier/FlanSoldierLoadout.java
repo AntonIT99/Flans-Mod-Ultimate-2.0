@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.soldier;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.model;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.NpcsMod;
 import lombok.AccessLevel;

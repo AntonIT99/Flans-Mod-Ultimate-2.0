@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.raytracing;
 
-import com.flansmodultimate.api.ArmPoseRule;
+import com.flansmodultimate.api.equipment.ArmPoseRule;
 import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;

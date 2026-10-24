@@ -1,6 +1,10 @@
 package com.wolffsmod.npcs.soldier;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.content.IContentPack;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.wolffsmod.npcs.client.FlanSoldierBrowser;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;

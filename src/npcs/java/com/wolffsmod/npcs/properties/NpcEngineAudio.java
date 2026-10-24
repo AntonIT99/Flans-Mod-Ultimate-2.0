@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EngineSound;
-import com.flansmodultimate.api.FlansEntitySounds;
+import com.flansmodultimate.api.entity.EngineSound;
+import com.flansmodultimate.api.entity.FlansEntitySounds;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import java.util.UUID;

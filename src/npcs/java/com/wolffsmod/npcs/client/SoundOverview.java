@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.EngineSound;
-import com.flansmodultimate.api.FlansEntityTypes;
+import com.flansmodultimate.api.entity.EngineSound;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;

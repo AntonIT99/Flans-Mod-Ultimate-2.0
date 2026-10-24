@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.content.ContentPack;
 import com.flansmodultimate.content.IContentProvider;

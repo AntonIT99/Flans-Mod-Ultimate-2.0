@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.config.EnumEntityAimPose;

@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
-import com.flansmodultimate.api.PartState;
+import com.flansmodultimate.api.parts.PartState;
 import com.wolffsmod.npcs.model.FlanModelKind;
 
 import java.util.*;

@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.teams.centre;
 
-import com.flansmodultimate.api.FlansCommandCentre;
+import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

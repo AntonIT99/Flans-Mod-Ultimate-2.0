@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.GroundPropulsion;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.GroundPropulsion;
 import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;

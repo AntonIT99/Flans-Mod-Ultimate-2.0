@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.client.CombatPages.Group;
 import com.wolffsmod.npcs.client.ModelTuningRows.Row;

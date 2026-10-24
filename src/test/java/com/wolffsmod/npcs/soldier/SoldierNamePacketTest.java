@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.soldier;
 
-import com.flansmodultimate.api.IPlayerClass;
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
 import com.wolffsmod.npcs.network.SoldierNamePacket;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;

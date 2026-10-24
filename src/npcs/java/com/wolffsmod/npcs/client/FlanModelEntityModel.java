@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.client.FlansModelPreviews;
+import com.flansmodultimate.api.client.model.FlansModelPreviews;
+import com.flansmodultimate.api.content.IContentType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.npcs.model.FlanModelEntity;

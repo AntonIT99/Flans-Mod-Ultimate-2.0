@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.teams.centre;
 
-import com.flansmodultimate.api.FlansCommandCentre;
+import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketCommandCentreState;
 import com.flansmodultimate.util.FlansLog;

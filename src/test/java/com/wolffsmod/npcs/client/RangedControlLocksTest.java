@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.ProjectileSources;
-import com.flansmodultimate.api.ProjectileSources.Source;
+import com.flansmodultimate.api.projectiles.ProjectileSources;
+import com.flansmodultimate.api.projectiles.ProjectileSources.Source;
 import com.wolffsmod.npcs.client.RangedControlLocks.Page;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import org.junit.jupiter.api.Test;

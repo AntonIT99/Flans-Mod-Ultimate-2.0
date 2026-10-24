@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.PartArmor;
-import com.flansmodultimate.api.PartBox;
-import com.flansmodultimate.api.PartState;
+import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.api.parts.PartBox;
+import com.flansmodultimate.api.parts.PartState;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.driveables.parts.PartBody;

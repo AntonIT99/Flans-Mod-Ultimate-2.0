@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
-import com.flansmodultimate.api.GroundHandling;
-import com.flansmodultimate.api.GroundPropulsion;
+import com.flansmodultimate.api.driveables.GroundHandling;
+import com.flansmodultimate.api.driveables.GroundPropulsion;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.sim.NpcDriving.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;

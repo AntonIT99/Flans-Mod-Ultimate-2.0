@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.IPlayerClass;
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsLiveRound;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

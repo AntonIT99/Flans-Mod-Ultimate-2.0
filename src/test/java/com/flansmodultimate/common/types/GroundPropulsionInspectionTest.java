@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.GroundPropulsion;
+import com.flansmodultimate.api.driveables.GroundPropulsion;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.api.client.model.ModelPose;
+import com.flansmodultimate.api.driveables.MountAim;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;

@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.EngineSound;
+import com.flansmodultimate.api.entity.EngineSound;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.SoundPriority;
 import com.flansmodultimate.network.PacketHandler;

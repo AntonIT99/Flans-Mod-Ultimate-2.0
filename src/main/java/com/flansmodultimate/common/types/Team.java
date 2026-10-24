@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.common.teams.editor.EditorCatalog;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.ModUtils;

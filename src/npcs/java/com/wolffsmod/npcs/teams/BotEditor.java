@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsRound;
 import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.network.BotEditorActionPacket;

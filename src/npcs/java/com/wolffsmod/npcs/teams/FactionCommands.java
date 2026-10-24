@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsRound;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;

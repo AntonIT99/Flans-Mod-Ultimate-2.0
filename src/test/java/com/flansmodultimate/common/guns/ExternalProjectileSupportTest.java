@@ -1,7 +1,10 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;

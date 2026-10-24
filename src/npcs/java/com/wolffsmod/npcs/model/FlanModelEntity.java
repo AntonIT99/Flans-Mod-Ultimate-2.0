@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.model;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.content.PaintjobVariant;
+import com.flansmodultimate.api.entity.ILivingVisualEffects;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

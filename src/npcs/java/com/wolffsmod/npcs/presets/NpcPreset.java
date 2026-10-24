@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.presets;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelFolder;
 import com.wolffsmod.npcs.sim.NpcTuning;

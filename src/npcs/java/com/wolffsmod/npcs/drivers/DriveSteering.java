@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.DriveControl;
+import com.flansmodultimate.api.driveables.DriveControl;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

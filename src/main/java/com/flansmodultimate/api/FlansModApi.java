@@ -5,6 +5,10 @@
  */
 package com.flansmodultimate.api;
 
+import com.flansmodultimate.api.content.IContentPack;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.ContentManager;

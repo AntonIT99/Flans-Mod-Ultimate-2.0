@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.client.centre;
 
-import com.flansmodultimate.api.client.CommandCentreRow;
-import com.flansmodultimate.api.client.ICommandCentreView;
+import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
+import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;

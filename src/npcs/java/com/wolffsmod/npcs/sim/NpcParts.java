@@ -1,6 +1,11 @@
 package com.wolffsmod.npcs.sim;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.parts.FlansPartBodies;
+import com.flansmodultimate.api.parts.IPartBody;
+import com.flansmodultimate.api.parts.PartBodyPose;
+import com.flansmodultimate.api.parts.PartState;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;

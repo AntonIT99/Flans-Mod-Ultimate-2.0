@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsRound;
 import com.flansmodultimate.common.types.Team;
 import lombok.AccessLevel;
 import lombok.Getter;
