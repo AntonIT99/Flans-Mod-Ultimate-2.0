@@ -333,6 +333,7 @@
   "options.flansmodultimate.suppressionRangeMultiplier": "压制范围倍率",
   "options.flansmodultimate.suppressionVignette": "压制暗角不透明度",
   "options.flansmodultimate.tooltip.current_value": "当前值：%s",
+  "options.flansmodultimate.tooltip.default_value": "默认值：%s",
   "options.flansmodultimate.value.aimpose.dynamic": "动态",
   "options.flansmodultimate.value.aimpose.enforced": "强制",
   "options.flansmodultimate.value.automatic": "自动",

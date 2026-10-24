@@ -333,6 +333,7 @@
   "options.flansmodultimate.suppressionRangeMultiplier": "Множитель радиуса подавления",
   "options.flansmodultimate.suppressionVignette": "Непрозрачность виньетки",
   "options.flansmodultimate.tooltip.current_value": "Текущее значение: %s",
+  "options.flansmodultimate.tooltip.default_value": "Значение по умолчанию: %s",
   "options.flansmodultimate.value.aimpose.dynamic": "Динамическая",
   "options.flansmodultimate.value.aimpose.enforced": "Постоянная",
   "options.flansmodultimate.value.automatic": "Автоматически",

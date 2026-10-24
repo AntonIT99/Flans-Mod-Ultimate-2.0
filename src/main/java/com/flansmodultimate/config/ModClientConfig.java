@@ -919,7 +919,19 @@ public final class ModClientConfig
         if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
             return RenderPreset.CUSTOM;
 
-        LodValues current = currentLodValues();
+        return findLodPreset(currentLodValues());
+    }
+
+    public static RenderPreset defaultLodPreset()
+    {
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.getDefault()))
+            return RenderPreset.CUSTOM;
+        return findLodPreset(new LodValues(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.getDefault(), MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.getDefault(), DRIVEABLE_LOD_DETAIL_MULTIPLIER.getDefault(),
+            DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.getDefault(), DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.getDefault()));
+    }
+
+    private static RenderPreset findLodPreset(LodValues current)
+    {
         for (RenderPreset preset : RenderPreset.values())
             if (preset != RenderPreset.CUSTOM && lodValues(preset).equals(current))
                 return preset;
@@ -931,10 +943,21 @@ public final class ModClientConfig
         if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
             return RenderPreset.CUSTOM;
 
-        if (DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get() == 0 && DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get() == 0)
-            return RenderPreset.OFF;
+        return findImpostorPreset(currentImpostorValues());
+    }
 
-        ImpostorValues current = currentImpostorValues();
+    public static RenderPreset defaultImpostorPreset()
+    {
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.getDefault()))
+            return RenderPreset.CUSTOM;
+        return findImpostorPreset(new ImpostorValues(DRIVEABLE_IMPOSTOR_PIXEL_SIZE.getDefault(), DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.getDefault(), DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.getDefault(),
+            DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.getDefault(), DRIVEABLE_IMPOSTOR_RESOLUTION.getDefault(), DRIVEABLE_IMPOSTOR_YAW_ANGLES.getDefault()));
+    }
+
+    private static RenderPreset findImpostorPreset(ImpostorValues current)
+    {
+        if (current.pixels() == 0 && current.maximumDistance() == 0)
+            return RenderPreset.OFF;
         for (RenderPreset preset : RenderPreset.values())
             if (preset != RenderPreset.OFF && preset != RenderPreset.CUSTOM && impostorValues(preset).equals(current))
                 return preset;

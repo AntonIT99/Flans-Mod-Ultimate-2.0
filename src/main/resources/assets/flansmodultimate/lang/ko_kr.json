@@ -333,6 +333,7 @@
   "options.flansmodultimate.suppressionRangeMultiplier": "제압 범위 배율",
   "options.flansmodultimate.suppressionVignette": "제압 비네트 불투명도",
   "options.flansmodultimate.tooltip.current_value": "현재 값: %s",
+  "options.flansmodultimate.tooltip.default_value": "기본값: %s",
   "options.flansmodultimate.value.aimpose.dynamic": "동적",
   "options.flansmodultimate.value.aimpose.enforced": "고정",
   "options.flansmodultimate.value.automatic": "자동",

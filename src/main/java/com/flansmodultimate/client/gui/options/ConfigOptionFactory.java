@@ -11,14 +11,17 @@ import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.*;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /**
  * Turns config entries into the option widgets the options screen shows. Captions come from the language
@@ -27,8 +30,8 @@ import java.util.function.Function;
  *
  * <p>
  * Booleans, enums and bounded numbers are editable on screen. Free text and lists are left to the config
- * file itself. A toggle applies at once; a slider only records its value while it is being dragged, and the
- * options screen applies it once it closes.
+ * file itself. A toggle applies at once; sliders and numeric input fields record values while editing,
+ * and the options screen applies them once it closes.
  * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -38,11 +41,13 @@ public final class ConfigOptionFactory
     private static final String VALUE_KEY_PREFIX = KEY_PREFIX + "value.";
     /** Steps a decimal slider offers between its bounds. */
     private static final int DOUBLE_SLIDER_STEPS = 100;
-    /** Upper end, in blocks, of the sound range sliders. */
-    private static final int SOUND_RANGE_SLIDER_MAX = 1024;
+
+    /** A widget factory, with a separate visible label for direct input fields. */
+    public record Option(@Nullable Component label, IntFunction<AbstractWidget> widgetFactory)
+    {}
 
     /** A config section and the options of it that can be edited on screen. */
-    public record Section(Component title, List<OptionInstance<?>> options)
+    public record Section(Component title, List<Option> options)
     {}
 
     /** Every section of the target's config, in the order the config file declares them. */
@@ -61,7 +66,7 @@ public final class ConfigOptionFactory
                 continue;
 
             String title = prefix.isEmpty() ? entry.getKey() : prefix + " / " + entry.getKey();
-            List<OptionInstance<?>> options = optionsOf(target, section);
+            List<Option> options = optionsOf(target, section);
             if (!options.isEmpty())
                 sections.add(new Section(Component.literal(title), options));
 
@@ -70,15 +75,15 @@ public final class ConfigOptionFactory
         }
     }
 
-    private static List<OptionInstance<?>> optionsOf(ConfigTarget target, UnmodifiableConfig section)
+    private static List<Option> optionsOf(ConfigTarget target, UnmodifiableConfig section)
     {
-        List<OptionInstance<?>> options = new ArrayList<>();
+        List<Option> options = new ArrayList<>();
         for (Object child : section.valueMap().values())
         {
             if (!(child instanceof ConfigValue<?> value))
                 continue;
 
-            OptionInstance<?> option = option(target, value);
+            Option option = option(target, value);
             if (option != null)
                 options.add(option);
         }
@@ -86,10 +91,8 @@ public final class ConfigOptionFactory
     }
 
     /** The option widget for one config entry, or null when its type cannot be edited on screen. */
-    // The option value type is only known at runtime.
-    @SuppressWarnings("java:S1452")
     @Nullable
-    public static OptionInstance<?> option(ConfigTarget target, ConfigValue<?> value)
+    public static Option option(ConfigTarget target, ConfigValue<?> value)
     {
         if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE) && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
             return null;
@@ -98,19 +101,30 @@ public final class ConfigOptionFactory
             return null;
 
         Object current = target.get(value);
+        if (current instanceof Double number && ModCommonConfig.isSoundRange(value))
+        {
+            Function<Double, Component> valueText = range -> Component.translatable("options.flansmodultimate.distance.blocks", SoundRangeInput.format(range));
+            return new Option(Component.translatable(captionKey(value)), width -> new SoundRangeInput(width, target, value, valueSpec, number, tooltip(target, value, valueSpec, valueText)));
+        }
         if (current instanceof Boolean flag)
-            return booleanOption(target, value, valueSpec, flag);
+            return widgetOption(booleanOption(target, value, valueSpec, flag));
 
         if (current instanceof Enum<?>)
-            return enumOption(target, value, valueSpec, valueSpec.getClazz(), current);
+            return widgetOption(enumOption(target, value, valueSpec, valueSpec.getClazz(), current));
 
         if (current instanceof Integer number)
-            return intOption(target, value, valueSpec, number);
+            return widgetOption(intOption(target, value, valueSpec, number));
 
         if (current instanceof Double number)
-            return doubleOption(target, value, valueSpec, number);
+            return widgetOption(doubleOption(target, value, valueSpec, number));
 
         return null;
+    }
+
+    @Nullable
+    private static Option widgetOption(@Nullable OptionInstance<?> option)
+    {
+        return option == null ? null : new Option(null, width -> option.createButton(Minecraft.getInstance().options, 0, 0, width));
     }
 
     private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, boolean current)
@@ -161,8 +175,6 @@ public final class ConfigOptionFactory
             return null;
 
         double min = range.getMin();
-        if (ModCommonConfig.isSoundRange(value))
-            return soundRangeOption(target, value, valueSpec, min, range.getMax(), current);
         boolean distanceMultiplier = value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
         int stepsCount = distanceMultiplier ? 75 : DOUBLE_SLIDER_STEPS;
         double step = (range.getMax() - min) / stepsCount;
@@ -175,19 +187,6 @@ public final class ConfigOptionFactory
             newValue -> target.setWhileDragging(value, newValue));
     }
 
-    /**
-     * Sound ranges also set loudness, so they are tuned by the block. The slider stops at a practical
-     * hearing distance; larger values remain available in the config file.
-     */
-    private static OptionInstance<Double> soundRangeOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, double min, double max, double current)
-    {
-        int lowest = (int) Math.ceil(min);
-        int highest = Math.max(lowest + 1, (int) Math.min(max, SOUND_RANGE_SLIDER_MAX));
-        Function<Double, Component> valueText = number -> Component.translatable("options.flansmodultimate.distance.blocks", Math.round(number));
-        return new OptionInstance<>(captionKey(value), tooltip(target, value, valueSpec, valueText), (caption, number) -> Options.genericValueLabel(caption, valueText.apply(number)),
-            new OptionInstance.IntRange(lowest, highest).xmap(steps -> (double) steps, number -> (int) Math.round(number)), current, newValue -> target.setWhileDragging(value, newValue));
-    }
-
     /** Vanilla builds the caption from a translation key, so every editable entry needs one. */
     private static String captionKey(ConfigValue<?> value)
     {
@@ -195,9 +194,11 @@ public final class ConfigOptionFactory
     }
 
     /**
-     * Every tooltip opens with the setting's name and its current value, so a row stays readable when its
+     * Every tooltip opens with the setting's name, current value and default, so a row stays readable when its
      * label is cut short or a slider is being dragged; the description follows below.
      */
+    // ValueSpec and the formatter describe the same runtime config type.
+    @SuppressWarnings("unchecked")
     private static <T> OptionInstance.TooltipSupplier<T> tooltip(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, Function<T, Component> valueText)
     {
         Component title = Component.translatable(captionKey(value));
@@ -206,7 +207,7 @@ public final class ConfigOptionFactory
         boolean locked = !target.editable();
         return current ->
         {
-            MutableComponent text = tooltipHeader(title, valueText.apply(current));
+            MutableComponent text = tooltipHeader(title, valueText.apply(current), valueText.apply((T) valueSpec.getDefault()));
             if (description != null)
                 text.append("\n\n").append(description);
             if (locked)
@@ -215,11 +216,12 @@ public final class ConfigOptionFactory
         };
     }
 
-    /** The styled first lines of a setting's tooltip: its name, then its current value. */
-    public static MutableComponent tooltipHeader(Component title, Component value)
+    /** The styled first lines of a setting's tooltip: its name, current value and default. */
+    public static MutableComponent tooltipHeader(Component title, Component value, Component defaultValue)
     {
         return Component.empty().append(title.copy().withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)).append("\n")
-            .append(Component.translatable(KEY_PREFIX + "tooltip.current_value", value.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
+            .append(Component.translatable(KEY_PREFIX + "tooltip.current_value", value.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY)).append("\n")
+            .append(Component.translatable(KEY_PREFIX + "tooltip.default_value", defaultValue.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
     }
 
     /**

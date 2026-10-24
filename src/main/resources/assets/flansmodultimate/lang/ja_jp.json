@@ -333,6 +333,7 @@
   "options.flansmodultimate.suppressionRangeMultiplier": "制圧範囲倍率",
   "options.flansmodultimate.suppressionVignette": "制圧時の周辺暗化",
   "options.flansmodultimate.tooltip.current_value": "現在の値: %s",
+  "options.flansmodultimate.tooltip.default_value": "デフォルト値: %s",
   "options.flansmodultimate.value.aimpose.dynamic": "動的",
   "options.flansmodultimate.value.aimpose.enforced": "常時",
   "options.flansmodultimate.value.automatic": "自動",

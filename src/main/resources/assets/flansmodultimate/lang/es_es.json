@@ -333,6 +333,7 @@
   "options.flansmodultimate.suppressionRangeMultiplier": "Multiplicador de alcance de supresión",
   "options.flansmodultimate.suppressionVignette": "Opacidad de la viñeta",
   "options.flansmodultimate.tooltip.current_value": "Valor actual: %s",
+  "options.flansmodultimate.tooltip.default_value": "Valor predeterminado: %s",
   "options.flansmodultimate.value.aimpose.dynamic": "Dinámica",
   "options.flansmodultimate.value.aimpose.enforced": "Forzada",
   "options.flansmodultimate.value.automatic": "Automático",
