@@ -7,6 +7,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -14,8 +15,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +97,7 @@ public class FlansOptionsScreen extends Screen
     private final List<ConfigOptionFactory.Option> commonOptions = new ArrayList<>();
     private FlansOptionsList list;
     private double scrollAmount;
+    private final SettingsTooltip settingsTooltip = new SettingsTooltip();
 
     public FlansOptionsScreen(@Nullable Screen lastScreen)
     {
@@ -295,6 +299,7 @@ public class FlansOptionsScreen extends Screen
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
+        settingsTooltip.beginFrame();
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         list.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, TITLE_TOP, 0xFFFFFF);
@@ -303,6 +308,21 @@ public class FlansOptionsScreen extends Screen
             graphics.drawCenteredString(font, footerNote(), width / 2, height - BUTTON_BOTTOM_MARGIN - 12, NOTE_COLOUR);
 
         super.render(graphics, mouseX, mouseY, partialTick);
+        settingsTooltip.render(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public void setTooltipForNextRenderPass(@NotNull List<FormattedCharSequence> tooltip, @NotNull ClientTooltipPositioner positioner, boolean override)
+    {
+        settingsTooltip.queue(tooltip, positioner, override);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    {
+        if (hasShiftDown() && settingsTooltip.scroll(delta))
+            return true;
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     /** Says whose settings these are, because it decides whether they can be changed at all. */
