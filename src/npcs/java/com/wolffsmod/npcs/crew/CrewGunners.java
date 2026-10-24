@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.crew;
 
 import com.flansmodultimate.api.*;
+import com.wolffsmod.npcs.combat.NpcMuzzleFlashes;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
@@ -102,7 +103,7 @@ public final class CrewGunners
         {
             WeaponMuzzle muzzle = FlansProjectiles.getSeatMuzzle(definition, mount.seat(), gun.sequence, state.turretAim()).orElse(null);
             Vec3 origin = muzzle == null ? null : NpcModels.world(vehicle, context.model(), muzzle.offset(), state.getHullYaw());
-            if (origin == null || !aligned(context, mount, aimPoint.subtract(origin)) || !clear(vehicle, gun, origin, aimPoint) || !launch(context, gunner, weapon, ammo, gun, origin))
+            if (origin == null || !aligned(context, mount, aimPoint.subtract(origin)) || !clear(vehicle, gun, origin, aimPoint) || !launch(context, gunner, weapon, ammo, gun, origin, muzzle))
                 return;
             effects(context, gunner, weapon, muzzle, origin, state.seatFacing(mount), shot == 0);
             gun.sequence = gun.sequence >= Integer.MAX_VALUE / 2 ? 0 : gun.sequence + 1;
@@ -143,7 +144,7 @@ public final class CrewGunners
     }
 
     /** Fires one round of the gun, led as the vehicle leads its own shots. */
-    private static boolean launch(Context context, EntityNPCInterface gunner, IContentType weapon, ItemStack ammo, Gun gun, Vec3 origin)
+    private static boolean launch(Context context, EntityNPCInterface gunner, IContentType weapon, ItemStack ammo, Gun gun, Vec3 origin, WeaponMuzzle muzzle)
     {
         NpcWeaponOptions options = context.options();
         LivingEntity target = context.target();
@@ -153,7 +154,10 @@ public final class CrewGunners
             return false;
         boolean arc = options.enabled(Feature.BALLISTIC_AIM);
         Vec3 direction = context.state().lead(aimPoint.subtract(origin), target, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, false);
-        return !shot.launch(origin, direction, false).isEmpty();
+        if (shot.launch(origin, direction, false).isEmpty())
+            return false;
+        NpcMuzzleFlashes.fired(context.vehicle(), muzzle, direction, context.state().getHullYaw(), false);
+        return true;
     }
 
     private static void effects(Context context, EntityNPCInterface gunner, IContentType weapon, WeaponMuzzle muzzle, Vec3 origin, float facing, boolean first)

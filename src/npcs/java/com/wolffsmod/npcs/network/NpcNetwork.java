@@ -32,6 +32,7 @@ public final class NpcNetwork
         NpcNetworkPlatform.toServer("crew_action", CrewActionPacket.class, CrewActionPacket::write, CrewActionPacket::read, CrewActionPacket::handle);
         NpcNetworkPlatform.bidirectional("npc_preset", NpcPresetPacket.class, NpcPresetPacket::write, NpcPresetPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::presetState,
             NpcPresetPacket::handle);
+        NpcNetworkPlatform.toClient("muzzle_flash", MuzzleFlashPacket.class, MuzzleFlashPacket::write, MuzzleFlashPacket::read, () -> com.wolffsmod.npcs.client.NpcMuzzleFlashRenderer::receive);
         NpcNetworkPlatform.toClient("npc_remote", NpcRemotePacket.class, NpcRemotePacket::write, NpcRemotePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::remoteNpcs);
     }
 
@@ -101,6 +102,11 @@ public final class NpcNetwork
     }
 
     public static void sendToTracking(EntityNPCInterface npc, PartStatePacket packet)
+    {
+        NpcNetworkPlatform.sendToTracking(npc, packet);
+    }
+
+    public static void sendToTracking(EntityNPCInterface npc, MuzzleFlashPacket packet)
     {
         NpcNetworkPlatform.sendToTracking(npc, packet);
     }

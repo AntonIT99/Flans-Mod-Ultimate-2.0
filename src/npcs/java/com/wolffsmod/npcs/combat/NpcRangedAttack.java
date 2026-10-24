@@ -201,6 +201,8 @@ public final class NpcRangedAttack
             Vec3 direction = state.lead(NpcVehicleState.aimPoint(aimed).subtract(from), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
             if (shot.launch(from, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
+            if (modelMuzzles && shotIndex == 0 && !FlansProjectiles.isGrenade(selectedAmmo))
+                NpcMuzzleFlashes.fired(npc, muzzle, direction, hullYaw(), secondary);
             playLaunchEffects(muzzle, origin, shotIndex, selectedAmmo);
             return true;
         }

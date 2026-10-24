@@ -169,6 +169,7 @@ public final class NpcDriverGuns
         Vec3 direction = state.lead(aimPoint.subtract(origin), target, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, false);
         if (shot.launch(origin, direction, false).isEmpty())
             return false;
+        NpcMuzzleFlashes.fired(npc, muzzle, direction, state.getHullYaw(), secondary);
         if (options.enabled(Feature.SHOOT_PARTICLES))
             FlansProjectiles.shootParticles(npc, muzzle, origin, state.getHullYaw() + state.turretAim().yaw(), NpcModels.scale(npc));
         return true;

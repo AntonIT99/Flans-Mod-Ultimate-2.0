@@ -220,6 +220,23 @@ public final class FlansProjectiles
     }
 
     /**
+     * Whether a mounted muzzle declares a flash model or can use the vehicle's DefaultFlash.
+     * Safe on either side after content loading; does not load client models.
+     *
+     * @param platform
+     *            vehicle definition
+     * @param muzzle
+     *            fired mount, including its optional gun definition
+     * @param secondary
+     *            weapon bank for muzzles without a gun definition
+     * @return false for unsupported or unconfigured mounts, including non-gun banks
+     */
+    public static boolean hasMuzzleFlash(IContentType platform, WeaponMuzzle muzzle, boolean secondary)
+    {
+        return ExternalProjectileSupport.hasMuzzleFlash(platform, muzzle, secondary);
+    }
+
+    /**
      * Broadcasts authored shooting particles, with a small muzzle flame when none are declared.
      * Server thread only; clients create the particles.
      *

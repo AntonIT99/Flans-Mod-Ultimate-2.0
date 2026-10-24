@@ -399,6 +399,17 @@ public final class ExternalProjectileSupport
         return true;
     }
 
+    public static boolean hasMuzzleFlash(IContentType platform, WeaponMuzzle muzzle, boolean secondary)
+    {
+        GunType gun = muzzle.weapon().orElse(null) instanceof GunType type ? type : null;
+        if (gun != null && gun.hasMuzzleFlashModel())
+            return true;
+        if (!(platform instanceof DriveableType type) || !type.isDefaultMuzzleFlash())
+            return false;
+        EnumWeaponType bank = type.weaponType(secondary);
+        return gun != null || bank == EnumWeaponType.GUN || bank == EnumWeaponType.SHELL;
+    }
+
     public static void shootParticles(Entity shooter, WeaponMuzzle muzzle, Vec3 origin, float bodyYaw, float scale)
     {
         if (!serverThread(shooter) || !finite(origin) || !Float.isFinite(bodyYaw) || !Float.isFinite(scale) || scale <= 0F)

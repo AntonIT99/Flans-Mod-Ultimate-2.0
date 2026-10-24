@@ -1268,6 +1268,8 @@
   "wolffsmodnpcs.weapons.secondary_bank.help": "Die sekundären Waffenpositionen, Werte, Geräusche und Partikel des Modells verwenden. Nein verwendet seine Primärwaffe. Fahrerwaffen zusätzlich zur Hauptwaffe lässt auch montierte Waffen der anderen Gruppe feuern.",
   "wolffsmodnpcs.weapons.driver_guns": "Fahrerwaffen zusätzlich zur Hauptwaffe",
   "wolffsmodnpcs.weapons.driver_guns.help": "Fahrergesteuerte montierte Waffen der anderen Waffengruppe und eine separate Fahrersitzwaffe zusätzlich in ihrem eigenen Takt und mit eigener Nachladezeit abfeuern. Standardmäßig und durch Fahrzeugvoreinstellungen aktiviert. Jede Fahrerwaffe wählt passende Munition zuerst aus dem Projektilplatz, dann in Inventarreihenfolge, sonst ihre Standardmunition. Munition wird nicht verbraucht. Benötigt Flan-Projektile und Modellmündungen. Die gewählte Hauptwaffe behält ihren normalen Angriffstakt.",
+  "wolffsmodnpcs.weapons.muzzle_flashes": "Mündungsfeuermodelle",
+  "wolffsmodnpcs.weapons.muzzle_flashes.help": "Zeigt Mündungsfeuer der montierten Waffen mit FlashModel oder MuzzleFlashModel und dem DefaultFlash des Fahrzeugs. Standardmäßig aktiv, unabhängig von Schusspartikeln.",
   "wolffsmodnpcs.weapons.shoot_particles": "Schusspartikel",
   "wolffsmodnpcs.weapons.shoot_particles.help": "Die festgelegten Mündungspartikel der gewählten Gruppe ausstoßen, mit einer kleinen Flamme, wenn keine festgelegt sind. Geschossspuren und Explosionen behalten ihre Definitionen.",
   "wolffsmodnpcs.weapons.solid_hitboxes": "Feste Hitboxen",

@@ -1268,6 +1268,8 @@
   "wolffsmodnpcs.weapons.secondary_bank.help": "Use the model's secondary weapon positions, statistics, sounds and particles. No uses its primary weapon. Driver guns alongside main weapon can also fire gun mounts in the other bank.",
   "wolffsmodnpcs.weapons.driver_guns": "Driver guns alongside main weapon",
   "wolffsmodnpcs.weapons.driver_guns.help": "Also fire driver-controlled gun mounts in the other weapon bank and a separate driver-seat gun, at their own cadence and reload. Enabled by default and by vehicle presets. Each driver gun uses compatible ammunition from the projectile slot, then inventory order, then its default ammunition. Ammunition is not consumed. Requires Flan projectiles and model muzzles. The selected main weapon keeps its normal attack timing.",
+  "wolffsmodnpcs.weapons.muzzle_flashes": "Muzzle flash models",
+  "wolffsmodnpcs.weapons.muzzle_flashes.help": "Render mounted gun muzzle flashes using the gun's FlashModel or MuzzleFlashModel and the vehicle's DefaultFlash fallback. Enabled by default, independently of shooting particles.",
   "wolffsmodnpcs.weapons.shoot_particles": "Shooting particles",
   "wolffsmodnpcs.weapons.shoot_particles.help": "Emit the selected bank's authored muzzle particles, with a small flame when none are defined. Projectile trails and explosions retain their definitions.",
   "wolffsmodnpcs.weapons.solid_hitboxes": "Solid hitboxes",

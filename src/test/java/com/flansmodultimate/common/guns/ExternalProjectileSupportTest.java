@@ -12,9 +12,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExternalProjectileSupportTest
 {
@@ -121,6 +124,23 @@ class ExternalProjectileSupportTest
         assertEquals(77F, fallback.getBulletSpeed());
     }
 
+    @Test
+    void muzzleFlashAvailabilityUsesGunModelsOrConfiguredGunAndShellFallbacks()
+    {
+        TestVehicle platform = new TestVehicle(new Vector3f());
+        TestGun gun = new TestGun();
+        WeaponMuzzle bare = new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of());
+        WeaponMuzzle mounted = new WeaponMuzzle(Vec3.ZERO, Optional.of(gun), List.of());
+        assertFalse(FlansProjectiles.hasMuzzleFlash(platform, mounted, false));
+        gun.flash("DefaultFlash");
+        assertTrue(FlansProjectiles.hasMuzzleFlash(platform, mounted, false));
+        gun.flash("");
+        platform.flashes();
+        assertTrue(FlansProjectiles.hasMuzzleFlash(platform, bare, false));
+        assertFalse(FlansProjectiles.hasMuzzleFlash(platform, bare, true));
+        assertTrue(FlansProjectiles.hasMuzzleFlash(platform, mounted, true));
+    }
+
     private static ShootPoint point(Vector3f position)
     {
         return new ShootPoint(new DriveablePosition(position, EnumDriveablePart.CORE), new Vector3f());
@@ -142,6 +162,13 @@ class ExternalProjectileSupportTest
             shootPointsPrimary.add(point(position));
             shootPointsSecondary.add(point(new Vector3f(3F, 1F, 2F)));
             shootParticlesSecondary.add(new ShootParticle("smoke", 0.1F, 0F, 0F));
+        }
+
+        private void flashes()
+        {
+            defaultMuzzleFlash = true;
+            primary = EnumWeaponType.SHELL;
+            secondary = EnumWeaponType.MISSILE;
         }
 
         private void usePureGunStats()
@@ -183,6 +210,11 @@ class ExternalProjectileSupportTest
         TestGun()
         {
             damage = 5F;
+        }
+
+        private void flash(String model)
+        {
+            flashModelName = model;
         }
 
         // Pin neutral config modifiers without starting a Minecraft registry or server.
