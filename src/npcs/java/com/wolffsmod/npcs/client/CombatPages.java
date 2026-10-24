@@ -101,6 +101,7 @@ final class CombatPages
     private Group group = Group.GENERAL;
     private EquipmentProperty.Group equipmentGroup = EquipmentProperty.Group.MELEE;
     private final PartHitboxPage parts;
+    private final ModelTuningRows tuning;
     /** The model property or equipment statistic whose Select button opened the sound picker, until the picker closes. */
     @Nullable
     private Enum<?> choosingSound;
@@ -131,13 +132,16 @@ final class CombatPages
         }
     }
 
-    /** Tabs of the model properties page; every property belongs to exactly one. */
+    /**
+     * Tabs of the model properties page; every property belongs to exactly one. Driving and Turning hold no property but the
+     * movement values of a content-pack model, laid out by {@link ModelTuningRows}.
+     */
     enum Group
     {
         GENERAL(NpcTypeProperty.HEALTH, NpcTypeProperty.AGGRO_RANGE, NpcTypeProperty.MELEE_REACH, NpcTypeProperty.WALKING_SPEED), SURVIVAL(NpcTypeProperty.CAN_DROWN, NpcTypeProperty.NO_FALL_DAMAGE,
             NpcTypeProperty.POTION_IMMUNE, NpcTypeProperty.IGNORE_COBWEB, NpcTypeProperty.HEALTH_REGEN, NpcTypeProperty.COMBAT_REGEN), WEAPON(NpcTypeProperty.RANGE, NpcTypeProperty.DAMAGE,
                 NpcTypeProperty.ACCURACY, NpcTypeProperty.SPEED, NpcTypeProperty.SHOT_COUNT), TIMING(NpcTypeProperty.DELAY_MIN, NpcTypeProperty.DELAY_MAX, NpcTypeProperty.BURST_DELAY,
-                    NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND);
+                    NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND), DRIVING, TURNING;
 
         private final List<NpcTypeProperty> properties;
 
@@ -157,6 +161,7 @@ final class CombatPages
         this.gui = gui;
         this.npc = npc;
         parts = new PartHitboxPage(gui, npc);
+        tuning = new ModelTuningRows(gui, npc);
     }
 
     boolean active()
@@ -312,12 +317,12 @@ final class CombatPages
         properties.refresh(npc);
         Map<NpcTypeProperty, Tag> inherited = properties.inherited();
         Map<NpcTypeProperty, String> readouts = properties.type().map(type -> NpcTypeReadouts.create(type, inherited, options, properties.usesNativeProjectile())).orElse(Map.of());
-        Group[] groups = Group.values();
-        for (int i = 0; i < groups.length; i++)
+        initGroupTabs(loaded);
+        if (ModelTuningRows.holds(group))
         {
-            GuiButtonNop tab = new GuiButtonNop(gui, GROUP_ID + i, gui.guiLeft + 8 + i * 78, gui.guiTop + 29, 76, 20, new String[]{PREFIX + "group." + groups[i].name().toLowerCase(Locale.ROOT)}, 0);
-            tab.setEnabled(loaded && groups[i] != group);
-            gui.addButton(tab);
+            bulkButtons(INHERIT_ALL_ID, loaded && tuning.anyCustom(group), IMPORT_ALL_ID, loaded && tuning.anyInherited(group), INHERIT_ALL + HELP_SUFFIX, IMPORT_ALL + HELP_SUFFIX);
+            tuning.init(group, gui.guiTop + 55, loaded);
+            return;
         }
         NpcCombatSettings settings = settings();
         bulkButtons(INHERIT_ALL_ID, loaded && group.properties().stream().anyMatch(property -> properties.supplied().contains(property) && settings.isCustom(property)), IMPORT_ALL_ID,
@@ -333,6 +338,23 @@ final class CombatPages
         {
             engineRow(EngineChannel.IDLE, gui.guiTop + 55 + rows.size() * 21, loaded);
             engineRow(EngineChannel.MOVEMENT, gui.guiTop + 55 + (rows.size() + 1) * 21, loaded);
+        }
+    }
+
+    /** The tabs of the model properties page; the movement tabs are offered only for a model that has movement values to supply. */
+    private void initGroupTabs(boolean loaded)
+    {
+        List<Group> groups = Arrays.stream(Group.values()).filter(candidate -> ModelTuningRows.visible(npc, candidate)).toList();
+        if (!groups.contains(group))
+            group = Group.GENERAL;
+        int width = (396 + 2) / groups.size() - 2;
+        for (int i = 0; i < groups.size(); i++)
+        {
+            Group tabGroup = groups.get(i);
+            GuiButtonNop tab = new GuiButtonNop(gui, GROUP_ID + tabGroup.ordinal(), gui.guiLeft + 8 + i * (width + 2), gui.guiTop + 29, width, 20,
+                new String[]{PREFIX + "group." + tabGroup.name().toLowerCase(Locale.ROOT)}, 0);
+            tab.setEnabled(loaded && tabGroup != group);
+            gui.addButton(tab);
         }
     }
 
@@ -788,7 +810,7 @@ final class CombatPages
         return id == KNOCKBACK_ID || id == PROPERTIES_PAGE_ID || id == MAIN_HAND_PAGE_ID || id == OFF_HAND_PAGE_ID || id == ARMOR_PAGE_ID || id == PROJECTILE_SLOT_PAGE_ID || id == PARTS_PAGE_ID
             || parts.handles(id) || id == IMPORT_ALL_ID || id == EQUIPMENT_IMPORT_ALL_ID || id == INHERIT_ALL_ID || id == EQUIPMENT_INHERIT_ALL_ID
             || id >= GROUP_ID && id < GROUP_ID + Group.values().length || id >= EQUIPMENT_GROUP_ID && id < EQUIPMENT_GROUP_ID + EquipmentProperty.Group.values().length || equipmentControl(id)
-            || id >= PROPERTY_MODE_ID && id < PROPERTY_VALUE_ID + NpcTypeProperty.values().length || engineControl(id);
+            || id >= PROPERTY_MODE_ID && id < PROPERTY_VALUE_ID + NpcTypeProperty.values().length || engineControl(id) || ModelTuningRows.handles(id);
     }
 
     private static boolean equipmentControl(int id)
@@ -870,6 +892,8 @@ final class CombatPages
         }
         if (parts.handles(id))
             return parts.buttonEvent(button);
+        if (tuning.claims(id, group))
+            return tuning.event(group, button);
         if (id == KNOCKBACK_ID)
             settings.setKnockback(Knockback.values()[Math.floorMod(button.getValue(), Knockback.values().length)]);
         else if (id == INHERIT_ALL_ID)
@@ -894,6 +918,8 @@ final class CombatPages
     {
         if (page == Page.PARTS)
             return parts.unFocused(field);
+        if (page == Page.PROPERTIES && ModelTuningRows.handles(field.id))
+            return tuning.field(field);
         if (page == Page.PROPERTIES && field.id >= ENGINE_VALUE_ID && field.id < ENGINE_VALUE_ID + EngineChannel.values().length)
         {
             NpcVehicleSounds sounds = NpcPresentation.of(npc).getVehicleSounds();

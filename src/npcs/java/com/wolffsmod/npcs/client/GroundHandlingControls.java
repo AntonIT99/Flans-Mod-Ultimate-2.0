@@ -2,8 +2,10 @@ package com.wolffsmod.npcs.client;
 
 import com.wolffsmod.npcs.sim.NpcDriving;
 import com.wolffsmod.npcs.sim.NpcMobility;
+import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -15,7 +17,10 @@ import net.minecraft.network.chat.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-/** Explicit modes for the driving numbers whose zero sentinel inherits model handling. */
+/**
+ * Explicit modes for the driving and aiming numbers whose zero sentinel inherits model handling, shared by the Travel and
+ * Turret aim pages and the model properties page.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class GroundHandlingControls
 {
@@ -30,6 +35,8 @@ final class GroundHandlingControls
         return switch (value)
         {
             case HULL_TURN_RATE, TURN_RADIUS, DRIVE_REVERSE_SPEED, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING -> true;
+            // Only a content-pack model has a gun mount to take an aim speed from.
+            case AIM_SPEED_YAW, AIM_SPEED_PITCH -> NpcModels.flan(npc) != null;
             // Any other NPC keeps the plain field, whose 0 is its walking speed.
             case LAND_SPEED -> NpcMobility.modelSpeed(npc).isPresent();
             default -> false;
@@ -48,7 +55,7 @@ final class GroundHandlingControls
         int stored = NpcTuning.of(npc).get(value);
         boolean inherit = stored == 0;
         double shown = inherit ? effective(npc, value) : stored;
-        GuiTextFieldNop field = new GuiTextFieldNop(fieldId, gui, x, y, 60, 20, BigDecimal.valueOf(shown).setScale(3, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString());
+        GuiTextFieldNop field = new GuiTextFieldNop(fieldId, gui, x, y, 60, 20, format(shown));
         field.numbersOnly = !inherit;
         field.setMinMaxDefault(1, value.maximum(), 1);
         field.setEditable(loaded && !inherit);
@@ -60,8 +67,17 @@ final class GroundHandlingControls
         return true;
     }
 
-    private static double effective(EntityNPCInterface npc, Value value)
+    /** @return a value as the editor shows it, with up to three decimals */
+    static String format(double value)
     {
+        return BigDecimal.valueOf(value).setScale(3, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+    }
+
+    /** @return the value the NPC uses while it inherits: the model's, or the documented fallback */
+    static double effective(EntityNPCInterface npc, Value value)
+    {
+        if (value == Value.AIM_SPEED_YAW || value == Value.AIM_SPEED_PITCH)
+            return NpcVehicleState.modelAimStep(npc, value == Value.AIM_SPEED_PITCH) * 20D;
         NpcDriving.Settings settings = NpcDriving.settings(npc);
         return switch (value)
         {
@@ -100,15 +116,30 @@ final class GroundHandlingControls
         int index = button.id - MODE_ID;
         if (index < 0 || index >= Value.values().length || !supported(npc, Value.values()[index]))
             return false;
-        Value value = Value.values()[index];
+        choose(npc, Value.values()[index], button.getValue() == 1);
+        return true;
+    }
+
+    /** Switches a value to Custom, starting from the effective value, or back to Inherit, which clears it. */
+    static void choose(EntityNPCInterface npc, Value value, boolean custom)
+    {
+        if (!custom)
+        {
+            store(npc, value, 0);
+            return;
+        }
         double effective = effective(npc, value);
         if (value == Value.HULL_TURN_RATE && NpcTuning.of(npc).driveType() == NpcTuning.DriveType.HEAVY_TRACKED)
             effective /= 0.6D;
-        int number = button.getValue() == 0 ? 0 : Math.max(1, Math.round((float) effective));
+        store(npc, value, Math.max(1, Math.round((float) effective)));
+    }
+
+    /** Stores a value; a driving value the presets fill in turns the preset to Custom, as the Driving page does. */
+    static void store(EntityNPCInterface npc, Value value, int number)
+    {
         NpcTuning.of(npc).set(value, number);
-        // Land speed is a travel setting rather than one the driving presets fill in.
-        if (value != Value.LAND_SPEED)
+        // Land speed is a travel setting and aim speeds belong to the turret: no driving preset fills them in.
+        if (value != Value.LAND_SPEED && value != Value.AIM_SPEED_YAW && value != Value.AIM_SPEED_PITCH)
             NpcTuning.of(npc).set(Value.DRIVE_PRESET, NpcTuning.DrivePreset.CUSTOM.ordinal());
-        return true;
     }
 }

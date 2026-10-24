@@ -405,6 +405,24 @@ public final class NpcVehicleState
         }
     }
 
+    /**
+     * @param pitch
+     *            whether to read the elevation speed rather than the traverse speed
+     * @return degrees per tick the NPC's model turns its gun at when its own aim speed is left to the model: the driver
+     *         seat's speed, or the default for a model whose seat states none and for a mecha's arms
+     */
+    public static float modelAimStep(EntityNPCInterface npc, boolean pitch)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        IContentType definition = model == null ? null : model.getInfoType();
+        if (definition == null || FlanModelKind.of(definition) == FlanModelKind.MECHA)
+            return DEFAULT_AIM_STEP;
+        WeaponMount driver = FlansEntityTypes.getMounts(definition).stream().filter(WeaponMount::driver).findFirst().orElse(null);
+        if (driver == null)
+            return DEFAULT_AIM_STEP;
+        return pitch ? driver.pitchSpeed() : driver.yawSpeed();
+    }
+
     private static float aimStep(NpcTuning tuning, Value value, float modelStep)
     {
         int perSecond = tuning.get(value);
