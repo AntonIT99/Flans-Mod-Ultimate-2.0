@@ -135,7 +135,7 @@ public interface ICommandCentreView
      * answers with new state.
      *
      * @param command
-     *            a {@code /teams} command, with or without its slash; the server refuses any other
+     *            a {@code /teams} or {@code /gamerule} command, with or without its slash; the server refuses any other
      */
     void runCommand(String command);
 

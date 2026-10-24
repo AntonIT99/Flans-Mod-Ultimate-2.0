@@ -75,7 +75,7 @@ public final class CommandCentre
         PacketHandler.sendTo(new PacketCommandCentreState(open, sections(player), feedback), player);
     }
 
-    /** Runs a {@code /teams} command as the operator, and gives back what it told them. */
+    /** Runs a {@code /teams} or {@code /gamerule} command as the operator, and gives back what it told them. */
     static List<Feedback> run(ServerPlayer player, String command)
     {
         String line = CommandLines.normalise(command);

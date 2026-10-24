@@ -1,11 +1,14 @@
 package com.flansmodultimate.client.gui.centre;
 
+import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.flansmodultimate.common.teams.centre.TeamsSection;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 
@@ -26,16 +29,18 @@ final class RulesPage extends TeamsPage
     private static final String SCORE_LIMIT_TEXT = "score_limit";
     private static final String RULE = "rule.";
     private static final String VARIABLE = "variable.";
+    private static final String GAME_RULE = "gamerule.";
     private static final String SET_VARIABLE = "teams admin setvariable";
     private static final String SEA_LEVEL = "sea_level";
     private static final String SEA_LEVEL_FIELD = "sea_level_field";
 
     private enum Tab
     {
-        PROTECTION, COMBAT, CLEANUP, GAME_TYPE
+        PROTECTION, COMBAT, CLEANUP, GAME_TYPE, MINECRAFT
     }
 
     private Tab tab = Tab.PROTECTION;
+    private String selectedGameRule = "";
 
     RulesPage()
     {
@@ -63,12 +68,47 @@ final class RulesPage extends TeamsPage
             }
             case CLEANUP -> initCleanup(view, data.rules(), left, y + 16, width);
             case GAME_TYPE -> initGameType(view, data, left, y + 16, width);
+            case MINECRAFT -> initMinecraftRules(view, data.rules().getCompound(TeamsSection.GAME_RULES), left, y + 16, width);
         }
-        if (tab != Tab.GAME_TYPE)
+        if (tab != Tab.GAME_TYPE && tab != Tab.MINECRAFT)
         {
             int half = (width - GAP) / 2;
             button(view, tr("preset.arena"), left, bottom, half, tr("preset.arena.tip"), () -> view.confirm(tr("preset.arena.confirm"), () -> run(view, "teams admin arena")));
             button(view, tr("preset.survival"), left + half + GAP, bottom, half, tr("preset.survival.tip"), () -> view.confirm(tr("preset.survival.confirm"), () -> run(view, "teams admin survival")));
+        }
+    }
+
+    private void initMinecraftRules(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
+    {
+        List<String> names = rules.getAllKeys().stream().sorted().toList();
+        if (!names.contains(selectedGameRule))
+            selectedGameRule = names.isEmpty() ? "" : names.get(0);
+        int listWidth = (width - GAP) / 2;
+        List<CommandCentreRow> rows = new ArrayList<>();
+        for (String name : names)
+        {
+            String value = rules.contains(name, Tag.TAG_BYTE) ? Boolean.toString(rules.getBoolean(name)) : Integer.toString(rules.getInt(name));
+            rows.add(CommandCentreRow.of(name, Component.translatable(GAME_RULE + name), Component.literal(name + " = " + value)).selected(name.equals(selectedGameRule)));
+        }
+        view.addList("minecraft_rules", new ScreenRectangle(left, top, listWidth, view.getTop() + view.getHeight() - top), rows, Component.empty(), name ->
+        {
+            selectedGameRule = name;
+            view.rebuild();
+        });
+        if (selectedGameRule.isEmpty())
+            return;
+        String name = selectedGameRule;
+        int x = left + listWidth + GAP;
+        int editorWidth = width - listWidth - GAP;
+        Component title = Component.translatable(GAME_RULE + name);
+        Component description = Component.translatableWithFallback(GAME_RULE + name + ".description", name);
+        if (rules.contains(name, Tag.TAG_BYTE))
+            toggle(view, title, rules.getBoolean(name), x, top, editorWidth, description, enabled -> run(view, "gamerule", name, enabled));
+        else
+        {
+            view.addField(GAME_RULE + name, x, top, editorWidth - 44, Integer.toString(rules.getInt(name)), title).setTooltip(Tooltip.create(title.copy().append("\n").append(description)));
+            button(view, tr("set"), x + editorWidth - 40, top, 40,
+                () -> number(view, GAME_RULE + name, Integer.MIN_VALUE, Integer.MAX_VALUE, title).ifPresent(value -> run(view, "gamerule", name, value)));
         }
     }
 

@@ -160,7 +160,15 @@ public final class ConfigOptionFactory
     @Nullable
     private static Option widgetOption(ConfigTarget target, ConfigValue<?> value, @Nullable OptionInstance<?> option)
     {
-        return option == null ? null : new Option(null, width -> option.createButton(Minecraft.getInstance().options, 0, 0, width), target, value);
+        if (option == null)
+            return null;
+        return new Option(null, width ->
+        {
+            AbstractWidget widget = option.createButton(Minecraft.getInstance().options, 0, 0, width);
+            if (value == ModClientConfig.ENABLE_UNCENSORED_CONTENT && ModClientConfig.isUncensoredContentForced())
+                widget.active = false;
+            return widget;
+        }, target, value);
     }
 
     private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, boolean current)

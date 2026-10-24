@@ -12,11 +12,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class CommandCentreTest
 {
     @Test
-    void onlyTeamsCommandsAreRun()
+    void onlyTeamsAndGameRuleCommandsAreRun()
     {
         assertEquals("teams admin next", CommandLines.normalise("  /teams admin next "));
         assertTrue(CommandLines.isCentreCommand("teams admin next"));
         assertTrue(CommandLines.isCentreCommand("Teams"));
+        assertTrue(CommandLines.isCentreCommand("gamerule keepInventory true"));
+        assertTrue(CommandLines.isCentreCommand("gamerule randomTickSpeed 3"));
+        assertFalse(CommandLines.isCentreCommand("gamerules keepInventory true"));
+        assertFalse(CommandLines.isCentreCommand("execute run gamerule keepInventory true"));
         assertFalse(CommandLines.isCentreCommand("teamspeak"));
         assertFalse(CommandLines.isCentreCommand(CommandLines.normalise("/op somebody")));
     }

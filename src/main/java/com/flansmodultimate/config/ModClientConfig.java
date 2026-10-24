@@ -35,6 +35,7 @@ public final class ModClientConfig
     public static final ForgeConfigSpec configSpec;
 
     private static final AtomicReference<Boolean> startupUncensoredContentEnabled = new AtomicReference<>();
+    private static final AtomicBoolean serverForcesUncensoredContent = new AtomicBoolean();
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean showDetailedItemDescriptions;
@@ -298,7 +299,8 @@ public final class ModClientConfig
         SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder.comment("Show content pack names in item descriptions").define("showPackNameInItemDescriptions", true);
         SHOW_DETAILED_ITEM_DESCRIPTIONS = builder.comment("Show the detailed descriptions of guns, ammunition and other Flan's items: loaded ammunition, statistics",
             "and the full statistics shown while sneaking. When disabled, only the item's own description is listed.").define("showDetailedItemDescriptions", true);
-        ENABLE_UNCENSORED_CONTENT = builder.comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources.")
+        ENABLE_UNCENSORED_CONTENT = builder.comment(
+            "Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources. Restore Defaults preserves this preference. A server may require uncensored content while connected.")
             .define("enableUncensoredContent", false);
         OPTIONS_BUTTON_PLACEMENT = builder.comment("""
             Where the button opening the Flan's Mod options screen is added.
@@ -734,8 +736,24 @@ public final class ModClientConfig
         return configSpec.isLoaded() ? value.get() : value.getDefault();
     }
 
+    public static boolean isUncensoredContentForced()
+    {
+        return serverForcesUncensoredContent.get();
+    }
+
+    /** Applies a server requirement for this connection without changing the saved client preference. Client thread. */
+    public static void setServerForcesUncensoredContent(boolean forced)
+    {
+        boolean previous = isUncensoredContentEnabled();
+        serverForcesUncensoredContent.set(forced);
+        if (previous != isUncensoredContentEnabled())
+            Minecraft.getInstance().reloadResourcePacks();
+    }
+
     public static boolean isUncensoredContentEnabled()
     {
+        if (serverForcesUncensoredContent.get())
+            return true;
         ModClientConfig config = get();
         if (config != null)
             return config.enableUncensoredContent;

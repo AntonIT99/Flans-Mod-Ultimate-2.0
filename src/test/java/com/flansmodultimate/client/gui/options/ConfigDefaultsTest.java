@@ -12,6 +12,18 @@ import static org.mockito.Mockito.*;
 class ConfigDefaultsTest
 {
     @Test
+    void uncensoredPreferenceSurvivesRestoreDefaults()
+    {
+        ConfigTarget target = editableTarget();
+        ConfigDefaults defaults = new ConfigDefaults();
+        defaults.add(target, ModClientConfig.ENABLE_UNCENSORED_CONTENT);
+        assertEquals(0, defaults.changedCount());
+        defaults.restore();
+        verify(target, never()).setWhileDragging(any(), any());
+        verify(target, never()).flush();
+    }
+
+    @Test
     void countsOnlyDistinctEditableDisplayedValuesThatDifferFromDefaults()
     {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();

@@ -16,6 +16,8 @@ public class ClientConfigTarget implements ConfigTarget
     @Override
     public Object get(ConfigValue<?> value)
     {
+        if (value == ModClientConfig.ENABLE_UNCENSORED_CONTENT && ModClientConfig.isUncensoredContentForced())
+            return true;
         return value.get();
     }
 

@@ -13,6 +13,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameRules;
 
 import java.util.List;
 
@@ -38,6 +39,7 @@ public final class TeamsSection
     public static final String TEAMS = "team_list";
     public static final String POOLS = "loadout_pools";
     public static final String RULES = "rules";
+    public static final String GAME_RULES = "game_rules";
     public static final String SETTINGS = "settings";
     public static final String VARIABLES = "variables";
 
@@ -123,11 +125,32 @@ public final class TeamsSection
             pools.add(entry);
         });
         tag.put(POOLS, pools);
-        tag.put(RULES, rules(manager));
+        CompoundTag rules = rules(manager);
+        rules.put(GAME_RULES, gameRules(player));
+        tag.put(RULES, rules);
         tag.put(SETTINGS, settings(manager));
         CompoundTag variables = new CompoundTag();
         manager.getCurrentGameType().ifPresent(type -> type.getVariables().forEach(variables::putString));
         tag.put(VARIABLES, variables);
+        return tag;
+    }
+
+    private static CompoundTag gameRules(ServerPlayer player)
+    {
+        CompoundTag tag = new CompoundTag();
+        GameRules rules = player.server.getGameRules();
+        GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor()
+        {
+            @Override
+            public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type)
+            {
+                GameRules.Value<T> value = rules.getRule(key);
+                if (value instanceof GameRules.BooleanValue flag)
+                    tag.putBoolean(key.getId(), flag.get());
+                else if (value instanceof GameRules.IntegerValue integer)
+                    tag.putInt(key.getId(), integer.get());
+            }
+        });
         return tag;
     }
 

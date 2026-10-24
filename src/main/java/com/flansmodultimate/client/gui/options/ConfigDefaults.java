@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.gui.options;
 
+import com.flansmodultimate.config.ModClientConfig;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ final class ConfigDefaults
 
     void add(ConfigTarget target, ConfigValue<?> value)
     {
+        if (value == ModClientConfig.ENABLE_UNCENSORED_CONTENT)
+            return;
         values.computeIfAbsent(target, ignored -> new LinkedHashSet<>()).add(value);
     }
 

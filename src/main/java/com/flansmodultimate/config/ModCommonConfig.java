@@ -33,6 +33,7 @@ public final class ModCommonConfig
     private static final String SECTION_TEAMS = "Teams Settings";
     public static final ForgeConfigSpec configSpec;
     public static final IntValue THROWN_GUN_DESPAWN_SECONDS;
+    public static final BooleanValue FORCE_UNCENSORED_CONTENT;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
     /** Vanilla player health; the maximum health setting leaves players untouched at this value. */
@@ -320,6 +321,7 @@ public final class ModCommonConfig
     static
     {
         builder.push("General Settings");
+        FORCE_UNCENSORED_CONTENT = builder.comment("Require uncensored names and textures for connected clients without changing their saved preference.").define("forceUncensoredContent", false);
         ADD_ALL_PAINTJOBS_TO_CREATIVE = builder.comment("Whether all paintjobs should appear in creative").define("addAllPaintjobsToCreative", true);
         ADD_GUNPOWDER_RECIPE = builder.comment("Add a shapeless recipe for gunpowder using three charcoal and one glowstone dust.", "Changes take effect after restarting or reloading server data.")
             .define("addGunpowderRecipe", true);
@@ -752,7 +754,8 @@ public final class ModCommonConfig
             ENCHANTMENT_MODULE_ENABLED.get(),
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
-            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get());
+            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
+            FORCE_UNCENSORED_CONTENT.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1373,6 +1376,7 @@ public final class ModCommonConfig
     public enum RuntimeOption
     {
         // spotless:off
+        FORCE_UNCENSORED_CONTENT(() -> ModCommonConfig.FORCE_UNCENSORED_CONTENT, QuickSection.SERVER),
         DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS, QuickSection.SERVER),
         DISABLE_CROSSHAIR_WHILE_SCOPED(() -> ModCommonConfig.DISABLE_CROSSHAIR_WHILE_SCOPED, QuickSection.SERVER),
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS, QuickSection.SERVER),

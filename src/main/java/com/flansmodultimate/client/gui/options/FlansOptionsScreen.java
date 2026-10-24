@@ -355,9 +355,6 @@ public class FlansOptionsScreen extends Screen
 
     private void refresh()
     {
-        if (commonOptions.isEmpty() && mode != Mode.COMMON)
-            return;
-
         scrollAmount = list.getScrollAmount();
         rebuildWidgets();
     }

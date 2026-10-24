@@ -22,11 +22,11 @@ public final class CommandLines
         return line;
     }
 
-    /** Whether a normalised line is a {@code /teams} command, the only kind the centre runs. */
+    /** Whether a normalised line is a {@code /teams} command, or a vanilla {@code /gamerule} command. */
     public static boolean isCentreCommand(String line)
     {
         String lower = line.toLowerCase(Locale.ROOT);
-        return lower.equals(FlansCommandCentre.COMMAND) || lower.startsWith(FlansCommandCentre.COMMAND + " ");
+        return lower.equals(FlansCommandCentre.COMMAND) || lower.startsWith(FlansCommandCentre.COMMAND + " ") || lower.equals("gamerule") || lower.startsWith("gamerule ");
     }
 
     /** Joins the words of a command with spaces, each written as it is. */

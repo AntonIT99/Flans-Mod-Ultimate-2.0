@@ -19,7 +19,7 @@ import java.util.function.Function;
  * it, such as skirmishes and wars fought by bots.
  *
  * <p>
- * The screen does nothing on its own. Everything an operator does in it runs as a {@code /teams} command on the server,
+ * The screen does nothing on its own. Everything an operator does in it runs as a {@code /teams} or {@code /gamerule} command on the server,
  * with the operator's own permissions, and the command's output is shown in the screen. What the screen shows comes
  * from <em>sections</em>: tag data that the server builds for the operator each time it sends the screen's state, after
  * every command and every few seconds while the screen is open. The main mod sends a section of its own for the Teams
@@ -30,7 +30,7 @@ import java.util.function.Function;
 @ApiStatus.Experimental
 public final class FlansCommandCentre
 {
-    /** The command every command the centre runs starts with, without its slash. */
+    /** The root command for Teams actions, without its slash. */
     public static final String COMMAND = "teams";
     /** The operator permission level the centre and its commands require. */
     public static final int PERMISSION_LEVEL = 2;
