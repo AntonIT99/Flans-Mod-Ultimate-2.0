@@ -80,7 +80,7 @@ import java.util.UUID;
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
- * gunner, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
+ * gunner, appears seated with empty hands while aboard, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
  * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
@@ -212,8 +212,17 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsDisplayedThrow(CallbackInfoReturnable<ItemStack> callback)
     {
         // Only the client sees the substitute; server combat, saves and drops keep the original inventory.
-        if (level().isClientSide && isAlive() && !((EntityNPCInterface) (Object) this).isKilled() && !wolffsmodnpcsThrowDisplay().isEmpty())
+        if (level().isClientSide && NpcCrew.vehicleOf(this).isPresent())
+            callback.setReturnValue(ItemStack.EMPTY);
+        else if (level().isClientSide && isAlive() && !((EntityNPCInterface) (Object) this).isKilled() && !wolffsmodnpcsThrowDisplay().isEmpty())
             callback.setReturnValue(wolffsmodnpcsThrowDisplay());
+    }
+
+    @Inject(method = {"getOffhandItem", "m_21206_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsCrewEmptyOffhand(CallbackInfoReturnable<ItemStack> callback)
+    {
+        if (level().isClientSide && NpcCrew.vehicleOf(this).isPresent())
+            callback.setReturnValue(ItemStack.EMPTY);
     }
 
     @Override

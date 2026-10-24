@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.client.FlansEquipmentRender;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import noppes.npcs.entity.EntityCustomNpc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,7 +12,7 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.Entity;
 
-/** Gives borrowed humanoid models the live NPC's handedness, swing and equipment poses, including legacy skin models. */
+/** Gives borrowed humanoid models the live NPC's handedness, swing, crew sitting and equipment poses, including legacy skin models. */
 @Mixin(targets = "noppes.npcs.client.renderer.RenderCustomNpc$2", remap = false)
 public abstract class NpcBorrowedModelMixin
 {
@@ -23,8 +24,11 @@ public abstract class NpcBorrowedModelMixin
     {
         if (model instanceof HumanoidModel<?> humanoid && borrowed instanceof EntityCustomNpc && owner instanceof EntityCustomNpc npc)
         {
+            boolean crew = NpcCrew.vehicleOf(npc).isPresent();
+            model.riding = crew || npc.isPassenger() && npc.getVehicle() != null && npc.getVehicle().shouldRiderSit();
             model.setupAnim(npc, swing, amount, age, yaw, pitch);
-            FlansEquipmentRender.applyWeaponPose(humanoid, npc);
+            if (!crew)
+                FlansEquipmentRender.applyWeaponPose(humanoid, npc);
             if (humanoid instanceof PlayerModel<?> player)
             {
                 player.rightSleeve.copyFrom(humanoid.rightArm);
