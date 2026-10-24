@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.MechaPhysics;
@@ -698,7 +699,8 @@ public class Mecha extends Driveable implements MechaVisual
         MechaType mechaType = getMechaType();
         if (mechaType == null)
             return;
-        double reach = Mth.clamp(tool.getReach() * mechaType.getReach(), 1F, 32F);
+        var melee = MechaMeleeProperties.of(tool.getSpeed(), tool.getReach(), mechaType.getReach());
+        double reach = melee.reach();
         Vec3 origin = attacker.getEyePosition();
         Vec3 direction = aimDirection();
         AABB sweep = new AABB(origin, origin.add(direction.scale(reach))).inflate(1.25D);
@@ -706,12 +708,12 @@ public class Mecha extends Driveable implements MechaVisual
             .min(java.util.Comparator.comparingDouble(entity -> entity.distanceToSqr(origin))).orElse(null);
         if (target != null)
         {
-            target.hurt(level().damageSources().mobAttack(attacker), Math.max(1F, 6F * tool.getSpeed()));
+            target.hurt(level().damageSources().mobAttack(attacker), melee.damage());
             if (tool.isFlameBurst())
                 EntityPlatform.igniteForSeconds(target, 4);
         }
         playToolSound(tool);
-        toolCooldown[index] = Math.max(4, Mth.ceil(10F / Math.max(0.1F, tool.getSpeed())));
+        toolCooldown[index] = melee.delay();
     }
 
     /** Points a held mining arm at the block it reaches. The right arm wins when both do, as in 1.7.10. */

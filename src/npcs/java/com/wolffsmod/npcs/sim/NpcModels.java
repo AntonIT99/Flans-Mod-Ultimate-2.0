@@ -1,7 +1,9 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.wolffsmod.npcs.combat.NpcMechaTools;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.model.FlanModelKind;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityCustomNpc;
@@ -25,7 +27,15 @@ public final class NpcModels
     @Nullable
     public static FlanModelEntity flan(Entity entity)
     {
-        return entity instanceof EntityCustomNpc custom && custom.modelData.getEntity(custom) instanceof FlanModelEntity model ? model : null;
+        return entity instanceof EntityCustomNpc custom && custom.modelData != null && custom.modelData.getEntity(custom) instanceof FlanModelEntity model ? model : null;
+    }
+
+    /** @return whether a machine NPC has nothing to strike with; mechas require a sword addon */
+    public static boolean meleeless(Entity entity)
+    {
+        FlanModelEntity model = flan(entity);
+        FlanModelKind kind = model == null ? null : FlanModelKind.of(model.getInfoType());
+        return kind != null && (kind != FlanModelKind.MECHA || entity instanceof EntityNPCInterface npc && NpcMechaTools.properties(npc).isEmpty());
     }
 
     /** @return the factor the NPC's size setting scales its model by */

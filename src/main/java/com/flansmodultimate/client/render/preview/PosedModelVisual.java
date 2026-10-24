@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render.preview;
 
 import com.flansmodultimate.api.client.model.ModelPose;
 import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.equipment.IMechaEquipment;
 import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
@@ -496,6 +498,12 @@ public final class PosedModelVisual implements VehicleVisual, PlaneVisual, Mecha
     }
 
     // Mecha
+
+    @Override
+    public ItemStack getMechaTool(boolean left)
+    {
+        return owner instanceof IMechaEquipment equipment ? equipment.flansmodultimateMechaTool(left) : ItemStack.EMPTY;
+    }
 
     @Override
     public float getLegSwing()

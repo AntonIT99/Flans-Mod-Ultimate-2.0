@@ -95,7 +95,7 @@ final class CombatPages
         Map.entry(NpcTypeProperty.SHOT_COUNT, "shot_count"), Map.entry(NpcTypeProperty.FIRING_SOUND, "firing_sound"), Map.entry(NpcTypeProperty.MELEE_REACH, "melee_reach"),
         Map.entry(NpcTypeProperty.WALKING_SPEED, "walking_speed"), Map.entry(NpcTypeProperty.IDLE_SOUND, "idle_sound"), Map.entry(NpcTypeProperty.STEP_SOUND, "step_sound"),
         Map.entry(NpcTypeProperty.POTION_IMMUNE, "potion_immune"), Map.entry(NpcTypeProperty.IGNORE_COBWEB, "ignore_cobweb"), Map.entry(NpcTypeProperty.HEALTH_REGEN, "health_regen"),
-        Map.entry(NpcTypeProperty.COMBAT_REGEN, "combat_regen"));
+        Map.entry(NpcTypeProperty.COMBAT_REGEN, "combat_regen"), Map.entry(NpcTypeProperty.MELEE_DAMAGE, "melee_damage"), Map.entry(NpcTypeProperty.MELEE_DELAY, "melee_delay"));
 
     private final GuiBasic gui;
     private final EntityNPCInterface npc;
@@ -140,10 +140,11 @@ final class CombatPages
      */
     enum Group
     {
-        GENERAL(NpcTypeProperty.HEALTH, NpcTypeProperty.AGGRO_RANGE, NpcTypeProperty.MELEE_REACH, NpcTypeProperty.WALKING_SPEED), SURVIVAL(NpcTypeProperty.CAN_DROWN, NpcTypeProperty.NO_FALL_DAMAGE,
-            NpcTypeProperty.POTION_IMMUNE, NpcTypeProperty.IGNORE_COBWEB, NpcTypeProperty.HEALTH_REGEN, NpcTypeProperty.COMBAT_REGEN), WEAPON(NpcTypeProperty.RANGE, NpcTypeProperty.DAMAGE,
-                NpcTypeProperty.ACCURACY, NpcTypeProperty.SPEED, NpcTypeProperty.SHOT_COUNT), TIMING(NpcTypeProperty.DELAY_MIN, NpcTypeProperty.DELAY_MAX, NpcTypeProperty.BURST_DELAY,
-                    NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND), DRIVING, TURNING;
+        GENERAL(NpcTypeProperty.HEALTH, NpcTypeProperty.AGGRO_RANGE, NpcTypeProperty.MELEE_DAMAGE, NpcTypeProperty.MELEE_REACH, NpcTypeProperty.MELEE_DELAY, NpcTypeProperty.WALKING_SPEED), SURVIVAL(
+            NpcTypeProperty.CAN_DROWN, NpcTypeProperty.NO_FALL_DAMAGE, NpcTypeProperty.POTION_IMMUNE, NpcTypeProperty.IGNORE_COBWEB, NpcTypeProperty.HEALTH_REGEN,
+            NpcTypeProperty.COMBAT_REGEN), WEAPON(NpcTypeProperty.RANGE, NpcTypeProperty.DAMAGE, NpcTypeProperty.ACCURACY, NpcTypeProperty.SPEED, NpcTypeProperty.SHOT_COUNT), TIMING(
+                NpcTypeProperty.DELAY_MIN, NpcTypeProperty.DELAY_MAX, NpcTypeProperty.BURST_DELAY,
+                NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND), DRIVING, TURNING;
 
         private final List<NpcTypeProperty> properties;
 
@@ -998,12 +999,13 @@ final class CombatPages
             case ACCURACY, SPEED, WALKING_SPEED -> 100D;
             case SHOT_COUNT -> 10D;
             case MELEE_REACH -> 64D;
+            case MELEE_DELAY -> 1000D;
             case DELAY_MIN, DELAY_MAX, BURST_DELAY, BURST -> 9999D;
             default -> 100_000D;
         };
         double min = switch (property)
         {
-            case HEALTH, AGGRO_RANGE, RANGE, SHOT_COUNT, DELAY_MIN, DELAY_MAX, BURST -> 1D;
+            case HEALTH, AGGRO_RANGE, RANGE, SHOT_COUNT, DELAY_MIN, DELAY_MAX, BURST, MELEE_DELAY -> 1D;
             default -> 0D;
         };
         double clamped = Math.max(min, Math.min(max, number.getAsDouble()));

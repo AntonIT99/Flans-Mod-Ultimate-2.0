@@ -1,4 +1,8 @@
 {
+  "wolffsmodnpcs.weapons.read_only.type_properties.melee_delay": "Mit Schwert-Addon: Ticks zwischen Angriffen, max(4, ceil(10 / max(0.1, Werkzeug-Speed))), wie bei einem spielergesteuerten Mecha.",
+  "wolffsmodnpcs.weapons.read_only.type_properties.melee_damage": "Maschinen übernehmen 0 Nahkampfschaden. Ein Mecha benötigt ein Addon mit Function SWORD: Schaden ist max(1, 6 × Werkzeug-Speed). Das erste Schwert in Händen, Projektilslot oder Inventar wird am rechten Arm montiert.",
+  "wolffsmodnpcs.combat.property.melee_delay": "Nahkampftempo",
+  "wolffsmodnpcs.combat.property.melee_damage": "Nahkampfschaden",
   "wolffsmodnpcs.category.factions": "Team-Fraktionen",
   "wolffsmodnpcs.team_faction.create": "Fraktion aus Flan-Team erstellen",
   "wolffsmodnpcs.team_faction.apply": "Fraktion anwenden",
@@ -1392,7 +1396,7 @@
   "wolffsmodnpcs.weapons.read_only.type_properties.idle_sound": "Das angegebene Leerlaufgeräusch des Modells.",
   "wolffsmodnpcs.weapons.read_only.type_properties.ignore_cobweb": "Ein Flan-Modell ist eine Maschine: Spinnweben verlangsamen es nicht.",
   "wolffsmodnpcs.weapons.read_only.type_properties.max_delay": "Gleich der geringsten Verzögerung: die Nachladezeit des Modells mit Nachladezyklus und Flan-Munition, sonst das Feuerintervall der Waffengruppe.",
-  "wolffsmodnpcs.weapons.read_only.type_properties.melee_reach": "Die Nahkampfreichweite ist die Reichweite des Mechas in Blöcken.",
+  "wolffsmodnpcs.weapons.read_only.type_properties.melee_reach": "Mit Schwert-Addon: Werkzeug-Reach × Mecha-Reach, begrenzt auf 1–32 Blöcke.",
   "wolffsmodnpcs.weapons.read_only.type_properties.min_delay": "Mit Nachladezyklus und Flan-Munition die Nachladezeit des Modells in Ticks, die nach jedem Magazin abgewartet wird. Sonst das Feuerintervall der gewählten Waffengruppe, wobei gebrochene Intervalle zwischen den Schüssen übertragen werden.",
   "wolffsmodnpcs.weapons.read_only.type_properties.no_fall_damage": "Danach gesetzt, ob der Fallschaden des Modells aktiviert ist.",
   "wolffsmodnpcs.weapons.read_only.type_properties.potion_immune": "Ein Flan-Modell ist eine Maschine: Trankeffekte wirken nicht auf es.",

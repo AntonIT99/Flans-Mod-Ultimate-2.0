@@ -7,13 +7,13 @@ package com.flansmodultimate.api.equipment;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
+import com.flansmodultimate.common.driveables.EnumMechaItemType;
+import com.flansmodultimate.common.driveables.EnumMechaToolType;
 import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
 import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.guns.EquipmentSupport;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.common.item.MechaAddonItem;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -30,6 +30,19 @@ import java.util.OptionalDouble;
 @ApiStatus.Experimental
 public final class FlansEquipment
 {
+    /**
+     * Reads a sword addon's effective damage, attack delay and reach for a mecha definition, on either side.
+     * Returns empty for another item, a non-sword addon or a non-mecha definition.
+     */
+    public static Optional<MechaMeleeProperties> getMechaMeleeProperties(IContentType mecha, ItemStack tool)
+    {
+        if (!(mecha instanceof MechaType type) || !(tool.getItem() instanceof MechaAddonItem addon) || addon.getConfigType().getMechaItemType() != EnumMechaItemType.TOOL
+            || addon.getConfigType().getFunction() != EnumMechaToolType.SWORD)
+            return Optional.empty();
+        MechaItemType sword = addon.getConfigType();
+        return Optional.of(MechaMeleeProperties.of(sword.getSpeed(), sword.getReach(), type.getReach()));
+    }
+
     private FlansEquipment()
     {}
 

@@ -5,6 +5,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.visual.DriveableVisual;
+import com.flansmodultimate.common.driveables.visual.MechaVisual;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.MechaType;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -173,6 +174,8 @@ public class ModelMecha extends ModelDriveable
 
     private static boolean hasAddon(DriveableVisual driveable, EnumMechaSlotType slot)
     {
+        if (driveable instanceof MechaVisual mecha && (slot == EnumMechaSlotType.LEFT_TOOL || slot == EnumMechaSlotType.RIGHT_TOOL))
+            return !mecha.getMechaTool(slot == EnumMechaSlotType.LEFT_TOOL).isEmpty();
         DriveableData data = driveable.getDriveableData();
         return data != null && !data.getMechaAddon(slot).isEmpty();
     }

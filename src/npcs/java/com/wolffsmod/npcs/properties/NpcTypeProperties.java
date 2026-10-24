@@ -4,6 +4,7 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.flansmodultimate.api.entity.EntityTypeProperties;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
@@ -17,6 +18,7 @@ import noppes.npcs.entity.data.DataAI;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.*;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -33,6 +35,7 @@ public final class NpcTypeProperties
     private LivingEntity lastModel;
     private long lastFlags = -1L;
     private boolean lastNative;
+    private Optional<MechaMeleeProperties> lastMelee = Optional.empty();
     private int nextInspection;
     @Nullable
     private EntityTypeProperties type;
@@ -58,14 +61,16 @@ public final class NpcTypeProperties
         IContentType selected = model instanceof FlanModelEntity flan ? flan.getInfoType() : null;
         ItemStack ammunition = NpcAmmunition.modelTemplate(npc);
         boolean nativeAttack = NpcRangedAttack.usesFlanProjectile(options, ammunition);
+        Optional<MechaMeleeProperties> melee = NpcMechaTools.properties(npc);
         // There are more switches than fit beside the signature, so the two are mixed rather than packed side by side.
         long flags = flags(options) * 31L + combat.customSignature();
-        if (model != lastModel || selected != lastType || flags != lastFlags || nativeAttack != lastNative || npc.tickCount >= nextInspection)
+        if (model != lastModel || selected != lastType || flags != lastFlags || nativeAttack != lastNative || !melee.equals(lastMelee) || npc.tickCount >= nextInspection)
         {
             lastModel = model;
             lastType = selected;
             lastFlags = flags;
             lastNative = nativeAttack;
+            lastMelee = melee;
             nextInspection = npc.tickCount + 20;
             double modelHealth = model != null && !(model instanceof FlanModelEntity) ? ((NpcModelHealth) ((EntityCustomNpc) npc).modelData).wolffsmodnpcsModelMaxHealth() : Double.NaN;
             inspect(options, combat, selected, ammunition, modelHealth);
@@ -94,6 +99,8 @@ public final class NpcTypeProperties
         else if (Double.isFinite(modelHealth) && modelHealth > 0D)
             offered.put(NpcTypeProperty.HEALTH, IntTag.valueOf((int) Math.max(1D, Math.min(Math.ceil(modelHealth), Math.min(Integer.MAX_VALUE, maxHealth)))));
         FlanModelKind kind = FlanModelKind.of(selected);
+        if (type != null && kind == FlanModelKind.MECHA)
+            offerMeleeValues(offered, lastMelee);
         // Driveable definitions state no targeting range; vehicles engage at longer distances than infantry.
         if (type != null && options.enabled(Feature.TYPE_PROPERTIES) && kind != null && kind != FlanModelKind.AA_GUN)
         {
@@ -110,6 +117,19 @@ public final class NpcTypeProperties
         supplied = Set.copyOf(type == null ? inherited.keySet() : NpcTypeReadouts.create(type, inherited, options, lastNative).keySet());
         offered.keySet().removeAll(combat.customProperties());
         mapped = Map.copyOf(offered);
+    }
+
+    /** A sword supplies all three melee fields together; removing it restores zero damage and the saved cadence/reach. */
+    static void offerMeleeValues(Map<NpcTypeProperty, Tag> offered, Optional<MechaMeleeProperties> melee)
+    {
+        offered.put(NpcTypeProperty.MELEE_DAMAGE, IntTag.valueOf(melee.map(value -> Mth.ceil(value.damage())).orElse(0)));
+        offered.remove(NpcTypeProperty.MELEE_REACH);
+        offered.remove(NpcTypeProperty.MELEE_DELAY);
+        melee.ifPresent(value ->
+        {
+            offered.put(NpcTypeProperty.MELEE_REACH, FloatTag.valueOf((float) value.reach()));
+            offered.put(NpcTypeProperty.MELEE_DELAY, IntTag.valueOf(value.delay()));
+        });
     }
 
     /**

@@ -11,6 +11,7 @@ import com.flansmodultimate.api.equipment.FlansMelee;
 import com.flansmodultimate.api.equipment.HeldItemSettings;
 import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.api.equipment.IHeldItemPresentation;
+import com.flansmodultimate.api.equipment.IMechaEquipment;
 import com.flansmodultimate.api.parts.IFlanPartTarget;
 import com.flansmodultimate.api.parts.IPartBody;
 import com.flansmodultimate.platform.entity.EntityPlatform;
@@ -69,7 +70,8 @@ import java.util.UUID;
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
  * and each kind of armor protection the NPC keeps its own value for. An equipped ranged weapon is fired by a goal of its own,
  * which leaves the NPC's movement to a tactic of the mod's own, to Custom NPCs' tactical variant or else to an approach goal,
- * and it selects the ranged variant of Custom NPCs' tactic. The entity carries what its tactic remembers.</li>
+ * and it selects the ranged variant of Custom NPCs' tactic. The entity carries what its tactic remembers. An NPC wearing an AA
+ * gun, vehicle or plane model strikes nothing in melee; a mecha requires a sword addon, synchronized for its model to draw.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
@@ -121,6 +123,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IFlanSeatOccupant,
         ILivingVisualEffects,
         IEngineSoundSource,
+        IMechaEquipment,
         IFlanPartTarget,
         NpcVehicleStateHolder,
         NpcThrowPresentation,
@@ -139,6 +142,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private static final EntityDataAccessor<Boolean> WOLFFSMODNPCS_DISTANCE_DATA = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_THROW_DISPLAY = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
+    @Unique
+    private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_MECHA_TOOL = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
     @Unique
     private static final EntityDataAccessor<Integer> WOLFFSMODNPCS_CREW_SEAT = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.INT);
     @Unique
@@ -482,7 +487,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         // An aircraft below its attack altitude attacks with nothing, whatever asks it to, nor does an NPC at the wheel.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcModels.meleeless(npc))
         {
             callback.setReturnValue(false);
             return;
@@ -497,6 +502,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public NpcMeleeState wolffsmodnpcsMeleeState()
     {
         return wolffsmodnpcsMelee;
+    }
+
+    /** The selected sword is mounted on the right arm; inventory tools are synchronized independently of held items. */
+    @Override
+    public ItemStack flansmodultimateMechaTool(boolean left)
+    {
+        return left ? ItemStack.EMPTY : getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL);
     }
 
     @Override
@@ -724,6 +736,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (!npc.level().isClientSide)
         {
             NpcAmmunition.refillEmptySlots(npc);
+            ItemStack sword = NpcMechaTools.findSword(npc);
+            if (!ItemStack.matches(sword, getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL)))
+                getEntityData().set(WOLFFSMODNPCS_MECHA_TOOL, sword.copy());
             NpcTypeProperties.of(npc).refresh(npc);
         }
     }
@@ -945,6 +960,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         getEntityData().define(WOLFFSMODNPCS_DISTANCE_DATA, false);
         getEntityData().define(WOLFFSMODNPCS_THROW_DISPLAY, ItemStack.EMPTY);
+        getEntityData().define(WOLFFSMODNPCS_MECHA_TOOL, ItemStack.EMPTY);
     }
 
     @Inject(method = {"readAdditionalSaveData", "m_7378_"}, at = @At("TAIL"))

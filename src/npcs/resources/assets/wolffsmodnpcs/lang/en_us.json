@@ -1,4 +1,8 @@
 {
+  "wolffsmodnpcs.weapons.read_only.type_properties.melee_delay": "With a sword addon: ticks between attacks, max(4, ceil(10 / max(0.1, tool Speed))), as for a player-controlled mecha.",
+  "wolffsmodnpcs.weapons.read_only.type_properties.melee_damage": "Machines inherit 0 melee damage. A mecha needs a Function SWORD addon: damage is max(1, 6 × tool Speed). The first sword in its hands, projectile slot or inventory is mounted on its right arm.",
+  "wolffsmodnpcs.combat.property.melee_delay": "Melee speed",
+  "wolffsmodnpcs.combat.property.melee_damage": "Melee damage",
   "wolffsmodnpcs.category.factions": "Team factions",
   "wolffsmodnpcs.team_faction.create": "Create faction from Flan team",
   "wolffsmodnpcs.team_faction.apply": "Apply faction",
@@ -1392,7 +1396,7 @@
   "wolffsmodnpcs.weapons.read_only.type_properties.idle_sound": "The model's declared idle sound.",
   "wolffsmodnpcs.weapons.read_only.type_properties.ignore_cobweb": "A Flan model is a machine: cobwebs do not slow it down.",
   "wolffsmodnpcs.weapons.read_only.type_properties.max_delay": "Equal to the minimum delay: the model's reload time with Reload cycle and Flan ammunition, otherwise the weapon bank's firing interval.",
-  "wolffsmodnpcs.weapons.read_only.type_properties.melee_reach": "Melee reach is the mecha's reach in blocks.",
+  "wolffsmodnpcs.weapons.read_only.type_properties.melee_reach": "With a sword addon: tool Reach × mecha Reach, clamped to 1–32 blocks.",
   "wolffsmodnpcs.weapons.read_only.type_properties.min_delay": "With Reload cycle and Flan ammunition, the model's reload time in ticks, waited after each magazine. Otherwise the selected weapon bank's firing interval, with fractional intervals carried between shots.",
   "wolffsmodnpcs.weapons.read_only.type_properties.no_fall_damage": "Set from whether the model's fall damage is enabled.",
   "wolffsmodnpcs.weapons.read_only.type_properties.potion_immune": "A Flan model is a machine: potion effects do not affect it.",

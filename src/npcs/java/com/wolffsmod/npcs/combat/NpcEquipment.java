@@ -40,6 +40,8 @@ public final class NpcEquipment
     /** Whether the selected melee hand holds an item while Use equipped weapons is enabled. */
     public static boolean meleeAuthority(EntityNPCInterface npc)
     {
+        if (NpcMechaTools.isMecha(npc))
+            return false;
         if (!enabled(npc, Feature.ITEM_WEAPONS))
             return false;
         ItemStack weapon = meleeWeapon(npc);
