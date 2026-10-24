@@ -7,6 +7,7 @@ import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.platform.PlatformSounds;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -179,7 +180,7 @@ public final class NpcItemAttacks
 
     public static boolean ranged(EntityNPCInterface npc, LivingEntity target)
     {
-        if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
+        if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         ItemStack weapon = NpcEquipment.rangedWeapon(npc);
         boolean fired = ranged(npc, target, weapon);
@@ -211,7 +212,7 @@ public final class NpcItemAttacks
     /** Fires the Flan weapon held in either hand with its own ammunition, attachments and sounds. */
     public static boolean fireFlan(EntityNPCInterface npc, LivingEntity target, InteractionHand hand)
     {
-        if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
+        if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         ItemStack weapon = npc.getItemInHand(hand);
         var flanWeapon = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
@@ -265,7 +266,7 @@ public final class NpcItemAttacks
      */
     public static boolean throwCarried(EntityNPCInterface npc, LivingEntity target, ItemStack stack)
     {
-        if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
+        if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         NpcThrowing.Kind kind = NpcThrowing.kind(stack);
         if (kind == null)

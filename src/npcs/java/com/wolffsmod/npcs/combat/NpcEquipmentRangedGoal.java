@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -87,7 +88,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     public static boolean engages(EntityNPCInterface npc)
     {
         LivingEntity target = npc.getTarget();
-        return !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level() && !rushes(npc)
+        return !NpcCrew.holdsFire(npc) && !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level() && !rushes(npc)
             && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
     }
 

@@ -6,10 +6,10 @@ import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
-import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
+import com.wolffsmod.npcs.combat.NpcAmmunition;
 import com.wolffsmod.npcs.combat.NpcMuzzleFlashes;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -35,7 +35,7 @@ import java.util.Optional;
 /**
  * The seat guns of a vehicle NPC that its crew man. A gun fires at the vehicle's target once a crew member sits behind it,
  * the seat gun has turned onto the target within its limits, the target is within the vehicle's firing range and nothing
- * solid stands in the way. It fires the default ammunition of its gun without using any up, at the gun's own cadence, and
+ * solid stands in the way. It selects compatible ammunition from the vehicle, then the gunner, then the gun's default, without using any up, and
  * waits out the gun's reload after each item of ammunition, as a crewed driveable's seat gun does. The crew member is the
  * shooter, so its hits are credited to it. Server thread; one instance per vehicle NPC.
  */
@@ -51,8 +51,6 @@ public final class CrewGunners
     private static final double MIN_SHOT_DELAY = 1D;
 
     private final Map<Integer, Gun> guns = new HashMap<>();
-    /** The default ammunition of each seat gun, made once. */
-    private final Map<IContentType, ItemStack> ammunition = new HashMap<>();
 
     /** What the vehicle's guns fire at this tick, and with what. */
     private record Context(EntityNPCInterface vehicle, IContentType definition, FlanModelEntity model, LivingEntity target, NpcVehicleState state, NpcWeaponOptions options)
@@ -103,7 +101,7 @@ public final class CrewGunners
         NpcVehicleState state = context.state();
         Gun gun = guns.computeIfAbsent(mount.seat(), seat -> new Gun());
         IContentType weapon = mount.gun().orElseThrow();
-        ItemStack ammo = ammunition.computeIfAbsent(weapon, type -> FlansEquipment.createDefaultAmmunition(type).orElse(ItemStack.EMPTY));
+        ItemStack ammo = NpcAmmunition.crewGunTemplate(vehicle, gunner, weapon);
         Vec3 aimPoint = NpcVehicleState.aimPoint(context.target());
         ReloadCycle cycle = FlansEntityTypes.getSeatReloadCycle(definition, mount.seat(), ammo).orElse(null);
         if (gun.cooldown >= 1D || ammo.isEmpty() || cycle == null || context.target().distanceTo(vehicle) > vehicle.stats.ranged.getRange())
@@ -144,7 +142,7 @@ public final class CrewGunners
     /** Whether nothing solid stands between the gun and the target, looked at every few ticks. */
     private static boolean clear(EntityNPCInterface vehicle, Gun gun, Vec3 origin, Vec3 aimPoint)
     {
-        if (vehicle.tickCount - gun.sightCheckedAt >= SIGHT_INTERVAL || vehicle.tickCount < gun.sightCheckedAt)
+        if (gun.sightCheckedAt == Integer.MIN_VALUE || vehicle.tickCount - gun.sightCheckedAt >= SIGHT_INTERVAL || vehicle.tickCount < gun.sightCheckedAt)
         {
             gun.sightCheckedAt = vehicle.tickCount;
             gun.clear = vehicle.level().clip(new ClipContext(origin, aimPoint, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, vehicle)).getType() == HitResult.Type.MISS;

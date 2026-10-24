@@ -120,16 +120,24 @@ public final class NpcAmmunition
      */
     public static ItemStack driverGunTemplate(EntityNPCInterface npc, IContentType gun)
     {
+        return gunTemplate(npc, gun).orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+    }
+
+    /** Compatible vehicle ammunition, then the gunner's ammunition, then the seat gun's default; templates are never consumed. */
+    public static ItemStack crewGunTemplate(EntityNPCInterface vehicle, EntityNPCInterface gunner, IContentType gun)
+    {
+        return gunTemplate(vehicle, gun).or(() -> gunTemplate(gunner, gun)).orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+    }
+
+    private static Optional<ItemStack> gunTemplate(EntityNPCInterface npc, IContentType gun)
+    {
         if (gun.getItem() == null)
-            return ItemStack.EMPTY;
+            return Optional.empty();
         ItemStack weapon = new ItemStack(gun.getItem());
         ItemStack projectile = stack(npc.inventory.getProjectile());
         if (FlansEquipment.acceptsAmmunition(weapon, projectile))
-            return projectile;
-        for (ItemStack candidate : inventory(npc))
-            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
-                return candidate;
-        return FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY);
+            return Optional.of(projectile);
+        return inventory(npc).stream().filter(candidate -> FlansEquipment.acceptsAmmunition(weapon, candidate)).findFirst();
     }
 
     /**

@@ -4,6 +4,7 @@ import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.combat.NpcReloadFeedback;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
@@ -31,6 +32,7 @@ import java.util.Optional;
  * Custom NPCs' fallback ranged AI.
  *
  * <ul>
+ * <li>Crew holding their fire cannot start or fire an ordinary ranged attack.</li>
  * <li>It never fires synthetic shots alongside an authoritative equipped weapon, and reports that weapon's shots to the tactics
  * that wait for it to have fired.</li>
  * <li>A vehicle with ammunition consumption disabled starts its ranged attack using default ammunition even with an empty inventory.</li>
@@ -75,7 +77,7 @@ public abstract class EntityAIRangedAttackMixin
     @Inject(method = {"canUse", "m_8036_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsNativeWeaponAI(CallbackInfoReturnable<Boolean> callback)
     {
-        if (NpcEquipment.weaponAuthority(npc))
+        if (NpcEquipment.weaponAuthority(npc) || NpcCrew.holdsFire(npc))
             callback.setReturnValue(false);
     }
 
@@ -151,7 +153,7 @@ public abstract class EntityAIRangedAttackMixin
         NpcVehicleState state = NpcVehicleState.of(npc);
         // An aircraft below its attack altitude climbs first; it keeps its target meanwhile. An NPC at the wheel of a Flan's
         // driveable fights with the driveable's weapons.
-        boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire() || NpcDrivers.holdsFire(npc);
+        boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc);
         LivingEntity target = npc.getTarget();
         if (target != null && state.holdsFire(npc, target))
         {

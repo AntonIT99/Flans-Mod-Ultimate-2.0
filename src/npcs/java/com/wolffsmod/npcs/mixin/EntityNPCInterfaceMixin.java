@@ -616,7 +616,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
         // A gun whose turret has been shot off stays silent, and an NPC at the wheel fights with the driveable's weapons.
         // A throw being wound up beside the NPC's other attacks holds them meanwhile.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc) || NpcThrowGoal.throwing(npc))
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc)
+            || NpcThrowGoal.throwing(npc))
         {
             callback.cancel();
             return;

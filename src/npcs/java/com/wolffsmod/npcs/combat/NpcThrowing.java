@@ -5,6 +5,7 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcModels;
@@ -189,7 +190,7 @@ public final class NpcThrowing
      */
     public static Optional<Choice> occasionalThrow(EntityNPCInterface npc, LivingEntity target, long[] readyAt, long now)
     {
-        if (npc.ais.onAttack != 0 || TacticKind.of(npc) != TacticKind.STANDARD || NpcDrivers.holdsFire(npc) || !npc.getSensing().hasLineOfSight(target))
+        if (npc.ais.onAttack != 0 || TacticKind.of(npc) != TacticKind.STANDARD || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc) || !npc.getSensing().hasLineOfSight(target))
             return Optional.empty();
         double distance = npc.distanceTo(target);
         for (Kind kind : Kind.values())
