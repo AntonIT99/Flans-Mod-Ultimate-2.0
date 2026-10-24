@@ -4,14 +4,22 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.tree.RootCommandNode;
+import io.netty.buffer.Unpooled;
+import net.minecraftforge.server.command.CommandHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.server.Bootstrap;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +43,29 @@ class FlansModCommandAliasesTest
                 cause = cause.getCause();
             if (!(cause instanceof NoSuchMethodException) || !cause.getMessage().equals("net.minecraftforge.network.NetworkEvent.<init>()"))
                 throw error;
+        }
+    }
+
+    @Test
+    void leafAliasesCanBeReconstructedFromTheCommandPacket()
+    {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        FlansModHelpCommand.register(dispatcher);
+        dispatcher.register(Commands.literal("craftingparts").executes(context -> 1));
+        FlansModCommandAliases.registerAlias(dispatcher, "craftingparts", "craftingparts");
+        RootCommandNode<SharedSuggestionProvider> root = new RootCommandNode<>();
+        CommandHelper.mergeCommandNode(dispatcher.getRoot(), root, new HashMap<>(), source(true), context -> 0, provider -> SuggestionProviders.ASK_SERVER);
+        var packet = new ClientboundCommandsPacket(root);
+        var buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try
+        {
+            packet.write(buffer);
+            var received = new ClientboundCommandsPacket(buffer);
+            assertDoesNotThrow(() -> received.getRoot(null));
+        }
+        finally
+        {
+            buffer.release();
         }
     }
 
@@ -97,7 +128,7 @@ class FlansModCommandAliasesTest
             };
             var target = dispatcher.getRoot().getChild(original);
             var alias = dispatcher.getRoot().getChild("flansmodultimate").getChild(name);
-            assertSame(target, alias.getRedirect(), name);
+            assertSame(target.getChildren().isEmpty() ? null : target, alias.getRedirect(), name);
             assertSame(target.getCommand(), alias.getCommand(), name);
             assertSame(target.getRequirement(), alias.getRequirement(), name);
         }

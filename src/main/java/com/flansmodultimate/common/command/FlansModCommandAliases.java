@@ -29,7 +29,11 @@ public final class FlansModCommandAliases
     public static void registerAlias(CommandDispatcher<CommandSourceStack> dispatcher, String name, String original)
     {
         var target = Objects.requireNonNull(dispatcher.getRoot().getChild(original), "Register the standalone command before its alias: " + original);
-        var alias = Commands.literal(name).requires(target.getRequirement()).redirect(target);
+        var alias = Commands.literal(name).requires(target.getRequirement());
+        // Equal leaf nodes are deduplicated by Forge's command-tree conversion. Redirecting one
+        // to the other can therefore produce a self-redirect in the packet sent to the client.
+        if (!target.getChildren().isEmpty())
+            alias.redirect(target);
         // Brigadier follows a redirect only when more input follows it; keep the no-argument action too.
         if (target.getCommand() != null)
             alias.executes(target.getCommand());
