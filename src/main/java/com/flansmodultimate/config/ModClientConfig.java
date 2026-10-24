@@ -316,7 +316,7 @@ public final class ModClientConfig
             option, which can only hide the crosshair, never bring it back.
             """).define("hideCrosshairForGuns", false);
         SHOW_CROSSHAIR_WHILE_SCOPED = builder.comment("""
-            Keep the vanilla crosshair visible while aiming down a gun's sights or scope.
+            Keep the vanilla crosshair visible while aiming down a gun's sights or scope without a zoom overlay.
             In multiplayer, the server's disableCrosshairWhileScoped setting must be false to allow this.
             Private singleplayer worlds use this preference directly.
             Server, gun definition, vehicle optics and hideCrosshairForGuns restrictions still apply.

@@ -307,8 +307,8 @@ public final class ClientEventHandler
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
         return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
-            || (ModClient.getCurrentScope() != null && (serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped)) || gunConfigHidesCrosshair
-            || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
+            || (ModClient.getCurrentScope() != null && (ModClient.getCurrentScope().hasZoomOverlay() || serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped))
+            || gunConfigHidesCrosshair || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 
     /** Draws the hit marker where the crosshair is, whether or not the crosshair itself is shown. */
