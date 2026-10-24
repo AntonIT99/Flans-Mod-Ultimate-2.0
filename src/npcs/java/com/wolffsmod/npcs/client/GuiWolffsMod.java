@@ -72,6 +72,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int PRESET_ID = 320;
     private static final int PRESET_APPLY_ID = 321;
     private static final int PRESET_UNDO_ID = 322;
+    private static final int CREATE_FACTION_ID = 323;
     private static final int HUB_BUTTON_ID = 330;
     private static final int HURT_FLASH_ID = 400;
     private static final int DEATH_ROTATION_ID = 401;
@@ -401,6 +402,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         // spotless:off
         /** The settings most NPCs of the edited kind need, with links to the pages they come from; its rows depend on the kind. */
         ESSENTIALS(Section.START, Scope.ALL),
+        FACTIONS(Section.START, Scope.ALL, Tab.named("team_factions")),
         MODEL_STATS(Section.MODEL, Scope.ALL, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Layout.COLUMN, Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
@@ -880,6 +882,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             top = TABBED_TOP;
         }
         Tab shown = tabs.get(tab);
+        if (category == Category.FACTIONS)
+        {
+            addButton(new GuiButtonNop(this, CREATE_FACTION_ID, guiLeft + 8, guiTop + top, 250, 20, "wolffsmodnpcs.team_faction.create"));
+            addLabel(new GuiLabel(CREATE_FACTION_ID, "wolffsmodnpcs.team_faction.help", guiLeft + 8, guiTop + top + 30));
+            return;
+        }
         if (HeldItemAnimationPage.ITEMS.equals(shown.name()) || HeldItemAnimationPage.ARMS_TAB.equals(shown.name()))
         {
             heldItems.init(shown.name(), loaded, top);
@@ -1677,7 +1685,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** @return whether the button belongs to a tab that lays out its own controls, which then handled it */
     private boolean ownPageButton(GuiButtonNop button)
     {
-        if (heldItems.handles(button.id))
+        if (button.id == CREATE_FACTION_ID)
+        {
+            save();
+            setSubGui(new TeamFactionMenu(npc.getId()));
+        }
+        else if (heldItems.handles(button.id))
             changed |= heldItems.button(button);
         else if (crew.handles(button.id))
             changed |= crew.button(button);

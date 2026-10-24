@@ -36,6 +36,7 @@ public final class NpcNetwork
         NpcNetworkPlatform.toClient("npc_remote", NpcRemotePacket.class, NpcRemotePacket::write, NpcRemotePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::remoteNpcs);
         NpcNetworkPlatform.bidirectional("soldier_name", SoldierNamePacket.class, SoldierNamePacket::write, SoldierNamePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::soldierName,
             SoldierNamePacket::handle);
+        NpcNetworkPlatform.toServer("team_faction", TeamFactionPacket.class, TeamFactionPacket::write, TeamFactionPacket::read, TeamFactionPacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -89,6 +90,11 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(ApplyLoadoutPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(TeamFactionPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }

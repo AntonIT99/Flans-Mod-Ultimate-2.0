@@ -11,6 +11,7 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.network.ApplyLoadoutPacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.SoldierNamePacket;
+import com.wolffsmod.npcs.network.TeamFactionPacket;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
@@ -41,6 +42,7 @@ public final class FlanSoldierBrowser
     private static final int SKIN_TOGGLE_ID = 9121;
     private static final int NAME_GENDER_ID = 9122;
     private static final int NAME_APPLY_ID = 9123;
+    private static final int FACTION_APPLY_ID = 9124;
     private static final int SKIN_WIDTH = 64;
     /** Whether choosing a class also gives the NPC its loadout; the builder's choice lasts for the session. */
     private static boolean applyClassLoadout = true;
@@ -233,6 +235,14 @@ public final class FlanSoldierBrowser
             button -> selection.ifPresent(chosen -> applyName(screen, chosen)));
         apply.setEnabled(selection.isPresent());
         screen.addButton(apply);
+        GuiButtonNop faction = new GuiButtonNop(screen, FACTION_APPLY_ID, screen.guiLeft + 260, screen.guiTop + 92, 128, 20, "wolffsmodnpcs.team_faction.apply",
+            button -> selection.filter(chosen -> chosen.team() != null).ifPresent(chosen ->
+            {
+                screen.save();
+                NpcNetwork.sendToServer(new TeamFactionPacket(screen.npc.getId(), chosen.team().getShortName(), chosen.playerClass().getShortName(), true));
+            }));
+        faction.setEnabled(selection.filter(chosen -> chosen.team() != null).isPresent());
+        screen.addButton(faction);
     }
 
     private static void applyName(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
