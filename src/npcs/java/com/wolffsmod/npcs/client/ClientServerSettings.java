@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.wolffsmod.npcs.diag.NpcModelRanges;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.network.ServerControlPacket;
 import lombok.*;
@@ -21,6 +22,10 @@ public final class ClientServerSettings
     private static int aggroRange = NpcServerSettings.DEFAULT_AGGRO_RANGE;
     @Getter
     private static int firingRange = NpcServerSettings.DEFAULT_FIRING_RANGE;
+    @Getter
+    private static int modelAggroRange = NpcServerSettings.DEFAULT_MODEL_RANGE;
+    @Getter
+    private static int modelFiringRange = NpcServerSettings.DEFAULT_MODEL_RANGE;
 
     /** Forgets the copy, so that a page opened later waits for the server again. */
     public static void forget()
@@ -34,7 +39,10 @@ public final class ClientServerSettings
         nearInterval = packet.nearInterval();
         farInterval = packet.farInterval();
         profiling = packet.profiling();
-        aggroRange = packet.aggroRange();
-        firingRange = packet.firingRange();
+        aggroRange = packet.ranges().aggro();
+        firingRange = packet.ranges().firing();
+        modelAggroRange = packet.ranges().modelAggro();
+        modelFiringRange = packet.ranges().modelFiring();
+        NpcModelRanges.received(modelAggroRange, modelFiringRange);
     }
 }

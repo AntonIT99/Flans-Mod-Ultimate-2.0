@@ -33,8 +33,9 @@ public final class NpcTypeMapping
 
     /**
      * @param cycle
-     *            the reload cycle of the model with the ammunition of the NPC, or null when the NPC follows none; with
-     *            one, the reload becomes the delay and the magazine the burst, as Custom NPCs understands them
+     *            the reload cycle of the model with the ammunition of the NPC, or with the model's default ammunition
+     *            when the NPC carries none it fires; null when the NPC follows none. With one, the reload becomes the
+     *            delay and the magazine the burst, as Custom NPCs understands them
      */
     public static Map<NpcTypeProperty, Tag> create(EntityTypeProperties type, NpcWeaponOptions options, boolean nativeProjectile, double maxHealth, @Nullable ReloadCycle cycle)
     {
@@ -42,9 +43,6 @@ public final class NpcTypeMapping
         if (!options.enabled(Feature.TYPE_PROPERTIES))
             return values;
         integer(values, NpcTypeProperty.HEALTH, type.health(), 1D, 1, (int) Math.min(Integer.MAX_VALUE, maxHealth));
-        integer(values, NpcTypeProperty.AGGRO_RANGE, type.targetRange(), 1D, 1, 512);
-        // Beyond the 256 blocks of the Custom NPCs editor; the server limit is applied to the NPC afterwards.
-        integer(values, NpcTypeProperty.RANGE, type.targetRange(), 1D, 1, 512);
         integer(values, NpcTypeProperty.WALKING_SPEED, type.walkingSpeed(), 20D, 0, 100);
         type.meleeReach().ifPresent(reach -> values.put(NpcTypeProperty.MELEE_REACH, FloatTag.valueOf(CustomNpcsPlatform.meleeRange(Math.max(0D, reach)))));
         // A machine has no breath to lose, takes no potions, rolls through cobwebs and does not heal by itself; a flooded
@@ -67,13 +65,14 @@ public final class NpcTypeMapping
         if (type.shootDelay().isEmpty())
             return;
         integer(values, NpcTypeProperty.BURST_DELAY, type.shootDelay(), 1D, 1, 9999);
-        if (nativeProjectile && cycle != null)
+        if (cycle != null)
         {
             // The NPC fires its magazine one trigger at a time, then waits out the reload.
             integer(values, NpcTypeProperty.DELAY_MIN, OptionalDouble.of(cycle.reloadTicks()), 1D, 1, 9999);
             integer(values, NpcTypeProperty.DELAY_MAX, OptionalDouble.of(cycle.reloadTicks()), 1D, 1, 9999);
             values.put(NpcTypeProperty.BURST, IntTag.valueOf(Math.min(9999, cycle.volleys())));
-            values.put(NpcTypeProperty.SHOT_COUNT, IntTag.valueOf(1));
+            if (nativeProjectile)
+                values.put(NpcTypeProperty.SHOT_COUNT, IntTag.valueOf(1));
             return;
         }
         integer(values, NpcTypeProperty.DELAY_MIN, type.shootDelay(), 1D, 1, 9999);

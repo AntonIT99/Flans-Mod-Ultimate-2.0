@@ -15,7 +15,7 @@ class NpcWeaponOptionsTest
     /** Display states of the model, a frozen turret, extra chunk ticking, running out of ammunition, drawn hitboxes and taking driveables are never what an untouched NPC wants. */
     private static final Set<Feature> STARTS_DISABLED = EnumSet.of(Feature.SECONDARY_BANK, Feature.INVULNERABLE, Feature.TURRET_LOCKED, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED,
         Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.MELEE_DUAL_WIELD, Feature.DRIVE_DRIVEABLES,
-        Feature.ADVANCED_SEARCH_INTERVALS, Feature.STAGGER_NEAR_SEARCH);
+        Feature.ADVANCED_SEARCH_INTERVALS, Feature.STAGGER_NEAR_SEARCH, Feature.FITTING_SLOT_AMMO);
 
     @Test
     void driverGunChoiceSurvivesSaveAndReload()
@@ -53,6 +53,26 @@ class NpcWeaponOptionsTest
             else
                 assertTrue(options.enabled(feature), feature.name());
         }
+    }
+
+    @Test
+    void gearPutUpBeforeDynamicGearStaysUpWhileGearLeftDownBecomesDynamic()
+    {
+        CompoundTag up = new CompoundTag();
+        up.putBoolean(Feature.GEAR_UP.name(), true);
+        CompoundTag npc = new CompoundTag();
+        npc.put(NpcWeaponOptions.NBT_KEY, up);
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.load(npc);
+        assertFalse(options.enabled(Feature.GEAR_DYNAMIC));
+        assertTrue(options.enabled(Feature.GEAR_UP));
+        up.putBoolean(Feature.GEAR_UP.name(), false);
+        options.load(npc);
+        assertTrue(options.enabled(Feature.GEAR_DYNAMIC));
+        // Once saved, the dynamic switch is what counts.
+        up.putBoolean(Feature.GEAR_DYNAMIC.name(), false);
+        options.load(npc);
+        assertFalse(options.enabled(Feature.GEAR_DYNAMIC));
     }
 
     @Test

@@ -27,7 +27,9 @@ enum NpcKind
         /** The models whose hull or base keeps its own facing. */
         HULLS(EnumSet.of(NpcKind.VEHICLE, NpcKind.AA_GUN)),
         /** Aircraft, and watercraft that dive. */
-        PLANES_AND_VEHICLES(EnumSet.of(NpcKind.PLANE, NpcKind.VEHICLE));
+        PLANES_AND_VEHICLES(EnumSet.of(NpcKind.PLANE, NpcKind.VEHICLE)),
+        /** The models that drive over the ground, and may run over what is in their way. */
+        GROUND_MACHINES(EnumSet.of(NpcKind.VEHICLE, NpcKind.MECHA));
 
         private final Set<NpcKind> kinds;
 

@@ -16,9 +16,9 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * Settings that hold for every NPC of a world rather than for one: the target-search intervals NPCs use unless they
- * state their own, whether target searches are profiled, and the aggro and firing ranges a new NPC starts with, which
- * an operator can also hand to every NPC of the world at once. Saved with the world, edited from the Server page of the
- * Wolff's Mod tab by operators.
+ * state their own, whether target searches are profiled, the aggro and firing ranges a new NPC starts with, which
+ * an operator can also hand to every NPC of the world at once, and the ranges an AA gun, vehicle, plane or mecha model
+ * lends the NPC wearing it. Saved with the world, edited from the Server page of the Wolff's Mod tab by operators.
  */
 public final class NpcServerSettings extends FlanSavedData
 {
@@ -30,6 +30,11 @@ public final class NpcServerSettings extends FlanSavedData
     public static final int DEFAULT_AGGRO_RANGE = 64;
     /** Blocks within which a new NPC fires at its target, until an operator chooses otherwise; Custom NPCs uses 15. */
     public static final int DEFAULT_FIRING_RANGE = 64;
+    /**
+     * Blocks within which an NPC wearing an AA gun, vehicle, plane or mecha model notices and fires at an enemy, while it
+     * inherits the model's ranges: machines engage farther out than infantry.
+     */
+    public static final int DEFAULT_MODEL_RANGE = 128;
     /** The farthest range saved; each NPC is held to the server's NPC tracking range besides. */
     public static final int MAX_RANGE = 512;
     private static final String NAME = NpcsMod.MOD_ID + "_settings";
@@ -38,6 +43,8 @@ public final class NpcServerSettings extends FlanSavedData
     private static final String AGGRO_KEY = "AggroRange";
     private static final String FIRING_KEY = "FiringRange";
     private static final String GENERATION_KEY = "RangeGeneration";
+    private static final String MODEL_AGGRO_KEY = "ModelAggroRange";
+    private static final String MODEL_FIRING_KEY = "ModelFiringRange";
     /** Ticks between two profiling summaries in the server log. */
     private static final int PROFILE_INTERVAL = 200;
 
@@ -62,6 +69,12 @@ public final class NpcServerSettings extends FlanSavedData
      */
     @Getter
     private int rangeGeneration;
+    /** The aggro range an NPC inherits from a Flan's model. */
+    @Getter
+    private int modelAggroRange = DEFAULT_MODEL_RANGE;
+    /** The firing range an NPC inherits from a Flan's model. */
+    @Getter
+    private int modelFiringRange = DEFAULT_MODEL_RANGE;
 
     public static NpcServerSettings get(MinecraftServer server)
     {
@@ -93,6 +106,10 @@ public final class NpcServerSettings extends FlanSavedData
         if (tag.contains(FIRING_KEY, Tag.TAG_INT))
             settings.firingRange = clamp(tag.getInt(FIRING_KEY), MAX_RANGE);
         settings.rangeGeneration = tag.getInt(GENERATION_KEY);
+        if (tag.contains(MODEL_AGGRO_KEY, Tag.TAG_INT))
+            settings.modelAggroRange = clamp(tag.getInt(MODEL_AGGRO_KEY), MAX_RANGE);
+        if (tag.contains(MODEL_FIRING_KEY, Tag.TAG_INT))
+            settings.modelFiringRange = clamp(tag.getInt(MODEL_FIRING_KEY), MAX_RANGE);
         return settings;
     }
 
@@ -105,16 +122,20 @@ public final class NpcServerSettings extends FlanSavedData
         tag.putInt(AGGRO_KEY, aggroRange);
         tag.putInt(FIRING_KEY, firingRange);
         tag.putInt(GENERATION_KEY, rangeGeneration);
+        tag.putInt(MODEL_AGGRO_KEY, modelAggroRange);
+        tag.putInt(MODEL_FIRING_KEY, modelFiringRange);
         return tag;
     }
 
-    public void set(int near, int far, boolean profile, int aggro, int firing)
+    public void set(int near, int far, boolean profile, int aggro, int firing, int modelAggro, int modelFiring)
     {
         searchNearInterval = clamp(near, MAX_NEAR_INTERVAL);
         searchFarInterval = clamp(far, MAX_FAR_INTERVAL);
         profiling = profile;
         aggroRange = clamp(aggro, MAX_RANGE);
         firingRange = clamp(firing, MAX_RANGE);
+        modelAggroRange = clamp(modelAggro, MAX_RANGE);
+        modelFiringRange = clamp(modelFiring, MAX_RANGE);
         setDirty();
         NpcProfiler.setServer(profiling || ServerBenchmark.running());
     }

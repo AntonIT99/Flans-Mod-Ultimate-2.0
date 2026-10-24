@@ -29,6 +29,9 @@ eclipse
 run
 logs
 
+# Python bytecode caches of helper scripts
+__pycache__/
+
 # Files from Forge MDK
 forge*changelog.txt
 

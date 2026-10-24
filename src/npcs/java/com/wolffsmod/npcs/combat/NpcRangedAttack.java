@@ -148,21 +148,34 @@ public final class NpcRangedAttack
             modelMuzzles = !muzzles.isEmpty();
             if (!modelMuzzles)
                 muzzles = List.of(EYE_MUZZLE);
-            for (WeaponMuzzle muzzle : muzzles)
-                fireMuzzle(muzzle);
+            boolean[] fixed = modelMuzzles ? fixedMuzzles() : new boolean[muzzles.size()];
+            for (int index = 0; index < muzzles.size(); index++)
+                fireMuzzle(muzzles.get(index), index < fixed.length && fixed[index]);
             if (fired)
                 finishAttack();
             return fired;
         }
 
-        private void fireMuzzle(WeaponMuzzle muzzle)
+        /** @return for each muzzle of this trigger, in order, whether it stays fixed to the hull while the turret turns */
+        private boolean[] fixedMuzzles()
+        {
+            boolean alternate = options.enabled(Feature.ALTERNATE_BARRELS);
+            return state.fixedMuzzles(FlansProjectiles.getMuzzles(definition, secondary, sequence, alternate, MountAim.REST),
+                FlansProjectiles.getMuzzles(definition, secondary, sequence, alternate, state.turretAim()));
+        }
+
+        /**
+         * @param fixed
+         *            whether the muzzle stays fixed to the hull of a turreted model
+         */
+        private void fireMuzzle(WeaponMuzzle muzzle, boolean fixed)
         {
             Vec3 origin = modelMuzzles ? NpcModels.world(npc, model, muzzle.offset(), hullYaw()) : npc.getEyePosition();
             Weapon adjusted = adjustedWeapon(muzzle).orElse(null);
             // A weapon firing with adjusted statistics still throws its own pellets, unless the shot count is adjusted too.
             int shots = adjusted != null && !own(NpcTypeProperty.SHOT_COUNT) ? Mth.clamp(adjusted.projectiles(), 1, 128) : shotCount;
             for (int shotIndex = 0; shotIndex < shots; shotIndex++)
-                fired = launch(muzzle, origin, shotIndex, adjusted) || fired;
+                fired = launch(muzzle, origin, shotIndex, adjusted, fixed) || fired;
         }
 
         private boolean own(NpcTypeProperty property)
@@ -202,24 +215,37 @@ public final class NpcRangedAttack
                 own(NpcTypeProperty.SPEED) ? speed : (float) weapon.speed().orElse(speed));
         }
 
-        private boolean launch(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, @Nullable Weapon adjusted)
+        private boolean launch(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, @Nullable Weapon adjusted, boolean fixed)
         {
             ItemStack selectedAmmo = ammunition(muzzle);
             var prepared = FlansProjectiles.prepare(npc, selectedAmmo, held, muzzle.weapon().orElse(null), definition, secondary, parameters(shotIndex, adjusted));
             if (prepared.isEmpty())
                 return false;
             var shot = prepared.get();
-            boolean arc = options.enabled(Feature.BALLISTIC_AIM);
+            // A model's rounds leave along its barrels, as a player's do, which were laid for them before the trigger was pulled. A
+            // gun fixed to the hull of a turreted model waits for the hull to point where they have to go. A bomb just drops.
+            boolean barrels = state.isActive() && definition != null && !shot.dropped();
+            if (barrels && fixed && !state.isHullAligned())
+                return false;
             // Only a preview has no target, and a preview never launches.
             LivingEntity aimed = Objects.requireNonNull(target);
             Vec3 from = throughCover(origin, NpcVehicleState.aimPoint(aimed));
-            Vec3 direction = state.lead(NpcVehicleState.aimPoint(aimed).subtract(from), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
+            Vec3 direction = barrels ? state.barrelDirection(npc, fixed) : led(shot, from, aimed);
             if (shot.launch(from, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
-            if (modelMuzzles && shotIndex == 0 && !FlansProjectiles.isGrenade(selectedAmmo))
+            // A bomb falls away from the bay without a flash.
+            boolean flashes = !FlansProjectiles.isGrenade(selectedAmmo) && !shot.dropped();
+            if (modelMuzzles && shotIndex == 0 && flashes)
                 NpcMuzzleFlashes.fired(npc, muzzle, direction, hullYaw(), secondary);
-            playLaunchEffects(muzzle, origin, shotIndex, selectedAmmo);
+            playLaunchEffects(muzzle, origin, shotIndex, selectedAmmo, shot.dropped());
             return true;
+        }
+
+        /** @return the direction a round the NPC fires without a model's barrels leaves in to meet the target, led as its switches ask */
+        private Vec3 led(ProjectileShot shot, Vec3 from, LivingEntity aimed)
+        {
+            boolean arc = options.enabled(Feature.BALLISTIC_AIM);
+            return state.lead(NpcVehicleState.aimPoint(aimed).subtract(from), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
         }
 
         /** An NPC that fires through transparent blocks launches from beyond them, so the round is not stopped by what it aimed through. */
@@ -229,7 +255,7 @@ public final class NpcRangedAttack
             return tuning.sight() == NpcTuning.Sight.SEE_AND_FIRE_THROUGH ? NpcSight.launchPoint(npc, origin, aimPoint, tuning.get(NpcTuning.Value.FIRE_LIMIT)) : origin;
         }
 
-        private void playLaunchEffects(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, ItemStack selectedAmmo)
+        private void playLaunchEffects(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, ItemStack selectedAmmo, boolean dropped)
         {
             if (!soundPlayed)
             {
@@ -238,7 +264,7 @@ public final class NpcRangedAttack
                 else if (options.enabled(Feature.FIRE_SOUNDS) && !own(NpcTypeProperty.FIRING_SOUND))
                     soundPlayed = FlansProjectiles.playShootSound(npc, muzzle.weapon().orElse(definition), held, secondary);
             }
-            if (shotIndex == 0 && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(selectedAmmo) || modelMuzzles))
+            if (shotIndex == 0 && !dropped && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(selectedAmmo) || modelMuzzles))
                 FlansProjectiles.shootParticles(npc, muzzle, origin, hullYaw() + (state.isActive() ? state.turretAim().yaw() : 0F), NpcModels.scale(npc));
         }
 

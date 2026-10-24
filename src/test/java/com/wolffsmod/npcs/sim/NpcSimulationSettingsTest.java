@@ -98,7 +98,7 @@ class NpcSimulationSettingsTest
     @Test
     void theStatePacketCarriesAnglesToHalfADegree()
     {
-        VehicleStatePacket sent = new VehicleStatePacket(4711, -179.5F, 93.26F, -12.74F, new float[]{93.26F, -45F}, new float[]{-12.74F, 7.5F}, 300, 3);
+        VehicleStatePacket sent = new VehicleStatePacket(4711, -179.5F, 93.26F, -12.74F, new float[]{93.26F, -45F}, new float[]{-12.74F, 7.5F}, 300, 3, 22.3F, -31.74F);
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         sent.write(buffer);
         VehicleStatePacket received = VehicleStatePacket.read(buffer);
@@ -111,5 +111,7 @@ class NpcSimulationSettingsTest
         assertArrayEquals(new float[]{-12.5F, 7.5F}, received.seatPitch());
         assertEquals(300, received.shots());
         assertEquals(3, received.barrel());
+        assertEquals(22.5F, received.attitudePitch());
+        assertEquals(-31.5F, received.attitudeBank());
     }
 }

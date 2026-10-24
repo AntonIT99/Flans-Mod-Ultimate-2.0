@@ -10,6 +10,7 @@ import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.drivers.WeaponAim;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.network.NpcNetwork;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -49,9 +51,18 @@ public final class NpcVehicleState
     private static final float DEFAULT_HULL_STEP = 4.5F;
     /** Traverse and elevation, in degrees per tick, of a turret whose model has no driver seat to state them. */
     private static final float DEFAULT_AIM_STEP = 8F;
-    /** A gun fixed to the hull only has to point roughly at the target: the shot itself is aimed exactly. */
-    private static final float FIXED_GUN_TOLERANCE = 12F;
+    /** Degrees a hovering helicopter tips its nose up or down at most to bring guns fixed to its hull onto its target, and per tick. */
+    private static final float MAX_HOVER_TIP = 45F;
+    private static final float HOVER_TIP_STEP = 3F;
+    /** Squared blocks a muzzle has to move by as the turret turns to count as one of the turret's. */
+    private static final double TURNING_MUZZLE = 1.0E-6D;
+    /** Fewest blocks above its target a bomb is let go from, and blocks from the target within which it may come down. */
+    private static final double MIN_BOMB_HEIGHT = 4D;
+    private static final double BOMB_RADIUS = 5D;
     private static final float[] NO_SEATS = new float[0];
+    /** Blocks above the ground, at size 5, below which dynamic landing gear comes down and above which it goes up again. */
+    private static final double GEAR_DOWN_HEIGHT = 6D;
+    private static final double GEAR_UP_HEIGHT = 10D;
 
     /** Whether the NPC currently is a content-pack model. */
     @Getter
@@ -70,9 +81,32 @@ public final class NpcVehicleState
     private int shots;
     @Getter
     private int barrel;
-    /** Whether the gun points where the shot has to go. Always true when nothing has to line up. */
+    /**
+     * Whether the main weapon may fire: the gun points where the shot has to go, or a bomb let go now would come down on the
+     * target. Always true for a gun when nothing has to line up.
+     */
     @Getter
     private boolean aligned = true;
+    /** Whether the guns point where the shot has to go, which guns beside a bomb bay go by. */
+    @Getter
+    private boolean gunAligned = true;
+    /** Whether the hull points where the shot has to go, which guns fixed to the hull of a turreted model go by. */
+    @Getter
+    private boolean hullAligned = true;
+    /** Whether the main weapon drops bombs rather than firing at the target. */
+    @Getter
+    private boolean bombing;
+    /**
+     * Degrees the model is pitched nose down, negative nose up, and rolled to its right, the right side down: the attitude of
+     * a plane in flight, level otherwise.
+     */
+    @Getter
+    private float attitudePitch;
+    @Getter
+    private float attitudeBank;
+    /** Where a bomb let go now would have to come down to meet the target, while the NPC bombs one. */
+    @Nullable
+    private Vec3 bombPoint;
     /** Share of its speed the NPC keeps this tick while its hull turns toward where it wants to go. */
     @Getter
     private float speedFactor = 1F;
@@ -85,6 +119,8 @@ public final class NpcVehicleState
     @Nullable
     private Vec3 lastPosition;
     private float lastHullYaw;
+    /** Blocks moved across the ground during the last tick, whichever way. */
+    private double groundSpeed;
 
     // Server
     private final TargetMotion motion = new TargetMotion();
@@ -110,6 +146,8 @@ public final class NpcVehicleState
     private int shapeSignature = Integer.MIN_VALUE;
     private int fireCheckedAt = Integer.MIN_VALUE;
     private boolean fireClear = true;
+    /** The world direction each manned seat gun's rounds have to leave in, as its gunner last worked it out; null for none. */
+    private Vec3[] seatLead = new Vec3[0];
 
     // Client
     private float targetHullYaw;
@@ -119,6 +157,11 @@ public final class NpcVehicleState
     private float[] targetSeatPitch = NO_SEATS;
     private int lerpSteps;
     private boolean received;
+    private boolean gearDown = true;
+    private float targetAttitudePitch;
+    private float targetAttitudeBank;
+    private float previousAttitudePitch;
+    private float previousAttitudeBank;
 
     /** What the selected model offers, resolved once per model and weapon bank. */
     private record Layout(IContentType model, FlanModelKind kind, boolean secondary, List<WeaponMount> mounts, @Nullable WeaponMount driver, boolean turreted, @Nullable Vec3 muzzle, double reach,
@@ -211,6 +254,8 @@ public final class NpcVehicleState
         else
             serverTick(npc, current, options, held);
         measure(npc);
+        if (!npc.level().isClientSide && (current.kind() == FlanModelKind.VEHICLE || current.kind() == FlanModelKind.MECHA))
+            NpcRunOver.tick(npc, current.model(), groundSpeed, options);
         if (held)
         {
             // The body would otherwise swing toward the head while the vehicle stands still.
@@ -234,11 +279,20 @@ public final class NpcVehicleState
         layout = null;
         hullKnown = false;
         aligned = true;
+        gunAligned = true;
+        hullAligned = true;
+        bombing = false;
+        bombPoint = null;
+        attitudePitch = 0F;
+        attitudeBank = 0F;
+        targetAttitudePitch = 0F;
+        targetAttitudeBank = 0F;
         speedFactor = 1F;
         turretYaw = 0F;
         turretPitch = 0F;
         seatYaw = NO_SEATS;
         seatPitch = NO_SEATS;
+        seatLead = new Vec3[0];
         targetId = -1;
         motion.reset();
         solution = null;
@@ -263,6 +317,7 @@ public final class NpcVehicleState
         int seats = created.mounts().stream().mapToInt(WeaponMount::seat).max().orElse(-1) + 1;
         seatYaw = new float[seats];
         seatPitch = new float[seats];
+        seatLead = new Vec3[seats];
         for (WeaponMount mount : created.mounts())
             seatYaw[mount.seat()] = mount.driver() ? 0F : mount.restYaw();
         targetSeatYaw = seatYaw.clone();
@@ -287,6 +342,7 @@ public final class NpcVehicleState
         Vec3 forward = Vec3.directionFromRotation(0F, hullYaw);
         // A teleport is not travel.
         travel = moved.lengthSqr() > 64D ? 0F : (float) (moved.x * forward.x + moved.z * forward.z);
+        groundSpeed = moved.lengthSqr() > 64D ? 0D : moved.horizontalDistance();
         turn = Mth.wrapDegrees(hullYaw - lastHullYaw);
         lastHullYaw = hullYaw;
     }
@@ -314,11 +370,19 @@ public final class NpcVehicleState
             motion.reset();
             solution = null;
         }
-        MountAim wanted = engaged ? MountMotion.relative(solve(npc, target, options), hullYaw) : null;
+        Vec3 aim = engaged ? solve(npc, current, target, options) : null;
+        attitude(npc, current, aim);
+        // Relative to the hull as it is pitched and banked, which the guns are carried with.
+        MountAim wanted = aim == null ? null : NpcModels.relative(npc, aim, hullYaw);
         float tolerance = tuning.get(Value.ALIGN_TOLERANCE);
         if (held && wanted != null && current.kind() == FlanModelKind.VEHICLE && options.enabled(Feature.HULL_ASSISTS_AIM) && !driving(npc))
             wanted = assistWithHull(npc, current, tuning, wanted, tolerance);
-        aimTurret(current, options, tuning, wanted, tolerance, held);
+        aimTurret(current, options, tuning, wanted, tolerance);
+        gunAligned = aligned;
+        bombPoint = null;
+        // A bomb is let go when it would come down on the target, whatever the switches say: from anywhere else it misses.
+        if (engaged && bombing)
+            aligned = bombsAway(npc, current, target, options);
         aimSeats(npc, current, options, engaged ? target : null);
         sync(npc, held);
     }
@@ -346,24 +410,54 @@ public final class NpcVehicleState
         return new MountAim(Mth.wrapDegrees(wanted.yaw() - Mth.wrapDegrees(hullYaw - before)), wanted.pitch());
     }
 
-    private void aimTurret(Layout current, NpcWeaponOptions options, NpcTuning tuning, @Nullable MountAim wanted, float tolerance, boolean held)
+    /**
+     * Turns the turret toward the wanted aim, and tells whether the guns point there: the turret's, or those fixed to the
+     * hull, which point where the hull and a plane's nose do, and a mecha's, which rise and fall with its arms. Rounds leave
+     * along the barrels, so a gun waits until it points where they have to go, within the tolerance.
+     */
+    private void aimTurret(Layout current, NpcWeaponOptions options, NpcTuning tuning, @Nullable MountAim wanted, float tolerance)
     {
         if (current.turreted())
         {
             // A turret that has been shot off no longer turns.
             if (!options.enabled(Feature.TURRET_LOCKED) && !parts.effects().gunDisabled())
                 turnTurret(current.driver(), tuning, wanted, options.enabled(Feature.GRADUAL_AIM));
-            aligned = wanted == null || MountMotion.error(turretAim(), wanted) <= tolerance;
         }
         else
         {
             turretYaw = 0F;
             turretPitch = current.kind() == FlanModelKind.MECHA ? armPitch(options, tuning, wanted) : 0F;
-            // A fixed gun is on target when the hull is; a model that turns like any NPC faces its target anyway.
-            aligned = wanted == null || !held || Math.abs(wanted.yaw()) <= Math.max(tolerance, FIXED_GUN_TOLERANCE);
         }
-        if (!options.enabled(Feature.FIRE_WHEN_ALIGNED))
-            aligned = true;
+        boolean check = options.enabled(Feature.FIRE_WHEN_ALIGNED) && wanted != null;
+        aligned = !check || MountMotion.error(turretAim(), wanted) <= tolerance;
+        hullAligned = !check || MountMotion.error(MountAim.REST, wanted) <= tolerance;
+    }
+
+    /**
+     * Pitches and banks a plane in flight as it flies, and tips a hovering helicopter whose guns are fixed to its hull onto
+     * its shot; any other model stays level.
+     *
+     * @param aim
+     *            the world direction the shot has to leave in, or null without one
+     */
+    private void attitude(EntityNPCInterface npc, Layout current, @Nullable Vec3 aim)
+    {
+        NpcTuning.Flight type = current.kind() == FlanModelKind.PLANE ? NpcFlight.type(npc) : NpcTuning.Flight.NORMAL;
+        if (type == NpcTuning.Flight.PLANE)
+        {
+            attitudePitch = flight.getPitch();
+            attitudeBank = flight.getBank();
+            return;
+        }
+        attitudePitch = type == NpcTuning.Flight.HELICOPTER && !current.turreted() && !npc.onGround() ? tip(aim) : 0F;
+        attitudeBank = 0F;
+    }
+
+    /** @return the nose-down pitch a hovering helicopter tips toward this tick: onto the shot it has to make, or level without one */
+    private float tip(@Nullable Vec3 aim)
+    {
+        float goal = aim == null ? 0F : Mth.clamp(MountMotion.relative(aim, 0F).pitch(), -MAX_HOVER_TIP, MAX_HOVER_TIP);
+        return attitudePitch + Mth.clamp(goal - attitudePitch, -HOVER_TIP_STEP, HOVER_TIP_STEP);
     }
 
     /** A mecha has no turret, but its arms raise and lower with its aim, as far as its model lets them. */
@@ -397,19 +491,91 @@ public final class NpcVehicleState
         for (WeaponMount mount : current.mounts())
         {
             int seat = mount.seat();
+            // A manned gun is laid where its rounds have to go, led as its gunner works it out.
+            Optional<Vec3> lead = seatLead(seat);
             MountAim next = seatAim(seat);
             if (mount.driver())
                 // The driver's gun is the turret's.
                 next = turretAim();
             else if (mount.gun().isPresent())
             {
-                float yaw = hullYaw + (mount.onTurret() ? turretYaw : 0F);
-                MountAim goal = track ? MountMotion.relative(direction, yaw) : new MountAim(mount.restYaw(), 0F);
+                MountAim goal = track ? seatRelative(npc, mount, lead.orElse(direction)) : new MountAim(mount.restYaw(), 0F);
                 next = MountMotion.approach(next, goal, mount, mount.yawSpeed(), mount.pitchSpeed());
             }
             seatYaw[seat] = next.yaw();
             seatPitch[seat] = next.pitch();
         }
+    }
+
+    /** @return the aim of a seat gun, relative to the hull or to the turret it stands on, that points along a world direction */
+    private MountAim seatRelative(EntityNPCInterface npc, WeaponMount mount, Vec3 direction)
+    {
+        MountAim aim = NpcModels.relative(npc, direction, hullYaw);
+        return mount.onTurret() ? new MountAim(Mth.wrapDegrees(aim.yaw() - turretYaw), aim.pitch()) : aim;
+    }
+
+    /**
+     * @return where a manned seat gun's rounds have to go, as its gunner last worked it out, and forgets it: a gun nobody
+     *         mans any more goes back to tracking the target plainly
+     */
+    private Optional<Vec3> seatLead(int seat)
+    {
+        if (seat < 0 || seat >= seatLead.length)
+            return Optional.empty();
+        Vec3 lead = seatLead[seat];
+        seatLead[seat] = null;
+        return Optional.ofNullable(lead);
+    }
+
+    /** Lays a manned seat gun, from the next tick on, for rounds that have to leave along a world direction. Server only. */
+    public void leadSeat(int seat, Vec3 direction)
+    {
+        if (seat >= 0 && seat < seatLead.length)
+            seatLead[seat] = direction;
+    }
+
+    /** @return whether a seat gun points along a world direction, within the NPC's tolerance */
+    public boolean seatPoints(EntityNPCInterface npc, WeaponMount mount, Vec3 direction)
+    {
+        return MountMotion.error(seatAim(mount.seat()), seatRelative(npc, mount, direction)) <= NpcTuning.of(npc).get(Value.ALIGN_TOLERANCE);
+    }
+
+    /** @return the world direction a seat gun points along as the model is drawn now, which its rounds leave along */
+    public Vec3 seatBarrelDirection(EntityNPCInterface npc, WeaponMount mount)
+    {
+        MountAim aim = seatAim(mount.seat());
+        return NpcModels.direction(npc, mount.onTurret() ? new MountAim(turretYaw + aim.yaw(), aim.pitch()) : aim, hullYaw);
+    }
+
+    /**
+     * @param fixed
+     *            whether the weapon is fixed to the hull of a turreted model rather than turning with its turret
+     * @return the world direction a weapon of the model's banks points along as it is drawn now, which its rounds leave
+     *         along as a player's do: the turret's or AA gun's, a mecha's arms', or straight ahead along the hull and a
+     *         plane's nose
+     */
+    public Vec3 barrelDirection(EntityNPCInterface npc, boolean fixed)
+    {
+        return NpcModels.direction(npc, fixed ? MountAim.REST : turretAim(), hullYaw);
+    }
+
+    /**
+     * @param muzzles
+     *            the muzzles of a trigger, selected with the turret at rest
+     * @param turned
+     *            the same muzzles selected with the turret as it is aimed now
+     * @return for each muzzle, in order, whether it stays fixed to the hull while the turret turns; never for a model
+     *         without a turret, or an AA gun, whose guns all point one way
+     */
+    public boolean[] fixedMuzzles(List<WeaponMuzzle> muzzles, List<WeaponMuzzle> turned)
+    {
+        boolean[] fixed = new boolean[muzzles.size()];
+        Layout current = active ? layout : null;
+        if (current == null || !current.turreted() || current.kind() == FlanModelKind.AA_GUN || turretAim().equals(MountAim.REST))
+            return fixed;
+        for (int index = 0; index < fixed.length && index < turned.size(); index++)
+            fixed[index] = muzzles.get(index).offset().distanceToSqr(turned.get(index).offset()) <= TURNING_MUZZLE;
+        return fixed;
     }
 
     /**
@@ -443,22 +609,53 @@ public final class NpcVehicleState
         return perSecond > 0 ? perSecond / 20F : (float) NpcDriving.handling(npc, options).turnRate().orElse(DEFAULT_HULL_STEP * 20D) / 20F;
     }
 
-    /** @return the world direction a shot at the target has to leave in, refreshed every few ticks */
-    private Vec3 solve(EntityNPCInterface npc, LivingEntity target, NpcWeaponOptions options)
+    /** @return the world direction a shot at the target has to leave in, from where the rounds leave, refreshed every few ticks */
+    private Vec3 solve(EntityNPCInterface npc, Layout current, LivingEntity target, NpcWeaponOptions options)
     {
         if (solution != null && npc.tickCount - solvedAt < SOLVE_INTERVAL && npc.tickCount >= solvedAt)
             return solution;
         solvedAt = npc.tickCount;
-        Vec3 displacement = aimPoint(target).subtract(npc.getEyePosition());
+        Vec3 displacement = aimPoint(target).subtract(fireOrigin(npc, current, options));
         refreshBallistics(npc);
         if (Double.isNaN(shotSpeed))
             solution = displacement.normalize();
         else
         {
             boolean arc = options.enabled(Feature.BALLISTIC_AIM);
-            solution = lead(displacement, target, options, shotSpeed, arc ? shotGravity : 0D, arc ? shotDrag : 1D, false);
+            solution = lead(displacement, target, options, shotSpeed, arc ? shotGravity : 0D, arc ? shotDrag : 1D, indirect(npc, target));
         }
         return solution;
+    }
+
+    /**
+     * @return where the main weapon's rounds leave from: the middle of its muzzles, carried with the turret as the NPC fires
+     *         them, or the NPC's eyes when it fires from there
+     */
+    private Vec3 fireOrigin(EntityNPCInterface npc, Layout current, NpcWeaponOptions options)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (model == null || !options.enabled(Feature.MODEL_MUZZLES))
+            return npc.getEyePosition();
+        MountAim aim = options.enabled(Feature.TURRET_MUZZLES) ? turretAim() : MountAim.REST;
+        List<WeaponMuzzle> muzzles = FlansProjectiles.getMuzzles(current.model(), current.secondary(), 0, false, aim);
+        if (muzzles.isEmpty())
+            return npc.getEyePosition();
+        Vec3 sum = Vec3.ZERO;
+        for (WeaponMuzzle muzzle : muzzles)
+            sum = sum.add(muzzle.offset());
+        return NpcModels.world(npc, model, sum.scale(1D / muzzles.size()), hullYaw);
+    }
+
+    /** Whether Custom NPCs' ranged AI fires at the target along the high arc, as it decides when it pulls the trigger. */
+    private static boolean indirect(EntityNPCInterface npc, LivingEntity target)
+    {
+        double range = npc.stats.ranged.getRange();
+        return switch (npc.stats.ranged.getFireType())
+        {
+            case 1 -> npc.distanceToSqr(target.getX(), target.getBoundingBox().minY, target.getZ()) > range * range / 2D;
+            case 2 -> !npc.getSensing().hasLineOfSight(target);
+            default -> false;
+        };
     }
 
     /** The launch direction against a target, led the way the NPC's switches ask for. */
@@ -481,6 +678,42 @@ public final class NpcVehicleState
         shotSpeed = shot.map(value -> (double) value.speed()).orElse(Double.NaN);
         shotGravity = shot.map(ProjectileShot::gravity).orElse(0D);
         shotDrag = shot.map(ProjectileShot::drag).orElse(1D);
+        bombing = shot.map(ProjectileShot::dropped).orElse(false);
+    }
+
+    /** @return the world direction, from where its rounds leave, a shot at its target leaves along; empty while it has none */
+    public Optional<Vec3> aimDirection()
+    {
+        return Optional.ofNullable(solution);
+    }
+
+    /** @return where a bomb let go now would have to come down to meet the target; empty while the NPC bombs nothing */
+    public Optional<Vec3> bombPoint()
+    {
+        return Optional.ofNullable(bombPoint);
+    }
+
+    /**
+     * Whether a bomb let go now, from the model's first muzzle at the NPC's velocity, would come down within reach of the
+     * target. A moving target is met where it will be when the bomb lands, as far as the NPC leads its targets.
+     */
+    private boolean bombsAway(EntityNPCInterface npc, Layout current, LivingEntity target, NpcWeaponOptions options)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        Vec3 origin = model != null && current.muzzle() != null ? NpcModels.world(npc, model, current.muzzle(), hullYaw) : npc.position();
+        WeaponAim.Fall fall = WeaponAim.fall(origin, npc.getDeltaMovement(), shotGravity, shotDrag, target.getY());
+        Vec3 meeting = target.position();
+        if (options.enabled(Feature.LEAD_TARGET))
+        {
+            Vec3 velocity = options.enabled(Feature.ADVANCED_LEAD) ? motionOf(target).map(TargetMotion::velocity).orElse(target.getDeltaMovement()) : target.getDeltaMovement();
+            meeting = meeting.add(velocity.x * fall.ticks(), 0D, velocity.z * fall.ticks());
+        }
+        bombPoint = meeting;
+        if (origin.y < target.getY() + MIN_BOMB_HEIGHT)
+            return false;
+        double x = fall.impact().x - meeting.x;
+        double z = fall.impact().z - meeting.z;
+        return x * x + z * z <= BOMB_RADIUS * BOMB_RADIUS;
     }
 
     /** The point of a target a shot is aimed at: the middle of a large body, the chest of a smaller one. */
@@ -643,7 +876,7 @@ public final class NpcVehicleState
         int signature = Arrays.hashCode(
             // A hull the model does not hold is the body yaw of the NPC, which clients already know.
             new int[]{held ? Math.round(hullYaw * 2F) : 0, Math.round(turretYaw * 4F), Math.round(turretPitch * 4F), Arrays.hashCode(quantise(seatYaw)), Arrays.hashCode(quantise(seatPitch)), shots,
-                barrel});
+                barrel, Math.round(attitudePitch * 2F), Math.round(attitudeBank * 2F)});
         if (sent && signature == sentSignature || npc.tickCount % SYNC_INTERVAL != 0)
             return;
         sent = true;
@@ -662,7 +895,24 @@ public final class NpcVehicleState
     /** @return the state as sent to a client that starts tracking the NPC */
     public VehicleStatePacket packet(EntityNPCInterface npc)
     {
-        return new VehicleStatePacket(npc.getId(), hullYaw, turretYaw, turretPitch, seatYaw.clone(), seatPitch.clone(), shots, barrel);
+        return new VehicleStatePacket(npc.getId(), hullYaw, turretYaw, turretPitch, seatYaw.clone(), seatPitch.clone(), shots, barrel, attitudePitch, attitudeBank);
+    }
+
+    /**
+     * @return whether dynamic landing gear is down: on the ground, in water or close above the ground, and up once the
+     *         aircraft has climbed clear of it. Either side.
+     */
+    public boolean dynamicGearDown(EntityNPCInterface npc)
+    {
+        if (npc.onGround() || npc.isInWater())
+            gearDown = true;
+        else
+        {
+            double height = npc.getY() - npc.level().getHeight(Heightmap.Types.MOTION_BLOCKING, npc.getBlockX(), npc.getBlockZ());
+            // Gear that is down stays down until the aircraft is well clear, so that it does not flicker at one height.
+            gearDown = height < (gearDown ? GEAR_UP_HEIGHT : GEAR_DOWN_HEIGHT) * Math.max(1F, NpcModels.scale(npc));
+        }
+        return gearDown;
     }
 
     /** Takes the server's state. Client only. */
@@ -675,14 +925,32 @@ public final class NpcVehicleState
         targetSeatPitch = packet.seatPitch();
         shots = packet.shots();
         barrel = packet.barrel();
+        targetAttitudePitch = packet.attitudePitch();
+        targetAttitudeBank = packet.attitudeBank();
         lerpSteps = received ? LERP_STEPS : 1;
         received = true;
     }
 
+    /** @return the attitude's nose-down pitch between the last tick and this one, for drawing. Client only. */
+    public float attitudePitch(float partialTick)
+    {
+        return Mth.lerp(partialTick, previousAttitudePitch, attitudePitch);
+    }
+
+    /** @return the attitude's bank to the right between the last tick and this one, for drawing. Client only. */
+    public float attitudeBank(float partialTick)
+    {
+        return Mth.lerp(partialTick, previousAttitudeBank, attitudeBank);
+    }
+
     private void clientTick(boolean held)
     {
+        previousAttitudePitch = attitudePitch;
+        previousAttitudeBank = attitudeBank;
         if (!received || lerpSteps <= 0)
             return;
+        attitudePitch += (targetAttitudePitch - attitudePitch) / lerpSteps;
+        attitudeBank += (targetAttitudeBank - attitudeBank) / lerpSteps;
         if (held)
             hullYaw = Mth.wrapDegrees(hullYaw + Mth.wrapDegrees(targetHullYaw - hullYaw) / lerpSteps);
         turretYaw += Mth.wrapDegrees(targetTurretYaw - turretYaw) / lerpSteps;

@@ -36,6 +36,9 @@ import static org.mockito.Mockito.*;
 
 class NpcDriverGunsTest
 {
+    /** Where the turret's barrel points in every battle: away from the target, so that a round led at it would show. */
+    private static final Vec3 TURRET_BARREL = new Vec3(0D, 0.6D, -0.8D);
+
     private static final class Battle implements AutoCloseable
     {
         private final MockedStatic<FlansProjectiles> projectiles = mockStatic(FlansProjectiles.class);
@@ -53,6 +56,7 @@ class NpcDriverGunsTest
         private final IDriveableType definition = mock(IDriveableType.class);
         private final IContentType weapon = mock(IContentType.class);
         private final List<Integer> fired = new ArrayList<>();
+        private final List<Vec3> directions = new ArrayList<>();
         private int tick;
 
         private Battle()
@@ -80,8 +84,15 @@ class NpcDriverGunsTest
             models.when(() -> NpcModels.flan(npc)).thenReturn(model);
             models.when(() -> NpcModels.world(eq(npc), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(npc)).thenReturn(state);
-            when(state.isAligned()).thenReturn(true);
+            when(state.isGunAligned()).thenReturn(true);
+            when(state.isHullAligned()).thenReturn(true);
             when(state.turretAim()).thenReturn(MountAim.REST);
+            when(state.fixedMuzzles(any(), any())).thenAnswer(call ->
+            {
+                List<?> muzzles = call.getArgument(0);
+                return new boolean[muzzles == null ? 0 : muzzles.size()];
+            });
+            when(state.barrelDirection(npc, false)).thenReturn(TURRET_BARREL);
             when(state.lead(any(), eq(target), eq(options), anyFloat(), anyDouble(), anyDouble(), eq(false))).thenReturn(new Vec3(0D, 0D, -1D));
             states.when(() -> NpcVehicleState.aimPoint(target)).thenReturn(new Vec3(0D, 0D, -10D));
             sight.when(() -> NpcSight.clear(eq(level), any(), any(), anyInt(), eq(npc))).thenReturn(true);
@@ -100,6 +111,7 @@ class NpcDriverGunsTest
             when(shot.launch(any(), any(), eq(false))).thenAnswer(call ->
             {
                 fired.add(tick);
+                directions.add(call.getArgument(1));
                 return List.of(mock(Entity.class));
             });
         }
@@ -140,6 +152,8 @@ class NpcDriverGunsTest
         {
             battle.advance(8);
             assertEquals(List.of(0, 2, 5, 7), battle.fired);
+            // Rounds leave along the barrel, as a player's do, not straight at the target.
+            assertEquals(Collections.nCopies(4, TURRET_BARREL), battle.directions);
             battle.projectiles.verify(() -> FlansProjectiles.getMuzzles(eq(battle.definition), eq(false), anyInt(), anyBoolean(), any()), never());
             battle.ammunition.verify(() -> NpcAmmunition.driverGunTemplate(battle.npc, battle.weapon), times(4));
         }
@@ -179,6 +193,24 @@ class NpcDriverGunsTest
     }
 
     @Test
+    void aGunFixedToTheHullFiresAlongTheHullOnceTheHullPointsAtTheTarget()
+    {
+        try (Battle battle = new Battle())
+        {
+            Vec3 hull = new Vec3(1D, 0D, 0D);
+            when(battle.state.fixedMuzzles(any(), any())).thenReturn(new boolean[]{true});
+            when(battle.state.barrelDirection(battle.npc, true)).thenReturn(hull);
+            when(battle.state.isHullAligned()).thenReturn(false);
+            battle.advance(3);
+            assertEquals(List.of(), battle.fired);
+            when(battle.state.isHullAligned()).thenReturn(true);
+            battle.advance(1);
+            assertEquals(List.of(3), battle.fired);
+            assertEquals(List.of(hull), battle.directions);
+        }
+    }
+
+    @Test
     void disabledGunsAndDamagedOrUnalignedVehiclesHoldFire()
     {
         try (Battle battle = new Battle())
@@ -186,9 +218,9 @@ class NpcDriverGunsTest
             battle.options.set(Feature.DRIVER_GUNS, false);
             battle.advance(3);
             battle.options.set(Feature.DRIVER_GUNS, true);
-            when(battle.state.isAligned()).thenReturn(false);
+            when(battle.state.isGunAligned()).thenReturn(false);
             battle.advance(3);
-            when(battle.state.isAligned()).thenReturn(true);
+            when(battle.state.isGunAligned()).thenReturn(true);
             when(battle.state.getParts().effects().gunDisabled()).thenReturn(true);
             battle.advance(3);
             when(battle.state.getParts().effects().gunDisabled()).thenReturn(false);

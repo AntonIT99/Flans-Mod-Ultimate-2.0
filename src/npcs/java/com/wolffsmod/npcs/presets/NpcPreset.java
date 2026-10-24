@@ -41,8 +41,8 @@ public enum NpcPreset
     SHIP(VEHICLE.targets, new Target(MOVEMENT, 2), new Target(TERRAIN, 2)),
     /** A freely roaming creature that flees. */
     PASSIVE_CREATURE(MOB.targets, new Target(ON_ATTACK, 1), new Target(ITEM_WEAPONS, 0)),
-    /** A static weapon that returns if displaced. */
-    TURRET(VEHICLE.targets, new Target(MOVING_TYPE, 0), new Target(RETURN_TO_START, 1), new Target(TACTIC, 2), new Target(DRIVING, 0));
+    /** A static weapon that stands still: it does not walk, whatever its model lends, and returns if displaced. */
+    TURRET(VEHICLE.targets, new Target(MOVING_TYPE, 0), new Target(RETURN_TO_START, 1), new Target(TACTIC, 2), new Target(DRIVING, 0), new Target(WALKING_SPEED, Values.FORCED_ZERO));
 
     /** What the preset sets, in the order its tooltip lists it: those of the preset it builds on first. */
     @Getter

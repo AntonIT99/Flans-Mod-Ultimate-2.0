@@ -354,7 +354,8 @@ public final class NpcItemAttacks
             return NpcAmmunition.load(npc, hand);
         // NPC ammunition is infinite: load from a detached copy large enough to fill every gun slot, never from the projectile slot itself.
         ItemStack weapon = npc.getItemInHand(hand);
-        return NpcAmmunition.infiniteTemplate(npc, weapon).map(template -> FlansEquipment.loadMagazine(npc, weapon, template.copyWithCount(Integer.MAX_VALUE))).orElse(false);
+        return NpcAmmunition.infiniteTemplate(npc, weapon).map(template -> FlansEquipment.loadMagazine(npc, weapon, template.copyWithCount(Integer.MAX_VALUE), NpcAmmunition.slotChoice(npc)))
+            .orElse(false);
     }
 
     private static boolean bow(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, BowItem bow)

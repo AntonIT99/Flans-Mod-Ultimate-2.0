@@ -2,15 +2,19 @@ package com.wolffsmod.npcs.properties;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.ReloadCycle;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.entity.EntityTypeProperties;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.MechaMeleeProperties;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.diag.NpcModelRanges;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
+import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -27,9 +31,6 @@ import java.util.*;
 /** Per-NPC inheritance cache. Only the live NPC owns gameplay state; its selected model supplies definitions. */
 public final class NpcTypeProperties
 {
-    /** Aggro and firing range a vehicle, plane or mecha model offers when its definition states none. */
-    public static final int DRIVEABLE_RANGE = 128;
-
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
     private LivingEntity lastModel;
@@ -73,7 +74,8 @@ public final class NpcTypeProperties
             lastMelee = melee;
             nextInspection = npc.tickCount + 20;
             double modelHealth = model != null && !(model instanceof FlanModelEntity) ? ((NpcModelHealth) ((EntityCustomNpc) npc).modelData).wolffsmodnpcsModelMaxHealth() : Double.NaN;
-            inspect(options, combat, selected, ammunition, modelHealth);
+            ItemStack reference = selected == null ? ammunition : NpcAmmunition.modelReference(npc, ammunition);
+            inspect(options, combat, selected, reference, modelHealth, new ModelRanges(NpcModelRanges.aggro(npc), NpcModelRanges.firing(npc)));
         }
         boolean server = !npc.level().isClientSide;
         boolean changed = server && carryOutImports(npc, combat);
@@ -85,13 +87,19 @@ public final class NpcTypeProperties
         }
     }
 
-    /** Reads what the selected model offers with the NPC's switches and ammunition, and which of it the NPC inherits. */
-    private void inspect(NpcWeaponOptions options, NpcCombatSettings combat, @Nullable IContentType selected, ItemStack ammunition, double modelHealth)
+    /**
+     * Reads what the selected model offers with the NPC's switches and ammunition, and which of it the NPC inherits.
+     *
+     * @param reference
+     *            the ammunition the model's statistics are read with: what the NPC fires, or else the model's default
+     */
+    private void inspect(NpcWeaponOptions options, NpcCombatSettings combat, @Nullable IContentType selected, ItemStack reference, double modelHealth, ModelRanges ranges)
     {
         boolean secondary = options.enabled(Feature.SECONDARY_BANK);
         type = Optional.ofNullable(selected).flatMap(value -> FlansEntityTypes.getProperties(value, secondary, options.enabled(Feature.MODEL_MUZZLES))).orElse(null);
-        boolean followsCycle = type != null && lastNative && options.enabled(Feature.RELOAD_CYCLE) && type.shootDelay().isPresent();
-        cycle = followsCycle ? FlansEntityTypes.getReloadCycle(selected, secondary, ammunition).orElse(null) : null;
+        // Without a round of its own the NPC still bursts and reloads as the model's default ammunition would.
+        boolean followsCycle = type != null && FlansProjectiles.isProjectile(reference) && options.enabled(Feature.RELOAD_CYCLE) && type.shootDelay().isPresent();
+        cycle = followsCycle ? FlansEntityTypes.getReloadCycle(selected, secondary, reference).orElse(null) : null;
         double maxHealth = NpcPlatform.maxHealthLimit();
         Map<NpcTypeProperty, Tag> offered = new EnumMap<>(NpcTypeProperty.class);
         if (type != null)
@@ -99,14 +107,10 @@ public final class NpcTypeProperties
         else if (Double.isFinite(modelHealth) && modelHealth > 0D)
             offered.put(NpcTypeProperty.HEALTH, IntTag.valueOf((int) Math.max(1D, Math.min(Math.ceil(modelHealth), Math.min(Integer.MAX_VALUE, maxHealth)))));
         FlanModelKind kind = FlanModelKind.of(selected);
+        if (type != null && kind != null)
+            offerMachineValues(offered, kind, selected, secondary, reference, options, ranges);
         if (type != null && kind == FlanModelKind.MECHA)
             offerMeleeValues(offered, lastMelee);
-        // Driveable definitions state no targeting range; vehicles engage at longer distances than infantry.
-        if (type != null && options.enabled(Feature.TYPE_PROPERTIES) && kind != null && kind != FlanModelKind.AA_GUN)
-        {
-            offered.putIfAbsent(NpcTypeProperty.AGGRO_RANGE, IntTag.valueOf(DRIVEABLE_RANGE));
-            offered.putIfAbsent(NpcTypeProperty.RANGE, IntTag.valueOf(DRIVEABLE_RANGE));
-        }
         // Vehicle engines have their own presentation controller; mecha stomps remain ordinary inherited footsteps.
         if (kind == FlanModelKind.VEHICLE || kind == FlanModelKind.PLANE)
         {
@@ -117,6 +121,28 @@ public final class NpcTypeProperties
         supplied = Set.copyOf(type == null ? inherited.keySet() : NpcTypeReadouts.create(type, inherited, options, lastNative).keySet());
         offered.keySet().removeAll(combat.customProperties());
         mapped = Map.copyOf(offered);
+    }
+
+    /**
+     * What an AA gun, vehicle, plane or mecha lends the NPC wearing it beyond its definition: the server's model ranges, no
+     * melee damage unless it is a mecha, an AA gun's standing still, and the velocity the round it fires with leaves at.
+     */
+    private void offerMachineValues(Map<NpcTypeProperty, Tag> offered, FlanModelKind kind, IContentType selected, boolean secondary, ItemStack reference, NpcWeaponOptions options, ModelRanges ranges)
+    {
+        int limit = NpcMobility.rangeLimit();
+        offered.put(NpcTypeProperty.AGGRO_RANGE, IntTag.valueOf(Math.min(limit, ranges.aggro())));
+        offered.put(NpcTypeProperty.RANGE, IntTag.valueOf(Math.min(limit, ranges.firing())));
+        if (kind != FlanModelKind.MECHA)
+            offered.put(NpcTypeProperty.MELEE_DAMAGE, IntTag.valueOf(0));
+        if (kind == FlanModelKind.AA_GUN)
+            offered.put(NpcTypeProperty.WALKING_SPEED, IntTag.valueOf(0));
+        // Mounts firing at velocities of their own keep showing them side by side.
+        boolean mixedMounts = type != null && type.weapons().size() > 1;
+        if (!options.enabled(Feature.MODEL_WEAPON_STATS) || !FlansProjectiles.isProjectile(reference) || mixedMounts)
+            return;
+        IContentType weapon = FlansProjectiles.getMuzzles(selected, secondary, 0, false).stream().findFirst().flatMap(WeaponMuzzle::weapon).orElse(null);
+        FlansProjectiles.getMuzzleVelocity(reference, weapon, selected, secondary)
+            .ifPresent(velocity -> offered.put(NpcTypeProperty.SPEED, IntTag.valueOf((int) Mth.clamp(Math.ceil(velocity * 10D), 0D, 100D))));
     }
 
     /** A sword supplies all three melee fields together; removing it restores zero damage and the saved cadence/reach. */
@@ -323,4 +349,8 @@ public final class NpcTypeProperties
                 flags |= 1L << feature.ordinal();
         return flags;
     }
+
+    /** The aggro and firing ranges, in blocks, a model lends the NPC. */
+    private record ModelRanges(int aggro, int firing)
+    {}
 }

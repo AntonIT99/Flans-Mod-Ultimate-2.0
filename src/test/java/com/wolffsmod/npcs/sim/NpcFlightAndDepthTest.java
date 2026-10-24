@@ -31,6 +31,34 @@ class NpcFlightAndDepthTest
     }
 
     @Test
+    void anOrbitingPlaneTurnsInForAGunPassNowAndThenAndCarriesOnBackToItsCircle()
+    {
+        NpcFlight flight = new NpcFlight();
+        double radius = 40D;
+        for (int tick = 1; tick < NpcFlight.ORBIT_PASS_INTERVAL; tick++)
+            assertFalse(flight.orbitPass(40D, radius));
+        assertTrue(flight.orbitPass(40D, radius), "turns in");
+        assertTrue(flight.orbitPass(20D, radius), "closes in");
+        assertTrue(flight.orbitPass(5D, radius), "has passed over the target and carries on");
+        assertTrue(flight.orbitPass(30D, radius), "still short of its circle");
+        assertFalse(flight.orbitPass(41D, radius), "circles again");
+        assertFalse(flight.orbitPass(41D, radius), "and counts afresh");
+    }
+
+    @Test
+    void anOrbitingPlaneTooCloseToLineUpWaitsAndAPassThatLastsTooLongIsBrokenOff()
+    {
+        NpcFlight flight = new NpcFlight();
+        for (int tick = 1; tick < NpcFlight.ORBIT_PASS_INTERVAL; tick++)
+            flight.orbitPass(40D, 40D);
+        assertFalse(flight.orbitPass(20D, 40D), "too close to line up");
+        assertTrue(flight.orbitPass(40D, 40D));
+        for (int tick = 0; tick < NpcFlight.MAX_PASS_TICKS; tick++)
+            assertTrue(flight.orbitPass(50D, 40D));
+        assertFalse(flight.orbitPass(50D, 40D), "broken off beyond its circle");
+    }
+
+    @Test
     void aPlaneNeitherStallsNorSpinsInPlace()
     {
         assertEquals(NpcFlight.STALL_SPEED, NpcFlight.planeSpeed(0, 0D));

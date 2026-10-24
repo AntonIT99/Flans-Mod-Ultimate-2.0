@@ -128,6 +128,18 @@ class ExternalProjectileSupportTest
     }
 
     @Test
+    void anAaGunAndADriveableWithoutBulletSpeedFireAtTheDefaultTheirEntitiesUseRatherThanTheCallers()
+    {
+        var contentStats = new ProjectileParameters(0, true, 1F, 1F, 77F);
+        assertEquals(BulletType.DEFAULT_BULLET_SPEED, ExternalProjectileSupport.resolveWeapon(new TestAA(), null, null, null, false, contentStats).getBulletSpeed());
+        TestVehicle vehicle = new TestVehicle(new Vector3f());
+        assertEquals(BulletType.DEFAULT_BULLET_SPEED, ExternalProjectileSupport.resolveWeapon(vehicle, null, null, vehicle, false, contentStats).getBulletSpeed());
+        // Without content statistics the caller's velocity still stands in.
+        var callerStats = new ProjectileParameters(0, false, 1F, 1F, 77F);
+        assertEquals(77F, ExternalProjectileSupport.resolveWeapon(new TestAA(), null, null, null, false, callerStats).getBulletSpeed());
+    }
+
+    @Test
     void muzzleFlashAvailabilityUsesGunModelsOrConfiguredGunAndShellFallbacks()
     {
         TestVehicle platform = new TestVehicle(new Vector3f());

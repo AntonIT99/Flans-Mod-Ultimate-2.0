@@ -99,7 +99,8 @@ public final class ExternalProjectileSupport
 
     private static Source weaponSpeedSource(InfoType definition, boolean contentStats)
     {
-        if (contentStats && (definition instanceof GunType || definition instanceof DriveableType driveable && driveable.getBulletSpeed() > 0F))
+        // AA guns and driveables fall back to the default every Flan bullet has, as their own entities do.
+        if (contentStats && (definition instanceof GunType || definition instanceof AAGunType || definition instanceof DriveableType))
             return Source.WEAPON;
         return Source.CALLER;
     }
@@ -219,19 +220,41 @@ public final class ExternalProjectileSupport
         return heldWeapon != null && heldWeapon.getItem() instanceof GunItem item && item.getConfigType() == gun ? heldWeapon : null;
     }
 
+    /**
+     * The weapon side of a shot. With content statistics an AA gun and a driveable's own ordnance supply the velocity their
+     * entities fire at, the driveable's BulletSpeed or else the default every Flan bullet has, rather than the caller's.
+     */
     static FireableGun resolveWeapon(InfoType definition, @Nullable ItemStack heldWeapon, LivingEntity shooter, @Nullable InfoType platform, boolean secondary, ProjectileParameters parameters)
     {
-        float fallbackSpeed = Math.max(0.01F, parameters.speed());
         if (!parameters.weaponStats())
             return fallbackWeapon(definition, parameters);
         if (definition instanceof GunType gun)
             return mountedGun(gun, heldWeapon, shooter, platform, secondary);
         if (definition instanceof AAGunType aa)
-            return new FireableGun(aa, aa.getDamage(), aa.getBulletSpread(), fallbackSpeed, aa.getSpreadPattern());
+            return new FireableGun(aa, aa.getDamage(), aa.getBulletSpread(), BulletType.DEFAULT_BULLET_SPEED, aa.getSpreadPattern());
         if (definition instanceof DriveableType driveable)
             return new FireableGun(driveable, Math.max(0F, secondary ? driveable.getDamageMultiplierSecondary() : driveable.getDamageMultiplierPrimary()), driveable.getBulletSpread(),
-                driveable.getBulletSpeed() > 0F ? driveable.getBulletSpeed() : fallbackSpeed, EnumSpreadPattern.CIRCLE);
+                driveable.getBulletSpeed() > 0F ? driveable.getBulletSpeed() : BulletType.DEFAULT_BULLET_SPEED, EnumSpreadPattern.CIRCLE);
         return fallbackWeapon(definition, parameters);
+    }
+
+    public static OptionalDouble muzzleVelocity(ItemStack ammunition, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary)
+    {
+        if (!isProjectile(ammunition))
+            return OptionalDouble.empty();
+        ShootableType ammo = ((ShootableItem) ammunition.getItem()).getConfigType();
+        if (ammo instanceof GrenadeType grenade)
+            return OptionalDouble.of(Math.max(0.01F, 0.5F * grenade.getThrowSpeed()));
+        InfoType definition = weaponDefinition(weapon, platform, ItemStack.EMPTY, ammo);
+        InfoType platformType = platform instanceof InfoType type ? type : null;
+        // Without a weapon the ammunition flies at its own velocity or the default.
+        FireableGun fireable = null;
+        if (definition instanceof GunType || definition instanceof AAGunType || definition instanceof DriveableType)
+        {
+            fireable = resolveWeapon(definition, null, null, platformType, secondary, new ProjectileParameters(0, true, 0F, 0F, 0F));
+            fireable.applyAmmunition(ammo);
+        }
+        return OptionalDouble.of(new FiredShot(fireable, (BulletType) ammo, null, null, 0, platformType).getMuzzleVelocity());
     }
 
     private static FireableGun fallbackWeapon(InfoType definition, ProjectileParameters parameters)
@@ -479,6 +502,12 @@ public final class ExternalProjectileSupport
         }
 
         @Override
+        public boolean dropped()
+        {
+            return ammo instanceof BulletType bullet && bullet.getWeaponType() == EnumWeaponType.BOMB;
+        }
+
+        @Override
         public List<Entity> launch(Vec3 origin, Vec3 direction, boolean throwSound)
         {
             if (!serverThread(shooter) || !shooter.isAlive() || !finite(origin) || !finite(direction) || direction.lengthSqr() < 1.0E-12D)
@@ -495,7 +524,12 @@ public final class ExternalProjectileSupport
                     projectile.setDeltaMovement(velocity);
                 }
                 else
+                {
                     projectile = ShootableFactory.createBullet(shooter.level(), new FiredShot(gun, (BulletType) ammo, shooter, shooter, round, platform), origin, aim);
+                    // A bomb falls away from what carries it, as a driveable drops one.
+                    if (dropped())
+                        projectile.setDeltaMovement(shooter.getDeltaMovement());
+                }
                 if (shooter.level().addFreshEntity(projectile))
                     entities.add(projectile);
             }

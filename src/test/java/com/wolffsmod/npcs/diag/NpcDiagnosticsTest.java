@@ -92,7 +92,7 @@ class NpcDiagnosticsTest
     @Test
     void theServerPageRequestsSurviveTheWire()
     {
-        ServerControlPacket sent = ServerControlPacket.set(15, 120, true, 96, 72);
+        ServerControlPacket sent = ServerControlPacket.set(15, 120, true, new ServerControlPacket.Ranges(96, 72, 160, 140));
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         sent.write(buffer);
         assertEquals(sent, ServerControlPacket.read(buffer));
@@ -113,9 +113,12 @@ class NpcDiagnosticsTest
         assertEquals(NpcServerSettings.DEFAULT_AGGRO_RANGE, settings.getAggroRange());
         assertEquals(NpcServerSettings.DEFAULT_FIRING_RANGE, settings.getFiringRange());
         assertEquals(0, settings.getRangeGeneration());
-        settings.set(NpcServerSettings.DEFAULT_NEAR_INTERVAL, NpcServerSettings.DEFAULT_FAR_INTERVAL, false, 0, 10_000);
+        assertEquals(NpcServerSettings.DEFAULT_MODEL_RANGE, settings.getModelAggroRange());
+        settings.set(NpcServerSettings.DEFAULT_NEAR_INTERVAL, NpcServerSettings.DEFAULT_FAR_INTERVAL, false, 0, 10_000, 0, 200);
         assertEquals(1, settings.getAggroRange());
         assertEquals(NpcServerSettings.MAX_RANGE, settings.getFiringRange());
+        assertEquals(1, settings.getModelAggroRange());
+        assertEquals(200, settings.getModelFiringRange());
         assertEquals(0, settings.getRangeGeneration());
         settings.applyRangesToAll();
         settings.applyRangesToAll();

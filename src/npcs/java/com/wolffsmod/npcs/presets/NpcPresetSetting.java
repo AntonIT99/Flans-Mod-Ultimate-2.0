@@ -98,6 +98,8 @@ public enum NpcPresetSetting
     HEALTH_REGEN(NpcTypeProperty.HEALTH_REGEN),
     /** Combat regen. */
     COMBAT_REGEN(NpcTypeProperty.COMBAT_REGEN),
+    /** AI > Movement > Walking speed; a preset makes it the NPC's own, so that no model lends another. */
+    WALKING_SPEED(NpcTypeProperty.WALKING_SPEED),
     /** Engine idle. */
     ENGINE_IDLE(npc -> yes(NpcPresentation.of(npc).getVehicleSounds().isIdleEnabled()), (npc, value) -> NpcPresentation.of(npc).getVehicleSounds().setIdleEnabled(value != 0), Values.NO_YES),
     /** Engine movement. */
@@ -150,7 +152,7 @@ public enum NpcPresetSetting
     {
         return switch (this)
         {
-            case CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> value / 2;
+            case CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN, WALKING_SPEED -> value / 2;
             default -> value;
         };
     }
@@ -200,6 +202,8 @@ public enum NpcPresetSetting
         public static final int WANDERING = 1;
         public static final int RESPAWN_NO = 3;
         public static final int DOORS_OPEN = 1;
+        /** A model property set to 0 as the NPC's own value, which no model then covers. */
+        public static final int FORCED_ZERO = 1;
         private static final List<String> NO_YES = List.of("gui.no", "gui.yes");
     }
 }

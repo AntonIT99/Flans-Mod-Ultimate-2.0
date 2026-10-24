@@ -183,6 +183,21 @@ public final class DriveableAmmoLoader
         return Optional.ofNullable(resolveBankAmmo(type, List.of(weapon)));
     }
 
+    /**
+     * Whether the selected driver bank can fire the round: one of its mounted guns takes it, or the bank's own ordnance is of
+     * its kind and the driveable lists it.
+     */
+    public static boolean bankAccepts(DriveableType type, boolean secondary, ShootableType ammo)
+    {
+        EnumWeaponType weapon = type.weaponType(secondary);
+        if (weapon == EnumWeaponType.NONE)
+            return false;
+        if (weapon == EnumWeaponType.GUN)
+            return type.shootPoints(secondary).stream().filter(point -> point.getRootPos() instanceof PilotGun).map(point -> ((PilotGun) point.getRootPos()).getType()).filter(Objects::nonNull)
+                .anyMatch(gun -> gun.getAmmoTypes().contains(ammo));
+        return ammo instanceof BulletType bullet && type.isValidAmmo(bullet, weapon);
+    }
+
     /** One report line per distinct mounted gun, however many slots feed it. */
     private static void loadGunSlots(DriveableType type, DriveableData data, @Nullable ShootableType requested, List<BankReport> banks, List<ItemStack> displaced)
     {

@@ -34,11 +34,21 @@ public class FlanModelEntity extends Mob implements ILivingVisualEffects
     private int paintjobId;
     private boolean hurtFlash = true;
     private boolean deathRotation = true;
+    /** Degrees the model is drawn pitched nose down and banked to its right this frame. Client only. */
+    private float attitudePitch;
+    private float attitudeBank;
 
     public void setVisualEffects(boolean hurt, boolean death)
     {
         hurtFlash = hurt;
         deathRotation = death;
+    }
+
+    /** Sets the pitch and bank the NPC wearing the model is drawn at this frame, in degrees. Client only. */
+    public void setAttitude(float pitch, float bank)
+    {
+        attitudePitch = pitch;
+        attitudeBank = bank;
     }
 
     @Override

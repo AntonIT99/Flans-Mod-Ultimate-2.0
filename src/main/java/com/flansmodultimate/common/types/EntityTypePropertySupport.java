@@ -31,6 +31,9 @@ public final class EntityTypePropertySupport
 {
     /** Traverse and elevation speed, in degrees per tick, of a mount whose definition states none. */
     private static final float DEFAULT_AIM_SPEED = 8F;
+    /** Blocks per tick across the ground above which a driveable that squashes mobs hurts them, and the most it deals. */
+    public static final double SQUASH_SPEED = 0.12D;
+    private static final double MAX_SQUASH_DAMAGE = 40D;
 
     private EntityTypePropertySupport()
     {}
@@ -126,6 +129,18 @@ public final class EntityTypePropertySupport
         return Math.min(2F, Math.max(0.5F, DriveableControlPhysics.engineSoundPitch(movement, curve, 1F)));
     }
 
+    public static OptionalDouble squashDamage(IContentType type, double horizontalSpeed)
+    {
+        boolean squashes = type instanceof VehicleType vehicle && vehicle.isSquashMobs() || type instanceof MechaType mecha && mecha.isSquashMobs();
+        return squashes && horizontalSpeed > SQUASH_SPEED ? OptionalDouble.of(squashDamage(horizontalSpeed)) : OptionalDouble.empty();
+    }
+
+    /** @return what a driveable that squashes mobs deals one it runs into at a speed across the ground in blocks per tick */
+    public static double squashDamage(double horizontalSpeed)
+    {
+        return Math.min(MAX_SQUASH_DAMAGE, 2D + horizontalSpeed * 12D);
+    }
+
     public static Optional<EntityTypeProperties> read(IContentType type, boolean secondary)
     {
         return read(type, secondary, true);
@@ -135,7 +150,9 @@ public final class EntityTypePropertySupport
     {
         if (type instanceof AAGunType aa)
         {
-            Weapon weapon = new Weapon(aa.getShortName(), aa.getDamage(), aa.getBulletSpread(), OptionalDouble.empty(), Math.max(1, aa.getNumBullets()), aa.getShootSound());
+            // An AA gun fires at the default every Flan bullet has, unless its ammunition states a velocity.
+            Weapon weapon = new Weapon(aa.getShortName(), aa.getDamage(), aa.getBulletSpread(), OptionalDouble.of(BulletType.DEFAULT_BULLET_SPEED), Math.max(1, aa.getNumBullets()),
+                aa.getShootSound());
             return Optional.of(new EntityTypeProperties(positive(aa.getHealth()), positive(aa.getTargetRange()), OptionalDouble.empty(), OptionalDouble.empty(), Optional.empty(), Optional.empty(),
                 positive(aa.getShootDelay()), Map.of(), List.of(weapon)));
         }

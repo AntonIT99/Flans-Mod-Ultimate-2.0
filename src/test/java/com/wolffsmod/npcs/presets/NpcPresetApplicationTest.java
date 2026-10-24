@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.level.Level;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +51,10 @@ class NpcPresetApplicationTest
         when(settings.wolffsmodnpcsTypeProperties()).thenReturn(properties);
         Level level = mock(Level.class);
         when(npc.level()).thenReturn(level);
+        // Setting the walking speed sets the movement attributes as well.
+        when(npc.getAttribute(any(Attribute.class))).thenAnswer(call -> new AttributeInstance(call.getArgument(0), changed ->
+        {
+        }));
         return npc;
     }
 
@@ -179,6 +185,18 @@ class NpcPresetApplicationTest
         assertFalse(combat.isCustom(NpcTypeProperty.NO_FALL_DAMAGE));
         assertFalse(combat.isCustom(NpcTypeProperty.HEALTH_REGEN));
         assertTrue(options.enabled(Feature.DRIVER_GUNS));
+    }
+
+    @Test
+    void theTurretPresetStopsTheNpcWalkingWhateverItsModelLends()
+    {
+        EntityNPCInterface npc = npc();
+        npc.ais.setWalkingSpeed(5);
+        NpcPreset.TURRET.apply(npc);
+        assertEquals(0, npc.ais.getWalkingSpeed());
+        // Its own value, so that no model's walking speed covers it.
+        assertTrue(combat.isCustom(NpcTypeProperty.WALKING_SPEED));
+        assertEquals(0, NpcPresetSetting.WALKING_SPEED.displayValue(NpcPresetSetting.WALKING_SPEED.get(npc)));
     }
 
     @Test

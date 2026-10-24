@@ -114,6 +114,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** The labels beside an NPC's own search intervals naming the server's, which an interval of 0 follows. */
     private static final int SERVER_NEAR_VALUE_ID = 1208;
     private static final int SERVER_FAR_VALUE_ID = 1209;
+    private static final int SERVER_MODEL_AGGRO_ID = 1210;
+    private static final int SERVER_MODEL_FIRING_ID = 1211;
     /** Distance between the left edges of two overview columns; a page button is this wide less the gap. */
     private static final int OVERVIEW_COLUMN = 134;
     private static final int OVERVIEW_GAP = 6;
@@ -157,6 +159,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final String TRIMMED = "..." + PATH_SEPARATOR;
     private static final String HELP_SUFFIX = ".help";
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
+    /** The landing gear row is a choice of three, kept as two switches: gear up, and dynamic gear, which outranks it. */
+    private static final String[] GEAR_CHOICES = {WEAPONS + "gear_up.down", WEAPONS + "gear_up.up", WEAPONS + "gear_up.dynamic"};
+    private static final int GEAR_UP_CHOICE = 1;
+    private static final int GEAR_DYNAMIC_CHOICE = 2;
     /** The hub tab the overview shows; kept while the game runs. */
     private static final AtomicReference<Hub> HUB = new AtomicReference<>(Hub.GENERAL);
     private static final String PRESET = "wolffsmodnpcs.preset.";
@@ -207,8 +213,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @RequiredArgsConstructor
     private enum ServerRow
     {
-        NEAR_INTERVAL(SERVER_NEAR_ID, NpcServerSettings.DEFAULT_NEAR_INTERVAL), FAR_INTERVAL(SERVER_FAR_ID, NpcServerSettings.DEFAULT_FAR_INTERVAL), PROFILING(SERVER_PROFILE_ID,
-            0), AGGRO_RANGE(SERVER_AGGRO_ID, NpcServerSettings.DEFAULT_AGGRO_RANGE), FIRING_RANGE(SERVER_FIRING_ID, NpcServerSettings.DEFAULT_FIRING_RANGE);
+        NEAR_INTERVAL(SERVER_NEAR_ID, NpcServerSettings.DEFAULT_NEAR_INTERVAL), FAR_INTERVAL(SERVER_FAR_ID, NpcServerSettings.DEFAULT_FAR_INTERVAL), PROFILING(SERVER_PROFILE_ID, 0), AGGRO_RANGE(
+            SERVER_AGGRO_ID, NpcServerSettings.DEFAULT_AGGRO_RANGE), FIRING_RANGE(SERVER_FIRING_ID, NpcServerSettings.DEFAULT_FIRING_RANGE), MODEL_AGGRO_RANGE(SERVER_MODEL_AGGRO_ID,
+                NpcServerSettings.DEFAULT_MODEL_RANGE), MODEL_FIRING_RANGE(SERVER_MODEL_FIRING_ID, NpcServerSettings.DEFAULT_MODEL_RANGE);
 
         private final int id;
         /** The value a new world starts with, 1 for Yes for the switch. */
@@ -224,6 +231,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case PROFILING -> ClientServerSettings.isProfiling() ? 1 : 0;
                 case AGGRO_RANGE -> ClientServerSettings.getAggroRange();
                 case FIRING_RANGE -> ClientServerSettings.getFiringRange();
+                case MODEL_AGGRO_RANGE -> ClientServerSettings.getModelAggroRange();
+                case MODEL_FIRING_RANGE -> ClientServerSettings.getModelFiringRange();
             };
         }
 
@@ -234,7 +243,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case NEAR_INTERVAL -> NpcServerSettings.MAX_NEAR_INTERVAL;
                 case FAR_INTERVAL -> NpcServerSettings.MAX_FAR_INTERVAL;
                 case PROFILING -> 1;
-                case AGGRO_RANGE, FIRING_RANGE -> NpcMobility.rangeLimit();
+                case AGGRO_RANGE, FIRING_RANGE, MODEL_AGGRO_RANGE, MODEL_FIRING_RANGE -> NpcMobility.rangeLimit();
             };
         }
     }
@@ -410,12 +419,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("turret_aim", Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.MANNED_GUNS_FIRE,
                 Feature.TURRET_LOCKED),
             Tab.named(CrewPage.TAB, Scope.DRIVEABLES)),
-        EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Layout.COLUMN, Feature.ITEM_ARMOR,
+        EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO, Layout.COLUMN,
+            Feature.ITEM_ARMOR,
             Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Value.WEAPON_SWITCH)),
         FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Value.GRENADE_USE, Feature.NATIVE_THROWABLES, Value.NATIVE_THROWABLE_USE, Value.THROWN_WEAPON_USE,
-            Feature.CONSUME_AMMO)),
+            Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO)),
         MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS, Tab.of(Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES,
-            Feature.EYE_AT_MUZZLE, Feature.DRIVER_GUNS)),
+            Feature.EYE_AT_MUZZLE, Feature.DRIVER_GUNS, Feature.RUN_OVER)),
         AIMING(Section.TARGETING, Scope.ALL, Tab.of(Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE)),
         PROTECTION(Section.PROTECTION, Scope.ALL,
             Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES),
@@ -451,7 +461,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL)),
         /** The pages of the whole server: their rows are {@link ServerRow}s, and the actions they offer sit below them. */
         SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL)),
-        SERVER_RANGES(Section.SERVER, Scope.ALL, Tab.of(ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE)),
+        SERVER_RANGES(Section.SERVER, Scope.ALL, Tab.of(ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE)),
         DIAGNOSTICS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.PROFILING));
         // spotless:on
 
@@ -772,6 +782,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** Whether the row holds another value than an NPC gets by default. The Custom NPCs ranges have no default of the tab's. */
     private boolean changed(Object row)
     {
+        if (row == Feature.GEAR_UP)
+            return gearChoice() != GEAR_DYNAMIC_CHOICE;
         if (row instanceof Feature feature)
             return enabled(feature) != feature.isDefaultEnabled();
         if (row instanceof Value value)
@@ -1112,6 +1124,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Nullable
     private static Component defaultText(Object row)
     {
+        if (row == Feature.GEAR_UP)
+            return Component.translatable(GEAR_CHOICES[GEAR_DYNAMIC_CHOICE]);
         if (row instanceof Feature feature)
             return Component.translatable(NO_YES[feature.isDefaultEnabled() ? 1 : 0]);
         if (row instanceof Look look)
@@ -1169,9 +1183,32 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return inactive(parent);
     }
 
+    /** Sets a switch from its button: 1 for Yes, or the gear row's choice of down, up or dynamic. */
+    private void setFeature(Feature feature, int value)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (feature == Feature.GEAR_UP)
+        {
+            options.set(Feature.GEAR_UP, value == GEAR_UP_CHOICE);
+            options.set(Feature.GEAR_DYNAMIC, value == GEAR_DYNAMIC_CHOICE);
+        }
+        else
+            options.set(feature, value == 1);
+    }
+
+    /** @return the landing gear the NPC draws: down, up, or dynamic, by its choice on the gear row */
+    private int gearChoice()
+    {
+        if (enabled(Feature.GEAR_DYNAMIC))
+            return GEAR_DYNAMIC_CHOICE;
+        return enabled(Feature.GEAR_UP) ? GEAR_UP_CHOICE : 0;
+    }
+
     /** @return the value of a switch, 1 for Yes, or of a choice or number */
     private int current(Enum<?> row)
     {
+        if (row == Feature.GEAR_UP)
+            return gearChoice();
         if (row instanceof Feature feature)
             return enabled(feature) ? 1 : 0;
         return NpcTuning.of(npc).get((Value) row);
@@ -1199,6 +1236,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, DRIVER_GUNS, MUZZLE_FLASHES -> Scope.DRIVEABLES;
                 case HULL_ASSISTS_AIM, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
+                case RUN_OVER -> Scope.GROUND_MACHINES;
                 case DRIVE_DRIVEABLES -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
@@ -1240,6 +1278,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void featureButton(Feature feature, int control, int y)
     {
+        if (feature == Feature.GEAR_UP)
+        {
+            int gear = gearChoice();
+            GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 60, 20, GEAR_CHOICES, gear);
+            button.setEnabled(loaded);
+            valueTooltip(button, GEAR_CHOICES[gear]);
+            addButton(button);
+            return;
+        }
         boolean on = enabled(feature);
         GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 48, 20, NO_YES, on ? 1 : 0);
         button.setEnabled(loaded);
@@ -1384,6 +1431,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         boolean profiling = ClientServerSettings.isProfiling();
         int aggro = ClientServerSettings.getAggroRange();
         int firing = ClientServerSettings.getFiringRange();
+        int modelAggro = ClientServerSettings.getModelAggroRange();
+        int modelFiring = ClientServerSettings.getModelFiringRange();
         boolean confirming = confirmApplyRanges;
         confirmApplyRanges = false;
         switch (id)
@@ -1393,6 +1442,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case SERVER_PROFILE_ID -> profiling = number == 1;
             case SERVER_AGGRO_ID -> aggro = number;
             case SERVER_FIRING_ID -> firing = number;
+            case SERVER_MODEL_AGGRO_ID -> modelAggro = number;
+            case SERVER_MODEL_FIRING_ID -> modelFiring = number;
             case SERVER_APPLY_RANGES_ID -> {
                 // The first press only asks for a second one: the ranges of every NPC are overwritten.
                 if (confirming)
@@ -1416,7 +1467,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 return false;
             }
         }
-        NpcNetwork.sendToServer(ServerControlPacket.set(near, far, profiling, aggro, firing));
+        NpcNetwork.sendToServer(ServerControlPacket.set(near, far, profiling, new ServerControlPacket.Ranges(aggro, firing, modelAggro, modelFiring)));
         return true;
     }
 
@@ -1641,7 +1692,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         }
         if (button.id >= 0 && button.id < Feature.values().length)
         {
-            ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.values()[button.id], button.getValue() == 1);
+            setFeature(Feature.values()[button.id], button.getValue());
             changed = true;
         }
         else if (button.id >= VALUE_ID && button.id < VALUE_ID + Value.values().length)

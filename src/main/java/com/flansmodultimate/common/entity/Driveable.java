@@ -6675,8 +6675,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 continue;
             if (!legacyKnockback && isHeavyContactBody(entity))
                 continue;
-            if (squash && entity instanceof LivingEntity && horizontalSpeed > 0.12D)
-                entity.hurt(level().damageSources().flyIntoWall(), (float) Math.min(40D, 2D + horizontalSpeed * 12D));
+            if (squash && entity instanceof LivingEntity && horizontalSpeed > EntityTypePropertySupport.SQUASH_SPEED)
+                entity.hurt(level().damageSources().flyIntoWall(), (float) EntityTypePropertySupport.squashDamage(horizontalSpeed));
             Vec3 push = entity.position().subtract(position());
             if (push.horizontalDistanceSqr() < 1.0E-6D)
                 push = getForwardVector();

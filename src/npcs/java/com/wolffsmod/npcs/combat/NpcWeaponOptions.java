@@ -24,7 +24,13 @@ public final class NpcWeaponOptions
                                 true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(
                                     true), PATH_DEBUG(false), CONSUME_AMMO(false), PART_HITBOXES(true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(
                                         true), HITBOX_OUTLINES(false), SOLID_HITBOXES(true), ARMOR_POTION_EFFECTS(true), MANNED_GUNS_FIRE(true), MELEE_DUAL_WIELD(false), DRIVE_DRIVEABLES(
-                                            false), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true);
+                                            false), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
+        /** Flan ammunition in the projectile slot is only fired by a held gun or model that takes it, as ammunition from the inventory always is. */
+        FITTING_SLOT_AMMO(false),
+        /** A vehicle or mecha whose definition squashes mobs runs over everything in its way but its allies. */
+        RUN_OVER(true),
+        /** Landing gear that retracts while the aircraft flies and comes down near the ground; the gear row shows it as a third choice beside down and up. */
+        GEAR_DYNAMIC(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter
@@ -66,6 +72,9 @@ public final class NpcWeaponOptions
             // The model weapon switch was saved under its earlier name.
             if (feature == Feature.MODEL_WEAPON_STATS && tag.contains("WEAPON_STATS", Tag.TAG_BYTE))
                 fallback = tag.getBoolean("WEAPON_STATS");
+            // Gear an NPC saved before dynamic gear existed keeps it up if it was put up; gear left down becomes dynamic.
+            if (feature == Feature.GEAR_DYNAMIC && tag.contains(Feature.GEAR_UP.name(), Tag.TAG_BYTE))
+                fallback = !tag.getBoolean(Feature.GEAR_UP.name());
             set(feature, tag.contains(feature.name(), Tag.TAG_BYTE) ? tag.getBoolean(feature.name()) : fallback);
         }
     }

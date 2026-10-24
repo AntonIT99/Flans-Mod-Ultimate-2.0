@@ -13,6 +13,7 @@ import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
 import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.guns.EquipmentSupport;
 import com.flansmodultimate.common.item.MechaAddonItem;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.ApiStatus;
@@ -107,6 +108,25 @@ public final class FlansEquipment
     }
 
     /**
+     * Tells whether a gun can be reloaded with a stack, optionally with a Flan bullet it does not take, as an owner may
+     * choose to give it. Nothing is consumed. Either side.
+     *
+     * @param weapon
+     *            the gun; false for any other item
+     * @param ammunition
+     *            the stack offered to it
+     * @param anyBullet
+     *            whether any Flan bullet with rounds left is accepted, not only ammunition the gun takes in its current fire
+     *            mode; Flan grenades still need a gun that takes them
+     * @return whether {@link #loadMagazine(LivingEntity, ItemStack, ItemStack, boolean)} would accept the stack for an
+     *         empty slot of the gun
+     */
+    public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition, boolean anyBullet)
+    {
+        return EquipmentSupport.acceptsAmmunition(weapon, ammunition, anyBullet);
+    }
+
+    /**
      * @param gun
      *            a gun definition, such as one a driveable mounts
      * @return a new full stack of the ammunition the gun is issued with by default, or empty for another definition or a
@@ -120,20 +140,48 @@ public final class FlansEquipment
     }
 
     /**
-     * Creates ammunition for the selected driver bank without changing an inventory. Either side after content loading.
-     * Uses the first mounted gun's default or the bank's declared ordnance, with the fallback used by default-ammo loading.
+     * Creates ammunition for the selected driver bank of a driveable, or for an AA gun, without changing an inventory.
+     * Either side after content loading. A driveable uses the first mounted gun's default or the bank's declared ordnance,
+     * with the fallback used by default-ammo loading; an AA gun uses the first ammunition it lists.
      *
      * @param vehicle
-     *            the driveable definition
+     *            the driveable or AA gun definition
      * @param secondary
-     *            whether to select the secondary bank rather than the primary bank
+     *            whether to select the secondary bank rather than the primary bank; ignored for an AA gun
      * @return a new full stack, or empty for an unsupported definition or a bank without ammunition
      */
     public static Optional<ItemStack> createDefaultAmmunition(IContentType vehicle, boolean secondary)
     {
-        if (!(vehicle instanceof DriveableType type))
+        Optional<ShootableType> ammo;
+        if (vehicle instanceof AAGunType aa)
+            ammo = aa.getDefaultAmmo();
+        else if (vehicle instanceof DriveableType type)
+            ammo = DriveableAmmoLoader.defaultBankAmmo(type, secondary);
+        else
             return Optional.empty();
-        return DriveableAmmoLoader.defaultBankAmmo(type, secondary).flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
+        return ammo.flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
+    }
+
+    /**
+     * Tells whether an AA gun, or the selected driver bank of a driveable, can fire a stack: a round one of the bank's
+     * mounted guns takes, ordnance of the bank's kind the driveable lists, or ammunition the AA gun lists. Rounds left in
+     * the stack are not checked. Either side after content loading.
+     *
+     * @param vehicle
+     *            the driveable or AA gun definition; false for any other
+     * @param secondary
+     *            whether to select the secondary bank rather than the primary bank; ignored for an AA gun
+     * @param ammunition
+     *            the stack offered
+     * @return whether the stack is Flan ammunition the weapon fires
+     */
+    public static boolean acceptsAmmunition(IContentType vehicle, boolean secondary, ItemStack ammunition)
+    {
+        if (!(ammunition.getItem() instanceof ShootableItem item))
+            return false;
+        if (vehicle instanceof AAGunType aa)
+            return aa.isAmmo(item.getConfigType());
+        return vehicle instanceof DriveableType type && DriveableAmmoLoader.bankAccepts(type, secondary, item.getConfigType());
     }
 
     /**
@@ -271,6 +319,21 @@ public final class FlansEquipment
     public static boolean loadMagazine(LivingEntity holder, ItemStack weapon, ItemStack spare)
     {
         return EquipmentSupport.loadMagazine(holder, weapon, spare);
+    }
+
+    /**
+     * Moves spare magazines into empty or spent gun slots as {@link #loadMagazine(LivingEntity, ItemStack, ItemStack)} does,
+     * optionally with a Flan bullet the gun does not take. Such a magazine is marked inside the gun, and the gun fires it with
+     * its own statistics until it is spent, whoever holds it then. Server thread.
+     *
+     * @param anyBullet
+     *            whether any Flan bullet with rounds left is loaded, not only ammunition the gun takes in its current fire
+     *            mode; Flan grenades still need a gun that takes them
+     * @return whether a magazine was loaded
+     */
+    public static boolean loadMagazine(LivingEntity holder, ItemStack weapon, ItemStack spare, boolean anyBullet)
+    {
+        return EquipmentSupport.loadMagazine(holder, weapon, spare, anyBullet);
     }
 
     /**

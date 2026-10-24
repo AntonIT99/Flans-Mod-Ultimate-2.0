@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 /** Projectile and weapon presentation support for addon-controlled living entities. */
 @ApiStatus.Experimental
@@ -107,6 +108,26 @@ public final class FlansProjectiles
         boolean weaponStats)
     {
         return ExternalProjectileSupport.getSources(ammunition, heldWeapon, weapon, platform, secondary, weaponStats);
+    }
+
+    /**
+     * Reads the velocity a round leaves the weapon at, as {@link #prepare} resolves it with content weapon statistics:
+     * the ammunition's own velocity, else the weapon's, else the default every Flan bullet falls back to. Belt rounds are
+     * read at their first position. Either side after content loading, for an editor preview as well.
+     *
+     * @param ammunition
+     *            bullet or grenade template
+     * @param weapon
+     *            mounted gun definition; null uses the platform or the ammunition alone
+     * @param platform
+     *            platform definition, including its fallback ammunition overrides, or null
+     * @param secondary
+     *            whether platform weapon statistics come from its secondary bank
+     * @return the velocity in blocks per tick, or empty for another item
+     */
+    public static OptionalDouble getMuzzleVelocity(ItemStack ammunition, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary)
+    {
+        return ExternalProjectileSupport.muzzleVelocity(ammunition, weapon, platform, secondary);
     }
 
     /**

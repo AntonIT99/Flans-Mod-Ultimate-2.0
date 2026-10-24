@@ -30,7 +30,8 @@ public final class NpcTypeReadouts
         {
             numbers(values, type, NpcTypeProperty.DAMAGE, weapon -> Math.ceil(weapon.damage()));
             numbers(values, type, NpcTypeProperty.ACCURACY, weapon -> Math.max(1D, Math.min(100D, Math.round(100D - weapon.spread() * 5D))));
-            if (type.weapons().stream().allMatch(weapon -> weapon.speed().isPresent()))
+            // A velocity read with the NPC's ammunition already is what the one weapon fires at.
+            if (!mapped.containsKey(NpcTypeProperty.SPEED) && type.weapons().stream().allMatch(weapon -> weapon.speed().isPresent()))
                 numbers(values, type, NpcTypeProperty.SPEED, weapon -> Math.max(0D, Math.min(100D, Math.ceil(weapon.speed().getAsDouble() * 10D))));
         }
         if (options.enabled(Feature.FIRE_SOUNDS) && !type.weapons().isEmpty() && type.weapons().stream().noneMatch(weapon -> weapon.firingSound().isBlank()))

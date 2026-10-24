@@ -169,6 +169,21 @@ public final class FlansEntityTypes
     }
 
     /**
+     * The damage a vehicle or mecha whose definition declares {@code SquashMobs} deals each living entity it runs into, as its
+     * own entity deals it. Either side after content loading.
+     *
+     * @param type
+     *            vehicle or mecha definition
+     * @param horizontalSpeed
+     *            how fast it moves across the ground, in blocks per tick
+     * @return the damage in half hearts, or empty for a definition that squashes nothing or a speed too slow to squash
+     */
+    public static OptionalDouble getSquashDamage(IContentType type, double horizontalSpeed)
+    {
+        return EntityTypePropertySupport.squashDamage(type, horizontalSpeed);
+    }
+
+    /**
      * Lists what a definition can aim: every seat of a driveable, the driver first, or the single gun of an AA gun.
      * Either side after content loading.
      *

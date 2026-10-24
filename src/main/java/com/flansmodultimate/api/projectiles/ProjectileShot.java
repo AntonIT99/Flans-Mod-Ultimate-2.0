@@ -27,13 +27,22 @@ public interface ProjectileShot
     double drag();
 
     /**
+     * @return whether the round is dropped, as a bomb is: {@link #launch} then releases it at the shooter's own velocity
+     *         rather than at {@link #speed()} along the direction
+     */
+    default boolean dropped()
+    {
+        return false;
+    }
+
+    /**
      * Launches actual projectile entities, including for weapons normally using hitscan.
      * Does not consume inventory. Call once per trigger; weapon pellet counts are included.
      *
      * @param origin
      *            world position in blocks
      * @param direction
-     *            nonzero world direction, normalized internally
+     *            nonzero world direction, normalized internally; a dropped round only takes its orientation from it
      * @param throwSound
      *            whether a grenade or thrown weapon may play its throw sound
      * @return immutable list of successfully spawned entities; empty on invalid input or the wrong side

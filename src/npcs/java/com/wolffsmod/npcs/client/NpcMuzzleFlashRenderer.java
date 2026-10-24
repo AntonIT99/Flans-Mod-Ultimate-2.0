@@ -64,7 +64,7 @@ public final class NpcMuzzleFlashRenderer
             for (Flash flash : entry.getValue())
             {
                 Vec3 origin = npc.getPosition(partialTick).add(NpcModels.local(npc, model, flash.shot.offset(), hullYaw)).subtract(camera.getPosition());
-                Vec3 direction = flash.shot.direction().yRot((float) Math.toRadians(180F - hullYaw));
+                Vec3 direction = NpcModels.tilt(npc, flash.shot.direction()).yRot((float) Math.toRadians(180F - hullYaw));
                 pose.pushPose();
                 pose.translate(origin.x, origin.y, origin.z);
                 pose.mulPose(new Quaternionf().rotationTo(1F, 0F, 0F, (float) direction.x, (float) direction.y, (float) direction.z));

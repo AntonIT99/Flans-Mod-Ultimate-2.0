@@ -474,20 +474,35 @@ public final class NpcDriver
             return false;
         Optional<WeaponBallistics> ballistics = seat.getDriverWeaponBallistics(secondary);
         if (ballistics.isPresent() && ballistics.get().dropped())
-            return bombsAway(origin.get(), driveable.getDeltaMovement(), ballistics.get(), target);
+            return bombsAway(origin.get(), driveable.getDeltaMovement(), ballistics.get(), target, bombLead(npc, target));
         if (direction.get().dot(launch(npc, seat, secondary, line)) < FIRE_CONE)
             return false;
         ClipContext sight = new ClipContext(origin.get(), aimPoint, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
         return npc.level().clip(sight).getType() == HitResult.Type.MISS;
     }
 
-    /** Whether a bomb dropped now, from above the target, would come down within reach of it. */
-    private static boolean bombsAway(Vec3 origin, Vec3 velocity, WeaponBallistics ballistics, LivingEntity target)
+    /** @return the target's velocity a bomb is led by, as far as the NPC's aiming switches lead targets; none without leading */
+    private Vec3 bombLead(EntityNPCInterface npc, LivingEntity target)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (!options.enabled(Feature.LEAD_TARGET))
+            return Vec3.ZERO;
+        return options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
+    }
+
+    /**
+     * Whether a bomb dropped now, from above the target, would come down within reach of it, where the target will be by then.
+     *
+     * @param lead
+     *            the target's velocity, in blocks per tick across the ground, it is met by
+     */
+    private static boolean bombsAway(Vec3 origin, Vec3 velocity, WeaponBallistics ballistics, LivingEntity target, Vec3 lead)
     {
         if (origin.y < target.getY() + MIN_BOMB_HEIGHT)
             return false;
-        Vec3 impact = WeaponAim.impact(origin, velocity, ballistics.gravity(), ballistics.drag(), target.getY());
-        return horizontal(impact, target.position()) <= BOMB_RADIUS;
+        WeaponAim.Fall fall = WeaponAim.fall(origin, velocity, ballistics.gravity(), ballistics.drag(), target.getY());
+        Vec3 meeting = target.position().add(lead.x * fall.ticks(), 0D, lead.z * fall.ticks());
+        return horizontal(fall.impact(), meeting) <= BOMB_RADIUS;
     }
 
     /**

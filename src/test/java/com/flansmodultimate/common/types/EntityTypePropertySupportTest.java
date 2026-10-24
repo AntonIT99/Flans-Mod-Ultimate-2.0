@@ -72,16 +72,28 @@ class EntityTypePropertySupportTest
     }
 
     @Test
-    void aaPropertiesExposeHealthTargetingAndCadenceButDoNotInventVelocityOrAmbientSounds()
+    void aaPropertiesExposeHealthTargetingCadenceAndTheDefaultVelocityButNoAmbientSounds()
     {
         var properties = EntityTypePropertySupport.read(new TestAA(), false).orElseThrow();
         assertEquals(250, properties.health().orElseThrow());
         assertEquals(80, properties.targetRange().orElseThrow());
         assertEquals(2, properties.shootDelay().orElseThrow());
         assertEquals(10, properties.weapons().get(0).damage());
-        assertTrue(properties.weapons().get(0).speed().isEmpty());
+        assertEquals(BulletType.DEFAULT_BULLET_SPEED, properties.weapons().get(0).speed().orElseThrow());
         assertTrue(properties.sounds().isEmpty());
         assertTrue(properties.takesFallDamage().isEmpty());
+    }
+
+    @Test
+    void onlyAVehicleThatSquashesMobsDealsTheDriveablesDamageAboveTheSquashingSpeed()
+    {
+        TestVehicle vehicle = new TestVehicle();
+        assertTrue(EntityTypePropertySupport.squashDamage(vehicle, 0.5D).isEmpty());
+        vehicle.squashMobs = true;
+        assertTrue(EntityTypePropertySupport.squashDamage(vehicle, 0.1D).isEmpty());
+        assertEquals(8D, EntityTypePropertySupport.squashDamage(vehicle, 0.5D).orElseThrow(), 1.0E-9D);
+        assertEquals(40D, EntityTypePropertySupport.squashDamage(vehicle, 10D).orElseThrow(), 1.0E-9D);
+        assertTrue(EntityTypePropertySupport.squashDamage(new TestAA(), 0.5D).isEmpty());
     }
 
     @Test

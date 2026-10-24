@@ -67,7 +67,7 @@ public record EntityTypeProperties(OptionalDouble health, OptionalDouble targetR
      * @param spread
      *            angular spread in the same units as {@link ProjectileParameters#spread()}
      * @param speed
-     *            optional launch speed in blocks per tick; AA guns leave this to ammunition or the caller
+     *            optional launch speed in blocks per tick before ammunition states its own; an AA gun reports the default every Flan bullet has
      * @param projectiles
      *            pellets per weapon trigger, excluding separate muzzles
      * @param firingSound

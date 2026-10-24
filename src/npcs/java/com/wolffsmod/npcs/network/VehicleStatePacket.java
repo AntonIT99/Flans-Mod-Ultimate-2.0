@@ -10,10 +10,14 @@ import net.minecraft.network.FriendlyByteBuf;
  *            shots fired so far; a client shows a recoil stroke when the count grows
  * @param barrel
  *            the barrel that fired last
+ * @param attitudePitch
+ *            degrees a plane in flight is pitched nose down, negative nose up
+ * @param attitudeBank
+ *            degrees a plane in flight is rolled to its right
  */
 // Packet arrays are written once and read once; nothing else holds on to them.
 @SuppressWarnings({"java:S6218", "java:S2384"})
-public record VehicleStatePacket(int entityId, float hullYaw, float turretYaw, float turretPitch, float[] seatYaw, float[] seatPitch, int shots, int barrel)
+public record VehicleStatePacket(int entityId, float hullYaw, float turretYaw, float turretPitch, float[] seatYaw, float[] seatPitch, int shots, int barrel, float attitudePitch, float attitudeBank)
 {
 
     private static final int MAX_SEATS = 64;
@@ -33,6 +37,8 @@ public record VehicleStatePacket(int entityId, float hullYaw, float turretYaw, f
         }
         buffer.writeVarInt(shots);
         buffer.writeByte(Math.min(127, barrel));
+        buffer.writeShort(steps(attitudePitch));
+        buffer.writeShort(steps(attitudeBank));
     }
 
     public static VehicleStatePacket read(FriendlyByteBuf buffer)
@@ -49,7 +55,7 @@ public record VehicleStatePacket(int entityId, float hullYaw, float turretYaw, f
             seatYaw[seat] = degrees(buffer.readShort());
             seatPitch[seat] = degrees(buffer.readShort());
         }
-        return new VehicleStatePacket(entityId, hullYaw, turretYaw, turretPitch, seatYaw, seatPitch, buffer.readVarInt(), buffer.readByte());
+        return new VehicleStatePacket(entityId, hullYaw, turretYaw, turretPitch, seatYaw, seatPitch, buffer.readVarInt(), buffer.readByte(), degrees(buffer.readShort()), degrees(buffer.readShort()));
     }
 
     private static int steps(float degrees)

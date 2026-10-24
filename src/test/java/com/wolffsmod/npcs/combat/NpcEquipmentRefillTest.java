@@ -36,6 +36,8 @@ class NpcEquipmentRefillTest
             npc.inventory = new DataInventory(npc);
             when(npc.getMainHandItem()).thenAnswer(call -> stack(npc.inventory.weapons.get(0)));
             options.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
+            // As by default, Flan ammunition in the projectile slot is loaded whether or not it fits.
+            options.when(() -> NpcEquipment.enabled(npc, Feature.FITTING_SLOT_AMMO)).thenReturn(false);
         }
 
         private ItemStack weapon(String name, boolean throwable)
@@ -130,10 +132,11 @@ class NpcEquipmentRefillTest
             assertSame(issued, NpcAmmunition.infiniteTemplate(inventory.npc, gun).orElseThrow());
             assertFalse(NpcAmmunition.nothingToLoad(inventory.npc, gun));
 
-            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted)).thenReturn(true);
+            // What the projectile slot holds may be loaded by choice, which the three-argument check decides.
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted, true)).thenReturn(true);
             assertSame(slotted, NpcAmmunition.infiniteTemplate(inventory.npc, gun).orElseThrow());
 
-            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted)).thenReturn(false);
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted, true)).thenReturn(false);
             inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, issued)).thenReturn(false);
             assertTrue(NpcAmmunition.infiniteTemplate(inventory.npc, gun).isEmpty());
             assertTrue(NpcAmmunition.nothingToLoad(inventory.npc, gun));
@@ -192,7 +195,7 @@ class NpcEquipmentRefillTest
                 {
                     ItemStack ammunition = new ItemStack(Items.IRON_NUGGET);
                     inventory.equipped(1, ammunition);
-                    inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, ammunition)).thenReturn(true);
+                    inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, ammunition, true)).thenReturn(true);
                 }
                 assertTrue(NpcAmmunition.refillEmptySlots(inventory.npc));
                 assertSame(entry, inventory.npc.inventory.weapons.get(0));

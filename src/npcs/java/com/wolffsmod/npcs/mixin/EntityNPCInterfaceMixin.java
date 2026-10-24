@@ -486,7 +486,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsItemMelee(Entity target, CallbackInfoReturnable<Boolean> callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        // An aircraft below its attack altitude attacks with nothing, whatever asks it to, nor does an NPC at the wheel.
+        // An aircraft below its attack altitude attacks with nothing, whatever asks it to, nor does an NPC at the wheel, nor a
+        // machine with nothing to strike with.
         if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcModels.meleeless(npc))
         {
             callback.setReturnValue(false);
