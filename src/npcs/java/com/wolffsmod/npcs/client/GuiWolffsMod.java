@@ -1232,9 +1232,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void featureButton(Feature feature, int control, int y)
     {
-        GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 48, 20, NO_YES, enabled(feature) ? 1 : 0);
+        boolean on = enabled(feature);
+        GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 48, 20, NO_YES, on ? 1 : 0);
         button.setEnabled(loaded);
+        valueTooltip(button, labelKey(feature) + (on ? ".yes" : ".no"));
         addButton(button);
+    }
+
+    /** What the selected value does, on its control, for a row whose help explains its values one by one. The page is rebuilt on every click. */
+    private static void valueTooltip(GuiButtonNop button, String valueKey)
+    {
+        if (I18n.exists(valueKey + HELP_SUFFIX))
+            button.setTooltip(Tooltip.create(Component.translatable(valueKey + HELP_SUFFIX).withStyle(HELP_STYLE)));
     }
 
     private void valueControl(Value value, int control, int y)
@@ -1252,6 +1261,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 names[choice] = key + "." + choices[choice].name().toLowerCase(Locale.ROOT);
             GuiButtonNop button = new GuiButtonNop(this, id, control, y, 150, 20, names, current);
             button.setEnabled(loaded);
+            if (current >= 0 && current < names.length)
+                valueTooltip(button, names[current]);
             addButton(button);
             return;
         }
