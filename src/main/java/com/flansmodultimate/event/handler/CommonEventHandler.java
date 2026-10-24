@@ -123,6 +123,7 @@ public final class CommonEventHandler
         VehicleCollisionDebugCommand.register(event.getDispatcher());
         VehiclePhysicsCommand.register(event.getDispatcher());
         WorldPhysicsCommand.register(event.getDispatcher());
+        FlansModCommandAliases.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 
