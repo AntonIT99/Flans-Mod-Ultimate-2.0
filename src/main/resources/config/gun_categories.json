@@ -4009,7 +4009,7 @@
 
     "Lightsaber (Fictional)": {
         "properties": {
-            "MeleeDamage": 11,
+            "MeleeDamage": 12,
             "MeleeDamageVsDriveables": 24,
             "MeleeSpeed": 1.8
         },
