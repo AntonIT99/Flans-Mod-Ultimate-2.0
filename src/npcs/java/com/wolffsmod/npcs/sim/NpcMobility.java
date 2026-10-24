@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.FlansModApi;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 
+import java.util.OptionalDouble;
 import java.util.Set;
 
 /**
@@ -43,27 +45,50 @@ public final class NpcMobility
     // Speed
 
     /**
-     * @return the factor that brings the NPC's walking speed to its land speed setting, or 1 without one or in water.
-     *         The walking speed of a mob follows the square of its speed value, which the estimate allows for.
+     * @return the factor that brings the NPC's walking speed to its land speed: its setting, or the top speed of the
+     *         vehicle model it inherits; 1 without either or in water. The walking speed of a mob follows the square of its
+     *         speed value, which the estimate allows for.
      */
     public static float landFactor(EntityNPCInterface npc)
     {
-        int tenths = NpcTuning.of(npc).get(Value.LAND_SPEED);
-        if (tenths <= 0 || npc.isInWater())
+        if (npc.isInWater())
             return 1F;
-        return landFactor(tenths, npc.ais.getWalkingSpeed());
+        int tenths = NpcTuning.of(npc).get(Value.LAND_SPEED);
+        if (tenths > 0)
+            return landFactor(tenths, npc.ais.getWalkingSpeed());
+        OptionalDouble inherited = modelSpeed(npc);
+        return inherited.isPresent() ? landFactor(inherited.getAsDouble(), npc.ais.getWalkingSpeed()) : 1F;
     }
 
     static float landFactor(int tenthsPerSecond, int walkingSpeed)
     {
-        return (float) Mth.clamp(tenthsPerSecond / 200D / naturalSpeed(walkingSpeed), 0.05D, 20D);
+        return landFactor(tenthsPerSecond / 200D, walkingSpeed);
     }
 
-    /** @return blocks per tick the NPC settles at on land at its full pace: its land speed setting, or what its walking speed comes to */
+    static float landFactor(double blocksPerTick, int walkingSpeed)
+    {
+        return (float) Mth.clamp(blocksPerTick / naturalSpeed(walkingSpeed), 0.05D, 20D);
+    }
+
+    /**
+     * @return blocks per tick the NPC settles at on land at its full pace: its land speed setting, the top speed of the
+     *         vehicle model it inherits, or what its walking speed comes to
+     */
     public static double topSpeed(EntityNPCInterface npc)
     {
         int tenths = NpcTuning.of(npc).get(Value.LAND_SPEED);
-        return tenths > 0 ? tenths / 200D : naturalSpeed(npc.ais.getWalkingSpeed());
+        if (tenths > 0)
+            return tenths / 200D;
+        return modelSpeed(npc).orElseGet(() -> naturalSpeed(npc.ais.getWalkingSpeed()));
+    }
+
+    /** @return the top speed of the vehicle model the NPC drives as, when it drives like one and takes the model's properties */
+    public static OptionalDouble modelSpeed(EntityNPCInterface npc)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (!options.enabled(Feature.HULL_FACES_TRAVEL) || !options.enabled(Feature.DRIVING))
+            return OptionalDouble.empty();
+        return NpcDriving.propulsion(npc, options).map(found -> OptionalDouble.of(found.topSpeed())).orElse(OptionalDouble.empty());
     }
 
     static double naturalSpeed(int walkingSpeed)

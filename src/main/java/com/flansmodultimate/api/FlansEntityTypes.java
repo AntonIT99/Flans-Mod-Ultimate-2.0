@@ -9,6 +9,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.EntityTypePropertySupport;
+import com.flansmodultimate.common.types.GroundPropulsionProfiles;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.server.level.ServerLevel;
@@ -40,6 +41,19 @@ public final class FlansEntityTypes
     public static GroundHandling getGroundHandling(IContentType type)
     {
         return EntityTypePropertySupport.groundHandling(type);
+    }
+
+    /**
+     * Reads how a ground vehicle speeds up, tops out and slows down without creating an entity, so that something
+     * moving in its place can match a player-driven vehicle of that definition. Either side after content loading.
+     *
+     * @param type
+     *            selected definition
+     * @return the vehicle's longitudinal response, or empty for anything but a ground vehicle with a usable top speed
+     */
+    public static Optional<GroundPropulsion> getGroundPropulsion(IContentType type)
+    {
+        return GroundPropulsionProfiles.of(type);
     }
 
     /**

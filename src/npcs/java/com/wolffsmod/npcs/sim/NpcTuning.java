@@ -40,7 +40,7 @@ public final class NpcTuning
         MAX_WADE_DEPTH(1, 0, 64),
         /** Shallowest water, in blocks, a watercraft floats in. */
         MIN_WATER_DEPTH(1, 1, 64),
-        /** Speed on land in tenths of a block per second; 0 keeps the NPC's walking speed. */
+        /** Speed on land in tenths of a block per second; 0 takes the top speed of a vehicle model, or keeps the NPC's walking speed. */
         LAND_SPEED(0, 0, 600),
         /** Speed in water in tenths of a block per second; 0 keeps the default swimming speed. */
         WATER_SPEED(0, 0, 600),
@@ -66,12 +66,12 @@ public final class NpcTuning
         DRIVE_PRESET(0, 0, DrivePreset.values().length - 1),
         /** Index into {@link DriveType}. */
         DRIVE_TYPE(0, 0, DriveType.values().length - 1),
-        /** Share of full throttle gained per second, in percent. */
-        DRIVE_ACCELERATION(100, 5, 2000),
-        /** Share of full throttle shed per second while braking, in percent. */
-        DRIVE_BRAKING(250, 5, 2000),
-        /** Share of full throttle shed per second while coasting, in percent. */
-        DRIVE_COASTING(60, 1, 2000),
+        /** Share of full throttle gained per second, in percent; 0 takes the vehicle model's engine response, or uses 100. */
+        DRIVE_ACCELERATION(0, 0, 2000),
+        /** Share of full throttle shed per second while braking, in percent; 0 takes the vehicle model's brakes, or uses 250. */
+        DRIVE_BRAKING(0, 0, 2000),
+        /** Share of full throttle shed per second while coasting, in percent; 0 takes the vehicle model's rolling resistance, or uses 60. */
+        DRIVE_COASTING(0, 0, 2000),
         /** Top speed in reverse as a share of forward speed, in percent; 0 inherits the model or uses 40. */
         DRIVE_REVERSE_SPEED(0, 0, 100),
         /** Smallest turning circle radius in tenths of a block; 0 takes the radius of the vehicle type. */

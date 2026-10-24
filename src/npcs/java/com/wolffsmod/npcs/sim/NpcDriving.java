@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.FlansEntityTypes;
 import com.flansmodultimate.api.GroundHandling;
+import com.flansmodultimate.api.GroundPropulsion;
 import com.flansmodultimate.api.IDriveableType;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -19,6 +20,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
 
 /**
  * Drives a ground vehicle NPC along the path Custom NPCs gave it, the way a vehicle moves rather than the way a mob
@@ -44,12 +47,22 @@ public final class NpcDriving
     private static final int CIRCLING_TICKS = 80;
     private static final int RECOVERY_TICKS = 30;
     private static final float RECOVERY_THROTTLE = 0.6F;
+    /** Most ticks a recovery is lengthened by while the vehicle picks up reverse speed. */
+    private static final int MAX_RECOVERY_RAMP = 80;
     private static final int FOLLOW_INTERVAL = 10;
     private static final float FOLLOW_CONE = 35F;
     /** Share of full throttle a vehicle keeps up to the end of its path, so that it gets there. */
     private static final float ARRIVAL_THROTTLE = 0.2F;
     /** Blocks from a position it is pushed toward without a path at which a vehicle has arrived. */
     private static final double ARRIVED = 0.3D;
+    /** Ticks of travel at its current speed a vehicle steers ahead for on a straight, when that reaches beyond its lookahead. */
+    private static final double STEER_TICKS = 8D;
+    /** Farthest, in blocks, a vehicle looks along its path for a corner to brake for. */
+    private static final double MAX_CORNER_SCAN = 64D;
+    /** Throttle response without a model to take it from, per tick. */
+    private static final float DEFAULT_ACCELERATE = 100F / 2000F;
+    private static final float DEFAULT_BRAKE = 250F / 2000F;
+    private static final float DEFAULT_COAST = 60F / 2000F;
 
     /** Signed share of the top speed the vehicle is commanded to: negative in reverse. */
     @Getter
@@ -99,9 +112,11 @@ public final class NpcDriving
      *            blocks within which a goal behind is reached in reverse
      * @param widenRadius
      *            whether the custom/fallback radius widens with throttle; false for the definition-derived rolling radius
+     * @param propulsion
+     *            the model's engine and brakes, for the responses taken from them; null when every response is a fixed rate
      */
     public record Settings(boolean pivot, float turnStep, float radius, float accelerate, float brake, float coast, float reverseShare, float cornerShare, float floor, boolean reverse,
-        float reverseAngle, double reverseDistance, boolean widenRadius)
+        float reverseAngle, double reverseDistance, boolean widenRadius, @Nullable Propulsion propulsion)
     {
         public Settings(boolean pivot, float turnStep, float radius, float accelerate, float brake, float coast, float reverseShare, float cornerShare, float floor, boolean reverse,
             float reverseAngle, double reverseDistance)
@@ -109,7 +124,52 @@ public final class NpcDriving
             this(pivot, turnStep, radius, accelerate, brake, coast, reverseShare, cornerShare, floor, reverse, reverseAngle, reverseDistance, true);
         }
 
+        public Settings(boolean pivot, float turnStep, float radius, float accelerate, float brake, float coast, float reverseShare, float cornerShare, float floor, boolean reverse,
+            float reverseAngle, double reverseDistance, boolean widenRadius)
+        {
+            this(pivot, turnStep, radius, accelerate, brake, coast, reverseShare, cornerShare, floor, reverse, reverseAngle, reverseDistance, widenRadius, null);
+        }
+
+        /**
+         * @param speed
+         *            blocks the vehicle moves per tick
+         * @param topSpeed
+         *            blocks per tick it moves at full throttle; 0 when unknown, which takes the model's top speed
+         * @return throttle gained per tick at that speed
+         */
+        public float accelerationAt(double speed, double topSpeed)
+        {
+            return propulsion != null && propulsion.acceleration() ? propulsion.acceleration(speed, topSpeed) : accelerate;
+        }
+
+        /** @return throttle shed per tick at that speed while braking */
+        public float brakingAt(double speed, double topSpeed)
+        {
+            return propulsion != null && propulsion.braking() ? propulsion.deceleration(speed, topSpeed, 1D) : brake;
+        }
+
+        /** @return throttle shed per tick at that speed with nowhere to go */
+        public float coastingAt(double speed, double topSpeed)
+        {
+            return propulsion != null && propulsion.coasting() ? propulsion.deceleration(speed, topSpeed, 0D) : coast;
+        }
+
+        /** @return blocks the vehicle needs to come to a halt from the given speed while braking, as far as the arithmetic of {@link #arrival} goes */
+        public double stoppingDistance(double speed, double topSpeed)
+        {
+            double top = topSpeed;
+            if (top <= 0D && propulsion != null)
+                top = propulsion.model().topSpeed();
+            float step = brakingAt(speed, topSpeed);
+            return top <= 0D || step <= 0F ? 0D : speed * speed / (2D * step * top);
+        }
+
         static Settings of(NpcTuning tuning, NpcWeaponOptions options, boolean tracked, GroundHandling model)
+        {
+            return of(tuning, options, tracked, model, null);
+        }
+
+        static Settings of(NpcTuning tuning, NpcWeaponOptions options, boolean tracked, GroundHandling model, @Nullable GroundPropulsion engine)
         {
             DriveType type = tuning.driveType();
             if (type == DriveType.AUTO)
@@ -123,14 +183,79 @@ public final class NpcDriving
             int tenths = tuning.get(Value.TURN_RADIUS);
             boolean inheritedRadius = tenths == 0 && model.turningRadius().isPresent();
             float radius = tenths > 0 ? tenths / 10F : (float) model.turningRadius().orElse(DEFAULT_WHEELED_RADIUS);
-            int reversePercent = tuning.get(Value.DRIVE_REVERSE_SPEED);
-            float reverseShare = reversePercent > 0 ? reversePercent / 100F : (float) model.reverseShare().orElse(0.4D);
+            float reverseShare = reverseShare(tuning.get(Value.DRIVE_REVERSE_SPEED), model, engine);
             float floor = options.enabled(Feature.MISALIGNED_THROTTLE) ? tuning.get(Value.THROTTLE_FLOOR) / 100F : 1F;
             if (type == DriveType.HEAVY_TRACKED)
                 floor = 0F;
-            return new Settings(pivot, turnStep, radius, tuning.get(Value.DRIVE_ACCELERATION) / 2000F, tuning.get(Value.DRIVE_BRAKING) / 2000F, tuning.get(Value.DRIVE_COASTING) / 2000F, reverseShare,
+            int acceleration = tuning.get(Value.DRIVE_ACCELERATION);
+            int braking = tuning.get(Value.DRIVE_BRAKING);
+            int coasting = tuning.get(Value.DRIVE_COASTING);
+            return new Settings(pivot, turnStep, radius, rate(acceleration, DEFAULT_ACCELERATE), rate(braking, DEFAULT_BRAKE), rate(coasting, DEFAULT_COAST), reverseShare,
                 tuning.get(Value.CORNER_SPEED) / 100F, floor, options.enabled(Feature.DRIVE_REVERSE) && reverseShare > 0F, tuning.get(Value.REVERSE_ANGLE), tuning.get(Value.REVERSE_DISTANCE),
-                !inheritedRadius);
+                !inheritedRadius, Propulsion.of(engine, acceleration == 0, braking == 0, coasting == 0));
+        }
+
+        /** Without a stated reverse speed the vehicle reverses as its model says, or as its engine does at the share its throttle allows. */
+        private static float reverseShare(int percent, GroundHandling model, @Nullable GroundPropulsion engine)
+        {
+            if (percent > 0)
+                return percent / 100F;
+            if (model.reverseShare().isPresent())
+                return (float) model.reverseShare().getAsDouble();
+            return engine == null ? 0.4F : (float) Mth.clamp(engine.reverseSpeed() / engine.topSpeed(), 0D, 1D);
+        }
+
+        /** @return throttle per tick for a rate in percent per second, the fallback for 0 */
+        private static float rate(int percentPerSecond, float fallback)
+        {
+            return percentPerSecond > 0 ? percentPerSecond / 2000F : fallback;
+        }
+    }
+
+    /**
+     * The engine and brakes of the vehicle model, for the responses left to inherit them.
+     *
+     * @param acceleration
+     *            whether the throttle rises as the engine accelerates the vehicle
+     * @param braking
+     *            whether it falls as the brakes slow it down
+     * @param coasting
+     *            whether it falls as rolling resistance slows it down
+     */
+    public record Propulsion(GroundPropulsion model, boolean acceleration, boolean braking, boolean coasting)
+    {
+        /** @return the engine for the responses that inherit it, or null when none does or there is no engine */
+        @Nullable
+        static Propulsion of(@Nullable GroundPropulsion engine, boolean acceleration, boolean braking, boolean coasting)
+        {
+            return engine != null && (acceleration || braking || coasting) ? new Propulsion(engine, acceleration, braking, coasting) : null;
+        }
+
+        /**
+         * The response follows the throttle, not the blocks: a vehicle given its own land speed picks it up and sheds it
+         * in the same time the model takes for its top speed.
+         *
+         * @return throttle gained per tick at that speed, under full demand
+         */
+        float acceleration(double speed, double topSpeed)
+        {
+            return share(model.acceleration(modelSpeed(speed, topSpeed)));
+        }
+
+        /** @return throttle shed per tick at that speed, under the given share of the brake */
+        float deceleration(double speed, double topSpeed, double brake)
+        {
+            return share(model.deceleration(modelSpeed(speed, topSpeed), brake));
+        }
+
+        private double modelSpeed(double speed, double topSpeed)
+        {
+            return topSpeed > 0D ? speed / topSpeed * model.topSpeed() : speed;
+        }
+
+        private float share(double perTick)
+        {
+            return Double.isFinite(perTick) ? (float) Mth.clamp(perTick / model.topSpeed(), 0D, 1D) : 0F;
         }
     }
 
@@ -195,18 +320,20 @@ public final class NpcDriving
         float hull = steer(situation.hullYaw(), situation.hullYaw() + steer, situation.speed(), settings, responseTicks, stationaryTurn, settings.turnStep());
         float remaining = Math.abs(Mth.wrapDegrees(situation.hullYaw() + steer - hull));
         float share = MountMotion.throttle(remaining, settings.pivot() && stationaryTurn ? settings.floor() : Math.max(settings.floor(), WHEELED_FLOOR));
+        float brake = settings.brakingAt(situation.speed(), situation.topSpeed());
         if (situation.cornerAngle() > 0F && situation.lookahead() > 0D)
         {
             float corner = Mth.lerp(Mth.clamp(situation.cornerAngle() / 90F, 0F, 1F), 1F, settings.cornerShare());
             float near = (float) Mth.clamp(1D - (situation.cornerDistance() - 1D) / situation.lookahead(), 0D, 1D);
-            share *= Mth.lerp(near, 1F, corner);
+            // A vehicle that brakes slowly has to start slowing for the corner before it is in sight of the lookahead.
+            share *= Math.min(Mth.lerp(near, 1F, corner), approachLimit(situation.cornerDistance() - 1D, situation.topSpeed(), brake, corner));
         }
         share *= Mth.clamp(situation.limit(), 0F, 1F);
         // It slows down in time to halt where its path ends, rather than rolling past.
         float free = reversing ? share * settings.reverseShare() : share;
-        float wanted = Math.min(free, arrival(situation.goalDistance() - situation.haltDistance(), situation.topSpeed(), settings.brake()));
+        float wanted = Math.min(free, arrival(situation.goalDistance() - situation.haltDistance(), situation.topSpeed(), brake));
         arriving = wanted < free;
-        throttle = approach(reversing ? -wanted : wanted, settings, false);
+        throttle = approach(reversing ? -wanted : wanted, settings, false, situation.speed(), situation.topSpeed());
         return new Command(hull, throttle);
     }
 
@@ -231,6 +358,20 @@ public final class NpcDriving
 
     /**
      * @param remaining
+     *            blocks left to where the vehicle has to be down to the given throttle
+     * @param end
+     *            the throttle it has to be down to there
+     * @return the highest throttle from which braking still brings it down to that throttle in time; 1 with an unknown top speed
+     */
+    static float approachLimit(double remaining, double topSpeed, float brake, float end)
+    {
+        if (topSpeed <= 0D)
+            return 1F;
+        return (float) Mth.clamp(Math.sqrt(end * end + 2D * brake * Math.max(0D, remaining) / topSpeed), end, 1D);
+    }
+
+    /**
+     * @param remaining
      *            blocks left to where the vehicle halts
      * @param topSpeed
      *            blocks per tick it moves at full throttle
@@ -248,9 +389,20 @@ public final class NpcDriving
     /** Lets the vehicle roll out when it has nowhere to go, or brakes it when it has just got there. */
     public Command idle(float hullYaw, Settings settings)
     {
+        return idle(hullYaw, 0D, 0D, settings);
+    }
+
+    /**
+     * @param speed
+     *            blocks the vehicle actually moved per tick
+     * @param topSpeed
+     *            blocks per tick it moves at full throttle; 0 when unknown
+     */
+    public Command idle(float hullYaw, double speed, double topSpeed, Settings settings)
+    {
         reversing = false;
         steeringRate = 0F;
-        throttle = approach(0F, settings, !arriving);
+        throttle = approach(0F, settings, !arriving, speed, topSpeed);
         return new Command(hullYaw, throttle);
     }
 
@@ -258,14 +410,14 @@ public final class NpcDriving
      * @param coasting
      *            whether a halt is merely the lack of anywhere to go, rather than something to stop for
      */
-    private float approach(float target, Settings settings, boolean coasting)
+    private float approach(float target, Settings settings, boolean coasting, double speed, double topSpeed)
     {
         if (target == 0F)
-            return toward(0F, coasting ? settings.coast() : settings.brake());
+            return toward(0F, coasting ? settings.coastingAt(speed, topSpeed) : settings.brakingAt(speed, topSpeed));
         // Changing direction means braking to a halt first.
         if (throttle != 0F && Math.signum(throttle) != Math.signum(target))
-            return toward(0F, settings.brake());
-        return toward(target, Math.abs(target) > Math.abs(throttle) ? settings.accelerate() : settings.brake());
+            return toward(0F, settings.brakingAt(speed, topSpeed));
+        return toward(target, Math.abs(target) > Math.abs(throttle) ? settings.accelerationAt(speed, topSpeed) : settings.brakingAt(speed, topSpeed));
     }
 
     private float toward(float target, float step)
@@ -298,8 +450,13 @@ public final class NpcDriving
      */
     public Command travel(EntityNPCInterface npc, float hullYaw, double speed, NpcTuning tuning, NpcWeaponOptions options)
     {
-        Settings settings = Settings.of(tuning, options, tracked(npc), handling(npc, options));
-        Route route = route(npc, tuning.get(Value.DRIVE_LOOKAHEAD), tuning.get(Value.STOP_DISTANCE));
+        Settings settings = Settings.of(tuning, options, tracked(npc), handling(npc, options), propulsion(npc, options).orElse(null));
+        double topSpeed = NpcMobility.topSpeed(npc);
+        int lookahead = tuning.get(Value.DRIVE_LOOKAHEAD);
+        // A fast vehicle steers further along a straight, and looks far enough ahead to brake for the next corner in time.
+        double steerAhead = Math.min(Value.DRIVE_LOOKAHEAD.maximum(), Math.max(lookahead, speed * STEER_TICKS));
+        double scan = Math.min(MAX_CORNER_SCAN, Math.max(lookahead * 2D, steerAhead + settings.stoppingDistance(speed, topSpeed)));
+        Route route = route(npc, steerAhead, scan, tuning.get(Value.STOP_DISTANCE));
         steerPoint = route == null ? null : route.steer();
         if (route != null && stopsShort(npc, route, tuning.get(Value.STOP_DISTANCE)))
             route = null;
@@ -308,14 +465,14 @@ public final class NpcDriving
             recovery = 0;
             circling = 0;
             anchor = null;
-            return idle(hullYaw, settings);
+            return idle(hullYaw, speed, topSpeed, settings);
         }
         if (recovery > 0)
         {
             // Backing up while the hull keeps turning toward the path is a three-point turn.
             recovery--;
             float step = settings.pivot() ? settings.turnStep() : settings.turnStep() * 0.5F;
-            throttle = recoveryThrottle;
+            throttle = approach(recoveryThrottle, settings, false, speed, topSpeed);
             if (recovery == 0)
                 npc.getNavigation().recomputePath();
             return new Command(
@@ -324,9 +481,9 @@ public final class NpcDriving
         updateTraffic(npc, hullYaw, tuning.get(Value.FOLLOW_DISTANCE), tuning.get(Value.TRAFFIC_STOP_GAP));
         float wanted = MountMotion.yaw(route.steer().subtract(npc.position()));
         // The NPC's own motion is no measure of its speed here: before it moves, ground friction has already been taken off it.
-        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), tuning.get(Value.DRIVE_LOOKAHEAD), speed, followLimit,
-            route.haltDistance(), NpcMobility.topSpeed(npc)), settings, tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
-        watchProgress(npc, Mth.wrapDegrees(wanted - command.hullYaw()));
+        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), lookahead, speed, followLimit, route.haltDistance(), topSpeed),
+            settings, tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
+        watchProgress(npc, Mth.wrapDegrees(wanted - command.hullYaw()), settings.accelerationAt(speed, topSpeed));
         return command;
     }
 
@@ -342,13 +499,20 @@ public final class NpcDriving
     public static Settings settings(EntityNPCInterface npc)
     {
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        return Settings.of(NpcTuning.of(npc), options, tracked(npc), handling(npc, options));
+        return Settings.of(NpcTuning.of(npc), options, tracked(npc), handling(npc, options), propulsion(npc, options).orElse(null));
     }
 
     static GroundHandling handling(EntityNPCInterface npc, NpcWeaponOptions options)
     {
         FlanModelEntity model = NpcModels.flan(npc);
         return model != null && options.enabled(Feature.TYPE_PROPERTIES) ? FlansEntityTypes.getGroundHandling(model.getInfoType()) : GroundHandling.EMPTY;
+    }
+
+    /** @return how the vehicle model gains and sheds speed, when the NPC takes properties from its model */
+    public static Optional<GroundPropulsion> propulsion(EntityNPCInterface npc, NpcWeaponOptions options)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        return model != null && options.enabled(Feature.TYPE_PROPERTIES) ? FlansEntityTypes.getGroundPropulsion(model.getInfoType()) : Optional.empty();
     }
 
     private static boolean tracked(EntityNPCInterface npc)
@@ -365,8 +529,13 @@ public final class NpcDriving
         return true;
     }
 
-    /** Backs the vehicle up when it pushes without moving, or steers hard without coming round. */
-    private void watchProgress(EntityNPCInterface npc, float off)
+    /**
+     * Backs the vehicle up when it pushes without moving, or steers hard without coming round.
+     *
+     * @param accelerate
+     *            throttle the vehicle gains per tick, which decides how long it needs to back up
+     */
+    private void watchProgress(EntityNPCInterface npc, float off, float accelerate)
     {
         circling = Math.abs(off) > 45F && Math.abs(throttle) > 0.1F ? circling + 1 : 0;
         boolean stuck = false;
@@ -383,7 +552,8 @@ public final class NpcDriving
         }
         if (stuck || circling > CIRCLING_TICKS)
         {
-            recovery = RECOVERY_TICKS;
+            // A vehicle that picks up speed slowly backs up for longer, so that it gets anywhere at all.
+            recovery = RECOVERY_TICKS + Math.min(MAX_RECOVERY_RAMP, Mth.ceil(RECOVERY_THROTTLE / Math.max(1.0E-3F, accelerate)));
             recoveryThrottle = throttle > 0F ? -RECOVERY_THROTTLE : RECOVERY_THROTTLE;
             circling = 0;
             anchor = null;
@@ -431,7 +601,7 @@ public final class NpcDriving
 
     /** Reads the point to steer for, the next corner and the distance to the goal off the NPC's path or its movement input. */
     @Nullable
-    private static Route route(EntityNPCInterface npc, int lookahead, int stopDistance)
+    private static Route route(EntityNPCInterface npc, double lookahead, double scan, int stopDistance)
     {
         Vec3 position = npc.position();
         Path path = npc.getNavigation().getPath();
@@ -444,7 +614,7 @@ public final class NpcDriving
         float cornerAngle = 0F;
         double cornerDistance = Double.MAX_VALUE;
         Vec3 from = steer;
-        for (int node = index + 1; node < path.getNodeCount() && travelled < lookahead * 2D; node++)
+        for (int node = index + 1; node < path.getNodeCount() && travelled < scan; node++)
         {
             Vec3 to = path.getEntityPosAtNode(npc, node);
             double length = horizontal(from, to);
@@ -468,7 +638,7 @@ public final class NpcDriving
 
     /** Without a path, a goal may still push the NPC directly: toward a wanted position, or sideways round a target. */
     @Nullable
-    private static Route inputRoute(EntityNPCInterface npc, Vec3 position, int lookahead)
+    private static Route inputRoute(EntityNPCInterface npc, Vec3 position, double lookahead)
     {
         if (npc.getMoveControl().hasWanted())
         {
