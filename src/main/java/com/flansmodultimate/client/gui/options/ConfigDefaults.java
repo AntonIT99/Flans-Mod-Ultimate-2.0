@@ -5,6 +5,7 @@ import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /** Tracks only the config values represented on one screen, including compound preset controls. */
@@ -24,7 +25,24 @@ final class ConfigDefaults
 
     boolean canRestore()
     {
-        return values.keySet().stream().anyMatch(target -> target.ready() && target.editable());
+        return changedCount() > 0;
+    }
+
+    int changedCount()
+    {
+        int count = 0;
+        for (Map.Entry<ConfigTarget, Set<ConfigValue<?>>> entry : values.entrySet())
+        {
+            ConfigTarget target = entry.getKey();
+            if (target.ready() && target.editable())
+                count += (int) entry.getValue().stream().filter(value -> differsFromDefault(target, value)).count();
+        }
+        return count;
+    }
+
+    private static boolean differsFromDefault(ConfigTarget target, ConfigValue<?> value)
+    {
+        return !Objects.equals(target.get(value), value.getDefault());
     }
 
     void restore()
@@ -35,9 +53,17 @@ final class ConfigDefaults
             // Permissions may have changed while the confirmation was open.
             if (!target.ready() || !target.editable())
                 continue;
+            boolean changed = false;
             for (ConfigValue<?> value : entry.getValue())
-                target.setWhileDragging(value, value.getDefault());
-            target.flush();
+            {
+                if (differsFromDefault(target, value))
+                {
+                    target.setWhileDragging(value, value.getDefault());
+                    changed = true;
+                }
+            }
+            if (changed)
+                target.flush();
         }
     }
 }

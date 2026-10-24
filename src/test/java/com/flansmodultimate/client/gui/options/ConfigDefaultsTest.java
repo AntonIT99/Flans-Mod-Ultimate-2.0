@@ -10,6 +10,59 @@ import static org.mockito.Mockito.*;
 class ConfigDefaultsTest
 {
     @Test
+    void countsOnlyDistinctEditableDisplayedValuesThatDifferFromDefaults()
+    {
+        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        var changed = builder.define("changed", true);
+        var unchanged = builder.defineInRange("unchanged", 0.25D, 0D, 1D);
+        var hidden = builder.define("hidden", true);
+        builder.build();
+        ConfigTarget target = editableTarget();
+        ConfigTarget locked = editableTarget();
+        ConfigTarget waiting = editableTarget();
+        when(target.get(changed)).thenReturn(false);
+        when(target.get(unchanged)).thenReturn(0.25D);
+        when(locked.editable()).thenReturn(false);
+        when(waiting.ready()).thenReturn(false);
+        ConfigDefaults defaults = new ConfigDefaults();
+        defaults.add(target, changed);
+        defaults.add(target, unchanged);
+        defaults.add(target, changed);
+        defaults.add(locked, hidden);
+        defaults.add(waiting, hidden);
+
+        assertEquals(1, defaults.changedCount());
+        when(target.get(changed)).thenReturn(true);
+        assertEquals(0, defaults.changedCount());
+        assertFalse(defaults.canRestore());
+    }
+
+    @Test
+    void leavesAlreadyDefaultValuesUntouchedAndDoesNotFlushANoOpReset()
+    {
+        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        var changed = builder.define("changed", true);
+        var unchanged = builder.defineInRange("unchanged", 5, 0, 10);
+        builder.build();
+        ConfigTarget target = editableTarget();
+        when(target.get(changed)).thenReturn(false);
+        when(target.get(unchanged)).thenReturn(5);
+        ConfigDefaults defaults = new ConfigDefaults();
+        defaults.add(target, changed);
+        defaults.add(target, unchanged);
+
+        defaults.restore();
+
+        verify(target).setWhileDragging(changed, true);
+        verify(target, never()).setWhileDragging(eq(unchanged), any());
+        verify(target).flush();
+        when(target.get(changed)).thenReturn(true);
+        defaults.restore();
+        verify(target, times(1)).setWhileDragging(changed, true);
+        verify(target, times(1)).flush();
+    }
+
+    @Test
     void restoresOnlyDisplayedValuesAndFlushesEachTargetOnce()
     {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();

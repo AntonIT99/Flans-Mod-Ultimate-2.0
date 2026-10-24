@@ -101,6 +101,8 @@ public class FlansOptionsScreen extends Screen
     private double scrollAmount;
     private final SettingsTooltip settingsTooltip = new SettingsTooltip();
     private final ConfigDefaults defaults = new ConfigDefaults();
+    @Nullable
+    private Button restoreDefaultsButton;
 
     public FlansOptionsScreen(@Nullable Screen lastScreen)
     {
@@ -270,9 +272,10 @@ public class FlansOptionsScreen extends Screen
 
     private void addFooterButtons()
     {
-        Button restore = addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.options.restore_defaults"), button -> confirmRestoreDefaults())
-            .bounds((width - WIDE_BUTTON_WIDTH) / 2, height - RESTORE_BUTTON_BOTTOM_MARGIN, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT).build());
-        restore.active = defaults.canRestore();
+        int restoreWidth = BUTTON_WIDTH * 2 + BUTTON_GAP;
+        restoreDefaultsButton = addRenderableWidget(Button.builder(restoreDefaultsCaption(defaults.changedCount()), button -> confirmRestoreDefaults())
+            .bounds((width - restoreWidth) / 2, height - RESTORE_BUTTON_BOTTOM_MARGIN, restoreWidth, BUTTON_HEIGHT).build());
+        updateRestoreDefaultsButton();
 
         if (mode != Mode.QUICK)
         {
@@ -293,7 +296,7 @@ public class FlansOptionsScreen extends Screen
         if (minecraft == null || !defaults.canRestore())
             return;
 
-        Component heading = Component.translatable("gui.flansmodultimate.options.restore_defaults");
+        Component heading = restoreDefaultsCaption(defaults.changedCount());
         var warning = Component.translatable("gui.flansmodultimate.options.restore_defaults.warning", title);
         if (!commonOptions.isEmpty() && minecraft.level != null)
             warning.append("\n\n").append(Component.translatable("gui.flansmodultimate.options.restore_defaults.server_warning"));
@@ -305,6 +308,21 @@ public class FlansOptionsScreen extends Screen
                 defaults.restore();
             client.setScreen(this);
         }, heading, warning, heading, CommonComponents.GUI_CANCEL));
+    }
+
+    private Component restoreDefaultsCaption(int count)
+    {
+        return Component.translatable("gui.flansmodultimate.options.restore_defaults").append(" (" + count + ")");
+    }
+
+    private void updateRestoreDefaultsButton()
+    {
+        if (restoreDefaultsButton != null)
+        {
+            int count = defaults.changedCount();
+            restoreDefaultsButton.setMessage(restoreDefaultsCaption(count));
+            restoreDefaultsButton.active = count > 0;
+        }
     }
 
     /**
@@ -330,6 +348,7 @@ public class FlansOptionsScreen extends Screen
     public void tick()
     {
         list.tick();
+        updateRestoreDefaultsButton();
     }
 
     @Override
