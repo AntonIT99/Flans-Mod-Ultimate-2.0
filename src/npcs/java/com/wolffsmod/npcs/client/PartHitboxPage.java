@@ -139,8 +139,14 @@ final class PartHitboxPage
         GuiButtonNop mode = new GuiButtonNop(gui, ARMOR_MODE_ID, x + 122, y, 48, 20, NO_YES, armor == null ? 0 : 1);
         mode.setEnabled(loaded);
         gui.addButton(mode);
-        armorField(ARMOR_ID, "armor", x + 184, x + 204, y, armor == null ? 0F : armor.thicknessMm(), loaded && armor != null);
-        armorField(HEAT_ARMOR_ID, "armor_heat", x + 274, x + 330, y, armor == null ? 0F : armor.heatThicknessMm(), loaded && armor != null);
+        PartArmor shown = armor != null ? armor : modelArmor(part);
+        armorField(ARMOR_ID, "armor", x + 184, x + 204, y, shown.thicknessMm(), loaded && armor != null);
+        armorField(HEAT_ARMOR_ID, "armor_heat", x + 274, x + 330, y, shown.heatThicknessMm(), loaded && armor != null);
+    }
+
+    private PartArmor modelArmor(PartState part)
+    {
+        return body == null ? new PartArmor(0F, 0F) : body.getModelArmor(part.name()).orElse(new PartArmor(0F, 0F));
     }
 
     private void armorField(int id, String name, int x, int controlX, int y, float value, boolean editable)
@@ -288,7 +294,7 @@ final class PartHitboxPage
             case ENABLED_ID -> settings().setEnabled(part.name(), button.getValue() == 1);
             // The NPC's own box starts as the model's.
             case MODE_ID -> settings().setBox(part.name(), button.getValue() == 1 ? part.definition() : null);
-            case ARMOR_MODE_ID -> settings().setArmor(part.name(), button.getValue() == 1 ? new PartArmor(0F, 0F) : null);
+            case ARMOR_MODE_ID -> settings().setArmor(part.name(), button.getValue() == 1 ? modelArmor(part) : null);
             default -> {
                 return false;
             }

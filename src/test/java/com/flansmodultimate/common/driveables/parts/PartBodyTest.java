@@ -247,7 +247,11 @@ class PartBodyTest
         PartBody body = new PartBody(type, boxes, Vec3.ZERO, Vec3.ZERO);
         int original = body.signature();
         assertEquals(new ArmorPlate(100F, 20F, 200F), body.armor().plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT).authored());
+        assertEquals(new PartArmor(40F, 80F), body.getModelArmor("core").orElseThrow());
+        assertEquals(new PartArmor(100F, 200F), body.getModelArmor("TURRET").orElseThrow());
+        assertTrue(body.getModelArmor("missing").isEmpty());
         body.setArmor("turret", new PartArmor(120F, 600F));
+        assertEquals(new PartArmor(100F, 200F), body.getModelArmor("turret").orElseThrow());
         assertNotEquals(original, body.signature());
         for (EnumArmorFacing face : EnumArmorFacing.values())
         {

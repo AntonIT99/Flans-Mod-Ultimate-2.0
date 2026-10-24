@@ -85,6 +85,19 @@ public interface IPartBody
     }
 
     /**
+     * Reads the model definition on either side, on the body's level thread, ignoring custom armour.
+     *
+     * @param part
+     *            part name as in type files, in any letter case
+     * @return nominal kinetic and HEAT thicknesses in millimetres on the front face, including inherited hull or turret
+     *         plates, or empty for an unknown part. Other faces can differ; virtual slope is not included
+     */
+    default Optional<PartArmor> getModelArmor(String part)
+    {
+        return Optional.empty();
+    }
+
+    /**
      * Takes a part out of the body or puts it back. A disabled part is not hit, holds no hit points and is never
      * broken.
      */

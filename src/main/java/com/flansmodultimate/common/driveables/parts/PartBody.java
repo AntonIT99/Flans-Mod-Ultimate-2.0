@@ -224,6 +224,16 @@ public final class PartBody implements IPartBody
         return part == null ? Optional.empty() : Optional.ofNullable(armorOverrides.get(part.getType()));
     }
 
+    @Override
+    public Optional<PartArmor> getModelArmor(String name)
+    {
+        DriveablePart part = find(name);
+        if (part == null)
+            return Optional.empty();
+        ArmorPlate plate = type instanceof DriveableType driveable ? driveable.getResolvedArmor().plate(part.getType(), EnumArmorFacing.FRONT).authored() : ArmorPlate.UNARMOURED;
+        return Optional.of(new PartArmor(plate.thicknessMm(), plate.heatThicknessMm()));
+    }
+
     /** The model's plates with this body's per-part replacements, shared by rounds, blasts and debug readouts. */
     public ResolvedVehicleArmor armor()
     {
