@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.guns.ThrownGunLifetime;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.GunType;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.*;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,8 +35,6 @@ import net.minecraft.world.phys.Vec3;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ThrownGun extends FlanArrow
 {
-    /** Ticks a recoverable weapon stays stuck before despawning, the lifespan of a dropped item */
-    public static final int RECOVERABLE_LIFESPAN = 6000;
     /** Gravity AbstractArrow applies on its own each tick, which this projectile replaces. */
     private static final double VANILLA_ARROW_GRAVITY = 0.05D;
 
@@ -153,9 +153,13 @@ public class ThrownGun extends FlanArrow
             return;
         }
 
-        // A weapon worth recovering lasts as long as the same item would on the ground
-        life++;
-        if (life >= RECOVERABLE_LIFESPAN)
+        if (!(level() instanceof ServerLevel serverLevel))
+            return;
+
+        int seconds = ThrownGunLifetime.get(serverLevel).seconds();
+        if (life < Integer.MAX_VALUE)
+            life++;
+        if (seconds > 0 && life >= seconds * 20)
             discard();
     }
 

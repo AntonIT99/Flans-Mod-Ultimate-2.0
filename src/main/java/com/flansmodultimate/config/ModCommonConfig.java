@@ -32,6 +32,7 @@ public final class ModCommonConfig
 {
     private static final String SECTION_TEAMS = "Teams Settings";
     public static final ForgeConfigSpec configSpec;
+    public static final IntValue THROWN_GUN_DESPAWN_SECONDS;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
     /** Vanilla player health; the maximum health setting leaves players untouched at this value. */
@@ -415,6 +416,10 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Gun Settings");
+        THROWN_GUN_DESPAWN_SECONDS = builder
+            .comment("Default time in seconds before a recoverable thrown gun despawns while stuck in the ground. 0 disables despawning.",
+                "Override per world with /thrownGunDespawn <seconds>, or use /thrownGunDespawn reset to restore this default.")
+            .defineInRange("thrownGunDespawnSeconds", 300, 0, Integer.MAX_VALUE / 20);
         GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE = builder.comment("Guns will be always usable by players in creative mode, regardless of the parameter 'UsableByPlayers' in gun configs")
             .define("gunsAlwaysUsableByPlayersInCreativeMode", true);
         FORCE_ALLOW_ALL_ATTACHMENTS = builder.comment("Always allow all attachments on all guns, regardless of the 'AllowAllAttachments' value in gun configs.").define("forceAllowAllAttachments",
