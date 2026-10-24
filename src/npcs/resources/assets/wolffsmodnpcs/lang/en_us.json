@@ -891,6 +891,7 @@
   "wolffsmodnpcs.skirmish.won": "%s won the skirmish %s",
   "wolffsmodnpcs.soldier.apply_loadout": "Apply class loadout",
   "wolffsmodnpcs.soldier.apply_name": "Apply class name",
+  "wolffsmodnpcs.model.apply_entity_name": "Apply entity name",
   "wolffsmodnpcs.soldier.name.male": "Male",
   "wolffsmodnpcs.soldier.name.female": "Female",
   "wolffsmodnpcs.soldier.name.denied": "You may not change this NPC's name.",

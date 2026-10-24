@@ -175,8 +175,8 @@ public final class BotFactory
         tuning.set(Value.TACTIC, tactic.ordinal());
         if (definition != null)
             stockAmmunition(npc, definition);
-        String crew = crewName(npc, order, random);
-        npc.display.setName(crew.isEmpty() ? npc.display.getName() : crew);
+        // FlanModelNpcs already uses the model's full name, including a definition fallback on dedicated servers.
+        order.slot().setName(npc.display.getName());
         join(npc, order, order.position(), Membership.VEHICLE);
         train(npc, order.settings().getDifficulty());
         npc.setHealth(npc.getMaxHealth());
@@ -264,13 +264,6 @@ public final class BotFactory
             name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
         order.slot().setName(name);
         npc.display.setName(name);
-    }
-
-    private static String crewName(EntityNPCInterface npc, Order order, RandomGenerator random)
-    {
-        // A vehicle has no player class; its crew label inherits only the team association.
-        order.slot().setName(chooseName(npc, order, "", order.slot().getName(), random));
-        return order.slot().getName();
     }
 
     /** Applies the associated generator and gender while preserving an existing slot's identity across respawns. */

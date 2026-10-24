@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
+import noppes.npcs.shared.client.gui.components.GuiButtonNop;
 import noppes.npcs.shared.client.gui.components.GuiCustomScrollNop;
 import noppes.npcs.shared.common.util.NaturalOrderComparator;
 import org.spongepowered.asm.mixin.*;
@@ -33,6 +34,7 @@ import java.util.*;
  * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the toggle that applies that class's loadout on selection and the toggle that keeps the NPC's own skin.
  * Offers shared behaviour presets and Undo alongside the selected model.
  * Classes with several skins expose a variant folder with saved skin selection, like vehicle paintjobs.
+ * Lets builders explicitly use a Flan or vanilla model's full entity name as the NPC's display name.
  */
 // Mixin merges this class into the target, so self-casts are valid.
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference", "DataFlowIssue"})
@@ -105,6 +107,7 @@ public abstract class NpcModelBrowserMixin
         scroll.setSelectedIndex(selected < 0 ? -1 : selected + offset);
         wolffsmodnpcsRestoreSelectionScroll();
         FlanSoldierBrowser.addLoadoutControls(screen, wolffsmodnpcsSoldiers != null);
+        wolffsmodnpcsAddEntityNameControl(screen);
         NpcPresetControls.addPicker(screen);
         if (!wolffsmodnpcsPresetsRequested)
         {
@@ -118,6 +121,23 @@ public abstract class NpcModelBrowserMixin
             screen.getLabel(110).visible = false;
             screen.getLabel(110).enabled = false;
         }
+    }
+
+    /** Uses the model type's name, without any custom name or shortened browser label. */
+    @Unique
+    private void wolffsmodnpcsAddEntityNameControl(GuiCreationScreenInterface screen)
+    {
+        if (wolffsmodnpcsSoldiers != null || screen.entity == null)
+            return;
+        EntityType<?> type = screen.entity.getType();
+        String namespace = BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace();
+        if (!(type instanceof FlanModelEntityType) && !namespace.equals("minecraft") && !namespace.equals("flansmodultimate"))
+            return;
+        screen.addButton(new GuiButtonNop(screen, 9124, screen.guiLeft + 124, screen.guiTop + 69, 180, 20, "wolffsmodnpcs.model.apply_entity_name", button ->
+        {
+            screen.npc.display.setName(type.getDescription().getString());
+            screen.save();
+        }));
     }
 
     /** The first level: the Flan folders, then every model that is not a Flan one. */

@@ -891,6 +891,7 @@
   "wolffsmodnpcs.skirmish.won": "%s hat das Gefecht %s gewonnen",
   "wolffsmodnpcs.soldier.apply_loadout": "Klassenausrüstung anwenden",
   "wolffsmodnpcs.soldier.apply_name": "Klassennamen anwenden",
+  "wolffsmodnpcs.model.apply_entity_name": "Entitätsnamen anwenden",
   "wolffsmodnpcs.soldier.name.male": "Männlich",
   "wolffsmodnpcs.soldier.name.female": "Weiblich",
   "wolffsmodnpcs.soldier.name.denied": "Du darfst den Namen dieses NPCs nicht ändern.",
