@@ -224,7 +224,7 @@ public final class ConfigOptionFactory
     }
 
     /** Vanilla builds the caption from a translation key, so every editable entry needs one. */
-    private static String captionKey(ConfigValue<?> value)
+    static String captionKey(ConfigValue<?> value)
     {
         return KEY_PREFIX + value.getPath().get(value.getPath().size() - 1);
     }

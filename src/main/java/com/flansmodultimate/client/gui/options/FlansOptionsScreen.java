@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
@@ -48,6 +49,7 @@ public class FlansOptionsScreen extends Screen
     private static final int WIDE_BUTTON_WIDTH = 200;
     private static final int BUTTON_BOTTOM_MARGIN = 27;
     private static final int RESTORE_BUTTON_BOTTOM_MARGIN = 52;
+    private static final int MAX_RESTORE_TOOLTIP_PARAMETERS = 8;
     private static final int NOTE_COLOUR = 0xA0A0A0;
     /** Only shown while Distant Horizons is installed, since its settings do nothing otherwise. */
     private static final String DISTANT_HORIZONS_SECTION = "distant_horizons";
@@ -319,10 +321,26 @@ public class FlansOptionsScreen extends Screen
     {
         if (restoreDefaultsButton != null)
         {
-            int count = defaults.changedCount();
+            List<ConfigValue<?>> changed = defaults.changedValues();
+            int count = changed.size();
             restoreDefaultsButton.setMessage(restoreDefaultsCaption(count));
+            restoreDefaultsButton.setTooltip(restoreDefaultsTooltip(changed));
             restoreDefaultsButton.active = count > 0;
         }
+    }
+
+    private Tooltip restoreDefaultsTooltip(List<ConfigValue<?>> changed)
+    {
+        Component caption = restoreDefaultsCaption(changed.size());
+        Tooltip summary = Tooltip.create(caption);
+        if (minecraft == null || changed.isEmpty() || changed.size() > MAX_RESTORE_TOOLTIP_PARAMETERS)
+            return summary;
+
+        var text = caption.copy();
+        for (ConfigValue<?> value : changed)
+            text.append("\n• ").append(Component.translatable(ConfigOptionFactory.captionKey(value)));
+        Tooltip detailed = Tooltip.create(text);
+        return detailed.toCharSequence(minecraft).size() <= SettingsTooltip.lineCapacity(height) ? detailed : summary;
     }
 
     /**

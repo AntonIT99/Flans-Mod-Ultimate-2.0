@@ -2,8 +2,10 @@ package com.flansmodultimate.client.gui.options;
 
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -30,14 +32,19 @@ final class ConfigDefaults
 
     int changedCount()
     {
-        int count = 0;
+        return changedValues().size();
+    }
+
+    List<ConfigValue<?>> changedValues()
+    {
+        List<ConfigValue<?>> changed = new ArrayList<>();
         for (Map.Entry<ConfigTarget, Set<ConfigValue<?>>> entry : values.entrySet())
         {
             ConfigTarget target = entry.getKey();
             if (target.ready() && target.editable())
-                count += (int) entry.getValue().stream().filter(value -> differsFromDefault(target, value)).count();
+                entry.getValue().stream().filter(value -> differsFromDefault(target, value)).forEach(changed::add);
         }
-        return count;
+        return changed;
     }
 
     private static boolean differsFromDefault(ConfigTarget target, ConfigValue<?> value)

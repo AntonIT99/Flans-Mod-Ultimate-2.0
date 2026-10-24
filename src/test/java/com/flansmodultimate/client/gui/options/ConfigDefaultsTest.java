@@ -4,6 +4,8 @@ import com.flansmodultimate.config.ModClientConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -32,8 +34,10 @@ class ConfigDefaultsTest
         defaults.add(waiting, hidden);
 
         assertEquals(1, defaults.changedCount());
+        assertEquals(List.of(changed), defaults.changedValues());
         when(target.get(changed)).thenReturn(true);
         assertEquals(0, defaults.changedCount());
+        assertTrue(defaults.changedValues().isEmpty());
         assertFalse(defaults.canRestore());
     }
 
