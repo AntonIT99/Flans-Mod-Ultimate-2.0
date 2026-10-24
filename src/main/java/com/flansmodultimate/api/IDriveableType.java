@@ -28,6 +28,18 @@ public interface IDriveableType extends IContentType
     DriveableKind getDriveableKind();
 
     /**
+     * Minimum incoming melee damage in health points, before armour and resistances. Weaker hits are ignored;
+     * hits at the threshold apply in full. Zero accepts every hit. Includes the server default when no pack override
+     * is authored. Readable on either side after content loading and config synchronization.
+     *
+     * @return the effective melee threshold
+     */
+    default float getMeleeDamageThreshold()
+    {
+        return 10F;
+    }
+
+    /**
      * Returns the ship classification used by creative inventory and model browsers.
      * Water-only hulls and explicitly marked ships qualify; amphibious ground vehicles
      * and seaplanes with flight controls do not. Safe to query on either side.

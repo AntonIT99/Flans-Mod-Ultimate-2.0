@@ -65,7 +65,8 @@ import java.util.UUID;
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
  * a playing engine sound replaces the Custom NPCs step and idle sounds.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
- * resists knockback while it is a vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
+ * resists knockback while it is a vehicle. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
+ * melee against protected riders reaches their vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.
  * Optional melee dual wield alternates striking hands on one AI cooldown and sends item break feedback for the attacking hand.</li>
@@ -625,10 +626,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.MODEL_ARMOUR);
     }
 
-    @Inject(method = {"hurt", "m_6469_"}, at = @At("HEAD"), cancellable = true)
+    @ModifyVariable(method = {"hurt", "m_6469_"}, at = @At("HEAD"), argsOnly = true)
+    private float wolffsmodnpcsVehicleMeleeDamage(float amount, DamageSource source, float originalAmount)
+    {
+        return NpcProtection.meleeDamage((EntityNPCInterface) (Object) this, source, amount);
+    }
+
+    // After the HEAD damage normalization, before resistance, damage scripts or hit side effects.
+    @Inject(method = {"hurt", "m_6469_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/Resistances;applyResistance(Lnet/minecraft/world/damagesource/DamageSource;F)F"), cancellable = true)
     private void wolffsmodnpcsIgnoreHit(DamageSource source, float amount, CallbackInfoReturnable<Boolean> callback)
     {
-        if (!level().isClientSide && (NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount) || NpcCrew.shielded(this, source)))
+        if (!level().isClientSide && (FlansMelee.protectRider((EntityNPCInterface) (Object) this, source, amount) || NpcCrew.shielded(this, source, amount)
+            || NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount)))
             callback.setReturnValue(false);
     }
 

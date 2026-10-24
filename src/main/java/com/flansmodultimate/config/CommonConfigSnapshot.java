@@ -164,10 +164,11 @@ public record CommonConfigSnapshot(
     boolean suppressionAffectsRiders,
     boolean bulletFlybySounds,
     double bulletFlybyRangeMultiplier,
-    int driveableWreckLifetime
+    int driveableWreckLifetime,
+    double driveableMeleeDamageThreshold
 )
 {
-    public static final int CURRENT_VERSION = 44;
+    public static final int CURRENT_VERSION = 45;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -339,6 +340,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.bulletFlybySounds);
         buf.writeDouble(s.bulletFlybyRangeMultiplier);
         buf.writeVarInt(s.driveableWreckLifetime);
+        buf.writeDouble(s.driveableMeleeDamageThreshold);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -501,7 +503,8 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readDouble(),
-            buf.readVarInt()
+            buf.readVarInt(),
+            buf.readDouble()
         );
     }
 

@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.crew;
 
 import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.FlansMelee;
 import com.flansmodultimate.api.WeaponMount;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.NpcsMod;
@@ -206,6 +207,16 @@ public final class NpcCrew
     public static boolean shielded(Entity entity, DamageSource source)
     {
         return !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && shieldingVehicle(entity).isPresent();
+    }
+
+    /** Protected crew forward melee to their vehicle, whose own threshold and resistances decide the result. */
+    public static boolean shielded(Entity entity, DamageSource source, float amount)
+    {
+        if (!shielded(entity, source))
+            return false;
+        if (FlansMelee.isMelee(source) && source.getEntity() != entity)
+            shieldingVehicle(entity).ifPresent(vehicle -> vehicle.hurt(source, amount));
+        return true;
     }
 
     /**

@@ -4916,6 +4916,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable DamageSource source)
     {
+        if (source != null && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && VehicleMeleeDamage.isMelee(source))
+        {
+            amount = VehicleMeleeDamage.againstVehicle(source, amount);
+            if (configType != null && VehicleMeleeDamage.belowThreshold(configType.getMeleeDamageThreshold(), amount))
+                return false;
+        }
+        return damagePartAfterMelee(partType, amount, source);
+    }
+
+    /** Damage already passed the melee threshold and weapon scaling, before shields or vulnerability are applied. */
+    protected boolean damagePartAfterMelee(@Nullable EnumDriveablePart partType, float amount, @Nullable DamageSource source)
+    {
         if (!level().isClientSide && wreckTicks >= 0 && source != null && source.is(DamageTypeTags.IS_EXPLOSION))
             absorbWreckDamage(amount);
         if (level().isClientSide || destroyed || driveableData == null || amount <= 0F)

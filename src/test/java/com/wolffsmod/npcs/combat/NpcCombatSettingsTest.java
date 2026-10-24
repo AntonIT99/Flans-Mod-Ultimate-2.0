@@ -13,6 +13,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class NpcCombatSettingsTest
 {
     @Test
+    void explicitZeroMeleeOverrideSurvivesSavingAndCanReturnToModelInheritance()
+    {
+        NpcCombatSettings settings = new NpcCombatSettings();
+        assertTrue(settings.inheritsMeleeThreshold());
+        settings.setMinimumHit(NpcDamageCategory.MELEE, 0);
+        CompoundTag root = new CompoundTag();
+        settings.save(root);
+        NpcCombatSettings restored = new NpcCombatSettings();
+        restored.load(root);
+        assertFalse(restored.inheritsMeleeThreshold());
+        assertEquals(0, restored.minimumHit(NpcDamageCategory.MELEE));
+        restored.setMinimumHit(NpcDamageCategory.MELEE, 30);
+        restored.save(root);
+        settings.load(root);
+        assertEquals(30, settings.minimumHit(NpcDamageCategory.MELEE));
+        restored.inheritMeleeThreshold();
+        restored.save(root);
+        settings.load(root);
+        assertTrue(settings.inheritsMeleeThreshold());
+    }
+
+    @Test
     void npcsSavedBeforeTheseSettingsInheritEverythingAndAcceptEveryHit()
     {
         NpcCombatSettings settings = new NpcCombatSettings();

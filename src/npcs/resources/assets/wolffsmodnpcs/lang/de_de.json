@@ -275,7 +275,7 @@
   "wolffsmodnpcs.combat.main_hand_properties": "Haupthandeigenschaften",
   "wolffsmodnpcs.combat.main_hand_properties.summary": "Jeden Haupthandwert übernehmen, behalten oder importieren",
   "wolffsmodnpcs.combat.minimum_hit.explosion": "Mindest-Explosionstreffer",
-  "wolffsmodnpcs.combat.minimum_hit.help": "Treffer dieser Art, die schwächer als dieser Schaden sind, werden ignoriert; ein Treffer von genau diesem Schaden zählt. 0 nimmt jeden Treffer an. Verglichen mit dem eingehenden Schaden vor Rüstung und Resistenzen, nach dem Schadensprofil des Modells.",
+  "wolffsmodnpcs.combat.minimum_hit.help": "Treffer dieser Art, die schwächer als dieser Schaden sind, werden ignoriert; ein Treffer von genau diesem Schaden zählt. 0 nimmt jeden Treffer an. Im Nahkampf erbt -1 den Schwellenwert des Fahrzeugmodells (sonst 0); das Modell nutzt seinen TXT-Wert oder den Serverstandard 10. Verglichen mit dem eingehenden Schaden vor Rüstung und Resistenzen, nach dem Schadensprofil des Modells.",
   "wolffsmodnpcs.combat.minimum_hit.melee": "Mindest-Nahkampftreffer",
   "wolffsmodnpcs.combat.minimum_hit.projectile": "Mindest-Geschosstreffer",
   "wolffsmodnpcs.combat.mode.custom": "Eigen",

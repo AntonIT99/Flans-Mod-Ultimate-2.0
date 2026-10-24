@@ -97,7 +97,7 @@ public final class NpcItemAttacks
         boolean accepted = false;
         try
         {
-            accepted = target.hurt(npc.damageSources().mobAttack(npc), damage);
+            accepted = target.hurt(FlansMelee.source(npc.damageSources().mobAttack(npc), weapon), damage);
             if (accepted && state != null)
                 state.hit(target.getId(), tick, delay);
             return accepted;

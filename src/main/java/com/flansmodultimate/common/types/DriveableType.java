@@ -44,6 +44,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** {@code VehicleGunReloadTick} value meaning that no chambering sound is timed. */
     public static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     protected VehicleOptics optics = new VehicleOptics();
+    /** Negative means inherit the server config; zero explicitly disables melee protection. */
+    protected float meleeDamageThreshold = -1F;
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
     private static final float DEFAULT_WHEEL_GROUND_CLEARANCE = 0.375F;
@@ -414,6 +416,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     @Override
     protected void read(TypeFile file)
     {
+        meleeDamageThreshold = readValue("MeleeDamageThreshold", meleeDamageThreshold, file);
+        if (!Float.isFinite(meleeDamageThreshold) || meleeDamageThreshold < 0F)
+            meleeDamageThreshold = -1F;
         super.read(file);
         engine = readValue("Engine", engine, file).trim();
         readSeats(file);
@@ -1274,6 +1279,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public float getWheelGroundClearance()
     {
         return Float.isNaN(wheelContactClearance) ? DEFAULT_WHEEL_GROUND_CLEARANCE : wheelContactClearance;
+    }
+
+    @Override
+    public float getMeleeDamageThreshold()
+    {
+        return meleeDamageThreshold < 0F ? ModCommonConfig.driveableMeleeDamageThreshold() : meleeDamageThreshold;
     }
 
     @Override

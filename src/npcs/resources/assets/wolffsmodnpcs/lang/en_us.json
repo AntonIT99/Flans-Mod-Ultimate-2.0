@@ -275,7 +275,7 @@
   "wolffsmodnpcs.combat.main_hand_properties": "Main hand properties",
   "wolffsmodnpcs.combat.main_hand_properties.summary": "Inherit, keep or import each main-hand value",
   "wolffsmodnpcs.combat.minimum_hit.explosion": "Minimum explosion hit",
-  "wolffsmodnpcs.combat.minimum_hit.help": "Hits of this kind weaker than this damage are ignored; a hit of exactly this damage counts. 0 accepts every hit. Compared with the incoming damage before armor and resistances, after the model damage profile.",
+  "wolffsmodnpcs.combat.minimum_hit.help": "Hits of this kind weaker than this damage are ignored; a hit of exactly this damage counts. 0 accepts every hit. For melee, -1 inherits the driveable model threshold (otherwise 0); the model uses its TXT override or the server default of 10. Compared with the incoming damage before armor and resistances, after the model damage profile.",
   "wolffsmodnpcs.combat.minimum_hit.melee": "Minimum melee hit",
   "wolffsmodnpcs.combat.minimum_hit.projectile": "Minimum projectile hit",
   "wolffsmodnpcs.combat.mode.custom": "Custom",

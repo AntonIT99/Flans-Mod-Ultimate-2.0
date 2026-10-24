@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.FlansMelee;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.*;
@@ -722,7 +723,7 @@ public class GunItemHandler
         Player attackedPlayer = hit.getHitbox().player;
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
 
-        boolean didHurt = attackedPlayer.hurt(FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
+        boolean didHurt = attackedPlayer.hurt(FlansMelee.source(attacker, itemstack), damage);
         if (didHurt)
             attackedPlayer.invulnerableTime = attackedPlayer.hurtDuration / 2;
 
@@ -733,9 +734,9 @@ public class GunItemHandler
     private void applyEntityHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, EntityHit hit, int pointIdx, Vector3f dPos)
     {
         Entity target = hit.getEntity();
-        float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, target instanceof Driveable));
+        float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
 
-        boolean didHurt = target.hurt(FlanDamageSources.createDamageSource(level, attacker, FlanDamageSources.MELEE), damage);
+        boolean didHurt = target.hurt(FlansMelee.source(attacker, itemstack), damage);
         if (didHurt && target instanceof LivingEntity living)
             living.invulnerableTime = living.hurtDuration / 2;
 

@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * The combat pages of the Wolff's Mod tab that are more than a list of switches: knockback and minimum hit damage on the
@@ -35,6 +36,7 @@ final class CombatPages
 {
     static final int KNOCKBACK_ID = 700;
     static final int MINIMUM_HIT_ID = 710;
+    private static final Pattern MELEE_THRESHOLD_INPUT = Pattern.compile("-1?|\\d*");
     static final int PROPERTIES_PAGE_ID = 720;
     static final int MAIN_HAND_PAGE_ID = 721;
     static final int ARMOR_PAGE_ID = 723;
@@ -281,11 +283,16 @@ final class CombatPages
             int id = MINIMUM_HIT_ID + kinds[i].ordinal();
             String key = PREFIX + "minimum_hit." + kinds[i].name().toLowerCase(Locale.ROOT);
             gui.addLabel(new GuiLabel(id, key, x, rowY + 5, PREFIX + "minimum_hit" + HELP_SUFFIX));
-            GuiTextFieldNop field = new GuiTextFieldNop(id, gui, control, rowY, 60, 20, Integer.toString(settings.minimumHit(kinds[i])));
+            boolean melee = kinds[i] == NpcDamageCategory.MELEE;
+            int value = melee && settings.inheritsMeleeThreshold() ? -1 : settings.minimumHit(kinds[i]);
+            GuiTextFieldNop field = new GuiTextFieldNop(id, gui, control, rowY, 60, 20, Integer.toString(value));
             field.setEditable(loaded);
             field.setTextColorUneditable(READ_ONLY_COLOR);
-            field.numbersOnly = true;
-            field.setMinMaxDefault(0, NpcCombatSettings.MAX_MINIMUM_HIT, 0);
+            // Custom NPCs' numbersOnly filter rejects minus signs even when the minimum is negative.
+            field.numbersOnly = !melee;
+            if (melee)
+                field.setFilter(text -> MELEE_THRESHOLD_INPUT.matcher(text).matches());
+            field.setMinMaxDefault(melee ? -1 : 0, NpcCombatSettings.MAX_MINIMUM_HIT, melee ? -1 : 0);
             gui.addTextField(field);
         }
     }
@@ -935,8 +942,17 @@ final class CombatPages
         int index = field.id - MINIMUM_HIT_ID;
         if (index < 0 || index >= NpcDamageCategory.values().length)
             return false;
-        settings().setMinimumHit(NpcDamageCategory.values()[index], field.isInteger() ? field.getInteger() : 0);
+        minimumHitEdited(field, NpcDamageCategory.values()[index]);
         return true;
+    }
+
+    private void minimumHitEdited(GuiTextFieldNop field, NpcDamageCategory category)
+    {
+        int minimum = field.isInteger() ? field.getInteger() : -1;
+        if (category == NpcDamageCategory.MELEE && minimum < 0)
+            settings().inheritMeleeThreshold();
+        else
+            settings().setMinimumHit(category, minimum);
     }
 
     /** Whether the model property's cell edits the NPC's own value: the model does not supply it right now. */

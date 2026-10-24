@@ -428,7 +428,7 @@ public class Mecha extends Driveable implements MechaVisual
     }
 
     @Override
-    public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable net.minecraft.world.damagesource.DamageSource source)
+    protected boolean damagePartAfterMelee(@Nullable EnumDriveablePart partType, float amount, @Nullable net.minecraft.world.damagesource.DamageSource source)
     {
         if (source != null && source.getEntity() instanceof Player player && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
             return false;
@@ -441,7 +441,7 @@ public class Mecha extends Driveable implements MechaVisual
             if (amount <= 0F)
                 return true;
         }
-        return super.damagePart(partType, amount * vulnerability(), source);
+        return super.damagePartAfterMelee(partType, amount * vulnerability(), source);
     }
 
     private void useHandTool(EnumMechaSlotType slot, boolean left, boolean held)

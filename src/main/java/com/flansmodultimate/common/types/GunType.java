@@ -209,6 +209,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected float meleeRange = 3F;
     /** Modifier for melee damage against specifically driveable entities. */
     protected float meleeDamageDriveableModifier = 1F;
+    /** Absolute vehicle melee damage before attachments; NaN keeps the legacy multiplier path. */
+    protected float meleeDamageVsDriveables = Float.NaN;
     /**
      * The speed of bullets upon leaving this gun. 0.0f means instant.
      */
@@ -767,6 +769,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (Float.isFinite(configuredMeleeRange) && configuredMeleeRange > 0F)
             meleeRange = configuredMeleeRange;
         meleeDamageDriveableModifier = readValue("MeleeDamageDriveableModifier", meleeDamageDriveableModifier, file);
+        readVehicleMeleeDamage(file);
 
         // Reload
         canForceReload = readValue("CanForceReload", canForceReload, file);
@@ -1582,12 +1585,21 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (isPoweredOff(stack))
             return 0F;
 
-        float stackMeleeDamage = meleeDamage;
+        boolean vehicleOverride = driveable && Float.isFinite(meleeDamageVsDriveables);
+        float stackMeleeDamage = vehicleOverride ? meleeDamageVsDriveables : meleeDamage;
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackMeleeDamage *= attachment.meleeDamageMultiplier;
 
-        return stackMeleeDamage * (driveable ? meleeDamageDriveableModifier : 1F);
+        return stackMeleeDamage * (driveable && !vehicleOverride ? meleeDamageDriveableModifier : 1F);
+    }
+
+    private void readVehicleMeleeDamage(TypeFile file)
+    {
+        float vehicleMeleeDamage = readValue("MeleeDamageVsDriveable", meleeDamageVsDriveables, file);
+        vehicleMeleeDamage = readValue("MeleeDamageVsDriveables", vehicleMeleeDamage, file);
+        if (Float.isFinite(vehicleMeleeDamage) && vehicleMeleeDamage >= 0F)
+            meleeDamageVsDriveables = vehicleMeleeDamage;
     }
 
     /**

@@ -41,6 +41,31 @@ class GunTypeMeleeSpeedTest
     }
 
     @Test
+    void vehicleMeleeOverridesSupportBothSpellingsWithoutChangingLivingDamage()
+    {
+        for (String key : List.of("MeleeDamageVsDriveable", "MeleeDamageVsDriveables"))
+        {
+            GunType type = read("ShortName testWeapon", "MeleeDamage 12", "MeleeDamageDriveableModifier 3", key + " 24");
+            assertEquals(12F, type.getMeleeDamage(ItemStack.EMPTY, false));
+            assertEquals(24F, type.getMeleeDamage(ItemStack.EMPTY, true));
+        }
+        GunType legacy = read("ShortName testWeapon", "MeleeDamage 12", "MeleeDamageDriveableModifier 3");
+        assertEquals(36F, legacy.getMeleeDamage(ItemStack.EMPTY, true));
+        assertEquals(0F, read("ShortName testWeapon", "MeleeDamageVsDriveables 0").getMeleeDamage(ItemStack.EMPTY, true));
+    }
+
+    @Test
+    void invalidVehicleDamageDoesNotReplaceAValidOverride()
+    {
+        for (String invalid : List.of("-1", "NaN", "Infinity", "-Infinity", "invalid"))
+        {
+            GunType type = read("ShortName testWeapon", "MeleeDamageVsDriveables 24");
+            type.read(new TypeFile("testWeapon", EnumType.GUN, PACK, List.of("MeleeDamageVsDriveables " + invalid)));
+            assertEquals(24F, type.getMeleeDamage(ItemStack.EMPTY, true));
+        }
+    }
+
+    @Test
     void theLastAuthoredRateWins()
     {
         assertEquals(0.9F, read("ShortName testWeapon", "MeleeSpeed 1.6", "MeleeSpeed 0.9").getMeleeSpeed());

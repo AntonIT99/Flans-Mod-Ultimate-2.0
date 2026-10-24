@@ -1,6 +1,7 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.FlansMelee;
 import com.flansmodultimate.api.IEquipmentPolicy;
 import com.flansmodultimate.api.ITeamsRespawnRule;
 import com.flansmodultimate.client.render.hud.KillMessageData;
@@ -417,10 +418,10 @@ public final class CommonEventHandler
      */
     public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source, float amount)
     {
-        boolean cancel = entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat;
-
         if (!entity.level().isClientSide && isRejectedByTeams(entity, source))
-            cancel = true;
+            return true;
+
+        boolean cancel = FlansMelee.protectRider(entity, source, amount);
 
         if (!cancel && !entity.level().isClientSide && (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponEffects()) && tryShieldBlock(entity, source, amount))
             cancel = true;

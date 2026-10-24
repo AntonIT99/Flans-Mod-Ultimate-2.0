@@ -165,6 +165,7 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> AUTO_REFILL_VEHICLE_AMMO;
     private static final Supplier<Boolean> GUNS_IN_DESTROYED_PARTS_WORK;
     private static final Supplier<Integer> DRIVEABLE_WRECK_LIFETIME;
+    private static final Supplier<Double> DRIVEABLE_MELEE_DAMAGE_THRESHOLD;
 
     private static final Supplier<Integer> BREAKABLE_ARMOR;
     private static final Supplier<Integer> DEFAULT_ARMOR_DURABILITY;
@@ -395,6 +396,9 @@ public final class ModCommonConfig
             "Disabled by default. Destroyed seats still cannot be newly occupied.").define("gunsInDestroyedPartsWork", false);
         DRIVEABLE_WRECK_LIFETIME = builder.comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
             "0 removes destroyed driveables at once, as before.").defineInRange("driveableWreckLifetime", 120, 0, 3600);
+        DRIVEABLE_MELEE_DAMAGE_THRESHOLD = builder.comment("Minimum melee damage in health points for driveables and NPC driveable models. Weaker hits are ignored; qualifying hits apply in full.",
+            "Compared after Flan weapon vehicle modifiers, before armor and resistances. 0 disables the threshold.",
+            "Content packs may override this with MeleeDamageThreshold; NPCs may override their model's threshold.").defineInRange("driveableMeleeDamageThreshold", 10D, 0D, 100_000D);
         builder.pop();
 
         builder.push("Armor Settings");
@@ -743,7 +747,7 @@ public final class ModCommonConfig
             ENCHANTMENT_MODULE_ENABLED.get(),
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
-            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get());
+            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1019,6 +1023,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? 0 : 20 * Math.max(0, config.driveableWreckLifetime());
+    }
+
+    /** Default minimum melee damage in health points; content definitions and NPCs can override it. */
+    public static float driveableMeleeDamageThreshold()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 10F : (float) config.driveableMeleeDamageThreshold();
     }
 
     public static double maxArmorImpactAngleDeg()
