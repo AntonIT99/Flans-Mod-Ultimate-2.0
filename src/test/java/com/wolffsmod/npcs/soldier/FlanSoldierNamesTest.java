@@ -45,7 +45,9 @@ class FlanSoldierNamesTest
             names.when(() -> SoldierNames.generate(70, 1)).thenReturn("Louis Martin");
             FlanSoldierSelection selection = new FlanSoldierSelection(null, playerClass);
             assertEquals("Claire Martin", FlanSoldierNames.apply(npc, selection, 2).orElseThrow().name());
+            verify(npc.display).setMarkovGender(2);
             assertEquals("Louis Martin", FlanSoldierNames.apply(npc, selection, 1).orElseThrow().name());
+            verify(npc.display).setMarkovGender(1);
             assertTrue(FlanSoldierNames.request(null, 42, "", "class", 0).isEmpty());
             assertTrue(FlanSoldierNames.request(null, 42, "", "class", 3).isEmpty());
         }
@@ -67,6 +69,7 @@ class FlanSoldierNamesTest
             generator.when(() -> nikedemos.markovnames.generators.MarkovGenerator.fetch(0, 1)).thenReturn("Marcus");
             var reply = FlanSoldierNames.apply(npc, new FlanSoldierSelection(team, playerClass)).orElseThrow();
             verify(npc.display).setMarkovGeneratorId(0);
+            verify(npc.display).setMarkovGender(1);
             verify(npc.display).setName("Marcus");
             assertEquals(SoldierNames.ROMAN_ID, reply.nameList());
             assertEquals("Marcus", reply.name());
@@ -115,6 +118,8 @@ class FlanSoldierNamesTest
             names.when(() -> SoldierNames.generate(13, 2)).thenReturn("Anna Ivanova");
             var reply = FlanSoldierNames.apply(npc, new FlanSoldierSelection(team, playerClass)).orElseThrow();
             verify(npc.display).setMarkovGeneratorId(13);
+            verify(npc.display).setMarkovGender(2);
+            assertEquals(2, reply.gender());
             verify(npc.display).setName("Anna Ivanova");
             assertEquals("Anna Ivanova", reply.name());
             assertEquals("wolffsmodnpcs:russian", reply.nameList());
@@ -175,14 +180,19 @@ class FlanSoldierNamesTest
             permissions.when(() -> CustomNpcsPermissions.hasPermission(player, CustomNpcsPermissions.NPC_DISPLAY)).thenReturn(true);
             api.when(() -> FlansModApi.getPlayerClass("class")).thenReturn(Optional.of(playerClass));
             config.when(SoldierNameAssociations::current).thenReturn(associations);
-            SoldierNamePacket reply = FlanSoldierNames.request(player, 42, "", "class").orElseThrow();
+            SoldierNamePacket reply = FlanSoldierNames.request(player, 42, "", "class", 1).orElseThrow();
+            assertEquals(1, reply.gender());
             npc.display.setName("Old saved name");
+            npc.display.setMarkovGender(2);
             clearInvocations(npc.display);
-            FlanSoldierNames.confirm(player, new SoldierNamePacket(42, "", "class", true, reply.nameList(), "Injected name"));
+            FlanSoldierNames.confirm(player, new SoldierNamePacket(42, "", "class", true, reply.nameList(), "Injected name", reply.gender()));
+            verifyNoInteractions(npc.display);
+            FlanSoldierNames.confirm(player, new SoldierNamePacket(42, "", "class", true, reply.nameList(), reply.name(), 2));
             verifyNoInteractions(npc.display);
             FlanSoldierNames.confirm(player, reply);
             verify(npc.display).setName(reply.name());
             verify(npc.display).setMarkovGeneratorId(10);
+            verify(npc.display).setMarkovGender(1);
             clearInvocations(npc.display);
             FlanSoldierNames.confirm(player, reply);
             verifyNoInteractions(npc.display);

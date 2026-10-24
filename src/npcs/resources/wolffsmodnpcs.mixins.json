@@ -32,6 +32,7 @@
       "SummonCommandMixin"
   ],
   "client": [
+      "GuiButtonNopMixin",
       "GuiNPCInvMixin",
       "GuiNpcAIMixin",
       "GuiNpcMobSpawnerMixin",

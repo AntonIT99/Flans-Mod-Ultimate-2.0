@@ -26,6 +26,7 @@ public final class NpcClientPackets
             || !npc.modelData.extra.getString(FlanSoldierSelection.CLASS_KEY).equals(packet.playerClass()))
             return;
         npc.display.setMarkovGeneratorId(generator);
+        npc.display.setMarkovGender(packet.gender());
         npc.display.setName(packet.name());
         NpcNetwork.sendToServer(packet);
     }

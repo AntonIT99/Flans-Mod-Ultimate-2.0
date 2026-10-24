@@ -27,7 +27,8 @@ class SoldierNamePacketTest
         assertEquals("", SoldierNamePacket.request(42, new FlanSoldierSelection(null, playerClass)).team());
         FlanSoldierSelection selection = new FlanSoldierSelection(team, playerClass);
         for (SoldierNamePacket packet : new SoldierNamePacket[]{request, SoldierNamePacket.request(42, selection, 1), SoldierNamePacket.request(42, selection, 2),
-            new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german_20th", "Hans Müller")})
+            new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german_20th", "Hans Müller", 1),
+            new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:french", "Claire Martin", 2)})
         {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
             try

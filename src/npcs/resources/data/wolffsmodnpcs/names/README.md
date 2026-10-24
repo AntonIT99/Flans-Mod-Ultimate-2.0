@@ -187,11 +187,19 @@ inheritance are independent, so a female-only class can reuse its team's list:
 ```
 
 These options supply the default for requests without an explicit gender; the
-model picker's Male/Female choice overrides them when Apply is pressed. They do not alter the
-NPC Name menu's own gender selection. Serial and fixed-name generators ignore
+model picker's Male/Female choice overrides them when Apply is pressed. Applying a name also
+sets the NPC Name menu's gender selection for subsequent name generation. Serial and fixed-name generators ignore
 gender. GIGN now inherits the bundled modern `french` pool; existing server
 configs need its association merged manually, followed by a restart.
 
 Team/class IDs and gender-map keys are matched without case sensitivity, as Flan
 normalizes loaded shortnames to lowercase. Existing mixed-case source IDs remain
 valid. Entries that differ only by case within the same map are rejected as duplicates.
+
+Teams bots also use these associations when spawned: the class overrides the team,
+and an association takes priority over the force or squad template's name list.
+The configured gender defaults to male. Vehicle crew members use their individual
+classes; a vehicle's crew label uses the team association. The NPC's Name menu is
+set to the associated list and gender. Saved bot names survive respawns and reloads;
+crew members receive fresh names when recreated. Without an association, existing
+force/template name lists and clone or team-name fallbacks still apply.

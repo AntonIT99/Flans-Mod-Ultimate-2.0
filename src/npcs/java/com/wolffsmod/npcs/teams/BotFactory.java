@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
@@ -97,7 +98,7 @@ public final class BotFactory
     {
         return soldier(level, order, playerClass, position, random, npc ->
         {
-            String name = generate(order.nameList(), random);
+            String name = chooseName(npc, order, playerClass, "", random);
             if (name.isEmpty())
                 name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
             npc.display.setName(name);
@@ -168,7 +169,7 @@ public final class BotFactory
         tuning.set(Value.TACTIC, tactic.ordinal());
         if (definition != null)
             stockAmmunition(npc, definition);
-        String crew = crewName(order, random);
+        String crew = crewName(npc, order, random);
         npc.display.setName(crew.isEmpty() ? npc.display.getName() : crew);
         join(npc, order, order.position(), Membership.VEHICLE);
         train(npc, order.settings().getDifficulty());
@@ -252,23 +253,35 @@ public final class BotFactory
 
     private static void name(EntityNPCInterface npc, Order order, RandomGenerator random)
     {
-        if (!order.slot().getName().isEmpty())
-        {
-            npc.display.setName(order.slot().getName());
-            return;
-        }
-        String name = generate(order.nameList(), random);
+        String name = chooseName(npc, order, order.slot().getRole(), order.slot().getName(), random);
         if (name.isEmpty())
             name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
         order.slot().setName(name);
         npc.display.setName(name);
     }
 
-    private static String crewName(Order order, RandomGenerator random)
+    private static String crewName(EntityNPCInterface npc, Order order, RandomGenerator random)
     {
-        if (order.slot().getName().isEmpty())
-            order.slot().setName(generate(order.nameList(), random));
+        // A vehicle has no player class; its crew label inherits only the team association.
+        order.slot().setName(chooseName(npc, order, "", order.slot().getName(), random));
         return order.slot().getName();
+    }
+
+    /** Applies the associated generator and gender while preserving an existing slot's identity across respawns. */
+    static String chooseName(EntityNPCInterface npc, Order order, String playerClass, String retainedName, RandomGenerator random)
+    {
+        String team = order.team().getShortName();
+        SoldierNameAssociations associations = SoldierNameAssociations.current();
+        OptionalInt generator = associations.find(team, playerClass);
+        if (generator.isPresent())
+        {
+            int id = generator.getAsInt();
+            int gender = associations.gender(team, playerClass);
+            npc.display.setMarkovGeneratorId(id);
+            npc.display.setMarkovGender(gender);
+            return retainedName.isEmpty() ? SoldierNames.generate(id, gender) : retainedName;
+        }
+        return retainedName.isEmpty() ? generate(order.nameList(), random) : retainedName;
     }
 
     /** A name from a soldier name list, or empty for a list that does not exist. */

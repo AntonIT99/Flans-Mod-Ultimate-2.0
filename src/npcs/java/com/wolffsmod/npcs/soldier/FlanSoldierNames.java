@@ -65,6 +65,7 @@ public final class FlanSoldierNames
         if (npc == null || !npc.isAlive() || npc.level() != player.level() || npc.level().getGameTime() > pending.expires())
             return;
         npc.display.setMarkovGeneratorId(SoldierNames.generatorId(pending.packet().nameList()));
+        npc.display.setMarkovGender(pending.packet().gender());
         npc.display.setName(pending.packet().name());
         npc.updateClient = true;
     }
@@ -83,10 +84,12 @@ public final class FlanSoldierNames
         if (generator.isEmpty())
             return Optional.empty();
         int id = generator.getAsInt();
-        String name = SoldierNames.generate(id, gender == -1 ? associations.gender(team, playerClass) : gender);
+        int appliedGender = gender == -1 ? associations.gender(team, playerClass) : gender;
+        String name = SoldierNames.generate(id, appliedGender);
         npc.display.setMarkovGeneratorId(id);
+        npc.display.setMarkovGender(appliedGender);
         npc.display.setName(name);
         npc.updateClient = true;
-        return Optional.of(new SoldierNamePacket(npc.getId(), team, playerClass, true, SoldierNames.associationId(id), name));
+        return Optional.of(new SoldierNamePacket(npc.getId(), team, playerClass, true, SoldierNames.associationId(id), name, appliedGender));
     }
 }
