@@ -674,7 +674,7 @@
   "wolffsmodnpcs.parts.armor_heat": "vsHEAT",
   "wolffsmodnpcs.parts.armor_heat.help": "Äquivalente Panzerstärke gegen Hohlladungsstrahlen in Millimetern. Für Verbund- oder Schottpanzerung höher als den kinetischen Wert einstellen. 0 lässt das Teil gegen HEAT ungepanzert. Gilt nur bei „Panzerung ersetzen: Ja“.",
   "wolffsmodnpcs.parts.armor_override": "Panzerung ersetzen",
-  "wolffsmodnpcs.parts.armor_override.help": "Standardmäßig aus. Ja ersetzt alle Flächen dieses Teils durch die Werte mm und vsHEAT, beginnend bei 0 und unabhängig von der Box. Der Ersatz hat keine virtuelle Neigung; der Auftreffwinkel gilt weiterhin. Nein stellt die Platten des Modells wieder her. Erfordert Teil-Hitboxen, Modell-Schadensprofil und Modellpanzerung.",
+  "wolffsmodnpcs.parts.armor_override.help": "Standardmäßig aus. Ja ersetzt alle Flächen dieses Teils durch die Werte mm und vsHEAT, ausgehend von der Frontpanzerung des Modells und unabhängig von der Box. Bei Nein zeigen die Felder diese Modellwerte; andere Flächen können abweichen. Der Ersatz hat keine virtuelle Neigung; der Auftreffwinkel gilt weiterhin. Nein stellt die Platten des Modells wieder her. Erfordert Teil-Hitboxen, Modell-Schadensprofil und Modellpanzerung.",
   "wolffsmodnpcs.parts.corner": "Ecke X / Y / Z",
   "wolffsmodnpcs.parts.corner.help": "Die Ecke der Box mit den kleinsten Koordinaten, in Modellpixeln vom Modellursprung: X nach rechts, Y nach oben, Z nach hinten.",
   "wolffsmodnpcs.parts.definition": "Modell: %s LP, Resistenz %s, Ecke %s / %s / %s, Größe %s / %s / %s",

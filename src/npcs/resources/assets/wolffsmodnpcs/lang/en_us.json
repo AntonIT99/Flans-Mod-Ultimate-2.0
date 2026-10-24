@@ -674,7 +674,7 @@
   "wolffsmodnpcs.parts.armor_heat": "vsHEAT",
   "wolffsmodnpcs.parts.armor_heat.help": "Equivalent armour thickness against shaped-charge jets, in millimetres. Set this higher than the kinetic value for composite or spaced armour. 0 leaves the part unarmoured against HEAT. Used only with Override armour set to Yes.",
   "wolffsmodnpcs.parts.armor_override": "Override armour",
-  "wolffsmodnpcs.parts.armor_override.help": "Off by default. Yes replaces every face of this part with the mm and vsHEAT values, starting at 0, independently of the box. The replacement has no virtual slope; impact angle still applies. No restores the model's plates. Needs Part hitboxes, Model damage profile and Model armour.",
+  "wolffsmodnpcs.parts.armor_override.help": "Off by default. Yes replaces every face of this part with the mm and vsHEAT values, starting from the model's front-face thicknesses, independently of the box. With No, the fields show those model values; other faces may differ. The replacement has no virtual slope; impact angle still applies. No restores the model's plates. Needs Part hitboxes, Model damage profile and Model armour.",
   "wolffsmodnpcs.parts.corner": "Corner X / Y / Z",
   "wolffsmodnpcs.parts.corner.help": "The corner of the box with the smallest coordinates, in model pixels from the model origin: X to the right, Y up, Z to the rear.",
   "wolffsmodnpcs.parts.definition": "Model: %s HP, resistance %s, corner %s / %s / %s, size %s / %s / %s",
