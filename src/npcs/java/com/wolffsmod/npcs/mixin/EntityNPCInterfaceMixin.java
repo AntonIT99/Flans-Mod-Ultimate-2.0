@@ -76,7 +76,7 @@ import java.util.UUID;
  * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
  * <li>Solid part boxes replace the NPC's rectangular entity collision and pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
- * for a margin beyond aggro range, and terrain profiles set land and water speeds.</li>
+ * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.</li>
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
@@ -342,6 +342,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcSprinting.removeLegacyGoal(goalSelector);
         if (wolffsmodnpcsBoardingGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsBoardingGoal);
         wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
@@ -384,6 +385,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (level().isClientSide)
             return;
+        NpcSprinting.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
             NpcThrowPresentation.clear(npc);
         wolffsmodnpcsEngineAudio.tick(npc);
