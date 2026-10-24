@@ -48,7 +48,6 @@ public final class TryTeamCommand
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         dispatcher.register(commandRoot("tryteam"));
-        dispatcher.register(commandRoot("flantryteam"));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)

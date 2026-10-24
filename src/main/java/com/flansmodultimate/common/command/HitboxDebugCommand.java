@@ -27,7 +27,7 @@ public final class HitboxDebugCommand
     private static final String RESET = "reset";
     private static final String REMOVE = "remove";
     private static final String NUDGE = "nudge";
-    private static final String ROOT = "flandebug";
+    private static final String ROOT = "flansdebug";
     private static final Set<DriveableType> EDITED = new HashSet<>();
     private static final String[] AXES = {"x", "y", "z", "width", "height", "depth"};
     private HitboxDebugCommand()
@@ -35,7 +35,7 @@ public final class HitboxDebugCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        var command = Commands.literal("htibox").executes(c -> edit(c, "list"));
+        var command = Commands.literal("hitbox").executes(c -> edit(c, "list"));
         for (String operation : new String[]{"list", RESET})
             command.then(Commands.literal(operation).executes(c -> edit(c, operation)));
         command.then(Commands.literal(REMOVE).then(part().executes(c -> edit(c, REMOVE))));
@@ -43,7 +43,6 @@ public final class HitboxDebugCommand
         command.then(Commands.literal("add").then(part().then(Commands.argument("hp", FloatArgumentType.floatArg(0.001F, 1000000F)).then(geometry("add", 0)))));
         command.then(Commands.literal(NUDGE).then(part().then(geometry(NUDGE, 0))));
         dispatcher.register(Commands.literal(ROOT).requires(s -> s.hasPermission(2)).then(command));
-        dispatcher.register(Commands.literal(ROOT).requires(s -> s.hasPermission(2)).then(Commands.literal("hitbox").redirect(dispatcher.getRoot().getChild(ROOT).getChild("htibox"))));
     }
 
     private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> part()
@@ -128,7 +127,7 @@ public final class HitboxDebugCommand
         for (ServerPlayer player : server.getPlayerList().getPlayers())
             if (!server.isSingleplayerOwner(player.getGameProfile()))
                 PacketHandler.sendTo(new PacketDebugHitboxes(type, operation.equals(RESET)), player);
-        say(context, "Hitboxes " + operation + ": " + type.getShortName() + "; session only, affects every driveable of this type. /flandebug htibox reset restores geometry.");
+        say(context, "Hitboxes " + operation + ": " + type.getShortName() + "; session only, affects every driveable of this type. /flansdebug hitbox reset restores geometry.");
         return 1;
     }
 

@@ -212,7 +212,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
         }));
     }
 
-    /** Barrel lines as authored, kept while {@code /flandebug} overrides them, by barrel index. */
+    /** Barrel lines as authored, kept while {@code /flansdebug} overrides them, by barrel index. */
     @Getter(lombok.AccessLevel.NONE)
     private final Map<Integer, float[]> authoredBarrels = new TreeMap<>();
 

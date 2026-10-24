@@ -36,6 +36,7 @@ public final class AimOffsetDebugCommand
             .then(Commands.argument("x", FloatArgumentType.floatArg())
                 .then(Commands.argument("y", FloatArgumentType.floatArg()).then(Commands.argument("z", FloatArgumentType.floatArg()).executes(context -> apply(context.getSource(),
                     new Vector3f(FloatArgumentType.getFloat(context, "x"), FloatArgumentType.getFloat(context, "y"), FloatArgumentType.getFloat(context, "z")), false)))))));
+        dispatcher.register(Commands.literal("flansmodultimate").then(Commands.literal("debug").redirect(dispatcher.getRoot().getChild("flansdebug"))));
     }
 
     public static Vector3f resolve(ModelGun model)

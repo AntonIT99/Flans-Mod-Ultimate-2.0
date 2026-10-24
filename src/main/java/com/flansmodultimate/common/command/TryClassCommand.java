@@ -52,10 +52,7 @@ public final class TryClassCommand
 {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        // Registered twice rather than redirected, so the prefixed spelling accepts the same
-        // arguments; a redirect only forwards the arguments that follow it.
         dispatcher.register(commandRoot("tryclass"));
-        dispatcher.register(commandRoot("flantryclass"));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)

@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 /**
  * Developer tooling: writes the muzzles measured off each model into the tracked
- * type files, the way {@code /flandebug shootpoint apply} moves them for one
+ * type files, the way {@code /flansdebug shootpoint apply} moves them for one
  * session, and reports the values most worth checking by hand.
  *
  * <p>

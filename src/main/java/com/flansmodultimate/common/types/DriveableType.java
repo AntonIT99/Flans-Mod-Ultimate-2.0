@@ -1329,7 +1329,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /**
      * Moves one shoot point onto a muzzle measured off the model while the content
      * is loading. Unlike the debug overrides this becomes the type's baseline, so
-     * {@code /flandebug shootpoint reset} keeps it.
+     * {@code /flansdebug shootpoint reset} keeps it.
      *
      * @param modelPixels
      *            the measured muzzle, in the units and convention of a type file

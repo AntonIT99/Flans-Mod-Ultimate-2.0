@@ -16,8 +16,8 @@ class ShootPointDebugCommandTest
         CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
         ShootPointDebugCommand.register(dispatcher);
 
-        assertExecutable(dispatcher, "flandebug", "shootpoint", "seat", "seat", "x", "y", "z");
-        assertExecutable(dispatcher, "flandebug", "shootpoint", "nudge", "seat", "seat", "x", "y", "z");
+        assertExecutable(dispatcher, "flansdebug", "shootpoint", "seat", "seat", "x", "y", "z");
+        assertExecutable(dispatcher, "flansdebug", "shootpoint", "nudge", "seat", "seat", "x", "y", "z");
     }
 
     @Test
@@ -26,7 +26,7 @@ class ShootPointDebugCommandTest
         CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
         ShootPointDebugCommand.register(dispatcher);
 
-        assertExecutable(dispatcher, "flandebug", "shootpoint", "apply");
+        assertExecutable(dispatcher, "flansdebug", "shootpoint", "apply");
     }
 
     private static void assertExecutable(CommandDispatcher<CommandSourceStack> dispatcher, String... path)

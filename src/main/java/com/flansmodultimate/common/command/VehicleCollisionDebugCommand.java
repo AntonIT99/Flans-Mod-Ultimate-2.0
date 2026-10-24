@@ -38,7 +38,7 @@ public final class VehicleCollisionDebugCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("flandebug").requires(source -> source.hasPermission(2))
+        dispatcher.register(Commands.literal("flansdebug").requires(source -> source.hasPermission(2))
             .then(Commands.literal("vehiclecollision").executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()), null))
                 .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()), bypass(context))))
                 .then(Commands.literal("player")
@@ -46,6 +46,7 @@ public final class VehicleCollisionDebugCommand
                         .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setPlayers(context, EntityArgument.getPlayers(context, TARGETS), bypass(context))))))
                 .then(Commands.literal("all").executes(context -> setAll(context, !DriveableCollisionBypass.isAllEntities()))
                     .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setAll(context, bypass(context)))))));
+        dispatcher.register(Commands.literal("flansmodultimate").then(Commands.literal("debug").requires(source -> source.hasPermission(2)).redirect(dispatcher.getRoot().getChild("flansdebug"))));
     }
 
     /** The bypass state the typed collision state asks for: no collision means bypassing hulls. */

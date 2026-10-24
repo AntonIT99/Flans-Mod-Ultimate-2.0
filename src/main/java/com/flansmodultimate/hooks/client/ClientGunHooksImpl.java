@@ -440,7 +440,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             }
             // The type file's Barrel line, which only fires until a client has
             // reported the model. Shown whenever the model is what fires, so the
-            // two can be compared and the line corrected with /flandebug.
+            // two can be compared and the line corrected with /flansdebug.
             if (hasModelBarrel(barrelOriginData, barrel))
             {
                 Vec3 authored = aaGun.getAuthoredBarrelOrigin(barrel, sentry, barrelOriginData.pivots()[barrel]);

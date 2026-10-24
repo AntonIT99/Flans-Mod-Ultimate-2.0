@@ -32,7 +32,7 @@ import java.util.*;
  * keep their muzzles and its AA guns fire from their {@code Barrel} lines, elevated
  * round the measured pivot. A pack in the flan folder is not: its driveables have
  * their muzzles moved onto the measured ones by the rules of
- * {@code /flandebug shootpoint apply}, the primary bank only when it holds one
+ * {@code /flansdebug shootpoint apply}, the primary bank only when it holds one
  * plain point and each seat gun the model registers, and its AA guns fire from
  * the measured muzzles. Either way the measured barrels take the place of the
  * ones a client used to report, and a twin or quad mount fired from one point

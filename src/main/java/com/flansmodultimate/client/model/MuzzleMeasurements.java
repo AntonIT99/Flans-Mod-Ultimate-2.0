@@ -24,7 +24,7 @@ import java.util.List;
  *
  * <p>
  * Takes the few type values it needs as plain inputs rather than a loaded
- * type, so the {@code /flandebug shootpoint} command and the offline
+ * type, so the {@code /flansdebug shootpoint} command and the offline
  * {@code shootPointSync} tooling derive exactly the same values.
  * </p>
  */

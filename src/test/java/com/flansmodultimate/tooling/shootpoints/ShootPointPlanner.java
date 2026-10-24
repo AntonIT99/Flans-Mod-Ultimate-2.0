@@ -19,7 +19,7 @@ import java.util.*;
  * value for how much it deserves a look by hand.
  *
  * <p>
- * Applies the same rules as {@code /flandebug shootpoint apply}: the primary
+ * Applies the same rules as {@code /flansdebug shootpoint apply}: the primary
  * bank is moved only when it holds one plain point, each measured seat gun sets
  * that seat's {@code GunOrigin}, and each measured AA gun barrel sets its
  * {@code Barrel} line. Values are read the way {@code DriveableType} and

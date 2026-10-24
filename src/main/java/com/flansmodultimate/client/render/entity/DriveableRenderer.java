@@ -337,7 +337,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
      * Draws where the loaded model puts each muzzle, next to where the type file
      * does. The gap between the two markers is the correction a definition needs,
      * and seeing it on the vehicle is quicker to judge than reading the delta out
-     * of {@code /flandebug shootpoint list}.
+     * of {@code /flansdebug shootpoint list}.
      */
     private static void renderMeasuredMuzzles(Driveable driveable, DriveableType type)
     {

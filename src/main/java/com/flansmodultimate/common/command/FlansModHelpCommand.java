@@ -22,16 +22,16 @@ public final class FlansModHelpCommand
     private static int help(CommandSourceStack source)
     {
         source.sendSuccess(() -> Component.literal("Flan's Mod Ultimate commands (click a help command to fill the chat):").withStyle(ChatFormatting.GOLD), false);
-        entry(source, "/flansmodultimate, /flans", "Attachments; /flansmodultimate also provides help and operator entity administration", "/help flansmodultimate");
+        entry(source, "/flansmodultimate", "Attachments, debug, help and operator entity administration", "/help flansmodultimate");
         entry(source, "/teams, /flansteams, /team", "Teams, rounds, maps and loadouts", "/teams help");
-        entry(source, "/tryclass, /flantryclass", "Try a player class (operator)", "/help tryclass");
-        entry(source, "/tryteam, /flantryteam", "Try team equipment (operator)", "/help tryteam");
+        entry(source, "/tryclass", "Try a player class (operator)", "/help tryclass");
+        entry(source, "/tryteam", "Try team equipment (operator)", "/help tryteam");
         entry(source, "/craftingparts", "Give crafting ingredients for the held item (operator)", "/help craftingparts");
         entry(source, "/defaultammo", "Give default ammunition (operator)", "/help defaultammo");
-        entry(source, "/rearm, /flanrearm", "Rearm a driveable or mounted gun (operator)", "/help rearm");
+        entry(source, "/rearm", "Rearm a driveable or mounted gun (operator)", "/help rearm");
         entry(source, "/digitalammo", "Manage digital ammunition (operator)", "/help digitalammo");
         entry(source, "/fmparticle", "Spawn mod particles (operator)", "/help fmparticle");
-        entry(source, "/flandebug", "Edit hitboxes and shoot points; control vehicle collision (operator)", "/help flandebug");
+        entry(source, "/flansdebug, /flansmodultimate debug", "Edit hitboxes and shoot points; control vehicle collision (operator)", "/help flansdebug");
         entry(source, "/vehiclephysics", "Report vehicle physics (operator)", "/help vehiclephysics");
         entry(source, "/flansphysics", "Inspect and change dimension physics (operator)", "/help flansphysics");
         source.sendSuccess(() -> Component.literal("/flansrenderstats - Client-only render diagnostics: start, stop, reset, bridge [indices]").withStyle(ChatFormatting.GRAY), false);
