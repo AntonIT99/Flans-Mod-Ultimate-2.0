@@ -45,6 +45,9 @@ public final class NpcThrowing
     /** Blocks a thrower keeps beyond the reach of its grenade, and the least distance it throws one from whatever that reach. */
     private static final double GRENADE_MARGIN = 2D;
     private static final double MIN_GRENADE_DISTANCE = 4D;
+    /** The margin and least distance of the cautious strategy, which also keeps out of a grenade's whole fragment radius. */
+    private static final double CAUTIOUS_MARGIN = 3D;
+    private static final double MIN_CAUTIOUS_DISTANCE = 6D;
     /** Share of a grenade's fragment radius a thrower keeps out of: fragments that far off seldom hit, and do little. */
     private static final double FRAGMENT_SHARE = 0.5D;
     /** Blocks round where it lands that a splash potion or its lingering cloud reaches, and that a firework's stars reach. */
@@ -208,7 +211,7 @@ public final class NpcThrowing
         if (stack.isEmpty() || !target.isAlive() || target.level() != npc.level() || !carries(npc, stack) || !npc.getSensing().hasLineOfSight(target))
             return false;
         double distance = npc.distanceTo(target);
-        return distance <= reach(choice.kind()) + MIN_THROW_DISTANCE && keepsClear(npc, target, stack, distance);
+        return distance <= reach(choice.kind()) + MIN_THROW_DISTANCE && keepsClear(npc, target, stack, distance, strategy(npc, choice.kind()) == Throwing.CAUTIOUS);
     }
 
     /**
@@ -221,7 +224,7 @@ public final class NpcThrowing
         {
             case FREQUENT -> 100;
             case MODERATE -> 300;
-            case SPARING -> 600;
+            case SPARING, CAUTIOUS -> 600;
             case RANGED_SLOT, MAIN_WEAPON -> 0;
         };
         return ticks * (75 + npc.getRandom().nextInt(51)) / 100;
@@ -240,6 +243,20 @@ public final class NpcThrowing
         if (FlansProjectiles.isGrenade(stack))
             return Math.max(MIN_GRENADE_DISTANCE, hazard + GRENADE_MARGIN);
         return hazard > 0D ? hazard + 1D : MIN_THROW_DISTANCE;
+    }
+
+    /** @return the least distance for the cautious strategy: a grenade's whole reach, fragments included, plus a wider margin */
+    static double cautiousDistance(ItemStack stack)
+    {
+        if (!FlansProjectiles.isGrenade(stack))
+            return safeDistance(stack);
+        return Math.max(MIN_CAUTIOUS_DISTANCE, fullHazard(stack) + CAUTIOUS_MARGIN);
+    }
+
+    /** @return a grenade's whole reach, its fragments' included, which the cautious strategy also keeps allies out of */
+    private static double fullHazard(ItemStack stack)
+    {
+        return FlansProjectiles.getDetonationRadii(stack).map(DetonationRadii::largest).orElse(0D);
     }
 
     /** @return blocks round where it lands within which the item harms, as far as a thrower needs to keep out of it */
@@ -299,7 +316,7 @@ public final class NpcThrowing
 
     private static boolean worthThrowing(EntityNPCInterface npc, LivingEntity target, ItemStack stack, Kind kind, Throwing strategy, double distance)
     {
-        if (!keepsClear(npc, target, stack, distance))
+        if (!keepsClear(npc, target, stack, distance, strategy == Throwing.CAUTIOUS))
             return false;
         return switch (kind)
         {
@@ -310,11 +327,11 @@ public final class NpcThrowing
     }
 
     /** @return whether the NPC is beyond the reach of the item where it lands, and no ally of the NPC is within it */
-    private static boolean keepsClear(EntityNPCInterface npc, LivingEntity target, ItemStack stack, double distance)
+    private static boolean keepsClear(EntityNPCInterface npc, LivingEntity target, ItemStack stack, double distance, boolean cautious)
     {
-        if (distance < safeDistance(stack))
+        if (distance < (cautious ? cautiousDistance(stack) : safeDistance(stack)))
             return false;
-        double hazard = hazard(stack);
+        double hazard = cautious && FlansProjectiles.isGrenade(stack) ? fullHazard(stack) : hazard(stack);
         return hazard <= 0D || around(npc, target, hazard, other -> other != npc && NpcDrivers.ally(npc, other)) == 0;
     }
 
@@ -325,7 +342,7 @@ public final class NpcThrowing
         {
             case FREQUENT, RANGED_SLOT, MAIN_WEAPON -> 1;
             case MODERATE -> 2;
-            case SPARING -> 3;
+            case SPARING, CAUTIOUS -> 3;
         };
     }
 

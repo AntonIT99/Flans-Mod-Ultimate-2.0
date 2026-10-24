@@ -285,7 +285,9 @@ public final class NpcTuning
         /** Thrown from time to time beside the NPC's other attacks; grenades only at enemies close together or a tough one. */
         MODERATE,
         /** Thrown seldom beside the NPC's other attacks; grenades only at a larger group of enemies or a tough one. */
-        SPARING;
+        SPARING,
+        /** As Sparing, but a grenade is only thrown from beyond its whole reach, fragments included, plus 3 blocks and at least 6. */
+        CAUTIOUS;
 
         /** @return whether the NPC throws an item of the kind as its ranged weapon, given where the item is */
         public boolean mainWeapon(boolean inProjectileSlot)
@@ -296,7 +298,7 @@ public final class NpcTuning
         /** @return whether the NPC throws items of the kind now and then beside its other attacks */
         public boolean occasional()
         {
-            return this == FREQUENT || this == MODERATE || this == SPARING;
+            return this == FREQUENT || this == MODERATE || this == SPARING || this == CAUTIOUS;
         }
     }
 

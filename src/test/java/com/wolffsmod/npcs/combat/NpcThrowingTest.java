@@ -70,7 +70,7 @@ class NpcThrowingTest
     {
         for (Throwing strategy : Throwing.values())
         {
-            assertEquals(strategy == Throwing.FREQUENT || strategy == Throwing.MODERATE || strategy == Throwing.SPARING, strategy.occasional(), strategy.name());
+            assertEquals(strategy == Throwing.FREQUENT || strategy == Throwing.MODERATE || strategy == Throwing.SPARING || strategy == Throwing.CAUTIOUS, strategy.occasional(), strategy.name());
             assertEquals(strategy == Throwing.MAIN_WEAPON || strategy == Throwing.RANGED_SLOT, strategy.mainWeapon(true), strategy.name());
             assertEquals(strategy == Throwing.MAIN_WEAPON, strategy.mainWeapon(false), strategy.name());
         }
@@ -136,6 +136,9 @@ class NpcThrowingTest
             // Without any reach the thrower still keeps 4 blocks off; half the fragments' 16 plus 2 makes 10.
             assertEquals(4D, NpcThrowing.safeDistance(small), 1.0E-9D);
             assertEquals(10D, NpcThrowing.safeDistance(frag), 1.0E-9D);
+            // Cautious keeps out of the whole fragment radius with a wider margin, and at least 6 blocks off.
+            assertEquals(6D, NpcThrowing.cautiousDistance(small), 1.0E-9D);
+            assertEquals(19D, NpcThrowing.cautiousDistance(frag), 1.0E-9D);
 
             EntityNPCInterface npc = npc();
             LivingEntity target = mock(LivingEntity.class);
