@@ -21,13 +21,15 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LegacyTransformApplier
 {
-    public static void renderModel(IModelBase model, InfoType infoType, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    public static void renderModel(IModelBase model, InfoType infoType, ResourceLocation texture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, float red,
+        float green, float blue, float alpha)
     {
         poseStack.pushPose();
         applyModelTransform(model, infoType, poseStack);
 
         boolean translucent = ModClientConfig.get().useTranslucentRendering(infoType);
-        boolean cull = ModClientConfig.get().useCullingRendering(infoType);
+        // A reflected pose, such as 1.7.10's third-person item placement, reverses face winding
+        boolean cull = ModClientConfig.get().useCullingRendering(infoType) && poseStack.last().pose().determinant() > 0F;
         if (model instanceof ModelBase modelBase)
         {
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
@@ -69,7 +71,7 @@ public final class LegacyTransformApplier
             switch (op.kind())
             {
                 case TRANSLATE -> poseStack.translate(op.args()[0], op.args()[1], op.args()[2]);
-                case SCALE -> poseStack.scale(op.args()[0], op.args()[1], op.args()[2]);
+                case SCALE -> PoseScaling.scale(poseStack, op.args()[0], op.args()[1], op.args()[2]);
                 case ROTATE -> {
                     float angle = op.args()[0];
                     float x = op.args()[1];

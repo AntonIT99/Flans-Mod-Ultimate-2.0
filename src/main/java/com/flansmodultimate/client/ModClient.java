@@ -20,7 +20,6 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.gun.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import it.unimi.dsi.fastutil.longs.*;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +45,8 @@ import net.minecraft.world.phys.HitResult;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+
+import it.unimi.dsi.fastutil.longs.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -939,6 +940,18 @@ public class ModClient
         if (vehicleZoom > 1F)
             fov = Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(fov) / 2D) / vehicleZoom));
         return fov;
+    }
+
+    /**
+     * The field of view for the first-person hand and gun. 1.7.10 kept them at their own fixed field of view, so
+     * FOVZoomLevel never enlarged the held gun; only a near-complete ZoomLevel did, through the projection's camera zoom.
+     */
+    public static double handFov(double fov)
+    {
+        float zoomLevel = zoomProgress > 0.8F ? lastZoomLevel : 1F;
+        if (Math.abs(zoomLevel - 1F) < 0.01F)
+            return fov;
+        return Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(fov) / 2D) / zoomLevel));
     }
 
     public static void renderTick()

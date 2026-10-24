@@ -82,10 +82,16 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
+        // Without the configured FOV this is the hand pass, which 1.7.10 kept at its own fixed field of view
+        if (!event.usedConfiguredFov())
+        {
+            event.setFOV(ModClient.handFov(event.getFOV()));
+            return;
+        }
         double fov = ModClient.cameraFov(event.getFOV(), event.getPartialTick());
         ModClientConfig config = ModClientConfig.get();
-        // The firing punch narrows the world view only, as 1.7.10 left the hand at its own fixed field of view
-        if (event.usedConfiguredFov() && config != null && config.gunScreenShake)
+        // The firing punch narrows the world view only
+        if (config != null && config.gunScreenShake)
             fov = Math.max(1D, fov + GunScreenShake.fovOffset((float) event.getPartialTick()));
         event.setFOV(fov);
     }
