@@ -14,6 +14,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 
+import java.util.Map;
+
 /**
  * Capture the Flag. Players take, return and capture flags by clicking them; combatants of the round, which addons
  * field, do so by touching them. Both follow the same rules, and only players earn score, statistics and experience.
@@ -150,6 +152,14 @@ public final class GameTypeCTF extends GameTypeTDM
             return true;
         }
         return super.setVariable(variable, value);
+    }
+
+    @Override
+    public Map<String, String> getVariables()
+    {
+        Map<String, String> variables = super.getVariables();
+        variables.put("flagtime", Integer.toString(flagReturnTimeSeconds));
+        return variables;
     }
 
     @Override

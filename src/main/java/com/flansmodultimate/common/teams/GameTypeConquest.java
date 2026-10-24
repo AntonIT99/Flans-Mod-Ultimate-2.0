@@ -127,6 +127,17 @@ public final class GameTypeConquest extends GameTypeObjective
     }
 
     @Override
+    public Map<String, String> getVariables()
+    {
+        Map<String, String> variables = super.getVariables();
+        variables.put("ticketdraininterval", Integer.toString(ticketDrainInterval));
+        variables.put("killticketvalue", Integer.toString(killTicketValue));
+        variables.put("deploydelay", Integer.toString(deployDelaySeconds));
+        variables.put("precaptureendpoints", Boolean.toString(preCaptureEndPoints));
+        return variables;
+    }
+
+    @Override
     public void loadSettings(CompoundTag tag)
     {
         super.loadSettings(tag);

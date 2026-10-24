@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.client;
 
 import com.flansmodultimate.api.client.FlansEquipmentRender;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.client.centre.CommandCentrePages;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import com.wolffsmod.npcs.model.NpcSkins;
@@ -26,6 +27,7 @@ public final class NpcsClientEvents
         {
             FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply);
             NpcSkins.setClientResolver(NpcSkinResolver::apply);
+            CommandCentrePages.register();
         });
     }
 

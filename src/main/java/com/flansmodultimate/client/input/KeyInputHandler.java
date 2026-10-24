@@ -70,6 +70,7 @@ public final class KeyInputHandler
     private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsEditorKey = key("teams_editor", InputConstants.UNKNOWN.getValue(), KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping commandCentreKey = key("command_centre", GLFW.GLFW_KEY_F7, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyContexts.IN_GAME, CATEGORY_GENERAL);
 
     // Every driveable: planes, ground vehicles and mechas alike.
@@ -164,6 +165,18 @@ public final class KeyInputHandler
         return doorKey.getTranslatedKeyMessage();
     }
 
+    /** Whether a key pressed in a screen is the one that opens the Teams command centre, which closes it again. */
+    public static boolean isCommandCentreKey(int keyCode, int scanCode)
+    {
+        return commandCentreKey.matches(keyCode, scanCode);
+    }
+
+    /** The key bound to the Teams command centre, as the controls screen names it. */
+    public static Component commandCentreKeyName()
+    {
+        return commandCentreKey.getTranslatedKeyMessage();
+    }
+
     /** Current bindings and localized action names for the compact Teams HUD. */
     public static List<Component> teamsControlHints()
     {
@@ -186,6 +199,7 @@ public final class KeyInputHandler
         register.accept(teamsScoresKey);
         register.accept(teamsClassKey);
         register.accept(teamsEditorKey);
+        register.accept(commandCentreKey);
         register.accept(toggleAimPoseKey);
         register.accept(driveableInventoryKey);
         register.accept(primaryKey);
@@ -417,6 +431,8 @@ public final class KeyInputHandler
             PacketHandler.sendToServer(PacketTeamsAction.openClassMenu());
         if (noScreen && teamsEditorKey.consumeClick())
             PacketHandler.sendToServer(com.flansmodultimate.network.server.teams.PacketEditorAction.open());
+        if (noScreen && commandCentreKey.consumeClick())
+            PacketHandler.sendToServer(com.flansmodultimate.network.server.teams.PacketCommandCentreAction.open());
         if (noScreen && toggleAimPoseKey.consumeClick())
             AimPoseClient.toggle();
     }

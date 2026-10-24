@@ -430,6 +430,12 @@ public final class TeamsManager
         return vehiclesNeedFuel && !movieProp;
     }
 
+    /** The fuel rule as it is set, before movie prop mode lifts it. */
+    public boolean isVehiclesNeedFuelSetting()
+    {
+        return vehiclesNeedFuel;
+    }
+
     public void setPacifism(boolean pacifism)
     {
         this.pacifism = pacifism;
@@ -447,6 +453,12 @@ public final class TeamsManager
     {
         seaLevelOverride = seaLevel == null ? NO_SEA_LEVEL_OVERRIDE : seaLevel;
         saveRuntime();
+    }
+
+    /** The sea level an operator set with {@code /teams seaLevel}, or empty when each dimension keeps its own. */
+    public OptionalInt getSeaLevelOverride()
+    {
+        return seaLevelOverride == NO_SEA_LEVEL_OVERRIDE ? OptionalInt.empty() : OptionalInt.of(seaLevelOverride);
     }
 
     /** The sea level of a dimension, unless an operator set one with {@code /teams seaLevel}. */
@@ -593,7 +605,14 @@ public final class TeamsManager
         if (removed == null)
             return false;
 
-        savedData.rounds.removeIf(round -> round.getMapId().equals(removed.getShortName()));
+        // The rotation goes on after the last round it kept up to the one last started, as when a round is removed.
+        Predicate<TeamsRound> onMap = round -> round.getMapId().equals(removed.getShortName());
+        int keptBefore = 0;
+        for (int i = 0; i <= Math.min(rotationIndex, savedData.rounds.size() - 1); i++)
+            if (!onMap.test(savedData.rounds.get(i)))
+                keptBefore++;
+        savedData.rounds.removeIf(onMap);
+        rotationIndex = keptBefore - 1;
         markDirty();
         return true;
     }
@@ -669,8 +688,53 @@ public final class TeamsManager
         TeamsRound removed = Objects.requireNonNull(savedData).rounds.remove(index);
         if (removed.getId().equals(currentRoundId))
             stopRound();
+        // The rotation goes on from where it was: the rounds after the removed one moved up a place, and the round that
+        // took the place of a removed round last started is the one to play next.
+        if (index <= rotationIndex)
+            rotationIndex--;
         rotationIndex = Math.min(rotationIndex, savedData.rounds.size() - 1);
         markDirty();
+        return true;
+    }
+
+    /**
+     * Moves a round of the rotation to another place in it. The rotation goes on from the round last started wherever
+     * that round now stands, and a queued round stays queued.
+     *
+     * @return whether both places are in the rotation
+     */
+    public boolean moveRound(int from, int to)
+    {
+        ensureData();
+        List<TeamsRound> rounds = Objects.requireNonNull(savedData).rounds;
+        if (from < 0 || from >= rounds.size() || to < 0 || to >= rounds.size())
+            return false;
+        TeamsRound last = rotationIndex >= 0 && rotationIndex < rounds.size() ? rounds.get(rotationIndex) : null;
+        rounds.add(to, rounds.remove(from));
+        if (last != null)
+            rotationIndex = rounds.indexOf(last);
+        markDirty();
+        return true;
+    }
+
+    /**
+     * Changes the length and score limit of a round of the rotation. A round being played takes the new score limit at
+     * once and keeps its clock; the new length counts from the next time it starts.
+     *
+     * @return whether the round is in the rotation
+     */
+    public boolean setRoundLimits(int index, int minutes, int scoreLimit)
+    {
+        ensureData();
+        List<TeamsRound> rounds = Objects.requireNonNull(savedData).rounds;
+        if (index < 0 || index >= rounds.size() || minutes < 1 || scoreLimit < 1)
+            return false;
+        TeamsRound round = rounds.get(index);
+        round.setTimeLimitMinutes(minutes);
+        round.setScoreLimit(scoreLimit);
+        markDirty();
+        if (round.getId().equals(currentRoundId))
+            syncAll(PacketTeamsState.OpenScreen.NONE);
         return true;
     }
 
@@ -713,11 +777,12 @@ public final class TeamsManager
             for (int team = 0; team < teamCount; team++)
                 teamIds.add(candidates.remove(random.nextInt(candidates.size())).getShortName());
 
-            addRound(map.getShortName(), gameType.getId(), teamIds, List.of(), 10 + random.nextInt(10), generatedScoreLimit(gameType));
+            addRound(map.getShortName(), gameType.getId(), teamIds, List.of(), 10 + random.nextInt(10), defaultScoreLimit(gameType));
         }
     }
 
-    private static int generatedScoreLimit(com.flansmodultimate.common.teams.GameType gameType)
+    /** The score limit a round of a game type gets when it is not given one, as the rounds generator gives it. */
+    public static int defaultScoreLimit(com.flansmodultimate.common.teams.GameType gameType)
     {
         // Tickets in the objective modes: reinforcements for the attackers of an Assault, score to reach otherwise.
         if (gameType.getObjectiveMode() != ObjectiveMode.NONE)
@@ -831,6 +896,19 @@ public final class TeamsManager
             if (savedData.rounds.get(i).getId().equals(queuedRoundId))
                 return i;
         return -1;
+    }
+
+    /**
+     * The rotation index of the round {@link #startNextRound} would start: the queued round, otherwise the one after the
+     * round last started. A vote at the end of a round may still pick another. -1 for an empty rotation.
+     */
+    public int nextRoundIndex()
+    {
+        int queued = queuedRoundIndex();
+        if (queued >= 0)
+            return queued;
+        List<TeamsRound> rounds = getRounds();
+        return rounds.isEmpty() ? -1 : (rotationIndex + 1) % rounds.size();
     }
 
     /** Changes the score limit of the round being played, as the legacy {@code scorelimit} game type variable did. */

@@ -235,6 +235,17 @@ public final class GameTypeAssault extends GameTypeObjective
     }
 
     @Override
+    public Map<String, String> getVariables()
+    {
+        Map<String, String> variables = super.getVariables();
+        variables.put(SETTING_REINFORCEMENTS, Integer.toString(reinforcementRefill));
+        variables.put("stagetime", Integer.toString(stageTimeMinutes));
+        variables.put("defenderdeploydelay", Integer.toString(defenderDeployDelaySeconds));
+        variables.put("defenderdeploydelayperobjective", Integer.toString(defenderDeployDelayPerObjectiveSeconds));
+        return variables;
+    }
+
+    @Override
     public void loadSettings(CompoundTag tag)
     {
         super.loadSettings(tag);

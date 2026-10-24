@@ -69,12 +69,13 @@ public final class PacketHandler
             PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class, PacketGunShootClient.class,
             PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class, PacketHeldItemPresentation.class, PacketHitMarker.class, PacketKillMessage.class,
             PacketLoadoutState.class, PacketParticle.class, PacketParticles.class, PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class, PacketSyncCommonConfig.class,
-            PacketSyncDigitalAmmo.class, PacketRankUp.class, PacketTeamsObjectives.class, PacketTeamsState.class, PacketEditorState.class);
+            PacketSyncDigitalAmmo.class, PacketRankUp.class, PacketTeamsObjectives.class, PacketTeamsState.class, PacketEditorState.class, PacketCommandCentreState.class);
         addServerPackets(PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class, PacketDeployedGunInput.class,
             PacketDistantSubscription.class, PacketDriveableInput.class, PacketBuyWeapon.class, PacketGrenadeThrow.class, PacketGunFireMode.class, PacketGunInput.class, PacketGunPreferredAmmo.class,
             PacketGunReload.class, PacketGunScopedState.class, PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunToggle.class, PacketGunVariableZoom.class, PacketManualGuidance.class,
             PacketReloadPreferences.class, PacketRequestCommonConfig.class, PacketRequestDebug.class, PacketRequestDismount.class, PacketSelectPaintjob.class, PacketSetCommonConfigValue.class,
-            PacketTeamsAction.class, PacketLoadoutAction.class, PacketCapturePointEditAction.class, PacketDeployLayoutSave.class, PacketDeploySpawnSelect.class, PacketEditorAction.class);
+            PacketTeamsAction.class, PacketLoadoutAction.class, PacketCapturePointEditAction.class, PacketDeployLayoutSave.class, PacketDeploySpawnSelect.class, PacketEditorAction.class,
+            PacketCommandCentreAction.class);
 
         Comparator<Class<?>> byName = Comparator.comparing(Class::getName, String.CASE_INSENSITIVE_ORDER);
         CLIENT_PACKET_TYPES.sort(byName);

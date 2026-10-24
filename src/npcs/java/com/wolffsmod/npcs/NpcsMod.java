@@ -1,10 +1,12 @@
 package com.wolffsmod.npcs;
 
+import com.flansmodultimate.api.FlansCommandCentre;
 import com.mojang.logging.LogUtils;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
 import com.wolffsmod.npcs.scripting.FlansScriptApi;
+import com.wolffsmod.npcs.teams.BattlesSection;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -32,6 +34,7 @@ public class NpcsMod
         NpcNetwork.register();
         NpcNetworkPlatform.init(modEventBus);
         TeamsBots.register();
+        FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);
         modEventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(FlansScriptApi::register));
     }
 }

@@ -9,6 +9,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.Map;
+
 public class GameTypeTDM extends GameType
 {
     private static final String NBT_FRIENDLY_FIRE = "tdm_friendly_fire";
@@ -107,6 +109,15 @@ public class GameTypeTDM extends GameType
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Map<String, String> getVariables()
+    {
+        Map<String, String> variables = super.getVariables();
+        variables.put("friendlyfire", Boolean.toString(friendlyFire));
+        variables.put("autobalance", Boolean.toString(autoBalance));
+        return variables;
     }
 
     @Override
