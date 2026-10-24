@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.network.SoldierNamePacket;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
+import noppes.npcs.shared.client.gui.components.GuiButtonNop;
 import noppes.npcs.shared.client.gui.components.GuiButtonYesNo;
 import noppes.npcs.shared.client.gui.components.GuiLabel;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +26,7 @@ import java.util.*;
 /**
  * The "Flan Soldier" folder of the Custom NPCs model picker: content packs, their teams, then a team's classes.
  * Choosing a class gives the NPC the human model and, unless the builder turned the class skin off, the class skin, and
- * remembers the choice. Separate toggles, on by default, apply the class loadout and its configured naming list.
+ * remembers the choice. A toggle applies the class loadout; the naming controls generate a name on explicit request.
  */
 @SuppressWarnings("unused") // Reached only from the model picker mixin, which IntelliJ does not follow.
 public final class FlanSoldierBrowser
@@ -33,14 +34,15 @@ public final class FlanSoldierBrowser
     public static final String LABEL = "Flan Soldier";
     private static final int LOADOUT_TOGGLE_ID = 9120;
     private static final int SKIN_TOGGLE_ID = 9121;
-    private static final int NAME_TOGGLE_ID = 9122;
+    private static final int NAME_GENDER_ID = 9122;
+    private static final int NAME_APPLY_ID = 9123;
     private static final int SKIN_WIDTH = 64;
     /** Whether choosing a class also gives the NPC its loadout; the builder's choice lasts for the session. */
     private static boolean applyClassLoadout = true;
     /** Whether choosing a class or applying its loadout also gives the NPC the class skin; the builder's choice lasts for the session. */
     private static boolean applyClassSkin = true;
-    /** Whether choosing a class generates a name from its server-configured association. */
-    private static boolean applyClassName = true;
+    /** Gender for explicit naming requests; the builder's choice lasts for the session. */
+    private static int nameGender = 1;
 
     @Nullable
     private IContentPack pack;
@@ -192,21 +194,19 @@ public final class FlanSoldierBrowser
     }
 
     /**
-     * Gives the NPC the looks of a chosen class, optionally its loadout and a name from its associated list.
+     * Gives the NPC the looks of a chosen class and optionally its loadout. Naming requires the Apply button.
      */
     public static void choose(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
     {
         select(screen, selection);
-        if (applyClassLoadout || applyClassName)
+        if (applyClassLoadout)
             screen.save();
         if (applyClassLoadout)
             NpcNetwork.sendToServer(ApplyLoadoutPacket.of(screen.npc.getId(), selection));
-        if (applyClassName)
-            NpcNetwork.sendToServer(SoldierNamePacket.request(screen.npc.getId(), selection));
     }
 
     /**
-     * Adds independent loadout, skin and naming toggles, also while browsing so they can be set before choosing a class.
+     * Adds loadout and skin toggles, plus the naming gender selector and explicit Apply button.
      *
      * @param browsing
      *            whether the picker is inside the soldier folder
@@ -221,24 +221,20 @@ public final class FlanSoldierBrowser
             button -> setApplyClassLoadout(screen, selection.orElse(null), ((GuiButtonYesNo) button).getBoolean())));
         screen.addLabel(new GuiLabel(SKIN_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_skin", screen.guiLeft + 124, screen.guiTop + 51, 0xFF0000));
         screen.addButton(new GuiButtonYesNo(screen, SKIN_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 46, applyClassSkin, button -> setApplyClassSkin(((GuiButtonYesNo) button).getBoolean())));
-        screen.addLabel(new GuiLabel(NAME_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_name", screen.guiLeft + 124, screen.guiTop + 74, 0xFF0000));
-        screen.addButton(new GuiButtonYesNo(screen, NAME_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 69, applyClassName,
-            button -> setApplyClassName(screen, selection.orElse(null), ((GuiButtonYesNo) button).getBoolean())));
-    }
-
-    /** Turning naming on also names the already selected class, without applying its equipment. */
-    private static void setApplyClassName(GuiCreationScreenInterface screen, @Nullable FlanSoldierSelection selection, boolean apply)
-    {
-        applyClassName = apply;
-        if (apply && selection != null)
-            applyName(screen, selection);
+        screen.addLabel(new GuiLabel(NAME_GENDER_ID, "wolffsmodnpcs.soldier.apply_name", screen.guiLeft + 124, screen.guiTop + 74, 0xFF0000));
+        screen.addButton(new GuiButtonNop(screen, NAME_GENDER_ID, screen.guiLeft + 260, screen.guiTop + 69, 65, 20, button -> nameGender = ((GuiButtonNop) button).getValue() + 1, nameGender - 1,
+            "wolffsmodnpcs.soldier.name.male", "wolffsmodnpcs.soldier.name.female"));
+        GuiButtonNop apply = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 328, screen.guiTop + 69, 60, 20, "wolffsmodnpcs.preset.apply",
+            button -> selection.ifPresent(chosen -> applyName(screen, chosen)));
+        apply.setEnabled(selection.isPresent());
+        screen.addButton(apply);
     }
 
     private static void applyName(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
     {
         // Save the current display and selection before the server changes the generator and name.
         screen.save();
-        NpcNetwork.sendToServer(SoldierNamePacket.request(screen.npc.getId(), selection));
+        NpcNetwork.sendToServer(SoldierNamePacket.request(screen.npc.getId(), selection, nameGender));
     }
 
     private static void setApplyClassSkin(boolean apply)

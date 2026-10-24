@@ -8,13 +8,24 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 
 /** A picker naming request, the generated name returned by the server, and acknowledgement of that exact server result. */
-public record SoldierNamePacket(int entityId, String team, String playerClass, boolean state, String nameList, String name)
+public record SoldierNamePacket(int entityId, String team, String playerClass, boolean state, String nameList, String name, int gender)
 {
     private static final int MAX_LENGTH = 256;
 
+    /** Requests without an explicit editor gender retain the configured association gender. */
+    public SoldierNamePacket(int entityId, String team, String playerClass, boolean state, String nameList, String name)
+    {
+        this(entityId, team, playerClass, state, nameList, name, -1);
+    }
+
     public static SoldierNamePacket request(int entityId, FlanSoldierSelection selection)
     {
-        return new SoldierNamePacket(entityId, selection.team() == null ? "" : selection.team().getShortName(), selection.playerClass().getShortName(), false, "", "");
+        return request(entityId, selection, -1);
+    }
+
+    public static SoldierNamePacket request(int entityId, FlanSoldierSelection selection, int gender)
+    {
+        return new SoldierNamePacket(entityId, selection.team() == null ? "" : selection.team().getShortName(), selection.playerClass().getShortName(), false, "", "", gender);
     }
 
     public void write(FriendlyByteBuf buffer)
@@ -25,11 +36,13 @@ public record SoldierNamePacket(int entityId, String team, String playerClass, b
         buffer.writeBoolean(state);
         buffer.writeUtf(nameList, MAX_LENGTH);
         buffer.writeUtf(name, MAX_LENGTH);
+        buffer.writeVarInt(gender);
     }
 
     public static SoldierNamePacket read(FriendlyByteBuf buffer)
     {
-        return new SoldierNamePacket(buffer.readVarInt(), buffer.readUtf(MAX_LENGTH), buffer.readUtf(MAX_LENGTH), buffer.readBoolean(), buffer.readUtf(MAX_LENGTH), buffer.readUtf(MAX_LENGTH));
+        return new SoldierNamePacket(buffer.readVarInt(), buffer.readUtf(MAX_LENGTH), buffer.readUtf(MAX_LENGTH), buffer.readBoolean(), buffer.readUtf(MAX_LENGTH), buffer.readUtf(MAX_LENGTH),
+            buffer.readVarInt());
     }
 
     public void handle(ServerPlayer player)
@@ -37,6 +50,6 @@ public record SoldierNamePacket(int entityId, String team, String playerClass, b
         if (state)
             FlanSoldierNames.confirm(player, this);
         else
-            FlanSoldierNames.request(player, entityId, team, playerClass).ifPresent(packet -> NpcNetworkPlatform.sendToPlayer(player, packet));
+            FlanSoldierNames.request(player, entityId, team, playerClass, gender).ifPresent(packet -> NpcNetworkPlatform.sendToPlayer(player, packet));
     }
 }

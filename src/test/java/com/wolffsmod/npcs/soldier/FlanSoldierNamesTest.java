@@ -30,6 +30,28 @@ import static org.mockito.Mockito.*;
 class FlanSoldierNamesTest
 {
     @Test
+    @SuppressWarnings("ResultOfMethodCallIgnored") // Mockito's static stubbing callback intentionally discards the result.
+    void explicitPickerGenderOverridesAssociationAndInvalidRequestsAreIgnored()
+    {
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        npc.display = mock(DataDisplay.class);
+        IPlayerClass playerClass = mock(IPlayerClass.class);
+        when(playerClass.getShortName()).thenReturn("class");
+        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of(), Map.of("class", "wolffsmodnpcs:french"));
+        try (var config = mockStatic(SoldierNameAssociations.class); var names = mockStatic(SoldierNames.class, CALLS_REAL_METHODS))
+        {
+            config.when(SoldierNameAssociations::current).thenReturn(associations);
+            names.when(() -> SoldierNames.generate(70, 2)).thenReturn("Claire Martin");
+            names.when(() -> SoldierNames.generate(70, 1)).thenReturn("Louis Martin");
+            FlanSoldierSelection selection = new FlanSoldierSelection(null, playerClass);
+            assertEquals("Claire Martin", FlanSoldierNames.apply(npc, selection, 2).orElseThrow().name());
+            assertEquals("Louis Martin", FlanSoldierNames.apply(npc, selection, 1).orElseThrow().name());
+            assertTrue(FlanSoldierNames.request(null, 42, "", "class", 0).isEmpty());
+            assertTrue(FlanSoldierNames.request(null, 42, "", "class", 3).isEmpty());
+        }
+    }
+
+    @Test
     void romanTeamAppliesBuiltInGeneratorAndReturnsItsAssociationId()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);

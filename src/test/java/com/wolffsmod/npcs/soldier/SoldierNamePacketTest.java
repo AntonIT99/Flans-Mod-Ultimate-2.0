@@ -25,7 +25,9 @@ class SoldierNamePacketTest
         SoldierNamePacket request = SoldierNamePacket.request(42, new FlanSoldierSelection(team, playerClass));
         assertEquals(new SoldierNamePacket(42, "team", "class", false, "", ""), request);
         assertEquals("", SoldierNamePacket.request(42, new FlanSoldierSelection(null, playerClass)).team());
-        for (SoldierNamePacket packet : new SoldierNamePacket[]{request, new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german_20th", "Hans Müller")})
+        FlanSoldierSelection selection = new FlanSoldierSelection(team, playerClass);
+        for (SoldierNamePacket packet : new SoldierNamePacket[]{request, SoldierNamePacket.request(42, selection, 1), SoldierNamePacket.request(42, selection, 2),
+            new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german_20th", "Hans Müller")})
         {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
             try
@@ -50,9 +52,9 @@ class SoldierNamePacketTest
             state.handle(null);
             requests.verify(() -> FlanSoldierNames.confirm(null, state));
             requests.verifyNoMoreInteractions();
-            requests.when(() -> FlanSoldierNames.request(null, 42, "team", "class")).thenReturn(Optional.empty());
-            new SoldierNamePacket(42, "team", "class", false, "wolffsmodnpcs:german", "Injected name").handle(null);
-            requests.verify(() -> FlanSoldierNames.request(null, 42, "team", "class"));
+            requests.when(() -> FlanSoldierNames.request(null, 42, "team", "class", 2)).thenReturn(Optional.empty());
+            new SoldierNamePacket(42, "team", "class", false, "wolffsmodnpcs:german", "Injected name", 2).handle(null);
+            requests.verify(() -> FlanSoldierNames.request(null, 42, "team", "class", 2));
         }
     }
 }

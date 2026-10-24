@@ -30,6 +30,13 @@ public final class FlanSoldierNames
 
     public static Optional<SoldierNamePacket> request(ServerPlayer player, int entityId, String team, String playerClass)
     {
+        return request(player, entityId, team, playerClass, -1);
+    }
+
+    public static Optional<SoldierNamePacket> request(ServerPlayer player, int entityId, String team, String playerClass, int gender)
+    {
+        if (gender != -1 && gender != 1 && gender != 2)
+            return Optional.empty();
         EntityNPCInterface npc = NoppesUtilServer.getEditingNpc(player);
         boolean allowed = npc != null && npc.getId() == entityId && npc.isAlive() && npc.level() == player.level() && player.getInventory().getSelected().getItem() == CustomItems.wand
             && CustomNpcsPermissions.hasPermission(player, CustomNpcsPermissions.NPC_DISPLAY);
@@ -39,7 +46,7 @@ public final class FlanSoldierNames
             return Optional.empty();
         }
         PENDING.remove(player);
-        Optional<SoldierNamePacket> result = FlanSoldierSelection.resolve(team, playerClass).flatMap(selection -> apply(npc, selection));
+        Optional<SoldierNamePacket> result = FlanSoldierSelection.resolve(team, playerClass).flatMap(selection -> apply(npc, selection, gender));
         result.ifPresent(packet -> PENDING.put(player, new Pending(new WeakReference<>(npc), packet, npc.level().getGameTime() + 200)));
         return result;
     }
@@ -64,6 +71,11 @@ public final class FlanSoldierNames
 
     static Optional<SoldierNamePacket> apply(EntityNPCInterface npc, FlanSoldierSelection selection)
     {
+        return apply(npc, selection, -1);
+    }
+
+    static Optional<SoldierNamePacket> apply(EntityNPCInterface npc, FlanSoldierSelection selection, int gender)
+    {
         String team = selection.team() == null ? "" : selection.team().getShortName();
         String playerClass = selection.playerClass().getShortName();
         SoldierNameAssociations associations = SoldierNameAssociations.current();
@@ -71,7 +83,7 @@ public final class FlanSoldierNames
         if (generator.isEmpty())
             return Optional.empty();
         int id = generator.getAsInt();
-        String name = SoldierNames.generate(id, associations.gender(team, playerClass));
+        String name = SoldierNames.generate(id, gender == -1 ? associations.gender(team, playerClass) : gender);
         npc.display.setMarkovGeneratorId(id);
         npc.display.setName(name);
         npc.updateClient = true;
