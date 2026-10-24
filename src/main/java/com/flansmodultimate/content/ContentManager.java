@@ -115,7 +115,7 @@ public class ContentManager
         }
 
         ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(PlatformPaths.modsDir(), normalizedFlanFolder,
-            ModCachePaths.root(gameDir).resolve(ContentPackRelocator.CACHE_FILE_NAME));
+            ModCachePaths.packsManager(gameDir).resolve(ContentPackRelocator.CACHE_FILE_NAME));
         excludedFlanArchives = result.excludedFromContentLoading();
         result.warnings().forEach(FlansLog.log::warn);
         if (result.movedContentPacks() > 0)
