@@ -41,6 +41,8 @@ public final class ConfigOptionFactory
     private static final String VALUE_KEY_PREFIX = KEY_PREFIX + "value.";
     /** Steps a decimal slider offers between its bounds. */
     private static final int DOUBLE_SLIDER_STEPS = 100;
+    /** Wider ranges are difficult to select precisely on a short slider in All Settings. */
+    private static final int MAX_SLIDER_SPAN = 100;
 
     /** A widget factory, with a separate visible label for direct input fields. */
     public record Option(@Nullable Component label, IntFunction<AbstractWidget> widgetFactory)
@@ -83,7 +85,7 @@ public final class ConfigOptionFactory
             if (!(child instanceof ConfigValue<?> value))
                 continue;
 
-            Option option = option(target, value);
+            Option option = option(target, value, true);
             if (option != null)
                 options.add(option);
         }
@@ -94,6 +96,12 @@ public final class ConfigOptionFactory
     @Nullable
     public static Option option(ConfigTarget target, ConfigValue<?> value)
     {
+        return option(target, value, false);
+    }
+
+    @Nullable
+    private static Option option(ConfigTarget target, ConfigValue<?> value, boolean allSettings)
+    {
         if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE) && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
             return null;
         ValueSpec valueSpec = ConfigSpecValues.valueSpec(target.spec(), value.getPath());
@@ -101,11 +109,6 @@ public final class ConfigOptionFactory
             return null;
 
         Object current = target.get(value);
-        if (current instanceof Double number && ModCommonConfig.isSoundRange(value))
-        {
-            Function<Double, Component> valueText = range -> Component.translatable("options.flansmodultimate.distance.blocks", SoundRangeInput.format(range));
-            return new Option(Component.translatable(captionKey(value)), width -> new SoundRangeInput(width, target, value, valueSpec, number, tooltip(target, value, valueSpec, valueText)));
-        }
         if (current instanceof Boolean flag)
             return widgetOption(booleanOption(target, value, valueSpec, flag));
 
@@ -113,12 +116,45 @@ public final class ConfigOptionFactory
             return widgetOption(enumOption(target, value, valueSpec, valueSpec.getClazz(), current));
 
         if (current instanceof Integer number)
-            return widgetOption(intOption(target, value, valueSpec, number));
+            return integerWidgetOption(target, value, valueSpec, number, allSettings);
 
         if (current instanceof Double number)
-            return widgetOption(doubleOption(target, value, valueSpec, number));
+            return doubleWidgetOption(target, value, valueSpec, number, allSettings);
 
         return null;
+    }
+
+    @Nullable
+    private static Option integerWidgetOption(ConfigTarget target, ConfigValue<?> value, ValueSpec spec, int current, boolean allSettings)
+    {
+        if (allSettings && hasWideRange(spec))
+            return numericOption(target, value, spec, current, input -> intValueText(value, input), Integer::valueOf);
+        return widgetOption(intOption(target, value, spec, current));
+    }
+
+    @Nullable
+    private static Option doubleWidgetOption(ConfigTarget target, ConfigValue<?> value, ValueSpec spec, double current, boolean allSettings)
+    {
+        if (ModCommonConfig.isSoundRange(value) || allSettings && hasWideRange(spec))
+        {
+            Function<Double, Component> valueText = number -> ModCommonConfig.isSoundRange(value)
+                ? Component.translatable("options.flansmodultimate.distance.blocks", NumericConfigInput.format(number))
+                : Component.literal(NumericConfigInput.format(number));
+            return numericOption(target, value, spec, current, valueText, Double::valueOf);
+        }
+        return widgetOption(doubleOption(target, value, spec, current));
+    }
+
+    private static boolean hasWideRange(ValueSpec spec)
+    {
+        Range<?> range = spec.getRange();
+        return range != null && range.getMin() instanceof Number min && range.getMax() instanceof Number max && max.doubleValue() - min.doubleValue() > MAX_SLIDER_SPAN;
+    }
+
+    private static <T extends Number> Option numericOption(ConfigTarget target, ConfigValue<?> value, ValueSpec spec, T current, Function<T, Component> valueText, Function<String, T> parser)
+    {
+        return new Option(Component.translatable(captionKey(value)),
+            width -> new NumericConfigInput<>(width, target, value, current, tooltip(target, value, spec, valueText), text -> NumericConfigInput.parse(text, spec, parser)));
     }
 
     @Nullable

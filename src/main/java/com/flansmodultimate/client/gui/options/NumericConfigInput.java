@@ -9,15 +9,16 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 
 import java.math.BigDecimal;
-import java.util.OptionalDouble;
+import java.util.Optional;
+import java.util.function.Function;
 
-/** Direct sound-range entry. Only finite values accepted by the config are queued for saving. */
-public final class SoundRangeInput extends EditBox
+/** Direct numeric entry. Only finite values of the correct type accepted by the config are queued for saving. */
+public final class NumericConfigInput<T extends Number> extends EditBox
 {
     private static final int VALID_COLOR = 0xE0E0E0;
     private static final int INVALID_COLOR = 0xFF5555;
 
-    public SoundRangeInput(int width, ConfigTarget target, ConfigValue<?> value, ValueSpec spec, double current, OptionInstance.TooltipSupplier<Double> tooltip)
+    public NumericConfigInput(int width, ConfigTarget target, ConfigValue<?> value, T current, OptionInstance.TooltipSupplier<T> tooltip, Function<String, Optional<T>> parser)
     {
         super(Minecraft.getInstance().font, 0, 0, width, 20, Component.translatable("options.flansmodultimate." + value.getPath().get(value.getPath().size() - 1)));
         setMaxLength(64);
@@ -28,32 +29,32 @@ public final class SoundRangeInput extends EditBox
         {
             if (!target.editable())
                 return;
-            OptionalDouble parsed = parse(text, spec);
+            Optional<T> parsed = parser.apply(text);
             setTextColor(parsed.isPresent() ? VALID_COLOR : INVALID_COLOR);
             if (parsed.isPresent())
             {
-                double number = parsed.getAsDouble();
+                T number = parsed.orElseThrow();
                 target.setWhileDragging(value, number);
                 setTooltip(tooltip.apply(number));
             }
         });
     }
 
-    static OptionalDouble parse(String text, ValueSpec spec)
+    static <T extends Number> Optional<T> parse(String text, ValueSpec spec, Function<String, T> parser)
     {
         try
         {
-            double number = Double.parseDouble(text.strip());
-            return Double.isFinite(number) && spec.test(number) ? OptionalDouble.of(number) : OptionalDouble.empty();
+            T number = parser.apply(text.strip());
+            return Double.isFinite(number.doubleValue()) && spec.test(number) ? Optional.of(number) : Optional.empty();
         }
         catch (NumberFormatException ignored)
         {
-            return OptionalDouble.empty();
+            return Optional.empty();
         }
     }
 
-    static String format(double number)
+    static String format(Number number)
     {
-        return BigDecimal.valueOf(number).stripTrailingZeros().toPlainString();
+        return new BigDecimal(number.toString()).stripTrailingZeros().toPlainString();
     }
 }
