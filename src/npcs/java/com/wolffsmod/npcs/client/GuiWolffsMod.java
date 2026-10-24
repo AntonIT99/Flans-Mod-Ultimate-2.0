@@ -317,7 +317,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final Map<Enum<?>, Need> REQUIREMENTS = Map.ofEntries(
         Map.entry(Feature.DUAL_WIELD, Need.on(Feature.ITEM_WEAPONS)),
         Map.entry(Feature.MELEE_DUAL_WIELD, Need.on(Feature.ITEM_WEAPONS)),
-        Map.entry(Feature.CONSUME_AMMO, Need.on(Feature.ITEM_WEAPONS)),
+        Map.entry(Value.GRENADE_USE, Need.on(Feature.GRENADES)),
+        Map.entry(Value.NATIVE_THROWABLE_USE, Need.on(Feature.NATIVE_THROWABLES)),
+        Map.entry(Value.THROWN_WEAPON_USE, Need.on(Feature.ITEM_WEAPONS)),
         Map.entry(Feature.ARMOR_POTION_EFFECTS, Need.on(Feature.ITEM_ARMOR)),
         Map.entry(Value.WEAPON_SWITCH, Need.on(Feature.CONSUME_AMMO)),
         Map.entry(Feature.MODEL_WEAPON_STATS, Need.on(Feature.TYPE_PROPERTIES)),
@@ -408,7 +410,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named(CrewPage.TAB, Scope.DRIVEABLES)),
         EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Layout.COLUMN, Feature.ITEM_ARMOR,
             Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Value.WEAPON_SWITCH)),
-        FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES)),
+        FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Value.GRENADE_USE, Feature.NATIVE_THROWABLES, Value.NATIVE_THROWABLE_USE, Value.THROWN_WEAPON_USE,
+            Feature.CONSUME_AMMO)),
         MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS, Tab.of(Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES,
             Feature.EYE_AT_MUZZLE, Feature.DRIVER_GUNS)),
         AIMING(Section.TARGETING, Scope.ALL, Tab.of(Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE)),
@@ -1200,8 +1203,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case DRIVE_PRESET, DRIVE_TYPE, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING, TURN_RADIUS, THROTTLE_FLOOR, DRIVE_LOOKAHEAD, CORNER_SPEED, DRIVE_REVERSE_SPEED, REVERSE_ANGLE,
                     REVERSE_DISTANCE, STOP_DISTANCE, FOLLOW_DISTANCE, STEERING_RESPONSE, STATIONARY_TURN, TRAFFIC_STOP_GAP -> Scope.VEHICLES;
                 case HULL_TURN_RATE -> Scope.HULLS;
-                case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL ->
-                    Scope.STANDARD;
+                case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL,
+                    GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }
@@ -1297,6 +1300,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case WEAPON_SWITCH -> NpcTuning.WeaponSwitch.values();
             case TACTIC -> NpcTuning.Tactic.values();
             case TAKE_DRIVEABLES -> NpcTuning.Claim.values();
+            case GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> NpcTuning.Throwing.values();
             default -> new Enum<?>[0];
         };
     }

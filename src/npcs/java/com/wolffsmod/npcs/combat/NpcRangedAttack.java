@@ -47,7 +47,12 @@ public final class NpcRangedAttack
         // A recognized Flan round is handled even when the call originates on the client.
         if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || npc.isKilled() || target == null || !target.isAlive() || target.level() != npc.level())
             return true;
-        new Attack(npc, target, ammo, options, highArc, sequence).fire();
+        // Without a model the NPC fires what it carries itself: it keeps out of its own grenade's reach, and uses its rounds up.
+        boolean carried = NpcModels.flan(npc) == null;
+        if (carried && FlansProjectiles.isGrenade(ammo) && NpcThrowing.tooClose(npc, target, ammo))
+            return true;
+        if (new Attack(npc, target, ammo, options, highArc, sequence).fire() && carried && options.enabled(Feature.CONSUME_AMMO))
+            NpcAmmunition.consume(npc, ammo);
         return true;
     }
 
@@ -135,7 +140,8 @@ public final class NpcRangedAttack
             return FlansProjectiles.getMuzzles(definition, secondary, sequence, options.enabled(Feature.ALTERNATE_BARRELS), aim);
         }
 
-        private void fire()
+        /** @return whether a round left any muzzle */
+        private boolean fire()
         {
             event = new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, damage);
             List<WeaponMuzzle> muzzles = muzzles();
@@ -146,6 +152,7 @@ public final class NpcRangedAttack
                 fireMuzzle(muzzle);
             if (fired)
                 finishAttack();
+            return fired;
         }
 
         private void fireMuzzle(WeaponMuzzle muzzle)

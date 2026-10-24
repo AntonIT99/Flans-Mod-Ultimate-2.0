@@ -325,7 +325,7 @@ public final class NpcDrivers
      * Whether another entity is on the NPC's side: the player it follows, one on its Teams team or one its faction is
      * friendly to, or an NPC of its faction or Teams team.
      */
-    static boolean ally(EntityNPCInterface npc, Entity other)
+    public static boolean ally(EntityNPCInterface npc, Entity other)
     {
         if (other == npc.getOwner())
             return true;
@@ -419,7 +419,7 @@ public final class NpcDrivers
     }
 
     /** Whether the NPC and another entity are enemies, by the NPC's faction or the other NPC's, or because it is a monster. */
-    private static boolean hostile(EntityNPCInterface npc, Entity other)
+    public static boolean hostile(EntityNPCInterface npc, Entity other)
     {
         if (other == npc.getTarget())
             return true;

@@ -64,6 +64,28 @@ public final class FlansProjectiles
     }
 
     /**
+     * Reads how far the round reaches round its point of detonation, so that a shooter can keep clear of it. The radii follow
+     * the server's current explosion settings. Readable on either side after content loading.
+     *
+     * @return the radii of a Flan bullet or grenade, or empty for another item
+     */
+    public static Optional<DetonationRadii> getDetonationRadii(ItemStack stack)
+    {
+        return ExternalProjectileSupport.detonationRadii(stack);
+    }
+
+    /**
+     * Uses up one round of Flan ammunition the shooter fired without a gun: one item, or one round of an item that holds
+     * several. A stack left empty is the caller's to remove from where it is kept. Server thread.
+     *
+     * @return whether a round was used up; false for an empty stack or another item
+     */
+    public static boolean consumeRound(ItemStack stack)
+    {
+        return ExternalProjectileSupport.consumeRound(stack);
+    }
+
+    /**
      * Describes which caller defaults are replaced, without preparing or spawning a projectile.
      * Readable on either side after content loading, including for an editor preview.
      *

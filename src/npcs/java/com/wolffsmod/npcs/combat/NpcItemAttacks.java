@@ -192,13 +192,9 @@ public final class NpcItemAttacks
     {
         if (weapon == npc.getOffhandItem() && weapon != npc.getMainHandItem())
             return fireFlan(npc, target, InteractionHand.OFF_HAND);
+        // Thrown from the projectile slot or the inventory, which loses the stack once it is used up.
         if (weapon != npc.getMainHandItem())
-        {
-            boolean thrown = FlansProjectiles.isGrenade(weapon) ? grenade(npc, target, weapon) : throwFlan(npc, target, weapon);
-            if (thrown && weapon.isEmpty())
-                npc.inventory.weapons.remove(1);
-            return thrown;
-        }
+            return FlansProjectiles.isGrenade(weapon) ? grenade(npc, target, weapon) : throwFlan(npc, target, weapon);
         if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isPresent())
             return fireFlan(npc, target, InteractionHand.MAIN_HAND);
         if (FlansProjectiles.isGrenade(weapon))
@@ -260,10 +256,32 @@ public final class NpcItemAttacks
         return true;
     }
 
+    /**
+     * Throws a grenade, throwable Flan gun or native throwable the NPC carries in its projectile slot or inventory at the
+     * target, as a throw beside its other attacks, without drawing it into a hand. It is used up as Use up ammunition says.
+     * Server thread.
+     *
+     * @return whether it was thrown
+     */
+    public static boolean throwCarried(EntityNPCInterface npc, LivingEntity target, ItemStack stack)
+    {
+        if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
+            return false;
+        NpcThrowing.Kind kind = NpcThrowing.kind(stack);
+        if (kind == null)
+            return false;
+        return switch (kind)
+        {
+            case GRENADE -> grenade(npc, target, stack);
+            case THROWN_WEAPON -> throwFlan(npc, target, stack);
+            case NATIVE -> NpcThrowables.throwCarried(npc, target, stack);
+        };
+    }
+
     private static void finishThrow(EntityNPCInterface npc, ItemStack weapon, List<Entity> launched)
     {
         if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
-            weapon.shrink(1);
+            NpcAmmunition.consume(npc, weapon);
         else
             for (Entity entity : launched)
                 if (entity instanceof AbstractArrow arrow)
@@ -311,7 +329,8 @@ public final class NpcItemAttacks
 
     private static boolean grenade(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
     {
-        if (!NpcEquipment.enabled(npc, Feature.GRENADES))
+        // A target within the grenade's reach is left to the NPC's other attacks rather than taking the thrower with it.
+        if (!NpcEquipment.enabled(npc, Feature.GRENADES) || NpcThrowing.tooClose(npc, target, weapon))
             return false;
         var prepared = FlansProjectiles.prepare(npc, weapon, ItemStack.EMPTY, null, null, false, new ProjectileParameters(0, true, 0F, 0F, 1F));
         if (prepared.isEmpty())

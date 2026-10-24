@@ -79,21 +79,27 @@ public final class NpcAmmunition
     }
 
     /**
-     * @return what infinite ammunition copies to reload the gun: the projectile slot when the gun takes what it holds, or
-     *         else the ammunition the gun is issued with by default; never a stack to use up
+     * @return what infinite ammunition copies to reload the gun: the projectile slot when the gun takes what it holds, then the
+     *         first inventory slot it takes, or else the ammunition the gun is issued with by default; never a stack to use up
      */
     public static Optional<ItemStack> infiniteTemplate(EntityNPCInterface npc, ItemStack weapon)
     {
         ItemStack projectile = stack(npc.inventory.getProjectile());
         if (FlansEquipment.acceptsAmmunition(weapon, projectile))
             return Optional.of(projectile);
+        for (ItemStack candidate : inventory(npc))
+            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
+                return Optional.of(candidate);
         return FlansEquipment.createDefaultAmmunition(weapon).filter(ammunition -> FlansEquipment.acceptsAmmunition(weapon, ammunition));
     }
 
-    /** Projectile-slot ammunition, or the selected vehicle bank's default when the slot is empty and consumption is off. */
+    /**
+     * What the NPC fires without an equipped ranged weapon, as {@link NpcThrowing#mainProjectile} chooses it, or the selected
+     * vehicle bank's default when there is nothing and consumption is off.
+     */
     public static ItemStack modelTemplate(EntityNPCInterface npc)
     {
-        ItemStack projectile = stack(npc.inventory.getProjectile());
+        ItemStack projectile = NpcThrowing.mainProjectile(npc);
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
         if (!projectile.isEmpty() || !options.enabled(Feature.PROJECTILES) || options.enabled(Feature.CONSUME_AMMO))
             return projectile;
@@ -265,8 +271,51 @@ public final class NpcAmmunition
         return -1;
     }
 
+    /**
+     * Uses up one of a throwable or round the NPC carries and threw, or fired without a gun: one round of Flan ammunition,
+     * otherwise one item. A slot the stack is left empty in is cleared, and an emptied projectile slot takes the next stack of
+     * the same item from the inventory, so that the item stays the preferred one. Server thread.
+     */
+    public static void consume(EntityNPCInterface npc, ItemStack used)
+    {
+        ItemStack template = used.copyWithCount(1);
+        if (!FlansProjectiles.consumeRound(used))
+            used.shrink(1);
+        npc.updateClient = true;
+        if (!used.isEmpty())
+            return;
+        if (stack(npc.inventory.getProjectile()) == used)
+        {
+            npc.inventory.weapons.remove(PROJECTILE_INDEX);
+            // Flan ammunition counts its rounds in its tag, which a fresh item of it does not share.
+            boolean ammunition = FlansProjectiles.isProjectile(template);
+            int slot = find(npc, stack -> ammunition ? ItemStack.isSameItem(stack, template) : ItemStack.isSameItemSameTags(stack, template));
+            if (slot >= 0)
+                swap(npc, PROJECTILE_INDEX, slot);
+        }
+        else
+        {
+            List<ItemStack> inventory = inventory(npc);
+            for (int slot = 0; slot < inventory.size(); slot++)
+            {
+                if (inventory.get(slot) == used)
+                {
+                    npc.inventory.drops.remove(slot);
+                    npc.inventory.dropchance.remove(slot);
+                    break;
+                }
+            }
+        }
+    }
+
+    /** @return what the projectile slot holds, or an empty stack */
+    static ItemStack projectile(EntityNPCInterface npc)
+    {
+        return stack(npc.inventory.getProjectile());
+    }
+
     /** @return the inventory slots in order, empty stacks standing for empty slots */
-    private static List<ItemStack> inventory(EntityNPCInterface npc)
+    static List<ItemStack> inventory(EntityNPCInterface npc)
     {
         ItemStack[] slots = new ItemStack[INVENTORY_SLOTS];
         for (int slot = 0; slot < INVENTORY_SLOTS; slot++)

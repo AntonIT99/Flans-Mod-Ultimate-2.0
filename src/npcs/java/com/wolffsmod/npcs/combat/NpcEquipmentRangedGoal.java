@@ -117,6 +117,16 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         main.cadence.tick();
         off.cadence.tick();
+        if (NpcThrowGoal.throwing(npc))
+        {
+            // A throw beside the weapon shows its own item in hand; the weapon waits, and a reload it has begun goes on.
+            charging = 0;
+            if (npc.isUsingItem() && !NpcEquipment.shield(npc.getUseItem()))
+                npc.stopUsingItem();
+            continueReload(main);
+            continueReload(off);
+            return;
+        }
         LivingEntity target = npc.getTarget();
         if (target == null || !engages(npc))
         {

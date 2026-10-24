@@ -134,7 +134,13 @@ public final class NpcTuning
         /** Index into {@link StationaryTurn}; permission never grants stationary turns to wheeled vehicles. */
         STATIONARY_TURN(1, 0, StationaryTurn.values().length - 1),
         /** Traffic braking threshold in tenths of a block; 0 keeps half the following distance. */
-        TRAFFIC_STOP_GAP(0, 0, 320);
+        TRAFFIC_STOP_GAP(0, 0, 320),
+        /** Index into {@link Throwing}: how the NPC uses the Flan grenades it carries. */
+        GRENADE_USE(Throwing.MODERATE.ordinal(), 0, Throwing.values().length - 1),
+        /** Index into {@link Throwing}: how the NPC uses the throwable Flan guns it carries. */
+        THROWN_WEAPON_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1),
+        /** Index into {@link Throwing}: how the NPC uses the native throwables it carries. */
+        NATIVE_THROWABLE_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1);
 
         private final int fallback;
         private final int minimum;
@@ -265,6 +271,36 @@ public final class NpcTuning
     }
 
     /**
+     * How an NPC uses the throwables of one kind it carries: grenades, throwable Flan guns or native throwables. An item of the
+     * kind in the projectile slot is always the one the NPC prefers. Saves hold the index, so a new strategy goes at the end.
+     */
+    public enum Throwing
+    {
+        /** Only the one in the projectile slot, thrown as the NPC's ranged weapon while it holds none in hand. */
+        RANGED_SLOT,
+        /** The one in the projectile slot, or else the first one in the inventory, thrown as the NPC's ranged weapon while it holds none in hand. */
+        MAIN_WEAPON,
+        /** Thrown now and then beside the NPC's other attacks, at any enemy it can reach. */
+        FREQUENT,
+        /** Thrown from time to time beside the NPC's other attacks; grenades only at enemies close together or a tough one. */
+        MODERATE,
+        /** Thrown seldom beside the NPC's other attacks; grenades only at a larger group of enemies or a tough one. */
+        SPARING;
+
+        /** @return whether the NPC throws an item of the kind as its ranged weapon, given where the item is */
+        public boolean mainWeapon(boolean inProjectileSlot)
+        {
+            return this == MAIN_WEAPON || this == RANGED_SLOT && inProjectileSlot;
+        }
+
+        /** @return whether the NPC throws items of the kind now and then beside its other attacks */
+        public boolean occasional()
+        {
+            return this == FREQUENT || this == MODERATE || this == SPARING;
+        }
+    }
+
+    /**
      * How an NPC that fights at range, with an equipped ranged weapon or a projectile, moves while it fights. A tactic only
      * acts on the kinds of NPC it is written for; on any other, and on an NPC that fights in melee, Custom NPCs' tactical
      * variant applies. Saves hold the index, so a new tactic goes at the end.
@@ -386,6 +422,12 @@ public final class NpcTuning
     public Tactic tactic()
     {
         return Tactic.values()[get(Value.TACTIC)];
+    }
+
+    /** @return the strategy a {@link Throwing} value holds */
+    public Throwing throwing(Value value)
+    {
+        return Throwing.values()[get(value)];
     }
 
     /** Selects a preset and, unless it is Custom, fills in its driving values. */

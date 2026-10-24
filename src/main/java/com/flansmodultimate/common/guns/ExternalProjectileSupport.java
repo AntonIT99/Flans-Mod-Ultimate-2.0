@@ -3,6 +3,7 @@ package com.flansmodultimate.common.guns;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.api.projectiles.ProjectileSources;
@@ -15,6 +16,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.ShootableFactory;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.physics.ModPhysics;
@@ -55,6 +57,20 @@ public final class ExternalProjectileSupport
     public static int roundsPerItem(ItemStack stack)
     {
         return Math.max(0, ShootableItem.getMaxRounds(stack));
+    }
+
+    public static Optional<DetonationRadii> detonationRadii(ItemStack stack)
+    {
+        if (!isProjectile(stack))
+            return Optional.empty();
+        ShootableType type = ((ShootableItem) stack.getItem()).getConfigType();
+        FlanExplosion.Stats stats = type.getExplosionStats(null);
+        return Optional.of(new DetonationRadii(Math.max(0F, stats.explosionRadius()), Math.max(0F, stats.blastRadius()), Math.max(0F, stats.fragRadius()), Math.max(0F, type.getFireRadius())));
+    }
+
+    public static boolean consumeRound(ItemStack stack)
+    {
+        return isProjectile(stack) && ShootableItem.consumeRound(stack);
     }
 
     public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,

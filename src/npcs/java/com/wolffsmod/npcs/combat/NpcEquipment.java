@@ -116,15 +116,17 @@ public final class NpcEquipment
             return NpcAPI.Instance().getIItemStack(rangedWeapon(npc));
         if (weaponAuthority(npc))
             return null;
-        if (npc.inventory.getProjectile() != null)
-            return npc.inventory.getProjectile();
+        // A throwable only thrown now and then leaves the NPC to fight in melee meanwhile.
         ItemStack projectile = NpcAmmunition.modelTemplate(npc);
-        return projectile.isEmpty() ? null : NpcAPI.Instance().getIItemStack(projectile);
+        if (projectile.isEmpty())
+            return null;
+        IItemStack slot = npc.inventory.getProjectile();
+        return slot != null && slot.getMCItemStack() == projectile ? slot : NpcAPI.Instance().getIItemStack(projectile);
     }
 
     /**
      * A ranged weapon in the main hand takes precedence, then a Flan gun in the off hand, which the NPC then fires on its
-     * own; otherwise a Flan throwable in the projectile slot can be thrown.
+     * own; otherwise a grenade or throwable Flan gun it throws as its main weapon.
      */
     public static ItemStack rangedWeapon(EntityNPCInterface npc)
     {
@@ -135,20 +137,17 @@ public final class NpcEquipment
     }
 
     /**
-     * The ranged weapon of the main hand: the held one, or else a Flan throwable in the projectile slot, which is drawn into
-     * the main hand to be thrown. An off-hand gun is left out.
+     * The ranged weapon of the main hand: the held one, or else a grenade or throwable Flan gun the NPC throws as its main
+     * weapon, from the projectile slot or its inventory as the strategy for its kind says, which is drawn into the main hand
+     * to be thrown. An off-hand gun is left out.
      */
     public static ItemStack mainRangedWeapon(EntityNPCInterface npc)
     {
         ItemStack held = npc.getMainHandItem();
         if (ranged(held))
             return held;
-        IItemStack slot = npc.inventory.getProjectile();
-        ItemStack projectile = slot == null ? ItemStack.EMPTY : slot.getMCItemStack();
-        if (projectile != null && (FlansEquipment.getWeaponProperties(projectile, ItemStack.EMPTY).filter(EquippedWeaponProperties::throwable).isPresent()
-            || enabled(npc, Feature.GRENADES) && FlansProjectiles.isGrenade(projectile)))
-            return projectile;
-        return held;
+        ItemStack thrown = NpcThrowing.mainThrownWeapon(npc);
+        return thrown.isEmpty() ? held : thrown;
     }
 
     public static boolean ranged(ItemStack stack)

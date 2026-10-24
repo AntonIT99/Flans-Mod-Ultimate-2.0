@@ -80,7 +80,9 @@ import java.util.UUID;
  * resists knockback while it is a vehicle. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
  * melee against protected riders reaches their vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
- * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.
+ * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung. Grenades and
+ * other throwables the NPC carries anywhere are thrown as its main weapon or now and then beside its other attacks, as their
+ * strategy says, by a goal of their own whose wind-up holds the NPC's other ranged attacks.
  * Optional melee dual wield alternates striking hands on one AI cooldown and sends item break feedback for the attacking hand.</li>
  * <li>Throw wind-ups synchronize a temporary displayed main-hand item and the player's throwing pose without moving inventory.</li>
  * <li>Armor potion effects can be disabled independently of protection. Flan armor invisibility hides the NPC's body on the client, keeping its armor drawn.</li>
@@ -123,6 +125,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcVehicleStateHolder,
         NpcThrowPresentation,
         NpcEquipmentRangedGoal.Holder,
+        NpcThrowGoal.Holder,
         NpcTacticState.Holder,
         NpcCrewHolder,
         NpcMeleeState.Holder,
@@ -145,6 +148,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
+    @Unique
+    private NpcThrowGoal wolffsmodnpcsThrowGoal;
     @Unique
     private NpcTacticGoal wolffsmodnpcsTacticGoal;
     @Unique
@@ -349,13 +354,19 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     @Override
+    public NpcThrowGoal wolffsmodnpcsThrowGoal()
+    {
+        return wolffsmodnpcsThrowGoal;
+    }
+
+    @Override
     public NpcTacticState wolffsmodnpcsTacticState()
     {
         return wolffsmodnpcsTacticState;
     }
 
     /**
-     * The firing goal claims no flag, so its priority does not matter. A tactic of the mod's own comes first, before the
+     * The firing goal and the goal that throws now and then beside it claim no flag, so their priority does not matter. A tactic of the mod's own comes first, before the
      * tactical movement Custom NPCs registered. The approach goal takes the priority of Custom NPCs' attack goal: that
      * tactical movement then wins the NPC's movement, and melee, which only starts within melee range where the approach
      * ends, takes over from it there. Walking to a driveable to board comes before everything else that moves the NPC.
@@ -371,6 +382,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         goalSelector.addGoal(0, wolffsmodnpcsBoardingGoal);
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
+        if (wolffsmodnpcsThrowGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsThrowGoal);
         if (wolffsmodnpcsTacticGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsTacticGoal);
         if (wolffsmodnpcsObjectiveGoal != null)
@@ -381,6 +394,10 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (wolffsmodnpcsItemGoal == null)
             wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
+        // Its cooldowns outlast a rebuild too, or a rebuild would let the NPC throw again at once.
+        if (wolffsmodnpcsThrowGoal == null)
+            wolffsmodnpcsThrowGoal = new NpcThrowGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsThrowGoal);
         wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
         // Only a Teams bot uses it: it carries the bot to its squad's task while the bot has nobody to fight.
@@ -598,7 +615,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
         // A gun whose turret has been shot off stays silent, and an NPC at the wheel fights with the driveable's weapons.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc))
+        // A throw being wound up beside the NPC's other attacks holds them meanwhile.
+        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc) || NpcThrowGoal.throwing(npc))
         {
             callback.cancel();
             return;
@@ -617,7 +635,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             callback.cancel();
             return;
         }
-        if (NpcThrowables.fire(npc, target, distanceFactor == 1F))
+        // A projectile slot that only holds a throwable thrown now and then launches nothing of Custom NPCs' own either.
+        if (NpcThrowables.fire(npc, target, distanceFactor == 1F) || NpcAmmunition.modelTemplate(npc).isEmpty() && npc.inventory.getProjectile() != null)
             callback.cancel();
     }
 

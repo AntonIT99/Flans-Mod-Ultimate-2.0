@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
+import com.wolffsmod.npcs.sim.NpcTuning;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.NpcAPI;
 import noppes.npcs.api.item.IItemStack;
@@ -184,6 +185,7 @@ class NpcNativeThrowSpeedTest
         DataStats stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
         when(((NpcWeaponSettings) stats).wolffsmodnpcsCombat()).thenReturn(combat);
         when(((NpcWeaponSettings) stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
+        when(((NpcWeaponSettings) stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         when(((NpcWeaponSettings) stats).wolffsmodnpcsTypeProperties()).thenReturn(properties);
         npc.stats = stats;
         npc.stats.ranged = mock(DataRanged.class);

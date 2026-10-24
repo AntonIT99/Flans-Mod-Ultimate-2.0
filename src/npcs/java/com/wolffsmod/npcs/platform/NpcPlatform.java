@@ -8,7 +8,10 @@ import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.fml.loading.FMLPaths;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +22,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.projectile.SmallFireball;
+import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -27,6 +32,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -49,6 +55,19 @@ public final class NpcPlatform
     public static boolean canShieldBlock(ItemStack stack)
     {
         return stack.canPerformAction(ToolActions.SHIELD_BLOCK);
+    }
+
+    /** The effects a potion item brings: its potion's, then its own custom ones. */
+    public static List<MobEffectInstance> potionEffects(ItemStack stack)
+    {
+        return PotionUtils.getMobEffects(stack);
+    }
+
+    /** Whether a firework rocket carries stars, and so harms what is near where it bursts. */
+    public static boolean fireworkExplodes(ItemStack stack)
+    {
+        CompoundTag fireworks = stack.getTagElement(FireworkRocketItem.TAG_FIREWORKS);
+        return fireworks != null && !fireworks.getList(FireworkRocketItem.TAG_EXPLOSIONS, Tag.TAG_COMPOUND).isEmpty();
     }
 
     /** The folder of the game's configuration files. */
