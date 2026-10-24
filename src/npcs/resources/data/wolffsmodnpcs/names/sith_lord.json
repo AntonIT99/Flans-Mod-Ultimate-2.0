@@ -1,0 +1,66 @@
+{
+  "id": "sith_lord",
+  "groups": [
+    {
+      "weight": 1,
+      "male": [
+        "Darth"
+      ],
+      "female": [
+        "Darth"
+      ],
+      "surnames": [
+        "Azren",
+        "Borvex",
+        "Corvath",
+        "Drazel",
+        "Ezrath",
+        "Feroxen",
+        "Gorveth",
+        "Hazrek",
+        "Ixren",
+        "Jazrel",
+        "Korvax",
+        "Lazreth",
+        "Morven",
+        "Naxrel",
+        "Ozrek",
+        "Praven",
+        "Qorvex",
+        "Razeth",
+        "Sazrek",
+        "Torvath",
+        "Uzren",
+        "Vazrel",
+        "Xorven",
+        "Zarveth"
+      ],
+      "femaleSurnames": [
+        "Azrila",
+        "Borvessa",
+        "Corvara",
+        "Drazira",
+        "Ezrila",
+        "Feraxa",
+        "Gorvela",
+        "Hazrila",
+        "Ixara",
+        "Jazira",
+        "Korvessa",
+        "Lazira",
+        "Morvella",
+        "Naxira",
+        "Ozrela",
+        "Pravira",
+        "Qorvella",
+        "Razira",
+        "Sazrila",
+        "Torvessa",
+        "Uzrila",
+        "Vazira",
+        "Xorvela",
+        "Zarvira"
+      ]
+    }
+  ]
+}

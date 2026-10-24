@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.diag.NpcBenchmarkCommands;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
+import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.teams.BotCommands;
@@ -19,6 +20,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -34,6 +36,13 @@ import net.minecraft.server.level.ServerPlayer;
 @Mod.EventBusSubscriber(modid = NpcsMod.MOD_ID)
 public final class NpcsGameEvents
 {
+    @SubscribeEvent
+    @SuppressWarnings({"unused", "java:S1172"}) // Forge invokes this subscriber; startup needs no event data.
+    public static void serverStarting(ServerStartingEvent event)
+    {
+        SoldierNameAssociations.load();
+    }
+
     @SubscribeEvent
     public static void startTracking(PlayerEvent.StartTracking event)
     {

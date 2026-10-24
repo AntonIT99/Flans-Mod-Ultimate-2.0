@@ -34,6 +34,8 @@ public final class NpcNetwork
             NpcPresetPacket::handle);
         NpcNetworkPlatform.toClient("muzzle_flash", MuzzleFlashPacket.class, MuzzleFlashPacket::write, MuzzleFlashPacket::read, () -> com.wolffsmod.npcs.client.NpcMuzzleFlashRenderer::receive);
         NpcNetworkPlatform.toClient("npc_remote", NpcRemotePacket.class, NpcRemotePacket::write, NpcRemotePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::remoteNpcs);
+        NpcNetworkPlatform.bidirectional("soldier_name", SoldierNamePacket.class, SoldierNamePacket::write, SoldierNamePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::soldierName,
+            SoldierNamePacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
@@ -87,6 +89,11 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(ApplyLoadoutPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(SoldierNamePacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }

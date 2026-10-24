@@ -14,16 +14,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import nikedemos.markovnames.generators.MarkovGenerator;
+
 /** Bundled modern and world-war-era lists, with append-only numeric slots for Custom NPCs' existing packets and scripts. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SoldierNames
 {
     public static final int FIRST_ID = 10;
     public static final String SAVE_KEY = "WolffsModNameList";
+    public static final String ROMAN_ID = "customnpcs:roman";
     private static final List<String> IDS = List.of("german", "british", "american", "russian", "german_20th", "british_20th", "american_20th", "russian_20th", "canadian_20th", "italian_20th",
         "french_20th", "dutch_20th", "chinese_20th", "polish_20th", "hungarian_20th", "finnish_20th", "romanian_20th", "jewish_20th", "estonian_20th", "latvian_20th", "croatian_20th", "spanish_20th",
         "serbian_20th", "bulgarian_20th", "swedish_20th", "greek_20th", "ukrainian_20th", "czech_20th", "slovak_20th", "lithuanian_20th", "norwegian_20th", "danish_20th", "belgian_20th",
-        "portuguese_20th", "soviet_20th", "japanese_20th");
+        "portuguese_20th", "soviet_20th", "japanese_20th", "clone_ct", "clone_cc", "clone_arc", "clone_rc", "clone_cl", "clone_cs", "clone_alpha", "clone_null", "clone_rex", "clone_cody",
+        "imperial_tk", "imperial_td", "imperial_ts", "imperial_tb", "imperial_rs", "imperial_tx", "imperial_tk_legends", "droid_b1", "droid_oom", "droid_b2", "droid_bx", "droid_tactical",
+        "droid_magnaguard", "droid_droideka", "french", "jedi_knight", "jedi_master", "jedi_temple_guard", "jedi_wayfarer", "sith_apprentice", "sith_warrior", "sith_assassin", "sith_marauder",
+        "sith_lord");
     private static final List<SoldierNameList> LISTS = IDS.stream().map(SoldierNames::load).toList();
 
     public static List<String> ids()
@@ -56,7 +62,20 @@ public final class SoldierNames
 
     public static String generate(int generator, int gender)
     {
+        if (generator == 0)
+            return MarkovGenerator.fetch(0, gender);
         return LISTS.get(generator - FIRST_ID).generate(gender, ThreadLocalRandom.current());
+    }
+
+    /** Stable IDs accepted by class-picker associations, including the original Roman generator in slot zero. */
+    public static boolean acceptsAssociation(String id)
+    {
+        return ROMAN_ID.equals(id) || contains(generatorId(id));
+    }
+
+    public static String associationId(int generator)
+    {
+        return generator == 0 ? ROMAN_ID : stableId(generator);
     }
 
     public static String stableId(int generator)

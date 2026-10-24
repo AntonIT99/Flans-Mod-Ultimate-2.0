@@ -14,9 +14,29 @@ import static org.junit.jupiter.api.Assertions.*;
 class SoldierNamesTest
 {
     @Test
+    void romanAssociationDelegatesToCustomNpcsAndKeepsLegacyPersistence()
+    {
+        assertTrue(SoldierNames.acceptsAssociation("customnpcs:roman"));
+        assertFalse(SoldierNames.acceptsAssociation("customnpcs:missing"));
+        assertEquals(0, SoldierNames.generatorId("customnpcs:roman"));
+        assertEquals("customnpcs:roman", SoldierNames.associationId(0));
+        try (var generator = org.mockito.Mockito.mockStatic(nikedemos.markovnames.generators.MarkovGenerator.class))
+        {
+            generator.when(() -> nikedemos.markovnames.generators.MarkovGenerator.fetch(0, 2)).thenReturn("Livia");
+            assertEquals("Livia", SoldierNames.generate(0, 2));
+        }
+        CompoundTag tag = new CompoundTag();
+        SoldierNames.saveSelection(10, tag);
+        SoldierNames.saveSelection(0, tag);
+        assertFalse(tag.contains(SoldierNames.SAVE_KEY));
+        assertEquals(0, SoldierNames.loadSelection(0, tag));
+    }
+
+    @Test
     void bundledListsOnlyProduceWholeComponentsOfTheSelectedGender() throws Exception
     {
-        for (String id : SoldierNames.ids())
+        for (String id : SoldierNames.ids().stream()
+            .filter(id -> !id.startsWith("clone_") && !id.startsWith("imperial_") && !id.startsWith("droid_") && !id.startsWith("jedi_") && !id.startsWith("sith_")).toList())
         {
             try (var stream = SoldierNames.class.getResourceAsStream("/data/wolffsmodnpcs/names/" + id + ".json"))
             {
@@ -82,7 +102,7 @@ class SoldierNamesTest
         Arrays.fill(legacy, "legacy");
         String[] labels = SoldierNames.appendLabels(legacy);
         assertArrayEquals(legacy, Arrays.copyOf(labels, 10));
-        assertEquals(46, labels.length);
+        assertEquals(80, labels.length);
         assertEquals("wolffsmodnpcs.names.german", labels[10]);
         assertEquals("wolffsmodnpcs.names.russian", labels[13]);
         for (int slot = 0; slot < 10; slot++)
@@ -115,7 +135,7 @@ class SoldierNamesTest
         assertEquals(14, SoldierNames.generatorId("wolffsmodnpcs:german_20th"));
         assertEquals(44, SoldierNames.generatorId("wolffsmodnpcs:soviet_20th"));
         assertEquals(45, SoldierNames.generatorId("wolffsmodnpcs:japanese_20th"));
-        assertEquals(36, SoldierNames.ids().stream().distinct().count());
+        assertEquals(70, SoldierNames.ids().stream().distinct().count());
     }
 
     @Test

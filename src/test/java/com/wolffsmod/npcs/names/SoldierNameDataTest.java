@@ -17,7 +17,7 @@ class SoldierNameDataTest
     @Test
     void everyHistoricalListHasSubstantialPoolsPeriodMetadataAndReferences() throws IOException
     {
-        for (String id : SoldierNames.ids().subList(4, SoldierNames.ids().size()))
+        for (String id : SoldierNames.ids().subList(4, 36))
         {
             JsonObject json = read(id);
             SoldierNameList list = new Gson().fromJson(json, SoldierNameList.class);
