@@ -68,6 +68,7 @@
 
     "3 inch Gun Motor Carriage M10": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 29600,
             "RealEnginePowerHp": 375,
@@ -197,6 +198,7 @@
 
     "7TP": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9900,
             "RealEnginePowerPS": 110,
@@ -434,6 +436,7 @@
 
     "15 cm Panzerwerfer 42": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 8500,
             "RealEnginePowerPS": 100,
@@ -495,6 +498,7 @@
 
     "17-pdr SP Achilles": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 29600,
             "RealEnginePowerHp": 375,
@@ -578,6 +582,7 @@
 
     "39M Csaba": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 172.42,
             "RealMassKg": 5950,
             "RealEnginePowerPS": 90,
@@ -603,6 +608,7 @@
 
     "40M Turan I": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 18200,
             "RealEnginePowerPS": 260,
@@ -629,6 +635,7 @@
 
     "41M Turan II": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19200,
             "RealEnginePowerPS": 260,
@@ -655,6 +662,7 @@
 
     "43M Turan III": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 23000,
             "RealEnginePowerPS": 260,
@@ -681,6 +689,7 @@
 
     "44M Zrinyi I": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 21600,
             "RealEnginePowerPS": 260,
@@ -703,6 +712,7 @@
 
     "44TP Habicha": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 25000,
             "RealEnginePowerHp": 300,
@@ -746,6 +756,7 @@
 
     "53TP Markowskiego": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 25000,
             "RealEnginePowerHp": 400,
@@ -808,6 +819,7 @@
 
     "75mm Gun Motor Carriage M3": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 9070,
             "RealEnginePowerHp": 147,
@@ -831,6 +843,7 @@
 
     "75mm Howitzer Motor Carriage M8 Scott": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15700,
             "RealEnginePowerHp": 220,
@@ -965,6 +978,7 @@
 
     "105mm Gun Motor Carriage T95": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 86300,
             "RealEnginePowerHp": 500,
@@ -991,6 +1005,7 @@
 
     "105mm Howitzer Motor Carriage M7 Priest": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22970,
             "RealEnginePowerHp": 400,
@@ -1130,6 +1145,7 @@
 
     "A22D Churchill 3 inch Gun Carrier": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 39600,
             "RealEnginePowerHp": 350,
@@ -1173,6 +1189,7 @@
 
     "A39 Tortoise Heavy Assault Tank": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 79250,
             "RealEnginePowerHp": 650,
@@ -1288,6 +1305,7 @@
 
     "Ambulance Van (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 3500,
             "RealEnginePowerHp": 163,
@@ -1309,6 +1327,7 @@
 
     "AMX M4": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 55000,
             "RealEnginePowerHp": 700,
@@ -1335,6 +1354,7 @@
 
     "AMX-50 Surbaisse": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 59200,
             "RealEnginePowerHp": 1200,
@@ -1388,6 +1408,7 @@
 
     "ARL 44": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 48000,
             "RealEnginePowerPS": 575,
@@ -1414,6 +1435,7 @@
 
     "Armoured Bank Truck (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 198.94,
             "RealMassKg": 7490,
             "RealEnginePowerHp": 177,
@@ -1466,6 +1488,7 @@
 
     "Assault Tank M4A3E2 Jumbo": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 38000,
             "RealEnginePowerHp": 450,
@@ -1574,6 +1597,7 @@
 
     "Baneblade (Fictional)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 316000,
             "RealEnginePowerHp": 2000,
@@ -1656,6 +1680,7 @@
 
     "Bishop 25-pdr SP": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 17500,
             "RealEnginePowerHp": 131,
@@ -1754,6 +1779,7 @@
 
     "BM-13 Katyusha (ZiS-6)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 109.42,
             "RealMassKg": 7200,
             "RealEnginePowerHp": 73,
@@ -1908,6 +1934,7 @@
 
     "BT-7 mod. 1937": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 13900,
             "RealEnginePowerPS": 450,
@@ -1934,6 +1961,7 @@
 
     "BT-42": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 15000,
             "RealEnginePowerPS": 500,
@@ -1960,6 +1988,7 @@
 
     "Bundeswehr Cargo Truck (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 140.06,
             "RealMassKg": 15000,
             "RealEnginePowerHp": 320,
@@ -2053,6 +2082,7 @@
 
     "Carro Armato M11/39": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11175,
             "RealEnginePowerPS": 105,
@@ -2079,6 +2109,7 @@
 
     "Carro Armato M13/40": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 14000,
             "RealEnginePowerPS": 125,
@@ -2105,6 +2136,7 @@
 
     "Carro Armato M15/42": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15500,
             "RealEnginePowerPS": 192,
@@ -2131,6 +2163,7 @@
 
     "Carro Armato P26/40": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 26000,
             "RealEnginePowerPS": 330,
@@ -2157,6 +2190,7 @@
 
     "Carro Armato P.43": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 30000,
             "RealEnginePowerHp": 420,
@@ -2183,6 +2217,7 @@
 
     "Carro Veloce L3/35": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 3200,
             "RealEnginePowerPS": 43,
@@ -2205,6 +2240,7 @@
 
     "CATTB Abrams Test Bed": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 36,
             "RealMassKg": 55000,
             "RealEnginePowerHp": 1500,
@@ -2238,6 +2274,7 @@
 
     "Centurion Mk 3": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 50800,
             "RealEnginePowerHp": 650,
@@ -2264,6 +2301,7 @@
 
     "Char 2C": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 69000,
             "RealEnginePowerPS": 500,
@@ -2290,6 +2328,7 @@
 
     "Char B1 bis": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 28000,
             "RealEnginePowerPS": 272,
@@ -2318,6 +2357,7 @@
 
     "Char de Bataille B40": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 40000,
             "RealEnginePowerHp": 400,
@@ -2344,6 +2384,7 @@
 
     "Char leger modele 1935 H modifie 39": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12100,
             "RealEnginePowerHp": 120,
@@ -2370,6 +2411,7 @@
 
     "Chevrolet Suburban (2010)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2676,
             "RealEnginePowerHp": 320,
@@ -2409,6 +2451,7 @@
 
     "Churchill Mk III AVRE": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 40000,
             "RealEnginePowerHp": 350,
@@ -2441,6 +2484,7 @@
 
     "Citroen Type 23U": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 185.68,
             "RealMassKg": 3500,
             "RealEnginePowerHp": 43,
@@ -2533,6 +2577,7 @@
 
     "Cruiser Tank A27M Cromwell Mk V": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 27900,
             "RealEnginePowerHp": 600,
@@ -2585,6 +2630,7 @@
 
     "Cruiser Tank A30 Challenger": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 33000,
             "RealEnginePowerHp": 600,
@@ -2624,6 +2670,7 @@
 
     "Cruiser Tank Mk VI Crusader Mk III": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 20000,
             "RealEnginePowerHp": 340,
@@ -2755,6 +2802,7 @@
 
     "Dicker Max": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22000,
             "RealEnginePowerPS": 300,
@@ -3135,6 +3183,7 @@
 
     "Dodge Ram Pickup": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2400,
             "RealEnginePowerHp": 345,
@@ -3156,6 +3205,7 @@
 
     "Fiat 626": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 123.35,
             "RealMassKg": 6500,
             "RealEnginePowerHp": 70,
@@ -3177,6 +3227,7 @@
 
     "FIAT Ansaldo P.143 (Fictional)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 100000,
             "RealEnginePowerHp": 800,
@@ -3203,6 +3254,7 @@
 
     "Fire Appliance (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 16000,
             "RealEnginePowerHp": 299,
@@ -3225,6 +3277,7 @@
 
     "Flakpanzer IV Ostwind": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25000,
             "RealEnginePowerPS": 265,
@@ -3251,6 +3304,7 @@
 
     "Flakpanzer IV Wirbelwind": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 22000,
             "RealEnginePowerPS": 265,
@@ -3360,6 +3414,7 @@
 
     "Full-Size Sedan (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1850,
             "RealEnginePowerHp": 250,
@@ -3384,6 +3439,7 @@
 
     "FV4034 Challenger 2": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 28,
             "RealMassKg": 62500,
             "RealEnginePowerHp": 1200,
@@ -3436,6 +3492,7 @@
 
     "GAZ-24 Volga": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1420,
             "RealEnginePowerHp": 95,
@@ -3458,6 +3515,7 @@
 
     "GAZ-67": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1320,
             "RealEnginePowerHp": 54,
@@ -3479,6 +3537,7 @@
 
     "GAZ-MM": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1810,
             "RealEnginePowerPS": 50,
@@ -3501,6 +3560,7 @@
 
     "GMC CCKW 353": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 190.99,
             "RealMassKg": 5420,
             "RealEnginePowerHp": 91.5,
@@ -3524,6 +3584,7 @@
 
     "GMC CCKW 353 with T27 Xylophone": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 9300,
             "RealEnginePowerHp": 91.5,
@@ -3550,6 +3611,7 @@
 
     "GMC Vandura Panel Van": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2300,
             "RealEnginePowerHp": 160,
@@ -3592,6 +3654,7 @@
 
     "GTK Boxer": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 163.93,
             "RealMassKg": 36500,
             "RealEnginePowerHp": 711,
@@ -3649,6 +3712,7 @@
 
     "Half-track Car M3": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 9070,
             "RealEnginePowerHp": 148,
@@ -3703,6 +3767,7 @@
 
     "Heavy Goods Truck (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 18000,
             "RealEnginePowerHp": 440,
@@ -4456,6 +4521,7 @@
 
     "Hummel (Sd.Kfz. 165)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 23000,
             "RealEnginePowerPS": 265,
@@ -4940,6 +5006,7 @@
 
     "Ikarus 60": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 95.49,
             "RealMassKg": 11600,
             "RealEnginePowerHp": 125,
@@ -4961,6 +5028,7 @@
 
     "Ikarus 260": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 127.32,
             "RealMassKg": 15600,
             "RealEnginePowerHp": 192,
@@ -4982,6 +5050,7 @@
 
     "Infantry Tank A22F Churchill Mk VII": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 40600,
             "RealEnginePowerHp": 350,
@@ -5027,6 +5096,7 @@
 
     "Infantry Tank Mk II Matilda II": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25400,
             "RealEnginePowerHp": 190,
@@ -5053,6 +5123,7 @@
 
     "Infantry Tank Mk III Valentine Mk II": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 16257,
             "RealEnginePowerHp": 131,
@@ -5097,6 +5168,7 @@
 
     "Infantry Tank Mk IV A22 Churchill Mk III": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 39600,
             "RealEnginePowerHp": 350,
@@ -5141,6 +5213,7 @@
 
     "IS-2 mod. 1944": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 46000,
             "RealEnginePowerPS": 520,
@@ -5197,6 +5270,7 @@
 
     "IS-3": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 45800,
             "RealEnginePowerPS": 520,
@@ -5224,6 +5298,7 @@
 
     "IS-7": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 68000,
             "RealEnginePowerPS": 1050,
@@ -5250,6 +5325,7 @@
 
     "ISU-152": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 47300,
             "RealEnginePowerPS": 520,
@@ -5272,6 +5348,7 @@
 
     "Isuzu Type 94": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 3600,
             "RealEnginePowerHp": 68,
@@ -5293,6 +5370,7 @@
 
     "Jagdpanther": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 46000,
             "RealEnginePowerPS": 700,
@@ -5337,6 +5415,7 @@
 
     "Jagdpanzer 38(t) Hetzer": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 16000,
             "RealEnginePowerPS": 150,
@@ -5360,6 +5439,7 @@
 
     "Jagdtiger": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 75200,
             "RealEnginePowerPS": 600,
@@ -5388,6 +5468,7 @@
 
     "K2 Black Panther PIP": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 55000,
             "RealEnginePowerHp": 1500,
@@ -5421,6 +5502,7 @@
 
     "Karl-Gerat 040": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 124000,
             "RealEnginePowerPS": 580,
@@ -5443,6 +5525,7 @@
 
     "Komsomolets T-20": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 3500,
             "RealEnginePowerPS": 71,
@@ -5466,6 +5549,7 @@
 
     "KV-1E mod. 1941": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 47500,
             "RealEnginePowerPS": 600,
@@ -5519,6 +5603,7 @@
 
     "KV-2 mod. 1940": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 53800,
             "RealEnginePowerPS": 500,
@@ -5571,6 +5656,7 @@
 
     "Land Rover Defender": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 3050,
             "RealEnginePowerHp": 122,
@@ -5595,6 +5681,7 @@
 
     "Landkreuzer P.1000 Ratte": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 1000000,
             "RealEnginePowerHp": 16000,
@@ -5645,6 +5732,7 @@
 
     "Leman Russ Battle Tank (Fictional)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 60000,
             "RealEnginePowerHp": 800,
@@ -5675,6 +5763,7 @@
 
     "Leopard 2A4": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 32,
             "RealMassKg": 55150,
             "RealEnginePowerHp": 1500,
@@ -5708,6 +5797,7 @@
 
     "Leopard 2A6": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 32,
             "RealMassKg": 62300,
             "RealEnginePowerHp": 1500,
@@ -5757,6 +5847,7 @@
 
     "Leopard 2A7+ PSO": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 32,
             "RealMassKg": 67500,
             "RealEnginePowerHp": 1500,
@@ -5792,6 +5883,7 @@
 
     "Light Armored Car M8 Greyhound": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 177.06,
             "RealMassKg": 7440,
             "RealEnginePowerHp": 110,
@@ -5844,6 +5936,7 @@
 
     "Light Panel Truck (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 218.84,
             "RealMassKg": 7490,
             "RealEnginePowerHp": 180,
@@ -5867,6 +5960,7 @@
 
     "Light Tank M3 Stuart": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 12700,
             "RealEnginePowerHp": 250,
@@ -5894,6 +5988,7 @@
 
     "Light Tank M5A1 Stuart": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 15200,
             "RealEnginePowerHp": 220,
@@ -5938,6 +6033,7 @@
 
     "Light Tank M24 Chaffee": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 18370,
             "RealEnginePowerHp": 220,
@@ -5990,6 +6086,7 @@
 
     "M1 Abrams": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 36,
             "RealMassKg": 57154,
             "RealEnginePowerHp": 1500,
@@ -6059,6 +6156,7 @@
 
     "M8A1 75mm Gun Motor Carriage": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15600,
             "RealEnginePowerHp": 296,
@@ -6102,6 +6200,7 @@
 
     "M18 Hellcat": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 36,
             "RealMassKg": 17036,
             "RealEnginePowerHp": 400,
@@ -6155,6 +6254,7 @@
 
     "M20 Armored Utility Car": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 236.08,
             "RealMassKg": 5850,
             "RealEnginePowerHp": 110,
@@ -6196,6 +6296,7 @@
 
     "M109A6 Paladin": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 28800,
             "RealEnginePowerHp": 440,
@@ -6226,6 +6327,7 @@
 
     "M998 HMMWV": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 183.8,
             "RealMassKg": 3494,
             "RealEnginePowerHp": 150,
@@ -6363,6 +6465,7 @@
 
     "Marder II (Sd.Kfz. 131)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11000,
             "RealEnginePowerPS": 140,
@@ -6435,6 +6538,7 @@
 
     "Medium Tank M3 Lee": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 27200,
             "RealEnginePowerHp": 400,
@@ -6477,6 +6581,7 @@
 
     "Medium Tank M4 Sherman (75mm)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
@@ -6531,6 +6636,7 @@
 
     "Medium Tank M4 Sherman with T34 Calliope": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 31400,
             "RealEnginePowerHp": 400,
@@ -6560,6 +6666,7 @@
 
     "Medium Tank M4A1 Sherman (75mm)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
@@ -6589,6 +6696,7 @@
 
     "Medium Tank M4A1 Sherman DD": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30600,
             "RealEnginePowerHp": 400,
@@ -6636,6 +6744,7 @@
 
     "Medium Tank M4A3 (76) W HVSS": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 33650,
             "RealEnginePowerHp": 450,
@@ -6689,6 +6798,7 @@
 
     "Medium Tank M4A3 (76) W With T34 Calliope": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 33600,
             "RealEnginePowerHp": 500,
@@ -6719,6 +6829,7 @@
 
     "Medium Tank M4A3 Sherman (76mm)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 450,
@@ -6747,6 +6858,7 @@
 
     "Medium Tank M26 Pershing": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 41892,
             "RealEnginePowerHp": 450,
@@ -6808,6 +6920,7 @@
 
     "MIM-23 HAWK Launcher": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12900,
             "RealEnginePowerHp": 202,
@@ -7190,6 +7303,7 @@
 
     "O-I Super-Heavy Tank": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 150000,
             "RealEnginePowerPS": 1100,
@@ -7297,6 +7411,7 @@
 
     "Opel Blitz 3,6-36S": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 212.21,
             "RealMassKg": 2500,
             "RealEnginePowerPS": 68,
@@ -7469,6 +7584,7 @@
 
     "Panhard 178 AMD 35": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 8200,
             "RealEnginePowerPS": 105,
@@ -7494,6 +7610,7 @@
 
     "Jagdpanzer IV/70 (V)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25500,
             "RealEnginePowerPS": 265,
@@ -7522,6 +7639,7 @@
 
     "Panzerkampfwagen 38(t) Ausf. A": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9730,
             "RealEnginePowerPS": 125,
@@ -7567,6 +7685,7 @@
 
     "Panzerkampfwagen II Ausf. C": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 8900,
             "RealEnginePowerPS": 140,
@@ -7601,6 +7720,7 @@
 
     "Panzerkampfwagen II Ausf. L Luchs": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 11800,
             "RealEnginePowerPS": 180,
@@ -7630,6 +7750,7 @@
 
     "Panzerkampfwagen III Ausf. F": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 19500,
             "RealEnginePowerPS": 285,
@@ -7675,6 +7796,7 @@
 
     "Panzerkampfwagen III Ausf. J": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 21600,
             "RealEnginePowerPS": 285,
@@ -7701,6 +7823,7 @@
 
     "Panzerkampfwagen III Ausf. L": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 22500,
             "RealEnginePowerPS": 285,
@@ -7746,6 +7869,7 @@
 
     "Panzerkampfwagen IV Ausf. D": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 20000,
             "RealEnginePowerPS": 265,
@@ -7773,6 +7897,7 @@
 
     "Panzerkampfwagen IV Ausf. F1": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 22300,
             "RealEnginePowerPS": 265,
@@ -7805,6 +7930,7 @@
 
     "Panzerkampfwagen IV Ausf. F2/G": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 23600,
             "RealEnginePowerPS": 265,
@@ -7851,6 +7977,7 @@
 
     "Panzerkampfwagen IV Ausf. H": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25000,
             "RealEnginePowerPS": 265,
@@ -7907,6 +8034,7 @@
 
     "Panzerkampfwagen IV Ausf. J": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25000,
             "RealEnginePowerPS": 265,
@@ -7935,6 +8063,7 @@
 
     "Panzerkampfwagen Tiger Ausf. B": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 69800,
             "RealEnginePowerPS": 600,
@@ -7990,6 +8119,7 @@
 
     "Panzerkampfwagen V Panther Ausf. D": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 45500,
             "RealEnginePowerPS": 650,
@@ -8017,6 +8147,7 @@
 
     "Panzerkampfwagen V Panther Ausf. G": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 45500,
             "RealEnginePowerPS": 600,
@@ -8067,6 +8198,7 @@
 
     "Panzerkampfwagen VI (P) Tiger (P)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 16,
             "RealMassKg": 60000,
             "RealEnginePowerPS": 620,
@@ -8110,6 +8242,7 @@
 
     "Panzerkampfwagen VI Ausf. E Tiger": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 16,
             "RealMassKg": 57000,
             "RealEnginePowerPS": 700,
@@ -8212,6 +8345,7 @@
 
     "Panzerkampfwagen VIII Maus": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 188000,
             "RealEnginePowerPS": 1540,
@@ -8302,6 +8436,7 @@
 
     "Police Truck (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 218.84,
             "RealMassKg": 7490,
             "RealEnginePowerHp": 177,
@@ -8367,6 +8502,7 @@
 
     "PZInz 140 (4TP)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 4330,
             "RealEnginePowerHp": 95,
@@ -8395,6 +8531,7 @@
 
     "Radar Truck (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 119.37,
             "RealMassKg": 7000,
             "RealEnginePowerHp": 90,
@@ -8438,6 +8575,7 @@
 
     "Renault AMC 35": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 14500,
             "RealEnginePowerPS": 180,
@@ -8464,6 +8602,7 @@
 
     "Renault FT": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 6500,
             "RealEnginePowerPS": 39,
@@ -8950,6 +9089,7 @@
 
     "Samsung K9 Thunder": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 47000,
             "RealEnginePowerHp": 1000,
@@ -9089,6 +9229,7 @@
 
     "Sd.Kfz. 140/1 Aufklarungspanzer 38(t)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11000,
             "RealEnginePowerPS": 152,
@@ -9121,6 +9262,7 @@
 
     "Sd.Kfz. 222 leichter Panzerspähwagen Ausf. A": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 225.47,
             "RealMassKg": 4800,
             "RealEnginePowerPS": 75,
@@ -9149,6 +9291,7 @@
 
     "Sd.Kfz. 234/2 Puma": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 11740,
             "RealEnginePowerPS": 220,
@@ -9189,6 +9332,7 @@
 
     "Sd.Kfz. 251/1 mittlerer schützenpanzerwagen": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 7000,
             "RealEnginePowerPS": 100,
@@ -9221,6 +9365,7 @@
 
     "Semovente da 75/18": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 13100,
             "RealEnginePowerPS": 125,
@@ -9243,6 +9388,7 @@
 
     "Semovente da 75/34": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15000,
             "RealEnginePowerPS": 192,
@@ -9265,6 +9411,7 @@
 
     "Semovente da 90/53": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17000,
             "RealEnginePowerPS": 145,
@@ -9291,6 +9438,7 @@
 
     "Sherman VC Firefly": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 35300,
             "RealEnginePowerHp": 425,
@@ -9366,6 +9514,7 @@
 
     "SOMUA S35": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19500,
             "RealEnginePowerPS": 190,
@@ -9392,6 +9541,7 @@
 
     "Stridsvagn m/42": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22500,
             "RealEnginePowerPS": 324,
@@ -9418,6 +9568,7 @@
 
     "Studebaker BM-13N Katyusha": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 7200,
             "RealEnginePowerHp": 87,
@@ -9444,6 +9595,7 @@
 
     "Studebaker US6": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 9300,
             "RealEnginePowerHp": 87,
@@ -9465,6 +9617,7 @@
 
     "Sturmgeschütz III Ausf. G": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 23900,
             "RealEnginePowerPS": 265,
@@ -9506,6 +9659,7 @@
 
     "Sturmgeschütz IV": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25900,
             "RealEnginePowerPS": 265,
@@ -9555,6 +9709,7 @@
 
     "Sturmmörserwagen 606/4 mit 38 cm RW 61": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 65000,
             "RealEnginePowerPS": 650,
@@ -9582,6 +9737,7 @@
 
     "SU-1-12": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 3700,
             "RealEnginePowerHp": 50,
@@ -9604,6 +9760,7 @@
 
     "SU-76M": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 27.69,
             "RealMassKg": 10500,
             "RealEnginePowerPS": 140,
@@ -9646,6 +9803,7 @@
 
     "SU-85": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 24,
             "RealMassKg": 29600,
             "RealEnginePowerPS": 500,
@@ -9692,6 +9850,7 @@
 
     "SU-100": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 24,
             "RealMassKg": 31600,
             "RealEnginePowerPS": 500,
@@ -9739,6 +9898,7 @@
 
     "SU-122": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 24,
             "RealMassKg": 30900,
             "RealEnginePowerHp": 500,
@@ -9797,6 +9957,7 @@
 
     "Sumida M.2593": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 119.37,
             "RealMassKg": 7700,
             "RealEnginePowerHp": 45,
@@ -9822,6 +9983,7 @@
 
     "T26E1-1 Super Pershing": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 49900,
             "RealEnginePowerHp": 500,
@@ -9869,6 +10031,7 @@
 
     "T27 Wolfhound Armoured Car": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 192.98,
             "RealMassKg": 6900,
             "RealEnginePowerHp": 148,
@@ -9912,6 +10075,7 @@
 
     "T-26 mod. 1933": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9600,
             "RealEnginePowerPS": 90,
@@ -9938,6 +10102,7 @@
 
     "T-34-76 mod. 1940": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 24,
             "RealMassKg": 26500,
             "RealEnginePowerPS": 500,
@@ -9983,6 +10148,7 @@
 
     "T-34-76 mod. 1942": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 24,
             "RealMassKg": 30900,
             "RealEnginePowerPS": 500,
@@ -10029,6 +10195,7 @@
 
     "T-34-85 mod. 1944": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 24,
             "RealMassKg": 32000,
             "RealEnginePowerPS": 500,
@@ -10084,6 +10251,7 @@
 
     "T-34-100": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 24,
             "RealMassKg": 33000,
             "RealEnginePowerHp": 500,
@@ -10134,6 +10302,7 @@
 
     "T-35A": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 45000,
             "RealEnginePowerPS": 500,
@@ -10160,6 +10329,7 @@
 
     "T-44-100": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 31800,
             "RealEnginePowerHp": 520,
@@ -10187,6 +10357,7 @@
 
     "T-60": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 5800,
             "RealEnginePowerPS": 70,
@@ -10212,6 +10383,7 @@
 
     "T-70": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9200,
             "RealEnginePowerPS": 140,
@@ -10257,6 +10429,7 @@
 
     "T-90MS": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 28,
             "RealMassKg": 48000,
             "RealEnginePowerHp": 1130,
@@ -10426,6 +10599,7 @@
 
     "TKS": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 2650,
             "RealEnginePowerPS": 46,
@@ -10448,6 +10622,7 @@
 
     "TOG II*": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 81300,
             "RealEnginePowerHp": 600,
@@ -10523,6 +10698,7 @@
 
     "Troll Sherman (Fictional)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
@@ -10553,6 +10729,7 @@
 
     "Tsar Tank": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 27.06,
             "RealMassKg": 60000,
             "RealEnginePowerHp": 500,
@@ -10579,6 +10756,7 @@
 
     "Tunnelling Machine (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 120000,
             "RealEnginePowerHp": 400,
@@ -10623,6 +10801,7 @@
 
     "Type 1 Chi-He": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17200,
             "RealEnginePowerPS": 240,
@@ -10662,6 +10841,7 @@
 
     "Type 1 Ho-Ni I": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15400,
             "RealEnginePowerPS": 170,
@@ -10703,6 +10883,7 @@
 
     "Type 2 Ho-I": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 16100,
             "RealEnginePowerPS": 240,
@@ -10731,6 +10912,7 @@
 
     "Type 2 Ka-Mi": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12300,
             "RealEnginePowerPS": 115,
@@ -10770,6 +10952,7 @@
 
     "Type 3 Chi-Nu": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19000,
             "RealEnginePowerPS": 240,
@@ -10823,6 +11006,7 @@
 
     "Type 3 Chi-Nu II": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19800,
             "RealEnginePowerPS": 243,
@@ -10870,6 +11054,7 @@
 
     "Type 3 Ho-Ni III": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17000,
             "RealEnginePowerPS": 170,
@@ -10909,6 +11094,7 @@
 
     "Type 4 Ho-Ro": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 16300,
             "RealEnginePowerPS": 170,
@@ -10950,6 +11136,7 @@
 
     "Type 5 Chi-Ri": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 37600,
             "RealEnginePowerPS": 550,
@@ -11021,6 +11208,7 @@
 
     "Type 89 I-Go Ko": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12790,
             "RealEnginePowerPS": 120,
@@ -11100,6 +11288,7 @@
 
     "Type 95 Ha-Go": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 7400,
             "RealEnginePowerPS": 120,
@@ -11144,6 +11333,7 @@
 
     "Type 95 Kurogane": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1100,
             "RealEnginePowerPS": 33,
@@ -11209,6 +11399,7 @@
 
     "Type 97 Chi-Ha": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15000,
             "RealEnginePowerPS": 170,
@@ -11262,6 +11453,7 @@
 
     "Type 97 Chi-Ha Kai": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15800,
             "RealEnginePowerPS": 170,
@@ -11408,6 +11600,7 @@
 
     "UAZ-469": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2400,
             "RealEnginePowerHp": 75,
@@ -11432,6 +11625,7 @@
 
     "Universal Carrier": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 3800,
             "RealEnginePowerHp": 85,
@@ -12727,6 +12921,7 @@
 
     "Utility Crane (Generic)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 15000,
             "RealEnginePowerHp": 100,
@@ -13042,6 +13237,7 @@
 
     "Volkswagen Passat B2": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1050,
             "RealEnginePowerHp": 90,
@@ -13089,6 +13285,7 @@
 
     "Wespe (Sd.Kfz. 124)": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11000,
             "RealEnginePowerPS": 140,
@@ -13139,6 +13336,7 @@
 
     "Willys MB Jeep": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1475,
             "RealEnginePowerHp": 54,
@@ -13166,6 +13364,7 @@
 
     "Willys MB With M45 Quadmount": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2200,
             "RealEnginePowerHp": 60,
@@ -13211,6 +13410,7 @@
 
     "Wurfrahmen 40 auf Sd.Kfz. 251": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 8500,
             "RealEnginePowerPS": 100,
@@ -13233,6 +13433,7 @@
 
     "YaG-10 29-K": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 83.56,
             "RealMassKg": 8500,
             "RealEnginePowerHp": 93,
@@ -13394,6 +13595,7 @@
 
     "ZiS-30": {
         "properties": {
+            "SquashMobs": "true",
             "RealTurnRateDegPerSec": 36,
             "RealMassKg": 4000,
             "RealEnginePowerPS": 50,
