@@ -9,7 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * The Server page of the Wolff's Mod tab talking to the server: a client asks for the world-wide NPC settings, changes
+ * The Server pages of the Wolff's Mod tab talking to the server: a client asks for the world-wide NPC settings, changes
  * them, hands the ranges to every NPC or starts a server benchmark, and the server answers with the settings as they now
  * are.
  *

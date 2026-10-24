@@ -48,9 +48,9 @@ import java.util.stream.Collectors;
  * Per-NPC controls inside the Wolff's Mod tab, using the Custom NPCs stats transport and sound picker.
  *
  * <p>
- * The overview is split into hub tabs along its top: General, Combat, Movement and Tuning list pages under section
- * headings, one column per heading, below the kind of NPC being edited, a standard NPC or a Flan model; Server holds the
- * settings of the whole server. Every page is listed, and those not meant for the kind are greyed. A page is a list of
+ * The overview is split into hub tabs along its top: General, Combat, Movement and Advanced list pages under section
+ * headings, one column per heading, below the kind of NPC being edited, a standard NPC or a Flan model; the pages of Server
+ * hold the settings of the whole server instead. Every page is listed, and those not meant for the kind are greyed. A page is a list of
  * rows, split into named tabs where they do not fit together, and may link to a sub-page. The title of a page is the path
  * to it. The Essentials page gathers the settings most NPCs of the kind need. A row that does nothing for this NPC,
  * because of its kind or because a setting it depends on is off, keeps its control but has a grey label that says why; a
@@ -110,6 +110,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_AGGRO_ID = 1205;
     private static final int SERVER_FIRING_ID = 1206;
     private static final int SERVER_APPLY_RANGES_ID = 1207;
+    /** The labels beside an NPC's own search intervals naming the server's, which an interval of 0 follows. */
+    private static final int SERVER_NEAR_VALUE_ID = 1208;
+    private static final int SERVER_FAR_VALUE_ID = 1209;
     /** Distance between the left edges of two overview columns; a page button is this wide less the gap. */
     private static final int OVERVIEW_COLUMN = 134;
     private static final int OVERVIEW_GAP = 6;
@@ -157,10 +160,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final AtomicReference<Hub> HUB = new AtomicReference<>(Hub.GENERAL);
     private static final String PRESET = "wolffsmodnpcs.preset.";
 
-    /** A tab of the overview, in the row along its top. Server holds the settings of the whole server instead of pages. */
+    /** A tab of the overview, in the row along its top. The pages of Server hold the settings of the whole server instead of this NPC's. */
     private enum Hub
     {
-        GENERAL, COMBAT, MOVEMENT, TUNING, SERVER;
+        GENERAL, COMBAT, MOVEMENT, ADVANCED, SERVER;
 
         private String key()
         {
@@ -177,7 +180,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         START(Hub.GENERAL, 0), MODEL(Hub.GENERAL, 1), LOOK(Hub.GENERAL, 2),
         WEAPONS(Hub.COMBAT, 0), TARGETING(Hub.COMBAT, 1), PROTECTION(Hub.COMBAT, 2),
         BEHAVIOUR(Hub.MOVEMENT, 0), TRAVEL(Hub.MOVEMENT, 1),
-        TUNING(Hub.TUNING, 0);
+        ADVANCED(Hub.ADVANCED, 0),
+        SERVER(Hub.SERVER, 0);
         // spotless:on
 
         private final Hub hub;
@@ -196,6 +200,42 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         AGGRO_RANGE(AGGRO_RANGE_ID), FIRING_RANGE(FIRING_RANGE_ID);
 
         private final int id;
+    }
+
+    /** The settings of the whole server as rows. The server sends their values and decides who may change them. */
+    @RequiredArgsConstructor
+    private enum ServerRow
+    {
+        NEAR_INTERVAL(SERVER_NEAR_ID, NpcServerSettings.DEFAULT_NEAR_INTERVAL), FAR_INTERVAL(SERVER_FAR_ID, NpcServerSettings.DEFAULT_FAR_INTERVAL), PROFILING(SERVER_PROFILE_ID,
+            0), AGGRO_RANGE(SERVER_AGGRO_ID, NpcServerSettings.DEFAULT_AGGRO_RANGE), FIRING_RANGE(SERVER_FIRING_ID, NpcServerSettings.DEFAULT_FIRING_RANGE);
+
+        private final int id;
+        /** The value a new world starts with, 1 for Yes for the switch. */
+        private final int fallback;
+
+        /** @return the value the server last sent, 1 for Yes for the switch */
+        private int current()
+        {
+            return switch (this)
+            {
+                case NEAR_INTERVAL -> ClientServerSettings.getNearInterval();
+                case FAR_INTERVAL -> ClientServerSettings.getFarInterval();
+                case PROFILING -> ClientServerSettings.isProfiling() ? 1 : 0;
+                case AGGRO_RANGE -> ClientServerSettings.getAggroRange();
+                case FIRING_RANGE -> ClientServerSettings.getFiringRange();
+            };
+        }
+
+        private int maximum()
+        {
+            return switch (this)
+            {
+                case NEAR_INTERVAL -> NpcServerSettings.MAX_NEAR_INTERVAL;
+                case FAR_INTERVAL -> NpcServerSettings.MAX_FAR_INTERVAL;
+                case PROFILING -> 1;
+                case AGGRO_RANGE, FIRING_RANGE -> NpcMobility.rangeLimit();
+            };
+        }
     }
 
     /** The appearance switches as rows; they are not stored with the weapon options. */
@@ -379,6 +419,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 Feature.HITBOX_OUTLINES)),
         TACTICS(Section.BEHAVIOUR, Scope.ALL, Tab.of(Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS)),
         DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
+        PATHFINDING(Section.BEHAVIOUR, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
         TERRAIN(Section.TRAVEL, Scope.ALL, Tab.of(Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Value.LAND_SPEED, Value.WATER_SPEED)),
         DRIVING(Section.TRAVEL, Scope.VEHICLES,
             Tab.named("handling", Feature.DRIVING, Value.DRIVE_PRESET, Value.DRIVE_TYPE, Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.TURN_RADIUS),
@@ -398,12 +439,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
             Tab.named(IDLE_MOVEMENT_TAB)),
-        PERFORMANCE(Section.TUNING, Scope.ALL,
+        PERFORMANCE(Section.ADVANCED, Scope.ALL,
             Tab.named(GENERAL_TAB, Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAGGER_NEAR_SEARCH, Feature.STAY_ACTIVE, Value.ACTIVE_RANGE,
                 Feature.PATH_DEBUG),
             Tab.named("search_bands", Feature.ADVANCED_SEARCH_INTERVALS, Value.SEARCH_BAND_0_INTERVAL, Value.SEARCH_BAND_1_INTERVAL, Value.SEARCH_BAND_2_INTERVAL,
                 Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL)),
-        PATHFINDING(Section.TUNING, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT));
+        /** The pages of the whole server: their rows are {@link ServerRow}s, and the actions they offer sit below them. */
+        SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL)),
+        SERVER_RANGES(Section.SERVER, Scope.ALL, Tab.of(ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE)),
+        DIAGNOSTICS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.PROFILING));
         // spotless:on
 
         private final Section section;
@@ -464,8 +508,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         kind = NpcKind.of(npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
         NpcNetwork.sendToServer(NpcPresetPacket.request(npc.getId()));
-        if (HUB.get() == Hub.SERVER)
-            requestServerSettings();
+        // The Server pages and the server's intervals beside this NPC's own both need the server's settings.
+        requestServerSettings();
     }
 
     @Override
@@ -517,7 +561,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private String hint()
     {
-        if (category == null && HUB.get() == Hub.SERVER)
+        if ((category == null ? HUB.get() : category.section.hub) == Hub.SERVER)
             return TUNING + (ClientServerSettings.isKnown() ? "server_hint" : "server_waiting");
         if (category == null)
             return OVERVIEW + "hint";
@@ -532,19 +576,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     // Overview
 
     /**
-     * The row of hub tabs, then the hub tab shown: the Server settings, or the kind of NPC above one column per section, each
-     * a heading followed by the buttons of its pages. The Start here column ends with the presets.
+     * The row of hub tabs, then the hub tab shown: the kind of NPC, or for Server that its pages hold for the whole server,
+     * above one column per section, each a heading followed by the buttons of its pages. The Start here column ends with the
+     * presets.
      */
     private void initOverview()
     {
         initHubButtons();
         Hub hub = HUB.get();
         if (hub == Hub.SERVER)
-        {
-            initServer();
-            return;
-        }
-        initKindLabel();
+            addLabel(new GuiLabel(TITLE_LABEL_ID, OVERVIEW + "server_title", guiLeft + 8, guiTop + PAGE_TOP));
+        else
+            initKindLabel();
         List<Section> sections = Arrays.stream(Section.values()).filter(section -> section.hub == hub).toList();
         for (Section section : sections)
         {
@@ -728,6 +771,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return enabled(feature) != feature.isDefaultEnabled();
         if (row instanceof Value value)
             return NpcTuning.of(npc).get(value) != value.fallback();
+        if (row instanceof ServerRow setting)
+            return setting.current() != setting.fallback;
         return row instanceof Look look && lookEnabled(look) != look.fallback;
     }
 
@@ -890,14 +935,14 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** Whether the row's control is a choice or a number, which the controls of a single column leave more room for. */
     private static boolean wide(Object row)
     {
-        return row instanceof Value || row instanceof Range;
+        return row instanceof Value || row instanceof Range || row instanceof ServerRow setting && setting != ServerRow.PROFILING;
     }
 
     private static int controlWidth(Object row)
     {
         if (row instanceof Value value)
             return choices(value).length > 0 ? 150 : 60;
-        return row instanceof Range ? 60 : 48;
+        return wide(row) ? 60 : 48;
     }
 
     /** One button per tab across the page; a tab shown although it is not meant for this kind of NPC is greyed. */
@@ -936,6 +981,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             combat.initProtection(loaded, control, below);
         else if (category == Category.PROTECTION && PARTS_TAB.equals(shown.name()))
             combat.initPartsLink(loaded);
+        else if (category == Category.SERVER_RANGES)
+            serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", below + 6).setEnabled(ClientServerSettings.isKnown());
+        else if (category == Category.DIAGNOSTICS)
+        {
+            serverButton(SERVER_BENCHMARK_ID, "server_benchmark", below + 6);
+            serverButton(CLIENT_BENCHMARK_ID, "client_benchmark", below + 6 + 22);
+        }
     }
 
     /** @return whether the tab is one of the Sounds page's tabs that are not a list of rows, which is now laid out */
@@ -988,6 +1040,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 rangeField(range, control, y);
             else if (row instanceof Look look)
                 switchButton(look.id, lookEnabled(look), control, y);
+            else if (row instanceof ServerRow setting)
+                serverControl(setting, control, y);
         }
         return control;
     }
@@ -997,6 +1051,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         String name = ((Enum<?>) row).name().toLowerCase(Locale.ROOT);
         if (row instanceof Feature)
             return WEAPONS + name;
+        if (row instanceof ServerRow)
+            return TUNING + "server_" + name;
         return (row instanceof Look ? PRESENTATION : TUNING) + name;
     }
 
@@ -1006,6 +1062,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return VALUE_ID + value.ordinal();
         if (row instanceof Range range)
             return range.id;
+        if (row instanceof ServerRow setting)
+            return setting.id;
         if (row instanceof Look look)
             return look.id;
         return ((Feature) row).ordinal();
@@ -1047,6 +1105,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return Component.translatable(NO_YES[feature.isDefaultEnabled() ? 1 : 0]);
         if (row instanceof Look look)
             return Component.translatable(NO_YES[look.fallback ? 1 : 0]);
+        if (row == ServerRow.PROFILING)
+            return Component.translatable(NO_YES[ServerRow.PROFILING.fallback]);
+        if (row instanceof ServerRow setting)
+            return Component.literal(Integer.toString(setting.fallback));
         if (!(row instanceof Value value))
             return null;
         Enum<?>[] choices = choices(value);
@@ -1191,6 +1253,33 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return;
         }
         numberField(id, control, y, current, value.minimum(), value.maximum(), value.fallback());
+        serverValueLabel(value, control + 66, y + 5);
+    }
+
+    /** Beside an NPC's own search interval, the server's, which the NPC follows while its own is 0. */
+    private void serverValueLabel(Value value, int x, int y)
+    {
+        if (!ClientServerSettings.isKnown())
+            return;
+        int id;
+        int server;
+        if (value == Value.SEARCH_NEAR_INTERVAL)
+        {
+            id = SERVER_NEAR_VALUE_ID;
+            server = ClientServerSettings.getNearInterval();
+        }
+        else if (value == Value.SEARCH_FAR_INTERVAL)
+        {
+            id = SERVER_FAR_VALUE_ID;
+            server = ClientServerSettings.getFarInterval();
+        }
+        else
+            return;
+        String key = TUNING + "server_value";
+        Component text = Component.translatable(key, server);
+        GuiLabel label = new GuiLabel(id, text, READ_ONLY_COLOR, x, y, font().width(text), 10);
+        label.setTooltip(Tooltip.create(Component.translatable(key + HELP_SUFFIX)));
+        addLabel(label);
     }
 
     /** @return the named choices of a value that is one, or none for a number */
@@ -1235,37 +1324,26 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         }
     }
 
-    /** The settings and diagnostics of the whole server. The server sends the values and decides who may change them. */
-    private void initServer()
+    /** The control of a setting of the whole server, read-only until the server has sent the values. */
+    private void serverControl(ServerRow setting, int control, int y)
     {
         boolean known = ClientServerSettings.isKnown();
-        serverField(SERVER_NEAR_ID, "server_near_interval", ClientServerSettings.getNearInterval(), NpcServerSettings.MAX_NEAR_INTERVAL, 29, known);
-        serverField(SERVER_FAR_ID, "server_far_interval", ClientServerSettings.getFarInterval(), NpcServerSettings.MAX_FAR_INTERVAL, 50, known);
-        String profile = TUNING + "server_profiling";
-        addLabel(new GuiLabel(SERVER_PROFILE_ID, profile, guiLeft + 8, guiTop + 76, profile + HELP_SUFFIX));
-        GuiButtonNop toggle = new GuiButtonNop(this, SERVER_PROFILE_ID, guiLeft + 228, guiTop + 71, 48, 20, NO_YES, ClientServerSettings.isProfiling() ? 1 : 0);
-        toggle.setEnabled(known);
-        addButton(toggle);
-        serverField(SERVER_AGGRO_ID, "server_aggro_range", ClientServerSettings.getAggroRange(), NpcMobility.rangeLimit(), 92, known);
-        serverField(SERVER_FIRING_ID, "server_firing_range", ClientServerSettings.getFiringRange(), NpcMobility.rangeLimit(), 113, known);
-        GuiButtonNop apply = serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", 136);
-        apply.setEnabled(known);
-        serverButton(SERVER_BENCHMARK_ID, "server_benchmark", 158);
-        serverButton(CLIENT_BENCHMARK_ID, "client_benchmark", 180);
-    }
-
-    private void serverField(int id, String name, int current, int maximum, int y, boolean known)
-    {
-        String key = TUNING + name;
-        addLabel(new GuiLabel(id, key, guiLeft + 8, guiTop + y + 5, key + HELP_SUFFIX));
-        GuiTextFieldNop field = new GuiTextFieldNop(id, this, guiLeft + 228, guiTop + y, 60, 20, Integer.toString(current));
+        if (setting == ServerRow.PROFILING)
+        {
+            GuiButtonNop toggle = new GuiButtonNop(this, setting.id, control, y, 48, 20, NO_YES, setting.current());
+            toggle.setEnabled(known);
+            addButton(toggle);
+            return;
+        }
+        GuiTextFieldNop field = new GuiTextFieldNop(setting.id, this, control, y, 60, 20, Integer.toString(setting.current()));
         field.setEditable(known);
         field.setTextColorUneditable(READ_ONLY_COLOR);
         field.numbersOnly = true;
-        field.setMinMaxDefault(1, maximum, current);
+        field.setMinMaxDefault(1, setting.maximum(), setting.current());
         addTextField(field);
     }
 
+    /** An action of a Server page, below its rows, from the given height within the GUI. */
     private GuiButtonNop serverButton(int id, String name, int y)
     {
         String key = TUNING + name;
