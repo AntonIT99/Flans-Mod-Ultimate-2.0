@@ -1539,7 +1539,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void subGuiClosed(Screen subgui)
     {
-        if (subgui instanceof GuiSoundSelection picker)
+        if (subgui instanceof CrewSelectionMenu menu)
+            changed |= crew.selected(menu);
+        else if (subgui instanceof GuiSoundSelection picker)
         {
             if (combat.active())
                 changed |= combat.soundChosen(picker.selectedResource);
@@ -1586,7 +1588,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private boolean editEquipmentField(GuiTextFieldNop field)
     {
-        return heldItems.field(field) || crew.field(field) || combat.unFocused(field);
+        return heldItems.field(field) || combat.unFocused(field);
     }
 
     /** @return whether the field was one of the simulation numbers or ranges */
@@ -1816,6 +1818,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void setGuiData(CompoundTag tag)
     {
+        // A clone list may arrive after its selection menu was closed. It is not NPC statistics.
+        if (tag.contains("List"))
+            return;
         npc.stats.readToNBT(tag);
         loaded = true;
         editingSound = null;

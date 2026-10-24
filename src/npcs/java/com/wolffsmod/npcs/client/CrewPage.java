@@ -34,10 +34,7 @@ final class CrewPage
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
     private static final int POST_ID = 2300;
     private static final int SOURCE_ID = 2301;
-    private static final int CLONE_TAB_ID = 2302;
-    private static final int CLONE_NAME_ID = 2303;
-    private static final int TEAM_ID = 2304;
-    private static final int CLASS_ID = 2305;
+    private static final int SELECT_ID = 2302;
     private static final int SHIELDED_ID = 2306;
     private static final int PASSENGERS_FIRE_ID = 2307;
     private static final int DESTROYED_ID = 2308;
@@ -82,17 +79,9 @@ final class CrewPage
         button(SOURCE_ID, left + 164, y, 232, Arrays.stream(CrewSource.Kind.values()).map(CrewSource.Kind::key).toArray(String[]::new), source.kind().ordinal());
         switch (source.kind())
         {
-            case CLONE -> {
-                label(0, "clone_tab", left, y + ROW_HEIGHT + 5);
-                field(CLONE_TAB_ID, left + 72, y + ROW_HEIGHT, 40, Integer.toString(source.cloneTab())).setNumbersOnly().setMinMaxDefault(1, CrewSource.MAX_CLONE_TAB, 1);
-                label(1, "clone_name", left + 122, y + ROW_HEIGHT + 5);
-                field(CLONE_NAME_ID, left + 164, y + ROW_HEIGHT, 232, source.cloneName());
-            }
-            case CLASS -> {
-                label(0, "team", left, y + ROW_HEIGHT + 5);
-                field(TEAM_ID, left + 40, y + ROW_HEIGHT, 120, source.team());
-                label(1, "class", left + 122 + 10, y + ROW_HEIGHT + 5);
-                field(CLASS_ID, left + 204, y + ROW_HEIGHT, 192, source.playerClass());
+            case CLONE, CLASS -> {
+                GuiButtonNop select = button(SELECT_ID, left, y + ROW_HEIGHT, 396, new String[]{PREFIX + "select." + source.kind().name().toLowerCase(java.util.Locale.ROOT)}, 0);
+                select.setTooltip(Tooltip.create(Component.translatable(PREFIX + "select.help")));
             }
             case NONE -> {
                 // Nobody crews these seats; there is nothing to name.
@@ -161,21 +150,6 @@ final class CrewPage
         button.setTooltip(Tooltip.create(Component.translatable(PREFIX + key + HELP)));
     }
 
-    private void label(int index, String key, int x, int y)
-    {
-        GuiLabel label = new GuiLabel(LABEL_ID + index, PREFIX + key, x, y);
-        label.setTooltip(Tooltip.create(Component.translatable(PREFIX + key + HELP)));
-        gui.addLabel(label);
-    }
-
-    private GuiTextFieldNop field(int id, int x, int y, int width, String value)
-    {
-        GuiTextFieldNop field = new GuiTextFieldNop(id, gui, x, y, width, 20, value);
-        field.setEditable(ready);
-        gui.addTextField(field);
-        return field;
-    }
-
     boolean handles(int id)
     {
         return id >= POST_ID && id <= LAST_ID;
@@ -193,6 +167,7 @@ final class CrewPage
                 settings.setSource(post, settings.source(post).withKind(CrewSource.Kind.values()[button.getValue()]));
                 return true;
             }
+            case SELECT_ID -> gui.setSubGui(new CrewSelectionMenu(settings.source(post)));
             case SHIELDED_ID -> {
                 settings.setProtectedCrew(yes);
                 return true;
@@ -218,25 +193,14 @@ final class CrewPage
         return false;
     }
 
-    /** @return whether the field was one of the page's and changed the settings */
-    boolean field(GuiTextFieldNop field)
+    /** Applies a confirmed menu choice; cancelling leaves this seat's source untouched. */
+    boolean selected(CrewSelectionMenu menu)
     {
-        if (!ready || !handles(field.id))
+        CrewSource source = settings().source(post);
+        CrewSource selection = menu.selection().orElse(source);
+        if (source.equals(selection))
             return false;
-        NpcCrewSettings settings = settings();
-        CrewSource source = settings.source(post);
-        CrewSource changed = switch (field.id)
-        {
-            case CLONE_TAB_ID -> field.isInteger() ? source.withClone(field.getInteger(), source.cloneName()) : source;
-            case CLONE_NAME_ID -> source.withClone(source.cloneTab(), field.getValue());
-            case TEAM_ID -> source.withClass(field.getValue(), source.playerClass());
-            case CLASS_ID -> source.withClass(source.team(), field.getValue());
-            default -> source;
-        };
-        if (changed.equals(source))
-            return false;
-        settings.setSource(post, changed);
-        showStatus();
+        settings().setSource(post, selection);
         return true;
     }
 
