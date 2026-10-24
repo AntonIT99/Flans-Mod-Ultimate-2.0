@@ -1,4 +1,13 @@
 {
+  "wolffsmodnpcs.tab.traffic": "Verkehr",
+  "wolffsmodnpcs.tuning.steering_response": "Lenkaufbau (Ticks)",
+  "wolffsmodnpcs.tuning.steering_response.help": "0 lenkt sofort. Sonst baut sich die Drehrate in 1–100 Ticks von null bis zum Maximum auf; ein Richtungswechsel dauert länger. Physische Dreh- und Rollradiusgrenzen gelten weiterhin. Bei Stillstand ohne Fahrziel zurückgesetzt. Benötigt Fahren.",
+  "wolffsmodnpcs.tuning.stationary_turn": "Drehen im Stand",
+  "wolffsmodnpcs.tuning.stationary_turn.allow": "Für Kettenfahrzeuge erlauben",
+  "wolffsmodnpcs.tuning.stationary_turn.rolling_only": "Nur beim Rollen",
+  "wolffsmodnpcs.tuning.stationary_turn.help": "Standard erlaubt Kettenfahrzeugen das Drehen im Stand. Nur beim Rollen wendet die Rollradiusgrenze auch auf Kettenfahrzeuge und beim Freifahren an. Radfahrzeuge müssen immer rollen. Benötigt Fahren.",
+  "wolffsmodnpcs.tuning.traffic_stop_gap": "Verkehrs-Bremsabstand (0,1 Block)",
+  "wolffsmodnpcs.tuning.traffic_stop_gap.help": "0 verwendet den halben Folgeabstand. Sonst setzen 1–320 den Abstand zwischen Fahrzeugrändern auf 0,1–32 Blöcke, ab dem der Verkehr null Gas anfordert. Auf den Folgeabstand begrenzt; Folgeabstand 0 deaktiviert Verkehrsprüfungen. Bremsschwelle, kein garantierter Endabstand: Bremsen dauert und Verkehr wird alle 10 Ticks geprüft. Beim Freifahren wird Verkehr nicht geprüft.",
   "wolffsmodnpcs.creation_faction.unknown": "Unbekannte NPC-Fraktion. Wähle eine vorhandene Custom-NPCs-Fraktion.",
   "wolffsmodnpcs.creation_faction.set": "NPCs, die du mit Werkzeugen oder Befehlen erstellst, erhalten jetzt die Fraktion %s.",
   "wolffsmodnpcs.creation_faction.reset": "NPC-Fraktionsvorgabe gelöscht. Neue NPCs verwenden wieder ihre normale Fraktion bei der Erstellung.",

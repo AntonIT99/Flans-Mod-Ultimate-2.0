@@ -1,4 +1,13 @@
 {
+  "wolffsmodnpcs.tab.traffic": "Traffic",
+  "wolffsmodnpcs.tuning.steering_response": "Steering build-up (ticks)",
+  "wolffsmodnpcs.tuning.steering_response.help": "0 keeps immediate steering. Otherwise 1–100 ticks builds from zero to the maximum turn rate; reversing steering direction takes longer. Physical yaw and rolling-radius limits still apply. Reset on idle. Requires driving.",
+  "wolffsmodnpcs.tuning.stationary_turn": "Stationary turning",
+  "wolffsmodnpcs.tuning.stationary_turn.allow": "Allow for tracked vehicles",
+  "wolffsmodnpcs.tuning.stationary_turn.rolling_only": "Require rolling",
+  "wolffsmodnpcs.tuning.stationary_turn.help": "Default allows tracked vehicles to turn in place. Require rolling applies the rolling-radius limit even to tracked vehicles, including recovery. Wheeled vehicles always need to roll. No legacy crawl-pivot maneuver is added. Requires driving.",
+  "wolffsmodnpcs.tuning.traffic_stop_gap": "Traffic brake gap (0.1 block)",
+  "wolffsmodnpcs.tuning.traffic_stop_gap.help": "0 keeps half the following distance. Otherwise 1–320 sets a 0.1–32 block edge-to-edge gap where traffic requests zero throttle. Capped at following distance; following distance 0 disables traffic checks. This is a braking threshold, not guaranteed final separation: braking takes time and traffic is sampled every 10 ticks. Recovery does not check traffic.",
   "wolffsmodnpcs.creation_faction.unknown": "Unknown NPC faction. Choose an existing Custom NPCs faction.",
   "wolffsmodnpcs.creation_faction.set": "NPCs you create with tools or commands will now use faction %s.",
   "wolffsmodnpcs.creation_faction.reset": "NPC faction override cleared. New NPCs use their normal creation faction again.",

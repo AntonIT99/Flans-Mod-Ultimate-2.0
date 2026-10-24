@@ -128,7 +128,13 @@ public final class NpcTuning
         SEARCH_BAND_0_INTERVAL(0, 0, 1200), SEARCH_BAND_1_INTERVAL(0, 0, 1200), SEARCH_BAND_2_INTERVAL(0, 0, 1200), SEARCH_BAND_3_INTERVAL(0, 0, 1200), SEARCH_BAND_4_INTERVAL(0, 0,
             1200), SEARCH_BAND_5_INTERVAL(0, 0, 1200),
         /** Index into {@link AimPose}; by default the server's mob aim rule applies. */
-        AIM_POSE(0, 0, AimPose.values().length - 1);
+        AIM_POSE(0, 0, AimPose.values().length - 1),
+        /** Ticks to build from zero to the maximum yaw rate; 0 keeps immediate steering. */
+        STEERING_RESPONSE(0, 0, 100),
+        /** Index into {@link StationaryTurn}; permission never grants stationary turns to wheeled vehicles. */
+        STATIONARY_TURN(1, 0, StationaryTurn.values().length - 1),
+        /** Traffic braking threshold in tenths of a block; 0 keeps half the following distance. */
+        TRAFFIC_STOP_GAP(0, 0, 320);
 
         private final int fallback;
         private final int minimum;
@@ -324,6 +330,12 @@ public final class NpcTuning
         SEE_THROUGH,
         /** Sees and fires through transparent blocks. */
         SEE_AND_FIRE_THROUGH
+    }
+
+    /** Whether tracked driving may turn without rolling. */
+    public enum StationaryTurn
+    {
+        ROLLING_ONLY, ALLOW
     }
 
     public NpcTuning()

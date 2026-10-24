@@ -63,6 +63,7 @@ public final class NpcDriving
     private Vec3 anchor;
     private int anchorTick;
     private float followLimit = 1F;
+    private float steeringRate;
     /** Whether the vehicle was last slowing down for the end of its path, which it then brakes at rather than rolls past. */
     private boolean arriving;
     /** The point the vehicle currently steers for, for the path preview. */
@@ -179,22 +180,21 @@ public final class NpcDriving
     /** Steers and sets the throttle for one tick with somewhere to go. */
     public Command drive(Situation situation, Settings settings)
     {
+        return drive(situation, settings, 0, true);
+    }
+
+    /** Optional response time in ticks and tracked stationary-turn permission; defaults retain immediate steering. */
+    public Command drive(Situation situation, Settings settings, int responseTicks, boolean stationaryTurn)
+    {
         float off = Mth.wrapDegrees(situation.wantedYaw() - situation.hullYaw());
         // Once in reverse, the vehicle stays in reverse until the goal is clearly ahead again.
         boolean behind = Math.abs(off) > (reversing ? 90F : settings.reverseAngle());
         reversing = settings.reverse() && behind && situation.goalDistance() <= settings.reverseDistance();
         // In reverse it is the rear that has to point at the goal.
         float steer = reversing ? Mth.wrapDegrees(off + 180F) : off;
-        float step = settings.turnStep();
-        if (!settings.pivot())
-        {
-            // A wheeled vehicle turns only as fast as it rolls round its turning circle, which widens with speed.
-            double widened = (settings.widenRadius() ? Math.max(0.5D, settings.radius()) * (1D + Math.abs(throttle)) : Math.max(0.01D, settings.radius()));
-            step = (float) Math.min(step, Math.toDegrees(situation.speed() / widened));
-        }
-        float hull = MountMotion.turn(situation.hullYaw(), situation.hullYaw() + steer, step);
+        float hull = steer(situation.hullYaw(), situation.hullYaw() + steer, situation.speed(), settings, responseTicks, stationaryTurn, settings.turnStep());
         float remaining = Math.abs(Mth.wrapDegrees(situation.hullYaw() + steer - hull));
-        float share = MountMotion.throttle(remaining, settings.pivot() ? settings.floor() : Math.max(settings.floor(), WHEELED_FLOOR));
+        float share = MountMotion.throttle(remaining, settings.pivot() && stationaryTurn ? settings.floor() : Math.max(settings.floor(), WHEELED_FLOOR));
         if (situation.cornerAngle() > 0F && situation.lookahead() > 0D)
         {
             float corner = Mth.lerp(Mth.clamp(situation.cornerAngle() / 90F, 0F, 1F), 1F, settings.cornerShare());
@@ -208,6 +208,25 @@ public final class NpcDriving
         arriving = wanted < free;
         throttle = approach(reversing ? -wanted : wanted, settings, false);
         return new Command(hull, throttle);
+    }
+
+    /** Smooths yaw demand while enforcing the current rolling/yaw limits, including during recovery. */
+    private float steer(float hull, float wanted, double speed, Settings settings, int responseTicks, boolean stationaryTurn, float maximum)
+    {
+        float limit = maximum;
+        if (!settings.pivot() || !stationaryTurn)
+        {
+            double radius = settings.widenRadius() ? Math.max(0.5D, settings.radius()) * (1D + Math.abs(throttle)) : Math.max(0.01D, settings.radius());
+            limit = (float) Math.min(limit, Math.toDegrees(Math.abs(speed) / radius));
+        }
+        float error = Mth.wrapDegrees(wanted - hull);
+        float requested = Mth.clamp(error, -limit, limit);
+        float response = responseTicks <= 0 ? Float.MAX_VALUE : settings.turnStep() / responseTicks;
+        steeringRate += Mth.clamp(requested - steeringRate, -response, response);
+        // New speed/permission limits apply immediately, even while a previous turn is still unwinding.
+        steeringRate = Mth.clamp(steeringRate, -limit, limit);
+        steeringRate = Mth.clamp(steeringRate, -Math.abs(error), Math.abs(error));
+        return Mth.wrapDegrees(hull + steeringRate);
     }
 
     /**
@@ -230,6 +249,7 @@ public final class NpcDriving
     public Command idle(float hullYaw, Settings settings)
     {
         reversing = false;
+        steeringRate = 0F;
         throttle = approach(0F, settings, !arriving);
         return new Command(hullYaw, throttle);
     }
@@ -257,6 +277,7 @@ public final class NpcDriving
     public void reset()
     {
         throttle = 0F;
+        steeringRate = 0F;
         reversing = false;
         recovery = 0;
         circling = 0;
@@ -297,13 +318,14 @@ public final class NpcDriving
             throttle = recoveryThrottle;
             if (recovery == 0)
                 npc.getNavigation().recomputePath();
-            return new Command(MountMotion.turn(hullYaw, MountMotion.yaw(route.steer().subtract(npc.position())), step), throttle);
+            return new Command(
+                steer(hullYaw, MountMotion.yaw(route.steer().subtract(npc.position())), speed, settings, tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0, step), throttle);
         }
-        updateTraffic(npc, hullYaw, tuning.get(Value.FOLLOW_DISTANCE));
+        updateTraffic(npc, hullYaw, tuning.get(Value.FOLLOW_DISTANCE), tuning.get(Value.TRAFFIC_STOP_GAP));
         float wanted = MountMotion.yaw(route.steer().subtract(npc.position()));
         // The NPC's own motion is no measure of its speed here: before it moves, ground friction has already been taken off it.
         Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), tuning.get(Value.DRIVE_LOOKAHEAD), speed, followLimit,
-            route.haltDistance(), NpcMobility.topSpeed(npc)), settings);
+            route.haltDistance(), NpcMobility.topSpeed(npc)), settings, tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
         watchProgress(npc, Mth.wrapDegrees(wanted - command.hullYaw()));
         return command;
     }
@@ -369,7 +391,7 @@ public final class NpcDriving
     }
 
     /** Looks, every few ticks and at a moment of the NPC's own, for a vehicle ahead to keep a distance from. */
-    private void updateTraffic(EntityNPCInterface npc, float hullYaw, int distance)
+    private void updateTraffic(EntityNPCInterface npc, float hullYaw, int distance, int stopGapTenths)
     {
         if (distance <= 0)
         {
@@ -387,13 +409,23 @@ public final class NpcDriving
             if (Math.abs(Mth.wrapDegrees(MountMotion.yaw(offset) - heading)) <= FOLLOW_CONE)
                 nearest = Math.min(nearest, offset.horizontalDistance() - (npc.getBbWidth() + other.getBbWidth()) * 0.5D);
         }
-        followLimit = followLimit(nearest, distance);
+        followLimit = followLimit(nearest, distance, stopGapTenths);
     }
 
     /** @return the share of its speed a vehicle keeps with another one that many blocks ahead: none at half the distance or less */
     static float followLimit(double gap, int distance)
     {
-        double minimum = distance * 0.5D;
+        return followLimit(gap, distance, 0);
+    }
+
+    /** Zero inherits half the following distance; a custom threshold cannot exceed the following distance. */
+    static float followLimit(double gap, int distance, int stopGapTenths)
+    {
+        if (distance <= 0)
+            return 1F;
+        double minimum = stopGapTenths <= 0 ? distance * 0.5D : Math.min(distance, stopGapTenths / 10D);
+        if (gap <= minimum)
+            return 0F;
         return (float) Mth.clamp((gap - minimum) / Math.max(0.1D, distance - minimum), 0D, 1D);
     }
 

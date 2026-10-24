@@ -316,6 +316,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.REVERSE_DISTANCE, Need.on(Feature.DRIVE_REVERSE)),
         Map.entry(Value.STOP_DISTANCE, Need.on(Feature.DRIVING)),
         Map.entry(Value.FOLLOW_DISTANCE, Need.on(Feature.DRIVING)),
+        Map.entry(Value.STEERING_RESPONSE, Need.on(Feature.DRIVING)),
+        Map.entry(Value.STATIONARY_TURN, Need.on(Feature.DRIVING)),
+        Map.entry(Value.TRAFFIC_STOP_GAP, Need.on(Feature.DRIVING)),
         Map.entry(Value.PATH_MARGIN, Need.on(Feature.ADAPTIVE_PATH_RANGE)),
         Map.entry(Value.PATH_RETRY_INTERVAL, Need.on(Feature.ADAPTIVE_PATH_RANGE)),
         Map.entry(Feature.DOORS_OPEN, Need.on(Feature.ANIMATED_MODEL)),
@@ -376,8 +379,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         TERRAIN(Section.TRAVEL, Scope.ALL, Tab.of(Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Value.LAND_SPEED, Value.WATER_SPEED)),
         DRIVING(Section.TRAVEL, Scope.VEHICLES,
             Tab.named("handling", Feature.DRIVING, Value.DRIVE_PRESET, Value.DRIVE_TYPE, Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.TURN_RADIUS),
-            Tab.named("steering", Feature.HULL_FACES_TRAVEL, Value.HULL_TURN_RATE, Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR, Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED),
-            Tab.named("reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE)),
+            Tab.named("steering", Feature.HULL_FACES_TRAVEL, Value.HULL_TURN_RATE, Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR, Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED,
+                Value.STEERING_RESPONSE, Value.STATIONARY_TURN),
+            Tab.named("reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE, Value.STOP_DISTANCE),
+            Tab.named("traffic", Value.FOLLOW_DISTANCE, Value.TRAFFIC_STOP_GAP)),
         FLIGHT(Section.TRAVEL, Scope.PLANES_AND_VEHICLES, Tab.of(Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED, Value.SUBMARINE_DEPTH)),
         DRIVEABLES(Section.TRAVEL, Scope.STANDARD,
             Tab.named("boarding", Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES, Value.KEEP_DISTANCE),
@@ -1106,7 +1111,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             {
                 case ALIGN_TOLERANCE, AIM_SPEED_YAW, AIM_SPEED_PITCH -> Scope.MODELS;
                 case DRIVE_PRESET, DRIVE_TYPE, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING, TURN_RADIUS, THROTTLE_FLOOR, DRIVE_LOOKAHEAD, CORNER_SPEED, DRIVE_REVERSE_SPEED, REVERSE_ANGLE,
-                    REVERSE_DISTANCE, STOP_DISTANCE, FOLLOW_DISTANCE -> Scope.VEHICLES;
+                    REVERSE_DISTANCE, STOP_DISTANCE, FOLLOW_DISTANCE, STEERING_RESPONSE, STATIONARY_TURN, TRAFFIC_STOP_GAP -> Scope.VEHICLES;
                 case HULL_TURN_RATE -> Scope.HULLS;
                 case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL ->
                     Scope.STANDARD;
@@ -1169,6 +1174,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return switch (value)
         {
             case AIM_POSE -> NpcTuning.AimPose.values();
+            case STATIONARY_TURN -> NpcTuning.StationaryTurn.values();
             case TERRAIN -> NpcTuning.Terrain.values();
             case SIGHT -> NpcTuning.Sight.values();
             case DRIVE_PRESET -> NpcTuning.DrivePreset.values();
