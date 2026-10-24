@@ -2,20 +2,24 @@ package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.teams.BattleFactions;
 import com.wolffsmod.npcs.teams.BotFactions;
+import com.wolffsmod.npcs.teams.FactionMobSettings;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Optional;
 
 /**
  * Custom NPCs' factions.
+ * Persists the optional aggression toward the monsters covered by GetsAttacked.
  *
  * <ul>
  * <li>Teams bots: while a round runs, the faction of a Flan team treats a player by the team the player fights for, rather
@@ -28,8 +32,35 @@ import java.util.Optional;
  */
 @Mixin(value = Faction.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
-public abstract class FactionMixin
+public abstract class FactionMixin implements FactionMobSettings
 {
+    @Unique
+    private boolean wolffsmodnpcsAttackMobs;
+
+    @Override
+    public boolean wolffsmodnpcsAttackMobs()
+    {
+        return wolffsmodnpcsAttackMobs;
+    }
+
+    @Override
+    public void wolffsmodnpcsSetAttackMobs(boolean enabled)
+    {
+        wolffsmodnpcsAttackMobs = enabled;
+    }
+
+    @Inject(method = "readNBT", at = @At("TAIL"))
+    private void wolffsmodnpcsReadMobSettings(CompoundTag tag, CallbackInfo callback)
+    {
+        wolffsmodnpcsAttackMobs = tag.getBoolean("WolffsModAttackMobs");
+    }
+
+    @Inject(method = "writeNBT", at = @At("RETURN"))
+    private void wolffsmodnpcsWriteMobSettings(CompoundTag tag, CallbackInfoReturnable<CompoundTag> callback)
+    {
+        callback.getReturnValue().putBoolean("WolffsModAttackMobs", wolffsmodnpcsAttackMobs);
+    }
+
     @Inject(method = "isAggressiveToPlayer", at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsTeamsAggressive(Player player, CallbackInfoReturnable<Boolean> callback)
     {
