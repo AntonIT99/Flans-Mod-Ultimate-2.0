@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.network.chat.CommonComponents;
@@ -39,13 +40,14 @@ public class FlansOptionsScreen extends Screen
     private static final String SECTION_KEY_PREFIX = "gui.flansmodultimate.options.section.";
     private static final int TITLE_TOP = 16;
     private static final int LIST_TOP = 32;
-    private static final int LIST_BOTTOM_MARGIN = 36;
+    private static final int LIST_BOTTOM_MARGIN = 66;
     private static final int LIST_ITEM_HEIGHT = 25;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_WIDTH = 150;
     private static final int BUTTON_GAP = 10;
     private static final int WIDE_BUTTON_WIDTH = 200;
     private static final int BUTTON_BOTTOM_MARGIN = 27;
+    private static final int RESTORE_BUTTON_BOTTOM_MARGIN = 52;
     private static final int NOTE_COLOUR = 0xA0A0A0;
     /** Only shown while Distant Horizons is installed, since its settings do nothing otherwise. */
     private static final String DISTANT_HORIZONS_SECTION = "distant_horizons";
@@ -98,6 +100,7 @@ public class FlansOptionsScreen extends Screen
     private FlansOptionsList list;
     private double scrollAmount;
     private final SettingsTooltip settingsTooltip = new SettingsTooltip();
+    private final ConfigDefaults defaults = new ConfigDefaults();
 
     public FlansOptionsScreen(@Nullable Screen lastScreen)
     {
@@ -123,6 +126,7 @@ public class FlansOptionsScreen extends Screen
     protected void init()
     {
         commonOptions.clear();
+        defaults.clear();
         // The values of a joined server take a round trip; the screen fills in when the answer arrives
         if (!commonTarget.ready())
             CommonConfigMirror.request();
@@ -189,12 +193,14 @@ public class FlansOptionsScreen extends Screen
             list.addHeader(Component.translatable(SECTION_KEY_PREFIX + section.name()));
         if (section.name().equals("rendering"))
         {
-            list.addOptions(options.subList(0, 1));
+            addOptions(options.subList(0, 1));
             list.addWidgetRow(new RenderingPresetSlider(150, RenderingPresetSlider.Kind.LOD), new RenderingPresetSlider(150, RenderingPresetSlider.Kind.IMPOSTOR));
-            list.addOptions(options.subList(1, options.size()));
+            for (ConfigValue<?> value : ModClientConfig.renderPresetConfigValues())
+                defaults.add(clientTarget, value);
+            addOptions(options.subList(1, options.size()));
         }
         else
-            list.addOptions(options);
+            addOptions(options);
     }
 
     private void addSubmenu(String section, Mode submenuMode)
@@ -223,7 +229,7 @@ public class FlansOptionsScreen extends Screen
                 options.add(option);
         }
 
-        list.addOptions(options);
+        addOptions(options);
         commonOptions.addAll(options);
     }
 
@@ -240,8 +246,15 @@ public class FlansOptionsScreen extends Screen
         for (ConfigOptionFactory.Section section : sections)
         {
             list.addHeader(section.title());
-            list.addOptions(section.options());
+            addOptions(section.options());
         }
+    }
+
+    private void addOptions(List<ConfigOptionFactory.Option> options)
+    {
+        list.addOptions(options);
+        for (ConfigOptionFactory.Option option : options)
+            defaults.add(option.target(), option.value());
     }
 
     private void lockCommonOptions()
@@ -257,6 +270,10 @@ public class FlansOptionsScreen extends Screen
 
     private void addFooterButtons()
     {
+        Button restore = addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.options.restore_defaults"), button -> confirmRestoreDefaults())
+            .bounds((width - WIDE_BUTTON_WIDTH) / 2, height - RESTORE_BUTTON_BOTTOM_MARGIN, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT).build());
+        restore.active = defaults.canRestore();
+
         if (mode != Mode.QUICK)
         {
             addRenderableWidget(
@@ -269,6 +286,25 @@ public class FlansOptionsScreen extends Screen
             .bounds(left, height - BUTTON_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT).build());
         addRenderableWidget(
             Button.builder(CommonComponents.GUI_DONE, button -> onClose()).bounds(left + BUTTON_WIDTH + BUTTON_GAP, height - BUTTON_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT).build());
+    }
+
+    private void confirmRestoreDefaults()
+    {
+        if (minecraft == null || !defaults.canRestore())
+            return;
+
+        Component heading = Component.translatable("gui.flansmodultimate.options.restore_defaults");
+        var warning = Component.translatable("gui.flansmodultimate.options.restore_defaults.warning", title);
+        if (!commonOptions.isEmpty() && minecraft.level != null)
+            warning.append("\n\n").append(Component.translatable("gui.flansmodultimate.options.restore_defaults.server_warning"));
+
+        Minecraft client = minecraft;
+        client.setScreen(new ConfirmScreen(confirmed ->
+        {
+            if (confirmed)
+                defaults.restore();
+            client.setScreen(this);
+        }, heading, warning, heading, CommonComponents.GUI_CANCEL));
     }
 
     /**
@@ -305,7 +341,7 @@ public class FlansOptionsScreen extends Screen
         graphics.drawCenteredString(font, title, width / 2, TITLE_TOP, 0xFFFFFF);
 
         if (mode == Mode.COMMON || mode == Mode.SERVER || mode == Mode.SERVER_SOUNDS)
-            graphics.drawCenteredString(font, footerNote(), width / 2, height - BUTTON_BOTTOM_MARGIN - 12, NOTE_COLOUR);
+            graphics.drawCenteredString(font, footerNote(), width / 2, height - RESTORE_BUTTON_BOTTOM_MARGIN - 12, NOTE_COLOUR);
 
         super.render(graphics, mouseX, mouseY, partialTick);
         settingsTooltip.render(graphics, font, mouseX, mouseY);

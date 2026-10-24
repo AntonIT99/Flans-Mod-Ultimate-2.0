@@ -45,7 +45,7 @@ public final class ConfigOptionFactory
     private static final int MAX_SLIDER_SPAN = 100;
 
     /** A widget factory, with a separate visible label for direct input fields. */
-    public record Option(@Nullable Component label, IntFunction<AbstractWidget> widgetFactory)
+    public record Option(@Nullable Component label, IntFunction<AbstractWidget> widgetFactory, ConfigTarget target, ConfigValue<?> value)
     {}
 
     /** A config section and the options of it that can be edited on screen. */
@@ -110,10 +110,10 @@ public final class ConfigOptionFactory
 
         Object current = target.get(value);
         if (current instanceof Boolean flag)
-            return widgetOption(booleanOption(target, value, valueSpec, flag));
+            return widgetOption(target, value, booleanOption(target, value, valueSpec, flag));
 
         if (current instanceof Enum<?>)
-            return widgetOption(enumOption(target, value, valueSpec, valueSpec.getClazz(), current));
+            return widgetOption(target, value, enumOption(target, value, valueSpec, valueSpec.getClazz(), current));
 
         if (current instanceof Integer number)
             return integerWidgetOption(target, value, valueSpec, number, allSettings);
@@ -129,7 +129,7 @@ public final class ConfigOptionFactory
     {
         if (allSettings && hasWideRange(spec))
             return numericOption(target, value, spec, current, input -> intValueText(value, input), Integer::valueOf);
-        return widgetOption(intOption(target, value, spec, current));
+        return widgetOption(target, value, intOption(target, value, spec, current));
     }
 
     @Nullable
@@ -142,7 +142,7 @@ public final class ConfigOptionFactory
                 : Component.literal(NumericConfigInput.format(number));
             return numericOption(target, value, spec, current, valueText, Double::valueOf);
         }
-        return widgetOption(doubleOption(target, value, spec, current));
+        return widgetOption(target, value, doubleOption(target, value, spec, current));
     }
 
     private static boolean hasWideRange(ValueSpec spec)
@@ -154,13 +154,13 @@ public final class ConfigOptionFactory
     private static <T extends Number> Option numericOption(ConfigTarget target, ConfigValue<?> value, ValueSpec spec, T current, Function<T, Component> valueText, Function<String, T> parser)
     {
         return new Option(Component.translatable(captionKey(value)),
-            width -> new NumericConfigInput<>(width, target, value, current, tooltip(target, value, spec, valueText), text -> NumericConfigInput.parse(text, spec, parser)));
+            width -> new NumericConfigInput<>(width, target, value, current, tooltip(target, value, spec, valueText), text -> NumericConfigInput.parse(text, spec, parser)), target, value);
     }
 
     @Nullable
-    private static Option widgetOption(@Nullable OptionInstance<?> option)
+    private static Option widgetOption(ConfigTarget target, ConfigValue<?> value, @Nullable OptionInstance<?> option)
     {
-        return option == null ? null : new Option(null, width -> option.createButton(Minecraft.getInstance().options, 0, 0, width));
+        return option == null ? null : new Option(null, width -> option.createButton(Minecraft.getInstance().options, 0, 0, width), target, value);
     }
 
     private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ConfigValue<?> value, ValueSpec valueSpec, boolean current)

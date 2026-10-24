@@ -977,6 +977,14 @@ public final class ModClientConfig
             DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.get(), DRIVEABLE_IMPOSTOR_RESOLUTION.get(), DRIVEABLE_IMPOSTOR_YAW_ANGLES.get());
     }
 
+    /** The underlying settings represented by the quick menu's pair of rendering preset controls. */
+    public static List<ConfigValue<?>> renderPresetConfigValues()
+    {
+        return List.of(ENABLE_DRIVEABLE_LOD, MINIMUM_DRIVEABLE_PART_PIXEL_SIZE, MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE, DRIVEABLE_LOD_DETAIL_MULTIPLIER, DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE,
+            DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE, DRIVEABLE_IMPOSTOR_PIXEL_SIZE, DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE, DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE, DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER,
+            DRIVEABLE_IMPOSTOR_RESOLUTION, DRIVEABLE_IMPOSTOR_YAW_ANGLES);
+    }
+
     /** Changes only model/track LOD controls. Zero thresholds keep impostors available independently. */
     public static void applyLodPreset(RenderPreset preset)
     {
