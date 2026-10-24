@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Keeps settings tooltips on screen, paging descriptions that exceed the GUI height. */
-final class SettingsTooltip
+public final class SettingsTooltip
 {
     private static final int MARGIN = 6;
     private static final int LINE_HEIGHT = 10;
@@ -24,12 +24,12 @@ final class SettingsTooltip
     private int page;
     private int pageCount = 1;
 
-    void beginFrame()
+    public void beginFrame()
     {
         queued = false;
     }
 
-    void queue(List<FormattedCharSequence> text, ClientTooltipPositioner preferredPositioner, boolean override)
+    public void queue(List<FormattedCharSequence> text, ClientTooltipPositioner preferredPositioner, boolean override)
     {
         if (!queued || override)
         {
@@ -41,7 +41,7 @@ final class SettingsTooltip
         }
     }
 
-    void render(GuiGraphics graphics, Font font, int mouseX, int mouseY)
+    public void render(GuiGraphics graphics, Font font, int mouseX, int mouseY)
     {
         if (!queued || lines.isEmpty())
         {
@@ -68,7 +68,7 @@ final class SettingsTooltip
             positioner.positionTooltip(width, height, x, y, tooltipWidth, tooltipHeight)), mouseX, mouseY);
     }
 
-    boolean scroll(double delta)
+    public boolean scroll(double delta)
     {
         if (!queued || pageCount <= 1 || delta == 0)
             return false;

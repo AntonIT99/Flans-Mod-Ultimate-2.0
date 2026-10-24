@@ -1,14 +1,13 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.client.gui.options.SettingsTooltip;
 import com.wolffsmod.npcs.client.NpcKind.Scope;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
-import com.wolffsmod.npcs.network.NpcNetwork;
-import com.wolffsmod.npcs.network.NpcPresetPacket;
-import com.wolffsmod.npcs.network.ServerControlPacket;
+import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.presets.NpcPreset;
 import com.wolffsmod.npcs.properties.*;
@@ -26,16 +25,20 @@ import noppes.npcs.packets.server.SPacketMenuGet;
 import noppes.npcs.packets.server.SPacketMenuSave;
 import noppes.npcs.shared.client.gui.components.*;
 import noppes.npcs.shared.client.gui.listeners.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.*;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -449,6 +452,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private final SoundOverview soundOverview;
     private final HeldItemAnimationPage heldItems;
     private final CrewPage crew;
+    private final SettingsTooltip settingsTooltip = new SettingsTooltip();
 
     public GuiWolffsMod(EntityNPCInterface npc)
     {
@@ -475,6 +479,28 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         else
             initCategory();
         addLabel(hintLabel(loaded ? hint() : WEAPONS + "loading"));
+    }
+
+    @Override
+    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    {
+        settingsTooltip.beginFrame();
+        super.render(graphics, mouseX, mouseY, partialTick);
+        settingsTooltip.render(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public void setTooltipForNextRenderPass(@NotNull List<FormattedCharSequence> tooltip, @NotNull ClientTooltipPositioner positioner, boolean override)
+    {
+        settingsTooltip.queue(tooltip, positioner, override);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    {
+        if (hasShiftDown() && settingsTooltip.scroll(delta))
+            return true;
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     /** The line below the page; one too long for the page is cut short, and its tooltip holds all of it. */
