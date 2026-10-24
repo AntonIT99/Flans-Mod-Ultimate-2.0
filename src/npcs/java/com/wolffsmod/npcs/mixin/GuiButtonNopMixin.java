@@ -14,7 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 @Mixin(value = GuiButtonNop.class, remap = false)
 public abstract class GuiButtonNopMixin
 {
-    @Inject(method = {"renderWidget", "m_88315_"}, at = @At("HEAD"))
+    @Inject(method = {"render", "m_88315_"}, at = @At("HEAD"))
     private void wolffsmodnpcsClearMouseFocus(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo callback)
     {
         if (!Minecraft.getInstance().getLastInputType().isKeyboard())
