@@ -137,6 +137,9 @@ public record ServerControlPacket(Action action, List<Integer> values, int secon
             case SET -> {
                 if (settings.set(values))
                     NpcServerRules.healthChanged(server);
+                // Every player draws NPC name tags at the server's range, so every player hears of the change.
+                server.getPlayerList().getPlayers().forEach(other -> NpcNetwork.sendTo(other, values(settings)));
+                return;
             }
             case APPLY_RANGES -> {
                 settings.applyRangesToAll();

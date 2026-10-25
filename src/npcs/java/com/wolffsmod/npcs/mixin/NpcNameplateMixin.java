@@ -2,11 +2,12 @@ package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.client.teams.FlansTeamsClient;
-import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.wolffsmod.npcs.client.ClientServerSettings;
 import com.wolffsmod.npcs.client.FlanModelBounds;
 import com.wolffsmod.npcs.client.FlanNameplatePlacement;
+import com.wolffsmod.npcs.diag.NpcServerSettings.Setting;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.teams.BotSettings;
@@ -22,7 +23,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 
 /**
- * Sets the name tag range from the Flan common config, raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
+ * Sets the name tag range from the server settings, raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
  * and hides the name tags of Teams bots from players of the other sides when only allies should see them.
  */
 @Mixin(value = RenderNPCInterface.class, remap = false)
@@ -59,11 +60,11 @@ public abstract class NpcNameplateMixin
         });
     }
 
-    /** Custom NPCs hides name tags beyond a fixed squared distance of 512; the Flan common config sets the range instead. */
+    /** Custom NPCs hides name tags beyond a fixed squared distance of 512; the server settings of Wolff's Mod set the range instead. */
     @ModifyConstant(method = {"renderNameTag", "m_7649_"}, constant = @Constant(doubleValue = 512.0))
     private double wolffsmodnpcsNameTagRange(double original)
     {
-        double range = ModCommonConfig.npcNameTagRenderRange();
+        double range = ClientServerSettings.get(Setting.NAME_TAG_RANGE);
         return range * range;
     }
 

@@ -767,8 +767,6 @@
   "options.flansmodultimate.muzzleFlashStyle.tooltip": "Wähle das Aussehen des Mündungsfeuers. Gilt sofort für gehaltene, aufgestellte und montierte Waffen. Pakete mit nur einem Stil verwenden das verfügbare Modell.",
   "options.flansmodultimate.nameTagRenderRange": "Darstellungsreichweite Namensschilder",
   "options.flansmodultimate.nameTagSneakRenderRange": "Darstellungsreichweite Namensschilder beim Schleichen",
-  "options.flansmodultimate.npcNameTagRenderRange": "Darstellungsreichweite NPC-Namensschilder",
-  "options.flansmodultimate.npcNameTagRenderRange.tooltip": "Maximale Entfernung in Blöcken, aus der Namensschilder von Custom NPCs sichtbar sind. Benötigt das NPC-Modul.",
   "options.flansmodultimate.nearMissSuppression": "Unterdrückung durch Beinahetreffer",
   "options.flansmodultimate.newDamageSystemBlastFalloffSharpness": "Schärfe des Druckwellenabfalls",
   "options.flansmodultimate.newDamageSystemBlastRadiusReference": "Referenz Druckwellenradius",

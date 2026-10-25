@@ -1210,6 +1210,8 @@
   "wolffsmodnpcs.tuning.server_ammo_policy.never.help": "No NPC uses up its ammunition, whatever its switch says; one without ammunition fires the default rounds of its weapon.",
   "wolffsmodnpcs.tuning.server_ammo_policy.always": "Always used up",
   "wolffsmodnpcs.tuning.server_ammo_policy.always.help": "Every NPC uses up its ammunition, whatever its switch says, and switches weapons or stops firing once it has none left.",
+  "wolffsmodnpcs.tuning.server_name_tag_range": "Name tag range",
+  "wolffsmodnpcs.tuning.server_name_tag_range.help": "Blocks within which players see the name tags of NPCs. 0 hides them. Applies at once to every player. Operators only.",
   "wolffsmodnpcs.tuning.server_benchmark": "Run server benchmark (30 s)",
   "wolffsmodnpcs.tuning.server_benchmark.help": "Measures server ticks, NPC ticks, path searches and target searches, and writes a report. Also /flansnpcbenchmark [seconds] [warmup] [label], or status and stop. Operators only.",
   "wolffsmodnpcs.tuning.server_far_interval": "Far search interval, all NPCs (ticks)",

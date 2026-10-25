@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
@@ -49,6 +50,14 @@ public final class NpcsGameEvents
     {
         if (event.getEntity() instanceof ServerPlayer player)
             NpcNetwork.startTracking(event.getTarget(), player);
+    }
+
+    /** Players draw NPC name tags at the server's range, so each one gets the server settings on joining. */
+    @SubscribeEvent
+    public static void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event)
+    {
+        if (event.getEntity() instanceof ServerPlayer player)
+            NpcNetwork.sendTo(player, ServerControlPacket.values(NpcServerSettings.get(player.server)));
     }
 
     @SubscribeEvent

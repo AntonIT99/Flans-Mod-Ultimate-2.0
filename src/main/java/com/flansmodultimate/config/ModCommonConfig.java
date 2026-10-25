@@ -138,7 +138,6 @@ public final class ModCommonConfig
     private static final Supplier<String> DEFAULT_MECHA_ENGINE;
     private static final Supplier<Double> NAME_TAG_RENDER_RANGE;
     private static final Supplier<Double> NAME_TAG_SNEAK_RENDER_RANGE;
-    public static final DoubleValue NPC_NAME_TAG_RENDER_RANGE;
     private static final Supplier<Integer> NOTICE_SPAWN_KILL_TIME;
 
     private static final BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
@@ -334,8 +333,6 @@ public final class ModCommonConfig
         DEFAULT_MECHA_ENGINE = builder.comment("Optional default mecha engine item shortname or item ID. Empty uses automatic selection.").define("defaultMechaEngine", "");
         NAME_TAG_RENDER_RANGE = builder.comment("Maximum distance in blocks from which living-entity name tags can be seen.").defineInRange("nameTagRenderRange", 64D, 0D, 1000D);
         NAME_TAG_SNEAK_RENDER_RANGE = builder.comment("Maximum distance in blocks from which sneaking living-entity name tags can be seen.").defineInRange("nameTagSneakRenderRange", 32D, 0D, 1000D);
-        NPC_NAME_TAG_RENDER_RANGE = builder.comment("Maximum distance in blocks from which Custom NPC name tags can be seen. Requires the NPC module.").defineInRange("npcNameTagRenderRange", 24D, 0D,
-            1000D);
         NOTICE_SPAWN_KILL_TIME = builder.comment("Warn in the server log when a Flan bullet or grenade explosion kills a player younger than this many seconds.",
             "Set to 0 to disable the spawn-kill warning. Detailed explosion-kill audit records are still written.").defineInRange("noticeSpawnKillTime", 10, 0, 600);
         DISABLE_CROSSHAIR_FOR_GUNS = builder.comment("Disables crosshair for guns except melee weapons").define("disableCrosshairForGuns", false);
@@ -706,7 +703,7 @@ public final class ModCommonConfig
         return new CommonConfigSnapshot(CommonConfigSnapshot.CURRENT_VERSION,
 
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(), VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD.get(), DEFAULT_VEHICLE_ENGINE.get(), DEFAULT_PLANE_ENGINE.get(), DEFAULT_MECHA_ENGINE.get(),
-            NAME_TAG_RENDER_RANGE.get().floatValue(), NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(), NPC_NAME_TAG_RENDER_RANGE.get().floatValue(), NOTICE_SPAWN_KILL_TIME.get(),
+            NAME_TAG_RENDER_RANGE.get().floatValue(), NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(), NOTICE_SPAWN_KILL_TIME.get(),
 
             DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
             BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
@@ -875,12 +872,6 @@ public final class ModCommonConfig
         if (config == null)
             return sneaking ? 32F : 64F;
         return sneaking ? config.nameTagSneakRenderRange() : config.nameTagRenderRange();
-    }
-
-    public static float npcNameTagRenderRange()
-    {
-        CommonConfigSnapshot config = get();
-        return config == null ? 24F : config.npcNameTagRenderRange();
     }
 
     /** Whether all aircraft movement must ignore the real-world profile and global movement tuning. */
@@ -1402,7 +1393,6 @@ public final class ModCommonConfig
         ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE, QuickSection.SERVER),
         DRIVEABLE_TRACKING_RANGE(() -> ModCommonConfig.DRIVEABLE_TRACKING_RANGE, QuickSection.SERVER),
         FLAN_NPC_TRACKING_RANGE(() -> ModCommonConfig.FLAN_NPC_TRACKING_RANGE, QuickSection.SERVER),
-        NPC_NAME_TAG_RENDER_RANGE(() -> ModCommonConfig.NPC_NAME_TAG_RENDER_RANGE, QuickSection.SERVER),
         RELOAD_SOUND_RANGE(() -> ModCommonConfig.RELOAD_SOUND_RANGE, QuickSection.SOUNDS),
         GUN_ACTION_SOUND_RANGE(() -> ModCommonConfig.GUN_ACTION_SOUND_RANGE, QuickSection.SOUNDS),
         MELEE_SOUND_RANGE(() -> ModCommonConfig.MELEE_SOUND_RANGE, QuickSection.SOUNDS),

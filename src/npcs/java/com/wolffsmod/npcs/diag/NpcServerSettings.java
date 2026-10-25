@@ -43,6 +43,8 @@ public final class NpcServerSettings extends FlanSavedData
     public static final int DEFAULT_MODEL_RANGE = 128;
     /** The farthest range saved; each NPC is held to the server's NPC tracking range besides. */
     public static final int MAX_RANGE = 512;
+    /** Blocks within which players see the name tags of NPCs, until an operator chooses otherwise; vanilla uses 64. */
+    public static final int DEFAULT_NAME_TAG_RANGE = 64;
     private static final String NAME = NpcsMod.MOD_ID + "_settings";
     private static final String GENERATION_KEY = "RangeGeneration";
     private static final String SEARCH_GENERATION_KEY = "SearchGeneration";
@@ -71,7 +73,9 @@ public final class NpcServerSettings extends FlanSavedData
         /** Percent of its own most health every NPC has. */
         HEALTH_PERCENT(100, 10, 1000, "HealthPercent"),
         /** Index into {@link AmmoPolicy}. */
-        AMMO_POLICY(0, 0, AmmoPolicy.values().length - 1, "AmmoPolicy");
+        AMMO_POLICY(0, 0, AmmoPolicy.values().length - 1, "AmmoPolicy"),
+        /** Blocks within which players see the name tags of NPCs; Custom NPCs uses about 22.6. Sent to every player. */
+        NAME_TAG_RANGE(DEFAULT_NAME_TAG_RANGE, 0, MAX_RANGE, "NameTagRange");
 
         @Getter
         private final int fallback;

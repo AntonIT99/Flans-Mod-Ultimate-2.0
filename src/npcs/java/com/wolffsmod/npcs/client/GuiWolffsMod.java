@@ -123,6 +123,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_FREEZE_ID = 1215;
     private static final int SERVER_HEALTH_ID = 1216;
     private static final int SERVER_AMMO_ID = 1217;
+    private static final int SERVER_NAME_TAG_RANGE_ID = 1221;
     private static final int SERVER_APPLY_SEARCH_ID = 1218;
     private static final int REPORT_REFRESH_ID = 1219;
     private static final int DIAGNOSIS_COPY_ID = 1220;
@@ -252,7 +253,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         AGGRO_RANGE(SERVER_AGGRO_ID, Setting.AGGRO_RANGE), FIRING_RANGE(SERVER_FIRING_ID, Setting.FIRING_RANGE),
         MODEL_AGGRO_RANGE(SERVER_MODEL_AGGRO_ID, Setting.MODEL_AGGRO_RANGE), MODEL_FIRING_RANGE(SERVER_MODEL_FIRING_ID, Setting.MODEL_FIRING_RANGE),
         FREEZE_AI(SERVER_FREEZE_ID, Setting.FREEZE_AI), STAY_ACTIVE_LIMIT(SERVER_STAY_ACTIVE_LIMIT_ID, Setting.STAY_ACTIVE_LIMIT), PATH_BUDGET(SERVER_PATH_BUDGET_ID, Setting.PATH_BUDGET),
-        HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY);
+        HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY),
+        NAME_TAG_RANGE(SERVER_NAME_TAG_RANGE_ID, Setting.NAME_TAG_RANGE);
         // spotless:on
 
         private final int id;
@@ -508,7 +510,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL, ServerRow.SEARCH_BUDGET)),
         SERVER_RULES(Section.SERVER, Scope.ALL,
             Tab.named(SERVER_RANGES_TAB, ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE),
-            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY)),
+            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE)),
         SERVER_LIMITS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.FREEZE_AI, ServerRow.STAY_ACTIVE_LIMIT, ServerRow.PATH_BUDGET)),
         /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
         CENSUS(Section.SERVER, Scope.ALL, Tab.of()),

@@ -1210,6 +1210,8 @@
   "wolffsmodnpcs.tuning.server_ammo_policy.never.help": "Kein NPC verbraucht seine Munition, was auch immer sein Schalter sagt; einer ohne Munition feuert die Standardmunition seiner Waffe.",
   "wolffsmodnpcs.tuning.server_ammo_policy.always": "Immer verbraucht",
   "wolffsmodnpcs.tuning.server_ammo_policy.always.help": "Jeder NPC verbraucht seine Munition, was auch immer sein Schalter sagt, und wechselt die Waffe oder hört auf zu feuern, sobald er keine mehr hat.",
+  "wolffsmodnpcs.tuning.server_name_tag_range": "Reichweite der Namensschilder",
+  "wolffsmodnpcs.tuning.server_name_tag_range.help": "Blöcke, innerhalb derer Spieler die Namensschilder von NPCs sehen. 0 blendet sie aus. Wirkt sofort für alle Spieler. Nur für Operatoren.",
   "wolffsmodnpcs.tuning.server_benchmark": "Server-Benchmark starten (30 s)",
   "wolffsmodnpcs.tuning.server_benchmark.help": "Misst Server-Ticks, NPC-Ticks, Wegsuchen und Zielsuchen und schreibt einen Bericht. Auch /flansnpcbenchmark [Sekunden] [Aufwärmzeit] [Bezeichnung] sowie status und stop. Nur für Operatoren.",
   "wolffsmodnpcs.tuning.server_far_interval": "Suchintervall fern, alle NPCs (Ticks)",
