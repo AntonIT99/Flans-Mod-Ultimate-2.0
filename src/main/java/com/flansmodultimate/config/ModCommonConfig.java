@@ -110,7 +110,7 @@ public final class ModCommonConfig
     private static final double MIN_REALISTIC_CLASS_SPEED_SCALE = 0.1D;
     private static final double MAX_REALISTIC_CLASS_SPEED_SCALE = 1.0D;
     private static final double MIN_HARD_SPEED_CAP_KMH = 1.0D;
-    private static final double MAX_HARD_SPEED_CAP_KMH = 1000.0D;
+    private static final double MAX_HARD_SPEED_CAP_KMH = 10000.0D;
     private static final double MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 1.0D;
     private static final double MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 5.0D;
     private static final double MIN_KNOCKBACK_REFERENCE_MASS_KG = 1.0D;
@@ -345,7 +345,7 @@ public final class ModCommonConfig
             """).define("disableCrosshairWhileScoped", true);
         EXPLOSIONS_BREAK_BLOCKS = builder.comment("Whether explosions can break blocks").define("explosionBreakBlocks", true);
         FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS = builder.comment("Force shootables using the new explosion system to break blocks, ignoring their ExplosionBreaksBlocks property.",
-            "The teams rule and explosionBreakBlocks remain higher-priority global gates.").define("forceNewExplosionsBreakBlocks", false);
+            "The teams rule and explosionBreakBlocks remain higher-priority global gates.").define("forceNewExplosionsBreakBlocks", true);
         FLAN_EXPLOSIONS_DROP_BLOCKS = builder.comment("Whether blocks broken by Flan's Mod explosions should drop items. Off by default: ordnance obliterates blocks rather than harvesting them.")
             .define("flanExplosionsDropBlocks", false);
         BONUS_REGEN_AMOUNT = builder.comment("Allows you to increase health regen, best used alongside increased max health").defineInRange("bonusRegenAmount", 0, 0, 1000);
