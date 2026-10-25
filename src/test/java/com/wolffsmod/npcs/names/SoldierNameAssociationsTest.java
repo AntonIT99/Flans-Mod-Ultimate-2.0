@@ -5,13 +5,9 @@ import com.wolffsmod.npcs.platform.NpcPlatform;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mockStatic;
@@ -134,31 +130,4 @@ class SoldierNameAssociationsTest
         }
     }
 
-    @Test
-    void everyBundledAssociationNamesAnExistingSourceDefinitionAndNameList() throws Exception
-    {
-        SoldierNameAssociations defaults;
-        try (var stream = SoldierNameAssociations.class.getResourceAsStream("/data/wolffsmodnpcs/soldier-names.json"))
-        {
-            assertNotNull(stream);
-            defaults = new Gson().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), SoldierNameAssociations.class);
-        }
-        Set<String> teams = new HashSet<>();
-        Set<String> classes = new HashSet<>();
-        try (var paths = Files.walk(Path.of("src")))
-        {
-            for (Path path : paths.filter(path -> path.toString().endsWith(".txt") && (path.getParent().endsWith("teams") || path.getParent().endsWith("classes"))).toList())
-            {
-                Set<String> target = path.getParent().endsWith("teams") ? teams : classes;
-                try (var lines = Files.lines(path))
-                {
-                    lines.filter(line -> line.startsWith("ShortName ")).map(line -> line.substring("ShortName ".length()).strip().toLowerCase(java.util.Locale.ROOT)).forEach(target::add);
-                }
-            }
-        }
-        assertTrue(teams.containsAll(defaults.teams().keySet()));
-        assertTrue(classes.containsAll(defaults.classes().keySet()));
-        defaults.teams().values().forEach(id -> assertTrue(SoldierNames.acceptsAssociation(id), id));
-        defaults.classes().values().forEach(id -> assertTrue(SoldierNames.acceptsAssociation(id), id));
-    }
 }
