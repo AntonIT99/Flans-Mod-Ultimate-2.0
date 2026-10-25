@@ -1,11 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.content.IContentPack;
-import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.content.PaintjobVariant;
-import com.wolffsmod.npcs.client.FlanSoldierBrowser;
-import com.wolffsmod.npcs.client.NpcModelNameScroll;
-import com.wolffsmod.npcs.client.NpcPresetControls;
+import com.flansmodultimate.api.content.*;
+import com.wolffsmod.npcs.client.*;
 import com.wolffsmod.npcs.model.*;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.NpcPresetPacket;
@@ -133,7 +129,7 @@ public abstract class NpcModelBrowserMixin
         String namespace = BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace();
         if (!(type instanceof FlanModelEntityType) && !namespace.equals("minecraft") && !namespace.equals("flansmodultimate"))
             return;
-        screen.addButton(new GuiButtonNop(screen, 9124, screen.guiLeft + 124, screen.guiTop + 69, 180, 20, "wolffsmodnpcs.model.apply_entity_name", button ->
+        screen.addButton(new GuiButtonNop(screen, 9124, screen.guiLeft + 124, screen.guiTop + 20, 180, 20, "wolffsmodnpcs.model.apply_entity_name", button ->
         {
             screen.npc.display.setName(type.getDescription().getString());
             screen.save();

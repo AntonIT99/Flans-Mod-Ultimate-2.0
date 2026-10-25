@@ -3,21 +3,14 @@ package com.wolffsmod.npcs.client;
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentPack;
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.teams.IPlayerClass;
-import com.flansmodultimate.api.teams.ITeam;
-import com.flansmodultimate.api.teams.SkinOverrideVariant;
+import com.flansmodultimate.api.teams.*;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.wolffsmod.npcs.NpcsMod;
-import com.wolffsmod.npcs.network.ApplyLoadoutPacket;
-import com.wolffsmod.npcs.network.NpcNetwork;
-import com.wolffsmod.npcs.network.SoldierNamePacket;
-import com.wolffsmod.npcs.network.TeamFactionPacket;
+import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
-import noppes.npcs.shared.client.gui.components.GuiButtonNop;
-import noppes.npcs.shared.client.gui.components.GuiButtonYesNo;
-import noppes.npcs.shared.client.gui.components.GuiLabel;
+import noppes.npcs.shared.client.gui.components.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -229,13 +222,13 @@ public final class FlanSoldierBrowser
         screen.addLabel(new GuiLabel(SKIN_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_skin", screen.guiLeft + 124, screen.guiTop + 51, 0xFF0000));
         screen.addButton(new GuiButtonYesNo(screen, SKIN_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 46, applyClassSkin, button -> setApplyClassSkin(((GuiButtonYesNo) button).getBoolean())));
         screen.addLabel(new GuiLabel(NAME_GENDER_ID, "wolffsmodnpcs.soldier.apply_name", screen.guiLeft + 124, screen.guiTop + 74, 0xFF0000));
-        screen.addButton(new GuiButtonNop(screen, NAME_GENDER_ID, screen.guiLeft + 260, screen.guiTop + 69, 65, 20, button -> nameGender = ((GuiButtonNop) button).getValue() + 1, nameGender - 1,
+        screen.addButton(new GuiButtonNop(screen, NAME_GENDER_ID, screen.guiLeft + 292, screen.guiTop + 69, 46, 20, button -> nameGender = ((GuiButtonNop) button).getValue() + 1, nameGender - 1,
             "wolffsmodnpcs.soldier.name.male", "wolffsmodnpcs.soldier.name.female"));
-        GuiButtonNop apply = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 328, screen.guiTop + 69, 60, 20, "wolffsmodnpcs.preset.apply",
+        GuiButtonNop apply = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 340, screen.guiTop + 69, 48, 20, "wolffsmodnpcs.preset.apply",
             button -> selection.ifPresent(chosen -> applyName(screen, chosen)));
         apply.setEnabled(selection.isPresent());
         screen.addButton(apply);
-        GuiButtonNop faction = new GuiButtonNop(screen, FACTION_APPLY_ID, screen.guiLeft + 260, screen.guiTop + 92, 128, 20, "wolffsmodnpcs.team_faction.apply",
+        GuiButtonNop faction = new GuiButtonNop(screen, FACTION_APPLY_ID, screen.guiLeft + 292, screen.guiTop + 92, 96, 20, "wolffsmodnpcs.team_faction.apply",
             button -> selection.filter(chosen -> chosen.team() != null).ifPresent(chosen ->
             {
                 screen.save();
