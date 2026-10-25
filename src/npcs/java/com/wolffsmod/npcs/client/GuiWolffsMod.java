@@ -5,10 +5,8 @@ import com.wolffsmod.npcs.client.NpcKind.Scope;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.diag.BenchmarkResult;
-import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.diag.*;
 import com.wolffsmod.npcs.diag.NpcServerSettings.Setting;
-import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.presets.NpcPreset;
@@ -184,6 +182,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final String IDLE_MOVEMENT_TAB = "idle_movement";
     /** The tabs of the Damage & armour page: what any NPC takes with knockback and the minimum hits, the model's armour, and its parts. */
     private static final String GENERAL_TAB = "general";
+    private static final String SERVER_RANGES_TAB = "ranges";
     private static final String ARMOUR_TAB = "model_armour";
     private static final String PARTS_TAB = "parts";
     private static final String PATH_SEPARATOR = " > ";
@@ -455,7 +454,6 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         // spotless:off
         /** The settings most NPCs of the edited kind need, with links to the pages they come from; its rows depend on the kind. */
         ESSENTIALS(Section.START, Scope.ALL),
-        FACTIONS(Section.START, Scope.ALL, Tab.named("team_factions")),
         MODEL_STATS(Section.MODEL, Scope.ALL, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Layout.COLUMN, Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
@@ -508,11 +506,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         DIAGNOSIS(Section.ADVANCED, Scope.ALL, Tab.named(EFFECTIVE_TAB), Tab.named(LIVE_TAB)),
         /** The pages of the whole server: their rows are {@link ServerRow}s, and the actions they offer sit below them. */
         SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL, ServerRow.SEARCH_BUDGET)),
-        SERVER_RANGES(Section.SERVER, Scope.ALL, Tab.of(ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE)),
+        SERVER_RULES(Section.SERVER, Scope.ALL,
+            Tab.named(SERVER_RANGES_TAB, ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE),
+            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY)),
         SERVER_LIMITS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.FREEZE_AI, ServerRow.STAY_ACTIVE_LIMIT, ServerRow.PATH_BUDGET)),
-        SERVER_RULES(Section.SERVER, Scope.ALL, Tab.of(ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY)),
         /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
         CENSUS(Section.SERVER, Scope.ALL, Tab.of()),
+        FACTIONS(Section.SERVER, Scope.ALL, Tab.named("team_factions")),
         DIAGNOSTICS(Section.SERVER, Scope.ALL, Tab.named("profiling", ServerRow.PROFILING), Tab.named(COMPARISON_TAB));
         // spotless:on
 
@@ -1066,13 +1066,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         else if (category == Category.PROTECTION && PARTS_TAB.equals(shown.name()))
             combat.initPartsLink(loaded);
         else
-            initServerActions(below);
+            initServerActions(shown, below);
     }
 
     /** The actions of a Server page, below its rows: handing settings to every NPC, or the benchmarks. */
-    private void initServerActions(int below)
+    private void initServerActions(Tab shown, int below)
     {
-        if (category == Category.SERVER_RANGES)
+        if (category == Category.SERVER_RULES && SERVER_RANGES_TAB.equals(shown.name()))
             serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", below + 6).setEnabled(ClientServerSettings.isKnown());
         else if (category == Category.SERVER_SEARCH)
             serverButton(SERVER_APPLY_SEARCH_ID, confirmApplySearch ? "server_apply_search_confirm" : "server_apply_search", below + 6).setEnabled(ClientServerSettings.isKnown());
