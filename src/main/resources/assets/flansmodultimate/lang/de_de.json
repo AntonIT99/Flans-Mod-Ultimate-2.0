@@ -828,6 +828,7 @@
   "options.flansmodultimate.suppressionIntensity": "Unterdrückungsstärke",
   "options.flansmodultimate.suppressionRangeMultiplier": "Unterdrückungsreichweitenfaktor",
   "options.flansmodultimate.suppressionVignette": "Deckkraft der Unterdrückungsvignette",
+  "options.flansmodultimate.thrownGunDespawnSeconds": "Verschwindezeit geworfener Waffen (s)",
   "options.flansmodultimate.tooltip.current_value": "Aktueller Wert: %s",
   "options.flansmodultimate.tooltip.default_value": "Standardwert: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "Neues Durchschlagssystem verwenden",

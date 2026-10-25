@@ -826,6 +826,7 @@
   "options.flansmodultimate.suppressionIntensity": "Suppression Strength",
   "options.flansmodultimate.suppressionRangeMultiplier": "Suppression Range Multiplier",
   "options.flansmodultimate.suppressionVignette": "Suppression Vignette Opacity",
+  "options.flansmodultimate.thrownGunDespawnSeconds": "Thrown Gun Despawn Time (s)",
   "options.flansmodultimate.tooltip.current_value": "Current value: %s",
   "options.flansmodultimate.tooltip.default_value": "Default value: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "Use New Penetration System",
