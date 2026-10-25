@@ -19,7 +19,6 @@ MissileSlots 2
 FuelTankSize 2000
 
 // Paintjobs
-advpaintjob Original 44_S100 44_s100 gray 8
 AddDye 5 silver
 AddDye 3 red
 AddDye 1 black

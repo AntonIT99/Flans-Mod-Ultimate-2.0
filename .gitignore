@@ -43,9 +43,6 @@ src/*/resources/flan
 
 reports/temp
 
-# Plaintext authoring input for encrypted optional resources
-/src/*/resources/encrypted/
-
 # Local cache of decompiled reference classes (see .agents/skills/mod-class-decompilation)
 /decompiled/
 
