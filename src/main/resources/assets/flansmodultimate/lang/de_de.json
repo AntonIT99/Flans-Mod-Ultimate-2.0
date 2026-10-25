@@ -730,6 +730,8 @@
   "options.flansmodultimate.gunsInDestroyedPartsWork": "Waffen in zerstörten Teilen funktionieren",
   "options.flansmodultimate.hdHitMarker": "HD-Treffermarkierung",
   "options.flansmodultimate.headshotDamageModifier": "Schadensfaktor Kopftreffer",
+  "options.flansmodultimate.heatCrewSpallDamage": "HEAT-Besatzungssplitterschaden",
+  "options.flansmodultimate.heatDamageReference": "HEAT-Referenzschaden",
   "options.flansmodultimate.hideCrosshairForGuns": "Fadenkreuz für Waffen ausblenden",
   "options.flansmodultimate.hitMarkerAlpha": "Treffermarkierung Deckkraft",
   "options.flansmodultimate.hitMarkerBlue": "Treffermarkierung Blau",
