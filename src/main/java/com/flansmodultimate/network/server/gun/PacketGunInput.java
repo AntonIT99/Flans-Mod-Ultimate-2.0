@@ -14,14 +14,12 @@ import net.minecraft.world.InteractionHand;
 public class PacketGunInput implements IServerPacket
 {
     private boolean shootKeyPressed;
-    private boolean prevShootKeyPressed;
     private boolean secondaryFunctionKeyPressed;
-    InteractionHand hand;
+    private InteractionHand hand;
 
-    public PacketGunInput(boolean shootKeyPressed, boolean prevShootKeyPressed, boolean secondaryFunctionKeyPressed, InteractionHand hand)
+    public PacketGunInput(boolean shootKeyPressed, boolean secondaryFunctionKeyPressed, InteractionHand hand)
     {
         this.shootKeyPressed = shootKeyPressed;
-        this.prevShootKeyPressed = prevShootKeyPressed;
         this.secondaryFunctionKeyPressed = secondaryFunctionKeyPressed;
         this.hand = hand;
     }
@@ -30,7 +28,6 @@ public class PacketGunInput implements IServerPacket
     public void encodeInto(PacketBuffer data)
     {
         data.writeBoolean(shootKeyPressed);
-        data.writeBoolean(prevShootKeyPressed);
         data.writeBoolean(secondaryFunctionKeyPressed);
         data.writeEnum(hand);
     }
@@ -39,7 +36,6 @@ public class PacketGunInput implements IServerPacket
     public void decodeInto(PacketBuffer data)
     {
         shootKeyPressed = data.readBoolean();
-        prevShootKeyPressed = data.readBoolean();
         secondaryFunctionKeyPressed = data.readBoolean();
         hand = data.readEnum(InteractionHand.class);
     }
@@ -48,8 +44,7 @@ public class PacketGunInput implements IServerPacket
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
         PlayerData data = PlayerData.getInstance(player);
-        data.setShootKeyPressed(hand, shootKeyPressed);
-        data.setPrevShootKeyPressed(hand, prevShootKeyPressed);
+        data.receiveGunInput(hand, shootKeyPressed);
         data.setSecondaryFunctionKeyPressed(secondaryFunctionKeyPressed);
     }
 }

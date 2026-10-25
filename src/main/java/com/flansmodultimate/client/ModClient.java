@@ -13,6 +13,7 @@ import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.GunRecoil;
+import com.flansmodultimate.common.guns.GunSoundPermissions.Kind;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -872,7 +873,7 @@ public class ModClient
             || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
-            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().gunActionSoundRange());
+            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().gunActionSoundRange(), hand, Kind.ACTION);
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
@@ -891,19 +892,19 @@ public class ModClient
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
                     int time = (int) (animations.getReloadAnimationTime() / maxBullets);
-                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), time);
+                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), time, hand, Kind.INSERT);
                     ModClient.setLastBulletReload(-1);
                 }
                 else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
                 {
                     ModClient.setLastBulletReload(bulletNum);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), hand, Kind.INSERT);
                 }
 
                 if ((ammoPosition < 0.03 && bulletProgress > 0))
                 {
                     ModClient.setLastBulletReload(-2);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), hand, Kind.INSERT);
                 }
             }
         }

@@ -109,7 +109,7 @@ public class GunItemHandler
 
         boolean emptyAmmo = hasEmptyAmmo(gunStack, registries);
         boolean shootPressed = data.isShootKeyPressed(hand);
-        boolean shootEdgePressed = data.isShootKeyPressed(hand) && !data.isPrevShootKeyPressed(hand);
+        boolean shootEdgePressed = data.hasShootPress(hand);
 
         boolean actionRequested = switch (mode)
         {
@@ -242,6 +242,7 @@ public class GunItemHandler
             ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack, (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(),
                 handler);
 
+            data.getGunSoundPermissions().shot(hand, gunStack, level.getGameTime());
             playShootSound(level, player, gunStack, lastBullet);
             spawnMuzzleFlashParticles(level, player, gunStack, hand);
             // Lets the players who see the shooter play this shot's animation and muzzle flash model.
@@ -334,6 +335,7 @@ public class GunItemHandler
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack, level.registryAccess());
 
+            data.getGunSoundPermissions().reload(hand, gunStack, level.getGameTime(), reloadTime, reloadCount);
             data.doGunReload(hand, reloadTime);
             PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo), player);
 

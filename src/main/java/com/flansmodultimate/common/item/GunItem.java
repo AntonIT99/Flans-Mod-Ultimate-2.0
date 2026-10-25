@@ -593,6 +593,7 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
 
     protected void serverTick(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
+        data.updateHeldGuns(player);
         ensureGunTags(gunStack);
 
         if (configType.getPrimaryFunction() == EnumFunction.SHOOT)

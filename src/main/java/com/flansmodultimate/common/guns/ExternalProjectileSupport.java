@@ -73,6 +73,11 @@ public final class ExternalProjectileSupport
         return isProjectile(stack) && ShootableItem.consumeRound(stack);
     }
 
+    public static boolean hasRoundsLeft(ItemStack stack)
+    {
+        return isProjectile(stack) && ShootableItem.getTotalRounds(stack) > 0;
+    }
+
     public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,
         boolean weaponStats)
     {

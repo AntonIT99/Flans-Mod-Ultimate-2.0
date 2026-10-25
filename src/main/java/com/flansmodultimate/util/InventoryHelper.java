@@ -107,6 +107,32 @@ public final class InventoryHelper
     }
 
     /**
+     * Pays from a separate workspace stack first, requiring identical stack data there, then from the inventory by item
+     * identity. Both sources stay untouched on failure. The workspace stack must not also occupy an inventory slot.
+     */
+    public static boolean tryConsumeAll(Container inv, ItemStack workspace, List<ItemStack> required, boolean creative)
+    {
+        if (creative)
+            return true;
+        ItemStack available = workspace.copy();
+        List<ItemStack> remainder = new ArrayList<>();
+        for (ItemStack want : required)
+        {
+            if (want == null || want.isEmpty())
+                continue;
+            int take = ItemStackData.isSameItemSameData(available, want) ? Math.min(available.getCount(), want.getCount()) : 0;
+            available.shrink(take);
+            ItemStack rest = want.copy();
+            rest.shrink(take);
+            remainder.add(rest);
+        }
+        if (!tryConsumeAll(inv, remainder, false))
+            return false;
+        workspace.shrink(workspace.getCount() - available.getCount());
+        return true;
+    }
+
+    /**
      * @param inv
      *            target container
      * @param stack

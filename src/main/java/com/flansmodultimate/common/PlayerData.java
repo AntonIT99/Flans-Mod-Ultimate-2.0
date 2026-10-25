@@ -1,6 +1,7 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.guns.GunSoundPermissions;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
@@ -38,6 +39,11 @@ public class PlayerData
     private boolean isPrevShootKeyPressedRight;
     private boolean isShootKeyPressedLeft;
     private boolean isPrevShootKeyPressedLeft;
+    private final Set<InteractionHand> pendingShootPresses = EnumSet.noneOf(InteractionHand.class);
+    private final Map<InteractionHand, ItemStack> heldGunStacks = new EnumMap<>(InteractionHand.class);
+    private int selectedGunSlot = -1;
+    @Getter
+    private final GunSoundPermissions gunSoundPermissions = new GunSoundPermissions();
     @Getter @Setter
     private boolean isSecondaryFunctionKeyPressed;
 
@@ -332,8 +338,52 @@ public class PlayerData
 
     }
 
+    /** Records intent without allowing a packet to overwrite server input history. */
+    public void receiveGunInput(InteractionHand hand, boolean pressed)
+    {
+        if (pressed && !isShootKeyPressed(hand))
+            pendingShootPresses.add(hand);
+        setShootKeyPressed(hand, pressed);
+    }
+
+    /** A brief press released before the next tick still requests one semiautomatic shot. */
+    public boolean hasShootPress(InteractionHand hand)
+    {
+        return pendingShootPresses.contains(hand) || isShootKeyPressed(hand) && !isPrevShootKeyPressed(hand);
+    }
+
+    public void finishGunInputTick()
+    {
+        isPrevShootKeyPressedLeft = isShootKeyPressedLeft;
+        isPrevShootKeyPressedRight = isShootKeyPressedRight;
+        pendingShootPresses.clear();
+    }
+
+    /** Checks both hands before firing and on ticks without a held gun. Stack data mutations are not switches. */
+    public void updateHeldGuns(Player player)
+    {
+        int selected = player.getInventory().selected;
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            ItemStack current = player.getItemInHand(hand);
+            ItemStack previous = heldGunStacks.put(hand, current);
+            boolean switched = previous != current || hand == InteractionHand.MAIN_HAND && selected != selectedGunSlot;
+            if (switched)
+                gunSoundPermissions.clear(hand);
+            if (switched && current.getItem() instanceof GunItem gun)
+            {
+                float switchDelay = gun.getConfigType().getSwitchDelay();
+                if (switchDelay > 0F)
+                    setShootTime(hand, Math.max(getShootTime(hand), switchDelay));
+            }
+        }
+        selectedGunSlot = selected;
+    }
+
     public void tick(Player player)
     {
+        if (!player.level().isClientSide)
+            updateHeldGuns(player);
         tickGunCooldowns();
 
         if (shootClickDelay > 0)
@@ -345,8 +395,7 @@ public class PlayerData
         if (loopedSoundDelay > 0)
             loopedSoundDelay--;
 
-        isPrevShootKeyPressedLeft = isShootKeyPressedLeft;
-        isPrevShootKeyPressedRight = isShootKeyPressedRight;
+        finishGunInputTick();
 
         if (!player.level().isClientSide)
         {
@@ -472,6 +521,11 @@ public class PlayerData
     public void playerKilled()
     {
         isShootingRight = isShootingLeft = false;
+        isShootKeyPressedRight = isShootKeyPressedLeft = false;
+        finishGunInputTick();
+        heldGunStacks.clear();
+        for (InteractionHand hand : InteractionHand.values())
+            gunSoundPermissions.clear(hand);
         // Nobody keeps aiming through their own death: the client stops sending scope
         // state once it is out of the world, so the end of it has to be assumed here.
         scoped = false;

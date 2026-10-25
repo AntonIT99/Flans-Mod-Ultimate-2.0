@@ -8,7 +8,6 @@ import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -68,13 +66,8 @@ public class PacketSelectPaintjob implements IServerPacket
         if (pj == null)
             return;
 
-        if (!player.getAbilities().instabuild)
-        {
-            if (!hasRequiredDyes(player.getInventory(), pj))
-                return;
-
-            consumeRequiredDyes(player.getInventory(), pj);
-        }
+        if (!InventoryHelper.tryConsumeAll(player.getInventory(), pj.getDyesNeeded(), player.getAbilities().instabuild))
+            return;
 
         gunType.applyPaintjobToStack(gunStack, pj);
         menu.broadcastChanges();
@@ -93,39 +86,6 @@ public class PacketSelectPaintjob implements IServerPacket
         return null;
     }
 
-    private static boolean hasRequiredDyes(Inventory inv, Paintjob paintjob)
-    {
-        List<ItemStack> needed = paintjob.getDyesNeeded();
-        if (needed.isEmpty())
-            return true;
-
-        for (ItemStack want : needed)
-        {
-            if (want == null || want.isEmpty())
-                continue;
-
-            int have = InventoryHelper.countInInventory(inv, want);
-            if (have < want.getCount())
-                return false;
-        }
-        return true;
-    }
-
-    private static void consumeRequiredDyes(Inventory inv, Paintjob paintjob)
-    {
-        List<ItemStack> needed = paintjob.getDyesNeeded();
-        if (needed == null || needed.isEmpty())
-            return;
-
-        for (ItemStack want : needed)
-        {
-            if (want == null || want.isEmpty())
-                continue;
-
-            InventoryHelper.consumeFromInventory(inv, want);
-        }
-    }
-
     private void handlePaintjobTable(ServerPlayer player, PaintjobTableMenu menu)
     {
         ItemStack paintableStack = menu.getPaintableStack();
@@ -138,16 +98,8 @@ public class PacketSelectPaintjob implements IServerPacket
         if (pj == null)
             return;
 
-        if (!player.getAbilities().instabuild)
-        {
-            Inventory inv = player.getInventory();
-            ItemStack canSlot = menu.getPaintCanStack(); // slot 1
-
-            if (!hasRequiredDyes(inv, canSlot, pj))
-                return;
-
-            consumeRequiredDyes(inv, canSlot, pj);
-        }
+        if (!InventoryHelper.tryConsumeAll(player.getInventory(), menu.getPaintCanStack(), pj.getDyesNeeded(), player.getAbilities().instabuild))
+            return;
 
         type.applyPaintjobToStack(paintableStack, pj);
         menu.broadcastChanges();
@@ -164,62 +116,4 @@ public class PacketSelectPaintjob implements IServerPacket
         return null;
     }
 
-    private static boolean hasRequiredDyes(Inventory inv, ItemStack cansSlot, Paintjob paintjob)
-    {
-        List<ItemStack> needed = paintjob.getDyesNeeded();
-        if (needed == null || needed.isEmpty())
-            return true;
-
-        for (ItemStack want : needed)
-        {
-            if (want == null || want.isEmpty())
-                continue;
-
-            int required = want.getCount();
-
-            int fromCans = 0;
-            if (!cansSlot.isEmpty() && ItemStackData.isSameItemSameData(cansSlot, want))
-                fromCans = cansSlot.getCount();
-
-            int fromInv = InventoryHelper.countInInventory(inv, want);
-
-            if (fromCans + fromInv < required)
-                return false;
-        }
-
-        return true;
-    }
-
-    private static void consumeRequiredDyes(Inventory inv, ItemStack cansSlot, Paintjob paintjob)
-    {
-        List<ItemStack> needed = paintjob.getDyesNeeded();
-        if (needed == null || needed.isEmpty())
-            return;
-
-        for (ItemStack want : needed)
-        {
-            if (want == null || want.isEmpty())
-                continue;
-
-            int remaining = want.getCount();
-
-            // 1) Consume from slot 1 first (if it matches)
-            if (!cansSlot.isEmpty() && ItemStackData.isSameItemSameData(cansSlot, want))
-            {
-                int take = Math.min(remaining, cansSlot.getCount());
-                cansSlot.shrink(take);
-                remaining -= take;
-            }
-
-            // 2) Consume remainder from player inventory
-            if (remaining > 0)
-            {
-                ItemStack remainder = want.copy();
-                remainder.setCount(remaining);
-                InventoryHelper.consumeFromInventory(inv, remainder);
-            }
-        }
-
-        inv.setChanged();
-    }
 }

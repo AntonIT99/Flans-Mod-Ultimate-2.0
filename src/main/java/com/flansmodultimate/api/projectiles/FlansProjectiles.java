@@ -52,6 +52,19 @@ public final class FlansProjectiles
         return ExternalProjectileSupport.isProjectile(stack);
     }
 
+    /**
+     * Tests whether Flan ammunition has any usable rounds, including subsequent items in a stacked magazine. Readable on
+     * either side without changing the stack. Unlike {@link #isProjectile(ItemStack)}, this rejects exhausted magazines.
+     *
+     * @param stack
+     *            ammunition to inspect
+     * @return whether at least one round remains; false for another item or an empty stack
+     */
+    public static boolean hasRoundsLeft(ItemStack stack)
+    {
+        return ExternalProjectileSupport.hasRoundsLeft(stack);
+    }
+
     /** @return whether the stack represents a Flan grenade; readable on either side */
     public static boolean isGrenade(ItemStack stack)
     {

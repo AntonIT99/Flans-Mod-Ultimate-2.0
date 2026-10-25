@@ -104,6 +104,13 @@ public final class NpcAmmunition
     public static ItemStack modelTemplate(EntityNPCInterface npc)
     {
         ItemStack projectile = NpcThrowing.mainProjectile(npc);
+        // Old saves can leave the final, zero-round magazine in the projectile slot.
+        if (NpcModels.flan(npc) == null && FlansProjectiles.isProjectile(projectile) && !FlansProjectiles.hasRoundsLeft(projectile) && NpcEquipment.enabled(npc, Feature.CONSUME_AMMO)
+            && !npc.level().isClientSide)
+        {
+            consume(npc, projectile);
+            projectile = NpcThrowing.mainProjectile(npc);
+        }
         IContentType weapon = modelWeapon(npc);
         if (weapon == null)
             return projectile;
@@ -334,7 +341,14 @@ public final class NpcAmmunition
     public static void consume(EntityNPCInterface npc, ItemStack used)
     {
         ItemStack template = used.copyWithCount(1);
-        if (!FlansProjectiles.consumeRound(used))
+        boolean ammunition = FlansProjectiles.isProjectile(used);
+        if (ammunition)
+        {
+            FlansProjectiles.consumeRound(used);
+            if (!FlansProjectiles.hasRoundsLeft(used))
+                used.setCount(0);
+        }
+        else
             used.shrink(1);
         npc.updateClient = true;
         if (!used.isEmpty())
@@ -343,22 +357,24 @@ public final class NpcAmmunition
         {
             npc.inventory.weapons.remove(PROJECTILE_INDEX);
             // Flan ammunition counts its rounds in its tag, which a fresh item of it does not share.
-            boolean ammunition = FlansProjectiles.isProjectile(template);
-            int slot = find(npc, stack -> ammunition ? ItemStack.isSameItem(stack, template) : ItemStack.isSameItemSameTags(stack, template));
+            int slot = find(npc, stack -> ammunition ? ItemStack.isSameItem(stack, template) && FlansProjectiles.hasRoundsLeft(stack) : ItemStack.isSameItemSameTags(stack, template));
             if (slot >= 0)
                 swap(npc, PROJECTILE_INDEX, slot);
         }
         else
+            removeEmptyInventoryStack(npc, used);
+    }
+
+    private static void removeEmptyInventoryStack(EntityNPCInterface npc, ItemStack used)
+    {
+        List<ItemStack> inventory = inventory(npc);
+        for (int slot = 0; slot < inventory.size(); slot++)
         {
-            List<ItemStack> inventory = inventory(npc);
-            for (int slot = 0; slot < inventory.size(); slot++)
+            if (inventory.get(slot) == used)
             {
-                if (inventory.get(slot) == used)
-                {
-                    npc.inventory.drops.remove(slot);
-                    npc.inventory.dropchance.remove(slot);
-                    break;
-                }
+                npc.inventory.drops.remove(slot);
+                npc.inventory.dropchance.remove(slot);
+                return;
             }
         }
     }
