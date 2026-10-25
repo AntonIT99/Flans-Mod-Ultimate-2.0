@@ -30,6 +30,7 @@ import java.util.*;
  * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the toggle that applies that class's loadout on selection and the toggle that keeps the NPC's own skin.
  * Offers shared behaviour presets and Undo alongside the selected model.
  * Classes with several skins expose a variant folder with saved skin selection, like vehicle paintjobs.
+ * Opens on the current Flan model's paintjob or pack level.
  * Lets builders explicitly use a Flan or vanilla model's full entity name as the NPC's display name.
  */
 // Mixin merges this class into the target, so self-casts are valid.
@@ -39,6 +40,8 @@ public abstract class NpcModelBrowserMixin
 {
     @Unique
     private boolean wolffsmodnpcsPresetsRequested;
+    @Unique
+    private boolean wolffsmodnpcsOpenedAtCurrentModel;
 
     @Shadow @SuppressWarnings("MismatchedCollectionQueryUpdate") // Shadowed target list, populated by the target.
     private List<EntityType<? extends Entity>> types;
@@ -84,6 +87,11 @@ public abstract class NpcModelBrowserMixin
     {
         List<String> labels = new ArrayList<>();
         List<EntityType<? extends Entity>> models = new ArrayList<>();
+        if (!wolffsmodnpcsOpenedAtCurrentModel)
+        {
+            wolffsmodnpcsOpenedAtCurrentModel = true;
+            wolffsmodnpcsOpenAtCurrentModel((GuiCreationScreenInterface) (Object) this);
+        }
         if (wolffsmodnpcsSoldiers != null)
         {
             labels.add("..");
@@ -116,6 +124,29 @@ public abstract class NpcModelBrowserMixin
             screen.getButton(110).active = false;
             screen.getLabel(110).visible = false;
             screen.getLabel(110).enabled = false;
+        }
+    }
+
+    /** Opens the picker on the current Flan model's paintjob level, or on its content pack's model level when it has no other paintjob. */
+    @Unique
+    private void wolffsmodnpcsOpenAtCurrentModel(GuiCreationScreenInterface screen)
+    {
+        if (!(screen.entity != null && screen.entity.getType() instanceof FlanModelEntityType model) || model.getInfoType() == null)
+            return;
+        FlanModelFolder kind = FlanModelFolder.of(model.getInfoType());
+        if (!WOLFFSMODNPCS_KINDS.contains(kind))
+            return;
+        wolffsmodnpcsKind = kind;
+        wolffsmodnpcsPack = model.getInfoType().getContentPack();
+        // The parent levels open at their top when the builder goes back.
+        wolffsmodnpcsParentScrollPositions.push(0);
+        wolffsmodnpcsParentScrollPositions.push(0);
+        List<PaintjobVariant> jobs = model.getInfoType().getPaintjobVariants();
+        if (jobs.stream().anyMatch(job -> job.id() != 0))
+        {
+            wolffsmodnpcsParentScrollPositions.push(0);
+            wolffsmodnpcsVariantModel = model;
+            wolffsmodnpcsPaintjobs = jobs;
         }
     }
 
