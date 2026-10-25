@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.client.teams.FlansTeamsClient;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.client.FlanModelBounds;
@@ -21,7 +22,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 
 /**
- * Raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
+ * Sets the name tag range from the Flan common config, raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
  * and hides the name tags of Teams bots from players of the other sides when only allies should see them.
  */
 @Mixin(value = RenderNPCInterface.class, remap = false)
@@ -56,6 +57,14 @@ public abstract class NpcNameplateMixin
             if (FlansTeamsClient.isLocalPlayerPlaying() && !ally)
                 callback.cancel();
         });
+    }
+
+    /** Custom NPCs hides name tags beyond a fixed squared distance of 512; the Flan common config sets the range instead. */
+    @ModifyConstant(method = {"renderNameTag", "m_7649_"}, constant = @Constant(doubleValue = 512.0))
+    private double wolffsmodnpcsNameTagRange(double original)
+    {
+        double range = ModCommonConfig.npcNameTagRenderRange();
+        return range * range;
     }
 
     @SuppressWarnings("unchecked")

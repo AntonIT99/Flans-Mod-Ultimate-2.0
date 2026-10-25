@@ -102,7 +102,8 @@ public final class ConfigOptionFactory
     @Nullable
     private static Option option(ConfigTarget target, ConfigValue<?> value, boolean allSettings)
     {
-        if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE) && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
+        if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE || value == ModCommonConfig.NPC_NAME_TAG_RENDER_RANGE)
+            && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
             return null;
         ValueSpec valueSpec = ConfigSpecValues.valueSpec(target.spec(), value.getPath());
         if (valueSpec == null)

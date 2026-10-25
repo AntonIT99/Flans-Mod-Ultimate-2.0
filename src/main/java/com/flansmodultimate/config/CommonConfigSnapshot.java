@@ -16,6 +16,7 @@ public record CommonConfigSnapshot(
     String defaultMechaEngine,
     float nameTagRenderRange,
     float nameTagSneakRenderRange,
+    float npcNameTagRenderRange,
     int noticeSpawnKillTime,
 
     boolean disableCrosshairForGuns,
@@ -169,7 +170,7 @@ public record CommonConfigSnapshot(
     boolean forceUncensoredContent
 )
 {
-    public static final int CURRENT_VERSION = 46;
+    public static final int CURRENT_VERSION = 47;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -182,6 +183,7 @@ public record CommonConfigSnapshot(
         buf.writeUtf(s.defaultMechaEngine, 32767);
         buf.writeFloat(s.nameTagRenderRange);
         buf.writeFloat(s.nameTagSneakRenderRange);
+        buf.writeFloat(s.npcNameTagRenderRange);
         buf.writeVarInt(s.noticeSpawnKillTime);
 
         buf.writeBoolean(s.disableCrosshairForGuns);
@@ -355,6 +357,7 @@ public record CommonConfigSnapshot(
             buf.readUtf(32767),
             buf.readUtf(32767),
             buf.readUtf(32767),
+            buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
             buf.readVarInt(),

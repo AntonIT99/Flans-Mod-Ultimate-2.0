@@ -765,6 +765,8 @@
   "options.flansmodultimate.muzzleFlashStyle.tooltip": "Choose the muzzle flash appearance. Applies immediately to held, deployed and mounted guns. Packs with only one style use their available model.",
   "options.flansmodultimate.nameTagRenderRange": "Name Tag Render Range",
   "options.flansmodultimate.nameTagSneakRenderRange": "Name Tag Sneak Render Range",
+  "options.flansmodultimate.npcNameTagRenderRange": "NPC Name Tag Render Range",
+  "options.flansmodultimate.npcNameTagRenderRange.tooltip": "Maximum distance in blocks from which Custom NPC name tags can be seen. Requires the NPC module.",
   "options.flansmodultimate.nearMissSuppression": "Near-Miss Suppression",
   "options.flansmodultimate.newDamageSystemBlastFalloffSharpness": "Blast Falloff Sharpness",
   "options.flansmodultimate.newDamageSystemBlastRadiusReference": "Blast Radius Reference",
