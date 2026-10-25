@@ -23,7 +23,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 
 /**
- * Sets the name tag range from the server settings, raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
+ * Sets the name tag and name text ranges from the server settings, raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
  * and hides the name tags of Teams bots from players of the other sides when only allies should see them.
  */
 @Mixin(value = RenderNPCInterface.class, remap = false)
@@ -66,6 +66,13 @@ public abstract class NpcNameplateMixin
     {
         double range = ClientServerSettings.get(Setting.NAME_TAG_RANGE);
         return range * range;
+    }
+
+    /** Custom NPCs then draws the name and title only within 8 blocks; the same server setting sets that range too. */
+    @ModifyConstant(method = "renderLivingLabel", constant = @Constant(doubleValue = 8.0))
+    private double wolffsmodnpcsNameTextRange(double original)
+    {
+        return ClientServerSettings.get(Setting.NAME_TAG_RANGE);
     }
 
     @SuppressWarnings("unchecked")

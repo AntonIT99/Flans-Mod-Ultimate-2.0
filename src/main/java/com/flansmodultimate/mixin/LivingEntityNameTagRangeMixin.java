@@ -1,5 +1,6 @@
 package com.flansmodultimate.mixin;
 
+import com.flansmodultimate.api.client.NameTagRanges;
 import com.flansmodultimate.api.entity.ILivingVisualEffects;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,14 +30,14 @@ public abstract class LivingEntityNameTagRangeMixin
     }
 
     @ModifyConstant(method = "shouldShowName*", constant = @Constant(floatValue = 64F))
-    private float flansmodultimateNormalNameTagRange(float vanillaRange)
+    private float flansmodultimateNormalNameTagRange(float vanillaRange, LivingEntity entity)
     {
-        return ModCommonConfig.nameTagRenderRange(false);
+        return NameTagRanges.resolve(entity, ModCommonConfig.nameTagRenderRange(false));
     }
 
     @ModifyConstant(method = "shouldShowName*", constant = @Constant(floatValue = 32F))
-    private float flansmodultimateSneakingNameTagRange(float vanillaRange)
+    private float flansmodultimateSneakingNameTagRange(float vanillaRange, LivingEntity entity)
     {
-        return ModCommonConfig.nameTagRenderRange(true);
+        return NameTagRanges.resolve(entity, ModCommonConfig.nameTagRenderRange(true));
     }
 }
