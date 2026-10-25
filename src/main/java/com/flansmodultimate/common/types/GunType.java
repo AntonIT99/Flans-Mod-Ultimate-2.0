@@ -1596,7 +1596,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     private void readVehicleMeleeDamage(TypeFile file)
     {
-        float vehicleMeleeDamage = readValue("MeleeDamageVsDriveable", meleeDamageVsDriveables, file);
+        float vehicleMeleeDamage = readValue("MeleeVsDriveable", meleeDamageVsDriveables, file);
+        vehicleMeleeDamage = readValue("MeleeVsDriveables", vehicleMeleeDamage, file);
+        vehicleMeleeDamage = readValue("MeleeDamageVsDriveable", vehicleMeleeDamage, file);
         vehicleMeleeDamage = readValue("MeleeDamageVsDriveables", vehicleMeleeDamage, file);
         if (Float.isFinite(vehicleMeleeDamage) && vehicleMeleeDamage >= 0F)
             meleeDamageVsDriveables = vehicleMeleeDamage;

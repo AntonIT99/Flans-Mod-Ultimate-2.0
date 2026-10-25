@@ -43,7 +43,7 @@ class GunTypeMeleeSpeedTest
     @Test
     void vehicleMeleeOverridesSupportBothSpellingsWithoutChangingLivingDamage()
     {
-        for (String key : List.of("MeleeDamageVsDriveable", "MeleeDamageVsDriveables"))
+        for (String key : List.of("MeleeVsDriveable", "MeleeVsDriveables", "MeleeDamageVsDriveable", "MeleeDamageVsDriveables"))
         {
             GunType type = read("ShortName testWeapon", "MeleeDamage 12", "MeleeDamageDriveableModifier 3", key + " 24");
             assertEquals(12F, type.getMeleeDamage(ItemStack.EMPTY, false));

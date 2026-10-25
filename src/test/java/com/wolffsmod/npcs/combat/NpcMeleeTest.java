@@ -1,5 +1,8 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.equipment.FlansMelee;
+import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.NpcAPI;
@@ -11,9 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -74,6 +79,36 @@ class NpcMeleeTest
             assertFalse(NpcItemAttacks.melee(npc, target));
             assertEquals(18, target.invulnerableTime);
             verify(npc, never()).setLastHurtMob(any());
+        }
+    }
+
+    @Test
+    void npcWeaponHitsCarryVehicleDamage()
+    {
+        GunType type = mock(GunType.class);
+        GunItem gun = mock(GunItem.class);
+        when(gun.getConfigType()).thenReturn(type);
+        ItemStack weapon = mock(ItemStack.class);
+        when(weapon.getItem()).thenReturn(gun);
+        when(weapon.copy()).thenReturn(weapon);
+        when(type.getMeleeDamage(weapon, false)).thenReturn(4F);
+        when(type.getMeleeDamage(weapon, true)).thenReturn(24F);
+        EntityNPCInterface npc = npc(20);
+        when(npc.getMainHandItem()).thenReturn(weapon);
+        when(npc.damageSources().mobAttack(npc)).thenReturn(new DamageSource(Holder.direct(new DamageType("mob", 0F)), npc));
+        Entity target = mock(Entity.class);
+        when(target.isAlive()).thenReturn(true);
+        try (var equipment = mockStatic(NpcEquipment.class))
+        {
+            when(target.hurt(any(DamageSource.class), eq(4F))).thenAnswer(call ->
+            {
+                DamageSource source = call.getArgument(0);
+                assertSame(npc, source.getEntity());
+                assertEquals(24F, FlansMelee.againstVehicle(source, call.getArgument(1)));
+                return false;
+            });
+            assertFalse(NpcItemAttacks.melee(npc, target));
+            verify(target).hurt(any(DamageSource.class), eq(4F));
         }
     }
 
