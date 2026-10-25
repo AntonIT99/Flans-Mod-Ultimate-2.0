@@ -32,11 +32,12 @@ class TeamFactionsTest
         {
             ITeam team = mock(ITeam.class);
             when(team.getShortName()).thenReturn("testTeam");
+            when(team.getName()).thenReturn("Test Team");
             when(team.getTeamColour()).thenReturn(0x123456);
             Faction faction = mock(Faction.class);
             faction.id = 8;
             faction.hideFaction = true;
-            when(controller.create("Flan Team: testTeam", 0x123456)).thenReturn(faction);
+            when(controller.create("Test Team", 0x123456)).thenReturn(faction);
             when(controller.getFaction(8)).thenReturn(faction);
             TeamFactions data = new TeamFactions();
             assertSame(faction, data.getOrCreate(team));
@@ -59,7 +60,7 @@ class TeamFactionsTest
             Faction replacement = mock(Faction.class);
             replacement.id = 9;
             when(controller.getFaction(8)).thenReturn(null);
-            when(controller.create("Flan Team: testTeam", 0x123456)).thenReturn(replacement);
+            when(controller.create("Test Team", 0x123456)).thenReturn(replacement);
             assertSame(replacement, reloaded.getOrCreate(team));
             when(controller.getFaction(9)).thenReturn(replacement);
             assertSame(replacement, reloaded.getOrCreate(team));
@@ -81,10 +82,11 @@ class TeamFactionsTest
         {
             ITeam team = mock(ITeam.class);
             when(team.getShortName()).thenReturn("existing");
+            when(team.getName()).thenReturn("Existing Team");
             Faction faction = mock(Faction.class);
             faction.id = 0;
             faction.color = 0x654321;
-            when(controller.getFactionFromName("Flan Team: existing")).thenReturn(faction);
+            when(controller.getFactionFromName("Existing Team")).thenReturn(faction);
             when(controller.getFaction(0)).thenReturn(faction);
             TeamFactions data = new TeamFactions();
             assertSame(faction, data.getOrCreate(team));

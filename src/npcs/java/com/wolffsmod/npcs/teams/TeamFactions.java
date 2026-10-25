@@ -36,7 +36,7 @@ public final class TeamFactions extends FlanSavedData
         Faction faction = id == null ? null : controller.getFaction(id);
         if (faction != null)
             return faction;
-        String name = "Flan Team: " + team.getShortName();
+        String name = team.getName();
         faction = controller.getFactionFromName(name);
         if (faction == null)
         {
