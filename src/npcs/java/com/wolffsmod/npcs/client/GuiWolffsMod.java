@@ -459,18 +459,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         MODEL_STATS(Section.MODEL, Scope.ALL, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Layout.COLUMN, Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
-        TURRET(Section.MODEL, Scope.MODELS,
-            Tab.named("turret_aim", Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.MANNED_GUNS_FIRE,
-                Feature.TURRET_LOCKED),
-            Tab.named(CrewPage.TAB, Scope.DRIVEABLES)),
+        CREW(Section.MODEL, Scope.DRIVEABLES, Tab.named(CrewPage.TAB), Tab.named(CrewPage.RULES_TAB)),
         EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO, Layout.COLUMN,
             Feature.ITEM_ARMOR,
             Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Value.WEAPON_SWITCH)),
         FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Value.GRENADE_USE, Feature.NATIVE_THROWABLES, Value.NATIVE_THROWABLE_USE, Value.THROWN_WEAPON_USE,
             Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO)),
-        MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS, Tab.of(Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES,
-            Feature.EYE_AT_MUZZLE, Feature.DRIVER_GUNS, Feature.RUN_OVER)),
-        AIMING(Section.TARGETING, Scope.ALL, Tab.of(Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE)),
+        MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS,
+            Tab.named("weapon_operation", Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.DRIVER_GUNS, Feature.MANNED_GUNS_FIRE, Feature.RUN_OVER),
+            Tab.named("weapon_positions", Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES, Feature.EYE_AT_MUZZLE)),
+        AIMING(Section.TARGETING, Scope.ALL,
+            Tab.named("target_tracking", Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE),
+            Tab.named("gun_movement", Scope.MODELS, Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED)),
         PROTECTION(Section.PROTECTION, Scope.ALL,
             Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES),
             Tab.named(ARMOUR_TAB, Scope.MODELS, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR),
@@ -877,7 +877,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case STANDARD -> List.of(Category.EQUIPMENT, Category.AIMING);
             case VEHICLE -> List.of(Category.MODEL_STATS, Category.DRIVING);
             case PLANE -> List.of(Category.MODEL_STATS, Category.FLIGHT);
-            case MECHA, AA_GUN -> List.of(Category.MODEL_STATS, Category.TURRET);
+            case MECHA, AA_GUN -> List.of(Category.MODEL_STATS, Category.AIMING);
         };
     }
 
@@ -964,9 +964,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             heldItems.init(shown.name(), loaded, top);
             return;
         }
-        if (CrewPage.TAB.equals(shown.name()))
+        if (CrewPage.owns(shown.name()))
         {
-            crew.init(loaded, top);
+            crew.init(shown.name(), loaded, top);
             return;
         }
         if (initLinesTab(shown, top))
@@ -1893,6 +1893,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         init();
     }
 
+    void crewResult(CrewResultPacket packet)
+    {
+        crew.receive(packet);
+    }
+
     @Override
     public void unFocused(GuiTextFieldNop field)
     {
@@ -1961,7 +1966,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return;
         if (ownPageButton(button) || navigate(button))
         {
-            init();
+            refreshPage();
             return;
         }
         String selection = combat.active() ? combat.soundSelection(button.id) : null;
@@ -2013,6 +2018,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         setSubGui(picker);
     }
 
+    private void refreshPage()
+    {
+        // setSubGui already initializes both screens; rebuilding again resets the picker's controls.
+        if (!hasSubGui())
+            init();
+    }
+
     /** @return whether the button belongs to a tab that lays out its own controls, which then handled it */
     private boolean ownPageButton(GuiButtonNop button)
     {
@@ -2026,7 +2038,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         else if (heldItems.handles(button.id))
             changed |= heldItems.button(button);
         else if (crew.handles(button.id))
-            changed |= crew.button(button);
+        {
+            // An action can save the editor itself; do not restore the dirty flag captured before that save.
+            boolean edited = crew.button(button);
+            changed |= edited;
+        }
         else if (GroundHandlingControls.button(npc, button))
             changed = true;
         else

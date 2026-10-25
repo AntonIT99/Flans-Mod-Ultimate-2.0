@@ -1,5 +1,8 @@
 package com.wolffsmod.npcs.crew;
 
+import com.wolffsmod.npcs.network.CrewResultPacket;
+import com.wolffsmod.npcs.network.CrewResultPacket.Result;
+import com.wolffsmod.npcs.network.NpcNetwork;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.CustomItems;
@@ -8,7 +11,6 @@ import noppes.npcs.NoppesUtilServer;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -16,8 +18,6 @@ import net.minecraft.server.level.ServerPlayer;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcCrewRequests
 {
-    private static final String PREFIX = "wolffsmodnpcs.crew.";
-
     /**
      * Crews the empty seats of the NPC the player is editing, or removes its crew. The NPC must be the one the player is
      * editing, which Custom NPCs only records for a player allowed to open its editor, and the player needs the wand and
@@ -36,24 +36,32 @@ public final class NpcCrewRequests
             && CustomNpcsPermissions.hasPermission(player, crew ? CustomNpcsPermissions.NPC_CREATE : CustomNpcsPermissions.NPC_DELETE);
         if (!allowed)
         {
-            player.sendSystemMessage(Component.translatable(PREFIX + "denied"));
+            reply(player, entityId, Result.DENIED, 0);
             return;
         }
         if (!crew)
         {
-            player.sendSystemMessage(Component.translatable(PREFIX + "removed", NpcCrew.dismiss(vehicle)));
+            reply(player, entityId, Result.REMOVED, NpcCrew.dismiss(vehicle));
             return;
         }
         NpcCrewSettings own = NpcCrewSettings.of(vehicle);
-        own.read(settings);
         if (NpcCrew.seats(vehicle).isEmpty())
         {
-            player.sendSystemMessage(Component.translatable(PREFIX + "no_seats"));
+            reply(player, entityId, Result.NO_SEATS, 0);
             return;
         }
+        own.read(settings);
+        vehicle.updateClient = true;
         int boarded = NpcCrew.fill((ServerLevel) vehicle.level(), vehicle, NpcCrew.recruiter(own));
         // Crewed by hand, it does not crew itself again until it next spawns or comes back.
         ((NpcCrewHolder) vehicle).wolffsmodnpcsCrewedAs(vehicle.getUUID());
-        player.sendSystemMessage(Component.translatable(PREFIX + "crewed", boarded));
+        reply(player, entityId, Result.CREWED, boarded);
+    }
+
+    private static void reply(ServerPlayer player, int entityId, Result result, int count)
+    {
+        CrewResultPacket packet = new CrewResultPacket(entityId, result, count);
+        NpcNetwork.sendTo(player, packet);
+        player.sendSystemMessage(packet.message());
     }
 }

@@ -34,6 +34,7 @@
       "SummonCommandMixin"
   ],
   "client": [
+      "EntityRenderDispatcherMixin",
       "GuiButtonNopMixin",
       "GuiNPCInvMixin",
       "GuiNpcAIMixin",

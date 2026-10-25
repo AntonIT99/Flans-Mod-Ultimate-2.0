@@ -15,6 +15,12 @@ import net.minecraft.client.Minecraft;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcClientPackets
 {
+    public static void crewResult(CrewResultPacket packet)
+    {
+        if (Minecraft.getInstance().screen instanceof GuiWolffsMod screen)
+            screen.crewResult(packet);
+    }
+
     /** Updates the editor's display as well as the tracked NPC, so later editor saves retain the server-generated name. */
     public static void soldierName(SoldierNamePacket packet)
     {

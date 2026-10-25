@@ -19,7 +19,7 @@ import java.math.RoundingMode;
 
 /**
  * Explicit modes for the driving and aiming numbers whose zero sentinel inherits model handling, shared by the Travel and
- * Turret aim pages and the model properties page.
+ * Aiming pages and the model properties page.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class GroundHandlingControls

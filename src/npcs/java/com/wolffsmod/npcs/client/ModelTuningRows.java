@@ -26,7 +26,7 @@ import java.util.OptionalDouble;
 
 /**
  * The rows of the Driving and Turning tabs of the model properties page: the movement values a content-pack model's
- * definition supplies. Each row edits the same tuning value as the Travel and Turret aim pages, where 0 inherits the
+ * definition supplies. Each row edits the same tuning value as the Travel and Aiming pages, where 0 inherits the
  * model; mass and engine power are read-only readouts of what the inherited response is made of.
  */
 final class ModelTuningRows

@@ -142,6 +142,12 @@ public final class NpcCrew
         return Optional.of(vehicle);
     }
 
+    /** Rendering policy only: hidden crew remain aboard and become visible again as soon as they leave their seat. */
+    public static boolean hiddenAboard(Entity entity)
+    {
+        return vehicleOf(entity).flatMap(vehicle -> seatOf(vehicle, entity).map(mount -> !NpcCrewSettings.of(vehicle).isSeatVisible(mount.seat()))).orElse(false);
+    }
+
     /** @return the living crew member sitting in a seat of the vehicle */
     public static Optional<EntityNPCInterface> occupant(EntityNPCInterface vehicle, int seat)
     {
@@ -313,7 +319,7 @@ public final class NpcCrew
     /** @return the recruiter that makes crew from the vehicle's own settings */
     public static Recruiter recruiter(NpcCrewSettings settings)
     {
-        return (level, vehicle, seat) -> recruit(level, vehicle, settings.source(seat.post()));
+        return (level, vehicle, seat) -> recruit(level, vehicle, settings.source(seat.index(), seat.post()));
     }
 
     /** Makes a crew member from a source beside the vehicle, of the vehicle's faction and staying dead once killed. */
@@ -367,6 +373,7 @@ public final class NpcCrew
             NpcsMod.log.warn("Cannot crew a vehicle with unknown class {} of team {}", source.playerClass(), source.team());
             return null;
         }
+        selection = new FlanSoldierSelection(selection.team(), selection.playerClass(), source.chooseSkin(selection.playerClass().getSkinOverrideVariants().size(), level.random));
         EntityCustomNpc npc = new EntityCustomNpc(CustomEntities.entityCustomNpc, level);
         npc.moveTo(position.x, position.y, position.z, 0F, 0F);
         FlanSoldierLoadout.apply(npc, selection);

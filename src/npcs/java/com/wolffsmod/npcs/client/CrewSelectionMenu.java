@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.client;
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.teams.IPlayerClass;
 import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.wolffsmod.npcs.crew.CrewSource;
 import noppes.npcs.packets.Packets;
 import noppes.npcs.packets.server.SPacketCloneList;
@@ -10,6 +11,7 @@ import noppes.npcs.shared.client.gui.components.*;
 import noppes.npcs.shared.client.gui.listeners.ICustomScrollListener;
 import noppes.npcs.shared.client.gui.listeners.IGuiData;
 
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -26,8 +28,9 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     private static final int DONE = 0;
     private static final int CANCEL = 1;
     private static final int TAB = 2;
+    private static final int SKIN = 3;
     private static final int LIST_TOP = 32;
-    private static final int LIST_HEIGHT = 158;
+    private static final int LIST_HEIGHT = 136;
     private final CrewSource original;
     private final List<ITeam> teams;
     private final GuiCustomScrollNop choices;
@@ -36,11 +39,16 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     private int cloneTab;
     private int teamIndex;
     private boolean loading;
+    private boolean clonesRequested;
+    private String chosenClass;
+    private int chosenSkin;
     private CrewSource selected;
 
     CrewSelectionMenu(CrewSource source)
     {
         original = source;
+        chosenClass = source.playerClass();
+        chosenSkin = source.skin();
         cloneTab = source.cloneTab();
         imageWidth = 400;
         imageHeight = 222;
@@ -71,7 +79,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
             for (int i = 0; i < tabs.length; i++)
                 tabs[i] = Component.translatable(PREFIX + "tab", i + 1).getString();
             addButton(new GuiButtonNop(this, TAB, guiLeft + 280, guiTop + 4, 112, 20, tabs, cloneTab - 1));
-            if (!loading)
+            if (!clonesRequested)
                 requestClones();
         }
         else
@@ -85,7 +93,9 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
             classes.guiLeft = guiLeft + 202;
             classes.guiTop = guiTop + LIST_TOP;
             addScroll(classes);
+            addButton(new GuiButtonNop(this, SKIN, guiLeft + 8, guiTop + 172, 384, 20, ""));
             showClasses();
+            showSkins();
         }
         addButton(new GuiButtonNop(this, DONE, guiLeft + 202, guiTop + 196, 92, 20, "gui.done"));
         addButton(new GuiButtonNop(this, CANCEL, guiLeft + 300, guiTop + 196, 92, 20, "gui.cancel"));
@@ -94,6 +104,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
 
     private void requestClones()
     {
+        clonesRequested = true;
         loading = true;
         choices.clear();
         Packets.sendServer(new SPacketCloneList(cloneTab));
@@ -106,8 +117,28 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         classes.clear();
         classes.setUnsortedList(playerClasses.stream().map(playerClass -> playerClass.getName() + " [" + playerClass.getShortName() + "]").toList());
         for (int i = 0; i < playerClasses.size(); i++)
-            if (playerClasses.get(i).getShortName().equals(original.playerClass()))
+            if (playerClasses.get(i).getShortName().equals(chosenClass))
                 classes.setSelectedIndex(i);
+    }
+
+    private void showSkins()
+    {
+        int index = classes.getSelectedIndex();
+        List<String> labels = new ArrayList<>();
+        labels.add(Component.translatable(PREFIX + "random_skin").getString());
+        if (index >= 0 && index < playerClasses.size())
+            labels.addAll(playerClasses.get(index).getSkinOverrideVariants().stream().map(SkinOverrideVariant::name).toList());
+        if (labels.size() == 1)
+            labels.add(Component.translatable(PREFIX + "default_skin").getString());
+        if (chosenSkin >= labels.size() - 1)
+            chosenSkin = 0;
+        // addButton replaces the ID lookup but leaves the old widget in Screen's render and input lists.
+        // Update the one button made by init, including when the selected class changes.
+        GuiButtonNop skin = getButton(SKIN);
+        Component name = Component.translatable(PREFIX + "skin", labels.get(chosenSkin + 1));
+        skin.setMessage(name);
+        skin.setTooltip(Tooltip.create(name.copy().append("\n").append(Component.translatable(PREFIX + "skin.help"))));
+        skin.setEnabled(index >= 0 && index < playerClasses.size() && playerClasses.get(index).getSkinOverrideVariants().size() > 1);
     }
 
     private void updateButtons()
@@ -125,31 +156,51 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     @Override
     public void buttonEvent(GuiButtonNop button)
     {
-        if (button.id == CANCEL)
-            close();
-        else if (button.id == TAB && !loading)
+        switch (button.id)
         {
-            cloneTab = button.getValue() + 1;
-            requestClones();
-            updateButtons();
+            case CANCEL -> close();
+            case TAB -> {
+                if (!loading)
+                {
+                    cloneTab = button.getValue() + 1;
+                    requestClones();
+                    updateButtons();
+                }
+            }
+            case SKIN -> cycleSkin();
+            case DONE -> confirmSelection();
+            default -> {
+                // The scrolls have their own listeners.
+            }
         }
-        else if (button.id == DONE)
+    }
+
+    private void cycleSkin()
+    {
+        int index = classes.getSelectedIndex();
+        if (index < 0 || index >= playerClasses.size())
+            return;
+        int variants = playerClasses.get(index).getSkinOverrideVariants().size();
+        chosenSkin = (chosenSkin + 2) % (variants + 1) - 1;
+        showSkins();
+    }
+
+    private void confirmSelection()
+    {
+        if (original.kind() == CrewSource.Kind.CLONE)
         {
-            if (original.kind() == CrewSource.Kind.CLONE)
-            {
-                if (loading || choices.getSelected() == null)
-                    return;
-                selected = original.withClone(cloneTab, choices.getSelected());
-            }
-            else
-            {
-                int index = classes.getSelectedIndex();
-                if (index < 0 || index >= playerClasses.size())
-                    return;
-                selected = original.withClass(teamIndex < 0 ? "" : teams.get(teamIndex).getShortName(), playerClasses.get(index).getShortName());
-            }
-            close();
+            if (loading || choices.getSelected() == null)
+                return;
+            selected = original.withClone(cloneTab, choices.getSelected());
         }
+        else
+        {
+            int index = classes.getSelectedIndex();
+            if (index < 0 || index >= playerClasses.size())
+                return;
+            selected = original.withClass(teamIndex < 0 ? "" : teams.get(teamIndex).getShortName(), playerClasses.get(index).getShortName()).withSkin(chosenSkin);
+        }
+        close();
     }
 
     @Override
@@ -175,6 +226,19 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         {
             teamIndex = choices.getSelectedIndex() - 1;
             showClasses();
+            showSkins();
+        }
+        else if (original.kind() == CrewSource.Kind.CLASS && scroll == classes)
+        {
+            int index = classes.getSelectedIndex();
+            if (index >= 0 && index < playerClasses.size())
+            {
+                String name = playerClasses.get(index).getShortName();
+                if (!name.equals(chosenClass))
+                    chosenSkin = 0;
+                chosenClass = name;
+            }
+            showSkins();
         }
         updateButtons();
     }

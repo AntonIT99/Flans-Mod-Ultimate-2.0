@@ -59,6 +59,8 @@ class NpcEditorPacketTest
             roundTrip(new NpcPresetPacket(42, action, "PLAYER_LIKE", settings()), NpcPresetPacket::write, NpcPresetPacket::read);
         for (CrewActionPacket.Action action : CrewActionPacket.Action.values())
             roundTrip(new CrewActionPacket(42, action, settings()), CrewActionPacket::write, CrewActionPacket::read);
+        for (CrewResultPacket.Result result : CrewResultPacket.Result.values())
+            roundTrip(new CrewResultPacket(42, result, 7), CrewResultPacket::write, CrewResultPacket::read);
     }
 
     private static CompoundTag settings()
