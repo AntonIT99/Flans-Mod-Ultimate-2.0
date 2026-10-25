@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.LivingEntity;
 
-/** Fits model previews above the picker's preset controls, and dresses the preview of a Flan soldier in its class loadout. */
+/** Hides previews under submenus, fits them above preset controls, and dresses a Flan soldier preview in its class loadout. */
 @SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = GuiCreationScreenInterface.class, remap = false)
 public abstract class NpcModelPreviewMixin
@@ -21,6 +21,8 @@ public abstract class NpcModelPreviewMixin
         "m_88315_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/client/gui/model/GuiCreationScreenInterface;drawNpc(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/entity/LivingEntity;IIFI)V"))
     private void wolffsmodnpcsFitPreview(GuiCreationScreenInterface screen, GuiGraphics graphics, LivingEntity npc, int x, int y, float zoom, int rotation)
     {
+        if (screen.hasSubGui())
+            return;
         if (screen instanceof GuiCreationEntities && screen.entity instanceof FlanModelEntity model)
             FlanModelMenuPreview.render(screen, graphics, model, rotation);
         else if (screen instanceof GuiCreationEntities)

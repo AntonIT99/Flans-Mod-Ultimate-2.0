@@ -223,7 +223,7 @@ public final class FlanSoldierBrowser
             button -> setApplyClassLoadout(screen, selection.orElse(null), ((GuiButtonYesNo) button).getBoolean())));
         screen.addLabel(new GuiLabel(SKIN_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_skin", screen.guiLeft + 124, screen.guiTop + 51, 0xFF0000));
         screen.addButton(new GuiButtonYesNo(screen, SKIN_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 46, applyClassSkin, button -> setApplyClassSkin(((GuiButtonYesNo) button).getBoolean())));
-        GuiButtonNop naming = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 124, screen.guiTop + 69, 264, 20, "wolffsmodnpcs.soldier.name.menu",
+        GuiButtonNop naming = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 292, screen.guiTop + 69, 96, 20, "wolffsmodnpcs.soldier.name.menu",
             button -> selection.ifPresent(chosen -> screen.setSubGui(new SoldierNameMenu(screen, chosen))));
         naming.setEnabled(selection.isPresent());
         screen.addButton(naming);
