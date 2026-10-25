@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.mixin;
 import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.soldier.SoldierCloneNames;
 import noppes.npcs.entity.EntityCustomNpc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
@@ -10,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.nbt.CompoundTag;
 
-/** Migrates legacy Flan rendering, applies inherited HP after model loading and restores the actual saved damage state. */
+/** Migrates legacy Flan rendering, applies inherited HP, restores saved damage state and regenerates opted-in clone names. */
 // Mixin merges this class into the target, so self-casts are valid.
 @SuppressWarnings({"UnresolvedMixinReference", "DataFlowIssue"})
 @Mixin(value = EntityCustomNpc.class, remap = false)
@@ -28,6 +29,7 @@ public abstract class NpcTypeModelLoadMixin
         EntityCustomNpc npc = (EntityCustomNpc) (Object) this;
         if (!npc.level().isClientSide)
         {
+            SoldierCloneNames.loaded(npc, compound);
             NpcTypeProperties.of(npc).refresh(npc);
             // Old saves use the NPC maximum; inherited saves record the effective maximum separately from stored defaults.
             if (compound.contains("Health") && (compound.contains(NpcTypeHealth.SAVED_MAXIMUM) || NpcTypeProperties.of(npc).values().containsKey(NpcTypeProperty.HEALTH)))
@@ -43,6 +45,7 @@ public abstract class NpcTypeModelLoadMixin
     private void wolffsmodnpcsSaveEffectiveHealth(CompoundTag tag, CallbackInfo callback)
     {
         EntityCustomNpc npc = (EntityCustomNpc) (Object) this;
+        SoldierCloneNames.save(npc, tag);
         if (NpcTypeProperties.of(npc).values().containsKey(NpcTypeProperty.HEALTH))
             tag.putFloat(NpcTypeHealth.SAVED_MAXIMUM, npc.getMaxHealth());
         else

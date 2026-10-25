@@ -8,6 +8,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
+import com.wolffsmod.npcs.soldier.SoldierCloneNames;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
 import noppes.npcs.shared.client.gui.components.*;
@@ -33,7 +34,6 @@ public final class FlanSoldierBrowser
     public static final String LABEL = "Flan Soldier";
     private static final int LOADOUT_TOGGLE_ID = 9120;
     private static final int SKIN_TOGGLE_ID = 9121;
-    private static final int NAME_GENDER_ID = 9122;
     private static final int NAME_APPLY_ID = 9123;
     private static final int FACTION_APPLY_ID = 9124;
     private static final int SKIN_WIDTH = 64;
@@ -41,8 +41,6 @@ public final class FlanSoldierBrowser
     private static boolean applyClassLoadout = true;
     /** Whether choosing a class or applying its loadout also gives the NPC the class skin; the builder's choice lasts for the session. */
     private static boolean applyClassSkin = true;
-    /** Gender for explicit naming requests; the builder's choice lasts for the session. */
-    private static int nameGender = 1;
 
     @Nullable
     private IContentPack pack;
@@ -187,7 +185,11 @@ public final class FlanSoldierBrowser
         ResourceLocation legacyModel = BuiltInRegistries.ENTITY_TYPE.getKey(CustomEntities.entityNPC64x32);
         boolean legacy = layout == SkinLayout.LEGACY || layout == SkinLayout.NONE && Objects.equals(screen.playerdata.getEntityName(), legacyModel);
         // Selecting a model also empties its extra data, so the choice is recorded afterwards.
+        boolean regenerate = screen.playerdata.extra.getBoolean(SoldierCloneNames.REGENERATE);
+        int gender = SoldierCloneNames.selectedGender(screen.playerdata.extra);
         screen.playerdata.setEntity(legacy ? legacyModel : null);
+        screen.playerdata.extra.putBoolean(SoldierCloneNames.REGENERATE, regenerate);
+        screen.playerdata.extra.putInt(SoldierCloneNames.GENDER, gender);
         selection.write(screen.playerdata.extra);
         if (skin != null && layout != SkinLayout.NONE)
             screen.npc.display.setSkinTexture(skin.toString());
@@ -206,7 +208,7 @@ public final class FlanSoldierBrowser
     }
 
     /**
-     * Adds loadout and skin toggles, plus the naming gender selector and explicit Apply button.
+     * Adds loadout and skin toggles, plus the NPC naming menu.
      *
      * @param browsing
      *            whether the picker is inside the soldier folder
@@ -221,13 +223,10 @@ public final class FlanSoldierBrowser
             button -> setApplyClassLoadout(screen, selection.orElse(null), ((GuiButtonYesNo) button).getBoolean())));
         screen.addLabel(new GuiLabel(SKIN_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_skin", screen.guiLeft + 124, screen.guiTop + 51, 0xFF0000));
         screen.addButton(new GuiButtonYesNo(screen, SKIN_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 46, applyClassSkin, button -> setApplyClassSkin(((GuiButtonYesNo) button).getBoolean())));
-        screen.addLabel(new GuiLabel(NAME_GENDER_ID, "wolffsmodnpcs.soldier.apply_name", screen.guiLeft + 124, screen.guiTop + 74, 0xFF0000));
-        screen.addButton(new GuiButtonNop(screen, NAME_GENDER_ID, screen.guiLeft + 292, screen.guiTop + 69, 46, 20, button -> nameGender = ((GuiButtonNop) button).getValue() + 1, nameGender - 1,
-            "wolffsmodnpcs.soldier.name.male", "wolffsmodnpcs.soldier.name.female"));
-        GuiButtonNop apply = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 340, screen.guiTop + 69, 48, 20, "wolffsmodnpcs.preset.apply",
-            button -> selection.ifPresent(chosen -> applyName(screen, chosen)));
-        apply.setEnabled(selection.isPresent());
-        screen.addButton(apply);
+        GuiButtonNop naming = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 124, screen.guiTop + 69, 264, 20, "wolffsmodnpcs.soldier.name.menu",
+            button -> selection.ifPresent(chosen -> screen.setSubGui(new SoldierNameMenu(screen, chosen))));
+        naming.setEnabled(selection.isPresent());
+        screen.addButton(naming);
         GuiButtonNop faction = new GuiButtonNop(screen, FACTION_APPLY_ID, screen.guiLeft + 292, screen.guiTop + 92, 96, 20, "wolffsmodnpcs.team_faction.apply",
             button -> selection.filter(chosen -> chosen.team() != null).ifPresent(chosen ->
             {
@@ -236,13 +235,6 @@ public final class FlanSoldierBrowser
             }));
         faction.setEnabled(selection.filter(chosen -> chosen.team() != null).isPresent());
         screen.addButton(faction);
-    }
-
-    private static void applyName(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
-    {
-        // Save the current display and selection before the server changes the generator and name.
-        screen.save();
-        NpcNetwork.sendToServer(SoldierNamePacket.request(screen.npc.getId(), selection, nameGender));
     }
 
     private static void setApplyClassSkin(boolean apply)
