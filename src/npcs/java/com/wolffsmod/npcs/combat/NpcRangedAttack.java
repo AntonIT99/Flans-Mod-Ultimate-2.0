@@ -51,7 +51,7 @@ public final class NpcRangedAttack
         boolean carried = NpcModels.flan(npc) == null;
         if (carried && FlansProjectiles.isGrenade(ammo) && NpcThrowing.tooClose(npc, target, ammo))
             return true;
-        if (new Attack(npc, target, ammo, options, highArc, sequence).fire() && carried && options.enabled(Feature.CONSUME_AMMO))
+        if (new Attack(npc, target, ammo, options, highArc, sequence).fire() && carried && NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
             NpcAmmunition.consume(npc, ammo);
         return true;
     }

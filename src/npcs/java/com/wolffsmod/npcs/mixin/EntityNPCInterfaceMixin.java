@@ -21,12 +21,14 @@ import com.wolffsmod.npcs.crew.CrewGunners;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.crew.NpcCrewHolder;
 import com.wolffsmod.npcs.diag.NpcProfiler;
+import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcBoardingGoal;
 import com.wolffsmod.npcs.drivers.NpcDriver;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
@@ -104,7 +106,9 @@ import java.util.UUID;
  * its own.</li>
  * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
- * <li>Diagnostics: while a benchmark or the profiler measures, the whole tick of the NPC is timed.</li>
+ * <li>Diagnostics: while a benchmark or the profiler measures, or an editor shows the NPC's live statistics, the whole tick of
+ * the NPC is timed; the editor also counts its attacks. The movement and aim debug switches draw what the NPC is doing.</li>
+ * <li>Frozen NPCs, as Custom NPCs' freeze switch holds them, neither fly, drive nor man guns.</li>
  * </ul>
  *
  * <p>
@@ -635,6 +639,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             callback.cancel();
             return;
         }
+        NpcWatch.attack(npc);
         if (NpcEquipment.weaponAuthority(npc))
         {
             // Scripted ranged triggers use the same item action, never the editor projectile template.
@@ -733,7 +738,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         // Zero doubles as "not measuring": the clock never reads it in practice.
-        wolffsmodnpcsTickStarted = NpcProfiler.server() && !npc.level().isClientSide ? System.nanoTime() : 0L;
+        wolffsmodnpcsTickStarted = !npc.level().isClientSide && (NpcProfiler.server() || NpcWatch.watched(npc)) ? System.nanoTime() : 0L;
         if (!npc.level().isClientSide)
         {
             NpcAmmunition.refillEmptySlots(npc);
@@ -807,7 +812,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         NpcVehicleState state = wolffsmodnpcsVehicleState();
         boolean server = !level().isClientSide;
-        if (server)
+        // Frozen NPCs neither fly, drive nor man guns, as Custom NPCs holds their own AI still.
+        boolean acting = server && !CustomNpcsPlatform.frozen();
+        if (acting)
         {
             // Before the model state, which reads the heading these leave the NPC with.
             state.getFlight().tick(npc);
@@ -818,13 +825,22 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         {
             NpcMobility.tick(npc);
             NpcPathDebug.tick(npc, state);
+            NpcAimDebug.tick(npc, state);
+        }
+        if (acting)
+        {
             NpcCrew.tick(npc);
             wolffsmodnpcsGunners.tick(npc);
             wolffsmodnpcsDriverGuns.tick(npc);
             NpcDrivers.tick(npc);
         }
         if (wolffsmodnpcsTickStarted != 0L)
-            NpcProfiler.npcTick(System.nanoTime() - wolffsmodnpcsTickStarted);
+        {
+            long nanos = System.nanoTime() - wolffsmodnpcsTickStarted;
+            if (NpcProfiler.server())
+                NpcProfiler.npcTick(nanos);
+            NpcWatch.tick(npc, nanos);
+        }
     }
 
     @ModifyVariable(method = {"travel", "m_7023_"}, at = @At("HEAD"), argsOnly = true)

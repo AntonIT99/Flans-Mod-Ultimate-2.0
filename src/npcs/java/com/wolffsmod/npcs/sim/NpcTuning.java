@@ -140,7 +140,9 @@ public final class NpcTuning
         /** Index into {@link Throwing}: how the NPC uses the throwable Flan guns it carries. */
         THROWN_WEAPON_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1),
         /** Index into {@link Throwing}: how the NPC uses the native throwables it carries. */
-        NATIVE_THROWABLE_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1);
+        NATIVE_THROWABLE_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1),
+        /** Blocks from every player beyond which the NPC looks for no targets and lets its target go; 0 never. */
+        DORMANT_RANGE(0, 0, 512);
 
         private final int fallback;
         private final int minimum;

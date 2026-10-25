@@ -1,10 +1,14 @@
 package com.wolffsmod.npcs.diag;
 
 import com.wolffsmod.npcs.network.ServerControlPacket;
+import com.wolffsmod.npcs.network.ServerReportPacket;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.network.FriendlyByteBuf;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -92,7 +96,7 @@ class NpcDiagnosticsTest
     @Test
     void theServerPageRequestsSurviveTheWire()
     {
-        ServerControlPacket sent = ServerControlPacket.set(15, 120, true, new ServerControlPacket.Ranges(96, 72, 160, 140));
+        ServerControlPacket sent = ServerControlPacket.set(List.of(15, 120, 1, 96, 72, 160, 140, 40, 8, 64, 1, 150, 2));
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         sent.write(buffer);
         assertEquals(sent, ServerControlPacket.read(buffer));
@@ -104,6 +108,49 @@ class NpcDiagnosticsTest
         assertEquals(45, received.seconds());
         assertEquals(ServerControlPacket.Action.GET, ServerControlPacket.request().action());
         assertEquals(ServerControlPacket.Action.APPLY_RANGES, ServerControlPacket.applyRanges().action());
+        assertEquals(ServerControlPacket.Action.APPLY_SEARCH, ServerControlPacket.applySearch().action());
+        assertEquals(ServerControlPacket.Action.REPORT, ServerControlPacket.report().action());
+    }
+
+    @Test
+    void theCensusAndTheBenchmarksSurviveTheWire()
+    {
+        NpcCensus.Row row = new NpcCensus.Row("minecraft:overworld", List.of(30, 2, 6, 3, 1), 5, 4, 3, 1, 10);
+        BenchmarkResult result = new BenchmarkResult("tanks", 600, true, List.of(12.5D, 30D, 4D, 32D, 42D, 1.5D, 0.75D, 0.25D));
+        ServerReportPacket sent = new ServerReportPacket(List.of(row), new NpcBudgets.Deferred(7, 2), List.of(result));
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        sent.write(buffer);
+        assertEquals(sent, ServerReportPacket.read(buffer));
+        assertEquals(0, buffer.readableBytes());
+        assertEquals(42, row.total());
+        assertEquals(6, row.count(NpcCensus.Kind.VEHICLE));
+        assertEquals(42D, result.figure(BenchmarkResult.Figure.NPCS_TICKING));
+        // A run from a version with fewer figures reads 0 for the ones it lacks.
+        assertEquals(0D, new BenchmarkResult("", 1, false, List.of(1D)).figure(BenchmarkResult.Figure.TARGET_MILLIS));
+    }
+
+    @Test
+    void theSettingsOfTheServerAreClampedAndAMissingValueKeepsItsOwn()
+    {
+        NpcServerSettings settings = new NpcServerSettings();
+        assertEquals(100, settings.get(NpcServerSettings.Setting.HEALTH_PERCENT));
+        assertEquals(NpcServerSettings.AmmoPolicy.PER_NPC, settings.ammoPolicy());
+        assertFalse(settings.isFrozen());
+        List<Integer> sent = new ArrayList<>(settings.all());
+        sent.set(NpcServerSettings.Setting.SEARCH_BUDGET.ordinal(), -5);
+        sent.set(NpcServerSettings.Setting.HEALTH_PERCENT.ordinal(), 5000);
+        sent.set(NpcServerSettings.Setting.AMMO_POLICY.ordinal(), 2);
+        assertTrue(settings.set(sent));
+        assertEquals(0, settings.get(NpcServerSettings.Setting.SEARCH_BUDGET));
+        assertEquals(1000, settings.get(NpcServerSettings.Setting.HEALTH_PERCENT));
+        assertEquals(NpcServerSettings.AmmoPolicy.ALWAYS, settings.ammoPolicy());
+        // An older client sends fewer values; the rest stay as they were.
+        assertFalse(settings.set(List.of(20, 90)));
+        assertEquals(20, settings.getSearchNearInterval());
+        assertEquals(1000, settings.get(NpcServerSettings.Setting.HEALTH_PERCENT));
+        assertEquals(0, settings.getSearchGeneration());
+        settings.applySearchToAll();
+        assertEquals(1, settings.getSearchGeneration());
     }
 
     @Test
@@ -114,7 +161,7 @@ class NpcDiagnosticsTest
         assertEquals(NpcServerSettings.DEFAULT_FIRING_RANGE, settings.getFiringRange());
         assertEquals(0, settings.getRangeGeneration());
         assertEquals(NpcServerSettings.DEFAULT_MODEL_RANGE, settings.getModelAggroRange());
-        settings.set(NpcServerSettings.DEFAULT_NEAR_INTERVAL, NpcServerSettings.DEFAULT_FAR_INTERVAL, false, 0, 10_000, 0, 200);
+        settings.set(List.of(NpcServerSettings.DEFAULT_NEAR_INTERVAL, NpcServerSettings.DEFAULT_FAR_INTERVAL, 0, 0, 10_000, 0, 200));
         assertEquals(1, settings.getAggroRange());
         assertEquals(NpcServerSettings.MAX_RANGE, settings.getFiringRange());
         assertEquals(1, settings.getModelAggroRange());

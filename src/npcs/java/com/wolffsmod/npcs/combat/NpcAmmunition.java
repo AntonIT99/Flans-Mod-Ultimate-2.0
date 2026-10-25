@@ -122,7 +122,7 @@ public final class NpcAmmunition
         for (ItemStack candidate : inventory(npc))
             if (FlansEquipment.acceptsAmmunition(weapon, secondary, candidate))
                 return candidate;
-        if (!options.enabled(Feature.PROJECTILES) || options.enabled(Feature.CONSUME_AMMO))
+        if (!options.enabled(Feature.PROJECTILES) || NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
             return ItemStack.EMPTY;
         return FlansEquipment.createDefaultAmmunition(weapon, secondary).orElse(ItemStack.EMPTY);
     }

@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.platform;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.CustomNpcs;
 import noppes.npcs.client.CustomNpcResourceListener;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataDisplay;
@@ -43,5 +44,18 @@ public final class CustomNpcsPlatform
     public static int tacticalRange(EntityNPCInterface npc)
     {
         return npc.ais.getTacticalRange();
+    }
+
+    /** Whether Custom NPCs holds every NPC still, the switch its remote calls Freeze NPCs. */
+    public static boolean frozen()
+    {
+        return CustomNpcs.FreezeNPCs;
+    }
+
+    // Custom NPCs keeps the switch in a public static field, which its own remote writes too.
+    @SuppressWarnings("java:S2696")
+    public static void setFrozen(boolean frozen)
+    {
+        CustomNpcs.FreezeNPCs = frozen;
     }
 }

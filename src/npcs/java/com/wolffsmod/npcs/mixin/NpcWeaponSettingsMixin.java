@@ -25,7 +25,7 @@ import net.minecraft.nbt.CompoundTag;
  * <li>The mod's per-NPC settings use Custom NPCs' existing permission-checked stats menu and normal persistence.</li>
  * <li>A newly created NPC starts with the server's aggro and firing ranges, gunfight distances by default instead of Custom
  * NPCs' melee-scale ones; a saved NPC keeps the ranges it was saved with until an operator applies the server's ranges to
- * every NPC, and remembers whether it has taken them.</li>
+ * every NPC, and remembers whether it has taken them. It remembers the same of the server's search intervals.</li>
  * </ul>
  */
 @SuppressWarnings("AddedMixinMembersNamePattern")
@@ -34,6 +34,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
 {
     @Unique
     private static final String WOLFFSMODNPCS_RANGE_GENERATION = "WolffsModRangeGeneration";
+    @Unique
+    private static final String WOLFFSMODNPCS_SEARCH_GENERATION = "WolffsModSearchGeneration";
 
     @Shadow
     public int aggroRange;
@@ -61,6 +63,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     private final NpcCrewSettings wolffsmodnpcsCrew = new NpcCrewSettings();
     @Unique
     private int wolffsmodnpcsRangeGeneration;
+    @Unique
+    private int wolffsmodnpcsSearchGeneration;
 
     // Defaults
 
@@ -73,6 +77,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         ranged.setRange(settings == null ? NpcServerSettings.DEFAULT_FIRING_RANGE : settings.getFiringRange());
         // Off the server thread the settings cannot be read: the NPC then takes the server's ranges at its first tick.
         wolffsmodnpcsRangeGeneration = settings == null ? -1 : settings.getRangeGeneration();
+        // A new NPC has no intervals of its own to give up.
+        wolffsmodnpcsSearchGeneration = settings == null ? -1 : settings.getSearchGeneration();
     }
 
     // Persistence
@@ -93,6 +99,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsTuning.load(compound);
         wolffsmodnpcsCrew.load(compound);
         wolffsmodnpcsRangeGeneration = compound.getInt(WOLFFSMODNPCS_RANGE_GENERATION);
+        wolffsmodnpcsSearchGeneration = compound.getInt(WOLFFSMODNPCS_SEARCH_GENERATION);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
     }
@@ -107,6 +114,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsTuning.save(callback.getReturnValue());
         wolffsmodnpcsCrew.save(callback.getReturnValue());
         callback.getReturnValue().putInt(WOLFFSMODNPCS_RANGE_GENERATION, wolffsmodnpcsRangeGeneration);
+        callback.getReturnValue().putInt(WOLFFSMODNPCS_SEARCH_GENERATION, wolffsmodnpcsSearchGeneration);
         wolffsmodnpcsProperties.saveDefaults(Component.STATS, callback.getReturnValue());
     }
 
@@ -162,5 +170,17 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     public void wolffsmodnpcsRangeGeneration(int generation)
     {
         wolffsmodnpcsRangeGeneration = generation;
+    }
+
+    @Override
+    public int wolffsmodnpcsSearchGeneration()
+    {
+        return wolffsmodnpcsSearchGeneration;
+    }
+
+    @Override
+    public void wolffsmodnpcsSearchGeneration(int generation)
+    {
+        wolffsmodnpcsSearchGeneration = generation;
     }
 }

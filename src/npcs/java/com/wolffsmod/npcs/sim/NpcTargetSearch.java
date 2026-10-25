@@ -2,8 +2,10 @@ package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.diag.NpcBudgets;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -11,10 +13,12 @@ import com.wolffsmod.npcs.tactics.NpcTactics;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +59,8 @@ public final class NpcTargetSearch
 
     private final long[] searched = new long[BANDS.length];
     private boolean started;
+    /** Game time a due search was first put off by the server's limit, or {@link Long#MIN_VALUE} while none waits. */
+    private long waitingSince = Long.MIN_VALUE;
 
     /** Sets how candidates are ranked ahead of their distance. */
     public static void setPriority(Priority priority)
@@ -97,6 +103,9 @@ public final class NpcTargetSearch
             double outer = Math.min(BANDS[band], range);
             if (due(band, now, interval(band, near, far, tuning, advanced), synchronizedNear))
             {
+                // Over the server's limit the band stays due, and the search waits for a later tick.
+                if (!mayStart(npc, now))
+                    return null;
                 searched[band] = now;
                 LivingEntity found = scan(npc, conditions, band, inner, outer);
                 if (found != null)
@@ -105,6 +114,37 @@ public final class NpcTargetSearch
             inner = outer;
         }
         return null;
+    }
+
+    /**
+     * @param server
+     *            the server's settings, or null for their defaults
+     * @return the ticks between searches of each band the NPC searches with, nearest first
+     */
+    public static List<Integer> bandIntervals(EntityNPCInterface npc, @Nullable NpcServerSettings server)
+    {
+        NpcTuning tuning = NpcTuning.of(npc);
+        int near = interval(tuning.get(Value.SEARCH_NEAR_INTERVAL), server == null ? NpcServerSettings.DEFAULT_NEAR_INTERVAL : server.getSearchNearInterval());
+        int far = Math.max(near, interval(tuning.get(Value.SEARCH_FAR_INTERVAL), server == null ? NpcServerSettings.DEFAULT_FAR_INTERVAL : server.getSearchFarInterval()));
+        boolean advanced = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.ADVANCED_SEARCH_INTERVALS);
+        List<Integer> intervals = new ArrayList<>(BANDS.length);
+        for (int band = 0; band < BANDS.length; band++)
+            intervals.add(interval(band, near, far, tuning, advanced));
+        return List.copyOf(intervals);
+    }
+
+    /** @return whether the server's limit lets a due search start now; one that may not remembers since when it waits */
+    private boolean mayStart(EntityNPCInterface npc, long now)
+    {
+        MinecraftServer server = npc.getServer();
+        if (server == null || NpcBudgets.targetSearch(server, waitingSince == Long.MIN_VALUE ? 0L : now - waitingSince))
+        {
+            waitingSince = Long.MIN_VALUE;
+            return true;
+        }
+        if (waitingSince == Long.MIN_VALUE)
+            waitingSince = now;
+        return false;
     }
 
     /** Shared nearby searches start immediately; other bands begin at their per-NPC phase. */
@@ -140,7 +180,8 @@ public final class NpcTargetSearch
     @Nullable
     private static LivingEntity scan(EntityNPCInterface npc, TargetingConditions conditions, int band, double inner, double outer)
     {
-        long started = NpcProfiler.server() ? System.nanoTime() : 0L;
+        boolean watched = NpcWatch.watched(npc);
+        long started = NpcProfiler.server() || watched ? System.nanoTime() : 0L;
         double innerSquared = inner * inner;
         double outerSquared = outer * outer;
         List<LivingEntity> candidates = npc.level().getEntitiesOfClass(LivingEntity.class, npc.getBoundingBox().inflate(outer), entity ->
@@ -161,7 +202,13 @@ public final class NpcTargetSearch
                 found = candidates.get(index);
         }
         if (started != 0L)
-            NpcProfiler.targetSearch(band, candidates.size(), tested, found != null, System.nanoTime() - started);
+        {
+            long nanos = System.nanoTime() - started;
+            if (NpcProfiler.server())
+                NpcProfiler.targetSearch(band, candidates.size(), tested, found != null, nanos);
+            if (watched)
+                NpcWatch.targetSearch(npc, nanos);
+        }
         return found;
     }
 

@@ -44,6 +44,8 @@ public final class NpcPlatform
 {
     private static final UUID KNOCKBACK_IMMUNITY = UUID.fromString("5b0f7a52-6f0b-4c0e-9d1f-0c2c6f7a3e41");
     private static final String KNOCKBACK_IMMUNITY_NAME = "Wolff's Mod knockback immunity";
+    private static final UUID SERVER_HEALTH = UUID.fromString("c3f1d7a4-2b6e-4f0a-8a51-7e9d2c4b6a13");
+    private static final String SERVER_HEALTH_NAME = "Wolff's Mod server health";
 
     /** Enchantment effects the editor readouts may not be able to show as a number. */
     public enum Effect
@@ -180,5 +182,24 @@ public final class NpcPlatform
             resistance.addTransientModifier(new AttributeModifier(KNOCKBACK_IMMUNITY, KNOCKBACK_IMMUNITY_NAME, 1D, AttributeModifier.Operation.ADDITION));
         else if (!immune && applied)
             resistance.removeModifier(KNOCKBACK_IMMUNITY);
+    }
+
+    /** @return the factor the server's health modifier puts on the most health, 1 without one */
+    public static double serverHealthFactor(AttributeInstance health)
+    {
+        AttributeModifier modifier = health.getModifier(SERVER_HEALTH);
+        return modifier == null ? 1D : 1D + modifier.getAmount();
+    }
+
+    /**
+     * Puts a factor on the most health, saved with the entity so a loaded NPC keeps the health it had; a factor of 1
+     * removes the modifier.
+     */
+    public static void setServerHealthFactor(AttributeInstance health, double factor)
+    {
+        if (health.getModifier(SERVER_HEALTH) != null)
+            health.removeModifier(SERVER_HEALTH);
+        if (factor != 1D)
+            health.addPermanentModifier(new AttributeModifier(SERVER_HEALTH, SERVER_HEALTH_NAME, factor - 1D, AttributeModifier.Operation.MULTIPLY_TOTAL));
     }
 }

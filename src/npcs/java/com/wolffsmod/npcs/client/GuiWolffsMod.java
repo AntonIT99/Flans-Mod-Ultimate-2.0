@@ -5,7 +5,9 @@ import com.wolffsmod.npcs.client.NpcKind.Scope;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.diag.BenchmarkResult;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.diag.NpcServerSettings.Setting;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
@@ -55,7 +57,8 @@ import java.util.stream.Collectors;
  * to it. The Essentials page gathers the settings most NPCs of the kind need. A row that does nothing for this NPC,
  * because of its kind or because a setting it depends on is off, keeps its control but has a grey label that says why; a
  * row that depends on another row of the same tab is indented below it. A hub tab, page or tab with settings changed from
- * their defaults shows how many.
+ * their defaults shows how many. A few pages show lines the server sends instead of rows: what the server finds of this NPC,
+ * the census of every NPC, and the latest server benchmarks side by side.
  * </p>
  */
 // Custom NPCs' editor requires the external GUI inheritance chain.
@@ -116,6 +119,37 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_FAR_VALUE_ID = 1209;
     private static final int SERVER_MODEL_AGGRO_ID = 1210;
     private static final int SERVER_MODEL_FIRING_ID = 1211;
+    private static final int SERVER_SEARCH_BUDGET_ID = 1212;
+    private static final int SERVER_PATH_BUDGET_ID = 1213;
+    private static final int SERVER_STAY_ACTIVE_LIMIT_ID = 1214;
+    private static final int SERVER_FREEZE_ID = 1215;
+    private static final int SERVER_HEALTH_ID = 1216;
+    private static final int SERVER_AMMO_ID = 1217;
+    private static final int SERVER_APPLY_SEARCH_ID = 1218;
+    private static final int REPORT_REFRESH_ID = 1219;
+    private static final int DIAGNOSIS_COPY_ID = 1220;
+    /** The first of the labels a page of read-only lines lays out, one per line or table cell. */
+    private static final int LINE_LABEL_ID = 1500;
+    /** Room for the lines of a page of read-only lines. */
+    private static final int LINE_HEIGHT = 11;
+    private static final int MAX_LINES = 14;
+    /** Where the buttons below a page of read-only lines sit, from the top of the GUI. */
+    private static final int LINES_BUTTON_TOP = 178;
+    /** Client ticks between two requests of what the Diagnosis page shows. */
+    private static final int INSPECT_INTERVAL = 20;
+    /** The left edges of the columns of the benchmark comparison: the figure, the previous run, the latest run and the change. */
+    private static final int[] COMPARISON_COLUMNS = {8, 214, 278, 342};
+    private static final String DIAGNOSIS = "wolffsmodnpcs.diagnosis.";
+    private static final String CENSUS = "wolffsmodnpcs.census.";
+    private static final String COMPARISON = "wolffsmodnpcs.comparison.";
+    private static final String WAITING = "waiting";
+    /** The tabs of the Diagnosis page, which lay out the lines the server sent rather than rows. */
+    private static final String EFFECTIVE_TAB = "effective_values";
+    private static final String LIVE_TAB = "live_stats";
+    /** The tab of the Profiling & benchmarks page that sets the latest server benchmark beside the one before. */
+    private static final String COMPARISON_TAB = "benchmark_comparison";
+    private static final int GOOD_COLOR = 0x55FF55;
+    private static final int BAD_COLOR = 0xFF5555;
     /** Distance between the left edges of two overview columns; a page button is this wide less the gap. */
     private static final int OVERVIEW_COLUMN = 134;
     private static final int OVERVIEW_GAP = 6;
@@ -213,38 +247,48 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @RequiredArgsConstructor
     private enum ServerRow
     {
-        NEAR_INTERVAL(SERVER_NEAR_ID, NpcServerSettings.DEFAULT_NEAR_INTERVAL), FAR_INTERVAL(SERVER_FAR_ID, NpcServerSettings.DEFAULT_FAR_INTERVAL), PROFILING(SERVER_PROFILE_ID, 0), AGGRO_RANGE(
-            SERVER_AGGRO_ID, NpcServerSettings.DEFAULT_AGGRO_RANGE), FIRING_RANGE(SERVER_FIRING_ID, NpcServerSettings.DEFAULT_FIRING_RANGE), MODEL_AGGRO_RANGE(SERVER_MODEL_AGGRO_ID,
-                NpcServerSettings.DEFAULT_MODEL_RANGE), MODEL_FIRING_RANGE(SERVER_MODEL_FIRING_ID, NpcServerSettings.DEFAULT_MODEL_RANGE);
+        // spotless:off
+        NEAR_INTERVAL(SERVER_NEAR_ID, Setting.NEAR_INTERVAL), FAR_INTERVAL(SERVER_FAR_ID, Setting.FAR_INTERVAL), SEARCH_BUDGET(SERVER_SEARCH_BUDGET_ID, Setting.SEARCH_BUDGET),
+        PROFILING(SERVER_PROFILE_ID, Setting.PROFILING),
+        AGGRO_RANGE(SERVER_AGGRO_ID, Setting.AGGRO_RANGE), FIRING_RANGE(SERVER_FIRING_ID, Setting.FIRING_RANGE),
+        MODEL_AGGRO_RANGE(SERVER_MODEL_AGGRO_ID, Setting.MODEL_AGGRO_RANGE), MODEL_FIRING_RANGE(SERVER_MODEL_FIRING_ID, Setting.MODEL_FIRING_RANGE),
+        FREEZE_AI(SERVER_FREEZE_ID, Setting.FREEZE_AI), STAY_ACTIVE_LIMIT(SERVER_STAY_ACTIVE_LIMIT_ID, Setting.STAY_ACTIVE_LIMIT), PATH_BUDGET(SERVER_PATH_BUDGET_ID, Setting.PATH_BUDGET),
+        HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY);
+        // spotless:on
 
         private final int id;
-        /** The value a new world starts with, 1 for Yes for the switch. */
-        private final int fallback;
+        private final Setting setting;
 
-        /** @return the value the server last sent, 1 for Yes for the switch */
+        /** @return the value the server last sent, 1 for Yes for a switch */
         private int current()
         {
-            return switch (this)
-            {
-                case NEAR_INTERVAL -> ClientServerSettings.getNearInterval();
-                case FAR_INTERVAL -> ClientServerSettings.getFarInterval();
-                case PROFILING -> ClientServerSettings.isProfiling() ? 1 : 0;
-                case AGGRO_RANGE -> ClientServerSettings.getAggroRange();
-                case FIRING_RANGE -> ClientServerSettings.getFiringRange();
-                case MODEL_AGGRO_RANGE -> ClientServerSettings.getModelAggroRange();
-                case MODEL_FIRING_RANGE -> ClientServerSettings.getModelFiringRange();
-            };
+            return ClientServerSettings.get(setting);
+        }
+
+        /** @return the value a new world starts with, 1 for Yes for a switch */
+        private int fallback()
+        {
+            return setting.getFallback();
         }
 
         private int maximum()
         {
             return switch (this)
             {
-                case NEAR_INTERVAL -> NpcServerSettings.MAX_NEAR_INTERVAL;
-                case FAR_INTERVAL -> NpcServerSettings.MAX_FAR_INTERVAL;
-                case PROFILING -> 1;
                 case AGGRO_RANGE, FIRING_RANGE, MODEL_AGGRO_RANGE, MODEL_FIRING_RANGE -> NpcMobility.rangeLimit();
+                default -> setting.getMaximum();
             };
+        }
+
+        private boolean toggle()
+        {
+            return this == PROFILING || this == FREEZE_AI;
+        }
+
+        /** @return the named choices of a row that is one, or none */
+        private Enum<?>[] choices()
+        {
+            return this == AMMO_POLICY ? NpcServerSettings.AmmoPolicy.values() : new Enum<?>[0];
         }
     }
 
@@ -455,14 +499,21 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
             Tab.named(IDLE_MOVEMENT_TAB)),
         PERFORMANCE(Section.ADVANCED, Scope.ALL,
-            Tab.named(GENERAL_TAB, Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAGGER_NEAR_SEARCH, Feature.STAY_ACTIVE, Value.ACTIVE_RANGE,
-                Feature.PATH_DEBUG),
+            Tab.named("target_search", Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAGGER_NEAR_SEARCH),
             Tab.named("search_bands", Feature.ADVANCED_SEARCH_INTERVALS, Value.SEARCH_BAND_0_INTERVAL, Value.SEARCH_BAND_1_INTERVAL, Value.SEARCH_BAND_2_INTERVAL,
-                Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL)),
+                Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL),
+            Tab.named("activity", Feature.STAY_ACTIVE, Value.ACTIVE_RANGE, Value.DORMANT_RANGE),
+            Tab.named("debug", Feature.PATH_DEBUG, Feature.AIM_DEBUG)),
+        /** What the server finds of this NPC: the values it acts on and what it is doing; its tabs lay out lines, not rows. */
+        DIAGNOSIS(Section.ADVANCED, Scope.ALL, Tab.named(EFFECTIVE_TAB), Tab.named(LIVE_TAB)),
         /** The pages of the whole server: their rows are {@link ServerRow}s, and the actions they offer sit below them. */
-        SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL)),
+        SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL, ServerRow.SEARCH_BUDGET)),
         SERVER_RANGES(Section.SERVER, Scope.ALL, Tab.of(ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE)),
-        DIAGNOSTICS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.PROFILING));
+        SERVER_LIMITS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.FREEZE_AI, ServerRow.STAY_ACTIVE_LIMIT, ServerRow.PATH_BUDGET)),
+        SERVER_RULES(Section.SERVER, Scope.ALL, Tab.of(ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY)),
+        /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
+        CENSUS(Section.SERVER, Scope.ALL, Tab.of()),
+        DIAGNOSTICS(Section.SERVER, Scope.ALL, Tab.named("profiling", ServerRow.PROFILING), Tab.named(COMPARISON_TAB));
         // spotless:on
 
         private final Section section;
@@ -505,6 +556,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private int tab;
     /** Whether the next press of the button applying the ranges to every NPC carries it out; any other edit asks again. */
     private boolean confirmApplyRanges;
+    /** The same for the button handing the search intervals to every NPC. */
+    private boolean confirmApplySearch;
+    /** Client ticks the Diagnosis page has been open, which time its requests. */
+    private int inspectTicks;
     private NpcKind kind;
     private NpcEngineSettings editingSound;
     private final CombatPages combat;
@@ -580,6 +635,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return TUNING + (ClientServerSettings.isKnown() ? "server_hint" : "server_waiting");
         if (category == null)
             return OVERVIEW + "hint";
+        if (category == Category.DIAGNOSIS)
+            return DIAGNOSIS + "hint";
         return combat.active() ? combat.hint() : category.hint();
     }
 
@@ -789,7 +846,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (row instanceof Value value)
             return NpcTuning.of(npc).get(value) != value.fallback();
         if (row instanceof ServerRow setting)
-            return setting.current() != setting.fallback;
+            return setting.current() != setting.fallback();
         return row instanceof Look look && lookEnabled(look) != look.fallback;
     }
 
@@ -910,6 +967,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             crew.init(loaded, top);
             return;
         }
+        if (initLinesTab(shown, top))
+            return;
         if (initSoundTab(shown, top))
             return;
         if (category == Category.ESSENTIALS)
@@ -958,13 +1017,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** Whether the row's control is a choice or a number, which the controls of a single column leave more room for. */
     private static boolean wide(Object row)
     {
-        return row instanceof Value || row instanceof Range || row instanceof ServerRow setting && setting != ServerRow.PROFILING;
+        return row instanceof Value || row instanceof Range || row instanceof ServerRow setting && !setting.toggle();
     }
 
     private static int controlWidth(Object row)
     {
         if (row instanceof Value value)
             return choices(value).length > 0 ? 150 : 60;
+        if (row instanceof ServerRow setting && setting.choices().length > 0)
+            return 150;
         return wide(row) ? 60 : 48;
     }
 
@@ -1004,13 +1065,209 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             combat.initProtection(loaded, control, below);
         else if (category == Category.PROTECTION && PARTS_TAB.equals(shown.name()))
             combat.initPartsLink(loaded);
-        else if (category == Category.SERVER_RANGES)
+        else
+            initServerActions(below);
+    }
+
+    /** The actions of a Server page, below its rows: handing settings to every NPC, or the benchmarks. */
+    private void initServerActions(int below)
+    {
+        if (category == Category.SERVER_RANGES)
             serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", below + 6).setEnabled(ClientServerSettings.isKnown());
+        else if (category == Category.SERVER_SEARCH)
+            serverButton(SERVER_APPLY_SEARCH_ID, confirmApplySearch ? "server_apply_search_confirm" : "server_apply_search", below + 6).setEnabled(ClientServerSettings.isKnown());
         else if (category == Category.DIAGNOSTICS)
         {
             serverButton(SERVER_BENCHMARK_ID, "server_benchmark", below + 6);
             serverButton(CLIENT_BENCHMARK_ID, "client_benchmark", below + 6 + 22);
         }
+    }
+
+    // Pages of lines
+
+    /**
+     * @return whether the tab is one that shows lines the server sent rather than rows: the Diagnosis tabs, the census and
+     *         the benchmark comparison, which is now laid out
+     */
+    private boolean initLinesTab(Tab shown, int top)
+    {
+        if (EFFECTIVE_TAB.equals(shown.name()) || LIVE_TAB.equals(shown.name()))
+        {
+            List<Component> lines = EFFECTIVE_TAB.equals(shown.name()) ? NpcInspectionView.effective(npc.getId()) : NpcInspectionView.live(npc.getId());
+            textLines(lines.isEmpty() ? List.of(Component.translatable(DIAGNOSIS + WAITING)) : lines, top);
+            GuiButtonNop copy = new GuiButtonNop(this, DIAGNOSIS_COPY_ID, guiLeft + 8, guiTop + LINES_BUTTON_TOP, 200, 20, new String[]{DIAGNOSIS + "copy"}, 0);
+            copy.setTooltip(Tooltip.create(Component.translatable(DIAGNOSIS + "copy" + HELP_SUFFIX)));
+            copy.setEnabled(loaded && NpcInspectionView.known(npc.getId()));
+            addButton(copy);
+            return true;
+        }
+        if (category == Category.CENSUS)
+        {
+            ServerReportPacket report = ClientServerSettings.getReport();
+            textLines(report == null ? List.of(Component.translatable(CENSUS + WAITING)) : NpcCensusLines.lines(report), top);
+            refreshButton();
+            return true;
+        }
+        if (COMPARISON_TAB.equals(shown.name()))
+        {
+            initComparison(top);
+            refreshButton();
+            return true;
+        }
+        return false;
+    }
+
+    private void refreshButton()
+    {
+        GuiButtonNop refresh = new GuiButtonNop(this, REPORT_REFRESH_ID, guiLeft + 8, guiTop + LINES_BUTTON_TOP, 120, 20, new String[]{CENSUS + "refresh"}, 0);
+        refresh.setTooltip(Tooltip.create(Component.translatable(CENSUS + "refresh" + HELP_SUFFIX)));
+        addButton(refresh);
+    }
+
+    /** Lays out read-only lines from the given height within the GUI; one too long for the page is cut short, and its tooltip holds all of it. */
+    private void textLines(List<Component> lines, int top)
+    {
+        int shown = Math.min(lines.size(), MAX_LINES);
+        for (int index = 0; index < shown; index++)
+            addLabel(textLabel(LINE_LABEL_ID + index, lines.get(index), guiLeft + 8, guiTop + top + index * LINE_HEIGHT, PAGE_WIDTH, CustomNpcsPlatform.defaultTextColor()));
+    }
+
+    private static GuiLabel textLabel(int id, Component text, int x, int y, int width, int color)
+    {
+        String full = text.getString();
+        if (font().width(full) <= width)
+            return new GuiLabel(id, text, color, x, y, width, 10);
+        String cut = font().plainSubstrByWidth(full, width - font().width("...")) + "...";
+        GuiLabel label = new GuiLabel(id, Component.literal(cut), color, x, y, width, 10);
+        label.setTooltip(Tooltip.create(text));
+        return label;
+    }
+
+    /**
+     * The latest server benchmark beside the one before it, one figure a line, with the change between them coloured by
+     * whether it is better or worse.
+     */
+    private void initComparison(int top)
+    {
+        ServerReportPacket report = ClientServerSettings.getReport();
+        if (report == null || report.benchmarks().isEmpty())
+        {
+            textLines(List.of(Component.translatable(report == null ? CENSUS + WAITING : COMPARISON + "none")), top);
+            return;
+        }
+        List<BenchmarkResult> results = report.benchmarks();
+        BenchmarkResult latest = results.get(results.size() - 1);
+        BenchmarkResult previous = results.size() > 1 ? results.get(results.size() - 2) : null;
+        int id = LINE_LABEL_ID;
+        int color = CustomNpcsPlatform.defaultTextColor();
+        int y = guiTop + top;
+        addLabel(textLabel(id++, Component.translatable(COMPARISON + "figure"), guiLeft + COMPARISON_COLUMNS[0], y, 200, color));
+        addLabel(textLabel(id++, run(previous), guiLeft + COMPARISON_COLUMNS[1], y, 60, color));
+        addLabel(textLabel(id++, run(latest), guiLeft + COMPARISON_COLUMNS[2], y, 60, color));
+        addLabel(textLabel(id++, Component.translatable(COMPARISON + "change"), guiLeft + COMPARISON_COLUMNS[3], y, 60, color));
+        for (BenchmarkResult.Figure figure : BenchmarkResult.Figure.values())
+        {
+            y += LINE_HEIGHT;
+            id = comparisonRow(figure, previous, latest, id, y);
+        }
+        if (previous == null)
+            addLabel(textLabel(id, Component.translatable(COMPARISON + "one"), guiLeft + 8, y + LINE_HEIGHT + 4, PAGE_WIDTH, READ_ONLY_COLOR));
+    }
+
+    /**
+     * One figure of the comparison at the given height on screen: its name, the value of each run and the change.
+     *
+     * @return the id of the next label
+     */
+    private int comparisonRow(BenchmarkResult.Figure figure, @Nullable BenchmarkResult previous, BenchmarkResult latest, int id, int y)
+    {
+        int color = CustomNpcsPlatform.defaultTextColor();
+        int next = id;
+        String name = COMPARISON + figure.name().toLowerCase(Locale.ROOT);
+        GuiLabel label = textLabel(next++, Component.translatable(name), guiLeft + COMPARISON_COLUMNS[0], y, 200, color);
+        label.setTooltip(Tooltip.create(Component.translatable(name + HELP_SUFFIX)));
+        addLabel(label);
+        addLabel(textLabel(next++, Component.literal(figure(latest.figure(figure))), guiLeft + COMPARISON_COLUMNS[2], y, 60, color));
+        if (previous == null)
+            return next;
+        double before = previous.figure(figure);
+        double change = before == 0D ? 0D : 100D * (latest.figure(figure) - before) / Math.abs(before);
+        addLabel(textLabel(next++, Component.literal(figure(before)), guiLeft + COMPARISON_COLUMNS[1], y, 60, color));
+        addLabel(textLabel(next++, Component.literal(String.format(Locale.ROOT, "%+.1f%%", change)), guiLeft + COMPARISON_COLUMNS[3], y, 60, changeColor(figure, change, color)));
+        return next;
+    }
+
+    /** @return green for a change for the better, red for one for the worse, or the plain colour for hardly any */
+    private static int changeColor(BenchmarkResult.Figure figure, double change, int plain)
+    {
+        if (Math.abs(change) < 0.5D)
+            return plain;
+        boolean better = figure.lowerIsBetter() ? change < 0D : change > 0D;
+        return better ? GOOD_COLOR : BAD_COLOR;
+    }
+
+    /** @return the heading of a run's column: its label, or that it was unnamed, marked when it was cut short */
+    private static Component run(@Nullable BenchmarkResult result)
+    {
+        if (result == null)
+            return Component.translatable(COMPARISON + "previous");
+        MutableComponent name = result.label().isEmpty() ? Component.translatable(COMPARISON + "unnamed") : Component.literal(result.label());
+        return result.aborted() ? name.append("*") : name;
+    }
+
+    private static String figure(double value)
+    {
+        return String.format(Locale.ROOT, Math.abs(value) >= 100D ? "%.0f" : "%.2f", value);
+    }
+
+    /** Copies what the Diagnosis page shows, with the NPC and its settings changed from their defaults, for a bug report. */
+    private void copySummary()
+    {
+        StringBuilder text = new StringBuilder();
+        text.append(I18n.get(DIAGNOSIS + "summary_title")).append('\n');
+        text.append(String.format(Locale.ROOT, "%s (id %d) at %.1f %.1f %.1f in %s%n", npc.getName().getString(), npc.getId(), npc.getX(), npc.getY(), npc.getZ(), npc.level().dimension().location()));
+        text.append(I18n.get(kind.key()));
+        NpcKind.model(npc).ifPresent(type -> text.append(": ").append(type.getName()).append(" (").append(type.getShortName()).append(')'));
+        text.append("\n\n").append(I18n.get(Tab.named(EFFECTIVE_TAB).key())).append('\n');
+        NpcInspectionView.effective(npc.getId()).forEach(line -> text.append("  ").append(line.getString()).append('\n'));
+        text.append('\n').append(I18n.get(Tab.named(LIVE_TAB).key())).append('\n');
+        NpcInspectionView.live(npc.getId()).forEach(line -> text.append("  ").append(line.getString()).append('\n'));
+        text.append('\n').append(I18n.get(DIAGNOSIS + "summary_changed")).append('\n');
+        // A row listed on several pages is named once.
+        Set<Object> rows = new LinkedHashSet<>();
+        for (Category page : Category.values())
+            for (Tab candidate : page.tabs)
+                rows.addAll(candidate.rows());
+        for (Object row : rows)
+        {
+            if (row instanceof Feature feature && changed(feature))
+                text.append("  ").append(feature.name()).append(" = ").append(row == Feature.GEAR_UP ? I18n.get(GEAR_CHOICES[gearChoice()]) : enabled(feature)).append('\n');
+            else if (row instanceof Value value && changed(value))
+                text.append("  ").append(value.name()).append(" = ").append(NpcTuning.of(npc).get(value)).append('\n');
+            else if (row instanceof Look look && changed(look))
+                text.append("  ").append(look.name()).append(" = ").append(lookEnabled(look)).append('\n');
+        }
+        Minecraft.getInstance().keyboardHandler.setClipboard(text.toString());
+        if (Minecraft.getInstance().player != null)
+            Minecraft.getInstance().player.displayClientMessage(Component.translatable(DIAGNOSIS + "copied"), true);
+    }
+
+    /** Shows what the server found of the NPC, if the Diagnosis page shows this NPC. */
+    public void inspected(int entityId)
+    {
+        if (entityId == npc.getId() && category == Category.DIAGNOSIS)
+            init();
+    }
+
+    @Override
+    public void tick()
+    {
+        super.tick();
+        // While the Diagnosis page is open, it asks the server once a second; the first request starts the count.
+        if (category != Category.DIAGNOSIS || !loaded)
+            return;
+        if (inspectTicks++ % INSPECT_INTERVAL == 0)
+            NpcNetwork.sendToServer(NpcInspectPacket.request(npc.getId()));
     }
 
     /** @return whether the tab is one of the Sounds page's tabs that are not a list of rows, which is now laid out */
@@ -1130,10 +1387,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return Component.translatable(NO_YES[feature.isDefaultEnabled() ? 1 : 0]);
         if (row instanceof Look look)
             return Component.translatable(NO_YES[look.fallback ? 1 : 0]);
-        if (row == ServerRow.PROFILING)
-            return Component.translatable(NO_YES[ServerRow.PROFILING.fallback]);
+        if (row instanceof ServerRow setting && setting.toggle())
+            return Component.translatable(NO_YES[setting.fallback()]);
+        if (row instanceof ServerRow setting && setting.choices().length > 0)
+            return Component.translatable(labelKey(setting) + "." + setting.choices()[setting.fallback()].name().toLowerCase(Locale.ROOT));
         if (row instanceof ServerRow setting)
-            return Component.literal(Integer.toString(setting.fallback));
+            return Component.literal(Integer.toString(setting.fallback()));
         if (!(row instanceof Value value))
             return null;
         Enum<?>[] choices = choices(value);
@@ -1398,18 +1657,30 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private void serverControl(ServerRow setting, int control, int y)
     {
         boolean known = ClientServerSettings.isKnown();
-        if (setting == ServerRow.PROFILING)
+        if (setting.toggle())
         {
             GuiButtonNop toggle = new GuiButtonNop(this, setting.id, control, y, 48, 20, NO_YES, setting.current());
             toggle.setEnabled(known);
             addButton(toggle);
             return;
         }
+        Enum<?>[] choices = setting.choices();
+        if (choices.length > 0)
+        {
+            String key = labelKey(setting);
+            String[] names = Arrays.stream(choices).map(choice -> key + "." + choice.name().toLowerCase(Locale.ROOT)).toArray(String[]::new);
+            int current = Math.max(0, Math.min(names.length - 1, setting.current()));
+            GuiButtonNop choice = new GuiButtonNop(this, setting.id, control, y, 150, 20, names, current);
+            choice.setEnabled(known);
+            valueTooltip(choice, names[current]);
+            addButton(choice);
+            return;
+        }
         GuiTextFieldNop field = new GuiTextFieldNop(setting.id, this, control, y, 60, 20, Integer.toString(setting.current()));
         field.setEditable(known);
         field.setTextColorUneditable(READ_ONLY_COLOR);
         field.numbersOnly = true;
-        field.setMinMaxDefault(1, setting.maximum(), setting.current());
+        field.setMinMaxDefault(setting.setting.getMinimum(), setting.maximum(), setting.current());
         addTextField(field);
     }
 
@@ -1426,49 +1697,56 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** @return whether the field or button belonged to the Server page */
     private boolean editServer(int id, int number)
     {
-        int near = ClientServerSettings.getNearInterval();
-        int far = ClientServerSettings.getFarInterval();
-        boolean profiling = ClientServerSettings.isProfiling();
-        int aggro = ClientServerSettings.getAggroRange();
-        int firing = ClientServerSettings.getFiringRange();
-        int modelAggro = ClientServerSettings.getModelAggroRange();
-        int modelFiring = ClientServerSettings.getModelFiringRange();
-        boolean confirming = confirmApplyRanges;
+        boolean confirmingRanges = confirmApplyRanges;
+        boolean confirmingSearch = confirmApplySearch;
         confirmApplyRanges = false;
+        confirmApplySearch = false;
+        Optional<ServerRow> row = Arrays.stream(ServerRow.values()).filter(candidate -> candidate.id == id).findFirst();
+        if (row.isPresent())
+        {
+            NpcNetwork.sendToServer(ServerControlPacket.set(ClientServerSettings.with(row.get().setting, number)));
+            return true;
+        }
         switch (id)
         {
-            case SERVER_NEAR_ID -> near = number;
-            case SERVER_FAR_ID -> far = number;
-            case SERVER_PROFILE_ID -> profiling = number == 1;
-            case SERVER_AGGRO_ID -> aggro = number;
-            case SERVER_FIRING_ID -> firing = number;
-            case SERVER_MODEL_AGGRO_ID -> modelAggro = number;
-            case SERVER_MODEL_FIRING_ID -> modelFiring = number;
             case SERVER_APPLY_RANGES_ID -> {
                 // The first press only asks for a second one: the ranges of every NPC are overwritten.
-                if (confirming)
+                if (confirmingRanges)
                     NpcNetwork.sendToServer(ServerControlPacket.applyRanges());
                 else
                     confirmApplyRanges = true;
                 init();
-                return true;
             }
-            case SERVER_BENCHMARK_ID -> {
-                NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
-                return true;
+            case SERVER_APPLY_SEARCH_ID -> {
+                // As with the ranges: every NPC's own intervals are dropped.
+                if (confirmingSearch)
+                    NpcNetwork.sendToServer(ServerControlPacket.applySearch());
+                else
+                    confirmApplySearch = true;
+                init();
             }
+            case REPORT_REFRESH_ID -> {
+                requestReport();
+                init();
+            }
+            case SERVER_BENCHMARK_ID -> NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
             case CLIENT_BENCHMARK_ID -> {
                 // A benchmark does not measure a screen: the editor closes first.
                 close();
                 ClientBenchmark.start(ServerBenchmark.DEFAULT_SECONDS);
-                return true;
             }
             default -> {
                 return false;
             }
         }
-        NpcNetwork.sendToServer(ServerControlPacket.set(near, far, profiling, new ServerControlPacket.Ranges(aggro, firing, modelAggro, modelFiring)));
         return true;
+    }
+
+    /** Asks the server for the NPC census and its latest benchmarks; the page shows them once they arrive. */
+    private static void requestReport()
+    {
+        ClientServerSettings.forgetReport();
+        NpcNetwork.sendToServer(ServerControlPacket.report());
     }
 
     private void rangeField(Range range, int control, int y)
@@ -1741,6 +2019,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             save();
             setSubGui(new TeamFactionMenu(npc.getId()));
         }
+        else if (button.id == DIAGNOSIS_COPY_ID)
+            copySummary();
         else if (heldItems.handles(button.id))
             changed |= heldItems.button(button);
         else if (crew.handles(button.id))
@@ -1816,6 +2096,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         category = opened;
         returnTo = null;
         tab = 0;
+        inspectTicks = 0;
+        if (opened == Category.CENSUS || opened == Category.DIAGNOSTICS)
+            requestReport();
     }
 
     private void goBack()

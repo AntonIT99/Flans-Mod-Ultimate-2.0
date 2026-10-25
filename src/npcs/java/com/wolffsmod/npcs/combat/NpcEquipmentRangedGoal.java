@@ -4,6 +4,7 @@ import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.crew.NpcCrew;
+import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -244,6 +245,7 @@ public final class NpcEquipmentRangedGoal extends Goal
             if (!shot)
                 break;
             fired = true;
+            NpcWatch.attack(npc);
             launched(target, hand.side);
         } while (automatic && hand.cadence.ready() && npc.getItemInHand(hand.side) == weapon && FlansEquipment.hasLoadedRound(weapon));
     }

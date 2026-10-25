@@ -30,7 +30,9 @@ public final class NpcWeaponOptions
         /** A vehicle or mecha whose definition squashes mobs runs over everything in its way but its allies. */
         RUN_OVER(true),
         /** Landing gear that retracts while the aircraft flies and comes down near the ground; the gear row shows it as a third choice beside down and up. */
-        GEAR_DYNAMIC(true);
+        GEAR_DYNAMIC(true),
+        /** Shows what the NPC aims at: its line to the target, the point it leads to, its ranges and a label above its head. */
+        AIM_DEBUG(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

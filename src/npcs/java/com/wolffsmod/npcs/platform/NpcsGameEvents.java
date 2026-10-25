@@ -5,6 +5,7 @@ import com.wolffsmod.npcs.NpcFactionCommands;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.diag.NpcBenchmarkCommands;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
 import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.network.NpcNetwork;
@@ -67,6 +68,7 @@ public final class NpcsGameEvents
         }
         ServerBenchmark.serverTickEnd(event.getServer());
         NpcServerSettings.serverTick(event.getServer());
+        NpcWatch.serverTick(event.getServer().getTickCount());
         TeamsBots.serverTick(event.getServer());
     }
 
@@ -81,6 +83,8 @@ public final class NpcsGameEvents
     {
         ServerBenchmark.serverStopping(event.getServer());
         TeamsBots.serverStopping(event.getServer());
+        NpcActivity.clear();
+        NpcWatch.clear();
     }
 
     @SubscribeEvent

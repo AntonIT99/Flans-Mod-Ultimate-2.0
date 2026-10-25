@@ -236,6 +236,12 @@ public final class NpcTypeProperties
         return settings.wolffsmodnpcsCombat().isCustom(property) && settings.wolffsmodnpcsTypeProperties().supplied.contains(property);
     }
 
+    /** @return whether the model's value currently covers the NPC's own for the property */
+    public boolean covers(NpcTypeProperty property)
+    {
+        return mapped.containsKey(property);
+    }
+
     /** @return every property the model decides while inherited, including values its mounts differ in */
     public Set<NpcTypeProperty> supplied()
     {

@@ -129,8 +129,9 @@ public final class NpcMobility
     }
 
     /**
-     * Applies what a terrain profile needs outside path searches, gives the NPC the server's ranges once an operator has
-     * applied them to every NPC, and keeps saved ranges within the server's limit.
+     * Applies what a terrain profile needs outside path searches, gives the NPC the server's ranges and search intervals
+     * once an operator has applied them to every NPC and the server's share of health, lets a dormant NPC rest, and keeps
+     * saved ranges within the server's limit.
      */
     public static void tick(EntityNPCInterface npc)
     {
@@ -145,6 +146,9 @@ public final class NpcMobility
             npc.setPathfindingMalus(BlockPathTypes.WATER, 0F);
         }
         takeServerRanges(npc);
+        if (npc.getServer() != null)
+            NpcServerRules.refresh(npc, NpcServerSettings.get(npc.getServer()));
+        NpcDormancy.rest(npc);
         int limit = rangeLimit();
         if (npc.stats.aggroRange > limit)
             npc.stats.setAggroRange(limit);

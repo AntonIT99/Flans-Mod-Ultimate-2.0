@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.client.BotKeys;
 import com.wolffsmod.npcs.client.BotWaypoints;
 import com.wolffsmod.npcs.client.ClientBenchmark;
+import com.wolffsmod.npcs.client.NpcDebugLabels;
 import com.wolffsmod.npcs.client.NpcMuzzleFlashRenderer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -30,8 +31,10 @@ public final class NpcsClientGameEvents
     @SubscribeEvent
     public static void clientTick(TickEvent.ClientTickEvent event)
     {
-        if (event.phase == TickEvent.Phase.END)
-            BotKeys.tick();
+        if (event.phase != TickEvent.Phase.END)
+            return;
+        BotKeys.tick();
+        NpcDebugLabels.tick();
     }
 
     @SubscribeEvent
@@ -41,6 +44,7 @@ public final class NpcsClientGameEvents
         {
             BotWaypoints.render(event.getPoseStack(), event.getCamera());
             NpcMuzzleFlashRenderer.render(event.getPoseStack(), event.getCamera(), event.getPartialTick());
+            NpcDebugLabels.render(event.getPoseStack(), event.getCamera(), event.getPartialTick());
         }
     }
 
@@ -49,6 +53,7 @@ public final class NpcsClientGameEvents
     {
         BotWaypoints.clear();
         NpcMuzzleFlashRenderer.clear();
+        NpcDebugLabels.clear();
     }
 
     @SubscribeEvent

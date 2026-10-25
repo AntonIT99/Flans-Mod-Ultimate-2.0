@@ -7,6 +7,7 @@ import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.sim.NpcServerRules;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.NpcAPI;
@@ -27,9 +28,11 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcEquipment
 {
+    /** @return whether the NPC's switch is on; on the server, whether it uses up ammunition also follows the server's rule */
     public static boolean enabled(EntityNPCInterface npc, Feature feature)
     {
-        return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);
+        boolean own = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);
+        return feature == Feature.CONSUME_AMMO ? NpcServerRules.consumesAmmo(npc, own) : own;
     }
 
     public static boolean weaponAuthority(EntityNPCInterface npc)

@@ -37,6 +37,30 @@ public final class NpcNetwork
         NpcNetworkPlatform.bidirectional("soldier_name", SoldierNamePacket.class, SoldierNamePacket::write, SoldierNamePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::soldierName,
             SoldierNamePacket::handle);
         NpcNetworkPlatform.toServer("team_faction", TeamFactionPacket.class, TeamFactionPacket::write, TeamFactionPacket::read, TeamFactionPacket::handle);
+        NpcNetworkPlatform.toClient("server_report", ServerReportPacket.class, ServerReportPacket::write, ServerReportPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::serverReport);
+        NpcNetworkPlatform.bidirectional("npc_inspect", NpcInspectPacket.class, NpcInspectPacket::write, NpcInspectPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::inspection,
+            NpcInspectPacket::handle);
+        NpcNetworkPlatform.toClient("debug_label", DebugLabelPacket.class, DebugLabelPacket::write, DebugLabelPacket::read, () -> com.wolffsmod.npcs.client.NpcDebugLabels::receive);
+    }
+
+    public static void sendTo(ServerPlayer player, ServerReportPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, NpcInspectPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(NpcInspectPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, DebugLabelPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)

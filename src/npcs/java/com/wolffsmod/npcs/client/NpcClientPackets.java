@@ -94,4 +94,19 @@ public final class NpcClientPackets
         if (Minecraft.getInstance().screen instanceof GuiWolffsMod tab)
             tab.init();
     }
+
+    public static void serverReport(ServerReportPacket packet)
+    {
+        ClientServerSettings.receive(packet);
+        if (Minecraft.getInstance().screen instanceof GuiWolffsMod tab)
+            tab.init();
+    }
+
+    /** Shows what the server found of the NPC on the Diagnosis page, if the tab still edits it. */
+    public static void inspection(NpcInspectPacket packet)
+    {
+        NpcInspectionView.receive(packet);
+        if (Minecraft.getInstance().screen instanceof GuiWolffsMod tab)
+            tab.inspected(packet.entityId());
+    }
 }
