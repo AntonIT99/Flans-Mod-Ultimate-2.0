@@ -11,6 +11,7 @@
       "EntityAIRangedAttackMixin",
       "EntityAIReturnMixin",
       "EntityNPCInterfaceMixin",
+      "EntityProjectileMixin",
       "FactionMixin",
       "ItemNpcWandMixin",
       "MarkovGeneratorMixin",
