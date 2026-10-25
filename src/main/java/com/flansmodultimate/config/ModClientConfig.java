@@ -296,9 +296,6 @@ public final class ModClientConfig
     static
     {
         builder.push("General Settings");
-        SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder.comment("Show content pack names in item descriptions").define("showPackNameInItemDescriptions", true);
-        SHOW_DETAILED_ITEM_DESCRIPTIONS = builder.comment("Show the detailed descriptions of guns, ammunition and other Flan's items: loaded ammunition, statistics",
-            "and the full statistics shown while sneaking. When disabled, only the item's own description is listed.").define("showDetailedItemDescriptions", true);
         ENABLE_UNCENSORED_CONTENT = builder.comment(
             "Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources. Restore Defaults preserves this preference. A server may require uncensored content while connected.")
             .define("enableUncensoredContent", false);
@@ -307,6 +304,18 @@ public final class ModClientConfig
             OPTIONS_SCREEN: in the vanilla options screen. PAUSE_MENU: in the pause menu.
             BOTH: in either one. NONE: nowhere; the screen stays reachable from the mod list.
             """).defineEnum("optionsButtonPlacement", EnumOptionsButtonPlacement.OPTIONS_SCREEN);
+        ADDITIONAL_THERMAL_HOT_PARTICLES = ConfigSpecValues.defineList(builder.comment("""
+            Extra particle type ids, such as somemod:plasma, that thermal sights show hot. Explosions, fire,
+            muzzle flashes, sparks, tracers and Flan's own blast and smoke particles are hot already.
+            """), "additionalThermalHotParticles", Collections.emptyList(), () -> "", String.class::isInstance);
+        builder.pop();
+        builder.push("Item Descriptions");
+        SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder.comment("Show content pack names in item descriptions").define("showPackNameInItemDescriptions", true);
+        SHOW_DETAILED_ITEM_DESCRIPTIONS = builder.comment("Show the detailed descriptions of guns, ammunition and other Flan's items: loaded ammunition, statistics",
+            "and the full statistics shown while sneaking. When disabled, only the item's own description is listed.").define("showDetailedItemDescriptions", true);
+        SHOW_SHOOTABLE_DURABILITY_BARS = builder.comment("Show a durability-style bar for shootable items when their current round item is not full").define("showShootableDurabilityBars", true);
+        builder.pop();
+        builder.push("HUD and Crosshair");
         SHOW_FLANS_HUD = builder.comment("""
             Show Flan's Mod's own in-world HUD: gun and vehicle ammunition, AA gun and deployed gun
             readouts, team information and the kill feed. The vanilla HUD is not affected.
@@ -323,6 +332,11 @@ public final class ModClientConfig
             Private singleplayer worlds use this preference directly.
             Server, gun definition, vehicle optics and hideCrosshairForGuns restrictions still apply.
             """).define("showCrosshairWhileScoped", false);
+        SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder.comment("Show the armor-style HUD bar for legacy armor damage absorption").define("showArmorDamageAbsorptionBar", true);
+        DRIVEABLE_SPEED_UNIT = builder.comment("Unit used for vehicle and plane speed on the HUD").defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
+        DRIVEABLE_VERTICAL_SPEED_UNIT = builder.comment("Unit used for plane vertical speed on the HUD").defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
+        builder.pop();
+        builder.push("Model Loading");
         LOAD_ALL_MODELS_IN_CACHE = builder.comment("""
             If true, loads and caches ALL models up-front during resource reload.
             ⚠ Warning:
@@ -339,18 +353,8 @@ public final class ModClientConfig
             shipping its own version of a model that also exists in the mod renders with its own version.
             Content packs keep loading the model classes the mod does not provide either way.
             """).define("preferBuiltInModelClasses", false);
-        SHOW_SHOOTABLE_DURABILITY_BARS = builder.comment("Show a durability-style bar for shootable items when their current round item is not full").define("showShootableDurabilityBars", true);
-        SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder.comment("Show the armor-style HUD bar for legacy armor damage absorption").define("showArmorDamageAbsorptionBar", true);
-        DRIVEABLE_SPEED_UNIT = builder.comment("Unit used for vehicle and plane speed on the HUD").defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
-        DRIVEABLE_VERTICAL_SPEED_UNIT = builder.comment("Unit used for plane vertical speed on the HUD").defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
-        builder.push("Engine Sound Pitch Defaults");
-        VEHICLE_ENGINE_PITCH_BASE = builder.comment("Vehicle engine pitch at zero throttle").defineInRange("vehiclePitchBase", 0.5D, 0D, Float.MAX_VALUE);
-        VEHICLE_ENGINE_PITCH_AT_50 = builder.comment("Vehicle engine pitch at 50% throttle").defineInRange("vehiclePitchAt50", 0.8D, 0D, Float.MAX_VALUE);
-        VEHICLE_ENGINE_PITCH_AT_100 = builder.comment("Vehicle engine pitch at 100% throttle").defineInRange("vehiclePitchAt100", 1.2D, 0D, Float.MAX_VALUE);
-        PLANE_ENGINE_PITCH_BASE = builder.comment("Plane engine pitch at zero throttle").defineInRange("planePitchBase", 0.5D, 0D, Float.MAX_VALUE);
-        PLANE_ENGINE_PITCH_AT_50 = builder.comment("Plane engine pitch at 50% throttle").defineInRange("planePitchAt50", 1D, 0D, Float.MAX_VALUE);
-        PLANE_ENGINE_PITCH_AT_100 = builder.comment("Plane engine pitch at 100% throttle").defineInRange("planePitchAt100", 1.5D, 0D, Float.MAX_VALUE);
         builder.pop();
+        builder.push("Hit Markers");
         HIT_MARKER_STYLE = builder.comment("""
             Visual style of the hit marker.
             ULTIMATE: the hit marker from Flan's Mod Ultimate 1.7.10.
@@ -366,6 +370,8 @@ public final class ModClientConfig
         HIT_MARKER_GREEN = builder.comment("Green component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerGreen", 1D, 0D, 1D);
         HIT_MARKER_BLUE = builder.comment("Blue component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerBlue", 1D, 0D, 1D);
         HIT_MARKER_ALPHA = builder.comment("Opacity of the hit marker, applied to every style and colour").defineInRange("hitMarkerAlpha", 1D, 0D, 1D);
+        builder.pop();
+        builder.push("Screen Shake and Suppression");
         SHOW_FLASHES_WHEN_WOUNDED = builder.comment("Show the red blood overlay flash when the player takes damage").define("showFlashesWhenWounded", true);
         VEHICLE_SCREEN_SHAKE = builder.comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun").define("vehicleScreenShake", true);
         GUN_SCREEN_SHAKE = builder.comment("Punch the field of view in and kick the camera when you fire a gun that opts into HasScreenShake").define("gunScreenShake", true);
@@ -378,12 +384,20 @@ public final class ModClientConfig
         SUPPRESSION_CAMERA_ROLL = builder.comment("Maximum visual camera roll in degrees from suppression. Zero disables camera movement; aim is unchanged.").defineInRange("suppressionCameraRoll",
             3.5D, 0.0, 10.0);
         SUPPRESSION_VIGNETTE = builder.comment("Maximum opacity of the suppression vignette. Zero disables darkening.").defineInRange("suppressionVignette", 0.82D, 0.0, 1.0);
+        builder.pop();
+        builder.push("Audio");
         BULLET_FLYBY_SOUNDS = builder.comment("Play bullet near-miss sounds, including ammunition FlyBySound overrides.").define("bulletFlybySounds", true);
         BULLET_FLYBY_VOLUME = builder.comment("Volume of near-miss sounds. Zero mutes them. Vanilla volume also controls audible attenuation.").defineInRange("bulletFlybyVolume", 10D, 0.0, 10.0);
-        ADDITIONAL_THERMAL_HOT_PARTICLES = ConfigSpecValues.defineList(builder.comment("""
-            Extra particle type ids, such as somemod:plasma, that thermal sights show hot. Explosions, fire,
-            muzzle flashes, sparks, tracers and Flan's own blast and smoke particles are hot already.
-            """), "additionalThermalHotParticles", Collections.emptyList(), () -> "", String.class::isInstance);
+        builder.push("Engine Sound Pitch Defaults");
+        VEHICLE_ENGINE_PITCH_BASE = builder.comment("Vehicle engine pitch at zero throttle").defineInRange("vehiclePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_50 = builder.comment("Vehicle engine pitch at 50% throttle").defineInRange("vehiclePitchAt50", 0.8D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_100 = builder.comment("Vehicle engine pitch at 100% throttle").defineInRange("vehiclePitchAt100", 1.2D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_BASE = builder.comment("Plane engine pitch at zero throttle").defineInRange("planePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_50 = builder.comment("Plane engine pitch at 50% throttle").defineInRange("planePitchAt50", 1D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_100 = builder.comment("Plane engine pitch at 100% throttle").defineInRange("planePitchAt100", 1.5D, 0D, Float.MAX_VALUE);
+        builder.pop();
+        builder.pop();
+        builder.push("Teams");
         ENABLE_PLAYER_CLASS_SKIN_OVERRIDES = builder.comment("""
             Let a Teams player class replace the skin of the players wearing it, when its content pack
             defines a SkinOverride. Overrides are ignored anyway when the texture is missing, is not a

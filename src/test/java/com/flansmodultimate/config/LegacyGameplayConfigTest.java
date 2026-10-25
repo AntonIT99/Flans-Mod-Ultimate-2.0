@@ -77,10 +77,10 @@ class LegacyGameplayConfigTest
     @Test
     void clientConfigDeclaresTheHitMarkerAndTooltipSettings()
     {
-        assertSetting(ModClientConfig.configSpec, true, "General Settings", "showDetailedItemDescriptions");
-        assertSetting(ModClientConfig.configSpec, true, "General Settings", "showHitMarker");
+        assertSetting(ModClientConfig.configSpec, true, "Item Descriptions", "showDetailedItemDescriptions");
+        assertSetting(ModClientConfig.configSpec, true, "Hit Markers", "showHitMarker");
         for (String channel : List.of("hitMarkerRed", "hitMarkerGreen", "hitMarkerBlue", "hitMarkerAlpha"))
-            assertSetting(ModClientConfig.configSpec, 1D, "General Settings", channel);
+            assertSetting(ModClientConfig.configSpec, 1D, "Hit Markers", channel);
     }
 
     /** Every field must travel to the client in the order it is read back, or the snapshot shifts. */
