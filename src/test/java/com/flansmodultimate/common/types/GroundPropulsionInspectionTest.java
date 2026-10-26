@@ -75,6 +75,23 @@ class GroundPropulsionInspectionTest
     }
 
     @Test
+    void inWaterALegacyHullDrivesAtItsWaterThrottleWithLessGripAndSteersOnItsTurnSpeeds()
+    {
+        VehicleType type = new VehicleType();
+        type.maxThrottle = 2F;
+        type.maxThrottleInWater = 1F;
+        type.turnLeftModifier = 0.1F;
+        type.turnRightModifier = 0.1F;
+        GroundPropulsion water = FlansEntityTypes.getWaterPropulsion(type).orElseThrow();
+        // In water Vehicle closes 8% of the gap each tick.
+        double settle = 0.08D * 0.98D / (1D - 0.98D * 0.92D);
+        assertEquals(0.32D * settle, water.topSpeed(), 1.0E-9D);
+        // A held key settles the control at 9, which turns 9 * 0.1 * 0.1 * 0.1 / 0.32 radians per block travelled.
+        assertEquals(1D / (9D * 0.1D * 0.1D * 0.1D / 0.32D), FlansEntityTypes.getWaterHandling(type).turningRadius().orElseThrow(), 1.0E-4D);
+        assertTrue(FlansEntityTypes.getGroundHandling(type).turningRadius().isEmpty());
+    }
+
+    @Test
     void aDefinitionThatCannotReverseOrIsNoGroundVehicleOffersNothingToReverseOrDrive()
     {
         VehicleType type = new VehicleType();

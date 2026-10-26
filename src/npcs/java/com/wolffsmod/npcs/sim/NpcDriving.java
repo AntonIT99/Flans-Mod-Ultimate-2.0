@@ -505,14 +505,18 @@ public final class NpcDriving
     static GroundHandling handling(EntityNPCInterface npc, NpcWeaponOptions options)
     {
         FlanModelEntity model = NpcModels.flan(npc);
-        return model != null && options.enabled(Feature.TYPE_PROPERTIES) ? FlansEntityTypes.getGroundHandling(model.getInfoType()) : GroundHandling.EMPTY;
+        if (model == null || !options.enabled(Feature.TYPE_PROPERTIES))
+            return GroundHandling.EMPTY;
+        return NpcMobility.afloat(npc) ? FlansEntityTypes.getWaterHandling(model.getInfoType()) : FlansEntityTypes.getGroundHandling(model.getInfoType());
     }
 
-    /** @return how the vehicle model gains and sheds speed, when the NPC takes properties from its model */
+    /** @return how the vehicle model gains and sheds speed, on land or in water, when the NPC takes properties from its model */
     public static Optional<GroundPropulsion> propulsion(EntityNPCInterface npc, NpcWeaponOptions options)
     {
         FlanModelEntity model = NpcModels.flan(npc);
-        return model != null && options.enabled(Feature.TYPE_PROPERTIES) ? FlansEntityTypes.getGroundPropulsion(model.getInfoType()) : Optional.empty();
+        if (model == null || !options.enabled(Feature.TYPE_PROPERTIES))
+            return Optional.empty();
+        return NpcMobility.afloat(npc) ? FlansEntityTypes.getWaterPropulsion(model.getInfoType()) : FlansEntityTypes.getGroundPropulsion(model.getInfoType());
     }
 
     private static boolean tracked(EntityNPCInterface npc)

@@ -1295,6 +1295,23 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     }
 
     @Override
+    public float getFloatingHeight()
+    {
+        if (!floatOnWater)
+            return getRestingHeight();
+        // As Driveable#applyGravityAndBuoyancy: a declared draft settles the core box bottom that far below the
+        // surface, otherwise the lowest wheel anchor floats at the surface, lowered by FloatOffset for vehicles.
+        ResolvedVehiclePhysics physics = getResolvedPhysics();
+        CollisionBox core = health.get(EnumDriveablePart.CORE);
+        if (physics.draftM() != null && !ModCommonConfig.forceLegacyMovement(physics.category()) && core != null && core.getWidth() > 0F && core.getHeight() > 0F && core.getDepth() > 0F)
+            return (float) (-physics.draftM() - core.asAabb().minY * Math.max(1.0E-4F, getModelScale()));
+        float lowestAnchor = getLowestWheelAnchor();
+        if (Float.isNaN(lowestAnchor))
+            return getRestingHeight();
+        return (this instanceof VehicleType ? floatOffset : 0F) - lowestAnchor;
+    }
+
+    @Override
     public Optional<AABB> getCoreBounds()
     {
         CollisionBox core = health.get(EnumDriveablePart.CORE);

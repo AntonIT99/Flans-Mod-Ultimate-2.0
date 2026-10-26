@@ -20,8 +20,11 @@ import java.util.OptionalDouble;
  */
 public final class GroundPropulsionProfiles
 {
-    /** Share of the gap to its wanted velocity a grounded legacy vehicle closes each tick. */
+    /** Share of the gap to its wanted velocity a grounded legacy vehicle closes each tick, and one in water. */
     private static final double LEGACY_GRIP = 0.22D;
+    private static final double LEGACY_WATER_GRIP = 0.08D;
+    /** Share of its traction a vehicle under the real-world profile keeps in water. */
+    private static final double WATER_TRACTION = 0.35D;
     /** Speed factors the legacy model applies to the throttle of tracked and wheeled vehicles. */
     private static final double LEGACY_TRACKED_FACTOR = 0.26D;
     private static final double LEGACY_WHEELED_FACTOR = 0.32D;
@@ -35,6 +38,15 @@ public final class GroundPropulsionProfiles
 
     public static Optional<GroundPropulsion> of(IContentType type)
     {
+        return of(type, false);
+    }
+
+    /**
+     * @param water
+     *            whether the vehicle is in water, where Vehicle grips less, loses traction and drives at MaxThrottleInWater
+     */
+    public static Optional<GroundPropulsion> of(IContentType type, boolean water)
+    {
         if (!(type instanceof VehicleType vehicle))
             return Optional.empty();
         boolean legacy = ModCommonConfig.forceLegacyVehiclePhysics();
@@ -43,11 +55,11 @@ public final class GroundPropulsionProfiles
             cap = Double.POSITIVE_INFINITY;
         ResolvedVehiclePhysics physics = vehicle.getResolvedPhysics();
         boolean pushed = vehicle.getPushSpeedKmh() > 0F;
-        GroundPropulsion result = !pushed && !legacy && physics.hasGroundPropulsion() ? derived(vehicle, physics, cap) : legacy(vehicle, physics, legacy, pushed, cap);
+        GroundPropulsion result = !pushed && !legacy && physics.hasGroundPropulsion() ? derived(vehicle, physics, cap, water) : legacy(vehicle, physics, legacy, pushed, cap, water);
         return result.topSpeed() > 0D && Double.isFinite(result.topSpeed()) ? Optional.of(result) : Optional.empty();
     }
 
-    private static GroundPropulsion derived(VehicleType vehicle, ResolvedVehiclePhysics physics, double cap)
+    private static GroundPropulsion derived(VehicleType vehicle, ResolvedVehiclePhysics physics, double cap, boolean water)
     {
         double scale = ModCommonConfig.realisticSpeedScale(physics.category());
         double terminal = physics.maxSpeedBlocksPerTick(scale);
@@ -58,16 +70,17 @@ public final class GroundPropulsionProfiles
                 ? physics.reverseSpeedBlocksPerTick(scale)
                 : terminal * Math.min(1D, vehicle.getMaxNegativeThrottle() / Math.max(1.0E-4D, vehicle.getMaxThrottle()));
         }
-        return new Derived(Math.min(terminal, cap), Math.min(reverse, cap), terminal, physics.effectivePowerWatts(1F), physics.massKg(), physics.driveType().tractionFactor(),
-            physics.baselinePowerKw(), vehicle.isTracked());
+        return new Derived(Math.min(terminal, cap), Math.min(reverse, cap), terminal, physics.effectivePowerWatts(1F), physics.massKg(),
+            physics.driveType().tractionFactor() * (water ? WATER_TRACTION : 1D), physics.baselinePowerKw(), vehicle.isTracked());
     }
 
-    private static GroundPropulsion legacy(VehicleType vehicle, ResolvedVehiclePhysics physics, boolean forceLegacy, boolean pushed, double cap)
+    private static GroundPropulsion legacy(VehicleType vehicle, ResolvedVehiclePhysics physics, boolean forceLegacy, boolean pushed, double cap, boolean water)
     {
+        double grip = water ? LEGACY_WATER_GRIP : LEGACY_GRIP;
         double drag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(pushed, vehicle.getDrag());
         // The velocity closes a share of the gap to its target each tick and then loses its drag, so it settles below the target.
-        double response = 1D - drag * (1D - LEGACY_GRIP);
-        double settle = LEGACY_GRIP * drag / response;
+        double response = 1D - drag * (1D - grip);
+        double settle = grip * drag / response;
         double factor = vehicle.isTracked() ? LEGACY_TRACKED_FACTOR : LEGACY_WHEELED_FACTOR;
         double forward;
         double reverse;
@@ -78,7 +91,7 @@ public final class GroundPropulsionProfiles
         }
         else
         {
-            forward = Math.max(0F, vehicle.getMaxThrottle()) * factor;
+            forward = Math.max(0F, water ? vehicle.getMaxThrottleInWater() : vehicle.getMaxThrottle()) * factor;
             reverse = Math.max(0F, vehicle.getMaxNegativeThrottle()) * factor;
             if (!forceLegacy && physics.hasReverseSpeedOverride())
                 reverse = Math.min(reverse, physics.reverseSpeedBlocksPerTick(ModCommonConfig.realisticSpeedScale(physics.category())));

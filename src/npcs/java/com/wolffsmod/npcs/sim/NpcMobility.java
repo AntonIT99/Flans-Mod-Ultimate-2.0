@@ -1,10 +1,12 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
+import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
@@ -41,6 +43,15 @@ public final class NpcMobility
     private static final int REFRESH_INTERVAL = 20;
     /** Custom NPCs' editor limit of the ranged attack range. */
     private static final int EDITOR_RANGE_LIMIT = 256;
+    /** Blocks below its feet a floating NPC looks for water, and above its waterline it falls rather than sinks. */
+    private static final double WATERLINE_REACH = 2D;
+    /** Share of the distance to its waterline a floating NPC closes per tick. */
+    private static final double WATERLINE_RESPONSE = 0.25D;
+    private static final double WATERLINE_MAX_SPEED = 0.3D;
+    /** Blocks below its feet water still keeps a vehicle model afloat, as one floating at its waterline may stand above it. */
+    private static final double AFLOAT_REACH = 0.5D;
+    /** Blocks a floating NPC looks upward for the water surface. */
+    private static final int SURFACE_SEARCH = 12;
 
     // Speed
 
@@ -71,15 +82,31 @@ public final class NpcMobility
     }
 
     /**
-     * @return blocks per tick the NPC settles at on land at its full pace: its land speed setting, the top speed of the
-     *         vehicle model it inherits, or what its walking speed comes to
+     * @return blocks per tick the NPC settles at at its full pace: its land speed setting, or its water speed setting while a
+     *         vehicle model keeps it afloat, the top speed of the vehicle model it inherits there, or what its walking speed
+     *         comes to
      */
     public static double topSpeed(EntityNPCInterface npc)
     {
-        int tenths = NpcTuning.of(npc).get(Value.LAND_SPEED);
+        int tenths = NpcTuning.of(npc).get(afloat(npc) ? Value.WATER_SPEED : Value.LAND_SPEED);
         if (tenths > 0)
             return tenths / 200D;
         return modelSpeed(npc).orElseGet(() -> naturalSpeed(npc.ais.getWalkingSpeed()));
+    }
+
+    /**
+     * @return whether the NPC drives as a vehicle model in water, which moves it as the vehicle moves there: at its water
+     *         speed and handling, along its hull
+     */
+    public static boolean afloat(EntityNPCInterface npc)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (model == null || !(model.getInfoType() instanceof IDriveableType))
+            return false;
+        if (npc.isInWater())
+            return true;
+        // An NPC not yet in a level has nothing to float on.
+        return npc.level() != null && npc.level().getFluidState(BlockPos.containing(npc.getX(), npc.getY() - AFLOAT_REACH, npc.getZ())).is(FluidTags.WATER);
     }
 
     /** @return the top speed of the vehicle model the NPC drives as, when it drives like one and takes the model's properties */
@@ -136,8 +163,8 @@ public final class NpcMobility
     public static void tick(EntityNPCInterface npc)
     {
         Terrain terrain = NpcTuning.of(npc).terrain();
-        if (floats(terrain) && NpcSubmarine.runningDepth(npc) == 0 && npc.isInWater() && NpcPlatform.waterHeight(npc) > npc.getFluidJumpThreshold() && npc.getRandom().nextFloat() < 0.8F)
-            npc.getJumpControl().jump();
+        if (floats(terrain) && NpcSubmarine.runningDepth(npc) == 0)
+            floatAtSurface(npc);
         if ((npc.tickCount + npc.getId()) % REFRESH_INTERVAL != 0)
             return;
         if (floats(terrain))
@@ -154,6 +181,54 @@ public final class NpcMobility
             npc.stats.setAggroRange(limit);
         if (npc.stats.ranged.getRange() > limit)
             npc.stats.ranged.setRange(limit);
+    }
+
+    /**
+     * Holds a driveable model at the waterline its driveable floats at, with a damped correction so it neither rides
+     * high nor bobs; any other NPC swims up by jumping, as vanilla mobs do.
+     */
+    private static void floatAtSurface(EntityNPCInterface npc)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (model == null || model.getModelType() == null || !(model.getModelType().getInfoType() instanceof IDriveableType driveable))
+        {
+            if (npc.isInWater() && NpcPlatform.waterHeight(npc) > npc.getFluidJumpThreshold() && npc.getRandom().nextFloat() < 0.8F)
+                npc.getJumpControl().jump();
+            return;
+        }
+        double surface = waterSurface(npc);
+        if (Double.isNaN(surface))
+        {
+            if (npc.isInWater())
+                npc.getJumpControl().jump();
+            return;
+        }
+        double target = surface + (driveable.getFloatingHeight() - model.getModelType().getShape().modelHeight()) * NpcModels.scale(npc) - NpcModels.bodyOffset(npc);
+        double error = target - npc.getY();
+        // Out of the water and above its waterline, it falls back in under gravity.
+        if (error < -WATERLINE_REACH)
+            return;
+        double vertical = Mth.clamp(error * WATERLINE_RESPONSE, -WATERLINE_MAX_SPEED, WATERLINE_MAX_SPEED);
+        npc.setDeltaMovement(npc.getDeltaMovement().x, vertical, npc.getDeltaMovement().z);
+        npc.fallDistance = 0F;
+    }
+
+    /** @return world Y of the surface of the water column around the NPC's feet, or NaN when there is none within reach */
+    private static double waterSurface(EntityNPCInterface npc)
+    {
+        BlockPos.MutableBlockPos cursor = BlockPos.containing(npc.getX(), npc.getY() - WATERLINE_REACH, npc.getZ()).mutable();
+        boolean water = false;
+        for (int step = 0; step <= SURFACE_SEARCH; step++, cursor.move(0, 1, 0))
+        {
+            boolean here = npc.level().getFluidState(cursor).is(FluidTags.WATER);
+            if (water && !here)
+            {
+                cursor.move(0, -1, 0);
+                return cursor.getY() + npc.level().getFluidState(cursor).getHeight(npc.level(), cursor);
+            }
+            water |= here;
+        }
+        return Double.NaN;
     }
 
     /** @return the farthest, in blocks, an NPC may notice or fire at an enemy on this server */

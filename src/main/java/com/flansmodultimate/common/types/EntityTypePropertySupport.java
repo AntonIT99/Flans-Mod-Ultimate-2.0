@@ -31,6 +31,8 @@ public final class EntityTypePropertySupport
 {
     /** Traverse and elevation speed, in degrees per tick, of a mount whose definition states none. */
     private static final float DEFAULT_AIM_SPEED = 8F;
+    /** Radians of yaw per tick Vehicle gives a legacy wheeled hull per unit of steering control, turn speed and speed scale. */
+    private static final double LEGACY_STEERING_SCALE = 0.1D;
     /** Blocks per tick across the ground above which a driveable that squashes mobs hurts them, and the most it deals. */
     public static final double SQUASH_SPEED = 0.12D;
     private static final double MAX_SQUASH_DAMAGE = 40D;
@@ -40,6 +42,16 @@ public final class EntityTypePropertySupport
 
     @SuppressWarnings("unused") // Headless IntelliJ loses this public API delegation across source sets.
     public static GroundHandling groundHandling(IContentType type)
+    {
+        return groundHandling(type, false);
+    }
+
+    /**
+     * @param water
+     *            whether the vehicle is in water; a legacy wheeled hull there turns on a circle its turn speeds set, as
+     *            Vehicle steers it with the control held
+     */
+    public static GroundHandling groundHandling(IContentType type, boolean water)
     {
         if (!(type instanceof VehicleType vehicle))
             return GroundHandling.EMPTY;
@@ -55,6 +67,12 @@ public final class EntityTypePropertySupport
                 double speed = VehiclePhysicsUnits.kmhToBlocksPerTick(reference) * ModCommonConfig.realisticSpeedScale(vehicle.getResolvedPhysics().category());
                 radius = OptionalDouble.of(speed / Math.toRadians(rate.getAsDouble() / 20D));
             }
+        }
+        else if (water && !vehicle.isTracked())
+        {
+            double modifier = (vehicle.getTurnLeftModifier() + vehicle.getTurnRightModifier()) * 0.5D;
+            if (modifier > 0D)
+                radius = OptionalDouble.of(1D / (DriveableControlPhysics.wheeledSteeringVelocityScale(1D) * LEGACY_STEERING_SCALE * DriveableControlPhysics.heldControl() * modifier));
         }
         return new GroundHandling(rate, radius, reverseShare(vehicle, legacy));
     }

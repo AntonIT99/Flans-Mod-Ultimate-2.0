@@ -754,6 +754,8 @@ public final class NpcVehicleState
             NpcDriving.Command command = driving.travel(npc, hullYaw, Math.abs(this.travel), tuning, options);
             hullYaw = command.hullYaw();
             npc.setYRot(hullYaw);
+            if (NpcMobility.afloat(npc))
+                return sail(npc, command.throttle(), travel);
             return new Vec3(0D, travel.y, NpcDriving.input(npc, command.throttle()));
         }
         driving.reset();
@@ -764,7 +766,24 @@ public final class NpcVehicleState
         if (options.enabled(Feature.MISALIGNED_THROTTLE))
             speedFactor = MountMotion.throttle(desired - hullYaw, tuning.get(Value.THROTTLE_FLOOR) / 100F);
         npc.setYRot(hullYaw);
+        // Nothing pushes a hull sideways through the water.
+        if (NpcMobility.afloat(npc))
+            return new Vec3(0D, travel.y, travel.z * speedFactor);
         return speedFactor == 1F ? travel : new Vec3(travel.x * speedFactor, travel.y, travel.z * speedFactor);
+    }
+
+    /**
+     * Moves a hull in water straight along its heading at the commanded share of its water speed, as the vehicle itself
+     * moves there, instead of letting the swimming of a mob carry it on and sideways through every turn.
+     *
+     * @return the movement input left for the swimming, which then only carries the hull up or down
+     */
+    private Vec3 sail(EntityNPCInterface npc, float throttle, Vec3 travel)
+    {
+        double speed = throttle * NpcMobility.topSpeed(npc) * parts.effects().mobility();
+        Vec3 forward = Vec3.directionFromRotation(0F, hullYaw);
+        npc.setDeltaMovement(forward.x * speed, npc.getDeltaMovement().y, forward.z * speed);
+        return new Vec3(0D, travel.y, 0D);
     }
 
     // Shape

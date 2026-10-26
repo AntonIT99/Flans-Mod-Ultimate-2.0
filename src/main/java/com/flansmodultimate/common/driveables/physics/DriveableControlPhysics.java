@@ -48,6 +48,12 @@ public final class DriveableControlPhysics
         return realSteeringYawDelta(rate, control, false, false, signedSpeed, VehiclePhysicsUnits.kmhToBlocksPerTick(PLANE_GROUND_STEERING_REFERENCE_KMH));
     }
 
+    /** @return the steering control a key held down settles at */
+    public static float heldControl()
+    {
+        return HELD_CONTROL_ANGLE;
+    }
+
     /** Steering follows rolling direction, even with a neutral throttle or an inactive engine. */
     public static double wheeledSteeringVelocityScale(double signedSpeed)
     {

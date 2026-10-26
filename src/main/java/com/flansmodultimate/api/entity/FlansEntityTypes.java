@@ -65,6 +65,32 @@ public final class FlansEntityTypes
     }
 
     /**
+     * Reads how a vehicle turns and reverses in water, where a legacy wheeled hull steers on a circle its turn speeds set.
+     * Either side after content loading.
+     *
+     * @param type
+     *            selected definition
+     * @return available handling, with empty fields for unsupported or unspecified properties
+     */
+    public static GroundHandling getWaterHandling(IContentType type)
+    {
+        return EntityTypePropertySupport.groundHandling(type, true);
+    }
+
+    /**
+     * Reads how a vehicle speeds up, tops out and slows down in water, as {@link #getGroundPropulsion} does on land: at
+     * {@code MaxThrottleInWater}, with the grip and traction it keeps in water. Either side after content loading.
+     *
+     * @param type
+     *            selected definition
+     * @return the vehicle's longitudinal response in water, or empty for anything but a vehicle with a usable top speed
+     */
+    public static Optional<GroundPropulsion> getWaterPropulsion(IContentType type)
+    {
+        return GroundPropulsionProfiles.of(type, true);
+    }
+
+    /**
      * Inspects movement-engine audio independently of living-entity stat inheritance. Either side after content loading.
      * Mecha stomps retain their footstep cadence and are not engine loops.
      *

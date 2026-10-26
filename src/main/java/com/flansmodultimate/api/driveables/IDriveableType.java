@@ -77,6 +77,15 @@ public interface IDriveableType extends IContentType
     float getRestingHeight();
 
     /**
+     * @return the height of the origin above the water surface when the driveable floats at rest, as its draft or its
+     *         wheel anchors and {@code FloatOffset} place it; its resting height when it does not float
+     */
+    default float getFloatingHeight()
+    {
+        return getRestingHeight();
+    }
+
+    /**
      * @return the collision box of the core part, which is the main body, if the definition has one
      */
     Optional<AABB> getCoreBounds();
