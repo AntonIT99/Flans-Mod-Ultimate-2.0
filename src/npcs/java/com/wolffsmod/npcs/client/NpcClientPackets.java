@@ -21,6 +21,12 @@ public final class NpcClientPackets
             screen.crewResult(packet);
     }
 
+    public static void crewClonePreview(CrewClonePreviewPacket packet)
+    {
+        if (Minecraft.getInstance().screen instanceof GuiWolffsMod screen && screen.getSubGui() instanceof CrewSelectionMenu menu)
+            menu.receive(packet);
+    }
+
     /** Updates the editor's display as well as the tracked NPC, so later editor saves retain the server-generated name. */
     public static void soldierName(SoldierNamePacket packet)
     {

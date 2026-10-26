@@ -5,21 +5,33 @@ import com.flansmodultimate.api.teams.IPlayerClass;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.wolffsmod.npcs.crew.CrewSource;
+import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.network.CrewClonePreviewPacket;
+import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
+import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
+import noppes.npcs.CustomEntities;
+import noppes.npcs.entity.EntityCustomNpc;
+import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.packets.Packets;
 import noppes.npcs.packets.server.SPacketCloneList;
 import noppes.npcs.shared.client.gui.components.*;
 import noppes.npcs.shared.client.gui.listeners.ICustomScrollListener;
 import noppes.npcs.shared.client.gui.listeners.IGuiData;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /** Browses server clones or loaded teams and classes without changing the crew source until Done is pressed. */
 final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrollListener
@@ -31,6 +43,8 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     private static final int SKIN = 3;
     private static final int LIST_TOP = 32;
     private static final int LIST_HEIGHT = 136;
+    private static final int PREVIEW_LEFT = 280;
+    private final int entityId;
     private final CrewSource original;
     private final List<ITeam> teams;
     private final GuiCustomScrollNop choices;
@@ -43,9 +57,14 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     private String chosenClass;
     private int chosenSkin;
     private CrewSource selected;
+    @Nullable
+    private EntityNPCInterface preview;
+    @Nullable
+    private UUID previewToken;
 
-    CrewSelectionMenu(CrewSource source)
+    CrewSelectionMenu(int entityId, CrewSource source)
     {
+        this.entityId = entityId;
         original = source;
         chosenClass = source.playerClass();
         chosenSkin = source.skin();
@@ -69,7 +88,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         super.init();
         boolean clones = original.kind() == CrewSource.Kind.CLONE;
         addLabel(new GuiLabel(0, PREFIX + (clones ? "clone" : "class"), guiLeft + 8, guiTop + 8));
-        choices.setSize(clones ? 384 : 190, LIST_HEIGHT);
+        choices.setSize(clones ? 264 : 130, LIST_HEIGHT);
         choices.guiLeft = guiLeft + 8;
         choices.guiTop = guiTop + LIST_TOP;
         addScroll(choices);
@@ -89,17 +108,19 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
             labels.addAll(teams.stream().map(team -> team.getName() + " [" + team.getShortName() + "]").toList());
             choices.setUnsortedList(labels);
             choices.setSelectedIndex(teamIndex + 1);
-            classes.setSize(190, LIST_HEIGHT);
-            classes.guiLeft = guiLeft + 202;
+            classes.setSize(130, LIST_HEIGHT);
+            classes.guiLeft = guiLeft + 142;
             classes.guiTop = guiTop + LIST_TOP;
             addScroll(classes);
-            addButton(new GuiButtonNop(this, SKIN, guiLeft + 8, guiTop + 172, 384, 20, ""));
+            addButton(new GuiButtonNop(this, SKIN, guiLeft + 8, guiTop + 172, 264, 20, ""));
             showClasses();
             showSkins();
         }
         addButton(new GuiButtonNop(this, DONE, guiLeft + 202, guiTop + 196, 92, 20, "gui.done"));
         addButton(new GuiButtonNop(this, CANCEL, guiLeft + 300, guiTop + 196, 92, 20, "gui.cancel"));
         updateButtons();
+        if (!clones)
+            updatePreview();
     }
 
     private void requestClones()
@@ -107,6 +128,8 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         clonesRequested = true;
         loading = true;
         choices.clear();
+        preview = null;
+        previewToken = null;
         Packets.sendServer(new SPacketCloneList(cloneTab));
     }
 
@@ -183,6 +206,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         int variants = playerClasses.get(index).getSkinOverrideVariants().size();
         chosenSkin = (chosenSkin + 2) % (variants + 1) - 1;
         showSkins();
+        updatePreview();
     }
 
     private void confirmSelection()
@@ -217,6 +241,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
             choices.setSelected(original.cloneName());
         loading = false;
         updateButtons();
+        updatePreview();
     }
 
     @Override
@@ -241,6 +266,75 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
             showSkins();
         }
         updateButtons();
+        updatePreview();
+    }
+
+    /** Builds an isolated client entity. Browsing never equips or spawns the NPC being edited. */
+    private void updatePreview()
+    {
+        preview = null;
+        previewToken = null;
+        if (minecraft == null || minecraft.level == null)
+            return;
+        if (original.kind() == CrewSource.Kind.CLONE)
+        {
+            String name = choices.getSelected();
+            if (!loading && name != null)
+            {
+                previewToken = UUID.randomUUID();
+                NpcNetwork.sendToServer(CrewClonePreviewPacket.request(entityId, cloneTab, name, previewToken));
+            }
+            return;
+        }
+        int index = classes.getSelectedIndex();
+        if (index < 0 || index >= playerClasses.size())
+            return;
+        // Random previews the first variant, while the setting still randomizes each server-side spawn.
+        FlanSoldierSelection selection = new FlanSoldierSelection(teamIndex < 0 ? null : teams.get(teamIndex), playerClasses.get(index), chosenSkin);
+        EntityCustomNpc model = new EntityCustomNpc(CustomEntities.entityCustomNpc, minecraft.level);
+        FlanSoldierLoadout.Equipment equipment = FlanSoldierLoadout.equipment(selection);
+        model.inventory.armor = equipment.armour();
+        model.inventory.weapons = equipment.weapons();
+        selection.write(model.modelData.extra);
+        NpcSkins.markClassSkin(model);
+        NpcSkinResolver.apply(model);
+        preview = model;
+    }
+
+    void receive(CrewClonePreviewPacket packet)
+    {
+        if (packet.request() || packet.entityId() != entityId || !packet.token().equals(previewToken) || packet.tab() != cloneTab || !packet.name().equals(choices.getSelected()) || minecraft == null
+            || minecraft.level == null)
+            return;
+        previewToken = null;
+        if (packet.data().isEmpty())
+            return;
+        preview = EntityType.create(packet.data(), minecraft.level).filter(EntityNPCInterface.class::isInstance).map(EntityNPCInterface.class::cast).orElse(null);
+        if (preview != null)
+            NpcSkins.resolveOnClient(preview);
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
+    {
+        super.render(graphics, mouseX, mouseY, partialTicks);
+        int left = guiLeft + PREVIEW_LEFT;
+        int top = guiTop + LIST_TOP;
+        graphics.fill(left, top, guiLeft + 392, top + LIST_HEIGHT, 0x40303030);
+        if (preview == null)
+        {
+            graphics.drawCenteredString(font, Component.translatable(PREFIX + "preview"), left + 56, top + 58, 0xFFFFFF);
+            return;
+        }
+        graphics.enableScissor(left, top, guiLeft + 392, top + LIST_HEIGHT);
+        try
+        {
+            drawNpc(graphics, preview, PREVIEW_LEFT + 56, LIST_TOP + LIST_HEIGHT - 8, 1.6F, 0, false);
+        }
+        finally
+        {
+            graphics.disableScissor();
+        }
     }
 
     @Override

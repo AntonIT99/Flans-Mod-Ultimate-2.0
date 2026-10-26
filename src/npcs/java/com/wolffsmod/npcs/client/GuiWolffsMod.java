@@ -2043,6 +2043,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         if (subgui instanceof CrewSelectionMenu menu)
             changed |= crew.selected(menu);
+        else if (subgui instanceof CrewCopyMenu menu)
+            changed |= crew.selected(menu);
         else if (subgui instanceof GuiSoundSelection picker)
         {
             if (combat.active())

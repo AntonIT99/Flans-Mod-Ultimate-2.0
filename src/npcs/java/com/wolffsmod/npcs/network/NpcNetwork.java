@@ -42,6 +42,8 @@ public final class NpcNetwork
             NpcInspectPacket::handle);
         NpcNetworkPlatform.toClient("debug_label", DebugLabelPacket.class, DebugLabelPacket::write, DebugLabelPacket::read, () -> com.wolffsmod.npcs.client.NpcDebugLabels::receive);
         NpcNetworkPlatform.toClient("crew_result", CrewResultPacket.class, CrewResultPacket::write, CrewResultPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::crewResult);
+        NpcNetworkPlatform.bidirectional("crew_clone_preview", CrewClonePreviewPacket.class, CrewClonePreviewPacket::write, CrewClonePreviewPacket::read,
+            () -> com.wolffsmod.npcs.client.NpcClientPackets::crewClonePreview, CrewClonePreviewPacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerReportPacket packet)
@@ -52,6 +54,16 @@ public final class NpcNetwork
     public static void sendTo(ServerPlayer player, CrewResultPacket packet)
     {
         NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, CrewClonePreviewPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(CrewClonePreviewPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
     }
 
     public static void sendTo(ServerPlayer player, NpcInspectPacket packet)

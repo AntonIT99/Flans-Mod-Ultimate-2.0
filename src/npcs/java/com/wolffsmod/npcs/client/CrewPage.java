@@ -21,9 +21,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Stream;
 
 /**
  * The Crew menu: individual seats and their clone or class selections, plus shared rules on a separate tab. Legacy
@@ -40,7 +40,7 @@ final class CrewPage implements ICustomScrollListener
     private static final int SEAT_ID = 2300;
     private static final int SOURCE_ID = 2301;
     private static final int SELECT_ID = 2302;
-    private static final int COPY_NEXT_ID = 2303;
+    private static final int COPY_TO_ID = 2303;
     private static final int COPY_ALL_ID = 2304;
     private static final int SHIELDED_ID = 2306;
     private static final int PASSENGERS_FIRE_ID = 2307;
@@ -49,9 +49,6 @@ final class CrewPage implements ICustomScrollListener
     private static final int CREW_NOW_ID = 2310;
     private static final int REMOVE_ID = 2311;
     private static final int VISIBLE_ID = 2312;
-    private static final int COPY_DRIVER_ID = 2313;
-    private static final int COPY_PASSENGERS_ID = 2314;
-    private static final int COPY_GUNNERS_ID = 2315;
     private static final int LABEL_ID = 2320;
     private static final int ROW_HEIGHT = 21;
     private static final int HALF_WIDTH = 196;
@@ -102,11 +99,9 @@ final class CrewPage implements ICustomScrollListener
             status = seats.isEmpty() ? Component.translatable(PREFIX + "no_seats") : status(source());
         if (status != null)
         {
-            boolean besideCopy = TAB.equals(tab) && copyRoles().size() > 2;
-            int statusLeft = besideCopy ? left + HALF_WIDTH + 4 : left;
-            int statusWidth = besideCopy ? HALF_WIDTH : 396;
+            int statusWidth = 396;
             String text = Minecraft.getInstance().font.plainSubstrByWidth(status.getString(), statusWidth - 6);
-            GuiLabel label = new GuiLabel(LABEL_ID, Component.literal(text).withStyle(status.getStyle()), 0x303030, statusLeft, gui.guiTop + 162, statusWidth, 10);
+            GuiLabel label = new GuiLabel(LABEL_ID, Component.literal(text).withStyle(status.getStyle()), 0x303030, left, gui.guiTop + 162, statusWidth, 10);
             label.setTooltip(Tooltip.create(status));
             gui.addLabel(label);
         }
@@ -133,20 +128,8 @@ final class CrewPage implements ICustomScrollListener
         if (source.kind() != CrewSource.Kind.NONE)
             action(SELECT_ID, x, y + ROW_HEIGHT, 232, "select." + source.kind().name().toLowerCase(Locale.ROOT), !seats.isEmpty());
         toggle(VISIBLE_ID, x, y + 2 * ROW_HEIGHT, 232, "visible", settings().isSeatVisible(selectedSeat)).setEnabled(ready && !seats.isEmpty());
-        action(COPY_NEXT_ID, x, y + 3 * ROW_HEIGHT, 114, "copy_next", seatIndex() >= 0 && seatIndex() + 1 < seats.size());
-        action(COPY_ALL_ID, x + 118, y + 3 * ROW_HEIGHT, 114, "copy_all", seats.size() > 1);
-        List<CrewPost> roles = copyRoles();
-        for (int i = 0; i < roles.size(); i++)
-        {
-            CrewPost role = roles.get(i);
-            int id = switch (role)
-            {
-                case DRIVER -> COPY_DRIVER_ID;
-                case PASSENGER -> COPY_PASSENGERS_ID;
-                case GUNNER -> COPY_GUNNERS_ID;
-            };
-            action(id, left + i % 2 * (HALF_WIDTH + 4), gui.guiTop + 136 + i / 2 * ROW_HEIGHT, HALF_WIDTH, "copy_" + role.id(), true);
-        }
+        action(COPY_ALL_ID, x, y + 3 * ROW_HEIGHT, 114, "copy_all", seats.size() > 1);
+        action(COPY_TO_ID, x + 118, y + 3 * ROW_HEIGHT, 114, "copy_to", seats.size() > 1);
     }
 
     private void initRules(int left, int y)
@@ -180,9 +163,18 @@ final class CrewPage implements ICustomScrollListener
         return seats.stream().filter(seat -> seat.seat() != selectedSeat && CrewPost.of(seat) == post).toList();
     }
 
-    private List<CrewPost> copyRoles()
+    private EnumSet<CrewCopyMenu.Target> copyTargets()
     {
-        return Stream.of(CrewPost.DRIVER, CrewPost.PASSENGER, CrewPost.GUNNER).filter(role -> !roleTargets(role).isEmpty()).toList();
+        EnumSet<CrewCopyMenu.Target> targets = EnumSet.noneOf(CrewCopyMenu.Target.class);
+        if (seatIndex() >= 0 && seatIndex() + 1 < seats.size())
+            targets.add(CrewCopyMenu.Target.NEXT);
+        if (!roleTargets(CrewPost.DRIVER).isEmpty())
+            targets.add(CrewCopyMenu.Target.DRIVER);
+        if (!roleTargets(CrewPost.GUNNER).isEmpty())
+            targets.add(CrewCopyMenu.Target.GUNNERS);
+        if (!roleTargets(CrewPost.PASSENGER).isEmpty())
+            targets.add(CrewCopyMenu.Target.PASSENGERS);
+        return targets;
     }
 
     private void copyToSeats(List<WeaponMount> targets)
@@ -250,7 +242,7 @@ final class CrewPage implements ICustomScrollListener
 
     boolean handles(int id)
     {
-        return id >= SOURCE_ID && id <= COPY_GUNNERS_ID;
+        return id >= SOURCE_ID && id <= VISIBLE_ID;
     }
 
     boolean button(GuiButtonNop button)
@@ -263,23 +255,14 @@ final class CrewPage implements ICustomScrollListener
             case SOURCE_ID -> settings.setSource(selectedSeat, source().withKind(CrewSource.Kind.values()[button.getValue()]));
             case SELECT_ID -> {
                 pickingSeat = selectedSeat;
-                gui.setSubGui(new CrewSelectionMenu(source()));
+                gui.setSubGui(new CrewSelectionMenu(npc.getId(), source()));
                 return false;
             }
-            case COPY_NEXT_ID -> {
-                CrewSource source = source();
-                boolean visible = settings.isSeatVisible(selectedSeat);
-                int next = seatIndex() + 1;
-                if (next <= 0 || next >= seats.size())
-                    return false;
-                selectedSeat = seats.get(next).seat();
-                settings.setSource(selectedSeat, source);
-                settings.setSeatVisible(selectedSeat, visible);
+            case COPY_TO_ID -> {
+                gui.setSubGui(new CrewCopyMenu(copyTargets()));
+                return false;
             }
             case COPY_ALL_ID -> copyToSeats(seats);
-            case COPY_DRIVER_ID -> copyToSeats(roleTargets(CrewPost.DRIVER));
-            case COPY_PASSENGERS_ID -> copyToSeats(roleTargets(CrewPost.PASSENGER));
-            case COPY_GUNNERS_ID -> copyToSeats(roleTargets(CrewPost.GUNNER));
             case VISIBLE_ID -> settings.setSeatVisible(selectedSeat, yes);
             case SHIELDED_ID -> settings.setProtectedCrew(yes);
             case PASSENGERS_FIRE_ID -> settings.setPassengersFire(yes);
@@ -305,6 +288,27 @@ final class CrewPage implements ICustomScrollListener
         if (selection == null)
             return false;
         settings().setSource(pickingSeat, selection);
+        result = null;
+        return true;
+    }
+
+    boolean selected(CrewCopyMenu menu)
+    {
+        CrewCopyMenu.Target target = menu.selection();
+        if (target == null || !copyTargets().contains(target))
+            return false;
+        switch (target)
+        {
+            case NEXT -> {
+                int next = seats.get(seatIndex() + 1).seat();
+                settings().setSource(next, source());
+                settings().setSeatVisible(next, settings().isSeatVisible(selectedSeat));
+                selectedSeat = next;
+            }
+            case DRIVER -> copyToSeats(roleTargets(CrewPost.DRIVER));
+            case GUNNERS -> copyToSeats(roleTargets(CrewPost.GUNNER));
+            case PASSENGERS -> copyToSeats(roleTargets(CrewPost.PASSENGER));
+        }
         result = null;
         return true;
     }
