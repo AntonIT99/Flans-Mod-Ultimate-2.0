@@ -50,9 +50,9 @@ import java.util.stream.Collectors;
  * <p>
  * The overview is split into hub tabs along its top: General, Combat, Movement and Advanced list pages under section
  * headings, one column per heading, below the kind of NPC being edited, a standard NPC or a Flan model; the pages of Server
- * hold the settings of the whole server instead. Locomotion lists only pages meant for this kind, with expandable sections
- * in a scrolling viewport. Other pages are all listed, and those not meant for the kind are greyed. A page is a list of
- * rows, split into named tabs where they do not fit together, and may link to a sub-page. The title of a page is the path
+ * hold the settings of the whole server instead. Locomotion lists only pages meant for this kind; Boarding & piloting uses
+ * expandable sections in a scrolling viewport. Other pages are all listed, and those not meant for the kind are greyed.
+ * A page is a list of rows, split into named tabs where they do not fit together, and may link to a sub-page. The title of a page is the path
  * to it. The Essentials page gathers the settings most NPCs of the kind need. A row that does nothing for this NPC,
  * because of its kind or because a setting it depends on is off, keeps its control but has a grey label that says why; a
  * row that depends on another row of the same tab is indented below it. A hub tab, page or tab with settings changed from
@@ -334,7 +334,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     /**
      * A part of a page: its rows, listed top to bottom in the order given and split into columns by {@link Layout} marks,
-     * and the NPCs it is meant for. Only the tabs of a page with several are named. Locomotion uses these as inline sections
+     * and the NPCs it is meant for. Only the tabs of a page with several are named. Boarding & piloting uses these as inline sections
      * instead of tabs, with an initial expanded state.
      */
     private record Tab(String name, Scope scope, List<Object> rows, boolean expanded)
@@ -506,14 +506,14 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         MOVEMENT(Section.TRAVEL, Scope.ALL,
             Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH),
             Tab.named("movement_speed", Value.LAND_SPEED, Value.WATER_SPEED),
-            Tab.folded("movement_watercraft", Value.SUBMARINE_DEPTH),
-            new Tab("movement_flight", Scope.PLANES_AND_VEHICLES, List.of(Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED), false)),
+            Tab.named("movement_watercraft", Value.SUBMARINE_DEPTH),
+            Tab.named("movement_flight", Scope.PLANES_AND_VEHICLES, Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED)),
         VEHICLE_HANDLING(Section.TRAVEL, Scope.VEHICLES,
             Tab.named("vehicle_setup", MovementRow.CONTROLLER, Value.DRIVE_PRESET, Value.DRIVE_TYPE),
-            Tab.folded("vehicle_speed_stopping", Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE, Value.TRAFFIC_STOP_GAP),
-            Tab.folded("vehicle_steering", Value.HULL_TURN_RATE, Value.TURN_RADIUS, Value.STEERING_RESPONSE, Value.STATIONARY_TURN, Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED,
-                Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR),
-            Tab.folded("vehicle_reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE)),
+            Tab.named("vehicle_speed_stopping", Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE, Value.TRAFFIC_STOP_GAP),
+            Tab.named("vehicle_steering", Value.HULL_TURN_RATE, Value.TURN_RADIUS, Value.STEERING_RESPONSE, Value.STATIONARY_TURN),
+            Tab.named("vehicle_cornering", Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED, Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR),
+            Tab.named("vehicle_reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE)),
         BOARDING(Section.TRAVEL, Scope.STANDARD,
             Tab.named("pilot_boarding", Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES),
             Tab.folded("pilot_ground", Value.KEEP_DISTANCE),
@@ -569,7 +569,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             {
                 case EQUIPMENT, MODEL_STATS, FIRING -> WEAPONS + "ammo_hint";
                 case PROTECTION, ANIMATIONS, EFFECTS, SOUNDS -> PRESENTATION + "hint";
-                case MOVEMENT, VEHICLE_HANDLING, BOARDING -> LOCOMOTION + "hint";
+                case MOVEMENT, VEHICLE_HANDLING -> LOCOMOTION + "tabs_hint";
+                case BOARDING -> LOCOMOTION + "hint";
                 default -> TUNING + "hint";
             };
         }
@@ -649,8 +650,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         if (hasShiftDown() && settingsTooltip.scroll(delta))
             return true;
-        if (movementPage() && !hasSubGui() && mouseX >= guiLeft + 8 && mouseX < guiLeft + 404 && mouseY >= guiTop + MOVEMENT_TOP && mouseY < guiTop + MOVEMENT_TOP + MOVEMENT_VISIBLE_ROWS * ROW_HEIGHT
-            && delta != 0D)
+        if (category == Category.BOARDING && !hasSubGui() && mouseX >= guiLeft + 8 && mouseX < guiLeft + 404 && mouseY >= guiTop + MOVEMENT_TOP
+            && mouseY < guiTop + MOVEMENT_TOP + MOVEMENT_VISIBLE_ROWS * ROW_HEIGHT && delta != 0D)
         {
             scrollMovement(delta > 0D ? -1 : 1);
             return true;
@@ -842,11 +843,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return font().width(label.getString() + marker.getString()) <= width - 8 ? label.append(marker) : label;
     }
 
-    /** @return the tabs of the page; as with pages, those not meant for this kind of NPC are shown greyed */
+    /** @return the tabs of the page; those not meant for this kind of NPC are omitted for Locomotion and greyed elsewhere */
     private List<Tab> tabs(Category page)
     {
         if (page == Category.ESSENTIALS)
             return List.of(Tab.of(essentials().toArray()));
+        if (page.section == Section.TRAVEL)
+            return page.tabs.stream().filter(candidate -> candidate.scope().includes(kind)).toList();
         return page.tabs;
     }
 
@@ -985,7 +988,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** The tab buttons of a page with several tabs, the rows of the tab shown and what the page adds below them. */
     private void initPage()
     {
-        if (movementPage())
+        if (category == Category.BOARDING)
         {
             initMovementPage();
             return;
@@ -1423,15 +1426,16 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     /**
      * Lays out the rows one below the other from the given left edge; their controls share a column, at least the given
-     * one, that clears the longest label.
+     * one, that clears the longest label. Locomotion keeps the given column and clips labels to fit beside it.
      *
      * @return the left edge of that column on screen
      */
     private int initRows(List<Object> rows, int left, int top, int minimum)
     {
         int column = minimum;
-        for (Object row : rows)
-            column = Math.max(column, left + indent(row, rows) + font().width(I18n.get(labelKey(row))) + 8);
+        if (!movementPage())
+            for (Object row : rows)
+                column = Math.max(column, left + indent(row, rows) + font().width(I18n.get(labelKey(row))) + 8);
         int control = guiLeft + column;
         for (int i = 0; i < rows.size(); i++)
         {
@@ -2247,7 +2251,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** Section expansion and scrolling only change editor navigation, never the NPC's dirty flag. */
     private boolean navigateMovement(int id)
     {
-        if (!movementPage())
+        if (category != Category.BOARDING)
             return false;
         if (id >= MOVEMENT_SECTION_ID && id < MOVEMENT_SECTION_ID + category.tabs.size())
         {
