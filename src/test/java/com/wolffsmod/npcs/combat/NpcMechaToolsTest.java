@@ -15,6 +15,8 @@ import noppes.npcs.ModelData;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.data.DataInventory;
+import noppes.npcs.entity.data.DataMelee;
+import noppes.npcs.entity.data.DataStats;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -81,6 +83,13 @@ class NpcMechaToolsTest
         assertSame(second, NpcMechaTools.findSword(npc));
         assertEquals(1, second.getCount());
         npc.inventory.drops.clear();
+        assertTrue(NpcModels.meleeless(npc));
+        // Without a sword, a melee damage of its own above 0 lets it strike with its arms.
+        npc.stats = mock(DataStats.class);
+        npc.stats.melee = mock(DataMelee.class);
+        when(npc.stats.melee.getStrength()).thenReturn(8);
+        assertFalse(NpcModels.meleeless(npc));
+        when(npc.stats.melee.getStrength()).thenReturn(0);
         assertTrue(NpcModels.meleeless(npc));
     }
 

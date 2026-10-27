@@ -21,7 +21,7 @@ import net.minecraft.world.InteractionHand;
 /**
  * Uses the selected melee hand's reach, cadence and swing in the existing AI, retaining one shared cooldown and editor fallbacks. An equipped ranged weapon
  * leaves melee to within melee range, as a projectile would; any other equipped weapon fights in melee at any distance. An NPC wearing an AA gun, vehicle
- * or plane model never closes in to strike; a mecha requires a sword addon.
+ * or plane model never closes in to strike; a mecha requires a sword addon or a melee damage of its own.
  */
 @SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = EntityAIAttackTarget.class, remap = false)

@@ -33,12 +33,23 @@ public final class NpcModels
         return entity instanceof EntityCustomNpc custom && custom.modelData != null && custom.modelData.getEntity(custom) instanceof FlanModelEntity model ? model : null;
     }
 
-    /** @return whether a machine NPC has nothing to strike with; mechas require a sword addon */
+    /**
+     * @return whether a machine NPC has nothing to strike with: anything but a mecha, and a mecha with neither a sword addon
+     *         nor a melee damage above 0 of its own, with which it strikes with its arms
+     */
     public static boolean meleeless(Entity entity)
     {
         FlanModelEntity model = flan(entity);
         FlanModelKind kind = model == null ? null : FlanModelKind.of(model.getInfoType());
-        return kind != null && (kind != FlanModelKind.MECHA || entity instanceof EntityNPCInterface npc && NpcMechaTools.properties(npc).isEmpty());
+        if (kind == null)
+            return false;
+        return kind != FlanModelKind.MECHA || entity instanceof EntityNPCInterface npc && NpcMechaTools.properties(npc).isEmpty() && !strikes(npc);
+    }
+
+    /** @return whether the NPC deals melee damage, set or inherited */
+    private static boolean strikes(EntityNPCInterface npc)
+    {
+        return npc.stats != null && npc.stats.melee != null && npc.stats.melee.getStrength() > 0;
     }
 
     /** @return the factor the NPC's size setting scales its model by */
