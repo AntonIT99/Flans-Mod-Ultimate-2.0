@@ -72,7 +72,7 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
 
     public CrewSource withClass(String teamName, String className)
     {
-        return new CrewSource(kind, cloneTab, cloneName, teamName, className, team.equals(teamName) && playerClass.equals(className) ? skin : 0);
+        return new CrewSource(kind, cloneTab, cloneName, teamName, className, team.equals(teamName) && playerClass.equals(className) ? skin : RANDOM_SKIN);
     }
 
     public CrewSource withSkin(int variant)

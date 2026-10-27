@@ -154,7 +154,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         if (labels.size() == 1)
             labels.add(Component.translatable(PREFIX + "default_skin").getString());
         if (chosenSkin >= labels.size() - 1)
-            chosenSkin = 0;
+            chosenSkin = CrewSource.RANDOM_SKIN;
         // addButton replaces the ID lookup but leaves the old widget in Screen's render and input lists.
         // Update the one button made by init, including when the selected class changes.
         GuiButtonNop skin = getButton(SKIN);
@@ -260,7 +260,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
             {
                 String name = playerClasses.get(index).getShortName();
                 if (!name.equals(chosenClass))
-                    chosenSkin = 0;
+                    chosenSkin = CrewSource.RANDOM_SKIN;
                 chosenClass = name;
             }
             showSkins();
