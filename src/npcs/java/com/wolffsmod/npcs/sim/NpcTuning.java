@@ -150,7 +150,9 @@ public final class NpcTuning
         /** Fastest climb of a plane or helicopter in tenths of a block per second; 0 takes its model's climb rate, or its default. */
         CLIMB_RATE(0, 0, 600),
         /** Fastest a submarine dives and surfaces, in tenths of a block per second; 0 keeps the default. */
-        DIVE_RATE(0, 0, 600);
+        DIVE_RATE(0, 0, 600),
+        /** Speed of a plane with nothing to fight in tenths of a block per second; 0 takes just above the least its model flies at. */
+        CRUISE_SPEED(0, 0, 600);
 
         private final int fallback;
         private final int minimum;

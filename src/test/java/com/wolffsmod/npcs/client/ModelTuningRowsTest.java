@@ -75,7 +75,7 @@ class ModelTuningRowsTest
             assertEquals(List.of(Row.LAND_SPEED, Row.STEP_HEIGHT), ModelTuningRows.rows(npc, Group.DRIVING));
             assertEquals(List.of(Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
             model(npc, models, kinds, FlanModelKind.PLANE);
-            assertEquals(List.of(Row.FLIGHT_SPEED, Row.CLIMB_RATE), ModelTuningRows.rows(npc, Group.DRIVING));
+            assertEquals(List.of(Row.FLIGHT_SPEED, Row.CRUISE_SPEED, Row.CLIMB_RATE), ModelTuningRows.rows(npc, Group.DRIVING));
             assertEquals(List.of(Row.FLIGHT_TURN_RATE, Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
             model(npc, models, kinds, FlanModelKind.AA_GUN);
             assertFalse(ModelTuningRows.visible(npc, Group.DRIVING));
@@ -138,6 +138,7 @@ class ModelTuningRowsTest
         {
             case LAND_SPEED -> Value.LAND_SPEED;
             case FLIGHT_SPEED -> Value.FLIGHT_SPEED;
+            case CRUISE_SPEED -> Value.CRUISE_SPEED;
             case CLIMB_RATE -> Value.CLIMB_RATE;
             case STEP_HEIGHT -> Value.STEP_HEIGHT;
             case FLIGHT_TURN_RATE -> Value.FLIGHT_TURN_RATE;

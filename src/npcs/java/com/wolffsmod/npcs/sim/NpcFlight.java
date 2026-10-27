@@ -37,9 +37,9 @@ import java.util.Optional;
  * nose on the target, as its fixed guns need; a bomber flies over its target level. A helicopter may hover and turns its hull
  * toward its target.
  * Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. An aircraft model
- * flies at its definition's speeds, climb rate and control rates: a plane builds up to its top speed, gains speed in a dive
- * and loses it in a climb, never below the speed it needs to fly, and turns as tightly as its steepest bank allows at its
- * speed. One instance per NPC, server side.
+ * flies at its definition's speeds, climb rate and control rates: a plane with nothing to fight cruises just above the speed
+ * it needs to fly and builds up to its top speed to fight, gains speed in a dive and loses it in a climb, never below the
+ * speed it needs to fly, and turns as tightly as its steepest bank allows at its speed. One instance per NPC, server side.
  * </p>
  */
 public final class NpcFlight
@@ -74,8 +74,10 @@ public final class NpcFlight
     /** Blocks per tick a plane climbs at most, and a helicopter, without a climb rate of their own. */
     static final double PLANE_CLIMB = 0.24D;
     static final double HELICOPTER_CLIMB = 0.30D;
-    /** Share of the gap to its top speed a plane flying its model closes each tick at full throttle. */
+    /** Share of the gap to the speed it is throttled to that a plane flying its model closes each tick. */
     static final double THRUST_RESPONSE = 0.02D;
+    /** How far above the least speed its model flies at a plane with nothing to fight cruises, so that a climb does not hold it at that speed. */
+    static final double CRUISE_MARGIN = 1.1D;
     /** Speed a plane gains per tick per unit of the sine of its dive, as gravity pulls it along its flight path. */
     static final double PATH_GRAVITY = 0.098D;
     /** Fastest a plane flying its model turns, in degrees per tick, however slow it is. */
@@ -288,7 +290,7 @@ public final class NpcFlight
             orbitTicks = 0;
         }
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
-        double speed = flightSpeed(tuning.get(Value.FLIGHT_SPEED), model, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
+        double speed = flightSpeed(tuning, model, target == null, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
         float before = yaw;
         yaw = MountMotion.turn(yaw, wanted, planeTurn(tuning.get(Value.FLIGHT_TURN_RATE), speed, loiterRadius(npc), model != null));
         float wantedBank = Mth.clamp(Mth.wrapDegrees(yaw - before) * BANK_PER_TURN, -MAX_BANK, MAX_BANK);
@@ -314,19 +316,35 @@ public final class NpcFlight
     }
 
     /**
-     * @param tenthsPerSecond
-     *            the plane speed setting; 0 for none
+     * @param idle
+     *            whether the plane has nothing to fight, and cruises
      * @param measured
      *            blocks per tick the plane flew along its flight path during the last tick
-     * @return blocks per tick the plane flies at this tick: its set speed, the airspeed its model builds up, or its own
-     *         between stall and top speed
+     * @return blocks per tick the plane flies at this tick: its set cruise or plane speed, the airspeed its model builds up
+     *         toward its cruise or top speed, or its own between stall and top speed
      */
-    private double flightSpeed(int tenthsPerSecond, @Nullable FlightPerformance model, double measured)
+    private double flightSpeed(NpcTuning tuning, @Nullable FlightPerformance model, boolean idle, double measured)
     {
-        if (tenthsPerSecond > 0 || model == null)
-            return planeSpeed(tenthsPerSecond, measured);
-        airspeed = modelSpeed(airspeed > 0D ? airspeed : measured, model.minimumSpeed(), model.topSpeed(), pitch);
+        int set = tuning.get(Value.FLIGHT_SPEED);
+        int cruise = idle ? tuning.get(Value.CRUISE_SPEED) : 0;
+        if (model == null || (set > 0 && cruise == 0))
+            return planeSpeed(cruise > 0 ? cruise : set, measured);
+        double throttle = idle ? cruiseSpeed(cruise, model) : model.topSpeed();
+        airspeed = modelSpeed(airspeed > 0D ? airspeed : measured, model.minimumSpeed(), throttle, model.topSpeed(), pitch);
         return airspeed;
+    }
+
+    /**
+     * @param tenthsPerSecond
+     *            the cruise speed setting; 0 for none
+     * @return blocks per tick a plane flying its model cruises at with nothing to fight: its cruise speed setting, or just above
+     *         the least speed it flies at; never below that speed nor above its top speed
+     */
+    public static double cruiseSpeed(int tenthsPerSecond, FlightPerformance model)
+    {
+        double top = model.topSpeed();
+        double cruise = tenthsPerSecond > 0 ? tenthsPerSecond / 200D : Math.max(STALL_SPEED, model.minimumSpeed() * CRUISE_MARGIN);
+        return Mth.clamp(cruise, Math.min(model.minimumSpeed(), top), top);
     }
 
     /** Unlimited roaming follows the local wander direction instead of steering back toward home. */
@@ -465,16 +483,18 @@ public final class NpcFlight
      *            blocks per tick it flies at now
      * @param minimum
      *            least it flies at, below which its wing no longer carries it
+     * @param throttle
+     *            speed it is throttled to fly level at: its top speed at full throttle, its cruise speed when idle
      * @param top
      *            fastest it flies level at full throttle
      * @param pitch
      *            degrees its nose points below the horizon, negative above it
-     * @return blocks per tick a plane flying its model flies at next: building up to its top speed, faster in a dive and slower
-     *         in a climb, never below the least it flies at nor above its top speed
+     * @return blocks per tick a plane flying its model flies at next: building up or slowing down to the speed it is
+     *         throttled to, faster in a dive and slower in a climb, never below the least it flies at nor above its top speed
      */
-    static double modelSpeed(double current, double minimum, double top, float pitch)
+    static double modelSpeed(double current, double minimum, double throttle, double top, float pitch)
     {
-        double next = current + (top - current) * THRUST_RESPONSE + PATH_GRAVITY * Math.sin(Math.toRadians(pitch));
+        double next = current + (throttle - current) * THRUST_RESPONSE + PATH_GRAVITY * Math.sin(Math.toRadians(pitch));
         return Mth.clamp(next, Math.min(minimum, top), top);
     }
 

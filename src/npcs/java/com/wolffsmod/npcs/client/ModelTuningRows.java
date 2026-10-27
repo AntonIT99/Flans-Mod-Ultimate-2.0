@@ -54,6 +54,7 @@ final class ModelTuningRows
         // spotless:off
         LAND_SPEED(Group.DRIVING, Value.LAND_SPEED),
         FLIGHT_SPEED(Group.DRIVING, Value.FLIGHT_SPEED),
+        CRUISE_SPEED(Group.DRIVING, Value.CRUISE_SPEED),
         CLIMB_RATE(Group.DRIVING, Value.CLIMB_RATE),
         REVERSE_SPEED(Group.DRIVING, Value.DRIVE_REVERSE_SPEED),
         ACCELERATION(Group.DRIVING, Value.DRIVE_ACCELERATION),
@@ -90,7 +91,7 @@ final class ModelTuningRows
             {
                 case TRAVERSE, ELEVATION -> true;
                 case LAND_SPEED, STEP_HEIGHT -> kind == FlanModelKind.VEHICLE || kind == FlanModelKind.MECHA;
-                case FLIGHT_SPEED, CLIMB_RATE, FLIGHT_TURN_RATE -> kind == FlanModelKind.PLANE;
+                case FLIGHT_SPEED, CRUISE_SPEED, CLIMB_RATE, FLIGHT_TURN_RATE -> kind == FlanModelKind.PLANE;
                 default -> kind == FlanModelKind.VEHICLE;
             };
         }

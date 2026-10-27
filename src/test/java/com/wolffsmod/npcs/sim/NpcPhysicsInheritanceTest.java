@@ -1,10 +1,13 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.sim.NpcTuning.Flight;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import org.junit.jupiter.api.Test;
+
+import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -45,18 +48,39 @@ class NpcPhysicsInheritanceTest
     @Test
     void aPlaneFlyingItsModelBuildsUpToItsTopSpeedGainsInADiveAndNeverStalls()
     {
-        double level = NpcFlight.modelSpeed(0.5D, 0.3D, 1.5D, 0F);
+        double level = NpcFlight.modelSpeed(0.5D, 0.3D, 1.5D, 1.5D, 0F);
         assertEquals(0.5D + 1D * NpcFlight.THRUST_RESPONSE, level, 1.0E-9D);
-        assertTrue(NpcFlight.modelSpeed(0.5D, 0.3D, 1.5D, 30F) > level);
-        assertTrue(NpcFlight.modelSpeed(0.5D, 0.3D, 1.5D, -30F) < level);
-        assertEquals(0.3D, NpcFlight.modelSpeed(0.3D, 0.3D, 1.5D, -45F), 1.0E-9D);
-        assertEquals(1.5D, NpcFlight.modelSpeed(1.5D, 0.3D, 1.5D, 45F), 1.0E-9D);
+        assertTrue(NpcFlight.modelSpeed(0.5D, 0.3D, 1.5D, 1.5D, 30F) > level);
+        assertTrue(NpcFlight.modelSpeed(0.5D, 0.3D, 1.5D, 1.5D, -30F) < level);
+        assertEquals(0.3D, NpcFlight.modelSpeed(0.3D, 0.3D, 1.5D, 1.5D, -45F), 1.0E-9D);
+        assertEquals(1.5D, NpcFlight.modelSpeed(1.5D, 0.3D, 1.5D, 1.5D, 45F), 1.0E-9D);
         // A least flying speed above the top speed cannot hold it above its top speed.
-        assertEquals(1D, NpcFlight.modelSpeed(0.5D, 2D, 1D, 0F), 1.0E-9D);
+        assertEquals(1D, NpcFlight.modelSpeed(0.5D, 2D, 1D, 1D, 0F), 1.0E-9D);
         double speed = 0.3D;
         for (int tick = 0; tick < 2000; tick++)
-            speed = NpcFlight.modelSpeed(speed, 0.3D, 1.5D, 0F);
+            speed = NpcFlight.modelSpeed(speed, 0.3D, 1.5D, 1.5D, 0F);
         assertEquals(1.5D, speed, 1.0E-6D);
+    }
+
+    @Test
+    void aPlaneWithNothingToFightThrottlesBackToJustAboveTheSpeedItNeedsToFly()
+    {
+        FlightPerformance legacy = new FlightPerformance(2D, 0.5D, OptionalDouble.empty(), 1D, 1D, false, false);
+        assertEquals(0.5D * NpcFlight.CRUISE_MARGIN, NpcFlight.cruiseSpeed(0, legacy), 1.0E-9D);
+        // A set cruise speed holds, but never below the least it flies at nor above its top speed.
+        assertEquals(1D, NpcFlight.cruiseSpeed(200, legacy), 1.0E-9D);
+        assertEquals(0.5D, NpcFlight.cruiseSpeed(20, legacy), 1.0E-9D);
+        assertEquals(2D, NpcFlight.cruiseSpeed(600, legacy), 1.0E-9D);
+        // A model that needs no speed to fly still cruises at the least speed a plane keeps.
+        assertEquals(NpcFlight.STALL_SPEED, NpcFlight.cruiseSpeed(0, new FlightPerformance(2D, 0D, OptionalDouble.empty(), 1D, 1D, false, false)), 1.0E-9D);
+        // From its top speed it slows down to its cruise speed and settles there.
+        double cruise = NpcFlight.cruiseSpeed(0, legacy);
+        double speed = 2D;
+        for (int tick = 0; tick < 2000; tick++)
+            speed = NpcFlight.modelSpeed(speed, 0.5D, cruise, 2D, 0F);
+        assertEquals(cruise, speed, 1.0E-6D);
+        // A climb slows it no further than the least it flies at.
+        assertEquals(0.5D, NpcFlight.modelSpeed(0.5D, 0.5D, cruise, 2D, -30F), 1.0E-9D);
     }
 
     @Test

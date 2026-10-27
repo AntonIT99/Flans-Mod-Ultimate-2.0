@@ -42,8 +42,8 @@ final class GroundHandlingControls
             // Any other NPC keeps the plain field, whose 0 is its walking speed.
             case LAND_SPEED -> NpcMobility.modelSpeed(npc).isPresent();
             case STEP_HEIGHT -> NpcMobility.modelStepHeight(npc).isPresent();
-            // An aircraft model offers its speed, turn and climb; anything else keeps the plain field and its default.
-            case FLIGHT_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE -> NpcFlight.performance(npc).isPresent();
+            // An aircraft model offers its speeds, turn and climb; anything else keeps the plain field and its default.
+            case FLIGHT_SPEED, CRUISE_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE -> NpcFlight.performance(npc).isPresent();
             default -> false;
         };
     }
@@ -85,7 +85,7 @@ final class GroundHandlingControls
             return NpcVehicleState.modelAimStep(npc, value == Value.AIM_SPEED_PITCH) * 20D;
         if (value == Value.STEP_HEIGHT)
             return NpcMobility.modelStepHeight(npc).orElse(0D) * 10D;
-        if (value == Value.FLIGHT_SPEED || value == Value.FLIGHT_TURN_RATE || value == Value.CLIMB_RATE)
+        if (value == Value.FLIGHT_SPEED || value == Value.CRUISE_SPEED || value == Value.FLIGHT_TURN_RATE || value == Value.CLIMB_RATE)
             return flight(npc, value);
         NpcDriving.Settings settings = NpcDriving.settings(npc);
         return switch (value)
@@ -108,6 +108,7 @@ final class GroundHandlingControls
         return switch (value)
         {
             case FLIGHT_SPEED -> model.topSpeed() * 200D;
+            case CRUISE_SPEED -> NpcFlight.cruiseSpeed(0, model) * 200D;
             case FLIGHT_TURN_RATE -> NpcFlight.modelTurnRate(model);
             default -> NpcFlight.maxClimb(NpcTuning.of(npc), model, model.rotorcraft() ? NpcTuning.Flight.HELICOPTER : NpcTuning.Flight.PLANE) * 200D;
         };
@@ -160,7 +161,7 @@ final class GroundHandlingControls
     {
         return switch (value)
         {
-            case LAND_SPEED, STEP_HEIGHT, FLIGHT_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE, AIM_SPEED_YAW, AIM_SPEED_PITCH -> false;
+            case LAND_SPEED, STEP_HEIGHT, FLIGHT_SPEED, CRUISE_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE, AIM_SPEED_YAW, AIM_SPEED_PITCH -> false;
             default -> true;
         };
     }
