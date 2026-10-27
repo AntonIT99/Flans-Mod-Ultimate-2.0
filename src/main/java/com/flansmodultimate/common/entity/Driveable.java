@@ -5033,6 +5033,20 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return targets;
     }
 
+    /** Operator repair bypasses part dependencies so even destroyed child parts are restored in one pass. */
+    public boolean repairAllParts()
+    {
+        if (level().isClientSide || driveableData == null || destroyed)
+            return false;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            part.repair(part.getMaxHealth());
+            part.extinguish();
+        }
+        destroyedParts.clear();
+        return true;
+    }
+
     public boolean repairFromTool(@NotNull Player player, int amount)
     {
         if (level().isClientSide || amount <= 0 || driveableData == null || !canPlayerAccess(player))

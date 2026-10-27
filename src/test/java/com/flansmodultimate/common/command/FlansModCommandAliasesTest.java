@@ -27,6 +27,28 @@ import static org.mockito.Mockito.*;
 
 class FlansModCommandAliasesTest
 {
+    @Test
+    void repairRequiresOperatorAndRepairsTheRiddenDriveable() throws Exception
+    {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        RepairDriveableCommand.register(dispatcher);
+        CommandSourceStack operator = source(true);
+        var player = mock(net.minecraft.server.level.ServerPlayer.class);
+        var seat = mock(com.flansmodultimate.common.entity.Seat.class);
+        var driveable = mock(com.flansmodultimate.common.entity.Driveable.class);
+        when(operator.getPlayerOrException()).thenReturn(player);
+        when(player.getVehicle()).thenReturn(seat);
+        when(seat.getDriveable()).thenReturn(driveable);
+        when(driveable.repairAllParts()).thenReturn(true);
+
+        assertThrows(CommandSyntaxException.class, () -> dispatcher.execute("flansmodultimate repair", source(false)));
+        verify(driveable, never()).repairAllParts();
+        assertEquals(1, dispatcher.execute("flansmodultimate repair", operator));
+        verify(driveable).repairAllParts();
+        when(player.getVehicle()).thenReturn(null);
+        assertEquals(0, dispatcher.execute("flansmodultimate repair", operator));
+    }
+
     @BeforeAll
     static void bootstrapRegistries()
     {

@@ -116,6 +116,7 @@ public final class CommonEventHandler
         GunAttachmentsCommand.register(event.getDispatcher());
         FlansModHelpCommand.register(event.getDispatcher());
         RearmCommand.register(event.getDispatcher());
+        RepairDriveableCommand.register(event.getDispatcher());
         ShootPointDebugCommand.register(event.getDispatcher());
         HitboxDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());

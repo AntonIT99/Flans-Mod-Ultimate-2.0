@@ -32,6 +32,7 @@ public final class FlansModHelpCommand
         new Topic("admin", "Server administration", "Find entities, change physics and spawn particles", true,
             List.of(new Entry("entities list", "Find Flan entities", "radius <radius> | dimension <dimension> | world", "", true),
                 new Entry("entities remove", "Remove Flan entities", "[force] radius <radius> | [force] dimension <dimension> | [force] world", "", true),
+                new Entry("repair", "Fully repair every driveable part", "[target]", "", true),
                 new Entry("physics", "Inspect dimension physics", "[gravity | drag] [<dimension> [<factor> | reset]]", "/flansphysics", true),
                 new Entry("particle", "Spawn a mod particle", "<name> [<pos> [<delta> <speed> <count> ...]]", "/fmparticle", true))),
         new Topic("debug", "Vehicle diagnostics", "Inspect physics, edit hitboxes and shoot points", true,
