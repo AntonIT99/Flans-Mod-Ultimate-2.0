@@ -560,7 +560,8 @@ public final class PosedModelVisual implements VehicleVisual, PlaneVisual, Mecha
             prevPitch = pitch;
             if (aim != null)
             {
-                yaw = aim.yaw();
+                // An aircraft model turns its seat guns positive to the left, as its seats state their yaw; an aim turns right.
+                yaw = type instanceof PlaneType ? -aim.yaw() : aim.yaw();
                 pitch = aim.pitch();
             }
             else if (isDriverSeat())

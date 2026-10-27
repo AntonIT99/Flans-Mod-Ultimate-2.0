@@ -108,22 +108,30 @@ public final class EntityTypePropertySupport
         List<WeaponMount> mounts = new ArrayList<>();
         for (SeatInfo seat : driveable.getSeats())
         {
-            if (seat == null)
-                continue;
-            float yawSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().x), 0.25F, 45F);
-            float pitchSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().y), 0.25F, 45F);
-            boolean onTurret = EnumDriveablePart.isTurretMounted(seat.getPart());
-            Vec3 position = LegacyDriveableCoordinates.toLocal(seat.getPosition());
-            // As Driveable seats a rider: RotatedOffset always turns with the turret, TurretOriginOffset only for turret seats.
-            Vec3 turretOffset = LegacyDriveableCoordinates.toLocal(seat.getRotatedOffset());
-            if (onTurret && driveable.getTurretOriginOffset() != null)
-                turretOffset = turretOffset.add(LegacyDriveableCoordinates.toLocal(driveable.getTurretOriginOffset()));
-            // Seats state pitch positive upwards, as the seat clamps it; a mount's pitch is positive downwards.
-            mounts.add(new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(seat.getMinYaw(), -seat.getMaxPitch()), new MountAim(seat.getMaxYaw(), -seat.getMinPitch()), yawSpeed,
-                pitchSpeed, position, onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset));
+            if (seat != null)
+                mounts.add(seatMount(driveable, seat));
         }
         mounts.sort(Comparator.comparingInt(WeaponMount::seat));
         return List.copyOf(mounts);
+    }
+
+    private static WeaponMount seatMount(DriveableType driveable, SeatInfo seat)
+    {
+        float yawSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().x), 0.25F, 45F);
+        float pitchSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().y), 0.25F, 45F);
+        boolean onTurret = EnumDriveablePart.isTurretMounted(seat.getPart());
+        Vec3 position = LegacyDriveableCoordinates.toLocal(seat.getPosition());
+        // As Driveable seats a rider: RotatedOffset always turns with the turret, TurretOriginOffset only for turret seats.
+        Vec3 turretOffset = LegacyDriveableCoordinates.toLocal(seat.getRotatedOffset());
+        if (onTurret && driveable.getTurretOriginOffset() != null)
+            turretOffset = turretOffset.add(LegacyDriveableCoordinates.toLocal(driveable.getTurretOriginOffset()));
+        // Seats state pitch positive upwards, as the seat clamps it; a mount's pitch is positive downwards. An aircraft's
+        // seats state yaw positive to the left, as its model turns its seat guns; a mount's yaw is positive to the right.
+        boolean left = driveable instanceof PlaneType;
+        float minimumYaw = left ? -seat.getMaxYaw() : seat.getMinYaw();
+        float maximumYaw = left ? -seat.getMinYaw() : seat.getMaxYaw();
+        return new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(minimumYaw, -seat.getMaxPitch()), new MountAim(maximumYaw, -seat.getMinPitch()), yawSpeed, pitchSpeed, position,
+            onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset);
     }
 
     public static Optional<EngineSound> engineSound(IContentType type)
