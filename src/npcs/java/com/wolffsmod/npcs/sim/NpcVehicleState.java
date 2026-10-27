@@ -969,10 +969,16 @@ public final class NpcVehicleState
      */
     public float seatFacing(WeaponMount seat)
     {
-        float frame = seat.onTurret() ? hullYaw + turretYaw : hullYaw;
+        float frame = seatFrameYaw(seat);
         if (!seat.driver() && seat.gun().isPresent())
             return frame + seatAim(seat.seat()).yaw();
         return frame;
+    }
+
+    /** @return the yaw the body of a seat's occupant keeps: ahead of the hull, or of the turret it sits on */
+    public float seatFrameYaw(WeaponMount seat)
+    {
+        return seat.onTurret() ? hullYaw + turretYaw : hullYaw;
     }
 
     /** @return blocks from the NPC's middle to the farthest side of its model, across the ground; 0 without a model */

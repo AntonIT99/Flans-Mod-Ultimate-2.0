@@ -184,11 +184,11 @@ public final class NpcCrew
             if (CrewPost.of(seat.get()) == CrewPost.DRIVER)
             {
                 // The driver looks where the vehicle looks, so it appears to steer it
-                face(living, state.seatFacing(seat.get()), vehicle.getYHeadRot());
+                face(living, state.seatFrameYaw(seat.get()), vehicle.getYHeadRot());
                 living.setXRot(vehicle.getXRot());
             }
             else
-                face(living, state.seatFacing(seat.get()), living.getYHeadRot());
+                face(living, state.seatFrameYaw(seat.get()), living.getYHeadRot());
         }
         return true;
     }

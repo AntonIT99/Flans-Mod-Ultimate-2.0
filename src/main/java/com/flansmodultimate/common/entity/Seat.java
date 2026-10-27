@@ -173,6 +173,8 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
      * </p>
      */
     private static final double MECHA_COCKPIT_RIDING_OFFSET = -0.05D;
+    /** Degrees a rider that is not a player may turn its head away from where its seat faces. */
+    private static final float RIDER_HEAD_TURN = 75F;
 
     @Getter @Nullable
     protected Driveable driveable;
@@ -693,6 +695,22 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         move.accept(passenger, riderPosition.x, riderPosition.y, riderPosition.z);
         passenger.setDeltaMovement(driveable == null ? Vec3.ZERO : driveable.getDeltaMovement());
         passenger.fallDistance = 0F;
+        if (driveable != null && passenger instanceof LivingEntity living && !(passenger instanceof Player))
+            alignRider(living, driveable);
+    }
+
+    /**
+     * Keeps the body of a rider that is not a player, such as an NPC crew member, along its seat: ahead of the driveable,
+     * or of the turret for a seat on it. Its head still looks where its AI looks, as far as a seated body can turn it.
+     * Players turn their own bodies on their client.
+     */
+    private void alignRider(LivingEntity rider, Driveable parent)
+    {
+        float facing = parent.getMountedViewAngles(parent.getSeatAimFrameYaw(this, 1F), 0F).yaw();
+        rider.yBodyRot += Mth.wrapDegrees(facing - rider.yBodyRot);
+        float head = rider.yBodyRot + Mth.clamp(Mth.wrapDegrees(rider.getYHeadRot() - rider.yBodyRot), -RIDER_HEAD_TURN, RIDER_HEAD_TURN);
+        rider.setYHeadRot(head);
+        rider.setYRot(head);
     }
 
     public double getPassengerRidingOffset(@NotNull Entity passenger)
