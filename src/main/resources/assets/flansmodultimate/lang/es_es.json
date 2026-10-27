@@ -72,6 +72,8 @@
   "gui.flansmodultimate.driveable.repair": "Reparar",
   "gui.flansmodultimate.driveable.repairing": "Reparando: %s s",
   "gui.flansmodultimate.driveable.requires": "Requiere",
+  "gui.flansmodultimate.driveable.tool_repair": "Reparando %1$s %2$s %3$s%%  |  Total %4$s%%",
+  "gui.flansmodultimate.driveable.tool_repaired": "%1$s reparado  |  Total %2$s%%",
   "gui.flansmodultimate.editor.add_class": "Añadir clase",
   "gui.flansmodultimate.editor.add_texture": "Add texture ID",
   "gui.flansmodultimate.editor.advanced": "Advanced",

@@ -184,6 +184,15 @@ public final class FlansRepairs
             .stream().flatMap(entity -> toolHits(entity, start, end.subtract(start))).min(Comparator.comparingDouble(ToolHit::fraction)).map(ToolHit::entity);
     }
 
+    /** Where a world-space tool ray first meets one driveable or part-body target, including destroyed parts, or empty when it misses. Either side. */
+    public static Optional<Vec3> toolHitPoint(Entity target, Vec3 start, Vec3 end)
+    {
+        if (!(target instanceof IFlanRepairTarget || target instanceof Driveable))
+            return Optional.empty();
+        Vec3 motion = end.subtract(start);
+        return toolHits(target, start, motion).min(Comparator.comparingDouble(ToolHit::fraction)).map(hit -> start.add(motion.scale(hit.fraction())));
+    }
+
     private static java.util.stream.Stream<ToolHit> toolHits(Entity entity, Vec3 origin, Vec3 motion)
     {
         if (entity instanceof Driveable driveable)

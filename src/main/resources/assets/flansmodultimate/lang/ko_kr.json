@@ -72,6 +72,8 @@
   "gui.flansmodultimate.driveable.repair": "수리",
   "gui.flansmodultimate.driveable.repairing": "\uc218\ub9ac \uc911: %s s",
   "gui.flansmodultimate.driveable.requires": "필요",
+  "gui.flansmodultimate.driveable.tool_repair": "수리 중 %1$s %2$s %3$s%%  |  전체 %4$s%%",
+  "gui.flansmodultimate.driveable.tool_repaired": "%1$s 수리 완료  |  전체 %2$s%%",
   "gui.flansmodultimate.editor.add_class": "병과 추가",
   "gui.flansmodultimate.editor.add_texture": "Add texture ID",
   "gui.flansmodultimate.editor.advanced": "Advanced",

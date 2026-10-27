@@ -72,6 +72,8 @@
   "gui.flansmodultimate.driveable.repair": "修理",
   "gui.flansmodultimate.driveable.repairing": "\u4fee\u7406\u4e2d: %s s",
   "gui.flansmodultimate.driveable.requires": "必要",
+  "gui.flansmodultimate.driveable.tool_repair": "修理中 %1$s %2$s %3$s%%  |  全体 %4$s%%",
+  "gui.flansmodultimate.driveable.tool_repaired": "%1$s 修理完了  |  全体 %2$s%%",
   "gui.flansmodultimate.editor.add_class": "クラスを追加",
   "gui.flansmodultimate.editor.add_texture": "Add texture ID",
   "gui.flansmodultimate.editor.advanced": "Advanced",

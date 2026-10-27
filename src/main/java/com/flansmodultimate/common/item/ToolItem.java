@@ -3,6 +3,7 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.api.parts.FlansRepairs;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.driveables.RepairToolFeedback;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.ToolType;
@@ -18,6 +19,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -102,18 +104,7 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
 
         // Heal driveables
         if (configType.isHealDriveables())
-        {
-            if (level.isClientSide)
-                return InteractionResultHolder.success(stack);
-
-            Entity driveable = FlansRepairs.toolTarget(player, start, end).orElseGet(() -> pickDriveableTarget(level, player, start, end));
-            if (driveable != null && FlansRepairs.useTool(player, driveable, stack))
-            {
-                spawnRepairParticles(level, driveable);
-                return InteractionResultHolder.consume(stack);
-            }
-            return InteractionResultHolder.pass(stack);
-        }
+            return level.isClientSide ? InteractionResultHolder.success(stack) : doRepairDriveable(level, player, stack, start, end);
 
         // Heal players
         if (configType.isHealPlayers())
@@ -147,15 +138,22 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
         return InteractionResultHolder.pass(stack);
     }
 
+    protected InteractionResultHolder<ItemStack> doRepairDriveable(Level level, Player player, ItemStack stack, Vec3 start, Vec3 end)
+    {
+        Entity driveable = FlansRepairs.toolTarget(player, start, end).orElseGet(() -> pickDriveableTarget(level, player, start, end));
+        if (driveable == null)
+            return InteractionResultHolder.pass(stack);
+        List<RepairToolFeedback.PartHealth> before = RepairToolFeedback.parts(driveable);
+        if (!FlansRepairs.useTool(player, driveable, stack))
+            return InteractionResultHolder.pass(stack);
+        if (player instanceof ServerPlayer serverPlayer)
+            RepairToolFeedback.show(serverPlayer, driveable, before, start, end);
+        return InteractionResultHolder.consume(stack);
+    }
+
     protected void spawnHealParticles(Level level, LivingEntity target)
     {
         Vec3 particlePos = target.position();
-        PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());
-    }
-
-    protected void spawnRepairParticles(Level level, Entity target)
-    {
-        Vec3 particlePos = target.position().add(0D, target.getBbHeight() * 0.5D, 0D);
         PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());
     }
 

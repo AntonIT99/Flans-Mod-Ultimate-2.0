@@ -72,6 +72,8 @@
   "gui.flansmodultimate.driveable.repair": "Ремонт",
   "gui.flansmodultimate.driveable.repairing": "\u0420\u0435\u043c\u043e\u043d\u0442: %s s",
   "gui.flansmodultimate.driveable.requires": "Требуется",
+  "gui.flansmodultimate.driveable.tool_repair": "Ремонт %1$s %2$s %3$s%%  |  Всего %4$s%%",
+  "gui.flansmodultimate.driveable.tool_repaired": "%1$s: ремонт завершён  |  Всего %2$s%%",
   "gui.flansmodultimate.editor.add_class": "Добавить класс",
   "gui.flansmodultimate.editor.add_texture": "Add texture ID",
   "gui.flansmodultimate.editor.advanced": "Advanced",
