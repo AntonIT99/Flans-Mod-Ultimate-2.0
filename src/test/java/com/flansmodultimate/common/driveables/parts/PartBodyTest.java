@@ -51,6 +51,13 @@ class PartBodyTest
         return (PartBodyHit) hits.get(0);
     }
 
+    /** @return the height at which a round falling at the given Z on the body's centre line strikes the core */
+    private static double coreTop(PartBody body, double z)
+    {
+        return body.trace(null, new Vec3(10D, 70D, z), new Vec3(0D, -10D, 0D)).stream().map(PartBodyHit.class::cast).filter(hit -> hit.getPart() == EnumDriveablePart.CORE).findFirst().orElseThrow()
+            .getHitPosition().y;
+    }
+
     /** Where the drawn model puts a point of its preview frame: scaled, then turned by 180 degrees less its yaw. */
     private static Vec3 drawn(Vec3 point, PartBodyPose pose)
     {
@@ -92,6 +99,30 @@ class PartBodyTest
                 assertTrue(body.trace(null, mirrored.add(0D, 5D, 0D), new Vec3(0D, -3.9D, 0D)).isEmpty(), "yaw " + yaw + " scale " + scale);
             }
         }
+    }
+
+    @Test
+    void boxesPitchAndBankWithTheModel()
+    {
+        PartBody body = body();
+        for (float[] tilt : new float[][]{{30F, 0F}, {0F, 40F}, {-20F, -35F}})
+        {
+            PartBodyPose pose = new PartBodyPose(ORIGIN, 37F, tilt[0], tilt[1], 1.5F, MountAim.REST);
+            body.setPose(pose);
+            Vec3[] corners = body.outlines().get(0).corners();
+            // The first outline is the core, from -1 to 1 wide, 0 to 1 high and -2 to 2 long; a model is drawn banked about its length, then pitched nose down about its width.
+            for (int index = 0; index < 8; index++)
+            {
+                Vec3 corner = new Vec3((index & 1) == 0 ? -1D : 1D, (index & 2) == 0 ? 0D : 1D, (index & 4) == 0 ? -2D : 2D);
+                Vec3 tilted = corner.zRot((float) Math.toRadians(tilt[1])).xRot((float) Math.toRadians(-tilt[0]));
+                Vec3 expected = drawn(tilted, pose).subtract(ORIGIN);
+                // Vec3 turns by the sine table of Mth, which is only good to about 1.0E-4.
+                assertTrue(Arrays.stream(corners).anyMatch(drawnCorner -> drawnCorner.distanceToSqr(expected) < 1.0E-5D), "pitch " + tilt[0] + " roll " + tilt[1] + " corner " + corner);
+            }
+        }
+        // Nose up, the front of the hull stands higher than its back.
+        body.setPose(new PartBodyPose(ORIGIN, 0F, 30F, 0F, 1F, MountAim.REST));
+        assertTrue(coreTop(body, 11.5D) > coreTop(body, 8.5D) + 1D);
     }
 
     @Test

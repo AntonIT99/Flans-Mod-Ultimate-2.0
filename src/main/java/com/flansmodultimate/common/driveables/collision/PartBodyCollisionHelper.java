@@ -100,6 +100,10 @@ public final class PartBodyCollisionHelper
      *            world position of the model origin
      * @param yaw
      *            the vanilla yaw the model faces
+     * @param pitch
+     *            degrees the nose is raised, as a driveable pitches
+     * @param roll
+     *            degrees the model is banked to the right, as a driveable rolls
      * @param scale
      *            factor the model is drawn larger or smaller by
      * @param turretPivot
@@ -111,8 +115,8 @@ public final class PartBodyCollisionHelper
      */
     // Every argument is one fact of the pose; a holder would only be built to be taken apart again.
     @SuppressWarnings("java:S107")
-    public void tick(Map<EnumDriveablePart, CollisionBox> boxes, int signature, Vec3 origin, float yaw, float scale, float turretYaw, float turretPitch, Vec3 turretPivot, Vec3 turretOffset,
-        Predicate<EnumDriveablePart> standing)
+    public void tick(Map<EnumDriveablePart, CollisionBox> boxes, int signature, Vec3 origin, float yaw, float pitch, float roll, float scale, float turretYaw, float turretPitch, Vec3 turretPivot,
+        Vec3 turretOffset, Predicate<EnumDriveablePart> standing)
     {
         if (!isLive())
         {
@@ -129,7 +133,7 @@ public final class PartBodyCollisionHelper
         boolean continuous = !rebuilt && lastTick == owner.tickCount - 1 && lastOrigin.distanceToSqr(origin) <= MAX_CARRY * MAX_CARRY;
         lastTick = owner.tickCount;
         lastOrigin = origin;
-        pose(current, origin, yaw, scale, turretYaw, turretPitch, turretPivot, turretOffset, standing, continuous);
+        pose(current, origin, yaw, pitch, roll, scale, turretYaw, turretPitch, turretPivot, turretOffset, standing, continuous);
         register(owner.level());
         if (current.queryBounds(bounds))
             handleEntities(current);
@@ -138,11 +142,11 @@ public final class PartBodyCollisionHelper
     /** Puts the boxes where the hit detection of the body has them. */
     // Every argument is one fact of the pose; a holder would only be built to be taken apart again.
     @SuppressWarnings("java:S107")
-    static void pose(DriveableHullGeometry geometry, Vec3 origin, float yaw, float scale, float turretYaw, float turretPitch, Vec3 turretPivot, Vec3 turretOffset,
+    static void pose(DriveableHullGeometry geometry, Vec3 origin, float yaw, float pitch, float roll, float scale, float turretYaw, float turretPitch, Vec3 turretPivot, Vec3 turretOffset,
         Predicate<EnumDriveablePart> standing, boolean continuous)
     {
         // The model faces the vanilla yaw a quarter turn on from the yaw driveables simulate with.
-        geometry.update(origin.x, origin.y, origin.z, yaw - 90F, 0F, 0F, turretYaw, turretPitch, turretPivot.scale(scale), turretOffset.scale(scale), standing, continuous);
+        geometry.update(origin.x, origin.y, origin.z, yaw - 90F, pitch, roll, turretYaw, turretPitch, turretPivot.scale(scale), turretOffset.scale(scale), standing, continuous);
     }
 
     /** The boxes as convex shapes at the size the body is drawn at. */

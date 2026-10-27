@@ -30,7 +30,7 @@ import java.util.*;
  * <p>
  * Boxes are kept in the frame type files author them in, which is also the frame a static model preview is drawn in,
  * and are traced through the same hull and turret transforms {@code Driveable} uses, so a stand-in is hit where its
- * model is drawn. The body stays level: only its yaw and its turret turn it.
+ * model is drawn. Its yaw, pitch and roll turn it as they turn a driveable, and its turret turns on top.
  * </p>
  */
 public final class PartBody implements IPartBody
@@ -54,7 +54,7 @@ public final class PartBody implements IPartBody
     private final Vec3 turretOffset;
     @Getter
     private PartBodyPose pose = PartBodyPose.REST;
-    /** World directions of the model-local axes at the current yaw. */
+    /** World directions of the model-local axes at the current yaw, pitch and roll. */
     private Vec3 axisX = Vec3.ZERO;
     private Vec3 axisY = Vec3.ZERO;
     private Vec3 axisZ = Vec3.ZERO;
@@ -462,9 +462,11 @@ public final class PartBody implements IPartBody
         this.pose = pose == null ? PartBodyPose.REST : pose;
         // The model faces the vanilla yaw a quarter turn on from the yaw driveables simulate with.
         float driveableYaw = this.pose.yaw() - 90F;
-        axisX = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(1D, 0D, 0D), driveableYaw, 0F, 0F);
-        axisY = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 1D, 0D), driveableYaw, 0F, 0F);
-        axisZ = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 0D, 1D), driveableYaw, 0F, 0F);
+        float pitch = this.pose.pitch();
+        float roll = this.pose.roll();
+        axisX = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(1D, 0D, 0D), driveableYaw, pitch, roll);
+        axisY = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 1D, 0D), driveableYaw, pitch, roll);
+        axisZ = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 0D, 1D), driveableYaw, pitch, roll);
         collide();
     }
 
@@ -490,7 +492,7 @@ public final class PartBody implements IPartBody
             boxes.put(part.getType(), box);
             signature = 31 * signature + Arrays.hashCode(new float[]{part.getType().ordinal(), box.getX(), box.getY(), box.getZ(), box.getWidth(), box.getHeight(), box.getDepth()});
         }
-        collision.tick(boxes, signature, pose.origin(), pose.yaw(), pose.scale(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset, part ->
+        collision.tick(boxes, signature, pose.origin(), pose.yaw(), pose.pitch(), pose.roll(), pose.scale(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset, part ->
         {
             DriveablePart state = parts.get(part);
             return state != null && hittable(state);
