@@ -36,9 +36,9 @@ import java.util.WeakHashMap;
  *
  * <p>
  * In the enforced aim pose every held gun is raised. In the dynamic aim pose a gun is raised only
- * while it is fired or aimed, unless its definition forces the aiming pose. Players choose the pose unless the
+ * while it is fired, aimed or reloaded, unless its definition forces the aiming pose. Players choose the pose unless the
  * server decides it for them; mobs follow the server alone and, having no aim control, raise a gun only
- * when they fire it.
+ * when they fire or reload it.
  * </p>
  *
  * <p>
@@ -57,6 +57,9 @@ public final class GunArmPoses
     /** Last shot game time per hand, per side, so that each side reads only its own entities. */
     private static final Map<LivingEntity, long[]> serverShots = new WeakHashMap<>();
     private static final Map<LivingEntity, long[]> clientShots = new WeakHashMap<>();
+    /** Game time until which a reload keeps each hand's gun raised, per side. */
+    private static final Map<LivingEntity, long[]> serverReloads = new WeakHashMap<>();
+    private static final Map<LivingEntity, long[]> clientReloads = new WeakHashMap<>();
 
     /** What a hand holds, as far as the arm pose is concerned. */
     public enum HandItem
@@ -98,9 +101,9 @@ public final class GunArmPoses
      * @param dynamic
      *            whether guns are raised only while active, rather than always
      * @param mainActive
-     *            whether the main hand gun is being fired or aimed
+     *            whether the main hand gun is being fired, aimed or reloaded
      * @param offActive
-     *            whether the off hand gun is being fired or aimed
+     *            whether the off hand gun is being fired, aimed or reloaded
      */
     public static Result resolve(HandItem main, HandItem off, boolean dynamic, boolean mainActive, boolean offActive)
     {
@@ -154,8 +157,8 @@ public final class GunArmPoses
         HandItem off = classify(offStack);
         InteractionHand throwingHand = chargingThrowHand(entity);
         boolean aiming = isAiming(entity);
-        Result held = resolve(main, off, isDynamic(entity), aiming || isFiring(entity, InteractionHand.MAIN_HAND) || forcesAimPose(main, mainStack),
-            aiming || isFiring(entity, InteractionHand.OFF_HAND) || forcesAimPose(off, offStack));
+        Result held = resolve(main, off, isDynamic(entity), aiming || isActive(entity, InteractionHand.MAIN_HAND) || forcesAimPose(main, mainStack),
+            aiming || isActive(entity, InteractionHand.OFF_HAND) || forcesAimPose(off, offStack));
         Result base = throwingHand == null ? held : charging(held, throwingHand);
         return new Result(override(entity, InteractionHand.MAIN_HAND, main, off, enabled ? base.mainHand() : Arm.NONE),
             override(entity, InteractionHand.OFF_HAND, off, main, enabled ? base.offHand() : Arm.NONE));
@@ -252,6 +255,22 @@ public final class GunArmPoses
         return entity.level().isClientSide ? data.isShownAiming() : data.isScoped();
     }
 
+    /** Whether the gun in the given hand is fired or reloaded, either of which raises it in the dynamic aim pose. */
+    private static boolean isActive(LivingEntity entity, InteractionHand hand)
+    {
+        return isFiring(entity, hand) || isReloading(entity, hand);
+    }
+
+    /** A player's own reload state on the server; otherwise the reload last recorded on this side. */
+    private static boolean isReloading(LivingEntity entity, InteractionHand hand)
+    {
+        if (!entity.level().isClientSide && entity instanceof Player player && PlayerData.getInstance(player).isReloading(hand))
+            return true;
+
+        long[] reloadEnds = reloads(entity).get(entity);
+        return reloadEnds != null && entity.level().getGameTime() < reloadEnds[hand.ordinal()];
+    }
+
     private static boolean isFiring(LivingEntity entity, InteractionHand hand)
     {
         return isFiring(entity, hand, HeldItemPresentation.get(entity, hand).poses().shotHoldTicks());
@@ -269,6 +288,26 @@ public final class GunArmPoses
     private static Map<LivingEntity, long[]> shots(LivingEntity entity)
     {
         return entity.level().isClientSide ? clientShots : serverShots;
+    }
+
+    private static Map<LivingEntity, long[]> reloads(LivingEntity entity)
+    {
+        return entity.level().isClientSide ? clientReloads : serverReloads;
+    }
+
+    /** Remembers that the entity reloads the gun in the given hand for the given ticks, on the side it is called on. */
+    public static void recordReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        long end = holder.level().getGameTime() + (long) Math.ceil(Math.max(0F, reloadTicks));
+        reloads(holder).computeIfAbsent(holder, entity -> new long[]{NEVER, NEVER})[hand.ordinal()] = end;
+    }
+
+    /** Forgets a reload that was cancelled, on the side it is called on. */
+    public static void clearReload(LivingEntity holder, InteractionHand hand)
+    {
+        long[] reloadEnds = reloads(holder).get(holder);
+        if (reloadEnds != null)
+            reloadEnds[hand.ordinal()] = NEVER;
     }
 
     /** Remembers that the entity fired the gun in the given hand, on the side it is called on. */

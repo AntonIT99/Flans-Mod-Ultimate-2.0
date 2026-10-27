@@ -223,7 +223,10 @@ public final class EquipmentSupport
     public static void animateReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
     {
         if (server(holder) && !(holder instanceof Player) && Float.isFinite(reloadTicks) && reloadTicks > 0F && holder.getItemInHand(hand).getItem() instanceof GunItem)
+        {
+            GunArmPoses.recordReload(holder, hand, reloadTicks);
             PacketHandler.sendToTracking(new PacketGunHolderAnimation(holder.getId(), hand, PacketGunHolderAnimation.Kind.RELOAD, reloadTicks), holder);
+        }
     }
 
     /** Plays a mob-held gun's melee animation for those who see the holder. */

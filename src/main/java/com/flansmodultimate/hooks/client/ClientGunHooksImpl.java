@@ -12,6 +12,7 @@ import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.guns.EnumFunction;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;
 import com.flansmodultimate.common.types.*;
@@ -103,6 +104,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             chargeDelay = modelGun.getChargeDelayAfterReload();
             chargeTime = modelGun.getChargeTime();
         }
+        GunArmPoses.recordReload(holder, hand, reloadTicks);
         ModClient.getGunAnimations(holder, hand).doReload(reloadTicks, pumpDelay, pumpTime, chargeDelay, chargeTime, 1, false);
     }
 
@@ -139,6 +141,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
 
         data.doGunReload(hand, reloadTime);
+        GunArmPoses.recordReload(player, hand, reloadTime);
 
         int pumpDelay = 0;
         int pumpTime = 1;
@@ -163,6 +166,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         data.setShootTimeRight(0);
         data.setShootTimeLeft(0);
         data.setReloading(hand, false);
+        GunArmPoses.clearReload(player, hand);
         ModClient.getGunAnimations(player, hand).cancelReload();
     }
 
