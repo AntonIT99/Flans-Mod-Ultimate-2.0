@@ -73,7 +73,7 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
         if (configType.getFoodness() > 0)
             return super.use(level, player, hand);
 
-        if (isDepleted(stack))
+        if (isDepleted(stack) || player.getCooldowns().isOnCooldown(this))
             return InteractionResultHolder.fail(stack);
 
         // Parachute
@@ -108,6 +108,7 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
             Driveable driveable = pickDriveableTarget(level, player, start, end);
             if (driveable != null && driveable.repairFromTool(player, configType.getHealAmount()))
             {
+                player.getCooldowns().addCooldown(this, 20);
                 spawnRepairParticles(level, driveable);
                 consumeUse(stack, player);
                 return InteractionResultHolder.consume(stack);

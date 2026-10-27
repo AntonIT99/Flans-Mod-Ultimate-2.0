@@ -22,6 +22,7 @@ public final class DriveablePart
     private int fireTime;
     private boolean onFire;
     private boolean dead;
+    private int repairDelay;
 
     public DriveablePart(EnumDriveablePart type, @Nullable CollisionBox box)
     {
@@ -61,6 +62,8 @@ public final class DriveablePart
 
     public void tick()
     {
+        if (repairDelay > 0)
+            --repairDelay;
         if (fireTime > 0)
             --fireTime;
         if (fireTime <= 0)
@@ -77,6 +80,7 @@ public final class DriveablePart
         if (amount > 0F && maxHealth > 0F && !dead)
         {
             health = Math.max(0F, health - amount);
+            repairDelay = 100;
             dead = health <= 0F;
         }
         if (fireDamage && !dead)

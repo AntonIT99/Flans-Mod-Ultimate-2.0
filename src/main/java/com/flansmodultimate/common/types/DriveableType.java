@@ -255,6 +255,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean epicShip;
     protected boolean canRepair = true;
     protected int repairTime = 200;
+    protected int shipRepairTime = 800;
     protected float floatOffset;
     protected float bulletDetectionRadius = -1F;
     /**
@@ -852,6 +853,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         canRepair = readValue("canRepair", canRepair, file);
         canRepair = readValue("NewRepairSystem", canRepair, file);
         repairTime = Math.max(1, readValue("RepairTime", repairTime, file));
+        shipRepairTime = Math.max(1, readValue("ShipRepairTime", shipRepairTime, file));
         floatOffset = readValue("FloatOffset", floatOffset, file);
         canMountEntity = readValue("CanMountEntity", canMountEntity, file);
         wheelStepHeight = aliasFloat(wheelStepHeight, file, "WheelRadius", "WheelStepHeight");

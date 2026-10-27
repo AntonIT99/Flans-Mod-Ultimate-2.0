@@ -18,6 +18,6 @@ RechargeRecipe 3 coal
 // Tool
 Heal false
 Repair true
-HealAmount 1000
-ToolLife 10000
+HealAmount 100
+ToolLife 200
 DestroyOnEmpty false

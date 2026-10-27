@@ -28,32 +28,37 @@ public final class DriveableRepairs
     private void tickPart(Driveable driveable, DriveablePart part, boolean carrier, boolean repairing, boolean damageControl, float totalCrew)
     {
         EnumDriveablePart type = part.getType();
-        if (part.isDestroyed() || !driveable.canRepairPart(type))
+        if (part.isDestroyed() || part.getRepairDelay() > 0 || !driveable.canRepairPart(type))
         {
             clocks.remove(type);
             return;
         }
-        if (carrier)
-            driveable.repairPart(type, 1F);
         boolean ship = damageControl && type != EnumDriveablePart.BUOYANCY;
         if (!(ship || repairing))
             return;
-        int interval = ship ? DriveableRepairRules.shipInterval(crewFraction(driveable, type), totalCrew) : 21;
+        int interval = ship ? DriveableRepairRules.shipInterval(crewFraction(driveable, type), totalCrew) : 20;
         int clock = clocks.getOrDefault(type, 0) + 1;
-        if (clock == 15)
-            driveable.repairPart(type, DriveableRepairRules.timedAmount(type, part.getMaxHealth(), ship));
+        if (clock >= interval)
+            driveable.repairPart(type, carrier ? Math.max(0.25F, part.getMaxHealth() * 0.015F) : DriveableRepairRules.timedAmount(type, part.getMaxHealth(), ship));
         clocks.put(type, clock >= interval ? 0 : clock);
     }
 
     private void tickBuoyancy(Driveable driveable, float totalCrew)
     {
         var type = driveable.getConfigType();
-        if (type == null || !type.isEpicShip())
+        DriveableData data = driveable.getDriveableData();
+        if (type == null || !type.isEpicShip() || data == null)
             return;
+        DriveablePart buoyancy = data.getPart(EnumDriveablePart.BUOYANCY);
+        if (buoyancy == null || buoyancy.getRepairDelay() > 0)
+        {
+            buoyancyClock = 0;
+            return;
+        }
         if (++buoyancyClock >= DriveableRepairRules.buoyancyInterval(totalCrew))
             buoyancyClock = 0;
-        if (buoyancyClock == 10)
-            driveable.repairPart(EnumDriveablePart.BUOYANCY, 1F);
+        if (buoyancyClock == 0)
+            driveable.repairPart(EnumDriveablePart.BUOYANCY, Math.max(0.25F, buoyancy.getMaxHealth() / 60F));
     }
 
     private static float crewFraction(Driveable driveable, EnumDriveablePart part)
@@ -68,7 +73,9 @@ public final class DriveableRepairs
             if (driveable.isPartIntact(seat.getSeatInfo().getPart()) && seat.getRiddenByEntity() != null)
                 ++occupied;
         }
-        return capacity == 0 ? 0F : (float) occupied / capacity;
+        if (capacity > 0)
+            return (float) occupied / capacity;
+        return part == null ? 0F : crewFraction(driveable, null);
     }
 
     private static boolean servicedByCarrier(Driveable driveable)

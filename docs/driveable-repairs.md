@@ -1,52 +1,54 @@
 # Driveable repairs
 
-At the driver's controls, press **I** (rebindable as **Repair driveable**) with
-throttle at or below 5% in either direction to start a repair session. Aircraft
-must be on the ground or have a non-air block five blocks below their origin.
-The default session lasts 200 ticks (10 seconds). Throttle and all driveable
-weapons are locked during repairs; the action bar shows seconds remaining.
-Repair sessions are transient and stop when the vehicle unloads.
+Press **I** at the driver's controls at no more than 5% throttle in either
+direction. Vehicles and landed aircraft run a 10-second session; ships run a
+separate 40-second damage-control session. Throttle and all driveable weapons
+are locked during the session. The action bar shows seconds remaining.
+Countermeasures are independent of repairs. Sessions stop on unloading.
 
-Ordinary parts recover `1 + floor(maxHP * 0.005)` HP per cycle. Wheels, tracks
-and engines recover `1 + floor(maxHP * 0.025)`. The first repair happens after
-15 active ticks, then every 21 ticks. Destroyed parts must first be rebuilt
-through the Repair menu or restored with a tool. Dependencies still apply.
+Ordinary parts recover 1.5% of maximum HP per second (15% per 10 seconds).
+Wheels, tracks and engines recover 2.5% per second. Each pulse restores at
+least 0.25 HP. All repairable parts heal simultaneously. A damaged part must
+go five seconds without further damage before automatic repairs resume.
+Damage restarts its repair clock rather than banking an immediate pulse.
 
-The Repair menu consumes the part's required materials and restores ordinary
-destroyed parts to `min(maxHP, max(1, floor(1 + maxHP / 115)))` HP. ERA, ERA2,
-ERA3, APS and ADS parts return to full HP. Repair tools and the operator command
-`/flansmodultimate repair [target]` remain available.
+Destroyed parts must first be rebuilt through the Repair menu or restored with
+a tool. Rebuilding consumes required materials and restores 10% of maximum HP,
+minimum 1 HP capped at maximum HP. ERA, ERA2, ERA3, APS and ADS return to full
+HP. Dependencies still apply.
 
 ## Ships and carriers
 
-An `EpicShip` uses its flare/countermeasure deployment as damage control instead
-of the I-key session. At near-zero throttle it repairs surviving parts other
-than buoyancy at the faster 2.5% rate. It cannot use throttle or weapons while
-damage control is active. The cycle interval ranges from 21 ticks with full
-crew to 567 ticks with no crew. Local and overall crew fractions both matter.
-Buoyancy separately recovers 1 HP every 20–400 ticks, depending on overall crew.
+Ship damage control restores 2.5% per pulse at intervals of 1-3 seconds.
+Local crew contributes 25% of the crew factor and overall crew 75%.
+Compartments without seats use overall crew availability for both factors.
+Crew means actual occupants of configured, intact seats, including NPCs.
 
-Crew means actual occupants of configured, intact seats, including NPCs. A part
-with no seats has a zero local crew fraction. This adapts Labjac's numeric crew
-pools to this project's existing seat system; it does not add virtual crew or
-reuse the hitbox's crew damage multiplier as a crew count.
+Buoyancy automatically recovers 1/60 of maximum HP per pulse, minimum 0.25 HP.
+Intervals range from one second with full crew to three seconds without crew:
+approximately 60-180 seconds for an entire buoyancy HP pool. The five-second
+delay after damage also applies.
 
-Aircraft mounted on a driveable with `CanMountEntity true`, or resting on its
-shaped collision hull at low throttle, receive carrier servicing: 1 HP per tick
-plus the normal timed repairs at near-zero throttle. Nearby aircraft that are
-not supported by the carrier do not qualify. Destroyed parts are not rebuilt.
+Aircraft mounted on a driveable with CanMountEntity true, or resting on its
+shaped collision hull at low throttle, receive carrier servicing: 1.5% of each
+surviving part's maximum HP per second, minimum 0.25 HP. It does not stack with
+field repairs. Nearby unsupported aircraft do not qualify.
 
-## Content-pack settings and compatibility
+## Tools and settings
 
-- `canRepair true` enables timed repairs (default true). `NewRepairSystem` is
-  accepted as Labjac's alias. These settings apply to ordinary vehicles and
-  aircraft; ships use damage control and mechas retain their nanorepair upgrade.
-- `RepairTime 200` sets the session duration in ticks, with a minimum of 1.
-- `EpicShip`, `HasFlare`, `TimeFlareUsing`, `FlareDelay` and `CanMountEntity`
-  retain their existing meanings.
+Repair tools work once per second on one part at a time. Each use restores
+at most 5% of the part's maximum HP (minimum cap 1 HP), without exceeding the
+tool's configured healing amount. Manual tools can work during the automatic
+repair delay. The official Blowtorch heals up to 100 HP per use and has 200
+uses before recharging; its recharge recipe remains three coal.
+
+- canRepair true enables timed sessions (default true); NewRepairSystem is
+  its legacy alias.
+- RepairTime 200 sets vehicle/aircraft session duration in ticks.
+- ShipRepairTime 800 sets ship damage-control duration in ticks.
+- Both durations have a minimum of one tick.
 
 Sessions and carrier servicing consume no materials or fuel. Mecha nanorepair
-retains its fuel cost and creative-driver exemption. Labjac's external money
-deduction and placeholder balance check are not ported: this project has no
-corresponding economy integration. Clients and servers must both be updated
-because the input protocol now includes the repair action.
+retains its rates, fuel cost and creative-driver exemption. The operator command
+/flansmodultimate repair [target] bypasses repair delays and restores all parts.
+External economy charges are not implemented.

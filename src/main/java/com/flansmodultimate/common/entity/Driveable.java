@@ -903,7 +903,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void setThrottle(float throttle)
     {
         float reversePower = configType == null ? 1F : configType.getMaxNegativeThrottle();
-        float normalized = DriveableControlPhysics.normalizedThrottle(getFlag(FLAG_REPAIR) || configType != null && configType.isEpicShip() && isVarFlare() ? 0F : throttle, reversePower);
+        float normalized = DriveableControlPhysics.normalizedThrottle(getFlag(FLAG_REPAIR) ? 0F : throttle, reversePower);
         if (prediction != null)
             predictedThrottle = normalized;
         else
@@ -1456,7 +1456,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         updateLockOnTargeting();
         absorbExternalImpulses();
         tickDriveable();
-        if (ticksRepairing > 0 || configType.isEpicShip() && ticksFlareUsing > 0)
+        if (ticksRepairing > 0)
             setThrottle(0F);
         finishEpicShipSinking();
         if (isRemoved())
@@ -1841,7 +1841,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean canFireWeaponBank(boolean secondary)
     {
-        if (ticksRepairing > 0 || configType != null && configType.isEpicShip() && ticksFlareUsing > 0 || !epicShipWeaponsAllowed())
+        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         if (configType == null || !configType.isWorksUnderWater() && isUnderWater())
             return false;
@@ -3344,7 +3344,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
     private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
     {
-        if (ticksRepairing > 0 || configType != null && configType.isEpicShip() && ticksFlareUsing > 0 || !epicShipWeaponsAllowed())
+        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         DriveableData data = initializedData();
         int ammoSlot = info.getGunnerID();
@@ -5050,12 +5050,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     private void startRepair()
     {
-        if (level().isClientSide || destroyed || configType == null || !configType.isCanRepair() || configType.isEpicShip() || !(this instanceof Vehicle || this instanceof Plane) || ticksRepairing > 0
+        if (level().isClientSide || destroyed || configType == null || !configType.isCanRepair() || !(this instanceof Vehicle || this instanceof Plane) || ticksRepairing > 0
             || Math.abs(getThrottle()) > 0.05F)
             return;
         if (this instanceof Plane && !onGround() && level().isEmptyBlock(blockPosition().below(5)))
             return;
-        ticksRepairing = configType.getRepairTime();
+        ticksRepairing = configType.isEpicShip() ? configType.getShipRepairTime() : configType.getRepairTime();
         setFlag(FLAG_REPAIR, true);
         setThrottle(0F);
     }
@@ -5064,7 +5064,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (driveableData == null || configType == null)
             return;
-        repairs.tick(this, ticksRepairing > 0, configType.isEpicShip() && ticksFlareUsing > 0);
+        repairs.tick(this, ticksRepairing > 0 && !configType.isEpicShip(), ticksRepairing > 0 && configType.isEpicShip());
         if (ticksRepairing > 0)
         {
             if (ticksRepairing % 20 == 0 && getControllingEntity() instanceof ServerPlayer player)
@@ -5098,7 +5098,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             .filter(this::canRepairPart).findFirst().orElseGet(() -> findNearestDamagedPart(origin).orElse(null));
         if (selected == null)
             return false;
-        return repairPart(selected, amount);
+        return repairPart(selected, DriveableRepairRules.toolAmount(driveableData.getPart(selected).getMaxHealth(), amount));
     }
 
     /** Repairs the damaged part nearest a point, as a repair tool used from there would, for repairers that are no players. */

@@ -53,6 +53,8 @@ class DriveableRepairsTest
         when(plane.getBoundingBox()).thenReturn(new net.minecraft.world.phys.AABB(0, 0, 0, 1, 1, 1));
         DriveablePart part = new DriveablePart(EnumDriveablePart.CORE, new CollisionBox(1000F, 0, 0, 0, 16, 16, 16));
         part.damage(100F, false);
+        for (int tick = 0; tick < 100; ++tick)
+            part.tick();
         when(data.getParts()).thenReturn(Map.of(EnumDriveablePart.CORE, part));
         when(plane.canRepairPart(EnumDriveablePart.CORE)).thenReturn(true);
         when(plane.repairPart(eq(EnumDriveablePart.CORE), anyFloat())).thenAnswer(invocation -> part.repair(invocation.getArgument(1)) > 0F);
@@ -63,15 +65,64 @@ class DriveableRepairsTest
         assertEquals(900F, part.getHealth());
         Driveable carrier = mock(Driveable.class);
         when(level.getEntitiesOfClass(eq(Driveable.class), any(), any())).thenReturn(List.of(carrier));
-        repairs.tick(plane, false, false);
-        assertEquals(901F, part.getHealth());
+        for (int tick = 0; tick < 20; ++tick)
+            repairs.tick(plane, false, false);
+        assertEquals(915F, part.getHealth());
         part.damage(1000F, false);
         repairs.tick(plane, false, false);
         assertTrue(part.isDestroyed());
     }
 
     @Test
-    void sessionRepairsAtTickFifteenThenEveryTwentyOneTicksAndNeverRebuildsDestroyedParts()
+    void unseatedShipCompartmentsUseOverallCrewAndBuoyancyRecoveryScalesWithHp()
+    {
+        Driveable ship = mock(Driveable.class);
+        DriveableData data = mock(DriveableData.class);
+        DriveableType type = mock(DriveableType.class);
+        ServerLevel level = mock(ServerLevel.class);
+        Seat seat = mock(Seat.class);
+        SeatInfo info = mock(SeatInfo.class);
+        net.minecraft.world.entity.LivingEntity occupant = mock(net.minecraft.world.entity.LivingEntity.class);
+        when(ship.level()).thenReturn(level);
+        when(ship.getDriveableData()).thenReturn(data);
+        when(ship.getConfigType()).thenReturn(type);
+        when(type.isEpicShip()).thenReturn(true);
+        when(ship.getSeats()).thenReturn(new Seat[]{seat});
+        when(seat.getSeatInfo()).thenReturn(info);
+        when(info.getPart()).thenReturn(EnumDriveablePart.CORE);
+        when(ship.isPartIntact(EnumDriveablePart.CORE)).thenReturn(true);
+        when(seat.getRiddenByEntity()).thenReturn(occupant);
+        DriveablePart bow = new DriveablePart(EnumDriveablePart.BOW, new CollisionBox(1000F, 0, 0, 0, 16, 16, 16));
+        DriveablePart buoyancy = new DriveablePart(EnumDriveablePart.BUOYANCY, new CollisionBox(6000F, 0, 0, 0, 16, 16, 16));
+        bow.damage(100F, false);
+        buoyancy.damage(1000F, false);
+        for (int tick = 0; tick < 100; ++tick)
+        {
+            bow.tick();
+            buoyancy.tick();
+        }
+        Map<EnumDriveablePart, DriveablePart> parts = Map.of(EnumDriveablePart.BOW, bow, EnumDriveablePart.BUOYANCY, buoyancy);
+        when(data.getParts()).thenReturn(parts);
+        when(data.getPart(EnumDriveablePart.BUOYANCY)).thenReturn(buoyancy);
+        when(ship.canRepairPart(any())).thenReturn(true);
+        when(ship.repairPart(any(), anyFloat())).thenAnswer(invocation ->
+        {
+            EnumDriveablePart part = invocation.getArgument(0);
+            return parts.get(part).repair(invocation.getArgument(1)) > 0F;
+        });
+        DriveableRepairs repairs = new DriveableRepairs();
+        for (int tick = 0; tick < 20; ++tick)
+            repairs.tick(ship, false, true);
+        assertEquals(925F, bow.getHealth());
+        assertEquals(5100F, buoyancy.getHealth());
+        buoyancy.damage(1F, false);
+        for (int tick = 0; tick < 40; ++tick)
+            repairs.tick(ship, false, false);
+        assertEquals(5099F, buoyancy.getHealth());
+    }
+
+    @Test
+    void sessionRepairsEverySecondAndNeverRebuildsDestroyedParts()
     {
         Driveable driveable = mock(Driveable.class);
         DriveableData data = mock(DriveableData.class);
@@ -83,18 +134,29 @@ class DriveableRepairsTest
         when(driveable.getSeats()).thenReturn(new Seat[0]);
         DriveablePart part = new DriveablePart(EnumDriveablePart.CORE, new CollisionBox(1000F, 0, 0, 0, 16, 16, 16));
         part.damage(100F, false);
+        for (int tick = 0; tick < 100; ++tick)
+            part.tick();
         when(data.getParts()).thenReturn(Map.of(EnumDriveablePart.CORE, part));
         when(driveable.canRepairPart(EnumDriveablePart.CORE)).thenAnswer(invocation -> !part.isDestroyed() && part.getHealth() < part.getMaxHealth());
         when(driveable.repairPart(eq(EnumDriveablePart.CORE), anyFloat())).thenAnswer(invocation -> part.repair(invocation.getArgument(1)) > 0F);
         DriveableRepairs repairs = new DriveableRepairs();
-        for (int tick = 0; tick < 14; ++tick)
+        for (int tick = 0; tick < 19; ++tick)
             repairs.tick(driveable, true, false);
         assertEquals(900F, part.getHealth());
         repairs.tick(driveable, true, false);
-        assertEquals(906F, part.getHealth());
-        for (int tick = 0; tick < 21; ++tick)
+        assertEquals(915F, part.getHealth());
+        for (int tick = 0; tick < 20; ++tick)
             repairs.tick(driveable, true, false);
-        assertEquals(912F, part.getHealth());
+        assertEquals(930F, part.getHealth());
+        part.damage(1F, false);
+        repairs.tick(driveable, true, false);
+        assertEquals(929F, part.getHealth());
+        assertEquals(100, part.getRepairDelay());
+        for (int tick = 0; tick < 100; ++tick)
+            part.tick();
+        for (int tick = 0; tick < 20; ++tick)
+            repairs.tick(driveable, true, false);
+        assertEquals(944F, part.getHealth());
         part.damage(1000F, false);
         for (int tick = 0; tick < 40; ++tick)
             repairs.tick(driveable, true, false);
