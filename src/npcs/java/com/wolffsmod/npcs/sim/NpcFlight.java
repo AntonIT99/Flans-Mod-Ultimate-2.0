@@ -53,6 +53,8 @@ public final class NpcFlight
     static final double STALL_SPEED = 0.13D;
     static final double TOP_SPEED = 0.42D;
     private static final double MIN_LOITER_RADIUS = 16D;
+    /** Blocks a plane without a walking range circles its home at, wide enough that it does not seem to spin over one spot. */
+    static final double HOME_CIRCLE_RADIUS = 64D;
     /** Degrees per tick a plane turns at least and, without a turn rate or a model, at most. */
     static final float MIN_PLANE_TURN = 0.25F;
     static final float MAX_PLANE_TURN = 2F;
@@ -459,10 +461,15 @@ public final class NpcFlight
         return extending ? horizontal < extend : horizontal < PASS_DISTANCE;
     }
 
-    /** @return blocks a plane is told to circle its home at, before its turn widens the circle */
     private static double loiterRadius(EntityNPCInterface npc)
     {
-        return Math.max(MIN_LOITER_RADIUS, npc.ais.walkingRange);
+        return loiterRadius(npc.ais.walkingRange);
+    }
+
+    /** @return blocks a plane is told to circle its home at, before its turn widens the circle: its walking range, or a wide circle without one */
+    static double loiterRadius(int walkingRange)
+    {
+        return walkingRange > 0 ? Math.max(MIN_LOITER_RADIUS, walkingRange) : HOME_CIRCLE_RADIUS;
     }
 
     /** @return blocks an orbiting plane is told to circle its target at, before its turn widens the circle */

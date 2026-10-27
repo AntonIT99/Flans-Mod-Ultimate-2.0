@@ -72,6 +72,15 @@ class NpcFlightAndDepthTest
     }
 
     @Test
+    void aPlaneCirclesItsHomeAtItsWalkingRangeOrWideWithoutOne()
+    {
+        assertEquals(NpcFlight.HOME_CIRCLE_RADIUS, NpcFlight.loiterRadius(0));
+        assertEquals(16D, NpcFlight.loiterRadius(5));
+        assertEquals(30D, NpcFlight.loiterRadius(30));
+        assertEquals(100D, NpcFlight.loiterRadius(100));
+    }
+
+    @Test
     void aPlaneIsNeverToldToCircleTighterThanItTurns()
     {
         // Two degrees a tick at one block a tick flies a circle of about 28.6 blocks.
