@@ -22,6 +22,12 @@ public final class NpcClientPackets
             screen.crewResult(packet);
     }
 
+    public static void factionRelations(FactionRelationsPacket packet)
+    {
+        if (Minecraft.getInstance().screen instanceof GuiWolffsMod screen)
+            screen.factionRelations(packet);
+    }
+
     public static void crewClonePreview(CrewClonePreviewPacket packet)
     {
         if (Minecraft.getInstance().screen instanceof GuiWolffsMod screen && screen.getSubGui() instanceof CrewSelectionMenu menu)

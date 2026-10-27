@@ -74,7 +74,6 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int PRESET_ID = 320;
     private static final int PRESET_APPLY_ID = 321;
     private static final int PRESET_UNDO_ID = 322;
-    private static final int CREATE_FACTION_ID = 323;
     private static final int HUB_BUTTON_ID = 330;
     private static final int HURT_FLASH_ID = 400;
     private static final int DEATH_ROTATION_ID = 401;
@@ -602,6 +601,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private final SoundOverview soundOverview;
     private final HeldItemAnimationPage heldItems;
     private final CrewPage crew;
+    private final TeamFactionsPage teamFactions;
     private final SettingsTooltip settingsTooltip = new SettingsTooltip();
 
     public GuiWolffsMod(EntityNPCInterface npc)
@@ -611,6 +611,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         soundOverview = new SoundOverview(this, npc);
         heldItems = new HeldItemAnimationPage(this, npc);
         crew = new CrewPage(this, npc);
+        teamFactions = new TeamFactionsPage(this, npc);
         kind = NpcKind.of(npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
         NpcNetwork.sendToServer(NpcPresetPacket.request(npc.getId()));
@@ -1004,8 +1005,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Tab shown = tabs.get(tab);
         if (category == Category.FACTIONS)
         {
-            addButton(new GuiButtonNop(this, CREATE_FACTION_ID, guiLeft + 8, guiTop + top, 250, 20, "wolffsmodnpcs.team_faction.create"));
-            addLabel(new GuiLabel(CREATE_FACTION_ID, "wolffsmodnpcs.team_faction.help", guiLeft + 8, guiTop + top + 30));
+            teamFactions.init(top);
             return;
         }
         if (HeldItemAnimationPage.ITEMS.equals(shown.name()) || HeldItemAnimationPage.ARMS_TAB.equals(shown.name()))
@@ -2063,6 +2063,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         crew.receive(packet);
     }
 
+    void factionRelations(FactionRelationsPacket packet)
+    {
+        teamFactions.receive(packet);
+        refreshPage();
+    }
+
     @Override
     public void unFocused(GuiTextFieldNop field)
     {
@@ -2198,11 +2204,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             NpcMovementController.values()[button.getValue()].apply(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions());
             changed = true;
         }
-        else if (button.id == CREATE_FACTION_ID)
-        {
-            save();
-            setSubGui(new TeamFactionMenu(npc.getId()));
-        }
+        else if (teamFactions.handles(button.id))
+            teamFactions.button(button);
         else if (button.id == DIAGNOSIS_COPY_ID)
             copySummary();
         else if (heldItems.handles(button.id))

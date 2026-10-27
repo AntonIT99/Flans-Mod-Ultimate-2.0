@@ -37,6 +37,8 @@ public final class NpcNetwork
         NpcNetworkPlatform.bidirectional("soldier_name", SoldierNamePacket.class, SoldierNamePacket::write, SoldierNamePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::soldierName,
             SoldierNamePacket::handle);
         NpcNetworkPlatform.toServer("team_faction", TeamFactionPacket.class, TeamFactionPacket::write, TeamFactionPacket::read, TeamFactionPacket::handle);
+        NpcNetworkPlatform.bidirectional("faction_relations", FactionRelationsPacket.class, FactionRelationsPacket::write, FactionRelationsPacket::read,
+            () -> com.wolffsmod.npcs.client.NpcClientPackets::factionRelations, FactionRelationsPacket::handle);
         NpcNetworkPlatform.toClient("server_report", ServerReportPacket.class, ServerReportPacket::write, ServerReportPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::serverReport);
         NpcNetworkPlatform.bidirectional("npc_inspect", NpcInspectPacket.class, NpcInspectPacket::write, NpcInspectPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::inspection,
             NpcInspectPacket::handle);
@@ -139,6 +141,16 @@ public final class NpcNetwork
     public static void sendToServer(TeamFactionPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(FactionRelationsPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, FactionRelationsPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
     }
 
     public static void sendToServer(SoldierNamePacket packet)

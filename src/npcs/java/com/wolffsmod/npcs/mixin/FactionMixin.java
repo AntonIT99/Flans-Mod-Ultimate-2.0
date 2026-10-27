@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.names.ContentNameBinding;
 import com.wolffsmod.npcs.names.FactionDisplayName;
 import com.wolffsmod.npcs.teams.BattleFactions;
 import com.wolffsmod.npcs.teams.BotFactions;
+import com.wolffsmod.npcs.teams.FactionAllies;
 import com.wolffsmod.npcs.teams.FactionMobSettings;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -19,11 +20,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Custom NPCs' factions.
- * Persists the optional aggression toward the monsters covered by GetsAttacked and display-only team name bindings.
+ * Persists the optional aggression toward the monsters covered by GetsAttacked, display-only team name bindings and the
+ * factions it is allied with.
  *
  * <ul>
  * <li>Teams bots: while a round runs, the faction of a Flan team treats a player by the team the player fights for, rather
@@ -36,15 +41,19 @@ import java.util.Optional;
  */
 @Mixin(value = Faction.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
-public abstract class FactionMixin implements FactionMobSettings, FactionDisplayName
+public abstract class FactionMixin implements FactionMobSettings, FactionDisplayName, FactionAllies
 {
     @Unique
     private static final String WOLFFSMODNPCS_NAME_BINDING = "WolffsModNameBinding";
+    @Unique
+    private static final String WOLFFSMODNPCS_ALLIES = "WolffsModAllies";
 
     @Unique
     private boolean wolffsmodnpcsAttackMobs;
     @Unique @Nullable
     private ContentNameBinding wolffsmodnpcsName;
+    @Unique
+    private final Set<Integer> wolffsmodnpcsAllies = new HashSet<>();
 
     @Override
     public void wolffsmodnpcsBindName(ContentNameBinding binding)
@@ -71,11 +80,19 @@ public abstract class FactionMixin implements FactionMobSettings, FactionDisplay
         wolffsmodnpcsAttackMobs = enabled;
     }
 
+    @Override
+    public Set<Integer> wolffsmodnpcsAllies()
+    {
+        return wolffsmodnpcsAllies;
+    }
+
     @Inject(method = "readNBT", at = @At("TAIL"))
     private void wolffsmodnpcsReadMobSettings(CompoundTag tag, CallbackInfo callback)
     {
         wolffsmodnpcsAttackMobs = tag.getBoolean("WolffsModAttackMobs");
         wolffsmodnpcsName = ContentNameBinding.read(tag.getCompound(WOLFFSMODNPCS_NAME_BINDING), ((Faction) (Object) this).name).orElse(null);
+        wolffsmodnpcsAllies.clear();
+        Arrays.stream(tag.getIntArray(WOLFFSMODNPCS_ALLIES)).forEach(wolffsmodnpcsAllies::add);
     }
 
     @Inject(method = "writeNBT", at = @At("RETURN"))
@@ -87,6 +104,9 @@ public abstract class FactionMixin implements FactionMobSettings, FactionDisplay
         result.remove(WOLFFSMODNPCS_NAME_BINDING);
         if (wolffsmodnpcsName != null && wolffsmodnpcsName.literal().equals(((Faction) (Object) this).name))
             result.put(WOLFFSMODNPCS_NAME_BINDING, wolffsmodnpcsName.save());
+        result.remove(WOLFFSMODNPCS_ALLIES);
+        if (!wolffsmodnpcsAllies.isEmpty())
+            result.putIntArray(WOLFFSMODNPCS_ALLIES, wolffsmodnpcsAllies.stream().mapToInt(Integer::intValue).sorted().toArray());
     }
 
     @Inject(method = "isAggressiveToPlayer", at = @At("HEAD"), cancellable = true)
