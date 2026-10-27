@@ -253,6 +253,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float buoyancy = 0.0165F;
     /** Opt-in Labjac naval compartment damage, listing and sinking rules. */
     protected boolean epicShip;
+    protected boolean canRepair = true;
+    protected int repairTime = 200;
     protected float floatOffset;
     protected float bulletDetectionRadius = -1F;
     /**
@@ -847,6 +849,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         floatOnWater = readValue("FloatOnWater", floatOnWater, file);
         buoyancy = readValue("Buoyancy", buoyancy, file);
         epicShip = readValue("EpicShip", epicShip, file);
+        canRepair = readValue("canRepair", canRepair, file);
+        canRepair = readValue("NewRepairSystem", canRepair, file);
+        repairTime = Math.max(1, readValue("RepairTime", repairTime, file));
         floatOffset = readValue("FloatOffset", floatOffset, file);
         canMountEntity = readValue("CanMountEntity", canMountEntity, file);
         wheelStepHeight = aliasFloat(wheelStepHeight, file, "WheelRadius", "WheelStepHeight");

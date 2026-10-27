@@ -97,6 +97,13 @@ public final class DriveableCollisionHelper
         return geometry.queryBounds(boundsScratch) ? new Vec3((boundsScratch[0] + boundsScratch[3]) * 0.5D, boundsScratch[4] + 0.1D, (boundsScratch[2] + boundsScratch[5]) * 0.5D) : null;
     }
 
+    /** Whether the existing posed collision geometry supports an entity's feet. */
+    public boolean supports(Entity entity)
+    {
+        AABB box = entity.getBoundingBox();
+        return geometry.findSupport(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ) >= 0;
+    }
+
     DriveableHullGeometry geometry()
     {
         return geometry;

@@ -135,6 +135,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final int FLAG_COUNTERMEASURE_RELOADING = 1 << 7;
     /** Aircraft air brakes are extended. Toggled by the pilot, never automatic. */
     protected static final int FLAG_AIR_BRAKE = 1 << 8;
+    protected static final int FLAG_REPAIR = 1 << 9;
 
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -345,6 +346,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected int flareDelay;
     @Getter
     protected int ticksFlareUsing;
+    @Getter
+    private int ticksRepairing;
+    private final DriveableRepairs repairs = new DriveableRepairs();
     protected int ticksSinceUsed;
     protected int markerTicks;
     protected int proxyCheckTicker;
@@ -899,7 +903,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void setThrottle(float throttle)
     {
         float reversePower = configType == null ? 1F : configType.getMaxNegativeThrottle();
-        float normalized = DriveableControlPhysics.normalizedThrottle(throttle, reversePower);
+        float normalized = DriveableControlPhysics.normalizedThrottle(getFlag(FLAG_REPAIR) || configType != null && configType.isEpicShip() && isVarFlare() ? 0F : throttle, reversePower);
         if (prediction != null)
             predictedThrottle = normalized;
         else
@@ -1445,12 +1449,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (flareDelay > 0)
             --flareDelay;
         updateFlares();
+        tickRepairs();
         refuelFromInventory();
         updateRiderVisibility();
         updateEngineState();
         updateLockOnTargeting();
         absorbExternalImpulses();
         tickDriveable();
+        if (ticksRepairing > 0 || configType.isEpicShip() && ticksFlareUsing > 0)
+            setThrottle(0F);
         finishEpicShipSinking();
         if (isRemoved())
             return;
@@ -1834,7 +1841,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean canFireWeaponBank(boolean secondary)
     {
-        if (!epicShipWeaponsAllowed())
+        if (ticksRepairing > 0 || configType != null && configType.isEpicShip() && ticksFlareUsing > 0 || !epicShipWeaponsAllowed())
             return false;
         if (configType == null || !configType.isWorksUnderWater() && isUnderWater())
             return false;
@@ -2044,6 +2051,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public boolean canMountEntity()
     {
         return configType != null && configType.isCanMountEntity();
+    }
+
+    /** Uses the same shaped hull as carrying and dismounting; nearby aircraft alone do not qualify for servicing. */
+    public boolean supportsCarrierService(Entity aircraft)
+    {
+        return canMountEntity() && !destroyed && collisionHelper != null && collisionHelper.supports(aircraft);
     }
 
     protected void handleInventoryReloadState()
@@ -3331,7 +3344,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
     private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
     {
-        if (!epicShipWeaponsAllowed())
+        if (ticksRepairing > 0 || configType != null && configType.isEpicShip() && ticksFlareUsing > 0 || !epicShipWeaponsAllowed())
             return false;
         DriveableData data = initializedData();
         int ammoSlot = info.getGunnerID();
@@ -4447,6 +4460,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             toggleAirBrake(player);
         if (DriveableInput.isDown(rising, DriveableInput.TRIM))
             setOrientation(getYaw(), 0F, 0F);
+        if (DriveableInput.isDown(rising, DriveableInput.REPAIR) && seat.isDriverSeat())
+            startRepair();
         if (DriveableInput.isDown(rising, DriveableInput.FLARE))
             deployFlare();
         if (DriveableInput.isDown(rising, DriveableInput.SWITCH_AMMO))
@@ -5031,6 +5046,32 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         targets.sort(Comparator.comparingDouble(VehicleExplosionTarget::distanceMeters).thenComparing(target -> target.part().ordinal()));
         return targets;
+    }
+
+    private void startRepair()
+    {
+        if (level().isClientSide || destroyed || configType == null || !configType.isCanRepair() || configType.isEpicShip() || !(this instanceof Vehicle || this instanceof Plane) || ticksRepairing > 0
+            || Math.abs(getThrottle()) > 0.05F)
+            return;
+        if (this instanceof Plane && !onGround() && level().isEmptyBlock(blockPosition().below(5)))
+            return;
+        ticksRepairing = configType.getRepairTime();
+        setFlag(FLAG_REPAIR, true);
+        setThrottle(0F);
+    }
+
+    private void tickRepairs()
+    {
+        if (driveableData == null || configType == null)
+            return;
+        repairs.tick(this, ticksRepairing > 0, configType.isEpicShip() && ticksFlareUsing > 0);
+        if (ticksRepairing > 0)
+        {
+            if (ticksRepairing % 20 == 0 && getControllingEntity() instanceof ServerPlayer player)
+                player.displayClientMessage(Component.translatable("gui.flansmodultimate.driveable.repairing", (ticksRepairing + 19) / 20), true);
+            --ticksRepairing;
+        }
+        setFlag(FLAG_REPAIR, ticksRepairing > 0);
     }
 
     /** Operator repair bypasses part dependencies so even destroyed child parts are restored in one pass. */
