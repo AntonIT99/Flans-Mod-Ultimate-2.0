@@ -31,9 +31,8 @@ import java.util.Optional;
  * <p>
  * Both keep a minimum altitude above the terrain under and ahead of them and hold their fire, without giving their
  * target up, while they are below it. A plane never stops: it flies along its heading and comes round in a circle,
- * toward its target or about its home while it has none. Its tactic may instead circle its target, turning in for a gun
- * pass now and then, or carry it on past
- * the target after each pass, holding its fire, before it comes round again. On a gun run it dives or climbs to put its
+ * toward its target or about its home while it has none, never tighter than it turns at its speed. Its tactic may instead
+ * circle its target, turning in for a gun pass now and then, or carry it on past the target after each pass, holding its fire, before it comes round again. On a gun run it dives or climbs to put its
  * nose on the target, as its fixed guns need; a bomber flies over its target level. A helicopter may hover and turns its hull
  * toward its target.
  * Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. An aircraft model
@@ -54,6 +53,11 @@ public final class NpcFlight
     static final double STALL_SPEED = 0.13D;
     static final double TOP_SPEED = 0.42D;
     private static final double MIN_LOITER_RADIUS = 16D;
+    /** Degrees per tick a plane turns at least and, without a turn rate or a model, at most. */
+    static final float MIN_PLANE_TURN = 0.25F;
+    static final float MAX_PLANE_TURN = 2F;
+    /** How much more a plane can turn than the circle it flies takes, so that it can come back onto it when it drifts off. */
+    static final double CIRCLE_MARGIN = 1.25D;
     private static final float HELICOPTER_TURN = 3F;
     /** Blocks across the ground within which a plane on a strafing run has passed over its target, and the least it carries on past it. */
     static final double PASS_DISTANCE = 10D;
@@ -279,20 +283,28 @@ public final class NpcFlight
         NpcVehicleState state = NpcVehicleState.of(npc);
         Vec3 toTarget = target == null ? Vec3.ZERO : state.bombPoint().orElse(target.position()).subtract(npc.position());
         Vec3 aim = target != null && !state.isBombing() ? state.aimDirection().orElse(toTarget) : toTarget;
+        // The horizontal speed of a diving or climbing plane is only part of its airspeed.
+        double speed = flightSpeed(tuning, model, target == null, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
+        int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
+        // No circle is tighter than the plane turns at its speed, with some turn to spare to stay on it.
+        double tightest = turnRadius(speed, maxTurn(turnRate, speed, model != null)) * CIRCLE_MARGIN;
         float wanted;
+        double circle;
+        if (target != null && NpcTactics.of(npc) == Tactic.ORBIT)
+            circle = Math.max(tightest, orbitRadius(npc));
+        else
+            circle = Math.max(tightest, loiterRadius(npc));
         if (target != null)
-            wanted = attackYaw(npc, target, aim);
+            wanted = attackYaw(npc, target, aim, circle);
         else
         {
-            wanted = idleYaw(npc, motion, yaw);
+            wanted = idleYaw(npc, motion, yaw, circle);
             extending = false;
             passing = false;
             orbitTicks = 0;
         }
-        // The horizontal speed of a diving or climbing plane is only part of its airspeed.
-        double speed = flightSpeed(tuning, model, target == null, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
         float before = yaw;
-        yaw = MountMotion.turn(yaw, wanted, planeTurn(tuning.get(Value.FLIGHT_TURN_RATE), speed, loiterRadius(npc), model != null));
+        yaw = MountMotion.turn(yaw, wanted, planeTurn(turnRate, speed, circle, model != null));
         float wantedBank = Mth.clamp(Mth.wrapDegrees(yaw - before) * BANK_PER_TURN, -MAX_BANK, MAX_BANK);
         float rollRate = ROLL_RATE * authority(model == null ? 1D : model.rollAuthority());
         float pitchRate = PITCH_RATE * authority(model == null ? 1D : model.pitchAuthority());
@@ -347,25 +359,32 @@ public final class NpcFlight
         return Mth.clamp(cruise, Math.min(model.minimumSpeed(), top), top);
     }
 
-    /** Unlimited roaming follows the local wander direction instead of steering back toward home. */
-    static float idleYaw(EntityNPCInterface npc, Vec3 motion, float heading)
+    /**
+     * Unlimited roaming follows the local wander direction instead of steering back toward home.
+     *
+     * @param radius
+     *            blocks the plane circles its home at
+     */
+    static float idleYaw(EntityNPCInterface npc, Vec3 motion, float heading, double radius)
     {
         if (npc.ais.walkingRange == 0 && !npc.ais.returnToStart)
             return motion.horizontalDistanceSqr() > 4.0E-4D ? MountMotion.yaw(motion) : heading;
-        return loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), loiterRadius(npc), (npc.getId() & 1) == 0, heading);
+        return loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), radius, (npc.getId() & 1) == 0, heading);
     }
 
     /**
      * The heading of a plane with a target, by its tactic: at the target, round it, or straight on past it after a pass. An
      * orbiting plane turns in for a pass now and then. Custom NPCs' own tactics fly at it.
+     *
+     * @param radius
+     *            blocks an orbiting plane circles its target at
      */
-    private float attackYaw(EntityNPCInterface npc, LivingEntity target, Vec3 aim)
+    private float attackYaw(EntityNPCInterface npc, LivingEntity target, Vec3 aim, double radius)
     {
         Tactic tactic = NpcTactics.of(npc);
         double horizontal = Math.sqrt(npc.distanceToSqr(target.getX(), npc.getY(), target.getZ()));
         if (tactic == Tactic.ORBIT)
         {
-            double radius = Math.max(MIN_LOITER_RADIUS, NpcTactics.engagement(npc).preferred());
             if (!orbitPass(horizontal, radius))
                 return loiterYaw(npc.position(), new Vec3(target.getX(), npc.getY(), target.getZ()), radius, (npc.getId() & 1) == 0, yaw);
         }
@@ -440,9 +459,16 @@ public final class NpcFlight
         return extending ? horizontal < extend : horizontal < PASS_DISTANCE;
     }
 
+    /** @return blocks a plane is told to circle its home at, before its turn widens the circle */
     private static double loiterRadius(EntityNPCInterface npc)
     {
         return Math.max(MIN_LOITER_RADIUS, npc.ais.walkingRange);
+    }
+
+    /** @return blocks an orbiting plane is told to circle its target at, before its turn widens the circle */
+    private static double orbitRadius(EntityNPCInterface npc)
+    {
+        return Math.max(MIN_LOITER_RADIUS, NpcTactics.engagement(npc).preferred());
     }
 
     /**
@@ -498,10 +524,33 @@ public final class NpcFlight
         return Mth.clamp(next, Math.min(minimum, top), top);
     }
 
-    /** @return degrees per tick a plane turns: what flying its loiter circle at its speed takes, so it never spins in place */
+    /**
+     * @return degrees per tick a plane turns: what flying its circle at its speed takes, with some turn to spare to stay on it,
+     *         so it never spins in place
+     */
     static float planeTurn(double speed, double radius)
     {
-        return (float) Mth.clamp(Math.toDegrees(speed / Math.max(1D, radius)), 0.25D, 2D);
+        return (float) Mth.clamp(Math.toDegrees(speed / Math.max(1D, radius)) * CIRCLE_MARGIN, MIN_PLANE_TURN, MAX_PLANE_TURN);
+    }
+
+    /**
+     * @param degreesPerSecond
+     *            the turn rate setting; 0 for none
+     * @param modelled
+     *            whether the plane flies as its model, and turns as tightly as its steepest bank allows
+     * @return degrees per tick a plane turns at most at its speed
+     */
+    static float maxTurn(int degreesPerSecond, double speed, boolean modelled)
+    {
+        if (degreesPerSecond > 0)
+            return degreesPerSecond / 20F;
+        return modelled ? coordinatedTurn(speed) : MAX_PLANE_TURN;
+    }
+
+    /** @return blocks across from its centre the tightest circle is that a plane flies turning so many degrees a tick */
+    static double turnRadius(double speed, float degreesPerTick)
+    {
+        return speed / Math.toRadians(Math.max(MIN_PLANE_TURN, degreesPerTick));
     }
 
     /**

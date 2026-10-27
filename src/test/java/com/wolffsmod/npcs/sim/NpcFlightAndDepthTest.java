@@ -65,10 +65,27 @@ class NpcFlightAndDepthTest
         assertEquals(NpcFlight.TOP_SPEED, NpcFlight.planeSpeed(0, 3D));
         assertEquals(0.3D, NpcFlight.planeSpeed(0, 0.3D));
         assertEquals(0.25D, NpcFlight.planeSpeed(50, 0D), 1.0E-9D);
-        // Flying a circle of 16 blocks at 0.3 blocks per tick takes about one degree per tick.
-        assertEquals(1.074F, NpcFlight.planeTurn(0.3D, 16D), 1.0E-3F);
+        // Flying a circle of 16 blocks at 0.3 blocks per tick takes about one degree per tick, and it can turn a quarter more.
+        assertEquals(1.074F * 1.25F, NpcFlight.planeTurn(0.3D, 16D), 1.0E-3F);
         assertEquals(2F, NpcFlight.planeTurn(0.42D, 2D));
         assertEquals(0.25F, NpcFlight.planeTurn(0.13D, 400D));
+    }
+
+    @Test
+    void aPlaneIsNeverToldToCircleTighterThanItTurns()
+    {
+        // Two degrees a tick at one block a tick flies a circle of about 28.6 blocks.
+        assertEquals(28.648D, NpcFlight.turnRadius(1D, 2F), 1.0E-3D);
+        assertEquals(NpcFlight.turnRadius(1D, NpcFlight.MIN_PLANE_TURN), NpcFlight.turnRadius(1D, 0F));
+        // Without a turn rate or a model it turns two degrees a tick at most, a model as its bank allows, a set rate as set.
+        assertEquals(NpcFlight.MAX_PLANE_TURN, NpcFlight.maxTurn(0, 1D, false));
+        assertEquals(NpcFlight.coordinatedTurn(2D), NpcFlight.maxTurn(0, 2D, true));
+        assertEquals(1.5F, NpcFlight.maxTurn(30, 2D, true));
+        // The tightest circle it is told to fly leaves it a quarter more turn than the circle takes, at most what it turns.
+        double tightest = NpcFlight.turnRadius(0.42D, NpcFlight.MAX_PLANE_TURN) * NpcFlight.CIRCLE_MARGIN;
+        assertEquals(NpcFlight.MAX_PLANE_TURN, NpcFlight.planeTurn(0.42D, tightest), 1.0E-4F);
+        // A fast model plane circles far wider than its sixteen-block home circle.
+        assertTrue(NpcFlight.turnRadius(2D, NpcFlight.maxTurn(0, 2D, true)) > 40D);
     }
 
     @Test

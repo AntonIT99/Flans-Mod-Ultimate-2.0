@@ -1722,7 +1722,7 @@
   "wolffsmodnpcs.preset.vehicle": "Vehicle NPC",
   "wolffsmodnpcs.preset.vehicle.help": "A ground vehicle or mecha.",
   "wolffsmodnpcs.preset.plane": "Plane NPC",
-  "wolffsmodnpcs.preset.plane.help": "An aircraft; helicopters hover automatically.",
+  "wolffsmodnpcs.preset.plane.help": "An aircraft that circles where it was placed while it has nothing to fight; helicopters hover automatically.",
   "wolffsmodnpcs.preset.ship": "Ship NPC",
   "wolffsmodnpcs.preset.ship.help": "A surface vessel restricted to navigable water.",
   "wolffsmodnpcs.preset.passive_creature": "Passive Creature",

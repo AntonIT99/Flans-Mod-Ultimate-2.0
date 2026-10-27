@@ -35,8 +35,8 @@ public enum NpcPreset
     VEHICLE(MOB.targets, new Target(TERRAIN, 1), new Target(HIDE_BODY, 0), new Target(KEEP_WRECK, 1), new Target(HURT_FLASH, 0), new Target(DEATH_ROTATION, 0), new Target(CAN_DROWN, 1),
         new Target(NO_FALL_DAMAGE, 1), new Target(POTION_IMMUNE, 3), new Target(IGNORE_COBWEB, 3), new Target(HEALTH_REGEN, 1), new Target(COMBAT_REGEN, 1), new Target(MODEL_WEAPON_STATS, 1),
         new Target(MODEL_SOUNDS, 1), new Target(DRIVING, 1), new Target(ENGINE_IDLE, 0), new Target(ENGINE_MOVEMENT, 1), new Target(DRIVER_GUNS, 1)),
-    /** Aircraft flight, automatically adapted to helicopters. */
-    PLANE(VEHICLE.targets, new Target(MOVEMENT, 1), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 1), new Target(TACTIC, NpcTuning.Tactic.STRAFING_RUN.ordinal())),
+    /** Aircraft flight, circling where it was placed while it has nothing to fight, automatically adapted to helicopters. */
+    PLANE(VEHICLE.targets, new Target(RETURN_TO_START, 1), new Target(MOVEMENT, 1), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 1), new Target(TACTIC, NpcTuning.Tactic.STRAFING_RUN.ordinal())),
     /** Surface watercraft. */
     SHIP(VEHICLE.targets, new Target(MOVEMENT, 2), new Target(TERRAIN, 2)),
     /** A freely roaming creature that flees. */

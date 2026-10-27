@@ -1722,7 +1722,7 @@
   "wolffsmodnpcs.preset.vehicle": "Fahrzeug-NPC",
   "wolffsmodnpcs.preset.vehicle.help": "Ein Bodenfahrzeug oder Mecha.",
   "wolffsmodnpcs.preset.plane": "Flugzeug-NPC",
-  "wolffsmodnpcs.preset.plane.help": "Ein Luftfahrzeug; Hubschrauber schweben automatisch.",
+  "wolffsmodnpcs.preset.plane.help": "Ein Luftfahrzeug, das über seinem Aufstellort kreist, solange es nichts zu bekämpfen hat; Hubschrauber schweben automatisch.",
   "wolffsmodnpcs.preset.ship": "Schiffs-NPC",
   "wolffsmodnpcs.preset.ship.help": "Ein Überwasserschiff, das in befahrbarem Wasser bleibt.",
   "wolffsmodnpcs.preset.passive_creature": "Passive Kreatur",
