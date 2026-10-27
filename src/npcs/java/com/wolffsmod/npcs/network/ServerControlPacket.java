@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.network;
 
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.diag.ServerBenchmark;
+import com.wolffsmod.npcs.sim.NpcNameTags;
 import com.wolffsmod.npcs.sim.NpcServerRules;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -38,6 +39,8 @@ public record ServerControlPacket(Action action, List<Integer> values, int secon
         APPLY_RANGES,
         /** Client to server: make every NPC follow the saved search intervals. */
         APPLY_SEARCH,
+        /** Client to server: show (seconds 1) or hide (seconds 0) the name tag of every loaded NPC. */
+        NAME_TAGS,
         /** Client to server: run a server benchmark. */
         BENCHMARK,
         /** Client to server: send the NPC census and the latest benchmarks. */
@@ -59,6 +62,11 @@ public record ServerControlPacket(Action action, List<Integer> values, int secon
     public static ServerControlPacket applySearch()
     {
         return command(Action.APPLY_SEARCH, 0);
+    }
+
+    public static ServerControlPacket nameTags(boolean shown)
+    {
+        return command(Action.NAME_TAGS, shown ? 1 : 0);
     }
 
     public static ServerControlPacket benchmark(int seconds)
@@ -148,6 +156,10 @@ public record ServerControlPacket(Action action, List<Integer> values, int secon
             case APPLY_SEARCH -> {
                 settings.applySearchToAll();
                 player.sendSystemMessage(Component.translatable("commands.wolffsmodnpcs.server.search_applied", settings.getSearchNearInterval(), settings.getSearchFarInterval()));
+            }
+            case NAME_TAGS -> {
+                int changed = NpcNameTags.setAll(server, seconds == 1);
+                player.sendSystemMessage(Component.translatable(seconds == 1 ? "commands.wolffsmodnpcs.server.name_tags_shown" : "commands.wolffsmodnpcs.server.name_tags_hidden", changed));
             }
             default -> {
                 if (!ServerBenchmark.start(player.createCommandSourceStack(), seconds))

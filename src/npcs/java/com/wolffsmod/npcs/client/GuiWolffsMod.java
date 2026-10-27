@@ -136,6 +136,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_APPLY_SEARCH_ID = 1218;
     private static final int REPORT_REFRESH_ID = 1219;
     private static final int DIAGNOSIS_COPY_ID = 1220;
+    private static final int SERVER_SHOW_NAME_TAGS_ID = 1222;
+    private static final int SERVER_HIDE_NAME_TAGS_ID = 1223;
     /** The first of the labels a page of read-only lines lays out, one per line or table cell. */
     private static final int LINE_LABEL_ID = 1500;
     /** Room for the lines of a page of read-only lines. */
@@ -1198,7 +1200,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** The actions of a Server page, below its rows: handing settings to every NPC, or the benchmarks. */
     private void initServerActions(Tab shown, int below)
     {
-        if (category == Category.SERVER_RULES && SERVER_RANGES_TAB.equals(shown.name()))
+        if (category == Category.SERVER_RULES && "rules".equals(shown.name()))
+        {
+            serverButton(SERVER_SHOW_NAME_TAGS_ID, "server_show_name_tags", below + 6).setEnabled(ClientServerSettings.isKnown());
+            serverButton(SERVER_HIDE_NAME_TAGS_ID, "server_hide_name_tags", below + 6 + 22).setEnabled(ClientServerSettings.isKnown());
+        }
+        else if (category == Category.SERVER_RULES && SERVER_RANGES_TAB.equals(shown.name()))
             serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", below + 6).setEnabled(ClientServerSettings.isKnown());
         else if (category == Category.SERVER_SEARCH)
             serverButton(SERVER_APPLY_SEARCH_ID, confirmApplySearch ? "server_apply_search_confirm" : "server_apply_search", below + 6).setEnabled(ClientServerSettings.isKnown());
@@ -1897,6 +1904,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case SERVER_BENCHMARK_ID -> NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
             case CLIENT_BENCHMARK_ID -> {
                 // A benchmark does not measure a screen: the editor closes first.
+            case SERVER_SHOW_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(true));
+            case SERVER_HIDE_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(false));
                 close();
                 ClientBenchmark.start(ServerBenchmark.DEFAULT_SECONDS);
             }
