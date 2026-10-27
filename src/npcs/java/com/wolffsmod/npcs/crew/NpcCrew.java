@@ -180,14 +180,23 @@ public final class NpcCrew
         Vec3 at = offset.get().add(EntityPlatform.riderOffset(passenger, vehicle));
         move.accept(passenger, vehicle.getX() + at.x, vehicle.getY() + at.y, vehicle.getZ() + at.z);
         if (crew && passenger instanceof LivingEntity living)
-            face(living, state.seatFacing(seat.get()));
+        {
+            if (CrewPost.of(seat.get()) == CrewPost.DRIVER)
+            {
+                // The driver looks where the vehicle looks, so it appears to steer it
+                face(living, state.seatFacing(seat.get()), vehicle.getYHeadRot());
+                living.setXRot(vehicle.getXRot());
+            }
+            else
+                face(living, state.seatFacing(seat.get()), living.getYHeadRot());
+        }
         return true;
     }
 
-    private static void face(LivingEntity crew, float facing)
+    private static void face(LivingEntity crew, float facing, float look)
     {
         crew.setYBodyRot(facing);
-        float head = facing + Mth.clamp(Mth.wrapDegrees(crew.getYHeadRot() - facing), -HEAD_TURN, HEAD_TURN);
+        float head = facing + Mth.clamp(Mth.wrapDegrees(look - facing), -HEAD_TURN, HEAD_TURN);
         crew.setYHeadRot(head);
         crew.setYRot(head);
     }
