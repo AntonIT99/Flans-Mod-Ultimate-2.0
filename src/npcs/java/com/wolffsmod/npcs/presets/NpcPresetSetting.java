@@ -52,6 +52,10 @@ public enum NpcPresetSetting
     /** On attack. */
     ON_ATTACK(npc -> npc.ais.onAttack, (npc, value) -> npc.ais.onAttack = value,
         List.of("wolffsmodnpcs.preset.value.retaliate", "wolffsmodnpcs.preset.value.flee", "wolffsmodnpcs.preset.value.avoid", "wolffsmodnpcs.preset.value.nothing")),
+    /** Faction > Attack hostile factions. */
+    ATTACK_HOSTILE_FACTIONS(npc -> yes(npc.advanced.attackOtherFactions), (npc, value) -> npc.advanced.attackOtherFactions = value != 0, Values.NO_YES),
+    /** Faction > Defend faction members. */
+    DEFEND_FACTION_MEMBERS(npc -> yes(npc.advanced.defendFaction), (npc, value) -> npc.advanced.defendFaction = value != 0, Values.NO_YES),
     /** Tactical variant. */
     TACTICAL_VARIANT(npc -> npc.ais.tacticalVariant, (npc, value) -> npc.ais.tacticalVariant = value, List.of()),
     /** Terrain. */
@@ -143,7 +147,7 @@ public enum NpcPresetSetting
         {
             case RESPAWN, CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> "survival";
             case KEEP_WRECK, HIDE_BODY, HURT_FLASH, DEATH_ROTATION, MODEL_SOUNDS, ENGINE_IDLE, ENGINE_MOVEMENT -> "appearance";
-            case CONSUME_AMMO, ITEM_WEAPONS, MODEL_WEAPON_STATS, ON_ATTACK -> "combat";
+            case CONSUME_AMMO, ITEM_WEAPONS, MODEL_WEAPON_STATS, ON_ATTACK, ATTACK_HOSTILE_FACTIONS, DEFEND_FACTION_MEMBERS -> "combat";
             default -> "movement";
         };
     }

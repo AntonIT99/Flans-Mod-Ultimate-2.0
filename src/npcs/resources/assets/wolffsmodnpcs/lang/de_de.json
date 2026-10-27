@@ -1732,6 +1732,8 @@
   "wolffsmodnpcs.preset.turret.help": "Ein stationäres Geschütz, das nicht geht, was immer sein Modell ihm leiht, und nach Verschiebung zurückkehrt.",
   "wolffsmodnpcs.preset.setting.movement": "Fortbewegung",
   "wolffsmodnpcs.preset.setting.on_attack": "Bei Angriff",
+  "wolffsmodnpcs.preset.setting.attack_hostile_factions": "Feindliche Fraktionen angreifen",
+  "wolffsmodnpcs.preset.setting.defend_faction_members": "Fraktionsmitglieder verteidigen",
   "wolffsmodnpcs.preset.setting.tactical_variant": "Alte Taktik",
   "wolffsmodnpcs.preset.setting.terrain": "Gelände",
   "wolffsmodnpcs.preset.setting.flight_type": "Flugtyp",

@@ -1732,6 +1732,8 @@
   "wolffsmodnpcs.preset.turret.help": "A static weapon that does not walk, whatever its model lends it, and returns if displaced.",
   "wolffsmodnpcs.preset.setting.movement": "Movement",
   "wolffsmodnpcs.preset.setting.on_attack": "When attacked",
+  "wolffsmodnpcs.preset.setting.attack_hostile_factions": "Attack hostile factions",
+  "wolffsmodnpcs.preset.setting.defend_faction_members": "Defend faction members",
   "wolffsmodnpcs.preset.setting.tactical_variant": "Legacy tactic",
   "wolffsmodnpcs.preset.setting.terrain": "Terrain",
   "wolffsmodnpcs.preset.setting.flight_type": "Flight",

@@ -26,7 +26,7 @@ public enum NpcPreset
     MOB(List.of(), new Target(MOVING_TYPE, Values.WANDERING), new Target(WALKING_RANGE, 0), new Target(RETURN_TO_START, 0), new Target(NPC_INTERACTING, 0), new Target(RESPAWN, Values.RESPAWN_NO),
         new Target(HIDE_BODY, 1), new Target(KEEP_WRECK, 0), new Target(DOOR_INTERACT, 2), new Target(CAN_SPRINT, 0), new Target(MOVEMENT, 0), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 0),
         new Target(TACTIC, 0), new Target(TACTICAL_VARIANT, 0), new Target(SUBMARINE_DEPTH, 0), new Target(LAND_SPEED, 0), new Target(WATER_SPEED, 0), new Target(DRIVE_DRIVEABLES, 0),
-        new Target(ON_ATTACK, 0)),
+        new Target(ON_ATTACK, 0), new Target(ATTACK_HOSTILE_FACTIONS, Values.YES), new Target(DEFEND_FACTION_MEMBERS, Values.YES)),
     /** A freely roaming person using equipped weapons. */
     HUMAN(MOB.targets, new Target(DOOR_INTERACT, Values.DOORS_OPEN), new Target(CAN_SPRINT, 1), new Target(ITEM_WEAPONS, 1)),
     /** Player movement, respawning and ammunition consumption. */
@@ -40,7 +40,7 @@ public enum NpcPreset
     /** Surface watercraft. */
     SHIP(VEHICLE.targets, new Target(MOVEMENT, 2), new Target(TERRAIN, 2)),
     /** A freely roaming creature that flees. */
-    PASSIVE_CREATURE(MOB.targets, new Target(ON_ATTACK, 1), new Target(ITEM_WEAPONS, 0)),
+    PASSIVE_CREATURE(MOB.targets, new Target(ON_ATTACK, 1), new Target(ITEM_WEAPONS, 0), new Target(ATTACK_HOSTILE_FACTIONS, Values.NO), new Target(DEFEND_FACTION_MEMBERS, Values.NO)),
     /** A static weapon that stands still: it does not walk, whatever its model lends, and returns if displaced. */
     TURRET(VEHICLE.targets, new Target(MOVING_TYPE, 0), new Target(RETURN_TO_START, 1), new Target(TACTIC, 2), new Target(DRIVING, 0), new Target(WALKING_SPEED, Values.FORCED_ZERO));
 
