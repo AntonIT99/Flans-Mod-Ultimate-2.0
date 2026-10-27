@@ -14,8 +14,11 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
@@ -57,6 +60,30 @@ public final class FlansModApi
     {
         if (level.getServer().isSameThread())
             com.flansmodultimate.common.entity.EntityDistancePolicy.requestTrackingRefresh();
+    }
+
+    /**
+     * Keep an entity sent to one player whatever the distance, for example while that player edits it from afar. A player has
+     * at most one pinned entity: pinning another replaces it. The pairing changes at once, so a packet naming the entity may
+     * follow. Pins end when the player logs out. Call on the server thread.
+     *
+     * @param player
+     *            the player who receives the entity
+     * @param entity
+     *            the entity to pin in the player's level, or {@code null} to remove the player's pin
+     */
+    public static void pinEntityTracking(ServerPlayer player, @Nullable Entity entity)
+    {
+        if (player.getServer() != null && player.getServer().isSameThread())
+            com.flansmodultimate.common.entity.EntityTrackingPins.pin(player, entity);
+    }
+
+    /**
+     * @return whether the entity is the one pinned for the player by {@link #pinEntityTracking}
+     */
+    public static boolean isEntityTrackingPinned(ServerPlayer player, Entity entity)
+    {
+        return com.flansmodultimate.common.entity.EntityTrackingPins.isPinned(entity, player);
     }
 
     /**

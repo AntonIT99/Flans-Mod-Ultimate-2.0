@@ -17,6 +17,7 @@
       "JobGuardMixin",
       "MarkovGeneratorMixin",
       "ModelDataMixin",
+      "NoppesUtilServerMixin",
       "NPCAttackSelectorMixin",
       "NpcEquipmentAttackAiMixin",
       "NpcGroundPathNavigatorMixin",
@@ -30,6 +31,7 @@
       "NpcWalkNodeEvaluatorMixin",
       "NpcWeaponSettingsMixin",
       "PathNavigationMixin",
+      "SPacketGuiOpenMixin",
       "SPacketRemoteNpcsGetMixin",
       "SPacketToolMobSpawnerMixin",
       "SummonCommandMixin"

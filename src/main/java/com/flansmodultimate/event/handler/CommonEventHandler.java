@@ -187,6 +187,7 @@ public final class CommonEventHandler
         CraterCarver.clear();
         DriveableCollisionBypass.reset();
         DistantSync.clear();
+        EntityTrackingPins.clear();
         contentReferencesValidated = false;
     }
 
@@ -310,6 +311,7 @@ public final class CommonEventHandler
         ModApocalypseConfig.clearServerOverride();
         DriveableCollisionBypass.clear(event.getEntity());
         DistantSync.unsubscribe(event.getEntity().getUUID());
+        EntityTrackingPins.unpin(event.getEntity().getUUID());
         regenTimers.remove(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);
