@@ -3,7 +3,7 @@ Name Stealth Sniper
 ShortName sasSniper2
 
 // Items
-AddItem m21+flanMWSilencer
+AddItem m21+flanMWSilencer+flanMW4xScope
 AddItem m9+flanMWSilencer
 AddItem mwKnife
 AddItem claymore 2

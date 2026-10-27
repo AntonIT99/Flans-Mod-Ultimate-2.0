@@ -15,4 +15,5 @@ AddClass OfficialWW2_RussianScout
 AddClass OfficialWW2_RussianAssault
 AddClass OfficialWW2_RussianSupport
 AddClass OfficialWW2_RussianEngineer
+AddClass OfficialWW2_RussianRifleman
 AddClass OfficialWW2_RussianMedic

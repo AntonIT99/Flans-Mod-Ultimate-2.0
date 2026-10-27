@@ -3,7 +3,7 @@ Name Stealth Sniper
 ShortName marineSniper2
 
 // Items
-AddItem r700+flanMWSilencer
+AddItem r700+flanMWSilencer+flanMW8xScope
 AddItem m9+flanMWSilencer
 AddItem mwKnife
 AddItem claymore 2

@@ -15,4 +15,5 @@ AddClass OfficialWW2_AmericanScout
 AddClass OfficialWW2_AmericanAssault
 AddClass OfficialWW2_AmericanSupport
 AddClass OfficialWW2_AmericanEngineer
+AddClass OfficialWW2_AmericanRifleman
 AddClass OfficialWW2_AmericanMedic

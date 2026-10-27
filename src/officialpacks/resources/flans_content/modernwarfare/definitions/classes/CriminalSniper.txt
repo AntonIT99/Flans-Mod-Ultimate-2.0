@@ -3,7 +3,7 @@ Name Sniper
 ShortName CriminalSniper
 
 // Items
-AddItem r700+flanMWSilencer
+AddItem r700+flanMWSilencer+flanMW8xScope
 AddItem usp+flanMWSilencer
 AddItem claymore 3
 AddItem mwKnife

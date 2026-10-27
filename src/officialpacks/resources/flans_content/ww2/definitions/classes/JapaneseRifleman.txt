@@ -1,0 +1,11 @@
+// Identity
+Name Rifleman
+ShortName OfficialWW2_JapaneseRifleman
+
+// Items
+AddItem type38
+AddItem type14
+AddItem type97 2
+AddItem ww2Knife
+AddItem type38Ammo 4
+AddItem type14Ammo 2

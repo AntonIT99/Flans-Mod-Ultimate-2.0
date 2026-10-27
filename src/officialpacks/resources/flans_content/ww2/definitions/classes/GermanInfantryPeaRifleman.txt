@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman (Kar98k, Pea Dot)
+ShortName OfficialWW2_GermanInfantryPeaRifleman
+
+// Armour
+Hat GermanSupportHelmet
+Chest GermanAssaultChestPea
+Legs GermanUniformPantsPea
+Shoes GermanUniformBoots
+
+// Items
+AddItem kar98k
+AddItem C96
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem kar98kAmmo 4
+AddItem C96Ammo 3

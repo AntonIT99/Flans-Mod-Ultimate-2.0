@@ -3,7 +3,7 @@ Name Scout
 ShortName OfficialWW2_AmericanScout
 
 // Items
-AddItem springfield
+AddItem springfieldSniper
 AddItem colt
 AddItem mk2Frag 2
 AddItem ww2Knife

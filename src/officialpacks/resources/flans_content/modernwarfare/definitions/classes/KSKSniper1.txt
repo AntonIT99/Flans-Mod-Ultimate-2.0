@@ -3,7 +3,7 @@ Name Heavy Sniper
 ShortName kskSniper1
 
 // Items
-AddItem m40a3
+AddItem m40a3+flanMW8xScope
 AddItem glock
 AddItem m67 2
 AddItem mwKnife

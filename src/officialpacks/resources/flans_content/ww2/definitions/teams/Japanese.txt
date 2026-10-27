@@ -15,4 +15,5 @@ AddClass OfficialWW2_JapaneseScout
 AddClass OfficialWW2_JapaneseAssault
 AddClass OfficialWW2_JapaneseSupport
 AddClass OfficialWW2_JapaneseEngineer
+AddClass OfficialWW2_JapaneseRifleman
 AddClass OfficialWW2_JapaneseMedic

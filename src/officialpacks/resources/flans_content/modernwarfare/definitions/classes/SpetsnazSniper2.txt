@@ -3,7 +3,7 @@ Name Stealth Sniper
 ShortName spetsnazSniper2
 
 // Items
-AddItem r700+flanMWSilencer
+AddItem r700+flanMWSilencer+flanMW8xScope
 AddItem makarov+flanMWSilencer
 AddItem mwKnife
 AddItem claymore 2

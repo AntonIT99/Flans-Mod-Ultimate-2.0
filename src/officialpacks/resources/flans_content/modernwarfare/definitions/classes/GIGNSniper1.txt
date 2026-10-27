@@ -3,7 +3,7 @@ Name Heavy Sniper
 ShortName gignSniper1
 
 // Items
-AddItem l96
+AddItem l96+flanMW8xScope
 AddItem m1911
 AddItem m67 2
 AddItem mwKnife

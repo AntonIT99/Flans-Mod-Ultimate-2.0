@@ -3,7 +3,7 @@ Name Heavy Sniper
 ShortName marineSniper1
 
 // Items
-AddItem barrett
+AddItem barrett+flanMW8xScope
 AddItem m9
 AddItem m67 1
 AddItem mwKnife
