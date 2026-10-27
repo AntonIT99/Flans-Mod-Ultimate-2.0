@@ -81,6 +81,20 @@ class NpcFlightAndDepthTest
     }
 
     @Test
+    void aRoamingPlaneMovesItsCircleOnRoughlyAlongItsHeading()
+    {
+        // Heading 0 flies toward positive z.
+        Vec3 next = NpcFlight.nextRoamCentre(new Vec3(10D, 80D, 20D), 0F, 128D, 0F);
+        assertEquals(10D, next.x, 1.0E-2D);
+        assertEquals(148D, next.z, 1.0E-2D);
+        assertEquals(80D, next.y);
+        // Turned off its heading, the next point lies as far away.
+        Vec3 turned = NpcFlight.nextRoamCentre(Vec3.ZERO, 0F, 128D, NpcFlight.ROAM_SPREAD);
+        assertEquals(128D, turned.horizontalDistance(), 1.0E-2D);
+        assertTrue(turned.x < 0D && turned.z > 0D);
+    }
+
+    @Test
     void aPlaneIsNeverToldToCircleTighterThanItTurns()
     {
         // Two degrees a tick at one block a tick flies a circle of about 28.6 blocks.

@@ -31,11 +31,11 @@ import java.util.Optional;
  * <p>
  * Both keep a minimum altitude above the terrain under and ahead of them and hold their fire, without giving their
  * target up, while they are below it. A plane never stops: it flies along its heading and comes round in a circle,
- * toward its target or about its home while it has none, never tighter than it turns at its speed. Its tactic may instead
- * circle its target, turning in for a gun pass now and then, or carry it on past the target after each pass, holding its fire, before it comes round again. On a gun run it dives or climbs to put its
- * nose on the target, as its fixed guns need; a bomber flies over its target level. A helicopter may hover and turns its hull
- * toward its target.
- * Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. An aircraft model
+ * toward its target or about its home while it has none, or, roaming, about where it is, moving on now and then; never
+ * tighter than it turns at its speed. Its tactic may instead circle its target, turning in for a gun pass now and then,
+ * or carry it on past the target after each pass, holding its fire, before it comes round again. On a gun run it dives or
+ * climbs to put its nose on the target, as its fixed guns need; a bomber flies over its target level. A helicopter may
+ * hover and turns its hull toward its target. Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. An aircraft model
  * flies at its definition's speeds, climb rate and control rates: a plane with nothing to fight cruises just above the speed
  * it needs to fly and builds up to its top speed to fight, gains speed in a dive and loses it in a climb, never below the
  * speed it needs to fly, and turns as tightly as its steepest bank allows at its speed. One instance per NPC, server side.
@@ -55,6 +55,10 @@ public final class NpcFlight
     private static final double MIN_LOITER_RADIUS = 16D;
     /** Blocks a plane without a walking range circles its home at, wide enough that it does not seem to spin over one spot. */
     static final double HOME_CIRCLE_RADIUS = 64D;
+    /** Ticks a roaming plane circles one point before it moves on, how many circle radii on from it the next point lies, and the most degrees off its heading. */
+    static final int ROAM_INTERVAL = 600;
+    static final double ROAM_STEP = 2D;
+    static final float ROAM_SPREAD = 60F;
     /** Degrees per tick a plane turns at least and, without a turn rate or a model, at most. */
     static final float MIN_PLANE_TURN = 0.25F;
     static final float MAX_PLANE_TURN = 2F;
@@ -119,6 +123,11 @@ public final class NpcFlight
     private int orbitTicks;
     /** Blocks per tick a plane flying its model flies at; 0 until it takes off from its measured speed. */
     private double airspeed;
+    /** Point a roaming plane circles, moved on now and then; null until it roams. */
+    @Nullable
+    private Vec3 roamCentre;
+    /** Ticks a roaming plane has circled its point. */
+    private int roamTicks;
 
     /** @return how the NPC flies: as its flight type says, Automatic resolved by its model; Normal unless it moves by flying */
     public static Flight type(EntityNPCInterface npc)
@@ -188,7 +197,7 @@ public final class NpcFlight
         if (type(npc) == Flight.PLANE)
         {
             if (npc.getTarget() == null)
-                return "LOITER";
+                return roams(npc) ? "ROAM" : "LOITER";
             if (extending)
                 return "EXTEND";
             return NpcTactics.of(npc) == Tactic.ORBIT && !passing ? "ORBIT" : "ATTACK_RUN";
@@ -210,6 +219,7 @@ public final class NpcFlight
             pitch = 0F;
             bank = 0F;
             airspeed = 0D;
+            roamCentre = null;
             return;
         }
         if (!flying)
@@ -297,10 +307,14 @@ public final class NpcFlight
         else
             circle = Math.max(tightest, loiterRadius(npc));
         if (target != null)
+        {
+            // After the fight a roaming plane circles wherever the fight has left it.
+            roamCentre = null;
             wanted = attackYaw(npc, target, aim, circle);
+        }
         else
         {
-            wanted = idleYaw(npc, motion, yaw, circle);
+            wanted = idleYaw(npc, circle);
             extending = false;
             passing = false;
             orbitTicks = 0;
@@ -362,16 +376,52 @@ public final class NpcFlight
     }
 
     /**
-     * Unlimited roaming follows the local wander direction instead of steering back toward home.
+     * The heading of a plane with nothing to fight: round its home, or, roaming, round where it is, moving that point on now and
+     * then. Custom NPCs' wandering picks no points for an aircraft that holds its altitude, as it only takes ground within a few
+     * blocks of the NPC's height.
      *
      * @param radius
-     *            blocks the plane circles its home at
+     *            blocks the plane circles at
      */
-    static float idleYaw(EntityNPCInterface npc, Vec3 motion, float heading, double radius)
+    private float idleYaw(EntityNPCInterface npc, double radius)
     {
-        if (npc.ais.walkingRange == 0 && !npc.ais.returnToStart)
-            return motion.horizontalDistanceSqr() > 4.0E-4D ? MountMotion.yaw(motion) : heading;
-        return loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), radius, (npc.getId() & 1) == 0, heading);
+        if (!roams(npc))
+        {
+            roamCentre = null;
+            return loiterYaw(npc.position(), new Vec3(npc.getStartXPos(), npc.getY(), npc.getStartZPos()), radius, (npc.getId() & 1) == 0, yaw);
+        }
+        if (roamCentre == null)
+        {
+            roamCentre = npc.position();
+            roamTicks = 0;
+        }
+        else if (++roamTicks >= ROAM_INTERVAL)
+        {
+            roamCentre = nextRoamCentre(npc.position(), yaw, radius * ROAM_STEP, (npc.getRandom().nextFloat() * 2F - 1F) * ROAM_SPREAD);
+            roamTicks = 0;
+        }
+        return loiterYaw(npc.position(), new Vec3(roamCentre.x, npc.getY(), roamCentre.z), radius, (npc.getId() & 1) == 0, yaw);
+    }
+
+    /** @return whether the plane roams: it has unlimited wandering and does not return to its start */
+    static boolean roams(EntityNPCInterface npc)
+    {
+        return npc.ais.walkingRange == 0 && !npc.ais.returnToStart;
+    }
+
+    /**
+     * @param heading
+     *            degrees the plane flies toward now
+     * @param distance
+     *            blocks on from the plane the next point lies
+     * @param turn
+     *            degrees off its heading the next point lies
+     * @return the next point a roaming plane circles
+     */
+    static Vec3 nextRoamCentre(Vec3 position, float heading, double distance, float turn)
+    {
+        Vec3 direction = Vec3.directionFromRotation(0F, heading + turn);
+        return position.add(direction.x * distance, 0D, direction.z * distance);
     }
 
     /**

@@ -1246,7 +1246,7 @@
   "wolffsmodnpcs.tuning.flight_type": "Flight type",
   "wolffsmodnpcs.tuning.flight_type.auto": "Automatic",
   "wolffsmodnpcs.tuning.flight_type.helicopter": "Helicopter",
-  "wolffsmodnpcs.tuning.flight_type.help": "For Flying movement: Normal uses Custom NPCs flight. Plane keeps moving and circles its home, as wide as a limited wandering range or 64 blocks without one, and wider when it is too fast to turn that tightly; with unlimited wandering and return to start off, it flies straight on. Helicopter can hover. Both climb before attacking. Automatic flies a helicopter or VTOL model as a helicopter, any other aircraft model as a plane, and anything else as Normal.",
+  "wolffsmodnpcs.tuning.flight_type.help": "For Flying movement: Normal uses Custom NPCs flight. Plane keeps moving and circles its home, as wide as a limited wandering range or 64 blocks without one, and wider when it is too fast to turn that tightly; with unlimited wandering and return to start off, it roams: it circles where it is and moves on every 30 seconds. Helicopter can hover. Both climb before attacking. Automatic flies a helicopter or VTOL model as a helicopter, any other aircraft model as a plane, and anything else as Normal.",
   "wolffsmodnpcs.tuning.flight_type.normal": "Normal",
   "wolffsmodnpcs.tuning.flight_type.plane": "Plane",
   "wolffsmodnpcs.tuning.follow_distance": "Following distance (blocks)",

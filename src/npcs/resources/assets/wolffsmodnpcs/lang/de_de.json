@@ -1246,7 +1246,7 @@
   "wolffsmodnpcs.tuning.flight_type": "Flugart",
   "wolffsmodnpcs.tuning.flight_type.auto": "Automatisch",
   "wolffsmodnpcs.tuning.flight_type.helicopter": "Hubschrauber",
-  "wolffsmodnpcs.tuning.flight_type.help": "Für fliegende Fortbewegung: Normal nutzt Custom NPCs. Flugzeuge bleiben in Bewegung und kreisen um ihren Startpunkt, so weit wie ein begrenzter Wanderradius oder ohne einen 64 Blöcke, und weiter, wenn sie zu schnell sind, um so eng zu wenden; ohne Begrenzung und Rückkehr zum Start fliegen sie geradeaus weiter. Hubschrauber können schweben. Beide steigen vor Angriffen. Automatisch fliegt ein Hubschrauber- oder VTOL-Modell als Hubschrauber, jedes andere Flugzeugmodell als Flugzeug und alles andere als Normal.",
+  "wolffsmodnpcs.tuning.flight_type.help": "Für fliegende Fortbewegung: Normal nutzt Custom NPCs. Flugzeuge bleiben in Bewegung und kreisen um ihren Startpunkt, so weit wie ein begrenzter Wanderradius oder ohne einen 64 Blöcke, und weiter, wenn sie zu schnell sind, um so eng zu wenden; ohne Begrenzung und Rückkehr zum Start streifen sie umher: Sie kreisen, wo sie sind, und ziehen alle 30 Sekunden weiter. Hubschrauber können schweben. Beide steigen vor Angriffen. Automatisch fliegt ein Hubschrauber- oder VTOL-Modell als Hubschrauber, jedes andere Flugzeugmodell als Flugzeug und alles andere als Normal.",
   "wolffsmodnpcs.tuning.flight_type.normal": "Normal",
   "wolffsmodnpcs.tuning.flight_type.plane": "Flugzeug",
   "wolffsmodnpcs.tuning.follow_distance": "Folgeabstand (Blöcke)",
