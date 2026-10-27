@@ -4,6 +4,7 @@ import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.teams.IPlayerClass;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.network.SoldierNamePacket;
@@ -34,7 +35,8 @@ class FlanSoldierNamesTest
     void explicitPickerGenderOverridesAssociationAndInvalidRequestsAreIgnored()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        npc.display = mock(DataDisplay.class);
+        npc.display = mock(DataDisplay.class, withSettings().extraInterfaces(NpcDisplayNames.Holder.class));
+        when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(playerClass.getShortName()).thenReturn("class");
         SoldierNameAssociations associations = new SoldierNameAssociations(Map.of(), Map.of("class", "wolffsmodnpcs:french"));
@@ -57,7 +59,8 @@ class FlanSoldierNamesTest
     void romanTeamAppliesBuiltInGeneratorAndReturnsItsAssociationId()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        npc.display = mock(DataDisplay.class);
+        npc.display = mock(DataDisplay.class, withSettings().extraInterfaces(NpcDisplayNames.Holder.class));
+        when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         ITeam team = mock(ITeam.class);
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(team.getShortName()).thenReturn(com.flansmodultimate.util.ResourceUtils.sanitize("WolffRome_Empire"));
@@ -87,7 +90,8 @@ class FlanSoldierNamesTest
     {
         ServerPlayer player = mock(ServerPlayer.class);
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        npc.display = mock(DataDisplay.class);
+        npc.display = mock(DataDisplay.class, withSettings().extraInterfaces(NpcDisplayNames.Holder.class));
+        when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         try (var editor = mockStatic(NoppesUtilServer.class); var config = mockStatic(SoldierNameAssociations.class))
         {
             assertTrue(FlanSoldierNames.request(player, 42, "team", "class").isEmpty());
@@ -104,7 +108,8 @@ class FlanSoldierNamesTest
     void appliesClassOverrideUsingConfiguredGenderAndReturnsSameNameToEditor()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        npc.display = mock(DataDisplay.class);
+        npc.display = mock(DataDisplay.class, withSettings().extraInterfaces(NpcDisplayNames.Holder.class));
+        when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         when(npc.getId()).thenReturn(42);
         when(npc.display.getMarkovGender()).thenReturn(2);
         ITeam team = mock(ITeam.class);
@@ -133,7 +138,8 @@ class FlanSoldierNamesTest
     void unmappedOrExplicitlyDisabledClassLeavesNameAndGeneratorAlone()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        npc.display = mock(DataDisplay.class);
+        npc.display = mock(DataDisplay.class, withSettings().extraInterfaces(NpcDisplayNames.Holder.class));
+        when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(playerClass.getShortName()).thenReturn("class");
         SoldierNameAssociations empty = new SoldierNameAssociations(Map.of(), Map.of());
@@ -156,7 +162,8 @@ class FlanSoldierNamesTest
     {
         ServerPlayer player = mock(ServerPlayer.class);
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        npc.display = mock(DataDisplay.class);
+        npc.display = mock(DataDisplay.class, withSettings().extraInterfaces(NpcDisplayNames.Holder.class));
+        when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         ServerLevel level = mock(ServerLevel.class);
         when(player.level()).thenReturn(level);
         when(npc.level()).thenReturn(level);

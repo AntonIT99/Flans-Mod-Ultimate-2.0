@@ -61,11 +61,10 @@ final class TeamFactionMenu extends GuiBasic implements ICustomScrollListener
     {
         String selected = choices.getSelected();
         String needle = query.strip().toLowerCase(Locale.ROOT);
-        filtered = teams.stream()
-            .filter(team -> (team.getName() + " " + team.getShortName() + " " + (team.getContentPack() == null ? "" : team.getContentPack().getName())).toLowerCase(Locale.ROOT).contains(needle))
-            .toList();
+        filtered = teams.stream().filter(team -> (team.getNameComponent().getString() + " " + team.getShortName() + " " + (team.getContentPack() == null ? "" : team.getContentPack().getName()))
+            .toLowerCase(Locale.ROOT).contains(needle)).toList();
         choices.clear();
-        choices.setUnsortedList(filtered.stream().map(team -> team.getName() + " [" + team.getShortName() + "]").toList());
+        choices.setUnsortedList(filtered.stream().map(team -> team.getNameComponent().getString() + " [" + team.getShortName() + "]").toList());
         if (selected != null)
             choices.setSelected(selected);
         addLabel(new GuiLabel(1, filtered.isEmpty() ? PREFIX + "empty" : "", guiLeft + 8, guiTop + 207));

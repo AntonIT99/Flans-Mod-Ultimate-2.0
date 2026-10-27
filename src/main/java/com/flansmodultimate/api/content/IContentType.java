@@ -10,6 +10,8 @@ import com.flansmodultimate.api.driveables.IDriveableType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 
@@ -34,6 +36,34 @@ public interface IContentType
      * @return the name the definition declares, before any translation
      */
     String getName();
+
+    /**
+     * Readable on either side. Pack teams use {@code team.flansmod.<shortname>} and classes use
+     * {@code class.flansmod.<shortname>}, lowercasing the original definition ShortName before registry collision aliases.
+     * Items and blocks retain their existing {@code item.flansmod.<registered-shortname>} and
+     * {@code block.flansmod.<registered-shortname>} keys, including collision aliases. Other itemless definitions
+     * use {@code <type>.flansmod.<original-shortname>}, such as {@code loadout_pool.flansmod.example}.
+     * The key is presentation data, never a content identifier. Explicit editor names remain literal.
+     *
+     * @return the optional name translation key, empty for a literal definition name
+     */
+    @SuppressWarnings("SameReturnValue") // Loaded definition implementations override this default with derived keys.
+    default String getNameTranslationKey()
+    {
+        return "";
+    }
+
+    /**
+     * Builds a fresh name component on either side, retaining the canonical name as its fallback.
+     * Send the component to clients without resolving it on the server so each viewer's resources apply.
+     *
+     * @return the unstyled display name; {@link #getName()} remains the canonical name for saves and scripts
+     */
+    default MutableComponent getNameComponent()
+    {
+        String key = getNameTranslationKey();
+        return key.isBlank() ? Component.literal(getName()) : Component.translatableWithFallback(key, getName());
+    }
 
     /**
      * @return the description the definition declares, empty when it has none

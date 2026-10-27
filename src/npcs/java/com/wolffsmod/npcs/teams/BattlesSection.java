@@ -130,6 +130,7 @@ public final class BattlesSection
             CompoundTag entry = new CompoundTag();
             entry.putString(ID, team.getShortName());
             entry.putString(NAME, team.getName());
+            entry.putString("displayName", net.minecraft.network.chat.Component.Serializer.toJson(team.getNameComponent()));
             entry.putInt(COLOUR, team.getTeamColour());
             return entry;
         }));
@@ -227,6 +228,7 @@ public final class BattlesSection
         CompoundTag tag = new CompoundTag();
         tag.putInt(ID, faction.id);
         tag.putString(NAME, faction.name);
+        tag.putString("displayName", net.minecraft.network.chat.Component.Serializer.toJson(com.wolffsmod.npcs.names.FactionDisplayName.of(faction)));
         tag.putInt(COLOUR, faction.color & 0xFFFFFF);
         return tag;
     }

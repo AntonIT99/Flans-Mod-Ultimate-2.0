@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.client;
 
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.SoldierNamePacket;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
@@ -31,7 +32,8 @@ class NpcClientNamesTest
         Minecraft minecraft = mock(Minecraft.class);
         minecraft.level = mock(ClientLevel.class);
         EntityCustomNpc npc = mock(EntityCustomNpc.class);
-        npc.display = mock(DataDisplay.class);
+        npc.display = mock(DataDisplay.class, withSettings().extraInterfaces(NpcDisplayNames.Holder.class));
+        when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         npc.modelData = mock(ModelData.class);
         npc.modelData.extra = new CompoundTag();
         npc.modelData.extra.putString(FlanSoldierSelection.TEAM_KEY, "team");

@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -233,7 +234,9 @@ final class BotCommander
             if (individual)
             {
                 for (BotSlot slot : slots)
-                    rows.add(new TeamsScoreEntry(ROW_PREFIX + (slot.getName().isEmpty() ? "#" + slot.getId() : slot.getName()), slot.getScore(), slot.getKills(), slot.getDeaths(), label(slot)));
+                    rows.add(new TeamsScoreEntry(ROW_PREFIX + (slot.getName().isEmpty() ? "#" + slot.getId() : slot.getName()), slot.getScore(), slot.getKills(), slot.getDeaths(),
+                        FlansModApi.getPlayerClass(slot.getRole()).map(IContentType::getName).or(() -> FlansModApi.getType(slot.getRole()).map(IContentType::getName)).orElse(slot.getRole()),
+                        Component.literal(ROW_PREFIX).append(slot.getNameComponent()), label(slot)));
             }
             else if (!slots.isEmpty())
             {
@@ -247,8 +250,9 @@ final class BotCommander
         }
     }
 
-    private static String label(BotSlot slot)
+    private static Component label(BotSlot slot)
     {
-        return FlansModApi.getPlayerClass(slot.getRole()).map(IContentType::getName).or(() -> FlansModApi.getType(slot.getRole()).map(IContentType::getName)).orElse(slot.getRole());
+        return FlansModApi.getPlayerClass(slot.getRole()).map(type -> (Component) type.getNameComponent())
+            .or(() -> FlansModApi.getType(slot.getRole()).map(type -> (Component) type.getNameComponent())).orElseGet(() -> Component.literal(slot.getRole()));
     }
 }

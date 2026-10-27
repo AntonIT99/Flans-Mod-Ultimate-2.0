@@ -94,9 +94,9 @@ public record TeamsData(boolean enabled, int players, int current, int next, int
         variableTag.getAllKeys().stream().sorted().forEach(key -> variables.put(key, variableTag.getString(key)));
         return new TeamsData(tag.getBoolean(TeamsSection.ENABLED), tag.getInt(TeamsSection.PLAYERS), index(tag, TeamsSection.CURRENT), index(tag, TeamsSection.NEXT), index(tag, TeamsSection.QUEUED),
             live, List.copyOf(rounds), list(tag, TeamsSection.MAPS, TeamsData::map), list(tag, TeamsSection.GAME_TYPES, TeamsData::gameType),
-            list(tag, TeamsSection.TEAMS, entry -> new TeamInfo(entry.getString(TeamsSection.ID), entry.getString(TeamsSection.NAME), entry.getInt(TeamsSection.COLOUR))),
-            list(tag, TeamsSection.POOLS, entry -> new Pool(entry.getString(TeamsSection.ID), entry.getString(TeamsSection.NAME))), tag.getCompound(TeamsSection.RULES),
-            tag.getCompound(TeamsSection.SETTINGS), Collections.unmodifiableMap(variables));
+            list(tag, TeamsSection.TEAMS, entry -> new TeamInfo(entry.getString(TeamsSection.ID), displayName(entry), entry.getInt(TeamsSection.COLOUR))),
+            list(tag, TeamsSection.POOLS, entry -> new Pool(entry.getString(TeamsSection.ID), displayName(entry))), tag.getCompound(TeamsSection.RULES), tag.getCompound(TeamsSection.SETTINGS),
+            Collections.unmodifiableMap(variables));
     }
 
     private static int index(CompoundTag tag, String key)
@@ -126,7 +126,7 @@ public record TeamsData(boolean enabled, int players, int current, int next, int
 
     private static LiveRound liveRound(CompoundTag tag, int index)
     {
-        List<LiveTeam> teams = list(tag, TeamsSection.TEAMS, entry -> new LiveTeam(entry.getString(TeamsSection.ID), entry.getString(TeamsSection.NAME), entry.getInt(TeamsSection.COLOUR),
+        List<LiveTeam> teams = list(tag, TeamsSection.TEAMS, entry -> new LiveTeam(entry.getString(TeamsSection.ID), displayName(entry), entry.getInt(TeamsSection.COLOUR),
             entry.getInt(TeamsSection.SIDE), entry.getInt(TeamsSection.SCORE), entry.getInt(TeamsSection.PLAYERS)));
         return new LiveRound(round(tag, index), tag.getInt(TeamsSection.TIME_LEFT), tag.getString(TeamsSection.PHASE), tag.getInt(TeamsSection.INTERMISSION_LEFT), teams);
     }
@@ -140,6 +140,13 @@ public record TeamsData(boolean enabled, int players, int current, int next, int
         return new MapInfo(tag.getString(TeamsSection.ID), tag.getString(TeamsSection.NAME), tag.getString(TeamsSection.DIMENSION),
             Arrays.stream(tag.getIntArray(TeamsSection.BOUNDS)).boxed().toList(), tag.getInt(TeamsSection.BASES), tag.getBoolean(TeamsSection.CAPTURE_POINTS), tag.getString(TeamsSection.IMAGE),
             List.copyOf(playable));
+    }
+
+    private static String displayName(CompoundTag tag)
+    {
+        String key = tag.getString("nameTranslationKey");
+        String name = tag.getString(TeamsSection.NAME);
+        return key.isBlank() ? name : Component.translatableWithFallback(key, name).getString();
     }
 
     private static GameTypeInfo gameType(CompoundTag tag)

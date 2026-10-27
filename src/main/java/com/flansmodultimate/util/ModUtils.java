@@ -156,16 +156,14 @@ public final class ModUtils
 
     /**
      * Display name of a content pack type, exactly as the player reads it in their own inventory.
-     * The generated language file is the single source of truth: it is keyed by shortname and seeded from the
-     * content pack's own {@code .lang} files, falling back to the type definition's {@code Name} line only where
-     * the pack ships no translation. Types without an item (player classes, teams, loadout pools) have no
-     * translation key, so those keep the {@code Name} line.
+     * Authored and generated translations retain their existing keys. The definition's {@code Name} is the
+     * runtime fallback when that key has no translation, including when no item has been registered.
      *
      * @see com.flansmodultimate.content.ContentManager
      */
     public static Component getDisplayName(@Nullable InfoType infoType)
     {
-        return getItemStack(infoType).map(ItemStack::getHoverName).orElseGet(() -> Component.literal(infoType == null ? StringUtils.EMPTY : infoType.getName()));
+        return getItemStack(infoType).map(ItemStack::getHoverName).orElseGet(() -> infoType == null ? Component.empty() : infoType.getNameComponent());
     }
 
     /** {@link #getDisplayName(InfoType)} as plain text, for the string-based font and layout helpers. */

@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
+import com.wolffsmod.npcs.names.FactionDisplayName;
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.NpcRemotePacket;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -29,7 +31,8 @@ public abstract class SPacketRemoteNpcsGetMixin
             if (entity instanceof EntityNPCInterface npc && !npc.isRemoved())
             {
                 var faction = npc.getFaction();
-                entries.add(new NpcRemotePacket.Entry(npc.getId(), npc.display.getName(), player.distanceToSqr(npc), faction.id, faction.name));
+                entries.add(new NpcRemotePacket.Entry(npc.getId(), npc.display.getName(), player.distanceToSqr(npc), faction.id, faction.name, NpcDisplayNames.name(npc.display),
+                    FactionDisplayName.of(faction)));
             }
         }
         NpcNetwork.sendTo(player, new NpcRemotePacket(entries));

@@ -7,6 +7,8 @@ package com.flansmodultimate.api.teams;
 
 import org.jetbrains.annotations.ApiStatus;
 
+import net.minecraft.network.chat.Component;
+
 /**
  * A row an addon adds to a team on the Teams scoreboard, beside its players: one combatant, or several summed up.
  *
@@ -19,8 +21,18 @@ import org.jetbrains.annotations.ApiStatus;
  * @param deaths
  *            deaths the row counts
  * @param label
- *            what the class column shows, such as the combatant's class
+ *            the canonical class-column label
+ * @param displayName
+ *            the displayed row name, retained as a component for each client to translate
+ * @param displayLabel
+ *            the displayed class-column label, retained as a component for each client to translate
  */
 @ApiStatus.Experimental
-public record TeamsScoreEntry(String name, int score, int kills, int deaths, String label)
-{}
+public record TeamsScoreEntry(String name, int score, int kills, int deaths, String label, Component displayName, Component displayLabel)
+{
+    /** Creates a row with literal name and class labels, readable on either side. */
+    public TeamsScoreEntry(String name, int score, int kills, int deaths, String label)
+    {
+        this(name, score, kills, deaths, label, Component.literal(name), Component.literal(label));
+    }
+}

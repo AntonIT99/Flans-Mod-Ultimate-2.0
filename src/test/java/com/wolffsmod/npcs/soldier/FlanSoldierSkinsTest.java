@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -29,6 +30,7 @@ class FlanSoldierSkinsTest
         when(pack.getPath()).thenReturn(Path.of("server-editor"));
         when(playerClass.getContentPack()).thenReturn(pack);
         when(playerClass.getName()).thenReturn("Custom Rifleman");
+        when(playerClass.getNameComponent()).thenReturn(Component.literal("Custom Rifleman"));
         when(playerClass.getShortName()).thenReturn("custom:rifleman");
         when(playerClass.getSkinOverrideVariants()).thenReturn(List.of());
         try (MockedStatic<FlansModApi> api = mockStatic(FlansModApi.class))
@@ -62,8 +64,10 @@ class FlanSoldierSkinsTest
         when(pack.getPath()).thenReturn(Path.of("test-pack"));
         when(team.getContentPack()).thenReturn(pack);
         when(team.getName()).thenReturn("Team");
+        when(team.getNameComponent()).thenReturn(Component.translatableWithFallback("team.test", "Team"));
         doReturn(List.of(playerClass)).when(team).getClasses();
         when(playerClass.getName()).thenReturn("Rifleman");
+        when(playerClass.getNameComponent()).thenReturn(Component.translatableWithFallback("class.test", "Rifleman"));
         when(playerClass.getSkinOverrideVariants()).thenReturn(List.of(new SkinOverrideVariant("first", null), new SkinOverrideVariant("second", null)));
         try (MockedStatic<FlansModApi> api = mockStatic(FlansModApi.class))
         {

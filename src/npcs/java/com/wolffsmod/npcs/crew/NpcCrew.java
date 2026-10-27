@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
@@ -383,7 +384,7 @@ public final class NpcCrew
             selection.write(npc.modelData.extra);
             NpcSkins.markClassSkin(npc);
         }
-        npc.display.setName(selection.playerClass().getName());
+        NpcDisplayNames.bindName(npc.display, selection.playerClass());
         level.addFreshEntity(npc);
         npc.setHealth(npc.getMaxHealth());
         return npc;

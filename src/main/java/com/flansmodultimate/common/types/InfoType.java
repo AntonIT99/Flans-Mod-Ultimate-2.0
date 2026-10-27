@@ -153,6 +153,19 @@ public abstract class InfoType implements IContentType
         return uniqueShortName != null ? uniqueShortName : originalShortName;
     }
 
+    /** Item and block keys retain their registered aliases and existing resource-pack translations. */
+    @Override
+    public String getNameTranslationKey()
+    {
+        if (type == null || StringUtils.isBlank(originalShortName))
+            return StringUtils.EMPTY;
+        if (type.isHasBlock())
+            return "block.flansmod." + getShortName();
+        if (type.isHasItem())
+            return "item.flansmod." + getShortName();
+        return type.getIdentifier() + ".flansmod." + originalShortName.toLowerCase(Locale.ROOT);
+    }
+
     @Override
     @Nullable
     public Item getItem()

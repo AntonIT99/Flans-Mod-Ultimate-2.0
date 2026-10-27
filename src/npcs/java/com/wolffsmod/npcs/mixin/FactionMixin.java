@@ -1,10 +1,13 @@
 package com.wolffsmod.npcs.mixin;
 
+import com.wolffsmod.npcs.names.ContentNameBinding;
+import com.wolffsmod.npcs.names.FactionDisplayName;
 import com.wolffsmod.npcs.teams.BattleFactions;
 import com.wolffsmod.npcs.teams.BotFactions;
 import com.wolffsmod.npcs.teams.FactionMobSettings;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,13 +16,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Optional;
 
 /**
  * Custom NPCs' factions.
- * Persists the optional aggression toward the monsters covered by GetsAttacked.
+ * Persists the optional aggression toward the monsters covered by GetsAttacked and display-only team name bindings.
  *
  * <ul>
  * <li>Teams bots: while a round runs, the faction of a Flan team treats a player by the team the player fights for, rather
@@ -32,10 +36,28 @@ import java.util.Optional;
  */
 @Mixin(value = Faction.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
-public abstract class FactionMixin implements FactionMobSettings
+public abstract class FactionMixin implements FactionMobSettings, FactionDisplayName
 {
     @Unique
+    private static final String WOLFFSMODNPCS_NAME_BINDING = "WolffsModNameBinding";
+
+    @Unique
     private boolean wolffsmodnpcsAttackMobs;
+    @Unique @Nullable
+    private ContentNameBinding wolffsmodnpcsName;
+
+    @Override
+    public void wolffsmodnpcsBindName(ContentNameBinding binding)
+    {
+        wolffsmodnpcsName = binding;
+    }
+
+    @Override
+    public Component wolffsmodnpcsNameComponent()
+    {
+        String literal = ((Faction) (Object) this).name;
+        return wolffsmodnpcsName == null ? Component.literal(literal) : wolffsmodnpcsName.component(literal);
+    }
 
     @Override
     public boolean wolffsmodnpcsAttackMobs()
@@ -53,12 +75,18 @@ public abstract class FactionMixin implements FactionMobSettings
     private void wolffsmodnpcsReadMobSettings(CompoundTag tag, CallbackInfo callback)
     {
         wolffsmodnpcsAttackMobs = tag.getBoolean("WolffsModAttackMobs");
+        wolffsmodnpcsName = ContentNameBinding.read(tag.getCompound(WOLFFSMODNPCS_NAME_BINDING), ((Faction) (Object) this).name).orElse(null);
     }
 
     @Inject(method = "writeNBT", at = @At("RETURN"))
+    @SuppressWarnings("ConstantValue") // The mixin's binding is populated by its load hook and the added interface.
     private void wolffsmodnpcsWriteMobSettings(CompoundTag tag, CallbackInfoReturnable<CompoundTag> callback)
     {
         callback.getReturnValue().putBoolean("WolffsModAttackMobs", wolffsmodnpcsAttackMobs);
+        CompoundTag result = callback.getReturnValue();
+        result.remove(WOLFFSMODNPCS_NAME_BINDING);
+        if (wolffsmodnpcsName != null && wolffsmodnpcsName.literal().equals(((Faction) (Object) this).name))
+            result.put(WOLFFSMODNPCS_NAME_BINDING, wolffsmodnpcsName.save());
     }
 
     @Inject(method = "isAggressiveToPlayer", at = @At("HEAD"), cancellable = true)

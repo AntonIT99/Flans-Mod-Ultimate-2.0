@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
@@ -39,7 +40,7 @@ public final class NpcClientPackets
             return;
         npc.display.setMarkovGeneratorId(generator);
         npc.display.setMarkovGender(packet.gender());
-        npc.display.setName(packet.name());
+        NpcDisplayNames.literalName(npc.display, packet.name());
         NpcNetwork.sendToServer(packet);
     }
 

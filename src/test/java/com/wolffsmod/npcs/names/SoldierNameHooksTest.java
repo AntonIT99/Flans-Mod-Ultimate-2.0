@@ -26,6 +26,22 @@ class SoldierNameHooksTest
     }
 
     @Test
+    void boundNameHooksMatchProductionMethodsAndTitleCallSites() throws IOException
+    {
+        ClassNode display = read("noppes/npcs/entity/data/DataDisplay");
+        method(display, "setName", "(Ljava/lang/String;)V");
+        method(display, "setTitle", "(Ljava/lang/String;)V");
+        method(read("noppes/npcs/entity/EntityNPCInterface"), "m_7755_", "()Lnet/minecraft/network/chat/Component;");
+        MethodNode label = method(read("noppes/npcs/client/renderer/RenderNPCInterface"), "renderLivingLabel",
+            "(Lnoppes/npcs/entity/EntityNPCInterface;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V");
+        int titleReads = 0;
+        for (var instruction : label.instructions)
+            if (instruction instanceof MethodInsnNode call && call.owner.equals("noppes/npcs/entity/data/DataDisplay") && call.name.equals("getTitle") && call.desc.equals("()Ljava/lang/String;"))
+                titleReads++;
+        assertEquals(2, titleReads);
+    }
+
+    @Test
     void bothNameMenusExposeTheExpectedTenSlotSelector() throws IOException
     {
         ClassNode client = read("noppes/npcs/client/gui/SubGuiNpcName");

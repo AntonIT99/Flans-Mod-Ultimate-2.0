@@ -1332,13 +1332,13 @@ public final class TeamsManager
             return Component.translatable("message.flansmodultimate.teams.class_unavailable");
         PlayerStats stats = getStats(player);
         if (stats.getRank() < playerClass.getUnlockLevel())
-            return Component.translatable("message.flansmodultimate.teams.class_rank", playerClass.getName(), playerClass.getUnlockLevel());
+            return Component.translatable("message.flansmodultimate.teams.class_rank", playerClass.getNameComponent(), playerClass.getUnlockLevel());
         if (stats.getPrestige() < playerClass.getRequiredPrestigeLevel())
-            return Component.translatable("message.flansmodultimate.teams.class_prestige", playerClass.getName(), playerClass.getRequiredPrestigeLevel());
+            return Component.translatable("message.flansmodultimate.teams.class_prestige", playerClass.getNameComponent(), playerClass.getRequiredPrestigeLevel());
         int capacity = getClassCapacity(team, playerClass);
         int used = countPlayersUsingClass(team, playerClass, player);
         if (!ClassLimits.hasSlot(capacity, used))
-            return Component.translatable("message.flansmodultimate.teams.class_full", playerClass.getName(), used, capacity);
+            return Component.translatable("message.flansmodultimate.teams.class_full", playerClass.getNameComponent(), used, capacity);
         return null;
     }
 
@@ -1436,7 +1436,7 @@ public final class TeamsManager
             return;
         }
 
-        broadcast(Component.translatable("message.flansmodultimate.teams.switched_team", player.getScoreboardName(), next.getName()));
+        broadcast(Component.translatable("message.flansmodultimate.teams.switched_team", player.getScoreboardName(), next.getNameComponent()));
         getCurrentGameType().ifPresent(type -> type.playerDefected(this, player, current, next));
 
         // Dying is what makes the change take hold: the respawn hook then applies the pending

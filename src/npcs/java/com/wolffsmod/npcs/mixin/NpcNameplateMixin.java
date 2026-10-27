@@ -9,12 +9,14 @@ import com.wolffsmod.npcs.client.FlanModelBounds;
 import com.wolffsmod.npcs.client.FlanNameplatePlacement;
 import com.wolffsmod.npcs.diag.NpcServerSettings.Setting;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.teams.BotSettings;
 import com.wolffsmod.npcs.teams.BotTag;
 import noppes.npcs.client.renderer.RenderNPCInterface;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataDisplay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,12 +26,18 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 
 /**
  * Sets the name tag and name text ranges from the server settings, raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
- * and hides the name tags of Teams bots from players of the other sides when only allies should see them.
+ * and hides the name tags of Teams bots from players of the other sides when only allies should see them. Resolves bound titles through the viewer's resources.
  */
 @Mixin(value = RenderNPCInterface.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
 public abstract class NpcNameplateMixin
 {
+    @Redirect(method = "renderLivingLabel", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataDisplay;getTitle()Ljava/lang/String;"))
+    private String wolffsmodnpcsContentTitle(DataDisplay display)
+    {
+        return NpcDisplayNames.title(display).getString();
+    }
+
     @Inject(method = "renderColor", at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsUnhurtTint(EntityNPCInterface npc, CallbackInfo callback)
     {

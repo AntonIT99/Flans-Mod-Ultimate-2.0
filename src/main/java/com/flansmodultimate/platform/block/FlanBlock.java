@@ -1,8 +1,11 @@
 package com.flansmodultimate.platform.block;
 
+import com.flansmodultimate.common.block.IFlanBlock;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -22,14 +25,19 @@ public abstract class FlanBlock extends Block
         super(properties);
     }
 
+    @Override
+    public @NotNull MutableComponent getName()
+    {
+        return this instanceof IFlanBlock<?> content ? Component.translatableWithFallback(getDescriptionId(), content.getConfigType().getName()) : super.getName();
+    }
+
     /** Handles a right-click on this block with the given hand. */
     protected abstract InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand);
 
     @Override
     @NotNull
     @SuppressWarnings("deprecation") // Block#use is the 1.20.1 interaction entry point.
-    public final InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand,
-        @NotNull BlockHitResult hit)
+    public final InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         return interact(state, level, pos, player, hand);
     }

@@ -14,6 +14,8 @@ import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.names.ContentNameBinding;
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -105,9 +107,10 @@ public final class BotFactory
         return soldier(level, order, playerClass, position, random, npc ->
         {
             String name = chooseName(npc, order, playerClass, "", random);
-            if (name.isEmpty())
-                name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
-            npc.display.setName(name);
+            if (name.isEmpty() && !order.force().usesClone())
+                NpcDisplayNames.bindName(npc.display, order.team());
+            else if (!name.isEmpty())
+                npc.display.setName(name);
             join(npc, order, position, Membership.CREW);
         });
     }
@@ -177,6 +180,7 @@ public final class BotFactory
             stockAmmunition(npc, definition);
         // FlanModelNpcs already uses the model's full name, including a definition fallback on dedicated servers.
         order.slot().setName(npc.display.getName());
+        order.slot().setNameBinding(NpcDisplayNames.of(npc.display).getName());
         join(npc, order, order.position(), Membership.VEHICLE);
         train(npc, order.settings().getDifficulty());
         npc.setHealth(npc.getMaxHealth());
@@ -259,11 +263,20 @@ public final class BotFactory
 
     private static void name(EntityNPCInterface npc, Order order, RandomGenerator random)
     {
+        ContentNameBinding retained = order.slot().getNameBinding();
+        if (retained != null && retained.literal().equals(order.slot().getName()))
+        {
+            npc.display.setName(retained.literal());
+            NpcDisplayNames.of(npc.display).setName(retained);
+            return;
+        }
         String name = chooseName(npc, order, order.slot().getRole(), order.slot().getName(), random);
-        if (name.isEmpty())
-            name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
-        order.slot().setName(name);
-        npc.display.setName(name);
+        if (name.isEmpty() && !order.force().usesClone())
+            NpcDisplayNames.bindName(npc.display, order.team());
+        else if (!name.isEmpty())
+            npc.display.setName(name);
+        order.slot().setName(npc.display.getName());
+        order.slot().setNameBinding(NpcDisplayNames.of(npc.display).getName());
     }
 
     /** Applies the associated generator and gender while preserving an existing slot's identity across respawns. */

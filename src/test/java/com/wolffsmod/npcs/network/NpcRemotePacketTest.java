@@ -4,6 +4,7 @@ import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -43,7 +44,9 @@ class NpcRemotePacketTest
     @Test
     void snapshotRoundTripPreservesPrecisionIdentityAndFactions()
     {
-        var packet = new NpcRemotePacket(List.of(entry(42, 16.001, 1), entry(43, 16.002, 2)));
+        var translated = new NpcRemotePacket.Entry(43, "Crewman", 16.002 * 16.002, 2, "Army", Component.translatableWithFallback("class.pack.crew", "Crewman"),
+            Component.translatableWithFallback("team.pack.army", "Army"));
+        var packet = new NpcRemotePacket(List.of(entry(42, 16.001, 1), translated));
         var buffer = new FriendlyByteBuf(Unpooled.buffer());
         try
         {

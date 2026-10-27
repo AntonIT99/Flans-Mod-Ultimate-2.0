@@ -198,9 +198,9 @@ final class CrewPage implements ICustomScrollListener
                 : Component.translatable(PREFIX + "status.clone_unnamed").withStyle(ChatFormatting.DARK_RED);
             case CLASS -> FlanSoldierSelection.resolve(source.team(), source.playerClass()).<Component>map(selection ->
             {
-                MutableComponent text = Component.translatable(PREFIX + "status.class", selection.playerClass().getName());
+                MutableComponent text = Component.translatable(PREFIX + "status.class", selection.playerClass().getNameComponent());
                 if (selection.team() != null)
-                    text.append(Component.translatable(PREFIX + "status.of_team", selection.team().getName()));
+                    text.append(Component.translatable(PREFIX + "status.of_team", selection.team().getNameComponent()));
                 var skins = selection.playerClass().getSkinOverrideVariants();
                 if (!skins.isEmpty())
                     text.append(" · ").append(skinLabel(source, skins));

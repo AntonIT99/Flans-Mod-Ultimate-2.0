@@ -204,6 +204,13 @@ public class PlayerClass extends InfoType implements IPlayerClass
         return ModUtils.getItemStack(InfoType.getInfoType(id, contentPack)).orElse(ItemStack.EMPTY);
     }
 
+    /** Original content names keep translation keys independent of registry collision aliases. */
+    @Override
+    public String getNameTranslationKey()
+    {
+        return StringUtils.isBlank(originalShortName) ? StringUtils.EMPTY : "class.flansmod." + originalShortName.toLowerCase(Locale.ROOT);
+    }
+
     public static java.util.Collection<PlayerClass> values()
     {
         return EditorCatalog.current().classes(CLASSES.values());

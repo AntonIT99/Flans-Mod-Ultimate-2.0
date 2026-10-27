@@ -144,7 +144,7 @@ final class BotRadio
                 }
             }
         }
-        return nearest == null ? Component.translatable(PREFIX + "headquarters") : Component.literal(nearest.getName());
+        return nearest == null ? Component.translatable(PREFIX + "headquarters") : nearest.getNameComponent();
     }
 
     private static Component label(TeamsCapturePoint point)

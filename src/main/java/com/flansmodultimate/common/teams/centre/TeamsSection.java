@@ -122,6 +122,7 @@ public final class TeamsSection
             CompoundTag entry = new CompoundTag();
             entry.putString(ID, pool.getShortName());
             entry.putString(NAME, pool.getName());
+            entry.putString("nameTranslationKey", pool.getNameTranslationKey());
             pools.add(entry);
         });
         tag.put(POOLS, pools);
@@ -231,6 +232,7 @@ public final class TeamsSection
         CompoundTag tag = new CompoundTag();
         tag.putString(ID, team.getShortName());
         tag.putString(NAME, team.getName());
+        tag.putString("nameTranslationKey", team.getNameTranslationKey());
         tag.putInt(COLOUR, team.getTeamColour());
         return tag;
     }

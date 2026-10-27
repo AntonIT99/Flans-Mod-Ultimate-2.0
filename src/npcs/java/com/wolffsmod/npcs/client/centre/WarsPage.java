@@ -149,7 +149,7 @@ final class WarsPage extends BattlePage
         {
             int id = war.factions().get(i);
             int held = i < war.holdings().size() ? war.holdings().get(i) : 0;
-            rows.add(CommandCentreRow.of(Integer.toString(id), Component.literal(data.factionName(id)), tr("war.holds", held)).withColour(data.factionColour(id)).selected(id == faction));
+            rows.add(CommandCentreRow.of(Integer.toString(id), Component.literal(data.factionDisplayName(id)), tr("war.holds", held)).withColour(data.factionColour(id)).selected(id == faction));
         }
         view.addList("factions@" + war.name(), new ScreenRectangle(x, top, width, listHeight), rows, tr("war.no_factions"), key ->
         {
@@ -163,7 +163,7 @@ final class WarsPage extends BattlePage
         if (!free.isEmpty())
         {
             addFaction = keep(free, addFaction, -1);
-            choice(view, tr("war.faction"), free, addFaction, id -> Component.literal(data.factionName(id)), x, y, choiceWidth, chosen -> addFaction = chosen);
+            choice(view, tr("war.faction"), free, addFaction, id -> Component.literal(data.factionDisplayName(id)), x, y, choiceWidth, chosen -> addFaction = chosen);
             button(view, tr("war.add_faction"), x + choiceWidth + GAP, y, buttonWidth, () -> run(view, "teams war faction", name, "add", quote(data.factionName(addFaction))));
         }
         else if (data.factions().isEmpty())
@@ -186,7 +186,7 @@ final class WarsPage extends BattlePage
         if (!war.factions().isEmpty())
         {
             claimFaction = keep(war.factions(), claimFaction, -1);
-            choice(view, tr("war.claim_for"), war.factions(), claimFaction, id -> Component.literal(data.factionName(id)), x, bottom, choiceWidth, chosen -> claimFaction = chosen);
+            choice(view, tr("war.claim_for"), war.factions(), claimFaction, id -> Component.literal(data.factionDisplayName(id)), x, bottom, choiceWidth, chosen -> claimFaction = chosen);
         }
         String radiusKey = "radius@" + war.name();
         view.addField(radiusKey, x + choiceWidth + GAP, bottom, radiusWidth, Integer.toString(CLAIM_RADIUS), tr(RADIUS)).setTooltip(Tooltip.create(tr("war.radius.tip")));
@@ -307,7 +307,7 @@ final class WarsPage extends BattlePage
         int holder = holder(war, index);
         int blockX = (map.centreX() - map.radius() + column) * 16 + 8;
         int blockZ = (map.centreZ() - map.radius() + row) * 16 + 8;
-        Component name = holder < 0 ? tr("war.unheld") : Component.literal(data.factionName(holder));
+        Component name = holder < 0 ? tr("war.unheld") : Component.literal(data.factionDisplayName(holder));
         return tr(map.contested().contains(index) ? "war.chunk_contested" : "war.chunk", blockX, blockZ, name);
     }
 

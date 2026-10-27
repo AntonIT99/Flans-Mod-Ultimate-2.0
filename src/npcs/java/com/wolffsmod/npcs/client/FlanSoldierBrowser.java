@@ -75,18 +75,18 @@ public final class FlanSoldierBrowser
             classes = FlansModApi.getPlayerClasses().stream().filter(candidate -> Objects.equals(candidate.getContentPack(), pack))
                 .filter(candidate -> FlansModApi.getTeams().stream().noneMatch(owner -> owner.getClasses().contains(candidate)))
                 .sorted(Comparator.comparing(IPlayerClass::getName, String.CASE_INSENSITIVE_ORDER)).toList();
-            return classes.stream().map(IContentType::getName).toList();
+            return classes.stream().map(type -> type.getNameComponent().getString()).toList();
         }
         if (team != null)
         {
             classes = team.getClasses();
-            return classes.stream().map(IContentType::getName).toList();
+            return classes.stream().map(type -> type.getNameComponent().getString()).toList();
         }
         if (pack != null)
         {
             teams = FlansModApi.getTeams().stream().filter(candidate -> Objects.equals(candidate.getContentPack(), pack) && !candidate.getClasses().isEmpty())
                 .sorted(Comparator.comparing(ITeam::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(ITeam::getShortName)).toList();
-            List<String> labels = new ArrayList<>(teams.stream().map(IContentType::getName).toList());
+            List<String> labels = new ArrayList<>(teams.stream().map(type -> type.getNameComponent().getString()).toList());
             if (hasUnassigned(pack))
                 labels.add(net.minecraft.network.chat.Component.translatable("wolffsmodnpcs.soldier.unassigned_classes").getString());
             return List.copyOf(labels);

@@ -105,7 +105,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         {
             List<String> labels = new ArrayList<>();
             labels.add(Component.translatable(PREFIX + "all_classes").getString());
-            labels.addAll(teams.stream().map(team -> team.getName() + " [" + team.getShortName() + "]").toList());
+            labels.addAll(teams.stream().map(team -> team.getNameComponent().getString() + " [" + team.getShortName() + "]").toList());
             choices.setUnsortedList(labels);
             choices.setSelectedIndex(teamIndex + 1);
             classes.setSize(130, LIST_HEIGHT);
@@ -138,7 +138,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         playerClasses = (teamIndex < 0 ? FlansModApi.getPlayerClasses() : teams.get(teamIndex).getClasses()).stream()
             .sorted(Comparator.comparing(IPlayerClass::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(IPlayerClass::getShortName)).toList();
         classes.clear();
-        classes.setUnsortedList(playerClasses.stream().map(playerClass -> playerClass.getName() + " [" + playerClass.getShortName() + "]").toList());
+        classes.setUnsortedList(playerClasses.stream().map(playerClass -> playerClass.getNameComponent().getString() + " [" + playerClass.getShortName() + "]").toList());
         for (int i = 0; i < playerClasses.size(); i++)
             if (playerClasses.get(i).getShortName().equals(chosenClass))
                 classes.setSelectedIndex(i);

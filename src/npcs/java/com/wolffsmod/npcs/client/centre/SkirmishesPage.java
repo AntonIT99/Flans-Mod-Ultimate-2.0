@@ -127,7 +127,7 @@ final class SkirmishesPage extends BattlePage
 
     private Component factionName(int id)
     {
-        return Component.literal(data.factionName(id));
+        return Component.literal(data.factionDisplayName(id));
     }
 
     // --- Drafting and quick skirmishes ---
@@ -393,7 +393,7 @@ final class SkirmishesPage extends BattlePage
             return;
         }
         BattlesData.SkirmishInfo skirmish = shown.get();
-        view.drawPanel(graphics, panelLeft, view.getTop(), panelWidth, view.getHeight(), Component.literal(skirmish.name()).append(" · ").append(value("state", skirmish.state())));
+        view.drawPanel(graphics, panelLeft, view.getTop(), panelWidth, view.getHeight(), Component.literal(skirmish.name()).append(" Â· ").append(value("state", skirmish.state())));
         int y = view.getTop() + 18 + 2 * ROW;
         if (tab == Tab.SAVE)
             paragraph(view, graphics, tr("skirmish.save_help"), x, y, width, DIM);

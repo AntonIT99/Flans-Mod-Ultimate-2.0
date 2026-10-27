@@ -35,6 +35,12 @@ public final class EditedPlayerClass extends PlayerClass
     }
 
     @Override
+    public String getNameTranslationKey()
+    {
+        return original == null || !name.equals(original.getName()) ? "" : original.getNameTranslationKey();
+    }
+
+    @Override
     public int getUnlockLevel()
     {
         return number("unlockLevel", original == null ? 0 : original.getUnlockLevel()).intValue();

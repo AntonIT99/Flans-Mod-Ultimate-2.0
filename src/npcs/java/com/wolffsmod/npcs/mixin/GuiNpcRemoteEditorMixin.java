@@ -139,7 +139,7 @@ public abstract class GuiNpcRemoteEditorMixin extends GuiNPCInterface implements
     @Unique
     private String wolffsmodnpcsFactionLabel()
     {
-        String faction = wolffsmodnpcsSnapshot.entries().stream().filter(entry -> Objects.equals(entry.factionId(), wolffsmodnpcsFaction)).map(NpcRemotePacket.Entry::faction).findFirst()
+        String faction = wolffsmodnpcsSnapshot.entries().stream().filter(entry -> Objects.equals(entry.factionId(), wolffsmodnpcsFaction)).map(entry -> entry.displayFaction().getString()).findFirst()
             .orElse(I18n.get("wolffsmodnpcs.remote.all"));
         return I18n.get("wolffsmodnpcs.remote.faction", faction);
     }
@@ -147,6 +147,6 @@ public abstract class GuiNpcRemoteEditorMixin extends GuiNPCInterface implements
     @Unique
     private static String wolffsmodnpcsLabel(NpcRemotePacket.Entry entry)
     {
-        return String.format(Locale.ROOT, "%.1f : %s [#%d]", Math.sqrt(entry.distanceSquared()), entry.name(), entry.entityId());
+        return String.format(Locale.ROOT, "%.1f : %s [#%d]", Math.sqrt(entry.distanceSquared()), entry.displayName().getString(), entry.entityId());
     }
 }

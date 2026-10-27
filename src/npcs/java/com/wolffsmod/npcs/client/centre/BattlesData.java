@@ -30,7 +30,8 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
      * @param member
      *            whether the operator belongs to it
      */
-    record FactionInfo(int id, String name, int colour, String outsiders, int members, boolean member, List<Integer> enemies, List<Branch> branches)
+    @SuppressWarnings("unused") // Constructed from the NPC command-centre snapshot and consumed by its registered pages.
+    record FactionInfo(int id, String name, int colour, String outsiders, int members, boolean member, List<Integer> enemies, List<Branch> branches, String displayName)
     {}
 
     /** A Flan team serving a managed faction. */
@@ -123,7 +124,7 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     {
         CompoundTag choices = tag.getCompound(BattlesSection.CHOICES);
         return new BattlesData(list(tag, BattlesSection.FACTIONS, BattlesData::faction), list(tag, BattlesSection.OTHER_FACTIONS, BattlesData::faction),
-            list(tag, BattlesSection.TEAMS, entry -> new TeamInfo(entry.getString(BattlesSection.ID), entry.getString(BattlesSection.NAME), entry.getInt(BattlesSection.COLOUR))),
+            list(tag, BattlesSection.TEAMS, entry -> new TeamInfo(entry.getString(BattlesSection.ID), displayName(entry), entry.getInt(BattlesSection.COLOUR))),
             list(tag, BattlesSection.SKIRMISHES, BattlesData::skirmish), strings(tag, BattlesSection.PRESETS), list(tag, BattlesSection.WARS, BattlesData::war),
             strings(tag, BattlesSection.DIMENSIONS), tag.getString(BattlesSection.HERE), list(tag, BattlesSection.ROUNDS, BattlesData::round), strings(tag, BattlesSection.BOT_PRESETS),
             list(tag.getCompound(BattlesSection.LIVE), BattlesSection.TEAMS, BattlesData::liveTeam),
@@ -154,12 +155,19 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
         return Arrays.stream(tag.getIntArray(key)).boxed().toList();
     }
 
+    private static String displayName(CompoundTag tag)
+    {
+        net.minecraft.network.chat.Component name = net.minecraft.network.chat.Component.Serializer.fromJson(tag.getString("displayName"));
+        return name == null ? tag.getString(BattlesSection.NAME) : name.getString();
+    }
+
     private static FactionInfo faction(CompoundTag tag)
     {
         return new FactionInfo(tag.getInt(BattlesSection.ID), tag.getString(BattlesSection.NAME), tag.getInt(BattlesSection.COLOUR), tag.getString(BattlesSection.OUTSIDERS),
             tag.getInt(BattlesSection.MEMBERS), tag.getBoolean(BattlesSection.MEMBER), ints(tag, BattlesSection.ENEMIES),
             list(tag, BattlesSection.BRANCHES, entry -> new Branch(entry.getString(BattlesSection.TEAM), entry.getInt(BattlesSection.WEIGHT), entry.getInt(BattlesSection.COUNT),
-                entry.getString(BattlesSection.ROLES), entry.getString(BattlesSection.SQUADS), entry.getString(BattlesSection.VEHICLES))));
+                entry.getString(BattlesSection.ROLES), entry.getString(BattlesSection.SQUADS), entry.getString(BattlesSection.VEHICLES))),
+            displayName(tag));
     }
 
     private static SkirmishInfo skirmish(CompoundTag tag)
@@ -230,6 +238,11 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     String factionName(int id)
     {
         return faction(id).map(FactionInfo::name).orElse("#" + id);
+    }
+
+    String factionDisplayName(int id)
+    {
+        return faction(id).map(FactionInfo::displayName).orElse("#" + id);
     }
 
     int factionColour(int id)

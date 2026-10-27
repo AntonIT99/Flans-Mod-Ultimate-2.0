@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -133,6 +134,7 @@ final class BotTransfers
             BotSlot slot = battle.newSlot(team, BotSlot.Source.VOLUNTEER, -1);
             BotTag.Data before = BotTag.read(npc).orElse(null);
             slot.setName(npc.display.getName());
+            slot.setNameBinding(NpcDisplayNames.of(npc.display).getName());
             slot.setRole(soldier.getValue());
             slot.setEntity(npc.getUUID());
             slot.setSpawns(1);

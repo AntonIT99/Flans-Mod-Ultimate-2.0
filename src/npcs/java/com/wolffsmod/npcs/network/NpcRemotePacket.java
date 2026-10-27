@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.network;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 
 import java.util.Comparator;
 import java.util.List;
@@ -8,8 +9,13 @@ import java.util.List;
 /** A server snapshot for the wand browser, including NPCs outside the client's tracking range. */
 public record NpcRemotePacket(List<Entry> entries)
 {
-    public record Entry(int entityId, String name, double distanceSquared, int factionId, String faction)
-    {}
+    public record Entry(int entityId, String name, double distanceSquared, int factionId, String faction, Component displayName, Component displayFaction)
+    {
+        public Entry(int entityId, String name, double distanceSquared, int factionId, String faction)
+        {
+            this(entityId, name, distanceSquared, factionId, faction, Component.literal(name), Component.literal(faction));
+        }
+    }
 
     public NpcRemotePacket
     {
@@ -33,11 +39,13 @@ public record NpcRemotePacket(List<Entry> entries)
             out.writeDouble(entry.distanceSquared());
             out.writeVarInt(entry.factionId());
             out.writeUtf(entry.faction());
+            out.writeComponent(entry.displayName());
+            out.writeComponent(entry.displayFaction());
         });
     }
 
     public static NpcRemotePacket read(FriendlyByteBuf buffer)
     {
-        return new NpcRemotePacket(buffer.readList(in -> new Entry(in.readVarInt(), in.readUtf(), in.readDouble(), in.readVarInt(), in.readUtf())));
+        return new NpcRemotePacket(buffer.readList(in -> new Entry(in.readVarInt(), in.readUtf(), in.readDouble(), in.readVarInt(), in.readUtf(), in.readComponent(), in.readComponent())));
     }
 }

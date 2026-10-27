@@ -3,6 +3,8 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.platform.world.FlanSavedData;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.names.ContentNameBinding;
+import com.wolffsmod.npcs.names.FactionDisplayName;
 import noppes.npcs.controllers.FactionController;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -42,6 +44,7 @@ public final class TeamFactions extends FlanSavedData
         {
             faction = (Faction) controller.create(name, team.getTeamColour());
             faction.hideFaction = false;
+            ((FactionDisplayName) faction).wolffsmodnpcsBindName(ContentNameBinding.of(team));
             controller.saveFaction(faction);
         }
         factions.put(team.getShortName(), faction.id);

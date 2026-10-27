@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.wolffsmod.npcs.names.ContentNameBinding;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
@@ -102,6 +103,27 @@ class BotRoundStoreTest
         CompoundTag saved = new CompoundTag();
         BotBattleCodec.write(played(UUID.randomUUID()), saved);
         assertEquals(saved, BotRoundStore.load(saved, ItemStackData.builtInRegistries()).save(new CompoundTag(), ItemStackData.builtInRegistries()));
+    }
+
+    @Test
+    void boundFallbackNamesSurviveRestartAndLiteralRenamesDetachThem()
+    {
+        UUID instance = UUID.randomUUID();
+        BotBattle before = played(instance);
+        BotSlot original = before.getSlots().values().iterator().next();
+        original.setName("Army");
+        ContentNameBinding binding = new ContentNameBinding(true, "army_2", "Army");
+        original.setNameBinding(binding);
+        CompoundTag saved = new CompoundTag();
+        BotBattleCodec.write(before, saved);
+        BotBattle after = battle(instance);
+        assertTrue(BotRoundStore.load(saved, ItemStackData.builtInRegistries()).resume(after, NOW));
+        BotSlot restored = after.getSlots().values().iterator().next();
+        assertEquals("Army", restored.getName());
+        assertEquals(binding, restored.getNameBinding());
+        restored.setName("Alice");
+        assertNull(restored.getNameBinding());
+        assertEquals("Alice", restored.getNameComponent().getString());
     }
 
     @Test

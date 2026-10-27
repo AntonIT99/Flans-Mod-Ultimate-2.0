@@ -64,7 +64,7 @@ public final class EditorClassPickerScreen extends Screen
     {
         String needle = query.toLowerCase(Locale.ROOT);
         return PlayerClass.values().stream().filter(type -> !assigned.contains(EditorCatalog.key(type)))
-            .filter(type -> type.getName().toLowerCase(Locale.ROOT).contains(needle) || type.getShortName().contains(needle))
+            .filter(type -> type.getNameComponent().getString().toLowerCase(Locale.ROOT).contains(needle) || type.getShortName().contains(needle))
             .sorted(Comparator.comparing(PlayerClass::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(PlayerClass::getShortName)).toList();
     }
 
@@ -98,7 +98,7 @@ public final class EditorClassPickerScreen extends Screen
             int y = 65 + index % rows * 28;
             boolean hovered = mouseX >= left && mouseX < left + panelWidth && mouseY >= y && mouseY < y + 26;
             graphics.fill(left, y, left + panelWidth, y + 26, hovered ? 0xFF42516A : 0xFF2B3444);
-            graphics.drawString(font, font.plainSubstrByWidth(type.getName(), panelWidth - 10), left + 5, y + 3, 0xFFFFFF);
+            graphics.drawString(font, font.plainSubstrByWidth(type.getNameComponent().getString(), panelWidth - 10), left + 5, y + 3, 0xFFFFFF);
             graphics.drawString(font, font.plainSubstrByWidth(type.getContentPack().getName(), panelWidth - 10), left + 5, y + 14, 0xAABBDD);
             if (hovered)
                 graphics.renderTooltip(font, Component.literal(type.getShortName()), mouseX, mouseY);

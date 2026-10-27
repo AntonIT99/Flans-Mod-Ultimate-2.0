@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -27,12 +28,12 @@ public final class PacketLoadoutState implements IClientPacket
         NONE, HUB, CHOOSE, EDIT, REWARD_BOX, MISSION_RESULTS, CLOSE
     }
 
-    public record Entry(LoadoutSlot slot, String typeId, String name, int unlockRank, ItemStack preview)
+    public record Entry(LoadoutSlot slot, String typeId, Component name, int unlockRank, ItemStack preview)
     {}
-    public record BoxView(UUID id, String boxId, String name, boolean opened, String rewardKey, ItemStack preview)
+    public record BoxView(UUID id, String boxId, Component name, boolean opened, String rewardKey, ItemStack preview)
     {}
     /** One kind of reward box the pool offers, listed even when the player holds none of it. */
-    public record BoxTypeView(String boxId, String name, ItemStack preview, int unopened)
+    public record BoxTypeView(String boxId, Component name, ItemStack preview, int unopened)
     {}
     public record RewardView(String key, String typeId, String name, int rarity)
     {}
@@ -40,7 +41,7 @@ public final class PacketLoadoutState implements IClientPacket
     private OpenScreen openScreen = OpenScreen.NONE;
     private String motd = "";
     private String poolId = "";
-    private String poolName = "";
+    private Component poolName = Component.empty();
     private int rank;
     private int experience;
     private int experienceForNextRank;
@@ -65,31 +66,51 @@ public final class PacketLoadoutState implements IClientPacket
         if (pool == null)
             return packet;
         PlayerStats stats = manager.getStats(player);
+        populatePoolDetails(packet, pool, stats);
+        return packet;
+    }
+
+    private static void populatePoolDetails(PacketLoadoutState packet, LoadoutPool pool, PlayerStats stats)
+    {
         packet.poolId = pool.getShortName();
-        packet.poolName = pool.getName();
+        packet.poolName = pool.getNameComponent();
         packet.rank = stats.getRank();
         packet.experience = stats.getExperience();
         packet.experienceForNextRank = pool.getExperienceForRank(stats.getRank());
         packet.selectedLoadout = stats.getSelectedLoadout();
         packet.loadouts = stats.getLoadouts(pool).stream().map(PlayerLoadout::copy).toList();
         packet.loadoutUnlockRanks = java.util.stream.IntStream.range(0, LoadoutPool.LOADOUT_COUNT).mapToObj(pool::getLoadoutUnlockLevel).toList();
+        packet.entries = createEntries(pool);
+        packet.boxes = createBoxes(stats);
+        packet.boxTypes = createBoxTypes(pool, stats);
+        packet.rewards = createRewards(stats);
+    }
 
+    private static List<Entry> createEntries(LoadoutPool pool)
+    {
         List<Entry> entries = new ArrayList<>();
         for (LoadoutSlot slot : LoadoutSlot.values())
             for (LoadoutPool.LoadoutEntry entry : pool.getEntries(slot))
             {
                 InfoType type = InfoType.getInfoType(entry.typeId(), pool.getContentPack());
                 if (type != null)
-                    entries.add(new Entry(slot, type.getOriginalShortName(), type.getName(), entry.unlockRank(), ModUtils.getItemStack(type).orElse(ItemStack.EMPTY)));
+                    entries.add(new Entry(slot, type.getOriginalShortName(), type.getNameComponent(), entry.unlockRank(), ModUtils.getItemStack(type).orElse(ItemStack.EMPTY)));
             }
-        packet.entries = List.copyOf(entries);
+        return List.copyOf(entries);
+    }
 
-        packet.boxes = stats.getRewardBoxes().stream().map(instance ->
+    private static List<BoxView> createBoxes(PlayerStats stats)
+    {
+        return stats.getRewardBoxes().stream().map(instance ->
         {
             RewardBox box = RewardBox.get(instance.boxId());
-            return new BoxView(instance.id(), instance.boxId(), box == null ? instance.boxId() : box.getName(), instance.isOpened(), instance.rewardKey(),
+            return new BoxView(instance.id(), instance.boxId(), box == null ? Component.literal(instance.boxId()) : box.getNameComponent(), instance.isOpened(), instance.rewardKey(),
                 box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY));
         }).toList();
+    }
+
+    private static List<BoxTypeView> createBoxTypes(LoadoutPool pool, PlayerStats stats)
+    {
         // Every box type the pool advertises is listed, in the order AddRewardBox
         // declared them, so a player can see what is on offer before owning any.
         // Boxes held from another pool or from a command are appended after them.
@@ -97,16 +118,19 @@ public final class PacketLoadoutState implements IClientPacket
         for (RewardBoxInstance instance : stats.getRewardBoxes())
             if (!instance.isOpened() && !boxTypeIds.contains(instance.boxId()))
                 boxTypeIds.add(instance.boxId());
-        packet.boxTypes = boxTypeIds.stream().map(boxId ->
+        return boxTypeIds.stream().map(boxId ->
         {
             RewardBox box = RewardBox.get(boxId);
             long unopened = stats.getRewardBoxes().stream().filter(instance -> !instance.isOpened() && boxId.equals(instance.boxId())).count();
-            return new BoxTypeView(boxId, box == null ? boxId : box.getName(), box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY), (int) unopened);
+            return new BoxTypeView(boxId, box == null ? Component.literal(boxId) : box.getNameComponent(), box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY),
+                (int) unopened);
         }).toList();
+    }
 
-        packet.rewards = stats.getRewardBoxes().stream().filter(RewardBoxInstance::isOpened).map(instance -> RewardBox.findReward(instance.rewardKey())).filter(java.util.Objects::nonNull).distinct()
+    private static List<RewardView> createRewards(PlayerStats stats)
+    {
+        return stats.getRewardBoxes().stream().filter(RewardBoxInstance::isOpened).map(instance -> RewardBox.findReward(instance.rewardKey())).filter(java.util.Objects::nonNull).distinct()
             .map(reward -> new RewardView(reward.key(), reward.typeId(), reward.paintName(), reward.rarity().ordinal())).toList();
-        return packet;
     }
 
     @Override
@@ -115,7 +139,7 @@ public final class PacketLoadoutState implements IClientPacket
         data.writeByte(openScreen.ordinal());
         data.writeUtf(motd, 256);
         data.writeUtf(poolId);
-        data.writeUtf(poolName);
+        data.writeComponent(poolName);
         data.writeVarInt(rank);
         data.writeVarInt(experience);
         data.writeVarInt(experienceForNextRank);
@@ -133,7 +157,7 @@ public final class PacketLoadoutState implements IClientPacket
         {
             data.writeByte(entry.slot().ordinal());
             data.writeUtf(entry.typeId());
-            data.writeUtf(entry.name());
+            data.writeComponent(entry.name());
             data.writeVarInt(entry.unlockRank());
             PacketIO.writeItem(data, entry.preview());
         }
@@ -142,7 +166,7 @@ public final class PacketLoadoutState implements IClientPacket
         {
             data.writeUUID(box.id());
             data.writeUtf(box.boxId());
-            data.writeUtf(box.name());
+            data.writeComponent(box.name());
             data.writeBoolean(box.opened());
             data.writeUtf(box.rewardKey());
             PacketIO.writeItem(data, box.preview());
@@ -151,7 +175,7 @@ public final class PacketLoadoutState implements IClientPacket
         for (BoxTypeView box : boxTypes)
         {
             data.writeUtf(box.boxId());
-            data.writeUtf(box.name());
+            data.writeComponent(box.name());
             PacketIO.writeItem(data, box.preview());
             data.writeVarInt(box.unopened());
         }
@@ -171,7 +195,7 @@ public final class PacketLoadoutState implements IClientPacket
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
         motd = data.readUtf(256);
         poolId = data.readUtf();
-        poolName = data.readUtf();
+        poolName = data.readComponent();
         rank = data.readVarInt();
         experience = data.readVarInt();
         experienceForNextRank = data.readVarInt();
@@ -191,16 +215,16 @@ public final class PacketLoadoutState implements IClientPacket
         for (int i = 0; i < entryCount; i++)
         {
             int slot = data.readUnsignedByte();
-            entries.add(new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)], data.readUtf(), data.readUtf(), data.readVarInt(), PacketIO.readItem(data)));
+            entries.add(new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)], data.readUtf(), data.readComponent(), data.readVarInt(), PacketIO.readItem(data)));
         }
         int boxCount = data.readVarInt();
         boxes = new ArrayList<>(boxCount);
         for (int i = 0; i < boxCount; i++)
-            boxes.add(new BoxView(data.readUUID(), data.readUtf(), data.readUtf(), data.readBoolean(), data.readUtf(), PacketIO.readItem(data)));
+            boxes.add(new BoxView(data.readUUID(), data.readUtf(), data.readComponent(), data.readBoolean(), data.readUtf(), PacketIO.readItem(data)));
         int boxTypeCount = data.readVarInt();
         boxTypes = new ArrayList<>(boxTypeCount);
         for (int i = 0; i < boxTypeCount; i++)
-            boxTypes.add(new BoxTypeView(data.readUtf(), data.readUtf(), PacketIO.readItem(data), data.readVarInt()));
+            boxTypes.add(new BoxTypeView(data.readUtf(), data.readComponent(), PacketIO.readItem(data), data.readVarInt()));
         rewards = data.readList(buf -> new RewardView(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readVarInt()));
     }
 

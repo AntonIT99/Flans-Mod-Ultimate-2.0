@@ -7,6 +7,7 @@ package com.flansmodultimate.api.client;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.world.entity.LivingEntity;
 
@@ -14,6 +15,7 @@ import java.util.Objects;
 
 /** Lets an addon replace the distance from which the name tag of a living entity can be seen. Client thread. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@ApiStatus.Experimental
 public final class NameTagRanges
 {
     private static Resolver resolver = (entity, configured) -> configured;
@@ -31,6 +33,7 @@ public final class NameTagRanges
     }
 
     @FunctionalInterface
+    @ApiStatus.Experimental
     public interface Resolver
     {
         float range(LivingEntity entity, float configured);

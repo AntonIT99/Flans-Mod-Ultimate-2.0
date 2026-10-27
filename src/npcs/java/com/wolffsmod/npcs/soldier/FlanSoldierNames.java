@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.soldier;
 
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.network.SoldierNamePacket;
@@ -66,7 +67,7 @@ public final class FlanSoldierNames
             return;
         npc.display.setMarkovGeneratorId(SoldierNames.generatorId(pending.packet().nameList()));
         npc.display.setMarkovGender(pending.packet().gender());
-        npc.display.setName(pending.packet().name());
+        NpcDisplayNames.literalName(npc.display, pending.packet().name());
         npc.updateClient = true;
     }
 
@@ -88,7 +89,7 @@ public final class FlanSoldierNames
         String name = SoldierNames.generate(id, appliedGender);
         npc.display.setMarkovGeneratorId(id);
         npc.display.setMarkovGender(appliedGender);
-        npc.display.setName(name);
+        NpcDisplayNames.literalName(npc.display, name);
         npc.updateClient = true;
         return Optional.of(new SoldierNamePacket(npc.getId(), team, playerClass, true, SoldierNames.associationId(id), name, appliedGender));
     }

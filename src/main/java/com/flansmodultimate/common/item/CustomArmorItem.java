@@ -63,6 +63,12 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     }
 
     @Override
+    public @NotNull Component getName(@NotNull ItemStack stack)
+    {
+        return Component.translatableWithFallback(getDescriptionId(stack), configType.getName());
+    }
+
+    @Override
     public boolean isDamageable(ItemStack stack)
     {
         // 0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config

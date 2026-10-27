@@ -28,6 +28,7 @@ import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelRendering;
 import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
@@ -50,6 +51,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -106,6 +108,7 @@ import java.util.UUID;
  * its own.</li>
  * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
+ * <li>Bound content names remain translatable components for nameplates, chat and death messages; raw display fields stay canonical.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, or an editor shows the NPC's live statistics, the whole tick of
  * the NPC is timed; the editor also counts its attacks. The movement and aim debug switches draw what the NPC is doing.</li>
  * <li>Frozen NPCs, as Custom NPCs' freeze switch holds them, neither fly, drive nor man guns.</li>
@@ -199,6 +202,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
         super(type, level);
+    }
+
+    @Inject(method = {"getName", "m_7755_"}, at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsContentName(CallbackInfoReturnable<Component> callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (npc.display != null && NpcDisplayNames.of(npc.display).getName() != null)
+            callback.setReturnValue(NpcDisplayNames.name(npc.display));
     }
 
     /** Non-respawning machines retain an inert wreck instead of vanilla's timed corpse removal. */

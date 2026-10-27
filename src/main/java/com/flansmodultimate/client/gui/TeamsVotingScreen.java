@@ -59,7 +59,7 @@ public final class TeamsVotingScreen extends Screen
             PacketTeamsState.VoteOption option = state.getVoteOptions().get(row);
             int y = top + 25 + 24 * row;
             graphics.drawString(font, option.mapName(), left + 10, y, 0xFFFFFF, false);
-            graphics.drawString(font, option.gameType() + (option.teams().isBlank() ? "" : " — " + option.teams()), left + 10, y + 10, 0xD0D0D0, false);
+            graphics.drawString(font, option.gameType() + (option.teams().getString().isBlank() ? "" : " — " + option.teams().getString()), left + 10, y + 10, 0xD0D0D0, false);
             int colour = state.getPlayerVote() == row + 1 ? 0x55FF55 : 0xFFFFFF;
             graphics.drawCenteredString(font, Integer.toString(option.votes()), left + 188, y + 5, colour);
         }

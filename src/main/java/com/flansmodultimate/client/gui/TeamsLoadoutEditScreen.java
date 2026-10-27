@@ -57,7 +57,7 @@ public final class TeamsLoadoutEditScreen extends Screen
         {
             PacketLoadoutState.Entry choice = choices.get(i);
             int local = i - start;
-            Button button = Button.builder(Component.literal(choice.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setEntry(loadoutIndex, selectedSlot, choice.typeId())))
+            Button button = Button.builder(choice.name(), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setEntry(loadoutIndex, selectedSlot, choice.typeId())))
                 .bounds(left + 91 + (local % 3) * 75, top + 28 + (local / 3) * 25, 70, 20).build();
             button.active = state.getRank() >= choice.unlockRank();
             addRenderableWidget(button);

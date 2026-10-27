@@ -99,7 +99,7 @@ public final class GameTypeCTF extends GameTypeTDM
             if (flag.isHome() && fighter instanceof ServerPlayer player)
                 PlayerData.getInstance(player).setScore(PlayerData.getInstance(player).getScore() + 3);
             flag.pickUp(fighter);
-            manager.broadcast(Component.literal(name(fighter) + " picked up the " + flagTeam.getName() + FLAG_SUFFIX));
+            manager.broadcast(Component.empty().append(name(fighter)).append(" picked up the ").append(flagTeam.getNameComponent()).append(FLAG_SUFFIX));
         }
     }
 
@@ -117,7 +117,7 @@ public final class GameTypeCTF extends GameTypeTDM
                 manager.getStats(player).recordFlagSave();
                 manager.awardExperience(player, 10);
             }
-            manager.broadcast(Component.literal(name(fighter) + " returned the " + flagTeam.getName() + FLAG_SUFFIX));
+            manager.broadcast(Component.empty().append(name(fighter)).append(" returned the ").append(flagTeam.getNameComponent()).append(FLAG_SUFFIX));
             return;
         }
 
@@ -134,13 +134,13 @@ public final class GameTypeCTF extends GameTypeTDM
                 manager.getStats(player).recordFlagCapture();
                 manager.awardExperience(player, 20);
             }
-            manager.broadcast(Component.literal(name(fighter) + " captured the " + (captured == null ? "enemy" : captured.getName()) + FLAG_SUFFIX));
+            manager.broadcast(Component.empty().append(name(fighter)).append(" captured the ").append(captured == null ? Component.literal("enemy") : captured.getNameComponent()).append(FLAG_SUFFIX));
         }
     }
 
-    private static String name(LivingEntity fighter)
+    private static Component name(LivingEntity fighter)
     {
-        return fighter instanceof ServerPlayer player ? player.getScoreboardName() : fighter.getName().getString();
+        return fighter instanceof ServerPlayer player ? Component.literal(player.getScoreboardName()) : fighter.getName();
     }
 
     @Override

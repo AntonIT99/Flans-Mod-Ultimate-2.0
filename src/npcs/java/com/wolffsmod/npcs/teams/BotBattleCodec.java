@@ -115,6 +115,8 @@ final class BotBattleCodec
         tag.putBoolean(NBT_INITIAL, slot.isInitial());
         tag.putInt(NBT_SQUAD, slot.getSquad());
         tag.putString(NBT_NAME, slot.getName());
+        if (slot.getNameBinding() != null)
+            tag.put("nameBinding", slot.getNameBinding().save());
         tag.putString(NBT_ROLE, slot.getRole());
         if (slot.getEntity() != null)
             tag.putUUID(NBT_ENTITY, slot.getEntity());
@@ -231,6 +233,7 @@ final class BotBattleCodec
             tag.getBoolean(NBT_INITIAL));
         slot.setSquad(tag.getInt(NBT_SQUAD));
         slot.setName(tag.getString(NBT_NAME));
+        slot.setNameBinding(com.wolffsmod.npcs.names.ContentNameBinding.read(tag.getCompound("nameBinding"), slot.getName()).orElse(null));
         slot.setRole(tag.getString(NBT_ROLE));
         slot.setEntity(tag.hasUUID(NBT_ENTITY) ? tag.getUUID(NBT_ENTITY) : null);
         slot.setRespawnAt(tag.getLong(NBT_RESPAWN_AT));

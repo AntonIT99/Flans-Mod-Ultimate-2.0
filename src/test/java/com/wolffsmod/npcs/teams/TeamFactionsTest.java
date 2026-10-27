@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.wolffsmod.npcs.names.FactionDisplayName;
 import noppes.npcs.controllers.FactionController;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -34,7 +35,7 @@ class TeamFactionsTest
             when(team.getShortName()).thenReturn("testTeam");
             when(team.getName()).thenReturn("Test Team");
             when(team.getTeamColour()).thenReturn(0x123456);
-            Faction faction = mock(Faction.class);
+            Faction faction = mock(Faction.class, withSettings().extraInterfaces(FactionDisplayName.class));
             faction.id = 8;
             faction.hideFaction = true;
             when(controller.create("Test Team", 0x123456)).thenReturn(faction);
@@ -57,7 +58,7 @@ class TeamFactionsTest
             verify(controller, times(1)).create(anyString(), anyInt());
             verify(controller, times(1)).saveFaction(any());
 
-            Faction replacement = mock(Faction.class);
+            Faction replacement = mock(Faction.class, withSettings().extraInterfaces(FactionDisplayName.class));
             replacement.id = 9;
             when(controller.getFaction(8)).thenReturn(null);
             when(controller.create("Test Team", 0x123456)).thenReturn(replacement);
@@ -83,7 +84,7 @@ class TeamFactionsTest
             ITeam team = mock(ITeam.class);
             when(team.getShortName()).thenReturn("existing");
             when(team.getName()).thenReturn("Existing Team");
-            Faction faction = mock(Faction.class);
+            Faction faction = mock(Faction.class, withSettings().extraInterfaces(FactionDisplayName.class));
             faction.id = 0;
             faction.color = 0x654321;
             when(controller.getFactionFromName("Existing Team")).thenReturn(faction);

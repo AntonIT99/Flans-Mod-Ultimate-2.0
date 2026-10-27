@@ -51,6 +51,6 @@ public record TeamFactionPacket(int entityId, String team, String playerClass, b
             factions.apply(npc, selected.get());
         else
             factions.getOrCreate(selected.get());
-        player.sendSystemMessage(Component.translatable("wolffsmodnpcs.team_faction." + (apply ? "applied" : "created"), selected.get().getName()));
+        player.sendSystemMessage(Component.translatable("wolffsmodnpcs.team_faction." + (apply ? "applied" : "created"), selected.get().getNameComponent()));
     }
 }

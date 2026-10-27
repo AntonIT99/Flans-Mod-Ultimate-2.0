@@ -418,7 +418,7 @@ public final class TeamsCommand
             return failure(context, "Unknown team");
         if (!manager().selectTeam(player, team, false))
             return failure(context, "That team is unavailable or joining it would unbalance the round");
-        return success(context, "You will join " + team.getName() + " on respawn");
+        return success(context, Component.literal("You will join ").append(team.getNameComponent()).append(" on respawn"));
     }
 
     private static int help(CommandContext<CommandSourceStack> context)
@@ -634,13 +634,13 @@ public final class TeamsCommand
 
     private static int listLoadoutPools(CommandContext<CommandSourceStack> context)
     {
-        LoadoutPool.values().forEach(pool -> context.getSource().sendSuccess(() -> Component.literal(pool.getShortName() + " — " + pool.getName()), false));
+        LoadoutPool.values().forEach(pool -> context.getSource().sendSuccess(() -> Component.literal(pool.getShortName() + " — ").append(pool.getNameComponent()), false));
         return LoadoutPool.values().size();
     }
 
     private static int listRewardBoxes(CommandContext<CommandSourceStack> context)
     {
-        RewardBox.values().forEach(box -> context.getSource().sendSuccess(() -> Component.literal(box.getShortName() + " — " + box.getName()), false));
+        RewardBox.values().forEach(box -> context.getSource().sendSuccess(() -> Component.literal(box.getShortName() + " — ").append(box.getNameComponent()), false));
         return RewardBox.values().size();
     }
 
@@ -687,13 +687,13 @@ public final class TeamsCommand
         ServerPlayer player = context.getSource().getPlayerOrException();
         PlayerClass playerClass = PlayerClass.getPlayerClass(StringArgumentType.getString(context, CLASS));
         Component refusal = manager().describeClassRefusal(player, playerClass);
-        if (refusal != null || !manager().selectClass(player, playerClass))
+        if (playerClass == null || refusal != null || !manager().selectClass(player, playerClass))
         {
             context.getSource().sendFailure(refusal == null ? Component.translatable("message.flansmodultimate.teams.class_unavailable") : refusal);
             return 0;
         }
         manager().confirmSelection(player);
-        return success(context, "Class selected: " + playerClass.getName());
+        return success(context, Component.literal("Class selected: ").append(playerClass.getNameComponent()));
     }
 
     private static int showMotd(CommandContext<CommandSourceStack> context)
@@ -752,13 +752,14 @@ public final class TeamsCommand
 
     private static int listTeams(CommandContext<CommandSourceStack> context)
     {
-        Team.values().forEach(team -> context.getSource().sendSuccess(() -> Component.literal(team.getShortName() + " — " + team.getName()), false));
+        Team.values().forEach(team -> context.getSource().sendSuccess(() -> Component.literal(team.getShortName() + " — ").append(team.getNameComponent()), false));
         return Team.values().size();
     }
 
     private static int listClasses(CommandContext<CommandSourceStack> context)
     {
-        PlayerClass.values().forEach(type -> context.getSource().sendSuccess(() -> Component.literal(type.getShortName() + " — " + type.getName() + " (rank " + type.getUnlockLevel() + ")"), false));
+        PlayerClass.values().forEach(
+            type -> context.getSource().sendSuccess(() -> Component.literal(type.getShortName() + " — ").append(type.getNameComponent()).append(" (rank " + type.getUnlockLevel() + ")"), false));
         return PlayerClass.values().size();
     }
 
@@ -912,6 +913,13 @@ public final class TeamsCommand
     private static int success(CommandContext<CommandSourceStack> context, String message)
     {
         context.getSource().sendSuccess(() -> Component.literal(message), true);
+        return 1;
+    }
+
+    @SuppressWarnings("SameReturnValue") // Brigadier commands report success as 1, matching the literal-message overload.
+    private static int success(CommandContext<CommandSourceStack> context, Component message)
+    {
+        context.getSource().sendSuccess(() -> message, true);
         return 1;
     }
 

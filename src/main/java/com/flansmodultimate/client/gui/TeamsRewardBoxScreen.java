@@ -42,7 +42,7 @@ public final class TeamsRewardBoxScreen extends Screen
         {
             if (row >= ROWS)
                 break;
-            Button button = Button.builder(Component.literal("Open " + type.name() + " x" + type.unopened()), ignored -> openFirstUnopened(state, type.boxId()))
+            Button button = Button.builder(Component.literal("Open ").append(type.name()).append(" x" + type.unopened()), ignored -> openFirstUnopened(state, type.boxId()))
                 .bounds(left + 28, top + 30 + row * 25, 140, 20).build();
             button.active = type.unopened() > 0;
             addRenderableWidget(button);

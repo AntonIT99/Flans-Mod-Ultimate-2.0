@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.SoldierNamePacket;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
@@ -31,8 +32,8 @@ final class SoldierNameMenu extends GuiBasic
     {
         super.init();
         addLabel(new GuiLabel(0, PREFIX + "menu", guiLeft + 10, guiTop + 10));
-        addMirror(6, "display_name", 30, picker.npc.display.getName());
-        addMirror(7, "display_title", 56, picker.npc.display.getTitle());
+        addMirror(6, "display_name", 30, NpcDisplayNames.name(picker.npc.display).getString());
+        addMirror(7, "display_title", 56, NpcDisplayNames.title(picker.npc.display).getString());
         String[] labels = {"class_name", "class_title", "real_name"};
         for (int row = 0; row < labels.length; row++)
         {
@@ -85,8 +86,8 @@ final class SoldierNameMenu extends GuiBasic
 
     private void updateMirrors()
     {
-        updateMirror(6, picker.npc.display.getName());
-        updateMirror(7, picker.npc.display.getTitle());
+        updateMirror(6, NpcDisplayNames.name(picker.npc.display).getString());
+        updateMirror(7, NpcDisplayNames.title(picker.npc.display).getString());
     }
 
     private void updateMirror(int id, String value)
@@ -105,11 +106,11 @@ final class SoldierNameMenu extends GuiBasic
         switch (button.id)
         {
             case 0 -> {
-                picker.npc.display.setName(selection.playerClass().getName());
+                NpcDisplayNames.bindName(picker.npc.display, selection.playerClass());
                 picker.save();
             }
             case 1 -> {
-                picker.npc.display.setTitle(selection.playerClass().getName());
+                NpcDisplayNames.bindTitle(picker.npc.display, selection.playerClass());
                 picker.save();
             }
             case 2 -> {

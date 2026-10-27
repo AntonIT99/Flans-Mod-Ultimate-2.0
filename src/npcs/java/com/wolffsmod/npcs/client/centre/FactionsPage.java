@@ -69,7 +69,7 @@ final class FactionsPage extends BattlePage
         List<CommandCentreRow> rows = new ArrayList<>();
         for (BattlesData.FactionInfo faction : data.factions())
         {
-            CommandCentreRow row = CommandCentreRow.of(Integer.toString(faction.id()), Component.literal(faction.name()), tr("faction.detail", faction.branches().size(), faction.members()))
+            CommandCentreRow row = CommandCentreRow.of(Integer.toString(faction.id()), Component.literal(faction.displayName()), tr("faction.detail", faction.branches().size(), faction.members()))
                 .withColour(faction.colour()).selected(faction.id() == selected);
             rows.add(faction.member() ? row.withBadge(tr("badge.member"), CommandCentreRow.GOOD) : row);
         }
@@ -176,7 +176,7 @@ final class FactionsPage extends BattlePage
                 continue;
             boolean war = faction.enemies().contains(other.id());
             Component detail = tr(data.managed(other.id()).isPresent() ? "faction.managed" : "faction.unmanaged");
-            rows.add(CommandCentreRow.of(Integer.toString(other.id()), Component.literal(other.name()), detail).withColour(other.colour()).withBadge(tr(war ? "badge.war" : "badge.peace"),
+            rows.add(CommandCentreRow.of(Integer.toString(other.id()), Component.literal(other.displayName()), detail).withColour(other.colour()).withBadge(tr(war ? "badge.war" : "badge.peace"),
                 war ? CommandCentreRow.BAD : CommandCentreRow.NEUTRAL));
         }
         int top = view.getTop() + 18 + ROW;
@@ -262,7 +262,7 @@ final class FactionsPage extends BattlePage
             return;
         }
         BattlesData.FactionInfo faction = shown.get();
-        view.drawPanel(graphics, panelLeft, view.getTop(), panelWidth, view.getHeight(), Component.literal(faction.name()));
+        view.drawPanel(graphics, panelLeft, view.getTop(), panelWidth, view.getHeight(), Component.literal(faction.displayName()));
         int y = view.getTop() + 18 + ROW + 2;
         switch (tab)
         {
