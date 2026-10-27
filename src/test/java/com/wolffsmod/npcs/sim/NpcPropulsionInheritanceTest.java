@@ -2,14 +2,22 @@ package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.driveables.GroundHandling;
 import com.flansmodultimate.api.driveables.GroundPropulsion;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.NpcDriving.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataStats;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
 import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class NpcPropulsionInheritanceTest
 {
@@ -58,6 +66,86 @@ class NpcPropulsionInheritanceTest
         public double deceleration(double speed, double brake)
         {
             return rolling + (braking - rolling) * brake;
+        }
+    }
+
+    /** A realistic hull whose acceleration and deceleration are both exactly power over mass, to verify the override's scaling. */
+    private record WeighedEngine(double mass, double powerKw) implements GroundPropulsion
+    {
+        @Override
+        public double topSpeed()
+        {
+            return TOP;
+        }
+
+        @Override
+        public double reverseSpeed()
+        {
+            return 0.1D;
+        }
+
+        @Override
+        public boolean realistic()
+        {
+            return true;
+        }
+
+        @Override
+        public OptionalDouble massKg()
+        {
+            return OptionalDouble.of(mass);
+        }
+
+        @Override
+        public OptionalDouble enginePowerKw()
+        {
+            return OptionalDouble.of(powerKw);
+        }
+
+        @Override
+        public double acceleration(double speed)
+        {
+            return powerKw / mass;
+        }
+
+        @Override
+        public double deceleration(double speed, double brake)
+        {
+            return powerKw / mass * (1D + brake);
+        }
+    }
+
+    @Test
+    void customMassOrPowerScalesTheResponseWithoutMovingTheTopSpeed()
+    {
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        FlanModelEntity model = mock(FlanModelEntity.class);
+        IDriveableType type = mock(IDriveableType.class);
+        when(model.getInfoType()).thenReturn(type);
+        npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
+        NpcTuning tuning = new NpcTuning();
+        when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(tuning);
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        GroundPropulsion base = new WeighedEngine(40000D, 300D);
+        try (var models = mockStatic(NpcModels.class); var types = mockStatic(FlansEntityTypes.class); var mobility = mockStatic(NpcMobility.class))
+        {
+            models.when(() -> NpcModels.flan(npc)).thenReturn(model);
+            mobility.when(() -> NpcMobility.afloat(npc)).thenReturn(false);
+            types.when(() -> FlansEntityTypes.getGroundPropulsion(type)).thenReturn(Optional.of(base));
+            GroundPropulsion inherited = NpcDriving.propulsion(npc, options).orElseThrow();
+            assertEquals(300D / 40000D, inherited.acceleration(0D), 1.0E-9D);
+            assertEquals(base.topSpeed(), inherited.topSpeed());
+            tuning.set(Value.MASS, 80000);
+            GroundPropulsion heavier = NpcDriving.propulsion(npc, options).orElseThrow();
+            assertEquals(300D / 80000D, heavier.acceleration(0D), 1.0E-9D);
+            assertEquals(80000D, heavier.massKg().orElseThrow());
+            assertEquals(300D, heavier.enginePowerKw().orElseThrow());
+            assertEquals(base.topSpeed(), heavier.topSpeed());
+            tuning.set(Value.ENGINE_POWER, 900);
+            GroundPropulsion stronger = NpcDriving.propulsion(npc, options).orElseThrow();
+            assertEquals(900D / 80000D, stronger.acceleration(0D), 1.0E-9D);
+            assertEquals(900D, stronger.enginePowerKw().orElseThrow());
+            assertEquals(900D / 80000D * 2D, stronger.deceleration(0D, 1D), 1.0E-9D);
         }
     }
 

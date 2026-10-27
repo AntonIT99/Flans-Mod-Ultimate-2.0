@@ -152,7 +152,11 @@ public final class NpcTuning
         /** Fastest a submarine dives and surfaces, in tenths of a block per second; 0 keeps the default. */
         DIVE_RATE(0, 0, 600),
         /** Speed of a plane with nothing to fight in tenths of a block per second; 0 takes just above the least its model flies at. */
-        CRUISE_SPEED(0, 0, 600);
+        CRUISE_SPEED(0, 0, 600),
+        /** Mass in kilograms, weighed against engine power for the inherited acceleration; 0 takes the model's own, where it states one. */
+        MASS(0, 0, 1_000_000),
+        /** Reference engine power in kilowatts, weighed against mass for the inherited acceleration; 0 takes the model's own, where it states one. */
+        ENGINE_POWER(0, 0, 100_000);
 
         private final int fallback;
         private final int minimum;

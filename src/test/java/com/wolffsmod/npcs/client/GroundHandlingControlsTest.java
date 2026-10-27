@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.api.driveables.GroundPropulsion;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.NpcDriving;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -64,6 +67,31 @@ class GroundHandlingControlsTest
             assertTrue(GroundHandlingControls.button(npc, button));
             assertEquals(0, tuning.get(Value.HULL_TURN_RATE));
             assertFalse(GroundHandlingControls.render(mock(GuiBasic.class), npc, Value.FOLLOW_DISTANCE, 1001, 0, 0, true));
+        }
+    }
+
+    @Test
+    void massAndEnginePowerReadTheModelsRealisticProfileAndIgnoreALegacyOne()
+    {
+        NpcTuning tuning = new NpcTuning();
+        EntityNPCInterface npc = npc(tuning);
+        try (var driving = mockStatic(NpcDriving.class))
+        {
+            GroundPropulsion realistic = mock(GroundPropulsion.class);
+            when(realistic.realistic()).thenReturn(true);
+            when(realistic.massKg()).thenReturn(OptionalDouble.of(40000D));
+            when(realistic.enginePowerKw()).thenReturn(OptionalDouble.of(300D));
+            driving.when(() -> NpcDriving.propulsion(eq(npc), any())).thenReturn(Optional.of(realistic));
+            assertTrue(GroundHandlingControls.supported(npc, Value.MASS));
+            assertTrue(GroundHandlingControls.supported(npc, Value.ENGINE_POWER));
+            assertEquals(40000D, GroundHandlingControls.effective(npc, Value.MASS));
+            assertEquals(300D, GroundHandlingControls.effective(npc, Value.ENGINE_POWER));
+
+            GroundPropulsion legacy = mock(GroundPropulsion.class);
+            when(legacy.realistic()).thenReturn(false);
+            driving.when(() -> NpcDriving.propulsion(eq(npc), any())).thenReturn(Optional.of(legacy));
+            assertFalse(GroundHandlingControls.supported(npc, Value.MASS));
+            assertFalse(GroundHandlingControls.supported(npc, Value.ENGINE_POWER));
         }
     }
 

@@ -1,13 +1,10 @@
 package com.wolffsmod.npcs.client;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.GroundPropulsion;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.client.CombatPages.Group;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
-import com.wolffsmod.npcs.sim.NpcDriving;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.DriveType;
@@ -22,12 +19,10 @@ import net.minecraft.network.chat.Component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.OptionalDouble;
 
 /**
  * The rows of the Driving and Turning tabs of the model properties page: the movement values a content-pack model's
- * definition supplies. Each row edits the same tuning value as the Travel and Aiming pages, where 0 inherits the
- * model; mass and engine power are read-only readouts of what the inherited response is made of.
+ * definition supplies. Each row edits the same tuning value as the Travel and Aiming pages, where 0 inherits the model.
  */
 final class ModelTuningRows
 {
@@ -37,7 +32,6 @@ final class ModelTuningRows
     private static final String HELP_SUFFIX = ".help";
     private static final String[] MODES = {PREFIX + "mode.inherit", PREFIX + "mode.custom"};
     private static final int INHERITED_COLOR = 0x408040;
-    private static final int READ_ONLY_COLOR = 0xA0A0A0;
     private static final int VALUE_LEFT = 130;
     private static final int VALUE_WIDTH = 112;
     private static final int MODE_LEFT = 258;
@@ -61,8 +55,8 @@ final class ModelTuningRows
         BRAKING(Group.DRIVING, Value.DRIVE_BRAKING),
         COASTING(Group.DRIVING, Value.DRIVE_COASTING),
         STEP_HEIGHT(Group.DRIVING, Value.STEP_HEIGHT),
-        MASS(Group.DRIVING, null),
-        ENGINE_POWER(Group.DRIVING, null),
+        MASS(Group.DRIVING, Value.MASS),
+        ENGINE_POWER(Group.DRIVING, Value.ENGINE_POWER),
         DRIVE_TYPE(Group.TURNING, Value.DRIVE_TYPE),
         HULL_TURN_RATE(Group.TURNING, Value.HULL_TURN_RATE),
         FLIGHT_TURN_RATE(Group.TURNING, Value.FLIGHT_TURN_RATE),
@@ -72,10 +66,9 @@ final class ModelTuningRows
         // spotless:on
 
         private final Group group;
-        @Nullable
         private final Value value;
 
-        Row(Group group, @Nullable Value value)
+        Row(Group group, Value value)
         {
             this.group = group;
             this.value = value;
@@ -150,17 +143,15 @@ final class ModelTuningRows
     {
         int x = gui.guiLeft + 8;
         String name = key(row);
-        String help = row.value == null ? name + HELP_SUFFIX : "wolffsmodnpcs.tuning." + row.value.name().toLowerCase(Locale.ROOT) + HELP_SUFFIX;
+        String help = "wolffsmodnpcs.tuning." + row.value.name().toLowerCase(Locale.ROOT) + HELP_SUFFIX;
         gui.addLabel(new GuiLabel(MODE_ID + row.ordinal(), name, x, y + 5, help));
-        boolean inherits = row.value == null || inherits(row.value);
-        if (row.value == null)
-            readout(row, y);
-        else if (row == Row.DRIVE_TYPE)
+        boolean inherits = inherits(row.value);
+        if (row == Row.DRIVE_TYPE)
             driveType(y, inherits, loaded);
         else
             number(row, y, inherits, loaded);
         GuiButtonNop mode = new GuiButtonNop(gui, MODE_ID + row.ordinal(), x + MODE_LEFT, y, MODE_WIDTH, 20, MODES.clone(), inherits ? 0 : 1);
-        mode.setEnabled(loaded && row.value != null && inheritable(row.value));
+        mode.setEnabled(loaded && inheritable(row.value));
         mode.setTooltip(Tooltip.create(Component.translatable("wolffsmodnpcs.tuning.handling_mode.help")));
         gui.addButton(mode);
     }
@@ -175,18 +166,6 @@ final class ModelTuningRows
     {
         int stored = NpcTuning.of(npc).get(value);
         return stored == 0 && inheritable(value);
-    }
-
-    private void readout(Row row, int y)
-    {
-        GroundPropulsion engine = NpcDriving.propulsion(npc, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).orElse(null);
-        OptionalDouble value = OptionalDouble.empty();
-        if (engine != null)
-            value = row == Row.MASS ? engine.massKg() : engine.enginePowerKw();
-        String text = value.isPresent() ? Component.translatable(key(row) + ".value", GroundHandlingControls.format(value.getAsDouble())).getString() : "-";
-        GuiLabel shown = new GuiLabel(VALUE_ID + row.ordinal(), Component.literal(text), value.isPresent() ? INHERITED_COLOR : READ_ONLY_COLOR, gui.guiLeft + VALUE_LEFT, y + 5, 40, 0);
-        shown.setTooltip(Tooltip.create(Component.translatable(key(row) + HELP_SUFFIX)));
-        gui.addLabel(shown);
     }
 
     private void driveType(int y, boolean inherits, boolean loaded)
@@ -247,7 +226,7 @@ final class ModelTuningRows
     boolean button(GuiButtonNop button)
     {
         Row row = row(button.id);
-        if (row == null || row.value == null)
+        if (row == null)
             return false;
         if (button.id >= VALUE_ID)
         {
@@ -266,7 +245,7 @@ final class ModelTuningRows
     boolean field(GuiTextFieldNop field)
     {
         Row row = row(field.id);
-        if (row == null || row.value == null || field.id < VALUE_ID || !field.isInteger() || inherits(row.value))
+        if (row == null || field.id < VALUE_ID || !field.isInteger() || inherits(row.value))
             return false;
         int minimum = inheritable(row.value) ? 1 : row.value.minimum();
         GroundHandlingControls.store(npc, row.value, Math.max(minimum, Math.min(row.value.maximum(), field.getInteger())));
@@ -278,7 +257,7 @@ final class ModelTuningRows
     {
         for (Row row : rows(npc, group))
         {
-            if (row.value != null && inheritable(row.value) && !inherits(row.value))
+            if (inheritable(row.value) && !inherits(row.value))
                 store(row, false);
         }
     }
@@ -288,7 +267,7 @@ final class ModelTuningRows
     {
         for (Row row : rows(npc, group))
         {
-            if (row.value != null && inherits(row.value))
+            if (inherits(row.value))
                 store(row, true);
         }
     }
@@ -304,13 +283,13 @@ final class ModelTuningRows
     /** @return whether Inherit all has anything to do on the tab */
     boolean anyCustom(Group group)
     {
-        return rows(npc, group).stream().anyMatch(row -> row.value != null && inheritable(row.value) && !inherits(row.value));
+        return rows(npc, group).stream().anyMatch(row -> inheritable(row.value) && !inherits(row.value));
     }
 
     /** @return whether Import all has anything to do on the tab */
     boolean anyInherited(Group group)
     {
-        return rows(npc, group).stream().anyMatch(row -> row.value != null && inherits(row.value));
+        return rows(npc, group).stream().anyMatch(row -> inherits(row.value));
     }
 
     private static String key(Row row)

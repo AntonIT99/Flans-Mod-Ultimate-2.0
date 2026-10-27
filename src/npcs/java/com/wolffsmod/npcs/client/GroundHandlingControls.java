@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.client;
 
 import com.flansmodultimate.api.driveables.FlightPerformance;
+import com.flansmodultimate.api.driveables.GroundPropulsion;
+import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.NpcDriving;
 import com.wolffsmod.npcs.sim.NpcFlight;
 import com.wolffsmod.npcs.sim.NpcMobility;
@@ -18,6 +20,7 @@ import net.minecraft.network.chat.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 /**
  * Explicit modes for the driving, travel, flight and aiming numbers whose zero sentinel inherits model handling, shared by
@@ -37,6 +40,8 @@ final class GroundHandlingControls
         return switch (value)
         {
             case HULL_TURN_RATE, TURN_RADIUS, DRIVE_REVERSE_SPEED, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING -> true;
+            // Only a complete real-world profile weighs mass against engine power; a legacy response ignores both.
+            case MASS, ENGINE_POWER -> realisticPropulsion(npc).isPresent();
             // Only a content-pack model has a gun mount to take an aim speed from.
             case AIM_SPEED_YAW, AIM_SPEED_PITCH -> NpcModels.flan(npc) != null;
             // Any other NPC keeps the plain field, whose 0 is its walking speed.
@@ -87,6 +92,8 @@ final class GroundHandlingControls
             return NpcMobility.modelStepHeight(npc).orElse(0D) * 10D;
         if (value == Value.FLIGHT_SPEED || value == Value.CRUISE_SPEED || value == Value.FLIGHT_TURN_RATE || value == Value.CLIMB_RATE)
             return flight(npc, value);
+        if (value == Value.MASS || value == Value.ENGINE_POWER)
+            return propulsionValue(npc, value);
         NpcDriving.Settings settings = NpcDriving.settings(npc);
         return switch (value)
         {
@@ -99,6 +106,19 @@ final class GroundHandlingControls
             case LAND_SPEED -> NpcMobility.topSpeed(npc) * 200D;
             default -> throw new IllegalArgumentException(value.name());
         };
+    }
+
+    /** @return the model's own realistic engine, when it uses one; empty for a legacy response, which mass and power do not weigh against */
+    private static Optional<GroundPropulsion> realisticPropulsion(EntityNPCInterface npc)
+    {
+        return NpcDriving.propulsion(npc, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).filter(GroundPropulsion::realistic);
+    }
+
+    /** @return the model's own mass in kilograms, or its engine power in kilowatts */
+    private static double propulsionValue(EntityNPCInterface npc, Value value)
+    {
+        GroundPropulsion engine = realisticPropulsion(npc).orElseThrow();
+        return value == Value.MASS ? engine.massKg().orElseThrow() : engine.enginePowerKw().orElseThrow();
     }
 
     /** @return what the aircraft model supplies for a flight value, in the units the value is set in */
@@ -161,7 +181,7 @@ final class GroundHandlingControls
     {
         return switch (value)
         {
-            case LAND_SPEED, STEP_HEIGHT, FLIGHT_SPEED, CRUISE_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE, AIM_SPEED_YAW, AIM_SPEED_PITCH -> false;
+            case LAND_SPEED, STEP_HEIGHT, FLIGHT_SPEED, CRUISE_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE, AIM_SPEED_YAW, AIM_SPEED_PITCH, MASS, ENGINE_POWER -> false;
             default -> true;
         };
     }

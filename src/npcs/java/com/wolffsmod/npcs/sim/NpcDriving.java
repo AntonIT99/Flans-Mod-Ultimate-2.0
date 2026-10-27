@@ -22,6 +22,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 /**
  * Drives a ground vehicle NPC along the path Custom NPCs gave it, the way a vehicle moves rather than the way a mob
@@ -516,7 +517,85 @@ public final class NpcDriving
         FlanModelEntity model = NpcModels.flan(npc);
         if (model == null || !options.enabled(Feature.TYPE_PROPERTIES))
             return Optional.empty();
-        return NpcMobility.afloat(npc) ? FlansEntityTypes.getWaterPropulsion(model.getInfoType()) : FlansEntityTypes.getGroundPropulsion(model.getInfoType());
+        Optional<GroundPropulsion> engine = NpcMobility.afloat(npc) ? FlansEntityTypes.getWaterPropulsion(model.getInfoType()) : FlansEntityTypes.getGroundPropulsion(model.getInfoType());
+        return engine.map(propulsion -> overridden(propulsion, NpcTuning.of(npc)));
+    }
+
+    /** Weighs the model's own realistic engine against a mass or power the NPC states instead of its own; a legacy response, which does not weigh one against the other, is kept as is. */
+    private static GroundPropulsion overridden(GroundPropulsion model, NpcTuning tuning)
+    {
+        if (!model.realistic())
+            return model;
+        int mass = tuning.get(Value.MASS);
+        int power = tuning.get(Value.ENGINE_POWER);
+        if (mass == 0 && power == 0)
+            return model;
+        return new OverriddenPropulsion(model, mass > 0 ? mass : model.massKg().orElseThrow(), power > 0 ? power : model.enginePowerKw().orElseThrow());
+    }
+
+    /**
+     * The model's own realistic response with its mass or engine power replaced by the NPC's own. Under
+     * {@link com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics} both the tractive force and the
+     * resistance that calibrates it to the model's authored top speed are directly proportional to engine power, and
+     * every term but a fixed braking allowance and a resistance floor divides by mass; scaling the model's own
+     * acceleration and deceleration by the ratio of the new figures to its own carries the curve over without
+     * recomputing it from scratch, and never moves the speed it levels out at. {@link #climbFactor} still weighs the
+     * model's own figures, which it does not expose on their own.
+     */
+    private record OverriddenPropulsion(GroundPropulsion model, double mass, double powerKw) implements GroundPropulsion
+    {
+        @Override
+        public double topSpeed()
+        {
+            return model.topSpeed();
+        }
+
+        @Override
+        public double reverseSpeed()
+        {
+            return model.reverseSpeed();
+        }
+
+        @Override
+        public boolean realistic()
+        {
+            return true;
+        }
+
+        @Override
+        public OptionalDouble massKg()
+        {
+            return OptionalDouble.of(mass);
+        }
+
+        @Override
+        public OptionalDouble enginePowerKw()
+        {
+            return OptionalDouble.of(powerKw);
+        }
+
+        @Override
+        public double acceleration(double speed)
+        {
+            return model.acceleration(speed) * scale();
+        }
+
+        @Override
+        public double deceleration(double speed, double brake)
+        {
+            return model.deceleration(speed, brake) * scale();
+        }
+
+        @Override
+        public double climbFactor(double climbDegrees)
+        {
+            return model.climbFactor(climbDegrees);
+        }
+
+        private double scale()
+        {
+            return powerKw / model.enginePowerKw().orElseThrow() * (model.massKg().orElseThrow() / mass);
+        }
     }
 
     private static boolean tracked(EntityNPCInterface npc)

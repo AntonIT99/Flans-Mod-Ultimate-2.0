@@ -5,6 +5,7 @@ import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.client.CombatPages.Group;
 import com.wolffsmod.npcs.client.ModelTuningRows.Row;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
@@ -151,7 +152,8 @@ class ModelTuningRowsTest
             case TURN_RADIUS -> Value.TURN_RADIUS;
             case TRAVERSE -> Value.AIM_SPEED_YAW;
             case ELEVATION -> Value.AIM_SPEED_PITCH;
-            case MASS, ENGINE_POWER -> null;
+            case MASS -> Value.MASS;
+            case ENGINE_POWER -> Value.ENGINE_POWER;
         };
     }
 
@@ -187,6 +189,7 @@ class ModelTuningRowsTest
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
         npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
         when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(tuning);
+        when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).thenReturn(new NpcWeaponOptions());
         return npc;
     }
 }
