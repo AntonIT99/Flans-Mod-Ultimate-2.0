@@ -133,9 +133,17 @@ public final class NpcVehicleState
     /** The part hitboxes of the model, on either side. */
     @Getter
     private final NpcParts parts = new NpcParts();
+    /** Where a ground vehicle drives to for a shot its main weapon cannot make from where it stands. */
+    @Getter
+    private final NpcFiringPosition firingPosition = new NpcFiringPosition();
     private int targetId = -1;
     @Nullable
     private Vec3 solution;
+    /** Where the main weapon's rounds left from when the solution was worked out. */
+    @Nullable
+    private Vec3 solvedFrom;
+    /** The pitch nearest to its shot that the main weapon of a vehicle reaches, while the shot lies beyond its elevation; NaN otherwise. */
+    private float reachablePitch = Float.NaN;
     private int solvedAt = Integer.MIN_VALUE;
     private double shotSpeed = Double.NaN;
     private double shotGravity;
@@ -296,6 +304,8 @@ public final class NpcVehicleState
         targetId = -1;
         motion.reset();
         solution = null;
+        solvedFrom = null;
+        reachablePitch = Float.NaN;
         sent = false;
         received = false;
         shapeSignature = Integer.MIN_VALUE;
@@ -369,6 +379,7 @@ public final class NpcVehicleState
             targetId = -1;
             motion.reset();
             solution = null;
+            solvedFrom = null;
         }
         Vec3 aim = engaged ? solve(npc, current, target, options) : null;
         attitude(npc, current, aim);
@@ -378,6 +389,7 @@ public final class NpcVehicleState
         if (held && wanted != null && current.kind() == FlanModelKind.VEHICLE && options.enabled(Feature.HULL_ASSISTS_AIM) && !driving(npc))
             wanted = assistWithHull(npc, current, tuning, wanted, tolerance);
         aimTurret(current, options, tuning, wanted, tolerance);
+        reachablePitch = wanted != null && !bombing && current.kind() == FlanModelKind.VEHICLE ? reachablePitch(current.driver(), current.turreted(), wanted, tolerance) : Float.NaN;
         gunAligned = aligned;
         bombPoint = null;
         // A bomb is let go when it would come down on the target, whatever the switches say: from anywhere else it misses.
@@ -482,6 +494,27 @@ public final class NpcVehicleState
         MountAim next = MountMotion.approach(turretAim(), goal, driver, yawStep, pitchStep);
         turretYaw = next.yaw();
         turretPitch = next.pitch();
+    }
+
+    /**
+     * @param driver
+     *            the seat whose limits a turret keeps to, or null for a turret that elevates freely
+     * @param turreted
+     *            whether the main weapon turns with a turret; otherwise it points straight along the hull
+     * @param wanted
+     *            where the main weapon has to point, relative to the hull
+     * @return the pitch nearest to the wanted one that the main weapon reaches within the tolerance, while the wanted one
+     *         lies beyond its elevation; NaN while it reaches it
+     */
+    static float reachablePitch(@Nullable WeaponMount driver, boolean turreted, MountAim wanted, float tolerance)
+    {
+        if (turreted && driver == null)
+            return Float.NaN;
+        float highest = (driver != null && turreted ? driver.minimum().pitch() : 0F) - tolerance;
+        float lowest = (driver != null && turreted ? driver.maximum().pitch() : 0F) + tolerance;
+        if (wanted.pitch() > lowest)
+            return lowest;
+        return wanted.pitch() < highest ? highest : Float.NaN;
     }
 
     private void aimSeats(EntityNPCInterface npc, Layout current, NpcWeaponOptions options, @Nullable LivingEntity target)
@@ -615,7 +648,9 @@ public final class NpcVehicleState
         if (solution != null && npc.tickCount - solvedAt < SOLVE_INTERVAL && npc.tickCount >= solvedAt)
             return solution;
         solvedAt = npc.tickCount;
-        Vec3 displacement = aimPoint(target).subtract(fireOrigin(npc, current, options));
+        Vec3 origin = fireOrigin(npc, current, options);
+        solvedFrom = origin;
+        Vec3 displacement = aimPoint(target).subtract(origin);
         refreshBallistics(npc);
         if (Double.isNaN(shotSpeed))
             solution = displacement.normalize();
@@ -647,7 +682,7 @@ public final class NpcVehicleState
     }
 
     /** Whether Custom NPCs' ranged AI fires at the target along the high arc, as it decides when it pulls the trigger. */
-    private static boolean indirect(EntityNPCInterface npc, LivingEntity target)
+    static boolean indirect(EntityNPCInterface npc, LivingEntity target)
     {
         double range = npc.stats.ranged.getRange();
         return switch (npc.stats.ranged.getFireType())
@@ -685,6 +720,21 @@ public final class NpcVehicleState
     public Optional<Vec3> aimDirection()
     {
         return Optional.ofNullable(solution);
+    }
+
+    /** @return where the main weapon's rounds leave from, as of the last shot at its target worked out; empty while it has none */
+    public Optional<Vec3> fireOrigin()
+    {
+        return Optional.ofNullable(solvedFrom);
+    }
+
+    /**
+     * @return the pitch, relative to the hull and positive downwards, nearest to its shot that the main weapon of a vehicle
+     *         reaches, while that shot lies beyond its elevation; empty while it reaches it or has no shot to make
+     */
+    public Optional<Float> elevationLimit()
+    {
+        return Float.isNaN(reachablePitch) ? Optional.empty() : Optional.of(reachablePitch);
     }
 
     /** @return where a bomb let go now would have to come down to meet the target; empty while the NPC bombs nothing */

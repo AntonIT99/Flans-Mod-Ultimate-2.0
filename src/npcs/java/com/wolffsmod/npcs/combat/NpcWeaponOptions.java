@@ -32,7 +32,16 @@ public final class NpcWeaponOptions
         /** Landing gear that retracts while the aircraft flies and comes down near the ground; the gear row shows it as a third choice beside down and up. */
         GEAR_DYNAMIC(true),
         /** Shows what the NPC aims at: its line to the target, the point it leads to, its ranges and a label above its head. */
-        AIM_DEBUG(false);
+        AIM_DEBUG(false),
+        /**
+         * A ground vehicle whose main weapon cannot lower or raise itself onto its target backs away until it can, and one
+         * whose line of fire is blocked drives on, round what blocks it, until it has a clear shot.
+         */
+        MANOEUVRE_TO_FIRE(true),
+        /** Each manned seat gun picks its own target within its own arc, whatever the turret and the other guns fire at. */
+        GUNNER_TARGETS(true),
+        /** A seat gun nobody sits behind aims and fires by itself, as a crew member would man it, credited to the vehicle. */
+        UNMANNED_GUNS_FIRE(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

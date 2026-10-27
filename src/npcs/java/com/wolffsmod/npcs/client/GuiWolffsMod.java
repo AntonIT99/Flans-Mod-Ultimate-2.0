@@ -491,11 +491,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Value.GRENADE_USE, Feature.NATIVE_THROWABLES, Value.NATIVE_THROWABLE_USE, Value.THROWN_WEAPON_USE,
             Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO)),
         MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS,
-            Tab.named("weapon_operation", Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.DRIVER_GUNS, Feature.MANNED_GUNS_FIRE, Feature.RUN_OVER),
+            Tab.named("weapon_operation", Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.DRIVER_GUNS, Feature.MANNED_GUNS_FIRE, Feature.UNMANNED_GUNS_FIRE, Feature.GUNNER_TARGETS,
+                Feature.RUN_OVER),
             Tab.named("weapon_positions", Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES, Feature.EYE_AT_MUZZLE)),
         AIMING(Section.TARGETING, Scope.ALL,
             Tab.named("target_tracking", Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE),
-            Tab.named("gun_movement", Scope.MODELS, Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.TURRET_LOCKED)),
+            Tab.named("gun_movement", Scope.MODELS, Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.MANOEUVRE_TO_FIRE, Feature.PASSENGER_GUNS,
+                Feature.TURRET_LOCKED)),
         PROTECTION(Section.PROTECTION, Scope.ALL,
             Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES),
             Tab.named(ARMOUR_TAB, Scope.MODELS, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR),
@@ -1662,8 +1664,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             {
                 case MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM, PASSENGER_GUNS,
                     TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING -> Scope.MODELS;
-                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, DRIVER_GUNS, MUZZLE_FLASHES -> Scope.DRIVEABLES;
-                case HULL_ASSISTS_AIM, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
+                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, UNMANNED_GUNS_FIRE, GUNNER_TARGETS, DRIVER_GUNS,
+                    MUZZLE_FLASHES -> Scope.DRIVEABLES;
+                case HULL_ASSISTS_AIM, MANOEUVRE_TO_FIRE, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
                 case RUN_OVER -> Scope.GROUND_MACHINES;
                 case DRIVE_DRIVEABLES -> Scope.STANDARD;
@@ -1901,11 +1904,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 requestReport();
                 init();
             }
+            case SERVER_SHOW_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(true));
+            case SERVER_HIDE_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(false));
             case SERVER_BENCHMARK_ID -> NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
             case CLIENT_BENCHMARK_ID -> {
                 // A benchmark does not measure a screen: the editor closes first.
-            case SERVER_SHOW_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(true));
-            case SERVER_HIDE_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(false));
                 close();
                 ClientBenchmark.start(ServerBenchmark.DEFAULT_SECONDS);
             }

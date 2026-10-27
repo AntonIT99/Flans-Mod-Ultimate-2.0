@@ -114,7 +114,8 @@ public final class EntityTypePropertySupport
             Vec3 turretOffset = LegacyDriveableCoordinates.toLocal(seat.getRotatedOffset());
             if (onTurret && driveable.getTurretOriginOffset() != null)
                 turretOffset = turretOffset.add(LegacyDriveableCoordinates.toLocal(driveable.getTurretOriginOffset()));
-            mounts.add(new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(seat.getMinYaw(), seat.getMinPitch()), new MountAim(seat.getMaxYaw(), seat.getMaxPitch()), yawSpeed,
+            // Seats state pitch positive upwards, as the seat clamps it; a mount's pitch is positive downwards.
+            mounts.add(new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(seat.getMinYaw(), -seat.getMaxPitch()), new MountAim(seat.getMaxYaw(), -seat.getMinPitch()), yawSpeed,
                 pitchSpeed, position, onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset));
         }
         mounts.sort(Comparator.comparingInt(WeaponMount::seat));

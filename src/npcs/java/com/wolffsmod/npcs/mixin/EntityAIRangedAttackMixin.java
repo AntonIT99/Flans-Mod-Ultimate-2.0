@@ -7,6 +7,7 @@ import com.wolffsmod.npcs.combat.NpcReloadFeedback;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.sim.NpcFiringPosition;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -43,6 +44,8 @@ import java.util.Optional;
  * <li>The trigger waits, without spending its cooldown or its burst, until a model's gun is on target and until nothing the NPC
  * must not fire through is in the way; meanwhile the NPC keeps closing in.</li>
  * <li>With a tactic of the mod's own, the tactic moves the NPC while this goal fires, and learns of its reloads and pauses.</li>
+ * <li>A ground vehicle whose main weapon has no shot from where it stands, too close for its elevation or with its line of fire
+ * blocked, drives to where it has one rather than standing or only closing in.</li>
  * </ul>
  */
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
@@ -98,19 +101,22 @@ public abstract class EntityAIRangedAttackMixin
 
     // Tactics. An @At inherits the mixin's remap = false; the navigator is a Minecraft class, whose names are remapped.
 
-    /** A tactic of the mod's own moves the NPC while this goal keeps firing; its own advance and halt then wait. */
+    /**
+     * A tactic of the mod's own moves the NPC while this goal keeps firing; its own advance and halt then wait. A ground
+     * vehicle without a shot from where it stands drives to where it has one instead.
+     */
     @SuppressWarnings("DefaultAnnotationParam")
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;moveTo(Lnet/minecraft/world/entity/Entity;D)Z", remap = true))
     private boolean wolffsmodnpcsTacticAdvances(PathNavigation navigation, Entity target, double speed)
     {
-        return NpcTactics.followsPath(NpcTactics.of(npc)) || navigation.moveTo(target, speed);
+        return NpcTactics.followsPath(NpcTactics.of(npc)) || target instanceof LivingEntity living && NpcFiringPosition.reposition(npc, living) || navigation.moveTo(target, speed);
     }
 
     @SuppressWarnings("DefaultAnnotationParam")
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;stop()V", remap = true))
     private void wolffsmodnpcsTacticHalts(PathNavigation navigation)
     {
-        if (!NpcTactics.followsPath(NpcTactics.of(npc)))
+        if (!NpcTactics.followsPath(NpcTactics.of(npc)) && !NpcFiringPosition.reposition(npc, npc.getTarget()))
             navigation.stop();
     }
 
@@ -120,6 +126,11 @@ public abstract class EntityAIRangedAttackMixin
         Tactic tactic = NpcTactics.of(npc);
         if (NpcTactics.followsPath(tactic))
             NpcTacticSteering.steer(npc, tactic);
+        else if (!npc.ais.directLOS)
+        {
+            // Without direct line of sight, Custom NPCs never moves the NPC to attack.
+            NpcFiringPosition.reposition(npc, npc.getTarget());
+        }
     }
 
     // Inherited cadence and reload cycle

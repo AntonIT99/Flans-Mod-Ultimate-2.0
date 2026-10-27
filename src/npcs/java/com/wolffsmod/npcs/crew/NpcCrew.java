@@ -265,7 +265,7 @@ public final class NpcCrew
         return boarded;
     }
 
-    private static boolean occupied(EntityNPCInterface vehicle, int seat)
+    static boolean occupied(EntityNPCInterface vehicle, int seat)
     {
         return vehicle.getPassengers().stream().anyMatch(passenger -> seatOf(vehicle, passenger).map(WeaponMount::seat).orElse(NO_SEAT) == seat);
     }
