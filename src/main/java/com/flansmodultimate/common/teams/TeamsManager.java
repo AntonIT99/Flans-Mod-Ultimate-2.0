@@ -1236,18 +1236,50 @@ public final class TeamsManager
         for (ServerPlayer player : getServer().getPlayerList().getPlayers())
             if (getPlayerTeam(player) != Team.SPECTATORS)
                 getStats(player).recordRound();
-        getCurrentRound().ifPresent(round ->
+        if (getCurrentGameType().map(com.flansmodultimate.common.teams.GameType::hasMvpPerTeam).orElse(true))
         {
-            for (String id : round.getTeamIds())
+            getCurrentRound().ifPresent(round ->
             {
-                getPlayersOnTeam(Team.getTeam(id)).stream().max(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore())).ifPresent(player ->
-                {
-                    getStats(player).recordMvp();
-                    awardExperience(player, 250);
-                });
-            }
-        });
+                for (String id : round.getTeamIds())
+                    getPlayersOnTeam(Team.getTeam(id)).stream().max(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore())).ifPresent(this::awardMvp);
+            });
+        }
+        else
+        {
+            awardFieldMvp();
+        }
         markDirty();
+    }
+
+    /** Names the single best player of the round, if one outscored everyone else with a positive score. */
+    private void awardFieldMvp()
+    {
+        ServerPlayer best = null;
+        boolean tied = false;
+        for (ServerPlayer player : getServer().getPlayerList().getPlayers())
+        {
+            if (getPlayerTeam(player) == Team.SPECTATORS)
+                continue;
+            int score = PlayerData.getInstance(player).getScore();
+            int bestScore = best == null ? 0 : PlayerData.getInstance(best).getScore();
+            if (score > bestScore)
+            {
+                best = player;
+                tied = false;
+            }
+            else if (best != null && score == bestScore)
+            {
+                tied = true;
+            }
+        }
+        if (best != null && !tied)
+            awardMvp(best);
+    }
+
+    private void awardMvp(ServerPlayer player)
+    {
+        getStats(player).recordMvp();
+        awardExperience(player, 250);
     }
 
     public boolean selectTeam(ServerPlayer player, @Nullable Team team, boolean force)

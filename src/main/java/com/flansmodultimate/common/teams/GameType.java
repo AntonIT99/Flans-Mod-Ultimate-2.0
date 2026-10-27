@@ -364,6 +364,12 @@ public abstract class GameType
         return true;
     }
 
+    /** Whether the end of a round names the best player of every team, rather than one across the whole field. */
+    public boolean hasMvpPerTeam()
+    {
+        return true;
+    }
+
     public boolean showZombieScore()
     {
         return false;
