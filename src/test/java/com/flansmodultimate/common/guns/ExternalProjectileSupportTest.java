@@ -161,6 +161,21 @@ class ExternalProjectileSupportTest
         return new ShootPoint(new DriveablePosition(position, EnumDriveablePart.CORE), new Vector3f());
     }
 
+    @Test
+    void anAimedSeatGunCarriesItsMuzzleRoundItsPivot()
+    {
+        // The preview frame faces -Z; a gun two blocks long resting ahead of its pivot.
+        Vec3 pivot = new Vec3(1D, 2D, 3D);
+        Vec3 muzzle = pivot.add(0D, 0D, -2D);
+        assertVector(muzzle, ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, MountAim.REST));
+        // Turned right, it points along +X, the way an aim of the same yaw leaves along; pitched down, it points down.
+        assertVector(pivot.add(2D, 0D, 0D), ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, new MountAim(90F, 0F)));
+        assertVector(pivot.add(0D, -2D, 0D), ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, new MountAim(0F, 90F)));
+        assertVector(pivot.add(0D, -1D, -Math.sqrt(3D)), ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, new MountAim(0F, 30F)));
+        // An aircraft's gun rests turned half round, so its muzzle measured behind the pivot is ahead of it when aimed ahead.
+        assertVector(muzzle, ExternalProjectileSupport.aimSeatGunPoint(pivot.add(0D, 0D, 2D), pivot, 180F, MountAim.REST));
+    }
+
     private static void assertVector(Vec3 expected, Vec3 actual)
     {
         assertEquals(expected.x, actual.x, 1.0E-6D);

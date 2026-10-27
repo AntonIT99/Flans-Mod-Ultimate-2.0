@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.guns;
 
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
@@ -302,7 +303,12 @@ public final class ExternalProjectileSupport
         return List.copyOf(muzzles);
     }
 
-    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim)
+    /**
+     * @param seatAim
+     *            where the seat gun points, relative to the hull or to the turret it sits on; null leaves the muzzle where it
+     *            rests
+     */
+    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim, @Nullable MountAim seatAim)
     {
         SeatInfo info = model instanceof DriveableType type ? type.getSeat(seat) : null;
         if (info == null || info.getGunType() == null)
@@ -311,11 +317,32 @@ public final class ExternalProjectileSupport
         int barrel = Math.floorMod(sequence, info.getGunBarrelCount());
         // As a crewed driveable lifts its seat guns, so the muzzle clears the gunner's own head.
         Vec3 position = LegacyDriveableCoordinates.toLocal(info.getGunOrigin(barrel)).add(0D, Driveable.PASSENGER_GUN_MOUNTED_OFFSET, 0D);
+        Vector3f pivot = info.getGunPivot();
+        boolean aimed = seatAim != null && pivot != null;
+        if (aimed)
+            position = aimSeatGunPoint(position, LegacyDriveableCoordinates.toLocal(pivot), type instanceof PlaneType ? 180F : 0F, seatAim);
         if (turretAim.yaw() != 0F && EnumDriveablePart.isTurretMounted(info.getPart()))
             position = aimTurretPoint(type, position, new MountAim(turretAim.yaw(), 0F));
+        float pitch = aimed ? seatAim.pitch() : 0F;
         List<WeaponMuzzle.Particle> particles = type.getShootParticlesPassenger(seat).stream()
-            .map(particle -> new WeaponMuzzle.Particle(particle.name(), previewVelocity(new Vec3(particle.x(), particle.y(), particle.z())))).toList();
+            .map(particle -> new WeaponMuzzle.Particle(particle.name(), LegacyDriveableCoordinates.rotateBarrelPitchLocal(previewVelocity(new Vec3(particle.x(), particle.y(), particle.z())), pitch)))
+            .toList();
         return Optional.of(new WeaponMuzzle(position, Optional.of(info.getGunType()), particles));
+    }
+
+    /**
+     * Carries a point of a seat gun from where it rests to where the aimed gun holds it, round the point the gun's model turns
+     * it round, in the preview frame, as a driven driveable carries its seat guns' muzzles.
+     *
+     * @param restYaw
+     *            the aim yaw the gun's model rests at: an aircraft draws its seat guns turned half round
+     */
+    static Vec3 aimSeatGunPoint(Vec3 point, Vec3 pivot, float restYaw, MountAim aim)
+    {
+        // The preview frame is not mirrored as the entity frame is, so a turn to the right is the opposite rotation.
+        Vec3 forwardAtRest = LegacyDriveableCoordinates.rotateTurretYawLocal(point.subtract(pivot), restYaw);
+        Vec3 pitched = LegacyDriveableCoordinates.rotateBarrelPitchLocal(forwardAtRest, aim.pitch());
+        return pivot.add(LegacyDriveableCoordinates.rotateTurretYawLocal(pitched, -aim.yaw()));
     }
 
     private static List<WeaponMuzzle> pointMuzzles(DriveableType type, ShootPoint point, List<WeaponMuzzle.Particle> particles, int sequence, boolean alternate, MountAim aim)

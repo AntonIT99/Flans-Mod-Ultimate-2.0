@@ -105,7 +105,7 @@ class CrewGunnersTest
             crew.when(() -> NpcCrew.occupant(vehicle, 1)).thenReturn(Optional.of(gunner));
             ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, gunner, weapon)).thenReturn(ammo);
             types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
-            projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST))).thenReturn(Optional.of(muzzle));
+            projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any())).thenReturn(Optional.of(muzzle));
             projectiles.when(() -> FlansProjectiles.prepare(eq(gunner), eq(ammo), eq(ItemStack.EMPTY), eq(weapon), isNull(), eq(false), any())).thenReturn(Optional.of(shot));
             CrewGunners guns = new CrewGunners();
             guns.tick(vehicle);
@@ -170,7 +170,7 @@ class CrewGunnersTest
             crew.when(() -> NpcCrew.occupant(vehicle, 1)).thenReturn(Optional.empty());
             ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, vehicle, weapon)).thenReturn(ammo);
             types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
-            projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST)))
+            projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any()))
                 .thenReturn(Optional.of(new WeaponMuzzle(Vec3.ZERO, Optional.of(weapon), List.of())));
             projectiles.when(() -> FlansProjectiles.prepare(eq(vehicle), eq(ammo), eq(ItemStack.EMPTY), eq(weapon), isNull(), eq(false), any())).thenReturn(Optional.of(shot));
             CrewGunners guns = new CrewGunners();
@@ -290,7 +290,7 @@ class CrewGunnersTest
             crew.when(() -> NpcCrew.occupant(vehicle, 1)).thenReturn(Optional.of(gunner));
             ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, gunner, weapon)).thenReturn(ammo);
             types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
-            projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST)))
+            projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any()))
                 .thenReturn(Optional.of(new WeaponMuzzle(Vec3.ZERO, Optional.of(weapon), List.of())));
             CrewGunners guns = new CrewGunners();
             float[] yaws = hullYaws.length == 0 ? new float[]{0F} : hullYaws;

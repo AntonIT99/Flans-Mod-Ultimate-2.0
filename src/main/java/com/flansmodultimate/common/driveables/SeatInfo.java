@@ -67,6 +67,12 @@ public final class SeatInfo
      * Empty for a gun with one barrel.
      */
     private List<Vector3f> gunBarrels = List.of();
+    /**
+     * Where the seat gun turns round as it aims, in blocks in the same frame as {@link #gunOrigin}, measured off the model
+     * while the content loads; null when it was not measured.
+     */
+    @Setter @Nullable
+    private Vector3f gunPivot;
 
     public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName,
         @Nullable String gunName)

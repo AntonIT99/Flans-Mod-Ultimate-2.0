@@ -156,7 +156,7 @@ public final class CrewGunners
             return;
         for (int shot = 0; shot < MAX_SHOTS_PER_TICK && gun.cooldown < 1D; shot++)
         {
-            WeaponMuzzle muzzle = FlansProjectiles.getSeatMuzzle(definition, mount.seat(), gun.sequence, state.turretAim()).orElse(null);
+            WeaponMuzzle muzzle = FlansProjectiles.getSeatMuzzle(definition, mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat())).orElse(null);
             Vec3 origin = muzzle == null ? null : NpcModels.world(vehicle, context.model(), muzzle.offset(), state.getHullYaw());
             if (origin == null || !clear(vehicle, gun, origin, aimPoint) || !launch(context, gunner, mount, ammo, gun, origin, muzzle))
                 return;
@@ -184,7 +184,7 @@ public final class CrewGunners
             return context.target();
         EntityNPCInterface vehicle = context.vehicle();
         NpcVehicleState state = context.state();
-        Vec3 origin = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim())
+        Vec3 origin = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat()))
             .map(muzzle -> NpcModels.world(vehicle, context.model(), muzzle.offset(), state.getHullYaw())).orElse(null);
         LivingEntity current = gun.target;
         boolean lost = current != null && (origin == null || !fightable(vehicle, current) || !reachable(context, mount, gun, origin, current));
@@ -288,7 +288,7 @@ public final class CrewGunners
     {
         EntityNPCInterface vehicle = context.vehicle();
         NpcVehicleState state = context.state();
-        Optional<WeaponMuzzle> muzzle = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim());
+        Optional<WeaponMuzzle> muzzle = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat()));
         if (muzzle.isEmpty())
             return false;
         Vec3 lead = lead(context, gunner, mount.gun().orElseThrow(), ammo, gun, NpcModels.world(vehicle, context.model(), muzzle.get().offset(), state.getHullYaw()), target);

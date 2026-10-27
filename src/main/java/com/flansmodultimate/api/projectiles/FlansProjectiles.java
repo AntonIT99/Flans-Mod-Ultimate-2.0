@@ -212,8 +212,7 @@ public final class FlansProjectiles
     /**
      * Selects the muzzle of a seat's own gun on a vehicle, plane or mecha model, without creating a driveable entity. A
      * twin or quad seat gun fires its barrels in turn, so the trigger index picks one. A seat on the turret is carried round
-     * with the turret; the seat gun's own aim does not move the muzzle, since the pivot it turns round is only known to
-     * clients from the loaded model. Either side after content loading.
+     * with the turret; the seat gun's own aim does not move the muzzle, as it rests. Either side after content loading.
      *
      * @param model
      *            vehicle, plane or mecha definition
@@ -228,7 +227,21 @@ public final class FlansProjectiles
      */
     public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim)
     {
-        return ExternalProjectileSupport.getSeatMuzzle(model, seat, sequence, turretAim);
+        return ExternalProjectileSupport.getSeatMuzzle(model, seat, sequence, turretAim, null);
+    }
+
+    /**
+     * {@link #getSeatMuzzle(IContentType, int, int, MountAim)} with the seat gun aimed: the muzzle is carried round the point
+     * the gun's model turns it round, as a driven driveable carries it, and the shooting particles are pitched with the gun,
+     * leaving their yaw to the caller as before. A gun whose model could not be measured keeps its muzzle where it rests.
+     *
+     * @param seatAim
+     *            where the seat gun points, relative to the hull, or to the turret for a seat on the turret, as
+     *            {@link WeaponMount} aims are given
+     */
+    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim, MountAim seatAim)
+    {
+        return ExternalProjectileSupport.getSeatMuzzle(model, seat, sequence, turretAim, seatAim);
     }
 
     /**

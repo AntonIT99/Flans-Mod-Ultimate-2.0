@@ -1420,6 +1420,21 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return true;
     }
 
+    /**
+     * Gives a seat gun the point its model turns it round as it aims, measured off the model.
+     *
+     * @param pixels
+     *            the pivot in type-file pixels, in the frame of the seat's {@code GunOrigin}
+     */
+    public boolean applyMeasuredGunPivot(int seatIndex, Vector3f pixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        seat.setGunPivot(new Vector3f(pixels.x / 16F, pixels.y / 16F, pixels.z / 16F));
+        return true;
+    }
+
     private static List<Vector3f> toBlocks(List<Vector3f> pixels)
     {
         return pixels.stream().map(offset -> new Vector3f(offset.x / 16F, offset.y / 16F, offset.z / 16F)).toList();

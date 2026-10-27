@@ -98,6 +98,23 @@ class MuzzleMeasurementCacheTest
     }
 
     @Test
+    void storedSeatGunPivotsReplay()
+    {
+        MuzzleMeasurementCache.Results results = new MuzzleMeasurementCache.Results();
+        MuzzleMeasurementCache.Pivot pivot = new MuzzleMeasurementCache.Pivot(2, 12F, 30F, -4F);
+        MuzzleMeasurementCache.recordPivot(results, vehicle(), pivot);
+
+        MuzzleMeasurementCache.Results restored = MuzzleMeasurementCache.fromJson(MuzzleMeasurementCache.toJson("key", results), "key");
+
+        assertNotNull(restored);
+        assertEquals(List.of(pivot), restored.pivots.get(MuzzleMeasurementCache.typeKey(vehicle())));
+        // A seat without a gun takes none, and applying stored pivots onto it leaves it alone.
+        VehicleType vehicle = vehicle();
+        assertEquals(0, MuzzleMeasurementCache.apply(restored, List.of(vehicle)));
+        assertFalse(vehicle.applyMeasuredGunPivot(2, new Vector3f(12F, 30F, -4F)));
+    }
+
+    @Test
     void resultsStoredForOtherContentAreIgnored()
     {
         String json = MuzzleMeasurementCache.toJson("before", new MuzzleMeasurementCache.Results());

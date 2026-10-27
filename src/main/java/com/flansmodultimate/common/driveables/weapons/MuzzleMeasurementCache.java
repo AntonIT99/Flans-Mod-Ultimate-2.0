@@ -48,7 +48,7 @@ import java.util.stream.Stream;
 final class MuzzleMeasurementCache
 {
     /** Raised whenever what is recorded, or how it is replayed, changes. */
-    private static final int FORMAT_VERSION = 3;
+    private static final int FORMAT_VERSION = 4;
     private static final String FILE_NAME = "muzzle-measurements.json";
     private static final Gson GSON = new GsonBuilder().create();
 
@@ -64,6 +64,7 @@ final class MuzzleMeasurementCache
         final Map<String, Barrels> aaGuns = new TreeMap<>();
         final Map<String, List<Move>> driveables = new TreeMap<>();
         final Map<String, List<Spread>> mounts = new TreeMap<>();
+        final Map<String, List<Pivot>> pivots = new TreeMap<>();
         int models;
         int failed;
 
@@ -87,6 +88,10 @@ final class MuzzleMeasurementCache
 
     /** One shoot point or {@code GunOrigin} moved onto the model, in type-file pixels. */
     record Move(boolean gunOrigin, boolean secondary, int index, float x, float y, float z)
+    {}
+
+    /** The point one seat gun turns round as it aims, in type-file pixels. */
+    record Pivot(int seat, float x, float y, float z)
     {}
 
     /** The barrels of one shoot point or seat gun, as offsets from its muzzle in type-file pixels. */
@@ -134,6 +139,11 @@ final class MuzzleMeasurementCache
         results.mounts.computeIfAbsent(typeKey(type), ignored -> new ArrayList<>()).add(spread);
     }
 
+    static void recordPivot(Results results, DriveableType type, Pivot pivot)
+    {
+        results.pivots.computeIfAbsent(typeKey(type), ignored -> new ArrayList<>()).add(pivot);
+    }
+
     /**
      * Applies stored results to types read from the same content they were measured on.
      *
@@ -156,22 +166,30 @@ final class MuzzleMeasurementCache
                 aaGun.setMeasuredBarrels(toVectors(barrels.pivots()), toVectors(barrels.muzzles()));
             }
             else if (type instanceof DriveableType driveable)
-            {
-                for (Move move : results.driveables.getOrDefault(key, List.of()))
-                {
-                    Vector3f position = new Vector3f(move.x(), move.y(), move.z());
-                    boolean applied = move.gunOrigin() ? driveable.applyMeasuredGunOrigin(move.index(), position) : driveable.applyMeasuredShootPoint(move.secondary(), move.index(), position);
-                    moved += applied ? 1 : 0;
-                }
-                for (Spread spread : results.mounts.getOrDefault(key, List.of()))
-                {
-                    if (spread.gunOrigin())
-                        driveable.applyMeasuredGunBarrels(spread.index(), spread.offsetVectors());
-                    else
-                        driveable.applyMeasuredBarrels(spread.secondary(), spread.index(), spread.offsetVectors());
-                }
-            }
+                moved += applyDriveable(results, key, driveable);
         }
+        return moved;
+    }
+
+    /** @return how many shoot points and {@code GunOrigin}s of the driveable were moved */
+    private static int applyDriveable(Results results, String key, DriveableType driveable)
+    {
+        int moved = 0;
+        for (Move move : results.driveables.getOrDefault(key, List.of()))
+        {
+            Vector3f position = new Vector3f(move.x(), move.y(), move.z());
+            boolean applied = move.gunOrigin() ? driveable.applyMeasuredGunOrigin(move.index(), position) : driveable.applyMeasuredShootPoint(move.secondary(), move.index(), position);
+            moved += applied ? 1 : 0;
+        }
+        for (Spread spread : results.mounts.getOrDefault(key, List.of()))
+        {
+            if (spread.gunOrigin())
+                driveable.applyMeasuredGunBarrels(spread.index(), spread.offsetVectors());
+            else
+                driveable.applyMeasuredBarrels(spread.secondary(), spread.index(), spread.offsetVectors());
+        }
+        for (Pivot pivot : results.pivots.getOrDefault(key, List.of()))
+            driveable.applyMeasuredGunPivot(pivot.seat(), new Vector3f(pivot.x(), pivot.y(), pivot.z()));
         return moved;
     }
 
