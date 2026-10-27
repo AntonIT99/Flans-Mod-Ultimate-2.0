@@ -3,6 +3,42 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Georgios": 20, "Ioannis": 20, "Konstantinos": 20, "Dimitrios": 20, "Nikolaos": 20, "Christos": 20, "Panagiotis": 20, "Vasileios": 20,
+        "Athanasios": 20, "Theodoros": 20, "Michail": 20, "Anastasios": 20, "Antonios": 20, "Spyridon": 20, "Evangelos": 20, "Stylianos": 20,
+        "Charalambos": 20, "Andreas": 20, "Petros": 20, "Pavlos": 20,
+        "Alexandros": 8, "Apostolos": 8, "Dionysios": 8, "Efthymios": 8, "Emmanouil": 8, "Ilias": 8, "Stavros": 8, "Stefanos": 8, "Sotirios": 8,
+        "Grigorios": 8, "Leonidas": 8, "Miltiadis": 8, "Pantelis": 8, "Paraskevas": 8, "Periklis": 8, "Thomas": 8, "Angelos": 8, "Aristidis": 8,
+        "Eleftherios": 8, "Loukas": 8, "Kosmas": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Eleni": 20, "Georgia": 20, "Ioanna": 20, "Kalliopi": 20, "Aikaterini": 20, "Sofia": 20, "Anna": 20, "Despina": 20,
+        "Vasiliki": 20, "Panagiota": 20, "Evangelia": 20, "Paraskevi": 20, "Konstantina": 20, "Theodora": 20, "Dimitra": 20, "Zoi": 20,
+        "Stavroula": 20, "Athanasia": 20, "Anastasia": 20,
+        "Fotini": 8, "Evgenia": 8, "Ourania": 8, "Marika": 8, "Penelope": 8, "Sotiria": 8, "Stamatia": 8, "Kyriaki": 8, "Alexandra": 8, "Chrysoula": 8,
+        "Eleftheria": 8, "Martha": 8, "Polyxeni": 8, "Marigo": 8, "Evdokia": 8, "Efrosyni": 8, "Agathi": 8, "Aglaia": 8, "Antigoni": 8, "Aspasia": 8,
+        "Ermioni": 8, "Ifigeneia": 8, "Kleopatra": 8
+      },
+      "surnameWeights": {
+        "Papadopoulos": 20, "Papadakis": 20, "Papageorgiou": 20, "Pappas": 20, "Georgiou": 20, "Dimitriou": 20, "Nikolaou": 20, "Ioannou": 20,
+        "Vasileiou": 20, "Christodoulou": 20,
+        "Konstantinou": 8, "Oikonomou": 8, "Christopoulos": 8, "Stavropoulos": 8, "Panagiotopoulos": 8, "Anagnostopoulos": 8, "Alexandrou": 8,
+        "Antonopoulos": 8, "Athanasiou": 8, "Markou": 8, "Petrou": 8, "Sotiriou": 8, "Stamatopoulos": 8, "Zachariou": 8, "Karagiannis": 8,
+        "Karamanlis": 8, "Katsaros": 8, "Kokkinos": 8, "Kontos": 8, "Kouris": 8,
+        "Lazaridis": 3, "Makris": 3, "Mavridis": 3, "Mavros": 3, "Michailidis": 3, "Papanikolaou": 3, "Paraskevopoulos": 3, "Rallis": 3,
+        "Sakellariou": 3, "Samaras": 3, "Spanos": 3, "Theodorou": 3, "Triantafyllou": 3, "Vlachos": 3, "Xanthopoulos": 3, "Zervas": 3,
+        "Giannopoulos": 3, "Kanellopoulos": 3, "Kalogeras": 3, "Daskalakis": 3
+      },
+      "femaleSurnameWeights": {
+        "Papadopoulou": 20, "Papadaki": 20, "Papageorgiou": 20, "Pappa": 20, "Georgiou": 20, "Dimitriou": 20, "Nikolaou": 20, "Ioannou": 20,
+        "Vasileiou": 20, "Christodoulou": 20,
+        "Konstantinou": 8, "Oikonomou": 8, "Christopoulou": 8, "Stavropoulou": 8, "Panagiotopoulou": 8, "Anagnostopoulou": 8, "Alexandrou": 8,
+        "Antonopoulou": 8, "Athanasiou": 8, "Markou": 8, "Petrou": 8, "Sotiriou": 8, "Stamatopoulou": 8, "Zachariou": 8, "Karagianni": 8,
+        "Karamanli": 8, "Katsarou": 8, "Kokkinou": 8, "Kontou": 8, "Kouri": 8,
+        "Lazaridi": 3, "Makri": 3, "Mavridi": 3, "Mavrou": 3, "Michailidi": 3, "Papanikolaou": 3, "Paraskevopoulou": 3, "Ralli": 3, "Sakellariou": 3,
+        "Samara": 3, "Spanou": 3, "Theodorou": 3, "Triantafyllou": 3, "Vlachou": 3, "Xanthopoulou": 3, "Zerva": 3, "Giannopoulou": 3,
+        "Kanellopoulou": 3, "Kalogera": 3, "Daskalaki": 3
+      },
       "male": [
         "Achilleas",
         "Alexandros",

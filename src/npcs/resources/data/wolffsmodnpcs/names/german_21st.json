@@ -1,8 +1,36 @@
 {
-    "id": "german",
+    "id": "german_21st",
     "groups": [
         {
             "weight": 1,
+            "maleWeights": {
+                "Thomas": 20, "Michael": 20, "Andreas": 20, "Stefan": 20, "Christian": 20, "Peter": 20, "Wolfgang": 20, "Markus": 20, "Frank": 20,
+                "Jürgen": 20, "Klaus": 20, "Daniel": 20, "Martin": 20, "Alexander": 20, "Hans": 20, "Matthias": 20,
+                "Jan": 8, "Tobias": 8, "Sebastian": 8, "Florian": 8, "Lukas": 8, "Felix": 8, "Maximilian": 8, "Paul": 8, "Jonas": 8, "Leon": 8,
+                "Tim": 8, "Niklas": 8, "Karl": 8, "Bernd": 8, "Dieter": 8, "Uwe": 8, "Ralf": 8, "Rainer": 8, "Manfred": 8, "Werner": 8, "Walter": 8,
+                "Heinz": 8, "Gerhard": 8, "Helmut": 8, "Jens": 8, "Oliver": 8, "Patrick": 8, "Marcel": 8, "Benjamin": 8, "David": 8
+            },
+            "femaleWeights": {
+                "Anna": 20, "Maria": 20, "Julia": 20, "Sandra": 20, "Sabine": 20, "Petra": 20, "Monika": 20, "Andrea": 20, "Claudia": 20,
+                "Susanne": 20, "Nicole": 20, "Stefanie": 20, "Katharina": 20, "Lisa": 20, "Laura": 20, "Sarah": 20, "Lena": 20, "Sophie": 20,
+                "Hannah": 20, "Emma": 20,
+                "Birgit": 8, "Karin": 8, "Ursula": 8, "Renate": 8, "Brigitte": 8, "Ingrid": 8, "Gabriele": 8, "Christina": 8, "Melanie": 8, "Nina": 8,
+                "Jessica": 8, "Anja": 8, "Kerstin": 8, "Heike": 8, "Martina": 8, "Silke": 8, "Simone": 8, "Eva": 8, "Johanna": 8, "Marie": 8,
+                "Leonie": 8, "Mia": 8, "Daniela": 8, "Katja": 8, "Elisabeth": 8
+            },
+            "surnameWeights": {
+                "Müller": 20, "Schmidt": 20, "Schneider": 20, "Fischer": 20, "Weber": 20, "Meyer": 20, "Wagner": 20, "Becker": 20, "Schulz": 20,
+                "Hoffmann": 20,
+                "Schäfer": 8, "Koch": 8, "Bauer": 8, "Richter": 8, "Klein": 8, "Wolf": 8, "Schröder": 8, "Neumann": 8, "Schwarz": 8, "Zimmermann": 8,
+                "Braun": 8, "Krüger": 8, "Hofmann": 8, "Hartmann": 8, "Lange": 8, "Schmitt": 8, "Werner": 8, "Schmitz": 8, "Krause": 8, "Meier": 8,
+                "Lehmann": 8, "Schmid": 8, "Schulze": 8, "Maier": 8, "Köhler": 8, "Herrmann": 8, "König": 8, "Walter": 8, "Mayer": 8, "Huber": 8,
+                "Kaiser": 3, "Fuchs": 3, "Peters": 3, "Lang": 3, "Scholz": 3, "Möller": 3, "Weiß": 3, "Jung": 3, "Hahn": 3, "Schubert": 3, "Vogel": 3,
+                "Friedrich": 3, "Keller": 3, "Günther": 3, "Frank": 3, "Berger": 3, "Winkler": 3, "Roth": 3, "Beck": 3, "Lorenz": 3, "Baumann": 3,
+                "Franke": 3, "Albrecht": 3, "Schuster": 3, "Simon": 3, "Ludwig": 3, "Böhm": 3, "Winter": 3, "Kraus": 3, "Martin": 3, "Schumacher": 3,
+                "Krämer": 3, "Vogt": 3, "Stein": 3, "Jäger": 3, "Otto": 3, "Sommer": 3, "Groß": 3, "Seidel": 3, "Heinrich": 3, "Brandt": 3, "Haas": 3,
+                "Schreiber": 3, "Graf": 3, "Schulte": 3, "Dietrich": 3, "Ziegler": 3, "Kuhn": 3, "Kühn": 3, "Pohl": 3, "Engel": 3, "Horn": 3,
+                "Busch": 3, "Bergmann": 3, "Thomas": 3, "Voigt": 3, "Sauer": 3, "Arnold": 3, "Wolff": 3, "Pfeiffer": 3
+            },
             "male": [
                 "Alexander",
                 "Andreas",

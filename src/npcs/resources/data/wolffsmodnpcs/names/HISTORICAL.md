@@ -11,7 +11,12 @@ These are hand-curated pools of real name components. The references below
 provide period context, spelling examples and starting points for further
 verification. They are not bulk-imported census extracts, and the presence or
 relative frequency of every entry has not been established for each army.
-Entries within a pool are equally likely. Group weights are illustrative game
+Common given names and surnames carry per-name weights (typically 20, 8 and 3 for
+frequent, usual and less usual entries; unlisted entries weigh 1). These tiers
+are hand-assigned from general knowledge of each period and language, not
+measured census frequencies. The Belarusian, Tatar, Caucasian and Central
+Asian groups of the Soviet pool and the Chinese and Japanese given names stay unweighted.
+Group weights are illustrative game
 mixes, not census or enlistment proportions. Names shared across periods are
 intentional; historical given-name selection differs from the modern pools.
 Surnames can be reused across periods without copying modern given-name pools.

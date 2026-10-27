@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.names;
 
 import java.util.List;
+import java.util.Map;
 import java.util.random.RandomGenerator;
 
 /** Whole-name pools, or generated designations and fixed names. National name components stay within one selected group. */
@@ -76,12 +77,23 @@ public record SoldierNameList(String id, List<Group> groups, List<String> design
         }
     }
 
-    /** Female surnames are explicit where the language has gendered forms, rather than inferred by suffix. */
-    public record Group(int weight, List<String> male, List<String> female, List<String> surnames, List<String> femaleSurnames, boolean surnameFirst)
+    /**
+     * Female surnames are explicit where the language has gendered forms, rather than inferred by suffix. Each optional weight map raises the chance of the named
+     * entries of one pool; entries it does not list weigh 1, so common names can outweigh rare ones without duplicating them.
+     */
+    public record Group(int weight, List<String> male, List<String> female, List<String> surnames, List<String> femaleSurnames, boolean surnameFirst, Map<String, Integer> maleWeights,
+        Map<String, Integer> femaleWeights, Map<String, Integer> surnameWeights, Map<String, Integer> femaleSurnameWeights)
     {
+        private static final int MAX_NAME_WEIGHT = 1000;
+
         public Group(int weight, List<String> male, List<String> female, List<String> surnames, List<String> femaleSurnames)
         {
             this(weight, male, female, surnames, femaleSurnames, false);
+        }
+
+        public Group(int weight, List<String> male, List<String> female, List<String> surnames, List<String> femaleSurnames, boolean surnameFirst)
+        {
+            this(weight, male, female, surnames, femaleSurnames, surnameFirst, null, null, null, null);
         }
 
         public Group
@@ -91,7 +103,12 @@ public record SoldierNameList(String id, List<Group> groups, List<String> design
             male = names(male);
             female = names(female);
             surnames = names(surnames);
-            femaleSurnames = femaleSurnames == null ? surnames : names(femaleSurnames);
+            boolean sharedSurnames = femaleSurnames == null;
+            femaleSurnames = sharedSurnames ? surnames : names(femaleSurnames);
+            maleWeights = nameWeights(maleWeights, male);
+            femaleWeights = nameWeights(femaleWeights, female);
+            surnameWeights = nameWeights(surnameWeights, surnames);
+            femaleSurnameWeights = sharedSurnames && femaleSurnameWeights == null ? surnameWeights : nameWeights(femaleSurnameWeights, femaleSurnames);
         }
 
         private static List<String> names(List<String> values)
@@ -101,17 +118,38 @@ public record SoldierNameList(String id, List<Group> groups, List<String> design
                 .anyMatch(name -> name.isBlank() || !name.equals(name.strip()) || name.length() > 40 || name.codePoints().anyMatch(character -> Character.isISOControl(character) || character == '§')))
                 throw new IllegalArgumentException("Invalid or empty soldier name pool");
             if (result.stream().distinct().count() != result.size())
-                throw new IllegalArgumentException("Duplicate soldier name; use group weights instead");
+                throw new IllegalArgumentException("Duplicate soldier name; use name weights instead");
             return result;
+        }
+
+        private static Map<String, Integer> nameWeights(Map<String, Integer> weights, List<String> pool)
+        {
+            if (weights == null)
+                return Map.of();
+            if (weights.entrySet().stream().anyMatch(entry -> !pool.contains(entry.getKey()) || entry.getValue() == null || entry.getValue() < 1 || entry.getValue() > MAX_NAME_WEIGHT))
+                throw new IllegalArgumentException("Soldier name weights must name pool entries and be between 1 and " + MAX_NAME_WEIGHT);
+            return Map.copyOf(weights);
+        }
+
+        private static String pick(List<String> pool, Map<String, Integer> weights, RandomGenerator random)
+        {
+            if (weights.isEmpty())
+                return pool.get(random.nextInt(pool.size()));
+            long ticket = random.nextLong(pool.stream().mapToLong(name -> weights.getOrDefault(name, 1)).sum());
+            for (String name : pool)
+            {
+                ticket -= weights.getOrDefault(name, 1);
+                if (ticket < 0)
+                    return name;
+            }
+            throw new IllegalStateException("No soldier name selected");
         }
 
         private String generate(int gender, RandomGenerator random)
         {
             boolean woman = gender == 2 || (gender != 1 && random.nextBoolean());
-            List<String> given = woman ? female : male;
-            List<String> family = woman ? femaleSurnames : surnames;
-            String first = given.get(random.nextInt(given.size()));
-            String last = family.get(random.nextInt(family.size()));
+            String first = woman ? pick(female, femaleWeights, random) : pick(male, maleWeights, random);
+            String last = woman ? pick(femaleSurnames, femaleSurnameWeights, random) : pick(surnames, surnameWeights, random);
             return surnameFirst ? last + " " + first : first + " " + last;
         }
     }

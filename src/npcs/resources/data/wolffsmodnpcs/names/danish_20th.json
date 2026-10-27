@@ -3,6 +3,32 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Jens": 20, "Hans": 20, "Niels": 20, "Peter": 20, "Carl": 20, "Karl": 20, "Christian": 20, "Anders": 20, "Jørgen": 20, "Poul": 20,
+        "Johannes": 20, "Knud": 20, "Svend": 20, "Ole": 20, "Aage": 20, "Erik": 20, "Henry": 20, "Harald": 20, "Axel": 20, "Viggo": 20,
+        "Aksel": 8, "Alfred": 8, "Arne": 8, "Bent": 8, "Børge": 8, "Ejner": 8, "Erling": 8, "Flemming": 8, "Frederik": 8, "Georg": 8, "Gunnar": 8,
+        "Helge": 8, "Henning": 8, "Holger": 8, "Ib": 8, "Johan": 8, "Kaj": 8, "Kurt": 8, "Lars": 8, "Laurits": 8, "Ludvig": 8, "Mads": 8, "Marius": 8,
+        "Mogens": 8, "Oluf": 8, "Otto": 8, "Peder": 8, "Preben": 8, "Søren": 8, "Thomas": 8, "Thorvald": 8, "Valdemar": 8, "Verner": 8, "Victor": 8,
+        "Vilhelm": 8, "William": 8
+      },
+      "femaleWeights": {
+        "Anna": 20, "Karen": 20, "Marie": 20, "Kirsten": 20, "Ingeborg": 20, "Else": 20, "Inger": 20, "Ellen": 20, "Agnes": 20, "Gudrun": 20,
+        "Ingrid": 20, "Edith": 20, "Emma": 20, "Gerda": 20, "Helga": 20, "Dagmar": 20, "Astrid": 20, "Ruth": 20, "Margrethe": 20, "Grethe": 20,
+        "Agnete": 8, "Annelise": 8, "Asta": 8, "Bente": 8, "Bodil": 8, "Dorthe": 8, "Ebba": 8, "Edel": 8, "Elsa": 8, "Erna": 8, "Esther": 8, "Eva": 8,
+        "Gunhild": 8, "Hanne": 8, "Inga": 8, "Jenny": 8, "Lillian": 8, "Lis": 8, "Lise": 8, "Martha": 8, "Meta": 8, "Rigmor": 8, "Signe": 8,
+        "Sigrid": 8, "Tove": 8, "Ulla": 8, "Valborg": 8, "Vera": 8, "Åse": 8, "Yrsa": 8
+      },
+      "surnameWeights": {
+        "Jensen": 20, "Nielsen": 20, "Hansen": 20, "Pedersen": 20, "Andersen": 20, "Christensen": 20, "Larsen": 20, "Sørensen": 20, "Rasmussen": 20,
+        "Jørgensen": 20,
+        "Petersen": 8, "Madsen": 8, "Kristensen": 8, "Olsen": 8, "Thomsen": 8, "Christiansen": 8, "Poulsen": 8, "Johansen": 8, "Møller": 8,
+        "Mortensen": 8, "Knudsen": 8, "Jakobsen": 8, "Jacobsen": 8, "Lund": 8, "Mikkelsen": 8, "Olesen": 8, "Frederiksen": 8, "Laursen": 8,
+        "Henriksen": 8, "Schmidt": 8, "Eriksen": 8, "Holm": 8, "Jespersen": 8, "Andreasen": 8, "Kristiansen": 8,
+        "Iversen": 3, "Nissen": 3, "Jeppesen": 3, "Søndergaard": 3, "Lind": 3, "Østergaard": 3, "Lauridsen": 3, "Jepsen": 3, "Svendsen": 3,
+        "Frandsen": 3, "Winther": 3, "Kjær": 3, "Simonsen": 3, "Dahl": 3, "Skov": 3, "Mogensen": 3, "Bach": 3, "Berg": 3, "Bertelsen": 3,
+        "Mathiasen": 3, "Thygesen": 3, "Hedegaard": 3, "Bruun": 3, "Dam": 3, "Nørgaard": 3, "Toft": 3, "Brandt": 3, "Mouritsen": 3, "Clausen": 3,
+        "Dalsgaard": 3
+      },
       "male": [
         "Aage",
         "Aksel",

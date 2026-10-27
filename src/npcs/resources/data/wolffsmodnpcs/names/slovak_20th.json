@@ -3,6 +3,38 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Ján": 20, "Jozef": 20, "Štefan": 20, "Július": 20, "Peter": 20, "Pavol": 20, "Michal": 20, "Martin": 20, "Anton": 20, "Ladislav": 20,
+        "František": 20, "Ondrej": 20, "Andrej": 20, "Karol": 20, "Milan": 20, "Eduard": 20, "Viliam": 20, "Rudolf": 20, "Ľudovít": 20, "Imrich": 20,
+        "Alexander": 8, "Albert": 8, "Emil": 8, "Gabriel": 8, "Ivan": 8, "Tibor": 8, "Tomáš": 8, "Vladimír": 8, "Miroslav": 8, "Jakub": 8, "Daniel": 8,
+        "Dominik": 8, "Ferdinand": 8, "Gustáv": 8, "Ignác": 8, "Koloman": 8, "Leonard": 8, "Matej": 8, "Mikuláš": 8, "Miloš": 8, "Oto": 8, "Samuel": 8,
+        "Stanislav": 8, "Valentín": 8, "Vojtech": 8, "Zoltán": 8
+      },
+      "femaleWeights": {
+        "Mária": 20, "Anna": 20, "Zuzana": 20, "Katarína": 20, "Alžbeta": 20, "Margita": 20, "Ľudmila": 20, "Helena": 20, "Ružena": 20, "Terézia": 20,
+        "Jozefína": 20, "Júlia": 20, "Eva": 20, "Emília": 20, "Božena": 20, "Irena": 20, "Štefánia": 20, "Františka": 20, "Veronika": 20,
+        "Antónia": 20,
+        "Agnesa": 8, "Amália": 8, "Apolónia": 8, "Barbora": 8, "Cecília": 8, "Elena": 8, "Gabriela": 8, "Hermína": 8, "Jana": 8, "Jolana": 8,
+        "Karolína": 8, "Klára": 8, "Magdaléna": 8, "Marta": 8, "Matilda": 8, "Olga": 8, "Paulína": 8, "Rozália": 8, "Valéria": 8, "Viktória": 8,
+        "Vilma": 8, "Žofia": 8
+      },
+      "surnameWeights": {
+        "Novák": 20, "Horváth": 20, "Kováč": 20, "Varga": 20, "Tóth": 20, "Nagy": 20, "Baláž": 20, "Molnár": 20, "Szabó": 20, "Balog": 20,
+        "Lukáč": 8, "Polák": 8, "Kollár": 8, "Kováčik": 8, "Šimko": 8, "Švec": 8, "Hudák": 8, "Bartoš": 8, "Blaško": 8, "Kučera": 8, "Urban": 8,
+        "Král": 8, "Štefánik": 8, "Černák": 8, "Ďurica": 8, "Ďuriš": 8, "Ferenc": 8, "Farkaš": 8, "Gašpar": 8, "Hruška": 8,
+        "Jankovič": 3, "Kiss": 3, "Krupa": 3, "Kubiš": 3, "Marek": 3, "Michalík": 3, "Ondrejka": 3, "Oravec": 3, "Pavlík": 3, "Petrík": 3, "Slávik": 3,
+        "Sokol": 3, "Štefanec": 3, "Šťastný": 3, "Valach": 3, "Veselý": 3, "Zajac": 3, "Žiak": 3, "Tichý": 3
+      },
+      "femaleSurnameWeights": {
+        "Nováková": 20, "Horváthová": 20, "Kováčová": 20, "Vargová": 20, "Tóthová": 20, "Nagyová": 20, "Balážová": 20, "Molnárová": 20, "Szabóová": 20,
+        "Balogová": 20,
+        "Lukáčová": 8, "Poláková": 8, "Kollárová": 8, "Kováčiková": 8, "Šimková": 8, "Švecová": 8, "Hudáková": 8, "Bartošová": 8, "Blašková": 8,
+        "Kučerová": 8, "Urbanová": 8, "Králová": 8, "Štefániková": 8, "Černáková": 8, "Ďuricová": 8, "Ďurišová": 8, "Ferencová": 8, "Farkašová": 8,
+        "Gašparová": 8, "Hrušková": 8,
+        "Jankovičová": 3, "Kissová": 3, "Krupová": 3, "Kubišová": 3, "Mareková": 3, "Michalíková": 3, "Ondrejková": 3, "Oravcová": 3, "Pavlíková": 3,
+        "Petríková": 3, "Sláviková": 3, "Sokolová": 3, "Štefancová": 3, "Šťastná": 3, "Valachová": 3, "Veselá": 3, "Zajacová": 3, "Žiaková": 3,
+        "Tichá": 3
+      },
       "male": [
         "Adam",
         "Albert",

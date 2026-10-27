@@ -22,11 +22,17 @@ Each file has an `id` and a `groups` array. Each group contains:
 - `femaleSurnames`: optional nonempty array; defaults to `surnames`.
 - `surnameFirst`: optional boolean; defaults to false. Hungarian, Chinese and
   Japanese historical pools use true.
+- `maleWeights`, `femaleWeights`, `surnameWeights` and `femaleSurnameWeights`:
+  optional objects mapping entries of the matching pool to an integer weight from
+  1 to 1000. Entries a map does not list weigh 1, so common names are raised
+  instead of duplicated. `femaleSurnameWeights` defaults to `surnameWeights` when
+  `femaleSurnames` is omitted. A key that is not in its pool is rejected.
 
 Historical files also include `setting` and `sources` metadata for maintainers.
 This metadata does not change generation probabilities.
 
-Within each pool every entry is equally likely. Duplicates are rejected.
+Within a pool an entry is chosen in proportion to its weight, and every entry
+without a weight counts 1. Duplicates are rejected; raise a weight instead.
 Gender uses Custom NPCs' existing values: 0 either, 1 male, 2 female. Either
 chooses each gender with equal probability. First select a group, then gender,
 then given name and surname from that group; components never cross groups.
@@ -179,7 +185,7 @@ inheritance are independent, so a female-only class can reuse its team's list:
 
 ```json
 {
-  "teams": { "gign": "wolffsmodnpcs:french" },
+  "teams": { "gign": "wolffsmodnpcs:french_21st" },
   "classes": {},
   "teamGenders": { "gign": "male" },
   "classGenders": { "myFemaleClass": "female", "myMixedClass": "mixed" }

@@ -39,7 +39,7 @@ class FlanSoldierNamesTest
         when(((NpcDisplayNames.Holder) npc.display).wolffsmodnpcsDisplayNames()).thenReturn(new NpcDisplayNames());
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(playerClass.getShortName()).thenReturn("class");
-        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of(), Map.of("class", "wolffsmodnpcs:french"));
+        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of(), Map.of("class", "wolffsmodnpcs:french_21st"));
         try (var config = mockStatic(SoldierNameAssociations.class); var names = mockStatic(SoldierNames.class, CALLS_REAL_METHODS))
         {
             config.when(SoldierNameAssociations::current).thenReturn(associations);
@@ -95,7 +95,7 @@ class FlanSoldierNamesTest
         try (var editor = mockStatic(NoppesUtilServer.class); var config = mockStatic(SoldierNameAssociations.class))
         {
             assertTrue(FlanSoldierNames.request(player, 42, "team", "class").isEmpty());
-            FlanSoldierNames.confirm(player, new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german", "Injected name"));
+            FlanSoldierNames.confirm(player, new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german_21st", "Injected name"));
             editor.when(() -> NoppesUtilServer.getEditingNpc(player)).thenReturn(npc);
             when(npc.getId()).thenReturn(43);
             assertTrue(FlanSoldierNames.request(player, 42, "team", "class").isEmpty());
@@ -116,7 +116,8 @@ class FlanSoldierNamesTest
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(team.getShortName()).thenReturn("team");
         when(playerClass.getShortName()).thenReturn("class");
-        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of("team", "wolffsmodnpcs:german"), Map.of("class", "wolffsmodnpcs:russian"), Map.of(), Map.of("class", "female"));
+        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of("team", "wolffsmodnpcs:german_21st"), Map.of("class", "wolffsmodnpcs:russian_21st"), Map.of(),
+            Map.of("class", "female"));
         try (var config = mockStatic(SoldierNameAssociations.class); var names = mockStatic(SoldierNames.class, CALLS_REAL_METHODS))
         {
             config.when(SoldierNameAssociations::current).thenReturn(associations);
@@ -127,7 +128,7 @@ class FlanSoldierNamesTest
             assertEquals(2, reply.gender());
             verify(npc.display).setName("Anna Ivanova");
             assertEquals("Anna Ivanova", reply.name());
-            assertEquals("wolffsmodnpcs:russian", reply.nameList());
+            assertEquals("wolffsmodnpcs:russian_21st", reply.nameList());
             assertEquals(42, reply.entityId());
             assertTrue(reply.state());
             assertTrue(npc.updateClient);
@@ -143,7 +144,7 @@ class FlanSoldierNamesTest
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(playerClass.getShortName()).thenReturn("class");
         SoldierNameAssociations empty = new SoldierNameAssociations(Map.of(), Map.of());
-        SoldierNameAssociations disabled = new SoldierNameAssociations(Map.of("team", "wolffsmodnpcs:german"), Map.of("class", ""));
+        SoldierNameAssociations disabled = new SoldierNameAssociations(Map.of("team", "wolffsmodnpcs:german_21st"), Map.of("class", ""));
         try (var config = mockStatic(SoldierNameAssociations.class))
         {
             config.when(SoldierNameAssociations::current).thenReturn(empty);
@@ -177,7 +178,7 @@ class FlanSoldierNamesTest
         when(wand.getItem()).thenReturn(CustomItems.wand);
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(playerClass.getShortName()).thenReturn("class");
-        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of(), Map.of("class", "wolffsmodnpcs:german"));
+        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of(), Map.of("class", "wolffsmodnpcs:german_21st"));
         try (var editor = mockStatic(NoppesUtilServer.class);
             var permissions = mockStatic(CustomNpcsPermissions.class);
             var api = mockStatic(FlansModApi.class);

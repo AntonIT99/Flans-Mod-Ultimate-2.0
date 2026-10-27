@@ -3,6 +3,29 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Jaan": 20, "Juhan": 20, "Mihkel": 20, "Karl": 20, "Johannes": 20, "August": 20, "Peeter": 20, "Jakob": 20, "Hans": 20, "Villem": 20,
+        "Paul": 20, "Ants": 20, "Andres": 20, "Aleksander": 20, "Eduard": 20, "Oskar": 20, "Voldemar": 20, "Nikolai": 20, "Artur": 20, "Rudolf": 20,
+        "Ado": 8, "Aadu": 8, "Aarne": 8, "Alfred": 8, "Arnold": 8, "Bernhard": 8, "Edgar": 8, "Elmar": 8, "Endel": 8, "Erich": 8, "Ernst": 8,
+        "Evald": 8, "Feliks": 8, "Gustav": 8, "Harald": 8, "Heinrich": 8, "Hendrik": 8, "Herman": 8, "Hugo": 8, "Ilmar": 8, "Jaak": 8, "Julius": 8,
+        "Konstantin": 8, "Lembit": 8, "Leopold": 8, "Otto": 8, "Priit": 8, "Rein": 8, "Richard": 8, "Robert": 8, "Theodor": 8, "Toomas": 8,
+        "Valter": 8, "Viktor": 8
+      },
+      "femaleWeights": {
+        "Anna": 20, "Maria": 20, "Marie": 20, "Liisa": 20, "Ella": 20, "Helene": 20, "Elisabeth": 20, "Ida": 20, "Hilda": 20, "Emilie": 20, "Aino": 20,
+        "Anni": 20, "Alma": 20, "Marta": 20, "Johanna": 20, "Linda": 20, "Olga": 20, "Minna": 20, "Eva": 20, "Salme": 20,
+        "Adele": 8, "Agnes": 8, "Alide": 8, "Berta": 8, "Edith": 8, "Elfriede": 8, "Elsa": 8, "Erika": 8, "Erna": 8, "Ester": 8, "Helmi": 8, "Ilse": 8,
+        "Leida": 8, "Lilli": 8, "Luise": 8, "Maie": 8, "Maimu": 8, "Malle": 8, "Selma": 8, "Sinaida": 8, "Sohvi": 8, "Vaike": 8, "Valve": 8,
+        "Vanda": 8, "Viima": 8, "Vilma": 8
+      },
+      "surnameWeights": {
+        "Tamm": 20, "Saar": 20, "Sepp": 20, "Mägi": 20, "Kask": 20, "Kukk": 20, "Rebane": 20, "Ilves": 20, "Karu": 20, "Pärn": 20,
+        "Koppel": 8, "Oja": 8, "Mets": 8, "Kivi": 8, "Teder": 8, "Lepp": 8, "Kuusk": 8, "Sild": 8, "Tõnisson": 8, "Päts": 8, "Laidoner": 8, "Luts": 8,
+        "Raud": 8, "Kallas": 8, "Liiv": 8, "Tooming": 8, "Põder": 8, "Vaher": 8, "Pihl": 8, "Saks": 8,
+        "Aavik": 3, "Allik": 3, "Kangur": 3, "Mänd": 3, "Susi": 3, "Kreek": 3, "Kütt": 3, "Rüütel": 3, "Kaasik": 3, "Uibo": 3, "Lepik": 3, "Järv": 3,
+        "Vain": 3, "Veskimägi": 3, "Paju": 3, "Nurm": 3, "Tali": 3, "Rätsep": 3, "Jürgenson": 3, "Peterson": 3, "Johanson": 3, "Anderson": 3,
+        "Hanson": 3, "Tomberg": 3, "Bergmann": 3, "Põld": 3
+      },
       "male": [
         "Aadu",
         "Aarne",

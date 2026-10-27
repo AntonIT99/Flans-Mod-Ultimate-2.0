@@ -3,6 +3,32 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "José": 20, "António": 20, "Manuel": 20, "João": 20, "Francisco": 20, "Joaquim": 20, "Luís": 20, "Carlos": 20, "Fernando": 20, "Jorge": 20,
+        "Henrique": 20, "Augusto": 20, "Alberto": 20, "Artur": 20, "Armando": 20, "Mário": 20, "Eduardo": 20, "Álvaro": 20, "Pedro": 20, "Américo": 20,
+        "Alfredo": 8, "Abel": 8, "Adelino": 8, "Adolfo": 8, "Alexandre": 8, "Amadeu": 8, "Aníbal": 8, "Bento": 8, "Bernardo": 8, "Domingos": 8,
+        "Duarte": 8, "Emílio": 8, "Ernesto": 8, "Eugénio": 8, "Gabriel": 8, "Guilherme": 8, "Júlio": 8, "Miguel": 8, "Paulo": 8, "Raul": 8,
+        "Ricardo": 8, "Rodrigo": 8, "Salvador": 8, "Sebastião": 8, "Tomás": 8, "Valentim": 8, "Vasco": 8, "Vicente": 8, "Vítor": 8, "Agostinho": 8,
+        "Afonso": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Ana": 20, "Margarida": 20, "Rosa": 20, "Joana": 20, "Teresa": 20, "Isabel": 20, "Amélia": 20, "Júlia": 20, "Fernanda": 20,
+        "Helena": 20, "Luísa": 20, "Conceição": 20, "Emília": 20, "Laura": 20, "Carolina": 20, "Antónia": 20, "Francisca": 20, "Glória": 20,
+        "Alice": 20,
+        "Albertina": 8, "Adelaide": 8, "Aurora": 8, "Beatriz": 8, "Benedita": 8, "Branca": 8, "Catarina": 8, "Cecília": 8, "Clara": 8, "Deolinda": 8,
+        "Dulce": 8, "Ermelinda": 8, "Ester": 8, "Eugénia": 8, "Idalina": 8, "Inês": 8, "Joaquina": 8, "Josefa": 8, "Leonor": 8, "Lídia": 8,
+        "Lucinda": 8, "Lurdes": 8, "Madalena": 8, "Manuela": 8, "Mariana": 8, "Palmira": 8, "Rita": 8, "Rosália": 8, "Virgínia": 8, "Vitória": 8,
+        "Angelina": 8, "Adélia": 8
+      },
+      "surnameWeights": {
+        "Silva": 20, "Santos": 20, "Ferreira": 20, "Pereira": 20, "Oliveira": 20, "Costa": 20, "Rodrigues": 20, "Martins": 20, "Jesus": 20,
+        "Sousa": 20,
+        "Fernandes": 8, "Gonçalves": 8, "Gomes": 8, "Lopes": 8, "Marques": 8, "Alves": 8, "Almeida": 8, "Ribeiro": 8, "Pinto": 8, "Carvalho": 8,
+        "Teixeira": 8, "Moreira": 8, "Correia": 8, "Mendes": 8, "Nunes": 8, "Soares": 8, "Vieira": 8, "Monteiro": 8, "Cardoso": 8, "Rocha": 8,
+        "Neves": 3, "Coelho": 3, "Cruz": 3, "Cunha": 3, "Pires": 3, "Ramos": 3, "Reis": 3, "Simões": 3, "Antunes": 3, "Matos": 3, "Fonseca": 3,
+        "Machado": 3, "Araújo": 3, "Barbosa": 3, "Tavares": 3, "Lourenço": 3, "Castro": 3, "Figueiredo": 3, "Azevedo": 3, "Freitas": 3, "Magalhães": 3,
+        "Nogueira": 3, "Amaral": 3, "Vaz": 3, "Paiva": 3, "Baptista": 3, "Lima": 3, "Abreu": 3, "Henriques": 3, "Leal": 3
+      },
       "male": [
         "Abel",
         "Adelino",

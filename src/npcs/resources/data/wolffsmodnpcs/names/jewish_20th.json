@@ -3,6 +3,31 @@
   "groups": [
     {
       "weight": 3,
+      "maleWeights": {
+        "Moses": 20, "Moshe": 20, "Abraham": 20, "Avraham": 20, "Jakob": 20, "Jacob": 20, "Josef": 20, "Joseph": 20, "David": 20, "Samuel": 20,
+        "Isaac": 20, "Israel": 20, "Leib": 20, "Chaim": 20, "Mendel": 20, "Meyer": 20, "Hirsch": 20, "Wolf": 20, "Leon": 20, "Louis": 20, "Isidor": 20,
+        "Julius": 20, "Solomon": 20,
+        "Aaron": 8, "Aron": 8, "Berl": 8, "Baruch": 8, "Eliezer": 8, "Gershon": 8, "Hersh": 8, "Itzhak": 8, "Yitzhak": 8, "Mordechai": 8, "Nathan": 8,
+        "Noah": 8, "Shmuel": 8, "Shimon": 8, "Zalman": 8, "Leopold": 8, "Kalman": 8, "Juda": 8, "Judah": 8, "Pinkas": 8, "Yaakov": 8, "Yosef": 8,
+        "Schlomo": 8, "Shalom": 8, "Alter": 8, "Abram": 8, "Aharon": 8, "Dov": 8, "Fishel": 8, "Isak": 8, "Jankel": 8, "Efraim": 8, "Zev": 8,
+        "Benyamin": 8, "Eliyahu": 8, "Yehuda": 8
+      },
+      "femaleWeights": {
+        "Sara": 20, "Sarah": 20, "Rachel": 20, "Rivka": 20, "Esther": 20, "Ester": 20, "Hanna": 20, "Chana": 20, "Miriam": 20, "Leah": 20, "Lea": 20,
+        "Roza": 20, "Bella": 20, "Golda": 20, "Malka": 20, "Dora": 20, "Anna": 20, "Clara": 20, "Frida": 20, "Ida": 20, "Bertha": 20, "Eva": 20,
+        "Chaya": 20, "Feiga": 20,
+        "Baila": 8, "Bluma": 8, "Deborah": 8, "Dvoyre": 8, "Etel": 8, "Gitel": 8, "Henia": 8, "Liba": 8, "Lotte": 8, "Nechama": 8, "Pesia": 8,
+        "Rahel": 8, "Rebeka": 8, "Ruchla": 8, "Ruth": 8, "Sheina": 8, "Sima": 8, "Sonia": 8, "Tauba": 8, "Tema": 8, "Tova": 8, "Tsipora": 8,
+        "Yetta": 8, "Zelda": 8, "Zlata": 8, "Adela": 8
+      },
+      "surnameWeights": {
+        "Cohen": 20, "Levi": 20, "Katz": 20, "Kohn": 20, "Kaplan": 20, "Goldberg": 20, "Rosenberg": 20, "Friedman": 20, "Weiss": 20, "Schwarz": 20,
+        "Rubin": 20, "Epstein": 20, "Goldstein": 20, "Rabinowitz": 20, "Rosenthal": 20,
+        "Levin": 8, "Levine": 8, "Kahn": 8, "Kogan": 8, "Goldman": 8, "Rosenfeld": 8, "Rosenbaum": 8, "Silverman": 8, "Silberman": 8, "Roth": 8,
+        "Wolff": 8, "Wolf": 8, "Weinberg": 8, "Weinstein": 8, "Friedmann": 8, "Freedman": 8, "Finkelstein": 8, "Feldman": 8, "Eisenberg": 8,
+        "Rabinovich": 8, "Rothschild": 8, "Goldschmidt": 8, "Rubinstein": 8, "Silberstein": 8, "Weissman": 8, "Weintraub": 8, "Rosenblum": 8,
+        "Rabinowicz": 8, "Friedland": 8, "Goldwasser": 8
+      },
       "male": [
         "Abraham",
         "Abram",
@@ -191,6 +216,24 @@
     },
     {
       "weight": 1,
+      "maleWeights": {
+        "Abraham": 20, "David": 20, "Isaac": 20, "Jacob": 20, "Joseph": 20, "Moshe": 20, "Moise": 20, "Samuel": 20, "Salomon": 20, "Solomon": 20,
+        "Yosef": 20, "Haim": 20, "Israel": 20, "Albert": 20, "Daniel": 20, "Leon": 20, "Meir": 20, "Shlomo": 20,
+        "Aharon": 8, "Avraham": 8, "Baruch": 8, "Binyamin": 8, "Eliahu": 8, "Eliyahu": 8, "Emanuel": 8, "Ezra": 8, "Gabriel": 8, "Isak": 8,
+        "Itzhak": 8, "Jacques": 8, "Jak": 8, "Mair": 8, "Mordehai": 8, "Nissim": 8, "Raphael": 8, "Reuven": 8, "Shemuel": 8, "Yehuda": 8, "Yitzhak": 8,
+        "Yuda": 8, "Zacharia": 8
+      },
+      "femaleWeights": {
+        "Sara": 20, "Esther": 20, "Ester": 20, "Rachel": 20, "Rebecca": 20, "Miriam": 20, "Rosa": 20, "Gracia": 20, "Luna": 20, "Bella": 20,
+        "Clara": 20, "Hanna": 20, "Reina": 20, "Sol": 20, "Perla": 20, "Vida": 20, "Judith": 20,
+        "Allegra": 8, "Anna": 8, "Buena": 8, "Dona": 8, "Dulce": 8, "Fortuna": 8, "Jamila": 8, "Mazal": 8, "Paloma": 8, "Raquel": 8, "Rivka": 8,
+        "Sarina": 8, "Solika": 8, "Zimbul": 8, "Zohra": 8
+      },
+      "surnameWeights": {
+        "Cohen": 20, "Levi": 20, "Perez": 20, "Pinto": 20, "Castro": 20, "Franco": 20, "Elias": 20, "Navon": 20, "Medina": 20, "Behar": 20,
+        "Alhadeff": 8, "Benveniste": 8, "Benatar": 8, "Modiano": 8, "Molho": 8, "Mizrahi": 8, "Danon": 8, "Azoulay": 8, "Amar": 8, "Gabbay": 8,
+        "Hasson": 8, "Matalon": 8, "Nahmias": 8, "Pardo": 8, "Eskenazi": 8, "Fresco": 8, "Carmi": 8, "Caro": 8, "Curiel": 8, "Amiel": 8, "Nahum": 8
+      },
       "male": [
         "Abraham",
         "Aharon",

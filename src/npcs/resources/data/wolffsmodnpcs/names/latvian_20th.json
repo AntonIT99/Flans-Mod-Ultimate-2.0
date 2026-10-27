@@ -3,6 +3,37 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Jānis": 20, "Kārlis": 20, "Pēteris": 20, "Andrejs": 20, "Mārtiņš": 20, "Jēkabs": 20, "Juris": 20, "Pauls": 20, "Augusts": 20, "Voldemārs": 20,
+        "Arnolds": 20, "Eduards": 20, "Alfrēds": 20, "Antons": 20, "Roberts": 20, "Rūdolfs": 20, "Nikolajs": 20, "Ansis": 20, "Vilis": 20,
+        "Miķelis": 20,
+        "Ādolfs": 8, "Aivars": 8, "Alberts": 8, "Artūrs": 8, "Bruno": 8, "Edgars": 8, "Dāvids": 8, "Emīls": 8, "Ernests": 8, "Fridrihs": 8,
+        "Gustavs": 8, "Haralds": 8, "Heinrihs": 8, "Herberts": 8, "Hermanis": 8, "Hugo": 8, "Konrāds": 8, "Leons": 8, "Ludvigs": 8, "Oskars": 8,
+        "Otto": 8, "Reinholds": 8, "Rihards": 8, "Teodors": 8, "Valdemārs": 8, "Valters": 8, "Viktors": 8, "Vilhelms": 8, "Zigfrīds": 8, "Ziedonis": 8
+      },
+      "femaleWeights": {
+        "Anna": 20, "Marija": 20, "Katrīna": 20, "Elizabete": 20, "Emīlija": 20, "Līna": 20, "Milda": 20, "Alma": 20, "Marta": 20, "Berta": 20,
+        "Lidija": 20, "Ida": 20, "Ella": 20, "Olga": 20, "Helēna": 20, "Johanna": 20, "Velta": 20, "Zelma": 20, "Ruta": 20, "Austra": 20,
+        "Dora": 8, "Edīte": 8, "Elfrīda": 8, "Elīna": 8, "Elza": 8, "Erna": 8, "Gaida": 8, "Herta": 8, "Hilda": 8, "Ilga": 8, "Irma": 8, "Leontīne": 8,
+        "Lilija": 8, "Lūcija": 8, "Luīze": 8, "Margarita": 8, "Minna": 8, "Paula": 8, "Rasma": 8, "Salome": 8, "Skaidrīte": 8, "Sofija": 8,
+        "Valentīna": 8, "Vera": 8, "Zenta": 8
+      },
+      "surnameWeights": {
+        "Bērziņš": 20, "Kalniņš": 20, "Ozoliņš": 20, "Jansons": 20, "Liepiņš": 20, "Krūmiņš": 20, "Balodis": 20, "Eglītis": 20, "Ozols": 20,
+        "Pētersons": 20,
+        "Vītols": 8, "Kārkliņš": 8, "Zariņš": 8, "Kļaviņš": 8, "Vanags": 8, "Zeltiņš": 8, "Briedis": 8, "Vasiļjevs": 8, "Lapiņš": 8, "Āboliņš": 8,
+        "Andersons": 8, "Grīnbergs": 8, "Siliņš": 8, "Bergs": 8, "Lūsis": 8, "Miezītis": 8, "Saulītis": 8, "Leimanis": 8, "Šmits": 8, "Priedītis": 8,
+        "Strazdiņš": 3, "Vilks": 3, "Zvirbulis": 3, "Celmiņš": 3, "Kauliņš": 3, "Birkavs": 3, "Dambis": 3, "Lazdiņš": 3, "Sproģis": 3, "Veinbergs": 3,
+        "Vētra": 3, "Dzenis": 3, "Purviņš": 3, "Reinfelds": 3, "Rozenbergs": 3, "Lācis": 3, "Dūmiņš": 3, "Grāvītis": 3, "Šķēle": 3, "Ulmanis": 3
+      },
+      "femaleSurnameWeights": {
+        "Bērziņa": 20, "Kalniņa": 20, "Ozoliņa": 20, "Jansone": 20, "Liepiņa": 20, "Krūmiņa": 20, "Balode": 20, "Eglīte": 20, "Ozola": 20,
+        "Pētersone": 20,
+        "Vītola": 8, "Kārkliņa": 8, "Zariņa": 8, "Kļaviņa": 8, "Vanaga": 8, "Zeltiņa": 8, "Briede": 8, "Vasiļjeva": 8, "Lapiņa": 8, "Āboliņa": 8,
+        "Andersone": 8, "Grīnberga": 8, "Siliņa": 8, "Berga": 8, "Lūse": 8, "Miezīte": 8, "Saulīte": 8, "Leimane": 8, "Šmite": 8, "Priedīte": 8,
+        "Strazdiņa": 3, "Vilka": 3, "Zvirbule": 3, "Celmiņa": 3, "Kauliņa": 3, "Birkava": 3, "Dambe": 3, "Lazdiņa": 3, "Sproģe": 3, "Veinberga": 3,
+        "Vētra": 3, "Dzene": 3, "Purviņa": 3, "Reinfelde": 3, "Rozenberga": 3, "Lāce": 3, "Dūmiņa": 3, "Grāvīte": 3, "Šķēle": 3, "Ulmane": 3
+      },
       "male": [
         "Ādolfs",
         "Aivars",

@@ -3,6 +3,43 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Ivan": 20, "Georgi": 20, "Dimitar": 20, "Petar": 20, "Nikola": 20, "Hristo": 20, "Todor": 20, "Stefan": 20, "Atanas": 20, "Vasil": 20,
+        "Angel": 20, "Kiril": 20, "Nikolay": 20, "Stoyan": 20, "Boris": 20, "Aleksandar": 20, "Mihail": 20, "Yordan": 20, "Konstantin": 20,
+        "Pavel": 20,
+        "Asen": 8, "Blagoy": 8, "Bogdan": 8, "Boyan": 8, "Bozhidar": 8, "Danail": 8, "Dobri": 8, "Doychin": 8, "Dragan": 8, "Emil": 8, "Gavril": 8,
+        "Gospodin": 8, "Ilia": 8, "Kosta": 8, "Kostadin": 8, "Krastyo": 8, "Krum": 8, "Lazar": 8, "Lyuben": 8, "Manol": 8, "Marin": 8, "Metodi": 8,
+        "Nayden": 8, "Pencho": 8, "Petko": 8, "Racho": 8, "Radoslav": 8, "Rangel": 8, "Rumen": 8, "Sava": 8, "Simeon": 8, "Spas": 8, "Stilyan": 8,
+        "Stoycho": 8, "Toma": 8, "Trifon": 8, "Velko": 8, "Vladimir": 8, "Zahari": 8, "Zhelyazko": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Ivanka": 20, "Elena": 20, "Ana": 20, "Petya": 20, "Stanka": 20, "Rayna": 20, "Raina": 20, "Penka": 20, "Donka": 20,
+        "Stoyanka": 20, "Nedka": 20, "Katerina": 20, "Dimitrina": 20, "Hristina": 20, "Yordanka": 20, "Milka": 20, "Slavka": 20, "Vasilka": 20,
+        "Rosa": 20,
+        "Anastasia": 8, "Angelina": 8, "Anka": 8, "Asya": 8, "Blaga": 8, "Bogdana": 8, "Boyana": 8, "Ekaterina": 8, "Elisaveta": 8, "Evgenia": 8,
+        "Ganka": 8, "Lilia": 8, "Lilyana": 8, "Lyuba": 8, "Lyubka": 8, "Mara": 8, "Mariyka": 8, "Nadezhda": 8, "Nikolina": 8, "Petra": 8, "Radka": 8,
+        "Sofia": 8, "Stefana": 8, "Tsvetana": 8, "Vela": 8, "Vera": 8, "Vesela": 8, "Zdravka": 8
+      },
+      "surnameWeights": {
+        "Ivanov": 20, "Georgiev": 20, "Dimitrov": 20, "Petrov": 20, "Nikolov": 20, "Hristov": 20, "Todorov": 20, "Stoyanov": 20, "Stoychev": 20,
+        "Iliev": 20,
+        "Vasilev": 8, "Atanasov": 8, "Angelov": 8, "Kolev": 8, "Yordanov": 8, "Popov": 8, "Mihaylov": 8, "Aleksandrov": 8, "Stefanov": 8, "Borisov": 8,
+        "Kostov": 8, "Simeonov": 8, "Pavlov": 8, "Kirilov": 8, "Velikov": 8, "Tsvetkov": 8, "Marinov": 8, "Radev": 8, "Rusev": 8, "Valkov": 8,
+        "Genov": 3, "Dobrev": 3, "Dimitriev": 3, "Penev": 3, "Tenev": 3, "Delchev": 3, "Danailov": 3, "Savov": 3, "Ganev": 3, "Naydenov": 3,
+        "Hadjiev": 3, "Lazarov": 3, "Manolov": 3, "Trifonov": 3, "Yanev": 3, "Kamenov": 3, "Mitev": 3, "Tanev": 3, "Zhelev": 3, "Zahariev": 3,
+        "Bozhilov": 3, "Gospodinov": 3, "Slavov": 3, "Daskalov": 3, "Rangelov": 3, "Raykov": 3, "Krastev": 3, "Cholakov": 3, "Rachev": 3, "Videnov": 3
+      },
+      "femaleSurnameWeights": {
+        "Ivanova": 20, "Georgieva": 20, "Dimitrova": 20, "Petrova": 20, "Nikolova": 20, "Hristova": 20, "Todorova": 20, "Stoyanova": 20,
+        "Stoycheva": 20, "Ilieva": 20,
+        "Vasileva": 8, "Atanasova": 8, "Angelova": 8, "Koleva": 8, "Yordanova": 8, "Popova": 8, "Mihaylova": 8, "Aleksandrova": 8, "Stefanova": 8,
+        "Borisova": 8, "Kostova": 8, "Simeonova": 8, "Pavlova": 8, "Kirilova": 8, "Velikova": 8, "Tsvetkova": 8, "Marinova": 8, "Radeva": 8,
+        "Ruseva": 8, "Valkova": 8,
+        "Genova": 3, "Dobreva": 3, "Dimitrieva": 3, "Peneva": 3, "Teneva": 3, "Delcheva": 3, "Danailova": 3, "Savova": 3, "Ganeva": 3, "Naydenova": 3,
+        "Hadjieva": 3, "Lazarova": 3, "Manolova": 3, "Trifonova": 3, "Yaneva": 3, "Kamenova": 3, "Miteva": 3, "Taneva": 3, "Zheleva": 3,
+        "Zaharieva": 3, "Bozhilova": 3, "Gospodinova": 3, "Slavova": 3, "Daskalova": 3, "Rangelova": 3, "Raykova": 3, "Krasteva": 3, "Cholakova": 3,
+        "Racheva": 3, "Videnova": 3
+      },
       "male": [
         "Aleksandar",
         "Angel",

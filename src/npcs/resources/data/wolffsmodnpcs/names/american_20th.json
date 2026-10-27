@@ -3,6 +3,33 @@
     "groups": [
         {
             "weight": 1,
+            "maleWeights": {
+                "James": 20, "John": 20, "Robert": 20, "William": 20, "Michael": 20, "David": 20, "Richard": 20, "Charles": 20, "Joseph": 20,
+                "Thomas": 20, "George": 20, "Edward": 20, "Frank": 20, "Henry": 20, "Harold": 20, "Paul": 20, "Walter": 20, "Arthur": 20, "Albert": 20,
+                "Raymond": 20, "Donald": 20,
+                "Ralph": 8, "Roy": 8, "Eugene": 8, "Howard": 8, "Carl": 8, "Louis": 8, "Earl": 8, "Jack": 8, "Fred": 8, "Herbert": 8, "Ernest": 8,
+                "Lawrence": 8, "Clarence": 8, "Kenneth": 8, "Harry": 8, "Samuel": 8, "Peter": 8, "Philip": 8, "Russell": 8, "Francis": 8, "Stanley": 8,
+                "Leonard": 8, "Daniel": 8, "Anthony": 8, "Gerald": 8
+            },
+            "femaleWeights": {
+                "Mary": 20, "Elizabeth": 20, "Dorothy": 20, "Helen": 20, "Margaret": 20, "Ruth": 20, "Mildred": 20, "Anna": 20, "Florence": 20,
+                "Frances": 20, "Alice": 20, "Betty": 20, "Marie": 20, "Virginia": 20, "Evelyn": 20, "Ethel": 20, "Catherine": 20, "Rose": 20,
+                "Patricia": 20, "Barbara": 20, "Sarah": 20,
+                "Marjorie": 8, "Lillian": 8, "Louise": 8, "Gladys": 8, "Irene": 8, "Doris": 8, "Josephine": 8, "Martha": 8, "Ann": 8, "Eleanor": 8,
+                "Esther": 8, "Hazel": 8, "Pauline": 8, "Julia": 8, "Beatrice": 8, "Lucille": 8, "Thelma": 8, "Bessie": 8, "Nancy": 8, "Emma": 8,
+                "Laura": 8, "Rebecca": 8
+            },
+            "surnameWeights": {
+                "Smith": 20, "Johnson": 20, "Williams": 20, "Brown": 20, "Jones": 20, "Garcia": 20, "Miller": 20, "Davis": 20, "Rodriguez": 20,
+                "Martinez": 20, "Hernandez": 20, "Lopez": 20,
+                "Gonzalez": 8, "Wilson": 8, "Anderson": 8, "Thomas": 8, "Taylor": 8, "Moore": 8, "Jackson": 8, "Martin": 8, "Lee": 8, "Perez": 8,
+                "Thompson": 8, "White": 8, "Harris": 8, "Sanchez": 8, "Clark": 8, "Ramirez": 8, "Lewis": 8, "Robinson": 8, "Walker": 8, "Young": 8,
+                "Allen": 8, "King": 8, "Wright": 8, "Scott": 8, "Torres": 8, "Hill": 8, "Flores": 8, "Green": 8,
+                "Adams": 3, "Nelson": 3, "Baker": 3, "Hall": 3, "Rivera": 3, "Campbell": 3, "Mitchell": 3, "Carter": 3, "Roberts": 3, "Gomez": 3,
+                "Phillips": 3, "Evans": 3, "Turner": 3, "Diaz": 3, "Parker": 3, "Cruz": 3, "Edwards": 3, "Collins": 3, "Reyes": 3, "Stewart": 3,
+                "Morris": 3, "Morales": 3, "Murphy": 3, "Cook": 3, "Rogers": 3, "Gutierrez": 3, "Ortiz": 3, "Morgan": 3, "Cooper": 3, "Peterson": 3,
+                "Bailey": 3, "Reed": 3, "Kelly": 3, "Howard": 3, "Ramos": 3, "Kim": 3, "Cox": 3, "Ward": 3, "Richardson": 3, "Watson": 3
+            },
             "male": [
                 "John",
                 "William",

@@ -1,6 +1,6 @@
 {
   "teams": {
-    "gign": "wolffsmodnpcs:french",
+    "gign": "wolffsmodnpcs:french_21st",
     "WolffRome_Empire": "customnpcs:roman",
     "WolffRome_Republic": "customnpcs:roman",
     "americanTeam": "wolffsmodnpcs:american_20th",
@@ -30,11 +30,11 @@
     "WolffGermany_Panzertruppe": "wolffsmodnpcs:german_20th",
     "WolffGermany_SpecialCorpsFeldgrau": "wolffsmodnpcs:german_20th",
     "WolffGermany_SpecialCorpsSteingrau": "wolffsmodnpcs:german_20th",
-    "ksk": "wolffsmodnpcs:german",
-    "marines": "wolffsmodnpcs:american",
-    "sas": "wolffsmodnpcs:british",
-    "spetsnaz": "wolffsmodnpcs:russian",
-    "swat": "wolffsmodnpcs:american",
+    "ksk": "wolffsmodnpcs:german_21st",
+    "marines": "wolffsmodnpcs:american_21st",
+    "sas": "wolffsmodnpcs:british_21st",
+    "spetsnaz": "wolffsmodnpcs:russian_21st",
+    "swat": "wolffsmodnpcs:american_21st",
     "WolffStarWars_Imperial": "wolffsmodnpcs:imperial_tk",
     "WolffStarWars_SeparatistGeonosis": "wolffsmodnpcs:droid_b1",
     "WolffStarWars_SeparatistStandard": "wolffsmodnpcs:droid_b1"

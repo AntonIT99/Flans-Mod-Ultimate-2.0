@@ -39,7 +39,7 @@ class NpcClientNamesTest
         npc.modelData.extra.putString(FlanSoldierSelection.TEAM_KEY, "team");
         npc.modelData.extra.putString(FlanSoldierSelection.CLASS_KEY, "class");
         when(minecraft.level.getEntity(42)).thenReturn(npc);
-        SoldierNamePacket packet = new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:french", "Louis Martin", 1);
+        SoldierNamePacket packet = new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:french_21st", "Louis Martin", 1);
         try (var client = mockStatic(Minecraft.class); var network = mockStatic(NpcNetwork.class))
         {
             client.when(Minecraft::getInstance).thenReturn(minecraft);

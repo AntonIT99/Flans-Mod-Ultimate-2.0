@@ -3,6 +3,31 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Petar": 20, "Nikola": 20, "Milan": 20, "Jovan": 20, "Marko": 20, "Stevan": 20, "Dragan": 20, "Miloš": 20, "Aleksandar": 20, "Dušan": 20,
+        "Đorđe": 20, "Vladimir": 20, "Lazar": 20, "Ivan": 20, "Milorad": 20, "Branko": 20, "Miroslav": 20, "Svetozar": 20, "Stojan": 20, "Radomir": 20,
+        "Aleksa": 8, "Andrija": 8, "Bogdan": 8, "Bogoljub": 8, "Božidar": 8, "Borislav": 8, "Branislav": 8, "Čedomir": 8, "Danilo": 8, "Dimitrije": 8,
+        "Dobrica": 8, "Dragoljub": 8, "Dragomir": 8, "Gavrilo": 8, "Ilija": 8, "Jakov": 8, "Ljubomir": 8, "Luka": 8, "Milivoje": 8, "Miloje": 8,
+        "Milovan": 8, "Miodrag": 8, "Momčilo": 8, "Obrad": 8, "Radivoje": 8, "Radoslav": 8, "Rajko": 8, "Sava": 8, "Svetislav": 8, "Tihomir": 8,
+        "Velimir": 8, "Vlastimir": 8, "Vojislav": 8, "Vuk": 8, "Živko": 8, "Živojin": 8
+      },
+      "femaleWeights": {
+        "Milica": 20, "Ana": 20, "Marija": 20, "Jelena": 20, "Ljubica": 20, "Mara": 20, "Danica": 20, "Katarina": 20, "Draga": 20, "Dragica": 20,
+        "Stana": 20, "Milena": 20, "Zora": 20, "Olga": 20, "Sofija": 20, "Nada": 20, "Radmila": 20, "Jovanka": 20, "Anka": 20, "Rada": 20,
+        "Anđelija": 8, "Anica": 8, "Bosiljka": 8, "Darinka": 8, "Desanka": 8, "Draginja": 8, "Dušanka": 8, "Jelisaveta": 8, "Kosara": 8, "Koviljka": 8,
+        "Leposava": 8, "Milka": 8, "Milosava": 8, "Mirjana": 8, "Natalija": 8, "Persida": 8, "Radojka": 8, "Ruža": 8, "Savka": 8, "Spasenija": 8,
+        "Stanija": 8, "Vidosava": 8, "Zagorka": 8, "Zorka": 8
+      },
+      "surnameWeights": {
+        "Jovanović": 20, "Petrović": 20, "Nikolić": 20, "Marković": 20, "Đorđević": 20, "Stojanović": 20, "Ilić": 20, "Stanković": 20, "Pavlović": 20,
+        "Popović": 20,
+        "Milošević": 8, "Kostić": 8, "Simić": 8, "Lazić": 8, "Janković": 8, "Matić": 8, "Milić": 8, "Radovanović": 8, "Filipović": 8, "Mladenović": 8,
+        "Živković": 8, "Obradović": 8, "Aleksić": 8, "Vasić": 8, "Vuković": 8, "Stevanović": 8, "Lukić": 8, "Todorović": 8, "Tomić": 8, "Stojković": 8,
+        "Vučković": 3, "Ristić": 3, "Mitrović": 3, "Dimitrijević": 3, "Mihajlović": 3, "Milenković": 3, "Milovanović": 3, "Gavrilović": 3, "Đukić": 3,
+        "Avramović": 3, "Veselinović": 3, "Bogdanović": 3, "Savić": 3, "Spasojević": 3, "Petković": 3, "Ćirić": 3, "Đurić": 3, "Vidaković": 3,
+        "Veličković": 3, "Božić": 3, "Pešić": 3, "Dabić": 3, "Vlahović": 3, "Radosavljević": 3, "Kovačević": 3, "Knežević": 3, "Vučić": 3, "Marić": 3,
+        "Babić": 3, "Vojinović": 3
+      },
       "male": [
         "Aleksa",
         "Aleksandar",

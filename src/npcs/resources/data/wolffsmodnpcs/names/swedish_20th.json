@@ -3,6 +3,34 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Karl": 20, "Carl": 20, "Johan": 20, "Erik": 20, "Lars": 20, "Nils": 20, "Anders": 20, "Per": 20, "Gustaf": 20, "Gustav": 20, "Olof": 20,
+        "Axel": 20, "Sven": 20, "Hans": 20, "Fredrik": 20, "Gunnar": 20, "Bengt": 20, "Ragnar": 20, "Harald": 20, "Emil": 20, "Arne": 20, "Einar": 20,
+        "John": 20, "Albert": 20, "Alfred": 20,
+        "Bertil": 8, "Birger": 8, "Bo": 8, "Bror": 8, "Edvard": 8, "Erland": 8, "Ernst": 8, "Folke": 8, "Georg": 8, "Gösta": 8, "Harry": 8, "Helge": 8,
+        "Henrik": 8, "Herbert": 8, "Hilding": 8, "Hjalmar": 8, "Holger": 8, "Hugo": 8, "Ivar": 8, "Knut": 8, "Lennart": 8, "Magnus": 8, "Olle": 8,
+        "Oscar": 8, "Rolf": 8, "Rune": 8, "Sigfrid": 8, "Sigurd": 8, "Tage": 8, "Torsten": 8, "Uno": 8, "Valter": 8, "Vilhelm": 8, "Åke": 8,
+        "Östen": 8, "Allan": 8, "Arvid": 8, "Albin": 8, "Adolf": 8
+      },
+      "femaleWeights": {
+        "Anna": 20, "Maria": 20, "Karin": 20, "Margareta": 20, "Ingrid": 20, "Elsa": 20, "Ebba": 20, "Elin": 20, "Eva": 20, "Greta": 20, "Hilda": 20,
+        "Ida": 20, "Signe": 20, "Sigrid": 20, "Astrid": 20, "Märta": 20, "Hanna": 20, "Ester": 20, "Elisabet": 20, "Gerda": 20, "Alice": 20,
+        "Linnea": 20, "Ingeborg": 20, "Ulla": 20,
+        "Agda": 8, "Agnes": 8, "Alma": 8, "Augusta": 8, "Barbro": 8, "Berit": 8, "Berta": 8, "Britta": 8, "Dagmar": 8, "Edit": 8, "Ella": 8,
+        "Gunhild": 8, "Gunvor": 8, "Gärda": 8, "Hedvig": 8, "Helga": 8, "Inga": 8, "Iris": 8, "Lisa": 8, "Maja": 8, "Rut": 8, "Sonja": 8, "Svea": 8,
+        "Tyra": 8, "Vera": 8, "Viola": 8
+      },
+      "surnameWeights": {
+        "Andersson": 20, "Johansson": 20, "Karlsson": 20, "Nilsson": 20, "Eriksson": 20, "Larsson": 20, "Olsson": 20, "Persson": 20, "Svensson": 20,
+        "Gustafsson": 20,
+        "Pettersson": 8, "Jonsson": 8, "Jansson": 8, "Hansson": 8, "Bengtsson": 8, "Jönsson": 8, "Petersson": 8, "Carlsson": 8, "Lindberg": 8,
+        "Magnusson": 8, "Lindström": 8, "Lindqvist": 8, "Lindgren": 8, "Lundberg": 8, "Bergström": 8, "Lundgren": 8, "Lundqvist": 8, "Mattsson": 8,
+        "Berg": 8, "Berglund": 8, "Fredriksson": 8, "Sandberg": 8, "Henriksson": 8, "Forsberg": 8, "Sjöberg": 8, "Wallin": 8, "Engström": 8,
+        "Eklund": 8, "Danielsson": 8, "Lundin": 8,
+        "Björk": 3, "Bergman": 3, "Ström": 3, "Åberg": 3, "Holm": 3, "Bergqvist": 3, "Löfgren": 3, "Lindholm": 3, "Nyberg": 3, "Sundberg": 3,
+        "Ekström": 3, "Lund": 3, "Berggren": 3, "Bergkvist": 3, "Sjögren": 3, "Mårtensson": 3, "Holmberg": 3, "Samuelsson": 3, "Isaksson": 3,
+        "Nyström": 3, "Blom": 3, "Lind": 3, "Nordström": 3, "Lundström": 3, "Holmgren": 3, "Eliasson": 3
+      },
       "male": [
         "Adolf",
         "Albert",

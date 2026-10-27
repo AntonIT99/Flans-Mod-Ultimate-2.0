@@ -28,7 +28,7 @@ class SoldierNamePacketTest
         FlanSoldierSelection selection = new FlanSoldierSelection(team, playerClass);
         for (SoldierNamePacket packet : new SoldierNamePacket[]{request, SoldierNamePacket.request(42, selection, 1), SoldierNamePacket.request(42, selection, 2),
             new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german_20th", "Hans Müller", 1),
-            new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:french", "Claire Martin", 2)})
+            new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:french_21st", "Claire Martin", 2)})
         {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
             try
@@ -49,12 +49,12 @@ class SoldierNamePacketTest
     {
         try (var requests = mockStatic(FlanSoldierNames.class))
         {
-            SoldierNamePacket state = new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german", "Injected name");
+            SoldierNamePacket state = new SoldierNamePacket(42, "team", "class", true, "wolffsmodnpcs:german_21st", "Injected name");
             state.handle(null);
             requests.verify(() -> FlanSoldierNames.confirm(null, state));
             requests.verifyNoMoreInteractions();
             requests.when(() -> FlanSoldierNames.request(null, 42, "team", "class", 2)).thenReturn(Optional.empty());
-            new SoldierNamePacket(42, "team", "class", false, "wolffsmodnpcs:german", "Injected name", 2).handle(null);
+            new SoldierNamePacket(42, "team", "class", false, "wolffsmodnpcs:german_21st", "Injected name", 2).handle(null);
             requests.verify(() -> FlanSoldierNames.request(null, 42, "team", "class", 2));
         }
     }

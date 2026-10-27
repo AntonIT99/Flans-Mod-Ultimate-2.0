@@ -59,7 +59,7 @@ class BotNamesTest
     @Test
     void respawningBotKeepsItsNameButRestoresAssociatedGeneratorAndGender()
     {
-        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of("team", "wolffsmodnpcs:french"), Map.of(), Map.of("team", "mixed"), Map.of());
+        SoldierNameAssociations associations = new SoldierNameAssociations(Map.of("team", "wolffsmodnpcs:french_21st"), Map.of(), Map.of("team", "mixed"), Map.of());
         EntityNPCInterface npc = npc();
         try (var config = mockStatic(SoldierNameAssociations.class))
         {

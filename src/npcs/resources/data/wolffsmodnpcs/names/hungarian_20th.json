@@ -3,6 +3,27 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "János": 20, "József": 20, "István": 20, "László": 20, "Ferenc": 20, "Sándor": 20, "Gyula": 20, "Lajos": 20, "Zoltán": 20, "Mihály": 20,
+        "Imre": 20, "Pál": 20, "Károly": 20, "András": 20, "Géza": 20, "Béla": 20, "Péter": 20, "György": 20, "Antal": 20, "Miklós": 20,
+        "Jenő": 8, "Ernő": 8, "Gábor": 8, "Dezső": 8, "Dénes": 8, "Árpád": 8, "Kálmán": 8, "Tibor": 8, "Ádám": 8, "Albert": 8, "Endre": 8, "Márton": 8,
+        "Rezső": 8, "Ottó": 8, "Rudolf": 8, "Vilmos": 8, "Elemér": 8, "Aladár": 8, "Ignác": 8, "Nándor": 8, "Bertalan": 8, "Zsigmond": 8, "Mátyás": 8
+      },
+      "femaleWeights": {
+        "Mária": 20, "Erzsébet": 20, "Anna": 20, "Ilona": 20, "Katalin": 20, "Margit": 20, "Julianna": 20, "Teréz": 20, "Irén": 20, "Magdolna": 20,
+        "Júlia": 20, "Éva": 20, "Rozália": 20, "Borbála": 20, "Piroska": 20, "Ágnes": 20, "Gizella": 20, "Zsófia": 20, "Jolán": 20, "Klára": 20,
+        "Aranka": 8, "Berta": 8, "Eszter": 8, "Etelka": 8, "Franciska": 8, "Gabriella": 8, "Janka": 8, "Judit": 8, "Karolina": 8, "Kornélia": 8,
+        "Lujza": 8, "Márta": 8, "Matild": 8, "Olga": 8, "Róza": 8, "Sarolta": 8, "Valéria": 8, "Vilma": 8, "Zsuzsanna": 8, "Irma": 8
+      },
+      "surnameWeights": {
+        "Nagy": 20, "Kovács": 20, "Tóth": 20, "Szabó": 20, "Horváth": 20, "Varga": 20, "Kiss": 20, "Molnár": 20, "Németh": 20, "Farkas": 20,
+        "Balogh": 8, "Papp": 8, "Takács": 8, "Juhász": 8, "Lakatos": 8, "Mészáros": 8, "Oláh": 8, "Simon": 8, "Rácz": 8, "Fekete": 8, "Szilágyi": 8,
+        "Török": 8, "Fehér": 8, "Balázs": 8, "Gál": 8, "Kis": 8, "Szűcs": 8, "Orsós": 8, "Kocsis": 8, "Fodor": 8, "Pintér": 8, "Sipos": 8,
+        "Kerekes": 8, "Szalai": 8, "Magyar": 8,
+        "Hegedűs": 3, "Boros": 3, "Vincze": 3, "Fazekas": 3, "Katona": 3, "Bognár": 3, "Szőke": 3, "Bodnár": 3, "Székely": 3, "Pál": 3, "Antal": 3,
+        "Deák": 3, "Fülöp": 3, "Barta": 3, "Lengyel": 3, "Sándor": 3, "Bíró": 3, "László": 3, "Veres": 3, "Vörös": 3, "Kelemen": 3, "Hajdu": 3,
+        "Bálint": 3, "Vass": 3, "Somogyi": 3
+      },
       "male": [
         "Ádám",
         "Albert",

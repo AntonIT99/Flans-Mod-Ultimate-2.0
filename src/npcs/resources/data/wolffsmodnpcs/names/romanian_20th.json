@@ -3,6 +3,32 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Ion": 20, "Gheorghe": 20, "Constantin": 20, "Ioan": 20, "Nicolae": 20, "Vasile": 20, "Dumitru": 20, "Alexandru": 20, "Mihai": 20,
+        "Ștefan": 20, "Petre": 20, "Marin": 20, "Teodor": 20, "Victor": 20, "Radu": 20, "Iosif": 20, "Traian": 20, "Grigore": 20, "Ilie": 20,
+        "Florea": 8, "Anghel": 8, "Anton": 8, "Aurel": 8, "Eugen": 8, "Emil": 8, "Mircea": 8, "Pavel": 8, "Petru": 8, "Toma": 8, "Tudor": 8,
+        "Virgil": 8, "Vlad": 8, "Liviu": 8, "Ovidiu": 8, "Cornel": 8, "Corneliu": 8, "Ionel": 8, "Gavril": 8, "Lazăr": 8, "Sorin": 8, "Valeriu": 8,
+        "Zaharia": 8, "Simion": 8, "Matei": 8, "Neculai": 8, "Niculae": 8, "Octav": 8, "Octavian": 8, "Romulus": 8, "Remus": 8, "Sabin": 8,
+        "Șerban": 8, "Spiridon": 8, "Horia": 8, "Iuliu": 8, "Iorgu": 8, "Doru": 8, "Cezar": 8, "Carol": 8, "Bogdan": 8, "Avram": 8, "Alexe": 8,
+        "Aurelian": 8, "Emanoil": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Elena": 20, "Ana": 20, "Ioana": 20, "Florica": 20, "Marioara": 20, "Ecaterina": 20, "Constanța": 20, "Aurora": 20,
+        "Victoria": 20, "Eugenia": 20, "Cornelia": 20, "Teodora": 20, "Mariana": 20, "Georgeta": 20, "Elisabeta": 20, "Margareta": 20, "Stela": 20,
+        "Rodica": 20, "Paraschiva": 20,
+        "Aneta": 8, "Angela": 8, "Catrina": 8, "Domnica": 8, "Emilia": 8, "Eufrosina": 8, "Gabriela": 8, "Ileana": 8, "Irina": 8, "Leontina": 8,
+        "Livia": 8, "Lucia": 8, "Lucreția": 8, "Matilda": 8, "Natalia": 8, "Olga": 8, "Paulina": 8, "Petruța": 8, "Rada": 8, "Rozalia": 8, "Sofia": 8,
+        "Ștefania": 8, "Tatiana": 8, "Valeria": 8, "Vasilica": 8, "Veronica": 8, "Virginia": 8, "Zamfira": 8
+      },
+      "surnameWeights": {
+        "Popescu": 20, "Ionescu": 20, "Popa": 20, "Pop": 20, "Dumitru": 20, "Stan": 20, "Stoica": 20, "Gheorghe": 20, "Rusu": 20, "Munteanu": 20,
+        "Matei": 8, "Constantin": 8, "Șerban": 8, "Marin": 8, "Dobre": 8, "Ilie": 8, "Tudor": 8, "Diaconu": 8, "Dinu": 8, "Florea": 8, "Petre": 8,
+        "Pavel": 8, "Preda": 8, "Gheorghiu": 8, "Vasilescu": 8, "Georgescu": 8, "Dumitrescu": 8, "Niculescu": 8, "Petrescu": 8, "Stanciu": 8,
+        "Stancu": 8, "Neagu": 8, "Nistor": 8, "Badea": 8, "Enache": 8, "Mihai": 8, "Manea": 8, "Coman": 8, "Oprea": 8, "Tănase": 8,
+        "Drăgan": 3, "Bălan": 3, "Moldovan": 3, "Barbu": 3, "Ciobanu": 3, "Radu": 3, "Sandu": 3, "Voicu": 3, "Bădescu": 3, "Lungu": 3, "Cojocaru": 3,
+        "Dascălu": 3, "Dobrescu": 3, "Florescu": 3, "Grigorescu": 3, "Iancu": 3, "Lăzărescu": 3, "Manolescu": 3, "Moraru": 3, "Năstase": 3, "Păun": 3,
+        "Rotaru": 3, "Simion": 3, "Teodorescu": 3, "Ungureanu": 3, "Vintilă": 3
+      },
       "male": [
         "Alexandru",
         "Alexe",

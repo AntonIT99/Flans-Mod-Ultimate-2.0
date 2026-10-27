@@ -27,7 +27,7 @@ class SoldierNameAssociationsTest
         assertEquals(2, associations.gender(team, playerClass));
         assertEquals(0, associations.gender(team, "ordinary"));
         assertTrue(associations.find(team, "disabledclass").isEmpty());
-        Map<String, String> duplicate = Map.of("Team", "wolffsmodnpcs:german", "team", "wolffsmodnpcs:british");
+        Map<String, String> duplicate = Map.of("Team", "wolffsmodnpcs:german_21st", "team", "wolffsmodnpcs:british_21st");
         Map<String, String> empty = Map.of();
         assertThrows(IllegalArgumentException.class, () -> new SoldierNameAssociations(duplicate, empty));
         Map<String, String> duplicateGenders = Map.of("Class", "male", "class", "female");
@@ -40,7 +40,7 @@ class SoldierNameAssociationsTest
         SoldierNameAssociations defaults = new SoldierNameAssociations(Map.of(), Map.of());
         assertEquals(1, defaults.gender("team", "class"));
         SoldierNameAssociations configured = new Gson().fromJson("""
-            {"teams":{"team":"wolffsmodnpcs:french"},"teamGenders":{"team":"mixed"},
+            {"teams":{"team":"wolffsmodnpcs:french_21st"},"teamGenders":{"team":"mixed"},
              "classGenders":{"women":"female","men":"male"}}
             """, SoldierNameAssociations.class);
         assertEquals(0, configured.gender("team", "ordinary"));
@@ -107,7 +107,7 @@ class SoldierNameAssociationsTest
         assertTrue(custom.find("W44_SovietArmy", "any").isEmpty());
         assertEquals(edited, Files.readString(file));
         Map<String, String> immutableTeams = custom.teams();
-        assertThrows(UnsupportedOperationException.class, () -> immutableTeams.put("extra", "wolffsmodnpcs:german"));
+        assertThrows(UnsupportedOperationException.class, () -> immutableTeams.put("extra", "wolffsmodnpcs:german_21st"));
     }
 
     @Test

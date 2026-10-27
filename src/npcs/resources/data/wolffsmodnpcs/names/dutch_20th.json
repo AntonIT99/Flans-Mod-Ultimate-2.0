@@ -3,6 +3,33 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Jan": 20, "Johannes": 20, "Cornelis": 20, "Hendrik": 20, "Willem": 20, "Pieter": 20, "Gerrit": 20, "Jacobus": 20, "Petrus": 20, "Dirk": 20,
+        "Jacob": 20, "Antonie": 20, "Johan": 20, "Maarten": 20, "Klaas": 20, "Albert": 20, "Gerard": 20, "Arie": 20, "Bernard": 20, "Frans": 20,
+        "Karel": 20,
+        "Teunis": 8, "Evert": 8, "Marinus": 8, "Nicolaas": 8, "Wim": 8, "Piet": 8, "Henk": 8, "Herman": 8, "Simon": 8, "Paul": 8, "Theodoor": 8,
+        "Thomas": 8, "Rudolf": 8, "Otto": 8, "Leendert": 8, "Lambert": 8, "Eduard": 8, "Daniël": 8, "Christiaan": 8, "Bram": 8, "Bert": 8, "Arnold": 8,
+        "Andries": 8, "Alfred": 8, "Aart": 8, "Frederik": 8, "Geert": 8, "Harm": 8, "Hugo": 8, "Isaak": 8, "Joost": 8, "Lodewijk": 8, "Roelof": 8,
+        "Wouter": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Johanna": 20, "Cornelia": 20, "Anna": 20, "Elisabeth": 20, "Wilhelmina": 20, "Hendrika": 20, "Catharina": 20, "Jacoba": 20,
+        "Geertruida": 20, "Adriana": 20, "Petronella": 20, "Margaretha": 20, "Antje": 20, "Grietje": 20, "Sophia": 20, "Neeltje": 20, "Josina": 20,
+        "Susanna": 20, "Theodora": 20,
+        "Agatha": 8, "Alida": 8, "Annie": 8, "Bertha": 8, "Clara": 8, "Dina": 8, "Dorothea": 8, "Emma": 8, "Eva": 8, "Hermina": 8, "Juliana": 8,
+        "Klara": 8, "Louisa": 8, "Marie": 8, "Pieternella": 8, "Sara": 8, "Trijntje": 8, "Willemina": 8, "Betsie": 8, "Truus": 8, "Rie": 8, "Mien": 8,
+        "Sien": 8, "Coba": 8, "Gré": 8, "Rika": 8
+      },
+      "surnameWeights": {
+        "de Jong": 20, "Jansen": 20, "de Vries": 20, "van den Berg": 20, "van Dijk": 20, "Bakker": 20, "Janssen": 20, "Visser": 20, "Smit": 20,
+        "Meijer": 20,
+        "de Boer": 8, "Mulder": 8, "de Groot": 8, "Bos": 8, "Vos": 8, "Peters": 8, "Hendriks": 8, "van Leeuwen": 8, "Dekker": 8, "Brouwer": 8,
+        "de Wit": 8, "Dijkstra": 8, "Smits": 8, "de Graaf": 8, "van der Meer": 8, "van der Linden": 8, "Kok": 8, "Jacobs": 8, "de Haan": 8,
+        "Vermeer": 8, "van den Broek": 8, "de Bruin": 8, "de Bruijn": 8, "van der Heijden": 8, "Schouten": 8,
+        "van Beek": 3, "Willems": 3, "van Vliet": 3, "van der Veen": 3, "Hoekstra": 3, "Maas": 3, "Verhoeven": 3, "Koster": 3, "van Dam": 3,
+        "van der Wal": 3, "Prins": 3, "Blom": 3, "Huisman": 3, "Peeters": 3, "de Lange": 3, "van de Ven": 3, "Kuipers": 3, "van Loon": 3, "Post": 3,
+        "Wolters": 3, "van der Meulen": 3, "van der Horst": 3, "Scholten": 3, "Veenstra": 3, "van Wijk": 3
+      },
       "male": [
         "Adriaan",
         "Albert",
