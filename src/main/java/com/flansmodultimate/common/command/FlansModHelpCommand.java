@@ -22,7 +22,8 @@ public final class FlansModHelpCommand
     private static final List<Topic> TOPICS = List.of(
         new Topic("equipment", "Equipment & ammunition", "Attachments, ammunition and crafting ingredients", false,
             List.of(new Entry("attachments", "Show attachments for your held gun", "", "", false), new Entry("defaultammo", "Give compatible ammunition", "[amount]", "/defaultammo", true),
-                new Entry("rearm", "Load your vehicle or mounted gun", "[ammo]", "/rearm", true), new Entry("craftingparts", "Give ingredients for your held item", "", "/craftingparts", true),
+                new Entry("rearm", "Load your vehicle or mounted gun", "[ammo]", "/rearm", true), new Entry("rebuild", "Rebuild an NPC vehicle part using materials", "<target> <part>", "", false),
+                new Entry("craftingparts", "Give ingredients for your held item", "", "/craftingparts", true),
                 new Entry("digitalammo", "Manage players' digital ammunition", "get <players> | set/add <players> <type> <amount> | fill <players> <type>", "/digitalammo", true))),
         new Topic("teams", "Teams & loadouts", "Join teams, choose classes and view ranks", false,
             List.of(new Entry("teams help", "Browse team and round commands", "", "/teams help", false), new Entry("teams admin", "Open the operator command centre", "", "/teams admin", true),
@@ -32,7 +33,7 @@ public final class FlansModHelpCommand
         new Topic("admin", "Server administration", "Find entities, change physics and spawn particles", true,
             List.of(new Entry("entities list", "Find Flan entities", "radius <radius> | dimension <dimension> | world", "", true),
                 new Entry("entities remove", "Remove Flan entities", "[force] radius <radius> | [force] dimension <dimension> | [force] world", "", true),
-                new Entry("repair", "Fully repair every driveable part", "[target]", "", true),
+                new Entry("repair", "Fully repair driveables or vehicle NPCs; order NPC maintenance", "[target] | start <target>", "", true),
                 new Entry("physics", "Inspect dimension physics", "[gravity | drag] [<dimension> [<factor> | reset]]", "/flansphysics", true),
                 new Entry("particle", "Spawn a mod particle", "<name> [<pos> [<delta> <speed> <count> ...]]", "/fmparticle", true))),
         new Topic("debug", "Vehicle diagnostics", "Inspect physics, edit hitboxes and shoot points", true,

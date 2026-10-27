@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.api.parts.FlansRepairs;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
@@ -39,7 +40,7 @@ public final class DriveableRepairs
         int interval = ship ? DriveableRepairRules.shipInterval(crewFraction(driveable, type), totalCrew) : 20;
         int clock = clocks.getOrDefault(type, 0) + 1;
         if (clock >= interval)
-            driveable.repairPart(type, carrier ? Math.max(0.25F, part.getMaxHealth() * 0.015F) : DriveableRepairRules.timedAmount(type, part.getMaxHealth(), ship));
+            driveable.repairPart(type, carrier ? DriveableRepairRules.carrierAmount(part.getMaxHealth()) : DriveableRepairRules.timedAmount(type, part.getMaxHealth(), ship));
         clocks.put(type, clock >= interval ? 0 : clock);
     }
 
@@ -58,7 +59,7 @@ public final class DriveableRepairs
         if (++buoyancyClock >= DriveableRepairRules.buoyancyInterval(totalCrew))
             buoyancyClock = 0;
         if (buoyancyClock == 0)
-            driveable.repairPart(EnumDriveablePart.BUOYANCY, Math.max(0.25F, buoyancy.getMaxHealth() / 60F));
+            driveable.repairPart(EnumDriveablePart.BUOYANCY, DriveableRepairRules.buoyancyAmount(buoyancy.getMaxHealth()));
     }
 
     private static float crewFraction(Driveable driveable, EnumDriveablePart part)
@@ -85,9 +86,10 @@ public final class DriveableRepairs
         Driveable parent = Driveable.ofRiddenEntity(driveable.getVehicle());
         if (parent != null && parent != driveable && parent.canMountEntity())
             return true;
+        if (driveable.getVehicle() != null && FlansRepairs.isCarrier(driveable.getVehicle()))
+            return true;
         if (Math.abs(driveable.getThrottle()) >= 0.1F)
             return false;
-        return !driveable.level()
-            .getEntitiesOfClass(Driveable.class, driveable.getBoundingBox().inflate(64D, 8D, 64D), candidate -> candidate != driveable && candidate.supportsCarrierService(driveable)).isEmpty();
+        return !driveable.level().getEntities(driveable, driveable.getBoundingBox().inflate(64D, 8D, 64D), candidate -> FlansRepairs.supports(candidate, driveable)).isEmpty();
     }
 }

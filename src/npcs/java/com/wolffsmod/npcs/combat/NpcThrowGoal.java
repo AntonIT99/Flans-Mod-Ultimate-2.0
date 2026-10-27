@@ -72,6 +72,12 @@ public final class NpcThrowGoal extends Goal
     @Override
     public void tick()
     {
+        if (com.wolffsmod.npcs.sim.NpcRepairs.active(npc))
+        {
+            NpcThrowPresentation.clear(npc);
+            pending = null;
+            return;
+        }
         LivingEntity target = npc.getTarget();
         if (target == null)
             return;

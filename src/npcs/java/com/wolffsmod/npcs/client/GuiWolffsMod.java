@@ -413,6 +413,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Feature.FLAN_DAMAGE_TYPES, Need.off(Feature.ITEM_ARMOR)),
         Map.entry(Feature.PART_HEALTH, Need.on(Feature.PART_HITBOXES)),
         Map.entry(Feature.PART_EFFECTS, Need.on(Feature.PART_HEALTH)),
+        Map.entry(Feature.AUTOMATIC_REPAIRS, Need.on(Feature.PART_HEALTH)),
         Map.entry(Feature.SOLID_HITBOXES, Need.on(Feature.PART_HITBOXES)),
         Map.entry(Value.VISION_LIMIT, Need.choice(Value.SIGHT, NpcTuning.Sight.SEE_THROUGH, NpcTuning.Sight.SEE_AND_FIRE_THROUGH)),
         Map.entry(Value.FIRE_LIMIT, Need.choice(Value.SIGHT, NpcTuning.Sight.SEE_AND_FIRE_THROUGH)),
@@ -507,7 +508,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         PROTECTION(Section.PROTECTION, Scope.ALL,
             Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES),
             Tab.named(ARMOUR_TAB, Scope.MODELS, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR),
-            Tab.named(PARTS_TAB, Scope.DRIVEABLES, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES,
+            Tab.named(PARTS_TAB, Scope.DRIVEABLES, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES,
                 Feature.HITBOX_OUTLINES)),
         TACTICS(Section.BEHAVIOUR, Scope.ALL, Tab.of(Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS)),
         DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
@@ -1671,8 +1672,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             {
                 case MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM, PASSENGER_GUNS,
                     TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING -> Scope.MODELS;
-                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, UNMANNED_GUNS_FIRE, GUNNER_TARGETS, DRIVER_GUNS,
-                    MUZZLE_FLASHES -> Scope.DRIVEABLES;
+                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, AUTOMATIC_REPAIRS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, UNMANNED_GUNS_FIRE, GUNNER_TARGETS,
+                    DRIVER_GUNS, MUZZLE_FLASHES -> Scope.DRIVEABLES;
                 case HULL_ASSISTS_AIM, MANOEUVRE_TO_FIRE, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;

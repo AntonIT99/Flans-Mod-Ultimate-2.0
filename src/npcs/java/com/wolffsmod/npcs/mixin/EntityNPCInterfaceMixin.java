@@ -13,6 +13,7 @@ import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.api.equipment.IHeldItemPresentation;
 import com.flansmodultimate.api.equipment.IMechaEquipment;
 import com.flansmodultimate.api.parts.IFlanPartTarget;
+import com.flansmodultimate.api.parts.IFlanRepairTarget;
 import com.flansmodultimate.api.parts.IPartBody;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.*;
@@ -98,6 +99,7 @@ import java.util.UUID;
  * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.
  * A vehicle or mecha climbs steps as high as its model does and slows on grades its engine cannot take; a ground vehicle
  * stays on its wheels rather than jumping, and a mecha jumps as high as its model.</li>
+ * <li>Repairs share driveable rates in part HP, including tools, timed sessions, carrier servicing and resource-backed nanobots.</li>
  * <li>Solid part boxes replace the NPC's rectangular entity collision and pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.</li>
@@ -135,6 +137,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IEngineSoundSource,
         IMechaEquipment,
         IFlanPartTarget,
+        IFlanRepairTarget,
         NpcVehicleStateHolder,
         NpcThrowPresentation,
         NpcEquipmentRangedGoal.Holder,
@@ -509,7 +512,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         // An aircraft below its attack altitude attacks with nothing, whatever asks it to, nor does an NPC at the wheel, nor a
         // machine with nothing to strike with.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcModels.meleeless(npc))
+        if (NpcRepairs.active(npc) || wolffsmodnpcsVehicleState().getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcModels.meleeless(npc))
         {
             callback.setReturnValue(false);
             return;
@@ -650,8 +653,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
         // A gun whose turret has been shot off stays silent, and an NPC at the wheel fights with the driveable's weapons.
         // A throw being wound up beside the NPC's other attacks holds them meanwhile.
-        if (wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc)
-            || NpcThrowGoal.throwing(npc))
+        if (NpcRepairs.active(npc) || wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc)
+            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc))
         {
             callback.cancel();
             return;
@@ -712,6 +715,38 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public Optional<IPartBody> flansmodultimatePartBody()
     {
         return wolffsmodnpcsVehicleState().getParts().body();
+    }
+
+    @Override
+    public boolean flansmodultimateRepair(Vec3 origin, int amount)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcParts parts = wolffsmodnpcsVehicleState().getParts();
+        return parts.body().map(body -> parts.repairs().tool(npc, body, origin, amount)).orElse(false);
+    }
+
+    @Override
+    public boolean flansmodultimateRestore()
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcParts parts = wolffsmodnpcsVehicleState().getParts();
+        return parts.body().map(body -> parts.repairs().restore(npc, body)).orElse(false);
+    }
+
+    @Override
+    public boolean flansmodultimateStartRepair()
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcParts parts = wolffsmodnpcsVehicleState().getParts();
+        return parts.body().map(body -> parts.repairs().start(npc, body)).orElse(false);
+    }
+
+    @Override
+    public boolean flansmodultimateRebuild(net.minecraft.world.entity.player.Player player, String part)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        NpcParts parts = wolffsmodnpcsVehicleState().getParts();
+        return parts.body().map(body -> parts.repairs().rebuild(npc, body, player, part)).orElse(false);
     }
 
     @Override
@@ -834,13 +869,15 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (acting)
         {
             // Before the model state, which reads the heading these leave the NPC with.
-            state.getFlight().tick(npc);
+            if (!NpcRepairs.active(npc))
+                state.getFlight().tick(npc);
             state.getSubmarine().tick(npc);
         }
         state.tick(npc);
         if (server)
         {
             NpcMobility.tick(npc);
+            state.getParts().body().ifPresent(body -> state.getParts().repairs().shipMotion(npc, body));
             NpcPathDebug.tick(npc, state);
             NpcAimDebug.tick(npc, state);
         }
@@ -866,6 +903,11 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (level().isClientSide)
             return travel;
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (NpcRepairs.active(npc))
+        {
+            NpcRepairs.hold(npc);
+            return Vec3.ZERO;
+        }
         Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
         // A vehicle set to stand turns on the spot but goes nowhere, however its driving or flight would move it.
         if (wolffsmodnpcsVehicleState().isActive() && npc.ais.getMovingType() == WOLFFSMODNPCS_STANDING && !(npc.isVehicle() && npc.ais.mountControl))

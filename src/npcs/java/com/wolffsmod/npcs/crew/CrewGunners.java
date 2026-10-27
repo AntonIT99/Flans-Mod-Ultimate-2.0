@@ -133,7 +133,8 @@ public final class CrewGunners
     {
         boolean anyFire = options.enabled(Feature.MANNED_GUNS_FIRE) || options.enabled(Feature.UNMANNED_GUNS_FIRE);
         boolean allowed = anyFire && options.enabled(Feature.PASSENGER_GUNS) && !options.enabled(Feature.TURRET_LOCKED);
-        return allowed && target != null && target.isAlive() && target.level() == vehicle.level() && vehicle.isAlive() && !vehicle.isKilled() && !state.getFlight().holdsFire();
+        return !com.wolffsmod.npcs.sim.NpcRepairs.active(vehicle) && allowed && target != null && target.isAlive() && target.level() == vehicle.level() && vehicle.isAlive() && !vehicle.isKilled()
+            && !state.getFlight().holdsFire();
     }
 
     private void fire(Context context, EntityNPCInterface gunner, WeaponMount mount)

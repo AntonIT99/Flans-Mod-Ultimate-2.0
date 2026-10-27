@@ -58,13 +58,13 @@ class DriveableRepairsTest
         when(data.getParts()).thenReturn(Map.of(EnumDriveablePart.CORE, part));
         when(plane.canRepairPart(EnumDriveablePart.CORE)).thenReturn(true);
         when(plane.repairPart(eq(EnumDriveablePart.CORE), anyFloat())).thenAnswer(invocation -> part.repair(invocation.getArgument(1)) > 0F);
-        when(level.getEntitiesOfClass(eq(Driveable.class), any(), any())).thenReturn(List.of());
+        when(level.getEntities(eq(plane), any(), any())).thenReturn(List.of());
         DriveableRepairs repairs = new DriveableRepairs();
         for (int tick = 0; tick < 40; ++tick)
             repairs.tick(plane, false, false);
         assertEquals(900F, part.getHealth());
         Driveable carrier = mock(Driveable.class);
-        when(level.getEntitiesOfClass(eq(Driveable.class), any(), any())).thenReturn(List.of(carrier));
+        when(level.getEntities(eq(plane), any(), any())).thenReturn(List.of(carrier));
         for (int tick = 0; tick < 20; ++tick)
             repairs.tick(plane, false, false);
         assertEquals(915F, part.getHealth());

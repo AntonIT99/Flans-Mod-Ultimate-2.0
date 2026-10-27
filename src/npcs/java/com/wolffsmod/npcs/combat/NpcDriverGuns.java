@@ -72,7 +72,7 @@ public final class NpcDriverGuns
         if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread())
             return;
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        if (!options.enabled(Feature.DRIVER_GUNS))
+        if (NpcRepairs.active(npc) || !options.enabled(Feature.DRIVER_GUNS))
         {
             guns.clear();
             return;

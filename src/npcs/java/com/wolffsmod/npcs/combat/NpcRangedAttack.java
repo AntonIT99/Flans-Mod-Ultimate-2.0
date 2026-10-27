@@ -40,6 +40,8 @@ public final class NpcRangedAttack
 
     public static boolean fire(EntityNPCInterface npc, LivingEntity target, boolean highArc, int sequence)
     {
+        if (NpcRepairs.active(npc))
+            return true;
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
         ItemStack ammo = NpcAmmunition.modelTemplate(npc);
         if (!usesFlanProjectile(options, ammo))

@@ -5106,7 +5106,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (level().isClientSide || amount <= 0 || driveableData == null || destroyed)
             return false;
-        return findNearestDamagedPart(origin).map(part -> repairPart(part, amount)).orElse(false);
+        return findNearestDamagedPart(origin).map(part -> repairPart(part, DriveableRepairRules.toolAmount(driveableData.getPart(part).getMaxHealth(), amount))).orElse(false);
     }
 
     /** The share of its hit points the driveable has left over every part that has any, or empty before its data is known. */

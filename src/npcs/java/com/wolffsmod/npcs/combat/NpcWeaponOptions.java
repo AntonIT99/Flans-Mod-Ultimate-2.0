@@ -47,7 +47,9 @@ public final class NpcWeaponOptions
         /** A ground vehicle model whose definition has a complete real-world profile slows down climbing steep grades, as the vehicle does. */
         SLOPE_PHYSICS(true),
         /** A plane or helicopter model flies at its definition's speeds, climb rate and control rates. */
-        MODEL_FLIGHT(true);
+        MODEL_FLIGHT(true),
+        /** Timed maintenance, carrier servicing, buoyancy recovery and fuel-backed nanorepair; manual tool healing remains separate. */
+        AUTOMATIC_REPAIRS(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

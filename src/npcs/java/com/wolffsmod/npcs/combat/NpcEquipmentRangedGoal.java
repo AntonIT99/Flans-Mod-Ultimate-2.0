@@ -89,8 +89,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     public static boolean engages(EntityNPCInterface npc)
     {
         LivingEntity target = npc.getTarget();
-        return !NpcCrew.holdsFire(npc) && !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level() && !rushes(npc)
-            && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
+        return !com.wolffsmod.npcs.sim.NpcRepairs.active(npc) && !NpcCrew.holdsFire(npc) && !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive()
+            && target.level() == npc.level() && !rushes(npc) && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
     }
 
     /** A throwable gun with a melee attack closes in while it waits for its next throw. */
@@ -150,7 +150,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         // An aircraft below its attack altitude climbs first; it keeps its target and its aim meanwhile.
         // An NPC at the wheel of a Flan's driveable fights with the driveable's weapons.
-        if (NpcVehicleState.of(npc).getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
+        if (com.wolffsmod.npcs.sim.NpcRepairs.active(npc) || NpcVehicleState.of(npc).getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
         {
             cancelUse();
             continueReload(main);

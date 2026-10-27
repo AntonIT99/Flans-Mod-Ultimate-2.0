@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -383,6 +384,17 @@ public final class NpcAmmunition
     static ItemStack projectile(EntityNPCInterface npc)
     {
         return stack(npc.inventory.getProjectile());
+    }
+
+    /** Actual carried stacks for supplies and upgrades; mutating a returned stack mutates the NPC inventory. */
+    public static List<ItemStack> supplies(EntityNPCInterface npc)
+    {
+        List<ItemStack> stacks = new ArrayList<>();
+        stacks.add(npc.getMainHandItem());
+        stacks.add(npc.getOffhandItem());
+        stacks.add(projectile(npc));
+        stacks.addAll(inventory(npc));
+        return List.copyOf(stacks);
     }
 
     /** @return the inventory slots in order, empty stacks standing for empty slots */

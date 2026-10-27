@@ -52,6 +52,13 @@ public final class PartBodyCollisionHelper
         this.live = live;
     }
 
+    /** Tests support against the existing posed hull; proximity alone does not qualify. */
+    public boolean supports(Entity entity)
+    {
+        AABB box = entity.getBoundingBox();
+        return geometry != null && geometry.findSupport(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ) >= 0;
+    }
+
     Entity owner()
     {
         return owner;
@@ -221,6 +228,7 @@ public final class PartBodyCollisionHelper
         double dz = vector[2] - footZ;
         if (dx * dx + dy * dy + dz * dz > MAX_CARRY * MAX_CARRY)
             return;
+        Vec3 before = entity.position();
         DriveableCollisionWorld.moveIgnoringHulls(entity, dx, dy, dz);
         float yaw = current.carryYaw(shape);
         if (Math.abs(yaw) > 1.0E-3F)
@@ -228,12 +236,11 @@ public final class PartBodyCollisionHelper
             entity.setYRot(entity.getYRot() + yaw);
             entity.setYHeadRot(entity.getYHeadRot() + yaw);
             if (entity instanceof LivingEntity living)
-        Vec3 before = entity.position();
                 living.yBodyRot += yaw;
         }
-        entity.resetFallDistance();
-    }
-}
         else
             yaw = 0F;
         HullCarry.noteCarry(entity, entity.getX() - before.x, entity.getY() - before.y, entity.getZ() - before.z, yaw);
+        entity.resetFallDistance();
+    }
+}

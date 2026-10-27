@@ -357,7 +357,11 @@ public final class FlansEntityTypes
      */
     public static boolean repair(Entity entity, Vec3 from, int amount)
     {
-        return entity instanceof Driveable driveable && driveable.repairNearestPart(from, amount);
+        if (entity.level().isClientSide)
+            return false;
+        return entity instanceof Driveable driveable
+            ? driveable.repairNearestPart(from, amount)
+            : entity instanceof com.flansmodultimate.api.parts.IFlanRepairTarget target && target.flansmodultimateRepair(from, amount);
     }
 
     /**

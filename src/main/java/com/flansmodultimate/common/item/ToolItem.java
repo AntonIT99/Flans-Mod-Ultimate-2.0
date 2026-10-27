@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.api.parts.FlansRepairs;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.*;
@@ -105,12 +106,10 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
             if (level.isClientSide)
                 return InteractionResultHolder.success(stack);
 
-            Driveable driveable = pickDriveableTarget(level, player, start, end);
-            if (driveable != null && driveable.repairFromTool(player, configType.getHealAmount()))
+            Entity driveable = FlansRepairs.toolTarget(player, start, end).orElseGet(() -> pickDriveableTarget(level, player, start, end));
+            if (driveable != null && FlansRepairs.useTool(player, driveable, stack))
             {
-                player.getCooldowns().addCooldown(this, 20);
                 spawnRepairParticles(level, driveable);
-                consumeUse(stack, player);
                 return InteractionResultHolder.consume(stack);
             }
             return InteractionResultHolder.pass(stack);
@@ -154,7 +153,7 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
         PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());
     }
 
-    protected void spawnRepairParticles(Level level, Driveable target)
+    protected void spawnRepairParticles(Level level, Entity target)
     {
         Vec3 particlePos = target.position().add(0D, target.getBbHeight() * 0.5D, 0D);
         PacketHandler.sendToAllAround(new PacketFlak(particlePos, 5, FlanParticles.HEART), particlePos, 50.0D, level.dimension());

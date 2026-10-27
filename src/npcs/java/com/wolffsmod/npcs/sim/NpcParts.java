@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.parts.FlansPartBodies;
 import com.flansmodultimate.api.parts.IPartBody;
@@ -60,6 +61,7 @@ public final class NpcParts
     private float healthBefore = Float.NaN;
     private boolean wasKilled;
     private NpcPartEffects effects = NpcPartEffects.NONE;
+    private final NpcRepairs repairs = new NpcRepairs();
     private int sentSignature;
     private boolean sent;
 
@@ -73,6 +75,12 @@ public final class NpcParts
     public NpcPartEffects effects()
     {
         return effects;
+    }
+
+    /** Server repair state owned by this body. */
+    public NpcRepairs repairs()
+    {
+        return repairs;
     }
 
     // Tick
@@ -132,11 +140,19 @@ public final class NpcParts
         NpcVehicleState state = NpcVehicleState.of(npc);
         current.setPose(new PartBodyPose(NpcModels.world(npc, model, Vec3.ZERO, hullYaw), hullYaw, -state.getAttitudePitch(), state.getAttitudeBank(), NpcModels.scale(npc), turret));
         if (!npc.level().isClientSide)
-            serverTick(npc, current, options, FlanModelKind.of(type));
+            serverTick(npc, current, options, damageKind(type));
+    }
+
+    // A ship filed as a plane must sink by its compartments, not die as a shot-down aircraft.
+    @Nullable
+    static FlanModelKind damageKind(IContentType type)
+    {
+        return type instanceof IDriveableType driveable && driveable.isShip() ? FlanModelKind.VEHICLE : FlanModelKind.of(type);
     }
 
     private void drop()
     {
+        repairs.reset();
         body = null;
         bodyType = null;
         settingsApplied = false;
@@ -149,7 +165,12 @@ public final class NpcParts
         boolean killed = npc.isKilled();
         // A respawned NPC comes back whole.
         if (wasKilled && !killed)
+        {
             current.restore();
+            repairs.reset();
+        }
+        if (killed)
+            repairs.reset();
         wasKilled = killed;
         float share = share(npc, current);
         if (!options.enabled(Feature.PART_HEALTH) || share <= 0F)
@@ -170,6 +191,7 @@ public final class NpcParts
         if (current.tickFire() > 0F)
             npc.setHealth(coreBroken(current) ? 0F : current.getHealth() * share);
         reconcile(npc, current, share, options.enabled(Feature.PART_REPAIR));
+        repairs.tick(npc, current);
         effects = options.enabled(Feature.PART_EFFECTS) && kind != null ? NpcPartEffects.of(current.getParts(), kind) : NpcPartEffects.NONE;
         if (effects.shotDown())
             npc.setHealth(0F);
@@ -293,9 +315,10 @@ public final class NpcParts
         // A model without a core takes such damage as one pool; the parts follow on the next tick.
         if (share <= 0F || dealt <= 0F || current.getPart(part).filter(PartState::enabled).isEmpty())
             return;
+        repairs.damaged(part, npc.level().getGameTime());
         current.damage(part, dealt / share, source.is(DamageTypeTags.IS_FIRE));
         boolean fatal = coreBroken(current)
-            || options.enabled(Feature.PART_EFFECTS) && bodyType != null && FlanModelKind.of(bodyType) == FlanModelKind.PLANE && NpcPartEffects.of(current.getParts(), FlanModelKind.PLANE).shotDown();
+            || options.enabled(Feature.PART_EFFECTS) && bodyType != null && damageKind(bodyType) == FlanModelKind.PLANE && NpcPartEffects.of(current.getParts(), FlanModelKind.PLANE).shotDown();
         npc.setHealth(fatal ? 0F : Math.min(before, current.getHealth() * share));
     }
 

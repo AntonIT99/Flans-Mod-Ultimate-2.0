@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.parts.PartBox;
 import com.flansmodultimate.api.parts.PartState;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -17,10 +19,22 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class NpcPartsTest
 {
     private static final PartBox BOX = new PartBox(new AABB(0D, 0D, 0D, 1D, 1D, 1D), 10F, 1F);
+
+    @Test
+    void shipsFiledAsPlanesUseCompartmentDamageInsteadOfAircraftLossRules()
+    {
+        IDriveableType type = mock(IDriveableType.class);
+        when(type.getDriveableKind()).thenReturn(DriveableKind.PLANE);
+        when(type.isShip()).thenReturn(true);
+        assertEquals(FlanModelKind.VEHICLE, NpcParts.damageKind(type));
+        when(type.isShip()).thenReturn(false);
+        assertEquals(FlanModelKind.PLANE, NpcParts.damageKind(type));
+    }
 
     private static PartBody tank()
     {

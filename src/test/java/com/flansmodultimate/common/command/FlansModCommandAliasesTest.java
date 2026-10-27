@@ -28,6 +28,26 @@ import static org.mockito.Mockito.*;
 class FlansModCommandAliasesTest
 {
     @Test
+    void operatorCanRepairARiddenNpcAndMaterialRebuildingIsAvailableToPlayers() throws Exception
+    {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        RepairDriveableCommand.register(dispatcher);
+        CommandSourceStack operator = source(true);
+        var player = mock(net.minecraft.server.level.ServerPlayer.class);
+        var npc = mock(net.minecraft.world.entity.LivingEntity.class, withSettings().extraInterfaces(com.flansmodultimate.api.parts.IFlanRepairTarget.class));
+        var repairable = (com.flansmodultimate.api.parts.IFlanRepairTarget) npc;
+        when(operator.getPlayerOrException()).thenReturn(player);
+        when(player.getVehicle()).thenReturn(npc);
+        when(repairable.flansmodultimateRestore()).thenReturn(true);
+        assertEquals(1, dispatcher.execute("flansmodultimate repair", operator));
+        verify(repairable).flansmodultimateRestore();
+        when(repairable.flansmodultimateRestore()).thenReturn(false);
+        assertEquals(0, dispatcher.execute("flansmodultimate repair", operator));
+        assertThrows(CommandSyntaxException.class, () -> dispatcher.execute("flansmodultimate repair", source(false)));
+        assertTrue(dispatcher.getRoot().getChild("flansmodultimate").getChild("rebuild").canUse(source(false)));
+    }
+
+    @Test
     void repairRequiresOperatorAndRepairsTheRiddenDriveable() throws Exception
     {
         CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();

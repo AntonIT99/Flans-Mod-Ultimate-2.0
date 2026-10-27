@@ -32,6 +32,16 @@ public final class DriveableRepairRules
         return Math.round(60F - 40F * (0.25F * fraction(localCrew) + 0.75F * fraction(totalCrew)));
     }
 
+    public static float carrierAmount(float maximum)
+    {
+        return Math.max(0.25F, maximum * 0.015F);
+    }
+
+    public static float buoyancyAmount(float maximum)
+    {
+        return Math.max(0.25F, maximum / 60F);
+    }
+
     public static int buoyancyInterval(float totalCrew)
     {
         return Math.round(60F - 40F * fraction(totalCrew));

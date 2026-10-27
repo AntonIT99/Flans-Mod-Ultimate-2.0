@@ -385,6 +385,55 @@ public final class PartBody implements IPartBody
         }
     }
 
+    public boolean canRepair(String name)
+    {
+        DriveablePart part = find(name);
+        if (part == null || !enabled(part) || part.getMaxHealth() <= 0F || part.getHealth() >= part.getMaxHealth())
+            return false;
+        for (EnumDriveablePart parent : part.getType().getParents())
+            if (!isIntact(parent))
+                return false;
+        return true;
+    }
+
+    /** Restores definition HP and clears fire only after validating the part's dependency chain. */
+    public float repair(String name, float amount, boolean rebuild)
+    {
+        DriveablePart part = find(name);
+        if (!canRepair(name) || part == null || !Float.isFinite(amount) || amount <= 0F || !rebuild && part.isDestroyed())
+            return 0F;
+        float gained = part.repair(amount);
+        if (gained > 0F)
+            part.extinguish();
+        return gained;
+    }
+
+    /** Nearest repairable part, using the same part-to-hull transform as projectile hits. */
+    public Optional<PartState> nearestRepairPart(Vec3 origin, boolean rebuild)
+    {
+        return parts.values().stream().filter(part -> canRepair(part.getType().getShortName()) && (rebuild || !part.isDestroyed()))
+            .min(Comparator.comparingDouble(part -> repairDistanceSqr(part, origin))).map(this::state);
+    }
+
+    /** Squared world-block distance to the nearest repairable part's surface, including destroyed parts. */
+    public double repairDistanceSqr(Vec3 origin)
+    {
+        return parts.values().stream().filter(part -> canRepair(part.getType().getShortName())).mapToDouble(part -> repairDistanceSqr(part, origin)).min().orElse(Double.POSITIVE_INFINITY);
+    }
+
+    private double repairDistanceSqr(DriveablePart part, Vec3 origin)
+    {
+        var surface = DriveableProjectileCollision.closestSurface(partBoxModelLocal(part), toLocal(origin), part.getType(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset);
+        Vec3 hull = DriveableProjectileCollision.partPointToHullLocal(surface.position(), part.getType(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset);
+        return toWorld(hull).distanceToSqr(origin);
+    }
+
+    /** Whether the already posed solid hull supports another entity. */
+    public boolean supports(Entity entity)
+    {
+        return solid && collision != null && collision.supports(entity);
+    }
+
     @Override
     public void setHealth(String name, float health)
     {
