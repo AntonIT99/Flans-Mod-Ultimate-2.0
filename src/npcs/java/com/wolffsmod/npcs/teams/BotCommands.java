@@ -253,6 +253,8 @@ public final class BotCommands
         change.accept(settings);
         FlansTeams.setRoundExtensionData(round, BotSettings.KEY, settings.save());
         context.getSource().sendSuccess(() -> message, true);
+        if (settings.isEnabled() && BotEditor.fielded(round, settings) == 0)
+            context.getSource().sendSuccess(() -> Component.translatable("wolffsmodnpcs.editor.nothing_fielded").withStyle(ChatFormatting.YELLOW), false);
         return 1;
     }
 

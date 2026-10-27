@@ -123,6 +123,8 @@ final class BotsPage extends BattlePage
         int y = view.getTop() + 18 + 2 * ROW + 2;
         if (!round.configured())
             y += paragraph(view, graphics, tr("bots.not_configured"), x, y, width, MUTED) + 3;
+        else if (round.enabled() && round.total() == 0)
+            y += paragraph(view, graphics, tr("bots.nothing_fielded"), x, y, width, ACCENT) + 3;
         if (round.current() && !data.live().isEmpty())
         {
             label(view, graphics, tr("bots.live"), x, y, width, ACCENT);

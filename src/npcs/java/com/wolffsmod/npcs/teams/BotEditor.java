@@ -129,6 +129,9 @@ public final class BotEditor
     public static List<Component> problems(ITeamsRound round, BotSettings settings)
     {
         List<Component> problems = new ArrayList<>();
+        // Bots switched on with no counts, as the first switch of a round leaves them, field nobody.
+        if (settings.isEnabled() && fielded(round, settings) == 0)
+            problems.add(Component.translatable(PREFIX + "nothing_fielded"));
         for (ITeam team : round.getTeams())
         {
             BotSettings.TeamForce force = settings.getTeams().get(team.getShortName());
@@ -152,6 +155,30 @@ public final class BotEditor
             crewProblems(name, classes, force, problems);
         }
         return problems;
+    }
+
+    /**
+     * Bots a round's settings field at full strength before any player joins: loose infantry as the mode plans it, the
+     * members of each squad and each vehicle.
+     */
+    public static int fielded(ITeamsRound round, BotSettings settings)
+    {
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        List<BotSettings.TeamForce> forces = new ArrayList<>();
+        for (ITeam team : round.getTeams())
+        {
+            BotSettings.TeamForce force = settings.getTeams().getOrDefault(team.getShortName(), new BotSettings.TeamForce());
+            counts.put(team.getShortName(), force.getCount());
+            forces.add(force);
+        }
+        int bots = ForcePlanner.infantryTargets(settings.getMode(), settings.getTotal(), counts, Map.of()).values().stream().mapToInt(Integer::intValue).sum();
+        for (BotSettings.TeamForce force : forces)
+        {
+            for (BotSettings.SquadEntry entry : force.getSquads())
+                bots += entry.count() * SquadTemplates.get().find(entry.template()).map(template -> template.roster().size()).orElse(0);
+            bots += force.getVehicles().stream().mapToInt(BotSettings.VehicleEntry::count).sum();
+        }
+        return bots;
     }
 
     /** Crew classes the team does not offer, for which a class is picked by weight instead. */

@@ -379,7 +379,7 @@ public final class BattlesSection
             entry.put(TEAMS, strings(round.getTeams().stream().map(ITeam::getShortName).toList()));
             entry.putBoolean(CONFIGURED, !settingsTag.isEmpty());
             entry.putBoolean(ENABLED, settings.isEnabled());
-            entry.putInt(TOTAL, settings.getTotal());
+            entry.putInt(TOTAL, BotEditor.fielded(round, settings));
             entry.putString(MODE, BotCommands.lower(settings.getMode()));
             entry.putString(DIFFICULTY, BotCommands.lower(settings.getDifficulty()));
             entry.putInt(MARKERS, markers.of(round.getMapId()).size());
