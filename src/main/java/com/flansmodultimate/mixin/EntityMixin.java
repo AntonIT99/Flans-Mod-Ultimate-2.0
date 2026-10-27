@@ -20,13 +20,23 @@ import net.minecraft.world.phys.*;
  * </p>
  *
  * <p>
+ * Keeps the {@link HullCarry} record of an entity a moving hull carries, and moves its stored previous position back
+ * to before a carry that came ahead of its own tick, so the client interpolates the carry instead of stepping it.
+ * </p>
+ *
+ * <p>
  * The owning Flan NPC is culled before its detached Flan model renderer is called.
  * </p>
  */
 @Mixin(Entity.class)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
-public abstract class EntityMixin
+public abstract class EntityMixin implements HullCarriedEntity
 {
+    @Unique
+    private HullCarry flansmodultimateHullCarry;
+
+    // Hull collision
+
     @Inject(method = "collide(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", at = @At("HEAD"), cancellable = true)
     private void flansmodultimateCollideWithDriveableHulls(Vec3 movement, CallbackInfoReturnable<Vec3> callback)
     {
@@ -34,6 +44,31 @@ public abstract class EntityMixin
         if (result != null)
             callback.setReturnValue(result);
     }
+
+    // Carrying by hulls
+
+    @Override
+    public HullCarry flansmodultimateHullCarry()
+    {
+        if (flansmodultimateHullCarry == null)
+            flansmodultimateHullCarry = new HullCarry();
+        return flansmodultimateHullCarry;
+    }
+
+    @Override
+    public HullCarry flansmodultimateHullCarryIfPresent()
+    {
+        return flansmodultimateHullCarry;
+    }
+
+    @Inject(method = "setOldPosAndRot", at = @At("TAIL"))
+    private void flansmodultimateKeepHullCarryInterpolated(CallbackInfo callback)
+    {
+        if (flansmodultimateHullCarry != null)
+            flansmodultimateHullCarry.startTick((Entity) (Object) this);
+    }
+
+    // Rendering
 
     // shouldRenderAtSqrDistance is client-only and stripped from the dedicated server, hence require = 0.
     @Inject(method = "shouldRenderAtSqrDistance", at = @At("HEAD"), cancellable = true, require = 0)

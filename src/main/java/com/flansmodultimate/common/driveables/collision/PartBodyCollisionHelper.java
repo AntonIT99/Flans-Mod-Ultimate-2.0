@@ -228,8 +228,12 @@ public final class PartBodyCollisionHelper
             entity.setYRot(entity.getYRot() + yaw);
             entity.setYHeadRot(entity.getYHeadRot() + yaw);
             if (entity instanceof LivingEntity living)
+        Vec3 before = entity.position();
                 living.yBodyRot += yaw;
         }
         entity.resetFallDistance();
     }
 }
+        else
+            yaw = 0F;
+        HullCarry.noteCarry(entity, entity.getX() - before.x, entity.getY() - before.y, entity.getZ() - before.z, yaw);

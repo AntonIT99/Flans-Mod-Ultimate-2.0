@@ -28,6 +28,7 @@
       "ItemInHandLayerMixin",
       "KeyMappingConflictMixin",
       "LivingEntityNameTagRangeMixin",
+      "LocalPlayerMixin",
       "ModMismatchDisconnectedScreenAccessor",
       "MountedRiderTurnMixin",
       "ParticleAccessor",

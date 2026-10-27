@@ -296,6 +296,7 @@ public final class DriveableCollisionHelper
         double lengthSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
         if (!(lengthSquared <= MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA))
             return;
+        Vec3 before = entity.position();
         if (lengthSquared > 1.0E-12D)
             DriveableCollisionWorld.moveIgnoringHulls(entity, deltaX, deltaY, deltaZ);
         float yaw = geometry.carryYaw(shape);
@@ -306,6 +307,9 @@ public final class DriveableCollisionHelper
             if (entity instanceof LivingEntity living)
                 living.yBodyRot += yaw;
         }
+        else
+            yaw = 0F;
+        HullCarry.noteCarry(entity, entity.getX() - before.x, entity.getY() - before.y, entity.getZ() - before.z, yaw);
         entity.resetFallDistance();
     }
 
