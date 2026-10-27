@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.sim;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.sim.NpcVehicleState.GunReach;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +17,8 @@ import java.util.OptionalDouble;
 /**
  * Takes a ground vehicle NPC to where its main weapon has a shot at its target. One whose gun cannot lower itself onto a
  * target close below it, or raise itself onto one close above, backs away until the shot lies within its elevation, in
- * reverse when the way back lies behind it. One whose line of fire is blocked drives on toward its target, round what
+ * reverse when the way back lies behind it; so does one whose target stands under its barrel, nearer the turret than the
+ * muzzle, where no elevation reaches it. One whose line of fire is blocked drives on toward its target, round what
  * blocks it as its path leads, until the line is clear. Whatever moves the NPC in a fight asks here before it stands it
  * still or closes it in. One per NPC, kept by its {@link NpcVehicleState}. Server thread.
  */
@@ -77,15 +79,18 @@ public final class NpcFiringPosition
         if (origin.isEmpty())
             return false;
         Vec3 aim = NpcVehicleState.aimPoint(target);
+        double range = npc.stats.ranged.getRange();
+        Optional<GunReach> gun = state.gunReach(npc);
+        // A turret's gun elevates about its pivot, so the shot it can lay runs from there rather than from where the muzzle swings to.
+        Vec3 from = gun.filter(GunReach::elevates).map(GunReach::pivot).orElse(origin.get());
         Optional<Float> limit = state.elevationLimit();
-        if (limit.isPresent())
+        OptionalDouble back = limit.isPresent() ? backDistance(horizontal(from, aim), from.y - aim.y, limit.get(), range) : OptionalDouble.empty();
+        // A target under the barrel is out of reach whichever way the gun points, and a shot aimed from the muzzle swings it round after it.
+        OptionalDouble clearOfBarrel = gun.map(reach -> reachDistance(horizontal(reach.pivot(), aim), reach.reach(), range)).orElse(OptionalDouble.empty());
+        if (back.isPresent() || clearOfBarrel.isPresent())
         {
-            OptionalDouble back = backDistance(horizontal(origin.get(), aim), origin.get().y - aim.y, limit.get(), npc.stats.ranged.getRange());
-            if (back.isPresent())
-            {
-                backAway(npc, state, target, back.getAsDouble());
-                return true;
-            }
+            backAway(npc, state, target, Math.max(back.orElse(0D), clearOfBarrel.orElse(0D)));
+            return true;
         }
         // A shell lobbed over what stands in the way needs no clear line.
         if (clear(npc, target, origin.get(), aim) || NpcVehicleState.indirect(npc, target))
@@ -116,6 +121,21 @@ public final class NpcFiringPosition
         double back = needed + BACK_MARGIN - horizontal;
         // A shot that should already be within reach misses it for its arc or the hull's tilt, which backing away does not mend.
         return needed > range || back <= 0D ? OptionalDouble.empty() : OptionalDouble.of(back);
+    }
+
+    /**
+     * @param horizontal
+     *            blocks across the ground from the point the gun turns about to the point aimed at
+     * @param reach
+     *            blocks across the ground from that point to the muzzles
+     * @param range
+     *            the NPC's firing range
+     * @return blocks the vehicle has to back away for the point aimed at to lie beyond its muzzles; empty when it already
+     *         does, or would only from beyond the firing range
+     */
+    static OptionalDouble reachDistance(double horizontal, double reach, double range)
+    {
+        return horizontal >= reach || reach > range ? OptionalDouble.empty() : OptionalDouble.of(reach + BACK_MARGIN - horizontal);
     }
 
     /** Backs the vehicle away from its target, or as near that way as it finds a path, far enough for its gun to reach it. */

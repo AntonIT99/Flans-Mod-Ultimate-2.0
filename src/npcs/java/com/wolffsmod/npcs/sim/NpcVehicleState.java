@@ -178,9 +178,17 @@ public final class NpcVehicleState
     private float previousAttitudePitch;
     private float previousAttitudeBank;
 
-    /** What the selected model offers, resolved once per model and weapon bank. */
+    /**
+     * What the selected model offers, resolved once per model and weapon bank.
+     *
+     * @param barrel
+     *            the middle of the main weapon's muzzles at rest, or null without any
+     * @param pivot
+     *            the point the main weapon turns about: where a turret turns and elevates it, or the middle of the hull at the
+     *            height of a gun fixed to it; null without muzzles
+     */
     private record Layout(IContentType model, FlanModelKind kind, boolean secondary, List<WeaponMount> mounts, @Nullable WeaponMount driver, boolean turreted, @Nullable Vec3 muzzle, double reach,
-        double top)
+        double top, @Nullable Vec3 barrel, @Nullable Vec3 pivot)
     {
         static Layout of(IContentType model, FlanModelKind kind, boolean secondary)
         {
@@ -193,7 +201,26 @@ public final class NpcVehicleState
                 turreted = rest.get(index).offset().distanceToSqr(turned.get(index).offset()) > 1.0E-6D;
             Optional<AABB> bounds = model instanceof IDriveableType driveable ? driveable.getBounds() : Optional.empty();
             double reach = bounds.map(box -> Math.max(Math.max(Math.abs(box.minX), Math.abs(box.maxX)), Math.max(Math.abs(box.minZ), Math.abs(box.maxZ)))).orElse(0D);
-            return new Layout(model, kind, secondary, mounts, driver, turreted, rest.isEmpty() ? null : rest.get(0).offset(), reach, bounds.map(box -> box.maxY).orElse(0D));
+            Vec3 restMuzzles = middle(rest);
+            return new Layout(model, kind, secondary, mounts, driver, turreted, rest.isEmpty() ? null : rest.get(0).offset(), reach, bounds.map(box -> box.maxY).orElse(0D), restMuzzles,
+                restMuzzles == null ? null : pivot(model, secondary, turreted, restMuzzles));
+        }
+
+        /**
+         * @return where a turret turns and elevates its gun: halfway between its muzzles at rest and turned half round, at the
+         *         height halfway between them pitched straight up and straight down; the middle of the hull, at the
+         *         muzzles' height, for a gun fixed to it
+         */
+        private static Vec3 pivot(IContentType model, boolean secondary, boolean turreted, Vec3 rest)
+        {
+            if (!turreted)
+                return new Vec3(0D, rest.y, 0D);
+            Vec3 behind = middle(FlansProjectiles.getMuzzles(model, secondary, 0, false, new MountAim(180F, 0F)));
+            Vec3 up = middle(FlansProjectiles.getMuzzles(model, secondary, 0, false, new MountAim(0F, -90F)));
+            Vec3 down = middle(FlansProjectiles.getMuzzles(model, secondary, 0, false, new MountAim(0F, 90F)));
+            if (behind == null || up == null || down == null)
+                return rest;
+            return new Vec3((rest.x + behind.x) / 2D, (up.y + down.y) / 2D, (rest.z + behind.z) / 2D);
         }
 
         /** @return whether the model drives along its hull: a vehicle, or a ship a content pack filed as a plane */
@@ -725,13 +752,20 @@ public final class NpcVehicleState
         if (model == null || !options.enabled(Feature.MODEL_MUZZLES))
             return npc.getEyePosition();
         MountAim aim = options.enabled(Feature.TURRET_MUZZLES) ? turretAim() : MountAim.REST;
-        List<WeaponMuzzle> muzzles = FlansProjectiles.getMuzzles(current.model(), current.secondary(), 0, false, aim);
+        Vec3 middle = middle(FlansProjectiles.getMuzzles(current.model(), current.secondary(), 0, false, aim));
+        return middle == null ? npc.getEyePosition() : NpcModels.world(npc, model, middle, hullYaw);
+    }
+
+    /** @return the middle of the muzzles, in their own frame; null without any */
+    @Nullable
+    private static Vec3 middle(List<WeaponMuzzle> muzzles)
+    {
         if (muzzles.isEmpty())
-            return npc.getEyePosition();
+            return null;
         Vec3 sum = Vec3.ZERO;
         for (WeaponMuzzle muzzle : muzzles)
             sum = sum.add(muzzle.offset());
-        return NpcModels.world(npc, model, sum.scale(1D / muzzles.size()), hullYaw);
+        return sum.scale(1D / muzzles.size());
     }
 
     /** Whether Custom NPCs' ranged AI fires at the target along the high arc, as it decides when it pulls the trigger. */
@@ -788,6 +822,34 @@ public final class NpcVehicleState
     public Optional<Float> elevationLimit()
     {
         return Float.isNaN(reachablePitch) ? Optional.empty() : Optional.of(reachablePitch);
+    }
+
+    /**
+     * The point the main weapon turns about, in the world, and how far across the ground its rounds leave from it. Its rounds
+     * leave from its muzzles, so nothing nearer the pivot than they are lies in front of the barrel, wherever it points.
+     *
+     * @param pivot
+     *            where a turret turns and elevates its gun, or the middle of the hull at the height of a gun fixed to it
+     * @param reach
+     *            blocks across the ground from the pivot to the muzzles
+     * @param elevates
+     *            whether the gun elevates about the pivot; one fixed to the hull lies level from its muzzles
+     */
+    public record GunReach(Vec3 pivot, double reach, boolean elevates)
+    {}
+
+    /** @return the point the main weapon turns about and its reach; empty while its rounds do not leave from muzzles that turn with it */
+    public Optional<GunReach> gunReach(EntityNPCInterface npc)
+    {
+        Layout current = active ? layout : null;
+        FlanModelEntity model = NpcModels.flan(npc);
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (current == null || model == null || current.barrel() == null || current.pivot() == null || !options.enabled(Feature.MODEL_MUZZLES)
+            || current.turreted() && !options.enabled(Feature.TURRET_MUZZLES))
+            return Optional.empty();
+        Vec3 pivot = NpcModels.world(npc, model, current.pivot(), hullYaw);
+        Vec3 muzzles = NpcModels.world(npc, model, current.barrel(), hullYaw);
+        return Optional.of(new GunReach(pivot, Math.sqrt(Mth.square(muzzles.x - pivot.x) + Mth.square(muzzles.z - pivot.z)), current.turreted()));
     }
 
     /** @return where a bomb let go now would have to come down to meet the target; empty while the NPC bombs nothing */

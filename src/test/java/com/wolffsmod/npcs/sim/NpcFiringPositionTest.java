@@ -64,4 +64,18 @@ class NpcFiringPositionTest
         // Nor is one it would only reach from beyond its firing range.
         assertTrue(NpcFiringPosition.backDistance(2D, 20D, 10F, 64D).isEmpty());
     }
+
+    @Test
+    void aVehicleBacksAwayFromATargetUnderItsBarrelUntilTheTargetLiesBeyondTheMuzzle()
+    {
+        // Two blocks from the turret, under a barrel reaching three: it backs off to a margin beyond the muzzle.
+        OptionalDouble back = NpcFiringPosition.reachDistance(2D, 3D, 64D);
+        assertTrue(back.isPresent());
+        assertEquals(3D + NpcFiringPosition.BACK_MARGIN - 2D, back.getAsDouble(), 1.0E-6D);
+        // A target already beyond the muzzle, or a gun whose rounds leave from its pivot, needs no room.
+        assertTrue(NpcFiringPosition.reachDistance(3.5D, 3D, 64D).isEmpty());
+        assertTrue(NpcFiringPosition.reachDistance(0D, 0D, 64D).isEmpty());
+        // A barrel longer than the firing range is not backed away from.
+        assertTrue(NpcFiringPosition.reachDistance(2D, 3D, 2.5D).isEmpty());
+    }
 }

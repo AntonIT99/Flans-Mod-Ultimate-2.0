@@ -44,8 +44,8 @@ import java.util.Optional;
  * <li>The trigger waits, without spending its cooldown or its burst, until a model's gun is on target and until nothing the NPC
  * must not fire through is in the way; meanwhile the NPC keeps closing in.</li>
  * <li>With a tactic of the mod's own, the tactic moves the NPC while this goal fires, and learns of its reloads and pauses.</li>
- * <li>A ground vehicle whose main weapon has no shot from where it stands, too close for its elevation or with its line of fire
- * blocked, drives to where it has one rather than standing or only closing in.</li>
+ * <li>A ground vehicle whose main weapon has no shot from where it stands, too close for its elevation or its barrel, or with its
+ * line of fire blocked, drives to where it has one rather than standing or only closing in.</li>
  * </ul>
  */
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
