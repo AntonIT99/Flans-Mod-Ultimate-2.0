@@ -11,6 +11,8 @@ import noppes.npcs.shared.client.gui.components.*;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 
+import java.util.function.Consumer;
+
 /** Explicit naming actions and per-NPC gender and clone preferences in the class model picker. */
 final class SoldierNameMenu extends GuiBasic
 {
@@ -32,8 +34,8 @@ final class SoldierNameMenu extends GuiBasic
     {
         super.init();
         addLabel(new GuiLabel(0, PREFIX + "menu", guiLeft + 10, guiTop + 10));
-        addMirror(6, "display_name", 30, NpcDisplayNames.name(picker.npc.display).getString());
-        addMirror(7, "display_title", 56, NpcDisplayNames.title(picker.npc.display).getString());
+        addMirror(6, "display_name", 30, NpcDisplayNames.name(picker.npc.display).getString(), value -> NpcDisplayNames.literalName(picker.npc.display, value));
+        addMirror(7, "display_title", 56, NpcDisplayNames.title(picker.npc.display).getString(), value -> NpcDisplayNames.literalTitle(picker.npc.display, value));
         String[] labels = {"class_name", "class_title", "real_name"};
         for (int row = 0; row < labels.length; row++)
         {
@@ -62,7 +64,7 @@ final class SoldierNameMenu extends GuiBasic
         getButton(5).setTooltip(Tooltip.create(Component.translatable(PREFIX + "done.help")));
     }
 
-    private void addMirror(int id, String key, int top, String value)
+    private void addMirror(int id, String key, int top, String value, Consumer<String> edit)
     {
         Tooltip help = Tooltip.create(Component.translatable(PREFIX + key + ".help"));
         GuiLabel label = new GuiLabel(id, PREFIX + key, guiLeft + 10, guiTop + top + 5);
@@ -70,8 +72,14 @@ final class SoldierNameMenu extends GuiBasic
         addLabel(label);
         GuiTextFieldNop field = new GuiTextFieldNop(id, this, guiLeft + 72, guiTop + top, 278, 20, "");
         field.setMaxLength(32767);
-        field.setEditable(false);
-        field.setTextColorUneditable(0xE0E0E0);
+        field.setResponder(text ->
+        {
+            if (field.isFocused())
+            {
+                edit.accept(text);
+                picker.save();
+            }
+        });
         field.setTooltip(help);
         addTextField(field);
         updateMirror(id, value);
@@ -93,7 +101,7 @@ final class SoldierNameMenu extends GuiBasic
     private void updateMirror(int id, String value)
     {
         GuiTextFieldNop field = getTextField(id);
-        if (field != null && !field.getValue().equals(value))
+        if (field != null && !field.isFocused() && !field.getValue().equals(value))
         {
             field.setValue(value);
             field.moveCursorToStart();

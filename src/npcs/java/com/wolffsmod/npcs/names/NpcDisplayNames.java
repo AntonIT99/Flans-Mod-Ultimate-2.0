@@ -41,6 +41,13 @@ public final class NpcDisplayNames
         ((Holder) display).wolffsmodnpcsNamesChanged();
     }
 
+    public static void literalTitle(DataDisplay display, String title)
+    {
+        display.setTitle(title);
+        of(display).title = null;
+        ((Holder) display).wolffsmodnpcsNamesChanged();
+    }
+
     public static void bindName(DataDisplay display, IContentType type)
     {
         display.setName(type.getName());
