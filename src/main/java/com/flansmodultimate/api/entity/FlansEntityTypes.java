@@ -8,14 +8,17 @@ package com.flansmodultimate.api.entity;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.AircraftMode;
 import com.flansmodultimate.api.driveables.DriveableAttitude;
+import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.flansmodultimate.api.driveables.GroundHandling;
 import com.flansmodultimate.api.driveables.GroundPropulsion;
 import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.MechaMobility;
 import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
+import com.flansmodultimate.common.types.DriveableMobilityProfiles;
 import com.flansmodultimate.common.types.EntityTypePropertySupport;
 import com.flansmodultimate.common.types.GroundPropulsionProfiles;
 import org.jetbrains.annotations.ApiStatus;
@@ -66,7 +69,7 @@ public final class FlansEntityTypes
 
     /**
      * Reads how a vehicle turns and reverses in water, where a legacy wheeled hull steers on a circle its turn speeds set.
-     * Either side after content loading.
+     * A ship filed as a plane only reports her astern share. Either side after content loading.
      *
      * @param type
      *            selected definition
@@ -79,15 +82,56 @@ public final class FlansEntityTypes
 
     /**
      * Reads how a vehicle speeds up, tops out and slows down in water, as {@link #getGroundPropulsion} does on land: at
-     * {@code MaxThrottleInWater}, with the grip and traction it keeps in water. Either side after content loading.
+     * {@code MaxThrottleInWater}, with the grip and traction it keeps in water. A ship filed as a plane is read from her
+     * marine profile, as she sails under it. Either side after content loading.
      *
      * @param type
      *            selected definition
-     * @return the vehicle's longitudinal response in water, or empty for anything but a vehicle with a usable top speed
+     * @return the vehicle's longitudinal response in water, or empty for anything but a vehicle or a
+     *         ship with a usable top speed
      */
     public static Optional<GroundPropulsion> getWaterPropulsion(IContentType type)
     {
         return GroundPropulsionProfiles.of(type, true);
+    }
+
+    /**
+     * Reads how a mecha walks when a player drives it, without creating an entity. Either side after content loading.
+     *
+     * @param type
+     *            selected definition
+     * @return the mecha's walking speed and authored jump, or empty for anything but a mecha
+     */
+    public static Optional<MechaMobility> getMechaMobility(IContentType type)
+    {
+        return DriveableMobilityProfiles.mecha(type);
+    }
+
+    /**
+     * Reads the highest step a driveable climbs without jumping, as its entity does: a vehicle's wheel step height, never
+     * below one block for one placeable on land, or a mecha's {@code StepHeight}. Either side after content loading.
+     *
+     * @param type
+     *            selected definition
+     * @return the step height in blocks, or empty for anything but a vehicle or mecha
+     */
+    public static OptionalDouble getStepHeight(IContentType type)
+    {
+        return DriveableMobilityProfiles.stepHeight(type);
+    }
+
+    /**
+     * Reads how a plane or helicopter flies when a player flies it, without creating an entity, so that something flying
+     * in its place can match it. Either side after content loading. Aircraft that fly freely in six degrees are not
+     * covered.
+     *
+     * @param type
+     *            selected definition
+     * @return the aircraft's flight performance, or empty for any other definition
+     */
+    public static Optional<FlightPerformance> getFlightPerformance(IContentType type)
+    {
+        return DriveableMobilityProfiles.flight(type);
     }
 
     /**

@@ -65,6 +65,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.UUID;
 
 /**
@@ -94,7 +95,9 @@ import java.util.UUID;
  * <li>Armor potion effects can be disabled independently of protection. Flan armor invisibility hides the NPC's body on the client, keeping its armor drawn.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
- * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.</li>
+ * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.
+ * A vehicle or mecha climbs steps as high as its model does and slows on grades its engine cannot take; a ground vehicle
+ * stays on its wheels rather than jumping, and a mecha jumps as high as its model.</li>
  * <li>Solid part boxes replace the NPC's rectangular entity collision and pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.</li>
@@ -861,8 +864,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return travel;
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
-        // Broken tracks, wheels and engines slow the NPC down or stop it.
-        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().getParts().effects().mobility();
+        // Broken tracks, wheels and engines slow the NPC down or stop it, and so does a grade too steep for its engine.
+        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().getParts().effects().mobility() * wolffsmodnpcsVehicleState().climbFactor(npc);
         return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
     }
 
@@ -870,6 +873,31 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsWaterSpeed(CallbackInfoReturnable<Float> callback)
     {
         callback.setReturnValue(NpcMobility.waterSlowDown((EntityNPCInterface) (Object) this, callback.getReturnValueF()));
+    }
+
+    // Custom NPCs sets the step height field on every move; Forge's getStepHeight() and the path search read this.
+    @Override
+    @SuppressWarnings("deprecation")
+    public float maxUpStep()
+    {
+        // Asked for while the entity is still being constructed, before it has settings to look at.
+        if (((EntityNPCInterface) (Object) this).stats == null)
+            return super.maxUpStep();
+        OptionalDouble step = NpcMobility.stepHeight((EntityNPCInterface) (Object) this);
+        return step.isPresent() ? (float) step.getAsDouble() : super.maxUpStep();
+    }
+
+    @Override
+    protected float getJumpPower()
+    {
+        return NpcMobility.jumpPower((EntityNPCInterface) (Object) this, super.getJumpPower());
+    }
+
+    @Override
+    protected void jumpFromGround()
+    {
+        if (!NpcMobility.keepsWheelsDown((EntityNPCInterface) (Object) this))
+            super.jumpFromGround();
     }
 
     @Override

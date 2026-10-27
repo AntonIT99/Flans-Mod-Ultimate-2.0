@@ -142,7 +142,15 @@ public final class NpcTuning
         /** Index into {@link Throwing}: how the NPC uses the native throwables it carries. */
         NATIVE_THROWABLE_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1),
         /** Blocks from every player beyond which the NPC looks for no targets and lets its target go; 0 never. */
-        DORMANT_RANGE(0, 0, 512);
+        DORMANT_RANGE(0, 0, 512),
+        /** Highest step, in tenths of a block, a vehicle or mecha model climbs without jumping; 0 takes its model's step height. */
+        STEP_HEIGHT(0, 0, 80),
+        /** Most degrees per second a plane or helicopter turns; 0 takes what its speed allows at its steepest bank, or its default. */
+        FLIGHT_TURN_RATE(0, 0, 3600),
+        /** Fastest climb of a plane or helicopter in tenths of a block per second; 0 takes its model's climb rate, or its default. */
+        CLIMB_RATE(0, 0, 600),
+        /** Fastest a submarine dives and surfaces, in tenths of a block per second; 0 keeps the default. */
+        DIVE_RATE(0, 0, 600);
 
         private final int fallback;
         private final int minimum;
@@ -258,7 +266,9 @@ public final class NpcTuning
         /** Never stops, turns in circles, climbs before it attacks. */
         PLANE,
         /** May hover, turns its hull toward its target, climbs before it attacks. */
-        HELICOPTER
+        HELICOPTER,
+        /** As a helicopter when the NPC shows a rotorcraft model, otherwise as a plane; as Normal without an aircraft model. */
+        AUTO
     }
 
     /** What an NPC that uses up its ammunition does once the gun it holds has none left. */

@@ -1,5 +1,14 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.FlightPerformance;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.NpcTuning.Flight;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -14,6 +23,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Optional;
+
 /**
  * Makes a flying NPC fly like a plane or a helicopter instead of drifting like a ghast.
  *
@@ -25,8 +36,10 @@ import net.minecraft.world.phys.Vec3;
  * the target after each pass, holding its fire, before it comes round again. On a gun run it dives or climbs to put its
  * nose on the target, as its fixed guns need; a bomber flies over its target level. A helicopter may hover and turns its hull
  * toward its target.
- * Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. One instance per
- * NPC, server side.
+ * Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. An aircraft model
+ * flies at its definition's speeds, climb rate and control rates: a plane builds up to its top speed, gains speed in a dive
+ * and loses it in a climb, never below the speed it needs to fly, and turns as tightly as its steepest bank allows at its
+ * speed. One instance per NPC, server side.
  * </p>
  */
 public final class NpcFlight
@@ -58,6 +71,18 @@ public final class NpcFlight
     /** Ticks an orbiting plane circles its target before it turns in for a gun pass, and the longest a pass lasts. */
     static final int ORBIT_PASS_INTERVAL = 200;
     static final int MAX_PASS_TICKS = 300;
+    /** Blocks per tick a plane climbs at most, and a helicopter, without a climb rate of their own. */
+    static final double PLANE_CLIMB = 0.24D;
+    static final double HELICOPTER_CLIMB = 0.30D;
+    /** Share of the gap to its top speed a plane flying its model closes each tick at full throttle. */
+    static final double THRUST_RESPONSE = 0.02D;
+    /** Speed a plane gains per tick per unit of the sine of its dive, as gravity pulls it along its flight path. */
+    static final double PATH_GRAVITY = 0.098D;
+    /** Fastest a plane flying its model turns, in degrees per tick, however slow it is. */
+    static final float MAX_COORDINATED_TURN = 6F;
+    /** Least and most a model's control rates scale the default pitch and roll rates by. */
+    private static final double MIN_AUTHORITY = 0.25D;
+    private static final double MAX_AUTHORITY = 3D;
 
     private int sampledAt = Integer.MIN_VALUE;
     /** Height of the highest terrain under and ahead of the aircraft. */
@@ -84,10 +109,59 @@ public final class NpcFlight
     private boolean passing;
     /** Ticks an orbiting plane has circled since its last pass, or spent on the pass it is making. */
     private int orbitTicks;
+    /** Blocks per tick a plane flying its model flies at; 0 until it takes off from its measured speed. */
+    private double airspeed;
 
+    /** @return how the NPC flies: as its flight type says, Automatic resolved by its model; Normal unless it moves by flying */
     public static Flight type(EntityNPCInterface npc)
     {
-        return npc.ais.movementType == 1 ? NpcTuning.of(npc).flight() : Flight.NORMAL;
+        if (npc.ais.movementType != 1)
+            return Flight.NORMAL;
+        Flight flight = NpcTuning.of(npc).flight();
+        return flight == Flight.AUTO ? automatic(model(npc)) : flight;
+    }
+
+    /** @return Helicopter for a rotorcraft model, Plane for any other aircraft model, Normal for anything else, a ship among them */
+    static Flight automatic(@Nullable IContentType model)
+    {
+        if (!(model instanceof IDriveableType driveable) || driveable.getDriveableKind() != DriveableKind.PLANE || driveable.isShip())
+            return Flight.NORMAL;
+        boolean rotorcraft = FlansEntityTypes.getFlightPerformance(model).map(FlightPerformance::rotorcraft).orElse(driveable.isHelicopter());
+        return rotorcraft ? Flight.HELICOPTER : Flight.PLANE;
+    }
+
+    /** @return how the aircraft model the NPC shows flies, when it flies as its model and takes the model's properties */
+    public static Optional<FlightPerformance> performance(EntityNPCInterface npc)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        IContentType model = model(npc);
+        if (model == null || !options.enabled(Feature.MODEL_FLIGHT) || !options.enabled(Feature.TYPE_PROPERTIES))
+            return Optional.empty();
+        return FlansEntityTypes.getFlightPerformance(model);
+    }
+
+    @Nullable
+    private static IContentType model(EntityNPCInterface npc)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        return model == null ? null : model.getInfoType();
+    }
+
+    /** @return degrees per second the aircraft model turns at its top speed, as the editor shows it while the turn rate is inherited */
+    public static double modelTurnRate(FlightPerformance model)
+    {
+        return (model.rotorcraft() ? HELICOPTER_TURN : coordinatedTurn(model.topSpeed())) * 20D;
+    }
+
+    /** @return blocks per tick the aircraft climbs at most: its climb rate setting, its model's, or the default of its type */
+    public static double maxClimb(NpcTuning tuning, @Nullable FlightPerformance model, Flight type)
+    {
+        int tenths = tuning.get(Value.CLIMB_RATE);
+        if (tenths > 0)
+            return tenths / 200D;
+        if (model != null && model.climbRate().isPresent())
+            return model.climbRate().getAsDouble();
+        return type == Flight.PLANE ? PLANE_CLIMB : HELICOPTER_CLIMB;
     }
 
     /** @return whether the aircraft is too low to attack and climbing back */
@@ -127,6 +201,7 @@ public final class NpcFlight
             orbitTicks = 0;
             pitch = 0F;
             bank = 0F;
+            airspeed = 0D;
             return;
         }
         if (!flying)
@@ -139,26 +214,46 @@ public final class NpcFlight
         int minimum = tuning.get(Value.ATTACK_ALTITUDE);
         sample(npc, type, minimum);
         Vec3 motion = npc.getDeltaMovement();
-        double vertical = climb(motion.y, terrain + minimum + (type == Flight.PLANE ? PLANE_MARGIN : HELICOPTER_MARGIN) - npc.getY(), type, npc.getNavigation().isDone());
+        FlightPerformance model = performance(npc).orElse(null);
+        double vertical = climb(motion.y, terrain + minimum + (type == Flight.PLANE ? PLANE_MARGIN : HELICOPTER_MARGIN) - npc.getY(), type, npc.getNavigation().isDone(),
+            maxClimb(tuning, model, type));
         LivingEntity target = npc.getTarget();
         boolean engaged = target != null && target.isAlive();
         if (type == Flight.PLANE)
-            flyPlane(npc, tuning, engaged ? target : null, vertical, minimum);
+            flyPlane(npc, tuning, model, engaged ? target : null, vertical, minimum);
         else
-        {
-            pitch = 0F;
-            bank = 0F;
-            float wanted = yaw;
-            // Its guns fire along its hull, so it faces where their rounds have to go.
-            if (engaged)
-                wanted = MountMotion.yaw(NpcVehicleState.of(npc).aimDirection().orElse(target.position().subtract(npc.position())));
-            else if (motion.horizontalDistanceSqr() > 4.0E-4D)
-                wanted = MountMotion.yaw(motion);
-            yaw = MountMotion.turn(yaw, wanted, HELICOPTER_TURN);
-            npc.setDeltaMovement(motion.x, vertical, motion.z);
-        }
+            flyHelicopter(npc, tuning, model, engaged ? target : null, vertical);
         npc.setYRot(yaw);
         npc.setYBodyRot(yaw);
+    }
+
+    /**
+     * Turns a helicopter's hull toward its target, or along its travel, and holds its height; it flies no faster than its
+     * model does.
+     *
+     * @param model
+     *            how the helicopter's model flies, when it flies as its model; null for the defaults
+     * @param target
+     *            the living target the helicopter fights, or null
+     * @param vertical
+     *            the vertical speed that holds its altitude
+     */
+    private void flyHelicopter(EntityNPCInterface npc, NpcTuning tuning, @Nullable FlightPerformance model, @Nullable LivingEntity target, double vertical)
+    {
+        Vec3 motion = npc.getDeltaMovement();
+        pitch = 0F;
+        bank = 0F;
+        float wanted = yaw;
+        // Its guns fire along its hull, so it faces where their rounds have to go.
+        if (target != null)
+            wanted = MountMotion.yaw(NpcVehicleState.of(npc).aimDirection().orElse(target.position().subtract(npc.position())));
+        else if (motion.horizontalDistanceSqr() > 4.0E-4D)
+            wanted = MountMotion.yaw(motion);
+        int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
+        yaw = MountMotion.turn(yaw, wanted, turnRate > 0 ? turnRate / 20F : HELICOPTER_TURN);
+        double horizontal = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
+        double cap = model != null && horizontal > model.topSpeed() ? model.topSpeed() / horizontal : 1D;
+        npc.setDeltaMovement(motion.x * cap, vertical, motion.z * cap);
     }
 
     /**
@@ -166,6 +261,8 @@ public final class NpcFlight
      * puts its nose on where its rounds have to go, diving or climbing as steeply as the run allows; otherwise its nose
      * follows its flight path. It banks into its turns.
      *
+     * @param model
+     *            how the plane's model flies, when it flies as its model; null for the defaults
      * @param target
      *            the living target the plane fights, or null
      * @param vertical
@@ -173,7 +270,7 @@ public final class NpcFlight
      * @param minimum
      *            blocks above the terrain the plane must stay to attack
      */
-    private void flyPlane(EntityNPCInterface npc, NpcTuning tuning, @Nullable LivingEntity target, double vertical, int minimum)
+    private void flyPlane(EntityNPCInterface npc, NpcTuning tuning, @Nullable FlightPerformance model, @Nullable LivingEntity target, double vertical, int minimum)
     {
         Vec3 motion = npc.getDeltaMovement();
         // Guns are led at where the target will be; a bomber flies over where its bomb meets the target.
@@ -191,11 +288,13 @@ public final class NpcFlight
             orbitTicks = 0;
         }
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
-        double speed = planeSpeed(tuning.get(Value.FLIGHT_SPEED), motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
+        double speed = flightSpeed(tuning.get(Value.FLIGHT_SPEED), model, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
         float before = yaw;
-        yaw = MountMotion.turn(yaw, wanted, planeTurn(speed, loiterRadius(npc)));
+        yaw = MountMotion.turn(yaw, wanted, planeTurn(tuning.get(Value.FLIGHT_TURN_RATE), speed, loiterRadius(npc), model != null));
         float wantedBank = Mth.clamp(Mth.wrapDegrees(yaw - before) * BANK_PER_TURN, -MAX_BANK, MAX_BANK);
-        bank += Mth.clamp(wantedBank - bank, -ROLL_RATE, ROLL_RATE);
+        float rollRate = ROLL_RATE * authority(model == null ? 1D : model.rollAuthority());
+        float pitchRate = PITCH_RATE * authority(model == null ? 1D : model.pitchAuthority());
+        bank += Mth.clamp(wantedBank - bank, -rollRate, rollRate);
         double climb = vertical;
         double horizontal = speed;
         if (target != null && attacks(npc, aim))
@@ -204,14 +303,30 @@ public final class NpcFlight
             float dive = Mth.clamp(MountMotion.relative(aim, yaw).pitch(), -MAX_CLIMB, MAX_DIVE);
             if (npc.getY() - terrain <= minimum + 1D)
                 dive = Math.min(dive, 0F);
-            pitch += Mth.clamp(dive - pitch, -PITCH_RATE, PITCH_RATE);
+            pitch += Mth.clamp(dive - pitch, -pitchRate, pitchRate);
             climb = -speed * Math.sin(Math.toRadians(pitch));
             horizontal = speed * Math.cos(Math.toRadians(pitch));
         }
         else
-            pitch += Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -PITCH_RATE, PITCH_RATE);
+            pitch += Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -pitchRate, pitchRate);
         Vec3 forward = Vec3.directionFromRotation(0F, yaw);
         npc.setDeltaMovement(forward.x * horizontal, climb, forward.z * horizontal);
+    }
+
+    /**
+     * @param tenthsPerSecond
+     *            the plane speed setting; 0 for none
+     * @param measured
+     *            blocks per tick the plane flew along its flight path during the last tick
+     * @return blocks per tick the plane flies at this tick: its set speed, the airspeed its model builds up, or its own
+     *         between stall and top speed
+     */
+    private double flightSpeed(int tenthsPerSecond, @Nullable FlightPerformance model, double measured)
+    {
+        if (tenthsPerSecond > 0 || model == null)
+            return planeSpeed(tenthsPerSecond, measured);
+        airspeed = modelSpeed(airspeed > 0D ? airspeed : measured, model.minimumSpeed(), model.topSpeed(), pitch);
+        return airspeed;
     }
 
     /** Unlimited roaming follows the local wander direction instead of steering back toward home. */
@@ -322,9 +437,18 @@ public final class NpcFlight
      */
     static double climb(double vertical, double error, Flight type, boolean idle)
     {
+        return climb(vertical, error, type, idle, type == Flight.PLANE ? PLANE_CLIMB : HELICOPTER_CLIMB);
+    }
+
+    /**
+     * @param maxClimb
+     *            blocks per tick the aircraft climbs at most
+     */
+    static double climb(double vertical, double error, Flight type, boolean idle, double maxClimb)
+    {
         boolean plane = type == Flight.PLANE;
         if (error > 0.5D)
-            return Math.max(vertical, Math.min(plane ? 0.24D : 0.30D, 0.06D + error * 0.035D));
+            return Math.max(vertical, Math.min(maxClimb, 0.06D + error * 0.035D));
         if (error < -5D)
             return Math.min(vertical, Math.max(plane ? -0.12D : -0.16D, error * 0.025D));
         return !plane && idle ? vertical * 0.55D : vertical;
@@ -336,10 +460,55 @@ public final class NpcFlight
         return tenthsPerSecond > 0 ? tenthsPerSecond / 200D : Mth.clamp(current, STALL_SPEED, TOP_SPEED);
     }
 
+    /**
+     * @param current
+     *            blocks per tick it flies at now
+     * @param minimum
+     *            least it flies at, below which its wing no longer carries it
+     * @param top
+     *            fastest it flies level at full throttle
+     * @param pitch
+     *            degrees its nose points below the horizon, negative above it
+     * @return blocks per tick a plane flying its model flies at next: building up to its top speed, faster in a dive and slower
+     *         in a climb, never below the least it flies at nor above its top speed
+     */
+    static double modelSpeed(double current, double minimum, double top, float pitch)
+    {
+        double next = current + (top - current) * THRUST_RESPONSE + PATH_GRAVITY * Math.sin(Math.toRadians(pitch));
+        return Mth.clamp(next, Math.min(minimum, top), top);
+    }
+
     /** @return degrees per tick a plane turns: what flying its loiter circle at its speed takes, so it never spins in place */
     static float planeTurn(double speed, double radius)
     {
         return (float) Mth.clamp(Math.toDegrees(speed / Math.max(1D, radius)), 0.25D, 2D);
+    }
+
+    /**
+     * @param degreesPerSecond
+     *            the turn rate setting; 0 for none
+     * @param modelled
+     *            whether the plane flies as its model, and turns as tightly as its steepest bank allows
+     * @return degrees per tick a plane turns
+     */
+    static float planeTurn(int degreesPerSecond, double speed, double radius, boolean modelled)
+    {
+        if (degreesPerSecond > 0)
+            return degreesPerSecond / 20F;
+        return modelled ? coordinatedTurn(speed) : planeTurn(speed, radius);
+    }
+
+    /** @return degrees per tick a plane turns banked at its steepest without losing height: the slower, the tighter */
+    static float coordinatedTurn(double speed)
+    {
+        double rate = Math.toDegrees(PATH_GRAVITY * Math.tan(Math.toRadians(MAX_BANK)) / Math.max(1.0E-3D, speed));
+        return (float) Mth.clamp(rate, 0.25D, MAX_COORDINATED_TURN);
+    }
+
+    /** @return the share a model's control rate scales a default rate by, within reasonable bounds */
+    static float authority(double modelRate)
+    {
+        return (float) Mth.clamp(modelRate, MIN_AUTHORITY, MAX_AUTHORITY);
     }
 
     /**

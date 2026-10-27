@@ -63,6 +63,10 @@ public final class NpcVehicleState
     /** Blocks above the ground, at size 5, below which dynamic landing gear comes down and above which it goes up again. */
     private static final double GEAR_DOWN_HEIGHT = 6D;
     private static final double GEAR_UP_HEIGHT = 10D;
+    /** Share of each tick's rise and run the measured grade takes in. */
+    private static final double GRADE_SMOOTHING = 0.1D;
+    /** Blocks per tick below which a vehicle is too slow for its grade to mean anything. */
+    private static final double MIN_GRADE_RUN = 1.0E-3D;
 
     /** Whether the NPC currently is a content-pack model. */
     @Getter
@@ -121,6 +125,9 @@ public final class NpcVehicleState
     private float lastHullYaw;
     /** Blocks moved across the ground during the last tick, whichever way. */
     private double groundSpeed;
+    /** Smoothed blocks the NPC rose and travelled across the ground per tick, which make the grade it drives up. */
+    private double climbRise;
+    private double climbRun;
 
     // Server
     private final TargetMotion motion = new TargetMotion();
@@ -188,6 +195,12 @@ public final class NpcVehicleState
             double reach = bounds.map(box -> Math.max(Math.max(Math.abs(box.minX), Math.abs(box.maxX)), Math.max(Math.abs(box.minZ), Math.abs(box.maxZ)))).orElse(0D);
             return new Layout(model, kind, secondary, mounts, driver, turreted, rest.isEmpty() ? null : rest.get(0).offset(), reach, bounds.map(box -> box.maxY).orElse(0D));
         }
+
+        /** @return whether the model drives along its hull: a vehicle, or a ship a content pack filed as a plane */
+        boolean drives()
+        {
+            return kind == FlanModelKind.VEHICLE || kind == FlanModelKind.PLANE && model instanceof IDriveableType driveable && driveable.isShip();
+        }
     }
 
     public static NpcVehicleState of(EntityNPCInterface npc)
@@ -223,6 +236,12 @@ public final class NpcVehicleState
     public FlanModelKind kind()
     {
         return active && layout != null ? layout.kind() : null;
+    }
+
+    /** @return whether the NPC is a model that drives along its hull: a vehicle, or a ship a content pack filed as a plane */
+    public boolean drivesHull()
+    {
+        return active && layout != null && layout.drives();
     }
 
     /** Records a shot, so clients show the recoil. Server only. */
@@ -296,6 +315,8 @@ public final class NpcVehicleState
         targetAttitudePitch = 0F;
         targetAttitudeBank = 0F;
         speedFactor = 1F;
+        climbRise = 0D;
+        climbRun = 0D;
         turretYaw = 0F;
         turretPitch = 0F;
         seatYaw = NO_SEATS;
@@ -338,10 +359,10 @@ public final class NpcVehicleState
         return created;
     }
 
-    /** A vehicle's hull follows its travel and an AA gun's base stays put; other models turn like any NPC. */
+    /** A vehicle's or ship's hull follows its travel and an AA gun's base stays put; other models turn like any NPC. */
     private static boolean holdsHull(Layout layout, NpcWeaponOptions options)
     {
-        return options.enabled(Feature.HULL_FACES_TRAVEL) && (layout.kind() == FlanModelKind.VEHICLE || layout.kind() == FlanModelKind.AA_GUN);
+        return options.enabled(Feature.HULL_FACES_TRAVEL) && (layout.drives() || layout.kind() == FlanModelKind.AA_GUN);
     }
 
     private void measure(EntityNPCInterface npc)
@@ -353,6 +374,9 @@ public final class NpcVehicleState
         // A teleport is not travel.
         travel = moved.lengthSqr() > 64D ? 0F : (float) (moved.x * forward.x + moved.z * forward.z);
         groundSpeed = moved.lengthSqr() > 64D ? 0D : moved.horizontalDistance();
+        // Smoothed, so that a single step up a block edge barely registers while a hillside does.
+        climbRise = Mth.lerp(GRADE_SMOOTHING, climbRise, moved.lengthSqr() > 64D ? 0D : moved.y);
+        climbRun = Mth.lerp(GRADE_SMOOTHING, climbRun, groundSpeed);
         turn = Mth.wrapDegrees(hullYaw - lastHullYaw);
         lastHullYaw = hullYaw;
     }
@@ -776,6 +800,33 @@ public final class NpcVehicleState
     // Movement
 
     /**
+     * @return the share of its propulsion a ground vehicle keeps on the grade it drives up, as its definition's real-world
+     *         profile has the vehicle bog down; 1 for anything else, downhill, or with the switch off. Server only.
+     */
+    public float climbFactor(EntityNPCInterface npc)
+    {
+        if (!active || layout == null || layout.kind() != FlanModelKind.VEHICLE || !npc.onGround() || npc.isInWater())
+            return 1F;
+        double grade = grade(climbRise, climbRun);
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (grade <= 0D || !options.enabled(Feature.SLOPE_PHYSICS))
+            return 1F;
+        return NpcDriving.propulsion(npc, options).map(propulsion -> (float) Mth.clamp(propulsion.climbFactor(grade), 0D, 1D)).orElse(1F);
+    }
+
+    /**
+     * @param rise
+     *            blocks risen per tick
+     * @param run
+     *            blocks travelled across the ground per tick
+     * @return degrees of the grade they make; 0 while barely moving
+     */
+    static double grade(double rise, double run)
+    {
+        return run < MIN_GRADE_RUN ? 0D : Math.toDegrees(Math.atan2(rise, run));
+    }
+
+    /**
      * Turns a driving vehicle's hull toward where it wants to go, makes it drive where the hull points, and slows it
      * down while the two differ: with the driving controller as a vehicle would, without it by plain steering.
      * Server only, before the NPC moves.
@@ -787,7 +838,7 @@ public final class NpcVehicleState
     public Vec3 beforeTravel(EntityNPCInterface npc, Vec3 travel)
     {
         speedFactor = 1F;
-        if (!active || layout == null || layout.kind() != FlanModelKind.VEHICLE || !hullKnown || npc.isKilled() || npc.isVehicle() && npc.ais.mountControl)
+        if (!active || layout == null || !layout.drives() || !hullKnown || npc.isKilled() || npc.isVehicle() && npc.ais.mountControl)
         {
             driving.reset();
             return travel;

@@ -2,7 +2,9 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.GroundPropulsion;
+import com.flansmodultimate.common.driveables.physics.EnumDriveType;
 import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
+import com.flansmodultimate.common.driveables.physics.GroundSlopePhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
@@ -16,7 +18,8 @@ import java.util.OptionalDouble;
 /**
  * Reads a vehicle definition's longitudinal response the way {@code Vehicle} applies it to a driven vehicle, without
  * creating one: the derived power model under a complete real-world profile, otherwise the legacy throttle ramp, grip and
- * drag. Engine parts are taken at their reference values.
+ * drag. Engine parts are taken at their reference values. A ship a content pack filed as a plane has the same response in
+ * water under her marine profile.
  */
 public final class GroundPropulsionProfiles
 {
@@ -32,6 +35,8 @@ public final class GroundPropulsionProfiles
     private static final double LEGACY_THROTTLE_STEP = 0.01D;
     private static final double LEGACY_REFERENCE_ENGINE_POWER = 10D;
     private static final double LEGACY_MIN_REALISTIC_STEP = 0.0005D;
+    /** Share of her top speed a ship filed as a plane makes astern without her own reverse speed, as {@code Plane} allows her. */
+    private static final double MARINE_ASTERN_SHARE = 0.4D;
 
     private GroundPropulsionProfiles()
     {}
@@ -47,6 +52,8 @@ public final class GroundPropulsionProfiles
      */
     public static Optional<GroundPropulsion> of(IContentType type, boolean water)
     {
+        if (water && type instanceof PlaneType plane)
+            return marine(plane);
         if (!(type instanceof VehicleType vehicle))
             return Optional.empty();
         boolean legacy = ModCommonConfig.forceLegacyVehiclePhysics();
@@ -71,7 +78,26 @@ public final class GroundPropulsionProfiles
                 : terminal * Math.min(1D, vehicle.getMaxNegativeThrottle() / Math.max(1.0E-4D, vehicle.getMaxThrottle()));
         }
         return new Derived(Math.min(terminal, cap), Math.min(reverse, cap), terminal, physics.effectivePowerWatts(1F), physics.massKg(),
-            physics.driveType().tractionFactor() * (water ? WATER_TRACTION : 1D), physics.baselinePowerKw(), vehicle.isTracked());
+            physics.driveType().tractionFactor() * (water ? WATER_TRACTION : 1D), physics.baselinePowerKw(), vehicle.isTracked(), water ? 0F : physics.powerToWeightKwPerKg(), physics.driveType(),
+            false);
+    }
+
+    /**
+     * A ship a content pack filed as a plane is driven in water by the same constant-power model as a vehicle ship, as
+     * {@code Plane} drives her: at her authored top speed, astern at her reverse speed or 40% of it.
+     */
+    private static Optional<GroundPropulsion> marine(PlaneType plane)
+    {
+        ResolvedVehiclePhysics physics = plane.getResolvedPhysics();
+        if (!plane.isShip() || ModCommonConfig.forceLegacyPlanePhysics() || !physics.hasMarineProfile())
+            return Optional.empty();
+        double scale = ModCommonConfig.realisticSpeedScale(physics.category());
+        double terminal = physics.maxSpeedBlocksPerTick(scale);
+        if (terminal <= 0D || !Double.isFinite(terminal))
+            return Optional.empty();
+        double reverse = physics.hasReverseSpeedOverride() ? physics.reverseSpeedBlocksPerTick(scale) : terminal * MARINE_ASTERN_SHARE;
+        return Optional.of(new Derived(terminal, Math.min(reverse, terminal), terminal, physics.effectivePowerWatts(1F), physics.massKg(), EnumDriveType.MARINE.tractionFactor(),
+            physics.baselinePowerKw(), false, 0F, EnumDriveType.MARINE, true));
     }
 
     private static GroundPropulsion legacy(VehicleType vehicle, ResolvedVehiclePhysics physics, boolean forceLegacy, boolean pushed, double cap, boolean water)
@@ -122,9 +148,23 @@ public final class GroundPropulsionProfiles
     /**
      * @param terminal
      *            the profile's own top speed, which calibrates its resistance even when the speed cap lowers the top speed
+     * @param powerToWeight
+     *            kilowatts per kilogram that set how steep a grade it climbs at full speed; zero in water, where nothing
+     *            is climbed
+     * @param marine
+     *            whether it is a hull in water, which no ground friction slows down
      */
-    private record Derived(double topSpeed, double reverseSpeed, double terminal, double powerWatts, double mass, double traction, double powerKw, boolean tracked) implements GroundPropulsion
+    // One component per quantity of the profile, as the vehicle resolves them.
+    @SuppressWarnings("java:S107")
+    private record Derived(double topSpeed, double reverseSpeed, double terminal, double powerWatts, double mass, double traction, double powerKw, boolean tracked, float powerToWeight,
+        EnumDriveType driveType, boolean marine) implements GroundPropulsion
     {
+        @Override
+        public double climbFactor(double climbDegrees)
+        {
+            return GroundSlopePhysics.propulsionFactor((float) climbDegrees, 1F, powerToWeight, driveType);
+        }
+
         @Override
         public boolean realistic()
         {
@@ -154,7 +194,8 @@ public final class GroundPropulsionProfiles
         public double deceleration(double speed, double brake)
         {
             double share = brakeShare(brake);
-            return Math.max(GroundPropulsionPhysics.decelerationBlocksPerTickSquared(magnitude(speed), powerWatts, mass, terminal, share), floor(tracked, share));
+            double resistance = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(magnitude(speed), powerWatts, mass, terminal, share);
+            return marine ? resistance : Math.max(resistance, floor(tracked, share));
         }
     }
 

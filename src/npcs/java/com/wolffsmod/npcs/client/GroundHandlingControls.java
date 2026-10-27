@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.wolffsmod.npcs.sim.NpcDriving;
+import com.wolffsmod.npcs.sim.NpcFlight;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -18,8 +20,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * Explicit modes for the driving and aiming numbers whose zero sentinel inherits model handling, shared by the Travel and
- * Aiming pages and the model properties page.
+ * Explicit modes for the driving, travel, flight and aiming numbers whose zero sentinel inherits model handling, shared by
+ * the Travel and Aiming pages and the model properties page.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class GroundHandlingControls
@@ -39,6 +41,9 @@ final class GroundHandlingControls
             case AIM_SPEED_YAW, AIM_SPEED_PITCH -> NpcModels.flan(npc) != null;
             // Any other NPC keeps the plain field, whose 0 is its walking speed.
             case LAND_SPEED -> NpcMobility.modelSpeed(npc).isPresent();
+            case STEP_HEIGHT -> NpcMobility.modelStepHeight(npc).isPresent();
+            // An aircraft model offers its speed, turn and climb; anything else keeps the plain field and its default.
+            case FLIGHT_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE -> NpcFlight.performance(npc).isPresent();
             default -> false;
         };
     }
@@ -78,6 +83,10 @@ final class GroundHandlingControls
     {
         if (value == Value.AIM_SPEED_YAW || value == Value.AIM_SPEED_PITCH)
             return NpcVehicleState.modelAimStep(npc, value == Value.AIM_SPEED_PITCH) * 20D;
+        if (value == Value.STEP_HEIGHT)
+            return NpcMobility.modelStepHeight(npc).orElse(0D) * 10D;
+        if (value == Value.FLIGHT_SPEED || value == Value.FLIGHT_TURN_RATE || value == Value.CLIMB_RATE)
+            return flight(npc, value);
         NpcDriving.Settings settings = NpcDriving.settings(npc);
         return switch (value)
         {
@@ -89,6 +98,18 @@ final class GroundHandlingControls
             case DRIVE_COASTING -> perSecond(settings.coastingAt(NpcMobility.topSpeed(npc), NpcMobility.topSpeed(npc)));
             case LAND_SPEED -> NpcMobility.topSpeed(npc) * 200D;
             default -> throw new IllegalArgumentException(value.name());
+        };
+    }
+
+    /** @return what the aircraft model supplies for a flight value, in the units the value is set in */
+    private static double flight(EntityNPCInterface npc, Value value)
+    {
+        FlightPerformance model = NpcFlight.performance(npc).orElseThrow();
+        return switch (value)
+        {
+            case FLIGHT_SPEED -> model.topSpeed() * 200D;
+            case FLIGHT_TURN_RATE -> NpcFlight.modelTurnRate(model);
+            default -> NpcFlight.maxClimb(NpcTuning.of(npc), model, model.rotorcraft() ? NpcTuning.Flight.HELICOPTER : NpcTuning.Flight.PLANE) * 200D;
         };
     }
 
@@ -134,12 +155,21 @@ final class GroundHandlingControls
         store(npc, value, Math.max(1, Math.round((float) effective)));
     }
 
+    /** Travel, flight and aim values belong to no driving preset; every other inheritable value is a driving one. */
+    private static boolean filledByPreset(Value value)
+    {
+        return switch (value)
+        {
+            case LAND_SPEED, STEP_HEIGHT, FLIGHT_SPEED, FLIGHT_TURN_RATE, CLIMB_RATE, AIM_SPEED_YAW, AIM_SPEED_PITCH -> false;
+            default -> true;
+        };
+    }
+
     /** Stores a value; a driving value the presets fill in turns the preset to Custom, as the Driving page does. */
     static void store(EntityNPCInterface npc, Value value, int number)
     {
         NpcTuning.of(npc).set(value, number);
-        // Land speed is a travel setting and aim speeds belong to the turret: no driving preset fills them in.
-        if (value != Value.LAND_SPEED && value != Value.AIM_SPEED_YAW && value != Value.AIM_SPEED_PITCH)
+        if (filledByPreset(value))
             NpcTuning.of(npc).set(Value.DRIVE_PRESET, NpcTuning.DrivePreset.CUSTOM.ordinal());
     }
 }

@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client;
 
+import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.client.CombatPages.Group;
@@ -7,6 +8,7 @@ import com.wolffsmod.npcs.client.ModelTuningRows.Row;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
+import com.wolffsmod.npcs.sim.NpcFlight;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,10 +44,12 @@ class ModelTuningRowsTest
     void everyTuningValueAModelCanSupplyHasARowOnTheModelPropertiesPage()
     {
         EntityNPCInterface npc = npc(new NpcTuning());
-        try (var models = mockStatic(NpcModels.class); var kinds = mockStatic(FlanModelKind.class); var mobility = mockStatic(NpcMobility.class))
+        try (var models = mockStatic(NpcModels.class); var kinds = mockStatic(FlanModelKind.class); var mobility = mockStatic(NpcMobility.class); var flight = mockStatic(NpcFlight.class))
         {
             model(npc, models, kinds, FlanModelKind.VEHICLE);
             mobility.when(() -> NpcMobility.modelSpeed(npc)).thenReturn(OptionalDouble.of(0.5D));
+            mobility.when(() -> NpcMobility.modelStepHeight(npc)).thenReturn(OptionalDouble.of(1D));
+            flight.when(() -> NpcFlight.performance(npc)).thenReturn(Optional.of(new FlightPerformance(1D, 0.3D, OptionalDouble.empty(), 1D, 1D, false, false)));
             Set<Value> rows = Arrays.stream(Row.values()).map(ModelTuningRowsTest::value).filter(Objects::nonNull).collect(Collectors.toSet());
             for (Value value : Value.values())
             {
@@ -62,8 +67,16 @@ class ModelTuningRowsTest
         try (var models = mockStatic(NpcModels.class); var kinds = mockStatic(FlanModelKind.class))
         {
             model(npc, models, kinds, FlanModelKind.VEHICLE);
-            assertEquals(List.of(Row.LAND_SPEED, Row.REVERSE_SPEED, Row.ACCELERATION, Row.BRAKING, Row.COASTING, Row.MASS, Row.ENGINE_POWER), ModelTuningRows.rows(npc, Group.DRIVING));
+            assertEquals(List.of(Row.LAND_SPEED, Row.REVERSE_SPEED, Row.ACCELERATION, Row.BRAKING, Row.COASTING, Row.STEP_HEIGHT, Row.MASS, Row.ENGINE_POWER),
+                ModelTuningRows.rows(npc, Group.DRIVING));
             assertEquals(List.of(Row.DRIVE_TYPE, Row.HULL_TURN_RATE, Row.TURN_RADIUS, Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
+            // A mecha walks at its own speed and climbs its own steps; a plane flies at its own speed, climb and turn.
+            model(npc, models, kinds, FlanModelKind.MECHA);
+            assertEquals(List.of(Row.LAND_SPEED, Row.STEP_HEIGHT), ModelTuningRows.rows(npc, Group.DRIVING));
+            assertEquals(List.of(Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
+            model(npc, models, kinds, FlanModelKind.PLANE);
+            assertEquals(List.of(Row.FLIGHT_SPEED, Row.CLIMB_RATE), ModelTuningRows.rows(npc, Group.DRIVING));
+            assertEquals(List.of(Row.FLIGHT_TURN_RATE, Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
             model(npc, models, kinds, FlanModelKind.AA_GUN);
             assertFalse(ModelTuningRows.visible(npc, Group.DRIVING));
             assertEquals(List.of(Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
@@ -124,6 +137,10 @@ class ModelTuningRowsTest
         return switch (row)
         {
             case LAND_SPEED -> Value.LAND_SPEED;
+            case FLIGHT_SPEED -> Value.FLIGHT_SPEED;
+            case CLIMB_RATE -> Value.CLIMB_RATE;
+            case STEP_HEIGHT -> Value.STEP_HEIGHT;
+            case FLIGHT_TURN_RATE -> Value.FLIGHT_TURN_RATE;
             case REVERSE_SPEED -> Value.DRIVE_REVERSE_SPEED;
             case ACCELERATION -> Value.DRIVE_ACCELERATION;
             case BRAKING -> Value.DRIVE_BRAKING;

@@ -51,10 +51,24 @@ final class ModelTuningRows
     /** One movement value of the model; every row belongs to the Driving or the Turning tab. */
     enum Row
     {
-        LAND_SPEED(Group.DRIVING, Value.LAND_SPEED), REVERSE_SPEED(Group.DRIVING, Value.DRIVE_REVERSE_SPEED), ACCELERATION(Group.DRIVING, Value.DRIVE_ACCELERATION), BRAKING(Group.DRIVING,
-            Value.DRIVE_BRAKING), COASTING(Group.DRIVING, Value.DRIVE_COASTING), MASS(Group.DRIVING, null), ENGINE_POWER(Group.DRIVING, null), DRIVE_TYPE(Group.TURNING,
-                Value.DRIVE_TYPE), HULL_TURN_RATE(Group.TURNING,
-                    Value.HULL_TURN_RATE), TURN_RADIUS(Group.TURNING, Value.TURN_RADIUS), TRAVERSE(Group.TURNING, Value.AIM_SPEED_YAW), ELEVATION(Group.TURNING, Value.AIM_SPEED_PITCH);
+        // spotless:off
+        LAND_SPEED(Group.DRIVING, Value.LAND_SPEED),
+        FLIGHT_SPEED(Group.DRIVING, Value.FLIGHT_SPEED),
+        CLIMB_RATE(Group.DRIVING, Value.CLIMB_RATE),
+        REVERSE_SPEED(Group.DRIVING, Value.DRIVE_REVERSE_SPEED),
+        ACCELERATION(Group.DRIVING, Value.DRIVE_ACCELERATION),
+        BRAKING(Group.DRIVING, Value.DRIVE_BRAKING),
+        COASTING(Group.DRIVING, Value.DRIVE_COASTING),
+        STEP_HEIGHT(Group.DRIVING, Value.STEP_HEIGHT),
+        MASS(Group.DRIVING, null),
+        ENGINE_POWER(Group.DRIVING, null),
+        DRIVE_TYPE(Group.TURNING, Value.DRIVE_TYPE),
+        HULL_TURN_RATE(Group.TURNING, Value.HULL_TURN_RATE),
+        FLIGHT_TURN_RATE(Group.TURNING, Value.FLIGHT_TURN_RATE),
+        TURN_RADIUS(Group.TURNING, Value.TURN_RADIUS),
+        TRAVERSE(Group.TURNING, Value.AIM_SPEED_YAW),
+        ELEVATION(Group.TURNING, Value.AIM_SPEED_PITCH);
+        // spotless:on
 
         private final Group group;
         @Nullable
@@ -66,10 +80,19 @@ final class ModelTuningRows
             this.value = value;
         }
 
-        /** Whether only a ground vehicle has the row; the gun's aim speeds belong to every content-pack model. */
-        boolean vehicleOnly()
+        /**
+         * @return whether a model of the kind has the row: the gun's aim speeds belong to every content-pack model, speed and
+         *         step height to a mecha too, flight to a plane, and the rest to a ground vehicle
+         */
+        boolean offeredFor(FlanModelKind kind)
         {
-            return this != TRAVERSE && this != ELEVATION;
+            return switch (this)
+            {
+                case TRAVERSE, ELEVATION -> true;
+                case LAND_SPEED, STEP_HEIGHT -> kind == FlanModelKind.VEHICLE || kind == FlanModelKind.MECHA;
+                case FLIGHT_SPEED, CLIMB_RATE, FLIGHT_TURN_RATE -> kind == FlanModelKind.PLANE;
+                default -> kind == FlanModelKind.VEHICLE;
+            };
         }
     }
 
@@ -85,7 +108,7 @@ final class ModelTuningRows
         return group == Group.DRIVING || group == Group.TURNING;
     }
 
-    /** @return whether the tab is offered for the NPC's model: driving for a ground vehicle, turning for any content-pack model */
+    /** @return whether the tab is offered for the NPC's model: when the model has any of its rows */
     static boolean visible(EntityNPCInterface npc, Group group)
     {
         return !holds(group) || !rows(npc, group).isEmpty();
@@ -96,7 +119,7 @@ final class ModelTuningRows
         FlanModelKind kind = kind(npc);
         if (kind == null)
             return List.of();
-        return Arrays.stream(Row.values()).filter(row -> row.group == group && (!row.vehicleOnly() || kind == FlanModelKind.VEHICLE)).toList();
+        return Arrays.stream(Row.values()).filter(row -> row.group == group && row.offeredFor(kind)).toList();
     }
 
     @Nullable
@@ -104,7 +127,10 @@ final class ModelTuningRows
     {
         FlanModelEntity model = NpcModels.flan(npc);
         IContentType definition = model == null ? null : model.getInfoType();
-        return definition == null ? null : FlanModelKind.of(definition);
+        if (definition == null)
+            return null;
+        // A ship a content pack filed as a plane sails as a vehicle, so the driving rows are hers.
+        return NpcKind.of(npc) == NpcKind.VEHICLE ? FlanModelKind.VEHICLE : FlanModelKind.of(definition);
     }
 
     static boolean handles(int id)

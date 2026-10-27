@@ -41,7 +41,13 @@ public final class NpcWeaponOptions
         /** Each manned seat gun picks its own target within its own arc, whatever the turret and the other guns fire at. */
         GUNNER_TARGETS(true),
         /** A seat gun nobody sits behind aims and fires by itself, as a crew member would man it, credited to the vehicle. */
-        UNMANNED_GUNS_FIRE(false);
+        UNMANNED_GUNS_FIRE(false),
+        /** A vehicle or mecha model climbs steps as high as its model does; a ground vehicle never jumps like a mob, and a mecha jumps as its model does. */
+        STEP_CLIMB(true),
+        /** A ground vehicle model whose definition has a complete real-world profile slows down climbing steep grades, as the vehicle does. */
+        SLOPE_PHYSICS(true),
+        /** A plane or helicopter model flies at its definition's speeds, climb rate and control rates. */
+        MODEL_FLIGHT(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

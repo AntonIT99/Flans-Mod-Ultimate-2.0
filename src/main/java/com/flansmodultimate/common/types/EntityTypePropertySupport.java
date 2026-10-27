@@ -53,6 +53,10 @@ public final class EntityTypePropertySupport
      */
     public static GroundHandling groundHandling(IContentType type, boolean water)
     {
+        // A ship filed as a plane answers her helm by the legacy flight controls; only her astern speed is her own.
+        if (water && type instanceof PlaneType plane)
+            return GroundPropulsionProfiles.of(plane, true)
+                .map(marine -> new GroundHandling(OptionalDouble.empty(), OptionalDouble.empty(), OptionalDouble.of(marine.reverseSpeed() / marine.topSpeed()))).orElse(GroundHandling.EMPTY);
         if (!(type instanceof VehicleType vehicle))
             return GroundHandling.EMPTY;
         boolean legacy = ModCommonConfig.forceLegacyVehiclePhysics();

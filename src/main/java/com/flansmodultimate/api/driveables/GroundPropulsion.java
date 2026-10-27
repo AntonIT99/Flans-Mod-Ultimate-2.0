@@ -53,4 +53,15 @@ public interface GroundPropulsion
      * @return speed lost per tick at that speed, above zero
      */
     double deceleration(double speed, double brake);
+
+    /**
+     * @param climbDegrees
+     *            grade the vehicle drives up, in degrees along its travel; zero or below on level ground and downhill
+     * @return share of its propulsion the vehicle keeps on that grade, from 0 to 1: a complete real-world profile bogs
+     *         down by its power-to-weight and drive layout, as the vehicle does; a legacy response is unaffected
+     */
+    default double climbFactor(double climbDegrees)
+    {
+        return 1D;
+    }
 }

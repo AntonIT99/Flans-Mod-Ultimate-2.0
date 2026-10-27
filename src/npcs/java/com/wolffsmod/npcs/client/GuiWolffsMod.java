@@ -419,8 +419,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.MAX_WADE_DEPTH, Need.choice(Value.TERRAIN, NpcTuning.Terrain.GROUND)),
         Map.entry(Value.MIN_WATER_DEPTH, Need.choice(Value.TERRAIN, NpcTuning.Terrain.WATERCRAFT)),
         Map.entry(Value.SUBMARINE_DEPTH, Need.choice(Value.TERRAIN, NpcTuning.Terrain.WATERCRAFT)),
-        Map.entry(Value.ATTACK_ALTITUDE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER)),
-        Map.entry(Value.FLIGHT_SPEED, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE)),
+        Map.entry(Value.DIVE_RATE, Need.choice(Value.TERRAIN, NpcTuning.Terrain.WATERCRAFT)),
+        Map.entry(Value.STEP_HEIGHT, Need.on(Feature.STEP_CLIMB)),
+        Map.entry(Value.ATTACK_ALTITUDE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
+        Map.entry(Value.FLIGHT_SPEED, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.AUTO)),
+        Map.entry(Value.FLIGHT_TURN_RATE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
+        Map.entry(Value.CLIMB_RATE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
+        Map.entry(Feature.MODEL_FLIGHT, Need.on(Feature.TYPE_PROPERTIES)),
         Map.entry(Value.TACTIC_DISTANCE, Need.choice(Value.TACTIC, Arrays.stream(NpcTuning.Tactic.values()).filter(NpcTuning.Tactic::usesDistance).toArray(Enum<?>[]::new))),
         Map.entry(Value.COVER_RADIUS, Need.choice(Value.TACTIC, NpcTuning.Tactic.COVER)),
         Map.entry(Feature.DRIVING, Need.on(Feature.HULL_FACES_TRAVEL)),
@@ -507,10 +512,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
         PATHFINDING(Section.BEHAVIOUR, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
         MOVEMENT(Section.TRAVEL, Scope.ALL,
-            Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH),
+            Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Feature.STEP_CLIMB, Value.STEP_HEIGHT, Feature.SLOPE_PHYSICS),
             Tab.named("movement_speed", Value.LAND_SPEED, Value.WATER_SPEED),
-            Tab.named("movement_watercraft", Value.SUBMARINE_DEPTH),
-            Tab.named("movement_flight", Scope.PLANES_AND_VEHICLES, Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED)),
+            Tab.named("movement_watercraft", Value.SUBMARINE_DEPTH, Value.DIVE_RATE),
+            Tab.named("movement_flight", Scope.PLANES_AND_VEHICLES, Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Feature.MODEL_FLIGHT, Value.FLIGHT_SPEED, Value.FLIGHT_TURN_RATE,
+                Value.CLIMB_RATE)),
         VEHICLE_HANDLING(Section.TRAVEL, Scope.VEHICLES,
             Tab.named("vehicle_setup", MovementRow.CONTROLLER, Value.DRIVE_PRESET, Value.DRIVE_TYPE),
             Tab.named("vehicle_speed_stopping", Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE, Value.TRAFFIC_STOP_GAP),
@@ -1668,7 +1674,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                     MUZZLE_FLASHES -> Scope.DRIVEABLES;
                 case HULL_ASSISTS_AIM, MANOEUVRE_TO_FIRE, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
-                case RUN_OVER -> Scope.GROUND_MACHINES;
+                case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
+                case SLOPE_PHYSICS -> Scope.VEHICLES;
+                case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
                 case DRIVE_DRIVEABLES -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
@@ -1681,6 +1689,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case DRIVE_PRESET, DRIVE_TYPE, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING, TURN_RADIUS, THROTTLE_FLOOR, DRIVE_LOOKAHEAD, CORNER_SPEED, DRIVE_REVERSE_SPEED, REVERSE_ANGLE,
                     REVERSE_DISTANCE, STOP_DISTANCE, FOLLOW_DISTANCE, STEERING_RESPONSE, STATIONARY_TURN, TRAFFIC_STOP_GAP -> Scope.VEHICLES;
                 case HULL_TURN_RATE -> Scope.HULLS;
+                case STEP_HEIGHT -> Scope.GROUND_MACHINES;
                 case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL,
                     GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> Scope.STANDARD;
                 default -> Scope.ALL;
