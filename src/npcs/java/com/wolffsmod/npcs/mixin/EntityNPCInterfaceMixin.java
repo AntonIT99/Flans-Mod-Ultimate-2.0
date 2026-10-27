@@ -148,6 +148,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
     @Unique
     private static final String WOLFFSMODNPCS_DISTANCE_OPT_IN = "FlansDistanceOptIn";
+    /** Custom NPCs moving type that keeps an NPC where it stands. */
+    @Unique
+    private static final int WOLFFSMODNPCS_STANDING = 0;
     @Unique
     private static final EntityDataAccessor<Boolean> WOLFFSMODNPCS_DISTANCE_DATA = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.BOOLEAN);
     @Unique
@@ -864,6 +867,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return travel;
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
+        // A vehicle set to stand turns on the spot but goes nowhere, however its driving or flight would move it.
+        if (wolffsmodnpcsVehicleState().isActive() && npc.ais.getMovingType() == WOLFFSMODNPCS_STANDING && !(npc.isVehicle() && npc.ais.mountControl))
+        {
+            Vec3 motion = getDeltaMovement();
+            setDeltaMovement(0D, motion.y, 0D);
+            return new Vec3(0D, driven.y, 0D);
+        }
         // Broken tracks, wheels and engines slow the NPC down or stop it, and so does a grade too steep for its engine.
         float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().getParts().effects().mobility() * wolffsmodnpcsVehicleState().climbFactor(npc);
         return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
