@@ -38,6 +38,8 @@
       "GuiButtonNopMixin",
       "GuiNPCInvMixin",
       "GuiNpcAIMixin",
+      "GuiNpcDisplayMixin",
+      "GuiNPCFactionSetupMixin",
       "GuiNpcMobSpawnerMixin",
       "GuiNpcRemoteEditorMixin",
       "GuiNPCManageFactionsMixin",
