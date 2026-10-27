@@ -38,10 +38,19 @@ import java.util.Optional;
  *            {@code position}; the position itself for a seat on the hull
  * @param gun
  *            the gun definition the seat mans, if any
+ * @param turretOffset
+ *            added to where the occupant sits and turned with the main turret whether or not the seat is on it, in the
+ *            same frame as {@code position}: the seat's rotated offset, plus the turret origin offset for a seat on
+ *            the turret
  */
 @ApiStatus.Experimental
-public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun)
+public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
+    Vec3 turretOffset)
 {
+    public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun)
+    {
+        this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, Vec3.ZERO);
+    }
 
     /**
      * @param turretYaw
@@ -50,13 +59,18 @@ public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim m
      */
     public Vec3 positionAt(float turretYaw)
     {
-        if (!onTurret || turretYaw == 0F)
-            return position;
-        double radians = Math.toRadians(turretYaw);
+        Vec3 seated = onTurret ? pivot.add(turn(position.subtract(pivot), turretYaw)) : position;
+        return seated.add(turn(turretOffset, turretYaw));
+    }
+
+    private static Vec3 turn(Vec3 vector, float yaw)
+    {
+        if (yaw == 0F)
+            return vector;
+        double radians = Math.toRadians(yaw);
         double cosine = Math.cos(radians);
         double sine = Math.sin(radians);
-        Vec3 arm = position.subtract(pivot);
-        return pivot.add(arm.x * cosine - arm.z * sine, arm.y, arm.x * sine + arm.z * cosine);
+        return new Vec3(vector.x * cosine - vector.z * sine, vector.y, vector.x * sine + vector.z * cosine);
     }
 
     /** @return whether the mount can turn all the way round */

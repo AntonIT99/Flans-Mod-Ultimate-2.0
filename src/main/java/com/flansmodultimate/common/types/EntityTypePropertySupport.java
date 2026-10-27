@@ -110,8 +110,12 @@ public final class EntityTypePropertySupport
             float pitchSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().y), 0.25F, 45F);
             boolean onTurret = EnumDriveablePart.isTurretMounted(seat.getPart());
             Vec3 position = LegacyDriveableCoordinates.toLocal(seat.getPosition());
+            // As Driveable seats a rider: RotatedOffset always turns with the turret, TurretOriginOffset only for turret seats.
+            Vec3 turretOffset = LegacyDriveableCoordinates.toLocal(seat.getRotatedOffset());
+            if (onTurret && driveable.getTurretOriginOffset() != null)
+                turretOffset = turretOffset.add(LegacyDriveableCoordinates.toLocal(driveable.getTurretOriginOffset()));
             mounts.add(new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(seat.getMinYaw(), seat.getMinPitch()), new MountAim(seat.getMaxYaw(), seat.getMaxPitch()), yawSpeed,
-                pitchSpeed, position, onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType())));
+                pitchSpeed, position, onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset));
         }
         mounts.sort(Comparator.comparingInt(WeaponMount::seat));
         return List.copyOf(mounts);
