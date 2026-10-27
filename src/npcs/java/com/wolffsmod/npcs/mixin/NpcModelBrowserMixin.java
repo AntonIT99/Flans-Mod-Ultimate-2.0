@@ -51,7 +51,7 @@ public abstract class NpcModelBrowserMixin
     @Unique
     private static final List<FlanModelFolder> WOLFFSMODNPCS_KINDS = List.of(FlanModelFolder.AA_GUN, FlanModelFolder.MECHA, FlanModelFolder.PLANE, FlanModelFolder.VEHICLE, FlanModelFolder.SHIP);
     @Unique
-    private static final List<String> WOLFFSMODNPCS_LABELS = List.of("Flan AA Gun", "Flan Mecha", "Flan Plane", "Flan Vehicle", "Flan Ship");
+    private static final List<String> WOLFFSMODNPCS_LABELS = List.of("Flan's AA Gun", "Flan's Mecha", "Flan's Plane", "Flan's Vehicle", "Flan's Ship");
     /** Folder rows at the top of the first level: the model kinds, then the soldier folder. */
     @Unique
     private static final int WOLFFSMODNPCS_TOP_FOLDERS = WOLFFSMODNPCS_KINDS.size() + 1;

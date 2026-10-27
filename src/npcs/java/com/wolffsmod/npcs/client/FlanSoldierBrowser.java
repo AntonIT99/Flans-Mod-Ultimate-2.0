@@ -24,14 +24,14 @@ import java.io.InputStream;
 import java.util.*;
 
 /**
- * The "Flan Soldier" folder of the Custom NPCs model picker: content packs, their teams, then a team's classes.
+ * The "Flan's Soldier" folder of the Custom NPCs model picker: content packs, their teams, then a team's classes.
  * Choosing a class gives the NPC the human model and, unless the builder turned the class skin off, the class skin, and
  * remembers the choice. A toggle applies the class loadout; the naming controls generate a name on explicit request.
  */
 @SuppressWarnings("unused") // Reached only from the model picker mixin, which IntelliJ does not follow.
 public final class FlanSoldierBrowser
 {
-    public static final String LABEL = "Flan Soldier";
+    public static final String LABEL = "Flan's Soldier";
     private static final int LOADOUT_TOGGLE_ID = 9120;
     private static final int SKIN_TOGGLE_ID = 9121;
     private static final int NAME_APPLY_ID = 9123;
