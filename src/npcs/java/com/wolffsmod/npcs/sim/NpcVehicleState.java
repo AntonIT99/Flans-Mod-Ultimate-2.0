@@ -489,6 +489,35 @@ public final class NpcVehicleState
         attitudeBank = 0F;
     }
 
+    /**
+     * Pitches, as Minecraft counts them, between which the main weapon of a hovering helicopter can be laid.
+     *
+     * @param highest
+     *            the steepest above the horizon, negative
+     * @param lowest
+     *            the steepest below it
+     */
+    public record ShotPitch(float highest, float lowest)
+    {
+        /** A weapon that points anywhere, as one fired from the NPC's eyes does. */
+        static final ShotPitch FREE = new ShotPitch(-90F, 90F);
+    }
+
+    /**
+     * @return how steeply the main weapon of a hovering helicopter reaches: as far as it tips its nose for guns fixed to its
+     *         hull, its turret's elevation limits for a turret, and anywhere without a model
+     */
+    public ShotPitch hoverShotPitch()
+    {
+        Layout current = active ? layout : null;
+        if (current == null)
+            return ShotPitch.FREE;
+        if (!current.turreted())
+            return new ShotPitch(-MAX_HOVER_TIP, MAX_HOVER_TIP);
+        WeaponMount driver = current.driver();
+        return driver == null ? ShotPitch.FREE : new ShotPitch(driver.minimum().pitch(), driver.maximum().pitch());
+    }
+
     /** @return the nose-down pitch a hovering helicopter tips toward this tick: onto the shot it has to make, or level without one */
     private float tip(@Nullable Vec3 aim)
     {

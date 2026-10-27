@@ -81,6 +81,40 @@ class NpcFlightAndDepthTest
     }
 
     @Test
+    void anAircraftThatDroppedBelowItsAttackAltitudeSettlesHighEnoughToFireAgain()
+    {
+        // It settles no lower than its margin less the band it no longer climbs in, which has to clear the height it fires again at.
+        assertTrue(NpcFlight.HELICOPTER_MARGIN - NpcFlight.CLIMB_DEADBAND > NpcFlight.ATTACK_HYSTERESIS);
+        assertTrue(NpcFlight.PLANE_MARGIN - NpcFlight.CLIMB_DEADBAND > NpcFlight.ATTACK_HYSTERESIS);
+        // Within that band it no longer climbs.
+        assertEquals(0D, NpcFlight.climb(0D, NpcFlight.CLIMB_DEADBAND, Flight.HELICOPTER, false));
+        assertTrue(NpcFlight.climb(0D, NpcFlight.CLIMB_DEADBAND + 0.01D, Flight.HELICOPTER, false) > 0D);
+    }
+
+    @Test
+    void aHelicopterBacksOffFromATargetSteeperThanItsGunsReach()
+    {
+        NpcVehicleState.ShotPitch tipped = new NpcVehicleState.ShotPitch(-45F, 45F);
+        assertFalse(NpcFlight.tooSteep(30F, tipped));
+        assertTrue(NpcFlight.tooSteep(41F, tipped), "too close to the steepest to keep the shot");
+        assertTrue(NpcFlight.tooSteep(80F, tipped), "right over its target");
+        assertTrue(NpcFlight.tooSteep(-60F, tipped), "steeply under an aircraft above it");
+        assertFalse(NpcFlight.tooSteep(80F, new NpcVehicleState.ShotPitch(-90F, 90F)));
+        // It backs off across the ground away from its target, and against its heading when right over it.
+        Vec3 away = NpcFlight.away(new Vec3(10D, 90D, 0D), new Vec3(0D, 64D, 0D), 0F);
+        assertEquals(1D, away.x, 1.0E-9D);
+        assertEquals(0D, away.y);
+        assertEquals(-1D, NpcFlight.away(new Vec3(0D, 90D, 0D), new Vec3(0D, 64D, 0D), 0F).z, 1.0E-6D);
+        // Flying in, it turns round to at least its backing-off speed; flying out faster, it keeps its speed; sideways motion stays.
+        Vec3 backing = NpcFlight.backOff(new Vec3(-0.3D, 0.1D, 0.2D), away, NpcFlight.BACK_OFF_SPEED);
+        assertEquals(NpcFlight.BACK_OFF_SPEED, backing.x, 1.0E-9D);
+        assertEquals(0.2D, backing.z, 1.0E-9D);
+        assertEquals(0.1D, backing.y, 1.0E-9D);
+        Vec3 fast = new Vec3(0.4D, 0D, 0D);
+        assertEquals(fast, NpcFlight.backOff(fast, away, NpcFlight.BACK_OFF_SPEED));
+    }
+
+    @Test
     void aRoamingPlaneMovesItsCircleOnRoughlyAlongItsHeading()
     {
         // Heading 0 flies toward positive z.

@@ -44,11 +44,20 @@ import java.util.Optional;
 public final class NpcFlight
 {
     private static final int SAMPLE_INTERVAL = 10;
-    /** Blocks above the attack altitude each type settles at. */
-    private static final double PLANE_MARGIN = 5D;
-    private static final double HELICOPTER_MARGIN = 2D;
+    /**
+     * Blocks above the attack altitude each type settles at. An aircraft settles up to {@link #CLIMB_DEADBAND} below that
+     * height, which has to leave it above {@link #ATTACK_HYSTERESIS}, or one that has dropped below its attack altitude
+     * never fires again.
+     */
+    static final double PLANE_MARGIN = 5D;
+    static final double HELICOPTER_MARGIN = 4D;
     /** Blocks an aircraft has to climb past its attack altitude before it fires again, so that it does not flicker. */
-    private static final double ATTACK_HYSTERESIS = 2D;
+    static final double ATTACK_HYSTERESIS = 2D;
+    /** Blocks below the height it should hold within which an aircraft no longer climbs. */
+    static final double CLIMB_DEADBAND = 0.5D;
+    /** Degrees inside the steepest its guns reach that a helicopter keeps its shot, and blocks per tick it backs off at least to keep it there. */
+    static final float STEEP_MARGIN = 5F;
+    static final double BACK_OFF_SPEED = 0.15D;
     /** Blocks per tick: a plane left to itself neither stalls below the first nor outruns the second. */
     static final double STALL_SPEED = 0.13D;
     static final double TOP_SPEED = 0.42D;
@@ -247,7 +256,7 @@ public final class NpcFlight
 
     /**
      * Turns a helicopter's hull toward its target, or along its travel, and holds its height; it flies no faster than its
-     * model does.
+     * model does. It backs off from a target further below or above it than its guns reach.
      *
      * @param model
      *            how the helicopter's model flies, when it flies as its model; null for the defaults
@@ -262,16 +271,51 @@ public final class NpcFlight
         pitch = 0F;
         bank = 0F;
         float wanted = yaw;
+        NpcVehicleState state = NpcVehicleState.of(npc);
+        Vec3 aim = target == null ? Vec3.ZERO : state.aimDirection().orElse(target.position().subtract(npc.position()));
         // Its guns fire along its hull, so it faces where their rounds have to go.
         if (target != null)
-            wanted = MountMotion.yaw(NpcVehicleState.of(npc).aimDirection().orElse(target.position().subtract(npc.position())));
+            wanted = MountMotion.yaw(aim);
         else if (motion.horizontalDistanceSqr() > 4.0E-4D)
             wanted = MountMotion.yaw(motion);
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
         yaw = MountMotion.turn(yaw, wanted, turnRate > 0 ? turnRate / 20F : HELICOPTER_TURN);
+        double top = model == null ? Double.POSITIVE_INFINITY : model.topSpeed();
+        if (target != null && tooSteep(MountMotion.relative(aim, 0F).pitch(), state.hoverShotPitch()))
+            motion = backOff(motion, away(npc.position(), target.position(), yaw), Math.min(BACK_OFF_SPEED, top));
         double horizontal = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
-        double cap = model != null && horizontal > model.topSpeed() ? model.topSpeed() / horizontal : 1D;
+        double cap = horizontal > top ? top / horizontal : 1D;
         npc.setDeltaMovement(motion.x * cap, vertical, motion.z * cap);
+    }
+
+    /**
+     * @param shot
+     *            degrees below the horizon the shot has to leave at, negative above it
+     * @return whether the shot lies beyond the steepest the helicopter's guns reach, or within {@link #STEEP_MARGIN} of it
+     */
+    static boolean tooSteep(float shot, NpcVehicleState.ShotPitch reach)
+    {
+        return shot > reach.lowest() - STEEP_MARGIN || shot < reach.highest() + STEEP_MARGIN;
+    }
+
+    /**
+     * @param heading
+     *            the helicopter's heading, which it backs off against when right over or under its target
+     * @return the direction across the ground from the target to the helicopter, along which it backs off
+     */
+    static Vec3 away(Vec3 position, Vec3 target, float heading)
+    {
+        Vec3 across = new Vec3(position.x - target.x, 0D, position.z - target.z);
+        if (across.lengthSqr() < 1.0E-4D)
+            return Vec3.directionFromRotation(0F, heading).scale(-1D);
+        return across.normalize();
+    }
+
+    /** @return the motion with at least the given speed along the direction, keeping the rest of it */
+    static Vec3 backOff(Vec3 motion, Vec3 direction, double speed)
+    {
+        double along = motion.x * direction.x + motion.z * direction.z;
+        return along >= speed ? motion : motion.add(direction.scale(speed - along));
     }
 
     /**
@@ -548,7 +592,7 @@ public final class NpcFlight
     static double climb(double vertical, double error, Flight type, boolean idle, double maxClimb)
     {
         boolean plane = type == Flight.PLANE;
-        if (error > 0.5D)
+        if (error > CLIMB_DEADBAND)
             return Math.max(vertical, Math.min(maxClimb, 0.06D + error * 0.035D));
         if (error < -5D)
             return Math.min(vertical, Math.max(plane ? -0.12D : -0.16D, error * 0.025D));
