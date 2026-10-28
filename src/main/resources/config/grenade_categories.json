@@ -115,6 +115,19 @@
         ]
     },
 
+    "Body And Wreckage Effect Props (Generic)": {
+        "properties": {},
+        "items": [
+            "gorearm",
+            "gorehead",
+            "goreleg",
+            "gorefried",
+            "turretgore",
+            "winggore",
+            "gore"
+        ]
+    },
+
     "C4 Plastic Explosive": {
         "properties": {
             "ThrowSpeedMs": 12,
@@ -169,7 +182,8 @@
             "Fuse": 80
         },
         "items": [
-            "44_f1frag"
+            "44_f1frag",
+            "f1soviet"
         ]
     },
 
@@ -230,6 +244,16 @@
         "items": [
             "germangeballteladung3kg",
             "geballteladung3kg"
+        ]
+    },
+
+    "Heavy Improvised Demolition Charge (Generic)": {
+        "properties": {
+            "ExplosiveMassTNTKg": 3,
+            "FragType": "IED_SHRAPNEL"
+        },
+        "items": [
+            "ied"
         ]
     },
 
@@ -306,6 +330,17 @@
         ]
     },
 
+    "M18 Coloured Smoke Grenade": {
+        "properties": {
+            "Mass": 538.64,
+            "FragType": "DEFAULT",
+            "Fuse": 30
+        },
+        "items": [
+            "m18"
+        ]
+    },
+
     "M18A1 Claymore Mine": {
         "properties": {
             "ThrowSpeedMs": 0,
@@ -320,6 +355,18 @@
         ]
     },
 
+    "M26 Fragmentation Grenade": {
+        "properties": {
+            "Mass": 453.592,
+            "ExplosiveMassTNTg": 207.38,
+            "FragType": "PREFORMED",
+            "Fuse": 90
+        },
+        "items": [
+            "m24frag"
+        ]
+    },
+
     "M67 Fragmentation Hand Grenade": {
         "properties": {
             "ThrowSpeedMs": 12,
@@ -329,6 +376,18 @@
         },
         "items": [
             "m67"
+        ]
+    },
+
+    "M1914 Fragmentation Grenade (TNT Loading)": {
+        "properties": {
+            "Mass": 720,
+            "ExplosiveMassTNTg": 400,
+            "FragType": "SLEEVE_FRAG",
+            "Fuse": 80
+        },
+        "items": [
+            "m1914frag"
         ]
     },
 
@@ -463,6 +522,18 @@
         ]
     },
 
+    "RGD-5 Fragmentation Grenade": {
+        "properties": {
+            "Mass": 310,
+            "ExplosiveMassTNTg": 110,
+            "FragType": "LOW_FRAG",
+            "Fuse": 74
+        },
+        "items": [
+            "rgd5"
+        ]
+    },
+
     "RGD-33 Grenade": {
         "properties": {
             "ThrowSpeedMs": 12,
@@ -473,6 +544,29 @@
         },
         "items": [
             "rgd33"
+        ]
+    },
+
+    "RGO Defensive Fragmentation Grenade": {
+        "properties": {
+            "Mass": 530,
+            "ExplosiveMassTNTg": 135,
+            "FragType": "PREFORMED",
+            "Fuse": 74
+        },
+        "items": [
+            "rgo"
+        ]
+    },
+
+    "RKG-3 Anti-Tank Grenade": {
+        "properties": {
+            "Mass": 1070,
+            "ExplosiveMassTNTg": 402.5,
+            "FragType": "THICK_CASE"
+        },
+        "items": [
+            "rkg3"
         ]
     },
 
@@ -621,6 +715,18 @@
         ]
     },
 
+    "Thrown Wooden Hunting Stick (Generic)": {
+        "properties": {
+            "Mass": 500,
+            "ThrowSpeedMs": 20,
+            "FallSpeed": 1.0,
+            "FragType": "DEFAULT"
+        },
+        "items": [
+            "throwingspear"
+        ]
+    },
+
     "Trip Mine (Generic)": {
         "properties": {
             "ThrowSpeedMs": 6,
@@ -643,6 +749,16 @@
         },
         "items": [
             "type97"
+        ]
+    },
+
+    "Wearable Demolition Charge (Generic)": {
+        "properties": {
+            "ExplosiveMassTNTKg": 1,
+            "FragType": "IED_SHRAPNEL"
+        },
+        "items": [
+            "bombdetonator"
         ]
     }
 }

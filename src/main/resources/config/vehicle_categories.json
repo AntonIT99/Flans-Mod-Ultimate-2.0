@@ -1,4 +1,5 @@
 {
+
     "1.1-inch/75 Mark 2 Quadruple Mount": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -63,6 +64,113 @@
         },
         "items": [
             "flakvierling"
+        ]
+    },
+
+    "2K12 Kub 2P25 launcher": {
+        "properties": {
+            "RealMassKg": 20000,
+            "RealEnginePowerHp": 280,
+            "RealMaxSpeedKmh": 44.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 15.0,
+            "ArmorSideMm": 10.0,
+            "ArmorRearMm": 10.0,
+            "ArmorTopMm": 8.0,
+            "ArmorBottomMm": 8.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 15.0
+        },
+        "items": [
+            "2k12kub"
+        ]
+    },
+
+    "2S1 Gvozdika": {
+        "properties": {
+            "RealMassKg": 15700,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "ShootDelayPrimarySeconds": 10.0
+        },
+        "items": [
+            "2s1"
+        ]
+    },
+
+    "2S6 Tunguska": {
+        "properties": {
+            "RealMassKg": 34700,
+            "RealEnginePowerHp": 710,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 15.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "tungusta"
+        ]
+    },
+
+    "2S19 Msta-S": {
+        "properties": {
+            "RealMassKg": 42000,
+            "RealEnginePowerHp": 840,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 15.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0
+        },
+        "items": [
+            "msta"
         ]
     },
 
@@ -196,33 +304,6 @@
         ]
     },
 
-    "7TP": {
-        "properties": {
-            "SquashMobs": "true",
-            "RealTurnRateDegPerSec": 26,
-            "RealMassKg": 9900,
-            "RealEnginePowerPS": 110,
-            "RealMaxSpeedKmh": 37,
-            "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": 6,
-            "ArmorFrontMm": 17,
-            "ArmorSideMm": 17,
-            "ArmorRearMm": 9,
-            "ArmorTopMm": 10,
-            "ArmorBottomMm": 8,
-            "TurretArmorFrontMm": 15,
-            "TurretArmorSideMm": 15,
-            "TurretArmorRearMm": 15,
-            "TurretArmorTopMm": 15,
-            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
-            "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
-        },
-        "items": [
-            "7tp"
-        ]
-    },
-
     "7.5 cm PaK 40": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -264,6 +345,33 @@
         "items": [
             "44_pak40",
             "pak40"
+        ]
+    },
+
+    "7TP": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 26,
+            "RealMassKg": 9900,
+            "RealEnginePowerPS": 110,
+            "RealMaxSpeedKmh": 37,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 6,
+            "ArmorFrontMm": 17,
+            "ArmorSideMm": 17,
+            "ArmorRearMm": 9,
+            "ArmorTopMm": 10,
+            "ArmorBottomMm": 8,
+            "TurretArmorFrontMm": 15,
+            "TurretArmorSideMm": 15,
+            "TurretArmorRearMm": 15,
+            "TurretArmorTopMm": 15,
+            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "7tp"
         ]
     },
 
@@ -348,6 +456,162 @@
         },
         "items": [
             "pak43"
+        ]
+    },
+
+    "9A34 Strela-10": {
+        "properties": {
+            "RealMassKg": 12300,
+            "RealEnginePowerHp": 240,
+            "RealMaxSpeedKmh": 61.0,
+            "RealMaxReverseSpeedKmh": 10.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 14.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 7.0,
+            "ArmorBottomMm": 7.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 10.0
+        },
+        "items": [
+            "shitboxaa"
+        ]
+    },
+
+    "9A52-2 Smerch": {
+        "properties": {
+            "RealMassKg": 43700,
+            "RealEnginePowerHp": 525,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 106.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0,
+            "ShootDelayPrimarySeconds": 3.0
+        },
+        "items": [
+            "bm30"
+        ]
+    },
+
+    "9K133 Kornet tripod launcher": {
+        "properties": {
+            "RealMassKg": 26,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 15
+        },
+        "items": [
+            "kornettripod"
+        ]
+    },
+
+    "9P117 Elbrus launcher": {
+        "properties": {
+            "RealMassKg": 37400,
+            "RealEnginePowerHp": 525,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 12.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 106.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0,
+            "ShootDelayPrimarySeconds": 30.0
+        },
+        "items": [
+            "scud"
+        ]
+    },
+
+    "9P135M Konkurs tripod launcher": {
+        "properties": {
+            "RealMassKg": 22.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 15
+        },
+        "items": [
+            "konkurstripod"
+        ]
+    },
+
+    "9P148 Konkurs": {
+        "properties": {
+            "RealMassKg": 7000,
+            "RealEnginePowerHp": 140,
+            "RealMaxSpeedKmh": 95.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 168.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 14.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 7.0,
+            "ArmorBottomMm": 7.0,
+            "TurretArmorFrontMm": 7.0,
+            "TurretArmorSideMm": 7.0,
+            "TurretArmorRearMm": 7.0,
+            "TurretArmorTopMm": 0.0,
+            "ShootDelayPrimarySeconds": 15.0
+        },
+        "items": [
+            "brdm2atgm"
+        ]
+    },
+
+    "9P149 Shturm-S": {
+        "properties": {
+            "RealMassKg": 12300,
+            "RealEnginePowerHp": 240,
+            "RealMaxSpeedKmh": 61.0,
+            "RealMaxReverseSpeedKmh": 10.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 14.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 7.0,
+            "ArmorBottomMm": 7.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 15.0
+        },
+        "items": [
+            "shitboxatgm"
         ]
     },
 
@@ -976,6 +1240,28 @@
         ]
     },
 
+    "105mm Feldhaubitze M.12": {
+        "properties": {
+            "RealTurnRateDegPerSec": 0,
+            "RealMassKg": 1420,
+            "RealEnginePowerHp": 6,
+            "RealMaxSpeedKmh": 8,
+            "DriveType": "AWD",
+            "RealMaxReverseSpeedKmh": 3,
+            "ShootDelayPrimarySeconds": 8,
+            "ArmorFrontMm": 4,
+            "ArmorSideMm": 4,
+            "ArmorRearMm": 4,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "105howitzerroma"
+        ]
+    },
+
     "105mm Gun Motor Carriage T95": {
         "properties": {
             "SquashMobs": "true",
@@ -1023,28 +1309,6 @@
         },
         "items": [
             "44_m7priest"
-        ]
-    },
-
-    "105mm Feldhaubitze M.12": {
-        "properties": {
-            "RealTurnRateDegPerSec": 0,
-            "RealMassKg": 1420,
-            "RealEnginePowerHp": 6,
-            "RealMaxSpeedKmh": 8,
-            "DriveType": "AWD",
-            "RealMaxReverseSpeedKmh": 3,
-            "ShootDelayPrimarySeconds": 8,
-            "ArmorFrontMm": 4,
-            "ArmorSideMm": 4,
-            "ArmorRearMm": 4,
-            "ArmorTopMm": 0,
-            "ArmorBottomMm": 0,
-            "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
-        },
-        "items": [
-            "105howitzerroma"
         ]
     },
 
@@ -1143,6 +1407,32 @@
         ]
     },
 
+    "A7V": {
+        "properties": {
+            "RealMassKg": 30000,
+            "RealEnginePowerHp": 200,
+            "RealMaxSpeedKmh": 15,
+            "RealMaxReverseSpeedKmh": 3,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30,
+            "ArmorSideMm": 20,
+            "ArmorRearMm": 20,
+            "ArmorTopMm": 10,
+            "ArmorBottomMm": 10,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6
+        },
+        "items": [
+            "a7v"
+        ]
+    },
+
     "A22D Churchill 3 inch Gun Carrier": {
         "properties": {
             "SquashMobs": "true",
@@ -1210,6 +1500,31 @@
         ]
     },
 
+    "AAV-7A1": {
+        "properties": {
+            "RealMassKg": 29100,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 72.0,
+            "RealMaxReverseSpeedKmh": 14.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 35.0,
+            "ArmorSideMm": 25.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "aav7"
+        ]
+    },
+
     "Admiral Hipper-class Heavy Cruiser": {
         "properties": {
             "RealTurnRateDegPerSec": 1.77,
@@ -1236,6 +1551,53 @@
         "items": [
             "ships_plane_prinzeugen_1a",
             "prinz"
+        ]
+    },
+
+    "Admiral Kuznetsov (1991)": {
+        "properties": {
+            "RealDisplacementT": 58600.0,
+            "RealEnginePowerHp": 200000,
+            "RealMaxSpeedKn": 29.0,
+            "RealMaxReverseSpeedKn": 11.6,
+            "DriveType": "MARINE",
+            "RealDraftM": 10.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "kuznetsov"
+        ]
+    },
+
+    "AGS-30 tripod mount": {
+        "properties": {
+            "RealMassKg": 16.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "RoundsPerMinPrimary": 400,
+            "ReloadRoundsPrimary": 30,
+            "ReloadTimePrimary": 100
+        },
+        "items": [
+            "ags30"
         ]
     },
 
@@ -1303,6 +1665,33 @@
         ]
     },
 
+    "Altay (initial production profile)": {
+        "properties": {
+            "RealMassKg": 65000,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 30.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm Rh-120 L/55"
+        },
+        "items": [
+            "turkiyealtay"
+        ]
+    },
+
     "Ambulance Van (Generic)": {
         "properties": {
             "SquashMobs": "true",
@@ -1349,6 +1738,67 @@
         },
         "items": [
             "amxm4"
+        ]
+    },
+
+    "AMX-13-75": {
+        "properties": {
+            "RealMassKg": 13700,
+            "RealEnginePowerHp": 250,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 6.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "75mm SA50"
+        },
+        "items": [
+            "amx13"
+        ]
+    },
+
+    "AMX-30B2": {
+        "properties": {
+            "RealMassKg": 37000,
+            "RealEnginePowerHp": 720,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 23.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 80.0,
+            "ArmorSideMm": 35.0,
+            "ArmorRearMm": 30.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 80.0,
+            "TurretArmorSideMm": 41.0,
+            "TurretArmorRearMm": 30.0,
+            "TurretArmorTopMm": 20.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "amx30"
         ]
     },
 
@@ -1486,6 +1936,36 @@
         ]
     },
 
+    "AS-90": {
+        "properties": {
+            "RealMassKg": 45300,
+            "RealEnginePowerHp": 660,
+            "RealMaxSpeedKmh": 55.0,
+            "RealMaxReverseSpeedKmh": 17.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 17.0,
+            "ArmorSideMm": 17.0,
+            "ArmorRearMm": 17.0,
+            "ArmorTopMm": 17.0,
+            "ArmorBottomMm": 17.0,
+            "TurretArmorFrontMm": 17.0,
+            "TurretArmorSideMm": 17.0,
+            "TurretArmorRearMm": 17.0,
+            "TurretArmorTopMm": 17.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 10.0
+        },
+        "items": [
+            "as90"
+        ]
+    },
+
     "Assault Tank M4A3E2 Jumbo": {
         "properties": {
             "SquashMobs": "true",
@@ -1595,6 +2075,34 @@
         ]
     },
 
+    "Balao GUPPY modernization (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 1870.0,
+            "RealEnginePowerHp": 5400,
+            "RealMaxSpeedKn": 17.0,
+            "RealMaxReverseSpeedKn": 6.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 5.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "balao"
+        ]
+    },
+
     "Baneblade (Fictional)": {
         "properties": {
             "SquashMobs": "true",
@@ -1654,6 +2162,27 @@
         },
         "items": [
             "genericbb"
+        ]
+    },
+
+    "Berliet GBC 8 KT": {
+        "properties": {
+            "RealMassKg": 12000,
+            "RealEnginePowerHp": 125,
+            "RealMaxSpeedKmh": 80.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 141.47,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0
+        },
+        "items": [
+            "gbc8ktlogi"
         ]
     },
 
@@ -1800,6 +2329,177 @@
         ]
     },
 
+    "BM-21 Grad": {
+        "properties": {
+            "RealMassKg": 13700,
+            "RealEnginePowerHp": 180,
+            "RealMaxSpeedKmh": 75.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 132.63,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0,
+            "ShootDelayPrimarySeconds": 0.5
+        },
+        "items": [
+            "bm21"
+        ]
+    },
+
+    "BMP-1": {
+        "properties": {
+            "RealMassKg": 13500,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 19.0,
+            "ArmorSideMm": 16.0,
+            "ArmorRearMm": 16.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 23.0,
+            "TurretArmorSideMm": 19.0,
+            "TurretArmorRearMm": 19.0,
+            "TurretArmorTopMm": 6.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "73mm 2A28"
+        },
+        "items": [
+            "bmp1"
+        ]
+    },
+
+    "BMP-2": {
+        "properties": {
+            "RealMassKg": 14300,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 19.0,
+            "ArmorSideMm": 16.0,
+            "ArmorRearMm": 16.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 23.0,
+            "TurretArmorSideMm": 19.0,
+            "TurretArmorRearMm": 19.0,
+            "TurretArmorTopMm": 6.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "bmp2"
+        ]
+    },
+
+    "BMP-2M Berezhok": {
+        "properties": {
+            "RealMassKg": 16000,
+            "RealEnginePowerHp": 360,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 19.0,
+            "ArmorSideMm": 16.0,
+            "ArmorRearMm": 16.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 23.0,
+            "TurretArmorSideMm": 19.0,
+            "TurretArmorRearMm": 19.0,
+            "TurretArmorTopMm": 6.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "bmp2m"
+        ]
+    },
+
+    "BMP-3": {
+        "properties": {
+            "RealMassKg": 18700,
+            "RealEnginePowerHp": 500,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 50.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 50.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0
+        },
+        "items": [
+            "bmp3"
+        ]
+    },
+
+    "BMP-3M": {
+        "properties": {
+            "RealMassKg": 22000,
+            "RealEnginePowerHp": 660,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 50.0,
+            "ArmorSideMm": 30.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 50.0,
+            "TurretArmorSideMm": 30.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0
+        },
+        "items": [
+            "bmp3m"
+        ]
+    },
+
     "BMW R75": {
         "properties": {
             "RealTurnRateDegPerSec": 240,
@@ -1900,6 +2600,60 @@
         ]
     },
 
+    "Boragh APC": {
+        "properties": {
+            "RealMassKg": 13500,
+            "RealEnginePowerHp": 330,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 12.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 0.0,
+            "TurretArmorSideMm": 0.0,
+            "TurretArmorRearMm": 0.0,
+            "TurretArmorTopMm": 0.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "boragh"
+        ]
+    },
+
+    "BRDM-2": {
+        "properties": {
+            "RealMassKg": 7000,
+            "RealEnginePowerHp": 140,
+            "RealMaxSpeedKmh": 95.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 168.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 14.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 7.0,
+            "ArmorBottomMm": 7.0,
+            "TurretArmorFrontMm": 10.0,
+            "TurretArmorSideMm": 7.0,
+            "TurretArmorRearMm": 7.0,
+            "TurretArmorTopMm": 7.0
+        },
+        "items": [
+            "brdm2"
+        ]
+    },
+
     "Brooklyn-class Light Cruiser": {
         "properties": {
             "RealTurnRateDegPerSec": 2.07,
@@ -1983,6 +2737,164 @@
         },
         "items": [
             "bt42"
+        ]
+    },
+
+    "BTR-4": {
+        "properties": {
+            "RealMassKg": 21900,
+            "RealEnginePowerHp": 500,
+            "RealMaxSpeedKmh": 110.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 194.52,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 30.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 10.0
+        },
+        "items": [
+            "btr4"
+        ]
+    },
+
+    "BTR-60PB": {
+        "properties": {
+            "RealMassKg": 10300,
+            "RealEnginePowerHp": 180,
+            "RealMaxSpeedKmh": 80.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 141.47,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 9.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 10.0,
+            "TurretArmorSideMm": 7.0,
+            "TurretArmorRearMm": 7.0,
+            "TurretArmorTopMm": 6.0
+        },
+        "items": [
+            "btr60"
+        ]
+    },
+
+    "BTR-70": {
+        "properties": {
+            "RealMassKg": 11500,
+            "RealEnginePowerHp": 240,
+            "RealMaxSpeedKmh": 80.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 141.47,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 10.0,
+            "TurretArmorSideMm": 7.0,
+            "TurretArmorRearMm": 7.0,
+            "TurretArmorTopMm": 6.0
+        },
+        "items": [
+            "btr70new"
+        ]
+    },
+
+    "BTR-80": {
+        "properties": {
+            "RealMassKg": 13600,
+            "RealEnginePowerHp": 260,
+            "RealMaxSpeedKmh": 80.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 141.47,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 10.0,
+            "TurretArmorSideMm": 7.0,
+            "TurretArmorRearMm": 7.0,
+            "TurretArmorTopMm": 6.0
+        },
+        "items": [
+            "btr80"
+        ]
+    },
+
+    "BTR-80A (30mm armed configuration)": {
+        "properties": {
+            "RealMassKg": 14550,
+            "RealEnginePowerHp": 260,
+            "RealMaxSpeedKmh": 80.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 141.47,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 10.0,
+            "TurretArmorRearMm": 10.0,
+            "TurretArmorTopMm": 6.0,
+            "UseAmmoGroup": "30mm 2A42/2A72",
+            "RoundsPerMinPrimary": 330,
+            "ReloadRoundsPrimary": 300,
+            "ReloadTimePrimary": 300
+        },
+        "items": [
+            "btr80a"
+        ]
+    },
+
+    "BTR-82A (30mm armed configuration)": {
+        "properties": {
+            "RealMassKg": 16000,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 80.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 141.47,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 10.0,
+            "TurretArmorRearMm": 10.0,
+            "TurretArmorTopMm": 6.0,
+            "UseAmmoGroup": "30mm 2A42/2A72",
+            "RoundsPerMinPrimary": 330,
+            "ReloadRoundsPrimary": 300,
+            "ReloadTimePrimary": 300
+        },
+        "items": [
+            "btr82"
         ]
     },
 
@@ -2268,7 +3180,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "forestedabrams"
+            "forestedabrams",
+            "cattb"
         ]
     },
 
@@ -2296,6 +3209,152 @@
         },
         "items": [
             "centurion84"
+        ]
+    },
+
+    "Centurion Mk 10": {
+        "properties": {
+            "RealMassKg": 51800,
+            "RealEnginePowerHp": 650,
+            "RealMaxSpeedKmh": 35.0,
+            "RealMaxReverseSpeedKmh": 12.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 120.0,
+            "ArmorSideMm": 51.0,
+            "ArmorRearMm": 38.0,
+            "ArmorTopMm": 29.0,
+            "ArmorBottomMm": 17.0,
+            "TurretArmorFrontMm": 152.0,
+            "TurretArmorSideMm": 89.0,
+            "TurretArmorRearMm": 51.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "centurion105"
+        ]
+    },
+
+    "Challenger 1 Mk 1": {
+        "properties": {
+            "RealMassKg": 62000,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 56.0,
+            "RealMaxReverseSpeedKmh": 36.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 500.0,
+            "ArmorSideMm": 50.0,
+            "ArmorRearMm": 38.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "120mm L11"
+        },
+        "items": [
+            "chally1"
+        ]
+    },
+
+    "Challenger 2 Theatre Entry Standard": {
+        "properties": {
+            "RealMassKg": 74000,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 56.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 100.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 50.0,
+            "ArmorBottomMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "120mm L30A1"
+        },
+        "items": [
+            "chally2tes"
+        ]
+    },
+
+    "Changchun Anshan-class (1955)": {
+        "properties": {
+            "RealDisplacementT": 2400.0,
+            "RealEnginePowerHp": 48000,
+            "RealMaxSpeedKn": 37.0,
+            "RealMaxReverseSpeedKn": 14.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 4.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "changchun"
+        ]
+    },
+
+    "Changchun Anshan-class (1974 retrofit)": {
+        "properties": {
+            "RealDisplacementT": 2660.0,
+            "RealEnginePowerHp": 48000,
+            "RealMaxSpeedKn": 35.0,
+            "RealMaxReverseSpeedKn": 14.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 4.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "changchunretrofit"
         ]
     },
 
@@ -2434,6 +3493,36 @@
         ]
     },
 
+    "Chieftain Mk 5": {
+        "properties": {
+            "RealMassKg": 55000,
+            "RealEnginePowerHp": 750,
+            "RealMaxSpeedKmh": 48.0,
+            "RealMaxReverseSpeedKmh": 9.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 120.0,
+            "ArmorSideMm": 38.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 16.0,
+            "TurretArmorFrontMm": 230.0,
+            "TurretArmorSideMm": 120.0,
+            "TurretArmorRearMm": 50.0,
+            "TurretArmorTopMm": 45.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "120mm L11"
+        },
+        "items": [
+            "chieftain"
+        ]
+    },
+
     "Chinese Junk": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -2446,6 +3535,68 @@
         },
         "items": [
             "junkship"
+        ]
+    },
+
+    "Chonma-2 (public-data gameplay estimate)": {
+        "properties": {
+            "RealMassKg": 55000,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 550.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 650.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "cheonma2"
+        ]
+    },
+
+    "Chonma-ho (T-62-derived profile)": {
+        "properties": {
+            "RealMassKg": 40000,
+            "RealEnginePowerHp": 580,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 100.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 214.0,
+            "TurretArmorSideMm": 153.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 12.0,
+            "UseAmmoGroup": "115mm U-5TS"
+        },
+        "items": [
+            "pegasus"
         ]
     },
 
@@ -2504,6 +3655,37 @@
         ]
     },
 
+    "Classic medium tank, Panzer IV D exemplar (Generic)": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 12,
+            "RealMassKg": 20000,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 42,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 8,
+            "ArmorFrontMm": "30 10",
+            "ArmorSideMm": 20,
+            "ArmorRearMm": 20,
+            "ArmorTopMm": 10,
+            "ArmorBottomMm": 10,
+            "TurretArmorFrontMm": 30,
+            "TurretArmorSideMm": 20,
+            "TurretArmorRearMm": 20,
+            "TurretArmorTopMm": 10,
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm KwK 37"
+        },
+        "items": [
+            "panzerclassic"
+        ]
+    },
+
     "Coastal Gun (Generic)": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -2526,6 +3708,38 @@
         ]
     },
 
+    "Constellation-class frigate design (Chesapeake representation)": {
+        "properties": {
+            "RealDisplacementT": 7400.0,
+            "RealEnginePowerHp": 43000,
+            "RealMaxSpeedKn": 26.0,
+            "RealMaxReverseSpeedKn": 10.4,
+            "DriveType": "MARINE",
+            "RealDraftM": 5.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "constellation"
+        ]
+    },
+
     "Cottonclad Warship (Generic)": {
         "properties": {
             "RealTurnRateDegPerSec": 1.32,
@@ -2545,6 +3759,23 @@
         },
         "items": [
             "cottonclad"
+        ]
+    },
+
+    "Counterweight trebuchet (Generic)": {
+        "properties": {
+            "RealMassKg": 10000,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 20
+        },
+        "items": [
+            "trebuchet"
         ]
     },
 
@@ -3203,6 +4434,97 @@
         ]
     },
 
+    "Dongfeng CSK131 Mengshi": {
+        "properties": {
+            "RealMassKg": 6300,
+            "RealEnginePowerHp": 200,
+            "RealMaxSpeedKmh": 120.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 212.21,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 8.0,
+            "ArmorRearMm": 8.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 8.0
+        },
+        "items": [
+            "csk131"
+        ]
+    },
+
+    "DShKM shielded tripod mount": {
+        "properties": {
+            "RealMassKg": 157,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 8,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "TurretArmorFrontMm": 8,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0
+        },
+        "items": [
+            "dshktripod"
+        ]
+    },
+
+    "Ehrhardt E-V/4 (1915)": {
+        "properties": {
+            "RealMassKg": 7750,
+            "RealEnginePowerHp": 80,
+            "RealMaxSpeedKmh": 60,
+            "RealMaxReverseSpeedKmh": 18.0,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 9,
+            "ArmorSideMm": 9,
+            "ArmorRearMm": 9,
+            "ArmorTopMm": 5,
+            "ArmorBottomMm": 5,
+            "TurretArmorFrontMm": 9,
+            "TurretArmorSideMm": 9,
+            "TurretArmorRearMm": 9,
+            "TurretArmorTopMm": 5
+        },
+        "items": [
+            "ev4"
+        ]
+    },
+
+    "Ehrhardt E-V/4 Becker conversion": {
+        "properties": {
+            "RealMassKg": 7900,
+            "RealEnginePowerHp": 80,
+            "RealMaxSpeedKmh": 60,
+            "RealMaxReverseSpeedKmh": 18.0,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 9,
+            "ArmorSideMm": 9,
+            "ArmorRearMm": 9,
+            "ArmorTopMm": 5,
+            "ArmorBottomMm": 5,
+            "TurretArmorFrontMm": 9,
+            "TurretArmorSideMm": 9,
+            "TurretArmorRearMm": 9,
+            "TurretArmorTopMm": 5
+        },
+        "items": [
+            "ev420mm"
+        ]
+    },
+
     "Fiat 626": {
         "properties": {
             "SquashMobs": "true",
@@ -3272,6 +4594,39 @@
         "items": [
             "civil_vehicle_lkw3_1a",
             "civil_vehicle_lkw3_2a"
+        ]
+    },
+
+    "Flakpanzer Gepard": {
+        "properties": {
+            "RealMassKg": 47300,
+            "RealEnginePowerHp": 830,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 70.0,
+            "ArmorSideMm": 35.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 25.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "35mm Oerlikon KDA",
+            "RoundsPerMinPrimary": 550,
+            "ReloadRoundsPrimary": 320,
+            "ReloadTimePrimary": 400
+        },
+        "items": [
+            "gepardflakpanzer"
         ]
     },
 
@@ -3382,7 +4737,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "modeltblack"
+            "modeltblack",
+            "modeltwar"
         ]
     },
 
@@ -3437,6 +4793,97 @@
         ]
     },
 
+    "FV101 Scorpion": {
+        "properties": {
+            "RealMassKg": 8074,
+            "RealEnginePowerHp": 190,
+            "RealMaxSpeedKmh": 72.0,
+            "RealMaxReverseSpeedKmh": 14.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 12.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 30.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 12.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "76mm L23"
+        },
+        "items": [
+            "scorpion"
+        ]
+    },
+
+    "FV107 Scimitar": {
+        "properties": {
+            "RealMassKg": 8074,
+            "RealEnginePowerHp": 190,
+            "RealMaxSpeedKmh": 72.0,
+            "RealMaxReverseSpeedKmh": 14.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 12.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 30.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 12.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "30mm RARDEN"
+        },
+        "items": [
+            "fv107"
+        ]
+    },
+
+    "FV510 Warrior": {
+        "properties": {
+            "RealMassKg": 25300,
+            "RealEnginePowerHp": 550,
+            "RealMaxSpeedKmh": 75.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 25.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 25.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "30mm RARDEN"
+        },
+        "items": [
+            "warriorg"
+        ]
+    },
+
     "FV4034 Challenger 2": {
         "properties": {
             "SquashMobs": "true",
@@ -3486,7 +4933,55 @@
             "UseAmmoGroup": "120mm L30A1"
         },
         "items": [
-            "challyii"
+            "challyii",
+            "teapot"
+        ]
+    },
+
+    "Garford-Putilov armoured car": {
+        "properties": {
+            "RealMassKg": 8600,
+            "RealEnginePowerHp": 30,
+            "RealMaxSpeedKmh": 18,
+            "RealMaxReverseSpeedKmh": 5.4,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 9,
+            "ArmorSideMm": 7,
+            "ArmorRearMm": 7,
+            "ArmorTopMm": 5,
+            "ArmorBottomMm": 5,
+            "TurretArmorFrontMm": 9,
+            "TurretArmorSideMm": 7,
+            "TurretArmorRearMm": 7,
+            "TurretArmorTopMm": 5,
+            "ShootDelayPrimarySeconds": 8
+        },
+        "items": [
+            "putilovgarford"
+        ]
+    },
+
+    "GAZ Tigr": {
+        "properties": {
+            "RealMassKg": 7200,
+            "RealEnginePowerHp": 205,
+            "RealMaxSpeedKmh": 125.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 221.05,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 8.0,
+            "ArmorRearMm": 8.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 8.0
+        },
+        "items": [
+            "tigr"
         ]
     },
 
@@ -3676,7 +5171,8 @@
             "boxer2",
             "boxer3",
             "boxer4",
-            "boxer5"
+            "boxer5",
+            "gtkboxer"
         ]
     },
 
@@ -3787,6 +5283,23 @@
             "civil_vehicle_lkw2_2a",
             "civil_vehicle_lkw2_2b",
             "civil_vehicle_lkw2_3a"
+        ]
+    },
+
+    "HJ-8 tripod launcher": {
+        "properties": {
+            "RealMassKg": 89,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 15
+        },
+        "items": [
+            "hj8"
         ]
     },
 
@@ -4025,6 +5538,38 @@
         },
         "items": [
             "hmscoventry1982"
+        ]
+    },
+
+    "HMS Daring D32": {
+        "properties": {
+            "RealDisplacementT": 8000.0,
+            "RealEnginePowerHp": 53640,
+            "RealMaxSpeedKn": 30.0,
+            "RealMaxReverseSpeedKn": 12.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 5.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "daring"
         ]
     },
 
@@ -5048,6 +6593,93 @@
         ]
     },
 
+    "ILL-10 Weishaupt II railgun tank (Fictional)": {
+        "properties": {
+            "RealMassKg": 90000,
+            "RealEnginePowerHp": 2000,
+            "RealMaxSpeedKmh": 65,
+            "RealMaxReverseSpeedKmh": 30,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 36,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 900,
+            "ArmorSideMm": 160,
+            "ArmorRearMm": 80,
+            "ArmorTopMm": 70,
+            "ArmorBottomMm": 60,
+            "ShootDelayPrimarySeconds": 8
+        },
+        "items": [
+            "leviathaniir"
+        ]
+    },
+
+    "ILL-10T Adolph Knigge tank destroyer (Fictional)": {
+        "properties": {
+            "RealMassKg": 85000,
+            "RealEnginePowerHp": 2000,
+            "RealMaxSpeedKmh": 65,
+            "RealMaxReverseSpeedKmh": 30,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 36,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 1000,
+            "ArmorSideMm": 140,
+            "ArmorRearMm": 80,
+            "ArmorTopMm": 70,
+            "ArmorBottomMm": 60,
+            "ShootDelayPrimarySeconds": 6
+        },
+        "items": [
+            "leviathaniitd"
+        ]
+    },
+
+    "ILL-11 Weishaupt III L hover tank (Fictional)": {
+        "properties": {
+            "RealMassKg": 80000,
+            "RealEnginePowerHp": 2000,
+            "RealMaxSpeedKmh": 70,
+            "RealMaxReverseSpeedKmh": 30,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 36,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 800,
+            "ArmorSideMm": 140,
+            "ArmorRearMm": 80,
+            "ArmorTopMm": 70,
+            "ArmorBottomMm": 60,
+            "ShootDelayPrimarySeconds": 5
+        },
+        "items": [
+            "leviathaniiilaser"
+        ]
+    },
+
+    "Improvised heavy cargo truck (Generic)": {
+        "properties": {
+            "RealMassKg": 10000,
+            "RealEnginePowerHp": 200,
+            "RealMaxSpeedKmh": 75,
+            "RealMaxReverseSpeedKmh": 15,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 132.63,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0
+        },
+        "items": [
+            "allahtruck"
+        ]
+    },
+
     "Infantry Tank A22F Churchill Mk VII": {
         "properties": {
             "SquashMobs": "true",
@@ -5368,6 +7000,36 @@
         ]
     },
 
+    "IT-1 Drakon": {
+        "properties": {
+            "RealMassKg": 35000,
+            "RealEnginePowerHp": 580,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 100.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 200.0,
+            "TurretArmorSideMm": 160.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 15.0
+        },
+        "items": [
+            "it1"
+        ]
+    },
+
     "Jagdpanther": {
         "properties": {
             "SquashMobs": "true",
@@ -5437,6 +7099,35 @@
         ]
     },
 
+    "Jagdpanzer IV/70 (V)": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 12,
+            "RealMassKg": 25500,
+            "RealEnginePowerPS": 265,
+            "RealMaxSpeedKmh": 35,
+            "DriveType": "TRACKED",
+            "ShootDelayPrimarySeconds": 6,
+            "ArmorFrontMm": "80 50",
+            "ArmorTopMm": 20,
+            "ArmorBottomMm": 20,
+            "RealMaxReverseSpeedKmh": 7,
+            "ArmorSideMm": 40,
+            "ArmorRearMm": 20,
+            "TurretArmorFrontMm": "80 50",
+            "TurretArmorSideMm": 40,
+            "TurretArmorRearMm": 20,
+            "TurretArmorTopMm": 20,
+            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "75mm KwK/PaK 42",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ww2_vehicle_jagdpanzeriv_1a"
+        ]
+    },
+
     "Jagdtiger": {
         "properties": {
             "SquashMobs": "true",
@@ -5463,6 +7154,96 @@
         },
         "items": [
             "ww2_vehicle_jagdtiger_1a"
+        ]
+    },
+
+    "JS Kongo DDG-173": {
+        "properties": {
+            "RealDisplacementT": 9500.0,
+            "RealEnginePowerHp": 100000,
+            "RealMaxSpeedKn": 30.0,
+            "RealMaxReverseSpeedKn": 12.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "kongonu"
+        ]
+    },
+
+    "K1A1": {
+        "properties": {
+            "RealMassKg": 53200,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 500.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 30.0,
+            "TurretArmorFrontMm": 600.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 60.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm M256"
+        },
+        "items": [
+            "k1a1normal"
+        ]
+    },
+
+    "K2 Black Panther": {
+        "properties": {
+            "RealMassKg": 56000,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 30.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm Rh-120 L/55"
+        },
+        "items": [
+            "blackpanther"
         ]
     },
 
@@ -5500,6 +7281,48 @@
         ]
     },
 
+    "KamAZ-4310": {
+        "properties": {
+            "RealMassKg": 15305,
+            "RealEnginePowerHp": 210,
+            "RealMaxSpeedKmh": 85.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 150.31,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0
+        },
+        "items": [
+            "kmz4310"
+        ]
+    },
+
+    "KamAZ-5350": {
+        "properties": {
+            "RealMassKg": 16000,
+            "RealEnginePowerHp": 260,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0
+        },
+        "items": [
+            "kmz5350"
+        ]
+    },
+
     "Karl-Gerat 040": {
         "properties": {
             "SquashMobs": "true",
@@ -5520,6 +7343,126 @@
         },
         "items": [
             "karlgerat"
+        ]
+    },
+
+    "Karrar (T-90-derived public-data estimate)": {
+        "properties": {
+            "RealMassKg": 51000,
+            "RealEnginePowerHp": 1000,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 550.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 650.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "karrar"
+        ]
+    },
+
+    "KF51 Panther demonstrator": {
+        "properties": {
+            "RealMassKg": 59000,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 30.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "kf51"
+        ]
+    },
+
+    "Kiev Project 1143": {
+        "properties": {
+            "RealDisplacementT": 41370.0,
+            "RealEnginePowerHp": 200000,
+            "RealMaxSpeedKn": 32.0,
+            "RealMaxReverseSpeedKn": 12.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 8.95,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "kiev"
+        ]
+    },
+
+    "Kirov Project 1144 (1980)": {
+        "properties": {
+            "RealDisplacementT": 28000.0,
+            "RealEnginePowerHp": 140000,
+            "RealMaxSpeedKn": 31.0,
+            "RealMaxReverseSpeedKn": 12.4,
+            "DriveType": "MARINE",
+            "RealDraftM": 9.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 76,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "kirovmissileship"
         ]
     },
 
@@ -5544,6 +7487,22 @@
         "items": [
             "t20",
             "44_t20"
+        ]
+    },
+
+    "Kord tripod mount (NSV localization)": {
+        "properties": {
+            "RealMassKg": 32,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0
+        },
+        "items": [
+            "kordtripod"
         ]
     },
 
@@ -5707,6 +7666,89 @@
         ]
     },
 
+    "LAV III": {
+        "properties": {
+            "RealMassKg": 16950,
+            "RealEnginePowerHp": 350,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 30.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 15.0,
+            "UseAmmoGroup": "25mm M242",
+            "RoundsPerMinPrimary": 200,
+            "ReloadRoundsPrimary": 150,
+            "ReloadTimePrimary": 300
+        },
+        "items": [
+            "lav3"
+        ]
+    },
+
+    "LAV-25A2": {
+        "properties": {
+            "RealMassKg": 14200,
+            "RealEnginePowerHp": 275,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 12.0,
+            "ArmorRearMm": 12.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 20.0,
+            "TurretArmorSideMm": 12.0,
+            "TurretArmorRearMm": 12.0,
+            "TurretArmorTopMm": 10.0,
+            "UseAmmoGroup": "25mm M242",
+            "RoundsPerMinPrimary": 200,
+            "ReloadRoundsPrimary": 150,
+            "ReloadTimePrimary": 300
+        },
+        "items": [
+            "gfs_lav25"
+        ]
+    },
+
+    "LAV-AD": {
+        "properties": {
+            "RealMassKg": 17463,
+            "RealEnginePowerHp": 275,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 12.0,
+            "ArmorRearMm": 12.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 20.0,
+            "TurretArmorSideMm": 12.0,
+            "TurretArmorRearMm": 12.0,
+            "TurretArmorTopMm": 10.0
+        },
+        "items": [
+            "lavad"
+        ]
+    },
+
     "LCVP Landing Craft": {
         "properties": {
             "RealTurnRateDegPerSec": 7.72,
@@ -5727,6 +7769,36 @@
         "items": [
             "44_higginslcvp",
             "ww2_vehicle_higginsboat_1a"
+        ]
+    },
+
+    "Leclerc Series 1": {
+        "properties": {
+            "RealMassKg": 54500,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 71.0,
+            "RealMaxReverseSpeedKmh": 38.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 550.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 650.0,
+            "TurretArmorSideMm": 250.0,
+            "TurretArmorRearMm": 60.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0
+        },
+        "items": [
+            "leclercs1"
         ]
     },
 
@@ -5761,6 +7833,37 @@
         ]
     },
 
+    "Leopard 1A1A1": {
+        "properties": {
+            "RealMassKg": 42400,
+            "RealEnginePowerHp": 830,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 70.0,
+            "ArmorSideMm": 35.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 70.0,
+            "TurretArmorSideMm": 60.0,
+            "TurretArmorRearMm": 30.0,
+            "TurretArmorTopMm": 20.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "l1a1"
+        ]
+    },
+
     "Leopard 2A4": {
         "properties": {
             "SquashMobs": "true",
@@ -5791,7 +7894,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "leo2a4"
+            "leo2a4",
+            "l2a4"
         ]
     },
 
@@ -5841,7 +7945,8 @@
         },
         "items": [
             "leo2a6",
-            "leopard2a6"
+            "leopard2a6",
+            "l2a6"
         ]
     },
 
@@ -5877,7 +7982,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "leopard2a7"
+            "leopard2a7",
+            "l2a7"
         ]
     },
 
@@ -6137,6 +8243,209 @@
         ]
     },
 
+    "M1 Abrams (105mm M68)": {
+        "properties": {
+            "RealMassKg": 54400,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 72.0,
+            "RealMaxReverseSpeedKmh": 40.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 350.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 32.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 400.0,
+            "TurretArmorSideMm": 150.0,
+            "TurretArmorRearMm": 50.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 7.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "m1abrams105"
+        ]
+    },
+
+    "M1A1 export configuration": {
+        "properties": {
+            "RealMassKg": 57200,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 67.0,
+            "RealMaxReverseSpeedKmh": 40.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 400.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 32.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm M256"
+        },
+        "items": [
+            "m1a1abramsexport"
+        ]
+    },
+
+    "M1A1-SA-BV (2024, HC-derived estimate)": {
+        "properties": {
+            "RealMassKg": 63000,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 67.0,
+            "RealMaxReverseSpeedKmh": 40.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 32.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 800.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 60.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm M256"
+        },
+        "items": [
+            "m1a1abramsukraine"
+        ]
+    },
+
+    "M1A1HC Abrams": {
+        "properties": {
+            "RealMassKg": 61200,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 67.0,
+            "RealMaxReverseSpeedKmh": 40.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 32.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 800.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 60.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm M256"
+        },
+        "items": [
+            "m1a1hcabrams"
+        ]
+    },
+
+    "M1A2 SEP v2": {
+        "properties": {
+            "RealMassKg": 64400,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 67.0,
+            "RealMaxReverseSpeedKmh": 40.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 32.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm M256"
+        },
+        "items": [
+            "m1a2sep"
+        ]
+    },
+
+    "M1A2 SEP v3": {
+        "properties": {
+            "RealMassKg": 66770,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 67.0,
+            "RealMaxReverseSpeedKmh": 40.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 650.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 32.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "120mm M256"
+        },
+        "items": [
+            "jewbrams"
+        ]
+    },
+
+    "M2 Bradley (initial model)": {
+        "properties": {
+            "RealMassKg": 22680,
+            "RealEnginePowerHp": 500,
+            "RealMaxSpeedKmh": 66.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 60.0,
+            "ArmorSideMm": 35.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 20.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 60.0,
+            "TurretArmorSideMm": 35.0,
+            "TurretArmorRearMm": 25.0,
+            "TurretArmorTopMm": 20.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "m2bradley"
+        ]
+    },
+
     "M2 Browning on M3 Tripod": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -6151,6 +8460,65 @@
         },
         "items": [
             "44_50caltripod"
+        ]
+    },
+
+    "M2A3 Bradley": {
+        "properties": {
+            "RealMassKg": 30400,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 61.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 80.0,
+            "ArmorSideMm": 50.0,
+            "ArmorRearMm": 30.0,
+            "ArmorTopMm": 20.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 80.0,
+            "TurretArmorSideMm": 50.0,
+            "TurretArmorRearMm": 30.0,
+            "TurretArmorTopMm": 20.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "m2a2"
+        ]
+    },
+
+    "M4A4 FL-10 Sherman": {
+        "properties": {
+            "RealMassKg": 35000,
+            "RealEnginePowerHp": 425,
+            "RealMaxSpeedKmh": 40.0,
+            "RealMaxReverseSpeedKmh": 5.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 51.0,
+            "ArmorSideMm": 38.0,
+            "ArmorRearMm": 38.0,
+            "ArmorTopMm": 19.0,
+            "ArmorBottomMm": 13.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "75mm SA50"
+        },
+        "items": [
+            "m4shermanegypt"
         ]
     },
 
@@ -6275,6 +8643,27 @@
         ]
     },
 
+    "M35 cargo truck": {
+        "properties": {
+            "RealMassKg": 10500,
+            "RealEnginePowerHp": 127,
+            "RealMaxSpeedKmh": 93.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 164.46,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0
+        },
+        "items": [
+            "m35doxxer"
+        ]
+    },
+
     "M45 Quadmount .50 Cal": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -6291,6 +8680,128 @@
         "items": [
             "m45quad",
             "meatchopper"
+        ]
+    },
+
+    "M47 Patton (vehicle localization collision)": {
+        "properties": {
+            "RealMassKg": 46200,
+            "RealEnginePowerHp": 810,
+            "RealMaxSpeedKmh": 48.0,
+            "RealMaxReverseSpeedKmh": 8.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 102.0,
+            "ArmorSideMm": 76.0,
+            "ArmorRearMm": 51.0,
+            "ArmorTopMm": 22.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 102.0,
+            "TurretArmorSideMm": 76.0,
+            "TurretArmorRearMm": 64.0,
+            "TurretArmorTopMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0
+        },
+        "items": [
+            "m47"
+        ]
+    },
+
+    "M48 Patton": {
+        "properties": {
+            "RealMassKg": 44900,
+            "RealEnginePowerHp": 810,
+            "RealMaxSpeedKmh": 45.0,
+            "RealMaxReverseSpeedKmh": 8.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 110.0,
+            "ArmorSideMm": 76.0,
+            "ArmorRearMm": 38.0,
+            "ArmorTopMm": 25.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 178.0,
+            "TurretArmorSideMm": 76.0,
+            "TurretArmorRearMm": 51.0,
+            "TurretArmorTopMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0
+        },
+        "items": [
+            "m48"
+        ]
+    },
+
+    "M60A1": {
+        "properties": {
+            "RealMassKg": 48200,
+            "RealEnginePowerHp": 750,
+            "RealMaxSpeedKmh": 48.0,
+            "RealMaxReverseSpeedKmh": 8.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 109.0,
+            "ArmorSideMm": 74.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 25.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 254.0,
+            "TurretArmorSideMm": 140.0,
+            "TurretArmorRearMm": 57.0,
+            "TurretArmorTopMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "m60tank"
+        ]
+    },
+
+    "M60A3 RISE passive": {
+        "properties": {
+            "RealMassKg": 52000,
+            "RealEnginePowerHp": 750,
+            "RealMaxSpeedKmh": 48.0,
+            "RealMaxReverseSpeedKmh": 8.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 109.0,
+            "ArmorSideMm": 74.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 25.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 254.0,
+            "TurretArmorSideMm": 140.0,
+            "TurretArmorRearMm": 57.0,
+            "TurretArmorTopMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "m60tankera"
         ]
     },
 
@@ -6321,7 +8832,131 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "m109a6"
+            "m109a6",
+            "m109"
+        ]
+    },
+
+    "M113A3 APC": {
+        "properties": {
+            "RealMassKg": 12338,
+            "RealEnginePowerHp": 275,
+            "RealMaxSpeedKmh": 67.6,
+            "RealMaxReverseSpeedKmh": 16.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 18.0,
+            "ArmorRearMm": 18.0,
+            "ArmorTopMm": 12.0,
+            "ArmorBottomMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "m113a3"
+        ]
+    },
+
+    "M142 HIMARS": {
+        "properties": {
+            "RealMassKg": 16250,
+            "RealEnginePowerHp": 290,
+            "RealMaxSpeedKmh": 85.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 150.31,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 8.0,
+            "ArmorSideMm": 8.0,
+            "ArmorRearMm": 8.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "ShootDelayPrimarySeconds": 1.0
+        },
+        "items": [
+            "himars"
+        ]
+    },
+
+    "M163 VADS": {
+        "properties": {
+            "RealMassKg": 12270,
+            "RealEnginePowerHp": 215,
+            "RealMaxSpeedKmh": 64.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 10.0,
+            "TurretArmorRearMm": 10.0,
+            "TurretArmorTopMm": 0.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "m163vads"
+        ]
+    },
+
+    "M220 TOW launcher": {
+        "properties": {
+            "RealMassKg": 93,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 15
+        },
+        "items": [
+            "bgmtow"
+        ]
+    },
+
+    "M551A1 Sheridan": {
+        "properties": {
+            "RealMassKg": 15200,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 69.0,
+            "RealMaxReverseSpeedKmh": 14.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 31.0,
+            "ArmorSideMm": 19.0,
+            "ArmorRearMm": 19.0,
+            "ArmorTopMm": 12.0,
+            "ArmorBottomMm": 12.0,
+            "TurretArmorFrontMm": 25.0,
+            "TurretArmorSideMm": 25.0,
+            "TurretArmorRearMm": 25.0,
+            "TurretArmorTopMm": 19.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 12.0
+        },
+        "items": [
+            "sheridan"
         ]
     },
 
@@ -6348,6 +8983,70 @@
             "hmmwv3",
             "hmmwv4",
             "humvee"
+        ]
+    },
+
+    "M1036 HMMWV TOW carrier": {
+        "properties": {
+            "RealMassKg": 3856,
+            "RealEnginePowerHp": 150,
+            "RealMaxSpeedKmh": 89.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 157.39,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0,
+            "ShootDelayPrimarySeconds": 15.0
+        },
+        "items": [
+            "gfs_humtow"
+        ]
+    },
+
+    "M1116 armoured HMMWV": {
+        "properties": {
+            "RealMassKg": 5489,
+            "RealEnginePowerHp": 190,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 8.0,
+            "ArmorRearMm": 8.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 8.0
+        },
+        "items": [
+            "m1116"
+        ]
+    },
+
+    "M1126 Stryker ICV": {
+        "properties": {
+            "RealMassKg": 16500,
+            "RealEnginePowerHp": 350,
+            "RealMaxSpeedKmh": 97.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 171.53,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0
+        },
+        "items": [
+            "gfs_m1126"
         ]
     },
 
@@ -6417,6 +9116,28 @@
         ]
     },
 
+    "M1989 Koksan (public-data estimate)": {
+        "properties": {
+            "RealMassKg": 46000,
+            "RealEnginePowerHp": 520,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 15.0,
+            "ShootDelayPrimarySeconds": 30.0
+        },
+        "items": [
+            "koksan"
+        ]
+    },
+
     "Man-pushed Anti-Tank Guns": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -6460,6 +9181,35 @@
             "type_1_47mm_at",
             "type_94_at",
             "zis2"
+        ]
+    },
+
+    "Marder 1A1": {
+        "properties": {
+            "RealMassKg": 28500,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 30.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 30.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "marderifv"
         ]
     },
 
@@ -6518,6 +9268,48 @@
         ]
     },
 
+    "Mark I Male": {
+        "properties": {
+            "RealMassKg": 28400,
+            "RealEnginePowerHp": 105,
+            "RealMaxSpeedKmh": 6,
+            "RealMaxReverseSpeedKmh": 2,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 12,
+            "ArmorSideMm": 10,
+            "ArmorRearMm": 10,
+            "ArmorTopMm": 6,
+            "ArmorBottomMm": 6
+        },
+        "items": [
+            "mki"
+        ]
+    },
+
+    "Mark V Male": {
+        "properties": {
+            "RealMassKg": 29465,
+            "RealEnginePowerHp": 150,
+            "RealMaxSpeedKmh": 8,
+            "RealMaxReverseSpeedKmh": 2,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 16,
+            "ArmorSideMm": 12,
+            "ArmorRearMm": 12,
+            "ArmorTopMm": 8,
+            "ArmorBottomMm": 8
+        },
+        "items": [
+            "mkv"
+        ]
+    },
+
     "Maschinengewehr 08 Mount": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -6533,6 +9325,36 @@
         },
         "items": [
             "mg08"
+        ]
+    },
+
+    "MBT-70": {
+        "properties": {
+            "RealMassKg": 50000,
+            "RealEnginePowerHp": 1475,
+            "RealMaxSpeedKmh": 64.0,
+            "RealMaxReverseSpeedKmh": 64.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 250.0,
+            "ArmorSideMm": 50.0,
+            "ArmorRearMm": 35.0,
+            "ArmorTopMm": 25.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 300.0,
+            "TurretArmorSideMm": 100.0,
+            "TurretArmorRearMm": 40.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0
+        },
+        "items": [
+            "mbt70"
         ]
     },
 
@@ -6901,6 +9723,80 @@
         ]
     },
 
+    "Mercedes-Benz 560 SEL (1987 catalytic European specification)": {
+        "properties": {
+            "RealMassKg": 2050,
+            "RealEnginePowerHp": 275,
+            "RealMaxSpeedKmh": 240,
+            "RealMaxReverseSpeedKmh": 44,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 690,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0
+        },
+        "items": [
+            "buggyeyedbenz"
+        ]
+    },
+
+    "Merkava Mk 1": {
+        "properties": {
+            "RealMassKg": 63000,
+            "RealEnginePowerHp": 900,
+            "RealMaxSpeedKmh": 46.0,
+            "RealMaxReverseSpeedKmh": 9.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 300.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "merkavamk1"
+        ]
+    },
+
+    "Merkava Mk 4": {
+        "properties": {
+            "RealMassKg": 65000,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 64.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 50.0,
+            "ArmorTopMm": 40.0,
+            "ArmorBottomMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0
+        },
+        "items": [
+            "merkavamk4"
+        ]
+    },
+
     "MG 34 on Lafette 34": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -6915,6 +9811,23 @@
         },
         "items": [
             "44_mg34tripod"
+        ]
+    },
+
+    "MILAN launcher": {
+        "properties": {
+            "RealMassKg": 16.4,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 15
+        },
+        "items": [
+            "milan"
         ]
     },
 
@@ -6939,6 +9852,26 @@
         },
         "items": [
             "mim23"
+        ]
+    },
+
+    "Mk 15 Phalanx CIWS mount": {
+        "properties": {
+            "RealMassKg": 6200,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0
+        },
+        "items": [
+            "phalanxciws"
         ]
     },
 
@@ -7219,6 +10152,38 @@
         ]
     },
 
+    "MN Richelieu (1943)": {
+        "properties": {
+            "RealDisplacementT": 47728.0,
+            "RealEnginePowerHp": 155000,
+            "RealMaxSpeedKn": 30.0,
+            "RealMaxReverseSpeedKn": 12.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 10.68,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": "330 15.24",
+            "ArmorDeckMm": 150,
+            "ArmorCitadelMm": 405,
+            "ArmorBulkheadMm": 233,
+            "ArmorConningTowerMm": 340,
+            "ArmorTorpedoBulgeMm": 50,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 430,
+            "TurretArmorSideMm": 300,
+            "TurretArmorRearMm": 260,
+            "TurretArmorTopMm": 170,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "richelieu"
+        ]
+    },
+
     "MN Surcouf (1934)": {
         "properties": {
             "RealTurnRateDegPerSec": 1.67,
@@ -7250,6 +10215,88 @@
         ]
     },
 
+    "Moskva Project 1123 (1967)": {
+        "properties": {
+            "RealDisplacementT": 17500.0,
+            "RealEnginePowerHp": 90000,
+            "RealMaxSpeedKn": 29.0,
+            "RealMaxReverseSpeedKn": 11.6,
+            "DriveType": "MARINE",
+            "RealDraftM": 8.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "moskva"
+        ]
+    },
+
+    "MT-LB": {
+        "properties": {
+            "RealMassKg": 11900,
+            "RealEnginePowerHp": 240,
+            "RealMaxSpeedKmh": 61.0,
+            "RealMaxReverseSpeedKmh": 10.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 14.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 7.0,
+            "ArmorBottomMm": 7.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "shitboxpkp"
+        ]
+    },
+
+    "MT-LBVM": {
+        "properties": {
+            "RealMassKg": 12000,
+            "RealEnginePowerHp": 240,
+            "RealMaxSpeedKmh": 61.0,
+            "RealMaxReverseSpeedKmh": 10.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 14.0,
+            "ArmorSideMm": 7.0,
+            "ArmorRearMm": 7.0,
+            "ArmorTopMm": 7.0,
+            "ArmorBottomMm": 7.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "shitboxnsvt"
+        ]
+    },
+
     "Nimbus Type C With 20mm Madsen": {
         "properties": {
             "RealTurnRateDegPerSec": 135.28,
@@ -7271,6 +10318,22 @@
         },
         "items": [
             "nimbustypec20mm"
+        ]
+    },
+
+    "NSV tripod mount": {
+        "properties": {
+            "RealMassKg": 41,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0
+        },
+        "items": [
+            "nsvtripod"
         ]
     },
 
@@ -7383,7 +10446,8 @@
         },
         "items": [
             "ussstarkffg",
-            "usschesapeakeffg"
+            "usschesapeakeffg",
+            "ohp"
         ]
     },
 
@@ -7608,32 +10672,54 @@
         ]
     },
 
-    "Jagdpanzer IV/70 (V)": {
+    "Panhard AML-90": {
         "properties": {
-            "SquashMobs": "true",
-            "RealTurnRateDegPerSec": 12,
-            "RealMassKg": 25500,
-            "RealEnginePowerPS": 265,
-            "RealMaxSpeedKmh": 35,
-            "DriveType": "TRACKED",
-            "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": "80 50",
-            "ArmorTopMm": 20,
-            "ArmorBottomMm": 20,
-            "RealMaxReverseSpeedKmh": 7,
-            "ArmorSideMm": 40,
-            "ArmorRearMm": 20,
-            "TurretArmorFrontMm": "80 50",
-            "TurretArmorSideMm": 40,
-            "TurretArmorRearMm": 20,
-            "TurretArmorTopMm": 20,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
-            "UseAmmoGroup": "75mm KwK/PaK 42",
+            "RealMassKg": 5500,
+            "RealEnginePowerHp": 90,
+            "RealMaxSpeedKmh": 90.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 159.15,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 10.0,
+            "ArmorSideMm": 8.0,
+            "ArmorRearMm": 8.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 12.0,
+            "TurretArmorRearMm": 12.0,
+            "TurretArmorTopMm": 8.0,
+            "UseAmmoGroup": "90mm D921"
         },
         "items": [
-            "ww2_vehicle_jagdpanzeriv_1a"
+            "aml90"
+        ]
+    },
+
+    "Pantsir-S1": {
+        "properties": {
+            "RealMassKg": 30000,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 90.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 159.15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0,
+            "TurretArmorFrontMm": 0.0,
+            "TurretArmorSideMm": 0.0,
+            "TurretArmorRearMm": 0.0,
+            "TurretArmorTopMm": 0.0
+        },
+        "items": [
+            "pantsirs1"
         ]
     },
 
@@ -8398,6 +11484,57 @@
         ]
     },
 
+    "Peugeot 18CV armoured car": {
+        "properties": {
+            "RealMassKg": 5500,
+            "RealEnginePowerHp": 40,
+            "RealMaxSpeedKmh": 40,
+            "RealMaxReverseSpeedKmh": 12.0,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 5.5,
+            "ArmorSideMm": 5.5,
+            "ArmorRearMm": 5.5,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 4,
+            "ShootDelayPrimarySeconds": 8
+        },
+        "items": [
+            "ww1_frenchscoutcar"
+        ]
+    },
+
+    "PGZ-95": {
+        "properties": {
+            "RealMassKg": 22000,
+            "RealEnginePowerHp": 383,
+            "RealMaxSpeedKmh": 53.0,
+            "RealMaxReverseSpeedKmh": 10.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 20.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "pgz95"
+        ]
+    },
+
     "Pillbox (Generic)": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -8416,6 +11553,36 @@
         ]
     },
 
+    "PLZ-05": {
+        "properties": {
+            "RealMassKg": 35000,
+            "RealEnginePowerHp": 800,
+            "RealMaxSpeedKmh": 55.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 20.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0
+        },
+        "items": [
+            "plz05"
+        ]
+    },
+
     "PM M1910 Wheeled Mount": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -8431,6 +11598,33 @@
         },
         "items": [
             "pmm1910"
+        ]
+    },
+
+    "Pokpung-ho IV (T-72-derived estimate)": {
+        "properties": {
+            "RealMassKg": 44000,
+            "RealEnginePowerHp": 1000,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 400.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "popkung"
         ]
     },
 
@@ -8479,6 +11673,23 @@
         ]
     },
 
+    "Portable FPV drone control station (Generic)": {
+        "properties": {
+            "RealMassKg": 15,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 5
+        },
+        "items": [
+            "nintendods"
+        ]
+    },
+
     "Post-Apocalyptic Buggy (Fictional)": {
         "properties": {
             "RealTurnRateDegPerSec": 240,
@@ -8497,6 +11708,328 @@
         },
         "items": [
             "buggy"
+        ]
+    },
+
+    "Project 61 Kashin (1962)": {
+        "properties": {
+            "RealDisplacementT": 4510.0,
+            "RealEnginePowerHp": 72000,
+            "RealMaxSpeedKn": 35.0,
+            "RealMaxReverseSpeedKn": 14.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 4.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "kashin"
+        ]
+    },
+
+    "Project 205 Moskit missile boat": {
+        "properties": {
+            "RealDisplacementT": 209.0,
+            "RealEnginePowerHp": 12000,
+            "RealMaxSpeedKn": 38.0,
+            "RealMaxReverseSpeedKn": 15.2,
+            "DriveType": "MARINE",
+            "RealDraftM": 1.8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "moskitboat"
+        ]
+    },
+
+    "Project 627 Kit (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 3065.0,
+            "RealEnginePowerHp": 35000,
+            "RealMaxSpeedKn": 15.0,
+            "RealMaxReverseSpeedKn": 6.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 5.65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "kitnovember"
+        ]
+    },
+
+    "Project 633 Romeo (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 1475.0,
+            "RealEnginePowerHp": 4000,
+            "RealMaxSpeedKn": 15.2,
+            "RealMaxReverseSpeedKn": 6.08,
+            "DriveType": "MARINE",
+            "RealDraftM": 4.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "romeo"
+        ]
+    },
+
+    "Project 651 Juliett (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 3174.0,
+            "RealEnginePowerHp": 8000,
+            "RealMaxSpeedKn": 16.0,
+            "RealMaxReverseSpeedKn": 6.4,
+            "DriveType": "MARINE",
+            "RealDraftM": 7.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "juliett"
+        ]
+    },
+
+    "Project 667A Navaga (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 7766.0,
+            "RealEnginePowerHp": 52000,
+            "RealMaxSpeedKn": 15.0,
+            "RealMaxReverseSpeedKn": 6.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 8.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "navagayankee"
+        ]
+    },
+
+    "Project 877 Paltus (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 2300.0,
+            "RealEnginePowerHp": 5900,
+            "RealMaxSpeedKn": 10.0,
+            "RealMaxReverseSpeedKn": 4.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "kilo"
+        ]
+    },
+
+    "Project 949A Antey (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 14700.0,
+            "RealEnginePowerHp": 98000,
+            "RealMaxSpeedKn": 15.0,
+            "RealMaxReverseSpeedKn": 6.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 9.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "oscar2"
+        ]
+    },
+
+    "Project 956 Sarych (1980)": {
+        "properties": {
+            "RealDisplacementT": 7940.0,
+            "RealEnginePowerHp": 100000,
+            "RealMaxSpeedKn": 32.7,
+            "RealMaxReverseSpeedKn": 13.08,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "sovremenny"
+        ]
+    },
+
+    "Project 1134 Berkut": {
+        "properties": {
+            "RealDisplacementT": 7500.0,
+            "RealEnginePowerHp": 90000,
+            "RealMaxSpeedKn": 34.0,
+            "RealMaxReverseSpeedKn": 13.6,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "berkut"
+        ]
+    },
+
+    "PT-76": {
+        "properties": {
+            "RealMassKg": 14000,
+            "RealEnginePowerHp": 240,
+            "RealMaxSpeedKmh": 44.0,
+            "RealMaxReverseSpeedKmh": 6.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 13.0,
+            "ArmorSideMm": 13.0,
+            "ArmorRearMm": 6.0,
+            "ArmorTopMm": 5.0,
+            "ArmorBottomMm": 5.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 6.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0
+        },
+        "items": [
+            "pt76"
         ]
     },
 
@@ -8630,6 +12163,22 @@
         ]
     },
 
+    "Rheinmetall 20mm Zwilling mount": {
+        "properties": {
+            "RealMassKg": 2050,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0
+        },
+        "items": [
+            "rh202"
+        ]
+    },
+
     "RHN Kilkis": {
         "properties": {
             "RealTurnRateDegPerSec": 1.06,
@@ -8721,6 +12270,33 @@
         },
         "items": [
             "rhnsalamis"
+        ]
+    },
+
+    "Rigid-hull inflatable transport boat (Generic)": {
+        "properties": {
+            "RealMassKg": 3000,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKn": 40,
+            "RealMaxReverseSpeedKn": 16,
+            "DriveType": "MARINE",
+            "RealDraftM": 0.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0
+        },
+        "items": [
+            "rhib"
         ]
     },
 
@@ -9013,6 +12589,27 @@
         ]
     },
 
+    "Rolls-Royce armoured car (1914)": {
+        "properties": {
+            "RealMassKg": 4700,
+            "RealEnginePowerHp": 80,
+            "RealMaxSpeedKmh": 72,
+            "RealMaxReverseSpeedKmh": 21.6,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 65,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 8,
+            "ArmorSideMm": 8,
+            "ArmorRearMm": 8,
+            "ArmorTopMm": 6,
+            "ArmorBottomMm": 6
+        },
+        "items": [
+            "rollsroyce"
+        ]
+    },
+
     "Roman Field Ballista": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -9062,6 +12659,27 @@
         ]
     },
 
+    "S-75 SM-90 launcher": {
+        "properties": {
+            "RealMassKg": 8500,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 30
+        },
+        "items": [
+            "s75"
+        ]
+    },
+
     "S-100 Schnellboot": {
         "properties": {
             "RealTurnRateDegPerSec": 13.11,
@@ -9084,6 +12702,31 @@
         "items": [
             "44_s100",
             "s100"
+        ]
+    },
+
+    "Saint-Chamond (early production)": {
+        "properties": {
+            "RealMassKg": 23000,
+            "RealEnginePowerHp": 90,
+            "RealMaxSpeedKmh": 12,
+            "RealMaxReverseSpeedKmh": 3,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 17,
+            "ArmorSideMm": 8.5,
+            "ArmorRearMm": 8.5,
+            "ArmorTopMm": 5,
+            "ArmorBottomMm": 5,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "ww1_saintchamondearlyproduction"
         ]
     },
 
@@ -9136,6 +12779,31 @@
         },
         "items": [
             "sanicmobile"
+        ]
+    },
+
+    "Schneider CA 1": {
+        "properties": {
+            "RealMassKg": 13600,
+            "RealEnginePowerHp": 60,
+            "RealMaxSpeedKmh": 8.1,
+            "RealMaxReverseSpeedKmh": 2,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 11.5,
+            "ArmorSideMm": 11.5,
+            "ArmorRearMm": 11.5,
+            "ArmorTopMm": 5,
+            "ArmorBottomMm": 5,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "ww1_schnaiderca1"
         ]
     },
 
@@ -9363,6 +13031,38 @@
         ]
     },
 
+    "Sejong the Great KDX-III": {
+        "properties": {
+            "RealDisplacementT": 11000.0,
+            "RealEnginePowerHp": 100000,
+            "RealMaxSpeedKn": 30.0,
+            "RealMaxReverseSpeedKn": 12.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.25,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "sejong"
+        ]
+    },
+
     "Semovente da 75/18": {
         "properties": {
             "SquashMobs": "true",
@@ -9481,6 +13181,38 @@
         ]
     },
 
+    "Slava Project 1164": {
+        "properties": {
+            "RealDisplacementT": 12490.0,
+            "RealEnginePowerHp": 121000,
+            "RealMaxSpeedKn": 32.0,
+            "RealMaxReverseSpeedKn": 12.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 8.4,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "slava"
+        ]
+    },
+
     "SMS Leitha": {
         "properties": {
             "RealTurnRateDegPerSec": 2.83,
@@ -9536,6 +13268,149 @@
         },
         "items": [
             "s35"
+        ]
+    },
+
+    "SPG-9 tripod mount": {
+        "properties": {
+            "RealMassKg": 47.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 10
+        },
+        "items": [
+            "spg9"
+        ]
+    },
+
+    "Spruance-class destroyer (original fit)": {
+        "properties": {
+            "RealDisplacementT": 8040.0,
+            "RealEnginePowerHp": 80000,
+            "RealMaxSpeedKn": 32.5,
+            "RealMaxReverseSpeedKn": 13.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "spruance"
+        ]
+    },
+
+    "Spruance-class destroyer (VLS retrofit)": {
+        "properties": {
+            "RealDisplacementT": 8600.0,
+            "RealEnginePowerHp": 80000,
+            "RealMaxSpeedKn": 32.5,
+            "RealMaxReverseSpeedKn": 13.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "spruanceretrofit"
+        ]
+    },
+
+    "SPz Puma (protection level C)": {
+        "properties": {
+            "RealMassKg": 43000,
+            "RealEnginePowerHp": 1088,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 30.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 80.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 30.0,
+            "ArmorTopMm": 25.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 80.0,
+            "TurretArmorSideMm": 60.0,
+            "TurretArmorRearMm": 30.0,
+            "TurretArmorTopMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "spzpuma"
+        ]
+    },
+
+    "Stridsfordon 9040C": {
+        "properties": {
+            "RealMassKg": 28000,
+            "RealEnginePowerHp": 550,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 43.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 60.0,
+            "ArmorSideMm": 30.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 20.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 60.0,
+            "TurretArmorSideMm": 30.0,
+            "TurretArmorRearMm": 25.0,
+            "TurretArmorTopMm": 20.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "UseAmmoGroup": "40mm Bofors L70",
+            "RoundsPerMinPrimary": 300,
+            "ReloadRoundsPrimary": 24,
+            "ReloadTimePrimary": 200
+        },
+        "items": [
+            "cv90c"
         ]
     },
 
@@ -9612,6 +13487,34 @@
         },
         "items": [
             "44_studebakerus6"
+        ]
+    },
+
+    "Sturgeon-class submarine (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 4267.0,
+            "RealEnginePowerHp": 15000,
+            "RealMaxSpeedKn": 15.0,
+            "RealMaxReverseSpeedKn": 6.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 8.9,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "sturgeon"
         ]
     },
 
@@ -10073,6 +13976,37 @@
         ]
     },
 
+    "T-14 Armata (public-data gameplay estimate)": {
+        "properties": {
+            "RealMassKg": 55000,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 75.0,
+            "RealMaxReverseSpeedKmh": 30.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 700.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 40.0,
+            "ArmorBottomMm": 30.0,
+            "TurretArmorFrontMm": 100.0,
+            "TurretArmorSideMm": 50.0,
+            "TurretArmorRearMm": 30.0,
+            "TurretArmorTopMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t14mbt"
+        ]
+    },
+
     "T-26 mod. 1933": {
         "properties": {
             "SquashMobs": "true",
@@ -10355,6 +14289,68 @@
         ]
     },
 
+    "T-55A": {
+        "properties": {
+            "RealMassKg": 36000,
+            "RealEnginePowerHp": 580,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 100.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 200.0,
+            "TurretArmorSideMm": 160.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "100mm D-10T"
+        },
+        "items": [
+            "t55"
+        ]
+    },
+
+    "T-55AM (T-55AAM localization)": {
+        "properties": {
+            "RealMassKg": 41500,
+            "RealEnginePowerHp": 620,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 250.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 330.0,
+            "TurretArmorSideMm": 160.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "100mm D-10T"
+        },
+        "items": [
+            "t55am"
+        ]
+    },
+
     "T-60": {
         "properties": {
             "SquashMobs": "true",
@@ -10378,6 +14374,99 @@
         },
         "items": [
             "t60"
+        ]
+    },
+
+    "T-62": {
+        "properties": {
+            "RealMassKg": 37000,
+            "RealEnginePowerHp": 580,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 100.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 214.0,
+            "TurretArmorSideMm": 153.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 30.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 12.0,
+            "UseAmmoGroup": "115mm U-5TS"
+        },
+        "items": [
+            "t62"
+        ]
+    },
+
+    "T-64B": {
+        "properties": {
+            "RealMassKg": 39000,
+            "RealEnginePowerHp": 700,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 400.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 450.0,
+            "TurretArmorSideMm": 150.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t64b"
+        ]
+    },
+
+    "T-64BV": {
+        "properties": {
+            "RealMassKg": 42400,
+            "RealEnginePowerHp": 700,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 400.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 450.0,
+            "TurretArmorSideMm": 150.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t64bv"
         ]
     },
 
@@ -10424,6 +14513,312 @@
         "items": [
             "t70",
             "44_t70"
+        ]
+    },
+
+    "T-72A": {
+        "properties": {
+            "RealMassKg": 41500,
+            "RealEnginePowerHp": 780,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 400.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 420.0,
+            "TurretArmorSideMm": 150.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t72a"
+        ]
+    },
+
+    "T-72B3 (2011)": {
+        "properties": {
+            "RealMassKg": 46000,
+            "RealEnginePowerHp": 840,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 550.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 600.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t72b3"
+        ]
+    },
+
+    "T-72B3 (2016)": {
+        "properties": {
+            "RealMassKg": 46500,
+            "RealEnginePowerHp": 1130,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 550.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 600.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t72b3m"
+        ]
+    },
+
+    "T-72B3 (2022, added equipment estimate)": {
+        "properties": {
+            "RealMassKg": 48000,
+            "RealEnginePowerHp": 1130,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 550.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 600.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t72b3mcope"
+        ]
+    },
+
+    "T-72B (1985)": {
+        "properties": {
+            "RealMassKg": 44500,
+            "RealEnginePowerHp": 840,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 500.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 530.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t72b"
+        ]
+    },
+
+    "T-80B": {
+        "properties": {
+            "RealMassKg": 42500,
+            "RealEnginePowerHp": 1100,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 400.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 450.0,
+            "TurretArmorSideMm": 150.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 7.5,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t80b"
+        ]
+    },
+
+    "T-80BV": {
+        "properties": {
+            "RealMassKg": 43700,
+            "RealEnginePowerHp": 1100,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 400.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 450.0,
+            "TurretArmorSideMm": 150.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 7.5,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t80bv"
+        ]
+    },
+
+    "T-84 Oplot-M": {
+        "properties": {
+            "RealMassKg": 51000,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 32.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t84"
+        ]
+    },
+
+    "T-90A": {
+        "properties": {
+            "RealMassKg": 46500,
+            "RealEnginePowerHp": 1000,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 550.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 650.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.6,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t90a"
+        ]
+    },
+
+    "T-90M": {
+        "properties": {
+            "RealMassKg": 48000,
+            "RealEnginePowerHp": 1130,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 700.0,
+            "TurretArmorSideMm": 250.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "t90m"
         ]
     },
 
@@ -10597,6 +14992,34 @@
         ]
     },
 
+    "TK-208 Dmitri Donskoi (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 23200.0,
+            "RealEnginePowerHp": 100000,
+            "RealMaxSpeedKn": 12.0,
+            "RealMaxReverseSpeedKn": 4.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 11.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "dmitri"
+        ]
+    },
+
     "TKS": {
         "properties": {
             "SquashMobs": "true",
@@ -10672,6 +15095,203 @@
         },
         "items": [
             "s138"
+        ]
+    },
+
+    "TOS-1A": {
+        "properties": {
+            "RealMassKg": 46000,
+            "RealEnginePowerHp": 840,
+            "RealMaxSpeedKmh": 60.0,
+            "RealMaxReverseSpeedKmh": 4.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 100.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 30.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 20.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 0.5
+        },
+        "items": [
+            "tos"
+        ]
+    },
+
+    "Toy Sherman, full-size M4A1 exemplar (Fictional)": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 18,
+            "RealMassKg": 30300,
+            "RealEnginePowerHp": 400,
+            "RealMaxSpeedKmh": 39,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 5,
+            "ShootDelayPrimarySeconds": 6,
+            "ArmorFrontMm": "51 47",
+            "ArmorSideMm": 38,
+            "ArmorRearMm": 38,
+            "ArmorTopMm": 19,
+            "ArmorBottomMm": 13,
+            "TurretArmorFrontMm": 76,
+            "TurretArmorSideMm": 51,
+            "TurretArmorRearMm": 51,
+            "TurretArmorTopMm": 25,
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
+            "UseAmmoGroup": "75mm M3",
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "toysherman"
+        ]
+    },
+
+    "Toyota Hilux (1968) M2HB technical": {
+        "properties": {
+            "RealMassKg": 1800,
+            "RealEnginePowerHp": 84,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "RWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0
+        },
+        "items": [
+            "hilux1960m2"
+        ]
+    },
+
+    "Toyota Hilux BMP-1 turret technical (Generic)": {
+        "properties": {
+            "RealMassKg": 3700,
+            "RealEnginePowerHp": 100,
+            "RealMaxSpeedKmh": 90,
+            "RealMaxReverseSpeedKmh": 25,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 143.24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "TurretArmorFrontMm": 23,
+            "TurretArmorSideMm": 19,
+            "TurretArmorRearMm": 19,
+            "TurretArmorTopMm": 6,
+            "ShootDelayPrimarySeconds": 6,
+            "UseAmmoGroup": "73mm 2A28"
+        },
+        "items": [
+            "toyotabmp1turret"
+        ]
+    },
+
+    "Toyota Hilux DShK technical (Generic)": {
+        "properties": {
+            "RealMassKg": 2300,
+            "RealEnginePowerHp": 100,
+            "RealMaxSpeedKmh": 90,
+            "RealMaxReverseSpeedKmh": 25,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 143.24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0
+        },
+        "items": [
+            "toyotadshk"
+        ]
+    },
+
+    "Toyota Hilux Kornet technical (Generic)": {
+        "properties": {
+            "RealMassKg": 2350,
+            "RealEnginePowerHp": 100,
+            "RealMaxSpeedKmh": 90,
+            "RealMaxReverseSpeedKmh": 25,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 143.24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 15
+        },
+        "items": [
+            "toyotakornet"
+        ]
+    },
+
+    "Toyota Hilux SPG-9 technical (Generic)": {
+        "properties": {
+            "RealMassKg": 2350,
+            "RealEnginePowerHp": 100,
+            "RealMaxSpeedKmh": 90,
+            "RealMaxReverseSpeedKmh": 25,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 143.24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 10
+        },
+        "items": [
+            "toyotaspg"
+        ]
+    },
+
+    "Toyota Hilux UB-32 technical (Generic)": {
+        "properties": {
+            "RealMassKg": 2400,
+            "RealEnginePowerHp": 100,
+            "RealMaxSpeedKmh": 90,
+            "RealMaxReverseSpeedKmh": 25,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 143.24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 0.2
+        },
+        "items": [
+            "toyotas5"
         ]
     },
 
@@ -11179,6 +15799,36 @@
         ]
     },
 
+    "Type 10 (standard armor package)": {
+        "properties": {
+            "RealMassKg": 44000,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 70.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 450.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 550.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 60.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 5.0
+        },
+        "items": [
+            "type10"
+        ]
+    },
+
     "Type 033 Patrol Submarine": {
         "properties": {
             "RealTurnRateDegPerSec": 1.87,
@@ -11203,6 +15853,193 @@
         },
         "items": [
             "kimsub"
+        ]
+    },
+
+    "Type 052D destroyer": {
+        "properties": {
+            "RealDisplacementT": 7500.0,
+            "RealEnginePowerHp": 100000,
+            "RealMaxSpeedKn": 30.0,
+            "RealMaxReverseSpeedKn": 12.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 6.5,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "type52"
+        ]
+    },
+
+    "Type 054A frigate": {
+        "properties": {
+            "RealDisplacementT": 4053.0,
+            "RealEnginePowerHp": 25340,
+            "RealMaxSpeedKn": 27.0,
+            "RealMaxReverseSpeedKn": 10.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 5.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "frigate54"
+        ]
+    },
+
+    "Type 61": {
+        "properties": {
+            "RealMassKg": 35000,
+            "RealEnginePowerHp": 570,
+            "RealMaxSpeedKmh": 45.0,
+            "RealMaxReverseSpeedKmh": 8.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 55.0,
+            "ArmorSideMm": 35.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 125.0,
+            "TurretArmorSideMm": 40.0,
+            "TurretArmorRearMm": 35.0,
+            "TurretArmorTopMm": 25.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0
+        },
+        "items": [
+            "type61"
+        ]
+    },
+
+    "Type 63 107mm rocket launcher": {
+        "properties": {
+            "RealMassKg": 602,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "ShootDelayPrimarySeconds": 0.5
+        },
+        "items": [
+            "type63mrls"
+        ]
+    },
+
+    "Type 73 APC": {
+        "properties": {
+            "RealMassKg": 13300,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 14.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 25.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0
+        },
+        "items": [
+            "type73"
+        ]
+    },
+
+    "Type 74": {
+        "properties": {
+            "RealMassKg": 38000,
+            "RealEnginePowerHp": 750,
+            "RealMaxSpeedKmh": 53.0,
+            "RealMaxReverseSpeedKmh": 14.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 80.0,
+            "ArmorSideMm": 35.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 20.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 195.0,
+            "TurretArmorSideMm": 70.0,
+            "TurretArmorRearMm": 35.0,
+            "TurretArmorTopMm": 40.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "t74"
+        ]
+    },
+
+    "Type 87 reconnaissance combat vehicle": {
+        "properties": {
+            "RealMassKg": 15000,
+            "RealEnginePowerHp": 305,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 20.0,
+            "ArmorSideMm": 10.0,
+            "ArmorRearMm": 10.0,
+            "ArmorTopMm": 8.0,
+            "ArmorBottomMm": 8.0,
+            "RoundsPerMinPrimary": 600,
+            "ReloadRoundsPrimary": 80,
+            "ReloadTimePrimary": 300
+        },
+        "items": [
+            "type87rcv"
         ]
     },
 
@@ -11247,6 +16084,65 @@
         ]
     },
 
+    "Type 89 IFV (vehicle localization collision)": {
+        "properties": {
+            "RealMassKg": 27000,
+            "RealEnginePowerHp": 600,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 25.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 25.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "type89"
+        ]
+    },
+
+    "Type 90": {
+        "properties": {
+            "RealMassKg": 50200,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 70.0,
+            "RealMaxReverseSpeedKmh": 42.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 450.0,
+            "ArmorSideMm": 60.0,
+            "ArmorRearMm": 40.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 550.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 60.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 5.0
+        },
+        "items": [
+            "type90"
+        ]
+    },
+
     "Type 92 Heavy Machine Gun on Tripod": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -11283,6 +16179,34 @@
         },
         "items": [
             "type_94_at"
+        ]
+    },
+
+    "Type 094 Jin (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 8000.0,
+            "RealEnginePowerHp": 30000,
+            "RealMaxSpeedKn": 12.0,
+            "RealMaxReverseSpeedKn": 4.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 9.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "jinclass"
         ]
     },
 
@@ -11598,6 +16522,27 @@
         ]
     },
 
+    "UAZ-452": {
+        "properties": {
+            "RealMassKg": 2000,
+            "RealEnginePowerHp": 75,
+            "RealMaxSpeedKmh": 95.0,
+            "RealMaxReverseSpeedKmh": 25.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 168.0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0
+        },
+        "items": [
+            "buhanka"
+        ]
+    },
+
     "UAZ-469": {
         "properties": {
             "SquashMobs": "true",
@@ -11619,7 +16564,8 @@
             "dayz_vehicle_uaz469_1a",
             "dayz_vehicle_uaz469_1b",
             "dayz_vehicle_uaz469_2a",
-            "dayz_vehicle_uaz469_3a"
+            "dayz_vehicle_uaz469_3a",
+            "uaz469"
         ]
     },
 
@@ -11644,6 +16590,27 @@
         "items": [
             "universalcarrier",
             "uc2pdr"
+        ]
+    },
+
+    "Ural-4320": {
+        "properties": {
+            "RealMassKg": 15200,
+            "RealEnginePowerHp": 210,
+            "RealMaxSpeedKmh": 85.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 150.31,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0.0,
+            "ArmorSideMm": 0.0,
+            "ArmorRearMm": 0.0,
+            "ArmorTopMm": 0.0,
+            "ArmorBottomMm": 0.0
+        },
+        "items": [
+            "ural"
         ]
     },
 
@@ -11706,6 +16673,38 @@
         },
         "items": [
             "ussarizona1941"
+        ]
+    },
+
+    "USS Arleigh Burke DDG-51": {
+        "properties": {
+            "RealDisplacementT": 8449.0,
+            "RealEnginePowerHp": 100000,
+            "RealMaxSpeedKn": 31.0,
+            "RealMaxReverseSpeedKn": 12.4,
+            "DriveType": "MARINE",
+            "RealDraftM": 9.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "TurretArmorFrontMm": 0,
+            "TurretArmorSideMm": 0,
+            "TurretArmorRearMm": 0,
+            "TurretArmorTopMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "arleigh"
         ]
     },
 
@@ -11858,6 +16857,34 @@
         },
         "items": [
             "ussboston1955"
+        ]
+    },
+
+    "USS Bremerton Los Angeles-class (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 6082.0,
+            "RealEnginePowerHp": 35000,
+            "RealMaxSpeedKn": 20.0,
+            "RealMaxReverseSpeedKn": 8.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 9.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "bremerton"
         ]
     },
 
@@ -12184,6 +17211,34 @@
         ]
     },
 
+    "USS Kitty Hawk CV-63 (1961)": {
+        "properties": {
+            "RealDisplacementT": 81284.0,
+            "RealEnginePowerHp": 280000,
+            "RealMaxSpeedKn": 32.0,
+            "RealMaxReverseSpeedKn": 12.8,
+            "DriveType": "MARINE",
+            "RealDraftM": 10.67,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "usskittyhawk"
+        ]
+    },
+
     "USS Liberty AGTR-5 (1967)": {
         "properties": {
             "RealTurnRateDegPerSec": 1.2,
@@ -12417,6 +17472,33 @@
         ]
     },
 
+    "USS Nimitz CVN-68": {
+        "properties": {
+            "RealDisplacementT": 100000.0,
+            "RealEnginePowerHp": 260000,
+            "RealMaxSpeedKn": 30.0,
+            "RealMaxReverseSpeedKn": 12.0,
+            "DriveType": "MARINE",
+            "RealDraftM": 11.3,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 64,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0
+        },
+        "items": [
+            "ussnimitz"
+        ]
+    },
+
     "USS Oklahoma BB-37 (1917)": {
         "properties": {
             "RealTurnRateDegPerSec": 1,
@@ -12476,6 +17558,34 @@
         },
         "items": [
             "ussraleigh1941"
+        ]
+    },
+
+    "USS Robert E Lee SSBN-601 (surfaced)": {
+        "properties": {
+            "RealDisplacementT": 5990.0,
+            "RealEnginePowerHp": 15000,
+            "RealMaxSpeedKn": 16.0,
+            "RealMaxReverseSpeedKn": 6.4,
+            "DriveType": "MARINE",
+            "RealDraftM": 8.8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "ArmorFlightDeckMm": 0,
+            "ShootDelayPrimarySeconds": 2
+        },
+        "items": [
+            "robertlee"
         ]
     },
 
@@ -12915,7 +18025,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "usszumwalt"
+            "usszumwalt",
+            "zumwalt"
         ]
     },
 
@@ -12938,6 +18049,34 @@
         },
         "items": [
             "crane"
+        ]
+    },
+
+    "VBCI": {
+        "properties": {
+            "RealMassKg": 28600,
+            "RealEnginePowerHp": 550,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 25.0,
+            "ArmorRearMm": 25.0,
+            "ArmorTopMm": 20.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 25.0,
+            "TurretArmorRearMm": 25.0,
+            "TurretArmorTopMm": 20.0,
+            "RoundsPerMinPrimary": 400,
+            "ReloadRoundsPrimary": 60,
+            "ReloadTimePrimary": 200
+        },
+        "items": [
+            "vbci"
         ]
     },
 
@@ -13545,6 +18684,119 @@
         ]
     },
 
+    "ZBD-04": {
+        "properties": {
+            "RealMassKg": 20000,
+            "RealEnginePowerHp": 550,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 10.0,
+            "ArmorBottomMm": 10.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 10.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 6.0
+        },
+        "items": [
+            "zbd04"
+        ]
+    },
+
+    "ZBD-05": {
+        "properties": {
+            "RealMassKg": 26500,
+            "RealEnginePowerHp": 550,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "zbd05"
+        ]
+    },
+
+    "ZBD-86A": {
+        "properties": {
+            "RealMassKg": 13500,
+            "RealEnginePowerHp": 300,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 11.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 19.0,
+            "ArmorSideMm": 16.0,
+            "ArmorRearMm": 16.0,
+            "ArmorTopMm": 6.0,
+            "ArmorBottomMm": 6.0,
+            "TurretArmorFrontMm": 23.0,
+            "TurretArmorSideMm": 19.0,
+            "TurretArmorRearMm": 19.0,
+            "TurretArmorTopMm": 6.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ]
+        },
+        "items": [
+            "zbd86"
+        ]
+    },
+
+    "ZBL-09": {
+        "properties": {
+            "RealMassKg": 21000,
+            "RealEnginePowerHp": 440,
+            "RealMaxSpeedKmh": 100.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 176.84,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 15.0
+        },
+        "items": [
+            "zbd08"
+        ]
+    },
+
     "ZiS-2 57mm Anti-Tank Gun": {
         "properties": {
             "RealTurnRateDegPerSec": 0,
@@ -13632,6 +18884,260 @@
         "items": [
             "zis30",
             "44_zis30"
+        ]
+    },
+
+    "ZPU-2 twin KPV mount": {
+        "properties": {
+            "RealMassKg": 994,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "RoundsPerMinPrimary": 600,
+            "ReloadRoundsPrimary": 150,
+            "ReloadTimePrimary": 200
+        },
+        "items": [
+            "zpu2"
+        ]
+    },
+
+    "ZSL-92": {
+        "properties": {
+            "RealMassKg": 15000,
+            "RealEnginePowerHp": 320,
+            "RealMaxSpeedKmh": 85.0,
+            "RealMaxReverseSpeedKmh": 20.0,
+            "DriveType": "AWD",
+            "RealTurnRateDegPerSec": 150.31,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 15.0,
+            "ArmorSideMm": 10.0,
+            "ArmorRearMm": 10.0,
+            "ArmorTopMm": 8.0,
+            "ArmorBottomMm": 8.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 10.0,
+            "TurretArmorRearMm": 10.0,
+            "TurretArmorTopMm": 8.0,
+            "RoundsPerMinPrimary": 300,
+            "ReloadRoundsPrimary": 100,
+            "ReloadTimePrimary": 300
+        },
+        "items": [
+            "zsl92"
+        ]
+    },
+
+    "ZSU-23-4V Shilka": {
+        "properties": {
+            "RealMassKg": 19000,
+            "RealEnginePowerHp": 280,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 15.0,
+            "ArmorSideMm": 15.0,
+            "ArmorRearMm": 15.0,
+            "ArmorTopMm": 9.0,
+            "ArmorBottomMm": 9.0,
+            "TurretArmorFrontMm": 15.0,
+            "TurretArmorSideMm": 15.0,
+            "TurretArmorRearMm": 15.0,
+            "TurretArmorTopMm": 9.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "RoundsPerMinPrimary": 3400,
+            "ReloadRoundsPrimary": 2000,
+            "ReloadTimePrimary": 600
+        },
+        "items": [
+            "zsu234"
+        ]
+    },
+
+    "ZSU-57-2": {
+        "properties": {
+            "RealMassKg": 28200,
+            "RealEnginePowerHp": 520,
+            "RealMaxSpeedKmh": 50.0,
+            "RealMaxReverseSpeedKmh": 7.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 15.0,
+            "ArmorSideMm": 13.5,
+            "ArmorRearMm": 8.0,
+            "ArmorTopMm": 8.0,
+            "ArmorBottomMm": 8.0,
+            "TurretArmorFrontMm": 13.5,
+            "TurretArmorSideMm": 13.5,
+            "TurretArmorRearMm": 13.5,
+            "TurretArmorTopMm": 0.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "RoundsPerMinPrimary": 120,
+            "ReloadRoundsPrimary": 4,
+            "ReloadTimePrimary": 60
+        },
+        "items": [
+            "zsu57"
+        ]
+    },
+
+    "ZTD-05 (105mm armed ZBD-05 family)": {
+        "properties": {
+            "RealMassKg": 26500,
+            "RealEnginePowerHp": 550,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 15.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 24,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 40.0,
+            "ArmorSideMm": 20.0,
+            "ArmorRearMm": 20.0,
+            "ArmorTopMm": 15.0,
+            "ArmorBottomMm": 15.0,
+            "TurretArmorFrontMm": 40.0,
+            "TurretArmorSideMm": 20.0,
+            "TurretArmorRearMm": 20.0,
+            "TurretArmorTopMm": 15.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "zlt05"
+        ]
+    },
+
+    "ZTZ-88": {
+        "properties": {
+            "RealMassKg": 38500,
+            "RealEnginePowerHp": 730,
+            "RealMaxSpeedKmh": 57.0,
+            "RealMaxReverseSpeedKmh": 10.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 200.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 20.0,
+            "TurretArmorFrontMm": 250.0,
+            "TurretArmorSideMm": 100.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 35.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "t88"
+        ]
+    },
+
+    "ZTZ-99": {
+        "properties": {
+            "RealMassKg": 54000,
+            "RealEnginePowerHp": 1200,
+            "RealMaxSpeedKmh": 65.0,
+            "RealMaxReverseSpeedKmh": 12.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 600.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 30.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 700.0,
+            "TurretArmorSideMm": 200.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "norinco99"
+        ]
+    },
+
+    "ZTZ-99A": {
+        "properties": {
+            "RealMassKg": 58000,
+            "RealEnginePowerHp": 1500,
+            "RealMaxSpeedKmh": 75.0,
+            "RealMaxReverseSpeedKmh": 30.0,
+            "DriveType": "TRACKED",
+            "RealTurnRateDegPerSec": 28,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 650.0,
+            "ArmorSideMm": 80.0,
+            "ArmorRearMm": 45.0,
+            "ArmorTopMm": 35.0,
+            "ArmorBottomMm": 25.0,
+            "TurretArmorFrontMm": 750.0,
+            "TurretArmorSideMm": 250.0,
+            "TurretArmorRearMm": 65.0,
+            "TurretArmorTopMm": 50.0,
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
+            "ShootDelayPrimarySeconds": 8.0,
+            "UseAmmoGroup": "125mm 2A46"
+        },
+        "items": [
+            "ztz99a"
+        ]
+    },
+
+    "ZU-23-2 twin mount": {
+        "properties": {
+            "RealMassKg": 950,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "RoundsPerMinPrimary": 1000,
+            "ReloadRoundsPrimary": 50,
+            "ReloadTimePrimary": 160
+        },
+        "items": [
+            "zsu23"
         ]
     }
 }

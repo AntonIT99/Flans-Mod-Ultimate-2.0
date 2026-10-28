@@ -27,6 +27,38 @@
         ]
     },
 
+    "Aerospatiale SA 330H Puma": {
+        "properties": {
+            "RealTurnRateDegPerSec": 17.68,
+            "RealMassKg": 7400,
+            "RealEnginePowerHp": 3150,
+            "RealMaxSpeedKmh": 273,
+            "RealRotorDiameterM": 15,
+            "RealClimbRateMs": 7.1,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "puma"
+        ]
+    },
+
+    "Aerospatiale SA 341F Gazelle": {
+        "properties": {
+            "RealTurnRateDegPerSec": 25.26,
+            "RealMassKg": 1800,
+            "RealEnginePowerHp": 590,
+            "RealMaxSpeedKmh": 310,
+            "RealRotorDiameterM": 10.5,
+            "RealClimbRateMs": 9,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "sa341"
+        ]
+    },
+
     "AH-1Z Viper": {
         "properties": {
             "RealTurnRateDegPerSec": 21.76,
@@ -41,7 +73,8 @@
         "items": [
             "ah1zgreen",
             "ah1zgrey",
-            "ah1zviper"
+            "ah1zviper",
+            "ah1z"
         ]
     },
 
@@ -57,7 +90,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "apacheah64"
+            "apacheah64",
+            "apacheblackd"
         ]
     },
 
@@ -113,6 +147,74 @@
         ]
     },
 
+    "Airco D.H.2": {
+        "properties": {
+            "RealTurnRateDegPerSec": 30.81,
+            "RealMassKg": 653,
+            "RealMaxSpeedKmh": 130,
+            "RealWingSpanM": 8.61,
+            "RealWingAreaM2": 21.5,
+            "RealClimbRateMs": 2.38,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 100
+        },
+        "items": [
+            "dh2"
+        ]
+    },
+
+    "Airco D.H.4 (Eagle VII)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.54,
+            "RealMassKg": 1588,
+            "RealMaxSpeedKmh": 200,
+            "RealWingSpanM": 12.916,
+            "RealWingAreaM2": 40,
+            "RealClimbRateMs": 4.93,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 325
+        },
+        "items": [
+            "dh4"
+        ]
+    },
+
+    "Albatros D.III (Mercedes D.IIIa)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 29.47,
+            "RealMassKg": 885,
+            "RealMaxSpeedKmh": 170,
+            "RealWingSpanM": 9,
+            "RealWingAreaM2": 20.54,
+            "RealClimbRateMs": 4.22,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 180
+        },
+        "items": [
+            "albatrosdiii"
+        ]
+    },
+
+    "Antonov An-12B": {
+        "properties": {
+            "RealTurnRateDegPerSec": 6.98,
+            "RealMassKg": 54000,
+            "RealMaxSpeedKmh": 660,
+            "RealWingSpanM": 38,
+            "RealWingAreaM2": 121.7,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 16000
+        },
+        "items": [
+            "an-12b"
+        ]
+    },
+
     "Arado Ar 196 A-5": {
         "properties": {
             "RealTurnRateDegPerSec": 25.67,
@@ -148,6 +250,23 @@
         ]
     },
 
+    "Armed FPV Quadcopter (Generic)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 0,
+            "RealMassKg": 2,
+            "RealMaxSpeedKmh": 97.2,
+            "RealRotorDiameterM": 0.127,
+            "RealClimbRateMs": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealRotorCount": 4,
+            "RealEnginePowerKw": 0.8
+        },
+        "items": [
+            "fpvdrone"
+        ]
+    },
+
     "Arsenal VB 10": {
         "properties": {
             "RealTurnRateDegPerSec": 20.55,
@@ -178,7 +297,25 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "lancaster"
+            "lancaster",
+            "lancaster_b_mk_i"
+        ]
+    },
+
+    "Avro Vulcan B.2 (Olympus 301)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 7.84,
+            "RealMassKg": 93000,
+            "RealEngineThrustKn": 320,
+            "RealMaxSpeedKmh": 1038,
+            "RealWingSpanM": 33.83,
+            "RealWingAreaM2": 368.3,
+            "RealClimbRateMs": 15,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "vulcan_b2"
         ]
     },
 
@@ -195,6 +332,70 @@
         },
         "items": [
             "cobra"
+        ]
+    },
+
+    "Bell AH-1F Cobra": {
+        "properties": {
+            "RealTurnRateDegPerSec": 19.78,
+            "RealMassKg": 4500,
+            "RealEnginePowerHp": 1800,
+            "RealMaxSpeedKmh": 277,
+            "RealRotorDiameterM": 13.41,
+            "RealClimbRateMs": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ah-1f"
+        ]
+    },
+
+    "Bell AH-1G Cobra": {
+        "properties": {
+            "RealTurnRateDegPerSec": 19.78,
+            "RealMassKg": 4309,
+            "RealEnginePowerHp": 1400,
+            "RealMaxSpeedKmh": 277,
+            "RealRotorDiameterM": 13.41,
+            "RealClimbRateMs": 6.25,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ah-1g"
+        ]
+    },
+
+    "Bell AH-1W Super Cobra": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.13,
+            "RealMassKg": 6690,
+            "RealEnginePowerHp": 3380,
+            "RealMaxSpeedKmh": 282,
+            "RealRotorDiameterM": 14.63,
+            "RealClimbRateMs": 8.2,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ah1w"
+        ]
+    },
+
+    "Bell OH-58D Kiowa Warrior": {
+        "properties": {
+            "RealTurnRateDegPerSec": 24.86,
+            "RealMassKg": 2495,
+            "RealEnginePowerHp": 650,
+            "RealMaxSpeedKmh": 204,
+            "RealRotorDiameterM": 10.67,
+            "RealClimbRateMs": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "oh-58d"
         ]
     },
 
@@ -229,6 +430,54 @@
         },
         "items": [
             "p59"
+        ]
+    },
+
+    "Bell UH-1C Iroquois": {
+        "properties": {
+            "RealTurnRateDegPerSec": 19.78,
+            "RealMassKg": 4310,
+            "RealEnginePowerHp": 1100,
+            "RealMaxSpeedKmh": 220,
+            "RealRotorDiameterM": 13.41,
+            "RealClimbRateMs": 5.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "uh-1c"
+        ]
+    },
+
+    "Bell UH-1D Iroquois": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.13,
+            "RealMassKg": 4100,
+            "RealEnginePowerHp": 1100,
+            "RealMaxSpeedKmh": 217,
+            "RealRotorDiameterM": 14.63,
+            "RealClimbRateMs": 4.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "uh-1d"
+        ]
+    },
+
+    "Bell UH-1Y Venom": {
+        "properties": {
+            "RealTurnRateDegPerSec": 17.83,
+            "RealMassKg": 8390,
+            "RealEnginePowerHp": 3600,
+            "RealMaxSpeedKmh": 304,
+            "RealRotorDiameterM": 14.88,
+            "RealClimbRateMs": 12.7,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "uh-1y"
         ]
     },
 
@@ -271,6 +520,22 @@
         ]
     },
 
+    "Boeing AH-64A Apache": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.13,
+            "RealMassKg": 8000,
+            "RealEnginePowerHp": 3380,
+            "RealMaxSpeedKmh": 293,
+            "RealRotorDiameterM": 14.63,
+            "RealClimbRateMs": 12.7,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "apacheblack"
+        ]
+    },
+
     "Boeing B-17G Flying Fortress": {
         "properties": {
             "RealTurnRateDegPerSec": 10.07,
@@ -306,6 +571,23 @@
         },
         "items": [
             "b29"
+        ]
+    },
+
+    "Boeing B-52C Stratofortress": {
+        "properties": {
+            "RealTurnRateDegPerSec": 4.7,
+            "RealMassKg": 185000,
+            "RealEngineThrustKn": 363,
+            "RealMaxSpeedKmh": 1010,
+            "RealWingSpanM": 56.39,
+            "RealWingAreaM2": 371.6,
+            "RealClimbRateMs": 20,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "b-52c"
         ]
     },
 
@@ -394,6 +676,56 @@
         ]
     },
 
+    "Bristol F.2B (Falcon III)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 22.13,
+            "RealMassKg": 1262,
+            "RealMaxSpeedKmh": 205,
+            "RealWingSpanM": 11.986,
+            "RealWingAreaM2": 37.7,
+            "RealClimbRateMs": 5.56,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 285
+        },
+        "items": [
+            "bristolf2"
+        ]
+    },
+
+    "British Aerospace Sea Harrier FRS.1": {
+        "properties": {
+            "RealTurnRateDegPerSec": 34.45,
+            "RealMassKg": 8830,
+            "RealEngineThrustKn": 95.6,
+            "RealMaxSpeedKmh": 1185,
+            "RealWingSpanM": 7.7,
+            "RealWingAreaM2": 18.68,
+            "RealClimbRateMs": 70,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "sea_harrier"
+        ]
+    },
+
+    "CAIC WZ-10K": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.4,
+            "RealMassKg": 7000,
+            "RealEnginePowerHp": 2680,
+            "RealMaxSpeedKmh": 270,
+            "RealRotorDiameterM": 13,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "z10w"
+        ]
+    },
+
     "Caproni Campini N.1": {
         "properties": {
             "RealTurnRateDegPerSec": 20.08,
@@ -425,6 +757,73 @@
         },
         "items": [
             "chinook"
+        ]
+    },
+
+    "Changhe Z-11W": {
+        "properties": {
+            "RealTurnRateDegPerSec": 24.81,
+            "RealMassKg": 2200,
+            "RealEnginePowerHp": 680,
+            "RealMaxSpeedKmh": 278,
+            "RealRotorDiameterM": 10.69,
+            "RealClimbRateMs": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "z-11w"
+        ]
+    },
+
+    "Chengdu J-7 (WP-7)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 37.1,
+            "RealMassKg": 7500,
+            "RealEngineThrustKn": 58.8,
+            "RealMaxSpeedKmh": 2120,
+            "RealWingSpanM": 7.15,
+            "RealWingAreaM2": 23,
+            "RealClimbRateMs": 120,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "j-7"
+        ]
+    },
+
+    "Chengdu J-10A": {
+        "properties": {
+            "RealTurnRateDegPerSec": 27.21,
+            "RealMassKg": 14000,
+            "RealEngineThrustKn": 122.6,
+            "RealMaxSpeedKmh": 2335,
+            "RealWingSpanM": 9.75,
+            "RealWingAreaM2": 33.05,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "j-10a"
+        ]
+    },
+
+    "Chengdu J-20": {
+        "properties": {
+            "RealTurnRateDegPerSec": 19.65,
+            "RealMassKg": 32000,
+            "RealEngineThrustKn": 294,
+            "RealMaxSpeedKmh": 2125,
+            "RealWingSpanM": 13.5,
+            "RealWingAreaM2": 73,
+            "RealClimbRateMs": 250,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "chengdu"
         ]
     },
 
@@ -599,6 +998,91 @@
         ]
     },
 
+    "Dassault Mirage 2000C": {
+        "properties": {
+            "RealTurnRateDegPerSec": 29.05,
+            "RealMassKg": 13800,
+            "RealEngineThrustKn": 95.1,
+            "RealMaxSpeedKmh": 2336,
+            "RealWingSpanM": 9.13,
+            "RealWingAreaM2": 41,
+            "RealClimbRateMs": 250,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mirage2000"
+        ]
+    },
+
+    "Dassault Mirage F1C": {
+        "properties": {
+            "RealTurnRateDegPerSec": 31.58,
+            "RealMassKg": 10900,
+            "RealEngineThrustKn": 70.6,
+            "RealMaxSpeedKmh": 2338,
+            "RealWingSpanM": 8.4,
+            "RealWingAreaM2": 25,
+            "RealClimbRateMs": 180,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "miragef1"
+        ]
+    },
+
+    "Dassault Mirage IIIE": {
+        "properties": {
+            "RealTurnRateDegPerSec": 32.27,
+            "RealMassKg": 9600,
+            "RealEngineThrustKn": 58.9,
+            "RealMaxSpeedKmh": 2350,
+            "RealWingSpanM": 8.22,
+            "RealWingAreaM2": 34.85,
+            "RealClimbRateMs": 83,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mirage3"
+        ]
+    },
+
+    "Dassault Mirage IVA": {
+        "properties": {
+            "RealTurnRateDegPerSec": 22.4,
+            "RealMassKg": 32000,
+            "RealEngineThrustKn": 129.4,
+            "RealMaxSpeedKmh": 2340,
+            "RealWingSpanM": 11.84,
+            "RealWingAreaM2": 78,
+            "RealClimbRateMs": 43,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mirage_iv"
+        ]
+    },
+
+    "Dassault Rafale M": {
+        "properties": {
+            "RealTurnRateDegPerSec": 24.34,
+            "RealMassKg": 16000,
+            "RealEngineThrustKn": 147.1,
+            "RealMaxSpeedKmh": 1912,
+            "RealWingSpanM": 10.9,
+            "RealWingAreaM2": 45.7,
+            "RealClimbRateMs": 250,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "rafale"
+        ]
+    },
+
     "de Havilland Mosquito FB Mk VI": {
         "properties": {
             "RealTurnRateDegPerSec": 19.28,
@@ -716,6 +1200,40 @@
         },
         "items": [
             "skyraider"
+        ]
+    },
+
+    "Douglas A-4C Skyhawk": {
+        "properties": {
+            "RealTurnRateDegPerSec": 31.65,
+            "RealMassKg": 8318,
+            "RealEngineThrustKn": 36.5,
+            "RealMaxSpeedKmh": 1082,
+            "RealWingSpanM": 8.38,
+            "RealWingAreaM2": 24.15,
+            "RealClimbRateMs": 43.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "a4"
+        ]
+    },
+
+    "Douglas A-4H Skyhawk": {
+        "properties": {
+            "RealTurnRateDegPerSec": 31.65,
+            "RealMassKg": 9700,
+            "RealEngineThrustKn": 41.4,
+            "RealMaxSpeedKmh": 1086,
+            "RealWingSpanM": 8.38,
+            "RealWingAreaM2": 24.15,
+            "RealClimbRateMs": 43.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "a4israel"
         ]
     },
 
@@ -865,6 +1383,56 @@
         },
         "items": [
             "ec665"
+        ]
+    },
+
+    "Eurocopter EC665 Tiger UHT": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.4,
+            "RealMassKg": 5800,
+            "RealEnginePowerHp": 2570,
+            "RealMaxSpeedKmh": 290,
+            "RealRotorDiameterM": 13,
+            "RealClimbRateMs": 10.7,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ec665uht"
+        ]
+    },
+
+    "Eurofighter Typhoon": {
+        "properties": {
+            "RealTurnRateDegPerSec": 24.22,
+            "RealMassKg": 16000,
+            "RealEngineThrustKn": 180,
+            "RealMaxSpeedKmh": 2125,
+            "RealWingSpanM": 10.95,
+            "RealWingAreaM2": 51.2,
+            "RealClimbRateMs": 250,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "typhoon"
+        ]
+    },
+
+    "Fairchild Republic A-10A Thunderbolt II": {
+        "properties": {
+            "RealTurnRateDegPerSec": 15.13,
+            "RealMassKg": 13782,
+            "RealEngineThrustKn": 80.64,
+            "RealMaxSpeedKmh": 706,
+            "RealWingSpanM": 17.53,
+            "RealWingAreaM2": 47,
+            "RealClimbRateMs": 30,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "a10c"
         ]
     },
 
@@ -1058,6 +1626,23 @@
         ]
     },
 
+    "Fokker D.VII (Mercedes D.IIIa)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 30.49,
+            "RealMassKg": 909,
+            "RealMaxSpeedKmh": 190,
+            "RealWingSpanM": 8.7,
+            "RealWingAreaM2": 20.4,
+            "RealClimbRateMs": 4.59,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 180
+        },
+        "items": [
+            "fokkerdvii"
+        ]
+    },
+
     "Fokker D.XXI (Mercury)": {
         "properties": {
             "RealTurnRateDegPerSec": 28.94,
@@ -1089,6 +1674,74 @@
         },
         "items": [
             "fokker"
+        ]
+    },
+
+    "Fokker E.III": {
+        "properties": {
+            "RealTurnRateDegPerSec": 26.53,
+            "RealMassKg": 641,
+            "RealMaxSpeedKmh": 142,
+            "RealWingSpanM": 10,
+            "RealWingAreaM2": 15.99,
+            "RealClimbRateMs": 2.58,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 100
+        },
+        "items": [
+            "eindecker"
+        ]
+    },
+
+    "General Atomics MQ-9 Reaper": {
+        "properties": {
+            "RealTurnRateDegPerSec": 13.2,
+            "RealMassKg": 4760,
+            "RealMaxSpeedKmh": 482,
+            "RealWingSpanM": 20.1,
+            "RealWingAreaM2": 25.6,
+            "RealClimbRateMs": 5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 900
+        },
+        "items": [
+            "reaperdrone"
+        ]
+    },
+
+    "General Dynamics F-16C Fighting Falcon (Block 50)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 26.63,
+            "RealMassKg": 12000,
+            "RealEngineThrustKn": 131.6,
+            "RealMaxSpeedKmh": 2120,
+            "RealWingSpanM": 9.96,
+            "RealWingAreaM2": 27.87,
+            "RealClimbRateMs": 254,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-16c"
+        ]
+    },
+
+    "General Dynamics F-16I Sufa": {
+        "properties": {
+            "RealTurnRateDegPerSec": 26.63,
+            "RealMassKg": 14500,
+            "RealEngineThrustKn": 129.7,
+            "RealMaxSpeedKmh": 2120,
+            "RealWingSpanM": 9.96,
+            "RealWingAreaM2": 27.87,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-16i"
         ]
     },
 
@@ -1140,6 +1793,23 @@
         },
         "items": [
             "glostermeteor"
+        ]
+    },
+
+    "Gotha G.IV": {
+        "properties": {
+            "RealTurnRateDegPerSec": 11.19,
+            "RealMassKg": 3635,
+            "RealMaxSpeedKmh": 140,
+            "RealWingSpanM": 23.7,
+            "RealWingAreaM2": 89.5,
+            "RealClimbRateMs": 2.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 520
+        },
+        "items": [
+            "gotha"
         ]
     },
 
@@ -1229,6 +1899,57 @@
         ]
     },
 
+    "Grumman F9F-6 Cougar": {
+        "properties": {
+            "RealTurnRateDegPerSec": 25.21,
+            "RealMassKg": 9525,
+            "RealEngineThrustKn": 32.2,
+            "RealMaxSpeedKmh": 1053,
+            "RealWingSpanM": 10.52,
+            "RealWingAreaM2": 28.34,
+            "RealClimbRateMs": 31,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f9f-6"
+        ]
+    },
+
+    "Grumman F9F-8 Cougar": {
+        "properties": {
+            "RealTurnRateDegPerSec": 25.21,
+            "RealMassKg": 11232,
+            "RealEngineThrustKn": 32.25,
+            "RealMaxSpeedKmh": 1135,
+            "RealWingSpanM": 10.52,
+            "RealWingAreaM2": 31.31,
+            "RealClimbRateMs": 34.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f9f-8"
+        ]
+    },
+
+    "Grumman F-14A Tomcat": {
+        "properties": {
+            "RealTurnRateDegPerSec": 13.58,
+            "RealMassKg": 33725,
+            "RealEngineThrustKn": 185.94,
+            "RealMaxSpeedKmh": 2485,
+            "RealWingSpanM": 19.53,
+            "RealWingAreaM2": 52.49,
+            "RealClimbRateMs": 152.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-14a"
+        ]
+    },
+
     "Grumman TBF Avenger": {
         "properties": {
             "RealTurnRateDegPerSec": 19.28,
@@ -1244,6 +1965,106 @@
         "items": [
             "tbf1c",
             "tbm3e"
+        ]
+    },
+
+    "Halberstadt CL.II (180 hp)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 24.63,
+            "RealMassKg": 1145,
+            "RealMaxSpeedKmh": 165,
+            "RealWingSpanM": 10.77,
+            "RealWingAreaM2": 27.5,
+            "RealClimbRateMs": 2.92,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 180
+        },
+        "items": [
+            "halberstadcl2"
+        ]
+    },
+
+    "Handley Page O/400": {
+        "properties": {
+            "RealTurnRateDegPerSec": 8.7,
+            "RealMassKg": 6350,
+            "RealMaxSpeedKmh": 156,
+            "RealWingSpanM": 30.48,
+            "RealWingAreaM2": 153.1,
+            "RealClimbRateMs": 1.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 720
+        },
+        "items": [
+            "handjob"
+        ]
+    },
+
+    "Hanriot HD.2": {
+        "properties": {
+            "RealTurnRateDegPerSec": 30.49,
+            "RealMassKg": 723,
+            "RealMaxSpeedKmh": 182,
+            "RealWingSpanM": 8.7,
+            "RealWingAreaM2": 18.2,
+            "RealClimbRateMs": 5.13,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 130
+        },
+        "items": [
+            "hd2"
+        ]
+    },
+
+    "Harbin Z-9 Haitun": {
+        "properties": {
+            "RealTurnRateDegPerSec": 22.22,
+            "RealMassKg": 3850,
+            "RealEnginePowerHp": 1702,
+            "RealMaxSpeedKmh": 305,
+            "RealRotorDiameterM": 11.94,
+            "RealClimbRateMs": 5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "z-9"
+        ]
+    },
+
+    "Harbin Z-9W": {
+        "properties": {
+            "RealTurnRateDegPerSec": 22.22,
+            "RealMassKg": 4100,
+            "RealEnginePowerHp": 1702,
+            "RealMaxSpeedKmh": 305,
+            "RealRotorDiameterM": 11.94,
+            "RealClimbRateMs": 5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "z-9w"
+        ]
+    },
+
+    "Hawker Hunter F.6": {
+        "properties": {
+            "RealTurnRateDegPerSec": 25.85,
+            "RealMassKg": 8050,
+            "RealEngineThrustKn": 44.5,
+            "RealMaxSpeedKmh": 1150,
+            "RealWingSpanM": 10.26,
+            "RealWingAreaM2": 32.42,
+            "RealClimbRateMs": 87.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "hunter"
         ]
     },
 
@@ -1334,6 +2155,23 @@
         ]
     },
 
+    "Hawker Typhoon Mk Ib": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.94,
+            "RealMassKg": 5176,
+            "RealMaxSpeedKmh": 663,
+            "RealWingSpanM": 12.67,
+            "RealWingAreaM2": 25.92,
+            "RealClimbRateMs": 13.9,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 2180
+        },
+        "items": [
+            "typhoonhawker"
+        ]
+    },
+
     "Heinkel He 51 B-1": {
         "properties": {
             "RealTurnRateDegPerSec": 28.94,
@@ -1421,6 +2259,22 @@
         ]
     },
 
+    "Hughes OH-6B Cayuse": {
+        "properties": {
+            "RealTurnRateDegPerSec": 33.03,
+            "RealMassKg": 1200,
+            "RealEnginePowerHp": 420,
+            "RealMaxSpeedKmh": 282,
+            "RealRotorDiameterM": 8.03,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "oh-6a"
+        ]
+    },
+
     "IAR 81C": {
         "properties": {
             "RealTurnRateDegPerSec": 28.94,
@@ -1489,6 +2343,23 @@
         ]
     },
 
+    "ILL-126 Multirole VTOL (Fictional)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 22.1,
+            "RealMassKg": 16000,
+            "RealEngineThrustKn": 180,
+            "RealMaxSpeedKmh": 1800,
+            "RealWingSpanM": 12,
+            "RealWingAreaM2": 40,
+            "RealClimbRateMs": 150,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ill126"
+        ]
+    },
+
     "Ilyushin Il-2M3": {
         "properties": {
             "RealTurnRateDegPerSec": 21.8,
@@ -1534,6 +2405,23 @@
         },
         "items": [
             "il28"
+        ]
+    },
+
+    "Ilyushin Il-76M": {
+        "properties": {
+            "RealTurnRateDegPerSec": 5.25,
+            "RealMassKg": 130000,
+            "RealEngineThrustKn": 470.8,
+            "RealMaxSpeedKmh": 850,
+            "RealWingSpanM": 50.5,
+            "RealWingAreaM2": 300,
+            "RealClimbRateMs": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "il-76m"
         ]
     },
 
@@ -1623,6 +2511,74 @@
         },
         "items": [
             "ju1488"
+        ]
+    },
+
+    "Kamov Ka-25BSh": {
+        "properties": {
+            "RealTurnRateDegPerSec": 16.85,
+            "RealMassKg": 6970,
+            "RealEnginePowerHp": 1800,
+            "RealMaxSpeedKmh": 220,
+            "RealRotorDiameterM": 15.74,
+            "RealClimbRateMs": 5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealRotorCount": 2
+        },
+        "items": [
+            "ka25"
+        ]
+    },
+
+    "Kamov Ka-27PL": {
+        "properties": {
+            "RealTurnRateDegPerSec": 16.68,
+            "RealMassKg": 11000,
+            "RealEnginePowerHp": 4450,
+            "RealMaxSpeedKmh": 270,
+            "RealRotorDiameterM": 15.9,
+            "RealClimbRateMs": 12.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealRotorCount": 2
+        },
+        "items": [
+            "ka27"
+        ]
+    },
+
+    "Kamov Ka-29": {
+        "properties": {
+            "RealTurnRateDegPerSec": 16.68,
+            "RealMassKg": 11000,
+            "RealEnginePowerHp": 4380,
+            "RealMaxSpeedKmh": 280,
+            "RealRotorDiameterM": 15.9,
+            "RealClimbRateMs": 9,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealRotorCount": 2
+        },
+        "items": [
+            "ka-29"
+        ]
+    },
+
+    "Kamov Ka-52 Alligator": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.29,
+            "RealMassKg": 10400,
+            "RealEnginePowerHp": 4800,
+            "RealMaxSpeedKmh": 300,
+            "RealRotorDiameterM": 14.5,
+            "RealClimbRateMs": 12,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealRotorCount": 2
+        },
+        "items": [
+            "ka52"
         ]
     },
 
@@ -1862,6 +2818,40 @@
         ]
     },
 
+    "Lockheed AC-130U Spooky II": {
+        "properties": {
+            "RealTurnRateDegPerSec": 6.56,
+            "RealMassKg": 56000,
+            "RealMaxSpeedKmh": 480,
+            "RealWingSpanM": 40.41,
+            "RealWingAreaM2": 162.1,
+            "RealClimbRateMs": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 19640
+        },
+        "items": [
+            "ac-130u"
+        ]
+    },
+
+    "Lockheed C-130E Hercules": {
+        "properties": {
+            "RealTurnRateDegPerSec": 6.56,
+            "RealMassKg": 60000,
+            "RealMaxSpeedKmh": 592,
+            "RealWingSpanM": 40.41,
+            "RealWingAreaM2": 162.1,
+            "RealClimbRateMs": 8,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 16200
+        },
+        "items": [
+            "c-130e"
+        ]
+    },
+
     "Lockheed C-130H Hercules": {
         "properties": {
             "RealTurnRateDegPerSec": 7.88,
@@ -1880,6 +2870,23 @@
         ]
     },
 
+    "Lockheed F-117A Nighthawk": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.1,
+            "RealMassKg": 20000,
+            "RealEngineThrustKn": 94.3,
+            "RealMaxSpeedKmh": 993,
+            "RealWingSpanM": 13.2,
+            "RealWingAreaM2": 73,
+            "RealClimbRateMs": 15,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-117a"
+        ]
+    },
+
     "Lockheed Martin F-22A Raptor": {
         "properties": {
             "RealTurnRateDegPerSec": 23.47,
@@ -1895,7 +2902,25 @@
         "items": [
             "f22",
             "modernwarfare_f22",
-            "f22mraptor"
+            "f22mraptor",
+            "f-22a"
+        ]
+    },
+
+    "Lockheed Martin F-35A Lightning II": {
+        "properties": {
+            "RealTurnRateDegPerSec": 24.79,
+            "RealMassKg": 22350,
+            "RealEngineThrustKn": 191,
+            "RealMaxSpeedKmh": 1975,
+            "RealWingSpanM": 10.7,
+            "RealWingAreaM2": 42.7,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f35a"
         ]
     },
 
@@ -1985,6 +3010,23 @@
         ]
     },
 
+    "Martin B-57B Canberra": {
+        "properties": {
+            "RealTurnRateDegPerSec": 13.6,
+            "RealMassKg": 18200,
+            "RealEngineThrustKn": 64.4,
+            "RealMaxSpeedKmh": 960,
+            "RealWingSpanM": 19.51,
+            "RealWingAreaM2": 89.19,
+            "RealClimbRateMs": 30.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "canberra"
+        ]
+    },
+
     "Martin PBM-1 Mariner": {
         "properties": {
             "RealTurnRateDegPerSec": 8.84,
@@ -2002,6 +3044,91 @@
         ]
     },
 
+    "McDonnell Douglas AV-8B Harrier II (Day Attack)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 28.68,
+            "RealMassKg": 9415,
+            "RealEngineThrustKn": 90.2,
+            "RealMaxSpeedKmh": 1086,
+            "RealWingSpanM": 9.25,
+            "RealWingAreaM2": 22.61,
+            "RealClimbRateMs": 60,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "harrierusmc"
+        ]
+    },
+
+    "McDonnell Douglas F-4E Phantom II": {
+        "properties": {
+            "RealTurnRateDegPerSec": 22.67,
+            "RealMassKg": 18825,
+            "RealEngineThrustKn": 158.76,
+            "RealMaxSpeedKmh": 2370,
+            "RealWingSpanM": 11.7,
+            "RealWingAreaM2": 49.2,
+            "RealClimbRateMs": 210,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-4e"
+        ]
+    },
+
+    "McDonnell Douglas F-15C Eagle": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.33,
+            "RealMassKg": 20200,
+            "RealEngineThrustKn": 208.6,
+            "RealMaxSpeedKmh": 2655,
+            "RealWingSpanM": 13.05,
+            "RealWingAreaM2": 56.5,
+            "RealClimbRateMs": 254,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-15c"
+        ]
+    },
+
+    "McDonnell Douglas F-15E Strike Eagle": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.33,
+            "RealMassKg": 26000,
+            "RealEngineThrustKn": 258.9,
+            "RealMaxSpeedKmh": 2655,
+            "RealWingSpanM": 13.05,
+            "RealWingAreaM2": 56.5,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-15e"
+        ]
+    },
+
+    "McDonnell Douglas F/A-18C Hornet": {
+        "properties": {
+            "RealTurnRateDegPerSec": 23.21,
+            "RealMassKg": 16652,
+            "RealEngineThrustKn": 157.46,
+            "RealMaxSpeedKmh": 1915,
+            "RealWingSpanM": 11.43,
+            "RealWingAreaM2": 37.16,
+            "RealClimbRateMs": 228.6,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f_a-18c"
+        ]
+    },
+
     "McDonnell XF-85 Goblin": {
         "properties": {
             "RealTurnRateDegPerSec": 49.43,
@@ -2016,6 +3143,22 @@
         },
         "items": [
             "goblinoplane"
+        ]
+    },
+
+    "MD Helicopters AH-6J Little Bird": {
+        "properties": {
+            "RealTurnRateDegPerSec": 31.84,
+            "RealMassKg": 1400,
+            "RealEnginePowerHp": 650,
+            "RealMaxSpeedKmh": 282,
+            "RealRotorDiameterM": 8.33,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "ah6j"
         ]
     },
 
@@ -2264,6 +3407,57 @@
         ]
     },
 
+    "Mikoyan MiG-27": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.99,
+            "RealMassKg": 18100,
+            "RealEngineThrustKn": 112.8,
+            "RealMaxSpeedKmh": 1350,
+            "RealWingSpanM": 13.965,
+            "RealWingAreaM2": 37.35,
+            "RealClimbRateMs": 100,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig-27"
+        ]
+    },
+
+    "Mikoyan MiG-29A (9.12)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 23.35,
+            "RealMassKg": 15000,
+            "RealEngineThrustKn": 162.8,
+            "RealMaxSpeedKmh": 2445,
+            "RealWingSpanM": 11.36,
+            "RealWingAreaM2": 38.06,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig29russia"
+        ]
+    },
+
+    "Mikoyan MiG-29K (9.41)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 22.12,
+            "RealMassKg": 18550,
+            "RealEngineThrustKn": 176.6,
+            "RealMaxSpeedKmh": 2200,
+            "RealWingSpanM": 11.99,
+            "RealWingAreaM2": 42,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig29k"
+        ]
+    },
+
     "Mikoyan-Gurevich I-225": {
         "properties": {
             "RealTurnRateDegPerSec": 28.94,
@@ -2316,6 +3510,189 @@
         ]
     },
 
+    "Mikoyan-Gurevich MiG-17AS (MiG-17F airframe)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 27.54,
+            "RealMassKg": 5354,
+            "RealEngineThrustKn": 33.15,
+            "RealMaxSpeedKmh": 1130,
+            "RealWingSpanM": 9.63,
+            "RealWingAreaM2": 22.6,
+            "RealClimbRateMs": 65,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig17missile"
+        ]
+    },
+
+    "Mikoyan-Gurevich MiG-19S": {
+        "properties": {
+            "RealTurnRateDegPerSec": 29.47,
+            "RealMassKg": 8832,
+            "RealEngineThrustKn": 63.74,
+            "RealMaxSpeedKmh": 1452,
+            "RealWingSpanM": 9,
+            "RealWingAreaM2": 25.16,
+            "RealClimbRateMs": 115,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig19"
+        ]
+    },
+
+    "Mikoyan-Gurevich MiG-21bis": {
+        "properties": {
+            "RealTurnRateDegPerSec": 37.08,
+            "RealMassKg": 8725,
+            "RealEngineThrustKn": 69.6,
+            "RealMaxSpeedKmh": 2175,
+            "RealWingSpanM": 7.154,
+            "RealWingAreaM2": 23,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig-21"
+        ]
+    },
+
+    "Mikoyan-Gurevich MiG-21F-13": {
+        "properties": {
+            "RealTurnRateDegPerSec": 37.1,
+            "RealMassKg": 7371,
+            "RealEngineThrustKn": 56.39,
+            "RealMaxSpeedKmh": 2125,
+            "RealWingSpanM": 7.15,
+            "RealWingAreaM2": 23,
+            "RealClimbRateMs": 120,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig21f13"
+        ]
+    },
+
+    "Mikoyan-Gurevich MiG-23M": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.99,
+            "RealMassKg": 15700,
+            "RealEngineThrustKn": 122.5,
+            "RealMaxSpeedKmh": 2445,
+            "RealWingSpanM": 13.965,
+            "RealWingAreaM2": 37.35,
+            "RealClimbRateMs": 180,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig-23"
+        ]
+    },
+
+    "Mikoyan-Gurevich MiG-25P": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.93,
+            "RealMassKg": 36720,
+            "RealEngineThrustKn": 200.2,
+            "RealMaxSpeedKmh": 3000,
+            "RealWingSpanM": 14.01,
+            "RealWingAreaM2": 61.4,
+            "RealClimbRateMs": 208,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mig25"
+        ]
+    },
+
+    "Mil Mi-4": {
+        "properties": {
+            "RealTurnRateDegPerSec": 12.63,
+            "RealMassKg": 7500,
+            "RealEnginePowerHp": 1700,
+            "RealMaxSpeedKmh": 185,
+            "RealRotorDiameterM": 21,
+            "RealClimbRateMs": 3.3,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi4"
+        ]
+    },
+
+    "Mil Mi-8AMTSh": {
+        "properties": {
+            "RealTurnRateDegPerSec": 12.46,
+            "RealMassKg": 11100,
+            "RealEnginePowerHp": 4000,
+            "RealMaxSpeedKmh": 250,
+            "RealRotorDiameterM": 21.29,
+            "RealClimbRateMs": 4.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi8amtsh",
+            "mi8amtsharmed"
+        ]
+    },
+
+    "Mil Mi-8MT": {
+        "properties": {
+            "RealTurnRateDegPerSec": 12.46,
+            "RealMassKg": 11100,
+            "RealMaxSpeedKmh": 250,
+            "RealRotorDiameterM": 21.29,
+            "RealClimbRateMs": 4.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerKw": 2870
+        },
+        "items": [
+            "mi8mt"
+        ]
+    },
+
+    "Mil Mi-8MTV": {
+        "properties": {
+            "RealTurnRateDegPerSec": 12.46,
+            "RealMassKg": 11100,
+            "RealEnginePowerHp": 4000,
+            "RealMaxSpeedKmh": 250,
+            "RealRotorDiameterM": 21.29,
+            "RealClimbRateMs": 4.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi8mtv"
+        ]
+    },
+
+    "Mil Mi-8T": {
+        "properties": {
+            "RealTurnRateDegPerSec": 12.46,
+            "RealMassKg": 11100,
+            "RealEnginePowerHp": 3000,
+            "RealMaxSpeedKmh": 250,
+            "RealRotorDiameterM": 21.29,
+            "RealClimbRateMs": 4.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi8t"
+        ]
+    },
+
     "Mil Mi-24 Hind": {
         "properties": {
             "RealTurnRateDegPerSec": 18.4,
@@ -2329,6 +3706,70 @@
         },
         "items": [
             "hind"
+        ]
+    },
+
+    "Mil Mi-24A": {
+        "properties": {
+            "RealTurnRateDegPerSec": 15.33,
+            "RealMassKg": 10500,
+            "RealEnginePowerHp": 3400,
+            "RealMaxSpeedKmh": 310,
+            "RealRotorDiameterM": 17.3,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi-24a"
+        ]
+    },
+
+    "Mil Mi-24D": {
+        "properties": {
+            "RealTurnRateDegPerSec": 15.33,
+            "RealMassKg": 11000,
+            "RealEnginePowerHp": 4400,
+            "RealMaxSpeedKmh": 335,
+            "RealRotorDiameterM": 17.3,
+            "RealClimbRateMs": 12.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi24d"
+        ]
+    },
+
+    "Mil Mi-24P": {
+        "properties": {
+            "RealTurnRateDegPerSec": 15.33,
+            "RealMassKg": 11500,
+            "RealEnginePowerHp": 4400,
+            "RealMaxSpeedKmh": 335,
+            "RealRotorDiameterM": 17.3,
+            "RealClimbRateMs": 12.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi24p"
+        ]
+    },
+
+    "Mil Mi-28N": {
+        "properties": {
+            "RealTurnRateDegPerSec": 15.42,
+            "RealMassKg": 10900,
+            "RealEnginePowerHp": 4400,
+            "RealMaxSpeedKmh": 300,
+            "RealRotorDiameterM": 17.2,
+            "RealClimbRateMs": 13.6,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mi28"
         ]
     },
 
@@ -2577,6 +4018,23 @@
         ]
     },
 
+    "Morane-Saulnier Type L (80 hp)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 23.68,
+            "RealMassKg": 655,
+            "RealMaxSpeedKmh": 125,
+            "RealWingSpanM": 11.2,
+            "RealWingAreaM2": 18.3,
+            "RealClimbRateMs": 2.08,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 80
+        },
+        "items": [
+            "morane"
+        ]
+    },
+
     "Nakajima A6M2-N": {
         "properties": {
             "RealTurnRateDegPerSec": 26.53,
@@ -2713,6 +4171,73 @@
         ]
     },
 
+    "Nanchang Q-5 Fantan": {
+        "properties": {
+            "RealTurnRateDegPerSec": 27.4,
+            "RealMassKg": 10000,
+            "RealEngineThrustKn": 63.74,
+            "RealMaxSpeedKmh": 1210,
+            "RealWingSpanM": 9.68,
+            "RealWingAreaM2": 27.95,
+            "RealClimbRateMs": 75,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "q5"
+        ]
+    },
+
+    "NHIndustries NH90 TTH (RTM322)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 16.27,
+            "RealMassKg": 10000,
+            "RealMaxSpeedKmh": 300,
+            "RealRotorDiameterM": 16.3,
+            "RealClimbRateMs": 11.2,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerKw": 3562
+        },
+        "items": [
+            "nh90"
+        ]
+    },
+
+    "Nieuport 16 (110 hp)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 35.27,
+            "RealMassKg": 560,
+            "RealMaxSpeedKmh": 165,
+            "RealWingSpanM": 7.52,
+            "RealWingAreaM2": 13.3,
+            "RealClimbRateMs": 4.2,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 110
+        },
+        "items": [
+            "nigga16"
+        ]
+    },
+
+    "Nieuport 17 C.1": {
+        "properties": {
+            "RealTurnRateDegPerSec": 32.51,
+            "RealMassKg": 560,
+            "RealMaxSpeedKmh": 156,
+            "RealWingSpanM": 8.16,
+            "RealWingAreaM2": 14.75,
+            "RealClimbRateMs": 5.38,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 110
+        },
+        "items": [
+            "nigga17"
+        ]
+    },
+
     "North American A-36A Apache": {
         "properties": {
             "RealTurnRateDegPerSec": 28.22,
@@ -2837,6 +4362,40 @@
         },
         "items": [
             "p51h"
+        ]
+    },
+
+    "Northrop F-5E Tiger II": {
+        "properties": {
+            "RealTurnRateDegPerSec": 32.63,
+            "RealMassKg": 7157,
+            "RealEngineThrustKn": 44.5,
+            "RealMaxSpeedKmh": 1700,
+            "RealWingSpanM": 8.13,
+            "RealWingAreaM2": 17.28,
+            "RealClimbRateMs": 175,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f5"
+        ]
+    },
+
+    "Northrop Grumman B-2A Spirit": {
+        "properties": {
+            "RealTurnRateDegPerSec": 5.06,
+            "RealMassKg": 152635,
+            "RealEngineThrustKn": 307.8,
+            "RealMaxSpeedKmh": 1010,
+            "RealWingSpanM": 52.43,
+            "RealWingAreaM2": 478,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "b-2a"
         ]
     },
 
@@ -3080,6 +4639,40 @@
         ]
     },
 
+    "Rockwell B-1B Lancer": {
+        "properties": {
+            "RealTurnRateDegPerSec": 6.37,
+            "RealMassKg": 148000,
+            "RealEngineThrustKn": 533.8,
+            "RealMaxSpeedKmh": 1448,
+            "RealWingSpanM": 41.67,
+            "RealWingAreaM2": 181.2,
+            "RealClimbRateMs": 25,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "b-1b"
+        ]
+    },
+
+    "Royal Aircraft Factory F.E.2b (160 hp)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.52,
+            "RealMassKg": 1380,
+            "RealMaxSpeedKmh": 147,
+            "RealWingSpanM": 14.32,
+            "RealWingAreaM2": 45.9,
+            "RealClimbRateMs": 2.04,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 160
+        },
+        "items": [
+            "fe2b"
+        ]
+    },
+
     "SAAB J 21A-1": {
         "properties": {
             "RealTurnRateDegPerSec": 27.44,
@@ -3131,6 +4724,91 @@
         ]
     },
 
+    "SF-2B Reaver VTOL (Fictional)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 33.58,
+            "RealMassKg": 6000,
+            "RealEngineThrustKn": 90,
+            "RealMaxSpeedKmh": 400,
+            "RealWingSpanM": 7.9,
+            "RealWingAreaM2": 12,
+            "RealClimbRateMs": 20,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "reaver"
+        ]
+    },
+
+    "Shenyang J-6 (MiG-19S airframe)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 29.47,
+            "RealMassKg": 8832,
+            "RealEngineThrustKn": 63.74,
+            "RealMaxSpeedKmh": 1452,
+            "RealWingSpanM": 9,
+            "RealWingAreaM2": 25.16,
+            "RealClimbRateMs": 115,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "j-6"
+        ]
+    },
+
+    "Shenyang J-11A (Su-27SK baseline)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 23430,
+            "RealEngineThrustKn": 245.2,
+            "RealMaxSpeedKmh": 2500,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 62,
+            "RealClimbRateMs": 230,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "j-11a"
+        ]
+    },
+
+    "Shenyang J-11B": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 23000,
+            "RealEngineThrustKn": 264,
+            "RealMaxSpeedKmh": 2500,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 62,
+            "RealClimbRateMs": 230,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "j-11b"
+        ]
+    },
+
+    "Shenyang J-15 (AL-31F)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 29940,
+            "RealEngineThrustKn": 250,
+            "RealMaxSpeedKmh": 2300,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 67.84,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "j15"
+        ]
+    },
+
     "Short Sunderland Mk III": {
         "properties": {
             "RealTurnRateDegPerSec": 9.26,
@@ -3148,6 +4826,22 @@
         ]
     },
 
+    "Sikorsky H-19D Chickasaw": {
+        "properties": {
+            "RealTurnRateDegPerSec": 16.41,
+            "RealMassKg": 3400,
+            "RealEnginePowerHp": 700,
+            "RealMaxSpeedKmh": 163,
+            "RealRotorDiameterM": 16.16,
+            "RealClimbRateMs": 3.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "uh19"
+        ]
+    },
+
     "Sikorsky R-5 Dragonfly": {
         "properties": {
             "RealTurnRateDegPerSec": 21.76,
@@ -3161,6 +4855,55 @@
         },
         "items": [
             "ho3s1"
+        ]
+    },
+
+    "Sikorsky S-22 Ilya Muromets (1914)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 8.9,
+            "RealMassKg": 4500,
+            "RealMaxSpeedKmh": 105,
+            "RealWingSpanM": 29.8,
+            "RealWingAreaM2": 125,
+            "RealClimbRateMs": 1.1,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 530
+        },
+        "items": [
+            "ilya"
+        ]
+    },
+
+    "Sikorsky SH-60B Seahawk": {
+        "properties": {
+            "RealTurnRateDegPerSec": 16.21,
+            "RealMassKg": 8055,
+            "RealEnginePowerHp": 3240,
+            "RealMaxSpeedKmh": 270,
+            "RealRotorDiameterM": 16.36,
+            "RealClimbRateMs": 8.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "sh60b"
+        ]
+    },
+
+    "Sikorsky UH-60L Black Hawk": {
+        "properties": {
+            "RealTurnRateDegPerSec": 16.21,
+            "RealMassKg": 9980,
+            "RealEnginePowerHp": 3780,
+            "RealMaxSpeedKmh": 294,
+            "RealRotorDiameterM": 16.36,
+            "RealClimbRateMs": 8.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "uh-60l"
         ]
     },
 
@@ -3194,7 +4937,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "biplane"
+            "biplane",
+            "biplaneclassic"
         ]
     },
 
@@ -3212,6 +4956,23 @@
         },
         "items": [
             "camel"
+        ]
+    },
+
+    "Sopwith Triplane": {
+        "properties": {
+            "RealTurnRateDegPerSec": 32.87,
+            "RealMassKg": 699,
+            "RealMaxSpeedKmh": 185,
+            "RealWingSpanM": 8.07,
+            "RealWingAreaM2": 21.46,
+            "RealClimbRateMs": 5.1,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 130
+        },
+        "items": [
+            "sopwithtriplane"
         ]
     },
 
@@ -3233,6 +4994,23 @@
         ]
     },
 
+    "Sukhoi Su-24M": {
+        "properties": {
+            "RealTurnRateDegPerSec": 15.04,
+            "RealMassKg": 38040,
+            "RealEngineThrustKn": 219.6,
+            "RealMaxSpeedKmh": 1700,
+            "RealWingSpanM": 17.64,
+            "RealWingAreaM2": 55.16,
+            "RealClimbRateMs": 100,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su24"
+        ]
+    },
+
     "Sukhoi Su-25": {
         "properties": {
             "RealTurnRateDegPerSec": 22.17,
@@ -3250,6 +5028,142 @@
         ]
     },
 
+    "Sukhoi Su-27S": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 23430,
+            "RealEngineThrustKn": 245.2,
+            "RealMaxSpeedKmh": 2500,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 62,
+            "RealClimbRateMs": 230,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su27"
+        ]
+    },
+
+    "Sukhoi Su-30MKK": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 26000,
+            "RealEngineThrustKn": 245.2,
+            "RealMaxSpeedKmh": 2125,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 62,
+            "RealClimbRateMs": 180,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su-30mkk"
+        ]
+    },
+
+    "Sukhoi Su-30SM": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 26090,
+            "RealEngineThrustKn": 245.2,
+            "RealMaxSpeedKmh": 2125,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 62,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su30sm"
+        ]
+    },
+
+    "Sukhoi Su-33": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 29940,
+            "RealEngineThrustKn": 250,
+            "RealMaxSpeedKmh": 2300,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 67.84,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su33"
+        ]
+    },
+
+    "Sukhoi Su-34": {
+        "properties": {
+            "RealTurnRateDegPerSec": 17.45,
+            "RealMassKg": 39500,
+            "RealEngineThrustKn": 245.2,
+            "RealMaxSpeedKmh": 1594,
+            "RealWingSpanM": 15.2,
+            "RealWingAreaM2": 62,
+            "RealClimbRateMs": 100,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su34"
+        ]
+    },
+
+    "Sukhoi Su-35S": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.04,
+            "RealMassKg": 25300,
+            "RealEngineThrustKn": 284.4,
+            "RealMaxSpeedKmh": 2390,
+            "RealWingSpanM": 14.7,
+            "RealWingAreaM2": 62,
+            "RealClimbRateMs": 250,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su35"
+        ]
+    },
+
+    "Sukhoi Su-39 (Su-25TM)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 18.47,
+            "RealMassKg": 19500,
+            "RealEngineThrustKn": 88.26,
+            "RealMaxSpeedKmh": 950,
+            "RealWingSpanM": 14.36,
+            "RealWingAreaM2": 30.1,
+            "RealClimbRateMs": 50,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su39"
+        ]
+    },
+
+    "Sukhoi Su-47K Naval Adaptation (Fictional)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 15.88,
+            "RealMassKg": 26000,
+            "RealEngineThrustKn": 284,
+            "RealMaxSpeedKmh": 2120,
+            "RealWingSpanM": 16.7,
+            "RealWingAreaM2": 56,
+            "RealClimbRateMs": 200,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "su47k"
+        ]
+    },
+
     "Sukhoi Su-57": {
         "properties": {
             "RealTurnRateDegPerSec": 22.58,
@@ -3263,7 +5177,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "sugoisu57m"
+            "sugoisu57m",
+            "putin"
         ]
     },
 
@@ -3370,7 +5285,42 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "tu22m"
+            "tu22m",
+            "tu22m3"
+        ]
+    },
+
+    "Tupolev Tu-95 (early Bear)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 5.3,
+            "RealMassKg": 171000,
+            "RealMaxSpeedKmh": 882,
+            "RealWingSpanM": 50.04,
+            "RealWingAreaM2": 283.7,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 48000
+        },
+        "items": [
+            "tu95"
+        ]
+    },
+
+    "Tupolev Tu-160": {
+        "properties": {
+            "RealTurnRateDegPerSec": 4.76,
+            "RealMassKg": 220000,
+            "RealEngineThrustKn": 980,
+            "RealMaxSpeedKmh": 2200,
+            "RealWingSpanM": 55.7,
+            "RealWingAreaM2": 360,
+            "RealClimbRateMs": 35,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "tu-160"
         ]
     },
 
@@ -3598,6 +5548,23 @@
         ]
     },
 
+    "Xian H-6K": {
+        "properties": {
+            "RealTurnRateDegPerSec": 8.04,
+            "RealMassKg": 79000,
+            "RealEngineThrustKn": 245.2,
+            "RealMaxSpeedKmh": 1050,
+            "RealWingSpanM": 33,
+            "RealWingAreaM2": 165,
+            "RealClimbRateMs": 10,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "xian"
+        ]
+    },
+
     "Yakovlev Yak-3": {
         "properties": {
             "RealTurnRateDegPerSec": 34.6,
@@ -3688,6 +5655,40 @@
         ]
     },
 
+    "Yakovlev Yak-38": {
+        "properties": {
+            "RealTurnRateDegPerSec": 36.24,
+            "RealMassKg": 10300,
+            "RealEngineThrustKn": 64.7,
+            "RealMaxSpeedKmh": 1050,
+            "RealWingSpanM": 7.32,
+            "RealWingAreaM2": 18.5,
+            "RealClimbRateMs": 60,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "yakovlev38vtol"
+        ]
+    },
+
+    "Yakovlev Yak-141": {
+        "properties": {
+            "RealTurnRateDegPerSec": 26.25,
+            "RealMassKg": 15800,
+            "RealEngineThrustKn": 152,
+            "RealMaxSpeedKmh": 1800,
+            "RealWingSpanM": 10.105,
+            "RealWingAreaM2": 31.7,
+            "RealClimbRateMs": 250,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "yak141"
+        ]
+    },
+
     "Yokosuka D4Y2 Suisei": {
         "properties": {
             "RealTurnRateDegPerSec": 27.68,
@@ -3753,6 +5754,23 @@
         },
         "items": [
             "r2y2"
+        ]
+    },
+
+    "Zeppelin-Staaken R.VI": {
+        "properties": {
+            "RealTurnRateDegPerSec": 6.29,
+            "RealMassKg": 11460,
+            "RealMaxSpeedKmh": 130,
+            "RealWingSpanM": 42.2,
+            "RealWingAreaM2": 332,
+            "RealClimbRateMs": 1.52,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 1040
+        },
+        "items": [
+            "staaken"
         ]
     }
 }

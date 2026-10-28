@@ -48,7 +48,8 @@
         },
         "items": [
             "delandephant",
-            "romaphant"
+            "romaphant",
+            "mughalphant"
         ]
     },
 
@@ -148,6 +149,16 @@
         },
         "items": [
             "madcat"
+        ]
+    },
+
+    "Mughal armoured elephant operational mass estimate (Generic)": {
+        "properties": {
+            "RealMassKg": 5500,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mughalphant"
         ]
     },
 
