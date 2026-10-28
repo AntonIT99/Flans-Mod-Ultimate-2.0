@@ -2104,6 +2104,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void unFocused(GuiTextFieldNop field)
     {
+        if (teamFactions.unFocused(field))
+            return;
         if (loaded && editEquipmentField(field))
         {
             changed = true;

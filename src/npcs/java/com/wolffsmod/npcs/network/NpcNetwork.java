@@ -39,6 +39,7 @@ public final class NpcNetwork
         NpcNetworkPlatform.toServer("team_faction", TeamFactionPacket.class, TeamFactionPacket::write, TeamFactionPacket::read, TeamFactionPacket::handle);
         NpcNetworkPlatform.bidirectional("faction_relations", FactionRelationsPacket.class, FactionRelationsPacket::write, FactionRelationsPacket::read,
             () -> com.wolffsmod.npcs.client.NpcClientPackets::factionRelations, FactionRelationsPacket::handle);
+        NpcNetworkPlatform.toServer("faction_joining", FactionJoiningPacket.class, FactionJoiningPacket::write, FactionJoiningPacket::read, FactionJoiningPacket::handle);
         NpcNetworkPlatform.toClient("server_report", ServerReportPacket.class, ServerReportPacket::write, ServerReportPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::serverReport);
         NpcNetworkPlatform.bidirectional("npc_inspect", NpcInspectPacket.class, NpcInspectPacket::write, NpcInspectPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::inspection,
             NpcInspectPacket::handle);
@@ -145,6 +146,11 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(FactionRelationsPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(FactionJoiningPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }

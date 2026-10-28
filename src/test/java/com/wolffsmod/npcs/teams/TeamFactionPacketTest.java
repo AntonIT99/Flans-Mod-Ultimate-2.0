@@ -80,10 +80,12 @@ class TeamFactionPacketTest
             var api = mockStatic(FlansModApi.class);
             var data = mockStatic(TeamFactions.class);
             var relations = mockStatic(FactionRelations.class);
+            var members = mockStatic(FactionMembers.class);
             var ignored = mockStatic(NpcNetwork.class))
         {
             // Creating a faction answers with the faction list, whose display names need the faction mixin, over the network.
             relations.when(FactionRelations::editable).thenReturn(List.of());
+            members.when(() -> FactionMembers.get(player.server)).thenReturn(new FactionMembers());
             editor.when(() -> NoppesUtilServer.getEditingNpc(player)).thenReturn(npc);
             api.when(() -> FlansModApi.getTeam("team")).thenReturn(Optional.of(team));
             data.when(() -> TeamFactions.get(player.server)).thenReturn(factions);
