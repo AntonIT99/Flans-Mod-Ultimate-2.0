@@ -17,8 +17,10 @@ public record WreckLoad(float ammunition, float fuel)
 {
     /** What is assumed of a machine whose load is not known, such as an NPC drawn as a vehicle. */
     public static final WreckLoad UNKNOWN = new WreckLoad(0.6F, 0.6F);
-    /** Rounds aboard that count as a full load for the look of a cook-off. */
+    /** Explosive rounds aboard that count as a full load for the look of a cook-off. */
     public static final int FULL_ROUNDS = 20;
+    /** Rounds without a charge that count as one explosive round: a belt of rifle rounds crackles, shells cook off. */
+    public static final int INERT_ROUNDS_PER_CHARGE = 20;
     private static final String NBT_AMMUNITION = "wreck_ammunition";
     private static final String NBT_FUEL = "wreck_fuel";
     private static final int STEPS = 100;
@@ -34,10 +36,18 @@ public record WreckLoad(float ammunition, float fuel)
         return Float.isFinite(value) ? Mth.clamp(value, 0F, 1F) : 0F;
     }
 
-    /** @return the load of a machine carrying this many rounds, with this much of its tank left */
-    public static WreckLoad of(int rounds, float fuelShare)
+    /** @return the load of a machine carrying this many explosive rounds' worth, with this much of its tank left */
+    public static WreckLoad of(float rounds, float fuelShare)
     {
-        return new WreckLoad(rounds / (float) FULL_ROUNDS, fuelShare);
+        return new WreckLoad(rounds / FULL_ROUNDS, fuelShare);
+    }
+
+    /** @return how many explosive rounds this many rounds of one kind count for */
+    public static float charges(int rounds, boolean explosive)
+    {
+        if (rounds <= 0)
+            return 0F;
+        return explosive ? rounds : rounds / (float) INERT_ROUNDS_PER_CHARGE;
     }
 
     /** @return the load packed into one number for the entity's synchronised data */

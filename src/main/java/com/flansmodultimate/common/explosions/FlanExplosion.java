@@ -460,7 +460,8 @@ public class FlanExplosion extends Explosion
         @Override
         public boolean intact(EnumDriveablePart part)
         {
-            return entity.isPartIntact(part);
+            // A wreck's hull is still there to take the blasts that break it up.
+            return entity.isPartIntact(part) || entity.isWreckHull(part);
         }
 
         @Override

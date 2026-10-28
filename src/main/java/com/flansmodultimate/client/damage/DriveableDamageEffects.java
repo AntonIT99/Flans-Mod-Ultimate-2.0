@@ -94,13 +94,18 @@ public final class DriveableDamageEffects
         DestructionSequences.scorch(position, radius);
     }
 
-    /** @return how hard the driveable's wreck burns now, for its sound and its heat, or 0 when it is no wreck */
+    /**
+     * @return how hard the driveable's wreck burns now, for its sound, or 0 when it is no wreck; as its flames do, it
+     *         burns less in the rain and not at all under water
+     */
     public static float wreckFireStrength(Driveable driveable)
     {
         int age = driveable.getWreckAge();
         if (age < 0)
             return 0F;
-        return DamageVisualCurves.wreckFire(age, ModCommonConfig.driveableWreckLifetimeTicks()) * driveable.getWreckLoad().fireStrength();
+        float fire = DamageVisualCurves.wreckFire(age, ModCommonConfig.driveableWreckLifetimeTicks()) * driveable.getWreckLoad().fireStrength();
+        DriveableEffectSource source = fire > 0F ? DriveableEffectSource.of(driveable) : null;
+        return source == null ? fire : fire * DamageEffectEmitter.fireExposure(source);
     }
 
     /** @return how hot the driveable shows on a thermal sight, from 0 to 1 */

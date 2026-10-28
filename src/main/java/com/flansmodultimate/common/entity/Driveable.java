@@ -96,6 +96,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public static final String NBT_SEAT_AIMS = "seat_aims";
     public static final String NBT_WRECK_AGE = "wreck_age";
     public static final String NBT_WRECK_DAMAGE = "wreck_damage";
+    public static final String NBT_WRECK_LANDED = "wreck_landed";
     public static final String NBT_FLAGS = "driveable_flags";
     public static final String NBT_MODE = "driveable_mode";
     public static final String NBT_OWNER = "driveable_owner";
@@ -169,13 +170,17 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
-    /** Ticks since the driveable was wrecked, or -1 while it still works; sent once a second. */
+    /** Ticks since the driveable was wrecked, or -1 while it still works; sent every {@link #WRECK_AGE_SYNC_INTERVAL} ticks. */
     protected static final EntityDataAccessor<Integer> DATA_WRECK_AGE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     /** What the wreck had aboard, packed by {@link WreckLoad#pack()}. */
     protected static final EntityDataAccessor<Integer> DATA_WRECK_LOAD = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
 
     private static final int INPUT_TIMEOUT_TICKS = 12;
     private static final int CHILD_REPAIR_INTERVAL = 20;
+    /** Ticks between the wreck ages the server sends; clients count on by themselves in between. */
+    private static final int WRECK_AGE_SYNC_INTERVAL = 100;
+    /** Degrees a tick a downed aircraft's wreck rolls and pitches towards level once it lies on the ground. */
+    private static final float WRECK_SETTLE_DEGREES = 3F;
     /** Matches the radius the server used when it still broadcast emitter particles. */
     private static final double EMITTER_PARTICLE_RANGE = 128D;
     private static final double MAX_SPAWN_COORDINATE = 29_999_984D;
@@ -1119,9 +1124,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         if (tag.contains(NBT_WRECK_AGE, Tag.TAG_INT))
         {
-            // A wreck saved with the world comes back as one, already lying where it fell.
+            // A wreck saved with the world comes back as one; one saved before it struck the ground still crashes.
             destroyed = true;
-            wreckLanded = true;
+            wreckLanded = !tag.contains(NBT_WRECK_LANDED, Tag.TAG_BYTE) || tag.getBoolean(NBT_WRECK_LANDED);
             wreckTicks = Math.max(0, tag.getInt(NBT_WRECK_AGE));
             wreckLoad = WreckLoad.load(tag);
             wreckDamage = tag.getFloat(NBT_WRECK_DAMAGE);
@@ -1235,6 +1240,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             tag.putInt(NBT_WRECK_AGE, wreckTicks);
             tag.putFloat(NBT_WRECK_DAMAGE, wreckDamage);
+            tag.putBoolean(NBT_WRECK_LANDED, wreckLanded);
             wreckLoad.save(tag);
         }
         if (!sourceStack.isEmpty())
@@ -4746,7 +4752,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     public boolean isPartHitboxActive(@Nullable DriveablePart part)
     {
-        return part != null && (part.getMaxHealth() <= 0F || !part.isDestroyed());
+        return part != null && (part.getMaxHealth() <= 0F || !part.isDestroyed() || isWreckHull(part.getType()));
+    }
+
+    /**
+     * Reports whether the part is the burnt-out hull of a wreck. The core is destroyed when the driveable dies, but its
+     * hull is still there: it stops rounds and takes the blasts that break the wreck up.
+     */
+    public boolean isWreckHull(@Nullable EnumDriveablePart part)
+    {
+        return part == EnumDriveablePart.CORE && isWreck();
     }
 
     /** Damage penalty used by legacy vehicle acceleration and maximum throttle. */
@@ -4814,7 +4829,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
-        if (!level().isClientSide)
+        // A wreck's hull only stops the round: there is nothing left to damage, and a warhead's blast breaks it up.
+        if (!level().isClientSide && !isWreckHull(hit.getPart()))
         {
             float previousHealth = part.getHealth();
             part.damage(resolvedDamage.damage(), bulletType.isSetEntitiesOnFire() && !armourBlocked);
@@ -4943,11 +4959,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Damage already passed the melee threshold and weapon scaling, before shields or vulnerability are applied. */
     protected boolean damagePartAfterMelee(@Nullable EnumDriveablePart partType, float amount, @Nullable DamageSource source)
     {
-        if (!level().isClientSide && wreckTicks >= 0 && source != null && source.is(DamageTypeTags.IS_EXPLOSION))
-            absorbWreckDamage(amount);
-        if (level().isClientSide || destroyed || driveableData == null || amount <= 0F)
+        if (level().isClientSide || amount <= 0F)
             return false;
         if (source != null && source.getEntity() instanceof Player player && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
+            return false;
+        if (wreckTicks >= 0)
+            return absorbWreckDamage(amount, source);
+        if (destroyed || driveableData == null)
             return false;
         EnumDriveablePart target = partType == null ? EnumDriveablePart.CORE : partType;
         DriveablePart part = driveableData.getPart(target);
@@ -5017,6 +5035,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return resolveExplosionTargets(worldPoint).stream().findFirst();
     }
 
+    /** @return whether a blast can reach the part: an intact part, or the hull of a wreck still standing */
+    private boolean takesBlasts(DriveablePart part)
+    {
+        return part.canReceiveExplosionDamage() || isWreckHull(part.getType()) && part.getBox() != null;
+    }
+
     /** One target per active part, ordered by distance from the detonation. */
     public List<VehicleExplosionTarget> resolveExplosionTargets(@NotNull Vec3 worldPoint)
     {
@@ -5028,7 +5052,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         List<VehicleExplosionTarget> targets = new ArrayList<>();
         for (DriveablePart part : driveableData.getParts().values())
         {
-            if (part == null || !part.canReceiveExplosionDamage() || !canHitPart(part.getType()))
+            if (part == null || !canHitPart(part.getType()) || !takesBlasts(part))
                 continue;
             AABB box = partBoxModelLocal(part.getBox());
             DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(box, hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(), turretPivot,
@@ -5672,7 +5696,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             passenger.hurt(level().damageSources().generic(), Float.MAX_VALUE);
         }
         // Read before the cargo is dropped: what was aboard decides how it burns and whether it cooks off.
-        wreckLoad = WreckLoad.of(countRoundsAboard(), fuelShare());
+        wreckLoad = WreckLoad.of(chargesAboard(), fuelShare());
         if (!suppressDrops)
             dropContents();
         if (lastAtkEntity instanceof ServerPlayer attacker)
@@ -5760,18 +5784,24 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             announcedLoad = load;
     }
 
-    /** @return rounds of ammunition aboard: shells, bullets, missiles and bombs in the cargo and the weapon slots */
-    private int countRoundsAboard()
+    /**
+     * @return the ammunition aboard, in the cargo and the weapon slots, as explosive rounds' worth: every shell, missile
+     *         and bomb counts in full, and every round in a magazine or belt without a charge counts for a little
+     */
+    private float chargesAboard()
     {
         if (driveableData == null)
-            return 0;
-        int rounds = 0;
+            return 0F;
+        float charges = 0F;
         for (ItemStack stack : driveableData.getInventory())
         {
-            if (!stack.isEmpty() && stack.getItem() instanceof ShootableItem)
-                rounds += stack.getCount();
+            if (stack.isEmpty() || !(stack.getItem() instanceof ShootableItem item) || item.getConfigType() == null)
+                continue;
+            ShootableType type = item.getConfigType();
+            boolean explosive = type.getExplosiveMass() > 0F || type.getExplosionRadius() > 0F;
+            charges += WreckLoad.charges(ShootableItem.getTotalRounds(stack), explosive);
         }
-        return rounds;
+        return charges;
     }
 
     /** @return the share of the tank still full, where a type that carries no tank always has something to burn */
@@ -5783,26 +5813,31 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     /**
      * Counts a blast against the wreck. A wreck takes as much explosive damage as its hull had hit points before it is
-     * blown apart, which clears a blocked road. Server side.
+     * blown apart, which clears a blocked road. Only explosives break a wreck up; nothing else hurts it any more.
+     * Server side.
+     *
+     * @return whether the blast counted against the wreck
      */
-    private void absorbWreckDamage(float amount)
+    private boolean absorbWreckDamage(float amount, @Nullable DamageSource source)
     {
-        if (isRemoved() || !Float.isFinite(amount) || amount <= 0F)
-            return;
+        if (source == null || !source.is(DamageTypeTags.IS_EXPLOSION) || isRemoved() || !Float.isFinite(amount) || amount <= 0F)
+            return false;
         wreckDamage += amount;
         DriveablePart core = driveableData == null ? null : driveableData.getPart(EnumDriveablePart.CORE);
         float integrity = core == null || core.getMaxHealth() <= 0F ? 100F : core.getMaxHealth();
-        if (wreckDamage < integrity)
-            return;
-        PacketHandler.sendToTracking(new PacketDriveableDestroyed(getId(), true, wreckLoad.pack()), this);
-        suppressDrops = true;
-        discard();
+        if (wreckDamage >= integrity)
+        {
+            PacketHandler.sendToTracking(new PacketDriveableDestroyed(getId(), true, wreckLoad.pack()), this);
+            suppressDrops = true;
+            discard();
+        }
+        return true;
     }
 
     private void receiveWreckAge(int age)
     {
         boolean news = clientWreckAge < 0 && age >= 0 && tickCount > 2;
-        // The client counts on by itself between the updates sent once a second, so only a real gap is corrected.
+        // The client counts on by itself between the server's occasional updates, so only a real gap is corrected.
         if (age < 0 || clientWreckAge < 0 || Math.abs(clientWreckAge - age) > 40)
             clientWreckAge = age;
         if (news)
@@ -5820,7 +5855,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void tickWreck()
     {
         ++wreckTicks;
-        if (wreckTicks % 20 == 0)
+        if (wreckTicks % WRECK_AGE_SYNC_INTERVAL == 0)
             entityData.set(DATA_WRECK_AGE, wreckTicks);
         int lifetime = ModCommonConfig.driveableWreckLifetimeTicks();
         // A wreck that has burnt out, or a hull lying on the sea bed, is gone.
@@ -5854,9 +5889,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return new Vec3(velocity.x * 0.9D, Math.max(velocity.y * 0.9D - 0.006D, -0.05D), velocity.z * 0.9D);
     }
 
-    /** On land a wreck falls under its own weight and drags to a stop. */
+    /**
+     * On land a wreck falls under its own weight and drags to a stop. A downed aircraft comes to rest on its belly
+     * rather than stay in the dive or bank it died in.
+     */
     private Vec3 settleWreck(Vec3 velocity)
     {
+        if (onGround() && getDamageClass().flies() && (getPitch() != 0F || getRoll() != 0F))
+            setOrientation(getYaw(), Mth.approachDegrees(getPitch(), 0F, WRECK_SETTLE_DEGREES), Mth.approachDegrees(getRoll(), 0F, WRECK_SETTLE_DEGREES));
         double drag = ModPhysics.dragRetention(onGround() ? 0.5D : 0.98D, level());
         return new Vec3(velocity.x * drag, velocity.y - 0.08D * ModCommonConfig.gravityFactor(level()), velocity.z * drag);
     }

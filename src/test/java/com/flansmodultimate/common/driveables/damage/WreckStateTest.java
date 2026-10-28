@@ -30,6 +30,20 @@ class WreckStateTest
     }
 
     @Test
+    @DisplayName("Shells count in full towards a cook-off, rounds without a charge for a little")
+    void inertRoundsWeighLess()
+    {
+        assertEquals(5F, WreckLoad.charges(5, true));
+        assertEquals(1F, WreckLoad.charges(WreckLoad.INERT_ROUNDS_PER_CHARGE, false));
+        assertEquals(0F, WreckLoad.charges(-3, true), "a negative count carries nothing");
+        WreckLoad belts = WreckLoad.of(WreckLoad.charges(200, false), 1F);
+        WreckLoad shells = WreckLoad.of(WreckLoad.charges(10, true), 1F);
+        assertEquals(belts.ammunition(), shells.ammunition(), 1.0E-6F, "two hundred rifle rounds weigh as much as ten shells");
+        assertFalse(WreckLoad.of(WreckLoad.charges(10, false), 1F).cooksOff(), "one magazine of rifle rounds does not cook off");
+        assertTrue(WreckLoad.of(WreckLoad.charges(1, true), 1F).cooksOff(), "one shell aboard does");
+    }
+
+    @Test
     @DisplayName("Rounds and fuel are shares of a full load, kept in range")
     void loadIsClamped()
     {
