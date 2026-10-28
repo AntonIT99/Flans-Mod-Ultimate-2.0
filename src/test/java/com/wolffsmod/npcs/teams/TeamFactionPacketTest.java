@@ -4,6 +4,7 @@ import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.teams.IPlayerClass;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.TeamFactionPacket;
 import io.netty.buffer.Unpooled;
 import noppes.npcs.CustomItems;
@@ -77,8 +78,12 @@ class TeamFactionPacketTest
         try (var editor = mockStatic(NoppesUtilServer.class);
             var permissions = mockStatic(CustomNpcsPermissions.class);
             var api = mockStatic(FlansModApi.class);
-            var data = mockStatic(TeamFactions.class))
+            var data = mockStatic(TeamFactions.class);
+            var relations = mockStatic(FactionRelations.class);
+            var ignored = mockStatic(NpcNetwork.class))
         {
+            // Creating a faction answers with the faction list, whose display names need the faction mixin, over the network.
+            relations.when(FactionRelations::editable).thenReturn(List.of());
             editor.when(() -> NoppesUtilServer.getEditingNpc(player)).thenReturn(npc);
             api.when(() -> FlansModApi.getTeam("team")).thenReturn(Optional.of(team));
             data.when(() -> TeamFactions.get(player.server)).thenReturn(factions);

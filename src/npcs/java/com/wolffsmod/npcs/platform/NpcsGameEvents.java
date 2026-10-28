@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.platform;
 import com.wolffsmod.npcs.NpcDistanceCommands;
 import com.wolffsmod.npcs.NpcFactionCommands;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcBenchmarkCommands;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.diag.NpcWatch;
@@ -59,6 +60,14 @@ public final class NpcsGameEvents
     {
         if (event.getEntity() instanceof ServerPlayer player)
             NpcNetwork.sendTo(player, ServerControlPacket.values(NpcServerSettings.get(player.server)));
+    }
+
+    /** Fired before the player is saved, so a vehicle NPC they ride stays in the world. */
+    @SubscribeEvent
+    public static void playerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event)
+    {
+        if (event.getEntity() instanceof ServerPlayer player)
+            NpcCrew.loggingOut(player);
     }
 
     @SubscribeEvent

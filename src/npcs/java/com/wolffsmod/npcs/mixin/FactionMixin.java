@@ -70,7 +70,7 @@ public abstract class FactionMixin implements FactionMobSettings, FactionDisplay
     @Unique
     private final Set<Integer> wolffsmodnpcsAllies = new HashSet<>();
     @Unique
-    private FactionJoining.Rule wolffsmodnpcsJoinRule = FactionJoining.Rule.OPEN;
+    private FactionJoining.Rule wolffsmodnpcsJoinRule = FactionJoining.Rule.INVITE;
     @Unique
     private int wolffsmodnpcsLeavePenalty;
     @Unique

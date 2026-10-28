@@ -167,7 +167,7 @@ class NpcCrewSettingsTest
         assertEquals(1, source.chooseSkin(3, random));
         assertEquals(CrewSource.RANDOM_SKIN, CrewSource.load(source.save()).skin());
         assertEquals(CrewSource.RANDOM_SKIN, source.withClass("team", "crew").skin());
-        assertEquals(0, source.withClass("team", "other").skin());
+        assertEquals(CrewSource.RANDOM_SKIN, source.withClass("team", "other").skin());
     }
 
     @Test

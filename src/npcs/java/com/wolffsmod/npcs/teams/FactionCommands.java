@@ -238,8 +238,12 @@ public final class FactionCommands
             faction = (Faction) controller.create(name, colour == null ? DEFAULT_COLOUR : colour);
         else if (colour != null)
             faction.color = colour;
+        BattleFactions battleFactions = BattleFactions.get(context.getSource().getServer());
+        // A faction set up for battles takes volunteers; one managed already keeps the rule its operators chose.
+        if (battleFactions.managed(faction.id).isEmpty())
+            FactionJoining.of(faction).wolffsmodnpcsSetJoinRule(FactionJoining.Rule.OPEN);
         controller.saveFaction(faction);
-        BattleFactions.get(context.getSource().getServer()).manage(faction.id);
+        battleFactions.manage(faction.id);
         String created = faction.name;
         context.getSource().sendSuccess(() -> text(adopted ? "adopted" : "created", created), true);
         return 1;

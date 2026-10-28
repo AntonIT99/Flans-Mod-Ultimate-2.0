@@ -49,7 +49,7 @@ import java.util.*;
  * A crew member keeps its seat in synchronized entity data, so both sides seat it alike. A rider without a seat of its
  * own, such as one put on with Custom NPCs' mounter, takes the first free seat, the driver's first. A player on the
  * vehicle's side gets into a free gunner's seat, else a passenger seat, by using it, mans the gun of a gunner's seat, and
- * gets out when the vehicle is destroyed. Server thread unless a method says otherwise.
+ * gets out when the vehicle is destroyed or they log out. Server thread unless a method says otherwise.
  * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -212,6 +212,17 @@ public final class NpcCrew
             return false;
         player.stopRiding();
         return player.startRiding(vehicle, true);
+    }
+
+    /**
+     * Puts a player leaving the server off the vehicle NPC they ride. A mount whose only player rider logs out would
+     * otherwise leave the world with its whole crew, saved with that player, until they come back. Server side, before the
+     * player is saved.
+     */
+    public static void loggingOut(Player player)
+    {
+        if (player.getVehicle() instanceof EntityNPCInterface vehicle && !NpcVehicleState.of(vehicle).crewSeats(vehicle).isEmpty())
+            player.stopRiding();
     }
 
     /**

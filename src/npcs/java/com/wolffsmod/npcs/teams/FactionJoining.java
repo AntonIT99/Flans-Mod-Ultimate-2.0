@@ -23,10 +23,13 @@ public interface FactionJoining
         /** Nobody: members are made with {@code /teams faction member}, as by a recruiter's dialog. */
         INVITE;
 
-        /** The rule of a saved name, or {@link #OPEN} for none or an unknown one. */
+        /**
+         * The rule of a saved name, or {@link #INVITE} for none or an unknown one, so that factions of existing worlds and
+         * maps take nobody until an operator opens them.
+         */
         public static Rule named(String name)
         {
-            return BotSettings.parse(Rule.class, name, OPEN);
+            return BotSettings.parse(Rule.class, name, INVITE);
         }
     }
 

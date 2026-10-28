@@ -49,10 +49,10 @@ class FactionJoiningTest
     }
 
     @Test
-    void savedRuleNamesFallBackToOpen()
+    void savedRuleNamesFallBackToInvite()
     {
         assertEquals(FactionJoining.Rule.POINTS, FactionJoining.Rule.named("POINTS"));
-        assertEquals(FactionJoining.Rule.OPEN, FactionJoining.Rule.named(""));
-        assertEquals(FactionJoining.Rule.OPEN, FactionJoining.Rule.named("bogus"));
+        assertEquals(FactionJoining.Rule.INVITE, FactionJoining.Rule.named(""));
+        assertEquals(FactionJoining.Rule.INVITE, FactionJoining.Rule.named("bogus"));
     }
 }
