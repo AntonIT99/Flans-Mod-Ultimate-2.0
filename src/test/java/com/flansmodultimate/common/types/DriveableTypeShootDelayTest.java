@@ -76,22 +76,32 @@ class DriveableTypeShootDelayTest
         // for backwards compatibility reloads at the pace the slowest one implies.
         VehicleType type = read("Driver 0 0 0", "Primary shell", "RoundsPerMinPrimary 600", "ShellDelay 40", "ReloadTimePrimary 30");
         assertEquals(2F, type.shootDelay(false), 1.0E-6F);
-        assertEquals(40F, type.reloadTime(false), 1.0E-6F);
+        assertEquals(40F, type.reloadTime(false, 2), 1.0E-6F);
     }
 
     @Test
     void sharedReloadTimeCountsTowardsEitherBank()
     {
         VehicleType type = read("Driver 0 0 0", "Primary shell", "Secondary missile", "ReloadTime 60");
-        assertEquals(60F, type.reloadTime(false), 1.0E-6F);
-        assertEquals(60F, type.reloadTime(true), 1.0E-6F);
+        assertEquals(60F, type.reloadTime(false, 2), 1.0E-6F);
+        assertEquals(60F, type.reloadTime(true, 2), 1.0E-6F);
     }
 
     @Test
-    void reloadTimeNeverFallsBelowTheBankCadence()
+    void multiRoundReloadTimeNeverFallsBelowTheBankCadence()
     {
         VehicleType type = read("Driver 0 0 0", "Primary shell", "ShellDelay 40", "ReloadTimePrimary 5");
-        assertEquals(40F, type.reloadTime(false), 1.0E-6F);
+        assertEquals(40F, type.reloadTime(false, 2), 1.0E-6F);
+    }
+
+    @Test
+    void singleRoundReloadUsesTheShorterOfReloadTimeAndBankCadence()
+    {
+        VehicleType fasterReload = read("Driver 0 0 0", "Primary shell", "ShellDelay 40", "ReloadTimePrimary 5");
+        assertEquals(5F, fasterReload.reloadTime(false, 1), 1.0E-6F);
+
+        VehicleType fasterCadence = read("Driver 0 0 0", "Primary shell", "ShellDelay 40", "ReloadTimePrimary 60");
+        assertEquals(40F, fasterCadence.reloadTime(false, 1), 1.0E-6F);
     }
 
     @Test
