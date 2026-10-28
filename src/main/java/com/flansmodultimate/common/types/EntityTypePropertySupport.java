@@ -1,21 +1,15 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.GroundHandling;
-import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.api.driveables.ReloadCycle;
-import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.EngineSound;
 import com.flansmodultimate.api.entity.EntityTypeProperties;
 import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
 import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.flansmodultimate.common.driveables.*;
-import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
-import com.flansmodultimate.common.driveables.physics.MechaPhysics;
-import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
-import com.flansmodultimate.common.guns.FireableGun;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -245,7 +239,7 @@ public final class EntityTypePropertySupport
         return Optional.of(new ReloadCycle(magazine, driveable.shootDelay(secondary), reload, chamberSound ? OptionalInt.of(driveable.getReloadSoundTick()) : OptionalInt.empty()));
     }
 
-    /** A seat gun reloads after every item of its ammunition, as a crewed driveable's does, never faster than it fires. */
+    /** A seat gun reloads after every item of its ammunition, as a crewed driveable's does; see {@link GunHandlingTiming#reloadWait}. */
     public static Optional<ReloadCycle> seatReloadCycle(IContentType type, int seat, ItemStack ammunition)
     {
         SeatInfo info = type instanceof DriveableType driveable ? driveable.getSeat(seat) : null;
@@ -253,7 +247,8 @@ public final class EntityTypePropertySupport
         if (gun == null)
             return Optional.empty();
         float delay = gun.getShootDelay(null);
-        return Optional.of(new ReloadCycle(ShootableItem.getMaxRounds(ammunition), delay, Math.max(gun.getReloadTime(), delay), OptionalInt.empty()));
+        int rounds = ShootableItem.getMaxRounds(ammunition);
+        return Optional.of(new ReloadCycle(rounds, delay, GunHandlingTiming.reloadWait(gun.getReloadTime(), delay, rounds), OptionalInt.empty()));
     }
 
     private static List<Weapon> weapons(DriveableType type, boolean secondary)

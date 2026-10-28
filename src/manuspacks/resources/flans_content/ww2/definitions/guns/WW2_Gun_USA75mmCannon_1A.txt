@@ -19,7 +19,7 @@ Scope None
 
 // Fire rate and reload
 RoundsPerMin 20
-ReloadTime 110
+ReloadTime 60
 
 // Ballistics
 MuzzleVelocity 618

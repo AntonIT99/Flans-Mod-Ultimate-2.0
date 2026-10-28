@@ -5,8 +5,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.teams.TeamsManager;
@@ -860,9 +859,13 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         ammo = newAmmo.copy();
         setHasAmmo(true);
         float reloadFactor = ammo.getItem() instanceof ShootableItem shootableItem ? shootableItem.getConfigType().getReloadTimeMultiplier() : 1F;
-        // Reloading never lets the gun outrun its own rate of fire, so the wait
-        // after the round that emptied it is the longer of the two.
-        setReloadTimer(Mth.ceil(Math.max(configType.getReloadTime() * reloadFactor, configType.getShootDelay(null))));
+        // A single-round gun waits the shorter of its reload and its cadence, since
+        // it reloads after every shot; a larger magazine never outruns the cadence.
+        int rounds = ShootableItem.getMaxRounds(ammo);
+        float wait = GunHandlingTiming.reloadWait(configType.getReloadTime() * reloadFactor, configType.getShootDelay(null), rounds);
+        setReloadTimer(Mth.ceil(wait));
+        if (rounds <= 1)
+            shootTimer = Math.min(shootTimer, wait);
         String reloadSound = configType.getReloadSound(null);
 
         // Play reload sound

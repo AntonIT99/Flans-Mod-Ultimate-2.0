@@ -21,6 +21,16 @@ public final class GunHandlingTiming
         return tacticalTime > 0F ? tacticalTime : emptyTime * multiplier;
     }
 
+    /**
+     * Ticks a gun waits after emptying a magazine of the given size. A single-round gun
+     * reloads after every shot, so the shorter of its reload and its cadence sets the gap
+     * between shots; a larger magazine never reloads faster than the gun fires.
+     */
+    public static float reloadWait(float reloadTime, float shootDelay, int magazineRounds)
+    {
+        return magazineRounds <= 1 ? Math.min(reloadTime, shootDelay) : Math.max(reloadTime, shootDelay);
+    }
+
     public static int switchTicks(float ticks)
     {
         return Float.isFinite(ticks) ? Mth.ceil(Mth.clamp(ticks, 0F, 1200F)) : 0;

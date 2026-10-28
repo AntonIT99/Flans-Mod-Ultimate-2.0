@@ -3295,7 +3295,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // restock, so a gunner reads 247/300 of the belt they actually have.
         passengerMagazineCapacity[index] = rounds;
         if (gun != null && validGunAmmo(ammo, gun))
-            beginPassengerReload(index, gun);
+            beginPassengerReload(index, gun, magazineSize(ammo, 0));
     }
 
     /** Fires a crewed seat gun for as long as its gunner's trigger and its cadence allow this tick. */
@@ -3315,7 +3315,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             float before = passengerShootDelay[index];
             if (!firePassengerGun(seat, info, gun, index))
                 break;
-            passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
+            // A shot that began a reload already set the wait, which a single-round gun may have shortened.
+            if (passengerRoundsFired[index] != 0)
+                passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
             if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
                 --passengerBurstRemaining[index];
             if (mode == EnumFireMode.SEMIAUTO)
@@ -3397,7 +3399,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /**
      * Counts a round out of a seat gun and makes its gunner wait out the gun's
      * reload once the magazine is spent, exactly as the same gun would in their
-     * hands and never less than the gun's own cadence.
+     * hands; see {@link GunHandlingTiming#reloadWait}.
      */
     private void reloadPassengerGun(int index, GunType gun, ItemStack fired)
     {
@@ -3405,14 +3407,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         if (!magazineSpent(++passengerRoundsFired[index], magazineSize(fired, 0), fired))
             return;
-        beginPassengerReload(index, gun);
+        beginPassengerReload(index, gun, magazineSize(fired, 0));
     }
 
-    /** Makes a seat gun's crew wait out the gun's reload, never less than its own cadence. */
-    private void beginPassengerReload(int index, GunType gun)
+    /** Makes a seat gun's crew wait out the gun's reload; see {@link GunHandlingTiming#reloadWait}. */
+    private void beginPassengerReload(int index, GunType gun, int magazineRounds)
     {
         passengerRoundsFired[index] = 0;
-        float reload = Math.max(gun.getReloadTime(), gun.getShootDelay(null));
+        float reload = GunHandlingTiming.reloadWait(gun.getReloadTime(), gun.getShootDelay(null), magazineRounds);
         passengerShootDelay[index] = Math.max(passengerShootDelay[index], reload);
         passengerReloadTicks[index] = Math.max(passengerReloadTicks[index], reload);
         String reloadSound = gun.getReloadSound(null);

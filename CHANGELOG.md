@@ -48,7 +48,7 @@
 * Aim offset support and debug commands for gun models
 * `DisableCulling`; `DistortSound` also affects `MeleeSound`
 * Configurable despawn time for recoverable thrown guns
-* RPM and reload time overlap, and rocket launchers fire faster
+* RPM and reload time overlap, and rocket launchers fire faster; mounted and deployed guns firing single-round ammunition wait the shorter of their reload time and rate of fire between shots
 * Fixed attachment points (including MP34 and red dot), the Springfield, Kar98k, flare gun, Olympia, WW2 flamethrower and creeper explosions
 * Fixed the melee sound playing twice, gun idle sounds and Apocalypse entities
 
