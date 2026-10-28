@@ -1,12 +1,8 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.platform.client.ClientPlatform;
-import com.wolffsmod.npcs.network.BotOrderPacket;
-import com.wolffsmod.npcs.network.BotOrdersStatePacket;
-import com.wolffsmod.npcs.network.NpcNetwork;
-import com.wolffsmod.npcs.teams.BotLeaders;
-import com.wolffsmod.npcs.teams.BotOrders;
-import com.wolffsmod.npcs.teams.PlayerOrder;
+import com.wolffsmod.npcs.network.*;
+import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
+import com.wolffsmod.npcs.teams.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,9 +14,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Orders for the bots of the player's side: the squads around the player, or every squad of the side for the player in
@@ -351,7 +345,7 @@ public final class BotOrdersScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
+        NpcClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         if (map && state.playing())
             renderMap(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);

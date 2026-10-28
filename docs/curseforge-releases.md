@@ -86,8 +86,12 @@ Supply it through the `CURSEFORGE_API_TOKEN` environment variable. The separate
 CurseForge discovery API key is not used. The token is read at task execution,
 kept out of configuration-cache inputs, and never printed by the release tooling.
 
-Prepare a Markdown changelog. The default is the local, gitignored `CHANGELOG.md`
-in the checkout root. These settings apply to all tasks unless overridden:
+Prepare a Markdown changelog. The default is the tracked `CHANGELOG.md` in the
+checkout root, which holds the notes of the next main mod release and is uploaded
+whole; the NPC module uses `src/npcs/CHANGELOG.md`. After a release, the notes
+move to `changelogs/<mod id>/<version>.md` and the file starts over for the next
+version. See "Changelogs" in `AGENTS.md` for how they are kept. These settings
+apply to all tasks unless overridden:
 
 ```properties
 curseforgeChangelog=CHANGELOG.md

@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.client.gui.options.SettingsTooltip;
 import com.wolffsmod.npcs.client.NpcKind.Scope;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;

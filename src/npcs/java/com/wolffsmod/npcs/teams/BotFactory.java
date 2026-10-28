@@ -4,20 +4,13 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
-import com.flansmodultimate.api.teams.FlansTeams;
-import com.flansmodultimate.api.teams.IPlayerClass;
-import com.flansmodultimate.api.teams.ITeam;
-import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.api.teams.*;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
-import com.wolffsmod.npcs.model.FlanModelEntityType;
-import com.wolffsmod.npcs.model.FlanModelNpcs;
-import com.wolffsmod.npcs.model.NpcSkins;
-import com.wolffsmod.npcs.names.ContentNameBinding;
-import com.wolffsmod.npcs.names.NpcDisplayNames;
-import com.wolffsmod.npcs.names.SoldierNameAssociations;
-import com.wolffsmod.npcs.names.SoldierNames;
+import com.wolffsmod.npcs.model.*;
+import com.wolffsmod.npcs.names.*;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -227,7 +220,7 @@ public final class BotFactory
         List<ItemStack> stocks = new ArrayList<>();
         for (WeaponMount mount : FlansEntityTypes.getMounts(definition))
         {
-            mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> ItemStackData.isSameItemSameData(stock, ammunition)))
+            mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> NpcPlatform.isSameItemSameData(stock, ammunition)))
                 .ifPresent(stocks::add);
         }
         for (int i = 0; i < stocks.size() && i <= INVENTORY_SLOTS; i++)

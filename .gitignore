@@ -36,7 +36,6 @@ __pycache__/
 forge*changelog.txt
 
 src/*/resources/flan
-/CHANGELOG.md
 
 # AI agents
 .claude

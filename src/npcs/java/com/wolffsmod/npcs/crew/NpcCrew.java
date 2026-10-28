@@ -3,13 +3,13 @@ package com.wolffsmod.npcs.crew;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.FlansMelee;
-import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.names.NpcDisplayNames;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcParachutes;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
@@ -241,7 +241,7 @@ public final class NpcCrew
         Optional<Vec3> offset = seat.flatMap(mount -> state.seatOffset(vehicle, mount));
         if (offset.isEmpty())
             return false;
-        Vec3 at = offset.get().add(EntityPlatform.riderOffset(passenger, vehicle));
+        Vec3 at = offset.get().add(NpcPlatform.riderOffset(passenger, vehicle));
         move.accept(passenger, vehicle.getX() + at.x, vehicle.getY() + at.y, vehicle.getZ() + at.z);
         if (crew && passenger instanceof LivingEntity living)
         {

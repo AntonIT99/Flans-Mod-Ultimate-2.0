@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.HolderLookup;
@@ -12,14 +11,14 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /** A world's friendly fire settings, for factions without settings of their own. Saved with the world; server thread only. */
-public final class FriendlyFireSettings extends FlanSavedData
+public final class FriendlyFireSettings extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_friendly_fire";
     private final Map<FriendlyFire.Kind, FriendlyFire.Setting> settings = new EnumMap<>(FriendlyFire.Kind.class);
 
     public static FriendlyFireSettings get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, FriendlyFireSettings::new, FriendlyFireSettings::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, FriendlyFireSettings::new, FriendlyFireSettings::load);
     }
 
     public FriendlyFire.Setting get(FriendlyFire.Kind kind)

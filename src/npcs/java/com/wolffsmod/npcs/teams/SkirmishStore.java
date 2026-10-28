@@ -1,13 +1,10 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.Vec3;
 
@@ -17,7 +14,7 @@ import java.util.*;
  * The skirmishes of the world, drafts included, with the state of their bots, written out whenever the world is saved. The
  * NPCs themselves are saved with their chunks; a skirmish adopts them again when the server starts. Server thread.
  */
-final class SkirmishStore extends FlanSavedData
+final class SkirmishStore extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_skirmishes";
     private static final String NBT_SKIRMISHES = "skirmishes";
@@ -29,7 +26,7 @@ final class SkirmishStore extends FlanSavedData
 
     public static SkirmishStore get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, SkirmishStore::new, SkirmishStore::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, SkirmishStore::new, SkirmishStore::load);
     }
 
     public Collection<Skirmish> all()
@@ -93,7 +90,7 @@ final class SkirmishStore extends FlanSavedData
         return tag;
     }
 
-    // SavedDataPlatform passes the registries; this store holds no registry data.
+    // NpcSavedData passes the registries; this store holds no registry data.
     @SuppressWarnings("unused")
     static SkirmishStore load(CompoundTag tag, HolderLookup.Provider registries)
     {

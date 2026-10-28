@@ -21,8 +21,12 @@ to grow that API into something other mods can rely on. Follow the API rules in
   whether it belongs in the API: behaviour or data another mod could plausibly reuse, and that
   can be abstracted without much effort. When it does, add or extend the API in the same change
   and have this module call the API rather than the internals.
-- Prefer existing API types over main-mod internals. Reach into internals only when the need is
-  specific to this module or cannot be abstracted reasonably, and keep such uses few and easy to
-  replace later.
-- Report the assessment in the change summary: what was added to the API, and what was left
-  internal and why.
+- Import nothing from the main mod but `com.flansmodultimate.api`, so the module depends only on
+  the MIT-licensed API and survives internal refactoring. A need the API does not cover is met by
+  extending the API, or, when it is specific to this module, by the module's own code.
+- Loader and Minecraft version differences go through the module's own `platform` package
+  (`NpcPlatform`, `CustomNpcsPlatform`, `client.NpcClientPlatform`, `network.NpcNetworkPlatform`,
+  `world.NpcSavedData`), never the main mod's `com.flansmodultimate.platform` classes. Each
+  maintained branch keeps its own versions of these files.
+- Report the assessment in the change summary: what was added to the API, and what the module
+  implements itself and why.

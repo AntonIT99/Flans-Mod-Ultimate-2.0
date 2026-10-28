@@ -860,6 +860,7 @@
   "wolffsmodnpcs.editor.vehicle_crews": "Fahrzeugbesatzungen",
   "wolffsmodnpcs.editor.vehicles": "Fahrzeuge",
   "wolffsmodnpcs.editor.vehicles_help": "Fahrzeuge: Typ:Anzahl[:Budget[:Respawn s[:Ticketkosten[:transportierte Vorlage]]]], ...",
+  "wolffsmodnpcs.editor.tooltip_page": "Umschalt + Mausrad: Seite %s/%s",
   "wolffsmodnpcs.held_item.arm_x": "Arm X (Grad)",
   "wolffsmodnpcs.held_item.arm_y": "Arm Y (Grad)",
   "wolffsmodnpcs.held_item.arm_z": "Arm Z (Grad)",

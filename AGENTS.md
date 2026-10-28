@@ -59,6 +59,26 @@ Nested `AGENTS.md` files add rules for their directories.
   Before assuming a `src/` directory is untracked or disposable, check for a nested
   `.git`.
 
+## Changelogs
+
+`CHANGELOG.md` holds the release notes of the next main mod release, and `src/npcs/CHANGELOG.md`
+those of the next NPC module release. The CurseForge tasks upload each file whole (see
+`docs/curseforge-releases.md`); content-pack modules without a changelog of their own upload the
+root one. These are the one exception to the documentation rule above: keep them current.
+
+- In the same change, add a short bullet for anything players, server operators, content-pack
+  authors or addon developers notice: new features, changed behaviour or defaults, renamed or
+  removed commands, settings or parameters, and notable fixes of released behaviour. Skip
+  refactoring, tests, tooling and internal cleanups.
+- Write for users, in English, in the files' existing style: one line per item, under the fitting
+  section, naming parameters, settings and commands in backticks. Add a section only when none fits.
+- Fold changes to something not yet released into its existing bullet instead of adding a fix line.
+- Keep each heading's version equal to `mod_version` (main mod) or the module's `archiveVersion`.
+- Released notes are archived under `changelogs/<mod id>/<version>.md`, for example
+  `changelogs/flansmodultimate/2.1.md` and `changelogs/wolffsmodnpcs/1.0.md`. When a version is
+  bumped after a release, move the released file there unchanged and start the changelog over
+  with the next version's heading. Never edit archived notes except to fix an error in them.
+
 ## Mixins
 
 Mixins live in `src/main/java/com/flansmodultimate/mixin` (config

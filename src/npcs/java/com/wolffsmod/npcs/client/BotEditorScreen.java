@@ -1,24 +1,16 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.platform.client.ClientPlatform;
 import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.names.SoldierNames;
-import com.wolffsmod.npcs.network.BotEditorActionPacket;
-import com.wolffsmod.npcs.network.BotEditorStatePacket;
-import com.wolffsmod.npcs.network.NpcNetwork;
-import com.wolffsmod.npcs.teams.BotEditor;
-import com.wolffsmod.npcs.teams.BotSettings;
-import com.wolffsmod.npcs.teams.BotSettingsText;
-import com.wolffsmod.npcs.teams.SquadTemplate;
+import com.wolffsmod.npcs.network.*;
+import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
+import com.wolffsmod.npcs.teams.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -586,7 +578,7 @@ public final class BotEditorScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
+        NpcClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
         for (Label label : labels)

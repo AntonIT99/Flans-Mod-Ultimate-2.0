@@ -4,8 +4,6 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.FlansMelee;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileParameters;
-import com.flansmodultimate.platform.PlatformSounds;
-import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.platform.NpcPlatform;
@@ -382,7 +380,7 @@ public final class NpcItemAttacks
             return false;
         if (!infinite)
             ammo.shrink(1);
-        ItemStackData.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
+        NpcPlatform.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
         npc.playSound(SoundEvents.ARROW_SHOOT, 1F, 1F);
         return true;
     }
@@ -420,7 +418,7 @@ public final class NpcItemAttacks
         if (trident && EnchantmentHelper.getRiptide(weapon) > 0)
             return false;
         if (trident)
-            ItemStackData.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
+            NpcPlatform.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
         Projectile projectile = projectile(npc, weapon);
         if (projectile == null)
             return false;
@@ -430,7 +428,7 @@ public final class NpcItemAttacks
             return false;
         weapon.shrink(1);
         npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
-        npc.playSound(trident ? PlatformSounds.tridentThrow() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
+        npc.playSound(trident ? NpcPlatform.tridentThrow() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
         return true;
     }
 

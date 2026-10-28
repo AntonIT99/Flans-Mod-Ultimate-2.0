@@ -860,6 +860,7 @@
   "wolffsmodnpcs.editor.vehicle_crews": "Vehicle crews",
   "wolffsmodnpcs.editor.vehicles": "Vehicles",
   "wolffsmodnpcs.editor.vehicles_help": "Vehicles: type:count[:budget[:respawn s[:ticket cost[:carried template]]]], ...",
+  "wolffsmodnpcs.editor.tooltip_page": "Shift + scroll: page %s/%s",
   "wolffsmodnpcs.held_item.arm_x": "Arm X (deg)",
   "wolffsmodnpcs.held_item.arm_y": "Arm Y (deg)",
   "wolffsmodnpcs.held_item.arm_z": "Arm Z (deg)",

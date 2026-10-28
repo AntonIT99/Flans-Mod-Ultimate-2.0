@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import noppes.npcs.controllers.FactionController;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.controllers.data.PlayerData;
@@ -22,7 +21,7 @@ import java.util.*;
  * each faction. A faction treats its members, and the members of factions it is at war or allied with, by that rather
  * than by faction points alone, in Teams rounds or not; see {@link FactionStance}. Saved with the world. Server thread.
  */
-public final class FactionMembers extends FlanSavedData
+public final class FactionMembers extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_faction_members";
     private static final String NBT_MEMBERS = "members";
@@ -56,7 +55,7 @@ public final class FactionMembers extends FlanSavedData
 
     public static FactionMembers get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, () -> adopting(BattleFactions.get(server).takeLegacyMembers()), FactionMembers::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, () -> adopting(BattleFactions.get(server).takeLegacyMembers()), FactionMembers::load);
     }
 
     /** A new store with the members battle factions kept before membership moved here. */
@@ -223,7 +222,7 @@ public final class FactionMembers extends FlanSavedData
         return tag;
     }
 
-    // SavedDataPlatform passes the registries; this store holds no registry data.
+    // NpcSavedData passes the registries; this store holds no registry data.
     @SuppressWarnings("unused")
     static FactionMembers load(CompoundTag tag, HolderLookup.Provider registries)
     {

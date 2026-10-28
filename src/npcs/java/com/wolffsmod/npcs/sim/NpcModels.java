@@ -1,11 +1,9 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.NpcMechaTools;
-import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.model.FlanModelEntityType;
-import com.wolffsmod.npcs.model.FlanModelKind;
+import com.wolffsmod.npcs.model.*;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityCustomNpc;
@@ -70,7 +68,7 @@ public final class NpcModels
         if (box.getXsize() >= UNHIT_WIDTH)
             return Optional.empty();
         Entity model = npc instanceof EntityCustomNpc custom ? custom.modelData.getEntity(custom) : null;
-        double half = (model == null ? EntityPlatform.width(npc.baseSize) : model.getBbWidth()) * npc.display.getSize() / 10D;
+        double half = (model == null ? NpcPlatform.width(npc.baseSize) : model.getBbWidth()) * npc.display.getSize() / 10D;
         return Optional.of(box.inflate(half, 0D, half));
     }
 
@@ -122,7 +120,7 @@ public final class NpcModels
     /** @return blocks above the feet, at size 5, a model pitches and banks about: the middle of its box */
     public static float attitudePivot(FlanModelEntityType type)
     {
-        return EntityPlatform.height(type.getShape().dimensions()) / 2F;
+        return NpcPlatform.height(type.getShape().dimensions()) / 2F;
     }
 
     /** @return the world position of a point of the model preview frame */

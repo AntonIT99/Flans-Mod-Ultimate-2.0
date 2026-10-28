@@ -1,10 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
-import com.flansmodultimate.api.equipment.FlansEquipment;
-import com.flansmodultimate.api.equipment.WeaponOverrides;
+import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
-import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcServerRules;
@@ -259,7 +256,7 @@ public final class NpcEquipment
     private static int vanillaChargeTime(ItemStack stack, LivingEntity holder)
     {
         if (stack.getItem() instanceof CrossbowItem)
-            return CrossbowItem.isCharged(stack) ? 0 : EntityPlatform.crossbowChargeDuration(stack, holder);
+            return CrossbowItem.isCharged(stack) ? 0 : NpcPlatform.crossbowChargeDuration(stack, holder);
         if (stack.getItem() instanceof BowItem)
             return 20;
         return stack.getItem() instanceof TridentItem ? 10 : 0;

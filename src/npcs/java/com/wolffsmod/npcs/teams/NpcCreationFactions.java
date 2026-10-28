@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import noppes.npcs.controllers.FactionController;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -16,13 +15,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.OptionalInt;
-import java.util.UUID;
+import java.util.*;
 
 /** Per-builder faction overrides for NPCs created with tools or commands. Saved with the world; server thread only. */
-public final class NpcCreationFactions extends FlanSavedData
+public final class NpcCreationFactions extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_creation_factions";
     private static final String PLAYERS = "players";
@@ -30,7 +26,7 @@ public final class NpcCreationFactions extends FlanSavedData
 
     public static NpcCreationFactions get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, NpcCreationFactions::new, NpcCreationFactions::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, NpcCreationFactions::new, NpcCreationFactions::load);
     }
 
     public OptionalInt factionOf(UUID player)

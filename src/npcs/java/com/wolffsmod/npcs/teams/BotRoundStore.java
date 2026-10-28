@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +13,7 @@ import net.minecraft.server.MinecraftServer;
  * up again where they were, as {@link BotBattleCodec} stores them. The NPCs themselves are saved with their chunks; the
  * round adopts them again when the same playing resumes. Server thread.
  */
-public final class BotRoundStore extends FlanSavedData
+public final class BotRoundStore extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_bot_round";
 
@@ -26,7 +25,7 @@ public final class BotRoundStore extends FlanSavedData
 
     public static BotRoundStore get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, BotRoundStore::new, BotRoundStore::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, BotRoundStore::new, BotRoundStore::load);
     }
 
     /**
@@ -68,7 +67,7 @@ public final class BotRoundStore extends FlanSavedData
         return tag;
     }
 
-    // SavedDataPlatform passes the registries; this store holds no registry data.
+    // NpcSavedData passes the registries; this store holds no registry data.
     @SuppressWarnings("unused")
     static BotRoundStore load(CompoundTag tag, HolderLookup.Provider registries)
     {

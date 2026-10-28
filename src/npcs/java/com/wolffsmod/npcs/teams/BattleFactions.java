@@ -1,8 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.teams.FlansTeams;
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import lombok.Getter;
 import lombok.Setter;
 import noppes.npcs.controllers.FactionController;
@@ -11,10 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.*;
@@ -26,7 +22,7 @@ import java.util.*;
  * its faction menu shows and edits them; any NPC set to one in that menu fights for it. Saved with the world. Server
  * thread.
  */
-public final class BattleFactions extends FlanSavedData
+public final class BattleFactions extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_battle_factions";
     private static final String NBT_FACTIONS = "factions";
@@ -98,7 +94,7 @@ public final class BattleFactions extends FlanSavedData
 
     public static BattleFactions get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, BattleFactions::new, BattleFactions::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, BattleFactions::new, BattleFactions::load);
     }
 
     public Optional<Managed> managed(int id)
@@ -195,7 +191,7 @@ public final class BattleFactions extends FlanSavedData
         return tag;
     }
 
-    // SavedDataPlatform passes the registries; this store holds no registry data.
+    // NpcSavedData passes the registries; this store holds no registry data.
     @SuppressWarnings("unused")
     static BattleFactions load(CompoundTag tag, HolderLookup.Provider registries)
     {

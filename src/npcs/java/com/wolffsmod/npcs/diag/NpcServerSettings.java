@@ -1,9 +1,8 @@
 package com.wolffsmod.npcs.diag;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +25,7 @@ import java.util.List;
  * whether every NPC is frozen, and the health and ammunition rules every NPC follows. Saved with the world, edited from
  * the Server page of the Wolff's Mod tab by operators.
  */
-public final class NpcServerSettings extends FlanSavedData
+public final class NpcServerSettings extends NpcSavedData
 {
     public static final int DEFAULT_NEAR_INTERVAL = 10;
     public static final int DEFAULT_FAR_INTERVAL = 60;
@@ -132,7 +131,7 @@ public final class NpcServerSettings extends FlanSavedData
 
     public static NpcServerSettings get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), NAME, NpcServerSettings::new, NpcServerSettings::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), NAME, NpcServerSettings::new, NpcServerSettings::load);
     }
 
     /**
@@ -146,7 +145,7 @@ public final class NpcServerSettings extends FlanSavedData
         return server != null && server.isSameThread() ? get(server) : null;
     }
 
-    // SavedDataPlatform passes the registries; these settings hold no registry data.
+    // NpcSavedData passes the registries; these settings hold no registry data.
     @SuppressWarnings("unused")
     private static NpcServerSettings load(CompoundTag tag, HolderLookup.Provider registries)
     {

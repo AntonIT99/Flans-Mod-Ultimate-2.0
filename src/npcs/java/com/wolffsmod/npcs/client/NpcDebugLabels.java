@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.network.DebugLabelPacket;
+import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.joml.Matrix4f;
@@ -16,9 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Draws the label the aim debug switch puts above an NPC: its target, tactic and ranges, one line each, seen through
@@ -79,7 +77,7 @@ public final class NpcDebugLabels
             pose.pushPose();
             pose.translate(at.x, at.y, at.z);
             pose.mulPose(camera.rotation());
-            ClientPlatform.scaleCameraFacingLabel(pose, SCALE);
+            NpcClientPlatform.scaleCameraFacingLabel(pose, SCALE);
             Matrix4f matrix = pose.last().pose();
             for (int line = 0; line < lines.size(); line++)
             {

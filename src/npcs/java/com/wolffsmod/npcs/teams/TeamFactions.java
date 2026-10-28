@@ -1,10 +1,9 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.teams.ITeam;
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
 import com.wolffsmod.npcs.names.ContentNameBinding;
 import com.wolffsmod.npcs.names.FactionDisplayName;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import noppes.npcs.controllers.FactionController;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -19,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Ordinary editable Custom NPCs factions associated with Flan teams, independently of hidden Teams-round factions. Server thread only. */
-public final class TeamFactions extends FlanSavedData
+public final class TeamFactions extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_team_factions";
     private static final String TEAMS = "teams";
@@ -27,7 +26,7 @@ public final class TeamFactions extends FlanSavedData
 
     public static TeamFactions get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, TeamFactions::new, TeamFactions::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, TeamFactions::new, TeamFactions::load);
     }
 
     /** Reuses the saved id even after a builder renames or edits the faction. Deleted factions are recreated on request. */

@@ -5,7 +5,7 @@ def npcsSourceSet = registerFmuModule(
     archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Wolff's NPC Vehicles & Soldiers",
     archiveVersion: '1.0',
     // A blank projectUrl disables this module's CurseForge upload.
-    curseforge: [projectUrl: '', projectId: ''],
+    curseforge: [projectUrl: '', projectId: '', changelog: 'src/npcs/CHANGELOG.md'],
     implementationTitle: 'npcs'
 )
 

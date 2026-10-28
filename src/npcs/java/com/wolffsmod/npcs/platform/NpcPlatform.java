@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.platform;
 
-import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.EquipmentAttributes;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -10,20 +9,14 @@ import net.minecraftforge.fml.loading.FMLPaths;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.projectile.SmallFireball;
-import net.minecraft.world.item.FireworkRocketItem;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -31,13 +24,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
- * Version boundary for the Forge and Minecraft item, attribute, enchantment and fluid APIs the module reads. Forge 1.20.1
- * has scalar enchantments; Minecraft 1.21 enchantments are data-driven effects that may need the real target.
+ * Version boundary for the Forge and Minecraft entity, item, sound, attribute, enchantment and fluid APIs the module reads.
+ * Forge 1.20.1 has scalar enchantments; Minecraft 1.21 enchantments are data-driven effects that may need the real target.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcPlatform
@@ -51,6 +42,64 @@ public final class NpcPlatform
     public enum Effect
     {
         DAMAGE, KNOCKBACK, PROTECTION
+    }
+
+    /** Whether the slot is one of the four worn armor slots, not a hand or a body slot. */
+    public static boolean isHumanoidArmor(EquipmentSlot slot)
+    {
+        return slot.getType() == EquipmentSlot.Type.ARMOR;
+    }
+
+    public static float width(EntityDimensions dimensions)
+    {
+        return dimensions.width;
+    }
+
+    public static float height(EntityDimensions dimensions)
+    {
+        return dimensions.height;
+    }
+
+    /** Whether the entity has been added to a level, as opposed to only constructed. */
+    public static boolean isAddedToLevel(Entity entity)
+    {
+        return entity.isAddedToWorld();
+    }
+
+    /** Offset from a vehicle seat position to where the passenger stands. */
+    // Part of the cross-version platform signature; 1.21 asks the passenger for its attachment point on the vehicle.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static Vec3 riderOffset(Entity passenger, Entity vehicle)
+    {
+        return new Vec3(0D, passenger.getMyRidingOffset(), 0D);
+    }
+
+    /** Ticks a crossbow takes to charge for the entity. */
+    // Part of the cross-version platform signature; 1.21 asks the crossbow's enchantments for the entity.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static int crossbowChargeDuration(ItemStack crossbow, LivingEntity entity)
+    {
+        return CrossbowItem.getChargeDuration(crossbow);
+    }
+
+    /** Whether both stacks hold the same item with the same custom data, ignoring count. */
+    public static boolean isSameItemSameData(ItemStack first, ItemStack second)
+    {
+        return ItemStack.isSameItemSameTags(first, second);
+    }
+
+    /** Damages the stack, breaking it with the usual effects when it runs out of durability. */
+    public static void hurtAndBreak(ItemStack stack, int amount, LivingEntity entity, EquipmentSlot slot)
+    {
+        stack.hurtAndBreak(amount, entity, owner -> owner.broadcastBreakEvent(slot));
+    }
+
+    /** The trident throw sound, which 1.21 exposes only as a registry holder. */
+    // A fixed sound here; 1.21 unwraps the holder of the same sound.
+    @SuppressWarnings("SameReturnValue")
+    public static SoundEvent tridentThrow()
+    {
+        return SoundEvents.TRIDENT_THROW;
     }
 
     /** Whether the item blocks like a shield. */
@@ -155,7 +204,7 @@ public final class NpcPlatform
         var modifiers = new ArrayList<AttributeModifier>();
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (EntityPlatform.isHumanoidArmor(slot))
+            if (isHumanoidArmor(slot))
                 modifiers.addAll(wearer.getItemBySlot(slot).getAttributeModifiers(slot).get(attribute));
         }
         var instance = wearer.getAttribute(attribute);

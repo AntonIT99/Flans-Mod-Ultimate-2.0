@@ -3,42 +3,24 @@ package com.wolffsmod.npcs.mixin;
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
-import com.flansmodultimate.api.entity.IEngineSoundSource;
-import com.flansmodultimate.api.entity.IFlanNpcDistance;
-import com.flansmodultimate.api.entity.ILivingVisualEffects;
-import com.flansmodultimate.api.equipment.EquippedArmorProperties;
-import com.flansmodultimate.api.equipment.FlansMelee;
-import com.flansmodultimate.api.equipment.HeldItemSettings;
-import com.flansmodultimate.api.equipment.IEquipmentPolicy;
-import com.flansmodultimate.api.equipment.IHeldItemPresentation;
-import com.flansmodultimate.api.equipment.IMechaEquipment;
-import com.flansmodultimate.api.parts.IFlanPartTarget;
-import com.flansmodultimate.api.parts.IFlanRepairTarget;
-import com.flansmodultimate.api.parts.IPartBody;
-import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.api.entity.*;
+import com.flansmodultimate.api.equipment.*;
+import com.flansmodultimate.api.parts.*;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.crew.CrewDisembark;
-import com.wolffsmod.npcs.crew.CrewGunners;
-import com.wolffsmod.npcs.crew.NpcCrew;
-import com.wolffsmod.npcs.crew.NpcCrewHolder;
+import com.wolffsmod.npcs.crew.*;
 import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.diag.NpcWatch;
-import com.wolffsmod.npcs.drivers.NpcBoardingGoal;
-import com.wolffsmod.npcs.drivers.NpcDriver;
-import com.wolffsmod.npcs.drivers.NpcDrivers;
-import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.model.FlanModelRendering;
-import com.wolffsmod.npcs.model.NpcSkins;
+import com.wolffsmod.npcs.drivers.*;
+import com.wolffsmod.npcs.model.*;
 import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
-import com.wolffsmod.npcs.teams.BotObjectiveGoal;
-import com.wolffsmod.npcs.teams.BotTag;
-import com.wolffsmod.npcs.teams.FriendlyFire;
+import com.wolffsmod.npcs.teams.*;
 import noppes.npcs.Resistances;
 import noppes.npcs.ai.EntityAIAttackTarget;
 import noppes.npcs.api.item.IItemStack;
@@ -70,9 +52,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed.
@@ -492,7 +472,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (!EntityPlatform.isHumanoidArmor(slot))
+            if (!NpcPlatform.isHumanoidArmor(slot))
                 continue;
             ItemStack armor = getItemBySlot(slot);
             armor.getAttributeModifiers(slot).forEach((attribute, modifier) ->
@@ -624,7 +604,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         int wear = Math.max(1, (int) (amount / 4F));
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (EntityPlatform.isHumanoidArmor(slot))
+            if (NpcPlatform.isHumanoidArmor(slot))
             {
                 ItemStack stack = getItemBySlot(slot);
                 if (stack.getItem() instanceof net.minecraft.world.item.ArmorItem && (!source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE) || !stack.getItem().isFireResistant()))
