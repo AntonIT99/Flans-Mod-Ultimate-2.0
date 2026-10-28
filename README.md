@@ -146,7 +146,8 @@ For detailed upstream attribution and project lineage, see
 
 Flan's Mod Ultimate 2 is distributed under the
 **Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported
-(CC BY-NC-SA 3.0)** license.
+(CC BY-NC-SA 3.0)** license. The companion mod Flan's Ultimate 2: NPC
+Vehicles & Soldiers (`src/npcs`) is distributed under the same license.
 
 See [LICENSE](LICENSE) for the complete license terms.
 
