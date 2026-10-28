@@ -18,6 +18,7 @@ import com.flansmodultimate.api.parts.IPartBody;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.CrewDisembark;
 import com.wolffsmod.npcs.crew.CrewGunners;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.crew.NpcCrewHolder;
@@ -102,12 +103,14 @@ import java.util.UUID;
  * <li>Repairs share driveable rates in part HP, including tools, timed sessions, carrier servicing and resource-backed nanobots.</li>
  * <li>Solid part boxes replace the NPC's rectangular entity collision and pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
- * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.</li>
+ * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.
+ * A falling NPC opens a parachute it carries and steers it toward its target.</li>
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
  * gunner, appears seated with empty hands while aboard, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
- * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.</li>
+ * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.
+ * Crew whose seats let them get out to fight do so near the vehicle's target, jumping by parachute from an aircraft above it.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
@@ -454,6 +457,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (level().isClientSide)
             return;
         NpcSprinting.tick(npc);
+        NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
             NpcThrowPresentation.clear(npc);
         wolffsmodnpcsEngineAudio.tick(npc);
@@ -884,6 +888,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (acting)
         {
             NpcCrew.tick(npc);
+            CrewDisembark.tick(npc);
             wolffsmodnpcsGunners.tick(npc);
             wolffsmodnpcsDriverGuns.tick(npc);
             NpcDrivers.tick(npc);

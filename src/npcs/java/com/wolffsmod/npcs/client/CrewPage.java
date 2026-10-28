@@ -49,6 +49,10 @@ final class CrewPage implements ICustomScrollListener
     private static final int CREW_NOW_ID = 2310;
     private static final int REMOVE_ID = 2311;
     private static final int VISIBLE_ID = 2312;
+    private static final int DISEMBARK_ID = 2313;
+    private static final int PASSENGERS_DISEMBARK_ID = 2314;
+    /** The seat's disembark choice as its button cycles: as its post, yes, no. */
+    private static final String[] DISEMBARK_CHOICES = {PREFIX + "disembark.post", "gui.yes", "gui.no"};
     private static final int LABEL_ID = 2320;
     private static final int ROW_HEIGHT = 21;
     private static final int HALF_WIDTH = 196;
@@ -114,7 +118,7 @@ final class CrewPage implements ICustomScrollListener
     {
         if (seats.stream().noneMatch(seat -> seat.seat() == selectedSeat) && !seats.isEmpty())
             selectedSeat = seats.get(0).seat();
-        seatList.setSize(160, 84);
+        seatList.setSize(160, 4 * ROW_HEIGHT + 20);
         seatList.guiLeft = left;
         seatList.guiTop = y;
         seatList.setUnsortedList(
@@ -128,8 +132,26 @@ final class CrewPage implements ICustomScrollListener
         if (source.kind() != CrewSource.Kind.NONE)
             action(SELECT_ID, x, y + ROW_HEIGHT, 232, "select." + source.kind().name().toLowerCase(Locale.ROOT), !seats.isEmpty());
         toggle(VISIBLE_ID, x, y + 2 * ROW_HEIGHT, 232, "visible", settings().isSeatVisible(selectedSeat)).setEnabled(ready && !seats.isEmpty());
-        action(COPY_ALL_ID, x, y + 3 * ROW_HEIGHT, 114, "copy_all", seats.size() > 1);
-        action(COPY_TO_ID, x + 118, y + 3 * ROW_HEIGHT, 114, "copy_to", seats.size() > 1);
+        disembarkButton(x, y + 3 * ROW_HEIGHT);
+        action(COPY_ALL_ID, x, y + 4 * ROW_HEIGHT, 114, "copy_all", seats.size() > 1);
+        action(COPY_TO_ID, x + 118, y + 4 * ROW_HEIGHT, 114, "copy_to", seats.size() > 1);
+    }
+
+    /** The selected seat's choice whether its crew member gets out to fight, showing what following its post comes to. */
+    private void disembarkButton(int x, int y)
+    {
+        int index = seatIndex();
+        Boolean own = settings().seatDisembarks(selectedSeat).orElse(null);
+        int value = 0;
+        if (own != null)
+            value = Boolean.TRUE.equals(own) ? 1 : 2;
+        GuiButtonNop button = button(DISEMBARK_ID, x, y, 232, DISEMBARK_CHOICES, value);
+        boolean byPost = index >= 0 && settings().disembarks(selectedSeat, CrewPost.of(seats.get(index)));
+        String byPostLabel = NO_YES[byPost ? 1 : 0];
+        Component choice = own == null ? Component.translatable(DISEMBARK_CHOICES[0], Component.translatable(byPostLabel)) : Component.translatable(DISEMBARK_CHOICES[value]);
+        button.setMessage(Component.translatable(PREFIX + "disembark", choice));
+        button.setTooltip(Tooltip.create(Component.translatable(PREFIX + "disembark" + HELP)));
+        button.setEnabled(ready && index >= 0);
     }
 
     private void initRules(int left, int y)
@@ -142,6 +164,7 @@ final class CrewPage implements ICustomScrollListener
         destroyedButton.setMessage(Component.translatable(PREFIX + "destroyed", Component.translatable(destroyed.key())));
         destroyedButton.setTooltip(Tooltip.create(Component.translatable(PREFIX + "destroyed" + HELP)));
         toggle(AUTO_ID, left, y + 2 * ROW_HEIGHT, HALF_WIDTH, "auto", settings().isAutoCrew());
+        toggle(PASSENGERS_DISEMBARK_ID, left + HALF_WIDTH + 4, y + 2 * ROW_HEIGHT, HALF_WIDTH, "passengers_disembark", settings().isPassengersDisembark());
     }
 
     private CrewSource source()
@@ -179,13 +202,15 @@ final class CrewPage implements ICustomScrollListener
 
     private void copyToSeats(List<WeaponMount> targets)
     {
-        CrewSource source = source();
-        boolean visible = settings().isSeatVisible(selectedSeat);
-        targets.forEach(seat ->
-        {
-            settings().setSource(seat.seat(), source);
-            settings().setSeatVisible(seat.seat(), visible);
-        });
+        targets.forEach(seat -> copyTo(seat.seat()));
+    }
+
+    /** Gives a seat the selected seat's source, visibility and disembark choice. */
+    private void copyTo(int seat)
+    {
+        settings().setSource(seat, source());
+        settings().setSeatVisible(seat, settings().isSeatVisible(selectedSeat));
+        settings().setSeatDisembarks(seat, settings().seatDisembarks(selectedSeat).orElse(null));
     }
 
     private static Component status(CrewSource source)
@@ -242,7 +267,7 @@ final class CrewPage implements ICustomScrollListener
 
     boolean handles(int id)
     {
-        return id >= SOURCE_ID && id <= VISIBLE_ID;
+        return id >= SOURCE_ID && id <= PASSENGERS_DISEMBARK_ID;
     }
 
     boolean button(GuiButtonNop button)
@@ -264,6 +289,8 @@ final class CrewPage implements ICustomScrollListener
             }
             case COPY_ALL_ID -> copyToSeats(seats);
             case VISIBLE_ID -> settings.setSeatVisible(selectedSeat, yes);
+            case DISEMBARK_ID -> settings.setSeatDisembarks(selectedSeat, button.getValue() == 0 ? null : button.getValue() == 1);
+            case PASSENGERS_DISEMBARK_ID -> settings.setPassengersDisembark(yes);
             case SHIELDED_ID -> settings.setProtectedCrew(yes);
             case PASSENGERS_FIRE_ID -> settings.setPassengersFire(yes);
             case DESTROYED_ID -> settings.setDestroyed(NpcCrewSettings.Destroyed.values()[button.getValue()]);
@@ -301,8 +328,7 @@ final class CrewPage implements ICustomScrollListener
         {
             case NEXT -> {
                 int next = seats.get(seatIndex() + 1).seat();
-                settings().setSource(next, source());
-                settings().setSeatVisible(next, settings().isSeatVisible(selectedSeat));
+                copyTo(next);
                 selectedSeat = next;
             }
             case DRIVER -> copyToSeats(roleTargets(CrewPost.DRIVER));

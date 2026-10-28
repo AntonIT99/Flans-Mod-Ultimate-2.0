@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.names.NpcDisplayNames;
+import com.wolffsmod.npcs.sim.NpcParachutes;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
@@ -423,8 +424,11 @@ public final class NpcCrew
             crew(vehicle).stream().filter(member -> !member.isRemoved()).forEach(EntityNPCInterface::delete);
     }
 
-    /** Gets a crew member out beside the vehicle, on the side its seat is, or by parachute from an aircraft in the air. */
-    private static void bailOut(EntityNPCInterface vehicle, EntityNPCInterface crew)
+    /**
+     * Gets a crew member out beside the vehicle, on the side its seat is, or by parachute from an aircraft in the air: one it
+     * carries, else the first the content packs load; without any, it floats down.
+     */
+    static void bailOut(EntityNPCInterface vehicle, EntityNPCInterface crew)
     {
         NpcVehicleState state = NpcVehicleState.of(vehicle);
         Vec3 seat = seatOf(vehicle, crew).flatMap(mount -> state.seatOffset(vehicle, mount)).orElse(Vec3.ZERO);
@@ -437,8 +441,8 @@ public final class NpcCrew
         double ground = vehicle.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(spot.x), Mth.floor(spot.z));
         boolean jump = vehicle.getY() - ground > JUMP_HEIGHT;
         crew.teleportTo(spot.x, jump ? vehicle.getY() + seat.y : Math.max(ground, vehicle.getY()), spot.z);
-        if (jump && !FlansEquipment.deployParachute(crew))
+        if (jump && !NpcParachutes.open(crew) && !FlansEquipment.deployParachute(crew))
             crew.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, FALL_TICKS));
-        crew.ais.setStartPos(BlockPos.containing(spot));
+        crew.ais.setStartPos(BlockPos.containing(spot.x, ground, spot.z));
     }
 }

@@ -14,6 +14,7 @@ import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.sim.NpcModels;
+import com.wolffsmod.npcs.sim.NpcParachutes;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Claim;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -213,10 +214,10 @@ public final class NpcDrivers
         driver.setBoardAfter(now + BOARD_COOLDOWN);
     }
 
-    /** Opens a parachute over an NPC that got out high above the ground; without a parachute tool, it floats down. */
+    /** Opens a parachute over an NPC that got out high above the ground, its own first; without a parachute tool, it floats down. */
     private static void descend(EntityNPCInterface npc)
     {
-        if (height(npc) > JUMP_HEIGHT && !FlansEquipment.deployParachute(npc))
+        if (height(npc) > JUMP_HEIGHT && !NpcParachutes.open(npc) && !FlansEquipment.deployParachute(npc))
             npc.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, FALL_TICKS));
     }
 

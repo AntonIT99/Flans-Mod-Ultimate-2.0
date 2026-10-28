@@ -195,6 +195,51 @@ class NpcCrewSettingsTest
         assertEquals(0, loaded.changes());
     }
 
+    @Test
+    void passengersGetOutToFightByDefaultWhileDriversAndGunnersStayAboard()
+    {
+        NpcCrewSettings settings = new NpcCrewSettings();
+        assertTrue(settings.isPassengersDisembark());
+        assertTrue(settings.disembarks(2, CrewPost.PASSENGER));
+        assertFalse(settings.disembarks(0, CrewPost.DRIVER));
+        assertFalse(settings.disembarks(1, CrewPost.GUNNER));
+        settings.setPassengersDisembark(false);
+        assertFalse(settings.disembarks(2, CrewPost.PASSENGER));
+        assertEquals(1, settings.changes());
+        assertEquals(0, settings.selectionChanges());
+    }
+
+    @Test
+    void aSeatsOwnDisembarkChoiceOverridesItsPostAndSurvivesSaving()
+    {
+        NpcCrewSettings settings = new NpcCrewSettings();
+        settings.setPassengersDisembark(false);
+        settings.setSeatDisembarks(1, true);
+        settings.setSeatDisembarks(3, false);
+        settings.setSeatDisembarks(4, true);
+        assertTrue(settings.disembarks(1, CrewPost.GUNNER));
+        assertFalse(settings.disembarks(3, CrewPost.PASSENGER));
+        assertTrue(settings.disembarks(4, CrewPost.PASSENGER));
+        assertFalse(settings.disembarks(5, CrewPost.PASSENGER));
+        assertEquals(3, settings.selectionChanges());
+
+        CompoundTag stats = new CompoundTag();
+        settings.save(stats);
+        NpcCrewSettings loaded = new NpcCrewSettings();
+        loaded.load(stats);
+        assertEquals(settings.write(), loaded.write());
+        assertEquals(Optional.of(true), loaded.seatDisembarks(1));
+        assertEquals(Optional.of(false), loaded.seatDisembarks(3));
+        assertFalse(loaded.isPassengersDisembark());
+        loaded.setSeatDisembarks(3, null);
+        assertEquals(Optional.empty(), loaded.seatDisembarks(3));
+        assertFalse(loaded.disembarks(3, CrewPost.PASSENGER));
+        loaded.load(new CompoundTag());
+        assertTrue(loaded.isPassengersDisembark());
+        assertEquals(Optional.empty(), loaded.seatDisembarks(1));
+        assertEquals(0, loaded.changes());
+    }
+
     private static WeaponMount mount(int seat, boolean driver, @Nullable IContentType gun)
     {
         return new WeaponMount(seat, driver, false, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, Optional.ofNullable(gun));

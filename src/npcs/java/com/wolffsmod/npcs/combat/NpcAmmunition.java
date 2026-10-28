@@ -366,6 +366,17 @@ public final class NpcAmmunition
             removeEmptyInventoryStack(npc, used);
     }
 
+    /** Takes a stack the NPC carried and used up, such as a spent tool, out of its weapon or inventory slot. Server thread. */
+    public static void clearUsedUp(EntityNPCInterface npc, ItemStack used)
+    {
+        if (!used.isEmpty())
+            return;
+        npc.updateClient = true;
+        if (npc.inventory.weapons.values().removeIf(item -> stack(item) == used))
+            return;
+        removeEmptyInventoryStack(npc, used);
+    }
+
     private static void removeEmptyInventoryStack(EntityNPCInterface npc, ItemStack used)
     {
         List<ItemStack> inventory = inventory(npc);

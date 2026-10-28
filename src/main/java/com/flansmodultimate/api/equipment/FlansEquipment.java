@@ -20,6 +20,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -197,6 +198,48 @@ public final class FlansEquipment
         Optional<ToolType> tool = InfoType.getInfoTypes().values().stream().filter(ToolType.class::isInstance).map(ToolType.class::cast).filter(ToolType::isParachute)
             .min(Comparator.comparing(ToolType::getShortName));
         return tool.map(type -> Parachute.spawnAndMount(rider.level(), rider, type) != null).orElse(false);
+    }
+
+    /** @return whether a stack is a Flan parachute tool with a use left, one {@link #deployParachute(LivingEntity, ItemStack)} opens; either side */
+    public static boolean isUsableParachute(ItemStack tool)
+    {
+        if (!(tool.getItem() instanceof com.flansmodultimate.common.item.ToolItem item) || !item.getConfigType().isParachute())
+            return false;
+        ToolType type = item.getConfigType();
+        return type.getToolLife() <= 0 || tool.getDamageValue() < type.getToolLife();
+    }
+
+    /**
+     * Opens a parachute over a living entity from a parachute tool it carries, as a player using the tool does, and spends one
+     * of the tool's uses: a tool with limited uses is damaged by one, and one that is destroyed once used up shrinks. A
+     * creative-mode player spends nothing. Server thread.
+     *
+     * @param tool
+     *            the carried stack, changed in place
+     * @return whether the parachute opened; false for a stack that is not a usable parachute tool, on a client, or without
+     *         room above the entity, none of which spends a use
+     */
+    public static boolean deployParachute(LivingEntity rider, ItemStack tool)
+    {
+        if (rider.level().isClientSide || !isUsableParachute(tool))
+            return false;
+        ToolType type = ((com.flansmodultimate.common.item.ToolItem) tool.getItem()).getConfigType();
+        if (Parachute.spawnAndMount(rider.level(), rider, type) == null)
+            return false;
+        boolean creative = rider instanceof Player player && player.getAbilities().instabuild;
+        if (!creative && type.getToolLife() > 0)
+        {
+            tool.setDamageValue(tool.getDamageValue() + 1);
+            if (type.isDestroyOnEmpty() && tool.getDamageValue() >= type.getToolLife())
+                tool.shrink(1);
+        }
+        return true;
+    }
+
+    /** @return whether a living entity hangs from an open Flan parachute, which it steers by walking toward where it faces; either side */
+    public static boolean isUnderParachute(LivingEntity rider)
+    {
+        return rider.getVehicle() instanceof Parachute;
     }
 
     /**
