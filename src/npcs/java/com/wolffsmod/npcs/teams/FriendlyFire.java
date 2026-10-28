@@ -155,7 +155,7 @@ public final class FriendlyFire
     /** Whether friendly fire of the kind is on for factions without a setting of their own. */
     public static boolean worldEnabled(Kind kind, @Nullable MinecraftServer server)
     {
-        Setting world = server == null ? Setting.DEFAULT : FriendlyFireSettings.get(server).get(kind);
+        Setting world = server == null ? Setting.DEFAULT : FriendlyFireSettings.get(server, kind);
         return world.or(() -> configured(kind));
     }
 

@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import lombok.RequiredArgsConstructor;
 import noppes.npcs.client.NoppesUtil;
 import noppes.npcs.client.gui.select.GuiSoundSelection;
@@ -137,6 +138,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int DIAGNOSIS_COPY_ID = 1220;
     private static final int SERVER_SHOW_NAME_TAGS_ID = 1222;
     private static final int SERVER_HIDE_NAME_TAGS_ID = 1223;
+    private static final int SERVER_FRIENDLY_FIRE_NPCS_ID = 1224;
+    private static final int SERVER_FRIENDLY_FIRE_PLAYERS_ID = 1225;
     /** The first of the labels a page of read-only lines lays out, one per line or table cell. */
     private static final int LINE_LABEL_ID = 1500;
     /** Room for the lines of a page of read-only lines. */
@@ -264,7 +267,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         MODEL_AGGRO_RANGE(SERVER_MODEL_AGGRO_ID, Setting.MODEL_AGGRO_RANGE), MODEL_FIRING_RANGE(SERVER_MODEL_FIRING_ID, Setting.MODEL_FIRING_RANGE),
         FREEZE_AI(SERVER_FREEZE_ID, Setting.FREEZE_AI), STAY_ACTIVE_LIMIT(SERVER_STAY_ACTIVE_LIMIT_ID, Setting.STAY_ACTIVE_LIMIT), PATH_BUDGET(SERVER_PATH_BUDGET_ID, Setting.PATH_BUDGET),
         HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY),
-        NAME_TAG_RANGE(SERVER_NAME_TAG_RANGE_ID, Setting.NAME_TAG_RANGE);
+        NAME_TAG_RANGE(SERVER_NAME_TAG_RANGE_ID, Setting.NAME_TAG_RANGE),
+        FRIENDLY_FIRE_NPCS(SERVER_FRIENDLY_FIRE_NPCS_ID, Setting.FRIENDLY_FIRE_NPCS), FRIENDLY_FIRE_PLAYERS(SERVER_FRIENDLY_FIRE_PLAYERS_ID, Setting.FRIENDLY_FIRE_PLAYERS);
         // spotless:on
 
         private final int id;
@@ -299,7 +303,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         /** @return the named choices of a row that is one, or none */
         private Enum<?>[] choices()
         {
-            return this == AMMO_POLICY ? NpcServerSettings.AmmoPolicy.values() : new Enum<?>[0];
+            return switch (this)
+            {
+                case AMMO_POLICY -> NpcServerSettings.AmmoPolicy.values();
+                case FRIENDLY_FIRE_NPCS, FRIENDLY_FIRE_PLAYERS -> FriendlyFire.Setting.values();
+                default -> new Enum<?>[0];
+            };
         }
     }
 
@@ -548,7 +557,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL, ServerRow.SEARCH_BUDGET)),
         SERVER_RULES(Section.SERVER, Scope.ALL,
             Tab.named(SERVER_RANGES_TAB, ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE),
-            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE)),
+            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE),
+            Tab.named("friendly_fire", ServerRow.FRIENDLY_FIRE_NPCS, ServerRow.FRIENDLY_FIRE_PLAYERS)),
         SERVER_LIMITS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.FREEZE_AI, ServerRow.STAY_ACTIVE_LIMIT, ServerRow.PATH_BUDGET)),
         /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
         CENSUS(Section.SERVER, Scope.ALL, Tab.of()),

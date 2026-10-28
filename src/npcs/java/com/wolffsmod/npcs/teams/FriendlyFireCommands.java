@@ -76,7 +76,7 @@ public final class FriendlyFireCommands
     private static int setWorld(CommandContext<CommandSourceStack> context, FriendlyFire.Kind kind, FriendlyFire.Setting setting)
     {
         MinecraftServer server = context.getSource().getServer();
-        FriendlyFireSettings.get(server).set(kind, setting);
+        FriendlyFireSettings.set(server, kind, setting);
         boolean enabled = FriendlyFire.worldEnabled(kind, server);
         Component message = setting == FriendlyFire.Setting.DEFAULT ? text("world_reset", kindName(kind), state(enabled)) : text("world_set", kindName(kind), state(enabled));
         context.getSource().sendSuccess(() -> message, true);
@@ -127,7 +127,7 @@ public final class FriendlyFireCommands
 
     private static Component worldSource(FriendlyFire.Kind kind, MinecraftServer server)
     {
-        return text(FriendlyFireSettings.get(server).get(kind) == FriendlyFire.Setting.DEFAULT ? "source.config" : "source.world");
+        return text(FriendlyFireSettings.get(server, kind) == FriendlyFire.Setting.DEFAULT ? "source.config" : "source.world");
     }
 
     private static Component kindName(FriendlyFire.Kind kind)

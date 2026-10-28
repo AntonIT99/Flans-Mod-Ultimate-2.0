@@ -22,7 +22,7 @@ import java.util.List;
  * state their own, which an operator can also hand to every NPC at once, whether target searches are profiled, the aggro
  * and firing ranges a new NPC starts with, which an operator can hand to every NPC as well, the ranges an AA gun,
  * vehicle, plane or mecha model lends the NPC wearing it, the limits that keep many NPCs from overloading the server,
- * whether every NPC is frozen, and the health and ammunition rules every NPC follows. Saved with the world, edited from
+ * whether every NPC is frozen, the health and ammunition rules every NPC follows, and whether allies harm each other. Saved with the world, edited from
  * the Server page of the Wolff's Mod tab by operators.
  */
 public final class NpcServerSettings extends NpcSavedData
@@ -74,7 +74,11 @@ public final class NpcServerSettings extends NpcSavedData
         /** Index into {@link AmmoPolicy}. */
         AMMO_POLICY(0, 0, AmmoPolicy.values().length - 1, "AmmoPolicy"),
         /** Blocks within which players see the name tags of NPCs; Custom NPCs uses about 22.6. Sent to every player. */
-        NAME_TAG_RANGE(DEFAULT_NAME_TAG_RANGE, 0, MAX_RANGE, "NameTagRange");
+        NAME_TAG_RANGE(DEFAULT_NAME_TAG_RANGE, 0, MAX_RANGE, "NameTagRange"),
+        /** Index into {@link com.wolffsmod.npcs.teams.FriendlyFire.Setting}: whether allied NPCs harm each other, for factions without a setting of their own. */
+        FRIENDLY_FIRE_NPCS(0, 0, 2, "FriendlyFireNpcs"),
+        /** Index into {@link com.wolffsmod.npcs.teams.FriendlyFire.Setting}: whether NPCs and the players they are friendly to harm each other. */
+        FRIENDLY_FIRE_PLAYERS(0, 0, 2, "FriendlyFirePlayers");
 
         @Getter
         private final int fallback;
@@ -177,6 +181,13 @@ public final class NpcServerSettings extends NpcSavedData
     public int get(Setting setting)
     {
         return values[setting.ordinal()];
+    }
+
+    /** Changes one value, clamped to its bounds. */
+    public void set(Setting setting, int value)
+    {
+        values[setting.ordinal()] = setting.clamp(value);
+        setDirty();
     }
 
     /** @return every value, in the order of {@link Setting} */

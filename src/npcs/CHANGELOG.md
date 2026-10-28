@@ -25,7 +25,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Players can join and leave factions; factions are invite-only by default, and operators choose who may join, the leave penalty and the rejoin cooldown
 * Skirmishes between factions outside Teams rounds, and endless wars over chunk territory
 * Factions, Skirmishes, Wars and Bots pages in the Teams command centre
-* Configurable friendly fire between NPCs, players and allies (`wolffsmodnpcs-common.toml`, `/flansnpcfriendlyfire`)
+* Configurable friendly fire between NPCs, players and allies (`wolffsmodnpcs-common.toml`, `/flansnpcfriendlyfire`, Server > Rules > Friendly fire in the Wolff's Mod tab)
 
 ## Tools
 
