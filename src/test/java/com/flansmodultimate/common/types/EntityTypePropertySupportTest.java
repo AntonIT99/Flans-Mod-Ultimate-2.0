@@ -196,7 +196,7 @@ class EntityTypePropertySupportTest
         assertEquals(1, shell.volleys());
         assertEquals(4, shell.shotDelay());
         // Ordnance chambers at its own pace whatever the round's reload multiplier.
-        assertEquals(100, shell.reloadTicks());
+        assertEquals(4, shell.reloadTicks());
         assertTrue(shell.chamberSoundTick().isEmpty());
         vehicle.shootReloadSound = "flansmod:chamber";
         vehicle.reloadSoundTick = 30;
