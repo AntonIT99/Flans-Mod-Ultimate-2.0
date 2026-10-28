@@ -48,8 +48,8 @@ import java.util.*;
  * <p>
  * A crew member keeps its seat in synchronized entity data, so both sides seat it alike. A rider without a seat of its
  * own, such as one put on with Custom NPCs' mounter, takes the first free seat, the driver's first. A player on the
- * vehicle's side gets into a free passenger seat by using it, and gets out when it is destroyed. Server thread unless a
- * method says otherwise.
+ * vehicle's side gets into a free gunner's seat, else a passenger seat, by using it, mans the gun of a gunner's seat, and
+ * gets out when the vehicle is destroyed. Server thread unless a method says otherwise.
  * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -104,7 +104,7 @@ public final class NpcCrew
     /**
      * @return the seat a rider of the vehicle sits in: the one it was given, unless an earlier rider holds it, or else the
      *         first seat no rider was given that it may take, the driver's first, in the order the riders got on. A player
-     *         only takes a passenger seat.
+     *         never takes the driver's seat, and takes a gunner's seat before a passenger seat.
      */
     public static Optional<WeaponMount> seatOf(EntityNPCInterface vehicle, Entity rider)
     {
@@ -122,7 +122,7 @@ public final class NpcCrew
         {
             if (claimed.get(seat(passenger)) == passenger)
                 continue;
-            WeaponMount next = free.stream().filter(mount -> mayTake(passenger, mount)).findFirst().orElse(null);
+            WeaponMount next = free.stream().filter(mount -> rank(passenger, mount) >= 0).min(Comparator.comparingInt(mount -> rank(passenger, mount))).orElse(null);
             if (next != null)
                 free.remove(next);
             if (passenger == rider)
@@ -131,10 +131,28 @@ public final class NpcCrew
         return Optional.empty();
     }
 
-    /** Whether a rider without a seat of its own may sit in a seat: a player only as a passenger, anyone else anywhere. */
-    private static boolean mayTake(Entity rider, WeaponMount mount)
+    /**
+     * @return how readily a rider without a seat of its own takes a seat, lowest first, or -1 for a seat it may not take: a
+     *         player takes a gunner's seat before a passenger seat and never the driver's, anyone else any seat alike
+     */
+    private static int rank(Entity rider, WeaponMount mount)
     {
-        return !(rider instanceof Player) || CrewPost.of(mount) == CrewPost.PASSENGER;
+        if (!(rider instanceof Player))
+            return 0;
+        return switch (CrewPost.of(mount))
+        {
+            case DRIVER -> -1;
+            case GUNNER -> 0;
+            case PASSENGER -> 1;
+        };
+    }
+
+    /** @return the seat whose gun a player mans: the gunner's seat they sit in on a vehicle NPC. Either side. */
+    public static Optional<WeaponMount> mannedGun(Player player)
+    {
+        if (!(player.getVehicle() instanceof EntityNPCInterface vehicle))
+            return Optional.empty();
+        return seatOf(vehicle, player).filter(mount -> CrewPost.of(mount) == CrewPost.GUNNER);
     }
 
     @Nullable
@@ -167,8 +185,8 @@ public final class NpcCrew
     }
 
     /**
-     * @return whether the vehicle has room for another rider, for a player a free passenger seat; empty for an NPC without
-     *         seats, which takes one rider
+     * @return whether the vehicle has room for another rider, for a player a free seat other than the driver's; empty for
+     *         an NPC without seats, which takes one rider
      */
     public static Optional<Boolean> canCarry(EntityNPCInterface vehicle, Entity rider)
     {
@@ -176,12 +194,13 @@ public final class NpcCrew
         if (mounts.isEmpty())
             return Optional.empty();
         if (rider instanceof Player)
-            return Optional.of(mounts.stream().anyMatch(mount -> CrewPost.of(mount) == CrewPost.PASSENGER && !occupied(vehicle, mount.seat())));
+            return Optional.of(mounts.stream().anyMatch(mount -> rank(rider, mount) >= 0 && !occupied(vehicle, mount.seat())));
         return Optional.of(vehicle.getPassengers().size() < mounts.size());
     }
 
     /**
-     * Seats a player in a free passenger seat of a vehicle that is on their side, as when they use it without sneaking.
+     * Seats a player in a free gunner's or passenger seat of a vehicle that is on their side, as when they use it without
+     * sneaking.
      * Server side.
      *
      * @return whether the player got on; otherwise the vehicle answers them as any NPC would
@@ -203,7 +222,7 @@ public final class NpcCrew
     public static boolean positionRider(EntityNPCInterface vehicle, Entity passenger, Entity.MoveFunction move)
     {
         boolean crew = seat(passenger) >= 0;
-        // A player always sits in the passenger seat they got into.
+        // A player always sits in the seat they got into.
         if (!crew && !(passenger instanceof Player) && !((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.RIDER_AT_SEAT))
             return false;
         NpcVehicleState state = NpcVehicleState.of(vehicle);

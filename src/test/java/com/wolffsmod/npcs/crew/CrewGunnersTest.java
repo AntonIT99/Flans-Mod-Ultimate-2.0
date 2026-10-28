@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -197,6 +199,77 @@ class CrewGunnersTest
         assertTrue(own.get(0).z > 0.99D);
         // Without gunners picking their own targets, the gun waits on the vehicle's target, which it cannot reach.
         assertTrue(ledAt(false, new Vec3(10D, 0D, 0D), new Vec3(0D, 0D, 10D)).stream().allMatch(lead -> lead.x > 0.99D));
+    }
+
+    @Test
+    void aPlayerGunnerLaysTheGunWhereTheyLookAndFiresOnlyWhileHoldingTheTrigger()
+    {
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
+        Player player = mock(Player.class);
+        ServerLevel level = mock(ServerLevel.class, RETURNS_DEEP_STUBS);
+        when(vehicle.level()).thenReturn(level);
+        when(vehicle.isAlive()).thenReturn(true);
+        // The vehicle fights nobody: the player decides when the gun fires.
+        when(vehicle.getTarget()).thenReturn(null);
+        when(vehicle.getPassengers()).thenReturn(List.of(player));
+        when(player.getUUID()).thenReturn(UUID.randomUUID());
+        Vec3 look = new Vec3(1D, 0D, 0D);
+        when(player.getLookAngle()).thenReturn(look);
+        vehicle.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.set(Feature.PASSENGER_GUNS, true);
+        options.set(Feature.FIRE_SOUNDS, false);
+        options.set(Feature.SHOOT_PARTICLES, false);
+        when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
+        Vec3 barrel = new Vec3(0D, 0D, -1D);
+        NpcVehicleState state = mock(NpcVehicleState.class, invocation -> invocation.getMethod().getReturnType() == Vec3.class ? barrel : RETURNS_DEEP_STUBS.answer(invocation));
+        when(state.turretAim()).thenReturn(MountAim.REST);
+        IContentType definition = mock(IContentType.class);
+        IContentType weapon = mock(IContentType.class);
+        FlanModelEntity model = mock(FlanModelEntity.class);
+        when(model.getInfoType()).thenReturn(definition);
+        WeaponMount mount = new WeaponMount(1, false, false, new MountAim(-180F, -90F), new MountAim(180F, 90F), 10F, 10F, Vec3.ZERO, Vec3.ZERO, Optional.of(weapon));
+        when(state.crewSeats(vehicle)).thenReturn(List.of(mount));
+        ItemStack ammo = new ItemStack(Items.IRON_NUGGET);
+        ProjectileShot shot = mock(ProjectileShot.class);
+        when(shot.launch(Vec3.ZERO, barrel, false)).thenReturn(List.of(mock(Entity.class)));
+        try (var models = mockStatic(NpcModels.class);
+            var states = mockStatic(NpcVehicleState.class);
+            var crew = mockStatic(NpcCrew.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var types = mockStatic(FlansEntityTypes.class);
+            var projectiles = mockStatic(FlansProjectiles.class))
+        {
+            models.when(() -> NpcModels.flan(vehicle)).thenReturn(model);
+            models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
+            states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
+            crew.when(() -> NpcCrew.mannedGun(player)).thenReturn(Optional.of(mount));
+            ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, player, weapon)).thenReturn(ammo);
+            types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
+            projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any()))
+                .thenReturn(Optional.of(new WeaponMuzzle(Vec3.ZERO, Optional.of(weapon), List.of())));
+            projectiles.when(() -> FlansProjectiles.prepare(eq(player), eq(ammo), eq(ItemStack.EMPTY), eq(weapon), isNull(), eq(false), any())).thenReturn(Optional.of(shot));
+            CrewGunners guns = new CrewGunners();
+            guns.tick(vehicle);
+            verify(state).leadSeat(1, look);
+            verify(shot, never()).launch(any(), any(), anyBoolean());
+            guns.trigger(player, true);
+            guns.tick(vehicle);
+            // Fired along the barrel, as the gun has turned so far, with the hit credited to the player.
+            verify(shot, times(1)).launch(Vec3.ZERO, barrel, false);
+            guns.trigger(player, false);
+            for (int tick = 0; tick < 10; tick++)
+                guns.tick(vehicle);
+            verify(shot, times(1)).launch(Vec3.ZERO, barrel, false);
+            // A trigger left held by someone who no longer mans the gun is let go.
+            guns.trigger(player, true);
+            crew.when(() -> NpcCrew.mannedGun(player)).thenReturn(Optional.empty());
+            guns.tick(vehicle);
+            crew.when(() -> NpcCrew.mannedGun(player)).thenReturn(Optional.of(mount));
+            for (int tick = 0; tick < 10; tick++)
+                guns.tick(vehicle);
+            verify(shot, times(1)).launch(Vec3.ZERO, barrel, false);
+        }
     }
 
     @Test

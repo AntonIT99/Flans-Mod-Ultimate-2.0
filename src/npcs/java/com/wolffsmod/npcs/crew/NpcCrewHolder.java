@@ -4,7 +4,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-/** Implemented on Custom NPCs' entity: the seat it was given as a crew member, and whether it has been crewed as a vehicle. */
+/**
+ * Implemented on Custom NPCs' entity: the seat it was given as a crew member, whether it has been crewed as a vehicle, and
+ * its seat guns.
+ */
 public interface NpcCrewHolder
 {
     /** @return the seat the NPC took as a crew member, synchronized to clients; -1 for an NPC that is no crew member */
@@ -20,4 +23,7 @@ public interface NpcCrewHolder
     UUID wolffsmodnpcsCrewedAs();
 
     void wolffsmodnpcsCrewedAs(@Nullable UUID id);
+
+    /** @return the seat guns the NPC's crew and riders man while it is a vehicle */
+    CrewGunners wolffsmodnpcsGunners();
 }

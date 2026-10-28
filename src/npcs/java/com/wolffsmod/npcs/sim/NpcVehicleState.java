@@ -604,7 +604,7 @@ public final class NpcVehicleState
         for (WeaponMount mount : current.mounts())
         {
             int seat = mount.seat();
-            // A manned gun is laid where its rounds have to go, led as its gunner works it out.
+            // A manned gun is laid where its rounds have to go, led as its gunner works it out, or where a player gunner looks.
             Optional<Vec3> lead = seatLead(seat);
             MountAim next = seatAim(seat);
             if (mount.driver())
@@ -612,7 +612,11 @@ public final class NpcVehicleState
                 next = turretAim();
             else if (mount.gun().isPresent())
             {
-                MountAim goal = track ? seatRelative(npc, mount, lead.orElse(direction)) : new MountAim(mount.restYaw(), 0F);
+                MountAim goal;
+                if (lead.isPresent())
+                    goal = seatRelative(npc, mount, lead.get());
+                else
+                    goal = track ? seatRelative(npc, mount, direction) : new MountAim(mount.restYaw(), 0F);
                 next = MountMotion.approach(next, goal, mount, mount.yawSpeed(), mount.pitchSpeed());
             }
             seatYaw[seat] = next.yaw();

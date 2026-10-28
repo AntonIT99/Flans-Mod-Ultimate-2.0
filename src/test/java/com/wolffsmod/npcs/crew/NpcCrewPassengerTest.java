@@ -35,25 +35,32 @@ class NpcCrewPassengerTest
     }
 
     @Test
-    void playersTakeOnlyPassengerSeatsWhileOtherRidersStillTakeTheDriverFirst()
+    void playersTakeGunnersThenPassengerSeatsWhileOtherRidersStillTakeTheDriverFirst()
     {
         EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
         Player first = mock(Player.class);
         Entity mounted = mock(Entity.class);
         Player second = mock(Player.class);
         Player third = mock(Player.class);
-        when(vehicle.getPassengers()).thenReturn(List.of(first, mounted, second, third));
-        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER, SECOND_PASSENGER))
+        Player fourth = mock(Player.class);
+        when(vehicle.getPassengers()).thenReturn(List.of(first, mounted, second, third, fourth));
+        when(first.getVehicle()).thenReturn(vehicle);
+        when(second.getVehicle()).thenReturn(vehicle);
+        try (var states = vehicleWith(vehicle, DRIVER, FIRST_PASSENGER, GUNNER, SECOND_PASSENGER))
         {
-            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, first));
+            assertEquals(Optional.of(GUNNER), NpcCrew.seatOf(vehicle, first));
             assertEquals(Optional.of(DRIVER), NpcCrew.seatOf(vehicle, mounted));
-            assertEquals(Optional.of(SECOND_PASSENGER), NpcCrew.seatOf(vehicle, second));
-            assertEquals(Optional.empty(), NpcCrew.seatOf(vehicle, third));
+            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, second));
+            assertEquals(Optional.of(SECOND_PASSENGER), NpcCrew.seatOf(vehicle, third));
+            assertEquals(Optional.empty(), NpcCrew.seatOf(vehicle, fourth));
+            // Only the player in the gunner's seat mans a gun.
+            assertEquals(Optional.of(GUNNER), NpcCrew.mannedGun(first));
+            assertEquals(Optional.empty(), NpcCrew.mannedGun(second));
         }
     }
 
     @Test
-    void aPlayerFitsOnlyWhileAPassengerSeatIsFree()
+    void aPlayerFitsOnlyWhileASeatOtherThanTheDriversIsFree()
     {
         EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
         Player aboard = mock(Player.class);
@@ -61,6 +68,10 @@ class NpcCrewPassengerTest
         Entity mounted = mock(Entity.class);
         when(vehicle.getPassengers()).thenReturn(List.of(aboard));
         try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER))
+        {
+            assertEquals(Optional.of(true), NpcCrew.canCarry(vehicle, boarding));
+        }
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER))
         {
             assertEquals(Optional.of(false), NpcCrew.canCarry(vehicle, boarding));
             assertEquals(Optional.of(true), NpcCrew.canCarry(vehicle, mounted));

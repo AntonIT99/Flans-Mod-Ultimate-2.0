@@ -46,6 +46,7 @@ public final class NpcNetwork
         NpcNetworkPlatform.toClient("crew_result", CrewResultPacket.class, CrewResultPacket::write, CrewResultPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::crewResult);
         NpcNetworkPlatform.bidirectional("crew_clone_preview", CrewClonePreviewPacket.class, CrewClonePreviewPacket::write, CrewClonePreviewPacket::read,
             () -> com.wolffsmod.npcs.client.NpcClientPackets::crewClonePreview, CrewClonePreviewPacket::handle);
+        NpcNetworkPlatform.toServer("gunner_trigger", GunnerTriggerPacket.class, GunnerTriggerPacket::write, GunnerTriggerPacket::read, GunnerTriggerPacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerReportPacket packet)
@@ -159,6 +160,11 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(CrewActionPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(GunnerTriggerPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }

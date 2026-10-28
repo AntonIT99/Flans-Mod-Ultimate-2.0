@@ -17,12 +17,15 @@ import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.MountMotion;
 import com.wolffsmod.npcs.sim.NpcModels;
+import com.wolffsmod.npcs.sim.NpcRepairs;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.ai.selector.NPCAttackSelector;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
@@ -31,9 +34,12 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * The seat guns of a vehicle NPC that its crew man, or that aim and fire by themselves in seats nobody sits in, as the
@@ -42,8 +48,13 @@ import java.util.Optional;
  * target within its limits, the target is within the vehicle's firing range and nothing solid stands in the way. It
  * selects compatible ammunition from the vehicle, then the gunner, then the gun's default, without using any up, and
  * waits out the gun's reload after each item of ammunition, as a crewed driveable's seat gun does. The crew member is the
- * shooter, so its hits are credited to it; an unmanned gun's are credited to the vehicle. Server thread; one instance per
- * vehicle NPC.
+ * shooter, so its hits are credited to it; an unmanned gun's are credited to the vehicle.
+ *
+ * <p>
+ * A player in a gunner's seat mans its gun instead: it turns, at its own speed and within its limits, toward where they
+ * look, and fires along its barrel while they hold the attack button, whether or not the vehicle fights, with the same
+ * ammunition and cadence, credited to them. Server thread; one instance per vehicle NPC.
+ * </p>
  */
 public final class CrewGunners
 {
@@ -63,14 +74,16 @@ public final class CrewGunners
     private static final int BALLISTICS_INTERVAL = 20;
 
     private final Map<Integer, Gun> guns = new HashMap<>();
+    /** The players who hold the trigger of the gun they man. */
+    private final Set<UUID> triggers = new HashSet<>();
 
     /**
      * What the vehicle's guns fire at this tick, and with what.
      *
      * @param target
-     *            the vehicle's own target
+     *            the vehicle's own target, if it has one
      */
-    private record Context(EntityNPCInterface vehicle, IContentType definition, FlanModelEntity model, LivingEntity target, NpcVehicleState state, NpcWeaponOptions options)
+    private record Context(EntityNPCInterface vehicle, IContentType definition, FlanModelEntity model, @Nullable LivingEntity target, NpcVehicleState state, NpcWeaponOptions options)
     {}
 
     /** What one seat gun is doing. */
@@ -107,11 +120,46 @@ public final class CrewGunners
         IContentType definition = model == null ? null : model.getInfoType();
         LivingEntity target = vehicle.getTarget();
         NpcVehicleState state = NpcVehicleState.of(vehicle);
-        if (definition == null || !engages(vehicle, options, target, state))
+        if (definition == null)
+        {
+            triggers.clear();
             return;
+        }
         Context context = new Context(vehicle, definition, model, target, state, options);
+        Set<UUID> manning = new HashSet<>();
+        if (playersFire(vehicle, options))
+        {
+            for (Entity rider : vehicle.getPassengers())
+            {
+                if (rider instanceof Player player)
+                    NpcCrew.mannedGun(player).ifPresent(mount ->
+                    {
+                        manning.add(player.getUUID());
+                        man(context, player, mount);
+                    });
+            }
+        }
+        // A trigger held by someone who no longer mans a gun here is let go.
+        triggers.retainAll(manning);
+        if (!engages(vehicle, options, target, state))
+            return;
         for (WeaponMount mount : state.crewSeats(vehicle))
             gunner(vehicle, options, mount).ifPresent(gunner -> fire(context, gunner, mount));
+    }
+
+    /** Holds or lets go of the trigger of the seat gun a player mans in this vehicle, as their client says. */
+    public void trigger(Player player, boolean held)
+    {
+        if (held)
+            triggers.add(player.getUUID());
+        else
+            triggers.remove(player.getUUID());
+    }
+
+    /** Whether players may lay and fire the seat guns they man: the vehicle is intact, its seat guns work and it is not under repair. */
+    private static boolean playersFire(EntityNPCInterface vehicle, NpcWeaponOptions options)
+    {
+        return vehicle.isAlive() && !vehicle.isKilled() && options.enabled(Feature.PASSENGER_GUNS) && !options.enabled(Feature.TURRET_LOCKED) && !NpcRepairs.active(vehicle);
     }
 
     /**
@@ -133,18 +181,14 @@ public final class CrewGunners
     {
         boolean anyFire = options.enabled(Feature.MANNED_GUNS_FIRE) || options.enabled(Feature.UNMANNED_GUNS_FIRE);
         boolean allowed = anyFire && options.enabled(Feature.PASSENGER_GUNS) && !options.enabled(Feature.TURRET_LOCKED);
-        return !com.wolffsmod.npcs.sim.NpcRepairs.active(vehicle) && allowed && target != null && target.isAlive() && target.level() == vehicle.level() && vehicle.isAlive() && !vehicle.isKilled()
+        return !NpcRepairs.active(vehicle) && allowed && target != null && target.isAlive() && target.level() == vehicle.level() && vehicle.isAlive() && !vehicle.isKilled()
             && !state.getFlight().holdsFire();
     }
 
     private void fire(Context context, EntityNPCInterface gunner, WeaponMount mount)
     {
-        EntityNPCInterface vehicle = context.vehicle();
-        IContentType definition = context.definition();
-        NpcVehicleState state = context.state();
         Gun gun = guns.computeIfAbsent(mount.seat(), seat -> new Gun());
-        IContentType weapon = mount.gun().orElseThrow();
-        ItemStack ammo = NpcAmmunition.crewGunTemplate(vehicle, gunner, weapon);
+        ItemStack ammo = NpcAmmunition.crewGunTemplate(context.vehicle(), gunner, mount.gun().orElseThrow());
         LivingEntity target = target(context, mount, gun);
         if (target != gun.laidOn)
         {
@@ -152,14 +196,42 @@ public final class CrewGunners
             gun.sightCheckedAt = Integer.MIN_VALUE;
         }
         Vec3 aimPoint = NpcVehicleState.aimPoint(target);
-        ReloadCycle cycle = FlansEntityTypes.getSeatReloadCycle(definition, mount.seat(), ammo).orElse(null);
+        ReloadCycle cycle = FlansEntityTypes.getSeatReloadCycle(context.definition(), mount.seat(), ammo).orElse(null);
         if (ammo.isEmpty() || cycle == null || !lay(context, gunner, mount, gun, ammo, target))
             return;
+        shoot(context, gunner, mount, gun, ammo, cycle, aimPoint);
+    }
+
+    /** Lays the gun a player mans where they look, and fires it along its barrel while they hold the trigger. */
+    private void man(Context context, Player player, WeaponMount mount)
+    {
+        context.state().leadSeat(mount.seat(), player.getLookAngle());
+        Gun gun = guns.computeIfAbsent(mount.seat(), seat -> new Gun());
+        if (!triggers.contains(player.getUUID()) || gun.cooldown >= 1D)
+            return;
+        ItemStack ammo = NpcAmmunition.crewGunTemplate(context.vehicle(), player, mount.gun().orElseThrow());
+        ReloadCycle cycle = FlansEntityTypes.getSeatReloadCycle(context.definition(), mount.seat(), ammo).orElse(null);
+        if (!ammo.isEmpty() && cycle != null)
+            shoot(context, player, mount, gun, ammo, cycle, null);
+    }
+
+    /**
+     * Fires the gun along its barrel as often as its cadence lets it this tick.
+     *
+     * @param aimPoint
+     *            what the gun is laid on, which it only fires at while nothing solid stands in the way; null for a gun a
+     *            player fires where they will
+     */
+    private static void shoot(Context context, LivingEntity gunner, WeaponMount mount, Gun gun, ItemStack ammo, ReloadCycle cycle, @Nullable Vec3 aimPoint)
+    {
+        EntityNPCInterface vehicle = context.vehicle();
+        NpcVehicleState state = context.state();
+        IContentType weapon = mount.gun().orElseThrow();
         for (int shot = 0; shot < MAX_SHOTS_PER_TICK && gun.cooldown < 1D; shot++)
         {
-            WeaponMuzzle muzzle = FlansProjectiles.getSeatMuzzle(definition, mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat())).orElse(null);
+            WeaponMuzzle muzzle = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat())).orElse(null);
             Vec3 origin = muzzle == null ? null : NpcModels.world(vehicle, context.model(), muzzle.offset(), state.getHullYaw());
-            if (origin == null || !clear(vehicle, gun, origin, aimPoint) || !launch(context, gunner, mount, ammo, gun, origin, muzzle))
+            if (origin == null || (aimPoint != null && !clear(vehicle, gun, origin, aimPoint)) || !launch(context, gunner, mount, ammo, gun, origin, muzzle))
                 return;
             effects(context, gunner, weapon, muzzle, origin, state.seatFacing(mount), shot == 0);
             gun.sequence = gun.sequence >= Integer.MAX_VALUE / 2 ? 0 : gun.sequence + 1;
@@ -345,7 +417,7 @@ public final class CrewGunners
     }
 
     /** Fires one round of the gun along its barrel, as a player's leaves, which was laid where the round has to go. */
-    private static boolean launch(Context context, EntityNPCInterface gunner, WeaponMount mount, ItemStack ammo, Gun gun, Vec3 origin, WeaponMuzzle muzzle)
+    private static boolean launch(Context context, LivingEntity gunner, WeaponMount mount, ItemStack ammo, Gun gun, Vec3 origin, WeaponMuzzle muzzle)
     {
         ProjectileShot shot = FlansProjectiles.prepare(gunner, ammo, ItemStack.EMPTY, mount.gun().orElseThrow(), null, false, new ProjectileParameters(gun.fired, true, 0F, 0F, 1F)).orElse(null);
         if (shot == null)
@@ -357,7 +429,7 @@ public final class CrewGunners
         return true;
     }
 
-    private static void effects(Context context, EntityNPCInterface gunner, IContentType weapon, WeaponMuzzle muzzle, Vec3 origin, float facing, boolean first)
+    private static void effects(Context context, LivingEntity gunner, IContentType weapon, WeaponMuzzle muzzle, Vec3 origin, float facing, boolean first)
     {
         NpcWeaponOptions options = context.options();
         if (first && options.enabled(Feature.FIRE_SOUNDS))

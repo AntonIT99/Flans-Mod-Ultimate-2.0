@@ -113,7 +113,8 @@ import java.util.UUID;
  * gunner, appears seated with empty hands while aboard, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
  * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.
  * Crew whose seats let them get out to fight do so near the vehicle's target, jumping by parachute from an aircraft above it.
- * A player on the vehicle's side who uses it without sneaking gets into a free passenger seat.</li>
+ * A player on the vehicle's side who uses it without sneaking gets into a free gunner's or passenger seat, and mans the
+ * gun of a gunner's seat.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
@@ -990,7 +991,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     /**
-     * A player on the vehicle's side who uses it gets into a passenger seat instead of talking to it. Placed after Custom NPCs'
+     * A player on the vehicle's side who uses it gets into a seat instead of talking to it. Placed after Custom NPCs'
      * own tools and interact event, so the wand still edits the vehicle and scripts can still cancel; sneaking talks as before.
      */
     @Inject(method = {"mobInteract",
@@ -1065,6 +1066,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public void wolffsmodnpcsCrewedAs(UUID id)
     {
         wolffsmodnpcsCrewedAs = id;
+    }
+
+    @Override
+    public CrewGunners wolffsmodnpcsGunners()
+    {
+        return wolffsmodnpcsGunners;
     }
 
     // Senses

@@ -18,6 +18,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -178,10 +179,11 @@ public final class NpcAmmunition
         return gunTemplate(npc, gun).orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
     }
 
-    /** Compatible vehicle ammunition, then the gunner's ammunition, then the seat gun's default; templates are never consumed. */
-    public static ItemStack crewGunTemplate(EntityNPCInterface vehicle, EntityNPCInterface gunner, IContentType gun)
+    /** Compatible vehicle ammunition, then an NPC gunner's ammunition, then the seat gun's default; templates are never consumed. */
+    public static ItemStack crewGunTemplate(EntityNPCInterface vehicle, LivingEntity gunner, IContentType gun)
     {
-        return gunTemplate(vehicle, gun).or(() -> gunTemplate(gunner, gun)).orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+        return gunTemplate(vehicle, gun).or(() -> gunner instanceof EntityNPCInterface npc ? gunTemplate(npc, gun) : Optional.empty())
+            .orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
     }
 
     private static Optional<ItemStack> gunTemplate(EntityNPCInterface npc, IContentType gun)
