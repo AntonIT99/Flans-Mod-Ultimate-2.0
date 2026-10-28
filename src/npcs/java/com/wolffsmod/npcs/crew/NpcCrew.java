@@ -7,6 +7,7 @@ import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.sim.NpcParachutes;
@@ -31,6 +32,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -45,8 +47,9 @@ import java.util.*;
  *
  * <p>
  * A crew member keeps its seat in synchronized entity data, so both sides seat it alike. A rider without a seat of its
- * own, such as one put on with Custom NPCs' mounter, takes the first free seat, the driver's first. Server thread unless
- * a method says otherwise.
+ * own, such as one put on with Custom NPCs' mounter, takes the first free seat, the driver's first. A player on the
+ * vehicle's side gets into a free passenger seat by using it, and gets out when it is destroyed. Server thread unless a
+ * method says otherwise.
  * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -100,7 +103,8 @@ public final class NpcCrew
 
     /**
      * @return the seat a rider of the vehicle sits in: the one it was given, unless an earlier rider holds it, or else the
-     *         first seat no rider was given, the driver's first, in the order the riders got on
+     *         first seat no rider was given that it may take, the driver's first, in the order the riders got on. A player
+     *         only takes a passenger seat.
      */
     public static Optional<WeaponMount> seatOf(EntityNPCInterface vehicle, Entity rider)
     {
@@ -113,18 +117,24 @@ public final class NpcCrew
                 claimed.putIfAbsent(seat(passenger), passenger);
         if (claimed.get(seat(rider)) == rider)
             return Optional.ofNullable(mount(mounts, seat(rider)));
-        Iterator<WeaponMount> free = mounts.stream().filter(mount -> !claimed.containsKey(mount.seat())).iterator();
+        List<WeaponMount> free = new ArrayList<>(mounts.stream().filter(mount -> !claimed.containsKey(mount.seat())).toList());
         for (Entity passenger : vehicle.getPassengers())
         {
             if (claimed.get(seat(passenger)) == passenger)
                 continue;
-            if (!free.hasNext())
-                return Optional.empty();
-            WeaponMount next = free.next();
+            WeaponMount next = free.stream().filter(mount -> mayTake(passenger, mount)).findFirst().orElse(null);
+            if (next != null)
+                free.remove(next);
             if (passenger == rider)
-                return Optional.of(next);
+                return Optional.ofNullable(next);
         }
         return Optional.empty();
+    }
+
+    /** Whether a rider without a seat of its own may sit in a seat: a player only as a passenger, anyone else anywhere. */
+    private static boolean mayTake(Entity rider, WeaponMount mount)
+    {
+        return !(rider instanceof Player) || CrewPost.of(mount) == CrewPost.PASSENGER;
     }
 
     @Nullable
@@ -156,11 +166,33 @@ public final class NpcCrew
         return crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled() && seatOf(vehicle, member).map(WeaponMount::seat).orElse(NO_SEAT) == seat).findFirst();
     }
 
-    /** @return whether the vehicle has room for another rider; empty for an NPC without seats, which takes one rider */
-    public static Optional<Boolean> canCarry(EntityNPCInterface vehicle)
+    /**
+     * @return whether the vehicle has room for another rider, for a player a free passenger seat; empty for an NPC without
+     *         seats, which takes one rider
+     */
+    public static Optional<Boolean> canCarry(EntityNPCInterface vehicle, Entity rider)
     {
         List<WeaponMount> mounts = NpcVehicleState.of(vehicle).crewSeats(vehicle);
-        return mounts.isEmpty() ? Optional.empty() : Optional.of(vehicle.getPassengers().size() < mounts.size());
+        if (mounts.isEmpty())
+            return Optional.empty();
+        if (rider instanceof Player)
+            return Optional.of(mounts.stream().anyMatch(mount -> CrewPost.of(mount) == CrewPost.PASSENGER && !occupied(vehicle, mount.seat())));
+        return Optional.of(vehicle.getPassengers().size() < mounts.size());
+    }
+
+    /**
+     * Seats a player in a free passenger seat of a vehicle that is on their side, as when they use it without sneaking.
+     * Server side.
+     *
+     * @return whether the player got on; otherwise the vehicle answers them as any NPC would
+     */
+    public static boolean carry(EntityNPCInterface vehicle, Player player)
+    {
+        if (player.isSecondaryUseActive() || player.isSpectator() || player.getVehicle() == vehicle || !vehicle.isAlive() || vehicle.isKilled() || !NpcDrivers.ally(vehicle, player)
+            || !canCarry(vehicle, player).orElse(false))
+            return false;
+        player.stopRiding();
+        return player.startRiding(vehicle, true);
     }
 
     /**
@@ -171,7 +203,8 @@ public final class NpcCrew
     public static boolean positionRider(EntityNPCInterface vehicle, Entity passenger, Entity.MoveFunction move)
     {
         boolean crew = seat(passenger) >= 0;
-        if (!crew && !((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.RIDER_AT_SEAT))
+        // A player always sits in the passenger seat they got into.
+        if (!crew && !(passenger instanceof Player) && !((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.RIDER_AT_SEAT))
             return false;
         NpcVehicleState state = NpcVehicleState.of(vehicle);
         Optional<WeaponMount> seat = seatOf(vehicle, passenger);
@@ -406,6 +439,8 @@ public final class NpcCrew
     public static void destroyed(EntityNPCInterface vehicle)
     {
         ((NpcCrewHolder) vehicle).wolffsmodnpcsCrewedAs(null);
+        // Nobody rides on in a wreck, which may stay where it fell.
+        vehicle.getPassengers().stream().filter(Player.class::isInstance).toList().forEach(Entity::stopRiding);
         List<EntityNPCInterface> crew = crew(vehicle);
         if (crew.isEmpty())
             return;

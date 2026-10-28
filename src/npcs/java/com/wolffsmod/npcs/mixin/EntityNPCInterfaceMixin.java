@@ -57,9 +57,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -110,7 +112,8 @@ import java.util.UUID;
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
  * gunner, appears seated with empty hands while aboard, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
  * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.
- * Crew whose seats let them get out to fight do so near the vehicle's target, jumping by parachute from an aircraft above it.</li>
+ * Crew whose seats let them get out to fight do so near the vehicle's target, jumping by parachute from an aircraft above it.
+ * A player on the vehicle's side who uses it without sneaking gets into a free passenger seat.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
@@ -983,7 +986,19 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Override
     protected boolean canAddPassenger(Entity passenger)
     {
-        return NpcCrew.canCarry((EntityNPCInterface) (Object) this).orElseGet(() -> super.canAddPassenger(passenger));
+        return NpcCrew.canCarry((EntityNPCInterface) (Object) this, passenger).orElseGet(() -> super.canAddPassenger(passenger));
+    }
+
+    /**
+     * A player on the vehicle's side who uses it gets into a passenger seat instead of talking to it. Placed after Custom NPCs'
+     * own tools and interact event, so the wand still edits the vehicle and scripts can still cancel; sneaking talks as before.
+     */
+    @Inject(method = {"mobInteract",
+        "m_6071_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/controllers/data/Faction;isAggressiveToPlayer(Lnet/minecraft/world/entity/player/Player;)Z"), cancellable = true)
+    private void wolffsmodnpcsCarryPlayer(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> callback)
+    {
+        if (NpcCrew.carry((EntityNPCInterface) (Object) this, player))
+            callback.setReturnValue(InteractionResult.CONSUME);
     }
 
     /** Crew holding their fire take no target, and attackers aiming at shielded crew aim at their vehicle. */

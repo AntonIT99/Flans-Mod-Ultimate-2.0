@@ -1,0 +1,110 @@
+package com.wolffsmod.npcs.crew;
+
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
+import noppes.npcs.entity.EntityNPCInterface;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class NpcCrewPassengerTest
+{
+    private static final WeaponMount DRIVER = mount(0, true, Optional.empty());
+    private static final WeaponMount GUNNER = mount(1, false, Optional.of(mock(IContentType.class)));
+    private static final WeaponMount FIRST_PASSENGER = mount(2, false, Optional.empty());
+    private static final WeaponMount SECOND_PASSENGER = mount(3, false, Optional.empty());
+
+    @BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    void playersTakeOnlyPassengerSeatsWhileOtherRidersStillTakeTheDriverFirst()
+    {
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
+        Player first = mock(Player.class);
+        Entity mounted = mock(Entity.class);
+        Player second = mock(Player.class);
+        Player third = mock(Player.class);
+        when(vehicle.getPassengers()).thenReturn(List.of(first, mounted, second, third));
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER, SECOND_PASSENGER))
+        {
+            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, first));
+            assertEquals(Optional.of(DRIVER), NpcCrew.seatOf(vehicle, mounted));
+            assertEquals(Optional.of(SECOND_PASSENGER), NpcCrew.seatOf(vehicle, second));
+            assertEquals(Optional.empty(), NpcCrew.seatOf(vehicle, third));
+        }
+    }
+
+    @Test
+    void aPlayerFitsOnlyWhileAPassengerSeatIsFree()
+    {
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
+        Player aboard = mock(Player.class);
+        Player boarding = mock(Player.class);
+        Entity mounted = mock(Entity.class);
+        when(vehicle.getPassengers()).thenReturn(List.of(aboard));
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER))
+        {
+            assertEquals(Optional.of(false), NpcCrew.canCarry(vehicle, boarding));
+            assertEquals(Optional.of(true), NpcCrew.canCarry(vehicle, mounted));
+        }
+        try (var states = vehicleWith(vehicle))
+        {
+            assertEquals(Optional.empty(), NpcCrew.canCarry(vehicle, boarding));
+        }
+    }
+
+    @Test
+    void onlyAllyPlayersWhoDoNotSneakAreCarried()
+    {
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
+        Player ally = mock(Player.class);
+        Player enemy = mock(Player.class);
+        Player sneaking = mock(Player.class);
+        when(vehicle.isAlive()).thenReturn(true);
+        when(vehicle.getPassengers()).thenReturn(List.of());
+        when(sneaking.isSecondaryUseActive()).thenReturn(true);
+        when(ally.startRiding(vehicle, true)).thenReturn(true);
+        try (var states = vehicleWith(vehicle, DRIVER, FIRST_PASSENGER); var drivers = mockStatic(NpcDrivers.class))
+        {
+            drivers.when(() -> NpcDrivers.ally(vehicle, ally)).thenReturn(true);
+            drivers.when(() -> NpcDrivers.ally(vehicle, sneaking)).thenReturn(true);
+            assertTrue(NpcCrew.carry(vehicle, ally));
+            assertFalse(NpcCrew.carry(vehicle, enemy));
+            assertFalse(NpcCrew.carry(vehicle, sneaking));
+            verify(enemy, never()).startRiding(any(), anyBoolean());
+            verify(sneaking, never()).startRiding(any(), anyBoolean());
+        }
+    }
+
+    private static MockedStatic<NpcVehicleState> vehicleWith(EntityNPCInterface vehicle, WeaponMount... mounts)
+    {
+        NpcVehicleState state = mock(NpcVehicleState.class);
+        when(state.crewSeats(vehicle)).thenReturn(List.of(mounts));
+        var states = mockStatic(NpcVehicleState.class);
+        states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
+        return states;
+    }
+
+    private static WeaponMount mount(int seat, boolean driver, Optional<IContentType> gun)
+    {
+        return new WeaponMount(seat, driver, false, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, gun);
+    }
+}
