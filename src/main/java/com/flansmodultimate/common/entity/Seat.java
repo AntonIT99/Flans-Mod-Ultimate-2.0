@@ -173,7 +173,10 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
      * </p>
      */
     private static final double MECHA_COCKPIT_RIDING_OFFSET = -0.05D;
-    /** Degrees a rider that is not a player may turn its head away from where its seat faces. */
+    /**
+     * Degrees a rider that is not a player may turn its head away from where its seat faces, and an aircraft gunner its gun
+     * before its torso follows, as a player's does.
+     */
     private static final float RIDER_HEAD_TURN = 75F;
 
     @Getter @Nullable
@@ -700,13 +703,26 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     }
 
     /**
-     * Keeps the body of a rider that is not a player, such as an NPC crew member, along its seat: ahead of the driveable,
-     * or of the turret for a seat on it. Its head still looks where its AI looks, as far as a seated body can turn it.
-     * Players turn their own bodies on their client.
+     * Turns a rider that is not a player, such as an NPC crew member, as a player's client turns a player in this seat. A
+     * gunner looks along its gun and turns its body with it, in an aircraft only once the gun turns further than a torso
+     * planted in the cockpit lets it look. Anyone else keeps its body ahead of the driveable, or of the turret for a seat
+     * on it, and looks where its AI looks, as far as a seated body can turn its head.
      */
     private void alignRider(LivingEntity rider, Driveable parent)
     {
-        float facing = parent.getMountedViewAngles(parent.getSeatAimFrameYaw(this, 1F), 0F).yaw();
+        float frame = parent.getSeatAimFrameYaw(this, 1F);
+        if (!isDriverSeat() && seatInfo != null && seatInfo.getGunType() != null)
+        {
+            LegacyDriveableCoordinates.ViewAngles view = parent.getMountedViewAngles(getHullAimYaw(), getAimPitch());
+            float aim = Mth.wrapDegrees(getAimYaw());
+            float body = parent instanceof Plane ? parent.getMountedViewAngles(frame + aim - Mth.clamp(aim, -RIDER_HEAD_TURN, RIDER_HEAD_TURN), 0F).yaw() : view.yaw();
+            rider.yBodyRot += Mth.wrapDegrees(body - rider.yBodyRot);
+            rider.setYHeadRot(rider.yBodyRot + Mth.wrapDegrees(view.yaw() - rider.yBodyRot));
+            rider.setYRot(rider.getYHeadRot());
+            rider.setXRot(view.pitch());
+            return;
+        }
+        float facing = parent.getMountedViewAngles(frame, 0F).yaw();
         rider.yBodyRot += Mth.wrapDegrees(facing - rider.yBodyRot);
         float head = rider.yBodyRot + Mth.clamp(Mth.wrapDegrees(rider.getYHeadRot() - rider.yBodyRot), -RIDER_HEAD_TURN, RIDER_HEAD_TURN);
         rider.setYHeadRot(head);

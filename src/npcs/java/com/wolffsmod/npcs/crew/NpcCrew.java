@@ -251,8 +251,14 @@ public final class NpcCrew
                 face(living, state.seatFrameYaw(seat.get()), vehicle.getYHeadRot());
                 living.setXRot(vehicle.getXRot());
             }
+            else if (seat.get().gun().isPresent())
+            {
+                // A gunner looks along its gun, as a player manning it does
+                face(living, state.seatBodyYaw(seat.get()), state.seatFacing(seat.get()));
+                living.setXRot(state.seatAim(seat.get().seat()).pitch());
+            }
             else
-                face(living, state.seatFrameYaw(seat.get()), living.getYHeadRot());
+                face(living, state.seatBodyYaw(seat.get()), living.getYHeadRot());
         }
         return true;
     }

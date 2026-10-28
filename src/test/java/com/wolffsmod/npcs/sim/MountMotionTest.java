@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class MountMotionTest
 {
@@ -115,5 +117,22 @@ class MountMotionTest
         assertEquals(seat.position(), seat.positionAt(0F));
         WeaponMount hull = new WeaponMount(2, false, false, new MountAim(-360F, 0F), new MountAim(360F, 0F), 2F, 2F, new Vec3(1D, 1D, 1D), new Vec3(1D, 1D, 1D), Optional.empty());
         assertEquals(hull.position(), hull.positionAt(90F));
+    }
+
+    @Test
+    void aGunnerIsCarriedRoundItsGunsPivotFromTheGunsRest()
+    {
+        // A rear gun traversing from 100 to 260 degrees rests at 180, its gunner ahead of the pivot.
+        WeaponMount rear = new WeaponMount(1, false, false, new MountAim(100F, 0F), new MountAim(260F, 0F), 2F, 2F, new Vec3(0D, 1D, -1D), new Vec3(0D, 1D, -1D), Optional.of(mock(IContentType.class)),
+            Vec3.ZERO, Optional.of(Vec3.ZERO));
+        assertEquals(rear.position(), rear.positionAt(0F, 180F));
+        // A quarter turn of the gun to the right carries its gunner round to the pivot's right.
+        Vec3 turned = rear.positionAt(0F, 270F);
+        assertEquals(1D, turned.x, 1.0E-9D);
+        assertEquals(1D, turned.y, 1.0E-9D);
+        assertEquals(0D, turned.z, 1.0E-9D);
+        // Without a measured pivot the gunner stays in its seat.
+        WeaponMount unmeasured = new WeaponMount(1, false, false, rear.minimum(), rear.maximum(), 2F, 2F, rear.position(), rear.pivot(), rear.gun(), Vec3.ZERO);
+        assertEquals(rear.position(), unmeasured.positionAt(0F, 270F));
     }
 }

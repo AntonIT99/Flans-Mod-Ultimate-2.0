@@ -42,14 +42,23 @@ import java.util.Optional;
  *            added to where the occupant sits and turned with the main turret whether or not the seat is on it, in the
  *            same frame as {@code position}: the seat's rotated offset, plus the turret origin offset for a seat on
  *            the turret
+ * @param gunPivot
+ *            the point the seat's gun model turns round as it aims, in the same frame as {@code position} with the
+ *            turret at rest, when the model was measured; the gunner is carried round it as the gun traverses
  */
 @ApiStatus.Experimental
 public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
-    Vec3 turretOffset)
+    Vec3 turretOffset, Optional<Vec3> gunPivot)
 {
     public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun)
     {
         this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, Vec3.ZERO);
+    }
+
+    public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
+        Vec3 turretOffset)
+    {
+        this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, turretOffset, Optional.empty());
     }
 
     /**
@@ -59,8 +68,29 @@ public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim m
      */
     public Vec3 positionAt(float turretYaw)
     {
-        Vec3 seated = onTurret ? pivot.add(turn(position.subtract(pivot), turretYaw)) : position;
-        return seated.add(turn(turretOffset, turretYaw));
+        return seatedAt(position, turretYaw);
+    }
+
+    /**
+     * @param turretYaw
+     *            yaw of the main turret relative to the hull, in degrees, positive to the right
+     * @param gunYaw
+     *            yaw the seat's gun aims at, as {@link #minimum} and {@link #maximum} count it
+     * @return where the gunner sits with the turret and the gun turned that far: carried round the gun's pivot by the
+     *         gun's turn from its rest yaw, where the seat places it; as {@link #positionAt(float)} without a gun or pivot
+     */
+    public Vec3 positionAt(float turretYaw, float gunYaw)
+    {
+        if (driver || gun.isEmpty() || gunPivot.isEmpty())
+            return positionAt(turretYaw);
+        Vec3 gunAt = gunPivot.get();
+        return seatedAt(gunAt.add(turn(position.subtract(gunAt), gunYaw - restYaw())), turretYaw);
+    }
+
+    private Vec3 seatedAt(Vec3 seated, float turretYaw)
+    {
+        Vec3 turned = onTurret ? pivot.add(turn(seated.subtract(pivot), turretYaw)) : seated;
+        return turned.add(turn(turretOffset, turretYaw));
     }
 
     private static Vec3 turn(Vec3 vector, float yaw)

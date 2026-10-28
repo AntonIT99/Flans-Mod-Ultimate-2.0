@@ -60,6 +60,8 @@ public final class NpcVehicleState
     private static final double MIN_BOMB_HEIGHT = 4D;
     private static final double BOMB_RADIUS = 5D;
     private static final float[] NO_SEATS = new float[0];
+    /** Degrees an aircraft gunner turns its gun before its torso follows, as a player's does in a cockpit. */
+    private static final float COCKPIT_TORSO_FREE = 75F;
     /** Blocks above the ground, at size 5, below which dynamic landing gear comes down and above which it goes up again. */
     private static final double GEAR_DOWN_HEIGHT = 6D;
     private static final double GEAR_UP_HEIGHT = 10D;
@@ -1022,11 +1024,14 @@ public final class NpcVehicleState
         return current.kind() == FlanModelKind.AA_GUN ? List.of() : current.mounts();
     }
 
-    /** @return where the occupant of a seat sits, relative to the NPC's feet, as the hull and turret stand now */
+    /**
+     * @return where the occupant of a seat sits, relative to the NPC's feet, as the hull, turret and the seat's own gun
+     *         stand now
+     */
     public Optional<Vec3> seatOffset(EntityNPCInterface npc, WeaponMount seat)
     {
         FlanModelEntity model = NpcModels.flan(npc);
-        return !active || model == null ? Optional.empty() : Optional.of(NpcModels.local(npc, model, seat.positionAt(turretYaw), hullYaw));
+        return !active || model == null ? Optional.empty() : Optional.of(NpcModels.local(npc, model, seat.positionAt(turretYaw, seatAim(seat.seat()).yaw()), hullYaw));
     }
 
     /**
@@ -1041,10 +1046,27 @@ public final class NpcVehicleState
         return frame;
     }
 
-    /** @return the yaw the body of a seat's occupant keeps: ahead of the hull, or of the turret it sits on */
+    /** @return the yaw ahead of the hull, or of the turret for a seat on it */
     public float seatFrameYaw(WeaponMount seat)
     {
         return seat.onTurret() ? hullYaw + turretYaw : hullYaw;
+    }
+
+    /**
+     * @return the yaw the body of a seat's occupant keeps, as a player's does in that seat: a gunner turns with its gun, in
+     *         an aircraft only once the gun turns further than a torso planted in the cockpit lets it look; anyone else
+     *         stays ahead of the hull, or of the turret it sits on
+     */
+    public float seatBodyYaw(WeaponMount seat)
+    {
+        float frame = seatFrameYaw(seat);
+        if (seat.driver() || seat.gun().isEmpty())
+            return frame;
+        float aim = Mth.wrapDegrees(seatAim(seat.seat()).yaw());
+        Layout current = layout;
+        if (current != null && current.kind() == FlanModelKind.PLANE)
+            return frame + aim - Mth.clamp(aim, -COCKPIT_TORSO_FREE, COCKPIT_TORSO_FREE);
+        return frame + aim;
     }
 
     /** @return blocks from the NPC's middle to the farthest side of its model, across the ground; 0 without a model */
