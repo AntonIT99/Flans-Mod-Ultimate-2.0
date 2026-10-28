@@ -417,11 +417,12 @@ public final class CommonEventHandler
 
     /**
      * Whether incoming damage is cancelled before any processing: entities riding Flan vehicles are immune,
-     * the Teams game type may reject the attack, and a shield may block a melee hit or a thrown projectile.
+     * the Teams game type or an addon's friendly fire rule may reject the attack, and a shield may block a melee hit or a
+     * thrown projectile.
      */
     public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source, float amount)
     {
-        if (!entity.level().isClientSide && isRejectedByTeams(entity, source))
+        if (!entity.level().isClientSide && (isRejectedByTeams(entity, source) || FriendlyFireRules.sparesDamage(entity, source)))
             return true;
 
         boolean cancel = FlansMelee.protectRider(entity, source, amount);

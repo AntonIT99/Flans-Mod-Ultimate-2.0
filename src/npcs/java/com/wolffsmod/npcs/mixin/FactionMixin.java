@@ -5,7 +5,9 @@ import com.wolffsmod.npcs.names.FactionDisplayName;
 import com.wolffsmod.npcs.teams.BattleFactions;
 import com.wolffsmod.npcs.teams.BotFactions;
 import com.wolffsmod.npcs.teams.FactionAllies;
+import com.wolffsmod.npcs.teams.FactionFriendlyFire;
 import com.wolffsmod.npcs.teams.FactionMobSettings;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -21,14 +23,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 /**
  * Custom NPCs' factions.
- * Persists the optional aggression toward the monsters covered by GetsAttacked, display-only team name bindings and the
- * factions it is allied with.
+ * Persists the optional aggression toward the monsters covered by GetsAttacked, display-only team name bindings, the
+ * factions it is allied with and its own friendly fire settings.
  *
  * <ul>
  * <li>Teams bots: while a round runs, the faction of a Flan team treats a player by the team the player fights for, rather
@@ -41,12 +45,14 @@ import java.util.Set;
  */
 @Mixin(value = Faction.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
-public abstract class FactionMixin implements FactionMobSettings, FactionDisplayName, FactionAllies
+public abstract class FactionMixin implements FactionMobSettings, FactionDisplayName, FactionAllies, FactionFriendlyFire
 {
     @Unique
     private static final String WOLFFSMODNPCS_NAME_BINDING = "WolffsModNameBinding";
     @Unique
     private static final String WOLFFSMODNPCS_ALLIES = "WolffsModAllies";
+    @Unique
+    private static final String WOLFFSMODNPCS_FRIENDLY_FIRE = "WolffsModFriendlyFire";
 
     @Unique
     private boolean wolffsmodnpcsAttackMobs;
@@ -54,6 +60,8 @@ public abstract class FactionMixin implements FactionMobSettings, FactionDisplay
     private ContentNameBinding wolffsmodnpcsName;
     @Unique
     private final Set<Integer> wolffsmodnpcsAllies = new HashSet<>();
+    @Unique
+    private final Map<FriendlyFire.Kind, FriendlyFire.Setting> wolffsmodnpcsFriendlyFire = new EnumMap<>(FriendlyFire.Kind.class);
 
     @Override
     public void wolffsmodnpcsBindName(ContentNameBinding binding)
@@ -86,6 +94,18 @@ public abstract class FactionMixin implements FactionMobSettings, FactionDisplay
         return wolffsmodnpcsAllies;
     }
 
+    @Override
+    public FriendlyFire.Setting wolffsmodnpcsFriendlyFire(FriendlyFire.Kind kind)
+    {
+        return wolffsmodnpcsFriendlyFire.getOrDefault(kind, FriendlyFire.Setting.DEFAULT);
+    }
+
+    @Override
+    public void wolffsmodnpcsSetFriendlyFire(FriendlyFire.Kind kind, FriendlyFire.Setting setting)
+    {
+        wolffsmodnpcsFriendlyFire.put(kind, setting);
+    }
+
     @Inject(method = "readNBT", at = @At("TAIL"))
     private void wolffsmodnpcsReadMobSettings(CompoundTag tag, CallbackInfo callback)
     {
@@ -93,6 +113,7 @@ public abstract class FactionMixin implements FactionMobSettings, FactionDisplay
         wolffsmodnpcsName = ContentNameBinding.read(tag.getCompound(WOLFFSMODNPCS_NAME_BINDING), ((Faction) (Object) this).name).orElse(null);
         wolffsmodnpcsAllies.clear();
         Arrays.stream(tag.getIntArray(WOLFFSMODNPCS_ALLIES)).forEach(wolffsmodnpcsAllies::add);
+        FriendlyFire.load(tag.getCompound(WOLFFSMODNPCS_FRIENDLY_FIRE), wolffsmodnpcsFriendlyFire);
     }
 
     @Inject(method = "writeNBT", at = @At("RETURN"))
@@ -107,6 +128,10 @@ public abstract class FactionMixin implements FactionMobSettings, FactionDisplay
         result.remove(WOLFFSMODNPCS_ALLIES);
         if (!wolffsmodnpcsAllies.isEmpty())
             result.putIntArray(WOLFFSMODNPCS_ALLIES, wolffsmodnpcsAllies.stream().mapToInt(Integer::intValue).sorted().toArray());
+        result.remove(WOLFFSMODNPCS_FRIENDLY_FIRE);
+        CompoundTag friendlyFire = FriendlyFire.save(wolffsmodnpcsFriendlyFire);
+        if (!friendlyFire.isEmpty())
+            result.put(WOLFFSMODNPCS_FRIENDLY_FIRE, friendlyFire);
     }
 
     @Inject(method = "isAggressiveToPlayer", at = @At("HEAD"), cancellable = true)

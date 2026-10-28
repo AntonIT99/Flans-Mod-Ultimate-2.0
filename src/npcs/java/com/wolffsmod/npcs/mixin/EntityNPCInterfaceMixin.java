@@ -38,9 +38,11 @@ import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.teams.BotObjectiveGoal;
 import com.wolffsmod.npcs.teams.BotTag;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import noppes.npcs.Resistances;
 import noppes.npcs.ai.EntityAIAttackTarget;
 import noppes.npcs.api.item.IItemStack;
+import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
@@ -91,6 +93,8 @@ import java.util.UUID;
  * resists knockback while it is a vehicle. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
  * melee against protected riders reaches their vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
+ * <li>Friendly fire: hits from NPCs of the same faction and from players the faction is friendly to land where friendly fire is
+ * on, and a hit from a friend never turns the NPC or its faction on that friend.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung. Grenades and
  * other throwables the NPC carries anywhere are thrown as its main weapon or now and then beside its other attacks, as their
  * strategy says, by a goal of their own whose wind-up holds the NPC's other ranged attacks.
@@ -717,6 +721,40 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (!level().isClientSide && (FlansMelee.protectRider((EntityNPCInterface) (Object) this, source, amount) || NpcCrew.shielded(this, source, amount)
             || NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount)))
             callback.setReturnValue(false);
+    }
+
+    // Friendly fire
+
+    /** Custom NPCs spares every hit from an NPC of the same faction; friendly fire lets it land where it is on. */
+    @Redirect(method = {"hurt", "m_6469_"}, at = @At(value = "FIELD", target = "Lnoppes/npcs/controllers/data/Faction;id:I", opcode = Opcodes.GETFIELD, ordinal = 0))
+    private int wolffsmodnpcsFriendlyFireFaction(Faction attackerFaction, DamageSource source, float amount)
+    {
+        // The attacker's faction id is compared with this NPC's: a different value lets the hit through.
+        LivingEntity attacker = FriendlyFire.attacker(source);
+        return attacker instanceof EntityNPCInterface && FriendlyFire.lands((EntityNPCInterface) (Object) this, attacker) ? ~attackerFaction.id : attackerFaction.id;
+    }
+
+    /** Custom NPCs spares every hit from a player the faction is friendly to; friendly fire lets it land where it is on. */
+    @Redirect(method = {"hurt", "m_6469_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/controllers/data/Faction;isFriendlyToPlayer(Lnet/minecraft/world/entity/player/Player;)Z"))
+    private boolean wolffsmodnpcsFriendlyFirePlayer(Faction faction, Player player)
+    {
+        return faction.isFriendlyToPlayer(player) && !FriendlyFire.lands((EntityNPCInterface) (Object) this, player);
+    }
+
+    /** A hit from a friend, landed or not, does not turn the NPC on that friend. */
+    @Redirect(method = {"hurt", "m_6469_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/EntityNPCInterface;setTarget(Lnet/minecraft/world/entity/LivingEntity;)V", remap = true))
+    private void wolffsmodnpcsFriendlyFireTarget(EntityNPCInterface npc, LivingEntity target)
+    {
+        if (target == null || !FriendlyFire.areFriends(npc, target))
+            npc.setTarget(target);
+    }
+
+    /** Nor does it call the NPC's faction to defend it against that friend. */
+    @Redirect(method = {"hurt", "m_6469_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/EntityNPCInterface;onAttack(Lnet/minecraft/world/entity/LivingEntity;)V"))
+    private void wolffsmodnpcsFriendlyFireDefence(EntityNPCInterface defender, LivingEntity attacker)
+    {
+        if (!FriendlyFire.areFriends(defender, attacker))
+            defender.onAttack(attacker);
     }
 
     @Override

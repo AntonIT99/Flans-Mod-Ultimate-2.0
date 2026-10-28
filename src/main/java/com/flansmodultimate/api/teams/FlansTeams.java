@@ -150,6 +150,22 @@ public final class FlansTeams
     }
 
     /**
+     * Whether the round being played lets one of its fighters hurt another, as its game type rules: enemies always, allies
+     * only while the game type's friendly fire variable is on.
+     *
+     * @param victim
+     *            the entity that would be hurt
+     * @param attacker
+     *            the entity responsible for the hit
+     * @return whether the hit may land; empty unless both play the running round, players or combatants, so that the round
+     *         does not judge it
+     */
+    public static Optional<Boolean> mayHarm(LivingEntity victim, LivingEntity attacker)
+    {
+        return manager().flatMap(manager -> TeamsCombatants.mayHarm(manager, victim, attacker));
+    }
+
+    /**
      * Ends the round being played at once, with the side of {@code winner} as the winner, as when a game type decides
      * it: the end-of-round event, scores and the break that follows all run as usual. For rules an addon adds, such as
      * a side running out of reinforcements it manages.

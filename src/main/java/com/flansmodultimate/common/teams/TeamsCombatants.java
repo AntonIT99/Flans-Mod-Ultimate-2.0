@@ -14,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -107,19 +108,37 @@ public final class TeamsCombatants
     }
 
     /**
+     * Whether the running round lets one fighter hurt another, as its game type rules: allies only with friendly fire on.
+     * Empty unless both play the round, players or combatants.
+     */
+    public static Optional<Boolean> mayHarm(TeamsManager manager, LivingEntity victim, LivingEntity attacker)
+    {
+        if (getPlayingTeam(manager, victim) == null || getPlayingTeam(manager, attacker) == null)
+            return Optional.empty();
+        return manager.getCurrentGameType().map(type -> type.canBeAttacked(victim, attacker));
+    }
+
+    /**
      * The player or combatant held responsible for some damage: whoever caused it, or the owner of the projectile that
      * dealt it. Null when that is neither.
      */
     @Nullable
     public static LivingEntity getAttacker(DamageSource source)
     {
-        TeamsManager manager = TeamsManager.getInstance();
+        LivingEntity cause = getCause(source);
+        return cause != null && isParticipant(TeamsManager.getInstance(), cause) ? cause : null;
+    }
+
+    /** The living entity held responsible for some damage: whoever caused it, or the owner of the projectile that dealt it. */
+    @Nullable
+    public static LivingEntity getCause(DamageSource source)
+    {
         Entity cause = source.getEntity();
         if (cause instanceof Projectile projectile)
             cause = projectile.getOwner();
         if (cause == null && source.getDirectEntity() instanceof Projectile projectile)
             cause = projectile.getOwner();
-        return cause instanceof LivingEntity living && isParticipant(manager, living) ? living : null;
+        return cause instanceof LivingEntity living ? living : null;
     }
 
     @Nullable

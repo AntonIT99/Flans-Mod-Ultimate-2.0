@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
+import com.wolffsmod.npcs.teams.FriendlyFireCommands;
 import com.wolffsmod.npcs.teams.SkirmishCommands;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import com.wolffsmod.npcs.teams.WarCommands;
@@ -106,5 +107,6 @@ public final class NpcsGameEvents
         FactionCommands.register(event.getDispatcher());
         SkirmishCommands.register(event.getDispatcher());
         WarCommands.register(event.getDispatcher());
+        FriendlyFireCommands.register(event.getDispatcher());
     }
 }

@@ -7,9 +7,11 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
 import com.wolffsmod.npcs.scripting.FlansScriptApi;
 import com.wolffsmod.npcs.teams.BattlesSection;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
@@ -29,11 +31,13 @@ public class NpcsMod
     public NpcsMod(FMLJavaModLoadingContext context)
     {
         IEventBus modEventBus = context.getModEventBus();
+        context.registerConfig(ModConfig.Type.COMMON, NpcsCommonConfig.SPEC);
         modEventBus.addListener(FlanModelEntities::registerEntityTypes);
         modEventBus.addListener(FlanModelEntities::registerAttributes);
         NpcNetwork.register();
         NpcNetworkPlatform.init(modEventBus);
         TeamsBots.register();
+        FriendlyFire.register();
         FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);
         modEventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(FlansScriptApi::register));
     }

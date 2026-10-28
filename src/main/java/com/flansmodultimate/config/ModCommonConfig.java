@@ -499,8 +499,10 @@ public final class ModCommonConfig
             .comment("Shape of the blast damage falloff inside the blast radius. Higher values concentrate damage near the centre; lower values spread it out.",
                 "This only shapes the curve, it does not change any radius.")
             .defineInRange("newDamageSystemBlastFalloffSharpness", 2.5, 0.1, 10.0);
-        SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE = builder.comment("Whether proximity triggers can get triggered by allies and cause friendly fire").define("shootableProximityTriggerFriendlyFire",
-            false);
+        SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE = builder
+            .comment("Whether proximity triggers can get triggered by allies and cause friendly fire.",
+                "Allies are those the owner's fire spares, and driveables carrying them: teammates in Teams rounds, or friends by an addon's rules such as NPC factions.")
+            .define("shootableProximityTriggerFriendlyFire", false);
         SHOOTABLE_DEFAULT_RESPAWN_TIME = builder.comment("Max despawn time in ticks (0.05s). 0 means no despawn time.").defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         LOCK_ON_RANGE = builder.comment("Range in blocks used by lock-on missiles when searching for targets.").defineInRange("lockOnRange", 128.0, 1.0, 4096.0);
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);

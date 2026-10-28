@@ -4,7 +4,6 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.api.parts.IFlanPartTarget;
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.FlanExplosion;
@@ -49,7 +48,6 @@ import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class containing a bunch of shooting related functions
@@ -181,33 +179,9 @@ public final class ShootingHelper
             if (bulletType.isEntityHitSoundEnable() && !level.isClientSide)
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
-            AtomicBoolean isFriendly = new AtomicBoolean(false);
             driveableHit.getDriveable().setLastAtkEntity(owner);
 
-            playerOwner.ifPresent(serverPlayer -> FlansMod.teamsManager.getCurrentRound().ifPresent(round ->
-            {
-                Seat[] seats = driveableHit.getDriveable().getSeats();
-                if (seats == null)
-                    return;
-
-                for (Seat seat : seats)
-                {
-                    if (seat == null)
-                        continue;
-                    if (seat.getRiddenByEntity() instanceof Player controllingPlayer)
-                    {
-                        PlayerData dataDriver = PlayerData.getInstance(controllingPlayer);
-                        PlayerData dataAttacker = PlayerData.getInstance(serverPlayer);
-                        Team driverTeam = dataDriver.getTeam();
-                        Team attackerTeam = dataAttacker.getTeam();
-                        // Allied teams of a Teams round count as friends too
-                        if (driverTeam != null && (driverTeam.equals(attackerTeam) || round.areAllied(driverTeam, attackerTeam)))
-                            isFriendly.set(true);
-                    }
-                }
-            }));
-
-            if (isFriendly.get())
+            if (carriesFriend(driveableHit.getDriveable().getSeats(), owner))
                 penetratingPower = 0F;
             else
             {
@@ -334,6 +308,19 @@ public final class ShootingHelper
             bullet.getPenetrationLosses().add(new PenetrationLoss(Math.max(0F, powerBefore - penetratingPower), PenetrationLoss.EnumType.ENTITY));
 
         return new HitData(penetratingPower, lastHitPenAmount, hitData.lastHitHeadshot());
+    }
+
+    /** Whether a driveable carries someone the shooter's fire spares, so that the round leaves it unharmed. */
+    private static boolean carriesFriend(@Nullable Seat[] seats, @Nullable LivingEntity shooter)
+    {
+        if (seats == null || shooter == null)
+            return false;
+        for (Seat seat : seats)
+        {
+            if (seat != null && seat.getRiddenByEntity() instanceof LivingEntity rider && FriendlyFireRules.spares(rider, shooter))
+                return true;
+        }
+        return false;
     }
 
     private static boolean hurt(Entity entity, @Nullable PartBodyHit partHit, DamageSource source, float damage)
