@@ -1569,16 +1569,20 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * For a bank firing mounted guns the gun's own reload time stands in,
      * unless the vehicle states a reload time for the bank;
      * {@code ReadWeaponsFromGunTypes} again hands the gun the last word.
+     *
+     * <p>
+     * A bank firing {@code magazineRounds} of one reloads after every shot, so the
+     * shorter of reload and cadence wins; see {@link GunHandlingTiming#reloadWait}.
      */
-    public float reloadTime(boolean secondaryWeapon)
+    public float reloadTime(boolean secondaryWeapon, int magazineRounds)
     {
         int bankReload = secondaryWeapon ? reloadTimeSecondary : reloadTimePrimary;
         GunType gunType = getPilotGunType(secondaryWeapon);
         if (gunType != null && (readWeaponsFromGunTypes || bankReload <= 0 && reloadTimeShared <= 0))
-            return Math.max(gunType.getReloadTime(), gunType.getShootDelay(null));
+            return GunHandlingTiming.reloadWait(gunType.getReloadTime(), gunType.getShootDelay(null), magazineRounds);
 
         float longestDelay = secondaryWeapon ? longestDeclaredDelaySecondary : longestDeclaredDelayPrimary;
-        return Math.max(Math.max(bankReload, reloadTimeShared), Math.max(longestDelay, shootDelay(secondaryWeapon)));
+        return GunHandlingTiming.reloadWait(Math.max(bankReload, reloadTimeShared), Math.max(longestDelay, shootDelay(secondaryWeapon)), magazineRounds);
     }
 
     /**

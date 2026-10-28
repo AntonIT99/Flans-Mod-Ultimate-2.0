@@ -339,6 +339,17 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     }
 
     /**
+     * Trigger pulls a full load of ammunition with {@code perItem} rounds per item lasts.
+     * Firing together spends a round from every barrel per pull; alternating spends one.
+     */
+    public int volleysPerReload(int perItem)
+    {
+        int barrels = Math.max(1, numBarrels);
+        int together = shareAmmo ? (int) Math.ceil(perItem / (double) barrels) : perItem;
+        return fireAlternately ? perItem * Math.max(1, getAmmoSlotCount()) : together;
+    }
+
+    /**
      * {@code RoundsPerMin} overrides the legacy tick delay, matching {@link GunType}.
      *
      * <p>

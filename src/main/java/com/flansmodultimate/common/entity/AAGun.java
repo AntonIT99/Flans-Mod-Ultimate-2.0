@@ -1035,6 +1035,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         boolean loadedAny = false;
         float reloadFactor = 1F;
+        int perItem = 1;
         for (int i = 0; i < ammo.length; i++)
         {
             if (!ammo[i].isEmpty())
@@ -1051,6 +1052,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
                 loadedAny = true;
                 // A slower round to load holds up the whole reload, so the
                 // heaviest factor among what went in wins.
+                perItem = Math.max(perItem, ShootableItem.getMaxRounds(loaded));
                 if (loaded.getItem() instanceof ShootableItem shootableItem)
                     reloadFactor = Math.max(reloadFactor, shootableItem.getConfigType().getReloadTimeMultiplier());
             }
@@ -1059,9 +1061,13 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (loadedAny)
         {
             updateAmmoMask();
-            // Reloading never lets the gun outrun its own rate of fire, so the wait
-            // after the round that emptied a barrel is the longer of the two.
-            setReloadTimer(Mth.ceil(Math.max(type.getReloadTime() * reloadFactor, type.getShootDelay())));
+            // A gun one volley empties waits the shorter of its reload and its cadence,
+            // since it reloads after every volley; otherwise it never outruns the cadence.
+            int volleys = type.volleysPerReload(perItem);
+            float wait = GunHandlingTiming.reloadWait(type.getReloadTime() * reloadFactor, type.getShootDelay(), volleys);
+            setReloadTimer(Mth.ceil(wait));
+            if (volleys <= 1)
+                shootDelay = Math.min(shootDelay, wait);
             if (StringUtils.isNotBlank(type.getReloadSound()))
                 PacketPlaySound.sendSoundPacket(this, type.getReloadSoundRange(), type.getReloadSound(), false);
         }

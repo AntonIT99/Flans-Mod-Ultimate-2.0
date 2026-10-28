@@ -314,6 +314,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      * cooldown as before.
      */
     protected final float[] bankReloadTicks = {0F, 0F};
+    /** Whether the shot each bank just fired began a reload, which then sets the wait on its own. */
+    protected final boolean[] bankReloadBegan = {false, false};
     /** Rounds a gun bank's ammunition slot held when it was last restocked, for its HUD readout. */
     protected final int[] bankMagazineCapacity = {0, 0};
     /** The same, per seat gun. */
@@ -1785,11 +1787,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             // Charge the shot delay against the cooldown as it stood before the shot:
             // a round that emptied the magazine has already raised the cooldown to
-            // the reload, and adding the delay on top of that would double the wait.
+            // the reload, and adding the delay on top of that would double the wait
+            // or undo a single-round bank's shorter reload.
             float primaryBefore = primaryShootDelay;
+            bankReloadBegan[0] = false;
             if (!fireWeaponBank(false))
                 break;
-            setPrimaryShootDelay(Math.max(primaryShootDelay, ShotCooldown.charge(primaryBefore, getConfiguredShootDelay(false))));
+            if (!bankReloadBegan[0])
+                setPrimaryShootDelay(Math.max(primaryShootDelay, ShotCooldown.charge(primaryBefore, getConfiguredShootDelay(false))));
             if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
                 --primaryBurstRemaining;
             if (primaryMode == EnumFireMode.SEMIAUTO)
@@ -1798,9 +1803,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         while (ShotCooldown.isReady(secondaryShootDelay) && shouldFire(secondaryMode, secondaryDown, secondaryRising, secondaryHeldTicks, secondaryBurstRemaining))
         {
             float secondaryBefore = secondaryShootDelay;
+            bankReloadBegan[1] = false;
             if (!fireWeaponBank(true))
                 break;
-            setSecondaryShootDelay(Math.max(secondaryShootDelay, ShotCooldown.charge(secondaryBefore, getConfiguredShootDelay(true))));
+            if (!bankReloadBegan[1])
+                setSecondaryShootDelay(Math.max(secondaryShootDelay, ShotCooldown.charge(secondaryBefore, getConfiguredShootDelay(true))));
             if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
                 --secondaryBurstRemaining;
             if (secondaryMode == EnumFireMode.SEMIAUTO)
@@ -2101,7 +2108,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         ItemStack ammo = selection.stack();
         if (ammo.getItem() == gunBankAmmoItem[index] && ShootableItem.getTotalRounds(ammo) <= gunBankAmmoRounds[index])
             return;
-        beginBankReload(secondary, initializedType().reloadTime(secondary) * loadedReloadTimeMultiplier());
+        beginBankReload(secondary, initializedType().reloadTime(secondary, magazineSize(ammo, initializedType().reloadRounds(secondary))) * loadedReloadTimeMultiplier());
         GunType gunType = selection.gunType();
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
@@ -2169,6 +2176,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         int index = secondary ? 1 : 0;
         bankReloadTicks[index] = Math.max(bankReloadTicks[index], reloadTicks);
+        bankReloadBegan[index] = true;
         if (secondary)
             setSecondaryShootDelay(Math.max(secondaryShootDelay, reloadTicks));
         else
@@ -2402,7 +2410,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (slot < 0)
             return;
 
-        beginBankReload(secondary, type.reloadTime(secondary));
+        beginBankReload(secondary, type.reloadTime(secondary, magazineSize(getWeaponSlot(ordnanceBankFor(type.weaponType(secondary)), slot), type.reloadRounds(secondary))));
 
         String sound = type.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
@@ -2713,7 +2721,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (!magazineSpent(++bankRoundsFired[index], size, fired))
             return;
         bankRoundsFired[index] = 0;
-        beginBankReload(secondary, type.reloadTime(secondary));
+        beginBankReload(secondary, type.reloadTime(secondary, size));
 
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))

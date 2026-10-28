@@ -221,12 +221,8 @@ public final class EntityTypePropertySupport
         float multiplier = Float.isFinite(reloadMultiplier) && reloadMultiplier > 0F ? reloadMultiplier : 1F;
         if (type instanceof AAGunType aa)
         {
-            int barrels = Math.max(1, aa.getNumBarrels());
-            int rounds = perItem * Math.max(1, aa.getAmmoSlotCount());
-            // Firing together spends a round from every barrel per trigger; alternating spends one.
-            int together = aa.isShareAmmo() ? (int) Math.ceil(perItem / (double) barrels) : perItem;
-            int volleys = aa.isFireAlternately() ? rounds : together;
-            return Optional.of(new ReloadCycle(volleys, aa.getShootDelay(), Math.max(aa.getReloadTime() * multiplier, aa.getShootDelay()), OptionalInt.empty()));
+            int volleys = aa.volleysPerReload(perItem);
+            return Optional.of(new ReloadCycle(volleys, aa.getShootDelay(), GunHandlingTiming.reloadWait(aa.getReloadTime() * multiplier, aa.getShootDelay(), volleys), OptionalInt.empty()));
         }
         if (!(type instanceof DriveableType driveable) || driveable.weaponType(secondary) == EnumWeaponType.NONE)
             return Optional.empty();
@@ -234,7 +230,7 @@ public final class EntityTypePropertySupport
         int declared = driveable.reloadRounds(secondary);
         int magazine = declared > 0 ? Math.min(declared, perItem) : perItem;
         // Only a bank of mounted guns slows down for heavy ammunition; ordnance banks chamber at their own pace.
-        double reload = driveable.reloadTime(secondary) * (gunBank ? multiplier : 1F);
+        double reload = driveable.reloadTime(secondary, magazine) * (gunBank ? multiplier : 1F);
         boolean chamberSound = !gunBank && !secondary && driveable.getReloadSoundTick() != DriveableType.RELOAD_SOUND_TICK_UNSET && StringUtils.isNotBlank(driveable.getShootReloadSound());
         return Optional.of(new ReloadCycle(magazine, driveable.shootDelay(secondary), reload, chamberSound ? OptionalInt.of(driveable.getReloadSoundTick()) : OptionalInt.empty()));
     }

@@ -24,11 +24,14 @@ public final class GunHandlingTiming
     /**
      * Ticks a gun waits after emptying a magazine of the given size. A single-round gun
      * reloads after every shot, so the shorter of its reload and its cadence sets the gap
-     * between shots; a larger magazine never reloads faster than the gun fires.
+     * between shots; a larger magazine never reloads faster than the gun fires. An unset
+     * (non-positive) reload leaves the cadence alone.
      */
     public static float reloadWait(float reloadTime, float shootDelay, int magazineRounds)
     {
-        return magazineRounds <= 1 ? Math.min(reloadTime, shootDelay) : Math.max(reloadTime, shootDelay);
+        if (magazineRounds <= 1 && reloadTime > 0F)
+            return Math.min(reloadTime, shootDelay);
+        return Math.max(reloadTime, shootDelay);
     }
 
     public static int switchTicks(float ticks)
