@@ -24,7 +24,8 @@ Ammo krissvectorAmmo
 ReloadTime 60
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto Burst
+NumBurstRounds 2
 OneHanded true
 Deployable False
 CanShootUnderwater False

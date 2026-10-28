@@ -34,7 +34,7 @@ Ammo apcrrifleAmmo
 ReloadTime 40
 
 // Operation
-Mode Burst
+Mode Burst SemiAuto
 NumBurstRounds 3
 OneHanded False
 Deployable False

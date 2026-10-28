@@ -31,7 +31,7 @@ Ammo smg100ammo
 ReloadTime 50
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 OneHanded true
 Deployable False
 CanShootUnderwater False

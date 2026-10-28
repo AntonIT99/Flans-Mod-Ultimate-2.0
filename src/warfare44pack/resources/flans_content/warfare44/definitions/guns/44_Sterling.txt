@@ -19,7 +19,7 @@ CasingTexture Skin44_BulletCasing
 Ammo 44_SterlingAmmo
 
 // Handling
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 Scope None
 

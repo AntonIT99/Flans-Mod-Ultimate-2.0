@@ -24,7 +24,7 @@ Ammo Fg42Ammo
 ReloadTime 60
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable false
 RoundsPerMin 900.0
 

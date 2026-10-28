@@ -32,7 +32,7 @@ Ammo dragunovAmmo
 ReloadTime 40
 
 // Operation
-Mode SemiAuto
+Mode SemiAuto FullAuto
 Deployable False
 CanShootUnderwater False
 RoundsPerMin 550.0

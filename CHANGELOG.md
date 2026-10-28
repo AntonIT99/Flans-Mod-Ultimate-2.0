@@ -41,6 +41,8 @@
 
 ## Weapons
 
+* Historically supported firing modes for source-pack weapons, including semi-auto selectors and two- or three-round bursts
+
 * Variable zoom for modern scopes (binoculars up to 40x), with new default keybinds
 * New `MeleeSpeed` and `MeleeRange`, updated melee statistics and lightsaber balance
 * Tactical reloads with configurable magazine bonuses, timed secondary-mode switching and grips shown only in secondary mode where configured

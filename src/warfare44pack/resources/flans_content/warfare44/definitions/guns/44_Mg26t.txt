@@ -19,7 +19,7 @@ CasingTexture Skin44_BulletCasing
 Ammo 44_Mg26tAmmo
 
 // Handling
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 MoveSpeedModifier 0.35
 Scope None

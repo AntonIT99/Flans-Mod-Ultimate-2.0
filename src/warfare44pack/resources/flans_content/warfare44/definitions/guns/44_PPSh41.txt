@@ -19,7 +19,7 @@ CasingTexture Skin44_BulletCasing
 Ammo 44_PPSh41Ammo
 
 // Handling
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 Scope None
 

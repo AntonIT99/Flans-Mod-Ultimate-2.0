@@ -25,7 +25,7 @@ Ammo thompsonAmmo
 ReloadTime 40
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 RoundsPerMin 700.0
 

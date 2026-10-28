@@ -19,7 +19,7 @@ Ammo mp44Ammo
 ReloadTime 50
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 RoundsPerMin 550.0
 

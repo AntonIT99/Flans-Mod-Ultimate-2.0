@@ -29,7 +29,7 @@ Ammo honeybadgerAmmo
 ReloadTime 40
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 OneHanded true
 Deployable False
 CanShootUnderwater False

@@ -40,7 +40,7 @@ Ammo l86Ammo
 ReloadTime 60
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto Burst
 Deployable False
 CanShootUnderwater False
 RoundsPerMin 1000.0

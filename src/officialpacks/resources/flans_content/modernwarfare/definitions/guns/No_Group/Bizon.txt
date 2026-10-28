@@ -23,7 +23,7 @@ Ammo bizonAmmo
 ReloadTime 40
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 CanShootUnderwater False
 RoundsPerMin 700.0

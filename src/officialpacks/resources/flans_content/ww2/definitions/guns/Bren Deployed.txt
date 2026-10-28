@@ -17,7 +17,7 @@ Ammo brenAmmo100
 ReloadTime 40
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable True
 StandBackDistance 1.5
 TopViewLimit 30
