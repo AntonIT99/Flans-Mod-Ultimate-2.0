@@ -184,7 +184,8 @@ public final class BattlesSection
     private static ListTag factions(MinecraftServer server, ServerPlayer player)
     {
         BattleFactions data = BattleFactions.get(server);
-        Optional<Integer> own = data.factionOf(player.getUUID());
+        FactionMembers members = FactionMembers.get(server);
+        Optional<Integer> own = members.factionOf(player.getUUID());
         ListTag list = new ListTag();
         for (BattleFactions.Managed managed : data.all())
         {
@@ -193,7 +194,7 @@ public final class BattlesSection
                 continue;
             CompoundTag entry = faction(faction);
             entry.putString(OUTSIDERS, BotCommands.lower(managed.getOutsiders()));
-            entry.putInt(MEMBERS, (int) data.memberCount(managed.getId()));
+            entry.putInt(MEMBERS, (int) members.memberCount(managed.getId()));
             entry.putBoolean(MEMBER, own.map(id -> id == managed.getId()).orElse(false));
             entry.putIntArray(ENEMIES, faction.attackFactions.stream().mapToInt(Integer::intValue).sorted().toArray());
             entry.put(BRANCHES, list(managed.getBranches(), branch ->
