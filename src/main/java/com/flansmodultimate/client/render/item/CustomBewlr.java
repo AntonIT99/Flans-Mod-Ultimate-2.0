@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.render.item;
 
-import com.flansmodultimate.api.client.FlansEquipmentRender;
+import com.flansmodultimate.api.client.equipment.FlansEquipmentRender;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.NotNull;

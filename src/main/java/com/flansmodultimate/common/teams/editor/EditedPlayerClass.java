@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.teams.editor;
 
-import com.flansmodultimate.api.SkinOverrideVariant;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.google.gson.JsonElement;
@@ -32,6 +32,12 @@ public final class EditedPlayerClass extends PlayerClass
         name = original == null ? id : original.getName();
         if (patch.has("name"))
             name = patch.get("name").getAsString();
+    }
+
+    @Override
+    public String getNameTranslationKey()
+    {
+        return original == null || !name.equals(original.getName()) ? "" : original.getNameTranslationKey();
     }
 
     @Override

@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,29 +31,34 @@ public final class PacketTeamsState implements IClientPacket
         NONE, TEAM_SELECT, CLASS_SELECT, SCOREBOARD, VOTING, CLOSE, DEPLOY
     }
 
-    public record TeamChoice(String id, String name, int colour)
-    {}
+    public record TeamChoice(String id, String name, int colour, Component displayName)
+    {
+        public TeamChoice(String id, String name, int colour)
+        {
+            this(id, name, colour, Component.literal(name));
+        }
+    }
     /**
      * A class of the selected team. {@code capacity} is the number of players of that team who may
      * use it at once, or {@link #UNLIMITED_CLASS} for a class without a limit, and {@code used} how
      * many of those slots other players have taken.
      */
-    public record ClassChoice(String id, String name, int unlockLevel, int requiredPrestige, int used, int capacity, List<ItemStack> loadout)
+    public record ClassChoice(String id, String name, int unlockLevel, int requiredPrestige, int used, int capacity, List<ItemStack> loadout, Component displayName)
     {
         public boolean isFull()
         {
             return capacity != UNLIMITED_CLASS && used >= capacity;
         }
     }
-    public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass)
+    public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass, Component displayName, Component classDisplayName)
     {}
     /**
      * A team of the round. Allied teams carry the same {@code sideId}, the round team id of the first
      * team of their side, and the same {@code score}, which belongs to the side as a whole.
      */
-    public record TeamScore(String id, String name, int colour, int score, int sideId, List<PlayerScore> players)
+    public record TeamScore(String id, String name, int colour, int score, int sideId, List<PlayerScore> players, Component displayName)
     {}
-    public record VoteOption(String mapName, String gameType, String teams, int votes)
+    public record VoteOption(String mapName, String gameType, Component teams, int votes)
     {}
     /** Viewer-independent data, built once for each broadcast rather than once per player. */
     public record SharedScoreboard(List<TeamScore> teamScores, List<VoteOption> voteOptions, List<ObjectiveSnapshot> objectives)
@@ -157,7 +163,7 @@ public final class PacketTeamsState implements IClientPacket
         {
             Team team = Team.getTeam(id);
             if (team != null && manager.canChooseTeam(viewer, team))
-                choices.add(new TeamChoice(id, team.getName(), team.getTeamColour()));
+                choices.add(new TeamChoice(id, team.getName(), team.getTeamColour(), team.getNameComponent()));
         }
         choices.add(new TeamChoice(Team.SPECTATORS_ID, Team.SPECTATORS.getName(), Team.SPECTATORS.getTeamColour()));
         if (viewer.hasPermissions(2))
@@ -169,7 +175,8 @@ public final class PacketTeamsState implements IClientPacket
     {
         int capacity = manager.getClassCapacity(team, playerClass);
         return new ClassChoice(playerClass.getShortName(), playerClass.getName(), playerClass.getUnlockLevel(), playerClass.getRequiredPrestigeLevel(),
-            manager.countPlayersUsingClass(team, playerClass, viewer), capacity == ClassLimits.UNLIMITED ? UNLIMITED_CLASS : capacity, playerClass.createStartingItemPreviews());
+            manager.countPlayersUsingClass(team, playerClass, viewer), capacity == ClassLimits.UNLIMITED ? UNLIMITED_CLASS : capacity, playerClass.createStartingItemPreviews(),
+            playerClass.getNameComponent());
     }
 
     /** Adds what the objective HUD and the deployment map need to know about a round fought over capture points. */
@@ -205,9 +212,10 @@ public final class PacketTeamsState implements IClientPacket
             // Rows addons add, such as bots, are ranked with the players.
             List<PlayerScore> players = Stream
                 .concat(manager.getPlayersOnTeam(team).stream().map(PacketTeamsState::playerScore),
-                    manager.getScoreboardEntries(team).stream().map(entry -> new PlayerScore(entry.name(), entry.score(), entry.kills(), entry.deaths(), 0, entry.label())))
+                    manager.getScoreboardEntries(team).stream()
+                        .map(entry -> new PlayerScore(entry.name(), entry.score(), entry.kills(), entry.deaths(), 0, entry.label(), entry.displayName(), entry.displayLabel())))
                 .sorted(Comparator.comparingInt(PlayerScore::score).reversed().thenComparing(PlayerScore::name, String.CASE_INSENSITIVE_ORDER)).toList();
-            scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), round.getSideId(team), players));
+            scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), round.getSideId(team), players, team.getNameComponent()));
         }
 
         int[] votes = new int[manager.getVoteOptions().size()];
@@ -223,19 +231,30 @@ public final class PacketTeamsState implements IClientPacket
             TeamsRound option = manager.getVoteOptions().get(i);
             String map = manager.getMap(option.getMapId()).map(TeamsMap::getName).orElse(option.getMapId());
             GameType type = option.getGametype();
-            String teams = option.getSideIds().stream().map(sideId -> option.getSideDisplayComponent(sideId).getString()).filter(side -> !side.isEmpty()).reduce((left, right) -> left + " vs " + right)
-                .orElse("");
-            options.add(new VoteOption(map, type == null ? option.getGameTypeId() : type.getName(), teams, votes[i]));
+            options.add(new VoteOption(map, type == null ? option.getGameTypeId() : type.getName(), voteTeams(option), votes[i]));
         }
         GameType gameType = round.getGametype();
         return new SharedScoreboard(List.copyOf(scores), List.copyOf(options), gameType == null ? List.of() : gameType.createObjectives(manager));
+    }
+
+    private static Component voteTeams(TeamsRound option)
+    {
+        MutableComponent teams = Component.empty();
+        for (int sideId : option.getSideIds())
+        {
+            if (!teams.getSiblings().isEmpty())
+                teams.append(" vs ");
+            teams.append(option.getSideDisplayComponent(sideId));
+        }
+        return teams;
     }
 
     private static PlayerScore playerScore(ServerPlayer player)
     {
         PlayerData data = PlayerData.getInstance(player);
         return new PlayerScore(player.getScoreboardName(), data.getScore(), data.getKills(), data.getDeaths(), data.getZombieScore(),
-            data.getPlayerClass() == null ? "" : data.getPlayerClass().getName());
+            data.getPlayerClass() == null ? "" : data.getPlayerClass().getName(), Component.literal(player.getScoreboardName()),
+            data.getPlayerClass() == null ? Component.empty() : data.getPlayerClass().getNameComponent());
     }
 
     @Override
@@ -257,12 +276,14 @@ public final class PacketTeamsState implements IClientPacket
         data.writeUtf(selectedTeam);
         data.writeUtf(selectedClass);
 
-        data.writeCollection(teamChoices, (buf, choice) ->
+        data.writeVarInt(teamChoices.size());
+        for (TeamChoice choice : teamChoices)
         {
-            buf.writeUtf(choice.id());
-            buf.writeUtf(choice.name());
-            buf.writeInt(choice.colour());
-        });
+            data.writeUtf(choice.id());
+            data.writeUtf(choice.name());
+            data.writeInt(choice.colour());
+            PacketIO.writeComponent(data, choice.displayName());
+        }
         data.writeVarInt(classChoices.size());
         for (ClassChoice choice : classChoices)
         {
@@ -273,23 +294,29 @@ public final class PacketTeamsState implements IClientPacket
             data.writeVarInt(choice.used());
             data.writeVarInt(choice.capacity() + 1);
             PacketIO.writeItems(data, choice.loadout());
+            PacketIO.writeComponent(data, choice.displayName());
         }
-        data.writeCollection(teamScores, (buf, team) ->
+        data.writeVarInt(teamScores.size());
+        for (TeamScore team : teamScores)
         {
-            buf.writeUtf(team.id());
-            buf.writeUtf(team.name());
-            buf.writeInt(team.colour());
-            buf.writeVarInt(team.score());
-            buf.writeVarInt(team.sideId());
-            buf.writeCollection(team.players(), PacketTeamsState::writePlayer);
-        });
-        data.writeCollection(voteOptions, (buf, option) ->
+            data.writeUtf(team.id());
+            data.writeUtf(team.name());
+            data.writeInt(team.colour());
+            data.writeVarInt(team.score());
+            data.writeVarInt(team.sideId());
+            data.writeVarInt(team.players().size());
+            for (PlayerScore player : team.players())
+                writePlayer(data, player);
+            PacketIO.writeComponent(data, team.displayName());
+        }
+        data.writeVarInt(voteOptions.size());
+        for (VoteOption option : voteOptions)
         {
-            buf.writeUtf(option.mapName());
-            buf.writeUtf(option.gameType());
-            buf.writeUtf(option.teams());
-            buf.writeVarInt(option.votes());
-        });
+            data.writeUtf(option.mapName());
+            data.writeUtf(option.gameType());
+            PacketIO.writeComponent(data, option.teams());
+            data.writeVarInt(option.votes());
+        }
         data.writeVarInt(playerPrestige);
         data.writeVarInt(playerTeamId);
         data.writeVarInt(playerSideId);
@@ -317,7 +344,7 @@ public final class PacketTeamsState implements IClientPacket
         data.writeCollection(objectives, (buf, objective) -> objective.write(buf));
     }
 
-    private static void writePlayer(FriendlyByteBuf data, PlayerScore player)
+    private static void writePlayer(PacketBuffer data, PlayerScore player)
     {
         data.writeUtf(player.name());
         data.writeInt(player.score());
@@ -325,6 +352,8 @@ public final class PacketTeamsState implements IClientPacket
         data.writeVarInt(player.deaths());
         data.writeVarInt(player.zombieScore());
         data.writeUtf(player.playerClass());
+        PacketIO.writeComponent(data, player.displayName());
+        PacketIO.writeComponent(data, player.classDisplayName());
     }
 
     @Override
@@ -346,13 +375,23 @@ public final class PacketTeamsState implements IClientPacket
         playerVote = data.readVarInt();
         selectedTeam = data.readUtf();
         selectedClass = data.readUtf();
-        teamChoices = data.readList(buf -> new TeamChoice(buf.readUtf(), buf.readUtf(), buf.readInt()));
+        int teamCount = data.readVarInt();
+        teamChoices = new ArrayList<>(teamCount);
+        for (int i = 0; i < teamCount; i++)
+            teamChoices.add(new TeamChoice(data.readUtf(), data.readUtf(), data.readInt(), PacketIO.readComponent(data)));
         int classCount = data.readVarInt();
         classChoices = new ArrayList<>(classCount);
         for (int i = 0; i < classCount; i++)
-            classChoices.add(new ClassChoice(data.readUtf(), data.readUtf(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readVarInt() - 1, PacketIO.readItems(data)));
-        teamScores = data.readList(buf -> new TeamScore(buf.readUtf(), buf.readUtf(), buf.readInt(), buf.readVarInt(), buf.readVarInt(), buf.readList(PacketTeamsState::readPlayer)));
-        voteOptions = data.readList(buf -> new VoteOption(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readVarInt()));
+            classChoices.add(new ClassChoice(data.readUtf(), data.readUtf(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readVarInt() - 1, PacketIO.readItems(data),
+                PacketIO.readComponent(data)));
+        int scoreCount = data.readVarInt();
+        teamScores = new ArrayList<>(scoreCount);
+        for (int i = 0; i < scoreCount; i++)
+            teamScores.add(readTeamScore(data));
+        int voteCount = data.readVarInt();
+        voteOptions = new ArrayList<>(voteCount);
+        for (int i = 0; i < voteCount; i++)
+            voteOptions.add(new VoteOption(data.readUtf(), data.readUtf(), PacketIO.readComponent(data), data.readVarInt()));
         playerPrestige = data.readVarInt();
         playerTeamId = data.readVarInt();
         playerSideId = data.readVarInt();
@@ -372,9 +411,23 @@ public final class PacketTeamsState implements IClientPacket
         objectives = data.readList(ObjectiveSnapshot::read);
     }
 
-    private static PlayerScore readPlayer(FriendlyByteBuf data)
+    private static TeamScore readTeamScore(PacketBuffer data)
     {
-        return new PlayerScore(data.readUtf(), data.readInt(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readUtf());
+        String id = data.readUtf();
+        String name = data.readUtf();
+        int colour = data.readInt();
+        int score = data.readVarInt();
+        int sideId = data.readVarInt();
+        int playerCount = data.readVarInt();
+        List<PlayerScore> players = new ArrayList<>(playerCount);
+        for (int i = 0; i < playerCount; i++)
+            players.add(readPlayer(data));
+        return new TeamScore(id, name, colour, score, sideId, players, PacketIO.readComponent(data));
+    }
+
+    private static PlayerScore readPlayer(PacketBuffer data)
+    {
+        return new PlayerScore(data.readUtf(), data.readInt(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readUtf(), PacketIO.readComponent(data), PacketIO.readComponent(data));
     }
 
     @Override
@@ -579,7 +632,7 @@ public final class PacketTeamsState implements IClientPacket
     /** The names of the teams of a side, joined with ampersands. */
     public String getSideName(int sideId)
     {
-        return getTeamsOnSide(sideId).stream().map(TeamScore::name).reduce((left, right) -> left + " & " + right).orElse("");
+        return getTeamsOnSide(sideId).stream().map(team -> team.displayName().getString()).reduce((left, right) -> left + " & " + right).orElse("");
     }
 
     /** The side id of a team by short name, or 0 for one that is not playing this round. */

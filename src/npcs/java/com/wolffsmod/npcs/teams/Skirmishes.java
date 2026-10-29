@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
+import com.flansmodultimate.api.teams.FlansTeams;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.controllers.FactionController;
@@ -474,7 +474,7 @@ final class Skirmishes
     /** Tells the players near the skirmish and the members of its factions. */
     private static void announce(MinecraftServer server, ServerLevel level, Skirmish skirmish, Component message)
     {
-        BattleFactions factions = BattleFactions.get(server);
+        FactionMembers factions = FactionMembers.get(server);
         List<Vec3> places = new ArrayList<>(skirmish.getSides().stream().map(Skirmish.Side::anchor).toList());
         if (skirmish.getFront() != null)
             places.add(skirmish.getFront());

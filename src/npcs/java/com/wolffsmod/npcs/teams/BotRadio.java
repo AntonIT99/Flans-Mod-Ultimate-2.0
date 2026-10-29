@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -144,7 +144,7 @@ final class BotRadio
                 }
             }
         }
-        return nearest == null ? Component.translatable(PREFIX + "headquarters") : Component.literal(nearest.getName());
+        return nearest == null ? Component.translatable(PREFIX + "headquarters") : nearest.getNameComponent();
     }
 
     private static Component label(TeamsCapturePoint point)

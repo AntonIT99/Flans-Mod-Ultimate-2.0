@@ -16,7 +16,9 @@ public enum TacticKind
 
     public static TacticKind of(EntityNPCInterface npc)
     {
-        return of(NpcVehicleState.of(npc).kind(), NpcFlight.type(npc));
+        NpcVehicleState state = NpcVehicleState.of(npc);
+        // A ship a content pack filed as a plane sails, and fights, as a vehicle.
+        return of(state.drivesHull() ? FlanModelKind.VEHICLE : state.kind(), NpcFlight.type(npc));
     }
 
     /** How an NPC flies decides first: a soldier flying as a plane fights as one. */

@@ -2,7 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModItems;
-import com.flansmodultimate.api.PaintjobVariant;
+import com.flansmodultimate.api.content.PaintjobVariant;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
@@ -37,7 +37,7 @@ public abstract class PaintableType extends InfoType
 {
     public static final String RAINBOW_DYE = "rainbow";
 
-    //Paintjobs
+    // Paintjobs
     /** The list of all available paintjobs for this gun */
     @Getter
     protected Map<Integer, Paintjob> paintjobs = new LinkedHashMap<>();
@@ -57,7 +57,8 @@ public abstract class PaintableType extends InfoType
     {
         super.read(file);
 
-        readValuesInLines("Paintjob", file, 2).ifPresent(lines -> lines.forEach(split -> {
+        readValuesInLines("Paintjob", file, 2).ifPresent(lines -> lines.forEach(split ->
+        {
             List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 2) / 2);
             boolean isLegendary = false;
             for (int i = 0; i < (split.length - 2) / 2; i++)
@@ -75,7 +76,8 @@ public abstract class PaintableType extends InfoType
                 nonLegendaryPaintjobs.put(nextPaintjobId, paintjob);
         }));
 
-        readValuesInLines("AdvPaintJob", file, 3).ifPresent(lines -> lines.forEach(split -> {
+        readValuesInLines("AdvPaintJob", file, 3).ifPresent(lines -> lines.forEach(split ->
+        {
             List<Supplier<ItemStack>> dyeStacks = new ArrayList<>((split.length - 3) / 2);
             boolean isLegendary = false;
             for (int i = 0; i < (split.length - 3) / 2; i++)
@@ -93,7 +95,8 @@ public abstract class PaintableType extends InfoType
                 nonLegendaryPaintjobs.put(nextPaintjobId, paintjob);
         }));
 
-        readValues("AddPaintableToTables", file, 2).ifPresent(values -> {
+        readValues("AddPaintableToTables", file, 2).ifPresent(values ->
+        {
             if (values.length > 1)
             {
                 String paintjobName = values[0];
@@ -143,8 +146,7 @@ public abstract class PaintableType extends InfoType
     public List<PaintjobVariant> getPaintjobVariants()
     {
         return paintjobs.values().stream().sorted(Comparator.comparingInt(Paintjob::getId))
-            .map(job -> new PaintjobVariant(job.getId(), StringUtils.isBlank(job.getDisplayName())
-                ? job.getTextureName() : job.getDisplayName(), job.getTexture())).toList();
+            .map(job -> new PaintjobVariant(job.getId(), StringUtils.isBlank(job.getDisplayName()) ? job.getTextureName() : job.getDisplayName(), job.getTexture())).toList();
     }
 
     public void applyPaintjobToStack(ItemStack stack, Paintjob paintjob)
@@ -181,7 +183,8 @@ public abstract class PaintableType extends InfoType
         if (dungeonChance <= 0 || !type.isHasItem() || nonLegendaryPaintjobs.isEmpty())
             return;
 
-        ModUtils.getItem(this).ifPresent(item -> {
+        ModUtils.getItem(this).ifPresent(item ->
+        {
             int weight = Math.max(1, (FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance) / nonLegendaryPaintjobs.size());
             for (Paintjob paintjob : nonLegendaryPaintjobs.values())
                 addLootEntry(table, createPaintjobLootEntry(item, weight, paintjob));
@@ -192,10 +195,6 @@ public abstract class PaintableType extends InfoType
     {
         CompoundTag tag = new CompoundTag();
         tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob.getId());
-        return LootItem.lootTableItem(item)
-            .setWeight(weight)
-            .setQuality(1)
-            .apply(LootTablePlatform.setCustomData(tag))
-            .build();
+        return LootItem.lootTableItem(item).setWeight(weight).setQuality(1).apply(LootTablePlatform.setCustomData(tag)).build();
     }
 }

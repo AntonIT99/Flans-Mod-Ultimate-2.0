@@ -3,6 +3,7 @@ package com.flansmodultimate;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
+import com.flansmodultimate.util.ModCachePaths;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -17,10 +18,11 @@ import java.util.concurrent.locks.LockSupport;
 /** Waits for the companion packs manager before content discovery begins. */
 final class PacksManagerExtraction
 {
-    private PacksManagerExtraction() {}
+    private PacksManagerExtraction()
+    {}
 
     private static final int PACKS_MANAGER_EXTRACTION_STATE_PROTOCOL_VERSION = 1;
-    private static final String PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
+    private static final String PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME = "extraction-state.json";
     private static final String PACKS_MANAGER_EXTRACTION_STATE_COMPLETE = "complete";
     private static final String PACKS_MANAGER_EXTRACTION_STATE_FAILED = "failed";
     private static final int TIMEOUT_PACKS_MANAGER_EXTRACTION = 120;
@@ -38,7 +40,7 @@ final class PacksManagerExtraction
 
         FlansLog.log.info("Flan's Mod Ultimate Packs Manager found. Waiting for extraction...");
 
-        Path stateFile = PlatformPaths.gameDir().toAbsolutePath().normalize().resolve(PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME);
+        Path stateFile = ModCachePaths.packsManager(PlatformPaths.gameDir().toAbsolutePath().normalize()).resolve(PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME);
 
         long startNanos = System.nanoTime();
         long deadlineNanos = startNanos + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_MANAGER_EXTRACTION);
@@ -102,9 +104,6 @@ final class PacksManagerExtraction
 
     private enum PacksExtractionWaitState
     {
-        WAITING,
-        COMPLETE,
-        FAILED,
-        UNSUPPORTED
+        WAITING, COMPLETE, FAILED, UNSUPPORTED
     }
 }

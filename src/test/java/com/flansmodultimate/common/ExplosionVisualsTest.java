@@ -28,6 +28,7 @@ class ExplosionVisualsTest
     private static final float TWENTY_MM_KG = 0.010F;
     private static final float EIGHTY_EIGHT_MM_KG = 1.0F;
     private static final float STURMTIGER_CHARGE_KG = 10.0F;
+    private static final float HEAVY_BOMB_KG = 100.0F;
 
     private static float crater(float massKg)
     {
@@ -99,8 +100,7 @@ class ExplosionVisualsTest
     {
         assertEquals(0, ExplosionVisuals.shockwaveCount(blast(TWENTY_MM_KG)), "a 20 mm blast envelope is too small to read as a wave");
         assertTrue(ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)) > 0, "an 88 mm shell reaches far enough past its crater to be worth drawing");
-        assertTrue(ExplosionVisuals.shockwaveCount(blast(STURMTIGER_CHARGE_KG)) > ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)),
-            "a heavier charge drives a wider wave");
+        assertTrue(ExplosionVisuals.shockwaveCount(blast(STURMTIGER_CHARGE_KG)) > ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)), "a heavier charge drives a wider wave");
     }
 
     @Test
@@ -131,8 +131,7 @@ class ExplosionVisualsTest
         assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(TWENTY_MM_KG)));
         assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(EIGHTY_EIGHT_MM_KG)), "ordinary tank gunnery should not raise a column");
         assertTrue(ExplosionVisuals.smokeColumnCount(crater(STURMTIGER_CHARGE_KG)) > 0);
-        assertEquals(0.2F, ExplosionVisuals.smokeColumnLifetimeScale(crater(STURMTIGER_CHARGE_KG)), 0.0001F,
-            "an explosion should use only a brief tail of the smoke-screen particle");
+        assertEquals(0.2F, ExplosionVisuals.smokeColumnLifetimeScale(crater(STURMTIGER_CHARGE_KG)), 0.0001F, "an explosion should use only a brief tail of the smoke-screen particle");
     }
 
     @ParameterizedTest(name = "a crater radius of {0} produces no degenerate visuals")
@@ -215,7 +214,7 @@ class ExplosionVisualsTest
     }
 
     @Test
-    @DisplayName("A tank shell rolls out dust, a 10 kg charge rises and mushrooms")
+    @DisplayName("A tank shell rolls out dust, a 10 kg charge rises, a heavy bomb mushrooms")
     void theStagedLayersSwitchOnProgressively()
     {
         float shell = crater(EIGHTY_EIGHT_MM_KG);
@@ -228,8 +227,11 @@ class ExplosionVisualsTest
 
         assertTrue(ExplosionVisuals.dustSkirtWaves(charge) > ExplosionVisuals.dustSkirtWaves(shell));
         assertTrue(ExplosionVisuals.fireballStemSteps(charge) > 0, "a demolition charge should raise a stem");
-        assertTrue(ExplosionVisuals.mushroomCapPuffs(charge) > 0, "a demolition charge should mushroom");
-        assertTrue(ExplosionVisuals.mushroomCapRadius(charge) < ExplosionVisuals.fireballStemHeight(charge), "the cap should be narrower than the stem is tall");
+        assertEquals(0, ExplosionVisuals.mushroomCapPuffs(charge), "a mid-sized charge or missile warhead should not mushroom");
+
+        float bomb = crater(HEAVY_BOMB_KG);
+        assertTrue(ExplosionVisuals.mushroomCapPuffs(bomb) > 0, "a heavy bomb should mushroom");
+        assertTrue(ExplosionVisuals.mushroomCapRadius(bomb) < ExplosionVisuals.fireballStemHeight(bomb), "the cap should be narrower than the stem is tall");
     }
 
     @Test
@@ -267,8 +269,7 @@ class ExplosionVisualsTest
         // so the puffs drawing it must be too.
         float extreme = 200F;
         assertEquals(ExplosionVisuals.fireballStemHeight(extreme), ExplosionVisuals.fireballStemHeight(40F), 0.0001F);
-        assertEquals(ExplosionVisuals.stagedSizingRadius(40F), ExplosionVisuals.stagedSizingRadius(extreme), 0.0001F,
-            "puffs should stop growing at the crater where the stem stops growing");
+        assertEquals(ExplosionVisuals.stagedSizingRadius(40F), ExplosionVisuals.stagedSizingRadius(extreme), 0.0001F, "puffs should stop growing at the crater where the stem stops growing");
     }
 
     @Test

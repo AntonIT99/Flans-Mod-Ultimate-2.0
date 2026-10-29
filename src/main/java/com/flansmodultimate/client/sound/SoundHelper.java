@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.sound;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.guns.GunSoundPermissions.Kind;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.effects.PacketRequestPlaySound;
 import com.flansmodultimate.platform.registry.RegistryEntry;
@@ -20,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
@@ -134,7 +136,7 @@ public final class SoundHelper
         });
     }
 
-    public static void playSoundLocalAndBroadcast(@Nullable String sound, Vec3 pos, float range)
+    public static void playSoundLocalAndBroadcast(@Nullable String sound, Vec3 pos, float range, InteractionHand hand, Kind kind)
     {
         if (StringUtils.isBlank(sound))
             return;
@@ -146,12 +148,12 @@ public final class SoundHelper
             return;
 
         playSound(sound, pos, range, false, false, false, UUID.randomUUID(), player);
-        PacketHandler.sendToServer(new PacketRequestPlaySound(pos, range, sound));
+        PacketHandler.sendToServer(new PacketRequestPlaySound(hand, kind));
     }
 
-    public static void playSoundDelayedLocalAndBroadcast(@Nullable String sound, Vec3 pos, float range, int delayTicks)
+    public static void playSoundDelayedLocalAndBroadcast(@Nullable String sound, Vec3 pos, float range, int delayTicks, InteractionHand hand, Kind kind)
     {
-        pendingSounds.add(new PendingSound(delayTicks, () -> playSoundLocalAndBroadcast(sound, pos, range)));
+        pendingSounds.add(new PendingSound(delayTicks, () -> playSoundLocalAndBroadcast(sound, pos, range, hand, kind)));
     }
 
     // Keep packet sound fields explicit and preserve the established call signature.

@@ -8,7 +8,7 @@ Colour 255 255 255
 
 // Ammunition
 Ammo British2pdrAPShell
-ReloadTime 200
+ReloadTime 55
 
 // Operation
 Mode FullAuto

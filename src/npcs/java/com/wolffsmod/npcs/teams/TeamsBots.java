@@ -1,6 +1,14 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsListener;
+import com.flansmodultimate.api.teams.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule;
+import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import lombok.AccessLevel;

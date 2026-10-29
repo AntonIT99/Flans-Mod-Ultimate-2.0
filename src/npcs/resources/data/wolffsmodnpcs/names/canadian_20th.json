@@ -3,6 +3,34 @@
   "groups": [
     {
       "weight": 3,
+      "maleWeights": {
+        "John": 20, "William": 20, "George": 20, "James": 20, "Thomas": 20, "Charles": 20, "Joseph": 20, "Robert": 20, "Frederick": 20, "Arthur": 20,
+        "Albert": 20, "Harold": 20, "Edward": 20, "Henry": 20, "Walter": 20, "Alfred": 20, "Frank": 20, "Ernest": 20, "Herbert": 20, "Donald": 20,
+        "Leonard": 20, "Kenneth": 20, "Gordon": 20, "Douglas": 20, "Norman": 20,
+        "Richard": 8, "Harry": 8, "Jack": 8, "Percy": 8, "Sidney": 8, "Stanley": 8, "Victor": 8, "Cecil": 8, "Clifford": 8, "Edgar": 8, "Edmund": 8,
+        "Edwin": 8, "Gerald": 8, "Gilbert": 8, "Hugh": 8, "Laurence": 8, "Leslie": 8, "Lewis": 8, "Lionel": 8, "Ralph": 8, "Raymond": 8, "Reginald": 8,
+        "Roy": 8, "Ronald": 8, "Samuel": 8, "Philip": 8, "Peter": 8, "David": 8, "Cyril": 8, "Basil": 8, "Alexander": 8, "Archibald": 8, "Andrew": 8,
+        "Alan": 8, "Bernard": 8, "Colin": 8, "Eric": 8, "Francis": 8, "Graham": 8, "Ian": 8, "Maurice": 8, "Michael": 8, "Paul": 8, "Roger": 8,
+        "Stephen": 8, "Trevor": 8, "Vernon": 8, "Wallace": 8
+      },
+      "femaleWeights": {
+        "Mary": 20, "Margaret": 20, "Elizabeth": 20, "Dorothy": 20, "Florence": 20, "Edith": 20, "Annie": 20, "Ethel": 20, "Alice": 20, "Jean": 20,
+        "Doris": 20, "Marjorie": 20, "Kathleen": 20, "Evelyn": 20, "Jane": 20, "Grace": 20, "Ruth": 20, "Catherine": 20, "Irene": 20, "Beatrice": 20,
+        "Gladys": 20, "Joan": 20, "Agnes": 20, "Eleanor": 20,
+        "Amy": 8, "Audrey": 8, "Barbara": 8, "Bessie": 8, "Betty": 8, "Brenda": 8, "Caroline": 8, "Charlotte": 8, "Constance": 8, "Daisy": 8,
+        "Dora": 8, "Edna": 8, "Eileen": 8, "Elsie": 8, "Emily": 8, "Enid": 8, "Eva": 8, "Frances": 8, "Hilda": 8, "Iris": 8, "Isabel": 8, "Ivy": 8,
+        "Janet": 8, "Joyce": 8, "Lilian": 8, "Lily": 8, "Louisa": 8, "Lucy": 8, "Mabel": 8, "Maud": 8, "Millicent": 8, "Minnie": 8, "Muriel": 8,
+        "Nellie": 8, "Nora": 8, "Olive": 8, "Patricia": 8, "Phyllis": 8, "Rose": 8, "Vera": 8, "Violet": 8, "Winifred": 8
+      },
+      "surnameWeights": {
+        "Smith": 20, "Brown": 20, "Wilson": 20, "Johnson": 20, "MacDonald": 20, "Campbell": 20, "Anderson": 20, "Scott": 20, "Stewart": 20,
+        "Thompson": 20,
+        "Taylor": 8, "Walker": 8, "White": 8, "Martin": 8, "Clark": 8, "Young": 8, "Mitchell": 8, "Robinson": 8, "Wright": 8, "Murray": 8, "Ross": 8,
+        "Watson": 8, "Robertson": 8, "Morrison": 8, "Reid": 8, "Fraser": 8, "McLean": 8, "McKenzie": 8, "McDonald": 8, "Hamilton": 8,
+        "Graham": 3, "Ferguson": 3, "Cameron": 3, "Sinclair": 3, "Grant": 3, "Sullivan": 3, "Murphy": 3, "Kelly": 3, "Ryan": 3, "O'Brien": 3,
+        "O'Connor": 3, "Bennett": 3, "Cook": 3, "Edwards": 3, "Fisher": 3, "Harris": 3, "Henderson": 3, "Hill": 3, "Jackson": 3, "James": 3, "King": 3,
+        "Lewis": 3, "Miller": 3, "Moore": 3, "Morgan": 3, "Parker": 3, "Patterson": 3, "Reynolds": 3, "Roberts": 3, "Turner": 3
+      },
       "male": [
         "Albert",
         "Alfred",
@@ -247,6 +275,29 @@
     },
     {
       "weight": 1,
+      "maleWeights": {
+        "Joseph": 20, "Jean": 20, "Jean-Baptiste": 20, "Louis": 20, "Pierre": 20, "Paul": 20, "André": 20, "Charles": 20, "Henri": 20, "Georges": 20,
+        "Émile": 20, "Albert": 20, "Arthur": 20, "Marcel": 20, "Léon": 20, "Lucien": 20, "François": 20, "Jacques": 20, "Raymond": 20, "Alfred": 20,
+        "Napoléon": 20, "Wilfrid": 20, "Roméo": 20, "Armand": 20, "Maurice": 20, "René": 20,
+        "Alphonse": 8, "Antoine": 8, "Auguste": 8, "Édouard": 8, "Ernest": 8, "Eugène": 8, "Fernand": 8, "Hercule": 8, "Jules": 8, "Julien": 8,
+        "Léopold": 8, "Olivier": 8, "Oscar": 8, "Philippe": 8, "Raoul": 8, "Robert": 8, "Rodolphe": 8, "Victor": 8, "Ludger": 8, "Adélard": 8,
+        "Hormidas": 8, "Onésime": 8, "Jean-Marie": 8, "Gérard": 8
+      },
+      "femaleWeights": {
+        "Marie": 20, "Marguerite": 20, "Jeanne": 20, "Rose": 20, "Louise": 20, "Marthe": 20, "Madeleine": 20, "Yvonne": 20, "Thérèse": 20,
+        "Simone": 20, "Germaine": 20, "Hélène": 20, "Blanche": 20, "Alice": 20, "Cécile": 20, "Berthe": 20, "Lucie": 20, "Henriette": 20,
+        "Antoinette": 20, "Juliette": 20, "Pauline": 20, "Eva": 20, "Rita": 20, "Suzanne": 20, "Fernande": 20,
+        "Adèle": 8, "Angéline": 8, "Anne": 8, "Claire": 8, "Denise": 8, "Élise": 8, "Émilie": 8, "Gabrielle": 8, "Laure": 8, "Monique": 8,
+        "Pierrette": 8, "Yvette": 8, "Carmelle": 8, "Cécilia": 8, "Irène": 8
+      },
+      "surnameWeights": {
+        "Tremblay": 20, "Gagnon": 20, "Roy": 20, "Côté": 20, "Bouchard": 20, "Gauthier": 20, "Morin": 20, "Lavoie": 20, "Fortin": 20, "Gagné": 20,
+        "Ouellet": 8, "Pelletier": 8, "Bélanger": 8, "Lévesque": 8, "Bergeron": 8, "Leblanc": 8, "Paquette": 8, "Girard": 8, "Simard": 8, "Boucher": 8,
+        "Caron": 8, "Beaulieu": 8, "Cloutier": 8, "Dubé": 8, "Poirier": 8, "Fournier": 8, "Lapointe": 8, "Leclerc": 8, "Lefebvre": 8, "Poulin": 8,
+        "Thibault": 3, "Saint-Pierre": 3, "Nadeau": 3, "Martin": 3, "Landry": 3, "Martel": 3, "Bédard": 3, "Grenier": 3, "Bernier": 3, "Richard": 3,
+        "Blais": 3, "Desjardins": 3, "Lessard": 3, "Beaudoin": 3, "Lachance": 3, "Parent": 3, "Dion": 3, "Proulx": 3, "Gosselin": 3, "Turcotte": 3,
+        "Leduc": 3, "Hamel": 3, "Lemieux": 3, "Renaud": 3, "Rivard": 3, "Plante": 3, "Goulet": 3, "Laflamme": 3, "Perron": 3, "Trudel": 3
+      },
       "male": [
         "Albert",
         "Alfred",

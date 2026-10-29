@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.HeldItemSettings;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.equipment.HeldItemSettings;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.*;
 import lombok.Getter;

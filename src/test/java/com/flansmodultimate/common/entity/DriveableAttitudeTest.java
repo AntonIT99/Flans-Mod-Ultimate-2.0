@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.api.DriveableAttitude;
+import com.flansmodultimate.api.driveables.DriveableAttitude;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import org.junit.jupiter.api.Test;

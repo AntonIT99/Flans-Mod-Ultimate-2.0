@@ -3,6 +3,31 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Ivan": 20, "Mykola": 20, "Petro": 20, "Vasyl": 20, "Oleksandr": 20, "Stepan": 20, "Mykhailo": 20, "Andriy": 20, "Volodymyr": 20, "Yuriy": 20,
+        "Serhiy": 20, "Dmytro": 20, "Hryhoriy": 20, "Pavlo": 20, "Taras": 20, "Semen": 20, "Fedir": 20, "Oleksiy": 20, "Anton": 20, "Bohdan": 20,
+        "Roman": 8, "Ostap": 8, "Maksym": 8, "Marko": 8, "Danylo": 8, "Borys": 8, "Anatoliy": 8, "Viktor": 8, "Vitaliy": 8, "Yevhen": 8, "Zakhar": 8,
+        "Leonid": 8, "Ihor": 8, "Kostiantyn": 8, "Luka": 8, "Matviy": 8, "Nazar": 8, "Omelian": 8, "Panas": 8, "Karpo": 8, "Sava": 8, "Zenon": 8,
+        "Yukhym": 8
+      },
+      "femaleWeights": {
+        "Mariia": 20, "Hanna": 20, "Olena": 20, "Halyna": 20, "Kateryna": 20, "Olha": 20, "Nataliia": 20, "Tetiana": 20, "Iryna": 20, "Oksana": 20,
+        "Anna": 20, "Paraska": 20, "Motria": 20, "Oleksandra": 20, "Nadiia": 20, "Liubov": 20, "Valentyna": 20, "Nina": 20, "Yuliia": 20,
+        "Antonina": 20,
+        "Ahafiia": 8, "Anastasiia": 8, "Daryna": 8, "Klavdiia": 8, "Kseniia": 8, "Lidiia": 8, "Liudmyla": 8, "Marta": 8, "Melaniia": 8, "Orina": 8,
+        "Polina": 8, "Raisa": 8, "Sofiia": 8, "Solomiia": 8, "Stefaniia": 8, "Tamara": 8, "Ulyana": 8, "Varvara": 8, "Vira": 8, "Yaroslava": 8,
+        "Yevheniia": 8, "Zinaida": 8, "Zoya": 8
+      },
+      "surnameWeights": {
+        "Shevchenko": 20, "Kovalenko": 20, "Bondarenko": 20, "Tkachenko": 20, "Kravchenko": 20, "Kovalchuk": 20, "Melnyk": 20, "Boyko": 20,
+        "Bondar": 20, "Koval": 20,
+        "Kravets": 8, "Shevchuk": 8, "Polishchuk": 8, "Oliynyk": 8, "Tkachuk": 8, "Savchenko": 8, "Petrenko": 8, "Marchenko": 8, "Hrytsenko": 8,
+        "Lysenko": 8, "Sydorenko": 8, "Rudenko": 8, "Honcharenko": 8, "Zakharchenko": 8, "Klymenko": 8, "Pavlenko": 8, "Romaniuk": 8, "Moroz": 8,
+        "Mazur": 8, "Kushnir": 8, "Savchuk": 8, "Vasylenko": 8, "Symonenko": 8, "Ivashchenko": 8, "Ponomarenko": 8,
+        "Doroshenko": 3, "Yaremchuk": 3, "Havryliuk": 3, "Danylenko": 3, "Chumak": 3, "Bilous": 3, "Kozak": 3, "Kulyk": 3, "Holub": 3, "Kucher": 3,
+        "Demchenko": 3, "Fedorchenko": 3, "Myronenko": 3, "Onyshchenko": 3, "Andriyenko": 3, "Shapoval": 3, "Zinchenko": 3, "Yakovenko": 3,
+        "Omelchenko": 3, "Prokopenko": 3, "Tymoshenko": 3, "Chernenko": 3, "Horbenko": 3, "Dovzhenko": 3, "Turchyn": 3
+      },
       "male": [
         "Andriy",
         "Anatoliy",

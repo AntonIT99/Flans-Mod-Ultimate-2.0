@@ -38,8 +38,8 @@ Ammo l86Ammo
 ReloadTime 65
 
 // Operation
-NumBurstRounds 2
-Mode Burst
+NumBurstRounds 3
+Mode Burst SemiAuto
 Deployable False
 CanShootUnderwater False
 RoundsPerMin 800.0

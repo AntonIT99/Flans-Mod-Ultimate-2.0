@@ -3,6 +3,50 @@
   "groups": [
     {
       "weight": 50,
+      "maleWeights": {
+        "Ivan": 20, "Nikolay": 20, "Aleksandr": 20, "Sergey": 20, "Vladimir": 20, "Mikhail": 20, "Pavel": 20, "Pyotr": 20, "Aleksey": 20, "Dmitry": 20,
+        "Vasily": 20, "Fyodor": 20, "Andrey": 20, "Georgy": 20, "Grigory": 20, "Yakov": 20, "Semyon": 20, "Stepan": 20,
+        "Boris": 8, "Viktor": 8, "Konstantin": 8, "Leonid": 8, "Yury": 8, "Anatoly": 8, "Evgeny": 8, "Ilya": 8, "Kirill": 8, "Roman": 8, "Timofey": 8,
+        "Yegor": 8, "Lev": 8, "Oleg": 8, "Igor": 8, "Arkady": 8, "Maksim": 8, "Trofim": 8, "Valentin": 8, "Gennady": 8, "Vadim": 8, "Zakhar": 8,
+        "Savely": 8, "Anton": 8, "Prokofy": 8, "Kuzma": 8, "Osip": 8, "Iosif": 8, "Matvey": 8, "Makar": 8, "Yefim": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Anna": 20, "Elena": 20, "Ekaterina": 20, "Olga": 20, "Natalia": 20, "Tatiana": 20, "Aleksandra": 20, "Nina": 20, "Evdokia": 20,
+        "Anastasia": 20, "Vera": 20, "Agafya": 20, "Praskovya": 20, "Pelageya": 20, "Irina": 20, "Galina": 20, "Valentina": 20,
+        "Zinaida": 8, "Lidia": 8, "Nadezhda": 8, "Klavdia": 8, "Antonina": 8, "Sofia": 8, "Marina": 8, "Liubov": 8, "Yulia": 8, "Larisa": 8,
+        "Liudmila": 8, "Tamara": 8, "Raisa": 8, "Varvara": 8, "Evgenia": 8, "Daria": 8, "Elizaveta": 8, "Margarita": 8, "Serafima": 8, "Zoya": 8,
+        "Matryona": 8, "Akulina": 8, "Feodosia": 8, "Marfa": 8, "Glafira": 8
+      },
+      "surnameWeights": {
+        "Ivanov": 20, "Smirnov": 20, "Kuznetsov": 20, "Popov": 20, "Vasilyev": 20, "Petrov": 20, "Sokolov": 20, "Mikhailov": 20, "Novikov": 20,
+        "Fyodorov": 20,
+        "Morozov": 8, "Volkov": 8, "Alekseyev": 8, "Lebedev": 8, "Semyonov": 8, "Yegorov": 8, "Pavlov": 8, "Kozlov": 8, "Stepanov": 8, "Nikolayev": 8,
+        "Orlov": 8, "Andreyev": 8, "Makarov": 8, "Nikitin": 8, "Zakharov": 8, "Zaytsev": 8, "Solovyov": 8, "Borisov": 8, "Yakovlev": 8, "Grigoryev": 8,
+        "Romanov": 8, "Vorobyov": 8, "Sergeyev": 8, "Kuzmin": 8, "Frolov": 8, "Aleksandrov": 8, "Dmitriyev": 8, "Korolyov": 8, "Gusev": 8,
+        "Kiselyov": 8, "Ilyin": 8, "Maksimov": 8, "Polyakov": 8, "Sorokin": 8, "Vinogradov": 8, "Kovalyov": 8, "Belov": 8, "Medvedev": 8, "Antonov": 8,
+        "Tarasov": 8,
+        "Zhukov": 3, "Baranov": 3, "Filippov": 3, "Komarov": 3, "Davydov": 3, "Belyayev": 3, "Gerasimov": 3, "Bogdanov": 3, "Osipov": 3, "Sidorov": 3,
+        "Matveyev": 3, "Titov": 3, "Markov": 3, "Mironov": 3, "Krylov": 3, "Kulikov": 3, "Karpov": 3, "Vlasov": 3, "Melnikov": 3, "Denisov": 3,
+        "Gavrilov": 3, "Tikhonov": 3, "Kazakov": 3, "Afanasyev": 3, "Danilov": 3, "Savelyev": 3, "Timofeyev": 3, "Fomin": 3, "Chernov": 3,
+        "Abramov": 3, "Martynov": 3, "Yefimov": 3, "Fedotov": 3, "Shcherbakov": 3, "Nazarov": 3, "Kalinin": 3, "Isakov": 3, "Chernyshev": 3,
+        "Bykov": 3, "Maslov": 3, "Rodionov": 3, "Konovalov": 3, "Lazarev": 3, "Voronin": 3, "Klimov": 3, "Nesterov": 3, "Yermakov": 3, "Nikiforov": 3,
+        "Savin": 3, "Loginov": 3
+      },
+      "femaleSurnameWeights": {
+        "Ivanova": 20, "Smirnova": 20, "Kuznetsova": 20, "Popova": 20, "Vasilyeva": 20, "Petrova": 20, "Sokolova": 20, "Mikhailova": 20,
+        "Novikova": 20, "Fyodorova": 20,
+        "Morozova": 8, "Volkova": 8, "Alekseyeva": 8, "Lebedeva": 8, "Semyonova": 8, "Yegorova": 8, "Pavlova": 8, "Kozlova": 8, "Stepanova": 8,
+        "Nikolayeva": 8, "Orlova": 8, "Andreyeva": 8, "Makarova": 8, "Nikitina": 8, "Zakharova": 8, "Zaytseva": 8, "Solovyova": 8, "Borisova": 8,
+        "Yakovleva": 8, "Grigoryeva": 8, "Romanova": 8, "Vorobyova": 8, "Sergeyeva": 8, "Kuzmina": 8, "Frolova": 8, "Aleksandrova": 8, "Dmitriyeva": 8,
+        "Korolyova": 8, "Guseva": 8, "Kiselyova": 8, "Ilyina": 8, "Maksimova": 8, "Polyakova": 8, "Sorokina": 8, "Vinogradova": 8, "Kovalyova": 8,
+        "Belova": 8, "Medvedeva": 8, "Antonova": 8, "Tarasova": 8,
+        "Zhukova": 3, "Baranova": 3, "Filippova": 3, "Komarova": 3, "Davydova": 3, "Belyayeva": 3, "Gerasimova": 3, "Bogdanova": 3, "Osipova": 3,
+        "Sidorova": 3, "Matveyeva": 3, "Titova": 3, "Markova": 3, "Mironova": 3, "Krylova": 3, "Kulikova": 3, "Karpova": 3, "Vlasova": 3,
+        "Melnikova": 3, "Denisova": 3, "Gavrilova": 3, "Tikhonova": 3, "Kazakova": 3, "Afanasyeva": 3, "Danilova": 3, "Savelyeva": 3, "Timofeyeva": 3,
+        "Fomina": 3, "Chernova": 3, "Abramova": 3, "Martynova": 3, "Yefimova": 3, "Fedotova": 3, "Shcherbakova": 3, "Nazarova": 3, "Kalinina": 3,
+        "Isakova": 3, "Chernysheva": 3, "Bykova": 3, "Maslova": 3, "Rodionova": 3, "Konovalova": 3, "Lazareva": 3, "Voronina": 3, "Klimova": 3,
+        "Nesterova": 3, "Yermakova": 3, "Nikiforova": 3, "Savina": 3, "Loginova": 3
+      },
       "male": [
         "Aleksandr",
         "Aleksey",
@@ -557,6 +601,31 @@
     },
     {
       "weight": 20,
+      "maleWeights": {
+        "Ivan": 20, "Mykola": 20, "Petro": 20, "Vasyl": 20, "Oleksandr": 20, "Stepan": 20, "Mykhailo": 20, "Andriy": 20, "Volodymyr": 20, "Yuriy": 20,
+        "Serhiy": 20, "Dmytro": 20, "Hryhoriy": 20, "Pavlo": 20, "Taras": 20, "Semen": 20, "Fedir": 20, "Oleksiy": 20, "Anton": 20, "Bohdan": 20,
+        "Roman": 8, "Ostap": 8, "Maksym": 8, "Marko": 8, "Danylo": 8, "Borys": 8, "Anatoliy": 8, "Viktor": 8, "Vitaliy": 8, "Yevhen": 8, "Zakhar": 8,
+        "Leonid": 8, "Ihor": 8, "Kostiantyn": 8, "Luka": 8, "Matviy": 8, "Nazar": 8, "Omelian": 8, "Panas": 8, "Karpo": 8, "Sava": 8, "Zenon": 8,
+        "Yukhym": 8
+      },
+      "femaleWeights": {
+        "Mariia": 20, "Hanna": 20, "Olena": 20, "Halyna": 20, "Kateryna": 20, "Olha": 20, "Nataliia": 20, "Tetiana": 20, "Iryna": 20, "Oksana": 20,
+        "Anna": 20, "Paraska": 20, "Motria": 20, "Oleksandra": 20, "Nadiia": 20, "Liubov": 20, "Valentyna": 20, "Nina": 20, "Yuliia": 20,
+        "Antonina": 20,
+        "Ahafiia": 8, "Anastasiia": 8, "Daryna": 8, "Klavdiia": 8, "Kseniia": 8, "Lidiia": 8, "Liudmyla": 8, "Marta": 8, "Melaniia": 8, "Orina": 8,
+        "Polina": 8, "Raisa": 8, "Sofiia": 8, "Solomiia": 8, "Stefaniia": 8, "Tamara": 8, "Ulyana": 8, "Varvara": 8, "Vira": 8, "Yaroslava": 8,
+        "Yevheniia": 8, "Zinaida": 8, "Zoya": 8
+      },
+      "surnameWeights": {
+        "Shevchenko": 20, "Kovalenko": 20, "Bondarenko": 20, "Tkachenko": 20, "Kravchenko": 20, "Kovalchuk": 20, "Melnyk": 20, "Boyko": 20,
+        "Bondar": 20, "Koval": 20,
+        "Kravets": 8, "Shevchuk": 8, "Polishchuk": 8, "Oliynyk": 8, "Tkachuk": 8, "Savchenko": 8, "Petrenko": 8, "Marchenko": 8, "Hrytsenko": 8,
+        "Lysenko": 8, "Sydorenko": 8, "Rudenko": 8, "Honcharenko": 8, "Zakharchenko": 8, "Klymenko": 8, "Pavlenko": 8, "Romaniuk": 8, "Moroz": 8,
+        "Mazur": 8, "Kushnir": 8, "Savchuk": 8, "Vasylenko": 8, "Symonenko": 8, "Ivashchenko": 8, "Ponomarenko": 8,
+        "Doroshenko": 3, "Yaremchuk": 3, "Havryliuk": 3, "Danylenko": 3, "Chumak": 3, "Bilous": 3, "Kozak": 3, "Kulyk": 3, "Holub": 3, "Kucher": 3,
+        "Demchenko": 3, "Fedorchenko": 3, "Myronenko": 3, "Onyshchenko": 3, "Andriyenko": 3, "Shapoval": 3, "Zinchenko": 3, "Yakovenko": 3,
+        "Omelchenko": 3, "Prokopenko": 3, "Tymoshenko": 3, "Chernenko": 3, "Horbenko": 3, "Dovzhenko": 3, "Turchyn": 3
+      },
       "male": [
         "Andriy",
         "Anatoliy",
@@ -727,6 +796,7 @@
     },
     {
       "weight": 6,
+
       "male": [
         "Ales",
         "Aliaksei",
@@ -855,6 +925,7 @@
     },
     {
       "weight": 3,
+
       "male": [
         "Abdulla",
         "Abdulkhak",
@@ -996,6 +1067,7 @@
     },
     {
       "weight": 2,
+
       "male": [
         "Akaki",
         "Aleksandre",
@@ -1099,6 +1171,7 @@
     },
     {
       "weight": 2,
+
       "male": [
         "Aghasi",
         "Aleksandr",
@@ -1214,6 +1287,7 @@
     },
     {
       "weight": 2,
+
       "male": [
         "Abbas",
         "Abdulla",
@@ -1355,6 +1429,7 @@
     },
     {
       "weight": 2,
+
       "male": [
         "Abai",
         "Abdulla",
@@ -1496,6 +1571,7 @@
     },
     {
       "weight": 2,
+
       "male": [
         "Abdulla",
         "Abdurakhman",
@@ -1641,6 +1717,29 @@
     },
     {
       "weight": 1,
+      "maleWeights": {
+        "Jaan": 20, "Juhan": 20, "Mihkel": 20, "Karl": 20, "Johannes": 20, "August": 20, "Peeter": 20, "Jakob": 20, "Hans": 20, "Villem": 20,
+        "Paul": 20, "Ants": 20, "Andres": 20, "Aleksander": 20, "Eduard": 20, "Oskar": 20, "Voldemar": 20, "Nikolai": 20, "Artur": 20, "Rudolf": 20,
+        "Ado": 8, "Aadu": 8, "Aarne": 8, "Alfred": 8, "Arnold": 8, "Bernhard": 8, "Edgar": 8, "Elmar": 8, "Endel": 8, "Erich": 8, "Ernst": 8,
+        "Evald": 8, "Feliks": 8, "Gustav": 8, "Harald": 8, "Heinrich": 8, "Hendrik": 8, "Herman": 8, "Hugo": 8, "Ilmar": 8, "Jaak": 8, "Julius": 8,
+        "Konstantin": 8, "Lembit": 8, "Leopold": 8, "Otto": 8, "Priit": 8, "Rein": 8, "Richard": 8, "Robert": 8, "Theodor": 8, "Toomas": 8,
+        "Valter": 8, "Viktor": 8
+      },
+      "femaleWeights": {
+        "Anna": 20, "Maria": 20, "Marie": 20, "Liisa": 20, "Ella": 20, "Helene": 20, "Elisabeth": 20, "Ida": 20, "Hilda": 20, "Emilie": 20, "Aino": 20,
+        "Anni": 20, "Alma": 20, "Marta": 20, "Johanna": 20, "Linda": 20, "Olga": 20, "Minna": 20, "Eva": 20, "Salme": 20,
+        "Adele": 8, "Agnes": 8, "Alide": 8, "Berta": 8, "Edith": 8, "Elfriede": 8, "Elsa": 8, "Erika": 8, "Erna": 8, "Ester": 8, "Helmi": 8, "Ilse": 8,
+        "Leida": 8, "Lilli": 8, "Luise": 8, "Maie": 8, "Maimu": 8, "Malle": 8, "Selma": 8, "Sinaida": 8, "Sohvi": 8, "Vaike": 8, "Valve": 8,
+        "Vanda": 8, "Viima": 8, "Vilma": 8
+      },
+      "surnameWeights": {
+        "Tamm": 20, "Saar": 20, "Sepp": 20, "Mägi": 20, "Kask": 20, "Kukk": 20, "Rebane": 20, "Ilves": 20, "Karu": 20, "Pärn": 20,
+        "Koppel": 8, "Oja": 8, "Mets": 8, "Kivi": 8, "Teder": 8, "Lepp": 8, "Kuusk": 8, "Sild": 8, "Tõnisson": 8, "Päts": 8, "Laidoner": 8, "Luts": 8,
+        "Raud": 8, "Kallas": 8, "Liiv": 8, "Tooming": 8, "Põder": 8, "Vaher": 8, "Pihl": 8, "Saks": 8,
+        "Aavik": 3, "Allik": 3, "Kangur": 3, "Mänd": 3, "Susi": 3, "Kreek": 3, "Kütt": 3, "Rüütel": 3, "Kaasik": 3, "Uibo": 3, "Lepik": 3, "Järv": 3,
+        "Vain": 3, "Veskimägi": 3, "Paju": 3, "Nurm": 3, "Tali": 3, "Rätsep": 3, "Jürgenson": 3, "Peterson": 3, "Johanson": 3, "Anderson": 3,
+        "Hanson": 3, "Tomberg": 3, "Bergmann": 3, "Põld": 3
+      },
       "male": [
         "Aadu",
         "Aarne",
@@ -1806,6 +1905,37 @@
     },
     {
       "weight": 1,
+      "maleWeights": {
+        "Jānis": 20, "Kārlis": 20, "Pēteris": 20, "Andrejs": 20, "Mārtiņš": 20, "Jēkabs": 20, "Juris": 20, "Pauls": 20, "Augusts": 20, "Voldemārs": 20,
+        "Arnolds": 20, "Eduards": 20, "Alfrēds": 20, "Antons": 20, "Roberts": 20, "Rūdolfs": 20, "Nikolajs": 20, "Ansis": 20, "Vilis": 20,
+        "Miķelis": 20,
+        "Ādolfs": 8, "Aivars": 8, "Alberts": 8, "Artūrs": 8, "Bruno": 8, "Edgars": 8, "Dāvids": 8, "Emīls": 8, "Ernests": 8, "Fridrihs": 8,
+        "Gustavs": 8, "Haralds": 8, "Heinrihs": 8, "Herberts": 8, "Hermanis": 8, "Hugo": 8, "Konrāds": 8, "Leons": 8, "Ludvigs": 8, "Oskars": 8,
+        "Otto": 8, "Reinholds": 8, "Rihards": 8, "Teodors": 8, "Valdemārs": 8, "Valters": 8, "Viktors": 8, "Vilhelms": 8, "Zigfrīds": 8, "Ziedonis": 8
+      },
+      "femaleWeights": {
+        "Anna": 20, "Marija": 20, "Katrīna": 20, "Elizabete": 20, "Emīlija": 20, "Līna": 20, "Milda": 20, "Alma": 20, "Marta": 20, "Berta": 20,
+        "Lidija": 20, "Ida": 20, "Ella": 20, "Olga": 20, "Helēna": 20, "Johanna": 20, "Velta": 20, "Zelma": 20, "Ruta": 20, "Austra": 20,
+        "Dora": 8, "Edīte": 8, "Elfrīda": 8, "Elīna": 8, "Elza": 8, "Erna": 8, "Gaida": 8, "Herta": 8, "Hilda": 8, "Ilga": 8, "Irma": 8, "Leontīne": 8,
+        "Lilija": 8, "Lūcija": 8, "Luīze": 8, "Margarita": 8, "Minna": 8, "Paula": 8, "Rasma": 8, "Salome": 8, "Skaidrīte": 8, "Sofija": 8,
+        "Valentīna": 8, "Vera": 8, "Zenta": 8
+      },
+      "surnameWeights": {
+        "Bērziņš": 20, "Kalniņš": 20, "Ozoliņš": 20, "Jansons": 20, "Liepiņš": 20, "Krūmiņš": 20, "Balodis": 20, "Eglītis": 20, "Ozols": 20,
+        "Pētersons": 20,
+        "Vītols": 8, "Kārkliņš": 8, "Zariņš": 8, "Kļaviņš": 8, "Vanags": 8, "Zeltiņš": 8, "Briedis": 8, "Vasiļjevs": 8, "Lapiņš": 8, "Āboliņš": 8,
+        "Andersons": 8, "Grīnbergs": 8, "Siliņš": 8, "Bergs": 8, "Lūsis": 8, "Miezītis": 8, "Saulītis": 8, "Leimanis": 8, "Šmits": 8, "Priedītis": 8,
+        "Strazdiņš": 3, "Vilks": 3, "Zvirbulis": 3, "Celmiņš": 3, "Kauliņš": 3, "Birkavs": 3, "Dambis": 3, "Lazdiņš": 3, "Sproģis": 3, "Veinbergs": 3,
+        "Vētra": 3, "Dzenis": 3, "Purviņš": 3, "Reinfelds": 3, "Rozenbergs": 3, "Lācis": 3, "Dūmiņš": 3, "Grāvītis": 3, "Šķēle": 3, "Ulmanis": 3
+      },
+      "femaleSurnameWeights": {
+        "Bērziņa": 20, "Kalniņa": 20, "Ozoliņa": 20, "Jansone": 20, "Liepiņa": 20, "Krūmiņa": 20, "Balode": 20, "Eglīte": 20, "Ozola": 20,
+        "Pētersone": 20,
+        "Vītola": 8, "Kārkliņa": 8, "Zariņa": 8, "Kļaviņa": 8, "Vanaga": 8, "Zeltiņa": 8, "Briede": 8, "Vasiļjeva": 8, "Lapiņa": 8, "Āboliņa": 8,
+        "Andersone": 8, "Grīnberga": 8, "Siliņa": 8, "Berga": 8, "Lūse": 8, "Miezīte": 8, "Saulīte": 8, "Leimane": 8, "Šmite": 8, "Priedīte": 8,
+        "Strazdiņa": 3, "Vilka": 3, "Zvirbule": 3, "Celmiņa": 3, "Kauliņa": 3, "Birkava": 3, "Dambe": 3, "Lazdiņa": 3, "Sproģe": 3, "Veinberga": 3,
+        "Vētra": 3, "Dzene": 3, "Purviņa": 3, "Reinfelde": 3, "Rozenberga": 3, "Lāce": 3, "Dūmiņa": 3, "Grāvīte": 3, "Šķēle": 3, "Ulmane": 3
+      },
       "male": [
         "Ādolfs",
         "Aivars",
@@ -2012,6 +2142,40 @@
     },
     {
       "weight": 1,
+      "maleWeights": {
+        "Jonas": 20, "Antanas": 20, "Juozas": 20, "Petras": 20, "Pranas": 20, "Stasys": 20, "Kazimieras": 20, "Vincas": 20, "Jurgis": 20, "Vladas": 20,
+        "Mykolas": 20, "Kazys": 20, "Vytautas": 20, "Motiejus": 20, "Martynas": 20, "Steponas": 20, "Aleksandras": 20, "Tadas": 20, "Leonas": 20,
+        "Jokūbas": 20,
+        "Adomas": 8, "Alfonsas": 8, "Augustinas": 8, "Balys": 8, "Benediktas": 8, "Boleslovas": 8, "Bronius": 8, "Edvardas": 8, "Feliksas": 8,
+        "Ignas": 8, "Justinas": 8, "Klemensas": 8, "Konstantinas": 8, "Kostas": 8, "Liudas": 8, "Matas": 8, "Romualdas": 8, "Silvestras": 8,
+        "Simonas": 8, "Vincentas": 8, "Viktoras": 8, "Zigmas": 8
+      },
+      "femaleWeights": {
+        "Marija": 20, "Ona": 20, "Elena": 20, "Petronėlė": 20, "Stanislava": 20, "Juzefa": 20, "Barbora": 20, "Bronė": 20, "Anelė": 20, "Julija": 20,
+        "Kotryna": 20, "Veronika": 20, "Regina": 20, "Aldona": 20, "Emilija": 20, "Elžbieta": 20, "Janina": 20, "Genovaitė": 20, "Stefanija": 20,
+        "Kazimiera": 20,
+        "Adelė": 8, "Agota": 8, "Aleksandra": 8, "Antanina": 8, "Eugenija": 8, "Ieva": 8, "Jadvyga": 8, "Joana": 8, "Karolina": 8, "Konstancija": 8,
+        "Leokadija": 8, "Liucija": 8, "Magdalena": 8, "Marcelė": 8, "Morta": 8, "Rozalija": 8, "Salomėja": 8, "Teklė": 8, "Valerija": 8,
+        "Viktorija": 8, "Zofija": 8
+      },
+      "surnameWeights": {
+        "Kazlauskas": 20, "Petrauskas": 20, "Jankauskas": 20, "Stankevičius": 20, "Vasiliauskas": 20, "Žukauskas": 20, "Butkus": 20, "Paulauskas": 20,
+        "Urbonas": 20, "Kavaliauskas": 20,
+        "Sabaliauskas": 8, "Ivanauskas": 8, "Jonauskas": 8, "Grigaitis": 8, "Balčiūnas": 8, "Rimkus": 8, "Pocius": 8, "Sakalauskas": 8,
+        "Dambrauskas": 8, "Navickas": 8, "Ramanauskas": 8, "Vaitkus": 8, "Povilaitis": 8, "Čepulis": 8, "Brazaitis": 8, "Bielskis": 8, "Šimkus": 8,
+        "Rutkauskas": 8, "Vaičiūnas": 8, "Mikalauskas": 8,
+        "Gudaitis": 3, "Jakubauskas": 3, "Černiauskas": 3, "Vaičaitis": 3, "Jasaitis": 3, "Juozaitis": 3, "Daukantas": 3, "Kairys": 3,
+        "Laurinaitis": 3, "Smetona": 3, "Tumas": 3, "Giedraitis": 3, "Radvila": 3, "Žemaitis": 3, "Šalkauskas": 3
+      },
+      "femaleSurnameWeights": {
+        "Kazlauskaitė": 20, "Petrauskaitė": 20, "Jankauskaitė": 20, "Stankevičiūtė": 20, "Vasiliauskaitė": 20, "Žukauskaitė": 20, "Butkutė": 20,
+        "Paulauskaitė": 20, "Urbonaitė": 20, "Kavaliauskaitė": 20,
+        "Sabaliauskaitė": 8, "Ivanauskaitė": 8, "Jonauskaitė": 8, "Grigaitytė": 8, "Balčiūnaitė": 8, "Rimkutė": 8, "Pociūtė": 8, "Sakalauskaitė": 8,
+        "Dambrauskaitė": 8, "Navickaitė": 8, "Ramanauskaitė": 8, "Vaitkutė": 8, "Povilaitytė": 8, "Čepulytė": 8, "Brazaitytė": 8, "Bielskytė": 8,
+        "Šimkutė": 8, "Rutkauskaitė": 8, "Vaičiūnaitė": 8, "Mikalauskaitė": 8,
+        "Gudaitytė": 3, "Jakubauskaitė": 3, "Černiauskaitė": 3, "Vaičaitytė": 3, "Jasaitytė": 3, "Juozaitytė": 3, "Daukantaitė": 3, "Kairytė": 3,
+        "Laurinaitytė": 3, "Smetonaitė": 3, "Tumaitė": 3, "Giedraitytė": 3, "Radvilaitė": 3, "Žemaitytė": 3, "Šalkauskaitė": 3
+      },
       "male": [
         "Adomas",
         "Aleksandras",
@@ -2204,6 +2368,32 @@
     },
     {
       "weight": 1,
+      "maleWeights": {
+        "Ion": 20, "Gheorghe": 20, "Constantin": 20, "Ioan": 20, "Nicolae": 20, "Vasile": 20, "Dumitru": 20, "Alexandru": 20, "Mihai": 20,
+        "Ștefan": 20, "Petre": 20, "Marin": 20, "Teodor": 20, "Victor": 20, "Radu": 20, "Iosif": 20, "Traian": 20, "Grigore": 20, "Ilie": 20,
+        "Florea": 8, "Anghel": 8, "Anton": 8, "Aurel": 8, "Eugen": 8, "Emil": 8, "Mircea": 8, "Pavel": 8, "Petru": 8, "Toma": 8, "Tudor": 8,
+        "Virgil": 8, "Vlad": 8, "Liviu": 8, "Ovidiu": 8, "Cornel": 8, "Corneliu": 8, "Ionel": 8, "Gavril": 8, "Lazăr": 8, "Sorin": 8, "Valeriu": 8,
+        "Zaharia": 8, "Simion": 8, "Matei": 8, "Neculai": 8, "Niculae": 8, "Octav": 8, "Octavian": 8, "Romulus": 8, "Remus": 8, "Sabin": 8,
+        "Șerban": 8, "Spiridon": 8, "Horia": 8, "Iuliu": 8, "Iorgu": 8, "Doru": 8, "Cezar": 8, "Carol": 8, "Bogdan": 8, "Avram": 8, "Alexe": 8,
+        "Aurelian": 8, "Emanoil": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Elena": 20, "Ana": 20, "Ioana": 20, "Florica": 20, "Marioara": 20, "Ecaterina": 20, "Constanța": 20, "Aurora": 20,
+        "Victoria": 20, "Eugenia": 20, "Cornelia": 20, "Teodora": 20, "Mariana": 20, "Georgeta": 20, "Elisabeta": 20, "Margareta": 20, "Stela": 20,
+        "Rodica": 20, "Paraschiva": 20,
+        "Aneta": 8, "Angela": 8, "Catrina": 8, "Domnica": 8, "Emilia": 8, "Eufrosina": 8, "Gabriela": 8, "Ileana": 8, "Irina": 8, "Leontina": 8,
+        "Livia": 8, "Lucia": 8, "Lucreția": 8, "Matilda": 8, "Natalia": 8, "Olga": 8, "Paulina": 8, "Petruța": 8, "Rada": 8, "Rozalia": 8, "Sofia": 8,
+        "Ștefania": 8, "Tatiana": 8, "Valeria": 8, "Vasilica": 8, "Veronica": 8, "Virginia": 8, "Zamfira": 8
+      },
+      "surnameWeights": {
+        "Popescu": 20, "Ionescu": 20, "Popa": 20, "Pop": 20, "Dumitru": 20, "Stan": 20, "Stoica": 20, "Gheorghe": 20, "Rusu": 20, "Munteanu": 20,
+        "Matei": 8, "Constantin": 8, "Șerban": 8, "Marin": 8, "Dobre": 8, "Ilie": 8, "Tudor": 8, "Diaconu": 8, "Dinu": 8, "Florea": 8, "Petre": 8,
+        "Pavel": 8, "Preda": 8, "Gheorghiu": 8, "Vasilescu": 8, "Georgescu": 8, "Dumitrescu": 8, "Niculescu": 8, "Petrescu": 8, "Stanciu": 8,
+        "Stancu": 8, "Neagu": 8, "Nistor": 8, "Badea": 8, "Enache": 8, "Mihai": 8, "Manea": 8, "Coman": 8, "Oprea": 8, "Tănase": 8,
+        "Drăgan": 3, "Bălan": 3, "Moldovan": 3, "Barbu": 3, "Ciobanu": 3, "Radu": 3, "Sandu": 3, "Voicu": 3, "Bădescu": 3, "Lungu": 3, "Cojocaru": 3,
+        "Dascălu": 3, "Dobrescu": 3, "Florescu": 3, "Grigorescu": 3, "Iancu": 3, "Lăzărescu": 3, "Manolescu": 3, "Moraru": 3, "Năstase": 3, "Păun": 3,
+        "Rotaru": 3, "Simion": 3, "Teodorescu": 3, "Ungureanu": 3, "Vintilă": 3
+      },
       "male": [
         "Alexandru",
         "Alexe",
@@ -2395,6 +2585,7 @@
     },
     {
       "weight": 1,
+
       "male": [
         "Abdy",
         "Abdygany",
@@ -2511,6 +2702,7 @@
     },
     {
       "weight": 1,
+
       "male": [
         "Abdullo",
         "Abdurahmon",
@@ -2632,6 +2824,7 @@
     },
     {
       "weight": 1,
+
       "male": [
         "Agamyrat",
         "Akmyrat",

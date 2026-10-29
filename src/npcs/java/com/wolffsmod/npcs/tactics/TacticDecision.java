@@ -117,22 +117,31 @@ public final class TacticDecision
 
     private static Order advance(Situation situation)
     {
-        double preferred = situation.engagement().preferred();
+        Engagement engagement = situation.engagement();
         double distance = situation.targetDistance();
-        if (situation.inSight() && distance <= preferred)
+        // Closer than its own rounds reach, it backs away before it fires again, whatever else its tactic wants.
+        if (distance < engagement.minimum())
+            return retreat(situation, engagement.minimum() - distance);
+        if (situation.inSight() && distance <= engagement.preferred())
             return Order.STAND;
-        return Order.closeIn(distance > preferred * 2D ? RUN : WALK);
+        return Order.closeIn(distance > engagement.preferred() * 2D ? RUN : WALK);
     }
 
     private static Order standOff(Situation situation)
     {
         Engagement engagement = situation.engagement();
         double distance = situation.targetDistance();
+        if (distance < engagement.near())
+            return retreat(situation, engagement.near() - distance);
         if (!situation.inSight() || distance > engagement.far())
             return Order.closeIn(distance > engagement.far() * 2D ? RUN : WALK);
-        if (distance < engagement.near())
-            return Order.goTo(situation, away(situation.position(), situation.target(), engagement.near() - distance + RETREAT_MARGIN), RUN, ARRIVED);
         return Order.STAND;
+    }
+
+    /** @return an order to back straight away from the target by the blocks it is too close, and a margin so it does not hover at the edge */
+    private static Order retreat(Situation situation, double blocks)
+    {
+        return Order.goTo(situation, away(situation.position(), situation.target(), blocks + RETREAT_MARGIN), RUN, ARRIVED);
     }
 
     /** Hides in cover, steps out to fire when ready, and back in to reload or when hit. Without cover it advances. */

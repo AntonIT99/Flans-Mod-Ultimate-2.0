@@ -1,8 +1,14 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Throwing;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -58,6 +64,8 @@ class NpcThrownWeaponTest
                 when(npc.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(held);
                 when(npc.getOffhandItem()).thenReturn(ItemStack.EMPTY);
                 npc.inventory = new DataInventory(npc);
+                npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
+                when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
                 IItemStack wrapped = mock(IItemStack.class);
                 when(wrapped.getMCItemStack()).thenReturn(throwable);
                 if (!inHand)
@@ -184,7 +192,10 @@ class NpcThrownWeaponTest
             Sensing sensing = mock(Sensing.class);
             when(npc.getSensing()).thenReturn(sensing);
             when(sensing.hasLineOfSight(target)).thenReturn(true);
-            npc.stats = mock(DataStats.class);
+            npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
+            NpcTuning tuning = new NpcTuning();
+            tuning.set(Value.GRENADE_USE, Throwing.RANGED_SLOT.ordinal());
+            when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(tuning);
             npc.stats.ranged = mock(DataRanged.class);
             when(npc.stats.ranged.getRange()).thenReturn(32);
             when(npc.isInRange(target, 32D)).thenReturn(true);

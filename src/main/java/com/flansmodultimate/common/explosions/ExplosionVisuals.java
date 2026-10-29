@@ -223,13 +223,10 @@ public final class ExplosionVisuals
      * as well as the radius, so a thin-walled blast charge sprays far less than a frag shell
      * reaching the same distance.
      */
-    public static int fragSparkCount(float fragRadius, float fragIntensity, double effectiveFragments,
-                                     double sparkMultiplier, int maxFragSparks)
+    public static int fragSparkCount(float fragRadius, float fragIntensity, double effectiveFragments, double sparkMultiplier, int maxFragSparks)
     {
-        if (!Float.isFinite(fragRadius) || fragRadius < MIN_FRAG_SPRAY_RADIUS
-            || !Float.isFinite(fragIntensity) || fragIntensity <= 0F
-            || !Double.isFinite(effectiveFragments) || effectiveFragments < 1D
-            || !Double.isFinite(sparkMultiplier) || sparkMultiplier <= 0D || maxFragSparks <= 0)
+        if (!Float.isFinite(fragRadius) || fragRadius < MIN_FRAG_SPRAY_RADIUS || !Float.isFinite(fragIntensity) || fragIntensity <= 0F || !Double.isFinite(effectiveFragments)
+            || effectiveFragments < 1D || !Double.isFinite(sparkMultiplier) || sparkMultiplier <= 0D || maxFragSparks <= 0)
             return 0;
 
         double sparks = (double) fragRadius * fragRadius * SPARKS_PER_FRAG_AREA * Math.sqrt(fragIntensity);
@@ -290,15 +287,18 @@ public final class ExplosionVisuals
 
     /**
      * Below this crater radius the stem simply thins out at the top; above it, it spreads into a
-     * cap. Sits just under the ~12 block crater of a 10 kg charge, so only demolition charges and
-     * heavy bombs mushroom.
+     * cap. Sits around the crater of a 25 kg charge, so missile warheads and mid-sized charges keep
+     * a plain column and only heavy charges and bombs mushroom.
      */
-    public static final float MIN_MUSHROOM_CAP_CRATER_RADIUS = 10.0F;
-    private static final float CAP_PUFFS_PER_CRATER = 2.5F;
-    private static final int MIN_CAP_PUFFS = 12;
+    public static final float MIN_MUSHROOM_CAP_CRATER_RADIUS = 16.0F;
+    private static final float CAP_PUFFS_PER_CRATER = 2.0F;
+    private static final int MIN_CAP_PUFFS = 10;
     private static final int MAX_CAP_PUFFS = 64;
-    /** How wide the cap spreads, as a share of the stem's height. */
+    /** How wide the cap spreads, as a share of the stem's height, just past the threshold and at full size. */
+    private static final float MIN_CAP_WIDTH_SHARE_OF_STEM = 0.25F;
     private static final float CAP_WIDTH_SHARE_OF_STEM = 0.45F;
+    /** Crater radius at which the cap reaches its full width share. */
+    private static final float FULL_CAP_CRATER_RADIUS = 32.0F;
 
     /**
      * Crater radius past which the staged layers stop growing their puffs. It is where the stem
@@ -447,12 +447,13 @@ public final class ExplosionVisuals
         return Mth.clamp(Mth.ceil(craterRadius * CAP_PUFFS_PER_CRATER), MIN_CAP_PUFFS, MAX_CAP_PUFFS);
     }
 
-    /** Radius the cap spreads to around the top of the stem. */
+    /** Radius the cap spreads to around the top of the stem. It widens gradually past the threshold rather than appearing full-size. */
     public static float mushroomCapRadius(float craterRadius)
     {
         if (mushroomCapPuffs(craterRadius) <= 0)
             return 0F;
-        return fireballStemHeight(craterRadius) * CAP_WIDTH_SHARE_OF_STEM;
+        float growth = Mth.clamp((craterRadius - MIN_MUSHROOM_CAP_CRATER_RADIUS) / (FULL_CAP_CRATER_RADIUS - MIN_MUSHROOM_CAP_CRATER_RADIUS), 0F, 1F);
+        return fireballStemHeight(craterRadius) * Mth.lerp(growth, MIN_CAP_WIDTH_SHARE_OF_STEM, CAP_WIDTH_SHARE_OF_STEM);
     }
 
     /**
@@ -469,19 +470,26 @@ public final class ExplosionVisuals
      * flame, a demolition charge gets everything - and the performance guard, since the small-calibre
      * rounds that players fire by the hundred never reach the first threshold at all.
      *
-     * @param particle        particle to emit, resolved through {@link FlanParticles}
-     * @param minCraterRadius crater radius below which this layer does not appear
-     * @param countPerRadius  particles per block of crater radius
-     * @param maxCount        bound on this layer's cost to a client
-     * @param spreadShare     how far particles are scattered, as a share of the crater radius.
-     *                        Several of these particle types overwrite their own velocity, so the
-     *                        spread rather than the speed is what shapes them.
-     * @param speedShare      outward speed in blocks per tick, per block of crater radius
-     * @param upwardBias      0 throws particles evenly in every direction, 1 straight up
-     * @param lifetimeShare   multiplies the explosion's own lifetime scale for this layer
+     * @param particle
+     *            particle to emit, resolved through {@link FlanParticles}
+     * @param minCraterRadius
+     *            crater radius below which this layer does not appear
+     * @param countPerRadius
+     *            particles per block of crater radius
+     * @param maxCount
+     *            bound on this layer's cost to a client
+     * @param spreadShare
+     *            how far particles are scattered, as a share of the crater radius.
+     *            Several of these particle types overwrite their own velocity, so the
+     *            spread rather than the speed is what shapes them.
+     * @param speedShare
+     *            outward speed in blocks per tick, per block of crater radius
+     * @param upwardBias
+     *            0 throws particles evenly in every direction, 1 straight up
+     * @param lifetimeShare
+     *            multiplies the explosion's own lifetime scale for this layer
      */
-    public record Layer(String particle, float minCraterRadius, float countPerRadius, int maxCount,
-                        float spreadShare, float speedShare, float upwardBias, float lifetimeShare)
+    public record Layer(String particle, float minCraterRadius, float countPerRadius, int maxCount, float spreadShare, float speedShare, float upwardBias, float lifetimeShare)
     {
         /** How many of this layer a given crater gets, or zero when it is below the threshold. */
         public int count(float craterRadius)
@@ -515,6 +523,5 @@ public final class ExplosionVisuals
         // Incandescent ejecta popping out of the crater. This one sets its own upward velocity and
         // ignores anything asked of it, so it is placed across the crater instead - biased upwards
         // only enough to keep it from being scattered inside the ground, where it would stick.
-        new Layer(FlanParticles.LAVA, 6.0F, 0.5F, 12, 0.50F, 0.0F, 0.30F, 0.7F)
-    );
+        new Layer(FlanParticles.LAVA, 6.0F, 0.5F, 12, 0.50F, 0.0F, 0.30F, 0.7F));
 }

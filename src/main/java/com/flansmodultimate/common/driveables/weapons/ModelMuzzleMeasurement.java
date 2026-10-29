@@ -3,6 +3,7 @@ package com.flansmodultimate.common.driveables.weapons;
 import com.flansmod.client.model.*;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.MuzzleMeasurements;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.content.IContentProvider;
@@ -12,6 +13,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -32,7 +35,7 @@ import java.util.*;
  * keep their muzzles and its AA guns fire from their {@code Barrel} lines, elevated
  * round the measured pivot. A pack in the flan folder is not: its driveables have
  * their muzzles moved onto the measured ones by the rules of
- * {@code /flandebug shootpoint apply}, the primary bank only when it holds one
+ * {@code /flansdebug shootpoint apply}, the primary bank only when it holds one
  * plain point and each seat gun the model registers, and its AA guns fire from
  * the measured muzzles. Either way the measured barrels take the place of the
  * ones a client used to report, and a twin or quad mount fired from one point
@@ -159,6 +162,7 @@ public final class ModelMuzzleMeasurement
                 }
                 // After the correction, so a moved point spreads round where it now is.
                 tally.mounts += spreadBarrels(driveableType, driveableModel, tally.results);
+                measureGunPivots(driveableType, driveableModel, tally.results);
             }
         }
         catch (Exception | LinkageError e)
@@ -392,6 +396,25 @@ public final class ModelMuzzleMeasurement
         if (!spreads.isEmpty() && FlansLog.log.isDebugEnabled())
             FlansLog.log.debug("Spread the shots of {} over its model's barrels: {}", type, String.join(", ", spreads));
         return spreads.size();
+    }
+
+    /**
+     * Records the point each seat gun's model turns it round as it aims, as a driven driveable learns it from its client's
+     * model, so that anything placing a seat gun's muzzle without the model, such as an NPC drawn as the driveable, carries
+     * it round the same point.
+     */
+    private static void measureGunPivots(DriveableType type, ModelDriveable model, MuzzleMeasurementCache.Results results)
+    {
+        boolean plane = type instanceof PlaneType;
+        for (MuzzleMeasurements.SeatGun seatGun : inputs(type).seatGuns())
+        {
+            Vec3 pivot = model.getRegisteredGunAimPivot(seatGun.gunName(), type.getVehicleGunModelScale());
+            if (pivot == null)
+                continue;
+            Vector3f pixels = LegacyDriveableCoordinates.modelPixelsToTypeFile(pivot.scale(type.getModelScale() * 16D), plane);
+            if (type.applyMeasuredGunPivot(seatGun.seatIndex(), pixels))
+                MuzzleMeasurementCache.recordPivot(results, type, new MuzzleMeasurementCache.Pivot(seatGun.seatIndex(), pixels.x, pixels.y, pixels.z));
+        }
     }
 
     /** Whether a bank fires plain points that all stand on one muzzle, as one point or one written twice. */

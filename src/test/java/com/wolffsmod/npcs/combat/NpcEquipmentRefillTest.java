@@ -1,7 +1,11 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.common.item.BulletItem;
+import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -12,11 +16,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -37,6 +47,8 @@ class NpcEquipmentRefillTest
             npc.inventory = new DataInventory(npc);
             when(npc.getMainHandItem()).thenAnswer(call -> stack(npc.inventory.weapons.get(0)));
             options.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
+            // As by default, Flan ammunition in the projectile slot is loaded whether or not it fits.
+            options.when(() -> NpcEquipment.enabled(npc, Feature.FITTING_SLOT_AMMO)).thenReturn(false);
         }
 
         private ItemStack weapon(String name, boolean throwable)
@@ -131,10 +143,11 @@ class NpcEquipmentRefillTest
             assertSame(issued, NpcAmmunition.infiniteTemplate(inventory.npc, gun).orElseThrow());
             assertFalse(NpcAmmunition.nothingToLoad(inventory.npc, gun));
 
-            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted)).thenReturn(true);
+            // What the projectile slot holds may be loaded by choice, which the three-argument check decides.
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted, true)).thenReturn(true);
             assertSame(slotted, NpcAmmunition.infiniteTemplate(inventory.npc, gun).orElseThrow());
 
-            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted)).thenReturn(false);
+            inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, slotted, true)).thenReturn(false);
             inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, issued)).thenReturn(false);
             assertTrue(NpcAmmunition.infiniteTemplate(inventory.npc, gun).isEmpty());
             assertTrue(NpcAmmunition.nothingToLoad(inventory.npc, gun));
@@ -193,7 +206,7 @@ class NpcEquipmentRefillTest
                 {
                     ItemStack ammunition = new ItemStack(Items.IRON_NUGGET);
                     inventory.equipped(1, ammunition);
-                    inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, ammunition)).thenReturn(true);
+                    inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, ammunition, true)).thenReturn(true);
                 }
                 assertTrue(NpcAmmunition.refillEmptySlots(inventory.npc));
                 assertSame(entry, inventory.npc.inventory.weapons.get(0));
@@ -249,6 +262,94 @@ class NpcEquipmentRefillTest
             assertFalse(NpcAmmunition.refillEmptySlots(inventory.npc));
             assertTrue(inventory.npc.inventory.weapons.isEmpty());
             assertEquals(3, inventory.npc.inventory.drops.size());
+        }
+    }
+
+    // Plain JUnit must open the item registry that NeoForge's loader normally fills; NeoForge keeps its intrusive holders.
+    @SuppressWarnings("deprecation")
+    private static BulletItem registerAmmo(BulletType type)
+    {
+        MappedRegistry<Item> registry = (MappedRegistry<Item>) BuiltInRegistries.ITEM;
+        registry.unfreeze();
+        try
+        {
+            BulletItem item = new BulletItem(type);
+            Registry.register(registry, ResourceLocation.fromNamespaceAndPath("flansmodultimate", "test_ammo_" + UUID.randomUUID()), item);
+            return item;
+        }
+        finally
+        {
+            registry.freeze();
+        }
+    }
+
+    @Test
+    void finalMagazineRoundImmediatelyRefillsFromUsableReserves()
+    {
+        try (Inventory inventory = new Inventory())
+        {
+            BulletType type = mock(BulletType.class);
+            when(type.getRoundsPerItem()).thenReturn(3);
+            when(type.getMaxStackSize()).thenReturn(16);
+            BulletItem item = registerAmmo(type);
+            ItemStack used = new ItemStack(item);
+            ShootableItem.setRoundsRemaining(used, 1);
+            ItemStack exhausted = used.copy();
+            ShootableItem.setRoundsRemaining(exhausted, 0);
+            ItemStack reserve = new ItemStack(item);
+            inventory.equipped(1, used);
+            inventory.carried(0, exhausted);
+            IItemStack replacement = inventory.carried(2, reserve);
+            NpcAmmunition.consume(inventory.npc, used);
+            assertTrue(used.isEmpty());
+            assertSame(replacement, inventory.npc.inventory.weapons.get(1));
+            assertEquals(3, ShootableItem.getTotalRounds(reserve));
+            assertSame(exhausted, stack(inventory.npc.inventory.drops.get(0)));
+            assertFalse(inventory.npc.inventory.drops.containsKey(2));
+        }
+    }
+
+    @Test
+    void stackedMagazinesConsumeExactlyTheirRoundsAndSingleRoundsStillShrinkNormally()
+    {
+        for (int rounds : new int[]{1, 3})
+        {
+            try (Inventory inventory = new Inventory())
+            {
+                BulletType type = mock(BulletType.class);
+                when(type.getRoundsPerItem()).thenReturn(rounds);
+                when(type.getMaxStackSize()).thenReturn(16);
+                ItemStack used = new ItemStack(registerAmmo(type), 2);
+                inventory.equipped(1, used);
+                for (int remaining = 2 * rounds; remaining > 0; remaining--)
+                {
+                    assertTrue(FlansProjectiles.hasRoundsLeft(used));
+                    assertEquals(remaining, ShootableItem.getTotalRounds(used));
+                    NpcAmmunition.consume(inventory.npc, used);
+                }
+                assertFalse(FlansProjectiles.hasRoundsLeft(used));
+                assertTrue(used.isEmpty());
+                assertFalse(inventory.npc.inventory.weapons.containsKey(1));
+            }
+        }
+    }
+
+    @Test
+    void anAlreadyExhaustedMagazineIsRetiredWithoutConsumingItsReplacement()
+    {
+        try (Inventory inventory = new Inventory())
+        {
+            BulletType type = mock(BulletType.class);
+            when(type.getRoundsPerItem()).thenReturn(3);
+            BulletItem item = registerAmmo(type);
+            ItemStack used = new ItemStack(item);
+            ShootableItem.setRoundsRemaining(used, 0);
+            ItemStack reserve = new ItemStack(item);
+            inventory.equipped(1, used);
+            IItemStack replacement = inventory.carried(0, reserve);
+            assertSame(reserve, NpcAmmunition.modelTemplate(inventory.npc));
+            assertSame(replacement, inventory.npc.inventory.weapons.get(1));
+            assertEquals(3, ShootableItem.getTotalRounds(reserve));
         }
     }
 }

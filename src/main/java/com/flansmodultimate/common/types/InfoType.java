@@ -2,7 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModTextures;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.content.*;
@@ -151,6 +151,19 @@ public abstract class InfoType implements IContentType
         if (type != null && type.isHasItem())
             return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
         return uniqueShortName != null ? uniqueShortName : originalShortName;
+    }
+
+    /** Item and block keys retain their registered aliases and existing resource-pack translations. */
+    @Override
+    public String getNameTranslationKey()
+    {
+        if (type == null || StringUtils.isBlank(originalShortName))
+            return StringUtils.EMPTY;
+        if (type.isHasBlock())
+            return "block.flansmod." + getShortName();
+        if (type.isHasItem())
+            return "item.flansmod." + getShortName();
+        return type.getIdentifier() + ".flansmod." + originalShortName.toLowerCase(Locale.ROOT);
     }
 
     @Override

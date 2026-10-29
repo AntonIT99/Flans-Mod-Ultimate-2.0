@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

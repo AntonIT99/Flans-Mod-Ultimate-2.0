@@ -13,6 +13,7 @@ import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.GunRecoil;
+import com.flansmodultimate.common.guns.GunSoundPermissions.Kind;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -20,7 +21,6 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.gun.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import it.unimi.dsi.fastutil.longs.*;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +46,8 @@ import net.minecraft.world.phys.HitResult;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+
+import it.unimi.dsi.fastutil.longs.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -871,7 +873,7 @@ public class ModClient
             || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
-            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().gunActionSoundRange());
+            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().gunActionSoundRange(), hand, Kind.ACTION);
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
@@ -890,19 +892,19 @@ public class ModClient
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
                     int time = (int) (animations.getReloadAnimationTime() / maxBullets);
-                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), time);
+                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), time, hand, Kind.INSERT);
                     ModClient.setLastBulletReload(-1);
                 }
                 else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
                 {
                     ModClient.setLastBulletReload(bulletNum);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), hand, Kind.INSERT);
                 }
 
                 if ((ammoPosition < 0.03 && bulletProgress > 0))
                 {
                     ModClient.setLastBulletReload(-2);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), hand, Kind.INSERT);
                 }
             }
         }
@@ -939,6 +941,18 @@ public class ModClient
         if (vehicleZoom > 1F)
             fov = Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(fov) / 2D) / vehicleZoom));
         return fov;
+    }
+
+    /**
+     * The field of view for the first-person hand and gun. 1.7.10 kept them at their own fixed field of view, so
+     * FOVZoomLevel never enlarged the held gun; only a near-complete ZoomLevel did, through the projection's camera zoom.
+     */
+    public static double handFov(double fov)
+    {
+        float zoomLevel = zoomProgress > 0.8F ? lastZoomLevel : 1F;
+        if (Math.abs(zoomLevel - 1F) < 0.01F)
+            return fov;
+        return Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(fov) / 2D) / zoomLevel));
     }
 
     public static void renderTick()

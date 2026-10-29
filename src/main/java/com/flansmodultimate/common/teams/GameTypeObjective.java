@@ -330,6 +330,17 @@ public abstract class GameTypeObjective extends GameTypeTDM
     }
 
     @Override
+    public Map<String, String> getVariables()
+    {
+        // Objective modes keep friendly fire and autobalance of their own, under the names team deathmatch uses.
+        Map<String, String> variables = super.getVariables();
+        variables.put("friendlyfire", Boolean.toString(friendlyFire));
+        variables.put("autobalance", Boolean.toString(autoBalance));
+        variables.put("captureticks", Integer.toString(captureTicks));
+        return variables;
+    }
+
+    @Override
     public void loadSettings(CompoundTag tag)
     {
         friendlyFire = tag.getBoolean(key("friendly_fire"));

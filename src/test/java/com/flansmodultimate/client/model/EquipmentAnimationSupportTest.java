@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.model;
 
-import com.flansmodultimate.api.ArmPoseRule;
+import com.flansmodultimate.api.equipment.ArmPoseRule;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.GunArmPoses.Arm;
 import com.flansmodultimate.common.guns.HeldItemPresentation;

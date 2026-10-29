@@ -3,6 +3,35 @@
     "groups": [
         {
             "weight": 8,
+            "maleWeights": {
+                "John": 20, "William": 20, "George": 20, "Thomas": 20, "James": 20, "Charles": 20, "Frederick": 20, "Arthur": 20, "Albert": 20,
+                "Harry": 20, "Henry": 20, "Joseph": 20, "Robert": 20, "Edward": 20, "Alfred": 20, "Walter": 20, "Ernest": 20, "Harold": 20,
+                "Frank": 20, "Herbert": 20, "Percy": 20, "Sidney": 20, "Stanley": 20,
+                "Richard": 8, "David": 8, "Peter": 8, "Leonard": 8, "Cecil": 8, "Reginald": 8, "Francis": 8, "Samuel": 8, "Ronald": 8, "Norman": 8,
+                "Eric": 8, "Edwin": 8, "Bernard": 8, "Victor": 8, "Horace": 8, "Leslie": 8, "Arnold": 8, "Cyril": 8, "Douglas": 8, "Kenneth": 8,
+                "Raymond": 8, "Roy": 8, "Philip": 8, "Donald": 8, "Gordon": 8, "Jack": 8
+            },
+            "femaleWeights": {
+                "Mary": 20, "Elizabeth": 20, "Margaret": 20, "Florence": 20, "Edith": 20, "Annie": 20, "Doris": 20, "Dorothy": 20, "Ethel": 20,
+                "Alice": 20, "Ellen": 20, "Emily": 20, "Jane": 20, "Ada": 20, "Gladys": 20, "Winifred": 20, "Lily": 20, "Violet": 20, "Hilda": 20,
+                "Elsie": 20, "Beatrice": 20, "Kathleen": 20, "Gertrude": 20, "Grace": 20, "Mabel": 20,
+                "Catherine": 8, "Charlotte": 8, "Eleanor": 8, "Evelyn": 8, "Frances": 8, "Irene": 8, "Joan": 8, "Joyce": 8, "Lucy": 8, "Marjorie": 8,
+                "Maud": 8, "Nellie": 8, "Olive": 8, "Phyllis": 8, "Rose": 8, "Ruth": 8, "Sylvia": 8, "Vera": 8, "Amy": 8, "Edna": 8, "Eva": 8,
+                "Jessie": 8, "Louisa": 8, "Lilian": 8
+            },
+            "surnameWeights": {
+                "Smith": 20, "Jones": 20, "Taylor": 20, "Brown": 20, "Williams": 20, "Wilson": 20, "Johnson": 20, "Davies": 20, "Robinson": 20,
+                "Wright": 20, "Thompson": 20, "Evans": 20, "Walker": 20, "White": 20, "Roberts": 20,
+                "Green": 8, "Hall": 8, "Wood": 8, "Jackson": 8, "Clarke": 8, "Harris": 8, "Edwards": 8, "Turner": 8, "Martin": 8, "Cooper": 8,
+                "Hill": 8, "Ward": 8, "Hughes": 8, "Moore": 8, "Clark": 8, "King": 8, "Harrison": 8, "Lewis": 8, "Baker": 8, "Lee": 8, "Allen": 8,
+                "Morris": 8, "Scott": 8, "Watson": 8, "Davis": 8, "Parker": 8, "James": 8, "Bennett": 8, "Young": 8, "Phillips": 8,
+                "Richardson": 3, "Mitchell": 3, "Bailey": 3, "Carter": 3, "Cook": 3, "Shaw": 3, "Bell": 3, "Collins": 3, "Morgan": 3, "Kelly": 3,
+                "Miller": 3, "Cox": 3, "Richards": 3, "Marshall": 3, "Anderson": 3, "Simpson": 3, "Ellis": 3, "Adams": 3, "Wilkinson": 3, "Foster": 3,
+                "Chapman": 3, "Powell": 3, "Webb": 3, "Rogers": 3, "Gray": 3, "Mason": 3, "Hunt": 3, "Campbell": 3, "Matthews": 3, "Owen": 3,
+                "Palmer": 3, "Holmes": 3, "Mills": 3, "Barnes": 3, "Knight": 3, "Lloyd": 3, "Butler": 3, "Russell": 3, "Barker": 3, "Stevens": 3,
+                "Jenkins": 3, "Pearson": 3, "Dixon": 3, "Fletcher": 3, "Harvey": 3, "Hudson": 3, "Spencer": 3, "Howard": 3, "Andrews": 3, "Abbott": 3,
+                "Atkinson": 3, "Barlow": 3, "Barrett": 3, "Barton": 3, "Baxter": 3
+            },
             "male": [
                 "Albert",
                 "Alfred",
@@ -438,6 +467,24 @@
         },
         {
             "weight": 1,
+            "maleWeights": {
+                "John": 20, "James": 20, "David": 20, "Robert": 20, "William": 20, "Alexander": 20, "Donald": 20, "Duncan": 20, "Angus": 20, "Ian": 20,
+                "Iain": 20, "George": 20,
+                "Kenneth": 8, "Neil": 8, "Malcolm": 8, "Gordon": 8, "Colin": 8, "Hamish": 8, "Douglas": 8, "Archibald": 8, "Alasdair": 8, "Fraser": 8,
+                "Ross": 8, "Lachlan": 8, "Gavin": 8, "Ewan": 8, "Hugh": 8
+            },
+            "femaleWeights": {
+                "Margaret": 20, "Jean": 20, "Mary": 20, "Catherine": 20, "Isabella": 20, "Agnes": 20, "Janet": 20, "Christina": 20, "Helen": 20,
+                "Jessie": 20, "Catriona": 20, "Morag": 20, "Flora": 20, "Isobel": 20, "Elspeth": 20,
+                "Effie": 8, "Eileen": 8, "Aileen": 8, "Jane": 8
+            },
+            "surnameWeights": {
+                "Campbell": 20, "Stewart": 20, "Anderson": 20, "MacDonald": 20, "Scott": 20, "Murray": 20, "Reid": 20, "Robertson": 20, "Thomson": 20,
+                "Ross": 20, "Brown": 20, "Wilson": 20, "Fraser": 20, "Cameron": 20, "Henderson": 20, "MacKenzie": 20, "MacLeod": 20, "Morrison": 20,
+                "Gordon": 8, "Graham": 8, "Grant": 8, "Hamilton": 8, "Hunter": 8, "Johnston": 8, "Kerr": 8, "MacGregor": 8, "MacLean": 8,
+                "McIntosh": 8, "McKay": 8, "McLean": 8, "Sinclair": 8, "Watson": 8, "Wallace": 8, "Duncan": 8, "Ferguson": 8, "Forbes": 8, "Bell": 8,
+                "Davidson": 8, "Douglas": 8, "Boyd": 8, "Black": 8, "Bruce": 8
+            },
             "male": [
                 "Alasdair",
                 "Alexander",
@@ -554,6 +601,21 @@
         },
         {
             "weight": 1,
+            "maleWeights": {
+                "David": 20, "John": 20, "William": 20, "Evan": 20, "Owen": 20, "Thomas": 20, "Gareth": 20, "Dafydd": 20, "Rhys": 20, "Huw": 20,
+                "Glyn": 20, "Gwyn": 20, "Morgan": 20, "Arthur": 20, "Hywel": 20, "Idris": 20, "Emrys": 20, "Iorwerth": 20,
+                "Alun": 8, "Bryn": 8, "Dewi": 8, "Geraint": 8, "Ieuan": 8, "Iwan": 8, "Lloyd": 8
+            },
+            "femaleWeights": {
+                "Gwen": 20, "Megan": 20, "Mair": 20, "Sian": 20, "Rhiannon": 20, "Mary": 20, "Margaret": 20, "Glenys": 20
+            },
+            "surnameWeights": {
+                "Jones": 20, "Davies": 20, "Williams": 20, "Evans": 20, "Thomas": 20, "Roberts": 20, "Hughes": 20, "Lewis": 20, "Morgan": 20,
+                "Griffiths": 20, "Edwards": 20, "Owen": 20, "Rees": 20, "Jenkins": 20, "Phillips": 20, "Powell": 20, "Price": 20, "Lloyd": 20,
+                "Richards": 20, "Morris": 20,
+                "Bevan": 8, "Bowen": 8, "Ellis": 8, "Hopkins": 8, "Howells": 8, "James": 8, "Owens": 8, "Parry": 8, "Pritchard": 8, "Rowlands": 8,
+                "Vaughan": 8, "Watkins": 8
+            },
             "male": [
                 "Alun",
                 "Arthur",

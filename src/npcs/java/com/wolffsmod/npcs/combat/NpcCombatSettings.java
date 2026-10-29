@@ -66,10 +66,21 @@ public final class NpcCombatSettings
         return minimumHits.getOrDefault(category, 0);
     }
 
+    /** An absent melee value inherits the selected driveable model; an explicit zero disables that protection. */
+    public boolean inheritsMeleeThreshold()
+    {
+        return !minimumHits.containsKey(NpcDamageCategory.MELEE);
+    }
+
+    public void inheritMeleeThreshold()
+    {
+        minimumHits.remove(NpcDamageCategory.MELEE);
+    }
+
     public void setMinimumHit(NpcDamageCategory category, int damage)
     {
         int clamped = Math.max(0, Math.min(MAX_MINIMUM_HIT, damage));
-        if (clamped == 0)
+        if (clamped == 0 && category != NpcDamageCategory.MELEE)
             minimumHits.remove(category);
         else
             minimumHits.put(category, clamped);

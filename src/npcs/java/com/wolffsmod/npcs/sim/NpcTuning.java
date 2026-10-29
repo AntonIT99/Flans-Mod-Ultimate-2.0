@@ -40,7 +40,7 @@ public final class NpcTuning
         MAX_WADE_DEPTH(1, 0, 64),
         /** Shallowest water, in blocks, a watercraft floats in. */
         MIN_WATER_DEPTH(1, 1, 64),
-        /** Speed on land in tenths of a block per second; 0 keeps the NPC's walking speed. */
+        /** Speed on land in tenths of a block per second; 0 takes the top speed of a vehicle model, or keeps the NPC's walking speed. */
         LAND_SPEED(0, 0, 600),
         /** Speed in water in tenths of a block per second; 0 keeps the default swimming speed. */
         WATER_SPEED(0, 0, 600),
@@ -66,12 +66,12 @@ public final class NpcTuning
         DRIVE_PRESET(0, 0, DrivePreset.values().length - 1),
         /** Index into {@link DriveType}. */
         DRIVE_TYPE(0, 0, DriveType.values().length - 1),
-        /** Share of full throttle gained per second, in percent. */
-        DRIVE_ACCELERATION(100, 5, 2000),
-        /** Share of full throttle shed per second while braking, in percent. */
-        DRIVE_BRAKING(250, 5, 2000),
-        /** Share of full throttle shed per second while coasting, in percent. */
-        DRIVE_COASTING(60, 1, 2000),
+        /** Share of full throttle gained per second, in percent; 0 takes the vehicle model's engine response, or uses 100. */
+        DRIVE_ACCELERATION(0, 0, 2000),
+        /** Share of full throttle shed per second while braking, in percent; 0 takes the vehicle model's brakes, or uses 250. */
+        DRIVE_BRAKING(0, 0, 2000),
+        /** Share of full throttle shed per second while coasting, in percent; 0 takes the vehicle model's rolling resistance, or uses 60. */
+        DRIVE_COASTING(0, 0, 2000),
         /** Top speed in reverse as a share of forward speed, in percent; 0 inherits the model or uses 40. */
         DRIVE_REVERSE_SPEED(0, 0, 100),
         /** Smallest turning circle radius in tenths of a block; 0 takes the radius of the vehicle type. */
@@ -104,6 +104,8 @@ public final class NpcTuning
         TACTIC_DISTANCE(0, 0, 256),
         /** Blocks around it in which an NPC fighting from cover looks for some. */
         COVER_RADIUS(8, 2, 16),
+        /** Blocks a vehicle, aircraft or ship keeps beyond the reach of its own explosive rounds before it fires them. */
+        BLAST_MARGIN(4, 0, 64),
         /** Blocks around it in which an NPC that drives Flan's driveables looks for one to board. */
         BOARD_RANGE(16, 2, 64),
         /** Index into {@link Claim}. */
@@ -128,7 +130,35 @@ public final class NpcTuning
         SEARCH_BAND_0_INTERVAL(0, 0, 1200), SEARCH_BAND_1_INTERVAL(0, 0, 1200), SEARCH_BAND_2_INTERVAL(0, 0, 1200), SEARCH_BAND_3_INTERVAL(0, 0, 1200), SEARCH_BAND_4_INTERVAL(0, 0,
             1200), SEARCH_BAND_5_INTERVAL(0, 0, 1200),
         /** Index into {@link AimPose}; by default the server's mob aim rule applies. */
-        AIM_POSE(0, 0, AimPose.values().length - 1);
+        AIM_POSE(0, 0, AimPose.values().length - 1),
+        /** Ticks to build from zero to the maximum yaw rate; 0 keeps immediate steering. */
+        STEERING_RESPONSE(0, 0, 100),
+        /** Index into {@link StationaryTurn}; permission never grants stationary turns to wheeled vehicles. */
+        STATIONARY_TURN(1, 0, StationaryTurn.values().length - 1),
+        /** Traffic braking threshold in tenths of a block; 0 keeps half the following distance. */
+        TRAFFIC_STOP_GAP(0, 0, 320),
+        /** Index into {@link Throwing}: how the NPC uses the Flan grenades it carries. */
+        GRENADE_USE(Throwing.MODERATE.ordinal(), 0, Throwing.values().length - 1),
+        /** Index into {@link Throwing}: how the NPC uses the throwable Flan guns it carries. */
+        THROWN_WEAPON_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1),
+        /** Index into {@link Throwing}: how the NPC uses the native throwables it carries. */
+        NATIVE_THROWABLE_USE(Throwing.MAIN_WEAPON.ordinal(), 0, Throwing.values().length - 1),
+        /** Blocks from every player beyond which the NPC looks for no targets and lets its target go; 0 never. */
+        DORMANT_RANGE(0, 0, 512),
+        /** Highest step, in tenths of a block, a vehicle or mecha model climbs without jumping; 0 takes its model's step height. */
+        STEP_HEIGHT(0, 0, 80),
+        /** Most degrees per second a plane or helicopter turns; 0 takes what its speed allows at its steepest bank, or its default. */
+        FLIGHT_TURN_RATE(0, 0, 3600),
+        /** Fastest climb of a plane or helicopter in tenths of a block per second; 0 takes its model's climb rate, or its default. */
+        CLIMB_RATE(0, 0, 600),
+        /** Fastest a submarine dives and surfaces, in tenths of a block per second; 0 keeps the default. */
+        DIVE_RATE(0, 0, 600),
+        /** Speed of a plane with nothing to fight in tenths of a block per second; 0 takes just above the least its model flies at. */
+        CRUISE_SPEED(0, 0, 600),
+        /** Mass in kilograms, weighed against engine power for the inherited acceleration; 0 takes the model's own, where it states one. */
+        MASS(0, 0, 1_000_000),
+        /** Reference engine power in kilowatts, weighed against mass for the inherited acceleration; 0 takes the model's own, where it states one. */
+        ENGINE_POWER(0, 0, 100_000);
 
         private final int fallback;
         private final int minimum;
@@ -244,7 +274,9 @@ public final class NpcTuning
         /** Never stops, turns in circles, climbs before it attacks. */
         PLANE,
         /** May hover, turns its hull toward its target, climbs before it attacks. */
-        HELICOPTER
+        HELICOPTER,
+        /** As a helicopter when the NPC shows a rotorcraft model, otherwise as a plane; as Normal without an aircraft model. */
+        AUTO
     }
 
     /** What an NPC that uses up its ammunition does once the gun it holds has none left. */
@@ -256,6 +288,38 @@ public final class NpcTuning
         MELEE_ONLY,
         /** Keeps the empty gun. */
         NONE
+    }
+
+    /**
+     * How an NPC uses the throwables of one kind it carries: grenades, throwable Flan guns or native throwables. An item of the
+     * kind in the projectile slot is always the one the NPC prefers. Saves hold the index, so a new strategy goes at the end.
+     */
+    public enum Throwing
+    {
+        /** Only the one in the projectile slot, thrown as the NPC's ranged weapon while it holds none in hand. */
+        RANGED_SLOT,
+        /** The one in the projectile slot, or else the first one in the inventory, thrown as the NPC's ranged weapon while it holds none in hand. */
+        MAIN_WEAPON,
+        /** Thrown now and then beside the NPC's other attacks, at any enemy it can reach. */
+        FREQUENT,
+        /** Thrown from time to time beside the NPC's other attacks; grenades only at enemies close together or a tough one. */
+        MODERATE,
+        /** Thrown seldom beside the NPC's other attacks; grenades only at a larger group of enemies or a tough one. */
+        SPARING,
+        /** As Sparing, but a grenade is only thrown from beyond its whole reach, fragments included, plus 3 blocks and at least 6. */
+        CAUTIOUS;
+
+        /** @return whether the NPC throws an item of the kind as its ranged weapon, given where the item is */
+        public boolean mainWeapon(boolean inProjectileSlot)
+        {
+            return this == MAIN_WEAPON || this == RANGED_SLOT && inProjectileSlot;
+        }
+
+        /** @return whether the NPC throws items of the kind now and then beside its other attacks */
+        public boolean occasional()
+        {
+            return this == FREQUENT || this == MODERATE || this == SPARING || this == CAUTIOUS;
+        }
     }
 
     /**
@@ -326,6 +390,12 @@ public final class NpcTuning
         SEE_AND_FIRE_THROUGH
     }
 
+    /** Whether tracked driving may turn without rolling. */
+    public enum StationaryTurn
+    {
+        ROLLING_ONLY, ALLOW
+    }
+
     public NpcTuning()
     {
         reset();
@@ -374,6 +444,12 @@ public final class NpcTuning
     public Tactic tactic()
     {
         return Tactic.values()[get(Value.TACTIC)];
+    }
+
+    /** @return the strategy a {@link Throwing} value holds */
+    public Throwing throwing(Value value)
+    {
+        return Throwing.values()[get(value)];
     }
 
     /** Selects a preset and, unless it is Custom, fills in its driving values. */

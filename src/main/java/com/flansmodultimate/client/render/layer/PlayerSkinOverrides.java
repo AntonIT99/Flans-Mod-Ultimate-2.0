@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.render.layer;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.SkinOverrideVariant;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.config.ModClientConfig;

@@ -1,9 +1,10 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
-import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.api.equipment.*;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.sim.NpcServerRules;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.NpcAPI;
@@ -24,9 +25,11 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcEquipment
 {
+    /** @return whether the NPC's switch is on; on the server, whether it uses up ammunition also follows the server's rule */
     public static boolean enabled(EntityNPCInterface npc, Feature feature)
     {
-        return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);
+        boolean own = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);
+        return feature == Feature.CONSUME_AMMO ? NpcServerRules.consumesAmmo(npc, own) : own;
     }
 
     public static boolean weaponAuthority(EntityNPCInterface npc)
@@ -37,6 +40,8 @@ public final class NpcEquipment
     /** Whether the selected melee hand holds an item while Use equipped weapons is enabled. */
     public static boolean meleeAuthority(EntityNPCInterface npc)
     {
+        if (NpcMechaTools.isMecha(npc))
+            return false;
         if (!enabled(npc, Feature.ITEM_WEAPONS))
             return false;
         ItemStack weapon = meleeWeapon(npc);
@@ -113,15 +118,17 @@ public final class NpcEquipment
             return NpcAPI.Instance().getIItemStack(rangedWeapon(npc));
         if (weaponAuthority(npc))
             return null;
-        if (npc.inventory.getProjectile() != null)
-            return npc.inventory.getProjectile();
+        // A throwable only thrown now and then leaves the NPC to fight in melee meanwhile.
         ItemStack projectile = NpcAmmunition.modelTemplate(npc);
-        return projectile.isEmpty() ? null : NpcAPI.Instance().getIItemStack(projectile);
+        if (projectile.isEmpty())
+            return null;
+        IItemStack slot = npc.inventory.getProjectile();
+        return slot != null && slot.getMCItemStack() == projectile ? slot : NpcAPI.Instance().getIItemStack(projectile);
     }
 
     /**
      * A ranged weapon in the main hand takes precedence, then a Flan gun in the off hand, which the NPC then fires on its
-     * own; otherwise a Flan throwable in the projectile slot can be thrown.
+     * own; otherwise a grenade or throwable Flan gun it throws as its main weapon.
      */
     public static ItemStack rangedWeapon(EntityNPCInterface npc)
     {
@@ -132,20 +139,17 @@ public final class NpcEquipment
     }
 
     /**
-     * The ranged weapon of the main hand: the held one, or else a Flan throwable in the projectile slot, which is drawn into
-     * the main hand to be thrown. An off-hand gun is left out.
+     * The ranged weapon of the main hand: the held one, or else a grenade or throwable Flan gun the NPC throws as its main
+     * weapon, from the projectile slot or its inventory as the strategy for its kind says, which is drawn into the main hand
+     * to be thrown. An off-hand gun is left out.
      */
     public static ItemStack mainRangedWeapon(EntityNPCInterface npc)
     {
         ItemStack held = npc.getMainHandItem();
         if (ranged(held))
             return held;
-        IItemStack slot = npc.inventory.getProjectile();
-        ItemStack projectile = slot == null ? ItemStack.EMPTY : slot.getMCItemStack();
-        if (projectile != null && (FlansEquipment.getWeaponProperties(projectile, ItemStack.EMPTY).filter(EquippedWeaponProperties::throwable).isPresent()
-            || enabled(npc, Feature.GRENADES) && FlansProjectiles.isGrenade(projectile)))
-            return projectile;
-        return held;
+        ItemStack thrown = NpcThrowing.mainThrownWeapon(npc);
+        return thrown.isEmpty() ? held : thrown;
     }
 
     public static boolean ranged(ItemStack stack)
@@ -252,7 +256,7 @@ public final class NpcEquipment
     private static int vanillaChargeTime(ItemStack stack, LivingEntity holder)
     {
         if (stack.getItem() instanceof CrossbowItem)
-            return CrossbowItem.isCharged(stack) ? 0 : EntityPlatform.crossbowChargeDuration(stack, holder);
+            return CrossbowItem.isCharged(stack) ? 0 : NpcPlatform.crossbowChargeDuration(stack, holder);
         if (stack.getItem() instanceof BowItem)
             return 20;
         return stack.getItem() instanceof TridentItem ? 10 : 0;
@@ -274,19 +278,19 @@ public final class NpcEquipment
     }
 
     /** Whether worn Flan armor grants the protection behind this statistic and the NPC inherits it rather than keeping its own. */
-    public static boolean armorProtects(EntityNPCInterface npc, EquipmentProperty property, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)
+    public static boolean armorProtects(EntityNPCInterface npc, EquipmentProperty property, java.util.function.Predicate<com.flansmodultimate.api.equipment.EquippedArmorProperties> protection)
     {
         return inherits(npc, property) && worn(npc, protection);
     }
 
     /** Whether worn Flan armor has an effect the NPC has no statistic of its own for, while Use equipped armor is on. */
-    public static boolean armorProtects(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)
+    public static boolean armorProtects(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.equipment.EquippedArmorProperties> protection)
     {
         return enabled(npc, Feature.ITEM_ARMOR) && worn(npc, protection);
     }
 
     /** Whether a worn Flan armor piece has this property. */
-    public static boolean worn(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.EquippedArmorProperties> protection)
+    public static boolean worn(EntityNPCInterface npc, java.util.function.Predicate<com.flansmodultimate.api.equipment.EquippedArmorProperties> protection)
     {
         for (ItemStack stack : npc.getArmorSlots())
             if (FlansEquipment.getArmorProperties(stack).filter(protection).isPresent())

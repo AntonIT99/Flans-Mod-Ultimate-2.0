@@ -1,10 +1,15 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.EntityTypeProperties.Sound;
+import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
+import com.flansmodultimate.content.ContentPack;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -72,16 +77,50 @@ class EntityTypePropertySupportTest
     }
 
     @Test
-    void aaPropertiesExposeHealthTargetingAndCadenceButDoNotInventVelocityOrAmbientSounds()
+    void aaPropertiesExposeHealthTargetingCadenceAndTheDefaultVelocityButNoAmbientSounds()
     {
         var properties = EntityTypePropertySupport.read(new TestAA(), false).orElseThrow();
         assertEquals(250, properties.health().orElseThrow());
         assertEquals(80, properties.targetRange().orElseThrow());
         assertEquals(2, properties.shootDelay().orElseThrow());
         assertEquals(10, properties.weapons().get(0).damage());
-        assertTrue(properties.weapons().get(0).speed().isEmpty());
+        assertEquals(BulletType.DEFAULT_BULLET_SPEED, properties.weapons().get(0).speed().orElseThrow());
         assertTrue(properties.sounds().isEmpty());
         assertTrue(properties.takesFallDamage().isEmpty());
+    }
+
+    @Test
+    void onlyAVehicleThatSquashesMobsDealsTheDriveablesDamageAboveTheSquashingSpeed()
+    {
+        TestVehicle vehicle = new TestVehicle();
+        assertTrue(EntityTypePropertySupport.squashDamage(vehicle, 0.5D).isEmpty());
+        vehicle.squashMobs = true;
+        assertTrue(EntityTypePropertySupport.squashDamage(vehicle, 0.1D).isEmpty());
+        assertEquals(8D, EntityTypePropertySupport.squashDamage(vehicle, 0.5D).orElseThrow(), 1.0E-9D);
+        assertEquals(40D, EntityTypePropertySupport.squashDamage(vehicle, 10D).orElseThrow(), 1.0E-9D);
+        assertTrue(EntityTypePropertySupport.squashDamage(new TestAA(), 0.5D).isEmpty());
+    }
+
+    @Test
+    void seatMountsTurnPositiveToTheRightForAnAircraftWhoseSeatsStateYawToTheLeft()
+    {
+        ContentPack pack = new ContentPack("mounts", Path.of("build", "test-packs", "mounts"));
+        // A waist gun on the left, as the Warfare 44 B-17G states it, and a starboard gun, as the S100 states it.
+        String seat = "Passenger 1 0 0 0 core 65 115 -18 18";
+        VehicleType vehicle = new VehicleType();
+        vehicle.read(new TypeFile("vehicle", EnumType.VEHICLE, pack, List.of("Driver 0 0 0", seat)));
+        PlaneType plane = new PlaneType();
+        plane.read(new TypeFile("plane", EnumType.PLANE, pack, List.of("Pilot 0 0 0", seat)));
+        WeaponMount starboard = EntityTypePropertySupport.mounts(vehicle).get(1);
+        WeaponMount left = EntityTypePropertySupport.mounts(plane).get(1);
+        assertEquals(65F, starboard.minimum().yaw());
+        assertEquals(115F, starboard.maximum().yaw());
+        assertEquals(-115F, left.minimum().yaw());
+        assertEquals(-65F, left.maximum().yaw());
+        assertEquals(-90F, left.restYaw());
+        // Pitch keeps its sense: positive downwards for both.
+        assertEquals(18F, left.maximum().pitch());
+        assertEquals(-18F, left.minimum().pitch());
     }
 
     @Test
@@ -157,7 +196,7 @@ class EntityTypePropertySupportTest
         assertEquals(1, shell.volleys());
         assertEquals(4, shell.shotDelay());
         // Ordnance chambers at its own pace whatever the round's reload multiplier.
-        assertEquals(100, shell.reloadTicks());
+        assertEquals(4, shell.reloadTicks());
         assertTrue(shell.chamberSoundTick().isEmpty());
         vehicle.shootReloadSound = "flansmod:chamber";
         vehicle.reloadSoundTick = 30;

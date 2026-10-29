@@ -1,13 +1,18 @@
 package com.wolffsmod.npcs;
 
+import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.mojang.logging.LogUtils;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
 import com.wolffsmod.npcs.scripting.FlansScriptApi;
+import com.wolffsmod.npcs.teams.BattlesSection;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 
@@ -23,13 +28,16 @@ public class NpcsMod
     public static final Logger log = LogUtils.getLogger();
 
     @SuppressWarnings("java:S1118")
-    public NpcsMod(IEventBus modEventBus)
+    public NpcsMod(IEventBus modEventBus, ModContainer modContainer)
     {
+        modContainer.registerConfig(ModConfig.Type.COMMON, NpcsCommonConfig.SPEC);
         modEventBus.addListener(FlanModelEntities::registerEntityTypes);
         modEventBus.addListener(FlanModelEntities::registerAttributes);
         NpcNetwork.register();
         NpcNetworkPlatform.init(modEventBus);
         TeamsBots.register();
+        FriendlyFire.register();
+        FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);
         modEventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(FlansScriptApi::register));
     }
 }

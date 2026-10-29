@@ -5,9 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,11 +32,9 @@ class BattleFactionsTest
     }
 
     @Test
-    void factionsBranchesAndMembersSurviveASave()
+    void factionsAndBranchesSurviveASave()
     {
         BattleFactions before = germany();
-        UUID player = UUID.randomUUID();
-        before.setMember(player, GERMANY);
 
         BattleFactions after = BattleFactions.load(before.save(new CompoundTag(), ItemStackData.builtInRegistries()), ItemStackData.builtInRegistries());
 
@@ -52,26 +48,14 @@ class BattleFactionsTest
         assertEquals(12, wehrmacht.getForce().getCount());
         assertEquals("tiger", wehrmacht.getForce().getVehicles().get(0).type());
         assertTrue(managed.branch("luftwaffe").orElseThrow().getRoles().isEmpty(), "a branch set to no roles fills every role it can");
-        assertEquals(Optional.of(GERMANY), after.factionOf(player));
     }
 
     @Test
-    void playersCanOnlyBelongToAManagedFaction()
+    void releasingAFactionStopsManagingIt()
     {
         BattleFactions data = germany();
-        UUID player = UUID.randomUUID();
-        data.setMember(player, BRITAIN);
-        assertEquals(Optional.empty(), data.factionOf(player));
-    }
-
-    @Test
-    void releasingAFactionLetsItsMembersGo()
-    {
-        BattleFactions data = germany();
-        UUID player = UUID.randomUUID();
-        data.setMember(player, GERMANY);
         assertTrue(data.release(GERMANY));
-        assertEquals(Optional.empty(), data.factionOf(player));
         assertTrue(data.managed(GERMANY).isEmpty());
+        assertFalse(data.release(BRITAIN));
     }
 }

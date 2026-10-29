@@ -1,14 +1,24 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.driveables.AircraftMode;
+import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.ITeam;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.sim.NpcModels;
+import com.wolffsmod.npcs.sim.NpcParachutes;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Claim;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.FactionRelations;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -204,10 +214,10 @@ public final class NpcDrivers
         driver.setBoardAfter(now + BOARD_COOLDOWN);
     }
 
-    /** Opens a parachute over an NPC that got out high above the ground; without a parachute tool, it floats down. */
+    /** Opens a parachute over an NPC that got out high above the ground, its own first; without a parachute tool, it floats down. */
     private static void descend(EntityNPCInterface npc)
     {
-        if (height(npc) > JUMP_HEIGHT && !FlansEquipment.deployParachute(npc))
+        if (height(npc) > JUMP_HEIGHT && !NpcParachutes.open(npc) && !FlansEquipment.deployParachute(npc))
             npc.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, FALL_TICKS));
     }
 
@@ -315,9 +325,9 @@ public final class NpcDrivers
 
     /**
      * Whether another entity is on the NPC's side: the player it follows, one on its Teams team or one its faction is
-     * friendly to, or an NPC of its faction or Teams team.
+     * friendly to, or an NPC of its faction, of a faction allied with it, or of its Teams team.
      */
-    static boolean ally(EntityNPCInterface npc, Entity other)
+    public static boolean ally(EntityNPCInterface npc, Entity other)
     {
         if (other == npc.getOwner())
             return true;
@@ -326,7 +336,7 @@ public final class NpcDrivers
             return true;
         if (other instanceof Player player)
             return npc.faction.isFriendlyToPlayer(player);
-        return other instanceof EntityNPCInterface fellow && fellow.faction.id == npc.faction.id;
+        return other instanceof EntityNPCInterface fellow && (fellow.faction.id == npc.faction.id || FactionRelations.allied(npc.faction, fellow.faction));
     }
 
     /** @return who sits in the driveable's driver seat, or null */
@@ -411,7 +421,7 @@ public final class NpcDrivers
     }
 
     /** Whether the NPC and another entity are enemies, by the NPC's faction or the other NPC's, or because it is a monster. */
-    private static boolean hostile(EntityNPCInterface npc, Entity other)
+    public static boolean hostile(EntityNPCInterface npc, Entity other)
     {
         if (other == npc.getTarget())
             return true;

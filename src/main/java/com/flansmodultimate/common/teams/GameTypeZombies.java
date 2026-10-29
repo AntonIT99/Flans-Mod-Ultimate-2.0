@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Map;
 
 public final class GameTypeZombies extends GameType
 {
@@ -123,6 +124,15 @@ public final class GameTypeZombies extends GameType
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Map<String, String> getVariables()
+    {
+        Map<String, String> variables = super.getVariables();
+        variables.put("humanpreptime", Integer.toString(humanPrepTimeTicks / 20));
+        variables.put("friendlyfire", Boolean.toString(friendlyFire));
+        return variables;
     }
 
     @Override

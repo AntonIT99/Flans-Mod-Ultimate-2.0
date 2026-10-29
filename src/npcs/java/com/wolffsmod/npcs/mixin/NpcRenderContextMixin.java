@@ -5,6 +5,7 @@ import com.wolffsmod.npcs.diag.NpcProfiler;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.platform.render.NpcRenderBuffers;
 import com.wolffsmod.npcs.properties.NpcPresentation;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.client.renderer.RenderCustomNpc;
 import noppes.npcs.entity.EntityCustomNpc;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,8 +18,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 
 /**
- * Carries render context through borrowed buffers, copies visual policies to Flan models, immediately hides killed bodies when requested
- * and leaves the body of an invisible NPC undrawn.
+ * Carries render context through borrowed buffers, copies visual policies and a plane's pitch and bank to Flan models, immediately
+ * hides killed bodies when requested and leaves the body of an invisible NPC undrawn.
  */
 @Mixin(value = RenderCustomNpc.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
@@ -33,7 +34,11 @@ public abstract class NpcRenderContextMixin
     {
         NpcPresentation settings = NpcPresentation.of(npc);
         if (npc.modelData.getEntity(npc) instanceof FlanModelEntity model)
+        {
             model.setVisualEffects(settings.isHurtFlash(), settings.isDeathRotation());
+            NpcVehicleState state = NpcVehicleState.of(npc);
+            model.setAttitude(state.attitudePitch(partialTick), state.attitudeBank(partialTick));
+        }
         if (!settings.isDeathRotation() && npc.stats.hideKilledBody && npc.isKilled())
             callback.cancel();
     }

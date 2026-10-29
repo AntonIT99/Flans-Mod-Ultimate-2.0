@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.IPlayerClass;
-import com.flansmodultimate.api.SkinOverrideVariant;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IPaintableItem;
@@ -202,6 +202,13 @@ public class PlayerClass extends InfoType implements IPlayerClass
         if (id == null)
             return ItemStack.EMPTY;
         return ModUtils.getItemStack(InfoType.getInfoType(id, contentPack)).orElse(ItemStack.EMPTY);
+    }
+
+    /** Original content names keep translation keys independent of registry collision aliases. */
+    @Override
+    public String getNameTranslationKey()
+    {
+        return StringUtils.isBlank(originalShortName) ? StringUtils.EMPTY : "class.flansmod." + originalShortName.toLowerCase(Locale.ROOT);
     }
 
     public static java.util.Collection<PlayerClass> values()

@@ -3,6 +3,28 @@
   "groups": [
     {
       "weight": 3,
+      "maleWeights": {
+        "Jozef": 20, "Jan": 20, "Karel": 20, "Frans": 20, "Hendrik": 20, "Louis": 20, "Alfons": 20, "Albert": 20, "Petrus": 20, "Gustaaf": 20,
+        "Emiel": 20, "Cornelis": 20, "Alfred": 20, "August": 20, "Arthur": 20, "Jules": 20, "Leopold": 20,
+        "Willem": 8, "Georges": 8, "Marcel": 8, "Maurice": 8, "Richard": 8, "Robert": 8, "Julius": 8, "Herman": 8, "Victor": 8, "René": 8, "Camiel": 8,
+        "Cyriel": 8, "Constant": 8, "Desiré": 8, "Edmond": 8, "Eduard": 8, "Ernest": 8, "Felix": 8, "Ferdinand": 8, "Frederik": 8, "Lodewijk": 8,
+        "Lucien": 8, "Prosper": 8, "André": 8, "Charles": 8, "Henri": 8, "Pierre": 8, "Antoon": 8, "Adriaan": 8, "Aloïs": 8, "Benoît": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Anna": 20, "Marie": 20, "Elisabeth": 20, "Joanna": 20, "Louisa": 20, "Margareta": 20, "Helena": 20, "Emma": 20, "Clara": 20,
+        "Rosalia": 20, "Theresia": 20, "Jeanne": 20, "Josephina": 20, "Juliana": 20, "Cecilia": 20, "Alice": 20, "Madeleine": 20,
+        "Bertha": 8, "Blanche": 8, "Eliza": 8, "Eugenie": 8, "Germaine": 8, "Hortense": 8, "Ida": 8, "Irma": 8, "Martha": 8, "Mathilde": 8,
+        "Octavie": 8, "Paulina": 8, "Simonne": 8, "Stephanie": 8, "Suzanna": 8, "Yvonne": 8, "Zulma": 8, "Adèle": 8
+      },
+      "surnameWeights": {
+        "Peeters": 20, "Janssens": 20, "Maes": 20, "Jacobs": 20, "Mertens": 20, "Claes": 20, "Willems": 20, "Goossens": 20, "Wouters": 20,
+        "De Smet": 20,
+        "De Vos": 8, "De Clercq": 8, "Vermeulen": 8, "Van den Broeck": 8, "Van den Berghe": 8, "Van Damme": 8, "Van de Velde": 8, "Van Acker": 8,
+        "Van Laere": 8, "Van Hoof": 8, "Van Hove": 8, "Van Dijk": 8, "Vandenberghe": 8, "Vandenbroucke": 8, "Verhoeven": 8, "Cools": 8, "Coppens": 8,
+        "De Backer": 8, "De Meyer": 8, "De Winter": 8,
+        "Declercq": 3, "Desmet": 3, "Devriese": 3, "Dhaene": 3, "Hermans": 3, "Lemmens": 3, "Lievens": 3, "Martens": 3, "Michiels": 3, "Moens": 3,
+        "Pauwels": 3, "Raes": 3, "Rombouts": 3, "Segers": 3, "Smets": 3, "Stevens": 3, "Verbeke": 3, "Vercammen": 3, "Verhaeghe": 3, "Verschueren": 3
+      },
       "male": [
         "Adriaan",
         "Albert",
@@ -148,6 +170,28 @@
     },
     {
       "weight": 2,
+      "maleWeights": {
+        "Joseph": 20, "Jean": 20, "Louis": 20, "Pierre": 20, "Paul": 20, "Henri": 20, "Charles": 20, "Émile": 20, "Léon": 20, "Albert": 20,
+        "Georges": 20, "Marcel": 20, "Maurice": 20, "Lucien": 20, "René": 20, "Fernand": 20, "Jules": 20, "Édouard": 20, "Ernest": 20, "François": 20,
+        "Alphonse": 20, "Victor": 20,
+        "André": 8, "Alfred": 8, "Antoine": 8, "Armand": 8, "Arthur": 8, "Auguste": 8, "Camille": 8, "Constant": 8, "Edmond": 8, "Eugène": 8,
+        "Félix": 8, "Gaston": 8, "Gustave": 8, "Hubert": 8, "Julien": 8, "Léopold": 8, "Nicolas": 8, "Prosper": 8, "Raymond": 8, "Robert": 8,
+        "Roger": 8, "Vincent": 8, "Élie": 8, "Éloi": 8, "Isidore": 8
+      },
+      "femaleWeights": {
+        "Marie": 20, "Jeanne": 20, "Marguerite": 20, "Louise": 20, "Marthe": 20, "Madeleine": 20, "Yvonne": 20, "Germaine": 20, "Suzanne": 20,
+        "Simone": 20, "Berthe": 20, "Renée": 20, "Marcelle": 20, "Henriette": 20, "Alice": 20, "Thérèse": 20, "Lucie": 20, "Blanche": 20,
+        "Juliette": 20, "Hélène": 20,
+        "Adèle": 8, "Alphonsine": 8, "Angèle": 8, "Anne": 8, "Antoinette": 8, "Cécile": 8, "Charlotte": 8, "Claire": 8, "Clémence": 8, "Denise": 8,
+        "Élise": 8, "Émilie": 8, "Eugénie": 8, "Fernande": 8, "Gabrielle": 8, "Irène": 8, "Mathilde": 8, "Odette": 8, "Pauline": 8, "Rose": 8
+      },
+      "surnameWeights": {
+        "Dubois": 20, "Lambert": 20, "Martin": 20, "Dupont": 20, "Simon": 20, "Laurent": 20, "Leclercq": 20, "Michel": 20, "Lefebvre": 20, "Leroy": 20,
+        "Bertrand": 8, "Lejeune": 8, "Collard": 8, "Lecomte": 8, "Dumont": 8, "François": 8, "Denis": 8, "Mathieu": 8, "Renard": 8, "Gilson": 8,
+        "Lemaire": 8, "Noël": 8, "Massart": 8, "Delfosse": 8, "Delvaux": 8, "Dardenne": 8, "Gérard": 8, "Duchêne": 8, "Gilles": 8, "Henry": 8,
+        "Hubert": 3, "Legros": 3, "Léonard": 3, "Liénard": 3, "Marchal": 3, "Marlier": 3, "Moreau": 3, "Philippe": 3, "Piérard": 3, "Poncelet": 3,
+        "Rousseau": 3, "Servais": 3, "Thiry": 3, "Toussaint": 3, "Vandamme": 3, "Wauthier": 3, "Willame": 3, "Libert": 3, "Bastin": 3, "Boulanger": 3
+      },
       "male": [
         "Albert",
         "Alfred",

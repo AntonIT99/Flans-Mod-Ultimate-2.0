@@ -74,7 +74,7 @@ public final class TeamsSelectScreen extends Screen
             for (int i = 0; i < visibleRows; i++)
             {
                 PacketTeamsState.ClassChoice choice = classChoices.get(firstRow + i);
-                Button button = Button.builder(Component.literal(choice.name()), ignored -> chooseClass(choice.id())).bounds(left + 9, top + 24 + 24 * i, 73, 20).build();
+                Button button = Button.builder(choice.displayName().copy(), ignored -> chooseClass(choice.id())).bounds(left + 9, top + 24 + 24 * i, 73, 20).build();
                 button.active = state.getPlayerRank() >= choice.unlockLevel() && state.getPlayerPrestige() >= choice.requiredPrestige() && !choice.isFull();
                 addRenderableWidget(button);
             }
@@ -84,7 +84,7 @@ public final class TeamsSelectScreen extends Screen
             for (int i = 0; i < visibleRows; i++)
             {
                 PacketTeamsState.TeamChoice choice = teamChoices.get(firstRow + i);
-                Component label = Component.literal(choice.name()).withStyle(style -> style.withColor(choice.colour()));
+                Component label = choice.displayName().copy().withStyle(style -> style.withColor(choice.colour()));
                 addRenderableWidget(Button.builder(label, ignored -> chooseTeam(choice.id())).bounds(left + 10, top + 24 + 24 * i, 236, 20).build());
             }
         }

@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.AircraftMode;
-import com.flansmodultimate.api.DriveControl;
-import com.flansmodultimate.api.DriveableAttitude;
-import com.flansmodultimate.api.FlansEntityTypes;
+import com.flansmodultimate.api.driveables.AircraftMode;
+import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.DriveableAttitude;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.sim.MountMotion;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -29,7 +29,9 @@ import java.util.Set;
  * climbs to a cruising height above the terrain ahead, banks to turn, makes strafing runs on the NPC's target and circles
  * where it has nowhere further to go; parked with nowhere to go, it stays parked. A rotorcraft lifts off on its collective,
  * tilts to fly to its goal, faces the NPC's target and hovers, and lands once it has stayed idle for a while. Either
- * pulls up whenever the ground comes too close. One per NPC, kept by its {@link NpcDriver}. Server thread.
+ * pulls up whenever the ground comes too close, and either keeps out of the reach of its own rounds: a plane breaks off
+ * its run before they could catch it, and a rotorcraft draws off to the edge of their reach rather than hovering inside
+ * it. One per NPC, kept by its {@link NpcDriver}. Server thread.
  */
 final class NpcPilot
 {
@@ -97,6 +99,8 @@ final class NpcPilot
     private final FlightControl control = new FlightControl();
     /** How the NPC wants its aircraft flown, as read this tick. */
     private Settings settings = Settings.DEFAULTS;
+    /** Blocks from its target within which the aircraft's own rounds would catch it, as read this tick. */
+    private double standoff;
     private final PlaneLanding landing = new PlaneLanding();
     /** The speed a plane cruises at, learnt as it cruises; 0 until it has. */
     private double cruiseSpeed;
@@ -216,6 +220,27 @@ final class NpcPilot
         lastState = null;
         lastCommand = null;
         settings = Settings.DEFAULTS;
+        standoff = 0D;
+    }
+
+    /**
+     * @return where the aircraft makes for: a point out beyond the reach of its own rounds while its target is closer
+     *         than that, so that a rotorcraft draws off rather than hovering inside its own blast; its goal otherwise
+     */
+    @Nullable
+    private Vec3 standoffPoint(Vec3 position, @Nullable LivingEntity target, @Nullable Vec3 goal)
+    {
+        if (target == null || standoff <= 0D)
+            return goal;
+        Vec3 aim = target.position();
+        double distance = horizontal(position, aim);
+        if (distance >= standoff)
+            return goal;
+        double x = position.x - aim.x;
+        double z = position.z - aim.z;
+        // Straight above or below its target, it draws off whichever way rather than nowhere.
+        Vec3 away = distance < 1.0E-4D ? new Vec3(0D, 0D, 1D) : new Vec3(x / distance, 0D, z / distance);
+        return aim.add(away.scale(standoff + ROTOR_ARRIVAL));
     }
 
     /** @return what the pilot wanted of the aircraft last tick against what it got, for the movement debug log */
@@ -234,13 +259,17 @@ final class NpcPilot
      *
      * @param goal
      *            where the NPC would walk, or null when it would stay
+     * @param standoff
+     *            blocks from its target within which the aircraft's own rounds would catch it; 0 while it carries none
+     *            that go off
      * @return the controls to hold, or none when the aircraft cannot be read
      */
-    Set<DriveControl> fly(EntityNPCInterface npc, Entity aircraft, AircraftMode mode, @Nullable Vec3 goal)
+    Set<DriveControl> fly(EntityNPCInterface npc, Entity aircraft, AircraftMode mode, @Nullable Vec3 goal, double standoff)
     {
         DriveableAttitude attitude = FlansEntityTypes.getAttitude(aircraft).orElse(null);
         if (attitude == null)
             return EnumSet.noneOf(DriveControl.class);
+        this.standoff = standoff;
         settings = Settings.of(npc);
         Vec3 position = aircraft.position();
         Vec3 velocity = lastPosition == null ? Vec3.ZERO : position.subtract(lastPosition);
@@ -256,7 +285,7 @@ final class NpcPilot
         Vec3 home = new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
         // Short of fuel, an aircraft gives up its target and its goal and heads home to land.
         LivingEntity target = !flight.lowOnFuel() && npc.getTarget() != null && npc.getTarget().isAlive() ? npc.getTarget() : null;
-        Vec3 destination = flight.lowOnFuel() ? home : goal;
+        Vec3 destination = flight.lowOnFuel() ? home : standoffPoint(position, target, goal);
         point = target != null ? target.getBoundingBox().getCenter() : destination;
         FlightControl.Command command = mode == AircraftMode.ROTORCRAFT ? rotor(flight, destination, target) : wings(level, flight, destination, target, home);
         rolling = flight.grounded() && command.throttle() > 0F;
@@ -375,7 +404,8 @@ final class NpcPilot
         if (extending && now >= extendUntil && distance > REENGAGE_DISTANCE)
             extending = false;
         boolean diving = distance < DIVE_DISTANCE;
-        if (!extending && (distance < BREAK_DISTANCE || diving && flight.height() < BREAK_HEIGHT && flight.velocity().y < 0D))
+        // It breaks off before its own rounds could catch it, and never later than its usual break-off distance.
+        if (!extending && (distance < Math.max(BREAK_DISTANCE, standoff) || diving && flight.height() < BREAK_HEIGHT && flight.velocity().y < 0D))
         {
             extending = true;
             extendUntil = now + EXTEND_TICKS;

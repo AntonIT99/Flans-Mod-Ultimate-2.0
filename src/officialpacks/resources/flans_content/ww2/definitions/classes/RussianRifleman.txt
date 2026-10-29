@@ -1,0 +1,11 @@
+// Identity
+Name Rifleman
+ShortName OfficialWW2_RussianRifleman
+
+// Items
+AddItem nagant
+AddItem tt33
+AddItem rgd33 2
+AddItem ww2Knife
+AddItem nagantAmmo 4
+AddItem tt33Ammo 2

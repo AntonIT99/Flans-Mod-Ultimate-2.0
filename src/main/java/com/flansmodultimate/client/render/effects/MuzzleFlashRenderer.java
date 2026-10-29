@@ -3,9 +3,11 @@ package com.flansmodultimate.client.render.effects;
 import com.flansmod.client.model.*;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansModTextures;
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.CustomRenderType;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.render.ShaderPlatform;
@@ -15,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Objects;
@@ -27,6 +30,23 @@ public final class MuzzleFlashRenderer
 
     private MuzzleFlashRenderer()
     {}
+
+    /** Renders an external mount using the native driveable flash selection and size. */
+    public static void renderExternal(@Nullable IContentType weapon, @Nullable IContentType platform, int frame, float scale, PoseStack poseStack, MultiBufferSource buffers)
+    {
+        GunType gun = weapon instanceof GunType type ? type : null;
+        boolean allowDefault = platform instanceof DriveableType type && type.isDefaultMuzzleFlash();
+        ModelBase model = select(gun, allowDefault);
+        if (model == null || !Float.isFinite(scale) || scale <= 0F)
+            return;
+        float flashScale = gun == null ? 1F : gun.getModelScale();
+        if (gun != null && ModelCache.getOrLoadTypeModel(gun) instanceof ModelGun gunModel)
+            flashScale *= gunModel.getFlashScale();
+        poseStack.pushPose();
+        poseStack.scale(scale, scale, scale);
+        render(model, gun, frame, flashScale, poseStack, buffers, OverlayTexture.NO_OVERLAY);
+        poseStack.popPose();
+    }
 
     @Nullable
     public static ModelBase select(@Nullable GunType gun, boolean allowDefault)
@@ -69,7 +89,7 @@ public final class MuzzleFlashRenderer
             return;
         if (model instanceof ModelFlash flash)
         {
-            ResourceLocation texture = model == DEFAULT_FLASH ? FlansModTextures.TEXTURE_DEFAULTFLASH : gun.getFlashTexture();
+            ResourceLocation texture = model == DEFAULT_FLASH || gun == null ? FlansModTextures.TEXTURE_DEFAULTFLASH : gun.getFlashTexture();
             flash.renderFlash(Math.max(0, Math.min(2, frame)), poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(texture)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F,
                 flashScale);
         }

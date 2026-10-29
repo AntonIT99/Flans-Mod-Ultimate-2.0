@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.model;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

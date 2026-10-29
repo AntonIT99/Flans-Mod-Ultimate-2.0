@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.ISuppressionListener;
+import com.flansmodultimate.api.entity.ISuppressionListener;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;

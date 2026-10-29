@@ -39,8 +39,8 @@ public final class NpcTypeControls
         NpcTypeProperties properties = NpcTypeProperties.of(npc);
         properties.refresh(npc);
         Map<NpcTypeProperty, Tag> values = properties.values();
-        Map<NpcTypeProperty, String> readouts = properties.type()
-            .map(type -> NpcTypeReadouts.create(type, values, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), properties.usesNativeProjectile())).orElse(Map.of());
+        Map<NpcTypeProperty, String> readouts = NpcTypeReadouts.create(properties.type().orElse(null), values, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(),
+            properties.usesNativeProjectile());
         Map<Integer, Reason> fields = new HashMap<>();
         Map<Integer, Reason> buttons = new HashMap<>();
         Map<Integer, Reason> labels = new HashMap<>();
@@ -94,7 +94,7 @@ public final class NpcTypeControls
         if (gui instanceof SubGuiNpcProjectiles)
             return Map.of(1, NpcTypeProperty.DAMAGE, 4, NpcTypeProperty.SPEED);
         if (gui instanceof SubGuiNpcMeleeProperties)
-            return Map.of(2, NpcTypeProperty.MELEE_REACH);
+            return Map.of(1, NpcTypeProperty.MELEE_DAMAGE, 2, NpcTypeProperty.MELEE_REACH, 3, NpcTypeProperty.MELEE_DELAY);
         if (gui instanceof SubGuiNpcMovement)
             return Map.of(14, NpcTypeProperty.WALKING_SPEED);
         if (gui instanceof GuiNPCSoundsMenu)

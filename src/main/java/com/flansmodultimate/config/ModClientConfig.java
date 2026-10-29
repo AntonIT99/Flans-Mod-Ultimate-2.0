@@ -35,6 +35,7 @@ public final class ModClientConfig
     public static final ModConfigSpec configSpec;
 
     private static final AtomicReference<Boolean> startupUncensoredContentEnabled = new AtomicReference<>();
+    private static final AtomicBoolean serverForcesUncensoredContent = new AtomicBoolean();
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean showDetailedItemDescriptions;
@@ -295,16 +296,26 @@ public final class ModClientConfig
     static
     {
         builder.push("General Settings");
-        SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder.comment("Show content pack names in item descriptions").define("showPackNameInItemDescriptions", true);
-        SHOW_DETAILED_ITEM_DESCRIPTIONS = builder.comment("Show the detailed descriptions of guns, ammunition and other Flan's items: loaded ammunition, statistics",
-            "and the full statistics shown while sneaking. When disabled, only the item's own description is listed.").define("showDetailedItemDescriptions", true);
-        ENABLE_UNCENSORED_CONTENT = builder.comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources.")
+        ENABLE_UNCENSORED_CONTENT = builder.comment(
+            "Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources. Restore Defaults preserves this preference.")
             .define("enableUncensoredContent", false);
         OPTIONS_BUTTON_PLACEMENT = builder.comment("""
             Where the button opening the Flan's Mod options screen is added.
             OPTIONS_SCREEN: in the vanilla options screen. PAUSE_MENU: in the pause menu.
             BOTH: in either one. NONE: nowhere; the screen stays reachable from the mod list.
             """).defineEnum("optionsButtonPlacement", EnumOptionsButtonPlacement.OPTIONS_SCREEN);
+        ADDITIONAL_THERMAL_HOT_PARTICLES = ConfigSpecValues.defineList(builder.comment("""
+            Extra particle type ids, such as somemod:plasma, that thermal sights show hot. Explosions, fire,
+            muzzle flashes, sparks, tracers and Flan's own blast and smoke particles are hot already.
+            """), "additionalThermalHotParticles", Collections.emptyList(), () -> "", String.class::isInstance);
+        builder.pop();
+        builder.push("Item Descriptions");
+        SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder.comment("Show content pack names in item descriptions").define("showPackNameInItemDescriptions", true);
+        SHOW_DETAILED_ITEM_DESCRIPTIONS = builder.comment("Show the detailed descriptions of guns, ammunition and other Flan's items: loaded ammunition, statistics",
+            "and the full statistics shown while sneaking. When disabled, only the item's own description is listed.").define("showDetailedItemDescriptions", true);
+        SHOW_SHOOTABLE_DURABILITY_BARS = builder.comment("Show a durability-style bar for shootable items when their current round item is not full").define("showShootableDurabilityBars", true);
+        builder.pop();
+        builder.push("HUD and Crosshair");
         SHOW_FLANS_HUD = builder.comment("""
             Show Flan's Mod's own in-world HUD: gun and vehicle ammunition, AA gun and deployed gun
             readouts, team information and the kill feed. The vanilla HUD is not affected.
@@ -316,11 +327,16 @@ public final class ModClientConfig
             option, which can only hide the crosshair, never bring it back.
             """).define("hideCrosshairForGuns", false);
         SHOW_CROSSHAIR_WHILE_SCOPED = builder.comment("""
-            Keep the vanilla crosshair visible while aiming down a gun's sights or scope.
+            Keep the vanilla crosshair visible while aiming down a gun's sights or scope without a zoom overlay.
             In multiplayer, the server's disableCrosshairWhileScoped setting must be false to allow this.
             Private singleplayer worlds use this preference directly.
             Server, gun definition, vehicle optics and hideCrosshairForGuns restrictions still apply.
             """).define("showCrosshairWhileScoped", false);
+        SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder.comment("Show the armor-style HUD bar for legacy armor damage absorption").define("showArmorDamageAbsorptionBar", true);
+        DRIVEABLE_SPEED_UNIT = builder.comment("Unit used for vehicle and plane speed on the HUD").defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
+        DRIVEABLE_VERTICAL_SPEED_UNIT = builder.comment("Unit used for plane vertical speed on the HUD").defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
+        builder.pop();
+        builder.push("Model Loading");
         LOAD_ALL_MODELS_IN_CACHE = builder.comment("""
             If true, loads and caches ALL models up-front during resource reload.
             ⚠ Warning:
@@ -337,18 +353,8 @@ public final class ModClientConfig
             shipping its own version of a model that also exists in the mod renders with its own version.
             Content packs keep loading the model classes the mod does not provide either way.
             """).define("preferBuiltInModelClasses", false);
-        SHOW_SHOOTABLE_DURABILITY_BARS = builder.comment("Show a durability-style bar for shootable items when their current round item is not full").define("showShootableDurabilityBars", true);
-        SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder.comment("Show the armor-style HUD bar for legacy armor damage absorption").define("showArmorDamageAbsorptionBar", true);
-        DRIVEABLE_SPEED_UNIT = builder.comment("Unit used for vehicle and plane speed on the HUD").defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
-        DRIVEABLE_VERTICAL_SPEED_UNIT = builder.comment("Unit used for plane vertical speed on the HUD").defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
-        builder.push("Engine Sound Pitch Defaults");
-        VEHICLE_ENGINE_PITCH_BASE = builder.comment("Vehicle engine pitch at zero throttle").defineInRange("vehiclePitchBase", 0.5D, 0D, Float.MAX_VALUE);
-        VEHICLE_ENGINE_PITCH_AT_50 = builder.comment("Vehicle engine pitch at 50% throttle").defineInRange("vehiclePitchAt50", 0.8D, 0D, Float.MAX_VALUE);
-        VEHICLE_ENGINE_PITCH_AT_100 = builder.comment("Vehicle engine pitch at 100% throttle").defineInRange("vehiclePitchAt100", 1.2D, 0D, Float.MAX_VALUE);
-        PLANE_ENGINE_PITCH_BASE = builder.comment("Plane engine pitch at zero throttle").defineInRange("planePitchBase", 0.5D, 0D, Float.MAX_VALUE);
-        PLANE_ENGINE_PITCH_AT_50 = builder.comment("Plane engine pitch at 50% throttle").defineInRange("planePitchAt50", 1D, 0D, Float.MAX_VALUE);
-        PLANE_ENGINE_PITCH_AT_100 = builder.comment("Plane engine pitch at 100% throttle").defineInRange("planePitchAt100", 1.5D, 0D, Float.MAX_VALUE);
         builder.pop();
+        builder.push("Hit Markers");
         HIT_MARKER_STYLE = builder.comment("""
             Visual style of the hit marker.
             ULTIMATE: the hit marker from Flan's Mod Ultimate 1.7.10.
@@ -364,6 +370,8 @@ public final class ModClientConfig
         HIT_MARKER_GREEN = builder.comment("Green component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerGreen", 1D, 0D, 1D);
         HIT_MARKER_BLUE = builder.comment("Blue component of the hit marker colour, used whenever the fancy hit marker does not colour it").defineInRange("hitMarkerBlue", 1D, 0D, 1D);
         HIT_MARKER_ALPHA = builder.comment("Opacity of the hit marker, applied to every style and colour").defineInRange("hitMarkerAlpha", 1D, 0D, 1D);
+        builder.pop();
+        builder.push("Screen Shake and Suppression");
         SHOW_FLASHES_WHEN_WOUNDED = builder.comment("Show the red blood overlay flash when the player takes damage").define("showFlashesWhenWounded", true);
         VEHICLE_SCREEN_SHAKE = builder.comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun").define("vehicleScreenShake", true);
         GUN_SCREEN_SHAKE = builder.comment("Punch the field of view in and kick the camera when you fire a gun that opts into HasScreenShake").define("gunScreenShake", true);
@@ -376,12 +384,20 @@ public final class ModClientConfig
         SUPPRESSION_CAMERA_ROLL = builder.comment("Maximum visual camera roll in degrees from suppression. Zero disables camera movement; aim is unchanged.").defineInRange("suppressionCameraRoll",
             3.5D, 0.0, 10.0);
         SUPPRESSION_VIGNETTE = builder.comment("Maximum opacity of the suppression vignette. Zero disables darkening.").defineInRange("suppressionVignette", 0.82D, 0.0, 1.0);
+        builder.pop();
+        builder.push("Audio");
         BULLET_FLYBY_SOUNDS = builder.comment("Play bullet near-miss sounds, including ammunition FlyBySound overrides.").define("bulletFlybySounds", true);
         BULLET_FLYBY_VOLUME = builder.comment("Volume of near-miss sounds. Zero mutes them. Vanilla volume also controls audible attenuation.").defineInRange("bulletFlybyVolume", 10D, 0.0, 10.0);
-        ADDITIONAL_THERMAL_HOT_PARTICLES = ConfigSpecValues.defineList(builder.comment("""
-            Extra particle type ids, such as somemod:plasma, that thermal sights show hot. Explosions, fire,
-            muzzle flashes, sparks, tracers and Flan's own blast and smoke particles are hot already.
-            """), "additionalThermalHotParticles", Collections.emptyList(), () -> "", String.class::isInstance);
+        builder.push("Engine Sound Pitch Defaults");
+        VEHICLE_ENGINE_PITCH_BASE = builder.comment("Vehicle engine pitch at zero throttle").defineInRange("vehiclePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_50 = builder.comment("Vehicle engine pitch at 50% throttle").defineInRange("vehiclePitchAt50", 0.8D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_100 = builder.comment("Vehicle engine pitch at 100% throttle").defineInRange("vehiclePitchAt100", 1.2D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_BASE = builder.comment("Plane engine pitch at zero throttle").defineInRange("planePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_50 = builder.comment("Plane engine pitch at 50% throttle").defineInRange("planePitchAt50", 1D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_100 = builder.comment("Plane engine pitch at 100% throttle").defineInRange("planePitchAt100", 1.5D, 0D, Float.MAX_VALUE);
+        builder.pop();
+        builder.pop();
+        builder.push("Teams");
         ENABLE_PLAYER_CLASS_SKIN_OVERRIDES = builder.comment("""
             Let a Teams player class replace the skin of the players wearing it, when its content pack
             defines a SkinOverride. Overrides are ignored anyway when the texture is missing, is not a
@@ -561,10 +577,10 @@ public final class ModClientConfig
 
         builder.push("Culling Defaults");
         ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT = defineCullingDefault("armors", "alwaysEnableArmorsCullingByDefault", false);
-        ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT = defineCullingDefault("guns", "alwaysEnableGunsCullingByDefault", false);
+        ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT = defineCullingDefault("guns", "alwaysEnableGunsCullingByDefault", true);
         ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT = defineCullingDefault("grenades", "alwaysEnableGrenadesCullingByDefault", true);
         ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT = defineCullingDefault("bullets", "alwaysEnableBulletsCullingByDefault", true);
-        ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT = defineCullingDefault("attachments", "alwaysEnableAttachmentsCullingByDefault", false);
+        ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT = defineCullingDefault("attachments", "alwaysEnableAttachmentsCullingByDefault", true);
         ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT = defineCullingDefault("aa-guns", "alwaysEnableAAGunsCullingByDefault", true);
         ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT = defineCullingDefault("vehicles", "alwaysEnableVehiclesCullingByDefault", true);
         ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT = defineCullingDefault("planes", "alwaysEnablePlanesCullingByDefault", true);
@@ -734,8 +750,24 @@ public final class ModClientConfig
         return configSpec.isLoaded() ? value.get() : value.getDefault();
     }
 
+    public static boolean isUncensoredContentForced()
+    {
+        return serverForcesUncensoredContent.get();
+    }
+
+    /** Applies a server requirement for this connection without changing the saved client preference. Client thread. */
+    public static void setServerForcesUncensoredContent(boolean forced)
+    {
+        boolean previous = isUncensoredContentEnabled();
+        serverForcesUncensoredContent.set(forced);
+        if (previous != isUncensoredContentEnabled())
+            Minecraft.getInstance().reloadResourcePacks();
+    }
+
     public static boolean isUncensoredContentEnabled()
     {
+        if (serverForcesUncensoredContent.get())
+            return true;
         ModClientConfig config = get();
         if (config != null)
             return config.enableUncensoredContent;
@@ -919,7 +951,19 @@ public final class ModClientConfig
         if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
             return RenderPreset.CUSTOM;
 
-        LodValues current = currentLodValues();
+        return findLodPreset(currentLodValues());
+    }
+
+    public static RenderPreset defaultLodPreset()
+    {
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.getDefault()))
+            return RenderPreset.CUSTOM;
+        return findLodPreset(new LodValues(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.getDefault(), MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.getDefault(), DRIVEABLE_LOD_DETAIL_MULTIPLIER.getDefault(),
+            DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.getDefault(), DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.getDefault()));
+    }
+
+    private static RenderPreset findLodPreset(LodValues current)
+    {
         for (RenderPreset preset : RenderPreset.values())
             if (preset != RenderPreset.CUSTOM && lodValues(preset).equals(current))
                 return preset;
@@ -931,10 +975,21 @@ public final class ModClientConfig
         if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
             return RenderPreset.CUSTOM;
 
-        if (DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get() == 0 && DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get() == 0)
-            return RenderPreset.OFF;
+        return findImpostorPreset(currentImpostorValues());
+    }
 
-        ImpostorValues current = currentImpostorValues();
+    public static RenderPreset defaultImpostorPreset()
+    {
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.getDefault()))
+            return RenderPreset.CUSTOM;
+        return findImpostorPreset(new ImpostorValues(DRIVEABLE_IMPOSTOR_PIXEL_SIZE.getDefault(), DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.getDefault(), DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.getDefault(),
+            DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.getDefault(), DRIVEABLE_IMPOSTOR_RESOLUTION.getDefault(), DRIVEABLE_IMPOSTOR_YAW_ANGLES.getDefault()));
+    }
+
+    private static RenderPreset findImpostorPreset(ImpostorValues current)
+    {
+        if (current.pixels() == 0 && current.maximumDistance() == 0)
+            return RenderPreset.OFF;
         for (RenderPreset preset : RenderPreset.values())
             if (preset != RenderPreset.OFF && preset != RenderPreset.CUSTOM && impostorValues(preset).equals(current))
                 return preset;
@@ -952,6 +1007,14 @@ public final class ModClientConfig
     {
         return new ImpostorValues(DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get(), DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.get(), DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get(),
             DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.get(), DRIVEABLE_IMPOSTOR_RESOLUTION.get(), DRIVEABLE_IMPOSTOR_YAW_ANGLES.get());
+    }
+
+    /** The underlying settings represented by the quick menu's pair of rendering preset controls. */
+    public static List<ConfigValue<?>> renderPresetConfigValues()
+    {
+        return List.of(ENABLE_DRIVEABLE_LOD, MINIMUM_DRIVEABLE_PART_PIXEL_SIZE, MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE, DRIVEABLE_LOD_DETAIL_MULTIPLIER, DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE,
+            DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE, DRIVEABLE_IMPOSTOR_PIXEL_SIZE, DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE, DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE, DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER,
+            DRIVEABLE_IMPOSTOR_RESOLUTION, DRIVEABLE_IMPOSTOR_YAW_ANGLES);
     }
 
     /** Changes only model/track LOD controls. Zero thresholds keep impostors available independently. */

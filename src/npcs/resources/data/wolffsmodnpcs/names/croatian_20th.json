@@ -3,6 +3,30 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Ivan": 20, "Josip": 20, "Stjepan": 20, "Franjo": 20, "Mate": 20, "Marko": 20, "Petar": 20, "Antun": 20, "Ante": 20, "Nikola": 20, "Mato": 20,
+        "Pavao": 20, "Juraj": 20, "Martin": 20, "Luka": 20, "Milan": 20, "Jure": 20, "Vinko": 20, "Slavko": 20, "Stipe": 20,
+        "Andrija": 8, "Bartol": 8, "Blaž": 8, "Bogdan": 8, "Božo": 8, "Branko": 8, "Dane": 8, "Dragutin": 8, "Drago": 8, "Đuro": 8, "Eugen": 8,
+        "Frane": 8, "Grga": 8, "Ilija": 8, "Ive": 8, "Ivica": 8, "Jakov": 8, "Jozo": 8, "Karlo": 8, "Krešimir": 8, "Krsto": 8, "Ladislav": 8,
+        "Lovro": 8, "Ljudevit": 8, "Matija": 8, "Miroslav": 8, "Pero": 8, "Rade": 8, "Stanko": 8, "Tomislav": 8, "Viktor": 8, "Vjekoslav": 8,
+        "Vladimir": 8, "Zvonimir": 8, "Žarko": 8
+      },
+      "femaleWeights": {
+        "Marija": 20, "Ana": 20, "Katarina": 20, "Ivana": 20, "Anica": 20, "Mara": 20, "Kata": 20, "Jelena": 20, "Josipa": 20, "Marica": 20,
+        "Ljubica": 20, "Terezija": 20, "Magdalena": 20, "Barica": 20, "Dragica": 20, "Danica": 20, "Milica": 20, "Slavica": 20, "Ruža": 20,
+        "Lucija": 20,
+        "Anka": 8, "Antonija": 8, "Bara": 8, "Božena": 8, "Đurđa": 8, "Elizabeta": 8, "Ema": 8, "Franciska": 8, "Iva": 8, "Jagoda": 8, "Jozefina": 8,
+        "Marta": 8, "Nada": 8, "Nevenka": 8, "Olga": 8, "Paulina": 8, "Stana": 8, "Štefica": 8, "Veronika": 8, "Vesna": 8, "Zdenka": 8, "Zlata": 8
+      },
+      "surnameWeights": {
+        "Horvat": 20, "Kovačević": 20, "Babić": 20, "Marić": 20, "Jurić": 20, "Novak": 20, "Kovačić": 20, "Knežević": 20, "Vuković": 20,
+        "Marković": 20,
+        "Petrović": 8, "Matić": 8, "Tomić": 8, "Popović": 8, "Božić": 8, "Perić": 8, "Pavlović": 8, "Filipović": 8, "Lončar": 8, "Posavec": 8,
+        "Vidović": 8, "Lovrić": 8, "Kralj": 8, "Blažević": 8, "Radić": 8, "Horvatić": 8, "Šarić": 8, "Klarić": 8, "Jelić": 8, "Nikolić": 8,
+        "Katić": 3, "Vidić": 3, "Šimić": 3, "Tadić": 3, "Mandić": 3, "Vlahović": 3, "Grgić": 3, "Barišić": 3, "Kolar": 3, "Rukavina": 3, "Špoljar": 3,
+        "Fuček": 3, "Šimunović": 3, "Vrdoljak": 3, "Domazet": 3, "Živković": 3, "Bosanac": 3, "Dujmović": 3, "Škorić": 3, "Budak": 3, "Žagar": 3,
+        "Sabolić": 3, "Pavić": 3, "Varga": 3, "Tomašić": 3, "Vitez": 3, "Kovač": 3, "Krsnik": 3, "Zorić": 3, "Pranjić": 3
+      },
       "male": [
         "Andrija",
         "Ante",

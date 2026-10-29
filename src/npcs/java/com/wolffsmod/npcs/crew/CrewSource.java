@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.crew;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.RandomSource;
 
 import java.util.Locale;
 
@@ -15,8 +16,9 @@ import java.util.Locale;
  * @param playerClass
  *            short name of the class
  */
-public record CrewSource(Kind kind, int cloneTab, String cloneName, String team, String playerClass)
+public record CrewSource(Kind kind, int cloneTab, String cloneName, String team, String playerClass, int skin)
 {
+    public static final int RANDOM_SKIN = -1;
     public static final int MAX_CLONE_TAB = 15;
     public static final CrewSource NONE = new CrewSource(Kind.NONE, 1, "", "", "");
     private static final String NBT_KIND = "Kind";
@@ -24,6 +26,7 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
     private static final String NBT_CLONE_NAME = "CloneName";
     private static final String NBT_TEAM = "Team";
     private static final String NBT_CLASS = "Class";
+    private static final String NBT_SKIN = "Skin";
 
     /** Where a crew member comes from. */
     public enum Kind
@@ -41,6 +44,12 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
         }
     }
 
+    /** Old role-wide sources used the first class skin. */
+    public CrewSource(Kind kind, int cloneTab, String cloneName, String team, String playerClass)
+    {
+        this(kind, cloneTab, cloneName, team, playerClass, 0);
+    }
+
     public CrewSource
     {
         kind = kind == null ? Kind.NONE : kind;
@@ -48,21 +57,37 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
         cloneName = cloneName == null ? "" : cloneName.strip();
         team = team == null ? "" : team.strip();
         playerClass = playerClass == null ? "" : playerClass.strip();
+        skin = Math.max(RANDOM_SKIN, skin);
     }
 
     public CrewSource withKind(Kind changed)
     {
-        return new CrewSource(changed, cloneTab, cloneName, team, playerClass);
+        return new CrewSource(changed, cloneTab, cloneName, team, playerClass, skin);
     }
 
     public CrewSource withClone(int tab, String name)
     {
-        return new CrewSource(kind, tab, name, team, playerClass);
+        return new CrewSource(kind, tab, name, team, playerClass, skin);
     }
 
     public CrewSource withClass(String teamName, String className)
     {
-        return new CrewSource(kind, cloneTab, cloneName, teamName, className);
+        return new CrewSource(kind, cloneTab, cloneName, teamName, className, team.equals(teamName) && playerClass.equals(className) ? skin : RANDOM_SKIN);
+    }
+
+    public CrewSource withSkin(int variant)
+    {
+        return new CrewSource(kind, cloneTab, cloneName, team, playerClass, variant);
+    }
+
+    /** Chooses once per recruit on the server; the resulting index is synchronized with that NPC. */
+    public int chooseSkin(int variants, RandomSource random)
+    {
+        if (variants <= 0)
+            return 0;
+        if (skin == RANDOM_SKIN)
+            return random.nextInt(variants);
+        return skin < variants ? skin : 0;
     }
 
     /** Whether the source names someone to crew with; a clone without a name or a class without one names nobody. */
@@ -84,6 +109,7 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
         tag.putString(NBT_CLONE_NAME, cloneName);
         tag.putString(NBT_TEAM, team);
         tag.putString(NBT_CLASS, playerClass);
+        tag.putInt(NBT_SKIN, skin);
         return tag;
     }
 
@@ -93,6 +119,6 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
         for (Kind candidate : Kind.values())
             if (candidate.name().equals(tag.getString(NBT_KIND)))
                 kind = candidate;
-        return new CrewSource(kind, tag.getInt(NBT_CLONE_TAB), tag.getString(NBT_CLONE_NAME), tag.getString(NBT_TEAM), tag.getString(NBT_CLASS));
+        return new CrewSource(kind, tag.getInt(NBT_CLONE_TAB), tag.getString(NBT_CLONE_NAME), tag.getString(NBT_TEAM), tag.getString(NBT_CLASS), tag.getInt(NBT_SKIN));
     }
 }

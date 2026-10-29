@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,9 @@ enum NpcKind
         /** The models whose hull or base keeps its own facing. */
         HULLS(EnumSet.of(NpcKind.VEHICLE, NpcKind.AA_GUN)),
         /** Aircraft, and watercraft that dive. */
-        PLANES_AND_VEHICLES(EnumSet.of(NpcKind.PLANE, NpcKind.VEHICLE));
+        PLANES_AND_VEHICLES(EnumSet.of(NpcKind.PLANE, NpcKind.VEHICLE)),
+        /** The models that drive over the ground, and may run over what is in their way. */
+        GROUND_MACHINES(EnumSet.of(NpcKind.VEHICLE, NpcKind.MECHA));
 
         private final Set<NpcKind> kinds;
 
@@ -45,6 +48,9 @@ enum NpcKind
 
     static NpcKind of(EntityNPCInterface npc)
     {
+        // A ship a content pack filed as a plane sails as a vehicle, so the vehicle pages are hers.
+        if (model(npc).orElse(null) instanceof IDriveableType driveable && driveable.isShip() && FlanModelKind.of(driveable) == FlanModelKind.PLANE)
+            return VEHICLE;
         return model(npc).map(FlanModelKind::of).map(kind -> switch (kind)
         {
             case AA_GUN -> AA_GUN;

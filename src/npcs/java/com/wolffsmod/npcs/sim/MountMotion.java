@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.WeaponMount;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMount;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;

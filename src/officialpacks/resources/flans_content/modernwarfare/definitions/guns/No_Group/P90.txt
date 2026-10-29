@@ -23,7 +23,7 @@ Ammo p90Ammo
 ReloadTime 52
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 CanShootUnderwater False
 RoundsPerMin 900.0

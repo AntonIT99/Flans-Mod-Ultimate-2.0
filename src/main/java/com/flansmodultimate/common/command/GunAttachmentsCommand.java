@@ -6,7 +6,6 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.util.ModUtils;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.AccessLevel;
@@ -30,16 +29,8 @@ public final class GunAttachmentsCommand
 {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(commandRoot("flans", true));
-        dispatcher.register(commandRoot("flansmodultimate", false));
-    }
-
-    private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name, boolean includeLegacyAlias)
-    {
-        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(name).then(Commands.literal("attachments").executes(GunAttachmentsCommand::listAttachments));
-        if (includeLegacyAlias)
-            root.then(Commands.literal("allowedAttachments").executes(GunAttachmentsCommand::listAttachments));
-        return root;
+        dispatcher.register(Commands.literal("flansmodultimate").then(Commands.literal("attachments").executes(GunAttachmentsCommand::listAttachments))
+            .then(Commands.literal("attachment").executes(GunAttachmentsCommand::listAttachments)));
     }
 
     private static int listAttachments(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
@@ -55,21 +46,19 @@ public final class GunAttachmentsCommand
         GunType gun = ((GunItem) gunStack.getItem()).getConfigType();
         if (gun.isAllowAllAttachments())
         {
-            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.all", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE),
-                false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.all", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE), false);
             return 1;
         }
 
         List<AttachmentType> attachments = gun.getAllowedAttachments().stream().filter(Objects::nonNull).toList();
         if (attachments.isEmpty())
         {
-            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.none", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE),
-                false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.none", gunStack.getHoverName()).withStyle(ChatFormatting.BLUE), false);
             return 1;
         }
 
-        context.getSource().sendSuccess(
-            () -> Component.translatable("commands.flansmodultimate.attachments.header", gunStack.getHoverName(), attachments.size()).withStyle(ChatFormatting.BLUE), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.flansmodultimate.attachments.header", gunStack.getHoverName(), attachments.size()).withStyle(ChatFormatting.BLUE),
+            false);
         for (int i = 0; i < attachments.size(); i++)
             sendAttachment(context.getSource(), i + 1, attachments.get(i));
         return attachments.size();

@@ -1,6 +1,9 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import lombok.AccessLevel;

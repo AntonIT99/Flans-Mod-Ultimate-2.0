@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.server.teams;
 
-import com.flansmodultimate.api.ITeamsRespawnRule;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.PlayerClass;

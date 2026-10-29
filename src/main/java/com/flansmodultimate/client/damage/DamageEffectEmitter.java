@@ -64,7 +64,7 @@ final class DamageEffectEmitter
         int wreckAge = source.wreckAge();
         int lifetime = ModCommonConfig.driveableWreckLifetimeTicks();
         Vec3 motion = source.motion();
-        boolean raining = entity.level().isRainingAt(BlockPos.containing(entity.getX(), entity.getY() + entity.getBbHeight(), entity.getZ()));
+        boolean raining = isRainingOn(entity);
         // A wreck burns as hard as the fuel it had, and less so in the rain.
         float fire = DamageVisualCurves.wreckFire(wreckAge, lifetime) * source.load().fireStrength() * (raining ? RAIN_DAMPING : 1F);
         Tick tick = new Tick(source, entity.level().random, density, motion, motion.length(), wreckAge >= 0, fire, DamageVisualCurves.wreckSmoke(wreckAge, lifetime), raining);
@@ -276,6 +276,36 @@ final class DamageEffectEmitter
         }
     }
 
+    /** @return the top of the source's hull, where a wreck's fire and smoke column rise from */
+    static Vec3 wreckTop(DamageEffectSource source)
+    {
+        DriveablePart core = source.core();
+        Entity entity = source.entity();
+        return core == null ? entity.position().add(0D, entity.getBbHeight(), 0D) : source.pointInPart(core, 0.5D, 1D, 0.5D);
+    }
+
+    /**
+     * @return how much of a wreck's fire survives where it lies: none once the top of its hull is under water, and less
+     *         in the rain
+     */
+    static float fireExposure(DamageEffectSource source)
+    {
+        Entity entity = source.entity();
+        if (isSubmerged(entity, wreckTop(source)))
+            return 0F;
+        return isRainingOn(entity) ? RAIN_DAMPING : 1F;
+    }
+
+    private static boolean isSubmerged(Entity entity, Vec3 top)
+    {
+        return entity.level().getFluidState(BlockPos.containing(top)).is(FluidTags.WATER);
+    }
+
+    private static boolean isRainingOn(Entity entity)
+    {
+        return entity.level().isRainingAt(BlockPos.containing(entity.getX(), entity.getY() + entity.getBbHeight(), entity.getZ()));
+    }
+
     /** The heavy fire and the smoke column of a wreck, from the top of its hull, and its crackle. */
     private static void emitWreck(Tick tick)
     {
@@ -285,9 +315,8 @@ final class DamageEffectEmitter
         RandomSource random = tick.random();
         double size = core == null ? 1D : sizeOf(source, core);
         float scale = (float) Math.sqrt(size);
-        Vec3 top = core == null ? entity.position().add(0D, entity.getBbHeight(), 0D) : source.pointInPart(core, 0.5D, 1D, 0.5D);
-        boolean submerged = entity.level().getFluidState(BlockPos.containing(top)).is(FluidTags.WATER);
-        if (submerged)
+        Vec3 top = wreckTop(source);
+        if (isSubmerged(entity, top))
         {
             int bubbles = DamageParticles.count(3D * tick.density(), random);
             for (int i = 0; i < bubbles; i++)

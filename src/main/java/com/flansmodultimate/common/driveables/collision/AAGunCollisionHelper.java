@@ -106,10 +106,12 @@ public final class AAGunCollisionHelper
                 double dz = vector[2] - footZ;
                 if (dx * dx + dy * dy + dz * dz <= MAX_CARRY * MAX_CARRY)
                 {
+                    Vec3 before = entity.position();
                     DriveableCollisionWorld.moveIgnoringHulls(entity, dx, dy, dz);
                     float yaw = geometry.carryYaw(support);
                     entity.setYRot(entity.getYRot() + yaw);
                     entity.setYHeadRot(entity.getYHeadRot() + yaw);
+                    HullCarry.noteCarry(entity, entity.getX() - before.x, entity.getY() - before.y, entity.getZ() - before.z, yaw);
                     entity.resetFallDistance();
                 }
             }

@@ -3,6 +3,40 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Jonas": 20, "Antanas": 20, "Juozas": 20, "Petras": 20, "Pranas": 20, "Stasys": 20, "Kazimieras": 20, "Vincas": 20, "Jurgis": 20, "Vladas": 20,
+        "Mykolas": 20, "Kazys": 20, "Vytautas": 20, "Motiejus": 20, "Martynas": 20, "Steponas": 20, "Aleksandras": 20, "Tadas": 20, "Leonas": 20,
+        "Jokūbas": 20,
+        "Adomas": 8, "Alfonsas": 8, "Augustinas": 8, "Balys": 8, "Benediktas": 8, "Boleslovas": 8, "Bronius": 8, "Edvardas": 8, "Feliksas": 8,
+        "Ignas": 8, "Justinas": 8, "Klemensas": 8, "Konstantinas": 8, "Kostas": 8, "Liudas": 8, "Matas": 8, "Romualdas": 8, "Silvestras": 8,
+        "Simonas": 8, "Vincentas": 8, "Viktoras": 8, "Zigmas": 8
+      },
+      "femaleWeights": {
+        "Marija": 20, "Ona": 20, "Elena": 20, "Petronėlė": 20, "Stanislava": 20, "Juzefa": 20, "Barbora": 20, "Bronė": 20, "Anelė": 20, "Julija": 20,
+        "Kotryna": 20, "Veronika": 20, "Regina": 20, "Aldona": 20, "Emilija": 20, "Elžbieta": 20, "Janina": 20, "Genovaitė": 20, "Stefanija": 20,
+        "Kazimiera": 20,
+        "Adelė": 8, "Agota": 8, "Aleksandra": 8, "Antanina": 8, "Eugenija": 8, "Ieva": 8, "Jadvyga": 8, "Joana": 8, "Karolina": 8, "Konstancija": 8,
+        "Leokadija": 8, "Liucija": 8, "Magdalena": 8, "Marcelė": 8, "Morta": 8, "Rozalija": 8, "Salomėja": 8, "Teklė": 8, "Valerija": 8,
+        "Viktorija": 8, "Zofija": 8
+      },
+      "surnameWeights": {
+        "Kazlauskas": 20, "Petrauskas": 20, "Jankauskas": 20, "Stankevičius": 20, "Vasiliauskas": 20, "Žukauskas": 20, "Butkus": 20, "Paulauskas": 20,
+        "Urbonas": 20, "Kavaliauskas": 20,
+        "Sabaliauskas": 8, "Ivanauskas": 8, "Jonauskas": 8, "Grigaitis": 8, "Balčiūnas": 8, "Rimkus": 8, "Pocius": 8, "Sakalauskas": 8,
+        "Dambrauskas": 8, "Navickas": 8, "Ramanauskas": 8, "Vaitkus": 8, "Povilaitis": 8, "Čepulis": 8, "Brazaitis": 8, "Bielskis": 8, "Šimkus": 8,
+        "Rutkauskas": 8, "Vaičiūnas": 8, "Mikalauskas": 8,
+        "Gudaitis": 3, "Jakubauskas": 3, "Černiauskas": 3, "Vaičaitis": 3, "Jasaitis": 3, "Juozaitis": 3, "Daukantas": 3, "Kairys": 3,
+        "Laurinaitis": 3, "Smetona": 3, "Tumas": 3, "Giedraitis": 3, "Radvila": 3, "Žemaitis": 3, "Šalkauskas": 3
+      },
+      "femaleSurnameWeights": {
+        "Kazlauskaitė": 20, "Petrauskaitė": 20, "Jankauskaitė": 20, "Stankevičiūtė": 20, "Vasiliauskaitė": 20, "Žukauskaitė": 20, "Butkutė": 20,
+        "Paulauskaitė": 20, "Urbonaitė": 20, "Kavaliauskaitė": 20,
+        "Sabaliauskaitė": 8, "Ivanauskaitė": 8, "Jonauskaitė": 8, "Grigaitytė": 8, "Balčiūnaitė": 8, "Rimkutė": 8, "Pociūtė": 8, "Sakalauskaitė": 8,
+        "Dambrauskaitė": 8, "Navickaitė": 8, "Ramanauskaitė": 8, "Vaitkutė": 8, "Povilaitytė": 8, "Čepulytė": 8, "Brazaitytė": 8, "Bielskytė": 8,
+        "Šimkutė": 8, "Rutkauskaitė": 8, "Vaičiūnaitė": 8, "Mikalauskaitė": 8,
+        "Gudaitytė": 3, "Jakubauskaitė": 3, "Černiauskaitė": 3, "Vaičaitytė": 3, "Jasaitytė": 3, "Juozaitytė": 3, "Daukantaitė": 3, "Kairytė": 3,
+        "Laurinaitytė": 3, "Smetonaitė": 3, "Tumaitė": 3, "Giedraitytė": 3, "Radvilaitė": 3, "Žemaitytė": 3, "Šalkauskaitė": 3
+      },
       "male": [
         "Adomas",
         "Aleksandras",

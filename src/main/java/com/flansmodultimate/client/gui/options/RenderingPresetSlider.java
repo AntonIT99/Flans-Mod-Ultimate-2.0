@@ -97,9 +97,12 @@ public final class RenderingPresetSlider extends AbstractSliderButton
     {
         Component caption = Component.translatable(kind.key);
         Component preset = Component.translatable("options.flansmodultimate.value.renderpreset." + selected.name().toLowerCase(Locale.ROOT));
+        ModClientConfig.RenderPreset defaultPreset = kind == Kind.LOD ? ModClientConfig.defaultLodPreset() : ModClientConfig.defaultImpostorPreset();
+        Component defaultLabel = Component.translatable("options.flansmodultimate.value.renderpreset." + defaultPreset.name().toLowerCase(Locale.ROOT));
         setMessage(Options.genericValueLabel(caption, preset));
         Component details = kind == Kind.LOD ? lodDetails() : impostorDetails();
-        setTooltip(Tooltip.create(ConfigOptionFactory.tooltipHeader(caption, preset).append("\n\n").append(Component.translatable(kind.key + ".tooltip")).append("\n\n").append(details)));
+        setTooltip(
+            Tooltip.create(ConfigOptionFactory.tooltipHeader(caption, preset, defaultLabel).append("\n\n").append(Component.translatable(kind.key + ".tooltip")).append("\n\n").append(details)));
     }
 
     private Component lodDetails()

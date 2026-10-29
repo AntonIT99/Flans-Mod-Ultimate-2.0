@@ -14,6 +14,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 
+import java.util.Map;
+
 /**
  * Capture the Flag. Players take, return and capture flags by clicking them; combatants of the round, which addons
  * field, do so by touching them. Both follow the same rules, and only players earn score, statistics and experience.
@@ -97,7 +99,7 @@ public final class GameTypeCTF extends GameTypeTDM
             if (flag.isHome() && fighter instanceof ServerPlayer player)
                 PlayerData.getInstance(player).setScore(PlayerData.getInstance(player).getScore() + 3);
             flag.pickUp(fighter);
-            manager.broadcast(Component.literal(name(fighter) + " picked up the " + flagTeam.getName() + FLAG_SUFFIX));
+            manager.broadcast(Component.empty().append(name(fighter)).append(" picked up the ").append(flagTeam.getNameComponent()).append(FLAG_SUFFIX));
         }
     }
 
@@ -115,7 +117,7 @@ public final class GameTypeCTF extends GameTypeTDM
                 manager.getStats(player).recordFlagSave();
                 manager.awardExperience(player, 10);
             }
-            manager.broadcast(Component.literal(name(fighter) + " returned the " + flagTeam.getName() + FLAG_SUFFIX));
+            manager.broadcast(Component.empty().append(name(fighter)).append(" returned the ").append(flagTeam.getNameComponent()).append(FLAG_SUFFIX));
             return;
         }
 
@@ -132,13 +134,13 @@ public final class GameTypeCTF extends GameTypeTDM
                 manager.getStats(player).recordFlagCapture();
                 manager.awardExperience(player, 20);
             }
-            manager.broadcast(Component.literal(name(fighter) + " captured the " + (captured == null ? "enemy" : captured.getName()) + FLAG_SUFFIX));
+            manager.broadcast(Component.empty().append(name(fighter)).append(" captured the ").append(captured == null ? Component.literal("enemy") : captured.getNameComponent()).append(FLAG_SUFFIX));
         }
     }
 
-    private static String name(LivingEntity fighter)
+    private static Component name(LivingEntity fighter)
     {
-        return fighter instanceof ServerPlayer player ? player.getScoreboardName() : fighter.getName().getString();
+        return fighter instanceof ServerPlayer player ? Component.literal(player.getScoreboardName()) : fighter.getName();
     }
 
     @Override
@@ -150,6 +152,14 @@ public final class GameTypeCTF extends GameTypeTDM
             return true;
         }
         return super.setVariable(variable, value);
+    }
+
+    @Override
+    public Map<String, String> getVariables()
+    {
+        Map<String, String> variables = super.getVariables();
+        variables.put("flagtime", Integer.toString(flagReturnTimeSeconds));
+        return variables;
     }
 
     @Override

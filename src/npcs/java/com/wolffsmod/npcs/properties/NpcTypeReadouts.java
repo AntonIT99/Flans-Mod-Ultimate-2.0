@@ -1,9 +1,10 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EntityTypeProperties;
-import com.flansmodultimate.api.EntityTypeProperties.Weapon;
+import com.flansmodultimate.api.entity.EntityTypeProperties;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
@@ -19,17 +20,18 @@ public final class NpcTypeReadouts
     private NpcTypeReadouts()
     {}
 
-    public static Map<NpcTypeProperty, String> create(EntityTypeProperties type, Map<NpcTypeProperty, Tag> mapped, NpcWeaponOptions options, boolean nativeProjectile)
+    public static Map<NpcTypeProperty, String> create(@Nullable EntityTypeProperties type, Map<NpcTypeProperty, Tag> mapped, NpcWeaponOptions options, boolean nativeProjectile)
     {
         Map<NpcTypeProperty, String> values = new EnumMap<>(NpcTypeProperty.class);
         mapped.forEach((property, value) -> values.put(property, value instanceof NumericTag number ? number.getAsNumber().toString() : value.getAsString()));
-        if (!nativeProjectile || !options.enabled(Feature.TYPE_PROPERTIES))
+        if (type == null || !nativeProjectile || !options.enabled(Feature.TYPE_PROPERTIES))
             return values;
         if (options.enabled(Feature.MODEL_WEAPON_STATS))
         {
             numbers(values, type, NpcTypeProperty.DAMAGE, weapon -> Math.ceil(weapon.damage()));
             numbers(values, type, NpcTypeProperty.ACCURACY, weapon -> Math.max(1D, Math.min(100D, Math.round(100D - weapon.spread() * 5D))));
-            if (type.weapons().stream().allMatch(weapon -> weapon.speed().isPresent()))
+            // A velocity read with the NPC's ammunition already is what the one weapon fires at.
+            if (!mapped.containsKey(NpcTypeProperty.SPEED) && type.weapons().stream().allMatch(weapon -> weapon.speed().isPresent()))
                 numbers(values, type, NpcTypeProperty.SPEED, weapon -> Math.max(0D, Math.min(100D, Math.ceil(weapon.speed().getAsDouble() * 10D))));
         }
         if (options.enabled(Feature.FIRE_SOUNDS) && !type.weapons().isEmpty() && type.weapons().stream().noneMatch(weapon -> weapon.firingSound().isBlank()))

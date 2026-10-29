@@ -1,13 +1,16 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.client.FlansModelPreviews;
+import com.flansmodultimate.api.client.model.FlansModelPreviews;
+import com.flansmodultimate.api.content.IContentType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import com.wolffsmod.npcs.platform.render.NpcRenderBuffers;
+import com.wolffsmod.npcs.sim.NpcModels;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.RenderType;
@@ -27,6 +30,9 @@ public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
     private static final float LIVING_MODEL_ORIGIN = 1.501F;
 
     private final FlanModelEntityType entityType;
+    /** The model entity last posed, whose pitch and bank the next draw takes; models are shared by every NPC of a type. */
+    @Nullable
+    private FlanModelEntity posed;
 
     public FlanModelEntityModel(FlanModelEntityType entityType)
     {
@@ -42,6 +48,7 @@ public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
     public void setupAnim(@NotNull FlanModelEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch)
     {
         // The NPC wearing the model animates it; see NpcModelPoses. Menus draw it at rest.
+        posed = entity;
     }
 
     @Override
@@ -61,6 +68,16 @@ public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
         // Undo the flipped, lifted frame of vanilla models and stand the model on the NPC's feet.
         poseStack.translate(0F, LIVING_MODEL_ORIGIN, 0F);
         poseStack.scale(-1F, -1F, 1F);
+        FlanModelEntity owner = posed;
+        if (owner != null && (owner.getAttitudePitch() != 0F || owner.getAttitudeBank() != 0F))
+        {
+            // Forward is -Z and right +X here: pitched nose down about the width, banked right about the length, as NpcModels places muzzles.
+            float pivot = NpcModels.attitudePivot(entityType);
+            poseStack.translate(0F, pivot, 0F);
+            poseStack.mulPose(Axis.XP.rotationDegrees(-owner.getAttitudePitch()));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-owner.getAttitudeBank()));
+            poseStack.translate(0F, -pivot, 0F);
+        }
         poseStack.translate(0F, entityType.getShape().modelHeight(), 0F);
         try
         {

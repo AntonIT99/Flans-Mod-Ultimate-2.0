@@ -1,9 +1,11 @@
 package com.wolffsmod.npcs.teams;
 
+import com.wolffsmod.npcs.names.ContentNameBinding;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -40,6 +42,8 @@ public final class BotSlot
     private final boolean initial;
     private int squad;
     private String name = "";
+    @Nullable
+    private ContentNameBinding nameBinding;
     /** Short name of the slot's class, or of its vehicle definition. */
     private String role = "";
     @Nullable
@@ -68,6 +72,21 @@ public final class BotSlot
         this.source = source;
         this.entry = entry;
         this.initial = initial;
+    }
+
+    public void setName(String value)
+    {
+        name = value;
+        if (nameBinding != null && !nameBinding.literal().equals(value))
+            nameBinding = null;
+    }
+
+    /** Unresolved display text, including the stable slot number before its first spawn. */
+    public Component getNameComponent()
+    {
+        if (nameBinding != null)
+            return nameBinding.component(name);
+        return Component.literal(name.isEmpty() ? "#" + id : name);
     }
 
     public boolean isVehicle()

@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EntityTypeProperties;
-import com.flansmodultimate.api.EntityTypeProperties.Sound;
-import com.flansmodultimate.api.EntityTypeProperties.Weapon;
-import com.flansmodultimate.api.ReloadCycle;
+import com.flansmodultimate.api.driveables.ReloadCycle;
+import com.flansmodultimate.api.entity.EntityTypeProperties;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import org.junit.jupiter.api.Test;
@@ -117,10 +117,15 @@ class NpcTypeMappingTest
         assertEquals(IntTag.valueOf(5), mapped.get(NpcTypeProperty.BURST_DELAY));
         assertEquals(IntTag.valueOf(40), mapped.get(NpcTypeProperty.BURST));
         assertEquals(IntTag.valueOf(1), mapped.get(NpcTypeProperty.SHOT_COUNT));
-        // Without Flan ammunition Custom NPCs keeps its own burst and the cycle does not apply.
+        // Firing a Custom NPCs projectile, the NPC still bursts and pauses as the model's default ammunition would; each
+        // trigger then throws the weapon's pellets itself.
         var template = NpcTypeMapping.create(type, options, false, 1024D, cycle);
-        assertEquals(IntTag.valueOf(5), template.get(NpcTypeProperty.DELAY_MIN));
-        assertFalse(template.containsKey(NpcTypeProperty.BURST));
+        assertEquals(IntTag.valueOf(60), template.get(NpcTypeProperty.DELAY_MIN));
+        assertEquals(IntTag.valueOf(40), template.get(NpcTypeProperty.BURST));
+        assertEquals(IntTag.valueOf(8), template.get(NpcTypeProperty.SHOT_COUNT));
+        // The model offers no ranges: the server's model ranges are laid over them.
+        assertFalse(template.containsKey(NpcTypeProperty.AGGRO_RANGE));
+        assertFalse(template.containsKey(NpcTypeProperty.RANGE));
         // Without a cycle the bank fires steadily, one trigger per burst.
         var steady = NpcTypeMapping.create(type, options, true, 1024D, null);
         assertEquals(IntTag.valueOf(5), steady.get(NpcTypeProperty.DELAY_MIN));

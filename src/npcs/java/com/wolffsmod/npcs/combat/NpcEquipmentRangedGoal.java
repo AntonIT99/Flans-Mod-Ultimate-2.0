@@ -1,8 +1,10 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.FlansEquipment;
-import com.flansmodultimate.api.FlansProjectiles;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.wolffsmod.npcs.crew.NpcCrew;
+import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -87,8 +89,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     public static boolean engages(EntityNPCInterface npc)
     {
         LivingEntity target = npc.getTarget();
-        return !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive() && target.level() == npc.level() && !rushes(npc)
-            && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
+        return !com.wolffsmod.npcs.sim.NpcRepairs.active(npc) && !NpcCrew.holdsFire(npc) && !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive()
+            && target.level() == npc.level() && !rushes(npc) && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
     }
 
     /** A throwable gun with a melee attack closes in while it waits for its next throw. */
@@ -117,6 +119,16 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         main.cadence.tick();
         off.cadence.tick();
+        if (NpcThrowGoal.throwing(npc))
+        {
+            // A throw beside the weapon shows its own item in hand; the weapon waits, and a reload it has begun goes on.
+            charging = 0;
+            if (npc.isUsingItem() && !NpcEquipment.shield(npc.getUseItem()))
+                npc.stopUsingItem();
+            continueReload(main);
+            continueReload(off);
+            return;
+        }
         LivingEntity target = npc.getTarget();
         if (target == null || !engages(npc))
         {
@@ -138,7 +150,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         // An aircraft below its attack altitude climbs first; it keeps its target and its aim meanwhile.
         // An NPC at the wheel of a Flan's driveable fights with the driveable's weapons.
-        if (NpcVehicleState.of(npc).getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
+        if (com.wolffsmod.npcs.sim.NpcRepairs.active(npc) || NpcVehicleState.of(npc).getFlight().holdsFire() || NpcDrivers.holdsFire(npc))
         {
             cancelUse();
             continueReload(main);
@@ -233,6 +245,7 @@ public final class NpcEquipmentRangedGoal extends Goal
             if (!shot)
                 break;
             fired = true;
+            NpcWatch.attack(npc);
             launched(target, hand.side);
         } while (automatic && hand.cadence.ready() && npc.getItemInHand(hand.side) == weapon && FlansEquipment.hasLoadedRound(weapon));
     }

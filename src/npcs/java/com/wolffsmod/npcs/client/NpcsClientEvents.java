@@ -1,7 +1,10 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.client.FlansEquipmentRender;
+import com.flansmodultimate.api.client.NameTagRanges;
+import com.flansmodultimate.api.client.equipment.FlansEquipmentRender;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.client.centre.CommandCentrePages;
+import com.wolffsmod.npcs.diag.NpcServerSettings.Setting;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import com.wolffsmod.npcs.model.NpcSkins;
@@ -14,6 +17,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import noppes.npcs.CustomEntities;
+import noppes.npcs.entity.EntityNPCInterface;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @EventBusSubscriber(modid = NpcsMod.MOD_ID, value = Dist.CLIENT)
@@ -26,6 +30,8 @@ public final class NpcsClientEvents
         {
             FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply);
             NpcSkins.setClientResolver(NpcSkinResolver::apply);
+            CommandCentrePages.register();
+            NameTagRanges.setResolver((entity, configured) -> entity instanceof EntityNPCInterface ? ClientServerSettings.get(Setting.NAME_TAG_RANGE) : configured);
         });
     }
 

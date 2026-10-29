@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmodultimate.api.DriveControl;
+import com.flansmodultimate.api.driveables.DriveControl;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;

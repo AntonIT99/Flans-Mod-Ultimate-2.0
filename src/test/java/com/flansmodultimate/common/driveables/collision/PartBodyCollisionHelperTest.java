@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.driveables.collision;
 
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.PartBodyPose;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.parts.PartBodyPose;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.parts.PartBody;
 import org.junit.jupiter.api.Test;
@@ -37,14 +37,18 @@ class PartBodyCollisionHelperTest
         {
             for (float scale : new float[]{1F, 1.5F, 0.4F})
             {
-                PartBodyPose pose = new PartBodyPose(ORIGIN, yaw, scale, new MountAim(55F, 0F));
-                body.setPose(pose);
-                DriveableHullGeometry geometry = new DriveableHullGeometry(PartBodyCollisionHelper.profile(boxes, scale));
-                PartBodyCollisionHelper.pose(geometry, ORIGIN, yaw, scale, 55F, 0F, PIVOT, OFFSET, part -> true, false);
-                List<PartBody.Outline> outlines = body.outlines();
-                assertEquals(3, outlines.size());
-                for (PartBody.Outline outline : outlines)
-                    assertTrue(matchesAShape(geometry, outline), "yaw " + yaw + " scale " + scale);
+                // Level, then pitched and banked as a plane in flight.
+                for (float[] tilt : new float[][]{{0F, 0F}, {-25F, 40F}})
+                {
+                    PartBodyPose pose = new PartBodyPose(ORIGIN, yaw, tilt[0], tilt[1], scale, new MountAim(55F, 0F));
+                    body.setPose(pose);
+                    DriveableHullGeometry geometry = new DriveableHullGeometry(PartBodyCollisionHelper.profile(boxes, scale));
+                    PartBodyCollisionHelper.pose(geometry, ORIGIN, yaw, tilt[0], tilt[1], scale, 55F, 0F, PIVOT, OFFSET, part -> true, false);
+                    List<PartBody.Outline> outlines = body.outlines();
+                    assertEquals(3, outlines.size());
+                    for (PartBody.Outline outline : outlines)
+                        assertTrue(matchesAShape(geometry, outline), "yaw " + yaw + " pitch " + tilt[0] + " roll " + tilt[1] + " scale " + scale);
+                }
             }
         }
     }
@@ -54,17 +58,17 @@ class PartBodyCollisionHelperTest
     {
         Map<EnumDriveablePart, CollisionBox> boxes = boxes();
         DriveableHullGeometry geometry = new DriveableHullGeometry(PartBodyCollisionHelper.profile(boxes, 1F));
-        PartBodyCollisionHelper.pose(geometry, ORIGIN, 0F, 1F, 0F, 0F, PIVOT, OFFSET, part -> true, false);
+        PartBodyCollisionHelper.pose(geometry, ORIGIN, 0F, 0F, 0F, 1F, 0F, 0F, PIVOT, OFFSET, part -> true, false);
         // Falling onto the hull, whose top is one block above the origin.
         assertEquals(-0.5D, geometry.clip(1, 9.7D, 65.5D, 9.7D, 10.3D, 67.3D, 10.3D, -2D), 1.0E-6D);
         // Standing on it counts from the tick after the boxes were first posed, when there is a pose to be carried from.
         assertEquals(-1, geometry.findSupport(9.7D, 65D, 9.7D, 10.3D, 66.8D, 10.3D));
-        PartBodyCollisionHelper.pose(geometry, ORIGIN, 0F, 1F, 0F, 0F, PIVOT, OFFSET, part -> true, true);
+        PartBodyCollisionHelper.pose(geometry, ORIGIN, 0F, 0F, 0F, 1F, 0F, 0F, PIVOT, OFFSET, part -> true, true);
         assertTrue(geometry.findSupport(9.7D, 65D, 9.7D, 10.3D, 66.8D, 10.3D) >= 0);
         // The pod is on the model's right, which is west while it faces south.
         assertTrue(geometry.intersects(7.2D, 64.2D, 9.8D, 7.8D, 64.8D, 10.2D));
         assertFalse(geometry.intersects(12.2D, 64.2D, 9.8D, 12.8D, 64.8D, 10.2D));
-        PartBodyCollisionHelper.pose(geometry, ORIGIN, 0F, 1F, 0F, 0F, PIVOT, OFFSET, part -> part != EnumDriveablePart.RIGHT_SKIRT, true);
+        PartBodyCollisionHelper.pose(geometry, ORIGIN, 0F, 0F, 0F, 1F, 0F, 0F, PIVOT, OFFSET, part -> part != EnumDriveablePart.RIGHT_SKIRT, true);
         assertFalse(geometry.intersects(7.2D, 64.2D, 9.8D, 7.8D, 64.8D, 10.2D));
     }
 

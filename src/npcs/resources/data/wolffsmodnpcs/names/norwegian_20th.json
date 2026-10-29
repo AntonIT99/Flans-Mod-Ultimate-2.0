@@ -3,6 +3,30 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Ole": 20, "Johan": 20, "Lars": 20, "Hans": 20, "Anders": 20, "Karl": 20, "Olav": 20, "Nils": 20, "Per": 20, "Jens": 20, "Knut": 20,
+        "Kristian": 20, "Einar": 20, "Arne": 20, "Erik": 20, "Sigurd": 20, "Thor": 20, "Harald": 20, "Martin": 20, "Olaf": 20,
+        "Alf": 8, "Alfred": 8, "Andreas": 8, "Bjarne": 8, "Bjørn": 8, "Carl": 8, "Egil": 8, "Eivind": 8, "Erling": 8, "Finn": 8, "Georg": 8,
+        "Gunnar": 8, "Gustav": 8, "Haakon": 8, "Helge": 8, "Henrik": 8, "Hjalmar": 8, "Håkon": 8, "Ivar": 8, "Jakob": 8, "Johannes": 8, "John": 8,
+        "Kjell": 8, "Leif": 8, "Magnus": 8, "Odd": 8, "Oskar": 8, "Otto": 8, "Ragnar": 8, "Reidar": 8, "Rolf": 8, "Sverre": 8, "Trygve": 8
+      },
+      "femaleWeights": {
+        "Anna": 20, "Marie": 20, "Ingeborg": 20, "Karen": 20, "Kari": 20, "Ingrid": 20, "Johanne": 20, "Ragnhild": 20, "Hanna": 20, "Signe": 20,
+        "Sigrid": 20, "Margit": 20, "Astrid": 20, "Gunhild": 20, "Solveig": 20, "Else": 20, "Elise": 20, "Inga": 20, "Helga": 20, "Ellen": 20,
+        "Agnes": 8, "Alma": 8, "Aslaug": 8, "Asta": 8, "Bergljot": 8, "Borghild": 8, "Dagny": 8, "Edel": 8, "Elisabeth": 8, "Emma": 8, "Eva": 8,
+        "Gerd": 8, "Gudrun": 8, "Haldis": 8, "Hilda": 8, "Jenny": 8, "Kirsten": 8, "Liv": 8, "Martha": 8, "Ragna": 8, "Reidun": 8, "Svanhild": 8,
+        "Thora": 8, "Tordis": 8, "Valborg": 8, "Vigdis": 8, "Åse": 8
+      },
+      "surnameWeights": {
+        "Hansen": 20, "Johansen": 20, "Olsen": 20, "Larsen": 20, "Andersen": 20, "Pedersen": 20, "Nilsen": 20, "Kristiansen": 20, "Jensen": 20,
+        "Karlsen": 20,
+        "Johnsen": 8, "Pettersen": 8, "Eriksen": 8, "Berg": 8, "Haugen": 8, "Hagen": 8, "Johannessen": 8, "Andreassen": 8, "Jacobsen": 8, "Dahl": 8,
+        "Jørgensen": 8, "Halvorsen": 8, "Henriksen": 8, "Lund": 8, "Sørensen": 8, "Jakobsen": 8, "Moen": 8, "Gundersen": 8, "Iversen": 8, "Strand": 8,
+        "Solberg": 8, "Martinsen": 8, "Paulsen": 8, "Knutsen": 8, "Eide": 8,
+        "Bakken": 3, "Kristoffersen": 3, "Mathisen": 3, "Lie": 3, "Amundsen": 3, "Holm": 3, "Solheim": 3, "Berge": 3, "Myhre": 3, "Aas": 3, "Vik": 3,
+        "Foss": 3, "Lunde": 3, "Sandvik": 3, "Moe": 3, "Haug": 3, "Svendsen": 3, "Aune": 3, "Sunde": 3, "Rønning": 3, "Dalen": 3, "Holmen": 3,
+        "Nygård": 3, "Skoglund": 3, "Wold": 3, "Vold": 3, "Arnesen": 3, "Bjerke": 3, "Ellingsen": 3, "Ruud": 3
+      },
       "male": [
         "Alf",
         "Alfred",

@@ -1,0 +1,11 @@
+// Identity
+Name Rifleman
+ShortName OfficialWW2_BritishRifleman
+
+// Items
+AddItem leeEnfield
+AddItem webley
+AddItem millsBomb 2
+AddItem ww2Knife
+AddItem leeEnfieldAmmo 4
+AddItem webleyAmmo 2

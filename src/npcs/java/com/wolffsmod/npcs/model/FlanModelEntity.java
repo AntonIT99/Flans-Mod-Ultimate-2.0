@@ -1,7 +1,9 @@
 package com.wolffsmod.npcs.model;
 
-import com.flansmodultimate.api.*;
-import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.content.PaintjobVariant;
+import com.flansmodultimate.api.entity.ILivingVisualEffects;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -32,11 +34,21 @@ public class FlanModelEntity extends Mob implements ILivingVisualEffects
     private int paintjobId;
     private boolean hurtFlash = true;
     private boolean deathRotation = true;
+    /** Degrees the model is drawn pitched nose down and banked to its right this frame. Client only. */
+    private float attitudePitch;
+    private float attitudeBank;
 
     public void setVisualEffects(boolean hurt, boolean death)
     {
         hurtFlash = hurt;
         deathRotation = death;
+    }
+
+    /** Sets the pitch and bank the NPC wearing the model is drawn at this frame, in degrees. Client only. */
+    public void setAttitude(float pitch, float bank)
+    {
+        attitudePitch = pitch;
+        attitudeBank = bank;
     }
 
     @Override
@@ -84,7 +96,7 @@ public class FlanModelEntity extends Mob implements ILivingVisualEffects
     {
         super.tick();
         // A model entity of an NPC is never added to a level; one that is was summoned.
-        if (EntityPlatform.isAddedToLevel(this) && level() instanceof ServerLevel level && !isRemoved())
+        if (NpcPlatform.isAddedToLevel(this) && level() instanceof ServerLevel level && !isRemoved())
             FlanModelSummons.replace(level, this);
     }
 

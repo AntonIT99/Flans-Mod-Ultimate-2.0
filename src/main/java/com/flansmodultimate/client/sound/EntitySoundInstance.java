@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.sound;
 
-import com.flansmodultimate.api.IEngineSoundSource;
+import com.flansmodultimate.api.entity.IEngineSoundSource;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.PlaneType;

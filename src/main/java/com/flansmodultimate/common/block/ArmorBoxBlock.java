@@ -83,26 +83,11 @@ public class ArmorBoxBlock extends FlanBlock implements IFlanBlock<ArmorBoxType>
         if (resultStack.isEmpty())
             return;
 
-        if (!player.getAbilities().instabuild && !hasRequiredParts(player, entry, pieceIndex))
+        if (!InventoryHelper.tryConsumeAll(player.getInventory(), entry.getRequiredStacks().get(pieceIndex), player.getAbilities().instabuild))
             return;
-
-        if (!player.getAbilities().instabuild)
-        {
-            for (ItemStack requiredPart : entry.getRequiredStacks().get(pieceIndex))
-                InventoryHelper.consumeFromInventory(player.getInventory(), requiredPart);
-        }
 
         if (!player.getInventory().add(resultStack))
             player.drop(resultStack, false);
     }
 
-    private boolean hasRequiredParts(ServerPlayer player, ArmorBoxType.ArmourBoxEntry entry, int pieceIndex)
-    {
-        for (ItemStack requiredPart : entry.getRequiredStacks().get(pieceIndex))
-        {
-            if (InventoryHelper.countInInventory(player.getInventory(), requiredPart) < requiredPart.getCount())
-                return false;
-        }
-        return true;
-    }
 }

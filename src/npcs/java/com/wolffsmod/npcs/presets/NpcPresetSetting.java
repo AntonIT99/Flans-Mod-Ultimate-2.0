@@ -53,6 +53,10 @@ public enum NpcPresetSetting
     /** On attack. */
     ON_ATTACK(npc -> npc.ais.onAttack, (npc, value) -> npc.ais.onAttack = value,
         List.of("wolffsmodnpcs.preset.value.retaliate", "wolffsmodnpcs.preset.value.flee", "wolffsmodnpcs.preset.value.avoid", "wolffsmodnpcs.preset.value.nothing")),
+    /** Faction > Attack hostile factions. */
+    ATTACK_HOSTILE_FACTIONS(npc -> yes(npc.advanced.attackOtherFactions), (npc, value) -> npc.advanced.attackOtherFactions = value != 0, Values.NO_YES),
+    /** Faction > Defend faction members. */
+    DEFEND_FACTION_MEMBERS(npc -> yes(npc.advanced.defendFaction), (npc, value) -> npc.advanced.defendFaction = value != 0, Values.NO_YES),
     /** Tactical variant. */
     TACTICAL_VARIANT(CustomNpcsPlatform::tacticalVariant, CustomNpcsPlatform::setTacticalVariant, List.of()),
     /** Terrain. */
@@ -99,6 +103,8 @@ public enum NpcPresetSetting
     HEALTH_REGEN(NpcTypeProperty.HEALTH_REGEN),
     /** Combat regen. */
     COMBAT_REGEN(NpcTypeProperty.COMBAT_REGEN),
+    /** AI > Movement > Walking speed; a preset makes it the NPC's own, so that no model lends another. */
+    WALKING_SPEED(NpcTypeProperty.WALKING_SPEED),
     /** Engine idle. */
     ENGINE_IDLE(npc -> yes(NpcPresentation.of(npc).getVehicleSounds().isIdleEnabled()), (npc, value) -> NpcPresentation.of(npc).getVehicleSounds().setIdleEnabled(value != 0), Values.NO_YES),
     /** Engine movement. */
@@ -142,7 +148,7 @@ public enum NpcPresetSetting
         {
             case RESPAWN, CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> "survival";
             case KEEP_WRECK, HIDE_BODY, HURT_FLASH, DEATH_ROTATION, MODEL_SOUNDS, ENGINE_IDLE, ENGINE_MOVEMENT -> "appearance";
-            case CONSUME_AMMO, ITEM_WEAPONS, MODEL_WEAPON_STATS, ON_ATTACK -> "combat";
+            case CONSUME_AMMO, ITEM_WEAPONS, MODEL_WEAPON_STATS, ON_ATTACK, ATTACK_HOSTILE_FACTIONS, DEFEND_FACTION_MEMBERS -> "combat";
             default -> "movement";
         };
     }
@@ -151,7 +157,7 @@ public enum NpcPresetSetting
     {
         return switch (this)
         {
-            case CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> value / 2;
+            case CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN, WALKING_SPEED -> value / 2;
             default -> value;
         };
     }
@@ -201,6 +207,8 @@ public enum NpcPresetSetting
         public static final int WANDERING = 1;
         public static final int RESPAWN_NO = 3;
         public static final int DOORS_OPEN = 1;
+        /** A model property set to 0 as the NPC's own value, which no model then covers. */
+        public static final int FORCED_ZERO = 1;
         private static final List<String> NO_YES = List.of("gui.no", "gui.yes");
     }
 }

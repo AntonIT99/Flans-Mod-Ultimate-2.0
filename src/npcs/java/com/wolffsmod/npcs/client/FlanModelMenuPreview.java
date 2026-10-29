@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.client.FlansModelPreviews;
+import com.flansmodultimate.api.client.model.FlansModelPreviews;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.math.Axis;
 import com.wolffsmod.npcs.model.FlanModelEntity;

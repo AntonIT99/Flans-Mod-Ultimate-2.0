@@ -7,6 +7,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -52,7 +53,8 @@ public final class NpcSubmarine
         npc.setAirSupply(npc.getMaxAirSupply());
         npc.fallDistance = 0F;
         Vec3 motion = npc.getDeltaMovement();
-        npc.setDeltaMovement(motion.x, dive(motion.y, surface - depth - npc.getY()), motion.z);
+        int rate = NpcTuning.of(npc).get(Value.DIVE_RATE);
+        npc.setDeltaMovement(motion.x, rate > 0 ? dive(motion.y, surface - depth - npc.getY(), rate / 200D) : dive(motion.y, surface - depth - npc.getY()), motion.z);
     }
 
     /**
@@ -67,6 +69,18 @@ public final class NpcSubmarine
         if (error > 0.35D)
             return Math.min(0.16D, error * 0.08D);
         return vertical * 0.45D;
+    }
+
+    /**
+     * @param rate
+     *            blocks per tick the submarine dives and surfaces at most, as its dive rate setting says
+     * @return the vertical speed that brings it there no faster than that, gently at the end, and then holds it
+     */
+    static double dive(double vertical, double error, double rate)
+    {
+        if (Math.abs(error) <= 0.35D)
+            return vertical * 0.45D;
+        return Mth.clamp(error * 0.08D, -rate, rate);
     }
 
     /**

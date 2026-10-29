@@ -14,6 +14,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class VehicleTypeSteeringTest
 {
     @Test
+    void labjacRepairAliasesAndDurationAreParsed()
+    {
+        assertTrue(vehicle("Driver 0 0 0").isCanRepair());
+        assertFalse(vehicle("canRepair false").isCanRepair());
+        assertFalse(vehicle("NewRepairSystem false").isCanRepair());
+        assertEquals(200, vehicle("Driver 0 0 0").getRepairTime());
+        assertEquals(800, vehicle("Driver 0 0 0").getShipRepairTime());
+        assertEquals(400, vehicle("ShipRepairTime 400").getShipRepairTime());
+        assertEquals(40, vehicle("RepairTime 40").getRepairTime());
+        assertEquals(1, vehicle("RepairTime -20").getRepairTime());
+    }
+
+    @Test
     void categoryRateAppliesOverAnExistingLegacyDefinition()
     {
         TypeFile file = new TypeFile("steering", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "test")),

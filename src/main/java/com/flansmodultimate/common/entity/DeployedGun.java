@@ -5,8 +5,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.teams.TeamsManager;
@@ -89,6 +88,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     protected boolean shootKeyPressed;
     @Getter @Setter
     protected boolean prevShootKeyPressed;
+    private boolean pendingShootPress;
 
     public DeployedGun(EntityType<?> entityType, Level level)
     {
@@ -672,6 +672,13 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             serverTick(level);
     }
 
+    /** Accepts current intent; press edges belong to the server, including a press released within one tick. */
+    public void receiveShootInput(boolean pressed)
+    {
+        pendingShootPress |= pressed && !shootKeyPressed;
+        shootKeyPressed = pressed;
+    }
+
     protected void serverTick(Level level)
     {
         // Type must exist
@@ -721,6 +728,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
                 reloadGun(level, player);
             fireGun(level, living);
         }
+        prevShootKeyPressed = shootKeyPressed;
+        pendingShootPress = false;
     }
 
     protected int findAmmo(Player player)
@@ -786,35 +795,38 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             return;
 
         boolean automaticFire = configType.getFireMode(null).isAutomaticFire();
-        if ((automaticFire && shootKeyPressed) || (!automaticFire && shootKeyPressed && !prevShootKeyPressed))
+        if (!requestsFire(automaticFire))
+            return;
+        float shootDelay = ShotCooldown.clampDelay(configType.getShootDelay(null));
+        while (ShotCooldown.isReady(shootTimer))
         {
-            float shootDelay = ShotCooldown.clampDelay(configType.getShootDelay(null));
-
-            while (ShotCooldown.isReady(shootTimer))
-            {
-                ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
-                entityData.set(DATA_MUZZLE_FLASH_FRAME, random.nextInt(3));
-                entityData.set(DATA_MUZZLE_FLASH_TICKS, 2);
-
-                if (soundTimer <= 0)
-                {
-                    if (StringUtils.isNotBlank(configType.getShootSound()))
-                    {
-                        PacketPlaySound.sendSoundPacket(this, configType.getGunSoundRange(), configType.getShootSound(), configType.isDistortSound(), configType.isSilencedSound(null));
-                        soundTimer = configType.getShootSoundLength();
-                    }
-
-                    if (StringUtils.isNotBlank(configType.getDistantShootSound()))
-                        PacketHandler.sendToDonut(level.dimension(), position(), configType.getGunSoundRange(), configType.getDistantSoundRange(),
-                            new PacketPlaySound(position(), configType.getDistantSoundRange(), configType.getDistantShootSound(), false, false, null));
-                }
-
-                shootTimer += shootDelay;
-
-                if (!automaticFire)
-                    break;
-            }
+            ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
+            entityData.set(DATA_MUZZLE_FLASH_FRAME, random.nextInt(3));
+            entityData.set(DATA_MUZZLE_FLASH_TICKS, 2);
+            playShootSound(level);
+            shootTimer += shootDelay;
+            if (!automaticFire)
+                break;
         }
+    }
+
+    private boolean requestsFire(boolean automaticFire)
+    {
+        return automaticFire ? shootKeyPressed : pendingShootPress || shootKeyPressed && !prevShootKeyPressed;
+    }
+
+    private void playShootSound(Level level)
+    {
+        if (soundTimer > 0)
+            return;
+        if (StringUtils.isNotBlank(configType.getShootSound()))
+        {
+            PacketPlaySound.sendSoundPacket(this, configType.getGunSoundRange(), configType.getShootSound(), configType.isDistortSound(), configType.isSilencedSound(null));
+            soundTimer = configType.getShootSoundLength();
+        }
+        if (StringUtils.isNotBlank(configType.getDistantShootSound()))
+            PacketHandler.sendToDonut(level.dimension(), position(), configType.getGunSoundRange(), configType.getDistantSoundRange(),
+                new PacketPlaySound(position(), configType.getDistantSoundRange(), configType.getDistantShootSound(), false, false, null));
     }
 
     public void reloadGun(Level level, Player gunner)
@@ -847,9 +859,13 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         ammo = newAmmo.copy();
         setHasAmmo(true);
         float reloadFactor = ammo.getItem() instanceof ShootableItem shootableItem ? shootableItem.getConfigType().getReloadTimeMultiplier() : 1F;
-        // Reloading never lets the gun outrun its own rate of fire, so the wait
-        // after the round that emptied it is the longer of the two.
-        setReloadTimer(Mth.ceil(Math.max(configType.getReloadTime() * reloadFactor, configType.getShootDelay(null))));
+        // A single-round gun waits the shorter of its reload and its cadence, since
+        // it reloads after every shot; a larger magazine never outruns the cadence.
+        int rounds = ShootableItem.getMaxRounds(ammo);
+        float wait = GunHandlingTiming.reloadWait(configType.getReloadTime() * reloadFactor, configType.getShootDelay(null), rounds);
+        setReloadTimer(Mth.ceil(wait));
+        if (rounds <= 1)
+            shootTimer = Math.min(shootTimer, wait);
         String reloadSound = configType.getReloadSound(null);
 
         // Play reload sound

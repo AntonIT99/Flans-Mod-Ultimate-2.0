@@ -80,9 +80,6 @@ public class GunBoxBlock extends FlanBlock implements IFlanBlock<GunBoxType>
         if (entry == null)
             return;
 
-        if (!player.getAbilities().instabuild && !hasRequiredParts(player, entry))
-            return;
-
         InfoType entryType = entry.getType();
         if (entryType == null)
             return;
@@ -93,24 +90,11 @@ public class GunBoxBlock extends FlanBlock implements IFlanBlock<GunBoxType>
 
         prepareCraftedStack(resultStack, entryType);
 
-        if (!player.getAbilities().instabuild)
-        {
-            for (ItemStack requiredPart : entry.getRequiredParts())
-                InventoryHelper.consumeFromInventory(player.getInventory(), requiredPart);
-        }
+        if (!InventoryHelper.tryConsumeAll(player.getInventory(), entry.getRequiredParts(), player.getAbilities().instabuild))
+            return;
 
         if (!player.getInventory().add(resultStack))
             player.drop(resultStack, false);
-    }
-
-    private boolean hasRequiredParts(ServerPlayer player, GunBoxType.GunBoxEntry entry)
-    {
-        for (ItemStack requiredPart : entry.getRequiredParts())
-        {
-            if (InventoryHelper.countInInventory(player.getInventory(), requiredPart) < requiredPart.getCount())
-                return false;
-        }
-        return true;
     }
 
     private void prepareCraftedStack(ItemStack stack, InfoType type)

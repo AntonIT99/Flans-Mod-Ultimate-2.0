@@ -31,16 +31,118 @@ class NpcFlightAndDepthTest
     }
 
     @Test
+    void anOrbitingPlaneTurnsInForAGunPassNowAndThenAndCarriesOnBackToItsCircle()
+    {
+        NpcFlight flight = new NpcFlight();
+        double radius = 40D;
+        for (int tick = 1; tick < NpcFlight.ORBIT_PASS_INTERVAL; tick++)
+            assertFalse(flight.orbitPass(40D, radius));
+        assertTrue(flight.orbitPass(40D, radius), "turns in");
+        assertTrue(flight.orbitPass(20D, radius), "closes in");
+        assertTrue(flight.orbitPass(5D, radius), "has passed over the target and carries on");
+        assertTrue(flight.orbitPass(30D, radius), "still short of its circle");
+        assertFalse(flight.orbitPass(41D, radius), "circles again");
+        assertFalse(flight.orbitPass(41D, radius), "and counts afresh");
+    }
+
+    @Test
+    void anOrbitingPlaneTooCloseToLineUpWaitsAndAPassThatLastsTooLongIsBrokenOff()
+    {
+        NpcFlight flight = new NpcFlight();
+        for (int tick = 1; tick < NpcFlight.ORBIT_PASS_INTERVAL; tick++)
+            flight.orbitPass(40D, 40D);
+        assertFalse(flight.orbitPass(20D, 40D), "too close to line up");
+        assertTrue(flight.orbitPass(40D, 40D));
+        for (int tick = 0; tick < NpcFlight.MAX_PASS_TICKS; tick++)
+            assertTrue(flight.orbitPass(50D, 40D));
+        assertFalse(flight.orbitPass(50D, 40D), "broken off beyond its circle");
+    }
+
+    @Test
     void aPlaneNeitherStallsNorSpinsInPlace()
     {
         assertEquals(NpcFlight.STALL_SPEED, NpcFlight.planeSpeed(0, 0D));
         assertEquals(NpcFlight.TOP_SPEED, NpcFlight.planeSpeed(0, 3D));
         assertEquals(0.3D, NpcFlight.planeSpeed(0, 0.3D));
         assertEquals(0.25D, NpcFlight.planeSpeed(50, 0D), 1.0E-9D);
-        // Flying a circle of 16 blocks at 0.3 blocks per tick takes about one degree per tick.
-        assertEquals(1.074F, NpcFlight.planeTurn(0.3D, 16D), 1.0E-3F);
+        // Flying a circle of 16 blocks at 0.3 blocks per tick takes about one degree per tick, and it can turn a quarter more.
+        assertEquals(1.074F * 1.25F, NpcFlight.planeTurn(0.3D, 16D), 1.0E-3F);
         assertEquals(2F, NpcFlight.planeTurn(0.42D, 2D));
         assertEquals(0.25F, NpcFlight.planeTurn(0.13D, 400D));
+    }
+
+    @Test
+    void aPlaneCirclesItsHomeAtItsWalkingRangeOrWideWithoutOne()
+    {
+        assertEquals(NpcFlight.HOME_CIRCLE_RADIUS, NpcFlight.loiterRadius(0));
+        assertEquals(16D, NpcFlight.loiterRadius(5));
+        assertEquals(30D, NpcFlight.loiterRadius(30));
+        assertEquals(100D, NpcFlight.loiterRadius(100));
+    }
+
+    @Test
+    void anAircraftThatDroppedBelowItsAttackAltitudeSettlesHighEnoughToFireAgain()
+    {
+        // It settles no lower than its margin less the band it no longer climbs in, which has to clear the height it fires again at.
+        assertTrue(NpcFlight.HELICOPTER_MARGIN - NpcFlight.CLIMB_DEADBAND > NpcFlight.ATTACK_HYSTERESIS);
+        assertTrue(NpcFlight.PLANE_MARGIN - NpcFlight.CLIMB_DEADBAND > NpcFlight.ATTACK_HYSTERESIS);
+        // Within that band it no longer climbs.
+        assertEquals(0D, NpcFlight.climb(0D, NpcFlight.CLIMB_DEADBAND, Flight.HELICOPTER, false));
+        assertTrue(NpcFlight.climb(0D, NpcFlight.CLIMB_DEADBAND + 0.01D, Flight.HELICOPTER, false) > 0D);
+    }
+
+    @Test
+    void aHelicopterBacksOffFromATargetSteeperThanItsGunsReach()
+    {
+        NpcVehicleState.ShotPitch tipped = new NpcVehicleState.ShotPitch(-45F, 45F);
+        assertFalse(NpcFlight.tooSteep(30F, tipped));
+        assertTrue(NpcFlight.tooSteep(41F, tipped), "too close to the steepest to keep the shot");
+        assertTrue(NpcFlight.tooSteep(80F, tipped), "right over its target");
+        assertTrue(NpcFlight.tooSteep(-60F, tipped), "steeply under an aircraft above it");
+        assertFalse(NpcFlight.tooSteep(80F, new NpcVehicleState.ShotPitch(-90F, 90F)));
+        // It backs off across the ground away from its target, and against its heading when right over it.
+        Vec3 away = NpcFlight.away(new Vec3(10D, 90D, 0D), new Vec3(0D, 64D, 0D), 0F);
+        assertEquals(1D, away.x, 1.0E-9D);
+        assertEquals(0D, away.y);
+        assertEquals(-1D, NpcFlight.away(new Vec3(0D, 90D, 0D), new Vec3(0D, 64D, 0D), 0F).z, 1.0E-6D);
+        // Flying in, it turns round to at least its backing-off speed; flying out faster, it keeps its speed; sideways motion stays.
+        Vec3 backing = NpcFlight.backOff(new Vec3(-0.3D, 0.1D, 0.2D), away, NpcFlight.BACK_OFF_SPEED);
+        assertEquals(NpcFlight.BACK_OFF_SPEED, backing.x, 1.0E-9D);
+        assertEquals(0.2D, backing.z, 1.0E-9D);
+        assertEquals(0.1D, backing.y, 1.0E-9D);
+        Vec3 fast = new Vec3(0.4D, 0D, 0D);
+        assertEquals(fast, NpcFlight.backOff(fast, away, NpcFlight.BACK_OFF_SPEED));
+    }
+
+    @Test
+    void aRoamingPlaneMovesItsCircleOnRoughlyAlongItsHeading()
+    {
+        // Heading 0 flies toward positive z.
+        Vec3 next = NpcFlight.nextRoamCentre(new Vec3(10D, 80D, 20D), 0F, 128D, 0F);
+        assertEquals(10D, next.x, 1.0E-2D);
+        assertEquals(148D, next.z, 1.0E-2D);
+        assertEquals(80D, next.y);
+        // Turned off its heading, the next point lies as far away.
+        Vec3 turned = NpcFlight.nextRoamCentre(Vec3.ZERO, 0F, 128D, NpcFlight.ROAM_SPREAD);
+        assertEquals(128D, turned.horizontalDistance(), 1.0E-2D);
+        assertTrue(turned.x < 0D && turned.z > 0D);
+    }
+
+    @Test
+    void aPlaneIsNeverToldToCircleTighterThanItTurns()
+    {
+        // Two degrees a tick at one block a tick flies a circle of about 28.6 blocks.
+        assertEquals(28.648D, NpcFlight.turnRadius(1D, 2F), 1.0E-3D);
+        assertEquals(NpcFlight.turnRadius(1D, NpcFlight.MIN_PLANE_TURN), NpcFlight.turnRadius(1D, 0F));
+        // Without a turn rate or a model it turns two degrees a tick at most, a model as its bank allows, a set rate as set.
+        assertEquals(NpcFlight.MAX_PLANE_TURN, NpcFlight.maxTurn(0, 1D, false));
+        assertEquals(NpcFlight.coordinatedTurn(2D), NpcFlight.maxTurn(0, 2D, true));
+        assertEquals(1.5F, NpcFlight.maxTurn(30, 2D, true));
+        // The tightest circle it is told to fly leaves it a quarter more turn than the circle takes, at most what it turns.
+        double tightest = NpcFlight.turnRadius(0.42D, NpcFlight.MAX_PLANE_TURN) * NpcFlight.CIRCLE_MARGIN;
+        assertEquals(NpcFlight.MAX_PLANE_TURN, NpcFlight.planeTurn(0.42D, tightest), 1.0E-4F);
+        // A fast model plane circles far wider than its sixteen-block home circle.
+        assertTrue(NpcFlight.turnRadius(2D, NpcFlight.maxTurn(0, 2D, true)) > 40D);
     }
 
     @Test

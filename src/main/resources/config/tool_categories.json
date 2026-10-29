@@ -1,0 +1,48 @@
+{
+
+    "TPR explosive remote detonators": {
+        "properties": {},
+        "items": [
+            "ahmedsphone",
+            "c4remote"
+        ]
+    },
+
+    "TPR food tools": {
+        "properties": {},
+        "items": [
+            "bigmac",
+            "cheesepizza",
+            "pootine"
+        ]
+    },
+
+    "TPR medical kits": {
+        "properties": {},
+        "items": [
+            "mwmedkit"
+        ]
+    },
+
+    "TPR parachutes": {
+        "properties": {},
+        "items": [
+            "mwparachute"
+        ]
+    },
+
+    "TPR UAV controllers": {
+        "properties": {},
+        "items": [
+            "uavcontroller"
+        ]
+    },
+
+    "TPR vehicle repair torches": {
+        "properties": {},
+        "items": [
+            "eliteblowtorch",
+            "superblowtorch"
+        ]
+    }
+}

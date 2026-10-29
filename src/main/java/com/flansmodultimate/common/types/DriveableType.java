@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.DriveableKind;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
@@ -44,6 +44,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** {@code VehicleGunReloadTick} value meaning that no chambering sound is timed. */
     public static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     protected VehicleOptics optics = new VehicleOptics();
+    /** Negative means inherit the server config; zero explicitly disables melee protection. */
+    protected float meleeDamageThreshold = -1F;
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
     private static final float DEFAULT_WHEEL_GROUND_CLEARANCE = 0.375F;
@@ -73,17 +75,15 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         debugHitboxRevision++;
     }
 
-    /** Inverse of SetupPart parsing, including plane facing. */
-    public float[] debugHitboxPixels(CollisionBox runtime)
+    /** Inverse of SetupPart parsing. */
+    public float[] debugHitboxPixels(CollisionBox box)
     {
-        CollisionBox box = this instanceof PlaneType ? applyPlaneModelFacing(runtime) : runtime;
         return new float[]{-(box.getZ() + box.getDepth()) * 16F, box.getY() * 16F, box.getX() * 16F, box.getDepth() * 16F, box.getHeight() * 16F, box.getWidth() * 16F};
     }
 
     public CollisionBox debugHitboxFromPixels(float hp, float[] geometry, float resistance, float crew)
     {
-        CollisionBox box = new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3], geometry[4], geometry[5], resistance, crew);
-        return this instanceof PlaneType ? applyPlaneModelFacing(box) : box;
+        return new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3], geometry[4], geometry[5], resistance, crew);
     }
 
     /** Original, unscaled definitions retained so repeated finalization is idempotent. */
@@ -251,6 +251,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float buoyancy = 0.0165F;
     /** Opt-in Labjac naval compartment damage, listing and sinking rules. */
     protected boolean epicShip;
+    protected boolean canRepair = true;
+    protected int repairTime = 200;
+    protected int shipRepairTime = 800;
     protected float floatOffset;
     protected float bulletDetectionRadius = -1F;
     /**
@@ -414,6 +417,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     @Override
     protected void read(TypeFile file)
     {
+        meleeDamageThreshold = readValue("MeleeDamageThreshold", meleeDamageThreshold, file);
+        if (!Float.isFinite(meleeDamageThreshold) || meleeDamageThreshold < 0F)
+            meleeDamageThreshold = -1F;
         super.read(file);
         engine = readValue("Engine", engine, file).trim();
         readSeats(file);
@@ -688,15 +694,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             float crew = !composite && values.length > start + 9 ? parseLegacyFloat(values[start + 9]) : defaultCrewMultiplier;
             CollisionBox box = new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]), parseLegacyFloat(values[start + 3]), parseLegacyFloat(values[start + 4]),
                 parseLegacyFloat(values[start + 5]), parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew);
-            health.put(part, this instanceof PlaneType ? applyPlaneModelFacing(box) : box);
+            health.put(part, box);
         });
-    }
-
-    /** Plane models face the opposite way to the simulation frame, as seats and wheels already account for. */
-    private static CollisionBox applyPlaneModelFacing(CollisionBox box)
-    {
-        return CollisionBox.inWorldUnits(box.getHealth(), -(box.getX() + box.getWidth()), box.getY(), -(box.getZ() + box.getDepth()), box.getWidth(), box.getHeight(), box.getDepth(),
-            box.getPenetrationResistance(), box.getCrewDamageMultiplier());
     }
 
     private void readWeapons(TypeFile file)
@@ -842,6 +841,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         floatOnWater = readValue("FloatOnWater", floatOnWater, file);
         buoyancy = readValue("Buoyancy", buoyancy, file);
         epicShip = readValue("EpicShip", epicShip, file);
+        canRepair = readValue("canRepair", canRepair, file);
+        canRepair = readValue("NewRepairSystem", canRepair, file);
+        repairTime = Math.max(1, readValue("RepairTime", repairTime, file));
+        shipRepairTime = Math.max(1, readValue("ShipRepairTime", shipRepairTime, file));
         floatOffset = readValue("FloatOffset", floatOffset, file);
         canMountEntity = readValue("CanMountEntity", canMountEntity, file);
         wheelStepHeight = aliasFloat(wheelStepHeight, file, "WheelRadius", "WheelStepHeight");
@@ -1277,10 +1280,33 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     }
 
     @Override
+    public float getMeleeDamageThreshold()
+    {
+        return meleeDamageThreshold < 0F ? ModCommonConfig.driveableMeleeDamageThreshold() : meleeDamageThreshold;
+    }
+
+    @Override
     public float getRestingHeight()
     {
         float lowestAnchor = getLowestWheelAnchor();
         return Float.isNaN(lowestAnchor) ? yOffset : getWheelGroundClearance() - lowestAnchor;
+    }
+
+    @Override
+    public float getFloatingHeight()
+    {
+        if (!floatOnWater)
+            return getRestingHeight();
+        // As Driveable#applyGravityAndBuoyancy: a declared draft settles the core box bottom that far below the
+        // surface, otherwise the lowest wheel anchor floats at the surface, lowered by FloatOffset for vehicles.
+        ResolvedVehiclePhysics physics = getResolvedPhysics();
+        CollisionBox core = health.get(EnumDriveablePart.CORE);
+        if (physics.draftM() != null && !ModCommonConfig.forceLegacyMovement(physics.category()) && core != null && core.getWidth() > 0F && core.getHeight() > 0F && core.getDepth() > 0F)
+            return (float) (-physics.draftM() - core.asAabb().minY * Math.max(1.0E-4F, getModelScale()));
+        float lowestAnchor = getLowestWheelAnchor();
+        if (Float.isNaN(lowestAnchor))
+            return getRestingHeight();
+        return (this instanceof VehicleType ? floatOffset : 0F) - lowestAnchor;
     }
 
     @Override
@@ -1329,7 +1355,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /**
      * Moves one shoot point onto a muzzle measured off the model while the content
      * is loading. Unlike the debug overrides this becomes the type's baseline, so
-     * {@code /flandebug shootpoint reset} keeps it.
+     * {@code /flansdebug shootpoint reset} keeps it.
      *
      * @param modelPixels
      *            the measured muzzle, in the units and convention of a type file
@@ -1389,6 +1415,21 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         if (seat == null || seat.getGunType() == null)
             return false;
         seat.setGunBarrels(toBlocks(offsetPixels));
+        return true;
+    }
+
+    /**
+     * Gives a seat gun the point its model turns it round as it aims, measured off the model.
+     *
+     * @param pixels
+     *            the pivot in type-file pixels, in the frame of the seat's {@code GunOrigin}
+     */
+    public boolean applyMeasuredGunPivot(int seatIndex, Vector3f pixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        seat.setGunPivot(new Vector3f(pixels.x / 16F, pixels.y / 16F, pixels.z / 16F));
         return true;
     }
 
@@ -1519,16 +1560,20 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * For a bank firing mounted guns the gun's own reload time stands in,
      * unless the vehicle states a reload time for the bank;
      * {@code ReadWeaponsFromGunTypes} again hands the gun the last word.
+     *
+     * <p>
+     * A bank firing {@code magazineRounds} of one reloads after every shot, so the
+     * shorter of reload and cadence wins; see {@link GunHandlingTiming#reloadWait}.
      */
-    public float reloadTime(boolean secondaryWeapon)
+    public float reloadTime(boolean secondaryWeapon, int magazineRounds)
     {
         int bankReload = secondaryWeapon ? reloadTimeSecondary : reloadTimePrimary;
         GunType gunType = getPilotGunType(secondaryWeapon);
         if (gunType != null && (readWeaponsFromGunTypes || bankReload <= 0 && reloadTimeShared <= 0))
-            return Math.max(gunType.getReloadTime(), gunType.getShootDelay(null));
+            return GunHandlingTiming.reloadWait(gunType.getReloadTime(), gunType.getShootDelay(null), magazineRounds);
 
         float longestDelay = secondaryWeapon ? longestDeclaredDelaySecondary : longestDeclaredDelayPrimary;
-        return Math.max(Math.max(bankReload, reloadTimeShared), Math.max(longestDelay, shootDelay(secondaryWeapon)));
+        return GunHandlingTiming.reloadWait(Math.max(bankReload, reloadTimeShared), Math.max(longestDelay, shootDelay(secondaryWeapon)), magazineRounds);
     }
 
     /**

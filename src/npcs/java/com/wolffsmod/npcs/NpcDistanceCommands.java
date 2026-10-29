@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs;
 
-import com.flansmodultimate.api.IFlanNpcDistance;
+import com.flansmodultimate.api.entity.IFlanNpcDistance;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 

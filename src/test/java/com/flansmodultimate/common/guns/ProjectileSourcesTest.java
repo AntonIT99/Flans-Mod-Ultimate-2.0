@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.ProjectileSources;
-import com.flansmodultimate.api.ProjectileSources.Source;
+import com.flansmodultimate.api.projectiles.ProjectileSources;
+import com.flansmodultimate.api.projectiles.ProjectileSources.Source;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.EnumType;
@@ -42,13 +42,14 @@ class ProjectileSourcesTest
     }
 
     @Test
-    void aaSpeedAndUnarmedStatsRemainFallbacksWhenAmmunitionDeclaresNoVelocity()
+    void anAaGunFiresAtItsOwnDefaultWhileUnarmedStatsRemainFallbacksWhenAmmunitionDeclaresNoVelocity()
     {
         TestBullet ammo = new TestBullet(0F, 0F);
         var aa = sources(ammo, new AAGunType(), true);
         assertEquals(Source.WEAPON, aa.damage());
         assertEquals(Source.WEAPON, aa.spread());
-        assertEquals(Source.CALLER, aa.speed());
+        // As the placed AA gun does, it falls back to the default every Flan bullet has.
+        assertEquals(Source.WEAPON, aa.speed());
         var unarmed = sources(ammo, ammo, true);
         assertEquals(Source.CALLER, unarmed.damage());
         assertEquals(Source.CALLER, unarmed.spread());
@@ -94,7 +95,8 @@ class ProjectileSourcesTest
         TestVehicle vehicle = new TestVehicle();
         var primary = ExternalProjectileSupport.settingSources(ammo, vehicle, null, null, false, true);
         var secondary = ExternalProjectileSupport.settingSources(ammo, vehicle, null, null, true, true);
-        assertEquals(Source.CALLER, primary.speed());
+        // A bank without BulletSpeed fires at the default its driveable uses.
+        assertEquals(Source.WEAPON, primary.speed());
         assertTrue(primary.firingSound());
         assertFalse(secondary.firingSound());
         vehicle.overrides("AmmoMass synthetic 9", "AmmoMuzzleVelocity synthetic 400");
@@ -150,8 +152,7 @@ class ProjectileSourcesTest
 
         void overrides(String... lines)
         {
-            ammoOverrides = AmmoOverrides
-                .read(new TypeFile("syntheticPlatform", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "sources")), List.of(lines))).overrides();
+            ammoOverrides = AmmoOverrides.read(new TypeFile("syntheticPlatform", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "sources")), List.of(lines))).overrides();
         }
     }
 }

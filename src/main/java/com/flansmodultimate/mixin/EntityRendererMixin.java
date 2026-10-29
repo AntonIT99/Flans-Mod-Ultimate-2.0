@@ -1,5 +1,6 @@
 package com.flansmodultimate.mixin;
 
+import com.flansmodultimate.api.client.NameTagRanges;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -53,7 +54,7 @@ public abstract class EntityRendererMixin
         if (!(entity instanceof LivingEntity livingEntity))
             return ClientHooks.isNameplateInRenderDistance(entity, squareDistance);
 
-        float range = ModCommonConfig.nameTagRenderRange(livingEntity.isDiscrete());
+        float range = NameTagRanges.resolve(livingEntity, ModCommonConfig.nameTagRenderRange(livingEntity.isDiscrete()));
         return squareDistance < range * range;
     }
 

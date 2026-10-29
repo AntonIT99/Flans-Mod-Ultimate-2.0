@@ -8,4 +8,6 @@ import java.util.List;
 public interface EntityTrackingRefresh
 {
     void flansmodultimateRefreshTracking(List<ServerPlayer> players);
+
+    void flansmodultimateUpdatePlayer(ServerPlayer player);
 }

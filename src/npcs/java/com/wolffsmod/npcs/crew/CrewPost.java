@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.crew;
 
-import com.flansmodultimate.api.WeaponMount;
+import com.flansmodultimate.api.driveables.WeaponMount;
 
 import java.util.Locale;
 

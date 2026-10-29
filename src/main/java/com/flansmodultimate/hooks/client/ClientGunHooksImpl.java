@@ -12,6 +12,7 @@ import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.guns.EnumFunction;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;
 import com.flansmodultimate.common.types.*;
@@ -37,8 +38,6 @@ import java.util.*;
 
 public class ClientGunHooksImpl implements IClientGunHooks
 {
-    private static final int AA_GUN_BARREL_ORIGIN_SYNC_INTERVAL = 100;
-    private static final Map<Integer, Long> aaGunBarrelOriginSyncTicks = new HashMap<>();
     /** Last held gun per hand and last selected hotbar slot, used to detect weapon switches client side */
     private static final Map<InteractionHand, GunItem> lastHeldGuns = new EnumMap<>(InteractionHand.class);
     private static int lastSelectedSlot = -1;
@@ -105,6 +104,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             chargeDelay = modelGun.getChargeDelayAfterReload();
             chargeTime = modelGun.getChargeTime();
         }
+        GunArmPoses.recordReload(holder, hand, reloadTicks);
         ModClient.getGunAnimations(holder, hand).doReload(reloadTicks, pumpDelay, pumpTime, chargeDelay, chargeTime, 1, false);
     }
 
@@ -141,6 +141,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
 
         data.doGunReload(hand, reloadTime);
+        GunArmPoses.recordReload(player, hand, reloadTime);
 
         int pumpDelay = 0;
         int pumpTime = 1;
@@ -165,6 +166,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         data.setShootTimeRight(0);
         data.setShootTimeLeft(0);
         data.setReloading(hand, false);
+        GunArmPoses.clearReload(player, hand);
         ModClient.getGunAnimations(player, hand).cancelReload();
     }
 
@@ -184,7 +186,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         {
             data.setShootKeyPressed(hand, false);
             data.setSecondaryFunctionKeyPressed(false);
-            PacketHandler.sendToServer(new PacketGunInput(false, data.isPrevShootKeyPressed(hand), false, hand));
+            PacketHandler.sendToServer(new PacketGunInput(false, false, hand));
         }
 
         GunInputState.ButtonState primaryFunctionState = GunInputState.getPrimaryFunctionState(hand);
@@ -214,7 +216,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
             // Send update to server when keys are pressed or released
             if (primaryFunctionState.isPressed() != primaryFunctionState.isPrevPressed() || secondaryFunctionState.isPressed() != secondaryFunctionState.isPrevPressed())
-                PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), primaryFunctionState.isPrevPressed(), secondaryFunctionState.isPressed(), hand));
+                PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), secondaryFunctionState.isPressed(), hand));
         }
     }
 
@@ -291,8 +293,6 @@ public class ClientGunHooksImpl implements IClientGunHooks
             ModClient.setSwitchTime(Math.max(ModClient.getSwitchTime(), animationLength));
 
             data.setShootTime(hand, Math.max(data.getShootTime(hand), animationLength));
-            // The server owns the shooting logic, so it has to know about the switch delay as well
-            PacketHandler.sendToServer(new PacketGunSwitchDelay(hand));
         }
     }
 
@@ -330,7 +330,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             if (deployedGun.isShootKeyPressed())
             {
                 deployedGun.setShootKeyPressed(false);
-                PacketHandler.sendToServer(new PacketDeployedGunInput(deployedGun, false, deployedGun.isPrevShootKeyPressed()));
+                PacketHandler.sendToServer(new PacketDeployedGunInput(deployedGun, false));
             }
         }
         else
@@ -341,7 +341,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
             // Send update to server when key is pressed or released
             if (deployedGun.isShootKeyPressed() != deployedGun.isPrevShootKeyPressed())
-                PacketHandler.sendToServer(new PacketDeployedGunInput(deployedGun, deployedGun.isShootKeyPressed(), deployedGun.isPrevShootKeyPressed()));
+                PacketHandler.sendToServer(new PacketDeployedGunInput(deployedGun, deployedGun.isShootKeyPressed()));
         }
     }
 
@@ -349,7 +349,6 @@ public class ClientGunHooksImpl implements IClientGunHooks
     public void tickAAGun(AAGun aaGun)
     {
         ModelAAGun.BarrelOriginData barrelOriginData = getAAGunModelBarrelOrigins(aaGun);
-        syncAAGunModelBarrelOrigins(aaGun, barrelOriginData);
         spawnAAGunDebugMarkers(aaGun, barrelOriginData);
 
         if (aaGun.getFirstPassenger() != Minecraft.getInstance().player)
@@ -360,7 +359,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             if (aaGun.isShootKeyPressed())
             {
                 aaGun.setShootKeyPressed(false);
-                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, false, aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
+                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, false));
             }
         }
         else
@@ -370,7 +369,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             aaGun.setPrevShootKeyPressed(primaryFunctionState.isPrevPressed());
 
             if (aaGun.isShootKeyPressed() != aaGun.isPrevShootKeyPressed())
-                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
+                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed()));
         }
     }
 
@@ -382,36 +381,6 @@ public class ClientGunHooksImpl implements IClientGunHooks
             return null;
 
         return model.getModelBarrelOriginData(type);
-    }
-
-    private static void syncAAGunModelBarrelOrigins(AAGun aaGun, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
-    {
-        if (barrelOriginData == null)
-            return;
-
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null)
-            return;
-
-        long gameTime = minecraft.level.getGameTime();
-        long nextSyncTick = aaGunBarrelOriginSyncTicks.getOrDefault(aaGun.getId(), 0L);
-        if (gameTime < nextSyncTick)
-            return;
-
-        aaGunBarrelOriginSyncTicks.put(aaGun.getId(), gameTime + AA_GUN_BARREL_ORIGIN_SYNC_INTERVAL);
-        PacketHandler.sendToServer(new PacketAAGunModelBarrelOrigins(aaGun, barrelOriginData.pivots(), barrelOriginData.muzzles()));
-    }
-
-    @Nullable
-    private static Vec3[] pivots(@Nullable ModelAAGun.BarrelOriginData barrelOriginData)
-    {
-        return barrelOriginData == null ? null : barrelOriginData.pivots();
-    }
-
-    @Nullable
-    private static Vec3[] muzzles(@Nullable ModelAAGun.BarrelOriginData barrelOriginData)
-    {
-        return barrelOriginData == null ? null : barrelOriginData.muzzles();
     }
 
     private static void spawnAAGunDebugMarkers(AAGun aaGun, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
@@ -438,9 +407,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
                 DebugHelper.spawnDebugDot(barrelOrigin, 2, 1F, 1F, 0F);
                 DebugHelper.spawnDebugVector(barrelOrigin, shootingVector, 2, 1F, 1F, 0F);
             }
-            // The type file's Barrel line, which only fires until a client has
-            // reported the model. Shown whenever the model is what fires, so the
-            // two can be compared and the line corrected with /flandebug.
+            // Compare the authored fallback with the locally measured model muzzle.
             if (hasModelBarrel(barrelOriginData, barrel))
             {
                 Vec3 authored = aaGun.getAuthoredBarrelOrigin(barrel, sentry, barrelOriginData.pivots()[barrel]);

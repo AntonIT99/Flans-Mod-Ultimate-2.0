@@ -1,10 +1,8 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.physics.ModPhysics;
-import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
@@ -19,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.*;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -291,17 +289,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
             // Living proximity
             if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
             {
-                if (ModCommonConfig.get().shootableProximityTriggerFriendlyFire())
-                {
-                    // Check to prevent friendly fire
-                    Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
-                    LivingEntity owner = getOwner().orElse(null);
-                    if (currentRound.isPresent() && owner instanceof ServerPlayer attacker && entity instanceof ServerPlayer victim
-                        && !Optional.ofNullable(currentRound.get().getGametype()).map(g -> g.canPlayerBeAttacked(victim, attacker)).orElse(false))
-                        continue;
-                }
-
-                if (!handleEntityInProximityTriggerRange(level, living))
+                if (ignoresAlly(living) || !handleEntityInProximityTriggerRange(level, living))
                     continue;
 
                 detonate(level);
@@ -311,13 +299,29 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
             // Driveable proximity
             if (entity instanceof Driveable driveable && entity.distanceToSqr(this) < rDriveableSq)
             {
-                if (!handleEntityInProximityTriggerRange(level, driveable))
+                if (ignoresAlly(driveable) || !handleEntityInProximityTriggerRange(level, driveable))
                     continue;
 
                 detonate(level);
                 break;
             }
         }
+    }
+
+    /**
+     * Whether the proximity trigger leaves an ally alone: unless allies may set triggers off, someone the owner's fire spares,
+     * or a driveable carrying such a rider.
+     */
+    private boolean ignoresAlly(Entity entity)
+    {
+        LivingEntity owner = getOwner().orElse(null);
+        if (owner == null || ModCommonConfig.get().shootableProximityTriggerFriendlyFire())
+            return false;
+        if (entity instanceof LivingEntity living)
+            return FriendlyFireRules.spares(living, owner);
+        if (entity instanceof Driveable driveable && driveable.getSeats() != null)
+            return Arrays.stream(driveable.getSeats()).anyMatch(seat -> seat != null && seat.getRiddenByEntity() instanceof LivingEntity rider && FriendlyFireRules.spares(rider, owner));
+        return false;
     }
 
     protected abstract boolean handleEntityInProximityTriggerRange(Level level, Entity entity);

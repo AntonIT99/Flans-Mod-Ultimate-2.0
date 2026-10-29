@@ -165,8 +165,8 @@ public final class TeamsEditorScreen extends Screen
         Map<String, Row> rows = new LinkedHashMap<>();
         Collection<? extends InfoType> originals = team ? Team.packValues() : PlayerClass.packValues();
         Collection<? extends InfoType> effective = team ? Team.values() : PlayerClass.values();
-        originals.forEach(type -> rows.put(EditorCatalog.key(type), new Row(EditorCatalog.key(type), type.getName(), type.getContentPack().getName(), "original")));
-        effective.forEach(type -> rows.put(EditorCatalog.key(type), new Row(EditorCatalog.key(type), type.getName(), type.getContentPack().getName(), "original")));
+        originals.forEach(type -> rows.put(EditorCatalog.key(type), new Row(EditorCatalog.key(type), type.getNameComponent().getString(), type.getContentPack().getName(), "original")));
+        effective.forEach(type -> rows.put(EditorCatalog.key(type), new Row(EditorCatalog.key(type), type.getNameComponent().getString(), type.getContentPack().getName(), "original")));
         JsonObject saved = team ? EditorClientState.document().teams() : EditorClientState.document().classes();
         saved.entrySet().forEach(entry ->
         {
@@ -175,7 +175,10 @@ public final class TeamsEditorScreen extends Screen
             String status = entryStatus(base, entry.getKey(), patch);
             String name = base == null ? entry.getKey() : base.name();
             if (patch.has("name"))
-                name = patch.get("name").getAsString();
+            {
+                InfoType source = effective.stream().filter(type -> EditorCatalog.key(type).equals(entry.getKey())).findFirst().orElse(null);
+                name = source == null ? patch.get("name").getAsString() : source.getNameComponent().getString();
+            }
             rows.put(entry.getKey(), new Row(entry.getKey(), name, base == null ? "Server editor" : base.pack(), status));
         });
         return rows.values().stream().sorted(Comparator.comparing(Row::name, String.CASE_INSENSITIVE_ORDER)).toList();
@@ -419,7 +422,7 @@ public final class TeamsEditorScreen extends Screen
     {
         String needle = query.toLowerCase(Locale.ROOT);
         List<PlayerClass> available = PlayerClass.values().stream().filter(type -> membershipIndex(EditorCatalog.key(type)) != Integer.MAX_VALUE)
-            .filter(type -> type.getName().toLowerCase(Locale.ROOT).contains(needle) || type.getShortName().contains(needle))
+            .filter(type -> type.getNameComponent().getString().toLowerCase(Locale.ROOT).contains(needle) || type.getShortName().contains(needle))
             .sorted(Comparator.<PlayerClass>comparingInt(type -> membershipIndex(EditorCatalog.key(type))).thenComparing(PlayerClass::getName, String.CASE_INSENSITIVE_ORDER)).toList();
         EditBox search = new EditBox(font, left + 8, top + 80, panelWidth - 116, 20, tr("search"));
         search.setHint(tr("search"));
@@ -450,7 +453,7 @@ public final class TeamsEditorScreen extends Screen
             PlayerClass type = available.get(index);
             String id = EditorCatalog.key(type);
             int rowY = top + 105 + index % count * 23;
-            String label = (membershipIndex(id) + 1) + ". " + type.getName();
+            String label = (membershipIndex(id) + 1) + ". " + type.getNameComponent().getString();
             int removeWidth = Math.max(90, font.width(tr("remove_class")) + 12);
             membershipButtons.put(id, button(Component.literal(label), left + 8, rowY, panelWidth - removeWidth - 20, () ->
             {
@@ -594,7 +597,7 @@ public final class TeamsEditorScreen extends Screen
     {
         if (team)
             return tr("round_references").getString();
-        return Team.values().stream().filter(candidate -> candidate.getClasses().stream().anyMatch(type -> EditorCatalog.key(type).equals(key))).map(Team::getName)
+        return Team.values().stream().filter(candidate -> candidate.getClasses().stream().anyMatch(type -> EditorCatalog.key(type).equals(key))).map(type -> type.getNameComponent().getString())
             .reduce((first, second) -> first + ", " + second).orElse(tr("no_teams").getString());
     }
 
@@ -974,7 +977,7 @@ public final class TeamsEditorScreen extends Screen
         PlayerClass previewedClass = team && previewClass ? EditorCatalog.resolveClass(selectedClass) : null;
         Component equipmentLabel = tr(team ? "uniform" : "kit");
         if (previewedClass != null)
-            equipmentLabel = Component.literal(tr("preview").getString() + ": " + previewedClass.getName());
+            equipmentLabel = Component.literal(tr("preview").getString() + ": " + previewedClass.getNameComponent().getString());
         graphics.drawString(font, font.plainSubstrByWidth(equipmentLabel.getString(), panelWidth >= 390 ? 190 : panelWidth - 20), left + 10, top + 79, 0xCCDDEE);
         if (panelWidth >= 390)
             graphics.drawString(font, tr("inventory"), left + 205, top + 79, 0xCCDDEE);

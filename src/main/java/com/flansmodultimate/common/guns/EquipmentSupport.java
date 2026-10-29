@@ -1,6 +1,11 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.EquippedArmorProperties;
+import com.flansmodultimate.api.equipment.EquippedShieldProperties;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.WeaponOverrides;
+import com.flansmodultimate.api.equipment.WeaponTraits;
+import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.physics.ModPhysics;
@@ -30,6 +35,9 @@ import java.util.*;
 /** Native equipment actions shared by living-entity addons; no player or addon state is required. */
 public final class EquipmentSupport
 {
+    /** Marks a magazine a gun was loaded with although it does not take it, so that the gun still fires it. */
+    private static final String CHOSEN_ROUND_KEY = "FlansChosenRound";
+
     private EquipmentSupport()
     {}
 
@@ -153,15 +161,35 @@ public final class EquipmentSupport
 
     public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition)
     {
+        return acceptsAmmunition(weapon, ammunition, false);
+    }
+
+    /**
+     * @param anyBullet
+     *            whether a Flan bullet the gun does not take is loaded as well
+     */
+    public static boolean acceptsAmmunition(ItemStack weapon, ItemStack ammunition, boolean anyBullet)
+    {
         return weapon.getItem() instanceof GunItem gun && ammunition.getItem() instanceof ShootableItem ammo && ShootableItem.hasRoundsLeft(ammunition)
-            && compatible(gun.getConfigType(), weapon, ammo.getConfigType());
+            && loadable(gun.getConfigType(), weapon, ammo.getConfigType(), anyBullet);
     }
 
     public static boolean loadMagazine(LivingEntity holder, ItemStack weapon, ItemStack spare)
     {
-        if (!server(holder) || !(weapon.getItem() instanceof GunItem gun) || !(spare.getItem() instanceof ShootableItem ammo) || !ShootableItem.hasRoundsLeft(spare)
-            || !compatible(gun.getConfigType(), weapon, ammo.getConfigType()))
+        return loadMagazine(holder, weapon, spare, false);
+    }
+
+    /**
+     * @param anyBullet
+     *            whether a Flan bullet the gun does not take is loaded as well; each such magazine is marked, so that the
+     *            gun fires it
+     */
+    public static boolean loadMagazine(LivingEntity holder, ItemStack weapon, ItemStack spare, boolean anyBullet)
+    {
+        if (!server(holder) || !acceptsAmmunition(weapon, spare, anyBullet))
             return false;
+        GunItem gun = (GunItem) weapon.getItem();
+        boolean chosen = !compatible(gun.getConfigType(), weapon, ((ShootableItem) spare.getItem()).getConfigType());
         boolean reloaded = false;
         for (int slot = 0; slot < gun.getConfigType().getNumAmmoItemsInGun(weapon) && !spare.isEmpty(); slot++)
         {
@@ -170,10 +198,18 @@ public final class EquipmentSupport
                 continue;
             if (old.getItem() instanceof ShootableItem spent)
                 ModUtils.dropItem(holder.level(), holder, spent.getConfigType().getDropItemOnReload(), spent.getConfigType().getContentPack());
-            gun.setBulletItemStack(weapon, spare.split(1), slot, holder.level().registryAccess());
+            ItemStack magazine = spare.split(1);
+            if (chosen)
+                ItemStackData.update(magazine, tag -> tag.putBoolean(CHOSEN_ROUND_KEY, true));
+            gun.setBulletItemStack(weapon, magazine, slot, holder.level().registryAccess());
             reloaded = true;
         }
         return reloaded;
+    }
+
+    private static boolean loadable(GunType type, ItemStack weapon, ShootableType ammunition, boolean anyBullet)
+    {
+        return compatible(type, weapon, ammunition) || anyBullet && ammunition instanceof BulletType;
     }
 
     /** Raises the gun's aim pose and plays its shot animation for those who see a mob holder, as a native shot does. */
@@ -187,7 +223,10 @@ public final class EquipmentSupport
     public static void animateReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
     {
         if (server(holder) && !(holder instanceof Player) && Float.isFinite(reloadTicks) && reloadTicks > 0F && holder.getItemInHand(hand).getItem() instanceof GunItem)
+        {
+            GunArmPoses.recordReload(holder, hand, reloadTicks);
             PacketHandler.sendToTracking(new PacketGunHolderAnimation(holder.getId(), hand, PacketGunHolderAnimation.Kind.RELOAD, reloadTicks), holder);
+        }
     }
 
     /** Plays a mob-held gun's melee animation for those who see the holder. */
@@ -356,7 +395,10 @@ public final class EquipmentSupport
         for (int slot = 0; slot < item.getConfigType().getNumAmmoItemsInGun(stack); slot++)
         {
             ItemStack ammo = item.getAmmoItemStack(stack, slot, ItemStackData.builtInRegistries());
-            if (ShootableItem.hasRoundsLeft(ammo) && ammo.getItem() instanceof ShootableItem shootable && compatible(item.getConfigType(), stack, shootable.getConfigType()))
+            // A magazine loaded by choice, which the gun does not take, is fired all the same.
+            boolean fires = ammo.getItem() instanceof ShootableItem shootable
+                && (compatible(item.getConfigType(), stack, shootable.getConfigType()) || ItemStackData.copy(ammo).getBoolean(CHOSEN_ROUND_KEY));
+            if (ShootableItem.hasRoundsLeft(ammo) && fires)
                 return new Loaded(slot, ammo);
         }
         return null;

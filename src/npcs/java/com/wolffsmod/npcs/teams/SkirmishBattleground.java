@@ -1,6 +1,11 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.TeamsFlag;
+import com.flansmodultimate.api.teams.TeamsSpawner;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.resources.ResourceKey;
@@ -61,12 +66,12 @@ final class SkirmishBattleground implements Battleground
         return skirmish.sideOfTeam(team.getShortName());
     }
 
-    /** A player fights for the managed faction they belong to, an NPC for its faction. */
+    /** A player fights for the faction they belong to, an NPC for its faction. */
     @Override
     public int sideOf(Entity entity)
     {
         if (entity instanceof Player player)
-            return BattleFactions.get(server).factionOf(player.getUUID()).map(skirmish::sideOf).orElse(-1);
+            return FactionMembers.get(server).factionOf(player.getUUID()).map(skirmish::sideOf).orElse(-1);
         if (entity instanceof EntityNPCInterface npc && npc.faction != null)
             return skirmish.sideOf(npc.faction.id);
         return -1;

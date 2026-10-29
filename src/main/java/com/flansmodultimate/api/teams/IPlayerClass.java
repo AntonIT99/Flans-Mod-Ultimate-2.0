@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) 2026 Wolff (AntonIT99)
+ * SPDX-License-Identifier: MIT
+ * See LICENSE-API at the root of the Flan's Mod Ultimate repository.
+ */
+package com.flansmodultimate.api.teams;
+
+import com.flansmodultimate.api.content.IContentType;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
+
+/**
+ * A class of a {@link ITeam}: the loadout a player spawns with in the Teams game modes, and
+ * optionally the skin worn while playing it. Read-only content data, reached through
+ * {@link ITeam#getClasses()}. Readable on either side after content loading unless a method
+ * says otherwise.
+ */
+@ApiStatus.Experimental
+@ApiStatus.NonExtendable
+public interface IPlayerClass extends IContentType
+{
+    /**
+     * The armour piece the class names for a slot. A slot the class leaves open is filled by
+     * {@link ITeam#getArmour(EquipmentSlot)}.
+     *
+     * @param slot
+     *            one of the four armour slots
+     * @return a new stack, empty when the class names nothing for the slot
+     */
+    ItemStack getArmour(EquipmentSlot slot);
+
+    /**
+     * Whether an empty class armour slot inherits the team's piece. Readable on either side.
+     * Editor definitions may explicitly leave a slot empty instead.
+     *
+     * @param slot
+     *            one of the four armour slots
+     * @return true for normal legacy inheritance
+     */
+    default boolean usesTeamArmour(EquipmentSlot slot)
+    {
+        return true;
+    }
+
+    /**
+     * Builds the items the class hands out, in the order the definition lists them. Guns come
+     * with the attachments the definition names and loaded with their default ammunition. Items
+     * that are not loaded are left out.
+     *
+     * @return new stacks the caller owns
+     */
+    List<ItemStack> createStartingItems();
+
+    /**
+     * Pack texture locations are resolved while client assets are read; editor-created classes
+     * can also expose their explicit texture location on a dedicated server. The texture is not checked: it may be missing, and it may use either
+     * the square player skin layout or the old 2:1 one.
+     *
+     * @return the first skin texture the class declares, or null when it declares none
+     */
+    @Nullable
+    ResourceLocation getSkinOverrideTexture();
+
+    /**
+     * The available skins in definition order. Readable on either side after content loading;
+     * pack texture locations are resolved on the client; editor-authored explicit references can also
+     * be available on the server. Locations are not validated. The returned
+     * list is unmodifiable. Players receive a random variant on each class application.
+     *
+     * @return all declared skins, or an empty list when none are declared
+     */
+    default List<SkinOverrideVariant> getSkinOverrideVariants()
+    {
+        ResourceLocation texture = getSkinOverrideTexture();
+        return texture == null ? List.of() : List.of(new SkinOverrideVariant(texture.toString(), texture));
+    }
+}

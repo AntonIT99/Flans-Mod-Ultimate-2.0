@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.wolffsmod.npcs.combat.NpcEquipmentStats.Shot;
 import org.junit.jupiter.api.Test;
 

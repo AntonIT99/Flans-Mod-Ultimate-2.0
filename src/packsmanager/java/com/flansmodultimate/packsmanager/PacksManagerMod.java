@@ -33,7 +33,7 @@ import java.util.jar.JarFile;
  * rejected as an output target.
  * <p>
  * Startup coordination with the main mod is done through a stable JSON state file named
- * {@value #EXTRACTION_STATE_FILE_NAME} in the game directory. The file name is deliberately independent from the
+ * {@value #EXTRACTION_STATE_FILE_NAME} in {@code .flansmod-cache/packs-manager}. The file name is deliberately independent from the
  * Packs Manager mod version and bundled packs version so {@code FlansMod} can wait for extraction to finish without
  * needing to know which pack version was resolved. The state file stores a protocol version, an extraction status,
  * the currently resolved bundled packs version, the last successfully extracted packs version, the resolved flan
@@ -63,7 +63,8 @@ public class PacksManagerMod
     private static final int NO_EXTRACTED_PACKS_VERSION = 0;
     private static final int FALLBACK_BUNDLED_PACKS_VERSION = 1;
     private static final String BUNDLED_PACKS_VERSION_RESOURCE = "/flansmodultimate_packs_manager/bundled_packs_version.txt";
-    private static final String EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
+    private static final String EXTRACTION_STATE_FILE_NAME = "extraction-state.json";
+    private static final String LEGACY_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
     private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
     /** Flan Directory */
@@ -157,9 +158,18 @@ public class PacksManagerMod
         return resolvedPath;
     }
 
-    private static Path resolveExtractionStatePath()
+    private static Path resolveExtractionStatePath() throws IOException
     {
-        return PlatformPaths.gameDir().toAbsolutePath().normalize().resolve(EXTRACTION_STATE_FILE_NAME);
+        Path gameDir = PlatformPaths.gameDir().toAbsolutePath().normalize();
+        // Keep this layout in sync with the main mod without depending on its classes.
+        Path statePath = gameDir.resolve(".flansmod-cache/packs-manager").resolve(EXTRACTION_STATE_FILE_NAME);
+        Path legacyPath = gameDir.resolve(LEGACY_EXTRACTION_STATE_FILE_NAME);
+        if (!Files.exists(statePath) && Files.isRegularFile(legacyPath) && !Files.isSymbolicLink(legacyPath))
+        {
+            Files.createDirectories(statePath.getParent());
+            Files.move(legacyPath, statePath);
+        }
+        return statePath;
     }
 
     private static String readContentPacksRelativePath()
@@ -377,7 +387,8 @@ public class PacksManagerMod
     private static boolean isExtractionStateFile(Path path)
     {
         String fileName = path.getFileName().toString();
-        return fileName.equals(EXTRACTION_STATE_FILE_NAME) || fileName.equals(EXTRACTION_STATE_FILE_NAME + ".tmp");
+        return fileName.equals(EXTRACTION_STATE_FILE_NAME) || fileName.equals(EXTRACTION_STATE_FILE_NAME + ".tmp") || fileName.equals(LEGACY_EXTRACTION_STATE_FILE_NAME)
+            || fileName.equals(LEGACY_EXTRACTION_STATE_FILE_NAME + ".tmp");
     }
 
     private boolean shouldProcessEntry(JarEntry entry)

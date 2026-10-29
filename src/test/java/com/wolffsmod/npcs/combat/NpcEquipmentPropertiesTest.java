@@ -1,9 +1,10 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.sim.NpcTuning;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
@@ -37,6 +38,7 @@ class NpcEquipmentPropertiesTest
         DataStats stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
         when(((NpcWeaponSettings) stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
         when(((NpcWeaponSettings) stats).wolffsmodnpcsCombat()).thenReturn(combat);
+        when(((NpcWeaponSettings) stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         npc.stats = stats;
         npc.inventory = new DataInventory(npc);
         when(npc.getMainHandItem()).thenReturn(mainHand);
@@ -95,10 +97,9 @@ class NpcEquipmentPropertiesTest
     void anOffHandMeleeWeaponChoosesMeleeInsteadOfTheProjectileSlotOnlyWhenOptedIn()
     {
         EntityNPCInterface npc = npc(ItemStack.EMPTY, new ItemStack(Items.IRON_SWORD));
-        npc.inventory = mock(DataInventory.class);
         IItemStack projectile = mock(IItemStack.class);
         when(projectile.getMCItemStack()).thenReturn(new ItemStack(Items.ARROW));
-        when(npc.inventory.getProjectile()).thenReturn(projectile);
+        npc.inventory.weapons.put(1, projectile);
         assertSame(projectile, NpcEquipment.combatProjectile(npc));
         options.set(Feature.MELEE_DUAL_WIELD, true);
         assertTrue(NpcEquipment.weaponAuthority(npc));

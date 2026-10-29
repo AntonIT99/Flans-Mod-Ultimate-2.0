@@ -12,8 +12,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Restores the AI tactical controls and locks the saved choice while a Flan tactic replaces it. */
-// The screen hierarchy is imposed by Custom NPCs; inherited controls belong to the target.
+/**
+ * Custom NPCs' AI page. Restores the tactical variant and range controls the installed NeoForge build omits; while a
+ * tactic of the mod's own moves the NPC, the variant button shows that tactic and cannot be changed, and the variant
+ * stays saved for when the tactic goes back to Custom NPCs'. Restores the Can Sprint switch, using the AI page's
+ * existing save path.
+ */
+// The mixin extends the target's superclass to reach its buttons, so it inherits Custom NPCs' screen hierarchy.
 @SuppressWarnings({"java:S110", "DataFlowIssue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
 @Mixin(value = GuiNpcAI.class, remap = false)
 public abstract class GuiNpcAIMixin extends GuiNPCInterface2
@@ -24,6 +29,9 @@ public abstract class GuiNpcAIMixin extends GuiNPCInterface2
     private static final int WOLFFSMODNPCS_RANGE_FIELD = 3;
     @Unique
     private static final String[] WOLFFSMODNPCS_TACTICS = {"aitactics.rush", "aitactics.stagger", "aitactics.orbit", "aitactics.hitandrun", "aitactics.ambush", "aitactics.stalk", "gui.none"};
+    /** The unused row below Mount Control, alongside Must See Target. */
+    @Unique
+    private static final int WOLFFSMODNPCS_SPRINT_BUTTON = 24;
 
     protected GuiNpcAIMixin(EntityNPCInterface npc)
     {
@@ -31,8 +39,10 @@ public abstract class GuiNpcAIMixin extends GuiNPCInterface2
     }
 
     @Inject(method = "init", at = @At("TAIL"))
-    private void wolffsmodnpcsShowTactic(CallbackInfo callback)
+    private void wolffsmodnpcsInitControls(CallbackInfo callback)
     {
+        addLabel(new GuiLabel(WOLFFSMODNPCS_SPRINT_BUTTON, "ai.sprint", guiLeft + 150, guiTop + 115));
+        addButton(new GuiButtonYesNo(this, WOLFFSMODNPCS_SPRINT_BUTTON, guiLeft + 230, guiTop + 110, 60, 20, npc.ais.canSprint));
         CustomNpcTactics settings = CustomNpcTactics.of(npc);
         int variant = settings.getVariant();
         addLabel(new GuiLabel(19, "ai.tacticalvariant", guiLeft + 150, guiTop + 140));
@@ -78,5 +88,12 @@ public abstract class GuiNpcAIMixin extends GuiNPCInterface2
     {
         if (field.id == WOLFFSMODNPCS_RANGE_FIELD)
             CustomNpcTactics.of(npc).setRange(field.getInteger());
+    }
+
+    @Inject(method = "buttonEvent", at = @At("TAIL"))
+    private void wolffsmodnpcsSetSprint(GuiButtonNop button, CallbackInfo callback)
+    {
+        if (button.id == WOLFFSMODNPCS_SPRINT_BUTTON)
+            npc.ais.canSprint = ((GuiButtonYesNo) button).getBoolean();
     }
 }

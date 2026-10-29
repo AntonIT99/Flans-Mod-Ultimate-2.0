@@ -27,6 +27,7 @@
     "ItemInHandLayerMixin",
     "KeyMappingConflictMixin",
     "LivingEntityNameTagRangeMixin",
+    "LocalPlayerMixin",
     "MountedRiderTurnMixin",
     "ParticleAccessor",
     "ParticleEngineThermalMixin",

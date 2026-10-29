@@ -37,6 +37,8 @@ public final class NpcTypePropertyAccess
             case IGNORE_COBWEB -> ByteTag.valueOf(npc.stats.ignoreCobweb);
             case HEALTH_REGEN -> IntTag.valueOf(npc.stats.healthRegen);
             case COMBAT_REGEN -> IntTag.valueOf(npc.stats.combatRegen);
+            case MELEE_DAMAGE -> IntTag.valueOf(npc.stats.melee.getStrength());
+            case MELEE_DELAY -> IntTag.valueOf(npc.stats.melee.getDelay());
         };
     }
 
@@ -66,6 +68,8 @@ public final class NpcTypePropertyAccess
             case IGNORE_COBWEB -> npc.stats.ignoreCobweb = bool(value);
             case HEALTH_REGEN -> npc.stats.healthRegen = integer(value);
             case COMBAT_REGEN -> npc.stats.combatRegen = integer(value);
+            case MELEE_DAMAGE -> npc.stats.melee.setStrength(integer(value));
+            case MELEE_DELAY -> npc.stats.melee.setDelay(integer(value));
         }
     }
 

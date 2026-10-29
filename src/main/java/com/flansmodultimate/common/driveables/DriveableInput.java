@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmodultimate.api.DriveControl;
+import com.flansmodultimate.api.driveables.DriveControl;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -56,7 +56,8 @@ public final class DriveableInput
     public static final int TOGGLE_SCOPE = 1 << 25;
     public static final int CYCLE_SIGHT = 1 << 26;
 
-    public static final int VALID_MASK = (1 << 27) - 1;
+    public static final int REPAIR = 1 << 27;
+    public static final int VALID_MASK = (1 << 28) - 1;
     public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE | THROTTLE_INCREASE
         | THROTTLE_DECREASE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
@@ -129,6 +130,7 @@ public final class DriveableInput
             case 15 -> TOGGLE_MODE;
             case 16 -> TRIM;
             case 18 -> FLARE;
+            case 34 -> REPAIR;
             default -> 0;
         };
     }

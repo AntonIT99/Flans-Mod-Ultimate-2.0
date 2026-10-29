@@ -1,13 +1,16 @@
 package com.wolffsmod.npcs.sim;
 
-import com.flansmodultimate.platform.entity.EntityPlatform;
-import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.wolffsmod.npcs.combat.NpcMechaTools;
+import com.wolffsmod.npcs.model.*;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -25,7 +28,26 @@ public final class NpcModels
     @Nullable
     public static FlanModelEntity flan(Entity entity)
     {
-        return entity instanceof EntityCustomNpc custom && custom.modelData.getEntity(custom) instanceof FlanModelEntity model ? model : null;
+        return entity instanceof EntityCustomNpc custom && custom.modelData != null && custom.modelData.getEntity(custom) instanceof FlanModelEntity model ? model : null;
+    }
+
+    /**
+     * @return whether a machine NPC has nothing to strike with: anything but a mecha, and a mecha with neither a sword addon
+     *         nor a melee damage above 0 of its own, with which it strikes with its arms
+     */
+    public static boolean meleeless(Entity entity)
+    {
+        FlanModelEntity model = flan(entity);
+        FlanModelKind kind = model == null ? null : FlanModelKind.of(model.getInfoType());
+        if (kind == null)
+            return false;
+        return kind != FlanModelKind.MECHA || entity instanceof EntityNPCInterface npc && NpcMechaTools.properties(npc).isEmpty() && !strikes(npc);
+    }
+
+    /** @return whether the NPC deals melee damage, set or inherited */
+    private static boolean strikes(EntityNPCInterface npc)
+    {
+        return npc.stats != null && npc.stats.melee != null && npc.stats.melee.getStrength() > 0;
     }
 
     /** @return the factor the NPC's size setting scales its model by */
@@ -46,7 +68,7 @@ public final class NpcModels
         if (box.getXsize() >= UNHIT_WIDTH)
             return Optional.empty();
         Entity model = npc instanceof EntityCustomNpc custom ? custom.modelData.getEntity(custom) : null;
-        double half = (model == null ? EntityPlatform.width(npc.baseSize) : model.getBbWidth()) * npc.display.getSize() / 10D;
+        double half = (model == null ? NpcPlatform.width(npc.baseSize) : model.getBbWidth()) * npc.display.getSize() / 10D;
         return Optional.of(box.inflate(half, 0D, half));
     }
 
@@ -66,17 +88,67 @@ public final class NpcModels
      *            a point in the model preview frame: blocks, Y up, forward -Z, relative to the model origin
      * @param hullYaw
      *            the yaw the model is drawn at
-     * @return the point relative to the NPC's feet, in world axes
+     * @return the point relative to the NPC's feet, in world axes, with the pitch and bank of a plane in flight
      */
     public static Vec3 local(EntityNPCInterface npc, FlanModelEntity model, Vec3 offset, float hullYaw)
     {
-        float height = model.getModelType() == null ? 0F : model.getModelType().getShape().modelHeight();
-        return offset.add(0D, height, 0D).scale(scale(npc)).yRot((float) Math.toRadians(180F - hullYaw)).add(0D, bodyOffset(npc), 0D);
+        FlanModelEntityType type = model.getModelType();
+        Vec3 point = offset.add(0D, type == null ? 0F : type.getShape().modelHeight(), 0D);
+        if (type != null)
+        {
+            // Round the middle of the model's box, as it is drawn.
+            Vec3 pivot = new Vec3(0D, attitudePivot(type), 0D);
+            point = tilt(npc, point.subtract(pivot)).add(pivot);
+        }
+        return point.scale(scale(npc)).yRot((float) Math.toRadians(180F - hullYaw)).add(0D, bodyOffset(npc), 0D);
+    }
+
+    /**
+     * @param vector
+     *            a direction of the model preview frame
+     * @return the direction banked about the model's length, then pitched about its width, as a plane in flight is; still
+     *         in the model preview frame
+     */
+    public static Vec3 tilt(EntityNPCInterface npc, Vec3 vector)
+    {
+        NpcVehicleState state = NpcVehicleState.of(npc);
+        if (state.getAttitudePitch() == 0F && state.getAttitudeBank() == 0F)
+            return vector;
+        return vector.zRot((float) Math.toRadians(state.getAttitudeBank())).xRot((float) Math.toRadians(state.getAttitudePitch()));
+    }
+
+    /** @return blocks above the feet, at size 5, a model pitches and banks about: the middle of its box */
+    public static float attitudePivot(FlanModelEntityType type)
+    {
+        return NpcPlatform.height(type.getShape().dimensions()) / 2F;
     }
 
     /** @return the world position of a point of the model preview frame */
     public static Vec3 world(EntityNPCInterface npc, FlanModelEntity model, Vec3 offset, float hullYaw)
     {
         return npc.position().add(local(npc, model, offset, hullYaw));
+    }
+
+    /**
+     * @param aim
+     *            where a weapon points, relative to the hull
+     * @return the world direction of the aim, pitched and banked with the model as a plane in flight is, as {@link #local}
+     *         carries points
+     */
+    public static Vec3 direction(EntityNPCInterface npc, MountAim aim, float hullYaw)
+    {
+        // Into the model preview frame, whose forward is -Z, then out of it round the hull's yaw.
+        Vec3 forward = Vec3.directionFromRotation(aim.pitch(), aim.yaw()).yRot(Mth.PI);
+        return tilt(npc, forward).yRot((float) Math.toRadians(180F - hullYaw));
+    }
+
+    /** @return the aim, relative to the hull as it is pitched and banked, that points along a world direction: the inverse of {@link #direction} */
+    public static MountAim relative(EntityNPCInterface npc, Vec3 direction, float hullYaw)
+    {
+        Vec3 model = direction.yRot((float) Math.toRadians(hullYaw - 180F));
+        NpcVehicleState state = NpcVehicleState.of(npc);
+        if (state.getAttitudePitch() != 0F || state.getAttitudeBank() != 0F)
+            model = model.xRot((float) Math.toRadians(-state.getAttitudePitch())).zRot((float) Math.toRadians(-state.getAttitudeBank()));
+        return MountMotion.relative(model.yRot(Mth.PI), 0F);
     }
 }

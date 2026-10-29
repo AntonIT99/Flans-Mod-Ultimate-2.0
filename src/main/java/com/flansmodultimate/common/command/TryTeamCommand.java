@@ -48,7 +48,6 @@ public final class TryTeamCommand
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         dispatcher.register(commandRoot("tryteam"));
-        dispatcher.register(commandRoot("flantryteam"));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)
@@ -93,7 +92,7 @@ public final class TryTeamCommand
 
         if (worn == 0)
         {
-            send(context, ChatFormatting.GRAY, team.getName() + " issues no armour; your armour slots are now empty");
+            context.getSource().sendSuccess(() -> team.getNameComponent().append(" issues no armour; your armour slots are now empty").withStyle(ChatFormatting.GRAY), false);
             return 0;
         }
 

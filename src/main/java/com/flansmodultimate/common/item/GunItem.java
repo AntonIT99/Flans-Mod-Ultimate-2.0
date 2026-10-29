@@ -593,6 +593,7 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
 
     protected void serverTick(Level level, @NotNull ServerPlayer player, @NotNull PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
+        data.updateHeldGuns(player);
         ensureGunTags(gunStack);
 
         if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
@@ -748,7 +749,12 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
             .anyMatch(ammo -> GunHandlingTiming.tacticalReload(true, maxAmmo, ShootableItem.getMaxRounds(ammo), configType.getTacticalReloadTime()));
         float baseTime = configType.getReloadTime(gunStack, tactical);
         float reloadTime = (maxAmmo <= 1) ? baseTime : (baseTime / maxAmmo) * getReloadCount(gunStack, registries);
-        return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
+        reloadTime = EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
+        // A gun holding a single round reloads after every shot, so the shorter of its
+        // reload and its cadence sets the gap between shots (see GunHandlingTiming.reloadWait).
+        if (reloadTime > 0F && maxAmmo <= 1 && !configType.getAmmoTypes().isEmpty() && configType.getAmmoTypes().stream().allMatch(ammo -> ammo.getRoundsPerItem() <= 1))
+            return GunHandlingTiming.reloadWait(reloadTime, configType.getShootDelay(gunStack), 1);
+        return reloadTime;
     }
 
     public void setPreferredAmmo(ItemStack gun, String ammoName)

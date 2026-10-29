@@ -90,7 +90,7 @@ public final class TeamsScoreScreen extends Screen
         String side = state.getSideName(state.getSideId(state.getWinnerId()));
         if (!side.isEmpty())
             return side;
-        return winner == null ? state.getWinnerId() : winner.getName();
+        return winner == null ? state.getWinnerId() : winner.getNameComponent().getString();
     }
 
     /** The players of a side, best first. Those of an alliance are drawn in the colour of their own team to tell them apart. */
@@ -135,7 +135,7 @@ public final class TeamsScoreScreen extends Screen
             {
                 PacketTeamsState.PlayerScore player = rows.get(row).player();
                 int y = top + 67 + 9 * row;
-                graphics.drawString(font, font.plainSubstrByWidth(player.name(), 88), left + 12 + 151 * column, y, rows.get(row).colour(), false);
+                graphics.drawString(font, font.plainSubstrByWidth(player.displayName().getString(), 88), left + 12 + 151 * column, y, rows.get(row).colour(), false);
                 drawCentered(graphics, Integer.toString(player.score()), left + 111 + 151 * column, y);
                 drawCentered(graphics, Integer.toString(state.isShowZombieScore() ? player.zombieScore() : player.kills()), left + 127 + 151 * column, y);
                 drawCentered(graphics, Integer.toString(player.deaths()), left + 143 + 151 * column, y);
@@ -182,7 +182,7 @@ public final class TeamsScoreScreen extends Screen
             {
                 PacketTeamsState.PlayerScore player = rows.get(row).player();
                 int y = top + 46 + 9 * row;
-                graphics.drawString(font, font.plainSubstrByWidth(player.name(), columnWidth - 60), x + 2, y, rows.get(row).colour(), false);
+                graphics.drawString(font, font.plainSubstrByWidth(player.displayName().getString(), columnWidth - 60), x + 2, y, rows.get(row).colour(), false);
                 drawCentered(graphics, Integer.toString(player.score()), right - 42, y);
                 drawCentered(graphics, Integer.toString(player.kills()), right - 24, y);
                 drawCentered(graphics, Integer.toString(player.deaths()), right - 8, y);
@@ -210,7 +210,7 @@ public final class TeamsScoreScreen extends Screen
         {
             PacketTeamsState.PlayerScore player = players.get(row);
             int y = top + 25 + 9 * row;
-            graphics.drawString(font, player.name(), left + 8, y, 0xFFFFFF, false);
+            graphics.drawString(font, player.displayName().getString(), left + 8, y, 0xFFFFFF, false);
             graphics.drawString(font, Integer.toString(player.score()), left + 100, y, 0xFFFFFF, false);
             graphics.drawString(font, Integer.toString(player.kills()), left + 150, y, 0xFFFFFF, false);
             graphics.drawString(font, Integer.toString(player.deaths()), left + 200, y, 0xFFFFFF, false);

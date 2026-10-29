@@ -198,9 +198,41 @@ class TacticDecisionTest
         return TacticDecision.decide(Tactic.COVER, situation(position, true, position, reloading, hit), memory, now);
     }
 
+    @Test
+    void anNpcWhoseOwnRoundsWouldCatchItNeverFightsFromInsideTheirReach()
+    {
+        // A launcher reaching 10 blocks keeps its distance band out beyond that, whatever the tactic distance says.
+        Engagement close = Engagement.of(64D, 6, WeaponRole.LAUNCHER, 10D);
+        assertEquals(10D, close.minimum(), 1.0E-9D);
+        assertEquals(10D, close.preferred(), 1.0E-9D, "it stands off at least as far as its own blast reaches");
+        assertEquals(10D, close.near(), 1.0E-9D);
+        assertTrue(close.far() >= close.near());
+        // A blast that outreaches the gun leaves the NPC standing at the edge of its range rather than unable to fight.
+        assertEquals(12D, Engagement.of(12D, 0, WeaponRole.GENERAL, 30D).minimum(), 1.0E-9D);
+    }
+
+    @Test
+    void anNpcInsideThatReachBacksAwayWhateverItsTacticIs()
+    {
+        Engagement blast = Engagement.of(64D, 0, WeaponRole.LAUNCHER, 20D);
+        Order advance = decide(Tactic.ADVANCE, at(8D), true, blast);
+        assertEquals(Move.GO_TO, advance.move(), "it does not stand and fire from inside its own blast");
+        assertNotNull(advance.point());
+        assertTrue(TacticDecision.horizontal(advance.point(), TARGET) > 8D, "the point it goes to lies further out");
+        // Out of sight it still opens the range first rather than closing in blindly.
+        assertEquals(Move.GO_TO, decide(Tactic.STAND_OFF, at(8D), false, blast).move());
+        assertEquals(Move.STAND, decide(Tactic.ADVANCE, at(30D), true, blast).move());
+    }
+
     private static Order decide(Tactic tactic, Vec3 position, boolean inSight)
     {
         return TacticDecision.decide(tactic, situation(position, inSight, position, false, false), new NpcTacticState(), 0L);
+    }
+
+    private static Order decide(Tactic tactic, Vec3 position, boolean inSight, Engagement engagement)
+    {
+        Situation situation = new Situation(inSight, position, TARGET, position, engagement, false, false);
+        return TacticDecision.decide(tactic, situation, new NpcTacticState(), 0L);
     }
 
     private static Situation situation(Vec3 position, boolean inSight, Vec3 home, boolean reloading, boolean hit)

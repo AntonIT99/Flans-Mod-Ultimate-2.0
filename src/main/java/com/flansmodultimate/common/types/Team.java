@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.common.teams.editor.EditorCatalog;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.ModUtils;
@@ -117,9 +117,16 @@ public class Team extends InfoType implements ITeam
             armour.put(slot, value);
     }
 
+    /** Original content names keep translation keys independent of registry collision aliases. */
+    @Override
+    public String getNameTranslationKey()
+    {
+        return StringUtils.isBlank(originalShortName) ? StringUtils.EMPTY : "team.flansmod." + originalShortName.toLowerCase(Locale.ROOT);
+    }
+
     public Component getDisplayComponent()
     {
-        return Component.literal(name).withStyle(textColour);
+        return getNameComponent().withStyle(textColour);
     }
 
     /** Web address of the flag image, which only the Teams editor sets; null for a flag of a texture. */

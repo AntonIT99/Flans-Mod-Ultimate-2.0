@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.EquippedArmorProperties;
-import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.equipment.EquippedArmorProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import lombok.AccessLevel;
@@ -73,6 +73,8 @@ public final class EquipmentValues
     {
         return switch (property.mainHand())
         {
+            case MELEE_DAMAGE -> NpcTypeProperty.MELEE_DAMAGE;
+            case MELEE_DELAY -> NpcTypeProperty.MELEE_DELAY;
             case MELEE_REACH -> NpcTypeProperty.MELEE_REACH;
             case RANGED_DAMAGE -> NpcTypeProperty.DAMAGE;
             case RANGED_ACCURACY -> NpcTypeProperty.ACCURACY;

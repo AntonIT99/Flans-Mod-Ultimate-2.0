@@ -3,6 +3,33 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "José": 20, "Juan": 20, "Francisco": 20, "Antonio": 20, "Manuel": 20, "Luis": 20, "Pedro": 20, "Miguel": 20, "Ángel": 20, "Carlos": 20,
+        "Fernando": 20, "Joaquín": 20, "Ramón": 20, "Rafael": 20, "Santiago": 20, "Vicente": 20, "Enrique": 20, "Eduardo": 20, "Jorge": 20,
+        "Julián": 20, "Ricardo": 20, "Domingo": 20, "Andrés": 20, "Alfonso": 20, "José Antonio": 20, "José Luis": 20, "Juan José": 20,
+        "Alberto": 8, "Alejandro": 8, "Alfredo": 8, "Daniel": 8, "Emilio": 8, "Ernesto": 8, "Félix": 8, "Federico": 8, "Gabriel": 8, "Ignacio": 8,
+        "Julio": 8, "Lorenzo": 8, "Mariano": 8, "Martín": 8, "Nicolás": 8, "Pablo": 8, "Salvador": 8, "Sebastián": 8, "Tomás": 8, "Víctor": 8,
+        "Agustín": 8, "Arturo": 8, "Benito": 8, "Bernardo": 8, "Diego": 8, "Esteban": 8, "Gonzalo": 8, "Guillermo": 8, "Isidro": 8, "Roberto": 8,
+        "Valentín": 8, "Teodoro": 8
+      },
+      "femaleWeights": {
+        "María": 20, "Carmen": 20, "Josefa": 20, "Isabel": 20, "Dolores": 20, "Francisca": 20, "Ana": 20, "Antonia": 20, "Pilar": 20, "Concepción": 20,
+        "Rosario": 20, "Teresa": 20, "Mercedes": 20, "Juana": 20, "Manuela": 20, "Rosa": 20, "Luisa": 20, "Catalina": 20, "Encarnación": 20,
+        "Amalia": 20, "Josefina": 20, "Julia": 20, "María del Carmen": 20, "María Teresa": 20,
+        "Asunción": 8, "Soledad": 8, "Remedios": 8, "Milagros": 8, "Purificación": 8, "Trinidad": 8, "Victoria": 8, "Vicenta": 8, "Ángela": 8,
+        "Aurora": 8, "Beatriz": 8, "Cristina": 8, "Elena": 8, "Emilia": 8, "Esperanza": 8, "Gloria": 8, "Inés": 8, "Leonor": 8, "Magdalena": 8,
+        "Rafaela": 8, "Ramona": 8, "Consuelo": 8, "Adela": 8, "Eugenia": 8, "Felisa": 8, "Gabriela": 8, "Ignacia": 8, "Lola": 8
+      },
+      "surnameWeights": {
+        "García": 20, "González": 20, "Rodríguez": 20, "Fernández": 20, "López": 20, "Martínez": 20, "Sánchez": 20, "Pérez": 20, "Gómez": 20,
+        "Martín": 20,
+        "Jiménez": 8, "Ruiz": 8, "Hernández": 8, "Díaz": 8, "Moreno": 8, "Álvarez": 8, "Muñoz": 8, "Romero": 8, "Alonso": 8, "Gutiérrez": 8,
+        "Navarro": 8, "Torres": 8, "Domínguez": 8, "Vázquez": 8, "Ramos": 8, "Gil": 8, "Ramírez": 8, "Serrano": 8, "Blanco": 8, "Molina": 8,
+        "Morales": 8, "Suárez": 8, "Ortega": 8, "Delgado": 8, "Castro": 8,
+        "Ortiz": 3, "Rubio": 3, "Marín": 3, "Sanz": 3, "Iglesias": 3, "Núñez": 3, "Medina": 3, "Garrido": 3, "Santos": 3, "Castillo": 3, "Cortés": 3,
+        "Lozano": 3, "Guerrero": 3, "Cano": 3, "Prieto": 3, "Méndez": 3, "Cruz": 3, "Calvo": 3, "Herrera": 3, "Gallego": 3, "Vidal": 3, "León": 3,
+        "Márquez": 3, "Peña": 3, "Flores": 3, "Cabrera": 3, "Campos": 3, "Vega": 3, "Díez": 3, "Fuentes": 3
+      },
       "male": [
         "Abel",
         "Adolfo",

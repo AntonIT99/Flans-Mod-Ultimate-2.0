@@ -1,5 +1,6 @@
 package com.flansmodultimate.platform.item;
 
+import com.flansmodultimate.common.item.IFlanItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +28,12 @@ public abstract class FlanItem extends Item
     protected FlanItem(Properties properties)
     {
         super(properties);
+    }
+
+    @Override
+    public @NotNull Component getName(@NotNull ItemStack stack)
+    {
+        return this instanceof IFlanItem<?> content ? Component.translatableWithFallback(getDescriptionId(stack), content.getConfigType().getName()) : super.getName(stack);
     }
 
     @Override

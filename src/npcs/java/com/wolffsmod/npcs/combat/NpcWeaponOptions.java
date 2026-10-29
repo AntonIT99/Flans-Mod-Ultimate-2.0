@@ -21,10 +21,45 @@ public final class NpcWeaponOptions
                     true), GUN_SHOT_ANIMATION(true), GUN_RELOAD_ANIMATION(true), GUN_MELEE_ANIMATION(true), NATIVE_THROWABLES(true), GRADUAL_AIM(true), FIRE_WHEN_ALIGNED(true), TURRET_LOCKED(
                         false), PASSENGER_GUNS(true), TURRET_MUZZLES(true), ADVANCED_LEAD(true), HULL_FACES_TRAVEL(true), MISALIGNED_THROTTLE(true), RIDER_AT_SEAT(true), EYE_AT_MUZZLE(
                             true), ANIMATED_MODEL(true), DOORS_OPEN(false), GEAR_UP(false), WINGS_FOLDED(false), ENGINE_RUNNING(true), FULL_THROTTLE(false), MODEL_CULLING(true), PROGRESSIVE_SEARCH(
-                                true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(true), PATH_DEBUG(false), CONSUME_AMMO(false), PART_HITBOXES(
-                                    true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(true), HITBOX_OUTLINES(false), SOLID_HITBOXES(true), ARMOR_POTION_EFFECTS(
-                                        true), MANNED_GUNS_FIRE(true), MELEE_DUAL_WIELD(
-                                            false), DRIVE_DRIVEABLES(false), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true);
+                                true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(
+                                    true), PATH_DEBUG(false), CONSUME_AMMO(false), PART_HITBOXES(true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(
+                                        true), HITBOX_OUTLINES(false), SOLID_HITBOXES(true), ARMOR_POTION_EFFECTS(true), MANNED_GUNS_FIRE(true), MELEE_DUAL_WIELD(false), DRIVE_DRIVEABLES(
+                                            false), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
+        /** Flan ammunition in the projectile slot is only fired by a held gun or model that takes it, as ammunition from the inventory always is. */
+        FITTING_SLOT_AMMO(false),
+        /** A vehicle or mecha whose definition squashes mobs runs over everything in its way but its allies. */
+        RUN_OVER(true),
+        /** Landing gear that retracts while the aircraft flies and comes down near the ground; the gear row shows it as a third choice beside down and up. */
+        GEAR_DYNAMIC(true),
+        /** Shows what the NPC aims at: its line to the target, the point it leads to, its ranges and a label above its head. */
+        AIM_DEBUG(false),
+        /**
+         * A ground vehicle whose main weapon cannot lower or raise itself onto its target backs away until it can, and one
+         * whose line of fire is blocked drives on, round what blocks it, until it has a clear shot.
+         */
+        MANOEUVRE_TO_FIRE(true),
+        /**
+         * A vehicle, aircraft or ship keeps out of the reach of its own explosive rounds: it holds its fire at a target
+         * too close for them and manoeuvres back to where it can fire them safely.
+         */
+        BLAST_STANDOFF(true),
+        /**
+         * A ship turns its bow onto its target for weapons fixed to its hull, such as torpedo tubes, and turns its side
+         * to it for its turrets once it has none of those left to fire.
+         */
+        SHIP_WEAPON_BEARING(true),
+        /** Each manned seat gun picks its own target within its own arc, whatever the turret and the other guns fire at. */
+        GUNNER_TARGETS(true),
+        /** A seat gun nobody sits behind aims and fires by itself, as a crew member would man it, credited to the vehicle. */
+        UNMANNED_GUNS_FIRE(false),
+        /** A vehicle or mecha model climbs steps as high as its model does; a ground vehicle never jumps like a mob, and a mecha jumps as its model does. */
+        STEP_CLIMB(true),
+        /** A ground vehicle model whose definition has a complete real-world profile slows down climbing steep grades, as the vehicle does. */
+        SLOPE_PHYSICS(true),
+        /** A plane or helicopter model flies at its definition's speeds, climb rate and control rates. */
+        MODEL_FLIGHT(true),
+        /** Timed maintenance, carrier servicing, buoyancy recovery and fuel-backed nanorepair; manual tool healing remains separate. */
+        AUTOMATIC_REPAIRS(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter
@@ -66,6 +101,9 @@ public final class NpcWeaponOptions
             // The model weapon switch was saved under its earlier name.
             if (feature == Feature.MODEL_WEAPON_STATS && tag.contains("WEAPON_STATS", Tag.TAG_BYTE))
                 fallback = tag.getBoolean("WEAPON_STATS");
+            // Gear an NPC saved before dynamic gear existed keeps it up if it was put up; gear left down becomes dynamic.
+            if (feature == Feature.GEAR_DYNAMIC && tag.contains(Feature.GEAR_UP.name(), Tag.TAG_BYTE))
+                fallback = !tag.getBoolean(Feature.GEAR_UP.name());
             set(feature, tag.contains(feature.name(), Tag.TAG_BYTE) ? tag.getBoolean(feature.name()) : fallback);
         }
     }

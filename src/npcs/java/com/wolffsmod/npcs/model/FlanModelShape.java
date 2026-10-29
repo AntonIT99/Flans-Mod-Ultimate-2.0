@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.model;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.IDriveableType;
-import com.flansmodultimate.api.IMechaType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.IMechaType;
 
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.phys.AABB;
@@ -12,14 +12,17 @@ import java.util.Optional;
 /**
  * Hitbox and resting height of a content-pack model, read from its definition.
  *
- * <p>The NPC stands where the driveable itself would rest on its wheels, but never sinks below
+ * <p>
+ * The NPC stands where the driveable itself would rest on its wheels, but never sinks below
  * its feet, since flying boats rest on their hull. The hitbox reaches from the ground to the top
  * of the core part, as wide as the core part is long, up to {@link #MAX_WIDTH}: a vanilla hitbox
  * cannot turn with the NPC, and a square as long as a ship would cover far more than the ship and
  * could not path. The main mod keeps its own driveable entity collision within the same width.
- * Mechas use their declared size. AA guns declare no size and keep the defaults of their kind.</p>
+ * Mechas use their declared size. AA guns declare no size and keep the defaults of their kind.
+ * </p>
  *
- * @param modelHeight blocks between the NPC's feet and the model origin
+ * @param modelHeight
+ *            blocks between the NPC's feet and the model origin
  */
 public record FlanModelShape(EntityDimensions dimensions, float modelHeight)
 {

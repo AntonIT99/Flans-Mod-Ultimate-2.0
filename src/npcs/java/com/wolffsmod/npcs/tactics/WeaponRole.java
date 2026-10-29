@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.tactics;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponTraits;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.item.ItemStack;

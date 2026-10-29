@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.ISeat;
+import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

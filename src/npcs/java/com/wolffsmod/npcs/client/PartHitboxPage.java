@@ -1,6 +1,11 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.parts.FlansPartBodies;
+import com.flansmodultimate.api.parts.IPartBody;
+import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.api.parts.PartBox;
+import com.flansmodultimate.api.parts.PartState;
 import com.wolffsmod.npcs.combat.NpcPartSettings;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;

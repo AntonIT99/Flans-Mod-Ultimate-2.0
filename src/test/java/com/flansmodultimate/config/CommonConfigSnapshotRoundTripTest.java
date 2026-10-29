@@ -24,7 +24,7 @@ class CommonConfigSnapshotRoundTripTest
         for (int i = 0; i < components.length; i++)
             values[i] = switch (components[i].getName())
             {
-                case "disableCrosshairWhileScoped" -> disableScopedCrosshair;
+                case "disableCrosshairWhileScoped", "forceUncensoredContent" -> disableScopedCrosshair;
                 case "disableCrosshairForGuns" -> !disableScopedCrosshair;
                 default -> sample(components[i]);
             };
@@ -36,6 +36,7 @@ class CommonConfigSnapshotRoundTripTest
             CommonConfigSnapshot.write(buffer, original);
             CommonConfigSnapshot decoded = CommonConfigSnapshot.read(buffer);
             assertEquals(original, decoded);
+            assertEquals(disableScopedCrosshair, decoded.forceUncensoredContent());
             assertEquals(disableScopedCrosshair, decoded.disableCrosshairWhileScoped());
             assertEquals(!disableScopedCrosshair, decoded.disableCrosshairForGuns());
             assertTrue(decoded.nearMissSuppression());

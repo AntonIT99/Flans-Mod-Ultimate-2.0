@@ -4,17 +4,16 @@ import com.wolffsmod.npcs.client.NpcKind.Scope;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.diag.NpcServerSettings;
-import com.wolffsmod.npcs.diag.ServerBenchmark;
-import com.wolffsmod.npcs.network.NpcNetwork;
-import com.wolffsmod.npcs.network.NpcPresetPacket;
-import com.wolffsmod.npcs.network.ServerControlPacket;
+import com.wolffsmod.npcs.diag.*;
+import com.wolffsmod.npcs.diag.NpcServerSettings.Setting;
+import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.presets.NpcPreset;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import lombok.RequiredArgsConstructor;
 import noppes.npcs.client.NoppesUtil;
 import noppes.npcs.client.gui.select.GuiSoundSelection;
@@ -26,16 +25,20 @@ import noppes.npcs.packets.server.SPacketMenuGet;
 import noppes.npcs.packets.server.SPacketMenuSave;
 import noppes.npcs.shared.client.gui.components.*;
 import noppes.npcs.shared.client.gui.listeners.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.*;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,14 +48,16 @@ import java.util.stream.Collectors;
  * Per-NPC controls inside the Wolff's Mod tab, using the Custom NPCs stats transport and sound picker.
  *
  * <p>
- * The overview is split into hub tabs along its top: General, Combat, Movement and Tuning list pages under section
- * headings, one column per heading, below the kind of NPC being edited, a standard NPC or a Flan model; Server holds the
- * settings of the whole server. Every page is listed, and those not meant for the kind are greyed. A page is a list of
- * rows, split into named tabs where they do not fit together, and may link to a sub-page. The title of a page is the path
+ * The overview is split into hub tabs along its top: General, Combat, Movement and Advanced list pages under section
+ * headings, one column per heading, below the kind of NPC being edited, a standard NPC or a Flan model; the pages of Server
+ * hold the settings of the whole server instead. Locomotion lists only pages meant for this kind; Boarding & piloting uses
+ * expandable sections in a scrolling viewport. Other pages are all listed, and those not meant for the kind are greyed.
+ * A page is a list of rows, split into named tabs where they do not fit together, and may link to a sub-page. The title of a page is the path
  * to it. The Essentials page gathers the settings most NPCs of the kind need. A row that does nothing for this NPC,
  * because of its kind or because a setting it depends on is off, keeps its control but has a grey label that says why; a
  * row that depends on another row of the same tab is indented below it. A hub tab, page or tab with settings changed from
- * their defaults shows how many.
+ * their defaults shows how many. A few pages show lines the server sends instead of rows: what the server finds of this NPC,
+ * the census of every NPC, and the latest server benchmarks side by side.
  * </p>
  */
 // Custom NPCs' editor requires the external GUI inheritance chain.
@@ -88,6 +93,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int ENGINE_REPEAT_ID = 502;
     private static final int ENGINE_SOUND_FIELD_ID = 503;
     private static final int VALUE_ID = 1000;
+    // 2200-2239 belong to held-item animations and 2300-2315 to crew controls, whose handlers run before page navigation.
+    private static final int CONTROLLER_ID = 2400;
+    private static final int MOVEMENT_SECTION_ID = 2410;
+    private static final int MOVEMENT_UP_ID = 2430;
+    private static final int MOVEMENT_DOWN_ID = 2431;
+    private static final int MOVEMENT_TOP = 45;
+    private static final int MOVEMENT_VISIBLE_ROWS = 7;
+    private static final int MOVEMENT_SCROLL_LEFT = 390;
+    private static final String LOCOMOTION = "wolffsmodnpcs.locomotion.";
     private static final int AGGRO_RANGE_ID = 1100;
     private static final int FIRING_RANGE_ID = 1101;
     private static final int READ_ONLY_COLOR = 0xA0A0A0;
@@ -107,6 +121,48 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_AGGRO_ID = 1205;
     private static final int SERVER_FIRING_ID = 1206;
     private static final int SERVER_APPLY_RANGES_ID = 1207;
+    /** The labels beside an NPC's own search intervals naming the server's, which an interval of 0 follows. */
+    private static final int SERVER_NEAR_VALUE_ID = 1208;
+    private static final int SERVER_FAR_VALUE_ID = 1209;
+    private static final int SERVER_MODEL_AGGRO_ID = 1210;
+    private static final int SERVER_MODEL_FIRING_ID = 1211;
+    private static final int SERVER_SEARCH_BUDGET_ID = 1212;
+    private static final int SERVER_PATH_BUDGET_ID = 1213;
+    private static final int SERVER_STAY_ACTIVE_LIMIT_ID = 1214;
+    private static final int SERVER_FREEZE_ID = 1215;
+    private static final int SERVER_HEALTH_ID = 1216;
+    private static final int SERVER_AMMO_ID = 1217;
+    private static final int SERVER_NAME_TAG_RANGE_ID = 1221;
+    private static final int SERVER_APPLY_SEARCH_ID = 1218;
+    private static final int REPORT_REFRESH_ID = 1219;
+    private static final int DIAGNOSIS_COPY_ID = 1220;
+    private static final int SERVER_SHOW_NAME_TAGS_ID = 1222;
+    private static final int SERVER_HIDE_NAME_TAGS_ID = 1223;
+    private static final int SERVER_FRIENDLY_FIRE_NPCS_ID = 1224;
+    private static final int SERVER_FRIENDLY_FIRE_PLAYERS_ID = 1225;
+    private static final int SERVER_ITEM_DROPS_ID = 1226;
+    /** The first of the labels a page of read-only lines lays out, one per line or table cell. */
+    private static final int LINE_LABEL_ID = 1500;
+    /** Room for the lines of a page of read-only lines. */
+    private static final int LINE_HEIGHT = 11;
+    private static final int MAX_LINES = 14;
+    /** Where the buttons below a page of read-only lines sit, from the top of the GUI. */
+    private static final int LINES_BUTTON_TOP = 178;
+    /** Client ticks between two requests of what the Diagnosis page shows. */
+    private static final int INSPECT_INTERVAL = 20;
+    /** The left edges of the columns of the benchmark comparison: the figure, the previous run, the latest run and the change. */
+    private static final int[] COMPARISON_COLUMNS = {8, 214, 278, 342};
+    private static final String DIAGNOSIS = "wolffsmodnpcs.diagnosis.";
+    private static final String CENSUS = "wolffsmodnpcs.census.";
+    private static final String COMPARISON = "wolffsmodnpcs.comparison.";
+    private static final String WAITING = "waiting";
+    /** The tabs of the Diagnosis page, which lay out the lines the server sent rather than rows. */
+    private static final String EFFECTIVE_TAB = "effective_values";
+    private static final String LIVE_TAB = "live_stats";
+    /** The tab of the Profiling & benchmarks page that sets the latest server benchmark beside the one before. */
+    private static final String COMPARISON_TAB = "benchmark_comparison";
+    private static final int GOOD_COLOR = 0x55FF55;
+    private static final int BAD_COLOR = 0xFF5555;
     /** Distance between the left edges of two overview columns; a page button is this wide less the gap. */
     private static final int OVERVIEW_COLUMN = 134;
     private static final int OVERVIEW_GAP = 6;
@@ -141,6 +197,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final String IDLE_MOVEMENT_TAB = "idle_movement";
     /** The tabs of the Damage & armour page: what any NPC takes with knockback and the minimum hits, the model's armour, and its parts. */
     private static final String GENERAL_TAB = "general";
+    private static final String SERVER_RANGES_TAB = "ranges";
     private static final String ARMOUR_TAB = "model_armour";
     private static final String PARTS_TAB = "parts";
     private static final String PATH_SEPARATOR = " > ";
@@ -150,14 +207,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final String TRIMMED = "..." + PATH_SEPARATOR;
     private static final String HELP_SUFFIX = ".help";
     private static final String[] NO_YES = {"gui.no", "gui.yes"};
+    /** The landing gear row is a choice of three, kept as two switches: gear up, and dynamic gear, which outranks it. */
+    private static final String[] GEAR_CHOICES = {WEAPONS + "gear_up.down", WEAPONS + "gear_up.up", WEAPONS + "gear_up.dynamic"};
+    private static final int GEAR_UP_CHOICE = 1;
+    private static final int GEAR_DYNAMIC_CHOICE = 2;
     /** The hub tab the overview shows; kept while the game runs. */
     private static final AtomicReference<Hub> HUB = new AtomicReference<>(Hub.GENERAL);
     private static final String PRESET = "wolffsmodnpcs.preset.";
 
-    /** A tab of the overview, in the row along its top. Server holds the settings of the whole server instead of pages. */
+    /** A tab of the overview, in the row along its top. The pages of Server hold the settings of the whole server instead of this NPC's. */
     private enum Hub
     {
-        GENERAL, COMBAT, MOVEMENT, TUNING, SERVER;
+        GENERAL, COMBAT, MOVEMENT, ADVANCED, SERVER;
 
         private String key()
         {
@@ -174,7 +235,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         START(Hub.GENERAL, 0), MODEL(Hub.GENERAL, 1), LOOK(Hub.GENERAL, 2),
         WEAPONS(Hub.COMBAT, 0), TARGETING(Hub.COMBAT, 1), PROTECTION(Hub.COMBAT, 2),
         BEHAVIOUR(Hub.MOVEMENT, 0), TRAVEL(Hub.MOVEMENT, 1),
-        TUNING(Hub.TUNING, 0);
+        ADVANCED(Hub.ADVANCED, 0),
+        SERVER(Hub.SERVER, 0);
         // spotless:on
 
         private final Hub hub;
@@ -193,6 +255,62 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         AGGRO_RANGE(AGGRO_RANGE_ID), FIRING_RANGE(FIRING_RANGE_ID);
 
         private final int id;
+    }
+
+    /** The settings of the whole server as rows. The server sends their values and decides who may change them. */
+    @RequiredArgsConstructor
+    private enum ServerRow
+    {
+        // spotless:off
+        NEAR_INTERVAL(SERVER_NEAR_ID, Setting.NEAR_INTERVAL), FAR_INTERVAL(SERVER_FAR_ID, Setting.FAR_INTERVAL), SEARCH_BUDGET(SERVER_SEARCH_BUDGET_ID, Setting.SEARCH_BUDGET),
+        PROFILING(SERVER_PROFILE_ID, Setting.PROFILING),
+        AGGRO_RANGE(SERVER_AGGRO_ID, Setting.AGGRO_RANGE), FIRING_RANGE(SERVER_FIRING_ID, Setting.FIRING_RANGE),
+        MODEL_AGGRO_RANGE(SERVER_MODEL_AGGRO_ID, Setting.MODEL_AGGRO_RANGE), MODEL_FIRING_RANGE(SERVER_MODEL_FIRING_ID, Setting.MODEL_FIRING_RANGE),
+        FREEZE_AI(SERVER_FREEZE_ID, Setting.FREEZE_AI), STAY_ACTIVE_LIMIT(SERVER_STAY_ACTIVE_LIMIT_ID, Setting.STAY_ACTIVE_LIMIT), PATH_BUDGET(SERVER_PATH_BUDGET_ID, Setting.PATH_BUDGET),
+        HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY),
+        NAME_TAG_RANGE(SERVER_NAME_TAG_RANGE_ID, Setting.NAME_TAG_RANGE), ITEM_DROPS(SERVER_ITEM_DROPS_ID, Setting.ITEM_DROPS),
+        FRIENDLY_FIRE_NPCS(SERVER_FRIENDLY_FIRE_NPCS_ID, Setting.FRIENDLY_FIRE_NPCS), FRIENDLY_FIRE_PLAYERS(SERVER_FRIENDLY_FIRE_PLAYERS_ID, Setting.FRIENDLY_FIRE_PLAYERS);
+        // spotless:on
+
+        private final int id;
+        private final Setting setting;
+
+        /** @return the value the server last sent, 1 for Yes for a switch */
+        private int current()
+        {
+            return ClientServerSettings.get(setting);
+        }
+
+        /** @return the value a new world starts with, 1 for Yes for a switch */
+        private int fallback()
+        {
+            return setting.getFallback();
+        }
+
+        private int maximum()
+        {
+            return switch (this)
+            {
+                case AGGRO_RANGE, FIRING_RANGE, MODEL_AGGRO_RANGE, MODEL_FIRING_RANGE -> NpcMobility.rangeLimit();
+                default -> setting.getMaximum();
+            };
+        }
+
+        private boolean toggle()
+        {
+            return this == PROFILING || this == FREEZE_AI || this == ITEM_DROPS;
+        }
+
+        /** @return the named choices of a row that is one, or none */
+        private Enum<?>[] choices()
+        {
+            return switch (this)
+            {
+                case AMMO_POLICY -> NpcServerSettings.AmmoPolicy.values();
+                case FRIENDLY_FIRE_NPCS, FRIENDLY_FIRE_PLAYERS -> FriendlyFire.Setting.values();
+                default -> new Enum<?>[0];
+            };
+        }
     }
 
     /** The appearance switches as rows; they are not stored with the weapon options. */
@@ -214,19 +332,26 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         COLUMN, BELOW
     }
 
+    /** A combined editor row; the underlying feature flags retain their save and packet identities. */
+    private enum MovementRow
+    {
+        CONTROLLER
+    }
+
     /** Where rows were laid out: the control column of the first of them, and the top of what follows them, both from the top left of the GUI. */
     private record Placed(int control, int bottom)
     {}
 
     /**
      * A part of a page: its rows, listed top to bottom in the order given and split into columns by {@link Layout} marks,
-     * and the NPCs it is meant for. Only the tabs of a page with several are named.
+     * and the NPCs it is meant for. Only the tabs of a page with several are named. Boarding & piloting uses these as inline sections
+     * instead of tabs, with an initial expanded state.
      */
-    private record Tab(String name, Scope scope, List<Object> rows)
+    private record Tab(String name, Scope scope, List<Object> rows, boolean expanded)
     {
         private static Tab of(Object... rows)
         {
-            return new Tab("", Scope.ALL, List.of(rows));
+            return new Tab("", Scope.ALL, List.of(rows), true);
         }
 
         private static Tab named(String name, Object... rows)
@@ -236,7 +361,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
         private static Tab named(String name, Scope scope, Object... rows)
         {
-            return new Tab(name, scope, List.of(rows));
+            return new Tab(name, scope, List.of(rows), true);
+        }
+
+        /** A section of a locomotion page, initially folded until the user asks for its detailed settings. */
+        private static Tab folded(String name, Object... rows)
+        {
+            return new Tab(name, Scope.ALL, List.of(rows), false);
         }
 
         private String key()
@@ -274,7 +405,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final Map<Enum<?>, Need> REQUIREMENTS = Map.ofEntries(
         Map.entry(Feature.DUAL_WIELD, Need.on(Feature.ITEM_WEAPONS)),
         Map.entry(Feature.MELEE_DUAL_WIELD, Need.on(Feature.ITEM_WEAPONS)),
-        Map.entry(Feature.CONSUME_AMMO, Need.on(Feature.ITEM_WEAPONS)),
+        Map.entry(Value.GRENADE_USE, Need.on(Feature.GRENADES)),
+        Map.entry(Value.NATIVE_THROWABLE_USE, Need.on(Feature.NATIVE_THROWABLES)),
+        Map.entry(Value.THROWN_WEAPON_USE, Need.on(Feature.ITEM_WEAPONS)),
         Map.entry(Feature.ARMOR_POTION_EFFECTS, Need.on(Feature.ITEM_ARMOR)),
         Map.entry(Value.WEAPON_SWITCH, Need.on(Feature.CONSUME_AMMO)),
         Map.entry(Feature.MODEL_WEAPON_STATS, Need.on(Feature.TYPE_PROPERTIES)),
@@ -289,17 +422,26 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Feature.FLAN_DAMAGE_TYPES, Need.off(Feature.ITEM_ARMOR)),
         Map.entry(Feature.PART_HEALTH, Need.on(Feature.PART_HITBOXES)),
         Map.entry(Feature.PART_EFFECTS, Need.on(Feature.PART_HEALTH)),
+        Map.entry(Feature.AUTOMATIC_REPAIRS, Need.on(Feature.PART_HEALTH)),
         Map.entry(Feature.SOLID_HITBOXES, Need.on(Feature.PART_HITBOXES)),
         Map.entry(Value.VISION_LIMIT, Need.choice(Value.SIGHT, NpcTuning.Sight.SEE_THROUGH, NpcTuning.Sight.SEE_AND_FIRE_THROUGH)),
         Map.entry(Value.FIRE_LIMIT, Need.choice(Value.SIGHT, NpcTuning.Sight.SEE_AND_FIRE_THROUGH)),
         Map.entry(Value.MAX_WADE_DEPTH, Need.choice(Value.TERRAIN, NpcTuning.Terrain.GROUND)),
         Map.entry(Value.MIN_WATER_DEPTH, Need.choice(Value.TERRAIN, NpcTuning.Terrain.WATERCRAFT)),
         Map.entry(Value.SUBMARINE_DEPTH, Need.choice(Value.TERRAIN, NpcTuning.Terrain.WATERCRAFT)),
-        Map.entry(Value.ATTACK_ALTITUDE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER)),
-        Map.entry(Value.FLIGHT_SPEED, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE)),
+        Map.entry(Value.DIVE_RATE, Need.choice(Value.TERRAIN, NpcTuning.Terrain.WATERCRAFT)),
+        Map.entry(Value.STEP_HEIGHT, Need.on(Feature.STEP_CLIMB)),
+        Map.entry(Value.ATTACK_ALTITUDE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
+        Map.entry(Value.FLIGHT_SPEED, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.AUTO)),
+        Map.entry(Value.CRUISE_SPEED, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.AUTO)),
+        Map.entry(Value.FLIGHT_TURN_RATE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
+        Map.entry(Value.CLIMB_RATE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
+        Map.entry(Feature.MODEL_FLIGHT, Need.on(Feature.TYPE_PROPERTIES)),
         Map.entry(Value.TACTIC_DISTANCE, Need.choice(Value.TACTIC, Arrays.stream(NpcTuning.Tactic.values()).filter(NpcTuning.Tactic::usesDistance).toArray(Enum<?>[]::new))),
         Map.entry(Value.COVER_RADIUS, Need.choice(Value.TACTIC, NpcTuning.Tactic.COVER)),
+        Map.entry(Value.BLAST_MARGIN, Need.on(Feature.BLAST_STANDOFF)),
         Map.entry(Feature.DRIVING, Need.on(Feature.HULL_FACES_TRAVEL)),
+        Map.entry(Value.HULL_TURN_RATE, Need.on(Feature.HULL_FACES_TRAVEL)),
         Map.entry(Value.DRIVE_PRESET, Need.on(Feature.DRIVING)),
         Map.entry(Value.DRIVE_TYPE, Need.on(Feature.DRIVING)),
         Map.entry(Value.DRIVE_ACCELERATION, Need.on(Feature.DRIVING)),
@@ -316,6 +458,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.REVERSE_DISTANCE, Need.on(Feature.DRIVE_REVERSE)),
         Map.entry(Value.STOP_DISTANCE, Need.on(Feature.DRIVING)),
         Map.entry(Value.FOLLOW_DISTANCE, Need.on(Feature.DRIVING)),
+        Map.entry(Value.STEERING_RESPONSE, Need.on(Feature.DRIVING)),
+        Map.entry(Value.STATIONARY_TURN, Need.on(Feature.DRIVING)),
+        Map.entry(Value.TRAFFIC_STOP_GAP, Need.on(Feature.DRIVING)),
         Map.entry(Value.PATH_MARGIN, Need.on(Feature.ADAPTIVE_PATH_RANGE)),
         Map.entry(Value.PATH_RETRY_INTERVAL, Need.on(Feature.ADAPTIVE_PATH_RANGE)),
         Map.entry(Feature.DOORS_OPEN, Need.on(Feature.ANIMATED_MODEL)),
@@ -353,49 +498,74 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         // spotless:off
         /** The settings most NPCs of the edited kind need, with links to the pages they come from; its rows depend on the kind. */
         ESSENTIALS(Section.START, Scope.ALL),
-        MODEL_STATS(Section.MODEL, Scope.MODELS, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
+        MODEL_STATS(Section.MODEL, Scope.ALL, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Layout.COLUMN, Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
-        TURRET(Section.MODEL, Scope.MODELS,
-            Tab.named("turret_aim", Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.PASSENGER_GUNS, Feature.MANNED_GUNS_FIRE,
-                Feature.TURRET_LOCKED),
-            Tab.named(CrewPage.TAB, Scope.DRIVEABLES)),
-        EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Layout.COLUMN, Feature.ITEM_ARMOR,
+        CREW(Section.MODEL, Scope.DRIVEABLES, Tab.named(CrewPage.TAB), Tab.named(CrewPage.RULES_TAB)),
+        EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO, Layout.COLUMN,
+            Feature.ITEM_ARMOR,
             Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Value.WEAPON_SWITCH)),
-        FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES)),
-        MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS, Tab.of(Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES,
-            Feature.EYE_AT_MUZZLE, Feature.DRIVER_GUNS)),
-        AIMING(Section.TARGETING, Scope.ALL, Tab.of(Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE)),
+        FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Value.GRENADE_USE, Feature.NATIVE_THROWABLES, Value.NATIVE_THROWABLE_USE, Value.THROWN_WEAPON_USE,
+            Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO)),
+        MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS,
+            Tab.named("weapon_operation", Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.RUN_OVER),
+            Tab.named("weapon_crew", Feature.DRIVER_GUNS, Feature.MANNED_GUNS_FIRE, Feature.UNMANNED_GUNS_FIRE, Feature.GUNNER_TARGETS),
+            Tab.named("weapon_positions", Feature.MODEL_MUZZLES, Feature.TURRET_MUZZLES, Feature.EYE_AT_MUZZLE)),
+        AIMING(Section.TARGETING, Scope.ALL,
+            Tab.named("target_tracking", Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE),
+            Tab.named("gun_movement", Scope.MODELS, Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.MANOEUVRE_TO_FIRE, Feature.PASSENGER_GUNS,
+                Feature.TURRET_LOCKED)),
         PROTECTION(Section.PROTECTION, Scope.ALL,
             Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES),
             Tab.named(ARMOUR_TAB, Scope.MODELS, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR),
-            Tab.named(PARTS_TAB, Scope.DRIVEABLES, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES,
+            Tab.named(PARTS_TAB, Scope.DRIVEABLES, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES,
                 Feature.HITBOX_OUTLINES)),
-        TACTICS(Section.BEHAVIOUR, Scope.ALL, Tab.of(Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS)),
+        TACTICS(Section.BEHAVIOUR, Scope.ALL, Tab.of(Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING)),
         DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
-        TERRAIN(Section.TRAVEL, Scope.ALL, Tab.of(Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Value.LAND_SPEED, Value.WATER_SPEED)),
-        DRIVING(Section.TRAVEL, Scope.VEHICLES,
-            Tab.named("handling", Feature.DRIVING, Value.DRIVE_PRESET, Value.DRIVE_TYPE, Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.TURN_RADIUS),
-            Tab.named("steering", Feature.HULL_FACES_TRAVEL, Value.HULL_TURN_RATE, Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR, Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED),
-            Tab.named("reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE)),
-        FLIGHT(Section.TRAVEL, Scope.PLANES_AND_VEHICLES, Tab.of(Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Value.FLIGHT_SPEED, Value.SUBMARINE_DEPTH)),
-        DRIVEABLES(Section.TRAVEL, Scope.STANDARD,
-            Tab.named("boarding", Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES, Value.KEEP_DISTANCE),
-            Tab.named("flying", Value.CRUISE_HEIGHT, Value.ATTACK_HEIGHT, Value.CIRCLE_RADIUS, Value.PLANE_LANDING_DELAY, Value.HOVER_HEIGHT, Value.HELICOPTER_LANDING_DELAY, Value.LOW_FUEL)),
+        PATHFINDING(Section.BEHAVIOUR, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
+        MOVEMENT(Section.TRAVEL, Scope.ALL,
+            Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Feature.STEP_CLIMB, Value.STEP_HEIGHT, Feature.SLOPE_PHYSICS),
+            Tab.named("movement_speed", Value.LAND_SPEED, Value.WATER_SPEED),
+            Tab.named("movement_watercraft", Value.SUBMARINE_DEPTH, Value.DIVE_RATE),
+            Tab.named("movement_flight", Scope.PLANES_AND_VEHICLES, Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Feature.MODEL_FLIGHT, Value.FLIGHT_SPEED, Value.CRUISE_SPEED,
+                Value.FLIGHT_TURN_RATE, Value.CLIMB_RATE)),
+        VEHICLE_HANDLING(Section.TRAVEL, Scope.VEHICLES,
+            Tab.named("vehicle_setup", MovementRow.CONTROLLER, Value.DRIVE_PRESET, Value.DRIVE_TYPE),
+            Tab.named("vehicle_speed_stopping", Value.DRIVE_ACCELERATION, Value.DRIVE_BRAKING, Value.DRIVE_COASTING, Value.STOP_DISTANCE, Value.FOLLOW_DISTANCE, Value.TRAFFIC_STOP_GAP),
+            Tab.named("vehicle_steering", Value.HULL_TURN_RATE, Value.TURN_RADIUS, Value.STEERING_RESPONSE, Value.STATIONARY_TURN),
+            Tab.named("vehicle_cornering", Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED, Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR),
+            Tab.named("vehicle_reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE)),
+        BOARDING(Section.TRAVEL, Scope.STANDARD,
+            Tab.named("pilot_boarding", Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES),
+            Tab.folded("pilot_ground", Value.KEEP_DISTANCE),
+            Tab.folded("pilot_aircraft", Value.CRUISE_HEIGHT, Value.ATTACK_HEIGHT, Value.CIRCLE_RADIUS, Value.PLANE_LANDING_DELAY, Value.HOVER_HEIGHT, Value.HELICOPTER_LANDING_DELAY, Value.LOW_FUEL)),
         ANIMATIONS(Section.LOOK, Scope.STANDARD,
             Tab.named("equipment_animation", Value.AIM_POSE, Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
             Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
-        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES)),
+        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES, Feature.MUZZLE_FLASHES)),
         SOUNDS(Section.LOOK, Scope.ALL,
             Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
             Tab.named(IDLE_MOVEMENT_TAB)),
-        PERFORMANCE(Section.TUNING, Scope.ALL,
-            Tab.named(GENERAL_TAB, Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAGGER_NEAR_SEARCH, Feature.STAY_ACTIVE, Value.ACTIVE_RANGE,
-                Feature.PATH_DEBUG),
+        PERFORMANCE(Section.ADVANCED, Scope.ALL,
+            Tab.named("target_search", Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAGGER_NEAR_SEARCH),
             Tab.named("search_bands", Feature.ADVANCED_SEARCH_INTERVALS, Value.SEARCH_BAND_0_INTERVAL, Value.SEARCH_BAND_1_INTERVAL, Value.SEARCH_BAND_2_INTERVAL,
-                Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL)),
-        PATHFINDING(Section.TUNING, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT));
+                Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL),
+            Tab.named("activity", Feature.STAY_ACTIVE, Value.ACTIVE_RANGE, Value.DORMANT_RANGE),
+            Tab.named("debug", Feature.PATH_DEBUG, Feature.AIM_DEBUG)),
+        /** What the server finds of this NPC: the values it acts on and what it is doing; its tabs lay out lines, not rows. */
+        DIAGNOSIS(Section.ADVANCED, Scope.ALL, Tab.named(EFFECTIVE_TAB), Tab.named(LIVE_TAB)),
+        /** The pages of the whole server: their rows are {@link ServerRow}s, and the actions they offer sit below them. */
+        SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL, ServerRow.SEARCH_BUDGET)),
+        SERVER_RULES(Section.SERVER, Scope.ALL,
+            Tab.named(SERVER_RANGES_TAB, ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE),
+            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE, ServerRow.ITEM_DROPS),
+            Tab.named("friendly_fire", ServerRow.FRIENDLY_FIRE_NPCS, ServerRow.FRIENDLY_FIRE_PLAYERS)),
+        SERVER_LIMITS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.FREEZE_AI, ServerRow.STAY_ACTIVE_LIMIT, ServerRow.PATH_BUDGET)),
+        /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
+        CENSUS(Section.SERVER, Scope.ALL, Tab.of()),
+        FACTIONS(Section.SERVER, Scope.ALL, Tab.named("team_factions")),
+        DIAGNOSTICS(Section.SERVER, Scope.ALL, Tab.named("profiling", ServerRow.PROFILING), Tab.named(COMPARISON_TAB));
         // spotless:on
 
         private final Section section;
@@ -421,6 +591,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             {
                 case EQUIPMENT, MODEL_STATS, FIRING -> WEAPONS + "ammo_hint";
                 case PROTECTION, ANIMATIONS, EFFECTS, SOUNDS -> PRESENTATION + "hint";
+                case MOVEMENT, VEHICLE_HANDLING -> LOCOMOTION + "tabs_hint";
+                case BOARDING -> LOCOMOTION + "hint";
                 default -> TUNING + "hint";
             };
         }
@@ -436,14 +608,24 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private Category returnTo;
     /** Which tab of a page with several is shown. */
     private int tab;
+    /** Folded sections and viewport position are local editor state, never NPC gameplay data. */
+    private final Set<String> toggledMovementSections = new HashSet<>();
+    private int movementOffset;
+    private int movementRowCount;
     /** Whether the next press of the button applying the ranges to every NPC carries it out; any other edit asks again. */
     private boolean confirmApplyRanges;
+    /** The same for the button handing the search intervals to every NPC. */
+    private boolean confirmApplySearch;
+    /** Client ticks the Diagnosis page has been open, which time its requests. */
+    private int inspectTicks;
     private NpcKind kind;
     private NpcEngineSettings editingSound;
     private final CombatPages combat;
     private final SoundOverview soundOverview;
     private final HeldItemAnimationPage heldItems;
     private final CrewPage crew;
+    private final TeamFactionsPage teamFactions;
+    private final SettingsTooltip settingsTooltip = new SettingsTooltip();
 
     public GuiWolffsMod(EntityNPCInterface npc)
     {
@@ -452,11 +634,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         soundOverview = new SoundOverview(this, npc);
         heldItems = new HeldItemAnimationPage(this, npc);
         crew = new CrewPage(this, npc);
+        teamFactions = new TeamFactionsPage(this, npc);
         kind = NpcKind.of(npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
         NpcNetwork.sendToServer(NpcPresetPacket.request(npc.getId()));
-        if (HUB.get() == Hub.SERVER)
-            requestServerSettings();
+        // The Server pages and the server's intervals beside this NPC's own both need the server's settings.
+        requestServerSettings();
     }
 
     @Override
@@ -470,6 +653,34 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         else
             initCategory();
         addLabel(hintLabel(loaded ? hint() : WEAPONS + "loading"));
+    }
+
+    @Override
+    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    {
+        settingsTooltip.beginFrame();
+        super.render(graphics, mouseX, mouseY, partialTick);
+        settingsTooltip.render(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public void setTooltipForNextRenderPass(@NotNull List<FormattedCharSequence> tooltip, @NotNull ClientTooltipPositioner positioner, boolean override)
+    {
+        settingsTooltip.queue(tooltip, positioner, override);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double delta)
+    {
+        if (hasShiftDown() && settingsTooltip.scroll(delta))
+            return true;
+        if (category == Category.BOARDING && !hasSubGui() && mouseX >= guiLeft + 8 && mouseX < guiLeft + 404 && mouseY >= guiTop + MOVEMENT_TOP
+            && mouseY < guiTop + MOVEMENT_TOP + MOVEMENT_VISIBLE_ROWS * ROW_HEIGHT && delta != 0D)
+        {
+            scrollMovement(delta > 0D ? -1 : 1);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, delta);
     }
 
     /** The line below the page; one too long for the page is cut short, and its tooltip holds all of it. */
@@ -486,10 +697,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private String hint()
     {
-        if (category == null && HUB.get() == Hub.SERVER)
+        if ((category == null ? HUB.get() : category.section.hub) == Hub.SERVER)
             return TUNING + (ClientServerSettings.isKnown() ? "server_hint" : "server_waiting");
         if (category == null)
             return OVERVIEW + "hint";
+        if (category == Category.DIAGNOSIS)
+            return DIAGNOSIS + "hint";
         return combat.active() ? combat.hint() : category.hint();
     }
 
@@ -501,19 +714,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     // Overview
 
     /**
-     * The row of hub tabs, then the hub tab shown: the Server settings, or the kind of NPC above one column per section, each
-     * a heading followed by the buttons of its pages. The Start here column ends with the presets.
+     * The row of hub tabs, then the hub tab shown: the kind of NPC, or for Server that its pages hold for the whole server,
+     * above one column per section, each a heading followed by the buttons of its pages. The Start here column ends with the
+     * presets.
      */
     private void initOverview()
     {
         initHubButtons();
         Hub hub = HUB.get();
         if (hub == Hub.SERVER)
-        {
-            initServer();
-            return;
-        }
-        initKindLabel();
+            addLabel(new GuiLabel(TITLE_LABEL_ID, OVERVIEW + "server_title", guiLeft + 8, guiTop + PAGE_TOP));
+        else
+            initKindLabel();
         List<Section> sections = Arrays.stream(Section.values()).filter(section -> section.hub == hub).toList();
         for (Section section : sections)
         {
@@ -526,7 +738,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             }
             for (Category page : Category.values())
             {
-                if (page.section != section)
+                if (page.section != section || page.section == Section.TRAVEL && !page.scope.includes(kind))
                     continue;
                 pageButton(page, x, guiTop + y);
                 y += ROW_HEIGHT;
@@ -655,11 +867,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return font().width(label.getString() + marker.getString()) <= width - 8 ? label.append(marker) : label;
     }
 
-    /** @return the tabs of the page; as with pages, those not meant for this kind of NPC are shown greyed */
+    /** @return the tabs of the page; those not meant for this kind of NPC are omitted for Locomotion and greyed elsewhere */
     private List<Tab> tabs(Category page)
     {
         if (page == Category.ESSENTIALS)
             return List.of(Tab.of(essentials().toArray()));
+        if (page.section == Section.TRAVEL)
+            return page.tabs.stream().filter(candidate -> candidate.scope().includes(kind)).toList();
         return page.tabs;
     }
 
@@ -693,10 +907,16 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** Whether the row holds another value than an NPC gets by default. The Custom NPCs ranges have no default of the tab's. */
     private boolean changed(Object row)
     {
+        if (row == MovementRow.CONTROLLER)
+            return movementController() != NpcMovementController.VEHICLE;
+        if (row == Feature.GEAR_UP)
+            return gearChoice() != GEAR_DYNAMIC_CHOICE;
         if (row instanceof Feature feature)
             return enabled(feature) != feature.isDefaultEnabled();
         if (row instanceof Value value)
             return NpcTuning.of(npc).get(value) != value.fallback();
+        if (row instanceof ServerRow setting)
+            return setting.current() != setting.fallback();
         return row instanceof Look look && lookEnabled(look) != look.fallback;
     }
 
@@ -723,9 +943,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return switch (kind)
         {
             case STANDARD -> List.of(Category.EQUIPMENT, Category.AIMING);
-            case VEHICLE -> List.of(Category.MODEL_STATS, Category.DRIVING);
-            case PLANE -> List.of(Category.MODEL_STATS, Category.FLIGHT);
-            case MECHA, AA_GUN -> List.of(Category.MODEL_STATS, Category.TURRET);
+            case VEHICLE -> List.of(Category.MODEL_STATS, Category.VEHICLE_HANDLING);
+            case PLANE -> List.of(Category.MODEL_STATS, Category.MOVEMENT);
+            case MECHA, AA_GUN -> List.of(Category.MODEL_STATS, Category.AIMING);
         };
     }
 
@@ -792,6 +1012,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** The tab buttons of a page with several tabs, the rows of the tab shown and what the page adds below them. */
     private void initPage()
     {
+        if (category == Category.BOARDING)
+        {
+            initMovementPage();
+            return;
+        }
         List<Tab> tabs = tabs(category);
         tab = Math.max(0, Math.min(tabs.size() - 1, tab));
         int top = PAGE_TOP;
@@ -801,22 +1026,104 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             top = TABBED_TOP;
         }
         Tab shown = tabs.get(tab);
+        if (category == Category.FACTIONS)
+        {
+            teamFactions.init(top);
+            return;
+        }
         if (HeldItemAnimationPage.ITEMS.equals(shown.name()) || HeldItemAnimationPage.ARMS_TAB.equals(shown.name()))
         {
             heldItems.init(shown.name(), loaded, top);
             return;
         }
-        if (CrewPage.TAB.equals(shown.name()))
+        if (CrewPage.owns(shown.name()))
         {
-            crew.init(loaded, top);
+            crew.init(shown.name(), loaded, top);
             return;
         }
+        if (initLinesTab(shown, top))
+            return;
         if (initSoundTab(shown, top))
             return;
         if (category == Category.ESSENTIALS)
             initEssentialLinks();
         Placed placed = initLayout(shown.rows().stream().filter(this::visible).toList(), top);
         initPageExtras(shown, placed.control(), placed.bottom());
+    }
+
+    private boolean movementPage()
+    {
+        return category != null && category.section == Section.TRAVEL;
+    }
+
+    private boolean expanded(Tab section)
+    {
+        return section.expanded() != toggledMovementSections.contains(section.name());
+    }
+
+    /** Inline sections share one viewport; only complete visible rows become widgets, so hidden controls cannot receive input. */
+    private void initMovementPage()
+    {
+        addLabel(textLabel(HINT_LABEL_ID + 1, Component.translatable(category.key() + ".intro"), guiLeft + 8, guiTop + PAGE_TOP, PAGE_WIDTH, READ_ONLY_COLOR));
+        List<Object> rows = new ArrayList<>();
+        for (Tab section : category.tabs)
+        {
+            if (!section.scope().includes(kind))
+                continue;
+            rows.add(section);
+            if (expanded(section))
+                rows.addAll(section.rows().stream().filter(this::visible).toList());
+        }
+        movementRowCount = rows.size();
+        movementOffset = Math.max(0, Math.min(movementOffset, Math.max(0, movementRowCount - MOVEMENT_VISIBLE_ROWS)));
+        for (int index = movementOffset; index < Math.min(rows.size(), movementOffset + MOVEMENT_VISIBLE_ROWS); index++)
+        {
+            int y = guiTop + MOVEMENT_TOP + (index - movementOffset) * ROW_HEIGHT;
+            Object row = rows.get(index);
+            if (row instanceof Tab section)
+                movementSection(section, y);
+            else
+            {
+                Tab section = category.tabs.stream().filter(candidate -> candidate.rows().contains(row)).findFirst().orElseThrow();
+                initRow(row, section.rows(), 8, guiLeft + VALUE_COLUMN, y);
+            }
+        }
+        if (movementRowCount > MOVEMENT_VISIBLE_ROWS)
+            initMovementScroll();
+    }
+
+    private void movementSection(Tab section, int y)
+    {
+        int index = category.tabs.indexOf(section);
+        int width = MOVEMENT_SCROLL_LEFT - 12;
+        GuiButtonNop button = new GuiButtonNop(this, MOVEMENT_SECTION_ID + index, guiLeft + 8, y, width, 20, new String[]{section.key()}, 0);
+        MutableComponent title = Component.literal(expanded(section) ? "- " : "+ ").append(Component.translatable(section.key()));
+        button.setMessage(marked(title, changes(section), width));
+        button.setTooltip(Tooltip.create(Component.translatable(LOCOMOTION + (expanded(section) ? "collapse" : "expand"))));
+        button.setEnabled(loaded);
+        addButton(button);
+    }
+
+    private void initMovementScroll()
+    {
+        int x = guiLeft + MOVEMENT_SCROLL_LEFT;
+        int y = guiTop + MOVEMENT_TOP;
+        GuiButtonNop up = new GuiButtonNop(this, MOVEMENT_UP_ID, x, y, 14, 20, "▲");
+        up.setTooltip(Tooltip.create(Component.translatable(LOCOMOTION + "scroll_up")));
+        up.setEnabled(loaded && movementOffset > 0);
+        addButton(up);
+        GuiButtonNop down = new GuiButtonNop(this, MOVEMENT_DOWN_ID, x, y + (MOVEMENT_VISIBLE_ROWS - 1) * ROW_HEIGHT, 14, 20, "▼");
+        down.setTooltip(Tooltip.create(Component.translatable(LOCOMOTION + "scroll_down")));
+        down.setEnabled(loaded && movementOffset < movementRowCount - MOVEMENT_VISIBLE_ROWS);
+        addButton(down);
+    }
+
+    private void scrollMovement(int direction)
+    {
+        // Commit an edited number before replacing the widgets, just as when navigating to another page.
+        GuiTextFieldNop.unfocus();
+        movementOffset = Math.max(0, Math.min(Math.max(0, movementRowCount - MOVEMENT_VISIBLE_ROWS), movementOffset + direction));
+        init();
     }
 
     /**
@@ -859,14 +1166,16 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** Whether the row's control is a choice or a number, which the controls of a single column leave more room for. */
     private static boolean wide(Object row)
     {
-        return row instanceof Value || row instanceof Range;
+        return row instanceof Value || row instanceof Range || row instanceof ServerRow setting && !setting.toggle();
     }
 
     private static int controlWidth(Object row)
     {
         if (row instanceof Value value)
             return choices(value).length > 0 ? 150 : 60;
-        return row instanceof Range ? 60 : 48;
+        if (row instanceof ServerRow setting && setting.choices().length > 0)
+            return 150;
+        return wide(row) ? 60 : 48;
     }
 
     /** One button per tab across the page; a tab shown although it is not meant for this kind of NPC is greyed. */
@@ -905,6 +1214,217 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             combat.initProtection(loaded, control, below);
         else if (category == Category.PROTECTION && PARTS_TAB.equals(shown.name()))
             combat.initPartsLink(loaded);
+        else
+            initServerActions(shown, below);
+    }
+
+    /** The actions of a Server page, below its rows: handing settings to every NPC, or the benchmarks. */
+    private void initServerActions(Tab shown, int below)
+    {
+        if (category == Category.SERVER_RULES && "rules".equals(shown.name()))
+        {
+            serverButton(SERVER_SHOW_NAME_TAGS_ID, "server_show_name_tags", below + 6).setEnabled(ClientServerSettings.isKnown());
+            serverButton(SERVER_HIDE_NAME_TAGS_ID, "server_hide_name_tags", below + 6 + 22).setEnabled(ClientServerSettings.isKnown());
+        }
+        else if (category == Category.SERVER_RULES && SERVER_RANGES_TAB.equals(shown.name()))
+            serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", below + 6).setEnabled(ClientServerSettings.isKnown());
+        else if (category == Category.SERVER_SEARCH)
+            serverButton(SERVER_APPLY_SEARCH_ID, confirmApplySearch ? "server_apply_search_confirm" : "server_apply_search", below + 6).setEnabled(ClientServerSettings.isKnown());
+        else if (category == Category.DIAGNOSTICS)
+        {
+            serverButton(SERVER_BENCHMARK_ID, "server_benchmark", below + 6);
+            serverButton(CLIENT_BENCHMARK_ID, "client_benchmark", below + 6 + 22);
+        }
+    }
+
+    // Pages of lines
+
+    /**
+     * @return whether the tab is one that shows lines the server sent rather than rows: the Diagnosis tabs, the census and
+     *         the benchmark comparison, which is now laid out
+     */
+    private boolean initLinesTab(Tab shown, int top)
+    {
+        if (EFFECTIVE_TAB.equals(shown.name()) || LIVE_TAB.equals(shown.name()))
+        {
+            List<Component> lines = EFFECTIVE_TAB.equals(shown.name()) ? NpcInspectionView.effective(npc.getId()) : NpcInspectionView.live(npc.getId());
+            textLines(lines.isEmpty() ? List.of(Component.translatable(DIAGNOSIS + WAITING)) : lines, top);
+            GuiButtonNop copy = new GuiButtonNop(this, DIAGNOSIS_COPY_ID, guiLeft + 8, guiTop + LINES_BUTTON_TOP, 200, 20, new String[]{DIAGNOSIS + "copy"}, 0);
+            copy.setTooltip(Tooltip.create(Component.translatable(DIAGNOSIS + "copy" + HELP_SUFFIX)));
+            copy.setEnabled(loaded && NpcInspectionView.known(npc.getId()));
+            addButton(copy);
+            return true;
+        }
+        if (category == Category.CENSUS)
+        {
+            ServerReportPacket report = ClientServerSettings.getReport();
+            textLines(report == null ? List.of(Component.translatable(CENSUS + WAITING)) : NpcCensusLines.lines(report), top);
+            refreshButton();
+            return true;
+        }
+        if (COMPARISON_TAB.equals(shown.name()))
+        {
+            initComparison(top);
+            refreshButton();
+            return true;
+        }
+        return false;
+    }
+
+    private void refreshButton()
+    {
+        GuiButtonNop refresh = new GuiButtonNop(this, REPORT_REFRESH_ID, guiLeft + 8, guiTop + LINES_BUTTON_TOP, 120, 20, new String[]{CENSUS + "refresh"}, 0);
+        refresh.setTooltip(Tooltip.create(Component.translatable(CENSUS + "refresh" + HELP_SUFFIX)));
+        addButton(refresh);
+    }
+
+    /** Lays out read-only lines from the given height within the GUI; one too long for the page is cut short, and its tooltip holds all of it. */
+    private void textLines(List<Component> lines, int top)
+    {
+        int shown = Math.min(lines.size(), MAX_LINES);
+        for (int index = 0; index < shown; index++)
+            addLabel(textLabel(LINE_LABEL_ID + index, lines.get(index), guiLeft + 8, guiTop + top + index * LINE_HEIGHT, PAGE_WIDTH, CustomNpcsPlatform.defaultTextColor()));
+    }
+
+    private static GuiLabel textLabel(int id, Component text, int x, int y, int width, int color)
+    {
+        String full = text.getString();
+        if (font().width(full) <= width)
+            return new GuiLabel(id, text, color, x, y, width, 10);
+        String cut = font().plainSubstrByWidth(full, width - font().width("...")) + "...";
+        GuiLabel label = new GuiLabel(id, Component.literal(cut), color, x, y, width, 10);
+        label.setTooltip(Tooltip.create(text));
+        return label;
+    }
+
+    /**
+     * The latest server benchmark beside the one before it, one figure a line, with the change between them coloured by
+     * whether it is better or worse.
+     */
+    private void initComparison(int top)
+    {
+        ServerReportPacket report = ClientServerSettings.getReport();
+        if (report == null || report.benchmarks().isEmpty())
+        {
+            textLines(List.of(Component.translatable(report == null ? CENSUS + WAITING : COMPARISON + "none")), top);
+            return;
+        }
+        List<BenchmarkResult> results = report.benchmarks();
+        BenchmarkResult latest = results.get(results.size() - 1);
+        BenchmarkResult previous = results.size() > 1 ? results.get(results.size() - 2) : null;
+        int id = LINE_LABEL_ID;
+        int color = CustomNpcsPlatform.defaultTextColor();
+        int y = guiTop + top;
+        addLabel(textLabel(id++, Component.translatable(COMPARISON + "figure"), guiLeft + COMPARISON_COLUMNS[0], y, 200, color));
+        addLabel(textLabel(id++, run(previous), guiLeft + COMPARISON_COLUMNS[1], y, 60, color));
+        addLabel(textLabel(id++, run(latest), guiLeft + COMPARISON_COLUMNS[2], y, 60, color));
+        addLabel(textLabel(id++, Component.translatable(COMPARISON + "change"), guiLeft + COMPARISON_COLUMNS[3], y, 60, color));
+        for (BenchmarkResult.Figure figure : BenchmarkResult.Figure.values())
+        {
+            y += LINE_HEIGHT;
+            id = comparisonRow(figure, previous, latest, id, y);
+        }
+        if (previous == null)
+            addLabel(textLabel(id, Component.translatable(COMPARISON + "one"), guiLeft + 8, y + LINE_HEIGHT + 4, PAGE_WIDTH, READ_ONLY_COLOR));
+    }
+
+    /**
+     * One figure of the comparison at the given height on screen: its name, the value of each run and the change.
+     *
+     * @return the id of the next label
+     */
+    private int comparisonRow(BenchmarkResult.Figure figure, @Nullable BenchmarkResult previous, BenchmarkResult latest, int id, int y)
+    {
+        int color = CustomNpcsPlatform.defaultTextColor();
+        int next = id;
+        String name = COMPARISON + figure.name().toLowerCase(Locale.ROOT);
+        GuiLabel label = textLabel(next++, Component.translatable(name), guiLeft + COMPARISON_COLUMNS[0], y, 200, color);
+        label.setTooltip(Tooltip.create(Component.translatable(name + HELP_SUFFIX)));
+        addLabel(label);
+        addLabel(textLabel(next++, Component.literal(figure(latest.figure(figure))), guiLeft + COMPARISON_COLUMNS[2], y, 60, color));
+        if (previous == null)
+            return next;
+        double before = previous.figure(figure);
+        double change = before == 0D ? 0D : 100D * (latest.figure(figure) - before) / Math.abs(before);
+        addLabel(textLabel(next++, Component.literal(figure(before)), guiLeft + COMPARISON_COLUMNS[1], y, 60, color));
+        addLabel(textLabel(next++, Component.literal(String.format(Locale.ROOT, "%+.1f%%", change)), guiLeft + COMPARISON_COLUMNS[3], y, 60, changeColor(figure, change, color)));
+        return next;
+    }
+
+    /** @return green for a change for the better, red for one for the worse, or the plain colour for hardly any */
+    private static int changeColor(BenchmarkResult.Figure figure, double change, int plain)
+    {
+        if (Math.abs(change) < 0.5D)
+            return plain;
+        boolean better = figure.lowerIsBetter() ? change < 0D : change > 0D;
+        return better ? GOOD_COLOR : BAD_COLOR;
+    }
+
+    /** @return the heading of a run's column: its label, or that it was unnamed, marked when it was cut short */
+    private static Component run(@Nullable BenchmarkResult result)
+    {
+        if (result == null)
+            return Component.translatable(COMPARISON + "previous");
+        MutableComponent name = result.label().isEmpty() ? Component.translatable(COMPARISON + "unnamed") : Component.literal(result.label());
+        return result.aborted() ? name.append("*") : name;
+    }
+
+    private static String figure(double value)
+    {
+        return String.format(Locale.ROOT, Math.abs(value) >= 100D ? "%.0f" : "%.2f", value);
+    }
+
+    /** Copies what the Diagnosis page shows, with the NPC and its settings changed from their defaults, for a bug report. */
+    private void copySummary()
+    {
+        StringBuilder text = new StringBuilder();
+        text.append(I18n.get(DIAGNOSIS + "summary_title")).append('\n');
+        text.append(String.format(Locale.ROOT, "%s (id %d) at %.1f %.1f %.1f in %s%n", npc.getName().getString(), npc.getId(), npc.getX(), npc.getY(), npc.getZ(), npc.level().dimension().location()));
+        text.append(I18n.get(kind.key()));
+        NpcKind.model(npc).ifPresent(type -> text.append(": ").append(type.getName()).append(" (").append(type.getShortName()).append(')'));
+        text.append("\n\n").append(I18n.get(Tab.named(EFFECTIVE_TAB).key())).append('\n');
+        NpcInspectionView.effective(npc.getId()).forEach(line -> text.append("  ").append(line.getString()).append('\n'));
+        text.append('\n').append(I18n.get(Tab.named(LIVE_TAB).key())).append('\n');
+        NpcInspectionView.live(npc.getId()).forEach(line -> text.append("  ").append(line.getString()).append('\n'));
+        text.append('\n').append(I18n.get(DIAGNOSIS + "summary_changed")).append('\n');
+        // A row listed on several pages is named once.
+        Set<Object> rows = new LinkedHashSet<>();
+        for (Category page : Category.values())
+            for (Tab candidate : page.tabs)
+                rows.addAll(candidate.rows());
+        // The combined controller still reports the original saved feature flags for diagnostics.
+        rows.add(Feature.HULL_FACES_TRAVEL);
+        rows.add(Feature.DRIVING);
+        for (Object row : rows)
+        {
+            if (row instanceof Feature feature && changed(feature))
+                text.append("  ").append(feature.name()).append(" = ").append(row == Feature.GEAR_UP ? I18n.get(GEAR_CHOICES[gearChoice()]) : enabled(feature)).append('\n');
+            else if (row instanceof Value value && changed(value))
+                text.append("  ").append(value.name()).append(" = ").append(NpcTuning.of(npc).get(value)).append('\n');
+            else if (row instanceof Look look && changed(look))
+                text.append("  ").append(look.name()).append(" = ").append(lookEnabled(look)).append('\n');
+        }
+        Minecraft.getInstance().keyboardHandler.setClipboard(text.toString());
+        if (Minecraft.getInstance().player != null)
+            Minecraft.getInstance().player.displayClientMessage(Component.translatable(DIAGNOSIS + "copied"), true);
+    }
+
+    /** Shows what the server found of the NPC, if the Diagnosis page shows this NPC. */
+    public void inspected(int entityId)
+    {
+        if (entityId == npc.getId() && category == Category.DIAGNOSIS)
+            init();
+    }
+
+    @Override
+    public void tick()
+    {
+        super.tick();
+        // While the Diagnosis page is open, it asks the server once a second; the first request starts the count.
+        if (category != Category.DIAGNOSIS || !loaded)
+            return;
+        if (inspectTicks++ % INSPECT_INTERVAL == 0)
+            NpcNetwork.sendToServer(NpcInspectPacket.request(npc.getId()));
     }
 
     /** @return whether the tab is one of the Sounds page's tabs that are not a list of rows, which is now laid out */
@@ -924,7 +1444,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         if (row == Value.WEAPON_SWITCH)
             return enabled(Feature.CONSUME_AMMO);
-        return row != Feature.MODEL_WEAPON_STATS || enabled(Feature.TYPE_PROPERTIES);
+        return row != Feature.MODEL_WEAPON_STATS || kind != NpcKind.STANDARD && enabled(Feature.TYPE_PROPERTIES);
     }
 
     private boolean enabled(Feature feature)
@@ -934,47 +1454,75 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     /**
      * Lays out the rows one below the other from the given left edge; their controls share a column, at least the given
-     * one, that clears the longest label.
+     * one, that clears the longest label. Locomotion keeps the given column and clips labels to fit beside it.
      *
      * @return the left edge of that column on screen
      */
     private int initRows(List<Object> rows, int left, int top, int minimum)
     {
         int column = minimum;
-        for (Object row : rows)
-            column = Math.max(column, left + indent(row, rows) + font().width(I18n.get(labelKey(row))) + 8);
+        if (!movementPage())
+            for (Object row : rows)
+                column = Math.max(column, left + indent(row, rows) + font().width(I18n.get(labelKey(row))) + 8);
         int control = guiLeft + column;
         for (int i = 0; i < rows.size(); i++)
         {
             int y = guiTop + top + i * ROW_HEIGHT;
-            Object row = rows.get(i);
-            rowLabel(row, rows, left, y);
-            if (row instanceof Feature feature)
-                featureButton(feature, control, y);
-            else if (row instanceof Value value)
-                valueControl(value, control, y);
-            else if (row instanceof Range range)
-                rangeField(range, control, y);
-            else if (row instanceof Look look)
-                switchButton(look.id, lookEnabled(look), control, y);
+            initRow(rows.get(i), rows, left, control, y);
         }
         return control;
     }
 
+    private void initRow(Object row, List<Object> rows, int left, int control, int y)
+    {
+        rowLabel(row, rows, left, y);
+        if (row == MovementRow.CONTROLLER)
+        {
+            String[] modes = Arrays.stream(NpcMovementController.values()).map(NpcMovementController::key).toArray(String[]::new);
+            GuiButtonNop button = new GuiButtonNop(this, CONTROLLER_ID, control, y, 150, 20, modes, movementController().ordinal());
+            button.setEnabled(loaded);
+            valueTooltip(button, modes[movementController().ordinal()]);
+            addButton(button);
+        }
+        else if (row instanceof Feature feature)
+            featureButton(feature, control, y);
+        else if (row instanceof Value value)
+            valueControl(value, control, y);
+        else if (row instanceof Range range)
+            rangeField(range, control, y);
+        else if (row instanceof Look look)
+            switchButton(look.id, lookEnabled(look), control, y);
+        else if (row instanceof ServerRow setting)
+            serverControl(setting, control, y);
+    }
+
+    private NpcMovementController movementController()
+    {
+        return NpcMovementController.of(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions());
+    }
+
     private static String labelKey(Object row)
     {
+        if (row == MovementRow.CONTROLLER)
+            return LOCOMOTION + "controller";
         String name = ((Enum<?>) row).name().toLowerCase(Locale.ROOT);
         if (row instanceof Feature)
             return WEAPONS + name;
+        if (row instanceof ServerRow)
+            return TUNING + "server_" + name;
         return (row instanceof Look ? PRESENTATION : TUNING) + name;
     }
 
     private static int rowId(Object row)
     {
+        if (row == MovementRow.CONTROLLER)
+            return CONTROLLER_ID;
         if (row instanceof Value value)
             return VALUE_ID + value.ordinal();
         if (row instanceof Range range)
             return range.id;
+        if (row instanceof ServerRow setting)
+            return setting.id;
         if (row instanceof Look look)
             return look.id;
         return ((Feature) row).ordinal();
@@ -987,7 +1535,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private void rowLabel(Object row, List<Object> rows, int left, int y)
     {
         String key = labelKey(row);
-        GuiLabel label = new GuiLabel(rowId(row), key, guiLeft + left + indent(row, rows), y + 5, key + HELP_SUFFIX);
+        int labelLeft = left + indent(row, rows);
+        GuiLabel label = movementPage()
+            ? textLabel(rowId(row), Component.translatable(key), guiLeft + labelLeft, y + 5, VALUE_COLUMN - labelLeft - 8, CustomNpcsPlatform.defaultTextColor())
+            : new GuiLabel(rowId(row), key, guiLeft + labelLeft, y + 5, key + HELP_SUFFIX);
         Component reason = inactive(row);
         if (reason != null)
         {
@@ -1012,16 +1563,31 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Nullable
     private static Component defaultText(Object row)
     {
+        if (row == MovementRow.CONTROLLER)
+            return Component.translatable(NpcMovementController.VEHICLE.key());
+        if (row == Feature.GEAR_UP)
+            return Component.translatable(GEAR_CHOICES[GEAR_DYNAMIC_CHOICE]);
         if (row instanceof Feature feature)
             return Component.translatable(NO_YES[feature.isDefaultEnabled() ? 1 : 0]);
         if (row instanceof Look look)
             return Component.translatable(NO_YES[look.fallback ? 1 : 0]);
+        if (row instanceof ServerRow setting)
+            return serverDefault(setting);
         if (!(row instanceof Value value))
             return null;
         Enum<?>[] choices = choices(value);
         if (choices.length > value.fallback() && value.fallback() >= 0)
             return Component.translatable(labelKey(value) + "." + choices[value.fallback()].name().toLowerCase(Locale.ROOT));
         return Component.literal(Integer.toString(value.fallback()));
+    }
+
+    private static Component serverDefault(ServerRow setting)
+    {
+        if (setting.toggle())
+            return Component.translatable(NO_YES[setting.fallback()]);
+        if (setting.choices().length > 0)
+            return Component.translatable(labelKey(setting) + "." + setting.choices()[setting.fallback()].name().toLowerCase(Locale.ROOT));
+        return Component.literal(Integer.toString(setting.fallback()));
     }
 
     /** @return how far the row is moved right: one step for each row above it in the list that it depends on */
@@ -1049,8 +1615,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (need == null)
             return null;
         Enum<?> parent = need.parent();
-        if (!need.values().contains(current(parent)))
+        if (!need.values().contains(current(parent)) || parent == Feature.DRIVING && movementController() != NpcMovementController.VEHICLE)
         {
+            if (parent == Feature.HULL_FACES_TRAVEL || parent == Feature.DRIVING)
+                return Component.translatable(LOCOMOTION + (parent == Feature.DRIVING ? "needs_vehicle_controller" : "needs_hull_controller"), Component.literal(location(parent)));
             Component name = Component.translatable(labelKey(parent));
             Component where = Component.literal(location(parent));
             if (parent instanceof Value value)
@@ -1065,9 +1633,32 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return inactive(parent);
     }
 
+    /** Sets a switch from its button: 1 for Yes, or the gear row's choice of down, up or dynamic. */
+    private void setFeature(Feature feature, int value)
+    {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (feature == Feature.GEAR_UP)
+        {
+            options.set(Feature.GEAR_UP, value == GEAR_UP_CHOICE);
+            options.set(Feature.GEAR_DYNAMIC, value == GEAR_DYNAMIC_CHOICE);
+        }
+        else
+            options.set(feature, value == 1);
+    }
+
+    /** @return the landing gear the NPC draws: down, up, or dynamic, by its choice on the gear row */
+    private int gearChoice()
+    {
+        if (enabled(Feature.GEAR_DYNAMIC))
+            return GEAR_DYNAMIC_CHOICE;
+        return enabled(Feature.GEAR_UP) ? GEAR_UP_CHOICE : 0;
+    }
+
     /** @return the value of a switch, 1 for Yes, or of a choice or number */
     private int current(Enum<?> row)
     {
+        if (row == Feature.GEAR_UP)
+            return gearChoice();
         if (row instanceof Feature feature)
             return enabled(feature) ? 1 : 0;
         return NpcTuning.of(npc).get((Value) row);
@@ -1078,7 +1669,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         for (Category page : Category.values())
             for (Tab candidate : page.tabs)
-                if (candidate.rows().contains(row))
+                if (candidate.rows().contains(row) || (row == Feature.HULL_FACES_TRAVEL || row == Feature.DRIVING) && candidate.rows().contains(MovementRow.CONTROLLER))
                     return I18n.get(page.key()) + (candidate.name().isEmpty() ? "" : PATH_SEPARATOR + I18n.get(candidate.key()));
         return "";
     }
@@ -1090,12 +1681,15 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         {
             return switch (feature)
             {
-                case TYPE_PROPERTIES, MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM,
-                    PASSENGER_GUNS, TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING ->
-                    Scope.MODELS;
-                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, DRIVER_GUNS -> Scope.DRIVEABLES;
-                case HULL_ASSISTS_AIM, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
+                case MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM, PASSENGER_GUNS,
+                    TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING -> Scope.MODELS;
+                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, AUTOMATIC_REPAIRS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, UNMANNED_GUNS_FIRE, GUNNER_TARGETS,
+                    DRIVER_GUNS, MUZZLE_FLASHES -> Scope.DRIVEABLES;
+                case HULL_ASSISTS_AIM, MANOEUVRE_TO_FIRE, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
+                case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
+                case SLOPE_PHYSICS -> Scope.VEHICLES;
+                case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
                 case DRIVE_DRIVEABLES -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
@@ -1106,10 +1700,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             {
                 case ALIGN_TOLERANCE, AIM_SPEED_YAW, AIM_SPEED_PITCH -> Scope.MODELS;
                 case DRIVE_PRESET, DRIVE_TYPE, DRIVE_ACCELERATION, DRIVE_BRAKING, DRIVE_COASTING, TURN_RADIUS, THROTTLE_FLOOR, DRIVE_LOOKAHEAD, CORNER_SPEED, DRIVE_REVERSE_SPEED, REVERSE_ANGLE,
-                    REVERSE_DISTANCE, STOP_DISTANCE, FOLLOW_DISTANCE -> Scope.VEHICLES;
+                    REVERSE_DISTANCE, STOP_DISTANCE, FOLLOW_DISTANCE, STEERING_RESPONSE, STATIONARY_TURN, TRAFFIC_STOP_GAP -> Scope.VEHICLES;
                 case HULL_TURN_RATE -> Scope.HULLS;
-                case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL ->
-                    Scope.STANDARD;
+                case STEP_HEIGHT -> Scope.GROUND_MACHINES;
+                case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL,
+                    GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }
@@ -1137,14 +1732,33 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void featureButton(Feature feature, int control, int y)
     {
-        GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 48, 20, NO_YES, enabled(feature) ? 1 : 0);
-        button.setEnabled(loaded);
+        if (feature == Feature.GEAR_UP)
+        {
+            int gear = gearChoice();
+            GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 60, 20, GEAR_CHOICES, gear);
+            button.setEnabled(loaded);
+            valueTooltip(button, GEAR_CHOICES[gear]);
+            addButton(button);
+            return;
+        }
+        boolean on = enabled(feature);
+        GuiButtonNop button = new GuiButtonNop(this, feature.ordinal(), control, y, 48, 20, NO_YES, on ? 1 : 0);
+        button.setEnabled(loaded && (!movementPage() || inactive(feature) == null));
+        valueTooltip(button, labelKey(feature) + (on ? ".yes" : ".no"));
         addButton(button);
+    }
+
+    /** What the selected value does, on its control, for a row whose help explains its values one by one. The page is rebuilt on every click. */
+    private static void valueTooltip(GuiButtonNop button, String valueKey)
+    {
+        if (I18n.exists(valueKey + HELP_SUFFIX))
+            button.setTooltip(Tooltip.create(Component.translatable(valueKey + HELP_SUFFIX).withStyle(HELP_STYLE)));
     }
 
     private void valueControl(Value value, int control, int y)
     {
-        if (GroundHandlingControls.render(this, npc, value, VALUE_ID + value.ordinal(), control, y, loaded))
+        boolean editable = loaded && (!movementPage() || inactive(value) == null);
+        if (GroundHandlingControls.render(this, npc, value, VALUE_ID + value.ordinal(), control, y, editable))
             return;
         int id = VALUE_ID + value.ordinal();
         int current = NpcTuning.of(npc).get(value);
@@ -1156,11 +1770,41 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             for (int choice = 0; choice < choices.length; choice++)
                 names[choice] = key + "." + choices[choice].name().toLowerCase(Locale.ROOT);
             GuiButtonNop button = new GuiButtonNop(this, id, control, y, 150, 20, names, current);
-            button.setEnabled(loaded);
+            button.setEnabled(editable);
+            if (current >= 0 && current < names.length)
+                valueTooltip(button, names[current]);
             addButton(button);
             return;
         }
         numberField(id, control, y, current, value.minimum(), value.maximum(), value.fallback());
+        getTextField(id).setEditable(editable);
+        serverValueLabel(value, control + 66, y + 5);
+    }
+
+    /** Beside an NPC's own search interval, the server's, which the NPC follows while its own is 0. */
+    private void serverValueLabel(Value value, int x, int y)
+    {
+        if (!ClientServerSettings.isKnown())
+            return;
+        int id;
+        int server;
+        if (value == Value.SEARCH_NEAR_INTERVAL)
+        {
+            id = SERVER_NEAR_VALUE_ID;
+            server = ClientServerSettings.getNearInterval();
+        }
+        else if (value == Value.SEARCH_FAR_INTERVAL)
+        {
+            id = SERVER_FAR_VALUE_ID;
+            server = ClientServerSettings.getFarInterval();
+        }
+        else
+            return;
+        String key = TUNING + "server_value";
+        Component text = Component.translatable(key, server);
+        GuiLabel label = new GuiLabel(id, text, READ_ONLY_COLOR, x, y, font().width(text), 10);
+        label.setTooltip(Tooltip.create(Component.translatable(key + HELP_SUFFIX)));
+        addLabel(label);
     }
 
     /** @return the named choices of a value that is one, or none for a number */
@@ -1169,6 +1813,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         return switch (value)
         {
             case AIM_POSE -> NpcTuning.AimPose.values();
+            case STATIONARY_TURN -> NpcTuning.StationaryTurn.values();
             case TERRAIN -> NpcTuning.Terrain.values();
             case SIGHT -> NpcTuning.Sight.values();
             case DRIVE_PRESET -> NpcTuning.DrivePreset.values();
@@ -1177,6 +1822,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case WEAPON_SWITCH -> NpcTuning.WeaponSwitch.values();
             case TACTIC -> NpcTuning.Tactic.values();
             case TAKE_DRIVEABLES -> NpcTuning.Claim.values();
+            case GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> NpcTuning.Throwing.values();
             default -> new Enum<?>[0];
         };
     }
@@ -1204,37 +1850,38 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         }
     }
 
-    /** The settings and diagnostics of the whole server. The server sends the values and decides who may change them. */
-    private void initServer()
+    /** The control of a setting of the whole server, read-only until the server has sent the values. */
+    private void serverControl(ServerRow setting, int control, int y)
     {
         boolean known = ClientServerSettings.isKnown();
-        serverField(SERVER_NEAR_ID, "server_near_interval", ClientServerSettings.getNearInterval(), NpcServerSettings.MAX_NEAR_INTERVAL, 29, known);
-        serverField(SERVER_FAR_ID, "server_far_interval", ClientServerSettings.getFarInterval(), NpcServerSettings.MAX_FAR_INTERVAL, 50, known);
-        String profile = TUNING + "server_profiling";
-        addLabel(new GuiLabel(SERVER_PROFILE_ID, profile, guiLeft + 8, guiTop + 76, profile + HELP_SUFFIX));
-        GuiButtonNop toggle = new GuiButtonNop(this, SERVER_PROFILE_ID, guiLeft + 228, guiTop + 71, 48, 20, NO_YES, ClientServerSettings.isProfiling() ? 1 : 0);
-        toggle.setEnabled(known);
-        addButton(toggle);
-        serverField(SERVER_AGGRO_ID, "server_aggro_range", ClientServerSettings.getAggroRange(), NpcMobility.rangeLimit(), 92, known);
-        serverField(SERVER_FIRING_ID, "server_firing_range", ClientServerSettings.getFiringRange(), NpcMobility.rangeLimit(), 113, known);
-        GuiButtonNop apply = serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", 136);
-        apply.setEnabled(known);
-        serverButton(SERVER_BENCHMARK_ID, "server_benchmark", 158);
-        serverButton(CLIENT_BENCHMARK_ID, "client_benchmark", 180);
-    }
-
-    private void serverField(int id, String name, int current, int maximum, int y, boolean known)
-    {
-        String key = TUNING + name;
-        addLabel(new GuiLabel(id, key, guiLeft + 8, guiTop + y + 5, key + HELP_SUFFIX));
-        GuiTextFieldNop field = new GuiTextFieldNop(id, this, guiLeft + 228, guiTop + y, 60, 20, Integer.toString(current));
+        if (setting.toggle())
+        {
+            GuiButtonNop toggle = new GuiButtonNop(this, setting.id, control, y, 48, 20, NO_YES, setting.current());
+            toggle.setEnabled(known);
+            addButton(toggle);
+            return;
+        }
+        Enum<?>[] choices = setting.choices();
+        if (choices.length > 0)
+        {
+            String key = labelKey(setting);
+            String[] names = Arrays.stream(choices).map(choice -> key + "." + choice.name().toLowerCase(Locale.ROOT)).toArray(String[]::new);
+            int current = Math.max(0, Math.min(names.length - 1, setting.current()));
+            GuiButtonNop choice = new GuiButtonNop(this, setting.id, control, y, 150, 20, names, current);
+            choice.setEnabled(known);
+            valueTooltip(choice, names[current]);
+            addButton(choice);
+            return;
+        }
+        GuiTextFieldNop field = new GuiTextFieldNop(setting.id, this, control, y, 60, 20, Integer.toString(setting.current()));
         field.setEditable(known);
         field.setTextColorUneditable(READ_ONLY_COLOR);
         field.numbersOnly = true;
-        field.setMinMaxDefault(1, maximum, current);
+        field.setMinMaxDefault(setting.setting.getMinimum(), setting.maximum(), setting.current());
         addTextField(field);
     }
 
+    /** An action of a Server page, below its rows, from the given height within the GUI. */
     private GuiButtonNop serverButton(int id, String name, int y)
     {
         String key = TUNING + name;
@@ -1247,45 +1894,58 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** @return whether the field or button belonged to the Server page */
     private boolean editServer(int id, int number)
     {
-        int near = ClientServerSettings.getNearInterval();
-        int far = ClientServerSettings.getFarInterval();
-        boolean profiling = ClientServerSettings.isProfiling();
-        int aggro = ClientServerSettings.getAggroRange();
-        int firing = ClientServerSettings.getFiringRange();
-        boolean confirming = confirmApplyRanges;
+        boolean confirmingRanges = confirmApplyRanges;
+        boolean confirmingSearch = confirmApplySearch;
         confirmApplyRanges = false;
+        confirmApplySearch = false;
+        Optional<ServerRow> row = Arrays.stream(ServerRow.values()).filter(candidate -> candidate.id == id).findFirst();
+        if (row.isPresent())
+        {
+            NpcNetwork.sendToServer(ServerControlPacket.set(ClientServerSettings.with(row.get().setting, number)));
+            return true;
+        }
         switch (id)
         {
-            case SERVER_NEAR_ID -> near = number;
-            case SERVER_FAR_ID -> far = number;
-            case SERVER_PROFILE_ID -> profiling = number == 1;
-            case SERVER_AGGRO_ID -> aggro = number;
-            case SERVER_FIRING_ID -> firing = number;
             case SERVER_APPLY_RANGES_ID -> {
                 // The first press only asks for a second one: the ranges of every NPC are overwritten.
-                if (confirming)
+                if (confirmingRanges)
                     NpcNetwork.sendToServer(ServerControlPacket.applyRanges());
                 else
                     confirmApplyRanges = true;
                 init();
-                return true;
             }
-            case SERVER_BENCHMARK_ID -> {
-                NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
-                return true;
+            case SERVER_APPLY_SEARCH_ID -> {
+                // As with the ranges: every NPC's own intervals are dropped.
+                if (confirmingSearch)
+                    NpcNetwork.sendToServer(ServerControlPacket.applySearch());
+                else
+                    confirmApplySearch = true;
+                init();
             }
+            case REPORT_REFRESH_ID -> {
+                requestReport();
+                init();
+            }
+            case SERVER_SHOW_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(true));
+            case SERVER_HIDE_NAME_TAGS_ID -> NpcNetwork.sendToServer(ServerControlPacket.nameTags(false));
+            case SERVER_BENCHMARK_ID -> NpcNetwork.sendToServer(ServerControlPacket.benchmark(ServerBenchmark.DEFAULT_SECONDS));
             case CLIENT_BENCHMARK_ID -> {
                 // A benchmark does not measure a screen: the editor closes first.
                 close();
                 ClientBenchmark.start(ServerBenchmark.DEFAULT_SECONDS);
-                return true;
             }
             default -> {
                 return false;
             }
         }
-        NpcNetwork.sendToServer(ServerControlPacket.set(near, far, profiling, aggro, firing));
         return true;
+    }
+
+    /** Asks the server for the NPC census and its latest benchmarks; the page shows them once they arrive. */
+    private static void requestReport()
+    {
+        ClientServerSettings.forgetReport();
+        NpcNetwork.sendToServer(ServerControlPacket.report());
     }
 
     private void rangeField(Range range, int control, int y)
@@ -1415,7 +2075,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void subGuiClosed(Screen subgui)
     {
-        if (subgui instanceof GuiSoundSelection picker)
+        if (subgui instanceof CrewSelectionMenu menu)
+            changed |= crew.selected(menu);
+        else if (subgui instanceof CrewCopyMenu menu)
+            changed |= crew.selected(menu);
+        else if (subgui instanceof GuiSoundSelection picker)
         {
             if (combat.active())
                 changed |= combat.soundChosen(picker.selectedResource);
@@ -1428,9 +2092,22 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         init();
     }
 
+    void crewResult(CrewResultPacket packet)
+    {
+        crew.receive(packet);
+    }
+
+    void factionRelations(FactionRelationsPacket packet)
+    {
+        teamFactions.receive(packet);
+        refreshPage();
+    }
+
     @Override
     public void unFocused(GuiTextFieldNop field)
     {
+        if (teamFactions.unFocused(field))
+            return;
         if (loaded && editEquipmentField(field))
         {
             changed = true;
@@ -1462,7 +2139,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private boolean editEquipmentField(GuiTextFieldNop field)
     {
-        return heldItems.field(field) || crew.field(field) || combat.unFocused(field);
+        return heldItems.field(field) || combat.unFocused(field);
     }
 
     /** @return whether the field was one of the simulation numbers or ranges */
@@ -1496,7 +2173,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return;
         if (ownPageButton(button) || navigate(button))
         {
-            init();
+            refreshPage();
             return;
         }
         String selection = combat.active() ? combat.soundSelection(button.id) : null;
@@ -1507,7 +2184,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         }
         if (button.id >= 0 && button.id < Feature.values().length)
         {
-            ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.values()[button.id], button.getValue() == 1);
+            setFeature(Feature.values()[button.id], button.getValue());
             changed = true;
         }
         else if (button.id >= VALUE_ID && button.id < VALUE_ID + Value.values().length)
@@ -1548,13 +2225,33 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         setSubGui(picker);
     }
 
+    private void refreshPage()
+    {
+        // setSubGui already initializes both screens; rebuilding again resets the picker's controls.
+        if (!hasSubGui())
+            init();
+    }
+
     /** @return whether the button belongs to a tab that lays out its own controls, which then handled it */
     private boolean ownPageButton(GuiButtonNop button)
     {
-        if (heldItems.handles(button.id))
+        if (button.id == CONTROLLER_ID)
+        {
+            NpcMovementController.values()[button.getValue()].apply(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions());
+            changed = true;
+        }
+        else if (teamFactions.handles(button.id))
+            teamFactions.button(button);
+        else if (button.id == DIAGNOSIS_COPY_ID)
+            copySummary();
+        else if (heldItems.handles(button.id))
             changed |= heldItems.button(button);
         else if (crew.handles(button.id))
-            changed |= crew.button(button);
+        {
+            // An action can save the editor itself; do not restore the dirty flag captured before that save.
+            boolean edited = crew.button(button);
+            changed |= edited;
+        }
         else if (GroundHandlingControls.button(npc, button))
             changed = true;
         else
@@ -1566,6 +2263,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private boolean navigate(GuiButtonNop button)
     {
         int id = button.id;
+        if (navigateMovement(id))
+            return true;
         if (id == BACK_BUTTON_ID)
             goBack();
         else if (category == Category.SOUNDS && !combat.active() && soundOverview.handles(id))
@@ -1585,6 +2284,24 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         }
         else if (category != null && id >= TAB_BUTTON_ID && id < TAB_BUTTON_ID + tabs(category).size())
             tab = id - TAB_BUTTON_ID;
+        else
+            return false;
+        return true;
+    }
+
+    /** Section expansion and scrolling only change editor navigation, never the NPC's dirty flag. */
+    private boolean navigateMovement(int id)
+    {
+        if (category != Category.BOARDING)
+            return false;
+        if (id >= MOVEMENT_SECTION_ID && id < MOVEMENT_SECTION_ID + category.tabs.size())
+        {
+            String section = category.tabs.get(id - MOVEMENT_SECTION_ID).name();
+            if (!toggledMovementSections.add(section))
+                toggledMovementSections.remove(section);
+        }
+        else if (id == MOVEMENT_UP_ID || id == MOVEMENT_DOWN_ID)
+            movementOffset += id == MOVEMENT_UP_ID ? -1 : 1;
         else
             return false;
         return true;
@@ -1626,6 +2343,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         category = opened;
         returnTo = null;
         tab = 0;
+        movementOffset = 0;
+        inspectTicks = 0;
+        if (opened == Category.CENSUS || opened == Category.DIAGNOSTICS)
+            requestReport();
     }
 
     private void goBack()
@@ -1692,6 +2413,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void setGuiData(CompoundTag tag)
     {
+        // A clone list may arrive after its selection menu was closed. It is not NPC statistics.
+        if (tag.contains("List"))
+            return;
         npc.stats.readToNBT(tag);
         loaded = true;
         editingSound = null;

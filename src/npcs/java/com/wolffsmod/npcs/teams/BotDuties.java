@@ -1,10 +1,14 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.FlansEquipment;
-import com.flansmodultimate.api.FlansTeams;
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.parts.FlansRepairs;
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.teams.ITeam;
 import com.wolffsmod.npcs.combat.NpcAmmunition;
+import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.NpcAPI;
@@ -214,29 +218,28 @@ final class BotDuties
         Entity damaged = damagedVehicle(level, battle, engineer, self, fighters);
         if (damaged == null)
             return;
-        if (damaged.distanceTo(engineer) > REPAIR_REACH + damaged.getBbWidth() / 2F)
+        if (!FlansRepairs.withinReach(damaged, engineer.getEyePosition(), REPAIR_REACH))
         {
             DESTINATIONS.put(engineer.getUUID(), damaged.position());
             return;
         }
         if (busy(engineer, now))
             return;
-        int kitAmount = BotRoles.kit(Objects.requireNonNull(self.slot()).getRole()).repairAmount();
-        int amount = kitAmount > 0 ? kitAmount : BotRoles.DEFAULT_REPAIR;
-        boolean repaired = damaged instanceof LivingEntity vehicleBot ? heal(vehicleBot, amount) : FlansEntityTypes.repair(damaged, engineer.getEyePosition(), amount);
+        boolean repaired = false;
+        for (ItemStack tool : com.wolffsmod.npcs.combat.NpcAmmunition.supplies(engineer))
+        {
+            if (FlansRepairs.useTool(engineer, damaged, tool))
+            {
+                repaired = true;
+                engineer.updateClient = true;
+                break;
+            }
+        }
         if (repaired)
         {
             effect(level, ParticleTypes.HAPPY_VILLAGER, damaged.position().add(0D, damaged.getBbHeight() / 2D, 0D));
             engineer.swing(InteractionHand.MAIN_HAND);
         }
-    }
-
-    private static boolean heal(LivingEntity vehicleBot, int amount)
-    {
-        if (vehicleBot.getHealth() >= vehicleBot.getMaxHealth())
-            return false;
-        vehicleBot.heal(amount);
-        return true;
     }
 
     /**
@@ -256,7 +259,17 @@ final class BotDuties
             if (damaged && friendly)
                 candidates.add(entity);
         }
-        return candidates.stream().min(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(engineer))).orElse(null);
+        return candidates.stream().filter(BotDuties::repairable).min(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(engineer))).orElse(null);
+    }
+
+    private static boolean repairable(Entity entity)
+    {
+        if (!(entity instanceof EntityNPCInterface npc))
+            return entity.isAlive();
+        if (!npc.isAlive() || npc.isKilled() || !NpcEquipment.enabled(npc, Feature.PART_HEALTH))
+            return false;
+        return NpcVehicleState.of(npc).getParts().body()
+            .map(body -> body.getParts().stream().anyMatch(part -> (!part.destroyed() || NpcEquipment.enabled(npc, Feature.PART_REPAIR)) && FlansRepairs.canRepair(body, part.name()))).orElse(false);
     }
 
     // --- Support ---

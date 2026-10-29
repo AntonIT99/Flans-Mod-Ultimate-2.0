@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.network.BotWaypointsPacket;
+import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.joml.Matrix4f;
@@ -70,7 +70,7 @@ public final class BotWaypoints
             pose.pushPose();
             pose.translate(offset.x, offset.y, offset.z);
             pose.mulPose(camera.rotation());
-            ClientPlatform.scaleCameraFacingLabel(pose, scale);
+            NpcClientPlatform.scaleCameraFacingLabel(pose, scale);
             Matrix4f matrix = pose.last().pose();
             int colour = "rally".equals(waypoint.kind()) ? RALLY_COLOUR : COLOUR;
             font.drawInBatch(label, -font.width(label) / 2F, 0F, colour, false, matrix, buffers, Font.DisplayMode.SEE_THROUGH, BACKGROUND, LightTexture.FULL_BRIGHT);

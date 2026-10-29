@@ -32,6 +32,8 @@ public final class ModCommonConfig
 {
     private static final String SECTION_TEAMS = "Teams Settings";
     public static final ModConfigSpec configSpec;
+    public static final IntValue THROWN_GUN_DESPAWN_SECONDS;
+    public static final BooleanValue FORCE_UNCENSORED_CONTENT;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
     /** Vanilla player health; the maximum health setting leaves players untouched at this value. */
@@ -108,7 +110,7 @@ public final class ModCommonConfig
     private static final double MIN_REALISTIC_CLASS_SPEED_SCALE = 0.1D;
     private static final double MAX_REALISTIC_CLASS_SPEED_SCALE = 1.0D;
     private static final double MIN_HARD_SPEED_CAP_KMH = 1.0D;
-    private static final double MAX_HARD_SPEED_CAP_KMH = 1000.0D;
+    private static final double MAX_HARD_SPEED_CAP_KMH = 10000.0D;
     private static final double MIN_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 1.0D;
     private static final double MAX_REALISTIC_AIRCRAFT_THROTTLE_RESPONSE = 5.0D;
     private static final double MIN_KNOCKBACK_REFERENCE_MASS_KG = 1.0D;
@@ -165,6 +167,7 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> AUTO_REFILL_VEHICLE_AMMO;
     private static final Supplier<Boolean> GUNS_IN_DESTROYED_PARTS_WORK;
     private static final Supplier<Integer> DRIVEABLE_WRECK_LIFETIME;
+    private static final Supplier<Double> DRIVEABLE_MELEE_DAMAGE_THRESHOLD;
 
     private static final Supplier<Integer> BREAKABLE_ARMOR;
     private static final Supplier<Integer> DEFAULT_ARMOR_DURABILITY;
@@ -318,6 +321,7 @@ public final class ModCommonConfig
     static
     {
         builder.push("General Settings");
+        FORCE_UNCENSORED_CONTENT = builder.comment("Require uncensored names and textures for connected clients without changing their saved preference.").define("forceUncensoredContent", false);
         ADD_ALL_PAINTJOBS_TO_CREATIVE = builder.comment("Whether all paintjobs should appear in creative").define("addAllPaintjobsToCreative", true);
         ADD_GUNPOWDER_RECIPE = builder.comment("Add a shapeless recipe for gunpowder using three charcoal and one glowstone dust.", "Changes take effect after restarting or reloading server data.")
             .define("addGunpowderRecipe", true);
@@ -341,7 +345,7 @@ public final class ModCommonConfig
             """).define("disableCrosshairWhileScoped", true);
         EXPLOSIONS_BREAK_BLOCKS = builder.comment("Whether explosions can break blocks").define("explosionBreakBlocks", true);
         FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS = builder.comment("Force shootables using the new explosion system to break blocks, ignoring their ExplosionBreaksBlocks property.",
-            "The teams rule and explosionBreakBlocks remain higher-priority global gates.").define("forceNewExplosionsBreakBlocks", false);
+            "The teams rule and explosionBreakBlocks remain higher-priority global gates.").define("forceNewExplosionsBreakBlocks", true);
         FLAN_EXPLOSIONS_DROP_BLOCKS = builder.comment("Whether blocks broken by Flan's Mod explosions should drop items. Off by default: ordnance obliterates blocks rather than harvesting them.")
             .define("flanExplosionsDropBlocks", false);
         BONUS_REGEN_AMOUNT = builder.comment("Allows you to increase health regen, best used alongside increased max health").defineInRange("bonusRegenAmount", 0, 0, 1000);
@@ -395,6 +399,9 @@ public final class ModCommonConfig
             "Disabled by default. Destroyed seats still cannot be newly occupied.").define("gunsInDestroyedPartsWork", false);
         DRIVEABLE_WRECK_LIFETIME = builder.comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
             "0 removes destroyed driveables at once, as before.").defineInRange("driveableWreckLifetime", 120, 0, 3600);
+        DRIVEABLE_MELEE_DAMAGE_THRESHOLD = builder.comment("Minimum melee damage in health points for driveables and NPC driveable models. Weaker hits are ignored; qualifying hits apply in full.",
+            "Compared after Flan weapon vehicle modifiers, before armor and resistances. 0 disables the threshold.",
+            "Content packs may override this with MeleeDamageThreshold; NPCs may override their model's threshold.").defineInRange("driveableMeleeDamageThreshold", 10D, 0D, 100_000D);
         builder.pop();
 
         builder.push("Armor Settings");
@@ -411,6 +418,10 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Gun Settings");
+        THROWN_GUN_DESPAWN_SECONDS = builder
+            .comment("Default time in seconds before a recoverable thrown gun despawns while stuck in the ground. 0 disables despawning.",
+                "Override per world with /thrownGunDespawn <seconds>, or use /thrownGunDespawn reset to restore this default.")
+            .defineInRange("thrownGunDespawnSeconds", 300, 0, Integer.MAX_VALUE / 20);
         GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE = builder.comment("Guns will be always usable by players in creative mode, regardless of the parameter 'UsableByPlayers' in gun configs")
             .define("gunsAlwaysUsableByPlayersInCreativeMode", true);
         FORCE_ALLOW_ALL_ATTACHMENTS = builder.comment("Always allow all attachments on all guns, regardless of the 'AllowAllAttachments' value in gun configs.").define("forceAllowAllAttachments",
@@ -488,8 +499,10 @@ public final class ModCommonConfig
             .comment("Shape of the blast damage falloff inside the blast radius. Higher values concentrate damage near the centre; lower values spread it out.",
                 "This only shapes the curve, it does not change any radius.")
             .defineInRange("newDamageSystemBlastFalloffSharpness", 2.5, 0.1, 10.0);
-        SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE = builder.comment("Whether proximity triggers can get triggered by allies and cause friendly fire").define("shootableProximityTriggerFriendlyFire",
-            false);
+        SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE = builder
+            .comment("Whether proximity triggers can get triggered by allies and cause friendly fire.",
+                "Allies are those the owner's fire spares, and driveables carrying them: teammates in Teams rounds, or friends by an addon's rules such as NPC factions.")
+            .define("shootableProximityTriggerFriendlyFire", false);
         SHOOTABLE_DEFAULT_RESPAWN_TIME = builder.comment("Max despawn time in ticks (0.05s). 0 means no despawn time.").defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         LOCK_ON_RANGE = builder.comment("Range in blocks used by lock-on missiles when searching for targets.").defineInRange("lockOnRange", 128.0, 1.0, 4096.0);
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);
@@ -743,7 +756,8 @@ public final class ModCommonConfig
             ENCHANTMENT_MODULE_ENABLED.get(),
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
-            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get());
+            SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
+            FORCE_UNCENSORED_CONTENT.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1019,6 +1033,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? 0 : 20 * Math.max(0, config.driveableWreckLifetime());
+    }
+
+    /** Default minimum melee damage in health points; content definitions and NPCs can override it. */
+    public static float driveableMeleeDamageThreshold()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 10F : (float) config.driveableMeleeDamageThreshold();
     }
 
     public static double maxArmorImpactAngleDeg()
@@ -1357,6 +1378,7 @@ public final class ModCommonConfig
     public enum RuntimeOption
     {
         // spotless:off
+        FORCE_UNCENSORED_CONTENT(() -> ModCommonConfig.FORCE_UNCENSORED_CONTENT, QuickSection.SERVER),
         DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS, QuickSection.SERVER),
         DISABLE_CROSSHAIR_WHILE_SCOPED(() -> ModCommonConfig.DISABLE_CROSSHAIR_WHILE_SCOPED, QuickSection.SERVER),
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS, QuickSection.SERVER),

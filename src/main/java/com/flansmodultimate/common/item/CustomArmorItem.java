@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.ArmorType;
@@ -61,6 +61,12 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         if (!configType.isReadEnchantability())
             return ModCommonConfig.get().defaultArmorEnchantability();
         return configType.getEnchantability();
+    }
+
+    @Override
+    public @NotNull Component getName(@NotNull ItemStack stack)
+    {
+        return Component.translatableWithFallback(getDescriptionId(stack), configType.getName());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EngineSound;
+import com.flansmodultimate.api.entity.EngineSound;
 
 /** Transient clip timer: pauses cancel immediately, resumed movement starts fresh, edits replace audio without overlap. */
 public final class NpcEngineCadence

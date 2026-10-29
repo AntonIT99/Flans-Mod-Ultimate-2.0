@@ -1,9 +1,14 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
-import com.flansmodultimate.platform.PlatformSounds;
-import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.api.entity.SoundRange;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.FlansMelee;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.NpcCrew;
+import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcSounds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -15,7 +20,6 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
@@ -100,7 +104,7 @@ public final class NpcItemAttacks
         boolean accepted = false;
         try
         {
-            accepted = target.hurt(npc.damageSources().mobAttack(npc), damage);
+            accepted = target.hurt(FlansMelee.source(npc.damageSources().mobAttack(npc), weapon), damage);
             if (accepted && state != null)
                 state.hit(target.getId(), tick, delay);
             return accepted;
@@ -185,7 +189,7 @@ public final class NpcItemAttacks
 
     public static boolean ranged(EntityNPCInterface npc, LivingEntity target)
     {
-        if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
+        if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         ItemStack weapon = NpcEquipment.rangedWeapon(npc);
         boolean fired = ranged(npc, target, weapon);
@@ -198,13 +202,9 @@ public final class NpcItemAttacks
     {
         if (weapon == npc.getOffhandItem() && weapon != npc.getMainHandItem())
             return fireFlan(npc, target, InteractionHand.OFF_HAND);
+        // Thrown from the projectile slot or the inventory, which loses the stack once it is used up.
         if (weapon != npc.getMainHandItem())
-        {
-            boolean thrown = FlansProjectiles.isGrenade(weapon) ? grenade(npc, target, weapon) : throwFlan(npc, target, weapon);
-            if (thrown && weapon.isEmpty())
-                npc.inventory.weapons.remove(1);
-            return thrown;
-        }
+            return FlansProjectiles.isGrenade(weapon) ? grenade(npc, target, weapon) : throwFlan(npc, target, weapon);
         if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isPresent())
             return fireFlan(npc, target, InteractionHand.MAIN_HAND);
         if (FlansProjectiles.isGrenade(weapon))
@@ -221,7 +221,7 @@ public final class NpcItemAttacks
     /** Fires the Flan weapon held in either hand with its own ammunition, attachments and sounds. */
     public static boolean fireFlan(EntityNPCInterface npc, LivingEntity target, InteractionHand hand)
     {
-        if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
+        if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         ItemStack weapon = npc.getItemInHand(hand);
         var flanWeapon = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
@@ -243,12 +243,10 @@ public final class NpcItemAttacks
         return fired;
     }
 
-    /** The NPC's own firing sound, played in place of the item's when the NPC keeps its own. */
+    /** The NPC's own firing sound, played in place of the item's when the NPC keeps its own, carrying as far as a gun's. */
     private static void playOwnFiringSound(EntityNPCInterface npc)
     {
-        SoundEvent sound = npc.stats.ranged.getSoundEvent(0);
-        if (sound != null)
-            npc.playSound(sound, 2F, 1F);
+        NpcSounds.play(npc, npc.stats.ranged.getSound(0), SoundRange.GUN_FIRE);
     }
 
     private static boolean throwFlan(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
@@ -266,10 +264,32 @@ public final class NpcItemAttacks
         return true;
     }
 
+    /**
+     * Throws a grenade, throwable Flan gun or native throwable the NPC carries in its projectile slot or inventory at the
+     * target, as a throw beside its other attacks, without drawing it into a hand. It is used up as Use up ammunition says.
+     * Server thread.
+     *
+     * @return whether it was thrown
+     */
+    public static boolean throwCarried(EntityNPCInterface npc, LivingEntity target, ItemStack stack)
+    {
+        if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
+            return false;
+        NpcThrowing.Kind kind = NpcThrowing.kind(stack);
+        if (kind == null)
+            return false;
+        return switch (kind)
+        {
+            case GRENADE -> grenade(npc, target, stack);
+            case THROWN_WEAPON -> throwFlan(npc, target, stack);
+            case NATIVE -> NpcThrowables.throwCarried(npc, target, stack);
+        };
+    }
+
     private static void finishThrow(EntityNPCInterface npc, ItemStack weapon, List<Entity> launched)
     {
         if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
-            weapon.shrink(1);
+            NpcAmmunition.consume(npc, weapon);
         else
             for (Entity entity : launched)
                 if (entity instanceof AbstractArrow arrow)
@@ -317,7 +337,8 @@ public final class NpcItemAttacks
 
     private static boolean grenade(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
     {
-        if (!NpcEquipment.enabled(npc, Feature.GRENADES))
+        // A target within the grenade's reach is left to the NPC's other attacks rather than taking the thrower with it.
+        if (!NpcEquipment.enabled(npc, Feature.GRENADES) || NpcThrowing.tooClose(npc, target, weapon))
             return false;
         var prepared = FlansProjectiles.prepare(npc, weapon, ItemStack.EMPTY, null, null, false, new ProjectileParameters(0, true, 0F, 0F, 1F));
         if (prepared.isEmpty())
@@ -340,7 +361,8 @@ public final class NpcItemAttacks
             return NpcAmmunition.load(npc, hand);
         // NPC ammunition is infinite: load from a detached copy large enough to fill every gun slot, never from the projectile slot itself.
         ItemStack weapon = npc.getItemInHand(hand);
-        return NpcAmmunition.infiniteTemplate(npc, weapon).map(template -> FlansEquipment.loadMagazine(npc, weapon, template.copyWithCount(Integer.MAX_VALUE))).orElse(false);
+        return NpcAmmunition.infiniteTemplate(npc, weapon).map(template -> FlansEquipment.loadMagazine(npc, weapon, template.copyWithCount(Integer.MAX_VALUE), NpcAmmunition.slotChoice(npc)))
+            .orElse(false);
     }
 
     private static boolean bow(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, BowItem bow)
@@ -366,7 +388,7 @@ public final class NpcItemAttacks
         if (!npc.level().addFreshEntity(arrow))
             return false;
         ammo.shrink(usedAmmo);
-        ItemStackData.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
+        NpcPlatform.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
         npc.playSound(SoundEvents.ARROW_SHOOT, 1F, 1F);
         return true;
     }
@@ -414,7 +436,7 @@ public final class NpcItemAttacks
         if (trident && EnchantmentHelper.getTridentSpinAttackStrength(weapon, npc) > 0)
             return false;
         if (trident)
-            ItemStackData.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
+            NpcPlatform.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
         Projectile projectile = projectile(npc, weapon);
         if (projectile == null)
             return false;
@@ -424,7 +446,7 @@ public final class NpcItemAttacks
             return false;
         weapon.shrink(1);
         npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
-        npc.playSound(trident ? PlatformSounds.tridentThrow() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
+        npc.playSound(trident ? NpcPlatform.tridentThrow() : SoundEvents.SNOWBALL_THROW, 1F, 1F);
         return true;
     }
 

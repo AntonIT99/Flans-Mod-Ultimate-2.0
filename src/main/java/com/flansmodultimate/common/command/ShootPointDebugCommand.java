@@ -63,7 +63,7 @@ import java.util.*;
  * </p>
  *
  * <p>
- * Named {@code flandebug} rather than {@code debug} because vanilla owns that
+ * Named {@code flansdebug} rather than {@code debug} because vanilla owns that
  * root already.
  * </p>
  */
@@ -79,7 +79,7 @@ public final class ShootPointDebugCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("flandebug").requires(source -> source.hasPermission(2)).then(Commands.literal("shootpoint")
+        dispatcher.register(Commands.literal("flansdebug").requires(source -> source.hasPermission(2)).then(Commands.literal("shootpoint")
             .then(Commands.literal("list").executes(ShootPointDebugCommand::list)).then(Commands.literal("reset").executes(ShootPointDebugCommand::reset))
             .then(Commands.literal("apply").executes(ShootPointDebugCommand::applyMeasured))
             .then(Commands.literal(PRIMARY).then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(vector(context -> setShootPoint(context, false, false)))))
@@ -149,7 +149,7 @@ public final class ShootPointDebugCommand
         send(context, ChatFormatting.AQUA, "-- " + bank + " (" + type.weaponType(secondary) + ") --");
         if (points.isEmpty())
         {
-            send(context, ChatFormatting.GRAY, "  (none authored; try /flandebug shootpoint add " + bank + ")");
+            send(context, ChatFormatting.GRAY, "  (none authored; try /flansdebug shootpoint add " + bank + ")");
             return;
         }
 
@@ -363,7 +363,7 @@ public final class ShootPointDebugCommand
             send(context, ChatFormatting.GRAY, "Nothing had a measurement that could be applied");
             return 0;
         }
-        send(context, ChatFormatting.WHITE, applied + " point(s) moved; /flandebug shootpoint reset undoes it");
+        send(context, ChatFormatting.WHITE, applied + " point(s) moved; /flansdebug shootpoint reset undoes it");
         return applied;
     }
 
@@ -452,7 +452,7 @@ public final class ShootPointDebugCommand
             confirm(context, "Barrel " + barrel, suggested, barrelLine(barrel, suggested));
             applied++;
         }
-        send(context, ChatFormatting.WHITE, applied + " barrel(s) moved, to the hundredth of a pixel; " + "/flandebug shootpoint reset undoes it");
+        send(context, ChatFormatting.WHITE, applied + " barrel(s) moved, to the hundredth of a pixel; " + "/flansdebug shootpoint reset undoes it");
         return applied;
     }
 

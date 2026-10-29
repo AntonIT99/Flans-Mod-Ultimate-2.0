@@ -250,7 +250,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         boolean creative = player.getAbilities().instabuild;
         if (!creative && !InventoryHelper.canConsumeAll(player.getInventory(), required))
             return;
-        if (!driveable.repairPart(partType, Math.max(1F, part.getMaxHealth() / 10F)))
+        if (!driveable.repairPart(partType, DriveableRepairRules.rebuildHealth(part.getType(), part.getMaxHealth())))
             return;
         InventoryHelper.tryConsumeAll(player.getInventory(), required, creative);
     }

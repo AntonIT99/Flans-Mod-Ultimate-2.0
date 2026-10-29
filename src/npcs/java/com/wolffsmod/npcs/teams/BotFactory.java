@@ -1,14 +1,16 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.*;
-import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.teams.*;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
-import com.wolffsmod.npcs.model.FlanModelEntityType;
-import com.wolffsmod.npcs.model.FlanModelNpcs;
-import com.wolffsmod.npcs.model.NpcSkins;
-import com.wolffsmod.npcs.names.SoldierNames;
+import com.wolffsmod.npcs.model.*;
+import com.wolffsmod.npcs.names.*;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -97,10 +99,11 @@ public final class BotFactory
     {
         return soldier(level, order, playerClass, position, random, npc ->
         {
-            String name = generate(order.nameList(), random);
-            if (name.isEmpty())
-                name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
-            npc.display.setName(name);
+            String name = chooseName(npc, order, playerClass, "", random);
+            if (name.isEmpty() && !order.force().usesClone())
+                NpcDisplayNames.bindName(npc.display, order.team());
+            else if (!name.isEmpty())
+                npc.display.setName(name);
             join(npc, order, position, Membership.CREW);
         });
     }
@@ -168,8 +171,9 @@ public final class BotFactory
         tuning.set(Value.TACTIC, tactic.ordinal());
         if (definition != null)
             stockAmmunition(npc, definition);
-        String crew = crewName(order, random);
-        npc.display.setName(crew.isEmpty() ? npc.display.getName() : crew);
+        // FlanModelNpcs already uses the model's full name, including a definition fallback on dedicated servers.
+        order.slot().setName(npc.display.getName());
+        order.slot().setNameBinding(NpcDisplayNames.of(npc.display).getName());
         join(npc, order, order.position(), Membership.VEHICLE);
         train(npc, order.settings().getDifficulty());
         npc.setHealth(npc.getMaxHealth());
@@ -216,7 +220,7 @@ public final class BotFactory
         List<ItemStack> stocks = new ArrayList<>();
         for (WeaponMount mount : FlansEntityTypes.getMounts(definition))
         {
-            mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> ItemStackData.isSameItemSameData(stock, ammunition)))
+            mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> NpcPlatform.isSameItemSameData(stock, ammunition)))
                 .ifPresent(stocks::add);
         }
         for (int i = 0; i < stocks.size() && i <= INVENTORY_SLOTS; i++)
@@ -252,23 +256,37 @@ public final class BotFactory
 
     private static void name(EntityNPCInterface npc, Order order, RandomGenerator random)
     {
-        if (!order.slot().getName().isEmpty())
+        ContentNameBinding retained = order.slot().getNameBinding();
+        if (retained != null && retained.literal().equals(order.slot().getName()))
         {
-            npc.display.setName(order.slot().getName());
+            npc.display.setName(retained.literal());
+            NpcDisplayNames.of(npc.display).setName(retained);
             return;
         }
-        String name = generate(order.nameList(), random);
-        if (name.isEmpty())
-            name = order.force().usesClone() ? npc.display.getName() : order.team().getName();
-        order.slot().setName(name);
-        npc.display.setName(name);
+        String name = chooseName(npc, order, order.slot().getRole(), order.slot().getName(), random);
+        if (name.isEmpty() && !order.force().usesClone())
+            NpcDisplayNames.bindName(npc.display, order.team());
+        else if (!name.isEmpty())
+            npc.display.setName(name);
+        order.slot().setName(npc.display.getName());
+        order.slot().setNameBinding(NpcDisplayNames.of(npc.display).getName());
     }
 
-    private static String crewName(Order order, RandomGenerator random)
+    /** Applies the associated generator and gender while preserving an existing slot's identity across respawns. */
+    static String chooseName(EntityNPCInterface npc, Order order, String playerClass, String retainedName, RandomGenerator random)
     {
-        if (order.slot().getName().isEmpty())
-            order.slot().setName(generate(order.nameList(), random));
-        return order.slot().getName();
+        String team = order.team().getShortName();
+        SoldierNameAssociations associations = SoldierNameAssociations.current();
+        OptionalInt generator = associations.find(team, playerClass);
+        if (generator.isPresent())
+        {
+            int id = generator.getAsInt();
+            int gender = associations.gender(team, playerClass);
+            npc.display.setMarkovGeneratorId(id);
+            npc.display.setMarkovGender(gender);
+            return retainedName.isEmpty() ? SoldierNames.generate(id, gender) : retainedName;
+        }
+        return retainedName.isEmpty() ? generate(order.nameList(), random) : retainedName;
     }
 
     /** A name from a soldier name list, or empty for a list that does not exist. */

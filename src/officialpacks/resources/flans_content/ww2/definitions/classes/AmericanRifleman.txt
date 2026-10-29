@@ -1,0 +1,11 @@
+// Identity
+Name Rifleman
+ShortName OfficialWW2_AmericanRifleman
+
+// Items
+AddItem m1Garand
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem m1GarandAmmo 4
+AddItem coltAmmo 2

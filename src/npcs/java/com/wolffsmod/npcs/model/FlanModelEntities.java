@@ -1,9 +1,9 @@
 package com.wolffsmod.npcs.model;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.api.content.IContentType;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
@@ -14,11 +14,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Registers one {@link FlanModelEntityType} for every AA gun and driveable of the loaded content packs.
@@ -65,7 +61,7 @@ public final class FlanModelEntities
                     return;
                 }
                 FlanModelShape shape = FlanModelShape.of(type, kind);
-                NpcsMod.log.debug("NPC model {}: {} x {} hitbox, model origin {} above the feet", id, EntityPlatform.width(shape.dimensions()), EntityPlatform.height(shape.dimensions()),
+                NpcsMod.log.debug("NPC model {}: {} x {} hitbox, model origin {} above the feet", id, NpcPlatform.width(shape.dimensions()), NpcPlatform.height(shape.dimensions()),
                     shape.modelHeight());
                 FlanModelEntityType entityType = new FlanModelEntityType(shortName, kind, shape);
                 helper.register(id, entityType);

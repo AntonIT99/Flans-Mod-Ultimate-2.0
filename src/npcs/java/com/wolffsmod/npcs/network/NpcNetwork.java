@@ -32,9 +32,66 @@ public final class NpcNetwork
         NpcNetworkPlatform.toServer("crew_action", CrewActionPacket.class, CrewActionPacket::write, CrewActionPacket::read, CrewActionPacket::handle);
         NpcNetworkPlatform.bidirectional("npc_preset", NpcPresetPacket.class, NpcPresetPacket::write, NpcPresetPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::presetState,
             NpcPresetPacket::handle);
+        NpcNetworkPlatform.toClient("muzzle_flash", MuzzleFlashPacket.class, MuzzleFlashPacket::write, MuzzleFlashPacket::read, () -> com.wolffsmod.npcs.client.NpcMuzzleFlashRenderer::receive);
+        NpcNetworkPlatform.toClient("npc_remote", NpcRemotePacket.class, NpcRemotePacket::write, NpcRemotePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::remoteNpcs);
+        NpcNetworkPlatform.bidirectional("soldier_name", SoldierNamePacket.class, SoldierNamePacket::write, SoldierNamePacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::soldierName,
+            SoldierNamePacket::handle);
+        NpcNetworkPlatform.toServer("team_faction", TeamFactionPacket.class, TeamFactionPacket::write, TeamFactionPacket::read, TeamFactionPacket::handle);
+        NpcNetworkPlatform.bidirectional("faction_relations", FactionRelationsPacket.class, FactionRelationsPacket::write, FactionRelationsPacket::read,
+            () -> com.wolffsmod.npcs.client.NpcClientPackets::factionRelations, FactionRelationsPacket::handle);
+        NpcNetworkPlatform.toServer("faction_joining", FactionJoiningPacket.class, FactionJoiningPacket::write, FactionJoiningPacket::read, FactionJoiningPacket::handle);
+        NpcNetworkPlatform.toClient("server_report", ServerReportPacket.class, ServerReportPacket::write, ServerReportPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::serverReport);
+        NpcNetworkPlatform.bidirectional("npc_inspect", NpcInspectPacket.class, NpcInspectPacket::write, NpcInspectPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::inspection,
+            NpcInspectPacket::handle);
+        NpcNetworkPlatform.toClient("debug_label", DebugLabelPacket.class, DebugLabelPacket::write, DebugLabelPacket::read, () -> com.wolffsmod.npcs.client.NpcDebugLabels::receive);
+        NpcNetworkPlatform.toClient("crew_result", CrewResultPacket.class, CrewResultPacket::write, CrewResultPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::crewResult);
+        NpcNetworkPlatform.bidirectional("crew_clone_preview", CrewClonePreviewPacket.class, CrewClonePreviewPacket::write, CrewClonePreviewPacket::read,
+            () -> com.wolffsmod.npcs.client.NpcClientPackets::crewClonePreview, CrewClonePreviewPacket::handle);
+        NpcNetworkPlatform.toServer("gunner_trigger", GunnerTriggerPacket.class, GunnerTriggerPacket::write, GunnerTriggerPacket::read, GunnerTriggerPacket::handle);
+        NpcNetworkPlatform.toServer("change_seat", ChangeSeatPacket.class, ChangeSeatPacket::write, ChangeSeatPacket::read, ChangeSeatPacket::handle);
+    }
+
+    public static void sendTo(ServerPlayer player, ServerReportPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, CrewResultPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, CrewClonePreviewPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(CrewClonePreviewPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, NpcInspectPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(NpcInspectPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, DebugLabelPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
     }
 
     public static void sendTo(ServerPlayer player, ServerControlPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendTo(ServerPlayer player, NpcRemotePacket packet)
     {
         NpcNetworkPlatform.sendToPlayer(player, packet);
     }
@@ -84,7 +141,42 @@ public final class NpcNetwork
         NpcNetworkPlatform.sendToServer(packet);
     }
 
+    public static void sendToServer(TeamFactionPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(FactionRelationsPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(FactionJoiningPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, FactionRelationsPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(SoldierNamePacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
     public static void sendToServer(CrewActionPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(GunnerTriggerPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(ChangeSeatPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }
@@ -95,6 +187,11 @@ public final class NpcNetwork
     }
 
     public static void sendToTracking(EntityNPCInterface npc, PartStatePacket packet)
+    {
+        NpcNetworkPlatform.sendToTracking(npc, packet);
+    }
+
+    public static void sendToTracking(EntityNPCInterface npc, MuzzleFlashPacket packet)
     {
         NpcNetworkPlatform.sendToTracking(npc, packet);
     }

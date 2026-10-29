@@ -70,6 +70,7 @@ public final class KeyInputHandler
     private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsEditorKey = key("teams_editor", InputConstants.UNKNOWN.getValue(), KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping commandCentreKey = key("command_centre", GLFW.GLFW_KEY_F7, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyContexts.IN_GAME, CATEGORY_GENERAL);
 
     // Every driveable: planes, ground vehicles and mechas alike.
@@ -81,6 +82,7 @@ public final class KeyInputHandler
     private static final KeyMapping changeSeatKey = key("driveable.change_seat", InputConstants.KEY_NUMPAD0, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping doorKey = key("driveable.door", InputConstants.KEY_K, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping engineKey = key("driveable.engine", InputConstants.KEY_SEMICOLON, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping repairKey = key("driveable.repair", InputConstants.KEY_I, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping flareKey = key("driveable.flare", InputConstants.KEY_X, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 
     // Ground vehicles and mechas. These default to the vanilla movement keys so
@@ -124,27 +126,27 @@ public final class KeyInputHandler
     private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey, preferredAmmoKey, secondaryModeKey, toggleKey, increaseZoomKey, decreaseZoomKey);
 
     private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey, driveablePlayerInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
-        changeSeatKey, doorKey, engineKey, flareKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
+        changeSeatKey, doorKey, engineKey, flareKey, repairKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Binds that claim their key while the player is at the controls of an aircraft. */
     private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey, yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey, controlModeKey,
-        gearKey, airBrakeKey, modeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey,
+        gearKey, airBrakeKey, modeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey,
         driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Binds that claim their key while the player is at the controls of anything else. */
     private static final List<KeyMapping> GROUND_BINDS = List.of(driveForwardKey, driveBackwardKey, steerLeftKey, steerRightKey, brakeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey,
-        secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, flareKey, driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
+        secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, flareKey, repairKey, driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Ground binds plus the persistent throttle lever that only vehicles answer. */
     private static final List<KeyMapping> VEHICLE_BINDS = List.of(driveForwardKey, driveBackwardKey, steerLeftKey, steerRightKey, brakeKey, decreaseVehicleThrottleKey, increaseVehicleThrottleKey,
         vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey,
-        doorKey, engineKey, flareKey, driveablePlayerInventoryKey);
+        doorKey, engineKey, flareKey, repairKey, driveablePlayerInventoryKey);
     /**
      * Binds read with consumeClick. Forge gates isDown on the conflict context
      * but not consumeClick, so a press made outside the context stays queued and
      * would fire the moment the player mounts. These are drained instead.
      */
-    private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey, flareKey, controlModeKey, gearKey, airBrakeKey, modeKey,
+    private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey, controlModeKey, gearKey, airBrakeKey, modeKey,
         driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
 
-    private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18};
+    private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 34};
 
     private static int lastControlEntityId = -1;
     private static int lastInputMask;
@@ -162,6 +164,18 @@ public final class KeyInputHandler
     public static Component getDoorKeyName()
     {
         return doorKey.getTranslatedKeyMessage();
+    }
+
+    /** Whether a key pressed in a screen is the one that opens the Teams command centre, which closes it again. */
+    public static boolean isCommandCentreKey(int keyCode, int scanCode)
+    {
+        return commandCentreKey.matches(keyCode, scanCode);
+    }
+
+    /** The key bound to the Teams command centre, as the controls screen names it. */
+    public static Component commandCentreKeyName()
+    {
+        return commandCentreKey.getTranslatedKeyMessage();
     }
 
     /** Current bindings and localized action names for the compact Teams HUD. */
@@ -186,6 +200,7 @@ public final class KeyInputHandler
         register.accept(teamsScoresKey);
         register.accept(teamsClassKey);
         register.accept(teamsEditorKey);
+        register.accept(commandCentreKey);
         register.accept(toggleAimPoseKey);
         register.accept(driveableInventoryKey);
         register.accept(primaryKey);
@@ -196,6 +211,7 @@ public final class KeyInputHandler
         register.accept(doorKey);
         register.accept(engineKey);
         register.accept(flareKey);
+        register.accept(repairKey);
         register.accept(driveForwardKey);
         register.accept(driveBackwardKey);
         register.accept(steerLeftKey);
@@ -342,6 +358,12 @@ public final class KeyInputHandler
         return false;
     }
 
+    private static boolean repairClaimsScoreKey()
+    {
+        LocalPlayer player = Minecraft.getInstance().player;
+        return player != null && player.getVehicle() instanceof Seat && teamsScoresKey.getKey().equals(repairKey.getKey());
+    }
+
     public static void checkKeys()
     {
         Minecraft mc = Minecraft.getInstance();
@@ -411,12 +433,14 @@ public final class KeyInputHandler
 
         if (noScreen && teamsMenuKey.consumeClick())
             PacketHandler.sendToServer(PacketTeamsAction.openTeamMenu());
-        if (noScreen && teamsScoresKey.consumeClick())
+        if (noScreen && teamsScoresKey.consumeClick() && !repairClaimsScoreKey())
             PacketHandler.sendToServer(PacketTeamsAction.openScoreboard());
         if (noScreen && teamsClassKey.consumeClick())
             PacketHandler.sendToServer(PacketTeamsAction.openClassMenu());
         if (noScreen && teamsEditorKey.consumeClick())
             PacketHandler.sendToServer(com.flansmodultimate.network.server.teams.PacketEditorAction.open());
+        if (noScreen && commandCentreKey.consumeClick())
+            PacketHandler.sendToServer(com.flansmodultimate.network.server.teams.PacketCommandCentreAction.open());
         if (noScreen && toggleAimPoseKey.consumeClick())
             AimPoseClient.toggle();
     }
@@ -519,6 +543,8 @@ public final class KeyInputHandler
                 edgeMask |= DriveableInput.TOGGLE_ENGINE;
             if (modeKey.consumeClick())
                 edgeMask |= DriveableInput.TOGGLE_MODE;
+            if (repairKey.consumeClick())
+                edgeMask |= DriveableInput.REPAIR;
             if (flareKey.consumeClick())
                 edgeMask |= DriveableInput.FLARE;
             // The same key that picks a handheld gun's ammunition chambers the
@@ -654,6 +680,12 @@ public final class KeyInputHandler
         if (mount instanceof Seat seat)
             return seat.getDriveable();
         return null;
+    }
+
+    /** @return the bind that moves a rider to the next free seat; live only in a Flan's driveable */
+    public static KeyMapping changeSeatKey()
+    {
+        return changeSeatKey;
     }
 
     @Nullable

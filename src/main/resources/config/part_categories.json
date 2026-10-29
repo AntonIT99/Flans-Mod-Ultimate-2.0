@@ -1,0 +1,85 @@
+{
+
+    "TPR animal feed": {
+        "properties": {},
+        "items": [
+            "infiniteenergy"
+        ]
+    },
+
+    "TPR driving model components": {
+        "properties": {},
+        "items": [
+            "flightmodel"
+        ]
+    },
+
+    "TPR fuel cans": {
+        "properties": {},
+        "items": [
+            "fuelcan"
+        ]
+    },
+
+    "TPR Illuminati currency": {
+        "properties": {},
+        "items": [
+            "bill",
+            "billdivine",
+            "billelite",
+            "coin"
+        ]
+    },
+
+    "TPR irreparable component markers": {
+        "properties": {},
+        "items": [
+            "lostturret",
+            "lostwing"
+        ]
+    },
+
+    "TPR percussion cap mechanisms": {
+        "properties": {},
+        "items": [
+            "caplock"
+        ]
+    },
+
+    "TPR repair materials": {
+        "properties": {},
+        "items": [
+            "repair"
+        ]
+    },
+
+    "TPR ship structure repair components": {
+        "properties": {},
+        "items": [
+            "shipstructure",
+            "shipstructure500",
+            "shipstructure1000"
+        ]
+    },
+
+    "TPR steam engine components": {
+        "properties": {},
+        "items": [
+            "steamengine"
+        ]
+    },
+
+    "TPR vehicle replacement components": {
+        "properties": {},
+        "items": [
+            "advancedera",
+            "armorreplacement",
+            "breachreplacement",
+            "erablock",
+            "reactorreplacement",
+            "spacedreplacement",
+            "steeringroom",
+            "trackreplacement"
+        ]
+    }
+}

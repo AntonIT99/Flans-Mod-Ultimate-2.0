@@ -1,11 +1,14 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.ReloadCycle;
+import com.flansmodultimate.api.driveables.ReloadCycle;
+import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.combat.NpcReloadFeedback;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.properties.*;
+import com.wolffsmod.npcs.sim.NpcFiringPosition;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -32,6 +35,7 @@ import java.util.Optional;
  * Custom NPCs' fallback ranged AI.
  *
  * <ul>
+ * <li>Crew holding their fire cannot start or fire an ordinary ranged attack.</li>
  * <li>It never fires synthetic shots alongside an authoritative equipped weapon, and reports that weapon's shots to the tactics
  * that wait for it to have fired.</li>
  * <li>A vehicle with ammunition consumption disabled starts its ranged attack using default ammunition even with an empty inventory.</li>
@@ -42,6 +46,8 @@ import java.util.Optional;
  * <li>The trigger waits, without spending its cooldown or its burst, until a model's gun is on target and until nothing the NPC
  * must not fire through is in the way; meanwhile the NPC keeps closing in.</li>
  * <li>With a tactic of the mod's own, the tactic moves the NPC while this goal fires, and learns of its reloads and pauses.</li>
+ * <li>A ground vehicle whose main weapon has no shot from where it stands, too close for its elevation or its barrel, or with its
+ * line of fire blocked, drives to where it has one rather than standing or only closing in.</li>
  * </ul>
  */
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
@@ -76,7 +82,7 @@ public abstract class EntityAIRangedAttackMixin
     @Inject(method = "canUse", at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsNativeWeaponAI(CallbackInfoReturnable<Boolean> callback)
     {
-        if (NpcEquipment.weaponAuthority(npc))
+        if (NpcEquipment.weaponAuthority(npc) || NpcCrew.holdsFire(npc))
             callback.setReturnValue(false);
     }
 
@@ -97,17 +103,20 @@ public abstract class EntityAIRangedAttackMixin
 
     // Tactics. An @At inherits the mixin's remap = false; the navigator is a Minecraft class, whose names are remapped.
 
-    /** A tactic of the mod's own moves the NPC while this goal keeps firing; its own advance and halt then wait. */
+    /**
+     * A tactic of the mod's own moves the NPC while this goal keeps firing; its own advance and halt then wait. A ground
+     * vehicle without a shot from where it stands drives to where it has one instead.
+     */
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;moveTo(Lnet/minecraft/world/entity/Entity;D)Z"))
     private boolean wolffsmodnpcsTacticAdvances(PathNavigation navigation, Entity target, double speed)
     {
-        return NpcTactics.followsPath(NpcTactics.of(npc)) || navigation.moveTo(target, speed);
+        return NpcTactics.followsPath(NpcTactics.of(npc)) || target instanceof LivingEntity living && NpcFiringPosition.reposition(npc, living) || navigation.moveTo(target, speed);
     }
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;stop()V"))
     private void wolffsmodnpcsTacticHalts(PathNavigation navigation)
     {
-        if (!NpcTactics.followsPath(NpcTactics.of(npc)))
+        if (!NpcTactics.followsPath(NpcTactics.of(npc)) && !NpcFiringPosition.reposition(npc, npc.getTarget()))
             navigation.stop();
     }
 
@@ -117,6 +126,11 @@ public abstract class EntityAIRangedAttackMixin
         Tactic tactic = NpcTactics.of(npc);
         if (NpcTactics.followsPath(tactic))
             NpcTacticSteering.steer(npc, tactic);
+        else if (!npc.ais.directLOS)
+        {
+            // Without direct line of sight, Custom NPCs never moves the NPC to attack.
+            NpcFiringPosition.reposition(npc, npc.getTarget());
+        }
     }
 
     // Inherited cadence and reload cycle
@@ -150,9 +164,10 @@ public abstract class EntityAIRangedAttackMixin
         NpcVehicleState state = NpcVehicleState.of(npc);
         // An aircraft below its attack altitude climbs first; it keeps its target meanwhile. An NPC at the wheel of a Flan's
         // driveable fights with the driveable's weapons.
-        boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire() || NpcDrivers.holdsFire(npc);
+        boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc);
         LivingEntity target = npc.getTarget();
-        if (target != null && state.holdsFire(npc, target))
+        // A target too close for the NPC's own explosive rounds is left alone until it has manoeuvred back out of their reach.
+        if (target != null && (state.holdsFire(npc, target) || NpcBlastSafety.tooClose(npc, target, state.blastReach())))
         {
             hold = true;
             // Custom NPCs stops advancing once it has seen its target for a while; it has to keep going for a clear shot.

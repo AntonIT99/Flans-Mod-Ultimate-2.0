@@ -1,0 +1,11 @@
+// Identity
+Name Rifleman
+ShortName OfficialWW2_GermanRifleman
+
+// Items
+AddItem kar98k
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem kar98kAmmo 4
+AddItem lugerAmmo 2

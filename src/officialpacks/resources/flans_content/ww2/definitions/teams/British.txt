@@ -15,4 +15,5 @@ AddClass OfficialWW2_BritishScout
 AddClass OfficialWW2_BritishAssault
 AddClass OfficialWW2_BritishSupport
 AddClass OfficialWW2_BritishEngineer
+AddClass OfficialWW2_BritishRifleman
 AddClass OfficialWW2_BritishMedic

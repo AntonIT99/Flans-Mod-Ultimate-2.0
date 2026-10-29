@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.ReloadCycle;
+import com.flansmodultimate.api.driveables.ReloadCycle;
 import org.jetbrains.annotations.Nullable;
 
 /**

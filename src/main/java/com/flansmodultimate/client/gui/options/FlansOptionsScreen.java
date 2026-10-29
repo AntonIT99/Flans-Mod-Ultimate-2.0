@@ -7,16 +7,20 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import net.neoforged.neoforge.common.ModConfigSpec.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,13 +41,15 @@ public class FlansOptionsScreen extends Screen
     private static final String SECTION_KEY_PREFIX = "gui.flansmodultimate.options.section.";
     private static final int TITLE_TOP = 16;
     private static final int LIST_TOP = 32;
-    private static final int LIST_BOTTOM_MARGIN = 36;
+    private static final int LIST_BOTTOM_MARGIN = 66;
     private static final int LIST_ITEM_HEIGHT = 25;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_WIDTH = 150;
     private static final int BUTTON_GAP = 10;
     private static final int WIDE_BUTTON_WIDTH = 200;
     private static final int BUTTON_BOTTOM_MARGIN = 27;
+    private static final int RESTORE_BUTTON_BOTTOM_MARGIN = 52;
+    private static final int MAX_RESTORE_TOOLTIP_PARAMETERS = 8;
     private static final int NOTE_COLOUR = 0xA0A0A0;
     /** Only shown while Distant Horizons is installed, since its settings do nothing otherwise. */
     private static final String DISTANT_HORIZONS_SECTION = "distant_horizons";
@@ -52,6 +58,12 @@ public class FlansOptionsScreen extends Screen
     {
         /** The settings worth changing while playing, from both config files. */
         QUICK,
+        /** The quick menu's HUD settings. */
+        HUD,
+        /** The quick menu's server settings. */
+        SERVER,
+        /** The quick menu's server sound ranges. */
+        SERVER_SOUNDS,
         /** Every client setting, section by section. */
         CLIENT,
         /** Every common setting, section by section. */
@@ -86,9 +98,13 @@ public class FlansOptionsScreen extends Screen
     private final ConfigTarget clientTarget = new ClientConfigTarget();
     private final CommonConfigTarget commonTarget = new CommonConfigTarget();
     /** The rows the server owns, which are disabled for players who may not change them. */
-    private final List<OptionInstance<?>> commonOptions = new ArrayList<>();
+    private final List<ConfigOptionFactory.Option> commonOptions = new ArrayList<>();
     private FlansOptionsList list;
     private double scrollAmount;
+    private final SettingsTooltip settingsTooltip = new SettingsTooltip();
+    private final ConfigDefaults defaults = new ConfigDefaults();
+    @Nullable
+    private Button restoreDefaultsButton;
 
     public FlansOptionsScreen(@Nullable Screen lastScreen)
     {
@@ -100,6 +116,9 @@ public class FlansOptionsScreen extends Screen
         super(Component.translatable(switch (mode)
         {
             case QUICK -> "gui.flansmodultimate.options.title";
+            case HUD -> SECTION_KEY_PREFIX + "hud";
+            case SERVER -> SECTION_KEY_PREFIX + "server";
+            case SERVER_SOUNDS -> SECTION_KEY_PREFIX + "server_sounds";
             case CLIENT -> "gui.flansmodultimate.options.title_client";
             case COMMON -> "gui.flansmodultimate.options.title_common";
         }));
@@ -111,6 +130,7 @@ public class FlansOptionsScreen extends Screen
     protected void init()
     {
         commonOptions.clear();
+        defaults.clear();
         // The values of a joined server take a round trip; the screen fills in when the answer arrives
         if (!commonTarget.ready())
             CommonConfigMirror.request();
@@ -121,8 +141,15 @@ public class FlansOptionsScreen extends Screen
         {
             case QUICK -> {
                 addQuickClientSections();
-                addQuickCommonSection();
+                if (minecraft != null && minecraft.level != null)
+                {
+                    addSubmenu("server", Mode.SERVER);
+                    addSubmenu("server_sounds", Mode.SERVER_SOUNDS);
+                }
             }
+            case HUD -> addQuickClientSections();
+            case SERVER -> addQuickCommonSection(ModCommonConfig.QuickSection.SERVER);
+            case SERVER_SOUNDS -> addQuickCommonSection(ModCommonConfig.QuickSection.SOUNDS);
             case CLIENT -> addSections(ConfigOptionFactory.sections(clientTarget));
             case COMMON -> addCommonSections();
         }
@@ -139,58 +166,75 @@ public class FlansOptionsScreen extends Screen
     {
         for (QuickSection section : QUICK_SECTIONS)
         {
-            if (section.name().equals(DISTANT_HORIZONS_SECTION) && !PlatformEnvironment.isModLoaded(DistantHorizonsClient.MOD_ID))
+            if (mode == Mode.HUD && !section.name().equals("hud"))
                 continue;
-
-            List<OptionInstance<?>> options = new ArrayList<>();
-            for (ConfigValue<?> value : section.values())
-            {
-                OptionInstance<?> option = ConfigOptionFactory.option(clientTarget, value);
-                if (option != null)
-                    options.add(option);
-            }
-
-            if (options.isEmpty())
-                continue;
-
-            list.addHeader(Component.translatable(SECTION_KEY_PREFIX + section.name()));
-            if (section.name().equals("rendering"))
-            {
-                list.addOptions(options.subList(0, 1));
-                list.addWidgetRow(new RenderingPresetSlider(150, RenderingPresetSlider.Kind.LOD), new RenderingPresetSlider(150, RenderingPresetSlider.Kind.IMPOSTOR));
-                list.addOptions(options.subList(1, options.size()));
-            }
-            else
-                list.addOptions(options);
+            addQuickClientSection(section);
         }
     }
 
-    /** The handful of server settings worth reaching without leaving the quick screen. */
-    private void addQuickCommonSection()
+    private void addQuickClientSection(QuickSection section)
+    {
+        if (mode == Mode.QUICK && section.name().equals("hud"))
+        {
+            addSubmenu(section.name(), Mode.HUD);
+            return;
+        }
+        if (section.name().equals(DISTANT_HORIZONS_SECTION) && !PlatformEnvironment.isModLoaded(DistantHorizonsClient.MOD_ID))
+            return;
+
+        List<ConfigOptionFactory.Option> options = new ArrayList<>();
+        for (ConfigValue<?> value : section.values())
+        {
+            ConfigOptionFactory.Option option = ConfigOptionFactory.option(clientTarget, value);
+            if (option != null)
+                options.add(option);
+        }
+
+        if (options.isEmpty())
+            return;
+
+        if (mode == Mode.QUICK)
+            list.addHeader(Component.translatable(SECTION_KEY_PREFIX + section.name()));
+        if (section.name().equals("rendering"))
+        {
+            addOptions(options.subList(0, 1));
+            list.addWidgetRow(new RenderingPresetSlider(150, RenderingPresetSlider.Kind.LOD), new RenderingPresetSlider(150, RenderingPresetSlider.Kind.IMPOSTOR));
+            for (ConfigValue<?> value : ModClientConfig.renderPresetConfigValues())
+                defaults.add(clientTarget, value);
+            addOptions(options.subList(1, options.size()));
+        }
+        else
+            addOptions(options);
+    }
+
+    private void addSubmenu(String section, Mode submenuMode)
+    {
+        list.addWidgetRow(Button.builder(Component.translatable(SECTION_KEY_PREFIX + section).append("..."), button ->
+        {
+            if (minecraft != null)
+                minecraft.setScreen(new FlansOptionsScreen(this, submenuMode));
+        }).width(BUTTON_WIDTH * 2 + BUTTON_GAP).build(), null);
+    }
+
+    /** The server settings selected for one of the quick menu's submenus. */
+    private void addQuickCommonSection(ModCommonConfig.QuickSection section)
     {
         // Outside a world the common config is edited whole, from the hub, rather than a few settings of it
         if (minecraft == null || minecraft.level == null)
             return;
 
-        for (ModCommonConfig.QuickSection section : ModCommonConfig.QuickSection.values())
+        List<ConfigOptionFactory.Option> options = new ArrayList<>();
+        for (ModCommonConfig.RuntimeOption runtimeOption : ModCommonConfig.RuntimeOption.values())
         {
-            List<OptionInstance<?>> options = new ArrayList<>();
-            for (ModCommonConfig.RuntimeOption runtimeOption : ModCommonConfig.RuntimeOption.values())
-            {
-                if (runtimeOption.getSection() != section)
-                    continue;
-                OptionInstance<?> option = ConfigOptionFactory.option(commonTarget, runtimeOption.getConfigValue().get());
-                if (option != null)
-                    options.add(option);
-            }
-
-            if (options.isEmpty())
+            if (runtimeOption.getSection() != section)
                 continue;
-
-            list.addHeader(Component.translatable(SECTION_KEY_PREFIX + (section == ModCommonConfig.QuickSection.SOUNDS ? "server_sounds" : "server")));
-            list.addOptions(options);
-            commonOptions.addAll(options);
+            ConfigOptionFactory.Option option = ConfigOptionFactory.option(commonTarget, runtimeOption.getConfigValue().get());
+            if (option != null)
+                options.add(option);
         }
+
+        addOptions(options);
+        commonOptions.addAll(options);
     }
 
     private void addCommonSections()
@@ -206,14 +250,21 @@ public class FlansOptionsScreen extends Screen
         for (ConfigOptionFactory.Section section : sections)
         {
             list.addHeader(section.title());
-            list.addOptions(section.options());
+            addOptions(section.options());
         }
+    }
+
+    private void addOptions(List<ConfigOptionFactory.Option> options)
+    {
+        list.addOptions(options);
+        for (ConfigOptionFactory.Option option : options)
+            defaults.add(option.target(), option.value());
     }
 
     private void lockCommonOptions()
     {
         // Their tooltips already carry the locked note, next to the name and value they still show
-        for (OptionInstance<?> option : commonOptions)
+        for (ConfigOptionFactory.Option option : commonOptions)
         {
             AbstractWidget widget = list.findWidget(option);
             if (widget != null)
@@ -223,6 +274,11 @@ public class FlansOptionsScreen extends Screen
 
     private void addFooterButtons()
     {
+        int restoreWidth = BUTTON_WIDTH * 2 + BUTTON_GAP;
+        restoreDefaultsButton = addRenderableWidget(Button.builder(restoreDefaultsCaption(defaults.changedCount()), button -> confirmRestoreDefaults())
+            .bounds((width - restoreWidth) / 2, height - RESTORE_BUTTON_BOTTOM_MARGIN, restoreWidth, BUTTON_HEIGHT).build());
+        updateRestoreDefaultsButton();
+
         if (mode != Mode.QUICK)
         {
             addRenderableWidget(
@@ -237,6 +293,56 @@ public class FlansOptionsScreen extends Screen
             Button.builder(CommonComponents.GUI_DONE, button -> onClose()).bounds(left + BUTTON_WIDTH + BUTTON_GAP, height - BUTTON_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT).build());
     }
 
+    private void confirmRestoreDefaults()
+    {
+        if (minecraft == null || !defaults.canRestore())
+            return;
+
+        Component heading = restoreDefaultsCaption(defaults.changedCount());
+        var warning = Component.translatable("gui.flansmodultimate.options.restore_defaults.warning", title);
+        if (!commonOptions.isEmpty() && minecraft.level != null)
+            warning.append("\n\n").append(Component.translatable("gui.flansmodultimate.options.restore_defaults.server_warning"));
+
+        Minecraft client = minecraft;
+        client.setScreen(new ConfirmScreen(confirmed ->
+        {
+            if (confirmed)
+                defaults.restore();
+            client.setScreen(this);
+        }, heading, warning, heading, CommonComponents.GUI_CANCEL));
+    }
+
+    private Component restoreDefaultsCaption(int count)
+    {
+        return Component.translatable("gui.flansmodultimate.options.restore_defaults").append(" (" + count + ")");
+    }
+
+    private void updateRestoreDefaultsButton()
+    {
+        if (restoreDefaultsButton != null)
+        {
+            List<ConfigValue<?>> changed = defaults.changedValues();
+            int count = changed.size();
+            restoreDefaultsButton.setMessage(restoreDefaultsCaption(count));
+            restoreDefaultsButton.setTooltip(restoreDefaultsTooltip(changed));
+            restoreDefaultsButton.active = count > 0;
+        }
+    }
+
+    private Tooltip restoreDefaultsTooltip(List<ConfigValue<?>> changed)
+    {
+        Component caption = restoreDefaultsCaption(changed.size());
+        Tooltip summary = Tooltip.create(caption);
+        if (minecraft == null || changed.isEmpty() || changed.size() > MAX_RESTORE_TOOLTIP_PARAMETERS)
+            return summary;
+
+        var text = caption.copy();
+        for (ConfigValue<?> value : changed)
+            text.append("\n• ").append(Component.translatable(ConfigOptionFactory.captionKey(value)));
+        Tooltip detailed = Tooltip.create(text);
+        return detailed.toCharSequence(minecraft).size() <= SettingsTooltip.lineCapacity(height) ? detailed : summary;
+    }
+
     /**
      * Rebuilds the screen with the values the server just sent, so a change it refused, or one another
      * operator made, snaps the rows back to what is really in force.
@@ -249,24 +355,44 @@ public class FlansOptionsScreen extends Screen
 
     private void refresh()
     {
-        if (commonOptions.isEmpty() && mode != Mode.COMMON)
-            return;
-
         scrollAmount = list.getScrollAmount();
         rebuildWidgets();
     }
 
     @Override
+    public void tick()
+    {
+        list.tick();
+        updateRestoreDefaultsButton();
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
+        settingsTooltip.beginFrame();
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         list.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, TITLE_TOP, 0xFFFFFF);
 
-        if (mode == Mode.COMMON)
-            graphics.drawCenteredString(font, footerNote(), width / 2, height - BUTTON_BOTTOM_MARGIN - 12, NOTE_COLOUR);
+        if (mode == Mode.COMMON || mode == Mode.SERVER || mode == Mode.SERVER_SOUNDS)
+            graphics.drawCenteredString(font, footerNote(), width / 2, height - RESTORE_BUTTON_BOTTOM_MARGIN - 12, NOTE_COLOUR);
 
         super.render(graphics, mouseX, mouseY, partialTick);
+        settingsTooltip.render(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public void setTooltipForNextRenderPass(@NotNull List<FormattedCharSequence> tooltip, @NotNull ClientTooltipPositioner positioner, boolean override)
+    {
+        settingsTooltip.queue(tooltip, positioner, override);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double delta)
+    {
+        if (hasShiftDown() && settingsTooltip.scroll(delta))
+            return true;
+        return super.mouseScrolled(mouseX, mouseY, scrollX, delta);
     }
 
     /** Says whose settings these are, because it decides whether they can be changed at all. */
@@ -284,6 +410,8 @@ public class FlansOptionsScreen extends Screen
     @Override
     public void removed()
     {
+        if (list != null)
+            scrollAmount = list.getScrollAmount();
         // Sliders only record their value while they are dragged, to avoid rewriting the config, or asking
         // the server, on every step
         clientTarget.flush();

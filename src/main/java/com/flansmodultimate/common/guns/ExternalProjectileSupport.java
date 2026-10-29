@@ -1,7 +1,14 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.*;
-import com.flansmodultimate.api.ProjectileSources.Source;
+import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.DetonationRadii;
+import com.flansmodultimate.api.projectiles.ProjectileParameters;
+import com.flansmodultimate.api.projectiles.ProjectileShot;
+import com.flansmodultimate.api.projectiles.ProjectileSources;
+import com.flansmodultimate.api.projectiles.ProjectileSources.Source;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
@@ -10,6 +17,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.ShootableFactory;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.physics.ModPhysics;
@@ -52,6 +60,25 @@ public final class ExternalProjectileSupport
         return Math.max(0, ShootableItem.getMaxRounds(stack));
     }
 
+    public static Optional<DetonationRadii> detonationRadii(ItemStack stack)
+    {
+        if (!isProjectile(stack))
+            return Optional.empty();
+        ShootableType type = ((ShootableItem) stack.getItem()).getConfigType();
+        FlanExplosion.Stats stats = type.getExplosionStats(null);
+        return Optional.of(new DetonationRadii(Math.max(0F, stats.explosionRadius()), Math.max(0F, stats.blastRadius()), Math.max(0F, stats.fragRadius()), Math.max(0F, type.getFireRadius())));
+    }
+
+    public static boolean consumeRound(ItemStack stack)
+    {
+        return isProjectile(stack) && ShootableItem.consumeRound(stack);
+    }
+
+    public static boolean hasRoundsLeft(ItemStack stack)
+    {
+        return isProjectile(stack) && ShootableItem.getTotalRounds(stack) > 0;
+    }
+
     public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,
         boolean weaponStats)
     {
@@ -78,7 +105,8 @@ public final class ExternalProjectileSupport
 
     private static Source weaponSpeedSource(InfoType definition, boolean contentStats)
     {
-        if (contentStats && (definition instanceof GunType || definition instanceof DriveableType driveable && driveable.getBulletSpeed() > 0F))
+        // AA guns and driveables fall back to the default every Flan bullet has, as their own entities do.
+        if (contentStats && (definition instanceof GunType || definition instanceof AAGunType || definition instanceof DriveableType))
             return Source.WEAPON;
         return Source.CALLER;
     }
@@ -198,19 +226,41 @@ public final class ExternalProjectileSupport
         return heldWeapon != null && heldWeapon.getItem() instanceof GunItem item && item.getConfigType() == gun ? heldWeapon : null;
     }
 
+    /**
+     * The weapon side of a shot. With content statistics an AA gun and a driveable's own ordnance supply the velocity their
+     * entities fire at, the driveable's BulletSpeed or else the default every Flan bullet has, rather than the caller's.
+     */
     static FireableGun resolveWeapon(InfoType definition, @Nullable ItemStack heldWeapon, LivingEntity shooter, @Nullable InfoType platform, boolean secondary, ProjectileParameters parameters)
     {
-        float fallbackSpeed = Math.max(0.01F, parameters.speed());
         if (!parameters.weaponStats())
             return fallbackWeapon(definition, parameters);
         if (definition instanceof GunType gun)
             return mountedGun(gun, heldWeapon, shooter, platform, secondary);
         if (definition instanceof AAGunType aa)
-            return new FireableGun(aa, aa.getDamage(), aa.getBulletSpread(), fallbackSpeed, aa.getSpreadPattern());
+            return new FireableGun(aa, aa.getDamage(), aa.getBulletSpread(), BulletType.DEFAULT_BULLET_SPEED, aa.getSpreadPattern());
         if (definition instanceof DriveableType driveable)
             return new FireableGun(driveable, Math.max(0F, secondary ? driveable.getDamageMultiplierSecondary() : driveable.getDamageMultiplierPrimary()), driveable.getBulletSpread(),
-                driveable.getBulletSpeed() > 0F ? driveable.getBulletSpeed() : fallbackSpeed, EnumSpreadPattern.CIRCLE);
+                driveable.getBulletSpeed() > 0F ? driveable.getBulletSpeed() : BulletType.DEFAULT_BULLET_SPEED, EnumSpreadPattern.CIRCLE);
         return fallbackWeapon(definition, parameters);
+    }
+
+    public static OptionalDouble muzzleVelocity(ItemStack ammunition, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary)
+    {
+        if (!isProjectile(ammunition))
+            return OptionalDouble.empty();
+        ShootableType ammo = ((ShootableItem) ammunition.getItem()).getConfigType();
+        if (ammo instanceof GrenadeType grenade)
+            return OptionalDouble.of(Math.max(0.01F, 0.5F * grenade.getThrowSpeed()));
+        InfoType definition = weaponDefinition(weapon, platform, ItemStack.EMPTY, ammo);
+        InfoType platformType = platform instanceof InfoType type ? type : null;
+        // Without a weapon the ammunition flies at its own velocity or the default.
+        FireableGun fireable = null;
+        if (definition instanceof GunType || definition instanceof AAGunType || definition instanceof DriveableType)
+        {
+            fireable = resolveWeapon(definition, null, null, platformType, secondary, new ProjectileParameters(0, true, 0F, 0F, 0F));
+            fireable.applyAmmunition(ammo);
+        }
+        return OptionalDouble.of(new FiredShot(fireable, (BulletType) ammo, null, null, 0, platformType).getMuzzleVelocity());
     }
 
     private static FireableGun fallbackWeapon(InfoType definition, ProjectileParameters parameters)
@@ -253,7 +303,12 @@ public final class ExternalProjectileSupport
         return List.copyOf(muzzles);
     }
 
-    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim)
+    /**
+     * @param seatAim
+     *            where the seat gun points, relative to the hull or to the turret it sits on; null leaves the muzzle where it
+     *            rests
+     */
+    public static Optional<WeaponMuzzle> getSeatMuzzle(IContentType model, int seat, int sequence, MountAim turretAim, @Nullable MountAim seatAim)
     {
         SeatInfo info = model instanceof DriveableType type ? type.getSeat(seat) : null;
         if (info == null || info.getGunType() == null)
@@ -262,11 +317,32 @@ public final class ExternalProjectileSupport
         int barrel = Math.floorMod(sequence, info.getGunBarrelCount());
         // As a crewed driveable lifts its seat guns, so the muzzle clears the gunner's own head.
         Vec3 position = LegacyDriveableCoordinates.toLocal(info.getGunOrigin(barrel)).add(0D, Driveable.PASSENGER_GUN_MOUNTED_OFFSET, 0D);
+        Vector3f pivot = info.getGunPivot();
+        boolean aimed = seatAim != null && pivot != null;
+        if (aimed)
+            position = aimSeatGunPoint(position, LegacyDriveableCoordinates.toLocal(pivot), type instanceof PlaneType ? 180F : 0F, seatAim);
         if (turretAim.yaw() != 0F && EnumDriveablePart.isTurretMounted(info.getPart()))
             position = aimTurretPoint(type, position, new MountAim(turretAim.yaw(), 0F));
+        float pitch = aimed ? seatAim.pitch() : 0F;
         List<WeaponMuzzle.Particle> particles = type.getShootParticlesPassenger(seat).stream()
-            .map(particle -> new WeaponMuzzle.Particle(particle.name(), previewVelocity(new Vec3(particle.x(), particle.y(), particle.z())))).toList();
+            .map(particle -> new WeaponMuzzle.Particle(particle.name(), LegacyDriveableCoordinates.rotateBarrelPitchLocal(previewVelocity(new Vec3(particle.x(), particle.y(), particle.z())), pitch)))
+            .toList();
         return Optional.of(new WeaponMuzzle(position, Optional.of(info.getGunType()), particles));
+    }
+
+    /**
+     * Carries a point of a seat gun from where it rests to where the aimed gun holds it, round the point the gun's model turns
+     * it round, in the preview frame, as a driven driveable carries its seat guns' muzzles.
+     *
+     * @param restYaw
+     *            the aim yaw the gun's model rests at: an aircraft draws its seat guns turned half round
+     */
+    static Vec3 aimSeatGunPoint(Vec3 point, Vec3 pivot, float restYaw, MountAim aim)
+    {
+        // The preview frame is not mirrored as the entity frame is, so a turn to the right is the opposite rotation.
+        Vec3 forwardAtRest = LegacyDriveableCoordinates.rotateTurretYawLocal(point.subtract(pivot), restYaw);
+        Vec3 pitched = LegacyDriveableCoordinates.rotateBarrelPitchLocal(forwardAtRest, aim.pitch());
+        return pivot.add(LegacyDriveableCoordinates.rotateTurretYawLocal(pitched, -aim.yaw()));
     }
 
     private static List<WeaponMuzzle> pointMuzzles(DriveableType type, ShootPoint point, List<WeaponMuzzle.Particle> particles, int sequence, boolean alternate, MountAim aim)
@@ -399,6 +475,17 @@ public final class ExternalProjectileSupport
         return true;
     }
 
+    public static boolean hasMuzzleFlash(IContentType platform, WeaponMuzzle muzzle, boolean secondary)
+    {
+        GunType gun = muzzle.weapon().orElse(null) instanceof GunType type ? type : null;
+        if (gun != null && gun.hasMuzzleFlashModel())
+            return true;
+        if (!(platform instanceof DriveableType type) || !type.isDefaultMuzzleFlash())
+            return false;
+        EnumWeaponType bank = type.weaponType(secondary);
+        return gun != null || bank == EnumWeaponType.GUN || bank == EnumWeaponType.SHELL;
+    }
+
     public static void shootParticles(Entity shooter, WeaponMuzzle muzzle, Vec3 origin, float bodyYaw, float scale)
     {
         if (!serverThread(shooter) || !finite(origin) || !Float.isFinite(bodyYaw) || !Float.isFinite(scale) || scale <= 0F)
@@ -447,6 +534,12 @@ public final class ExternalProjectileSupport
         }
 
         @Override
+        public boolean dropped()
+        {
+            return ammo instanceof BulletType bullet && bullet.getWeaponType() == EnumWeaponType.BOMB;
+        }
+
+        @Override
         public List<Entity> launch(Vec3 origin, Vec3 direction, boolean throwSound)
         {
             if (!serverThread(shooter) || !shooter.isAlive() || !finite(origin) || !finite(direction) || direction.lengthSqr() < 1.0E-12D)
@@ -463,7 +556,12 @@ public final class ExternalProjectileSupport
                     projectile.setDeltaMovement(velocity);
                 }
                 else
+                {
                     projectile = ShootableFactory.createBullet(shooter.level(), new FiredShot(gun, (BulletType) ammo, shooter, shooter, round, platform), origin, aim);
+                    // A bomb falls away from what carries it, as a driveable drops one.
+                    if (dropped())
+                        projectile.setDeltaMovement(shooter.getDeltaMovement());
+                }
                 if (shooter.level().addFreshEntity(projectile))
                     entities.add(projectile);
             }

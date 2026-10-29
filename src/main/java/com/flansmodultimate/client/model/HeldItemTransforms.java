@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.model;
 
-import com.flansmodultimate.api.FlansItemAnimations;
-import com.flansmodultimate.api.HeldItemTransform;
+import com.flansmodultimate.api.equipment.FlansItemAnimations;
+import com.flansmodultimate.api.equipment.HeldItemTransform;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.mojang.blaze3d.vertex.PoseStack;

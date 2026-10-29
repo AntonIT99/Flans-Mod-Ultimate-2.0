@@ -1,7 +1,8 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.WeaponBallistics;
+import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.distant.DistantRenderRange;
@@ -96,6 +97,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public static final String NBT_SEAT_AIMS = "seat_aims";
     public static final String NBT_WRECK_AGE = "wreck_age";
     public static final String NBT_WRECK_DAMAGE = "wreck_damage";
+    public static final String NBT_WRECK_LANDED = "wreck_landed";
     public static final String NBT_FLAGS = "driveable_flags";
     public static final String NBT_MODE = "driveable_mode";
     public static final String NBT_OWNER = "driveable_owner";
@@ -135,6 +137,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final int FLAG_COUNTERMEASURE_RELOADING = 1 << 7;
     /** Aircraft air brakes are extended. Toggled by the pilot, never automatic. */
     protected static final int FLAG_AIR_BRAKE = 1 << 8;
+    protected static final int FLAG_REPAIR = 1 << 9;
 
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -168,13 +171,17 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
-    /** Ticks since the driveable was wrecked, or -1 while it still works; sent once a second. */
+    /** Ticks since the driveable was wrecked, or -1 while it still works; sent every {@link #WRECK_AGE_SYNC_INTERVAL} ticks. */
     protected static final EntityDataAccessor<Integer> DATA_WRECK_AGE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     /** What the wreck had aboard, packed by {@link WreckLoad#pack()}. */
     protected static final EntityDataAccessor<Integer> DATA_WRECK_LOAD = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
 
     private static final int INPUT_TIMEOUT_TICKS = 12;
     private static final int CHILD_REPAIR_INTERVAL = 20;
+    /** Ticks between the wreck ages the server sends; clients count on by themselves in between. */
+    private static final int WRECK_AGE_SYNC_INTERVAL = 100;
+    /** Degrees a tick a downed aircraft's wreck rolls and pitches towards level once it lies on the ground. */
+    private static final float WRECK_SETTLE_DEGREES = 3F;
     /** Matches the radius the server used when it still broadcast emitter particles. */
     private static final double EMITTER_PARTICLE_RANGE = 128D;
     private static final double MAX_SPAWN_COORDINATE = 29_999_984D;
@@ -308,6 +315,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      * cooldown as before.
      */
     protected final float[] bankReloadTicks = {0F, 0F};
+    /** Whether the shot each bank just fired began a reload, which then sets the wait on its own. */
+    protected final boolean[] bankReloadBegan = {false, false};
     /** Rounds a gun bank's ammunition slot held when it was last restocked, for its HUD readout. */
     protected final int[] bankMagazineCapacity = {0, 0};
     /** The same, per seat gun. */
@@ -345,6 +354,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected int flareDelay;
     @Getter
     protected int ticksFlareUsing;
+    @Getter
+    private int ticksRepairing;
+    private final DriveableRepairs repairs = new DriveableRepairs();
     protected int ticksSinceUsed;
     protected int markerTicks;
     protected int proxyCheckTicker;
@@ -899,7 +911,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void setThrottle(float throttle)
     {
         float reversePower = configType == null ? 1F : configType.getMaxNegativeThrottle();
-        float normalized = DriveableControlPhysics.normalizedThrottle(throttle, reversePower);
+        float normalized = DriveableControlPhysics.normalizedThrottle(getFlag(FLAG_REPAIR) ? 0F : throttle, reversePower);
         if (prediction != null)
             predictedThrottle = normalized;
         else
@@ -1115,9 +1127,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         if (tag.contains(NBT_WRECK_AGE, Tag.TAG_INT))
         {
-            // A wreck saved with the world comes back as one, already lying where it fell.
+            // A wreck saved with the world comes back as one; one saved before it struck the ground still crashes.
             destroyed = true;
-            wreckLanded = true;
+            wreckLanded = !tag.contains(NBT_WRECK_LANDED, Tag.TAG_BYTE) || tag.getBoolean(NBT_WRECK_LANDED);
             wreckTicks = Math.max(0, tag.getInt(NBT_WRECK_AGE));
             wreckLoad = WreckLoad.load(tag);
             wreckDamage = tag.getFloat(NBT_WRECK_DAMAGE);
@@ -1231,6 +1243,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             tag.putInt(NBT_WRECK_AGE, wreckTicks);
             tag.putFloat(NBT_WRECK_DAMAGE, wreckDamage);
+            tag.putBoolean(NBT_WRECK_LANDED, wreckLanded);
             wreckLoad.save(tag);
         }
         if (!sourceStack.isEmpty())
@@ -1445,12 +1458,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (flareDelay > 0)
             --flareDelay;
         updateFlares();
+        tickRepairs();
         refuelFromInventory();
         updateRiderVisibility();
         updateEngineState();
         updateLockOnTargeting();
         absorbExternalImpulses();
         tickDriveable();
+        if (ticksRepairing > 0)
+            setThrottle(0F);
         finishEpicShipSinking();
         if (isRemoved())
             return;
@@ -1772,11 +1788,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             // Charge the shot delay against the cooldown as it stood before the shot:
             // a round that emptied the magazine has already raised the cooldown to
-            // the reload, and adding the delay on top of that would double the wait.
+            // the reload, and adding the delay on top of that would double the wait
+            // or undo a single-round bank's shorter reload.
             float primaryBefore = primaryShootDelay;
+            bankReloadBegan[0] = false;
             if (!fireWeaponBank(false))
                 break;
-            setPrimaryShootDelay(Math.max(primaryShootDelay, ShotCooldown.charge(primaryBefore, getConfiguredShootDelay(false))));
+            if (!bankReloadBegan[0])
+                setPrimaryShootDelay(Math.max(primaryShootDelay, ShotCooldown.charge(primaryBefore, getConfiguredShootDelay(false))));
             if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
                 --primaryBurstRemaining;
             if (primaryMode == EnumFireMode.SEMIAUTO)
@@ -1785,9 +1804,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         while (ShotCooldown.isReady(secondaryShootDelay) && shouldFire(secondaryMode, secondaryDown, secondaryRising, secondaryHeldTicks, secondaryBurstRemaining))
         {
             float secondaryBefore = secondaryShootDelay;
+            bankReloadBegan[1] = false;
             if (!fireWeaponBank(true))
                 break;
-            setSecondaryShootDelay(Math.max(secondaryShootDelay, ShotCooldown.charge(secondaryBefore, getConfiguredShootDelay(true))));
+            if (!bankReloadBegan[1])
+                setSecondaryShootDelay(Math.max(secondaryShootDelay, ShotCooldown.charge(secondaryBefore, getConfiguredShootDelay(true))));
             if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
                 --secondaryBurstRemaining;
             if (secondaryMode == EnumFireMode.SEMIAUTO)
@@ -1834,7 +1855,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean canFireWeaponBank(boolean secondary)
     {
-        if (!epicShipWeaponsAllowed())
+        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         if (configType == null || !configType.isWorksUnderWater() && isUnderWater())
             return false;
@@ -2046,6 +2067,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return configType != null && configType.isCanMountEntity();
     }
 
+    /** Uses the same shaped hull as carrying and dismounting; nearby aircraft alone do not qualify for servicing. */
+    public boolean supportsCarrierService(Entity aircraft)
+    {
+        return canMountEntity() && !destroyed && collisionHelper != null && collisionHelper.supports(aircraft);
+    }
+
     protected void handleInventoryReloadState()
     {
         DriveableData data = initializedData();
@@ -2082,7 +2109,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         ItemStack ammo = selection.stack();
         if (ammo.getItem() == gunBankAmmoItem[index] && ShootableItem.getTotalRounds(ammo) <= gunBankAmmoRounds[index])
             return;
-        beginBankReload(secondary, initializedType().reloadTime(secondary) * loadedReloadTimeMultiplier());
+        beginBankReload(secondary, initializedType().reloadTime(secondary, magazineSize(ammo, initializedType().reloadRounds(secondary))) * loadedReloadTimeMultiplier());
         GunType gunType = selection.gunType();
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
@@ -2150,6 +2177,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         int index = secondary ? 1 : 0;
         bankReloadTicks[index] = Math.max(bankReloadTicks[index], reloadTicks);
+        bankReloadBegan[index] = true;
         if (secondary)
             setSecondaryShootDelay(Math.max(secondaryShootDelay, reloadTicks));
         else
@@ -2383,7 +2411,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (slot < 0)
             return;
 
-        beginBankReload(secondary, type.reloadTime(secondary));
+        beginBankReload(secondary, type.reloadTime(secondary, magazineSize(getWeaponSlot(ordnanceBankFor(type.weaponType(secondary)), slot), type.reloadRounds(secondary))));
 
         String sound = type.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
@@ -2694,7 +2722,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (!magazineSpent(++bankRoundsFired[index], size, fired))
             return;
         bankRoundsFired[index] = 0;
-        beginBankReload(secondary, type.reloadTime(secondary));
+        beginBankReload(secondary, type.reloadTime(secondary, size));
 
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
@@ -3276,7 +3304,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // restock, so a gunner reads 247/300 of the belt they actually have.
         passengerMagazineCapacity[index] = rounds;
         if (gun != null && validGunAmmo(ammo, gun))
-            beginPassengerReload(index, gun);
+            beginPassengerReload(index, gun, magazineSize(ammo, 0));
     }
 
     /** Fires a crewed seat gun for as long as its gunner's trigger and its cadence allow this tick. */
@@ -3296,7 +3324,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             float before = passengerShootDelay[index];
             if (!firePassengerGun(seat, info, gun, index))
                 break;
-            passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
+            // A shot that began a reload already set the wait, which a single-round gun may have shortened.
+            if (passengerRoundsFired[index] != 0)
+                passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
             if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
                 --passengerBurstRemaining[index];
             if (mode == EnumFireMode.SEMIAUTO)
@@ -3331,7 +3361,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
     private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
     {
-        if (!epicShipWeaponsAllowed())
+        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         DriveableData data = initializedData();
         int ammoSlot = info.getGunnerID();
@@ -3378,7 +3408,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /**
      * Counts a round out of a seat gun and makes its gunner wait out the gun's
      * reload once the magazine is spent, exactly as the same gun would in their
-     * hands and never less than the gun's own cadence.
+     * hands; see {@link GunHandlingTiming#reloadWait}.
      */
     private void reloadPassengerGun(int index, GunType gun, ItemStack fired)
     {
@@ -3386,14 +3416,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         if (!magazineSpent(++passengerRoundsFired[index], magazineSize(fired, 0), fired))
             return;
-        beginPassengerReload(index, gun);
+        beginPassengerReload(index, gun, magazineSize(fired, 0));
     }
 
-    /** Makes a seat gun's crew wait out the gun's reload, never less than its own cadence. */
-    private void beginPassengerReload(int index, GunType gun)
+    /** Makes a seat gun's crew wait out the gun's reload; see {@link GunHandlingTiming#reloadWait}. */
+    private void beginPassengerReload(int index, GunType gun, int magazineRounds)
     {
         passengerRoundsFired[index] = 0;
-        float reload = Math.max(gun.getReloadTime(), gun.getShootDelay(null));
+        float reload = GunHandlingTiming.reloadWait(gun.getReloadTime(), gun.getShootDelay(null), magazineRounds);
         passengerShootDelay[index] = Math.max(passengerShootDelay[index], reload);
         passengerReloadTicks[index] = Math.max(passengerReloadTicks[index], reload);
         String reloadSound = gun.getReloadSound(null);
@@ -4407,11 +4437,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     @Nullable
     public WeaponBallistics getDriverWeaponBallistics(boolean secondary)
     {
-        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
         EnumWeaponType weapon = configType == null ? EnumWeaponType.NONE : configType.weaponType(secondary);
-        if (points.isEmpty() || weapon == EnumWeaponType.NONE || driveableData == null)
-            return null;
-        AmmoSelection selection = selectAmmo(points.get(0), weapon, secondary);
+        AmmoSelection selection = selectDriverWeaponAmmo(secondary);
         if (selection == null || !(selection.stack().getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bullet))
             return null;
         double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * bullet.getFallSpeed(), level());
@@ -4421,6 +4448,38 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
         float speed = new FiredShot(resolveFireableGun(selection, secondary), bullet, this, attacker, ShootableItem.getRoundsFired(selection.stack())).getMuzzleVelocity(false);
         return new WeaponBallistics(Math.max(0F, speed), gravity, drag, false);
+    }
+
+    /**
+     * @return how far round where it goes off the round the bank of the driver's trigger would fire now reaches, or
+     *         null with none loaded. Server side.
+     */
+    @Nullable
+    public DetonationRadii getDriverWeaponDetonation(boolean secondary)
+    {
+        AmmoSelection selection = selectDriverWeaponAmmo(secondary);
+        return selection == null ? null : ExternalProjectileSupport.detonationRadii(selection.stack()).orElse(null);
+    }
+
+    /**
+     * @return whether the bank of the driver's trigger fires along the hull rather than with the turret, as a bow
+     *         torpedo tube or a fixed forward gun does; false for a bank the driveable does not have
+     */
+    public boolean isDriverWeaponHullFixed(boolean secondary)
+    {
+        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
+        return !points.isEmpty() && !isTurretMountedPart(points.get(0).getRootPos().getPart());
+    }
+
+    /** @return the round the bank of the driver's trigger would fire now, or null with none loaded. Server side. */
+    @Nullable
+    private AmmoSelection selectDriverWeaponAmmo(boolean secondary)
+    {
+        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
+        EnumWeaponType weapon = configType == null ? EnumWeaponType.NONE : configType.weaponType(secondary);
+        if (points.isEmpty() || weapon == EnumWeaponType.NONE || driveableData == null)
+            return null;
+        return selectAmmo(points.get(0), weapon, secondary);
     }
 
     // Base implementation of a hook; overriding subclasses use the parameter.
@@ -4447,6 +4506,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             toggleAirBrake(player);
         if (DriveableInput.isDown(rising, DriveableInput.TRIM))
             setOrientation(getYaw(), 0F, 0F);
+        if (DriveableInput.isDown(rising, DriveableInput.REPAIR) && seat.isDriverSeat())
+            startRepair();
         if (DriveableInput.isDown(rising, DriveableInput.FLARE))
             deployFlare();
         if (DriveableInput.isDown(rising, DriveableInput.SWITCH_AMMO))
@@ -4731,7 +4792,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     public boolean isPartHitboxActive(@Nullable DriveablePart part)
     {
-        return part != null && (part.getMaxHealth() <= 0F || !part.isDestroyed());
+        return part != null && (part.getMaxHealth() <= 0F || !part.isDestroyed() || isWreckHull(part.getType()));
+    }
+
+    /**
+     * Reports whether the part is the burnt-out hull of a wreck. The core is destroyed when the driveable dies, but its
+     * hull is still there: it stops rounds and takes the blasts that break the wreck up.
+     */
+    public boolean isWreckHull(@Nullable EnumDriveablePart part)
+    {
+        return part == EnumDriveablePart.CORE && isWreck();
     }
 
     /** Damage penalty used by legacy vehicle acceleration and maximum throttle. */
@@ -4799,7 +4869,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
-        if (!level().isClientSide)
+        // A wreck's hull only stops the round: there is nothing left to damage, and a warhead's blast breaks it up.
+        if (!level().isClientSide && !isWreckHull(hit.getPart()))
         {
             float previousHealth = part.getHealth();
             part.damage(resolvedDamage.damage(), bulletType.isSetEntitiesOnFire() && !armourBlocked);
@@ -4916,11 +4987,25 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable DamageSource source)
     {
-        if (!level().isClientSide && wreckTicks >= 0 && source != null && source.is(DamageTypeTags.IS_EXPLOSION))
-            absorbWreckDamage(amount);
-        if (level().isClientSide || destroyed || driveableData == null || amount <= 0F)
+        if (source != null && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && VehicleMeleeDamage.isMelee(source))
+        {
+            amount = VehicleMeleeDamage.againstVehicle(source, amount);
+            if (configType != null && VehicleMeleeDamage.belowThreshold(configType.getMeleeDamageThreshold(), amount))
+                return false;
+        }
+        return damagePartAfterMelee(partType, amount, source);
+    }
+
+    /** Damage already passed the melee threshold and weapon scaling, before shields or vulnerability are applied. */
+    protected boolean damagePartAfterMelee(@Nullable EnumDriveablePart partType, float amount, @Nullable DamageSource source)
+    {
+        if (level().isClientSide || amount <= 0F)
             return false;
         if (source != null && source.getEntity() instanceof Player player && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
+            return false;
+        if (wreckTicks >= 0)
+            return absorbWreckDamage(amount, source);
+        if (destroyed || driveableData == null)
             return false;
         EnumDriveablePart target = partType == null ? EnumDriveablePart.CORE : partType;
         DriveablePart part = driveableData.getPart(target);
@@ -4951,8 +5036,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Picks the driveable up as an item when an eligible player strikes a parked
-     * one, and reports whether it did.
+     * Picks the driveable up as an item when an eligible player strikes an
+     * unoccupied one, and reports whether it did. Survival players require ground
+     * support; creative players can also pick up floating ships and airborne craft.
      *
      * <p>
      * Seats and wheels are separate collision entities that forward damage
@@ -4964,11 +5050,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     protected boolean tryPickupOnAttack(@Nullable DamageSource source)
     {
-        if (source == null || destroyed || hasDriveableOccupant() || !isSupportedByGround())
+        if (source == null || destroyed || hasDriveableOccupant())
             return false;
         if (!(source.getEntity() instanceof Player player) || !canPlayerAccess(player))
             return false;
-        if (!player.getAbilities().instabuild && !FlansMod.teamsManager.isSurvivalCanBreakVehicles())
+        if (!player.getAbilities().instabuild && (!isSupportedByGround() || !FlansMod.teamsManager.isSurvivalCanBreakVehicles()))
             return false;
         if (!level().isClientSide && FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_PICKUP))
             pickupAsItem(player);
@@ -4990,6 +5076,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return resolveExplosionTargets(worldPoint).stream().findFirst();
     }
 
+    /** @return whether a blast can reach the part: an intact part, or the hull of a wreck still standing */
+    private boolean takesBlasts(DriveablePart part)
+    {
+        return part.canReceiveExplosionDamage() || isWreckHull(part.getType()) && part.getBox() != null;
+    }
+
     /** One target per active part, ordered by distance from the detonation. */
     public List<VehicleExplosionTarget> resolveExplosionTargets(@NotNull Vec3 worldPoint)
     {
@@ -5001,7 +5093,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         List<VehicleExplosionTarget> targets = new ArrayList<>();
         for (DriveablePart part : driveableData.getParts().values())
         {
-            if (part == null || !part.canReceiveExplosionDamage() || !canHitPart(part.getType()))
+            if (part == null || !canHitPart(part.getType()) || !takesBlasts(part))
                 continue;
             AABB box = partBoxModelLocal(part.getBox());
             DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(box, hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(), turretPivot,
@@ -5021,6 +5113,46 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return targets;
     }
 
+    private void startRepair()
+    {
+        if (level().isClientSide || destroyed || configType == null || !configType.isCanRepair() || !(this instanceof Vehicle || this instanceof Plane) || ticksRepairing > 0
+            || Math.abs(getThrottle()) > 0.05F)
+            return;
+        if (this instanceof Plane && !onGround() && level().isEmptyBlock(blockPosition().below(5)))
+            return;
+        ticksRepairing = configType.isEpicShip() ? configType.getShipRepairTime() : configType.getRepairTime();
+        setFlag(FLAG_REPAIR, true);
+        setThrottle(0F);
+    }
+
+    private void tickRepairs()
+    {
+        if (driveableData == null || configType == null)
+            return;
+        repairs.tick(this, ticksRepairing > 0 && !configType.isEpicShip(), ticksRepairing > 0 && configType.isEpicShip());
+        if (ticksRepairing > 0)
+        {
+            if (ticksRepairing % 20 == 0 && getControllingEntity() instanceof ServerPlayer player)
+                player.displayClientMessage(Component.translatable("gui.flansmodultimate.driveable.repairing", (ticksRepairing + 19) / 20), true);
+            --ticksRepairing;
+        }
+        setFlag(FLAG_REPAIR, ticksRepairing > 0);
+    }
+
+    /** Operator repair bypasses part dependencies so even destroyed child parts are restored in one pass. */
+    public boolean repairAllParts()
+    {
+        if (level().isClientSide || driveableData == null || destroyed)
+            return false;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            part.repair(part.getMaxHealth());
+            part.extinguish();
+        }
+        destroyedParts.clear();
+        return true;
+    }
+
     public boolean repairFromTool(@NotNull Player player, int amount)
     {
         if (level().isClientSide || amount <= 0 || driveableData == null || !canPlayerAccess(player))
@@ -5031,7 +5163,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             .filter(this::canRepairPart).findFirst().orElseGet(() -> findNearestDamagedPart(origin).orElse(null));
         if (selected == null)
             return false;
-        return repairPart(selected, amount);
+        return repairPart(selected, DriveableRepairRules.toolAmount(driveableData.getPart(selected).getMaxHealth(), amount));
     }
 
     /** Repairs the damaged part nearest a point, as a repair tool used from there would, for repairers that are no players. */
@@ -5039,7 +5171,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (level().isClientSide || amount <= 0 || driveableData == null || destroyed)
             return false;
-        return findNearestDamagedPart(origin).map(part -> repairPart(part, amount)).orElse(false);
+        return findNearestDamagedPart(origin).map(part -> repairPart(part, DriveableRepairRules.toolAmount(driveableData.getPart(part).getMaxHealth(), amount))).orElse(false);
     }
 
     /** The share of its hit points the driveable has left over every part that has any, or empty before its data is known. */
@@ -5605,7 +5737,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             passenger.hurt(level().damageSources().generic(), Float.MAX_VALUE);
         }
         // Read before the cargo is dropped: what was aboard decides how it burns and whether it cooks off.
-        wreckLoad = WreckLoad.of(countRoundsAboard(), fuelShare());
+        wreckLoad = WreckLoad.of(chargesAboard(), fuelShare());
         if (!suppressDrops)
             dropContents();
         if (lastAtkEntity instanceof ServerPlayer attacker)
@@ -5693,18 +5825,24 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             announcedLoad = load;
     }
 
-    /** @return rounds of ammunition aboard: shells, bullets, missiles and bombs in the cargo and the weapon slots */
-    private int countRoundsAboard()
+    /**
+     * @return the ammunition aboard, in the cargo and the weapon slots, as explosive rounds' worth: every shell, missile
+     *         and bomb counts in full, and every round in a magazine or belt without a charge counts for a little
+     */
+    private float chargesAboard()
     {
         if (driveableData == null)
-            return 0;
-        int rounds = 0;
+            return 0F;
+        float charges = 0F;
         for (ItemStack stack : driveableData.getInventory())
         {
-            if (!stack.isEmpty() && stack.getItem() instanceof ShootableItem)
-                rounds += stack.getCount();
+            if (stack.isEmpty() || !(stack.getItem() instanceof ShootableItem item) || item.getConfigType() == null)
+                continue;
+            ShootableType type = item.getConfigType();
+            boolean explosive = type.getExplosiveMass() > 0F || type.getExplosionRadius() > 0F;
+            charges += WreckLoad.charges(ShootableItem.getTotalRounds(stack), explosive);
         }
-        return rounds;
+        return charges;
     }
 
     /** @return the share of the tank still full, where a type that carries no tank always has something to burn */
@@ -5716,26 +5854,31 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     /**
      * Counts a blast against the wreck. A wreck takes as much explosive damage as its hull had hit points before it is
-     * blown apart, which clears a blocked road. Server side.
+     * blown apart, which clears a blocked road. Only explosives break a wreck up; nothing else hurts it any more.
+     * Server side.
+     *
+     * @return whether the blast counted against the wreck
      */
-    private void absorbWreckDamage(float amount)
+    private boolean absorbWreckDamage(float amount, @Nullable DamageSource source)
     {
-        if (isRemoved() || !Float.isFinite(amount) || amount <= 0F)
-            return;
+        if (source == null || !source.is(DamageTypeTags.IS_EXPLOSION) || isRemoved() || !Float.isFinite(amount) || amount <= 0F)
+            return false;
         wreckDamage += amount;
         DriveablePart core = driveableData == null ? null : driveableData.getPart(EnumDriveablePart.CORE);
         float integrity = core == null || core.getMaxHealth() <= 0F ? 100F : core.getMaxHealth();
-        if (wreckDamage < integrity)
-            return;
-        PacketHandler.sendToTracking(new PacketDriveableDestroyed(getId(), true, wreckLoad.pack()), this);
-        suppressDrops = true;
-        discard();
+        if (wreckDamage >= integrity)
+        {
+            PacketHandler.sendToTracking(new PacketDriveableDestroyed(getId(), true, wreckLoad.pack()), this);
+            suppressDrops = true;
+            discard();
+        }
+        return true;
     }
 
     private void receiveWreckAge(int age)
     {
         boolean news = clientWreckAge < 0 && age >= 0 && tickCount > 2;
-        // The client counts on by itself between the updates sent once a second, so only a real gap is corrected.
+        // The client counts on by itself between the server's occasional updates, so only a real gap is corrected.
         if (age < 0 || clientWreckAge < 0 || Math.abs(clientWreckAge - age) > 40)
             clientWreckAge = age;
         if (news)
@@ -5753,7 +5896,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void tickWreck()
     {
         ++wreckTicks;
-        if (wreckTicks % 20 == 0)
+        if (wreckTicks % WRECK_AGE_SYNC_INTERVAL == 0)
             entityData.set(DATA_WRECK_AGE, wreckTicks);
         int lifetime = ModCommonConfig.driveableWreckLifetimeTicks();
         // A wreck that has burnt out, or a hull lying on the sea bed, is gone.
@@ -5787,9 +5930,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return new Vec3(velocity.x * 0.9D, Math.max(velocity.y * 0.9D - 0.006D, -0.05D), velocity.z * 0.9D);
     }
 
-    /** On land a wreck falls under its own weight and drags to a stop. */
+    /**
+     * On land a wreck falls under its own weight and drags to a stop. A downed aircraft comes to rest on its belly
+     * rather than stay in the dive or bank it died in.
+     */
     private Vec3 settleWreck(Vec3 velocity)
     {
+        if (onGround() && getDamageClass().flies() && (getPitch() != 0F || getRoll() != 0F))
+            setOrientation(getYaw(), Mth.approachDegrees(getPitch(), 0F, WRECK_SETTLE_DEGREES), Mth.approachDegrees(getRoll(), 0F, WRECK_SETTLE_DEGREES));
         double drag = ModPhysics.dragRetention(onGround() ? 0.5D : 0.98D, level());
         return new Vec3(velocity.x * drag, velocity.y - 0.08D * ModCommonConfig.gravityFactor(level()), velocity.z * drag);
     }
@@ -5899,18 +6047,24 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Model-local pivot that turret-mounted part boxes rotate around, the same
-     * one {@link #turretPointToLocal} turns shoot points round.
+     * Model-local pivot that turret-mounted part boxes rotate around.
+     *
+     * <p>
+     * The pivot is authored in the same type-file geometry coordinates as the
+     * boxes it turns, so it takes the part-box frame's own conversion
+     * ({@link #partFrameToModelLocal}) rather than the movement basis: like the
+     * boxes, an aircraft's pivot takes no half-turn.
+     * </p>
      */
     public Vec3 getCollisionTurretPivot()
     {
-        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOrigin());
+        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : partFrameToModelLocal(LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin()));
     }
 
-    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret. */
+    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret; see {@link #getCollisionTurretPivot}. */
     public Vec3 getCollisionTurretOffset()
     {
-        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOriginOffset());
+        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : partFrameToModelLocal(LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset()));
     }
 
     /**
@@ -6663,8 +6817,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 continue;
             if (!legacyKnockback && isHeavyContactBody(entity))
                 continue;
-            if (squash && entity instanceof LivingEntity && horizontalSpeed > 0.12D)
-                entity.hurt(level().damageSources().flyIntoWall(), (float) Math.min(40D, 2D + horizontalSpeed * 12D));
+            if (squash && entity instanceof LivingEntity && horizontalSpeed > EntityTypePropertySupport.SQUASH_SPEED)
+                entity.hurt(level().damageSources().flyIntoWall(), (float) EntityTypePropertySupport.squashDamage(horizontalSpeed));
             Vec3 push = entity.position().subtract(position());
             if (push.horizontalDistanceSqr() < 1.0E-6D)
                 push = getForwardVector();

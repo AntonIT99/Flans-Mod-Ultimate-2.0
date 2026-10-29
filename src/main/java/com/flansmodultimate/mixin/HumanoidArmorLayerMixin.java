@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.client.model.EquipmentAnimationSupport;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.mojang.blaze3d.vertex.PoseStack;

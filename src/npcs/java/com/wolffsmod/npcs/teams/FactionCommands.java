@@ -1,8 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsRound;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -34,7 +34,8 @@ import java.util.function.Consumer;
 
 /**
  * {@code /teams faction}: sets up the Custom NPCs factions managed for battles outside Teams rounds, the Flan teams that
- * serve them as branches and what each branch fields, which factions are at war, and lets players join and leave them.
+ * serve them as branches and what each branch fields; which Custom NPCs factions are at war, allied or neutral; and who
+ * may join a Custom NPCs faction, managed or not, letting players join and leave them.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FactionCommands
@@ -48,6 +49,8 @@ public final class FactionCommands
     private static final String ROLES = "roles";
     private static final String VALUE = "value";
     private static final String PLAYER = "player";
+    private static final String POINTS = "points";
+    private static final String MINUTES = "minutes";
     private static final String KEY = "faction.";
     private static final String AUTO = "auto";
     private static final String THEATRES = "theatres";
@@ -57,6 +60,7 @@ public final class FactionCommands
     private static final SimpleCommandExceptionType NOT_MANAGED = new SimpleCommandExceptionType(text("not_managed"));
     private static final SimpleCommandExceptionType ROUND_FACTION = new SimpleCommandExceptionType(text("round_faction"));
     private static final SimpleCommandExceptionType SAME_FACTION = new SimpleCommandExceptionType(text("same"));
+    private static final SimpleCommandExceptionType NOT_MEMBER = new SimpleCommandExceptionType(text("not_member"));
     private static final SimpleCommandExceptionType BAD_COLOUR = new SimpleCommandExceptionType(text("bad_colour"));
     private static final SimpleCommandExceptionType NO_TEAM = new SimpleCommandExceptionType(text("no_team"));
     private static final SimpleCommandExceptionType NO_BRANCH = new SimpleCommandExceptionType(text("no_branch"));
@@ -69,6 +73,11 @@ public final class FactionCommands
         .suggest(BattleFactions.get(context.getSource().getServer()).all().stream().map(managed -> nameOf(managed.getId())).filter(Objects::nonNull).map(FactionCommands::quoted).toList(), builder);
     private static final SuggestionProvider<CommandSourceStack> ANY_FACTION = (context, builder) -> SharedSuggestionProvider
         .suggest(FactionController.instance.factions.values().stream().filter(faction -> !BotFactions.isRoundFaction(faction.name)).map(faction -> quoted(faction.name)).toList(), builder);
+    /** The factions a player might join by themselves: those neither hidden nor taking only players they invite. */
+    private static final SuggestionProvider<CommandSourceStack> JOINABLE = (context,
+        builder) -> SharedSuggestionProvider.suggest(FactionController.instance.factions.values().stream()
+            .filter(faction -> !BotFactions.isRoundFaction(faction.name) && !faction.hideFaction && FactionJoining.of(faction).wolffsmodnpcsJoinRule() != FactionJoining.Rule.INVITE)
+            .map(faction -> quoted(faction.name)).toList(), builder);
     private static final SuggestionProvider<CommandSourceStack> TEAMS = (context, builder) -> SharedSuggestionProvider.suggest(FlansModApi.getTeams().stream().map(ITeam::getShortName).toList(),
         builder);
     private static final SuggestionProvider<CommandSourceStack> BRANCHES = (context, builder) -> SharedSuggestionProvider
@@ -102,8 +111,8 @@ public final class FactionCommands
     {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(FACTION);
         root.then(Commands.literal("list").executes(FactionCommands::list));
-        root.then(Commands.literal("info").then(managedArgument().executes(FactionCommands::info)));
-        root.then(Commands.literal("join").then(managedArgument().executes(FactionCommands::join)));
+        root.then(Commands.literal("info").then(anyArgument().executes(FactionCommands::info)));
+        root.then(Commands.literal("join").then(Commands.argument(FACTION, StringArgumentType.string()).suggests(JOINABLE).executes(FactionCommands::join)));
         root.then(Commands.literal("leave").executes(FactionCommands::leave));
         root.then(Commands.literal("create").requires(source -> source.hasPermission(2))
             .then(Commands.argument(NAME, StringArgumentType.string()).suggests(ANY_FACTION).executes(context -> create(context, null))
@@ -111,16 +120,20 @@ public final class FactionCommands
                 .then(Commands.argument(COLOUR, StringArgumentType.word()).executes(context -> create(context, colour(context))))));
         root.then(Commands.literal("remove").requires(source -> source.hasPermission(2)).then(managedArgument().executes(FactionCommands::remove)));
         root.then(Commands.literal("hostile").requires(source -> source.hasPermission(2))
-            .then(managedArgument().then(Commands.argument(OTHER, StringArgumentType.string()).suggests(ANY_FACTION).executes(context -> war(context, true)))));
+            .then(anyArgument().then(Commands.argument(OTHER, StringArgumentType.string()).suggests(ANY_FACTION).executes(context -> war(context, true)))));
         root.then(Commands.literal("peace").requires(source -> source.hasPermission(2))
-            .then(managedArgument().then(Commands.argument(OTHER, StringArgumentType.string()).suggests(ANY_FACTION).executes(context -> war(context, false)))));
+            .then(anyArgument().then(Commands.argument(OTHER, StringArgumentType.string()).suggests(ANY_FACTION).executes(context -> war(context, false)))));
+        for (FactionRelations.Relation relation : List.of(FactionRelations.Relation.ALLIED, FactionRelations.Relation.NEUTRAL))
+            root.then(Commands.literal(BotCommands.lower(relation)).requires(source -> source.hasPermission(2))
+                .then(anyArgument().then(Commands.argument(OTHER, StringArgumentType.string()).suggests(ANY_FACTION).executes(context -> relate(context, relation)))));
+        root.then(Commands.literal("joining").requires(source -> source.hasPermission(2)).then(joining()));
         LiteralArgumentBuilder<CommandSourceStack> outsiders = Commands.literal("outsiders").requires(source -> source.hasPermission(2));
         RequiredArgumentBuilder<CommandSourceStack, String> outsidersOf = managedArgument();
         for (BattleFactions.Outsiders rule : BattleFactions.Outsiders.values())
             outsidersOf.then(Commands.literal(BotCommands.lower(rule)).executes(context -> outsiders(context, rule)));
         root.then(outsiders.then(outsidersOf));
         root.then(Commands.literal("member").requires(source -> source.hasPermission(2)).then(Commands.argument(PLAYER, EntityArgument.player())
-            .then(Commands.literal(BotCommands.NONE).executes(context -> member(context, false))).then(managedArgument().executes(context -> member(context, true)))));
+            .then(Commands.literal(BotCommands.NONE).executes(context -> member(context, false))).then(anyArgument().executes(context -> member(context, true)))));
         root.then(Commands.literal("branch").requires(source -> source.hasPermission(2)).then(branches()));
         dispatcher.register(Commands.literal("teams").then(root));
     }
@@ -128,6 +141,27 @@ public final class FactionCommands
     private static RequiredArgumentBuilder<CommandSourceStack, String> managedArgument()
     {
         return Commands.argument(FACTION, StringArgumentType.string()).suggests(MANAGED);
+    }
+
+    private static RequiredArgumentBuilder<CommandSourceStack, String> anyArgument()
+    {
+        return Commands.argument(FACTION, StringArgumentType.string()).suggests(ANY_FACTION);
+    }
+
+    /** {@code joining <faction> rule|penalty|cooldown}: who may join a faction by themselves and what leaving it costs. */
+    private static RequiredArgumentBuilder<CommandSourceStack, String> joining()
+    {
+        RequiredArgumentBuilder<CommandSourceStack, String> faction = anyArgument();
+        LiteralArgumentBuilder<CommandSourceStack> rule = Commands.literal("rule");
+        for (FactionJoining.Rule value : FactionJoining.Rule.values())
+            rule.then(
+                Commands.literal(BotCommands.lower(value)).executes(context -> editJoining(context, joining -> joining.wolffsmodnpcsSetJoinRule(value), "joining_rule", BotCommands.lower(value))));
+        faction.then(rule);
+        faction.then(Commands.literal("penalty").then(Commands.argument(POINTS, IntegerArgumentType.integer(0)).executes(context -> editJoining(context,
+            joining -> joining.wolffsmodnpcsSetLeavePenalty(IntegerArgumentType.getInteger(context, POINTS)), "joining_penalty", IntegerArgumentType.getInteger(context, POINTS)))));
+        faction.then(Commands.literal("cooldown").then(Commands.argument(MINUTES, IntegerArgumentType.integer(0)).executes(context -> editJoining(context,
+            joining -> joining.wolffsmodnpcsSetRejoinCooldown(IntegerArgumentType.getInteger(context, MINUTES)), "joining_cooldown", IntegerArgumentType.getInteger(context, MINUTES)))));
+        return faction;
     }
 
     private static RequiredArgumentBuilder<CommandSourceStack, String> branches()
@@ -167,13 +201,19 @@ public final class FactionCommands
     @SuppressWarnings("SameReturnValue")
     private static int info(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
-        BattleFactions data = BattleFactions.get(context.getSource().getServer());
-        BattleFactions.Managed managed = managed(context);
-        Faction faction = FactionController.instance.getFaction(managed.getId());
-        List<String> enemies = faction.attackFactions.stream().map(FactionCommands::nameOf).filter(Objects::nonNull).toList();
-        context.getSource().sendSuccess(() -> text("info", faction.name, String.format(Locale.ROOT, "%06X", faction.color & 0xFFFFFF), BotCommands.lower(managed.getOutsiders()),
-            data.memberCount(managed.getId()), enemies.isEmpty() ? "-" : String.join(", ", enemies)), false);
-        for (BattleFactions.Branch branch : managed.getBranches())
+        Faction faction = anyFaction(context);
+        Optional<BattleFactions.Managed> found = BattleFactions.get(context.getSource().getServer()).managed(faction.id);
+        BattleFactions.Outsiders outsiders = found.map(BattleFactions.Managed::getOutsiders).orElse(BattleFactions.Outsiders.POINTS);
+        long members = FactionMembers.get(context.getSource().getServer()).memberCount(faction.id);
+        String enemies = names(faction.attackFactions);
+        context.getSource().sendSuccess(() -> text("info", faction.name, String.format(Locale.ROOT, "%06X", faction.color & 0xFFFFFF), BotCommands.lower(outsiders), members, enemies), false);
+        FactionJoining joining = FactionJoining.of(faction);
+        String allies = names(FactionAllies.of(faction).stream().filter(ally -> FactionRelations.allied(faction, FactionController.instance.getFaction(ally))).toList());
+        context.getSource()
+            .sendSuccess(() -> text("info_joining", BotCommands.lower(joining.wolffsmodnpcsJoinRule()), joining.wolffsmodnpcsLeavePenalty(), joining.wolffsmodnpcsRejoinCooldown(), allies), false);
+        if (found.isEmpty())
+            return 1;
+        for (BattleFactions.Branch branch : found.get().getBranches())
         {
             String roles = branch.getRoles().isEmpty() ? AUTO : String.join(" ", branch.getRoles().stream().map(BotCommands::lower).toList());
             BotSettings.TeamForce force = branch.getForce();
@@ -198,8 +238,12 @@ public final class FactionCommands
             faction = (Faction) controller.create(name, colour == null ? DEFAULT_COLOUR : colour);
         else if (colour != null)
             faction.color = colour;
+        BattleFactions battleFactions = BattleFactions.get(context.getSource().getServer());
+        // A faction set up for battles takes volunteers; one managed already keeps the rule its operators chose.
+        if (battleFactions.managed(faction.id).isEmpty())
+            FactionJoining.of(faction).wolffsmodnpcsSetJoinRule(FactionJoining.Rule.OPEN);
         controller.saveFaction(faction);
-        BattleFactions.get(context.getSource().getServer()).manage(faction.id);
+        battleFactions.manage(faction.id);
         String created = faction.name;
         context.getSource().sendSuccess(() -> text(adopted ? "adopted" : "created", created), true);
         return 1;
@@ -237,12 +281,8 @@ public final class FactionCommands
     @SuppressWarnings("SameReturnValue")
     private static int war(CommandContext<CommandSourceStack> context, boolean hostile) throws CommandSyntaxException
     {
-        Faction faction = FactionController.instance.getFaction(managed(context).getId());
-        Faction other = faction(StringArgumentType.getString(context, OTHER));
-        if (BotFactions.isRoundFaction(other.name))
-            throw ROUND_FACTION.create();
-        if (faction.id == other.id)
-            throw SAME_FACTION.create();
+        Faction faction = anyFaction(context);
+        Faction other = other(context, faction);
         if (hostile)
         {
             faction.attackFactions.add(other.id);
@@ -259,6 +299,29 @@ public final class FactionCommands
         return 1;
     }
 
+    /** Makes two factions allies, which ends a war between them, or neutral: neither at war nor allied. */
+    // A command reports how many relations it changed, which is always one here.
+    @SuppressWarnings("SameReturnValue")
+    private static int relate(CommandContext<CommandSourceStack> context, FactionRelations.Relation relation) throws CommandSyntaxException
+    {
+        Faction faction = anyFaction(context);
+        Faction other = other(context, faction);
+        FactionRelations.set(List.of(faction, other), relation);
+        context.getSource().sendSuccess(() -> text(BotCommands.lower(relation), faction.name, other.name), true);
+        return 1;
+    }
+
+    // A command reports how many settings it changed, which is always one here.
+    @SuppressWarnings("SameReturnValue")
+    private static int editJoining(CommandContext<CommandSourceStack> context, Consumer<FactionJoining> change, String key, Object value) throws CommandSyntaxException
+    {
+        Faction faction = anyFaction(context);
+        change.accept(FactionJoining.of(faction));
+        FactionController.instance.saveFaction(faction);
+        context.getSource().sendSuccess(() -> text(key, faction.name, value), true);
+        return 1;
+    }
+
     // A command reports how many settings it changed, which is always one here.
     @SuppressWarnings("SameReturnValue")
     private static int outsiders(CommandContext<CommandSourceStack> context, BattleFactions.Outsiders rule) throws CommandSyntaxException
@@ -272,14 +335,27 @@ public final class FactionCommands
 
     // --- Members ---
 
-    // A command reports how many players it moved, which is always one here.
-    @SuppressWarnings("SameReturnValue")
+    /** Joins a faction by the player's own choice, as its joining rules allow; refused, it reports why and moves nobody. */
     private static int join(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        BattleFactions.Managed managed = managed(context);
-        BattleFactions.get(context.getSource().getServer()).setMember(player.getUUID(), managed.getId());
-        context.getSource().sendSuccess(() -> text("joined", nameOf(managed.getId())), false);
+        Faction faction = anyFaction(context);
+        FactionMembers members = FactionMembers.get(context.getSource().getServer());
+        if (members.factionOf(player.getUUID()).filter(id -> id == faction.id).isPresent())
+        {
+            context.getSource().sendFailure(text("already", faction.name));
+            return 0;
+        }
+        Optional<FactionJoining.Refusal> refusal = FactionMembers.refusal(player, faction);
+        if (refusal.isPresent())
+        {
+            context.getSource().sendFailure(refused(refusal.get(), player, faction));
+            return 0;
+        }
+        FactionMembers.Joined joined = FactionMembers.join(player, faction);
+        Component message = joined.left().map(left -> text(joined.penalty() > 0 ? "switched_penalty" : "switched", left.name, faction.name, joined.penalty()))
+            .orElseGet(() -> text("joined", faction.name));
+        context.getSource().sendSuccess(() -> message, false);
         return 1;
     }
 
@@ -288,18 +364,29 @@ public final class FactionCommands
     private static int leave(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        BattleFactions.get(context.getSource().getServer()).setMember(player.getUUID(), null);
-        context.getSource().sendSuccess(() -> text("left"), false);
+        Faction left = FactionMembers.leave(player).orElseThrow(NOT_MEMBER::create);
+        int penalty = FactionMembers.leavePenalty(left);
+        context.getSource().sendSuccess(() -> penalty > 0 ? text("left_penalty", left.name, penalty) : text("left", left.name), false);
         return 1;
     }
 
+    private static Component refused(FactionJoining.Refusal refusal, ServerPlayer player, Faction faction)
+    {
+        if (refusal != FactionJoining.Refusal.COOLDOWN)
+            return text("refused." + BotCommands.lower(refusal), faction.name);
+        long since = FactionMembers.get(player.server).ticksSinceLeft(player.getUUID(), faction.id, player.server.overworld().getGameTime()).orElse(0);
+        long left = FactionJoining.of(faction).wolffsmodnpcsRejoinCooldown() * FactionJoining.TICKS_PER_MINUTE - since;
+        return text("refused.cooldown", faction.name, Math.max(1, (left + FactionJoining.TICKS_PER_MINUTE - 1) / FactionJoining.TICKS_PER_MINUTE));
+    }
+
+    /** Makes a player a member of a faction, or of none, whatever its joining rules and without a leave penalty: for operators and recruiters' dialogs. */
     // A command reports how many players it moved, which is always one here.
     @SuppressWarnings("SameReturnValue")
     private static int member(CommandContext<CommandSourceStack> context, boolean joins) throws CommandSyntaxException
     {
         ServerPlayer player = EntityArgument.getPlayer(context, PLAYER);
-        Integer faction = joins ? managed(context).getId() : null;
-        BattleFactions.get(context.getSource().getServer()).setMember(player.getUUID(), faction);
+        Integer faction = joins ? anyFaction(context).id : null;
+        FactionMembers.get(context.getSource().getServer()).setMember(player.getUUID(), faction);
         Component message = faction == null ? text("member_none", player.getDisplayName()) : text("member", player.getDisplayName(), nameOf(faction));
         context.getSource().sendSuccess(() -> message, true);
         return 1;
@@ -399,6 +486,33 @@ public final class FactionCommands
         if (faction == null)
             throw NO_FACTION.create();
         return faction;
+    }
+
+    /** The faction the command names, managed or not, but none of Teams rounds. */
+    private static Faction anyFaction(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        Faction faction = faction(StringArgumentType.getString(context, FACTION));
+        if (BotFactions.isRoundFaction(faction.name))
+            throw ROUND_FACTION.create();
+        return faction;
+    }
+
+    /** The other faction of a relation the command names: none of Teams rounds, and not the first one. */
+    private static Faction other(CommandContext<CommandSourceStack> context, Faction faction) throws CommandSyntaxException
+    {
+        Faction other = faction(StringArgumentType.getString(context, OTHER));
+        if (BotFactions.isRoundFaction(other.name))
+            throw ROUND_FACTION.create();
+        if (faction.id == other.id)
+            throw SAME_FACTION.create();
+        return other;
+    }
+
+    /** The names of factions, or a dash for none. */
+    private static String names(Collection<Integer> ids)
+    {
+        List<String> names = ids.stream().map(FactionCommands::nameOf).filter(Objects::nonNull).toList();
+        return names.isEmpty() ? "-" : String.join(", ", names);
     }
 
     @Nullable

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiPredicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,12 +12,34 @@ class FactionStanceTest
     private static final int GERMANY = 1;
     private static final int BRITAIN = 2;
     private static final int ITALY = 3;
-    /** Germany and Britain are at war, as declared from Germany's side only; Italy is at peace with both. */
-    private static final BiPredicate<Integer, Integer> WAR = (faction, other) -> faction == GERMANY && other == BRITAIN;
+    private static final int FRANCE = 4;
+    /**
+     * Germany and Britain are at war, as declared from Germany's side only; Germany and Italy are allied; France is at
+     * peace with everyone.
+     */
+    private static final FactionStance.Relations RELATIONS = new FactionStance.Relations()
+    {
+        @Override
+        public boolean attacks(int faction, int other)
+        {
+            return faction == GERMANY && other == BRITAIN;
+        }
+
+        @Override
+        public boolean allied(int faction, int other)
+        {
+            return Set.of(faction, other).equals(Set.of(GERMANY, ITALY));
+        }
+    };
 
     private static Optional<BotFactions.Stance> stance(int faction, Integer playerFaction)
     {
-        return FactionStance.resolve(false, faction, playerFaction, WAR, BattleFactions.Outsiders.NEUTRAL, false);
+        return stance(faction, new FactionStance.Standing(playerFaction, false, false));
+    }
+
+    private static Optional<BotFactions.Stance> stance(int faction, FactionStance.Standing player)
+    {
+        return FactionStance.resolve(false, faction, player, RELATIONS, BattleFactions.Outsiders.POINTS);
     }
 
     @Test
@@ -35,29 +56,45 @@ class FactionStanceTest
     }
 
     @Test
-    void membersOfAFactionAtPeaceAreFriends()
+    void membersOfAnAlliedFactionAreFriends()
     {
-        for (int faction : Set.of(GERMANY, BRITAIN))
-            assertEquals(Optional.of(BotFactions.Stance.FRIENDLY), stance(faction, ITALY));
+        assertEquals(Optional.of(BotFactions.Stance.FRIENDLY), stance(GERMANY, ITALY));
+        assertEquals(Optional.of(BotFactions.Stance.FRIENDLY), stance(ITALY, GERMANY));
     }
 
     @Test
-    void outsidersAreNeutralOrLeftToTheirFactionPoints()
+    void membersOfAFactionMerelyAtPeaceAreLeftToTheirFactionPoints()
     {
-        assertEquals(Optional.of(BotFactions.Stance.NEUTRAL), stance(GERMANY, null));
-        assertEquals(Optional.empty(), FactionStance.resolve(false, GERMANY, null, WAR, BattleFactions.Outsiders.POINTS, false));
+        for (int faction : Set.of(GERMANY, BRITAIN, ITALY))
+            assertEquals(Optional.empty(), stance(faction, FRANCE));
+    }
+
+    @Test
+    void aFactionThatHatesAPlayerByPointsIsHostileWhateverTheirFaction()
+    {
+        for (int playerFaction : Set.of(GERMANY, ITALY, FRANCE))
+            assertEquals(Optional.of(BotFactions.Stance.HOSTILE), stance(GERMANY, new FactionStance.Standing(playerFaction, true, false)));
+    }
+
+    @Test
+    void outsidersAreNeutralOrLeftToTheirFactionPointsEvenWithAGrudge()
+    {
+        FactionStance.Standing outsider = new FactionStance.Standing(null, true, false);
+        assertEquals(Optional.of(BotFactions.Stance.NEUTRAL), FactionStance.resolve(false, GERMANY, outsider, RELATIONS, BattleFactions.Outsiders.NEUTRAL));
+        assertEquals(Optional.empty(), FactionStance.resolve(false, GERMANY, outsider, RELATIONS, BattleFactions.Outsiders.POINTS));
     }
 
     @Test
     void factionsAtRestAreNeutralToEveryone()
     {
         for (Integer player : new Integer[]{GERMANY, BRITAIN, ITALY, null})
-            assertEquals(Optional.of(BotFactions.Stance.NEUTRAL), FactionStance.resolve(true, GERMANY, player, WAR, BattleFactions.Outsiders.POINTS, false));
+            assertEquals(Optional.of(BotFactions.Stance.NEUTRAL), FactionStance.resolve(true, GERMANY, new FactionStance.Standing(player, true, false), RELATIONS, BattleFactions.Outsiders.POINTS));
     }
 
     @Test
     void noFactionAttacksAPlayerInCreativeMode()
     {
-        assertEquals(Optional.of(BotFactions.Stance.NEUTRAL), FactionStance.resolve(false, GERMANY, BRITAIN, WAR, BattleFactions.Outsiders.NEUTRAL, true));
+        assertEquals(Optional.of(BotFactions.Stance.NEUTRAL), stance(GERMANY, new FactionStance.Standing(BRITAIN, false, true)));
+        assertEquals(Optional.of(BotFactions.Stance.NEUTRAL), stance(GERMANY, new FactionStance.Standing(GERMANY, true, true)));
     }
 }

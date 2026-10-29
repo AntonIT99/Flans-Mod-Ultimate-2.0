@@ -33,7 +33,7 @@ ReloadTime 90
 LoadIntoGun 14
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 CanShootUnderwater False
 RoundsPerMin 300.0

@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.soldier;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.FlansEquipment;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcAmmunition;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout.Kind;

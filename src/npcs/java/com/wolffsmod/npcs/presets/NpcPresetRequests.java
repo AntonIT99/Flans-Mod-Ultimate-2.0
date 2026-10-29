@@ -9,6 +9,7 @@ import noppes.npcs.CustomNpcsPermissions;
 import noppes.npcs.NoppesUtilServer;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -18,7 +19,10 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcPresetRequests
 {
-    private static final Map<EntityNPCInterface, Map<NpcPresetSetting, Integer>> UNDO = new WeakHashMap<>();
+    private static final Map<EntityNPCInterface, Undo> UNDO = new WeakHashMap<>();
+
+    private record Undo(Map<NpcPresetSetting, Integer> settings, CompoundTag lines)
+    {}
 
     public static boolean canUndo(EntityNPCInterface npc)
     {
@@ -36,12 +40,13 @@ public final class NpcPresetRequests
 
     /**
      * Gives the NPC the player is editing every setting of the preset, then sends them the settings as they now are. The
-     * player needs the wand and the permissions Custom NPCs asks for to change an NPC's AI and statistics, since a preset
-     * sets both.
+     * player needs the wand and the permissions Custom NPCs asks for to change an NPC's AI and statistics, plus advanced
+     * settings when spoken lines change.
      */
     public static void apply(ServerPlayer player, int entityId, NpcPreset preset)
     {
-        Optional<EntityNPCInterface> npc = permitted(player, entityId);
+        Optional<EntityNPCInterface> npc = permitted(player, entityId)
+            .filter(entity -> !preset.clearsLines() || NpcPresetLines.isEmpty(entity) || CustomNpcsPermissions.hasPermission(player, CustomNpcsPermissions.NPC_ADVANCED));
         if (npc.isEmpty())
         {
             player.sendSystemMessage(Component.translatable("wolffsmodnpcs.preset.denied"));
@@ -60,17 +65,19 @@ public final class NpcPresetRequests
             for (NpcPreset.Target target : preset.getTargets())
                 if (target.setting().get(npc) != preset.value(npc, target))
                     previous.put(target.setting(), target.setting().get(npc));
+            CompoundTag lines = preset.clearsLines() ? NpcPresetLines.capture(npc) : new CompoundTag();
             preset.apply(npc);
-            UNDO.put(npc, previous);
+            UNDO.put(npc, new Undo(previous, lines));
         }
     }
 
     static void undo(EntityNPCInterface npc)
     {
-        Map<NpcPresetSetting, Integer> previous = UNDO.remove(npc);
+        Undo previous = UNDO.remove(npc);
         if (previous != null)
         {
-            previous.forEach((setting, value) -> setting.set(npc, value));
+            previous.settings().forEach((setting, value) -> setting.set(npc, value));
+            NpcPresetLines.restore(npc, previous.lines());
             npc.updateAI = true;
             npc.updateClient = true;
         }
@@ -79,7 +86,8 @@ public final class NpcPresetRequests
     /** Restores only settings changed by the last application, with the same authorization as Apply. */
     public static void undo(ServerPlayer player, int entityId)
     {
-        Optional<EntityNPCInterface> npc = permitted(player, entityId);
+        Optional<EntityNPCInterface> npc = permitted(player, entityId)
+            .filter(entity -> !canUndo(entity) || UNDO.get(entity).lines().isEmpty() || CustomNpcsPermissions.hasPermission(player, CustomNpcsPermissions.NPC_ADVANCED));
         if (npc.isEmpty())
         {
             player.sendSystemMessage(Component.translatable("wolffsmodnpcs.preset.denied"));

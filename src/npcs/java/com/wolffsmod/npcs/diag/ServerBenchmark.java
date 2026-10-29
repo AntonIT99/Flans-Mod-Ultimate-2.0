@@ -28,8 +28,13 @@ public final class ServerBenchmark
     private static final double NANOS_PER_MILLI = 1.0E6D;
     private static final String PER_TICK = "ms per tick";
 
+    /** Finished runs kept for the Server page to compare. */
+    private static final int KEPT_RESULTS = 2;
+
     @Nullable
     private static Run run;
+    /** The latest finished runs since the server started, oldest first. Server thread. */
+    private static final Deque<BenchmarkResult> results = new ArrayDeque<>();
 
     /** One benchmark in progress. */
     private static final class Run
@@ -149,6 +154,7 @@ public final class ServerBenchmark
         if (finished == null)
             return;
         summarise(finished, abortReason);
+        remember(finished, abortReason != null);
         NpcProfiler.setServer(NpcServerSettings.get(server).isProfiling());
         NpcProfiler.resetServer();
         Optional<Path> file = finished.report.write();
@@ -187,6 +193,39 @@ public final class ServerBenchmark
         report.line(String.format(Locale.ROOT, "Path searches of %.0f ms or more: %d", NpcProfiler.SLOW_PATH_MILLIS, slow.size() + NpcProfiler.slowPathsDropped()));
         for (NpcProfiler.SlowPath path : slow.subList(0, Math.min(MAX_SLOW_PATHS_LISTED, slow.size())))
             report.line("  " + path.line());
+    }
+
+    /** Keeps the headline figures of a run that measured anything, forgetting the oldest beyond the ones compared. */
+    private static void remember(Run finished, boolean aborted)
+    {
+        int ticks = finished.tick.count();
+        if (ticks == 0)
+            return;
+        double mean = finished.tick.mean();
+        List<Double> figures = new ArrayList<>();
+        for (BenchmarkResult.Figure figure : BenchmarkResult.Figure.values())
+        {
+            figures.add(switch (figure)
+            {
+                case TICK_MEAN -> mean;
+                case TICK_P95 -> finished.tick.percentile(0.95D);
+                case NPC_MILLIS -> finished.npc.mean();
+                case NPC_SHARE -> share(finished.npc.mean(), mean);
+                case NPCS_TICKING -> finished.ticking.mean();
+                case PATHS_PER_TICK -> (double) finished.pathSearches / ticks;
+                case PATH_MILLIS -> finished.path.mean();
+                case TARGET_MILLIS -> finished.target.mean();
+            });
+        }
+        results.addLast(new BenchmarkResult(finished.options.label(), ticks, aborted, List.copyOf(figures)));
+        while (results.size() > KEPT_RESULTS)
+            results.removeFirst();
+    }
+
+    /** @return the latest finished runs since the server started, oldest first */
+    public static List<BenchmarkResult> results()
+    {
+        return List.copyOf(results);
     }
 
     private static double share(double part, double whole)

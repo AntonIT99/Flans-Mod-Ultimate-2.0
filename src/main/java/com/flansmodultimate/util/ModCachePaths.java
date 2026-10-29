@@ -25,6 +25,11 @@ public final class ModCachePaths
         return gameDir.resolve(DIRECTORY_NAME);
     }
 
+    public static Path packsManager(Path gameDir)
+    {
+        return root(gameDir).resolve("packs-manager");
+    }
+
     /** Stable coordination file; never move or delete it while content startup may be running. */
     public static Path contentStartupLock(Path gameDir)
     {
@@ -37,14 +42,15 @@ public final class ModCachePaths
         return root(gameDir).resolve("content-packs");
     }
 
-    /** Migrate only the two 2.1 cache files, retaining any existing new-layout entries. */
+    /** Migrate known legacy cache files, retaining any existing new-layout entries. */
     public static void migrate(Path gameDir)
     {
         Path cache = root(gameDir);
         Path oldMuzzleDirectory = gameDir.resolve(".flancache");
         moveMissing(oldMuzzleDirectory.resolve("muzzle-measurements.json"), cache.resolve("muzzle-measurements.json"));
         FileUtils.deleteDirectoryIfEmpty(oldMuzzleDirectory);
-        moveMissing(gameDir.resolve(".flansmod-pack-locations-cache.json"), cache.resolve(PACK_LOCATIONS_FILE_NAME));
+        moveMissing(cache.resolve(PACK_LOCATIONS_FILE_NAME), packsManager(gameDir).resolve(PACK_LOCATIONS_FILE_NAME));
+        moveMissing(gameDir.resolve(".flansmod-pack-locations-cache.json"), packsManager(gameDir).resolve(PACK_LOCATIONS_FILE_NAME));
     }
 
     private static void moveMissing(Path source, Path target)

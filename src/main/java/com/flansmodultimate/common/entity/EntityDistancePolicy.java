@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.api.IFlanNpcDistance;
+import com.flansmodultimate.api.entity.IFlanNpcDistance;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 

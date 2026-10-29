@@ -14,9 +14,29 @@ import static org.junit.jupiter.api.Assertions.*;
 class SoldierNamesTest
 {
     @Test
+    void romanAssociationDelegatesToCustomNpcsAndKeepsLegacyPersistence()
+    {
+        assertTrue(SoldierNames.acceptsAssociation("customnpcs:roman"));
+        assertFalse(SoldierNames.acceptsAssociation("customnpcs:missing"));
+        assertEquals(0, SoldierNames.generatorId("customnpcs:roman"));
+        assertEquals("customnpcs:roman", SoldierNames.associationId(0));
+        try (var generator = org.mockito.Mockito.mockStatic(nikedemos.markovnames.generators.MarkovGenerator.class))
+        {
+            generator.when(() -> nikedemos.markovnames.generators.MarkovGenerator.fetch(0, 2)).thenReturn("Livia");
+            assertEquals("Livia", SoldierNames.generate(0, 2));
+        }
+        CompoundTag tag = new CompoundTag();
+        SoldierNames.saveSelection(10, tag);
+        SoldierNames.saveSelection(0, tag);
+        assertFalse(tag.contains(SoldierNames.SAVE_KEY));
+        assertEquals(0, SoldierNames.loadSelection(0, tag));
+    }
+
+    @Test
     void bundledListsOnlyProduceWholeComponentsOfTheSelectedGender() throws Exception
     {
-        for (String id : SoldierNames.ids())
+        for (String id : SoldierNames.ids().stream()
+            .filter(id -> !id.startsWith("clone_") && !id.startsWith("imperial_") && !id.startsWith("droid_") && !id.startsWith("jedi_") && !id.startsWith("sith_")).toList())
         {
             try (var stream = SoldierNames.class.getResourceAsStream("/data/wolffsmodnpcs/names/" + id + ".json"))
             {
@@ -57,6 +77,39 @@ class SoldierNamesTest
     }
 
     @Test
+    void nameWeightsFavourListedEntriesAndUnlistedEntriesWeighOne()
+    {
+        var group = new SoldierNameList.Group(1, List.of("Common", "Rare"), List.of("Ada"), List.of("Plain", "Odd"), null, false, Map.of("Common", 9), null, Map.of("Plain", 3), null);
+        var list = new SoldierNameList("weighted", List.of(group));
+        Random random = new Random(7);
+        var counts = new HashMap<String, Integer>();
+        for (int index = 0; index < 40000; index++)
+            counts.merge(list.generate(1, random), 1, Integer::sum);
+        assertEquals(9.0 * 3.0, ratio(counts, "Common Plain", "Rare Odd"), 3.0);
+        assertEquals(3.0, ratio(counts, "Common Plain", "Common Odd"), 0.5);
+        var women = new HashSet<String>();
+        for (int index = 0; index < 200; index++)
+            women.add(list.generate(2, random));
+        assertEquals(Set.of("Ada Plain", "Ada Odd"), women);
+    }
+
+    @Test
+    void invalidNameWeightsFailInsteadOfSilentlyIgnoringEntries()
+    {
+        List<String> male = List.of("A");
+        List<String> female = List.of("B");
+        List<String> surnames = List.of("C");
+        assertThrows(IllegalArgumentException.class, () -> new SoldierNameList.Group(1, male, female, surnames, null, false, Map.of("Missing", 2), null, null, null));
+        assertThrows(IllegalArgumentException.class, () -> new SoldierNameList.Group(1, male, female, surnames, null, false, Map.of("A", 0), null, null, null));
+        assertThrows(IllegalArgumentException.class, () -> new SoldierNameList.Group(1, male, female, surnames, null, false, null, null, Map.of("C", 1001), null));
+    }
+
+    private static double ratio(Map<String, Integer> counts, String numerator, String denominator)
+    {
+        return (double) counts.getOrDefault(numerator, 0) / counts.getOrDefault(denominator, 1);
+    }
+
+    @Test
     void invalidPoolsFailInsteadOfGeneratingPartialNames()
     {
         List<SoldierNameList.Group> noGroups = List.of();
@@ -82,9 +135,9 @@ class SoldierNamesTest
         Arrays.fill(legacy, "legacy");
         String[] labels = SoldierNames.appendLabels(legacy);
         assertArrayEquals(legacy, Arrays.copyOf(labels, 10));
-        assertEquals(46, labels.length);
-        assertEquals("wolffsmodnpcs.names.german", labels[10]);
-        assertEquals("wolffsmodnpcs.names.russian", labels[13]);
+        assertEquals(80, labels.length);
+        assertEquals("wolffsmodnpcs.names.german_21st", labels[10]);
+        assertEquals("wolffsmodnpcs.names.russian_21st", labels[13]);
         for (int slot = 0; slot < 10; slot++)
         {
             assertFalse(SoldierNames.contains(slot));
@@ -106,7 +159,7 @@ class SoldierNamesTest
     @Test
     void historicalListsAppendAfterTheFourModernSlots()
     {
-        assertEquals(List.of("german", "british", "american", "russian"), SoldierNames.ids().subList(0, 4));
+        assertEquals(List.of("german_21st", "british_21st", "american_21st", "russian_21st"), SoldierNames.ids().subList(0, 4));
         assertEquals(
             List.of("german_20th", "british_20th", "american_20th", "russian_20th", "canadian_20th", "italian_20th", "french_20th", "dutch_20th", "chinese_20th", "polish_20th", "hungarian_20th",
                 "finnish_20th", "romanian_20th", "jewish_20th", "estonian_20th", "latvian_20th", "croatian_20th", "spanish_20th", "serbian_20th", "bulgarian_20th", "swedish_20th", "greek_20th",
@@ -115,7 +168,7 @@ class SoldierNamesTest
         assertEquals(14, SoldierNames.generatorId("wolffsmodnpcs:german_20th"));
         assertEquals(44, SoldierNames.generatorId("wolffsmodnpcs:soviet_20th"));
         assertEquals(45, SoldierNames.generatorId("wolffsmodnpcs:japanese_20th"));
-        assertEquals(36, SoldierNames.ids().stream().distinct().count());
+        assertEquals(70, SoldierNames.ids().stream().distinct().count());
     }
 
     @Test

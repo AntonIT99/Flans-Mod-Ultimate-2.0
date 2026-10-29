@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.network;
 
 import com.wolffsmod.npcs.presets.NpcPreset;
+import com.wolffsmod.npcs.presets.NpcPresetLines;
 import com.wolffsmod.npcs.presets.NpcPresetRequests;
 import com.wolffsmod.npcs.presets.NpcPresetSetting;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -27,6 +28,7 @@ public record NpcPresetPacket(int entityId, Action action, String preset, Compou
 {
     /** Longest preset name accepted; the names are far shorter. */
     private static final int MAX_NAME_LENGTH = 64;
+    private static final String SPOKEN_LINES = "SpokenLines";
 
     /** What the packet asks for or carries. */
     public enum Action
@@ -60,6 +62,7 @@ public record NpcPresetPacket(int entityId, Action action, String preset, Compou
         for (NpcPresetSetting setting : NpcPresetSetting.values())
             values.putInt(setting.name(), setting.get(npc));
         values.putBoolean("CanUndo", NpcPresetRequests.canUndo(npc));
+        values.put(SPOKEN_LINES, NpcPresetLines.capture(npc));
         return new NpcPresetPacket(npc.getId(), Action.STATE, "", values);
     }
 
@@ -69,6 +72,11 @@ public record NpcPresetPacket(int entityId, Action action, String preset, Compou
         for (NpcPresetSetting setting : NpcPresetSetting.values())
             if (values.contains(setting.name()) && setting.accepts(values.getInt(setting.name())))
                 setting.set(npc, values.getInt(setting.name()));
+        if (values.contains(SPOKEN_LINES))
+        {
+            NpcPresetLines.clear(npc);
+            NpcPresetLines.restore(npc, values.getCompound(SPOKEN_LINES));
+        }
     }
 
     public void write(FriendlyByteBuf buffer)

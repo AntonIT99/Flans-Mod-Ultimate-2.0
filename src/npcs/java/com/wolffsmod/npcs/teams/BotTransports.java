@@ -1,10 +1,11 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.ITeam;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.teams.ITeam;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.sim.NpcParachutes;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -110,10 +111,10 @@ final class BotTransports
         cargo.setTask(transport.getTask());
     }
 
-    /** Opens a parachute over a soldier jumping from an aircraft; without one in the content packs, it floats down. */
+    /** Opens a parachute over a soldier jumping from an aircraft, the one its class carries first; without one in the content packs, it floats down. */
     private static void parachute(EntityNPCInterface npc)
     {
-        if (!FlansEquipment.deployParachute(npc))
+        if (!NpcParachutes.open(npc) && !FlansEquipment.deployParachute(npc))
             npc.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, FALL_TICKS));
     }
 

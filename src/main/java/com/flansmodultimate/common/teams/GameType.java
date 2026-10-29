@@ -364,6 +364,12 @@ public abstract class GameType
         return true;
     }
 
+    /** Whether the end of a round names the best player of every team, rather than one across the whole field. */
+    public boolean hasMvpPerTeam()
+    {
+        return true;
+    }
+
     public boolean showZombieScore()
     {
         return false;
@@ -374,6 +380,15 @@ public abstract class GameType
     public boolean setVariable(String variable, String value)
     {
         return false;
+    }
+
+    /**
+     * The variables {@link #setVariable} takes for this game type, by the name it takes each under, with its current
+     * value written as it would be given. Overrides add theirs to what the game type they extend returns.
+     */
+    public Map<String, String> getVariables()
+    {
+        return new LinkedHashMap<>();
     }
 
     public void loadSettings(CompoundTag tag)

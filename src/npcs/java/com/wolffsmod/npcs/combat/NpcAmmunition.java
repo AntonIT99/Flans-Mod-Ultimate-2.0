@@ -1,8 +1,14 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IAAGunType;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.WeaponSwitch;
@@ -13,8 +19,10 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -36,7 +44,8 @@ public final class NpcAmmunition
     private static final double UNARMED_DAMAGE = 1D;
 
     /**
-     * Reloads the gun in a hand from the projectile slot, using the ammunition up. The slot is first given ammunition the
+     * Reloads the gun in a hand from the projectile slot, using the ammunition up: any Flan bullet put there, unless the NPC
+     * is held to ammunition that fits. The slot is first given ammunition the
      * gun takes when it holds none, and is refilled from the inventory as soon as the reload empties it.
      *
      * @return whether a magazine was loaded
@@ -47,7 +56,7 @@ public final class NpcAmmunition
         if (!supply(npc, weapon))
             return false;
         ItemStack spare = stack(npc.inventory.getProjectile());
-        boolean loaded = FlansEquipment.loadMagazine(npc, weapon, spare);
+        boolean loaded = FlansEquipment.loadMagazine(npc, weapon, spare, slotChoice(npc));
         if (spare.isEmpty())
         {
             npc.inventory.weapons.remove(PROJECTILE_INDEX);
@@ -75,33 +84,91 @@ public final class NpcAmmunition
     }
 
     /**
-     * @return what infinite ammunition copies to reload the gun: the projectile slot when the gun takes what it holds, or
-     *         else the ammunition the gun is issued with by default; never a stack to use up
+     * @return what infinite ammunition copies to reload the gun: the projectile slot when the gun may load what it holds, then the
+     *         first inventory slot it takes, or else the ammunition the gun is issued with by default; never a stack to use up
      */
     public static Optional<ItemStack> infiniteTemplate(EntityNPCInterface npc, ItemStack weapon)
     {
         ItemStack projectile = stack(npc.inventory.getProjectile());
-        if (FlansEquipment.acceptsAmmunition(weapon, projectile))
+        if (FlansEquipment.acceptsAmmunition(weapon, projectile, slotChoice(npc)))
             return Optional.of(projectile);
+        for (ItemStack candidate : inventory(npc))
+            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
+                return Optional.of(candidate);
         return FlansEquipment.createDefaultAmmunition(weapon).filter(ammunition -> FlansEquipment.acceptsAmmunition(weapon, ammunition));
     }
 
-    /** Projectile-slot ammunition, or the selected vehicle bank's default when the slot is empty and consumption is off. */
+    /**
+     * What the NPC fires without an equipped ranged weapon, as {@link NpcThrowing#mainProjectile} chooses it. An NPC wearing an
+     * AA gun or driveable model fires what its projectile slot holds, which was put there on purpose, unless it is held to
+     * ammunition its model fires; otherwise the first round in its inventory its model fires, or the AA gun's or selected
+     * bank's default when it carries none and consumption is off.
+     */
     public static ItemStack modelTemplate(EntityNPCInterface npc)
     {
-        ItemStack projectile = stack(npc.inventory.getProjectile());
+        ItemStack projectile = NpcThrowing.mainProjectile(npc);
+        // Old saves can leave the final, zero-round magazine in the projectile slot.
+        if (NpcModels.flan(npc) == null && FlansProjectiles.isProjectile(projectile) && !FlansProjectiles.hasRoundsLeft(projectile) && NpcEquipment.enabled(npc, Feature.CONSUME_AMMO)
+            && !npc.level().isClientSide)
+        {
+            consume(npc, projectile);
+            projectile = NpcThrowing.mainProjectile(npc);
+        }
+        IContentType weapon = modelWeapon(npc);
+        if (weapon == null)
+            return projectile;
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        if (!projectile.isEmpty() || !options.enabled(Feature.PROJECTILES) || options.enabled(Feature.CONSUME_AMMO))
+        boolean secondary = options.enabled(Feature.SECONDARY_BANK);
+        // Anything but Flan ammunition in the projectile slot is the NPC's own Custom NPCs projectile.
+        if (!projectile.isEmpty() && (slotChoice(npc) || !FlansProjectiles.isProjectile(projectile) || FlansEquipment.acceptsAmmunition(weapon, secondary, projectile)))
             return projectile;
+        for (ItemStack candidate : inventory(npc))
+            if (FlansEquipment.acceptsAmmunition(weapon, secondary, candidate))
+                return candidate;
+        if (!options.enabled(Feature.PROJECTILES) || NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+            return ItemStack.EMPTY;
+        return FlansEquipment.createDefaultAmmunition(weapon, secondary).orElse(ItemStack.EMPTY);
+    }
+
+    /**
+     * @return whether Flan ammunition in the projectile slot is fired whatever the weapon takes, as it was put there on
+     *         purpose: true unless the NPC is held to ammunition that fits. The inventory only ever supplies ammunition that
+     *         fits.
+     */
+    public static boolean slotChoice(EntityNPCInterface npc)
+    {
+        return !NpcEquipment.enabled(npc, Feature.FITTING_SLOT_AMMO);
+    }
+
+    /**
+     * The ammunition a model's inherited firing statistics are read with: the Flan round the NPC fires, or else the AA gun's
+     * or selected bank's default, so that the NPC shows what its model would fire even while it carries nothing it can.
+     *
+     * @param fired
+     *            what {@link #modelTemplate} returns for the NPC
+     * @return the round, or what the NPC fires when the model has no default either
+     */
+    public static ItemStack modelReference(EntityNPCInterface npc, ItemStack fired)
+    {
+        IContentType weapon = modelWeapon(npc);
+        if (weapon == null || FlansProjectiles.isProjectile(fired))
+            return fired;
+        boolean secondary = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.SECONDARY_BANK);
+        return FlansEquipment.createDefaultAmmunition(weapon, secondary).orElse(fired);
+    }
+
+    /** @return the AA gun or driveable whose model the NPC wears, or null */
+    @Nullable
+    private static IContentType modelWeapon(EntityNPCInterface npc)
+    {
         FlanModelEntity model = NpcModels.flan(npc);
-        if (model == null || !(model.getInfoType() instanceof IDriveableType))
-            return projectile;
-        return FlansEquipment.createDefaultAmmunition(model.getInfoType(), options.enabled(Feature.SECONDARY_BANK)).orElse(ItemStack.EMPTY);
+        IContentType definition = model == null ? null : model.getInfoType();
+        return definition instanceof IDriveableType || definition instanceof IAAGunType ? definition : null;
     }
 
     private static boolean hasAmmunition(EntityNPCInterface npc, ItemStack weapon)
     {
-        return FlansEquipment.acceptsAmmunition(weapon, stack(npc.inventory.getProjectile())) || find(npc, stack -> FlansEquipment.acceptsAmmunition(weapon, stack)) >= 0;
+        return FlansEquipment.acceptsAmmunition(weapon, stack(npc.inventory.getProjectile()), slotChoice(npc)) || find(npc, stack -> FlansEquipment.acceptsAmmunition(weapon, stack)) >= 0;
     }
 
     /**
@@ -110,16 +177,25 @@ public final class NpcAmmunition
      */
     public static ItemStack driverGunTemplate(EntityNPCInterface npc, IContentType gun)
     {
+        return gunTemplate(npc, gun).orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+    }
+
+    /** Compatible vehicle ammunition, then an NPC gunner's ammunition, then the seat gun's default; templates are never consumed. */
+    public static ItemStack crewGunTemplate(EntityNPCInterface vehicle, LivingEntity gunner, IContentType gun)
+    {
+        return gunTemplate(vehicle, gun).or(() -> gunner instanceof EntityNPCInterface npc ? gunTemplate(npc, gun) : Optional.empty())
+            .orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+    }
+
+    private static Optional<ItemStack> gunTemplate(EntityNPCInterface npc, IContentType gun)
+    {
         if (gun.getItem() == null)
-            return ItemStack.EMPTY;
+            return Optional.empty();
         ItemStack weapon = new ItemStack(gun.getItem());
         ItemStack projectile = stack(npc.inventory.getProjectile());
         if (FlansEquipment.acceptsAmmunition(weapon, projectile))
-            return projectile;
-        for (ItemStack candidate : inventory(npc))
-            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
-                return candidate;
-        return FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY);
+            return Optional.of(projectile);
+        return inventory(npc).stream().filter(candidate -> FlansEquipment.acceptsAmmunition(weapon, candidate)).findFirst();
     }
 
     /**
@@ -129,7 +205,7 @@ public final class NpcAmmunition
     private static boolean supply(EntityNPCInterface npc, ItemStack weapon)
     {
         ItemStack current = stack(npc.inventory.getProjectile());
-        if (FlansEquipment.acceptsAmmunition(weapon, current))
+        if (FlansEquipment.acceptsAmmunition(weapon, current, slotChoice(npc)))
             return true;
         int slot = find(npc, stack -> FlansEquipment.acceptsAmmunition(weapon, stack));
         if (slot < 0)
@@ -261,8 +337,82 @@ public final class NpcAmmunition
         return -1;
     }
 
+    /**
+     * Uses up one of a throwable or round the NPC carries and threw, or fired without a gun: one round of Flan ammunition,
+     * otherwise one item. A slot the stack is left empty in is cleared, and an emptied projectile slot takes the next stack of
+     * the same item from the inventory, so that the item stays the preferred one. Server thread.
+     */
+    public static void consume(EntityNPCInterface npc, ItemStack used)
+    {
+        ItemStack template = used.copyWithCount(1);
+        boolean ammunition = FlansProjectiles.isProjectile(used);
+        if (ammunition)
+        {
+            FlansProjectiles.consumeRound(used);
+            if (!FlansProjectiles.hasRoundsLeft(used))
+                used.setCount(0);
+        }
+        else
+            used.shrink(1);
+        npc.updateClient = true;
+        if (!used.isEmpty())
+            return;
+        if (stack(npc.inventory.getProjectile()) == used)
+        {
+            npc.inventory.weapons.remove(PROJECTILE_INDEX);
+            // Flan ammunition counts its rounds in its tag, which a fresh item of it does not share.
+            int slot = find(npc, stack -> ammunition ? ItemStack.isSameItem(stack, template) && FlansProjectiles.hasRoundsLeft(stack) : NpcPlatform.isSameItemSameData(stack, template));
+            if (slot >= 0)
+                swap(npc, PROJECTILE_INDEX, slot);
+        }
+        else
+            removeEmptyInventoryStack(npc, used);
+    }
+
+    /** Takes a stack the NPC carried and used up, such as a spent tool, out of its weapon or inventory slot. Server thread. */
+    public static void clearUsedUp(EntityNPCInterface npc, ItemStack used)
+    {
+        if (!used.isEmpty())
+            return;
+        npc.updateClient = true;
+        if (npc.inventory.weapons.values().removeIf(item -> stack(item) == used))
+            return;
+        removeEmptyInventoryStack(npc, used);
+    }
+
+    private static void removeEmptyInventoryStack(EntityNPCInterface npc, ItemStack used)
+    {
+        List<ItemStack> inventory = inventory(npc);
+        for (int slot = 0; slot < inventory.size(); slot++)
+        {
+            if (inventory.get(slot) == used)
+            {
+                npc.inventory.drops.remove(slot);
+                npc.inventory.dropchance.remove(slot);
+                return;
+            }
+        }
+    }
+
+    /** @return what the projectile slot holds, or an empty stack */
+    static ItemStack projectile(EntityNPCInterface npc)
+    {
+        return stack(npc.inventory.getProjectile());
+    }
+
+    /** Actual carried stacks for supplies and upgrades; mutating a returned stack mutates the NPC inventory. */
+    public static List<ItemStack> supplies(EntityNPCInterface npc)
+    {
+        List<ItemStack> stacks = new ArrayList<>();
+        stacks.add(npc.getMainHandItem());
+        stacks.add(npc.getOffhandItem());
+        stacks.add(projectile(npc));
+        stacks.addAll(inventory(npc));
+        return List.copyOf(stacks);
+    }
+
     /** @return the inventory slots in order, empty stacks standing for empty slots */
-    private static List<ItemStack> inventory(EntityNPCInterface npc)
+    static List<ItemStack> inventory(EntityNPCInterface npc)
     {
         ItemStack[] slots = new ItemStack[INVENTORY_SLOTS];
         for (int slot = 0; slot < INVENTORY_SLOTS; slot++)

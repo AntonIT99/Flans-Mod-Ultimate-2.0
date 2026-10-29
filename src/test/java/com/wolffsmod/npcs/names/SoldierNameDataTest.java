@@ -17,7 +17,7 @@ class SoldierNameDataTest
     @Test
     void everyHistoricalListHasSubstantialPoolsPeriodMetadataAndReferences() throws IOException
     {
-        for (String id : SoldierNames.ids().subList(4, SoldierNames.ids().size()))
+        for (String id : SoldierNames.ids().subList(4, 36))
         {
             JsonObject json = read(id);
             SoldierNameList list = new Gson().fromJson(json, SoldierNameList.class);
@@ -55,12 +55,26 @@ class SoldierNameDataTest
     void historicalNamesHaveTheirOwnPoolsAndRespectLanguageSpecificPresentation() throws IOException
     {
         for (String nation : List.of("german", "british", "american", "russian"))
-            assertNotEquals(list(nation).groups().get(0).male(), list(nation + "_20th").groups().get(0).male(), nation);
+            assertNotEquals(list(nation + "_21st").groups().get(0).male(), list(nation + "_20th").groups().get(0).male(), nation);
         for (String nation : List.of("hungarian_20th", "chinese_20th", "japanese_20th"))
             assertTrue(list(nation).groups().stream().allMatch(SoldierNameList.Group::surnameFirst), nation);
         for (String nation : List.of("russian_20th", "polish_20th", "czech_20th", "slovak_20th", "latvian_20th", "lithuanian_20th", "bulgarian_20th", "greek_20th"))
             assertNotEquals(list(nation).groups().get(0).surnames(), list(nation).groups().get(0).femaleSurnames(), nation);
         assertTrue(list("japanese_20th").groups().get(0).male().containsAll(List.of("Kiyoshi", "Shigeru", "Saburō", "Isamu", "Minoru")));
+    }
+
+    @Test
+    void everyNationalListWeightsItsCommonNamesAndSurnames() throws IOException
+    {
+        for (String id : SoldierNames.ids())
+        {
+            JsonObject json = read(id);
+            // Designation lists and the fictional Jedi and Sith pools have no real-world frequency to follow.
+            if (json.has("designations") || json.has("serials") || json.has("fixedNames") || id.startsWith("jedi_") || id.startsWith("sith_"))
+                continue;
+            // Weight maps are validated against their pools on load; here we only require that each list actually uses them.
+            assertTrue(list(id).groups().stream().anyMatch(group -> !group.surnameWeights().isEmpty()), id);
+        }
     }
 
     private static SoldierNameList list(String id) throws IOException

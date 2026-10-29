@@ -1,13 +1,17 @@
 package com.flansmodultimate.common.driveables.parts;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.parts.IPartBody;
+import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.api.parts.PartBodyPose;
+import com.flansmodultimate.api.parts.PartBox;
+import com.flansmodultimate.api.parts.PartState;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PartBodyHit;
 import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.PlaneType;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +29,7 @@ import java.util.*;
  * <p>
  * Boxes are kept in the frame type files author them in, which is also the frame a static model preview is drawn in,
  * and are traced through the same hull and turret transforms {@code Driveable} uses, so a stand-in is hit where its
- * model is drawn. The body stays level: only its yaw and its turret turn it.
+ * model is drawn. Its yaw, pitch and roll turn it as they turn a driveable, and its turret turns on top.
  * </p>
  */
 public final class PartBody implements IPartBody
@@ -49,7 +53,7 @@ public final class PartBody implements IPartBody
     private final Vec3 turretOffset;
     @Getter
     private PartBodyPose pose = PartBodyPose.REST;
-    /** World directions of the model-local axes at the current yaw. */
+    /** World directions of the model-local axes at the current yaw, pitch and roll. */
     private Vec3 axisX = Vec3.ZERO;
     private Vec3 axisY = Vec3.ZERO;
     private Vec3 axisZ = Vec3.ZERO;
@@ -102,14 +106,8 @@ public final class PartBody implements IPartBody
 
     public static PartBody of(DriveableType type)
     {
-        boolean plane = type instanceof PlaneType;
-        return new PartBody(type, type.getHealth(), configuredLocal(LegacyDriveableCoordinates.toLocal(type.getTurretOrigin()), plane),
-            configuredLocal(LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset()), plane));
-    }
-
-    private static Vec3 configuredLocal(Vec3 local, boolean plane)
-    {
-        return plane ? LegacyDriveableCoordinates.applyPlaneModelFacing(local) : local;
+        // The pivot is authored in the same geometry coordinates as the boxes it turns, so it takes their frame.
+        return new PartBody(type, type.getHealth(), mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOrigin())), mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset())));
     }
 
     private void add(EnumDriveablePart part, CollisionBox box)
@@ -380,6 +378,55 @@ public final class PartBody implements IPartBody
         }
     }
 
+    public boolean canRepair(String name)
+    {
+        DriveablePart part = find(name);
+        if (part == null || !enabled(part) || part.getMaxHealth() <= 0F || part.getHealth() >= part.getMaxHealth())
+            return false;
+        for (EnumDriveablePart parent : part.getType().getParents())
+            if (!isIntact(parent))
+                return false;
+        return true;
+    }
+
+    /** Restores definition HP and clears fire only after validating the part's dependency chain. */
+    public float repair(String name, float amount, boolean rebuild)
+    {
+        DriveablePart part = find(name);
+        if (!canRepair(name) || part == null || !Float.isFinite(amount) || amount <= 0F || !rebuild && part.isDestroyed())
+            return 0F;
+        float gained = part.repair(amount);
+        if (gained > 0F)
+            part.extinguish();
+        return gained;
+    }
+
+    /** Nearest repairable part, using the same part-to-hull transform as projectile hits. */
+    public Optional<PartState> nearestRepairPart(Vec3 origin, boolean rebuild)
+    {
+        return parts.values().stream().filter(part -> canRepair(part.getType().getShortName()) && (rebuild || !part.isDestroyed()))
+            .min(Comparator.comparingDouble(part -> repairDistanceSqr(part, origin))).map(this::state);
+    }
+
+    /** Squared world-block distance to the nearest repairable part's surface, including destroyed parts. */
+    public double repairDistanceSqr(Vec3 origin)
+    {
+        return parts.values().stream().filter(part -> canRepair(part.getType().getShortName())).mapToDouble(part -> repairDistanceSqr(part, origin)).min().orElse(Double.POSITIVE_INFINITY);
+    }
+
+    private double repairDistanceSqr(DriveablePart part, Vec3 origin)
+    {
+        var surface = DriveableProjectileCollision.closestSurface(partBoxModelLocal(part), toLocal(origin), part.getType(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset);
+        Vec3 hull = DriveableProjectileCollision.partPointToHullLocal(surface.position(), part.getType(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset);
+        return toWorld(hull).distanceToSqr(origin);
+    }
+
+    /** Whether the already posed solid hull supports another entity. */
+    public boolean supports(Entity entity)
+    {
+        return solid && collision != null && collision.supports(entity);
+    }
+
     @Override
     public void setHealth(String name, float health)
     {
@@ -457,9 +504,11 @@ public final class PartBody implements IPartBody
         this.pose = pose == null ? PartBodyPose.REST : pose;
         // The model faces the vanilla yaw a quarter turn on from the yaw driveables simulate with.
         float driveableYaw = this.pose.yaw() - 90F;
-        axisX = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(1D, 0D, 0D), driveableYaw, 0F, 0F);
-        axisY = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 1D, 0D), driveableYaw, 0F, 0F);
-        axisZ = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 0D, 1D), driveableYaw, 0F, 0F);
+        float pitch = this.pose.pitch();
+        float roll = this.pose.roll();
+        axisX = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(1D, 0D, 0D), driveableYaw, pitch, roll);
+        axisY = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 1D, 0D), driveableYaw, pitch, roll);
+        axisZ = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 0D, 1D), driveableYaw, pitch, roll);
         collide();
     }
 
@@ -485,7 +534,7 @@ public final class PartBody implements IPartBody
             boxes.put(part.getType(), box);
             signature = 31 * signature + Arrays.hashCode(new float[]{part.getType().ordinal(), box.getX(), box.getY(), box.getZ(), box.getWidth(), box.getHeight(), box.getDepth()});
         }
-        collision.tick(boxes, signature, pose.origin(), pose.yaw(), pose.scale(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset, part ->
+        collision.tick(boxes, signature, pose.origin(), pose.yaw(), pose.pitch(), pose.roll(), pose.scale(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset, part ->
         {
             DriveablePart state = parts.get(part);
             return state != null && hittable(state);

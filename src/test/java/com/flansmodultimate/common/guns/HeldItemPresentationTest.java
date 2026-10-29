@@ -1,6 +1,12 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.equipment.ArmPoseRule;
+import com.flansmodultimate.api.equipment.FlansItemAnimations;
+import com.flansmodultimate.api.equipment.HeldItemSettings;
+import com.flansmodultimate.api.equipment.HeldItemTransform;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IHeldItemPresentation;
+import com.flansmodultimate.api.equipment.WeaponPoseRules;
 import com.flansmodultimate.client.model.EquipmentAnimationSupport;
 import com.flansmodultimate.client.model.HeldItemTransforms;
 import com.flansmodultimate.common.item.GrenadeItem;

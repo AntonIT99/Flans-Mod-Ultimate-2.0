@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.tactics;
 
+import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
@@ -41,10 +42,13 @@ public final class NpcTactics
         return tactic != Tactic.CUSTOM_NPCS && !tactic.flown();
     }
 
-    /** @return the distances the NPC's tactic works with, from its firing range, its tactic distance and its weapon */
+    /**
+     * @return the distances the NPC's tactic works with, from its firing range, its tactic distance and its weapon, and
+     *         never nearer its target than its own explosive rounds reach
+     */
     public static Engagement engagement(EntityNPCInterface npc)
     {
-        return Engagement.of(npc.stats.ranged.getRange(), NpcTuning.of(npc).get(Value.TACTIC_DISTANCE), role(npc));
+        return Engagement.of(npc.stats.ranged.getRange(), NpcTuning.of(npc).get(Value.TACTIC_DISTANCE), role(npc), NpcBlastSafety.standoff(npc));
     }
 
     /** @return the role of the ranged weapon the NPC holds; a projectile fired from the slot alone counts as a rifle */

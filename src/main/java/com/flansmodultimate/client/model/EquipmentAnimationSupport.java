@@ -1,8 +1,8 @@
 package com.flansmodultimate.client.model;
 
-import com.flansmodultimate.api.ArmPoseRule;
-import com.flansmodultimate.api.IEquipmentPolicy;
-import com.flansmodultimate.api.client.ArmorPoseStep;
+import com.flansmodultimate.api.client.equipment.ArmorPoseStep;
+import com.flansmodultimate.api.equipment.ArmPoseRule;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
 

@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.DriveControl;
+import com.flansmodultimate.api.driveables.DriveControl;
 import com.flansmodultimate.common.driveables.physics.LegacyPlanePhysics;
 import com.wolffsmod.npcs.drivers.FlightControl.Command;
 import com.wolffsmod.npcs.drivers.FlightControl.State;

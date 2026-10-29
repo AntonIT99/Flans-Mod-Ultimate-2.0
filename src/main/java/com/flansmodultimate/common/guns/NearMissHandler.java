@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansModSounds;
-import com.flansmodultimate.api.ISuppressionListener;
+import com.flansmodultimate.api.entity.ISuppressionListener;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;

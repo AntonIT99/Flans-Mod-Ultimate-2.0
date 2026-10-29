@@ -16,6 +16,7 @@ import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
+import com.flansmodultimate.common.driveables.visual.MechaVisual;
 import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.*;
@@ -267,8 +268,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 }
             }
             poseStack.popPose();
-            if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
-                renderMechaAddons(driveable, mechaType, mechaModel, state, history, poseStack, buffer, packedLight);
+            if (driveable instanceof Mecha mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
+                renderMechaAddons(mecha, mechaType, mechaModel, state, history, poseStack, buffer, packedLight);
         }
         finally
         {
@@ -337,7 +338,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
      * Draws where the loaded model puts each muzzle, next to where the type file
      * does. The gap between the two markers is the correction a definition needs,
      * and seeing it on the vehicle is quicker to judge than reading the delta out
-     * of {@code /flandebug shootpoint list}.
+     * of {@code /flansdebug shootpoint list}.
      */
     private static void renderMeasuredMuzzles(Driveable driveable, DriveableType type)
     {
@@ -436,14 +437,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
     }
 
-    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, DriveableAnimationHistory history, PoseStack poseStack,
+    public static void renderMechaAddons(MechaVisual driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, DriveableAnimationHistory history, PoseStack poseStack,
         MultiBufferSource buffer, int packedLight)
     {
         DriveableData data = driveable.getDriveableData();
-        if (data == null)
-            return;
-
-        if (driveable.isPartDrawn(EnumDriveablePart.HIPS))
+        if (data != null && driveable.isPartDrawn(EnumDriveablePart.HIPS))
         {
             poseStack.pushPose();
             poseStack.scale(mechaType.getModelScale(), mechaType.getModelScale(), mechaType.getModelScale());
@@ -454,9 +452,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
 
         float armPitch = Mth.clamp(state.turretPitch(), -mechaType.getUpperArmLimit(), mechaType.getLowerArmLimit());
-        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL), true, driveable.isPartDrawn(EnumDriveablePart.LEFT_ARM), mechaType, armPitch,
+        renderHandAddon(driveable.getMechaTool(true), true, driveable.isPartDrawn(EnumDriveablePart.LEFT_ARM), mechaType, armPitch,
             DriveableInput.isDown(state.inputMask(), DriveableInput.PRIMARY_FIRE), state.animationTime(), history.leftGunAnimations, poseStack, buffer, packedLight);
-        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL), false, driveable.isPartDrawn(EnumDriveablePart.RIGHT_ARM), mechaType, armPitch,
+        renderHandAddon(driveable.getMechaTool(false), false, driveable.isPartDrawn(EnumDriveablePart.RIGHT_ARM), mechaType, armPitch,
             DriveableInput.isDown(state.inputMask(), DriveableInput.SECONDARY_FIRE), state.animationTime(), history.rightGunAnimations, poseStack, buffer, packedLight);
     }
 

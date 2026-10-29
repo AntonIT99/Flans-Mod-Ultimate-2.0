@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

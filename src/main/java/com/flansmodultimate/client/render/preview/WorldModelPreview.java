@@ -2,8 +2,9 @@ package com.flansmodultimate.client.render.preview;
 
 import com.flansmod.client.model.*;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.api.client.model.ModelPose;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.equipment.IMechaEquipment;
 import com.flansmodultimate.client.damage.DetachedPieces;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
@@ -91,7 +92,7 @@ public final class WorldModelPreview
         PartBody body = PartBodies.of(entity);
         boolean marked = PosedModelVisual.isMarked(entity, body);
         // An entity wearing a part body is always posed, still if it gave no pose, so that its pose is known when a part comes off.
-        ModelPose drawnPose = modelPose == null && body != null ? STILL : modelPose;
+        ModelPose drawnPose = modelPose == null && (body != null || type instanceof MechaType && entity instanceof IMechaEquipment) ? STILL : modelPose;
         // Stepped before any detail decision, so the motion carries on while an impostor is shown.
         ModelDriveable.RenderState state = drawnPose == null ? null : history.animate(type, entity.tickCount, partialTick, drawnPose);
         if (history.visual != null)
@@ -108,6 +109,13 @@ public final class WorldModelPreview
         try
         {
             pose.mulPose(Axis.YP.rotationDegrees(type instanceof PlaneType ? -90F : 90F));
+            if (type instanceof MechaType mechaType && model instanceof ModelMecha mechaModel && entity instanceof IMechaEquipment && state != null)
+            {
+                pose.pushPose();
+                LegacyTransformApplier.applyModelTransform(model, type, pose);
+                DriveableRenderer.renderMechaAddons(history.visual, mechaType, mechaModel, state, history.animation, pose, buffers, light);
+                pose.popPose();
+            }
             // This relative transform includes NPC size, model height, living rotation and death tilt.
             history.relative.set(entityPose.pose()).invert().mul(pose.last().pose());
             float parentScale = WorldModelPose.uniformScale(history.relative);

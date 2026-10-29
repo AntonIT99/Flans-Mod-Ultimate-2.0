@@ -101,8 +101,6 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     @Getter
     protected float[] barrelRecoil = new float[0];
     protected ItemStack[] ammo = new ItemStack[0];
-    protected Vec3[] modelBarrelPivots = new Vec3[0];
-    protected Vec3[] modelBarrelMuzzles = new Vec3[0];
     @Getter @Setter
     protected boolean shootKeyPressed;
     @Getter @Setter
@@ -188,35 +186,6 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     public double[] getCollisionBoxWorldVertices()
     {
         return collisionHelper == null ? null : collisionHelper.copyWorldVertices();
-    }
-
-    public void setModelBarrelOriginData(Vec3[] pivots, Vec3[] muzzles)
-    {
-        AAGunType type = getConfigType();
-        if (type == null || pivots == null || muzzles == null || pivots.length != type.getNumBarrels() || muzzles.length != type.getNumBarrels())
-            return;
-        // The type's own measurement already places the muzzles; no client report replaces it.
-        if (type.hasMeasuredBarrels())
-            return;
-
-        Vec3[] safePivots = new Vec3[type.getNumBarrels()];
-        Vec3[] safeMuzzles = new Vec3[type.getNumBarrels()];
-        for (int i = 0; i < type.getNumBarrels(); i++)
-        {
-            if (!isValidModelBarrelVector(pivots[i]) || !isValidModelBarrelVector(muzzles[i]))
-                return;
-            safePivots[i] = pivots[i];
-            safeMuzzles[i] = muzzles[i];
-        }
-
-        modelBarrelPivots = safePivots;
-        modelBarrelMuzzles = safeMuzzles;
-    }
-
-    private static boolean isValidModelBarrelVector(Vec3 vector)
-    {
-        return vector != null && Double.isFinite(vector.x) && Double.isFinite(vector.y) && Double.isFinite(vector.z) && Math.abs(vector.x) <= 512D && Math.abs(vector.y) <= 512D
-            && Math.abs(vector.z) <= 512D;
     }
 
     @Override
@@ -1066,6 +1035,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         boolean loadedAny = false;
         float reloadFactor = 1F;
+        int perItem = 1;
         for (int i = 0; i < ammo.length; i++)
         {
             if (!ammo[i].isEmpty())
@@ -1082,6 +1052,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
                 loadedAny = true;
                 // A slower round to load holds up the whole reload, so the
                 // heaviest factor among what went in wins.
+                perItem = Math.max(perItem, ShootableItem.getMaxRounds(loaded));
                 if (loaded.getItem() instanceof ShootableItem shootableItem)
                     reloadFactor = Math.max(reloadFactor, shootableItem.getConfigType().getReloadTimeMultiplier());
             }
@@ -1090,9 +1061,13 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (loadedAny)
         {
             updateAmmoMask();
-            // Reloading never lets the gun outrun its own rate of fire, so the wait
-            // after the round that emptied a barrel is the longer of the two.
-            setReloadTimer(Mth.ceil(Math.max(type.getReloadTime() * reloadFactor, type.getShootDelay())));
+            // A gun one volley empties waits the shorter of its reload and its cadence,
+            // since it reloads after every volley; otherwise it never outruns the cadence.
+            int volleys = type.volleysPerReload(perItem);
+            float wait = GunHandlingTiming.reloadWait(type.getReloadTime() * reloadFactor, type.getShootDelay(), volleys);
+            setReloadTimer(Mth.ceil(wait));
+            if (volleys <= 1)
+                shootDelay = Math.min(shootDelay, wait);
             if (StringUtils.isNotBlank(type.getReloadSound()))
                 PacketPlaySound.sendSoundPacket(this, type.getReloadSoundRange(), type.getReloadSound(), false);
         }
@@ -1248,10 +1223,9 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
             return position();
 
-        // Barrels the server measured itself win; a client's report is only the
-        // fallback for a model the server could not load.
-        Vec3[] pivots = type.hasMeasuredBarrels() ? type.getMeasuredBarrelPivots() : modelBarrelPivots;
-        Vec3[] muzzles = type.hasMeasuredBarrels() ? type.getMeasuredBarrelMuzzles() : modelBarrelMuzzles;
+        // Only server measurements and authored Barrel lines determine projectile origins.
+        Vec3[] pivots = type.hasMeasuredBarrels() ? type.getMeasuredBarrelPivots() : new Vec3[0];
+        Vec3[] muzzles = type.hasMeasuredBarrels() ? type.getMeasuredBarrelMuzzles() : new Vec3[0];
         if (type.firesFromBarrelLine(barrel))
         {
             // A trusted line fires as written, elevating round the model's pivot like the barrel drawn on it.
@@ -1265,7 +1239,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     /**
      * Where a type-file {@code Barrel} line puts the round. Without a model
-     * this is what fires until a client has reported the model's barrels; with
+     * this remains the authoritative firing origin; with
      * the model's barrel pivot it elevates round that pivot, as the model's
      * muzzles do, so the line can be compared with them at any aim.
      */

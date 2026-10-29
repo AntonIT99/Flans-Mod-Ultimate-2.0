@@ -29,7 +29,7 @@ ReloadTime 90
 NumBullets 1
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 CanShootUnderwater False
 MoveSpeedModifier 0.8

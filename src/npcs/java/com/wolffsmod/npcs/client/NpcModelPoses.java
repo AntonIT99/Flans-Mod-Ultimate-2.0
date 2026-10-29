@@ -1,10 +1,11 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.MountAim;
-import com.flansmodultimate.api.client.ModelPose;
+import com.flansmodultimate.api.client.model.ModelPose;
+import com.flansmodultimate.api.driveables.MountAim;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -48,7 +49,10 @@ public final class NpcModelPoses
         }
         if (!running)
             throttle = 0F;
-        return new ModelPose(state.turretAim(), seats, throttle, travel, state.getTurn(), options.enabled(Feature.DOORS_OPEN), !options.enabled(Feature.GEAR_UP), options.enabled(Feature.WINGS_FOLDED),
-            running, state.getShots(), state.getBarrel());
+        // Only aircraft have gear to draw, so only they look for the ground beneath them.
+        boolean dynamic = options.enabled(Feature.GEAR_DYNAMIC) && state.kind() == FlanModelKind.PLANE;
+        boolean gearDown = dynamic ? state.dynamicGearDown(npc) : !options.enabled(Feature.GEAR_UP);
+        return new ModelPose(state.turretAim(), seats, throttle, travel, state.getTurn(), options.enabled(Feature.DOORS_OPEN), gearDown, options.enabled(Feature.WINGS_FOLDED), running,
+            state.getShots(), state.getBarrel());
     }
 }

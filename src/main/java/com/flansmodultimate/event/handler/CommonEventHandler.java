@@ -1,8 +1,9 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.IEquipmentPolicy;
-import com.flansmodultimate.api.ITeamsRespawnRule;
+import com.flansmodultimate.api.equipment.FlansMelee;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule;
 import com.flansmodultimate.client.render.hud.KillMessageData;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.command.*;
@@ -121,14 +122,17 @@ public final class CommonEventHandler
         GunAttachmentsCommand.register(event.getDispatcher());
         FlansModHelpCommand.register(event.getDispatcher());
         RearmCommand.register(event.getDispatcher());
+        RepairDriveableCommand.register(event.getDispatcher());
         ShootPointDebugCommand.register(event.getDispatcher());
         HitboxDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
+        ThrownGunDespawnCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
         VehicleCollisionDebugCommand.register(event.getDispatcher());
         VehiclePhysicsCommand.register(event.getDispatcher());
         WorldPhysicsCommand.register(event.getDispatcher());
+        FlansModCommandAliases.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 
@@ -190,6 +194,7 @@ public final class CommonEventHandler
         CraterCarver.clear();
         DriveableCollisionBypass.reset();
         DistantSync.clear();
+        EntityTrackingPins.clear();
         contentReferencesValidated = false;
     }
 
@@ -313,6 +318,7 @@ public final class CommonEventHandler
         ModApocalypseConfig.clearServerOverride();
         DriveableCollisionBypass.clear(event.getEntity());
         DistantSync.unsubscribe(event.getEntity().getUUID());
+        EntityTrackingPins.unpin(event.getEntity().getUUID());
         regenTimers.remove(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);
@@ -418,14 +424,15 @@ public final class CommonEventHandler
 
     /**
      * Whether incoming damage is cancelled before any processing: entities riding Flan vehicles are immune,
-     * the Teams game type may reject the attack, and a shield may block a melee hit or a thrown projectile.
+     * the Teams game type or an addon's friendly fire rule may reject the attack, and a shield may block a melee hit or a
+     * thrown projectile.
      */
     public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source, float amount)
     {
-        boolean cancel = entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat;
+        if (!entity.level().isClientSide && (isRejectedByTeams(entity, source) || FriendlyFireRules.sparesDamage(entity, source)))
+            return true;
 
-        if (!entity.level().isClientSide && isRejectedByTeams(entity, source))
-            cancel = true;
+        boolean cancel = FlansMelee.protectRider(entity, source, amount);
 
         if (!cancel && !entity.level().isClientSide && (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponEffects()) && tryShieldBlock(entity, source, amount))
             cancel = true;

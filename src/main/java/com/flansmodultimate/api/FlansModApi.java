@@ -5,13 +5,21 @@
  */
 package com.flansmodultimate.api;
 
+import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.content.IContentPack;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.teams.IPlayerClass;
+import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
@@ -27,8 +35,23 @@ import java.util.*;
 @ApiStatus.Experimental
 public final class FlansModApi
 {
+    private static final Set<String> NAMESPACES = Set.of(FlansMod.MOD_ID, FlansMod.FLANSMOD_ID, FlansMod.APOCALYPSE_ID);
+
     private FlansModApi()
     {}
+
+    /**
+     * The namespaces Flan's Mod Ultimate registers under, so that an addon walking a registry or reading an identifier
+     * can tell the mod's own content from another mod's: {@code flansmodultimate} for the mod itself, {@code flansmod}
+     * for everything the content packs define, items, blocks, entities and sounds alike, and {@code flansmodapocalypse}
+     * for the Apocalypse module. Readable on either side at any time.
+     *
+     * @return the namespaces, unmodifiable
+     */
+    public static Set<String> getModNamespaces()
+    {
+        return NAMESPACES;
+    }
 
     /**
      * Reads the range, set by the server, within which NPCs using the Flan distance settings are sent to clients. An
@@ -53,6 +76,30 @@ public final class FlansModApi
     {
         if (level.getServer().isSameThread())
             com.flansmodultimate.common.entity.EntityDistancePolicy.requestTrackingRefresh();
+    }
+
+    /**
+     * Keep an entity sent to one player whatever the distance, for example while that player edits it from afar. A player has
+     * at most one pinned entity: pinning another replaces it. The pairing changes at once, so a packet naming the entity may
+     * follow. Pins end when the player logs out. Call on the server thread.
+     *
+     * @param player
+     *            the player who receives the entity
+     * @param entity
+     *            the entity to pin in the player's level, or {@code null} to remove the player's pin
+     */
+    public static void pinEntityTracking(ServerPlayer player, @Nullable Entity entity)
+    {
+        if (player.getServer() != null && player.getServer().isSameThread())
+            com.flansmodultimate.common.entity.EntityTrackingPins.pin(player, entity);
+    }
+
+    /**
+     * @return whether the entity is the one pinned for the player by {@link #pinEntityTracking}
+     */
+    public static boolean isEntityTrackingPinned(ServerPlayer player, Entity entity)
+    {
+        return com.flansmodultimate.common.entity.EntityTrackingPins.isPinned(entity, player);
     }
 
     /**

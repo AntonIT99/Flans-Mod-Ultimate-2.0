@@ -63,6 +63,38 @@ class InventoryHelperTest
     }
 
     @Test
+    void workspaceAndInventoryPayDuplicateDyesTogetherOrRemainUntouched()
+    {
+        ItemStack dye = new ItemStack(Items.RED_DYE);
+        ItemStack canSlot = dye.copy();
+        SimpleContainer inventory = new SimpleContainer(new ItemStack(Items.RED_DYE));
+        assertFalse(InventoryHelper.tryConsumeAll(inventory, canSlot, List.of(dye, dye, dye), false));
+        assertEquals(1, canSlot.getCount());
+        assertEquals(1, inventory.getItem(0).getCount());
+        assertTrue(InventoryHelper.tryConsumeAll(inventory, canSlot, List.of(dye, dye), false));
+        assertTrue(canSlot.isEmpty());
+        assertTrue(inventory.getItem(0).isEmpty());
+    }
+
+    @Test
+    void workspaceKeepsItsExactDataRuleAndCreativeDoesNotPay()
+    {
+        ItemStack dye = new ItemStack(Items.RED_DYE);
+        ItemStack tagged = dye.copy();
+        ItemStackData.update(tagged, tag -> tag.putInt("Paint", 1));
+        SimpleContainer inventory = new SimpleContainer(1);
+        assertFalse(InventoryHelper.tryConsumeAll(inventory, tagged, List.of(dye), false));
+        assertEquals(1, tagged.getCount());
+        inventory.setItem(0, tagged.copy());
+        assertTrue(InventoryHelper.tryConsumeAll(inventory, tagged, List.of(dye, dye), true));
+        assertEquals(1, tagged.getCount());
+        assertEquals(1, inventory.getItem(0).getCount());
+        assertTrue(InventoryHelper.tryConsumeAll(inventory, tagged, List.of(dye), false));
+        assertEquals(1, tagged.getCount());
+        assertTrue(inventory.getItem(0).isEmpty());
+    }
+
+    @Test
     void mergingStillKeepsDifferentStackDataSeparate()
     {
         ItemStack painted = new ItemStack(Items.IRON_INGOT);

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import re
@@ -38,7 +39,7 @@ CATEGORY_TO_JSON: Dict[str, str] = {
     "mecha": "mecha_categories.json",
 }
 
-SHORTNAME_RE = re.compile(r"^\s*Shortname\s+(\S+)\s*$", re.IGNORECASE)
+SHORTNAME_RE = re.compile(r"^\s*Shortname\s+(.+?)\s*$", re.IGNORECASE)
 NAME_RE = re.compile(r"^\s*Name\s+(.+?)\s*$", re.IGNORECASE)
 LANG_FILE_SUFFIX = "assets/flansmod/lang/en_us.json"
 LANG_KEY_PREFIX = "item.flansmod."
@@ -92,8 +93,19 @@ def extract_shortnames_from_text(text: str) -> List[str]:
     for line in text.splitlines():
         match = SHORTNAME_RE.match(line)
         if match:
-            shortnames.append(match.group(1).strip().lower())
+            shortnames.append(sanitize_shortname(match.group(1).strip()))
     return shortnames
+
+
+def sanitize_shortname(value: str) -> str:
+    return re.sub(r"[^a-z0-9._\-]", "_", value.lower())
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(PROJECT_ROOT))
+    except ValueError:
+        return str(path)
 
 
 def extract_full_name_from_text(text: str) -> str:
@@ -179,18 +191,24 @@ def find_resources_dir(definitions_dir: Path) -> Optional[Path]:
 def read_loose_localized_names(definitions_dir: Path) -> Dict[str, str]:
     resources_dir = find_resources_dir(definitions_dir)
     if resources_dir is None:
-        return {}
+        resources_dir = definitions_dir
 
     lang_path = resources_dir / LANG_FILE_SUFFIX
-    if not lang_path.is_file():
-        return {}
-
-    try:
-        text = decode_pack_text(lang_path.read_bytes())
-    except Exception as error:
-        print(f"[WARN] Could not read {lang_path}: {error}", file=sys.stderr)
-        return {}
-    return extract_localized_names(text, str(lang_path))
+    localized_names: Dict[str, str] = {}
+    legacy_path = resources_dir / "assets/flansmod/lang/en_US.lang"
+    if legacy_path.is_file():
+        for line in decode_pack_text(legacy_path.read_bytes()).splitlines():
+            if "=" not in line or line.lstrip().startswith("#"):
+                continue
+            key, value = line.split("=", 1)
+            if key.startswith("item.") and key.endswith(".name"):
+                shortname = key[len("item."):-len(".name")]
+                if shortname.startswith("flansmod."):
+                    shortname = shortname[len("flansmod."):]
+                localized_names[sanitize_shortname(shortname)] = value
+    if lang_path.is_file():
+        localized_names.update(extract_localized_names(decode_pack_text(lang_path.read_bytes()), str(lang_path)))
+    return localized_names
 
 
 def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
@@ -221,7 +239,7 @@ def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
                             category=category,
                             shortname_lower=shortname,
                             full_name=localized_names.get(shortname, definition_name),
-                            zip_path=str(zip_path.relative_to(PROJECT_ROOT)),
+                            zip_path=display_path(zip_path),
                             internal_txt_path=info.filename.replace("\\", "/"),
                         )
                     )
@@ -256,7 +274,7 @@ def read_loose_txt_shortnames(flans_content_dir: Path) -> List[ShortnameOrigin]:
                     category=category,
                     shortname_lower=shortname,
                     full_name=localized_names.get(shortname, definition_name),
-                    zip_path=str(flans_content_dir.relative_to(PROJECT_ROOT)),
+                    zip_path=display_path(flans_content_dir),
                     internal_txt_path=relative_path,
                 )
             )
@@ -287,6 +305,13 @@ def load_category_items(config_dir: Path, category: str) -> Set[str]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Find content-pack short names missing from built-in categories.")
+    parser.add_argument("--external", type=Path, action="append", default=[], metavar="PACK", help="Also scan an unpacked pack folder or ZIP (repeatable).")
+    parser.add_argument("--no-pause", action="store_true", help="Exit without waiting for Enter.")
+    args = parser.parse_args()
+    for path in args.external:
+        if not path.is_dir() and not (path.is_file() and path.suffix.lower() == ".zip"):
+            parser.error(f"External pack is not a directory or ZIP: {path}")
     origins_by_category: Dict[str, List[ShortnameOrigin]] = {
         category: [] for category in CATEGORY_TO_JSON
     }
@@ -297,6 +322,12 @@ def main() -> int:
 
     for flans_content_dir in iter_flans_content_dirs(SOURCE_ROOT):
         for origin in read_loose_txt_shortnames(flans_content_dir):
+            origins_by_category[origin.category].append(origin)
+
+    for path in args.external:
+        path = path.resolve()
+        origins = read_loose_txt_shortnames(path) if path.is_dir() else read_zip_txt_shortnames(path)
+        for origin in origins:
             origins_by_category[origin.category].append(origin)
 
     json_items_by_category = {
@@ -331,7 +362,11 @@ def main() -> int:
 
     print(f"[OK] Wrote output: {OUTPUT_CSV}")
     print(f"[OK] Missing entries: {len(missing_rows)}")
-    input("Press Enter to exit...")
+    if not args.no_pause and sys.stdin.isatty():
+        try:
+            input("Press Enter to exit...")
+        except EOFError:
+            pass
     return 0
 
 

@@ -19,7 +19,7 @@ CasingTexture Skin44_BulletCasing
 Ammo 44_ThompsonM1A1Ammo
 
 // Handling
-Mode FullAuto
+Mode FullAuto SemiAuto
 Deployable False
 Scope None
 

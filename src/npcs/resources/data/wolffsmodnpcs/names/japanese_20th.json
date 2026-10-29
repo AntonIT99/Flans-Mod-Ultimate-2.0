@@ -3,6 +3,17 @@
   "groups": [
     {
       "weight": 1,
+      "surnameWeights": {
+        "Satō": 20, "Suzuki": 20, "Takahashi": 20, "Tanaka": 20, "Itō": 20, "Watanabe": 20, "Yamamoto": 20, "Nakamura": 20, "Kobayashi": 20,
+        "Katō": 20,
+        "Yoshida": 8, "Yamada": 8, "Sasaki": 8, "Yamaguchi": 8, "Matsumoto": 8, "Inoue": 8, "Kimura": 8, "Hayashi": 8, "Shimizu": 8, "Yamazaki": 8,
+        "Mori": 8, "Abe": 8, "Ikeda": 8, "Hashimoto": 8, "Yamashita": 8, "Ishikawa": 8, "Nakajima": 8, "Maeda": 8, "Fujita": 8, "Ogawa": 8, "Gotō": 8,
+        "Okada": 8, "Hasegawa": 8, "Murakami": 8, "Kondō": 8, "Ishii": 8, "Saitō": 8, "Sakamoto": 8, "Endō": 8, "Aoki": 8,
+        "Fujii": 3, "Nishimura": 3, "Fukuda": 3, "Ōta": 3, "Miura": 3, "Okamoto": 3, "Matsuda": 3, "Nakagawa": 3, "Nakano": 3, "Harada": 3, "Ono": 3,
+        "Tamura": 3, "Takeuchi": 3, "Kaneko": 3, "Wada": 3, "Nakayama": 3, "Ishida": 3, "Ueda": 3, "Morita": 3, "Kojima": 3, "Shibata": 3, "Hara": 3,
+        "Miyazaki": 3, "Sakai": 3, "Kudō": 3, "Yokoyama": 3, "Miyamoto": 3, "Uchida": 3, "Takagi": 3, "Andō": 3, "Taniguchi": 3, "Ōno": 3,
+        "Maruyama": 3, "Imai": 3, "Takada": 3, "Fujimoto": 3, "Takeda": 3, "Murata": 3, "Ueno": 3, "Sugiyama": 3
+      },
       "male": [
         "Akira",
         "Akio",

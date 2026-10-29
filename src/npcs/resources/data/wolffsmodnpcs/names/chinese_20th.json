@@ -3,6 +3,14 @@
   "groups": [
     {
       "weight": 1,
+      "surnameWeights": {
+        "Wang": 20, "Li": 20, "Zhang": 20, "Liu": 20, "Chen": 20, "Yang": 20, "Huang": 20, "Zhao": 20, "Wu": 20, "Zhou": 20,
+        "Xu": 8, "Sun": 8, "Ma": 8, "Zhu": 8, "Hu": 8, "Guo": 8, "He": 8, "Gao": 8, "Lin": 8, "Luo": 8, "Zheng": 8, "Liang": 8, "Xie": 8, "Song": 8,
+        "Tang": 8, "Han": 8, "Feng": 8, "Yu": 8, "Dong": 8, "Xiao": 8,
+        "Cheng": 3, "Cao": 3, "Yuan": 3, "Deng": 3, "Fu": 3, "Shen": 3, "Zeng": 3, "Peng": 3, "Lu": 3, "Su": 3, "Jiang": 3, "Cai": 3, "Jia": 3,
+        "Ding": 3, "Wei": 3, "Xue": 3, "Ye": 3, "Yan": 3, "Pan": 3, "Du": 3, "Dai": 3, "Xia": 3, "Zhong": 3, "Tian": 3, "Ren": 3, "Fan": 3, "Fang": 3,
+        "Shi": 3, "Yao": 3, "Tan": 3
+      },
       "male": [
         "Anbang",
         "Anbao",

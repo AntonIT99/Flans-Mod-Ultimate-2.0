@@ -1,6 +1,14 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.ProjectileParameters;
+import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
@@ -27,7 +35,11 @@ public final class NpcDriverGuns
     private IContentType definition;
     private boolean secondary;
 
-    private record Context(EntityNPCInterface npc, LivingEntity target, FlanModelEntity model, NpcVehicleState state, NpcWeaponOptions options, MountAim aim)
+    /**
+     * @param fixed
+     *            the bank's muzzles, as selected with the aim, that stay fixed to the hull of a turreted model
+     */
+    private record Context(EntityNPCInterface npc, LivingEntity target, FlanModelEntity model, NpcVehicleState state, NpcWeaponOptions options, MountAim aim, Set<WeaponMuzzle> fixed)
     {}
 
     /** A bank gun and a driver's seat gun retain independent firing and reload progress. */
@@ -60,7 +72,7 @@ public final class NpcDriverGuns
         if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread())
             return;
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        if (!options.enabled(Feature.DRIVER_GUNS))
+        if (NpcRepairs.active(npc) || !options.enabled(Feature.DRIVER_GUNS))
         {
             guns.clear();
             return;
@@ -81,9 +93,10 @@ public final class NpcDriverGuns
             return;
         MountAim aim = options.enabled(Feature.TURRET_MUZZLES) ? state.turretAim() : MountAim.REST;
         Map<IContentType, List<WeaponMuzzle>> muzzles = new LinkedHashMap<>();
-        for (WeaponMuzzle muzzle : FlansProjectiles.getMuzzles(current, secondary, 0, false, aim))
+        List<WeaponMuzzle> selected = FlansProjectiles.getMuzzles(current, secondary, 0, false, aim);
+        for (WeaponMuzzle muzzle : selected)
             muzzle.weapon().ifPresent(weapon -> muzzles.computeIfAbsent(weapon, key -> new ArrayList<>()).add(muzzle));
-        Context context = new Context(npc, target, model, state, options, aim);
+        Context context = new Context(npc, target, model, state, options, aim, fixedMuzzles(current, state, selected));
         muzzles.forEach((weapon, points) -> fire(context, new Mount(weapon, -1), points));
         // A DriverGun/PilotGun on seat zero is separate from the primary/secondary shoot-point banks.
         FlansProjectiles.getSeatMuzzle(current, 0, 0, aim).filter(muzzle -> muzzle.weapon().isPresent()).ifPresent(muzzle ->
@@ -94,11 +107,26 @@ public final class NpcDriverGuns
         });
     }
 
+    /**
+     * @param selected
+     *            the bank's muzzles, as the guns fire them
+     * @return those of them that stay fixed to the hull of a turreted model while its turret turns
+     */
+    private Set<WeaponMuzzle> fixedMuzzles(IContentType current, NpcVehicleState state, List<WeaponMuzzle> selected)
+    {
+        boolean[] flags = state.fixedMuzzles(FlansProjectiles.getMuzzles(current, secondary, 0, false, MountAim.REST), FlansProjectiles.getMuzzles(current, secondary, 0, false, state.turretAim()));
+        Set<WeaponMuzzle> fixed = new HashSet<>();
+        for (int index = 0; index < selected.size() && index < flags.length; index++)
+            if (flags[index])
+                fixed.add(selected.get(index));
+        return fixed;
+    }
+
     private static boolean engages(EntityNPCInterface npc, LivingEntity target, NpcVehicleState state, NpcWeaponOptions options)
     {
         return options.enabled(Feature.PROJECTILES) && options.enabled(Feature.MODEL_MUZZLES) && npc.isAlive() && !npc.isKilled() && target != null && target.isAlive() && target.level() == npc.level()
             && target.distanceTo(npc) <= npc.stats.ranged.getRange() && !state.getFlight().holdsFire() && !state.getParts().effects().gunDisabled() && !NpcDrivers.holdsFire(npc)
-            && !NpcCrew.holdsFire(npc) && (!options.enabled(Feature.FIRE_WHEN_ALIGNED) || state.isAligned());
+            && !NpcCrew.holdsFire(npc) && (!options.enabled(Feature.FIRE_WHEN_ALIGNED) || state.isGunAligned());
     }
 
     private void fire(Context context, Mount mount, List<WeaponMuzzle> points)
@@ -112,6 +140,9 @@ public final class NpcDriverGuns
         ItemStack ammo = NpcAmmunition.driverGunTemplate(npc, weapon);
         EquippedWeaponProperties properties = FlansEquipment.getWeaponProperties(new ItemStack(weapon.getItem()), ammo).orElse(null);
         if (ammo.isEmpty() || properties == null)
+            return;
+        // A mount loaded with something explosive waits until the target is out of its own blast.
+        if (NpcBlastSafety.tooClose(npc, context.target(), NpcBlastSafety.reach(ammo)))
             return;
         for (int trigger = 0; trigger < MAX_SHOTS_PER_TICK && gun.cooldown < 1D; trigger++)
         {
@@ -165,10 +196,15 @@ public final class NpcDriverGuns
             .orElse(null);
         if (shot == null)
             return false;
-        boolean arc = options.enabled(Feature.BALLISTIC_AIM);
-        Vec3 direction = state.lead(aimPoint.subtract(origin), target, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, false);
+        // Rounds leave along the barrels, as a player's do: the turret's, or the hull's for a gun fixed to it, which waits for the
+        // hull to point where they have to go. The driver's own seat gun is the turret's.
+        boolean fixed = context.fixed().contains(muzzle);
+        if (fixed && !state.isHullAligned())
+            return false;
+        Vec3 direction = state.barrelDirection(npc, fixed);
         if (shot.launch(origin, direction, false).isEmpty())
             return false;
+        NpcMuzzleFlashes.fired(npc, muzzle, direction, state.getHullYaw(), secondary);
         if (options.enabled(Feature.SHOOT_PARTICLES))
             FlansProjectiles.shootParticles(npc, muzzle, origin, state.getHullYaw() + state.turretAim().yaw(), NpcModels.scale(npc));
         return true;

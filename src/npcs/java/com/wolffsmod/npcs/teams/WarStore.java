@@ -1,19 +1,16 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.*;
 
 /** The wars of the world with their territories and engagements, written out whenever the world is saved. Server thread. */
-final class WarStore extends FlanSavedData
+final class WarStore extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_wars";
     private static final String NBT_WARS = "wars";
@@ -22,7 +19,7 @@ final class WarStore extends FlanSavedData
 
     static WarStore get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, WarStore::new, WarStore::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, WarStore::new, WarStore::load);
     }
 
     Collection<War> all()
@@ -58,7 +55,7 @@ final class WarStore extends FlanSavedData
         return tag;
     }
 
-    // SavedDataPlatform passes the registries; this store holds no registry data.
+    // NpcSavedData passes the registries; this store holds no registry data.
     @SuppressWarnings("unused")
     static WarStore load(CompoundTag tag, HolderLookup.Provider registries)
     {

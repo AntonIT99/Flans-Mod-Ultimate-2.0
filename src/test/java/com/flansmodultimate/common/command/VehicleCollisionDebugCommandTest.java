@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.commands.CommandSourceStack;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class VehicleCollisionDebugCommandTest
 {
@@ -16,8 +16,7 @@ class VehicleCollisionDebugCommandTest
         CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
         VehicleCollisionDebugCommand.register(dispatcher);
 
-        CommandNode<CommandSourceStack> command = dispatcher.getRoot().getChild("flandebug")
-            .getChild("vehiclecollision");
+        CommandNode<CommandSourceStack> command = dispatcher.getRoot().getChild("flansdebug").getChild("vehiclecollision");
         assertToggleAndExplicit(command);
 
         CommandNode<CommandSourceStack> targets = command.getChild("player").getChild("targets");
@@ -25,6 +24,23 @@ class VehicleCollisionDebugCommandTest
         assertToggleAndExplicit(targets);
 
         assertToggleAndExplicit(command.getChild("all"));
+    }
+
+    @Test
+    void debugAliasIncludesAllServerDebugCommands()
+    {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        ShootPointDebugCommand.register(dispatcher);
+        HitboxDebugCommand.register(dispatcher);
+        VehicleCollisionDebugCommand.register(dispatcher);
+
+        CommandNode<CommandSourceStack> debug = dispatcher.getRoot().getChild("flansdebug");
+        assertSame(debug, dispatcher.getRoot().getChild("flansmodultimate").getChild("debug").getRedirect());
+        assertNotNull(debug.getChild("shootpoint"));
+        assertNotNull(debug.getChild("hitbox").getCommand());
+        assertNull(debug.getChild("htibox"));
+        assertNull(dispatcher.getRoot().getChild("flandebug"));
+        assertToggleAndExplicit(debug.getChild("vehiclecollision"));
     }
 
     private static void assertToggleAndExplicit(CommandNode<CommandSourceStack> node)

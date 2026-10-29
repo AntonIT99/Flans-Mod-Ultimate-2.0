@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.network;
 
-import com.flansmodultimate.api.IPartBody;
-import com.flansmodultimate.api.PartState;
+import com.flansmodultimate.api.parts.IPartBody;
+import com.flansmodultimate.api.parts.PartState;
 
 import net.minecraft.network.FriendlyByteBuf;
 

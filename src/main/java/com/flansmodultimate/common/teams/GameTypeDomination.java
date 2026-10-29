@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Domination from the Labjac fork: every capture point starts neutral, a point only changes
@@ -88,6 +89,15 @@ public final class GameTypeDomination extends GameTypeObjective
             }
         }
         return true;
+    }
+
+    @Override
+    public Map<String, String> getVariables()
+    {
+        Map<String, String> variables = super.getVariables();
+        variables.put("ticketdraininterval", Integer.toString(ticketDrainInterval));
+        variables.put("killticketvalue", Integer.toString(killTicketValue));
+        return variables;
     }
 
     @Override

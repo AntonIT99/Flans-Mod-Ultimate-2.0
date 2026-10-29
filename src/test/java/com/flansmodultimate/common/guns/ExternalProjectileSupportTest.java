@@ -1,7 +1,10 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
@@ -12,9 +15,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExternalProjectileSupportTest
 {
@@ -121,9 +127,53 @@ class ExternalProjectileSupportTest
         assertEquals(77F, fallback.getBulletSpeed());
     }
 
+    @Test
+    void anAaGunAndADriveableWithoutBulletSpeedFireAtTheDefaultTheirEntitiesUseRatherThanTheCallers()
+    {
+        var contentStats = new ProjectileParameters(0, true, 1F, 1F, 77F);
+        assertEquals(BulletType.DEFAULT_BULLET_SPEED, ExternalProjectileSupport.resolveWeapon(new TestAA(), null, null, null, false, contentStats).getBulletSpeed());
+        TestVehicle vehicle = new TestVehicle(new Vector3f());
+        assertEquals(BulletType.DEFAULT_BULLET_SPEED, ExternalProjectileSupport.resolveWeapon(vehicle, null, null, vehicle, false, contentStats).getBulletSpeed());
+        // Without content statistics the caller's velocity still stands in.
+        var callerStats = new ProjectileParameters(0, false, 1F, 1F, 77F);
+        assertEquals(77F, ExternalProjectileSupport.resolveWeapon(new TestAA(), null, null, null, false, callerStats).getBulletSpeed());
+    }
+
+    @Test
+    void muzzleFlashAvailabilityUsesGunModelsOrConfiguredGunAndShellFallbacks()
+    {
+        TestVehicle platform = new TestVehicle(new Vector3f());
+        TestGun gun = new TestGun();
+        WeaponMuzzle bare = new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of());
+        WeaponMuzzle mounted = new WeaponMuzzle(Vec3.ZERO, Optional.of(gun), List.of());
+        assertFalse(FlansProjectiles.hasMuzzleFlash(platform, mounted, false));
+        gun.flash("DefaultFlash");
+        assertTrue(FlansProjectiles.hasMuzzleFlash(platform, mounted, false));
+        gun.flash("");
+        platform.flashes();
+        assertTrue(FlansProjectiles.hasMuzzleFlash(platform, bare, false));
+        assertFalse(FlansProjectiles.hasMuzzleFlash(platform, bare, true));
+        assertTrue(FlansProjectiles.hasMuzzleFlash(platform, mounted, true));
+    }
+
     private static ShootPoint point(Vector3f position)
     {
         return new ShootPoint(new DriveablePosition(position, EnumDriveablePart.CORE), new Vector3f());
+    }
+
+    @Test
+    void anAimedSeatGunCarriesItsMuzzleRoundItsPivot()
+    {
+        // The preview frame faces -Z; a gun two blocks long resting ahead of its pivot.
+        Vec3 pivot = new Vec3(1D, 2D, 3D);
+        Vec3 muzzle = pivot.add(0D, 0D, -2D);
+        assertVector(muzzle, ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, MountAim.REST));
+        // Turned right, it points along +X, the way an aim of the same yaw leaves along; pitched down, it points down.
+        assertVector(pivot.add(2D, 0D, 0D), ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, new MountAim(90F, 0F)));
+        assertVector(pivot.add(0D, -2D, 0D), ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, new MountAim(0F, 90F)));
+        assertVector(pivot.add(0D, -1D, -Math.sqrt(3D)), ExternalProjectileSupport.aimSeatGunPoint(muzzle, pivot, 0F, new MountAim(0F, 30F)));
+        // An aircraft's gun rests turned half round, so its muzzle measured behind the pivot is ahead of it when aimed ahead.
+        assertVector(muzzle, ExternalProjectileSupport.aimSeatGunPoint(pivot.add(0D, 0D, 2D), pivot, 180F, MountAim.REST));
     }
 
     private static void assertVector(Vec3 expected, Vec3 actual)
@@ -142,6 +192,13 @@ class ExternalProjectileSupportTest
             shootPointsPrimary.add(point(position));
             shootPointsSecondary.add(point(new Vector3f(3F, 1F, 2F)));
             shootParticlesSecondary.add(new ShootParticle("smoke", 0.1F, 0F, 0F));
+        }
+
+        private void flashes()
+        {
+            defaultMuzzleFlash = true;
+            primary = EnumWeaponType.SHELL;
+            secondary = EnumWeaponType.MISSILE;
         }
 
         private void usePureGunStats()
@@ -183,6 +240,11 @@ class ExternalProjectileSupportTest
         TestGun()
         {
             damage = 5F;
+        }
+
+        private void flash(String model)
+        {
+            flashModelName = model;
         }
 
         // Pin neutral config modifiers without starting a Minecraft registry or server.

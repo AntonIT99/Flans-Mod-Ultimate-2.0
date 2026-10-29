@@ -75,6 +75,12 @@ public final class ClientPlatform
         // Nothing to advance: the cursor blink follows the clock.
     }
 
+    /** Puts a text field's cursor at the start of its text without selecting anything. */
+    public static void moveCursorToStart(EditBox box)
+    {
+        box.moveCursorToStart(false);
+    }
+
     /** Scales a label already turned to the camera so its text reads left to right, as name tags do. */
     public static void scaleCameraFacingLabel(PoseStack pose, float scale)
     {

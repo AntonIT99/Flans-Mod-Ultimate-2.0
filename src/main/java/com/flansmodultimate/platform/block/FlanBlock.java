@@ -1,8 +1,11 @@
 package com.flansmodultimate.platform.block;
 
+import com.flansmodultimate.common.block.IFlanBlock;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -22,6 +25,12 @@ public abstract class FlanBlock extends Block
     protected FlanBlock(Properties properties)
     {
         super(properties);
+    }
+
+    @Override
+    public @NotNull MutableComponent getName()
+    {
+        return this instanceof IFlanBlock<?> content ? Component.translatableWithFallback(getDescriptionId(), content.getConfigType().getName()) : super.getName();
     }
 
     /** Handles a right-click on this block with the given hand. */

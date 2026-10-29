@@ -1,13 +1,10 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.platform.world.FlanSavedData;
-import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.wolffsmod.npcs.platform.world.NpcSavedData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.Vec3;
 
@@ -17,7 +14,7 @@ import java.util.*;
  * The places operators marked on Teams maps for bots: route points paths are strung through, garrison and sniper posts
  * for defenders, positions for AA and patrol points for ships. Saved with the world, per map. Server thread.
  */
-public final class BotMarkers extends FlanSavedData
+public final class BotMarkers extends NpcSavedData
 {
     private static final String ID = "wolffsmodnpcs_bot_markers";
     private static final String NBT_MAPS = "maps";
@@ -48,7 +45,7 @@ public final class BotMarkers extends FlanSavedData
 
     public static BotMarkers get(MinecraftServer server)
     {
-        return SavedDataPlatform.computeIfAbsent(server.overworld(), ID, BotMarkers::new, BotMarkers::load);
+        return NpcSavedData.computeIfAbsent(server.overworld(), ID, BotMarkers::new, BotMarkers::load);
     }
 
     public List<Marker> of(String mapId)
@@ -114,7 +111,7 @@ public final class BotMarkers extends FlanSavedData
         return tag;
     }
 
-    // SavedDataPlatform passes the registries; this store holds no registry data.
+    // NpcSavedData passes the registries; this store holds no registry data.
     @SuppressWarnings("unused")
     static BotMarkers load(CompoundTag tag, HolderLookup.Provider registries)
     {

@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman (M1 Garand, Khaki)
+ShortName OfficialWW2_AmericanInfantryKhakiRifleman
+
+// Armour
+Hat AmericanAssaultHelmet
+Chest AmericanAssaultChestKhaki
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem m1Garand
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem m1GarandAmmo 4
+AddItem coltAmmo 2

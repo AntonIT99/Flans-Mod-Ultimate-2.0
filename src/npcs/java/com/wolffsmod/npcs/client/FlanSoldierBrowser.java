@@ -1,15 +1,17 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.content.IContentPack;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.teams.*;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.wolffsmod.npcs.NpcsMod;
-import com.wolffsmod.npcs.network.ApplyLoadoutPacket;
-import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
+import com.wolffsmod.npcs.soldier.SoldierCloneNames;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
-import noppes.npcs.shared.client.gui.components.GuiButtonYesNo;
-import noppes.npcs.shared.client.gui.components.GuiLabel;
+import noppes.npcs.shared.client.gui.components.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -22,16 +24,18 @@ import java.io.InputStream;
 import java.util.*;
 
 /**
- * The "Flan Soldier" folder of the Custom NPCs model picker: content packs, their teams, then a team's classes.
+ * The "Flan's Soldier" folder of the Custom NPCs model picker: content packs, their teams, then a team's classes.
  * Choosing a class gives the NPC the human model and, unless the builder turned the class skin off, the class skin, and
- * remembers the choice; while the loadout toggle is on, which it is by default, the NPC is also given the class's loadout.
+ * remembers the choice. A toggle applies the class loadout; the naming controls generate a name on explicit request.
  */
 @SuppressWarnings("unused") // Reached only from the model picker mixin, which IntelliJ does not follow.
 public final class FlanSoldierBrowser
 {
-    public static final String LABEL = "Flan Soldier";
+    public static final String LABEL = "Flan's Soldier";
     private static final int LOADOUT_TOGGLE_ID = 9120;
     private static final int SKIN_TOGGLE_ID = 9121;
+    private static final int NAME_APPLY_ID = 9123;
+    private static final int FACTION_APPLY_ID = 9124;
     private static final int SKIN_WIDTH = 64;
     /** Whether choosing a class also gives the NPC its loadout; the builder's choice lasts for the session. */
     private static boolean applyClassLoadout = true;
@@ -71,18 +75,18 @@ public final class FlanSoldierBrowser
             classes = FlansModApi.getPlayerClasses().stream().filter(candidate -> Objects.equals(candidate.getContentPack(), pack))
                 .filter(candidate -> FlansModApi.getTeams().stream().noneMatch(owner -> owner.getClasses().contains(candidate)))
                 .sorted(Comparator.comparing(IPlayerClass::getName, String.CASE_INSENSITIVE_ORDER)).toList();
-            return classes.stream().map(IContentType::getName).toList();
+            return classes.stream().map(type -> type.getNameComponent().getString()).toList();
         }
         if (team != null)
         {
             classes = team.getClasses();
-            return classes.stream().map(IContentType::getName).toList();
+            return classes.stream().map(type -> type.getNameComponent().getString()).toList();
         }
         if (pack != null)
         {
             teams = FlansModApi.getTeams().stream().filter(candidate -> Objects.equals(candidate.getContentPack(), pack) && !candidate.getClasses().isEmpty())
                 .sorted(Comparator.comparing(ITeam::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(ITeam::getShortName)).toList();
-            List<String> labels = new ArrayList<>(teams.stream().map(IContentType::getName).toList());
+            List<String> labels = new ArrayList<>(teams.stream().map(type -> type.getNameComponent().getString()).toList());
             if (hasUnassigned(pack))
                 labels.add(net.minecraft.network.chat.Component.translatable("wolffsmodnpcs.soldier.unassigned_classes").getString());
             return List.copyOf(labels);
@@ -181,26 +185,30 @@ public final class FlanSoldierBrowser
         ResourceLocation legacyModel = BuiltInRegistries.ENTITY_TYPE.getKey(CustomEntities.entityNPC64x32);
         boolean legacy = layout == SkinLayout.LEGACY || layout == SkinLayout.NONE && Objects.equals(screen.playerdata.getEntityName(), legacyModel);
         // Selecting a model also empties its extra data, so the choice is recorded afterwards.
+        boolean regenerate = screen.playerdata.extra.getBoolean(SoldierCloneNames.REGENERATE);
+        int gender = SoldierCloneNames.selectedGender(screen.playerdata.extra);
         screen.playerdata.setEntity(legacy ? legacyModel : null);
+        screen.playerdata.extra.putBoolean(SoldierCloneNames.REGENERATE, regenerate);
+        screen.playerdata.extra.putInt(SoldierCloneNames.GENDER, gender);
         selection.write(screen.playerdata.extra);
         if (skin != null && layout != SkinLayout.NONE)
             screen.npc.display.setSkinTexture(skin.toString());
     }
 
     /**
-     * Gives the NPC the looks of a chosen class and, while the loadout toggle is on, its loadout too.
+     * Gives the NPC the looks of a chosen class and optionally its loadout. Naming requires the Apply button.
      */
     public static void choose(GuiCreationScreenInterface screen, FlanSoldierSelection selection)
     {
+        select(screen, selection);
         if (applyClassLoadout)
-            applyLoadout(screen, selection);
-        else
-            select(screen, selection);
+            screen.save();
+        if (applyClassLoadout)
+            NpcNetwork.sendToServer(ApplyLoadoutPacket.of(screen.npc.getId(), selection));
     }
 
     /**
-     * Adds the toggle that makes choosing a class also give the NPC its loadout, and below it the toggle that turns the class
-     * skin off. Both are also shown while browsing the folder so that they can be set before a class is chosen.
+     * Adds loadout and skin toggles, plus the NPC naming menu.
      *
      * @param browsing
      *            whether the picker is inside the soldier folder
@@ -215,6 +223,18 @@ public final class FlanSoldierBrowser
             button -> setApplyClassLoadout(screen, selection.orElse(null), ((GuiButtonYesNo) button).getBoolean())));
         screen.addLabel(new GuiLabel(SKIN_TOGGLE_ID, "wolffsmodnpcs.soldier.apply_skin", screen.guiLeft + 124, screen.guiTop + 51, 0xFF0000));
         screen.addButton(new GuiButtonYesNo(screen, SKIN_TOGGLE_ID, screen.guiLeft + 260, screen.guiTop + 46, applyClassSkin, button -> setApplyClassSkin(((GuiButtonYesNo) button).getBoolean())));
+        GuiButtonNop naming = new GuiButtonNop(screen, NAME_APPLY_ID, screen.guiLeft + 292, screen.guiTop + 69, 96, 20, "wolffsmodnpcs.soldier.name.menu",
+            button -> selection.ifPresent(chosen -> screen.setSubGui(new SoldierNameMenu(screen, chosen))));
+        naming.setEnabled(selection.isPresent());
+        screen.addButton(naming);
+        GuiButtonNop faction = new GuiButtonNop(screen, FACTION_APPLY_ID, screen.guiLeft + 292, screen.guiTop + 92, 96, 20, "wolffsmodnpcs.team_faction.apply",
+            button -> selection.filter(chosen -> chosen.team() != null).ifPresent(chosen ->
+            {
+                screen.save();
+                NpcNetwork.sendToServer(new TeamFactionPacket(screen.npc.getId(), chosen.team().getShortName(), chosen.playerClass().getShortName(), true));
+            }));
+        faction.setEnabled(selection.filter(chosen -> chosen.team() != null).isPresent());
+        screen.addButton(faction);
     }
 
     private static void setApplyClassSkin(boolean apply)

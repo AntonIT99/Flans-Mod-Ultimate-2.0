@@ -1,8 +1,9 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.IDriveableType;
-import com.flansmodultimate.api.client.FlansModelPreviews;
+import com.flansmodultimate.api.client.model.FlansModelPreviews;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+
 import net.minecraft.world.phys.AABB;
 
 import java.util.Optional;
@@ -10,15 +11,15 @@ import java.util.Optional;
 /** Conservative static bounds relative to the model entity's feet. Client render thread only. */
 public final class FlanModelBounds
 {
-    private FlanModelBounds() {}
+    private FlanModelBounds()
+    {}
 
     public static AABB of(FlanModelEntity model)
     {
         var type = model.getInfoType();
         var modelType = model.getModelType();
         float lift = modelType == null ? 0 : modelType.getShape().modelHeight();
-        return combine(model.getBbWidth(), model.getBbHeight(), lift,
-            type == null ? Optional.empty() : FlansModelPreviews.getBounds(type),
+        return combine(model.getBbWidth(), model.getBbHeight(), lift, type == null ? Optional.empty() : FlansModelPreviews.getBounds(type),
             type instanceof IDriveableType driveable ? driveable.getBounds() : Optional.empty());
     }
 

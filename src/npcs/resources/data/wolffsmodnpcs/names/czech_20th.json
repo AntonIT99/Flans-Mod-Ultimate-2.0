@@ -3,6 +3,38 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Jan": 20, "Josef": 20, "František": 20, "Václav": 20, "Karel": 20, "Jiří": 20, "Antonín": 20, "Petr": 20, "Pavel": 20, "Jaroslav": 20,
+        "Vladimír": 20, "Miroslav": 20, "Stanislav": 20, "Ladislav": 20, "Jaromír": 20, "Tomáš": 20, "Zdeněk": 20, "Alois": 20, "Rudolf": 20,
+        "Bohumil": 20,
+        "Emil": 8, "Ferdinand": 8, "Gustav": 8, "Jindřich": 8, "Ludvík": 8, "Oldřich": 8, "Otakar": 8, "Richard": 8, "Robert": 8, "Vilém": 8,
+        "Vojtěch": 8, "Štěpán": 8, "Miloslav": 8, "Miloš": 8, "Bedřich": 8, "Adolf": 8, "Cyril": 8, "Julius": 8, "Leopold": 8, "Hynek": 8, "Jakub": 8,
+        "Ivan": 8, "Lubomír": 8, "Vlastimil": 8, "Zikmund": 8, "Valentin": 8, "Vít": 8
+      },
+      "femaleWeights": {
+        "Marie": 20, "Anna": 20, "Božena": 20, "Ludmila": 20, "Helena": 20, "Františka": 20, "Josefa": 20, "Jaroslava": 20, "Marta": 20, "Věra": 20,
+        "Milada": 20, "Růžena": 20, "Anežka": 20, "Emilie": 20, "Alžběta": 20, "Eliška": 20, "Jarmila": 20, "Olga": 20, "Zdenka": 20, "Vlasta": 20,
+        "Antonie": 8, "Blažena": 8, "Cecílie": 8, "Dobromila": 8, "Irena": 8, "Jiřina": 8, "Julie": 8, "Karolína": 8, "Kateřina": 8, "Květa": 8,
+        "Milena": 8, "Miloslava": 8, "Miroslava": 8, "Pavla": 8, "Stanislava": 8, "Štěpánka": 8, "Terezie": 8, "Zdislava": 8, "Žofie": 8, "Zuzana": 8
+      },
+      "surnameWeights": {
+        "Novák": 20, "Svoboda": 20, "Novotný": 20, "Dvořák": 20, "Černý": 20, "Procházka": 20, "Kučera": 20, "Veselý": 20, "Horák": 20, "Němec": 20,
+        "Marek": 8, "Pospíšil": 8, "Pokorný": 8, "Hájek": 8, "Král": 8, "Jelínek": 8, "Růžička": 8, "Beneš": 8, "Fiala": 8, "Sedláček": 8,
+        "Doležal": 8, "Zeman": 8, "Kolář": 8, "Navrátil": 8, "Čermák": 8, "Vaněk": 8, "Urban": 8, "Blažek": 8, "Kříž": 8, "Kovář": 8, "Kopecký": 8,
+        "Malý": 8, "Šimek": 8, "Šťastný": 8, "Polák": 8,
+        "Bartoš": 3, "Vlk": 3, "Mach": 3, "Nekola": 3, "Švec": 3, "Konečný": 3, "Krejčí": 3, "Holub": 3, "Tichý": 3, "Bureš": 3, "Sýkora": 3,
+        "Štěpánek": 3, "Müller": 3, "Šulc": 3, "Karásek": 3, "Kudrna": 3, "Havel": 3, "Koubek": 3, "Bláha": 3, "Pavlík": 3, "Vávra": 3
+      },
+      "femaleSurnameWeights": {
+        "Nováková": 20, "Svobodová": 20, "Novotná": 20, "Dvořáková": 20, "Černá": 20, "Procházková": 20, "Kučerová": 20, "Veselá": 20, "Horáková": 20,
+        "Němcová": 20,
+        "Marková": 8, "Pospíšilová": 8, "Pokorná": 8, "Hájková": 8, "Králová": 8, "Jelínková": 8, "Růžičková": 8, "Benešová": 8, "Fialová": 8,
+        "Sedláčková": 8, "Doležalová": 8, "Zemanová": 8, "Kolářová": 8, "Navrátilová": 8, "Čermáková": 8, "Vaňková": 8, "Urbanová": 8, "Blažková": 8,
+        "Křížová": 8, "Kovářová": 8, "Kopecká": 8, "Malá": 8, "Šimková": 8, "Šťastná": 8, "Poláková": 8,
+        "Bartošová": 3, "Vlková": 3, "Machová": 3, "Nekolová": 3, "Švecová": 3, "Konečná": 3, "Krejčí": 3, "Holubová": 3, "Tichá": 3, "Burešová": 3,
+        "Sýkorová": 3, "Štěpánková": 3, "Müllerová": 3, "Šulcová": 3, "Karásková": 3, "Kudrnová": 3, "Havlová": 3, "Koubková": 3, "Bláhová": 3,
+        "Pavlíková": 3, "Vávrová": 3
+      },
       "male": [
         "Adolf",
         "Alois",

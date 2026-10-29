@@ -1,5 +1,6 @@
 package com.flansmodultimate.platform.item;
 
+import com.flansmodultimate.common.item.IFlanItem;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.HolderLookup;
@@ -17,6 +18,12 @@ public abstract class FlanBlockItem extends BlockItem
     protected FlanBlockItem(Block block, Properties properties)
     {
         super(block, properties);
+    }
+
+    @Override
+    public @NotNull Component getName(@NotNull ItemStack stack)
+    {
+        return this instanceof IFlanItem<?> content ? Component.translatableWithFallback(getDescriptionId(stack), content.getConfigType().getName()) : super.getName(stack);
     }
 
     @Override

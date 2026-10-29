@@ -1,9 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.*;
-import com.wolffsmod.npcs.client.FlanSoldierBrowser;
-import com.wolffsmod.npcs.client.NpcModelNameScroll;
-import com.wolffsmod.npcs.client.NpcPresetControls;
+import com.flansmodultimate.api.content.*;
+import com.wolffsmod.npcs.client.*;
 import com.wolffsmod.npcs.model.*;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.NpcPresetPacket;
@@ -11,6 +9,7 @@ import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
+import noppes.npcs.shared.client.gui.components.GuiButtonNop;
 import noppes.npcs.shared.client.gui.components.GuiCustomScrollNop;
 import noppes.npcs.shared.common.util.NaturalOrderComparator;
 import org.spongepowered.asm.mixin.*;
@@ -31,6 +30,8 @@ import java.util.*;
  * Also adds the Flan Soldier folder, which dresses the NPC as a class of a Flan's team, the toggle that applies that class's loadout on selection and the toggle that keeps the NPC's own skin.
  * Offers shared behaviour presets and Undo alongside the selected model.
  * Classes with several skins expose a variant folder with saved skin selection, like vehicle paintjobs.
+ * Opens on the current Flan model's paintjob or pack level.
+ * Lets builders explicitly use a Flan or vanilla model's full entity name as the NPC's display name.
  */
 // Mixin merges this class into the target, so self-casts are valid.
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference", "DataFlowIssue"})
@@ -39,6 +40,8 @@ public abstract class NpcModelBrowserMixin
 {
     @Unique
     private boolean wolffsmodnpcsPresetsRequested;
+    @Unique
+    private boolean wolffsmodnpcsOpenedAtCurrentModel;
 
     @Shadow @SuppressWarnings("MismatchedCollectionQueryUpdate") // Shadowed target list, populated by the target.
     private List<EntityType<? extends Entity>> types;
@@ -48,7 +51,7 @@ public abstract class NpcModelBrowserMixin
     @Unique
     private static final List<FlanModelFolder> WOLFFSMODNPCS_KINDS = List.of(FlanModelFolder.AA_GUN, FlanModelFolder.MECHA, FlanModelFolder.PLANE, FlanModelFolder.VEHICLE, FlanModelFolder.SHIP);
     @Unique
-    private static final List<String> WOLFFSMODNPCS_LABELS = List.of("Flan AA Gun", "Flan Mecha", "Flan Plane", "Flan Vehicle", "Flan Ship");
+    private static final List<String> WOLFFSMODNPCS_LABELS = List.of("Flan's AA Gun", "Flan's Mecha", "Flan's Plane", "Flan's Vehicle", "Flan's Ship");
     /** Folder rows at the top of the first level: the model kinds, then the soldier folder. */
     @Unique
     private static final int WOLFFSMODNPCS_TOP_FOLDERS = WOLFFSMODNPCS_KINDS.size() + 1;
@@ -83,6 +86,11 @@ public abstract class NpcModelBrowserMixin
     {
         List<String> labels = new ArrayList<>();
         List<EntityType<? extends Entity>> models = new ArrayList<>();
+        if (!wolffsmodnpcsOpenedAtCurrentModel)
+        {
+            wolffsmodnpcsOpenedAtCurrentModel = true;
+            wolffsmodnpcsOpenAtCurrentModel((GuiCreationScreenInterface) (Object) this);
+        }
         if (wolffsmodnpcsSoldiers != null)
         {
             labels.add("..");
@@ -102,6 +110,7 @@ public abstract class NpcModelBrowserMixin
         scroll.setSelectedIndex(selected < 0 ? -1 : selected + offset);
         wolffsmodnpcsRestoreSelectionScroll();
         FlanSoldierBrowser.addLoadoutControls(screen, wolffsmodnpcsSoldiers != null);
+        wolffsmodnpcsAddEntityNameControl(screen);
         NpcPresetControls.addPicker(screen);
         if (!wolffsmodnpcsPresetsRequested)
         {
@@ -115,6 +124,46 @@ public abstract class NpcModelBrowserMixin
             screen.getLabel(110).visible = false;
             screen.getLabel(110).enabled = false;
         }
+    }
+
+    /** Opens the picker on the current Flan model's paintjob level, or on its content pack's model level when it has no other paintjob. */
+    @Unique
+    private void wolffsmodnpcsOpenAtCurrentModel(GuiCreationScreenInterface screen)
+    {
+        if (!(screen.entity != null && screen.entity.getType() instanceof FlanModelEntityType model) || model.getInfoType() == null)
+            return;
+        FlanModelFolder kind = FlanModelFolder.of(model.getInfoType());
+        if (!WOLFFSMODNPCS_KINDS.contains(kind))
+            return;
+        wolffsmodnpcsKind = kind;
+        wolffsmodnpcsPack = model.getInfoType().getContentPack();
+        // The parent levels open at their top when the builder goes back.
+        wolffsmodnpcsParentScrollPositions.push(0);
+        wolffsmodnpcsParentScrollPositions.push(0);
+        List<PaintjobVariant> jobs = model.getInfoType().getPaintjobVariants();
+        if (jobs.stream().anyMatch(job -> job.id() != 0))
+        {
+            wolffsmodnpcsParentScrollPositions.push(0);
+            wolffsmodnpcsVariantModel = model;
+            wolffsmodnpcsPaintjobs = jobs;
+        }
+    }
+
+    /** Uses the model type's name, without any custom name or shortened browser label. */
+    @Unique
+    private void wolffsmodnpcsAddEntityNameControl(GuiCreationScreenInterface screen)
+    {
+        if (wolffsmodnpcsSoldiers != null || screen.entity == null)
+            return;
+        EntityType<?> type = screen.entity.getType();
+        String namespace = BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace();
+        if (!(type instanceof FlanModelEntityType) && !namespace.equals("minecraft") && !namespace.equals("flansmodultimate"))
+            return;
+        screen.addButton(new GuiButtonNop(screen, 9124, screen.guiLeft + 124, screen.guiTop + 20, 180, 20, "wolffsmodnpcs.model.apply_entity_name", button ->
+        {
+            screen.npc.display.setName(type.getDescription().getString());
+            screen.save();
+        }));
     }
 
     /** The first level: the Flan folders, then every model that is not a Flan one. */

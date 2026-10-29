@@ -24,7 +24,8 @@ class NpcEquipmentHookContractTest
         assertEquals(2, calls(method(goal, "()V", "tick", "m_8037_"), NPC, "setPos", "(DDD)V"));
         assertDoesNotThrow(() -> method(goal, "(Z)V", "navigate"));
         assertDoesNotThrow(() -> method(goal, "()V", "start", "m_8056_"));
-        assertDoesNotThrow(() -> method(goal, "()Z", "canUse", "m_8036_"));
+        // The unlimited-range redirect must affect only the wandering-distance check, not the post-combat return.
+        assertEquals(1, calls(method(goal, "()Z", "canUse", "m_8036_"), NPC, "isInRange", "(DDDD)Z"));
         assertTrue(goal.fields.stream().anyMatch(field -> field.name.equals("totalTicks") && field.desc.equals("I")));
     }
 
@@ -225,6 +226,28 @@ class NpcEquipmentHookContractTest
     private static boolean hasNpcField(ClassNode goal, String name)
     {
         return goal.fields.stream().anyMatch(field -> field.name.equals(name) && field.desc.equals("L" + NPC + ";"));
+    }
+
+    @Test
+    void modelHealthIsCopiedOnceAfterLoadingExtraDataAndBeforeCopyingEquipment() throws IOException
+    {
+        MethodNode create = method(read("noppes/npcs/ModelData"), "(Lnoppes/npcs/entity/EntityNPCInterface;)Lnet/minecraft/world/entity/LivingEntity;", "getEntity");
+        String attribute = "net/minecraft/world/entity/ai/attributes/AttributeInstance";
+        assertEquals(1, calls(create, attribute, "setBaseValue", "(D)V"));
+        int loaded = -1;
+        int copied = -1;
+        int equipped = -1;
+        for (int i = 0; i < create.instructions.size(); i++)
+            if (create.instructions.get(i) instanceof MethodInsnNode call)
+            {
+                if (call.name.equals("readAdditionalSaveData"))
+                    loaded = i;
+                if (call.owner.equals(attribute) && call.name.equals("setBaseValue"))
+                    copied = i;
+                if (call.name.equals("setItemSlot"))
+                    equipped = i;
+            }
+        assertTrue(loaded >= 0 && loaded < copied && copied < equipped);
     }
 
     @Test

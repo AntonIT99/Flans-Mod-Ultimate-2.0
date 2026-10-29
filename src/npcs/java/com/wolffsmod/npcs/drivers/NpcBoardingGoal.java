@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.ISeat;
+import com.flansmodultimate.api.driveables.ISeat;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 

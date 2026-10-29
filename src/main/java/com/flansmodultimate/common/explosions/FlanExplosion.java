@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.explosions;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.IFlanPartTarget;
+import com.flansmodultimate.api.parts.IFlanPartTarget;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -460,7 +460,8 @@ public class FlanExplosion extends Explosion
         @Override
         public boolean intact(EnumDriveablePart part)
         {
-            return entity.isPartIntact(part);
+            // A wreck's hull is still there to take the blasts that break it up.
+            return entity.isPartIntact(part) || entity.isWreckHull(part);
         }
 
         @Override

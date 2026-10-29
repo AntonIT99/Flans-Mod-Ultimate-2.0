@@ -35,6 +35,12 @@ public final class EditedTeam extends Team
         name = text("name", original == null ? id : original.getName());
     }
 
+    @Override
+    public String getNameTranslationKey()
+    {
+        return original == null || !name.equals(original.getName()) ? "" : original.getNameTranslationKey();
+    }
+
     private String text(String field, String fallback)
     {
         return patch.has(field) ? patch.get(field).getAsString() : fallback;
@@ -57,7 +63,7 @@ public final class EditedTeam extends Team
     @Override
     public net.minecraft.network.chat.Component getDisplayComponent()
     {
-        return net.minecraft.network.chat.Component.literal(name).withStyle(getTextColour());
+        return getNameComponent().withStyle(getTextColour());
     }
 
     @Override

@@ -11,7 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ModCachePathsTest
 {
-    @TempDir Path gameDir;
+    @TempDir
+    Path gameDir;
 
     @Test
     void migratesVersion21CachesWithoutChangingContentsOrTimestamps() throws Exception
@@ -26,8 +27,7 @@ class ModCachePathsTest
             Files.setLastModifiedTime(file, modified);
         }
         ModCachePaths.migrate(gameDir);
-        for (Path file : java.util.List.of(ModCachePaths.root(gameDir).resolve("muzzle-measurements.json"),
-            ModCachePaths.root(gameDir).resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME)))
+        for (Path file : java.util.List.of(ModCachePaths.root(gameDir).resolve("muzzle-measurements.json"), ModCachePaths.packsManager(gameDir).resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME)))
         {
             assertEquals("cached data", Files.readString(file));
             assertEquals(modified, Files.getLastModifiedTime(file));
@@ -47,12 +47,24 @@ class ModCachePathsTest
         Files.writeString(oldRoot.resolve("muzzle-measurements.json"), "old");
         Files.writeString(newRoot.resolve("muzzle-measurements.json"), "current");
         Files.writeString(gameDir.resolve(".flansmod-pack-locations-cache.json"), "old locations");
-        Files.writeString(newRoot.resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME), "current locations");
+        Files.createDirectories(ModCachePaths.packsManager(gameDir));
+        Files.writeString(ModCachePaths.packsManager(gameDir).resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME), "current locations");
         ModCachePaths.migrate(gameDir);
         assertEquals("current", Files.readString(newRoot.resolve("muzzle-measurements.json")));
-        assertEquals("current locations", Files.readString(newRoot.resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME)));
+        assertEquals("current locations", Files.readString(ModCachePaths.packsManager(gameDir).resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME)));
         assertEquals("old", Files.readString(oldRoot.resolve("muzzle-measurements.json")));
         assertEquals("old locations", Files.readString(gameDir.resolve(".flansmod-pack-locations-cache.json")));
+    }
+
+    @Test
+    void migratesPreviousCacheRootLocations() throws Exception
+    {
+        Path previous = ModCachePaths.root(gameDir).resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME);
+        Files.createDirectories(previous.getParent());
+        Files.writeString(previous, "locations");
+        ModCachePaths.migrate(gameDir);
+        assertEquals("locations", Files.readString(ModCachePaths.packsManager(gameDir).resolve(ModCachePaths.PACK_LOCATIONS_FILE_NAME)));
+        assertFalse(Files.exists(previous));
     }
 
     @Test

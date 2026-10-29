@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EngineSound;
+import com.flansmodultimate.api.entity.EngineSound;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

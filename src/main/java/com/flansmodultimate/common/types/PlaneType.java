@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.DriveableKind;
+import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.recipe.RecipeIngredient;

@@ -11,12 +11,14 @@ import com.wolffsmod.npcs.tactics.CustomNpcTactics;
 import io.netty.buffer.Unpooled;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
+import noppes.npcs.entity.data.DataAdvanced;
 import noppes.npcs.entity.data.DataStats;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.level.Level;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +41,7 @@ class NpcPresetApplicationTest
     private EntityNPCInterface npc()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
-        installAI(npc);
+        installContainers(npc);
         npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
         NpcWeaponSettings settings = (NpcWeaponSettings) npc.stats;
         when(settings.wolffsmodnpcsTuning()).thenReturn(tuning);
@@ -49,17 +51,24 @@ class NpcPresetApplicationTest
         when(settings.wolffsmodnpcsTypeProperties()).thenReturn(properties);
         Level level = mock(Level.class);
         when(npc.level()).thenReturn(level);
+        // Setting the walking speed sets the movement attributes as well.
+        when(npc.getAttribute(any())).thenAnswer(call -> new AttributeInstance(call.getArgument(0), changed ->
+        {
+        }));
         return npc;
     }
 
-    @SuppressWarnings("java:S3011") // Mockito skips construction; install the real final AI container for integration tests.
-    private static void installAI(EntityNPCInterface npc)
+    @SuppressWarnings("java:S3011") // Mockito skips construction; install the real final data containers for integration tests.
+    private static void installContainers(EntityNPCInterface npc)
     {
         try
         {
             var field = EntityNPCInterface.class.getField("ais");
             field.setAccessible(true);
             field.set(npc, new TestAI(npc));
+            var advanced = EntityNPCInterface.class.getField("advanced");
+            advanced.setAccessible(true);
+            advanced.set(npc, new DataAdvanced(npc));
         }
         catch (ReflectiveOperationException exception)
         {
@@ -85,6 +94,56 @@ class NpcPresetApplicationTest
     }
 
     @Test
+    void nonSpeakingPresetsClearEveryLineGroupWhilePeopleKeepTheirDialogue()
+    {
+        for (NpcPreset preset : NpcPreset.values())
+        {
+            EntityNPCInterface npc = npc();
+            for (int type = 0; type < 6; type++)
+                npc.advanced.setLine(type, 0, "Hello", "minecraft:entity.villager.ambient");
+            preset.apply(npc);
+            boolean speaking = preset == NpcPreset.HUMAN || preset == NpcPreset.PLAYER;
+            for (int type = 0; type < 6; type++)
+                assertEquals(speaking ? 1 : 0, npc.advanced.getLineCount(type), preset + " line group " + type);
+            assertTrue(preset.matches(npc));
+        }
+    }
+
+    @Test
+    void dialogueAloneCanReapplyAPresetAndUndoRestoresTextSlotsAndSounds()
+    {
+        EntityNPCInterface npc = npc();
+        NpcPreset.MOB.apply(npc);
+        npc.advanced.setLine(0, 3, "Hello", "minecraft:entity.villager.ambient");
+        assertFalse(NpcPreset.MOB.matches(npc));
+        NpcPresetRequests.apply(npc, NpcPreset.MOB);
+        assertTrue(NpcPresetLines.isEmpty(npc));
+        assertTrue(NpcPresetRequests.canUndo(npc));
+        npc.advanced.setLine(1, 2, "A later edit", "");
+        NpcPresetRequests.undo(npc);
+        assertEquals("Hello", npc.advanced.getLine(0, 3));
+        assertEquals("minecraft:entity.villager.ambient", npc.advanced.interactLines.lines.get(3).getSound());
+        assertEquals("A later edit", npc.advanced.getLine(1, 2));
+    }
+
+    @Test
+    void presetStateSynchronizesClearedAndRestoredLinesWithTheEditor()
+    {
+        EntityNPCInterface server = npc();
+        EntityNPCInterface client = npc();
+        server.advanced.setLine(0, 0, "Hello", "");
+        client.advanced.setLine(0, 0, "Hello", "");
+        NpcPresetRequests.apply(server, NpcPreset.SHIP);
+        NpcPresetPacket.state(server).copyTo(client);
+        assertTrue(NpcPresetLines.isEmpty(client));
+        assertTrue(NpcPreset.SHIP.matches(client));
+        NpcPresetRequests.undo(server);
+        NpcPresetPacket.state(server).copyTo(client);
+        assertEquals("Hello", client.advanced.getLine(0, 0));
+        assertFalse(NpcPreset.SHIP.matches(client));
+    }
+
+    @Test
     void switchingFromAircraftToHumanClearsFlightAndHoldBehaviourWithoutTouchingAmmo()
     {
         EntityNPCInterface npc = npc();
@@ -96,13 +155,31 @@ class NpcPresetApplicationTest
         NpcPreset.HUMAN.apply(npc);
         assertEquals(0, npc.ais.movementType);
         assertEquals(0, npc.ais.walkingRange);
-        assertFalse(npc.ais.returnToStart);
         assertEquals(NpcTuning.Flight.NORMAL, tuning.flight());
         assertEquals(NpcTuning.Terrain.DEFAULT, tuning.terrain());
         assertEquals(NpcTuning.Tactic.CUSTOM_NPCS, tuning.tactic());
         assertTrue(options.enabled(Feature.CONSUME_AMMO));
         assertTrue(npc.ais.canSprint);
         assertEquals(1, npc.ais.doorInteract);
+    }
+
+    @Test
+    void everyPresetPreservesReturnToStartWhenAppliedMatchedAndUndone()
+    {
+        for (NpcPreset preset : NpcPreset.values())
+        {
+            for (boolean returnToStart : new boolean[]{false, true})
+            {
+                EntityNPCInterface npc = npc();
+                npc.ais.returnToStart = returnToStart;
+                NpcPresetRequests.apply(npc, preset);
+                assertEquals(returnToStart, npc.ais.returnToStart, preset.name());
+                npc.ais.returnToStart = !returnToStart;
+                assertTrue(preset.matches(npc), preset.name());
+                NpcPresetRequests.undo(npc);
+                assertEquals(!returnToStart, npc.ais.returnToStart, preset.name());
+            }
+        }
     }
 
     @Test
@@ -143,6 +220,18 @@ class NpcPresetApplicationTest
         assertFalse(combat.isCustom(NpcTypeProperty.NO_FALL_DAMAGE));
         assertFalse(combat.isCustom(NpcTypeProperty.HEALTH_REGEN));
         assertTrue(options.enabled(Feature.DRIVER_GUNS));
+    }
+
+    @Test
+    void theTurretPresetStopsTheNpcWalkingWhateverItsModelLends()
+    {
+        EntityNPCInterface npc = npc();
+        npc.ais.setWalkingSpeed(5);
+        NpcPreset.TURRET.apply(npc);
+        assertEquals(0, npc.ais.getWalkingSpeed());
+        // Its own value, so that no model's walking speed covers it.
+        assertTrue(combat.isCustom(NpcTypeProperty.WALKING_SPEED));
+        assertEquals(0, NpcPresetSetting.WALKING_SPEED.displayValue(NpcPresetSetting.WALKING_SPEED.get(npc)));
     }
 
     @Test
@@ -187,7 +276,7 @@ class NpcPresetApplicationTest
             NpcPresetPacket packet = NpcPresetPacket.read(buffer);
             assertTrue(packet.values().getBoolean("CanUndo"));
             assertEquals(1, packet.values().getInt("KEEP_WRECK"));
-            assertEquals(1, packet.values().getInt("RETURN_TO_START"));
+            assertEquals(npc.ais.returnToStart ? 1 : 0, packet.values().getInt("RETURN_TO_START"));
         }
         finally
         {

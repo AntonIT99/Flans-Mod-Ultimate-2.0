@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;

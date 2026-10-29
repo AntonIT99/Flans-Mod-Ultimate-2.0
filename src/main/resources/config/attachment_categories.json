@@ -1,0 +1,91 @@
+{
+
+    "TPR foregrips": {
+        "properties": {},
+        "items": [
+            "kacgrip",
+            "magpulafg",
+            "magpulafgtan"
+        ]
+    },
+
+    "TPR optical and reflex sights": {
+        "properties": {},
+        "items": [
+            "1p29",
+            "1p63",
+            "1p78",
+            "1p87",
+            "44_no32mkiiscope",
+            "44_puscope",
+            "44_type97scope",
+            "44_unertl8xscope",
+            "44_zf4scope",
+            "44_zf39scope",
+            "44_zf41scope",
+            "acog",
+            "barrettscope",
+            "coltscope",
+            "elcan",
+            "exps3",
+            "goerze",
+            "gz3",
+            "kobra",
+            "kobradovetail",
+            "lebelscope",
+            "m68cco",
+            "pgo72",
+            "pso1",
+            "qbzscope",
+            "reichert",
+            "toyscopegreen",
+            "toyscopetan",
+            "zf24"
+        ]
+    },
+
+    "TPR rifle bayonets": {
+        "properties": {},
+        "items": [
+            "lebelbayonet",
+            "leebayonet",
+            "m95bayonet",
+            "mannlichery1903bayonet",
+            "musketbayonet",
+            "seitengewehr98"
+        ]
+    },
+
+    "TPR rifle stocks": {
+        "properties": {},
+        "items": [
+            "magpulubr",
+            "magpulubrtan",
+            "moestocksvz",
+            "prsstocksvz"
+        ]
+    },
+
+    "TPR rifle suppressors": {
+        "properties": {},
+        "items": [
+            "riflesupressor",
+            "riflesupressorfde"
+        ]
+    },
+
+    "TPR SMAW spotting rifle": {
+        "properties": {},
+        "items": [
+            "smawspottingrifle"
+        ]
+    },
+
+    "TPR underbarrel and rifle grenade launchers": {
+        "properties": {},
+        "items": [
+            "gp25",
+            "schiessbecher"
+        ]
+    }
+}

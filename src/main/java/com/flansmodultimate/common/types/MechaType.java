@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.DriveableKind;
-import com.flansmodultimate.api.IMechaType;
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.IMechaType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -128,8 +128,7 @@ public class MechaType extends DriveableType implements IMechaType
                 continue;
             try
             {
-                legNodes.add(
-                    new LegNode(Integer.parseInt(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]), Integer.parseInt(values[3]), Integer.parseInt(values[4])));
+                legNodes.add(new LegNode(Integer.parseInt(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]), Integer.parseInt(values[3]), Integer.parseInt(values[4])));
             }
             catch (RuntimeException ex)
             {

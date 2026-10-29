@@ -97,6 +97,13 @@ public final class DriveableCollisionHelper
         return geometry.queryBounds(boundsScratch) ? new Vec3((boundsScratch[0] + boundsScratch[3]) * 0.5D, boundsScratch[4] + 0.1D, (boundsScratch[2] + boundsScratch[5]) * 0.5D) : null;
     }
 
+    /** Whether the existing posed collision geometry supports an entity's feet. */
+    public boolean supports(Entity entity)
+    {
+        AABB box = entity.getBoundingBox();
+        return geometry.findSupport(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ) >= 0;
+    }
+
     DriveableHullGeometry geometry()
     {
         return geometry;
@@ -289,6 +296,7 @@ public final class DriveableCollisionHelper
         double lengthSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
         if (!(lengthSquared <= MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA))
             return;
+        Vec3 before = entity.position();
         if (lengthSquared > 1.0E-12D)
             DriveableCollisionWorld.moveIgnoringHulls(entity, deltaX, deltaY, deltaZ);
         float yaw = geometry.carryYaw(shape);
@@ -299,6 +307,9 @@ public final class DriveableCollisionHelper
             if (entity instanceof LivingEntity living)
                 living.yBodyRot += yaw;
         }
+        else
+            yaw = 0F;
+        HullCarry.noteCarry(entity, entity.getX() - before.x, entity.getY() - before.y, entity.getZ() - before.z, yaw);
         entity.resetFallDistance();
     }
 

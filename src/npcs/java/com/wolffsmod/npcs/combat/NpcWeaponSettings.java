@@ -26,4 +26,9 @@ public interface NpcWeaponSettings
     int wolffsmodnpcsRangeGeneration();
 
     void wolffsmodnpcsRangeGeneration(int generation);
+
+    /** @return how many times the server had handed its search intervals to every NPC when this NPC last took them */
+    int wolffsmodnpcsSearchGeneration();
+
+    void wolffsmodnpcsSearchGeneration(int generation);
 }

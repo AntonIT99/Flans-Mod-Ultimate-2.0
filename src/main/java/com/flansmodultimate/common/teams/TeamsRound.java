@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.api.ITeam;
-import com.flansmodultimate.api.ITeamsRound;
+import com.flansmodultimate.api.teams.ITeam;
+import com.flansmodultimate.api.teams.ITeamsRound;
 import com.flansmodultimate.common.types.Team;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -62,7 +62,7 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     private final List<String> teamIds;
     /** Side of each team, parallel to {@link #teamIds} and numbered from 0 in order of first appearance. */
     private final List<Integer> sides;
-    private final int timeLimitMinutes;
+    private int timeLimitMinutes;
     private int scoreLimit;
     private final float popularity;
     private int roundsSincePlayed;
@@ -180,6 +180,12 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     public void setScoreLimit(int scoreLimit)
     {
         this.scoreLimit = Math.max(1, scoreLimit);
+    }
+
+    /** Changes the length of the round, from the next time it starts; a round being played keeps its clock. */
+    public void setTimeLimitMinutes(int timeLimitMinutes)
+    {
+        this.timeLimitMinutes = Math.max(1, timeLimitMinutes);
     }
 
     public void markPlayed()

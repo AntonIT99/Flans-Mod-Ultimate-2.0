@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.ISeat;
+import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.teams.BotTag;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

@@ -1,15 +1,15 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.*;
-import com.flansmodultimate.api.EntityTypeProperties.Sound;
-import com.flansmodultimate.api.EntityTypeProperties.Weapon;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.*;
+import com.flansmodultimate.api.entity.EngineSound;
+import com.flansmodultimate.api.entity.EntityTypeProperties;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
+import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.flansmodultimate.common.driveables.*;
-import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
-import com.flansmodultimate.common.driveables.physics.MechaPhysics;
-import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
-import com.flansmodultimate.common.guns.FireableGun;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +25,11 @@ public final class EntityTypePropertySupport
 {
     /** Traverse and elevation speed, in degrees per tick, of a mount whose definition states none. */
     private static final float DEFAULT_AIM_SPEED = 8F;
+    /** Radians of yaw per tick Vehicle gives a legacy wheeled hull per unit of steering control, turn speed and speed scale. */
+    private static final double LEGACY_STEERING_SCALE = 0.1D;
+    /** Blocks per tick across the ground above which a driveable that squashes mobs hurts them, and the most it deals. */
+    public static final double SQUASH_SPEED = 0.12D;
+    private static final double MAX_SQUASH_DAMAGE = 40D;
 
     private EntityTypePropertySupport()
     {}
@@ -32,6 +37,20 @@ public final class EntityTypePropertySupport
     @SuppressWarnings("unused") // Headless IntelliJ loses this public API delegation across source sets.
     public static GroundHandling groundHandling(IContentType type)
     {
+        return groundHandling(type, false);
+    }
+
+    /**
+     * @param water
+     *            whether the vehicle is in water; a legacy wheeled hull there turns on a circle its turn speeds set, as
+     *            Vehicle steers it with the control held
+     */
+    public static GroundHandling groundHandling(IContentType type, boolean water)
+    {
+        // A ship filed as a plane answers her helm by the legacy flight controls; only her astern speed is her own.
+        if (water && type instanceof PlaneType plane)
+            return GroundPropulsionProfiles.of(plane, true)
+                .map(marine -> new GroundHandling(OptionalDouble.empty(), OptionalDouble.empty(), OptionalDouble.of(marine.reverseSpeed() / marine.topSpeed()))).orElse(GroundHandling.EMPTY);
         if (!(type instanceof VehicleType vehicle))
             return GroundHandling.EMPTY;
         boolean legacy = ModCommonConfig.forceLegacyVehiclePhysics();
@@ -46,6 +65,12 @@ public final class EntityTypePropertySupport
                 double speed = VehiclePhysicsUnits.kmhToBlocksPerTick(reference) * ModCommonConfig.realisticSpeedScale(vehicle.getResolvedPhysics().category());
                 radius = OptionalDouble.of(speed / Math.toRadians(rate.getAsDouble() / 20D));
             }
+        }
+        else if (water && !vehicle.isTracked())
+        {
+            double modifier = (vehicle.getTurnLeftModifier() + vehicle.getTurnRightModifier()) * 0.5D;
+            if (modifier > 0D)
+                radius = OptionalDouble.of(1D / (DriveableControlPhysics.wheeledSteeringVelocityScale(1D) * LEGACY_STEERING_SCALE * DriveableControlPhysics.heldControl() * modifier));
         }
         return new GroundHandling(rate, radius, reverseShare(vehicle, legacy));
     }
@@ -77,17 +102,31 @@ public final class EntityTypePropertySupport
         List<WeaponMount> mounts = new ArrayList<>();
         for (SeatInfo seat : driveable.getSeats())
         {
-            if (seat == null)
-                continue;
-            float yawSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().x), 0.25F, 45F);
-            float pitchSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().y), 0.25F, 45F);
-            boolean onTurret = EnumDriveablePart.isTurretMounted(seat.getPart());
-            Vec3 position = LegacyDriveableCoordinates.toLocal(seat.getPosition());
-            mounts.add(new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(seat.getMinYaw(), seat.getMinPitch()), new MountAim(seat.getMaxYaw(), seat.getMaxPitch()), yawSpeed,
-                pitchSpeed, position, onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType())));
+            if (seat != null)
+                mounts.add(seatMount(driveable, seat));
         }
         mounts.sort(Comparator.comparingInt(WeaponMount::seat));
         return List.copyOf(mounts);
+    }
+
+    private static WeaponMount seatMount(DriveableType driveable, SeatInfo seat)
+    {
+        float yawSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().x), 0.25F, 45F);
+        float pitchSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().y), 0.25F, 45F);
+        boolean onTurret = EnumDriveablePart.isTurretMounted(seat.getPart());
+        Vec3 position = LegacyDriveableCoordinates.toLocal(seat.getPosition());
+        // As Driveable seats a rider: RotatedOffset always turns with the turret, TurretOriginOffset only for turret seats.
+        Vec3 turretOffset = LegacyDriveableCoordinates.toLocal(seat.getRotatedOffset());
+        if (onTurret && driveable.getTurretOriginOffset() != null)
+            turretOffset = turretOffset.add(LegacyDriveableCoordinates.toLocal(driveable.getTurretOriginOffset()));
+        // Seats state pitch positive upwards, as the seat clamps it; a mount's pitch is positive downwards. An aircraft's
+        // seats state yaw positive to the left, as its model turns its seat guns; a mount's yaw is positive to the right.
+        boolean left = driveable instanceof PlaneType;
+        float minimumYaw = left ? -seat.getMaxYaw() : seat.getMinYaw();
+        float maximumYaw = left ? -seat.getMinYaw() : seat.getMaxYaw();
+        return new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(minimumYaw, -seat.getMaxPitch()), new MountAim(maximumYaw, -seat.getMinPitch()), yawSpeed, pitchSpeed, position,
+            onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset,
+            Optional.ofNullable(seat.getGunPivot()).map(LegacyDriveableCoordinates::toLocal));
     }
 
     public static Optional<EngineSound> engineSound(IContentType type)
@@ -120,6 +159,18 @@ public final class EntityTypePropertySupport
         return Math.min(2F, Math.max(0.5F, DriveableControlPhysics.engineSoundPitch(movement, curve, 1F)));
     }
 
+    public static OptionalDouble squashDamage(IContentType type, double horizontalSpeed)
+    {
+        boolean squashes = type instanceof VehicleType vehicle && vehicle.isSquashMobs() || type instanceof MechaType mecha && mecha.isSquashMobs();
+        return squashes && horizontalSpeed > SQUASH_SPEED ? OptionalDouble.of(squashDamage(horizontalSpeed)) : OptionalDouble.empty();
+    }
+
+    /** @return what a driveable that squashes mobs deals one it runs into at a speed across the ground in blocks per tick */
+    public static double squashDamage(double horizontalSpeed)
+    {
+        return Math.min(MAX_SQUASH_DAMAGE, 2D + horizontalSpeed * 12D);
+    }
+
     public static Optional<EntityTypeProperties> read(IContentType type, boolean secondary)
     {
         return read(type, secondary, true);
@@ -129,7 +180,9 @@ public final class EntityTypePropertySupport
     {
         if (type instanceof AAGunType aa)
         {
-            Weapon weapon = new Weapon(aa.getShortName(), aa.getDamage(), aa.getBulletSpread(), OptionalDouble.empty(), Math.max(1, aa.getNumBullets()), aa.getShootSound());
+            // An AA gun fires at the default every Flan bullet has, unless its ammunition states a velocity.
+            Weapon weapon = new Weapon(aa.getShortName(), aa.getDamage(), aa.getBulletSpread(), OptionalDouble.of(BulletType.DEFAULT_BULLET_SPEED), Math.max(1, aa.getNumBullets()),
+                aa.getShootSound());
             return Optional.of(new EntityTypeProperties(positive(aa.getHealth()), positive(aa.getTargetRange()), OptionalDouble.empty(), OptionalDouble.empty(), Optional.empty(), Optional.empty(),
                 positive(aa.getShootDelay()), Map.of(), List.of(weapon)));
         }
@@ -169,12 +222,8 @@ public final class EntityTypePropertySupport
         float multiplier = Float.isFinite(reloadMultiplier) && reloadMultiplier > 0F ? reloadMultiplier : 1F;
         if (type instanceof AAGunType aa)
         {
-            int barrels = Math.max(1, aa.getNumBarrels());
-            int rounds = perItem * Math.max(1, aa.getAmmoSlotCount());
-            // Firing together spends a round from every barrel per trigger; alternating spends one.
-            int together = aa.isShareAmmo() ? (int) Math.ceil(perItem / (double) barrels) : perItem;
-            int volleys = aa.isFireAlternately() ? rounds : together;
-            return Optional.of(new ReloadCycle(volleys, aa.getShootDelay(), Math.max(aa.getReloadTime() * multiplier, aa.getShootDelay()), OptionalInt.empty()));
+            int volleys = aa.volleysPerReload(perItem);
+            return Optional.of(new ReloadCycle(volleys, aa.getShootDelay(), GunHandlingTiming.reloadWait(aa.getReloadTime() * multiplier, aa.getShootDelay(), volleys), OptionalInt.empty()));
         }
         if (!(type instanceof DriveableType driveable) || driveable.weaponType(secondary) == EnumWeaponType.NONE)
             return Optional.empty();
@@ -182,12 +231,12 @@ public final class EntityTypePropertySupport
         int declared = driveable.reloadRounds(secondary);
         int magazine = declared > 0 ? Math.min(declared, perItem) : perItem;
         // Only a bank of mounted guns slows down for heavy ammunition; ordnance banks chamber at their own pace.
-        double reload = driveable.reloadTime(secondary) * (gunBank ? multiplier : 1F);
+        double reload = driveable.reloadTime(secondary, magazine) * (gunBank ? multiplier : 1F);
         boolean chamberSound = !gunBank && !secondary && driveable.getReloadSoundTick() != DriveableType.RELOAD_SOUND_TICK_UNSET && StringUtils.isNotBlank(driveable.getShootReloadSound());
         return Optional.of(new ReloadCycle(magazine, driveable.shootDelay(secondary), reload, chamberSound ? OptionalInt.of(driveable.getReloadSoundTick()) : OptionalInt.empty()));
     }
 
-    /** A seat gun reloads after every item of its ammunition, as a crewed driveable's does, never faster than it fires. */
+    /** A seat gun reloads after every item of its ammunition, as a crewed driveable's does; see {@link GunHandlingTiming#reloadWait}. */
     public static Optional<ReloadCycle> seatReloadCycle(IContentType type, int seat, ItemStack ammunition)
     {
         SeatInfo info = type instanceof DriveableType driveable ? driveable.getSeat(seat) : null;
@@ -195,7 +244,8 @@ public final class EntityTypePropertySupport
         if (gun == null)
             return Optional.empty();
         float delay = gun.getShootDelay(null);
-        return Optional.of(new ReloadCycle(ShootableItem.getMaxRounds(ammunition), delay, Math.max(gun.getReloadTime(), delay), OptionalInt.empty()));
+        int rounds = ShootableItem.getMaxRounds(ammunition);
+        return Optional.of(new ReloadCycle(rounds, delay, GunHandlingTiming.reloadWait(gun.getReloadTime(), delay, rounds), OptionalInt.empty()));
     }
 
     private static List<Weapon> weapons(DriveableType type, boolean secondary)

@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.equipment.FlansMelee;
 import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
@@ -33,11 +35,24 @@ public final class NpcProtection
             return false;
         if (NpcEquipment.enabled(npc, Feature.INVULNERABLE))
             return true;
-        return belowMinimum(settings(npc).minimumHit(NpcDamageCategory.of(source)), amount);
+        NpcDamageCategory category = NpcDamageCategory.of(source);
+        float minimum = settings(npc).minimumHit(category);
+        if (category == NpcDamageCategory.MELEE && settings(npc).inheritsMeleeThreshold() && npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity model
+            && model.getInfoType() instanceof IDriveableType type)
+            minimum = type.getMeleeDamageThreshold();
+        return belowMinimum(minimum, amount);
+    }
+
+    /** Normalize melee before thresholds, editor resistances and damage scripts, using the striking hand's weapon. */
+    public static float meleeDamage(EntityNPCInterface npc, DamageSource source, float amount)
+    {
+        if (npc.getVehicle() == null && npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity model && model.getInfoType() instanceof IDriveableType)
+            return FlansMelee.againstVehicle(source, amount);
+        return amount;
     }
 
     /** A hit of exactly the minimum is accepted; 0 disables the minimum. */
-    static boolean belowMinimum(int minimum, float amount)
+    static boolean belowMinimum(float minimum, float amount)
     {
         return minimum > 0 && amount < minimum;
     }

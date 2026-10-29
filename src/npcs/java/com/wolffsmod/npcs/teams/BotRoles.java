@@ -1,6 +1,10 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.ToolProperties;
+import com.flansmodultimate.api.equipment.WeaponTraits;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

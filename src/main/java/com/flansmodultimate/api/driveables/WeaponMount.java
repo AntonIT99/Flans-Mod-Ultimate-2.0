@@ -1,0 +1,145 @@
+/*
+ * Copyright (c) 2026 Wolff (AntonIT99)
+ * SPDX-License-Identifier: MIT
+ * See LICENSE-API at the root of the Flan's Mod Ultimate repository.
+ */
+package com.flansmodultimate.api.driveables;
+
+import com.flansmodultimate.api.content.IContentType;
+import org.jetbrains.annotations.ApiStatus;
+
+import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
+
+/**
+ * A seat of a driveable definition, or the gun of an AA gun definition, as something that can be aimed: how far it
+ * turns, how fast, and where its occupant sits. Read from the definition alone, on either side after content loading.
+ *
+ * @param seat
+ *            seat index, 0 for the driver, whose aim turns the main turret
+ * @param driver
+ *            whether this is the driver's seat
+ * @param onTurret
+ *            whether the seat and its gun turn with the main turret
+ * @param minimum
+ *            leftmost and highest aim; pitch is positive downwards, so this is the smaller pitch
+ * @param maximum
+ *            rightmost and lowest aim. A yaw span of 360 degrees or more means the mount turns freely
+ * @param yawSpeed
+ *            traverse speed in degrees per tick
+ * @param pitchSpeed
+ *            elevation speed in degrees per tick
+ * @param position
+ *            where the occupant sits with the turret at rest, in the static model preview frame: blocks, Y up,
+ *            forward -Z, relative to the model origin
+ * @param pivot
+ *            the point a seat on the turret is carried round as the turret turns, in the same frame as
+ *            {@code position}; the position itself for a seat on the hull
+ * @param gun
+ *            the gun definition the seat mans, if any
+ * @param turretOffset
+ *            added to where the occupant sits and turned with the main turret whether or not the seat is on it, in the
+ *            same frame as {@code position}: the seat's rotated offset, plus the turret origin offset for a seat on
+ *            the turret
+ * @param gunPivot
+ *            the point the seat's gun model turns round as it aims, in the same frame as {@code position} with the
+ *            turret at rest, when the model was measured; the gunner is carried round it as the gun traverses
+ */
+@ApiStatus.Experimental
+public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
+    Vec3 turretOffset, Optional<Vec3> gunPivot)
+{
+    public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun)
+    {
+        this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, Vec3.ZERO);
+    }
+
+    public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
+        Vec3 turretOffset)
+    {
+        this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, turretOffset, Optional.empty());
+    }
+
+    /**
+     * @param turretYaw
+     *            yaw of the main turret relative to the hull, in degrees, positive to the right
+     * @return where the occupant sits with the turret turned that far, in the same frame as {@code position}
+     */
+    public Vec3 positionAt(float turretYaw)
+    {
+        return seatedAt(position, turretYaw);
+    }
+
+    /**
+     * @param turretYaw
+     *            yaw of the main turret relative to the hull, in degrees, positive to the right
+     * @param gunYaw
+     *            yaw the seat's gun aims at, as {@link #minimum} and {@link #maximum} count it
+     * @return where the gunner sits with the turret and the gun turned that far: carried round the gun's pivot by the
+     *         gun's turn from its rest yaw, where the seat places it; as {@link #positionAt(float)} without a gun or pivot
+     */
+    public Vec3 positionAt(float turretYaw, float gunYaw)
+    {
+        if (driver || gun.isEmpty() || gunPivot.isEmpty())
+            return positionAt(turretYaw);
+        Vec3 gunAt = gunPivot.get();
+        return seatedAt(gunAt.add(turn(position.subtract(gunAt), gunYaw - restYaw())), turretYaw);
+    }
+
+    private Vec3 seatedAt(Vec3 seated, float turretYaw)
+    {
+        Vec3 turned = onTurret ? pivot.add(turn(seated.subtract(pivot), turretYaw)) : seated;
+        return turned.add(turn(turretOffset, turretYaw));
+    }
+
+    private static Vec3 turn(Vec3 vector, float yaw)
+    {
+        if (yaw == 0F)
+            return vector;
+        double radians = Math.toRadians(yaw);
+        double cosine = Math.cos(radians);
+        double sine = Math.sin(radians);
+        return new Vec3(vector.x * cosine - vector.z * sine, vector.y, vector.x * sine + vector.z * cosine);
+    }
+
+    /** @return whether the mount can turn all the way round */
+    public boolean turnsFreely()
+    {
+        return maximum.yaw() - minimum.yaw() >= 360F;
+    }
+
+    /** @return the yaw the mount rests at: the middle of a limited traverse, or straight ahead */
+    public float restYaw()
+    {
+        return turnsFreely() ? 0F : (minimum.yaw() + maximum.yaw()) * 0.5F;
+    }
+
+    /**
+     * Brings an aim within the mount's limits. A yaw outside a limited traverse goes to the nearer end.
+     *
+     * @param aim
+     *            wanted aim relative to the hull
+     * @return the nearest aim the mount can reach, with its yaw wrapped to the half-open range from -180 to 180 when
+     *         the mount turns freely
+     */
+    public MountAim clamp(MountAim aim)
+    {
+        float pitch = Math.max(minimum.pitch(), Math.min(maximum.pitch(), aim.pitch()));
+        if (turnsFreely())
+            return new MountAim(wrap(aim.yaw()), pitch);
+        float centre = restYaw();
+        float halfSpan = (maximum.yaw() - minimum.yaw()) * 0.5F;
+        return new MountAim(centre + Math.max(-halfSpan, Math.min(halfSpan, wrap(aim.yaw() - centre))), pitch);
+    }
+
+    private static float wrap(float degrees)
+    {
+        float wrapped = degrees % 360F;
+        if (wrapped >= 180F)
+            wrapped -= 360F;
+        if (wrapped < -180F)
+            wrapped += 360F;
+        return wrapped;
+    }
+}

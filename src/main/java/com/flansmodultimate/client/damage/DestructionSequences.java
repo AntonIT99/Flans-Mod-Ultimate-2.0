@@ -68,6 +68,7 @@ final class DestructionSequences
         /** Whether there is ammunition aboard to go off, and the type lets it. */
         private final boolean cookOff;
         private final WreckLoad load;
+        private final float magazineBurstScale;
         private int age;
         private int nextJet;
 
@@ -78,6 +79,7 @@ final class DestructionSequences
             fate = RandomSource.create(source.entity().getUUID().getLeastSignificantBits() ^ source.entity().getUUID().getMostSignificantBits());
             load = source.load();
             cookOff = source.type().isCookOff() && load.cooksOff();
+            magazineBurstScale = cookOff ? DestructionAmmo.of(source.type()).magazineBurstScale(load) : 0F;
             duration = switch (source.damageClass())
             {
                 // The more rounds aboard, the longer they go on going off.
@@ -122,9 +124,10 @@ final class DestructionSequences
             if (throwOff(source, withChildren(source, part.getType()), at, 0.5D + random.nextDouble() * 0.4D, 0.35D, 1.5F, random.nextBoolean()))
                 ++thrown;
         }
+        float dustScale = DamageParticles.burstScale(size);
         for (int i = 0; i < 12; i++)
-            DamageParticles.puff(DamageParticles.DUST, centre, (random.nextDouble() - 0.5D) * 0.3D, random.nextDouble() * 0.1D, (random.nextDouble() - 0.5D) * 0.3D, (1F + random.nextFloat()) * size,
-                40 + random.nextInt(30), true);
+            DamageParticles.puff(DamageParticles.DUST, centre, (random.nextDouble() - 0.5D) * 0.3D, random.nextDouble() * 0.1D, (random.nextDouble() - 0.5D) * 0.3D,
+                (1F + random.nextFloat()) * dustScale, 40 + random.nextInt(30), true);
     }
 
     /** Lays a scorch mark on the ground below the point, when there is ground close enough below to burn. */
@@ -350,18 +353,28 @@ final class DestructionSequences
             }
         }
         if (sequence.age == sequence.magazineTick && sequence.cookOff)
+            shipMagazine(sequence);
+    }
+
+    private static void shipMagazine(Sequence sequence)
+    {
+        DamageEffectSource source = sequence.source;
+        RandomSource random = sequence.random;
+        // Rifle belts pop in the fire; only explosive ammunition produces a magazine blast.
+        DriveablePart turret = firstDrawnTurret(source);
+        DriveablePart seat = turret != null ? turret : source.core();
+        if (seat == null)
+            return;
+        if (sequence.magazineBurstScale <= 0F)
         {
-            // The magazine goes up, if there was anything left in it.
-            DriveablePart turret = firstDrawnTurret(source);
-            DriveablePart seat = turret != null ? turret : source.core();
-            if (seat == null)
-                return;
-            Vec3 at = source.pointInPart(seat, 0.5D, 0.5D, 0.5D);
-            DamageParticles.burst(at, (float) Math.max(2D, coreSize(source)), random);
-            explosionSound(source.entity(), 6F, 0.6F);
-            if (turret != null)
-                throwOff(source, Set.of(turret.getType()), at, 0.9D, 0.15D, 1F, true);
+            pop(source, seat, random);
+            return;
         }
+        Vec3 at = source.pointInPart(seat, 0.5D, 0.5D, 0.5D);
+        DamageParticles.burst(at, sequence.magazineBurstScale, random);
+        explosionSound(source.entity(), 1F + 2F * DamageParticles.burstScale(sequence.magazineBurstScale), 0.6F);
+        if (turret != null)
+            throwOff(source, Set.of(turret.getType()), at, 0.9D, 0.15D, 1F, true);
     }
 
     // Shared

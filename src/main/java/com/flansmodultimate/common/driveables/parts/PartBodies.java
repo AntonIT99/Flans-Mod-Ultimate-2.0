@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.driveables.parts;
 
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.parts.IFlanPartTarget;
+import com.flansmodultimate.api.parts.IPartBody;
 import com.flansmodultimate.common.types.DriveableType;
 import com.google.common.collect.MapMaker;
 import lombok.AccessLevel;

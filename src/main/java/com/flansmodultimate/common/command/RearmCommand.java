@@ -56,10 +56,7 @@ public final class RearmCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        // Registered twice rather than redirected, so the namespaced spelling accepts the
-        // bare form as well; a redirect only forwards the arguments that follow it.
         dispatcher.register(commandRoot("rearm"));
-        dispatcher.register(commandRoot("flanrearm"));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)

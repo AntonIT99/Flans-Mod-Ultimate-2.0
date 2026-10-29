@@ -1,12 +1,13 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.entity.SoundRange;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcSounds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.event.NpcEvent;
-import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,9 +23,10 @@ import net.minecraft.world.phys.Vec3;
 import java.util.OptionalDouble;
 
 /**
- * Fires vanilla throwables from the projectile slot as the real thing: potions splash, experience bottles burst,
- * fireworks explode with their stars and fire charges ignite. Custom NPCs' own projectile only carries the item's
- * picture and the NPC's damage, so those items would otherwise do none of this.
+ * Fires vanilla throwables as the real thing: potions splash, experience bottles burst, fireworks explode with their stars
+ * and fire charges ignite. Custom NPCs' own projectile only carries the item's picture and the NPC's damage, so those items
+ * would otherwise do none of this. The item comes from the projectile slot, or from the inventory as the native throwable
+ * strategy says, and is used up as Use up ammunition says.
  *
  * <p>
  * Custom NPCs keeps the trigger, cadence, shot count, accuracy and indirect-fire choice. Other items, snowballs
@@ -57,20 +59,46 @@ public final class NpcThrowables
             return true;
         NpcEvent.RangedLaunchedEvent event = new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, npc.stats.ranged.getStrength());
         Vec3 origin = npc.getEyePosition();
-        if (launch(npc, level, ammunition, flight, origin, direction(npc, target, origin, flight, highArc)))
+        if (launch(npc, level, ammunition, flight, origin, direction(npc, target, origin, flight, highArc), Mth.clamp(npc.stats.ranged.getShotCount(), 1, 10)))
         {
-            SoundEvent sound = npc.stats.ranged.getSoundEvent(0);
-            npc.playSound(sound == null ? flight.sound() : sound, sound == null ? 1F : 2F, 1F);
+            // The NPC's own sound stands in for the item's, and then carries as far as a thrown Flan weapon's.
+            String own = npc.stats.ranged.getSound(0);
+            if (own == null)
+                npc.playSound(flight.sound(), 1F, 1F);
+            else
+                NpcSounds.play(npc, own, SoundRange.THROW);
+            // One item a trigger, as for a player, whatever the NPC's shot count.
+            if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+                NpcAmmunition.consume(npc, ammunition);
             EventHooks.onNPCRangedLaunched(npc, event);
         }
         return true;
     }
 
-    /** @return whether at least one of the NPC's shots entered the level */
-    private static boolean launch(EntityNPCInterface npc, ServerLevel level, ItemStack ammunition, Flight flight, Vec3 origin, Vec3 direction)
+    /**
+     * Throws a native throwable the NPC carries at the target, once, as a throw beside its other attacks. It is used up as Use
+     * up ammunition says. Server thread.
+     *
+     * @return whether it was thrown
+     */
+    static boolean throwCarried(EntityNPCInterface npc, LivingEntity target, ItemStack stack)
+    {
+        Flight flight = flight(npc, stack);
+        if (flight == null || !(npc.level() instanceof ServerLevel level))
+            return false;
+        Vec3 origin = npc.getEyePosition();
+        if (!launch(npc, level, stack, flight, origin, direction(npc, target, origin, flight, false), 1))
+            return false;
+        npc.playSound(flight.sound(), 1F, 1F);
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+            NpcAmmunition.consume(npc, stack);
+        return true;
+    }
+
+    /** @return whether at least one of the shots entered the level */
+    private static boolean launch(EntityNPCInterface npc, ServerLevel level, ItemStack ammunition, Flight flight, Vec3 origin, Vec3 direction, int shots)
     {
         float inaccuracy = inaccuracy(npc.stats.ranged.getAccuracy());
-        int shots = Mth.clamp(npc.stats.ranged.getShotCount(), 1, 10);
         boolean launched = false;
         for (int i = 0; i < shots; i++)
         {
@@ -127,11 +155,12 @@ public final class NpcThrowables
         return defaults == null ? OptionalDouble.empty() : OptionalDouble.of(defaults.speed());
     }
 
+    /** @return what the NPC fires without an equipped ranged weapon, which need not be a native throwable, or null for nothing */
     @Nullable
     private static ItemStack ammunition(EntityNPCInterface npc)
     {
-        IItemStack slot = npc.inventory.getProjectile();
-        return slot == null ? null : slot.getMCItemStack();
+        ItemStack projectile = NpcThrowing.mainProjectile(npc);
+        return projectile.isEmpty() ? null : projectile;
     }
 
     /** The stored Custom value; until one is edited/imported it starts at the current item's default. */

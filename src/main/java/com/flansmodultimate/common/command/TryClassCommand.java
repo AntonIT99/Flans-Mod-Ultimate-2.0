@@ -52,10 +52,7 @@ public final class TryClassCommand
 {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        // Registered twice rather than redirected, so the prefixed spelling accepts the same
-        // arguments; a redirect only forwards the arguments that follow it.
         dispatcher.register(commandRoot("tryclass"));
-        dispatcher.register(commandRoot("flantryclass"));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)
@@ -120,10 +117,8 @@ public final class TryClassCommand
 
         int items = given;
         int pieces = worn;
-        context.getSource()
-            .sendSuccess(() -> Component
-                .literal("Equipped class " + playerClass.getName() + " (" + items + (items == 1 ? " item" : " items") + ", " + pieces + (pieces == 1 ? " armour piece" : " armour pieces") + ")")
-                .withStyle(ChatFormatting.GREEN), true);
+        context.getSource().sendSuccess(() -> Component.literal("Equipped class ").append(playerClass.getNameComponent())
+            .append(" (" + items + (items == 1 ? " item" : " items") + ", " + pieces + (pieces == 1 ? " armour piece" : " armour pieces") + ")").withStyle(ChatFormatting.GREEN), true);
         if (playerClass.getSkinOverride().isBlank())
             send(context, ChatFormatting.DARK_GRAY, "This class defines no SkinOverride");
         return 1;
@@ -153,11 +148,11 @@ public final class TryClassCommand
     private static int list(CommandContext<CommandSourceStack> context, @Nullable String filter)
     {
         Collection<PlayerClass> classes;
-        String header;
+        Component header;
         if (filter == null)
         {
             classes = PlayerClass.values();
-            header = "All player classes";
+            header = Component.literal("All player classes");
         }
         else
         {
@@ -165,7 +160,7 @@ public final class TryClassCommand
             if (team != null)
             {
                 classes = team.getClasses();
-                header = "Classes of team " + team.getName();
+                header = Component.literal("Classes of team ").append(team.getNameComponent());
             }
             else
             {
@@ -176,17 +171,17 @@ public final class TryClassCommand
                     return 0;
                 }
                 classes = PlayerClass.values().stream().filter(type -> pack.equals(packName(type))).toList();
-                header = "Classes of content pack " + pack;
+                header = Component.literal("Classes of content pack " + pack);
             }
         }
 
         if (classes.isEmpty())
         {
-            send(context, ChatFormatting.GRAY, header + ": none");
+            context.getSource().sendSuccess(() -> Component.empty().append(header).append(": none").withStyle(ChatFormatting.GRAY), false);
             return 0;
         }
 
-        send(context, ChatFormatting.GOLD, "=== " + header + " (" + classes.size() + ") ===");
+        context.getSource().sendSuccess(() -> Component.literal("=== ").append(header).append(" (" + classes.size() + ") ===").withStyle(ChatFormatting.GOLD), false);
         for (PlayerClass playerClass : classes)
             context.getSource().sendSuccess(() -> classLine(playerClass), false);
         return classes.size();
@@ -194,7 +189,7 @@ public final class TryClassCommand
 
     private static Component classLine(PlayerClass playerClass)
     {
-        MutableComponent line = idPrefix(playerClass).append(Component.literal(" - ").withStyle(ChatFormatting.GOLD)).append(Component.literal(playerClass.getName()).withStyle(ChatFormatting.WHITE));
+        MutableComponent line = idPrefix(playerClass).append(Component.literal(" - ").withStyle(ChatFormatting.GOLD)).append(playerClass.getNameComponent().withStyle(ChatFormatting.WHITE));
         if (playerClass.getUnlockLevel() > 0)
             line.append(Component.literal(" (rank " + playerClass.getUnlockLevel() + ")").withStyle(ChatFormatting.YELLOW));
         return line.append(packSuffix(playerClass));

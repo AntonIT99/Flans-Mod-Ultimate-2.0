@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.ITeamsRespawnRule;
-import com.flansmodultimate.api.ITeamsRound;
-import com.flansmodultimate.api.TeamsScoreEntry;
-import com.flansmodultimate.api.TeamsSpawner;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule;
+import com.flansmodultimate.api.teams.ITeamsRound;
+import com.flansmodultimate.api.teams.TeamsScoreEntry;
+import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.entity.Flag;
@@ -430,6 +430,12 @@ public final class TeamsManager
         return vehiclesNeedFuel && !movieProp;
     }
 
+    /** The fuel rule as it is set, before movie prop mode lifts it. */
+    public boolean isVehiclesNeedFuelSetting()
+    {
+        return vehiclesNeedFuel;
+    }
+
     public void setPacifism(boolean pacifism)
     {
         this.pacifism = pacifism;
@@ -447,6 +453,12 @@ public final class TeamsManager
     {
         seaLevelOverride = seaLevel == null ? NO_SEA_LEVEL_OVERRIDE : seaLevel;
         saveRuntime();
+    }
+
+    /** The sea level an operator set with {@code /teams seaLevel}, or empty when each dimension keeps its own. */
+    public OptionalInt getSeaLevelOverride()
+    {
+        return seaLevelOverride == NO_SEA_LEVEL_OVERRIDE ? OptionalInt.empty() : OptionalInt.of(seaLevelOverride);
     }
 
     /** The sea level of a dimension, unless an operator set one with {@code /teams seaLevel}. */
@@ -593,7 +605,14 @@ public final class TeamsManager
         if (removed == null)
             return false;
 
-        savedData.rounds.removeIf(round -> round.getMapId().equals(removed.getShortName()));
+        // The rotation goes on after the last round it kept up to the one last started, as when a round is removed.
+        Predicate<TeamsRound> onMap = round -> round.getMapId().equals(removed.getShortName());
+        int keptBefore = 0;
+        for (int i = 0; i <= Math.min(rotationIndex, savedData.rounds.size() - 1); i++)
+            if (!onMap.test(savedData.rounds.get(i)))
+                keptBefore++;
+        savedData.rounds.removeIf(onMap);
+        rotationIndex = keptBefore - 1;
         markDirty();
         return true;
     }
@@ -669,8 +688,53 @@ public final class TeamsManager
         TeamsRound removed = Objects.requireNonNull(savedData).rounds.remove(index);
         if (removed.getId().equals(currentRoundId))
             stopRound();
+        // The rotation goes on from where it was: the rounds after the removed one moved up a place, and the round that
+        // took the place of a removed round last started is the one to play next.
+        if (index <= rotationIndex)
+            rotationIndex--;
         rotationIndex = Math.min(rotationIndex, savedData.rounds.size() - 1);
         markDirty();
+        return true;
+    }
+
+    /**
+     * Moves a round of the rotation to another place in it. The rotation goes on from the round last started wherever
+     * that round now stands, and a queued round stays queued.
+     *
+     * @return whether both places are in the rotation
+     */
+    public boolean moveRound(int from, int to)
+    {
+        ensureData();
+        List<TeamsRound> rounds = Objects.requireNonNull(savedData).rounds;
+        if (from < 0 || from >= rounds.size() || to < 0 || to >= rounds.size())
+            return false;
+        TeamsRound last = rotationIndex >= 0 && rotationIndex < rounds.size() ? rounds.get(rotationIndex) : null;
+        rounds.add(to, rounds.remove(from));
+        if (last != null)
+            rotationIndex = rounds.indexOf(last);
+        markDirty();
+        return true;
+    }
+
+    /**
+     * Changes the length and score limit of a round of the rotation. A round being played takes the new score limit at
+     * once and keeps its clock; the new length counts from the next time it starts.
+     *
+     * @return whether the round is in the rotation
+     */
+    public boolean setRoundLimits(int index, int minutes, int scoreLimit)
+    {
+        ensureData();
+        List<TeamsRound> rounds = Objects.requireNonNull(savedData).rounds;
+        if (index < 0 || index >= rounds.size() || minutes < 1 || scoreLimit < 1)
+            return false;
+        TeamsRound round = rounds.get(index);
+        round.setTimeLimitMinutes(minutes);
+        round.setScoreLimit(scoreLimit);
+        markDirty();
+        if (round.getId().equals(currentRoundId))
+            syncAll(PacketTeamsState.OpenScreen.NONE);
         return true;
     }
 
@@ -713,11 +777,12 @@ public final class TeamsManager
             for (int team = 0; team < teamCount; team++)
                 teamIds.add(candidates.remove(random.nextInt(candidates.size())).getShortName());
 
-            addRound(map.getShortName(), gameType.getId(), teamIds, List.of(), 10 + random.nextInt(10), generatedScoreLimit(gameType));
+            addRound(map.getShortName(), gameType.getId(), teamIds, List.of(), 10 + random.nextInt(10), defaultScoreLimit(gameType));
         }
     }
 
-    private static int generatedScoreLimit(com.flansmodultimate.common.teams.GameType gameType)
+    /** The score limit a round of a game type gets when it is not given one, as the rounds generator gives it. */
+    public static int defaultScoreLimit(com.flansmodultimate.common.teams.GameType gameType)
     {
         // Tickets in the objective modes: reinforcements for the attackers of an Assault, score to reach otherwise.
         if (gameType.getObjectiveMode() != ObjectiveMode.NONE)
@@ -831,6 +896,19 @@ public final class TeamsManager
             if (savedData.rounds.get(i).getId().equals(queuedRoundId))
                 return i;
         return -1;
+    }
+
+    /**
+     * The rotation index of the round {@link #startNextRound} would start: the queued round, otherwise the one after the
+     * round last started. A vote at the end of a round may still pick another. -1 for an empty rotation.
+     */
+    public int nextRoundIndex()
+    {
+        int queued = queuedRoundIndex();
+        if (queued >= 0)
+            return queued;
+        List<TeamsRound> rounds = getRounds();
+        return rounds.isEmpty() ? -1 : (rotationIndex + 1) % rounds.size();
     }
 
     /** Changes the score limit of the round being played, as the legacy {@code scorelimit} game type variable did. */
@@ -1158,18 +1236,50 @@ public final class TeamsManager
         for (ServerPlayer player : getServer().getPlayerList().getPlayers())
             if (getPlayerTeam(player) != Team.SPECTATORS)
                 getStats(player).recordRound();
-        getCurrentRound().ifPresent(round ->
+        if (getCurrentGameType().map(com.flansmodultimate.common.teams.GameType::hasMvpPerTeam).orElse(true))
         {
-            for (String id : round.getTeamIds())
+            getCurrentRound().ifPresent(round ->
             {
-                getPlayersOnTeam(Team.getTeam(id)).stream().max(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore())).ifPresent(player ->
-                {
-                    getStats(player).recordMvp();
-                    awardExperience(player, 250);
-                });
-            }
-        });
+                for (String id : round.getTeamIds())
+                    getPlayersOnTeam(Team.getTeam(id)).stream().max(Comparator.comparingInt(player -> PlayerData.getInstance(player).getScore())).ifPresent(this::awardMvp);
+            });
+        }
+        else
+        {
+            awardFieldMvp();
+        }
         markDirty();
+    }
+
+    /** Names the single best player of the round, if one outscored everyone else with a positive score. */
+    private void awardFieldMvp()
+    {
+        ServerPlayer best = null;
+        boolean tied = false;
+        for (ServerPlayer player : getServer().getPlayerList().getPlayers())
+        {
+            if (getPlayerTeam(player) == Team.SPECTATORS)
+                continue;
+            int score = PlayerData.getInstance(player).getScore();
+            int bestScore = best == null ? 0 : PlayerData.getInstance(best).getScore();
+            if (score > bestScore)
+            {
+                best = player;
+                tied = false;
+            }
+            else if (best != null && score == bestScore)
+            {
+                tied = true;
+            }
+        }
+        if (best != null && !tied)
+            awardMvp(best);
+    }
+
+    private void awardMvp(ServerPlayer player)
+    {
+        getStats(player).recordMvp();
+        awardExperience(player, 250);
     }
 
     public boolean selectTeam(ServerPlayer player, @Nullable Team team, boolean force)
@@ -1254,13 +1364,13 @@ public final class TeamsManager
             return Component.translatable("message.flansmodultimate.teams.class_unavailable");
         PlayerStats stats = getStats(player);
         if (stats.getRank() < playerClass.getUnlockLevel())
-            return Component.translatable("message.flansmodultimate.teams.class_rank", playerClass.getName(), playerClass.getUnlockLevel());
+            return Component.translatable("message.flansmodultimate.teams.class_rank", playerClass.getNameComponent(), playerClass.getUnlockLevel());
         if (stats.getPrestige() < playerClass.getRequiredPrestigeLevel())
-            return Component.translatable("message.flansmodultimate.teams.class_prestige", playerClass.getName(), playerClass.getRequiredPrestigeLevel());
+            return Component.translatable("message.flansmodultimate.teams.class_prestige", playerClass.getNameComponent(), playerClass.getRequiredPrestigeLevel());
         int capacity = getClassCapacity(team, playerClass);
         int used = countPlayersUsingClass(team, playerClass, player);
         if (!ClassLimits.hasSlot(capacity, used))
-            return Component.translatable("message.flansmodultimate.teams.class_full", playerClass.getName(), used, capacity);
+            return Component.translatable("message.flansmodultimate.teams.class_full", playerClass.getNameComponent(), used, capacity);
         return null;
     }
 
@@ -1358,7 +1468,7 @@ public final class TeamsManager
             return;
         }
 
-        broadcast(Component.translatable("message.flansmodultimate.teams.switched_team", player.getScoreboardName(), next.getName()));
+        broadcast(Component.translatable("message.flansmodultimate.teams.switched_team", player.getScoreboardName(), next.getNameComponent()));
         getCurrentGameType().ifPresent(type -> type.playerDefected(this, player, current, next));
 
         // Dying is what makes the change take hold: the respawn hook then applies the pending

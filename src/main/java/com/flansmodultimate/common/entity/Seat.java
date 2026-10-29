@@ -1,7 +1,13 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
+import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.optics.*;
@@ -168,6 +174,11 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
      * </p>
      */
     private static final double MECHA_COCKPIT_RIDING_OFFSET = -0.05D;
+    /**
+     * Degrees a rider that is not a player may turn its head away from where its seat faces, and an aircraft gunner its gun
+     * before its torso follows, as a player's does.
+     */
+    private static final float RIDER_HEAD_TURN = 75F;
 
     @Getter @Nullable
     protected Driveable driveable;
@@ -688,6 +699,35 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         move.accept(passenger, riderPosition.x, riderPosition.y, riderPosition.z);
         passenger.setDeltaMovement(driveable == null ? Vec3.ZERO : driveable.getDeltaMovement());
         passenger.fallDistance = 0F;
+        if (driveable != null && passenger instanceof LivingEntity living && !(passenger instanceof Player))
+            alignRider(living, driveable);
+    }
+
+    /**
+     * Turns a rider that is not a player, such as an NPC crew member, as a player's client turns a player in this seat. A
+     * gunner looks along its gun and turns its body with it, in an aircraft only once the gun turns further than a torso
+     * planted in the cockpit lets it look. Anyone else keeps its body ahead of the driveable, or of the turret for a seat
+     * on it, and looks where its AI looks, as far as a seated body can turn its head.
+     */
+    private void alignRider(LivingEntity rider, Driveable parent)
+    {
+        float frame = parent.getSeatAimFrameYaw(this, 1F);
+        if (!isDriverSeat() && seatInfo != null && seatInfo.getGunType() != null)
+        {
+            LegacyDriveableCoordinates.ViewAngles view = parent.getMountedViewAngles(getHullAimYaw(), getAimPitch());
+            float aim = Mth.wrapDegrees(getAimYaw());
+            float body = parent instanceof Plane ? parent.getMountedViewAngles(frame + aim - Mth.clamp(aim, -RIDER_HEAD_TURN, RIDER_HEAD_TURN), 0F).yaw() : view.yaw();
+            rider.yBodyRot += Mth.wrapDegrees(body - rider.yBodyRot);
+            rider.setYHeadRot(rider.yBodyRot + Mth.wrapDegrees(view.yaw() - rider.yBodyRot));
+            rider.setYRot(rider.getYHeadRot());
+            rider.setXRot(view.pitch());
+            return;
+        }
+        float facing = parent.getMountedViewAngles(frame, 0F).yaw();
+        rider.yBodyRot += Mth.wrapDegrees(facing - rider.yBodyRot);
+        float head = rider.yBodyRot + Mth.clamp(Mth.wrapDegrees(rider.getYHeadRot() - rider.yBodyRot), -RIDER_HEAD_TURN, RIDER_HEAD_TURN);
+        rider.setYHeadRot(head);
+        rider.setYRot(head);
     }
 
     public double getPassengerRidingOffset(@NotNull Entity passenger)
@@ -862,6 +902,20 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         Driveable parent = driveable;
         return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponBallistics(secondary));
+    }
+
+    @Override
+    public Optional<DetonationRadii> getDriverWeaponDetonation(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponDetonation(secondary));
+    }
+
+    @Override
+    public boolean isDriverWeaponHullFixed(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent != null && parent.isMovementController(this) && parent.isDriverWeaponHullFixed(secondary);
     }
 
     @Override

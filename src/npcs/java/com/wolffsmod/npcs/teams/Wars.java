@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.FlansTeams;
+import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.NpcsMod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -259,7 +259,7 @@ final class Wars
                 present++;
         }
         int faction = skirmish.getSides().get(side).faction();
-        BattleFactions factions = BattleFactions.get(server);
+        FactionMembers factions = FactionMembers.get(server);
         for (ServerPlayer player : level.players())
         {
             if (player.isAlive() && !player.isSpectator() && player.chunkPosition().toLong() == chunk && factions.factionOf(player.getUUID()).filter(member -> member == faction).isPresent())
@@ -276,7 +276,7 @@ final class Wars
     /** Tells the members of the war's factions, and the players near, about ground taken. */
     private static void announce(MinecraftServer server, ServerLevel level, War war, Vec3 at, Component message)
     {
-        BattleFactions factions = BattleFactions.get(server);
+        FactionMembers factions = FactionMembers.get(server);
         for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             boolean member = factions.factionOf(player.getUUID()).map(war.getFactions()::contains).orElse(false);

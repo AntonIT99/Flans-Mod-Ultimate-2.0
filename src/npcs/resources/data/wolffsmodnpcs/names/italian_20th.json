@@ -3,6 +3,34 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Giuseppe": 20, "Giovanni": 20, "Antonio": 20, "Mario": 20, "Luigi": 20, "Francesco": 20, "Angelo": 20, "Vincenzo": 20, "Pietro": 20,
+        "Salvatore": 20, "Carlo": 20, "Domenico": 20, "Michele": 20, "Paolo": 20, "Roberto": 20, "Alberto": 20, "Bruno": 20, "Aldo": 20, "Umberto": 20,
+        "Ugo": 20, "Renato": 20, "Giorgio": 20, "Guido": 20, "Enrico": 20, "Alfredo": 20, "Giacomo": 20,
+        "Ettore": 8, "Ernesto": 8, "Emilio": 8, "Sergio": 8, "Vittorio": 8, "Nicola": 8, "Raffaele": 8, "Pasquale": 8, "Gaetano": 8, "Gennaro": 8,
+        "Lorenzo": 8, "Filippo": 8, "Federico": 8, "Eugenio": 8, "Cesare": 8, "Armando": 8, "Amedeo": 8, "Augusto": 8, "Attilio": 8, "Alessandro": 8,
+        "Benito": 8, "Edoardo": 8, "Felice": 8, "Fausto": 8, "Gino": 8, "Livio": 8, "Leone": 8, "Leonardo": 8, "Silvio": 8, "Tommaso": 8,
+        "Riccardo": 8, "Romano": 8, "Rodolfo": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Anna": 20, "Giuseppina": 20, "Rosa": 20, "Teresa": 20, "Angela": 20, "Giovanna": 20, "Lucia": 20, "Francesca": 20, "Carmela": 20,
+        "Caterina": 20, "Concetta": 20, "Antonietta": 20, "Margherita": 20, "Elena": 20, "Rita": 20, "Luisa": 20, "Ida": 20, "Pia": 20, "Lina": 20,
+        "Paola": 20, "Emilia": 20, "Laura": 20, "Franca": 20, "Giulia": 20,
+        "Filomena": 8, "Assunta": 8, "Clara": 8, "Carla": 8, "Cecilia": 8, "Elvira": 8, "Gina": 8, "Irma": 8, "Marianna": 8, "Matilde": 8, "Rosina": 8,
+        "Sara": 8, "Silvana": 8, "Vera": 8, "Vittoria": 8, "Gemma": 8, "Dina": 8, "Elisa": 8, "Olga": 8, "Amalia": 8, "Adriana": 8, "Alda": 8,
+        "Alba": 8, "Bice": 8, "Ester": 8, "Fernanda": 8, "Flora": 8, "Gabriella": 8, "Iolanda": 8, "Lidia": 8, "Maddalena": 8, "Nina": 8, "Rina": 8,
+        "Rosalia": 8, "Erminia": 8, "Enrica": 8
+      },
+      "surnameWeights": {
+        "Rossi": 20, "Russo": 20, "Ferrari": 20, "Esposito": 20, "Bianchi": 20, "Romano": 20, "Colombo": 20, "Ricci": 20, "Marino": 20, "Greco": 20,
+        "Bruno": 8, "Gallo": 8, "Conti": 8, "De Luca": 8, "Mancini": 8, "Costa": 8, "Giordano": 8, "Rizzo": 8, "Lombardi": 8, "Moretti": 8,
+        "Barbieri": 8, "Fontana": 8, "Santoro": 8, "Mariani": 8, "Rinaldi": 8, "Caruso": 8, "Ferrara": 8, "Galli": 8, "Martini": 8, "Leone": 8,
+        "Longo": 8, "Gentile": 8, "Martinelli": 8, "Vitale": 8, "Lombardo": 8,
+        "Serra": 3, "Coppola": 3, "De Santis": 3, "D'Angelo": 3, "Marchetti": 3, "Parisi": 3, "Villa": 3, "Conte": 3, "Ferraro": 3, "Ferri": 3,
+        "Fabbri": 3, "Bianco": 3, "Marini": 3, "Grasso": 3, "Valentini": 3, "Messina": 3, "Sala": 3, "De Angelis": 3, "Gatti": 3, "Pellegrini": 3,
+        "Palumbo": 3, "Sanna": 3, "Farina": 3, "Rizzi": 3, "Monti": 3, "Cattaneo": 3, "Morelli": 3, "Amato": 3, "Silvestri": 3, "Mazza": 3, "Testa": 3,
+        "Grassi": 3, "Pellegrino": 3, "Carbone": 3, "Giuliani": 3, "Benedetti": 3, "Barone": 3, "Rossetti": 3, "Caputo": 3, "De Rosa": 3
+      },
       "male": [
         "Alberto",
         "Aldo",

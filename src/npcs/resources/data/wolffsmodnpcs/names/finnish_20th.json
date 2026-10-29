@@ -3,6 +3,33 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Matti": 20, "Juhani": 20, "Johannes": 20, "Antti": 20, "Kalle": 20, "Heikki": 20, "Eino": 20, "Toivo": 20, "Väinö": 20, "Onni": 20,
+        "Aarne": 20, "Urho": 20, "Veikko": 20, "Paavo": 20, "Lauri": 20, "Pekka": 20, "Erkki": 20, "Yrjö": 20, "Juho": 20, "Tapio": 20, "Arvi": 20,
+        "Armas": 20, "Kaarlo": 20,
+        "Aarno": 8, "Aatto": 8, "Ahti": 8, "Aimo": 8, "Alpo": 8, "Arne": 8, "Arto": 8, "Atte": 8, "Aulis": 8, "Eero": 8, "Eetu": 8, "Einari": 8,
+        "Ensio": 8, "Erik": 8, "Esko": 8, "Henrik": 8, "Ilmari": 8, "Jaakko": 8, "Jalmari": 8, "Johan": 8, "Jussi": 8, "Kauko": 8, "Mauno": 8,
+        "Niilo": 8, "Olavi": 8, "Olli": 8, "Osmo": 8, "Pentti": 8, "Raimo": 8, "Reino": 8, "Risto": 8, "Sakari": 8, "Taisto": 8, "Tapani": 8,
+        "Tauno": 8, "Tuomas": 8, "Veli": 8, "Vilho": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Anna": 20, "Aino": 20, "Helena": 20, "Hilja": 20, "Hanna": 20, "Elina": 20, "Aili": 20, "Kaarina": 20, "Liisa": 20, "Martta": 20,
+        "Elsa": 20, "Ester": 20, "Eeva": 20, "Helmi": 20, "Lempi": 20, "Tyyni": 20, "Siiri": 20, "Saara": 20, "Kerttu": 20,
+        "Anja": 8, "Annikki": 8, "Eila": 8, "Elli": 8, "Elvi": 8, "Helli": 8, "Hilkka": 8, "Iida": 8, "Ilmi": 8, "Inkeri": 8, "Irja": 8, "Kaisa": 8,
+        "Katri": 8, "Lahja": 8, "Laina": 8, "Lilli": 8, "Maija": 8, "Maire": 8, "Margit": 8, "Mirjam": 8, "Naimi": 8, "Orvokki": 8, "Pirkko": 8,
+        "Rauha": 8, "Ritva": 8, "Saimi": 8, "Salme": 8, "Signe": 8, "Sylvi": 8, "Taimi": 8, "Terttu": 8, "Toini": 8
+      },
+      "surnameWeights": {
+        "Korhonen": 20, "Virtanen": 20, "Mäkinen": 20, "Nieminen": 20, "Mäkelä": 20, "Hämäläinen": 20, "Laine": 20, "Heikkinen": 20, "Koskinen": 20,
+        "Järvinen": 20,
+        "Lehtonen": 8, "Lehtinen": 8, "Saarinen": 8, "Salminen": 8, "Heinonen": 8, "Niemi": 8, "Heikkilä": 8, "Salonen": 8, "Kinnunen": 8,
+        "Turunen": 8, "Salo": 8, "Laitinen": 8, "Tuominen": 8, "Rantanen": 8, "Karjalainen": 8, "Jokinen": 8, "Mattila": 8, "Savolainen": 8,
+        "Lahtinen": 8, "Ahonen": 8, "Manninen": 8, "Leppänen": 8, "Hiltunen": 8, "Pitkänen": 8, "Ojala": 8,
+        "Leinonen": 3, "Räsänen": 3, "Anttila": 3, "Miettinen": 3, "Koivisto": 3, "Lehto": 3, "Järvelä": 3, "Aaltonen": 3, "Laaksonen": 3,
+        "Pulkkinen": 3, "Niskanen": 3, "Kallio": 3, "Toivonen": 3, "Hakala": 3, "Mustonen": 3, "Suominen": 3, "Kangas": 3, "Rautiainen": 3,
+        "Peltola": 3, "Kettunen": 3, "Kauppinen": 3, "Vainio": 3, "Hartikainen": 3, "Korpela": 3, "Huttunen": 3, "Lindholm": 3, "Lindström": 3,
+        "Berg": 3, "Nyman": 3, "Lindgren": 3, "Westerlund": 3
+      },
       "male": [
         "Aarne",
         "Aarno",

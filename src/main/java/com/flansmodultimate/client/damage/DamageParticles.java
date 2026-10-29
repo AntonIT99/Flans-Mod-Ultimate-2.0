@@ -30,6 +30,8 @@ final class DamageParticles
     static final double LANDMARK_RANGE = 320D;
     /** Ticks a scorch mark stays on the ground before it has faded. */
     static final int SCORCH_TICKS = 2400;
+    /** Burst puffs already grow over their lifetime; a large hull must not multiply that growth again. */
+    private static final float MAX_BURST_SCALE = 1.5F;
 
     // spotless:off
     static final BlastPuffParticle.Look GREY_SMOKE = new BlastPuffParticle.Look(0.56F, 0.55F, 0.54F, 0.42F, 0.42F, 0.42F, 0.55F, 2.2F, 0.96F, 0.004F, 0F, false, true);
@@ -122,6 +124,9 @@ final class DamageParticles
     /** A burst of fire, smoke and flash where something has just blown up. */
     static void burst(Vec3 at, float size, RandomSource random)
     {
+        size = burstScale(size);
+        if (size <= 0F)
+            return;
         puff(FLASH, at, 0D, 0D, 0D, 1.2F * size, 6, true);
         int fires = Math.max(4, Math.round(10 * size));
         for (int i = 0; i < fires; i++)
@@ -138,5 +143,13 @@ final class DamageParticles
                 60 + random.nextInt(40), true);
         }
         sparks(SPARK, at, Math.max(4, Math.round(8 * size)), 0.25D * Math.sqrt(size), random);
+    }
+
+    /** Keeps small part bursts unchanged and grows larger death and magazine bursts gently, with a shared ceiling. */
+    static float burstScale(float size)
+    {
+        if (!Float.isFinite(size) || size <= 0F)
+            return 0F;
+        return Math.min(size, Math.min((float) Math.sqrt(size), MAX_BURST_SCALE));
     }
 }

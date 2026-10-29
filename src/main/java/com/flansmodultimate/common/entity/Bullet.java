@@ -2,8 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.api.IBullet;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.projectiles.IBullet;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;
@@ -17,10 +17,8 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.ParticleNameCodec;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
-import com.flansmodultimate.network.server.gun.PacketManualGuidance;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.network.PacketBuffer;
@@ -84,10 +82,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected int impactZ;
     protected boolean isFirstPositionSetting;
     protected boolean isPositionUpper = true;
-    @Setter
-    protected Vec3 ownerPos;
-    @Setter
-    protected Vec3 ownerLook;
 
     /** Penetration */
     protected float penetratingPower;
@@ -490,7 +484,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             updatePenetrationPower();
             applyHomingIfLocked(level);
             updateShootForSettingPos();
-            updateManualGuidance(level);
+            updateManualGuidance();
             updateTorpedoVelocity();
             updatePositionAndOrientation();
 
@@ -1108,34 +1102,15 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         }
     }
 
-    protected void updateManualGuidance(Level level)
+    protected void updateManualGuidance()
     {
         LivingEntity owner = firedShot.getAttacker().orElse(null);
 
         if (owner != null && configType.isManualGuidance() && vlsDelay <= 0 && lockedOnTo == null)
         {
-            // CLIENT: send updated guidance to the server when player moves / looks
-            if (level.isClientSide && ClientHooks.PLAYER.isLocalPlayer(owner))
-            {
-                Vec3 tempPos = owner.position();
-                Vec3 look = owner.getLookAngle();
-
-                double deltaPos = (ownerPos == null) ? 1000.0F : tempPos.subtract(ownerPos).lengthSqr();
-                double deltaLook = (ownerLook == null) ? 1000.0F : look.subtract(ownerLook).lengthSqr();
-
-                ownerPos = tempPos;
-                ownerLook = look;
-
-                if (deltaPos > 1.0 || deltaLook > 0.0001)
-                    PacketHandler
-                        .sendToServer(new PacketManualGuidance(getId(), (float) ownerPos.x, (float) ownerPos.y, (float) ownerPos.z, (float) ownerLook.x, (float) ownerLook.y, (float) ownerLook.z));
-            }
-
-            // SERVER + CLIENT: apply guidance to the missile's motion
-
-            // Use last known look / pos from packet, or fall back to the current owner state
-            Vec3 lookVec = (ownerLook != null) ? ownerLook : owner.getLookAngle();
-            Vec3 origin = (ownerPos != null) ? ownerPos : owner.position();
+            // On the server these are the authoritative owner coordinates and rotation.
+            Vec3 lookVec = owner.getLookAngle();
+            Vec3 origin = owner.position();
 
             if (configType.isFixedDirection())
             {

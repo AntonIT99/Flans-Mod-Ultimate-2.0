@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.common.guns.GunArmPoses.Arm;
 import com.flansmodultimate.common.guns.GunArmPoses.HandItem;
 import com.flansmodultimate.common.guns.GunArmPoses.Result;

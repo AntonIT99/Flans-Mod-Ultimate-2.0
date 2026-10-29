@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.model;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import org.jetbrains.annotations.Nullable;
 
 /** Browser grouping independent of the model's entity kind and NPC simulation behavior. */

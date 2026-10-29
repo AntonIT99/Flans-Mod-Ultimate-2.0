@@ -18,7 +18,7 @@ Ammo MG34Ammo
 ReloadTime 100
 
 // Operation
-Mode FullAuto
+Mode FullAuto SemiAuto
 MoveSpeedModifier 0.7
 RoundsPerMin 850.0
 

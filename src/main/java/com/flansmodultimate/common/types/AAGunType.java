@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.IAAGunType;
+import com.flansmodultimate.api.driveables.IAAGunType;
 import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
 import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
@@ -212,7 +212,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
         }));
     }
 
-    /** Barrel lines as authored, kept while {@code /flandebug} overrides them, by barrel index. */
+    /** Barrel lines as authored, kept while {@code /flansdebug} overrides them, by barrel index. */
     @Getter(lombok.AccessLevel.NONE)
     private final Map<Integer, float[]> authoredBarrels = new TreeMap<>();
 
@@ -336,6 +336,17 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     public int getAmmoSlotCount()
     {
         return shareAmmo ? 1 : numBarrels;
+    }
+
+    /**
+     * Trigger pulls a full load of ammunition with {@code perItem} rounds per item lasts.
+     * Firing together spends a round from every barrel per pull; alternating spends one.
+     */
+    public int volleysPerReload(int perItem)
+    {
+        int barrels = Math.max(1, numBarrels);
+        int together = shareAmmo ? (int) Math.ceil(perItem / (double) barrels) : perItem;
+        return fireAlternately ? perItem * Math.max(1, getAmmoSlotCount()) : together;
     }
 
     /**

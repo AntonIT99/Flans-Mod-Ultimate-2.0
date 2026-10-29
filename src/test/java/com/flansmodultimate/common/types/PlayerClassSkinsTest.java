@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.SkinOverrideVariant;
+import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.content.ContentPack;
 import org.junit.jupiter.api.Test;

@@ -3,6 +3,32 @@
   "groups": [
     {
       "weight": 1,
+      "maleWeights": {
+        "Jan": 20, "Józef": 20, "Stanisław": 20, "Andrzej": 20, "Franciszek": 20, "Tadeusz": 20, "Władysław": 20, "Stefan": 20, "Antoni": 20,
+        "Piotr": 20, "Kazimierz": 20, "Marian": 20, "Zygmunt": 20, "Wojciech": 20, "Edward": 20, "Henryk": 20, "Michał": 20, "Paweł": 20, "Jerzy": 20,
+        "Mieczysław": 20,
+        "Bolesław": 8, "Bronisław": 8, "Czesław": 8, "Eugeniusz": 8, "Feliks": 8, "Ignacy": 8, "Janusz": 8, "Julian": 8, "Leon": 8, "Ludwik": 8,
+        "Roman": 8, "Teodor": 8, "Wacław": 8, "Wiktor": 8, "Wincenty": 8, "Witold": 8, "Zbigniew": 8, "Zdzisław": 8, "Adam": 8, "Aleksander": 8,
+        "Edmund": 8, "Konrad": 8, "Marceli": 8, "Leopold": 8, "Romuald": 8, "Rudolf": 8, "Włodzimierz": 8, "Florian": 8, "Leonard": 8
+      },
+      "femaleWeights": {
+        "Maria": 20, "Anna": 20, "Zofia": 20, "Helena": 20, "Stanisława": 20, "Jadwiga": 20, "Janina": 20, "Józefa": 20, "Marianna": 20, "Teresa": 20,
+        "Irena": 20, "Stefania": 20, "Władysława": 20, "Wanda": 20, "Krystyna": 20, "Barbara": 20, "Halina": 20, "Kazimiera": 20, "Genowefa": 20,
+        "Franciszka": 20,
+        "Aniela": 8, "Antonina": 8, "Bronisława": 8, "Cecylia": 8, "Czesława": 8, "Danuta": 8, "Dorota": 8, "Elżbieta": 8, "Eugenia": 8, "Ewa": 8,
+        "Hanna": 8, "Henryka": 8, "Julia": 8, "Leokadia": 8, "Lucyna": 8, "Ludwika": 8, "Natalia": 8, "Regina": 8, "Agnieszka": 8, "Aleksandra": 8,
+        "Alina": 8, "Adela": 8, "Zuzanna": 8
+      },
+      "surnameWeights": {
+        "Nowak": 20, "Kowalski": 20, "Wiśniewski": 20, "Wójcik": 20, "Kowalczyk": 20, "Kamiński": 20, "Lewandowski": 20, "Zieliński": 20,
+        "Szymański": 20, "Woźniak": 20,
+        "Dąbrowski": 8, "Kozłowski": 8, "Jankowski": 8, "Mazur": 8, "Wojciechowski": 8, "Kwiatkowski": 8, "Krawczyk": 8, "Kaczmarek": 8,
+        "Piotrowski": 8, "Grabowski": 8, "Zając": 8, "Pawłowski": 8, "Michalski": 8, "Król": 8, "Wieczorek": 8, "Jabłoński": 8, "Wróbel": 8,
+        "Nowakowski": 8, "Majewski": 8, "Olszewski": 8,
+        "Stępień": 3, "Jaworski": 3, "Malinowski": 3, "Adamczyk": 3, "Dudek": 3, "Nowicki": 3, "Pawlak": 3, "Górski": 3, "Witkowski": 3, "Walczak": 3,
+        "Sikora": 3, "Baran": 3, "Rutkowski": 3, "Michalak": 3, "Szewczyk": 3, "Ostrowski": 3, "Tomaszewski": 3, "Pietrzak": 3, "Wróblewski": 3,
+        "Zalewski": 3, "Sadowski": 3, "Bąk": 3, "Chmielewski": 3, "Duda": 3, "Borkowski": 3, "Lis": 3, "Jasiński": 3, "Sobczak": 3, "Kołodziej": 3
+      },
       "male": [
         "Adam",
         "Aleksander",

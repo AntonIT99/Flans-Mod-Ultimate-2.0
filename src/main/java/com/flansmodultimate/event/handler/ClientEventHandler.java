@@ -93,10 +93,16 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
+        // Without the configured FOV this is the hand pass, which 1.7.10 kept at its own fixed field of view
+        if (!event.usedConfiguredFov())
+        {
+            event.setFOV(ModClient.handFov(event.getFOV()));
+            return;
+        }
         double fov = ModClient.cameraFov(event.getFOV(), event.getPartialTick());
         ModClientConfig config = ModClientConfig.get();
-        // The firing punch narrows the world view only, as 1.7.10 left the hand at its own fixed field of view
-        if (event.usedConfiguredFov() && config != null && config.gunScreenShake)
+        // The firing punch narrows the world view only
+        if (config != null && config.gunScreenShake)
             fov = Math.max(1D, fov + GunScreenShake.fovOffset((float) event.getPartialTick()));
         event.setFOV(fov);
     }
@@ -318,8 +324,8 @@ public final class ClientEventHandler
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
         return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
-            || (ModClient.getCurrentScope() != null && (serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped)) || gunConfigHidesCrosshair
-            || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
+            || (ModClient.getCurrentScope() != null && (ModClient.getCurrentScope().hasZoomOverlay() || serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped))
+            || gunConfigHidesCrosshair || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 
     /** Draws the hit marker where the crosshair is, whether or not the crosshair itself is shown. */
@@ -572,6 +578,7 @@ public final class ClientEventHandler
         TeamFlagTextures.clear();
         KillMessageFeed.clear();
         CommonConfigMirror.clear();
+        ModClientConfig.setServerForcesUncensoredContent(false);
     }
 
     @SubscribeEvent

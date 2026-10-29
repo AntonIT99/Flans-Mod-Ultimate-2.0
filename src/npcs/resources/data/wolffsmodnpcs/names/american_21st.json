@@ -1,0 +1,77 @@
+{
+    "id": "american_21st",
+    "groups": [
+        {
+            "weight": 1,
+            "maleWeights": {
+                "James": 20, "John": 20, "Robert": 20, "William": 20, "Michael": 20, "David": 20, "Richard": 20, "Charles": 20, "Joseph": 20,
+                "Thomas": 20, "George": 20, "Edward": 20, "Frank": 20, "Henry": 20, "Harold": 20, "Paul": 20, "Walter": 20, "Arthur": 20, "Albert": 20,
+                "Raymond": 20, "Donald": 20,
+                "Ralph": 8, "Roy": 8, "Eugene": 8, "Howard": 8, "Carl": 8, "Louis": 8, "Jack": 8, "Lawrence": 8, "Clarence": 8, "Kenneth": 8,
+                "Harry": 8, "Samuel": 8, "Peter": 8, "Philip": 8, "Russell": 8, "Leonard": 8, "Daniel": 8, "Anthony": 8, "Gerald": 8, "Martin": 8,
+                "Patrick": 8, "Steven": 8, "Timothy": 8, "Mark": 8, "Jeffrey": 8, "Kevin": 8
+            },
+            "femaleWeights": {
+                "Mary": 20, "Elizabeth": 20, "Dorothy": 20, "Helen": 20, "Margaret": 20, "Ruth": 20, "Anna": 20, "Frances": 20, "Alice": 20,
+                "Betty": 20, "Marie": 20, "Virginia": 20, "Evelyn": 20, "Catherine": 20, "Rose": 20, "Grace": 20, "Jean": 20, "Patricia": 20,
+                "Barbara": 20, "Linda": 20, "Susan": 20, "Jennifer": 20, "Sarah": 20, "Jessica": 20, "Emily": 20,
+                "Doris": 8, "Martha": 8, "Charlotte": 8, "Julia": 8, "Carol": 8, "Nancy": 8, "Karen": 8, "Donna": 8, "Sharon": 8, "Deborah": 8,
+                "Emma": 8, "Ashley": 8, "Amanda": 8, "Melissa": 8, "Nicole": 8, "Michelle": 8, "Stephanie": 8, "Kimberly": 8, "Laura": 8, "Rebecca": 8
+            },
+            "surnameWeights": {
+                "Smith": 20, "Johnson": 20, "Williams": 20, "Brown": 20, "Jones": 20, "Garcia": 20, "Miller": 20, "Davis": 20, "Rodriguez": 20,
+                "Martinez": 20, "Hernandez": 20, "Lopez": 20,
+                "Gonzalez": 8, "Wilson": 8, "Anderson": 8, "Thomas": 8, "Taylor": 8, "Moore": 8, "Jackson": 8, "Martin": 8, "Lee": 8, "Perez": 8,
+                "Thompson": 8, "White": 8, "Harris": 8, "Sanchez": 8, "Clark": 8, "Ramirez": 8, "Lewis": 8, "Robinson": 8, "Walker": 8, "Young": 8,
+                "Allen": 8, "King": 8, "Wright": 8, "Scott": 8, "Torres": 8, "Nguyen": 8, "Hill": 8, "Flores": 8,
+                "Green": 3, "Adams": 3, "Nelson": 3, "Baker": 3, "Hall": 3, "Rivera": 3, "Campbell": 3, "Mitchell": 3, "Carter": 3, "Roberts": 3,
+                "Gomez": 3, "Phillips": 3, "Evans": 3, "Turner": 3, "Diaz": 3, "Parker": 3, "Cruz": 3, "Edwards": 3, "Collins": 3, "Reyes": 3,
+                "Stewart": 3, "Morris": 3, "Morales": 3, "Murphy": 3, "Cook": 3, "Rogers": 3, "Gutierrez": 3, "Ortiz": 3, "Morgan": 3, "Cooper": 3,
+                "Peterson": 3, "Bailey": 3, "Reed": 3, "Kelly": 3, "Howard": 3, "Ramos": 3, "Kim": 3, "Cox": 3, "Ward": 3, "Richardson": 3
+            },
+            "male": [
+                "Aaron", "Adam", "Adrian", "Alan", "Albert", "Alex", "Alexander", "Andrew", "Anthony", "Arthur",
+                "Austin", "Benjamin", "Blake", "Bradley", "Brandon", "Brian", "Bruce", "Bryan", "Caleb", "Calvin",
+                "Cameron", "Carl", "Carlos", "Charles", "Christian", "Christopher", "Clarence", "Cody", "Colin", "Connor",
+                "Craig", "Daniel", "David", "Dean", "Dennis", "Derek", "Donald", "Douglas", "Dylan", "Edward",
+                "Edwin", "Eric", "Ethan", "Eugene", "Evan", "Frank", "Franklin", "Gabriel", "Gary", "George",
+                "Gerald", "Gregory", "Harold", "Harry", "Henry", "Howard", "Hunter", "Isaac", "Jack", "Jackson",
+                "Jacob", "James", "Jason", "Jeffrey", "Jeremy", "Jesse", "Joel", "John", "Jonathan", "Jordan",
+                "Jose", "Joseph", "Joshua", "Juan", "Julian", "Justin", "Keith", "Kenneth", "Kevin", "Kyle",
+                "Lawrence", "Leonard", "Liam", "Logan", "Louis", "Lucas", "Luis", "Luke", "Marcus", "Mark",
+                "Martin", "Matthew", "Michael", "Nathan", "Nathaniel", "Nicholas", "Noah", "Oliver", "Oscar", "Patrick",
+                "Paul", "Peter", "Philip", "Ralph", "Randall", "Raymond", "Richard", "Robert", "Roger", "Ronald",
+                "Roy", "Russell", "Ryan", "Samuel", "Scott", "Sean", "Shawn", "Stephen", "Steven", "Theodore",
+                "Thomas", "Timothy", "Travis", "Tyler", "Victor", "Vincent", "Walter", "Wayne", "William", "Zachary"
+            ],
+            "female": [
+                "Abigail", "Alexandra", "Alexis", "Alice", "Allison", "Amanda", "Amber", "Amy", "Andrea", "Angela",
+                "Anna", "Ashley", "Audrey", "Barbara", "Betty", "Beverly", "Brenda", "Brittany", "Carol", "Carolyn",
+                "Catherine", "Charlotte", "Cheryl", "Christina", "Christine", "Cynthia", "Danielle", "Deborah", "Denise", "Diana",
+                "Diane", "Donna", "Doris", "Dorothy", "Elizabeth", "Emily", "Emma", "Erin", "Evelyn", "Frances",
+                "Gabrielle", "Gloria", "Grace", "Hannah", "Heather", "Helen", "Isabella", "Jacqueline", "Jane", "Janet",
+                "Janice", "Jean", "Jennifer", "Jessica", "Joan", "Joyce", "Judith", "Julia", "Julie", "Karen",
+                "Katherine", "Kathleen", "Kathryn", "Kayla", "Kelly", "Kimberly", "Laura", "Lauren", "Linda", "Lisa",
+                "Lori", "Madison", "Margaret", "Maria", "Marie", "Marilyn", "Martha", "Mary", "Megan", "Melissa",
+                "Michelle", "Nancy", "Natalie", "Nicole", "Olivia", "Pamela", "Patricia", "Rachel", "Rebecca", "Rose",
+                "Ruth", "Samantha", "Sandra", "Sara", "Sarah", "Sharon", "Shirley", "Sophia", "Stephanie", "Susan",
+                "Teresa", "Theresa", "Tiffany", "Victoria", "Virginia", "Wendy"
+            ],
+            "surnames": [
+                "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez",
+                "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
+                "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson",
+                "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores",
+                "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts",
+                "Gomez", "Phillips", "Evans", "Turner", "Diaz", "Parker", "Cruz", "Edwards", "Collins", "Reyes",
+                "Stewart", "Morris", "Morales", "Murphy", "Cook", "Rogers", "Gutierrez", "Ortiz", "Morgan", "Cooper",
+                "Peterson", "Bailey", "Reed", "Kelly", "Howard", "Ramos", "Kim", "Cox", "Ward", "Richardson",
+                "Watson", "Brooks", "Chavez", "Wood", "James", "Bennett", "Gray", "Mendoza", "Ruiz", "Hughes",
+                "Price", "Alvarez", "Castillo", "Sanders", "Patel", "Myers", "Long", "Ross", "Foster", "Jimenez",
+                "Powell", "Jenkins", "Perry", "Russell", "Sullivan", "Bell", "Coleman", "Butler", "Henderson", "Barnes",
+                "Gonzales", "Fisher", "Vasquez", "Simmons", "Romero", "Jordan", "Patterson", "Alexander", "Hamilton", "Graham",
+                "Reynolds", "Griffin", "Wallace", "Moreno", "West", "Cole", "Hayes", "Bryant", "Herrera", "Gibson"
+            ]
+        }
+    ]
+}

@@ -60,7 +60,7 @@ public final class DriveableAnimationHistory
 
     void updateModelAimPivots(Driveable driveable, DriveableType type, ModelDriveable model)
     {
-        // Shoot points can be moved live by /flandebug, which can put one on a
+        // Shoot points can be moved live by /flansdebug, which can put one on a
         // different barrel section, so these are looked up again every tick.
         if (model instanceof ModelVehicle vehicleModel && shootPointPivotTick != driveable.getVisualTick())
         {

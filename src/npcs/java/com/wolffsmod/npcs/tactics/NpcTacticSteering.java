@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.tactics;
 
+import com.wolffsmod.npcs.sim.NpcFiringPosition;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -50,7 +51,14 @@ public final class NpcTacticSteering
         boolean hit = npc.getLastHurtByMob() != null && npc.tickCount - npc.getLastHurtByMobTimestamp() < HIT_TICKS;
         Vec3 home = new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
         Situation situation = new Situation(npc.getSensing().hasLineOfSight(target), npc.position(), target.position(), home, engagement, memory.isReloading(now), hit);
-        follow(npc, TacticDecision.decide(tactic, situation, memory, now), memory, target, now);
+        Order order = TacticDecision.decide(tactic, situation, memory, now);
+        // A vehicle without a shot from where it would stand, or close in from, drives to where it has one; one that holds stays put.
+        if (tactic != Tactic.HOLD && order.move() != TacticDecision.Move.GO_TO && NpcFiringPosition.reposition(npc, target))
+        {
+            memory.order(null, now);
+            return;
+        }
+        follow(npc, order, memory, target, now);
     }
 
     private static void refreshCover(EntityNPCInterface npc, LivingEntity target, NpcTacticState memory, Engagement engagement, long now)

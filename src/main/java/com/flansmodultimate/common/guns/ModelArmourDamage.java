@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.IFlanDamageModel;
+import com.flansmodultimate.api.parts.IFlanDamageModel;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
