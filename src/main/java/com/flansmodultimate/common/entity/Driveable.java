@@ -5036,8 +5036,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Picks the driveable up as an item when an eligible player strikes a parked
-     * one, and reports whether it did.
+     * Picks the driveable up as an item when an eligible player strikes an
+     * unoccupied one, and reports whether it did. Survival players require ground
+     * support; creative players can also pick up floating ships and airborne craft.
      *
      * <p>
      * Seats and wheels are separate collision entities that forward damage
@@ -5049,11 +5050,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     protected boolean tryPickupOnAttack(@Nullable DamageSource source)
     {
-        if (source == null || destroyed || hasDriveableOccupant() || !isSupportedByGround())
+        if (source == null || destroyed || hasDriveableOccupant())
             return false;
         if (!(source.getEntity() instanceof Player player) || !canPlayerAccess(player))
             return false;
-        if (!player.getAbilities().instabuild && !FlansMod.teamsManager.isSurvivalCanBreakVehicles())
+        if (!player.getAbilities().instabuild && (!isSupportedByGround() || !FlansMod.teamsManager.isSurvivalCanBreakVehicles()))
             return false;
         if (!level().isClientSide && FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_PICKUP))
             pickupAsItem(player);

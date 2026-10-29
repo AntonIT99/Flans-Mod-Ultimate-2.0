@@ -29,6 +29,7 @@
 ## Vehicles, Aircraft & Ships
 
 * Ships are now separated from ground vehicles, with improved ship physics; leaving a ship puts the player on top of its hull
+* Creative players can pick up unoccupied floating ships and airborne driveables by hitting them
 * Vehicle cannon screen shake
 * Depth charges, HESH rounds, tracer rounds and composite armour
 * Suitable ground vehicle categories squash mobs they run over
