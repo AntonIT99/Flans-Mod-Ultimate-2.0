@@ -22,8 +22,8 @@ import java.util.List;
  * state their own, which an operator can also hand to every NPC at once, whether target searches are profiled, the aggro
  * and firing ranges a new NPC starts with, which an operator can hand to every NPC as well, the ranges an AA gun,
  * vehicle, plane or mecha model lends the NPC wearing it, the limits that keep many NPCs from overloading the server,
- * whether every NPC is frozen, the health and ammunition rules every NPC follows, and whether allies harm each other. Saved with the world, edited from
- * the Server page of the Wolff's Mod tab by operators.
+ * whether every NPC is frozen, the health and ammunition rules every NPC follows, whether allies harm each other, and whether a
+ * killed NPC drops its items. Saved with the world, edited from the Server page of the Wolff's Mod tab by operators.
  */
 public final class NpcServerSettings extends NpcSavedData
 {
@@ -78,7 +78,9 @@ public final class NpcServerSettings extends NpcSavedData
         /** Index into {@link com.wolffsmod.npcs.teams.FriendlyFire.Setting}: whether allied NPCs harm each other, for factions without a setting of their own. */
         FRIENDLY_FIRE_NPCS(0, 0, 2, "FriendlyFireNpcs"),
         /** Index into {@link com.wolffsmod.npcs.teams.FriendlyFire.Setting}: whether NPCs and the players they are friendly to harm each other. */
-        FRIENDLY_FIRE_PLAYERS(0, 0, 2, "FriendlyFirePlayers");
+        FRIENDLY_FIRE_PLAYERS(0, 0, 2, "FriendlyFirePlayers"),
+        /** Whether a killed NPC drops any of its items; its experience is unaffected. */
+        ITEM_DROPS(1, 0, 1, "ItemDrops");
 
         @Getter
         private final int fallback;
@@ -239,6 +241,12 @@ public final class NpcServerSettings extends NpcSavedData
     public AmmoPolicy ammoPolicy()
     {
         return AmmoPolicy.values()[get(Setting.AMMO_POLICY)];
+    }
+
+    /** @return whether a killed NPC drops any of its items */
+    public boolean itemDropsEnabled()
+    {
+        return get(Setting.ITEM_DROPS) == 1;
     }
 
     /**

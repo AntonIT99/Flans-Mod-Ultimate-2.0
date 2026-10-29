@@ -34,4 +34,5 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * The Wolff's Mod tab in the Custom NPCs editor, with combat, crew, movement, naming, model and server pages
 * Flan model picker with previews and tooltips
 * NPC diagnosis, server limits, rules, census and benchmarks
+* Server > Rules in the Wolff's Mod tab can turn off item drops from killed NPCs; their experience still drops either way
 * Scripting controls for Flan's features
