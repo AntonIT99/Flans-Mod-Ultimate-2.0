@@ -37,7 +37,7 @@ class NpcCrewSettingsTest
         NpcCrewSettings settings = new NpcCrewSettings();
         settings.setSource(CrewPost.DRIVER, new CrewSource(CrewSource.Kind.CLASS, 1, "", "germany", "tank_crewman"));
         settings.setSource(CrewPost.GUNNER, new CrewSource(CrewSource.Kind.CLONE, 4, "Gunner", "", ""));
-        settings.setAutoCrew(true);
+        settings.setAutoCrew(false);
         settings.setProtectedCrew(false);
         settings.setDestroyed(NpcCrewSettings.Destroyed.VANISH);
         settings.setPassengersFire(true);

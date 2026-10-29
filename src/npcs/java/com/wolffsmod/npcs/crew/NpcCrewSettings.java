@@ -69,7 +69,7 @@ public final class NpcCrewSettings
     @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
     private final Map<Integer, Boolean> disembarkSeats = new TreeMap<>();
     /** Whether the vehicle crews its empty seats by itself each time it spawns or comes back. */
-    private boolean autoCrew;
+    private boolean autoCrew = true;
     /** Whether the crew take no harm while aboard, the vehicle being what gets hit. */
     private boolean protectedCrew = true;
     private Destroyed destroyed = Destroyed.BAIL_OUT;
@@ -171,7 +171,7 @@ public final class NpcCrewSettings
     public int changes()
     {
         int count = selectionChanges();
-        count += autoCrew ? 1 : 0;
+        count += autoCrew ? 0 : 1;
         count += protectedCrew ? 0 : 1;
         count += destroyed == Destroyed.BAIL_OUT ? 0 : 1;
         count += passengersDisembark ? 0 : 1;
@@ -254,7 +254,7 @@ public final class NpcCrewSettings
         for (int seat : tag.getIntArray(NBT_ABOARD_SEATS))
             setSeatDisembarks(seat, false);
         passengersDisembark = !tag.contains(NBT_PASSENGERS_DISEMBARK) || tag.getBoolean(NBT_PASSENGERS_DISEMBARK);
-        autoCrew = tag.getBoolean(NBT_AUTO);
+        autoCrew = !tag.contains(NBT_AUTO) || tag.getBoolean(NBT_AUTO);
         protectedCrew = !tag.contains(NBT_PROTECTED) || tag.getBoolean(NBT_PROTECTED);
         destroyed = Destroyed.BAIL_OUT;
         for (Destroyed candidate : Destroyed.values())

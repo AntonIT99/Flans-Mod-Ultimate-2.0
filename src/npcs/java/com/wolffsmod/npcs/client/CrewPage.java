@@ -156,14 +156,14 @@ final class CrewPage implements ICustomScrollListener
 
     private void initRules(int left, int y)
     {
-        toggle(SHIELDED_ID, left, y, HALF_WIDTH, "shielded", settings().isProtectedCrew());
-        toggle(PASSENGERS_FIRE_ID, left + HALF_WIDTH + 4, y, HALF_WIDTH, "passengers_fire", settings().isPassengersFire());
+        toggle(AUTO_ID, left, y, HALF_WIDTH, "auto", settings().isAutoCrew());
+        toggle(SHIELDED_ID, left + HALF_WIDTH + 4, y, HALF_WIDTH, "shielded", settings().isProtectedCrew());
         NpcCrewSettings.Destroyed destroyed = settings().getDestroyed();
         GuiButtonNop destroyedButton = button(DESTROYED_ID, left, y + ROW_HEIGHT, 396, Arrays.stream(NpcCrewSettings.Destroyed.values()).map(NpcCrewSettings.Destroyed::key).toArray(String[]::new),
             destroyed.ordinal());
         destroyedButton.setMessage(Component.translatable(PREFIX + "destroyed", Component.translatable(destroyed.key())));
         destroyedButton.setTooltip(Tooltip.create(Component.translatable(PREFIX + "destroyed" + HELP)));
-        toggle(AUTO_ID, left, y + 2 * ROW_HEIGHT, HALF_WIDTH, "auto", settings().isAutoCrew());
+        toggle(PASSENGERS_FIRE_ID, left, y + 2 * ROW_HEIGHT, HALF_WIDTH, "passengers_fire", settings().isPassengersFire());
         toggle(PASSENGERS_DISEMBARK_ID, left + HALF_WIDTH + 4, y + 2 * ROW_HEIGHT, HALF_WIDTH, "passengers_disembark", settings().isPassengersDisembark());
     }
 
