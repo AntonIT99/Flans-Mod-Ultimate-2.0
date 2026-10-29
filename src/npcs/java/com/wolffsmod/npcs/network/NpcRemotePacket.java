@@ -48,7 +48,7 @@ public record NpcRemotePacket(List<Entry> entries)
 
     public static NpcRemotePacket read(FriendlyByteBuf buffer)
     {
-        return new NpcRemotePacket(buffer
-            .readList(in -> new Entry(in.readVarInt(), in.readUtf(), in.readDouble(), in.readVarInt(), in.readUtf(), NpcPacketIO.readComponent(in), NpcPacketIO.readComponent(in))));
+        return new NpcRemotePacket(
+            buffer.readList(in -> new Entry(in.readVarInt(), in.readUtf(), in.readDouble(), in.readVarInt(), in.readUtf(), NpcPacketIO.readComponent(in), NpcPacketIO.readComponent(in))));
     }
 }

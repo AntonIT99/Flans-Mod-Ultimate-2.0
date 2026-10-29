@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.platform.network;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.neoforged.neoforge.network.connection.ConnectionType;
 
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -32,6 +33,8 @@ public final class NpcPacketIO
     /** Minecraft 1.21 encodes components with registry context; play packets already carry it. */
     private static RegistryFriendlyByteBuf registryBuffer(FriendlyByteBuf buffer)
     {
-        return buffer instanceof RegistryFriendlyByteBuf registries ? registries : new RegistryFriendlyByteBuf(buffer, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
+        return buffer instanceof RegistryFriendlyByteBuf registries
+            ? registries
+            : new RegistryFriendlyByteBuf(buffer, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY), ConnectionType.NEOFORGE);
     }
 }

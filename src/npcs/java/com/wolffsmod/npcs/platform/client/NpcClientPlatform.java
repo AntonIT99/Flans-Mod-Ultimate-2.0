@@ -38,6 +38,7 @@ public final class NpcClientPlatform
      * Draws an NPC preview on a Custom NPCs screen, turned to the mouse or kept at the given rotation. The installed
      * NeoForge build has no {@code drawNpc} overload with the switch, so this calls the entity display it would have used.
      */
+    @SuppressWarnings("java:S107") // The Custom NPCs overload's seven arguments plus the screen that draws them.
     public static void drawNpc(GuiBasic screen, GuiGraphics graphics, LivingEntity entity, int x, int y, float zoom, int rotation, boolean followMouse)
     {
         CustomGuiEntityDisplay.drawEntity(graphics, entity, x, y, zoom, rotation, screen.wrapper.mouseX, screen.wrapper.mouseY, screen.guiLeft, screen.guiTop, followMouse);

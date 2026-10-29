@@ -50,8 +50,8 @@ public record FactionRelationsPacket(int entityId, @Nullable FactionRelations.Re
 
         static Entry read(FriendlyByteBuf buffer)
         {
-            return new Entry(buffer.readVarInt(), NpcPacketIO.readComponent(buffer), buffer.readInt(), buffer.readList(FriendlyByteBuf::readVarInt),
-                buffer.readList(FriendlyByteBuf::readVarInt), buffer.readEnum(FactionJoining.Rule.class), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt());
+            return new Entry(buffer.readVarInt(), NpcPacketIO.readComponent(buffer), buffer.readInt(), buffer.readList(FriendlyByteBuf::readVarInt), buffer.readList(FriendlyByteBuf::readVarInt),
+                buffer.readEnum(FactionJoining.Rule.class), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt());
         }
     }
 
