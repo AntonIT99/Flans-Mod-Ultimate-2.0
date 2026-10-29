@@ -55,6 +55,7 @@
 * RPM and reload time overlap, and rocket launchers fire faster; guns, AA guns and driveable weapons firing single-round ammunition wait the shorter of their reload time and rate of fire between shots
 * Fixed attachment points (including MP34 and red dot), the Springfield, Kar98k, flare gun, Olympia, WW2 flamethrower and creeper explosions
 * Fixed the melee sound playing twice, gun idle sounds and Apocalypse entities
+* Stereo content-pack sounds now fade with distance like mono sounds, including vehicle engines and weapons used by players and NPCs
 
 ## Rendering & Performance
 

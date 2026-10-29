@@ -19,6 +19,7 @@
   "client": [
       "BufferSourceAccessor",
       "CapeLayerMixin",
+      "ChannelAccessor",
       "CreateWorldScreenApocalypseMixin",
       "DriveableCameraMixin",
       "EntityRendererMixin",

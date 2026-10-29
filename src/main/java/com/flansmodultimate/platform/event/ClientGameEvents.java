@@ -2,10 +2,13 @@ package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.debug.*;
+import com.flansmodultimate.client.sound.SoundSpatialization;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
+import net.minecraftforge.client.event.sound.PlayStreamingSourceEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,6 +23,18 @@ public final class ClientGameEvents
 {
     private ClientGameEvents()
     {}
+
+    @SubscribeEvent
+    public static void onPlaySoundSource(PlaySoundSourceEvent event)
+    {
+        SoundSpatialization.apply(event.getSound(), event.getChannel());
+    }
+
+    @SubscribeEvent
+    public static void onPlayStreamingSource(PlayStreamingSourceEvent event)
+    {
+        SoundSpatialization.apply(event.getSound(), event.getChannel());
+    }
 
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event)
