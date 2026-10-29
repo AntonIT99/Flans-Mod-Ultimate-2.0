@@ -451,6 +451,7 @@
   "wolffsmodnpcs.combat.equipment_value.model": "Der eigene Wert des NPCs, derzeit vom gewählten Modell gesetzt. Stelle diese Eigenschaft unter Vom Modell übernehmen > Modelleigenschaften auf Eigen, um sie zu bearbeiten.",
   "wolffsmodnpcs.combat.equipment_value.own_effect": "Der eigene Nahkampfeffekt des NPCs, bearbeitet unter Werte > Nahkampfeigenschaften.",
   "wolffsmodnpcs.combat.group.driving": "Fahren",
+  "wolffsmodnpcs.combat.group.engine": "Antrieb",
   "wolffsmodnpcs.combat.group.general": "Allgemein",
   "wolffsmodnpcs.combat.group.sounds": "Geräusche",
   "wolffsmodnpcs.combat.group.survival": "Überleben",

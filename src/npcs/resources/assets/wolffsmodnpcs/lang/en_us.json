@@ -451,6 +451,7 @@
   "wolffsmodnpcs.combat.equipment_value.model": "The NPC's own value, currently set by the selected model. Switch that property to Custom in Inherit from model > Model properties to edit it.",
   "wolffsmodnpcs.combat.equipment_value.own_effect": "The NPC's own melee effect, edited in Stats > Melee properties.",
   "wolffsmodnpcs.combat.group.driving": "Driving",
+  "wolffsmodnpcs.combat.group.engine": "Engine",
   "wolffsmodnpcs.combat.group.general": "General",
   "wolffsmodnpcs.combat.group.sounds": "Sounds",
   "wolffsmodnpcs.combat.group.survival": "Survival",

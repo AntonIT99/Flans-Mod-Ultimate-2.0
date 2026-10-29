@@ -135,8 +135,9 @@ final class CombatPages
     }
 
     /**
-     * Tabs of the model properties page; every property belongs to exactly one. Driving and Turning hold no property but the
-     * movement values of a content-pack model, laid out by {@link ModelTuningRows}.
+     * Tabs of the model properties page; every property belongs to exactly one. Driving, Engine and Turning hold no property
+     * but the movement values of a content-pack model, laid out by {@link ModelTuningRows}; Engine splits off Driving's mass
+     * and engine power so a ground vehicle's rows fit the page.
      */
     enum Group
     {
@@ -144,7 +145,7 @@ final class CombatPages
             NpcTypeProperty.CAN_DROWN, NpcTypeProperty.NO_FALL_DAMAGE, NpcTypeProperty.POTION_IMMUNE, NpcTypeProperty.IGNORE_COBWEB, NpcTypeProperty.HEALTH_REGEN,
             NpcTypeProperty.COMBAT_REGEN), WEAPON(NpcTypeProperty.RANGE, NpcTypeProperty.DAMAGE, NpcTypeProperty.ACCURACY, NpcTypeProperty.SPEED, NpcTypeProperty.SHOT_COUNT), TIMING(
                 NpcTypeProperty.DELAY_MIN, NpcTypeProperty.DELAY_MAX, NpcTypeProperty.BURST_DELAY,
-                NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND), DRIVING, TURNING;
+                NpcTypeProperty.BURST), SOUNDS(NpcTypeProperty.FIRING_SOUND, NpcTypeProperty.IDLE_SOUND, NpcTypeProperty.STEP_SOUND), DRIVING, ENGINE, TURNING;
 
         private final List<NpcTypeProperty> properties;
 

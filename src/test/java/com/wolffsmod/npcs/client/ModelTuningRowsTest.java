@@ -68,21 +68,26 @@ class ModelTuningRowsTest
         try (var models = mockStatic(NpcModels.class); var kinds = mockStatic(FlanModelKind.class))
         {
             model(npc, models, kinds, FlanModelKind.VEHICLE);
-            assertEquals(List.of(Row.LAND_SPEED, Row.REVERSE_SPEED, Row.ACCELERATION, Row.BRAKING, Row.COASTING, Row.STEP_HEIGHT, Row.MASS, Row.ENGINE_POWER),
-                ModelTuningRows.rows(npc, Group.DRIVING));
+            assertEquals(List.of(Row.LAND_SPEED, Row.REVERSE_SPEED, Row.ACCELERATION, Row.BRAKING, Row.COASTING, Row.STEP_HEIGHT), ModelTuningRows.rows(npc, Group.DRIVING));
+            // Mass and engine power split off Driving onto their own tab, so a ground vehicle's rows still fit the page.
+            assertEquals(List.of(Row.MASS, Row.ENGINE_POWER), ModelTuningRows.rows(npc, Group.ENGINE));
             assertEquals(List.of(Row.DRIVE_TYPE, Row.HULL_TURN_RATE, Row.TURN_RADIUS, Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
             // A mecha walks at its own speed and climbs its own steps; a plane flies at its own speed, climb and turn.
             model(npc, models, kinds, FlanModelKind.MECHA);
             assertEquals(List.of(Row.LAND_SPEED, Row.STEP_HEIGHT), ModelTuningRows.rows(npc, Group.DRIVING));
+            assertFalse(ModelTuningRows.visible(npc, Group.ENGINE));
             assertEquals(List.of(Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
             model(npc, models, kinds, FlanModelKind.PLANE);
             assertEquals(List.of(Row.FLIGHT_SPEED, Row.CRUISE_SPEED, Row.CLIMB_RATE), ModelTuningRows.rows(npc, Group.DRIVING));
+            assertFalse(ModelTuningRows.visible(npc, Group.ENGINE));
             assertEquals(List.of(Row.FLIGHT_TURN_RATE, Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
             model(npc, models, kinds, FlanModelKind.AA_GUN);
             assertFalse(ModelTuningRows.visible(npc, Group.DRIVING));
+            assertFalse(ModelTuningRows.visible(npc, Group.ENGINE));
             assertEquals(List.of(Row.TRAVERSE, Row.ELEVATION), ModelTuningRows.rows(npc, Group.TURNING));
             models.when(() -> NpcModels.flan(npc)).thenReturn(null);
             assertFalse(ModelTuningRows.visible(npc, Group.DRIVING));
+            assertFalse(ModelTuningRows.visible(npc, Group.ENGINE));
             assertFalse(ModelTuningRows.visible(npc, Group.TURNING));
             assertTrue(ModelTuningRows.visible(npc, Group.GENERAL));
         }

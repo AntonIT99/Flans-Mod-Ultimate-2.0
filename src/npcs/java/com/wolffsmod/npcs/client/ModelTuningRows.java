@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The rows of the Driving and Turning tabs of the model properties page: the movement values a content-pack model's
+ * The rows of the Driving, Engine and Turning tabs of the model properties page: the movement values a content-pack model's
  * definition supplies. Each row edits the same tuning value as the Travel and Aiming pages, where 0 inherits the model.
  */
 final class ModelTuningRows
@@ -55,8 +55,8 @@ final class ModelTuningRows
         BRAKING(Group.DRIVING, Value.DRIVE_BRAKING),
         COASTING(Group.DRIVING, Value.DRIVE_COASTING),
         STEP_HEIGHT(Group.DRIVING, Value.STEP_HEIGHT),
-        MASS(Group.DRIVING, Value.MASS),
-        ENGINE_POWER(Group.DRIVING, Value.ENGINE_POWER),
+        MASS(Group.ENGINE, Value.MASS),
+        ENGINE_POWER(Group.ENGINE, Value.ENGINE_POWER),
         DRIVE_TYPE(Group.TURNING, Value.DRIVE_TYPE),
         HULL_TURN_RATE(Group.TURNING, Value.HULL_TURN_RATE),
         FLIGHT_TURN_RATE(Group.TURNING, Value.FLIGHT_TURN_RATE),
@@ -99,7 +99,7 @@ final class ModelTuningRows
     /** @return whether the tab holds movement rows rather than model properties */
     static boolean holds(Group group)
     {
-        return group == Group.DRIVING || group == Group.TURNING;
+        return group == Group.DRIVING || group == Group.ENGINE || group == Group.TURNING;
     }
 
     /** @return whether the tab is offered for the NPC's model: when the model has any of its rows */
