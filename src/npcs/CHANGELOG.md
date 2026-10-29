@@ -29,6 +29,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Teams bots: NPC soldiers, squads and vehicles that fight Teams rounds, with player orders, a commander seat, transports, class roles, suppression and squad leading
 * Manage Custom NPCs factions for battles: branches of Flan's teams, alliances, wars and peace between factions
 * Players can join and leave factions; factions are invite-only by default, and operators choose who may join, the leave penalty and the rejoin cooldown
+* `Attack Mobs` in Global > Factions: every NPC of the faction hunts hostile mobs on sight, slimes and ghasts included, without needing the Guard job
 * Skirmishes between factions outside Teams rounds, and endless wars over chunk territory
 * Factions, Skirmishes, Wars and Bots pages in the Teams command centre
 * Configurable friendly fire between NPCs, players and allies (`wolffsmodnpcs-common.toml`, `/flansnpcfriendlyfire`, Server > Rules > Friendly fire in the Wolff's Mod tab)

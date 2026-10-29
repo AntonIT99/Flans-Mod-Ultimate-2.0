@@ -66,13 +66,18 @@ public abstract class GuiNPCManageFactionsMixin extends GuiNPCInterface2
 
     // --- Translated team names ---
 
-    @Redirect(method = {"init", "m_7856_"}, at = @At(value = "NEW", target = "(Lnet/minecraft/client/gui/screens/Screen;I)Lnoppes/npcs/shared/client/gui/components/GuiCustomScrollNop;"))
+    // Mixin matches a NEW by its type and then looks forward for the first matching constructor, so without the ordinals the
+    // hostile list's three-argument descriptor also matches the faction list's NEW and one of the two redirects is dropped.
+    @Redirect(method = {"init", "m_7856_"}, at = @At(value = "NEW", target = "(Lnet/minecraft/client/gui/screens/Screen;I)Lnoppes/npcs/shared/client/gui/components/GuiCustomScrollNop;", ordinal = 0))
     private GuiCustomScrollNop wolffsmodnpcsFactionScroll(Screen parent, int id)
     {
         return new FactionNameScroll(parent, id);
     }
 
-    @Redirect(method = {"init", "m_7856_"}, at = @At(value = "NEW", target = "(Lnet/minecraft/client/gui/screens/Screen;IZ)Lnoppes/npcs/shared/client/gui/components/GuiCustomScrollNop;"))
+    // IntelliJ filters the candidates by descriptor before the ordinal and so sees only one; Mixin counts the ordinal over
+    // every NEW of the type first, where 1 is the hostile list.
+    @SuppressWarnings("MixinAnnotationTarget")
+    @Redirect(method = {"init", "m_7856_"}, at = @At(value = "NEW", target = "(Lnet/minecraft/client/gui/screens/Screen;IZ)Lnoppes/npcs/shared/client/gui/components/GuiCustomScrollNop;", ordinal = 1))
     private GuiCustomScrollNop wolffsmodnpcsHostileScroll(Screen parent, int id, boolean multipleSelection)
     {
         return new FactionNameScroll(parent, id, multipleSelection);
