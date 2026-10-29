@@ -61,6 +61,7 @@
 * GPU mesh caching and size culling draw only visible ranges and skip hidden batches
 * Oculus/Iris shader packs: correct glow layers and muzzle flashes, and a cheaper shadow pass
 * Sodium and Embeddium fast vertex writing, and EntityCulling compatibility
+* Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters
 * Clouds no longer draw over Flan particles
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`
 * Faster content startup and creative search

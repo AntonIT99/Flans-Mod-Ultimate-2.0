@@ -120,10 +120,8 @@ public final class ExplosionVisuals
     public static final float MIN_SMOKE_COLUMN_CRATER_RADIUS = 6.0F;
     /** One column source per this many blocks of crater radius. */
     private static final float CRATER_RADIUS_PER_COLUMN = 1.5F;
-    /** Column sources are long-lived emitters, so very few of them go a long way. */
+    /** Bound the number of ordinary smoke puffs in the column. */
     private static final int MAX_SMOKE_COLUMN_PARTICLES = 10;
-    /** Explosion columns use only a brief tail of the smoke-screen particle's authored lifetime. */
-    private static final float MAX_SMOKE_COLUMN_LIFETIME_SCALE = 0.2F;
 
     /**
      * Where this explosion sits between brief and impressive, 0 to 1.
@@ -241,12 +239,6 @@ public final class ExplosionVisuals
         if (!Float.isFinite(craterRadius) || craterRadius < MIN_SMOKE_COLUMN_CRATER_RADIUS)
             return 0;
         return Mth.clamp(Mth.ceil(craterRadius / CRATER_RADIUS_PER_COLUMN), 1, MAX_SMOKE_COLUMN_PARTICLES);
-    }
-
-    /** Lifetime scale for explosion columns; direct smoker effects retain their full lifetime. */
-    public static float smokeColumnLifetimeScale(float craterRadius)
-    {
-        return Math.min(lifetimeScale(craterRadius), MAX_SMOKE_COLUMN_LIFETIME_SCALE);
     }
 
     /**
