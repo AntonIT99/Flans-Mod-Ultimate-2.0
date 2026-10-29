@@ -40,9 +40,22 @@ public final class NpcRunOver
         if (damage.isEmpty())
             return;
         double reach = Math.min(MAX_REACH, speed + 0.25D);
-        AABB box = npc.getBoundingBox().inflate(reach, VERTICAL_REACH, reach);
-        for (LivingEntity victim : npc.level().getEntitiesOfClass(LivingEntity.class, box, candidate -> candidate != npc && candidate.isAlive() && !spared(npc, candidate)))
+        AABB own = npc.getBoundingBox();
+        AABB box = own.inflate(reach, VERTICAL_REACH, reach);
+        for (LivingEntity victim : npc.level().getEntitiesOfClass(LivingEntity.class, box,
+            candidate -> candidate != npc && candidate.isAlive() && !spared(npc, candidate) && !onTop(own, candidate.getY())))
             victim.hurt(npc.damageSources().mobAttack(npc), (float) damage.getAsDouble());
+    }
+
+    /**
+     * @param feet
+     *            the height of an entity's feet
+     * @return whether the entity stands on top of the NPC's box rather than in its way, as one riding its deck or turret
+     *         does; knocking it about would throw it off the vehicle it rides on
+     */
+    static boolean onTop(AABB npc, double feet)
+    {
+        return feet >= npc.maxY - VERTICAL_REACH;
     }
 
     /** @return whether the NPC drives past the entity unharmed: an ally, one riding with it, or what it rides */

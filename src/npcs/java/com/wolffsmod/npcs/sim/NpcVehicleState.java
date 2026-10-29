@@ -170,6 +170,9 @@ public final class NpcVehicleState
     private float targetHullYaw;
     private float targetTurretYaw;
     private float targetTurretPitch;
+    /** Degrees per tick the hull and the turret turned at between the last two states received. */
+    private float hullYawRate;
+    private float turretYawRate;
     private float[] targetSeatYaw = NO_SEATS;
     private float[] targetSeatPitch = NO_SEATS;
     private int lerpSteps;
@@ -1165,6 +1168,14 @@ public final class NpcVehicleState
     /** Takes the server's state. Client only. */
     public void receive(VehicleStatePacket packet)
     {
+        if (received)
+        {
+            // While they turn, the server sends a state every sync interval.
+            hullYawRate = Math.abs(Mth.wrapDegrees(packet.hullYaw() - targetHullYaw)) / SYNC_INTERVAL;
+            turretYawRate = Math.abs(Mth.wrapDegrees(packet.turretYaw() - targetTurretYaw)) / SYNC_INTERVAL;
+        }
+        else
+            turretYaw = packet.turretYaw();
         targetHullYaw = packet.hullYaw();
         targetTurretYaw = packet.turretYaw();
         targetTurretPitch = packet.turretPitch();
@@ -1194,13 +1205,17 @@ public final class NpcVehicleState
     {
         previousAttitudePitch = attitudePitch;
         previousAttitudeBank = attitudeBank;
-        if (!received || lerpSteps <= 0)
+        if (!received)
+            return;
+        // States arrive every few ticks and unevenly, so easing onto each one in turn would turn the hull and turret in fits
+        // and starts, which whoever stands on them feels as a juddering view. They follow at the rate the server turns them.
+        if (held)
+            hullYaw = Mth.wrapDegrees(follow(hullYaw, targetHullYaw, hullYawRate));
+        turretYaw = follow(turretYaw, targetTurretYaw, turretYawRate);
+        if (lerpSteps <= 0)
             return;
         attitudePitch += (targetAttitudePitch - attitudePitch) / lerpSteps;
         attitudeBank += (targetAttitudeBank - attitudeBank) / lerpSteps;
-        if (held)
-            hullYaw = Mth.wrapDegrees(hullYaw + Mth.wrapDegrees(targetHullYaw - hullYaw) / lerpSteps);
-        turretYaw += Mth.wrapDegrees(targetTurretYaw - turretYaw) / lerpSteps;
         turretPitch += (targetTurretPitch - turretPitch) / lerpSteps;
         for (int seat = 0; seat < seatYaw.length && seat < targetSeatYaw.length && seat < targetSeatPitch.length; seat++)
         {
@@ -1208,5 +1223,16 @@ public final class NpcVehicleState
             seatPitch[seat] += (targetSeatPitch[seat] - seatPitch[seat]) / lerpSteps;
         }
         lerpSteps--;
+    }
+
+    /**
+     * @return the yaw one tick on toward the target: at the rate it last turned at, and faster only to catch up once it lags
+     *         further behind than the next states would take it
+     */
+    static float follow(float yaw, float target, float rate)
+    {
+        float remaining = Mth.wrapDegrees(target - yaw);
+        float step = Math.max(rate, Math.abs(remaining) / LERP_STEPS);
+        return yaw + Mth.clamp(remaining, -step, step);
     }
 }

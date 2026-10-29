@@ -18,6 +18,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Seated crew face ahead of their vehicle or turret, while gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot
 * Friendly players can ride in passenger seats and man the gunner seats of vehicle NPCs, and change seats with Flan's change-seat key
 * NPC vehicles manoeuvre for a shot, back away from targets under their barrel and can be repaired
+* Players can stand on the solid hull and turret of an NPC vehicle, which carries them smoothly as it drives and turns without running them over
 * Guards can pick NPC vehicles, aircraft, mechas and AA guns as targets; Flan's driveables no longer clutter the Guard job's target list, and chosen targets leave Available Targets
 
 ## Teams Bots, Factions & Battles
