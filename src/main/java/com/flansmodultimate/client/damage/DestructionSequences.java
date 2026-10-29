@@ -445,11 +445,26 @@ final class DestructionSequences
         RandomSource random = level.random;
         Vec3 pivot = DetachedPieces.aboveGround(level, from);
         Vec3 velocity = DetachedPieces.throwVelocity(pivot, entity.position(), source.motion(), up, out, random);
-        if (!DetachedPieces.spawn(entity, parts, pivot, velocity, DetachedPieces.randomSpin(random, spin), burning))
+        if (!DetachedPieces.spawn(entity, parts, pivot, extent(source, parts), velocity, DetachedPieces.randomSpin(random, spin), burning))
             return false;
         for (EnumDriveablePart part : parts)
             DriveableDamageEffects.detach(entity, part);
         return true;
+    }
+
+    /** @return the world corners of every box the piece carries, so it can come to rest on the lowest of them */
+    private static List<Vec3> extent(DamageEffectSource source, Set<EnumDriveablePart> parts)
+    {
+        List<Vec3> corners = new ArrayList<>();
+        for (EnumDriveablePart type : parts)
+        {
+            DriveablePart part = part(source, type);
+            if (part == null || part.getBox() == null)
+                continue;
+            for (int corner = 0; corner < 8; corner++)
+                corners.add(source.pointInPart(part, corner & 1, (corner & 2) >> 1, (corner & 4) >> 2));
+        }
+        return corners;
     }
 
     @Nullable

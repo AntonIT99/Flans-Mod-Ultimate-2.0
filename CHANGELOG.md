@@ -38,7 +38,7 @@
 * Smooth view and position for players standing on turning hulls and turrets
 * Passenger guns mounted on a turret aim relative to the turret
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
-* Fixed aircraft part hitboxes and collision meshes facing backwards, which also left pieces of a plane or helicopter wreck hanging in the air
+* Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards, and pieces thrown off a wreck coming to rest in the air instead of on the ground
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
 
