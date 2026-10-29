@@ -37,12 +37,13 @@
 * Smooth view and position for players standing on turning hulls and turrets
 * Passenger guns mounted on a turret aim relative to the turret
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
+* Fixed aircraft part hitboxes and collision meshes facing backwards, which also left pieces of a plane or helicopter wreck hanging in the air
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity
+* Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
 
 ## Weapons
 
 * Historically supported firing modes for source-pack weapons, including semi-auto selectors and two- or three-round bursts
-
 * Variable zoom for modern scopes (binoculars up to 40x), with new default keybinds
 * New `MeleeSpeed` and `MeleeRange`, updated melee statistics and lightsaber balance
 * Tactical reloads with configurable magazine bonuses, timed secondary-mode switching and grips shown only in secondary mode where configured
@@ -74,7 +75,7 @@
 
 ## Compatibility & API
 
-* The public API is now stable (1.6) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules and the command centre
+* The public API is now stable (1.6) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
 * Clients disconnect safely, naming the differing content packs, when their content pack registries do not match the server's
 * Fixed bullet damage to players outside Teams rounds
 * Server-side weapon authority and resource accounting fixes
@@ -87,3 +88,4 @@
 * Classes can override skins for several models
 * New Roman shields
 * Updated vehicle armour, categories and textures
+* Fixed the Modern Warfare Cobra resting above its skids and its rotor, stub wings and tail boom being hard to hit
