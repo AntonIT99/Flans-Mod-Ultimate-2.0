@@ -87,7 +87,7 @@ import java.util.*;
  * A vehicle or mecha climbs steps as high as its model does and slows on grades its engine cannot take; a ground vehicle
  * stays on its wheels rather than jumping, and a mecha jumps as high as its model.</li>
  * <li>Repairs share driveable rates in part HP, including tools, timed sessions, carrier servicing and resource-backed nanobots.</li>
- * <li>Solid part boxes replace the NPC's rectangular entity collision and pushing, so walking on a vehicle meets only its actual hull.</li>
+ * <li>Solid part boxes replace the NPC's rectangular entity collision and both incoming and outgoing pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.
  * A falling NPC opens a parachute it carries and steers it toward its target.</li>
@@ -892,6 +892,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         if (wolffsmodnpcsHasSolidHull())
             callback.setReturnValue(false);
+    }
+
+    @Inject(method = {"pushEntities", "m_6138_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsNoHullPushOthers(CallbackInfo callback)
+    {
+        // isPushable only protects this NPC; its own pushEntities still calls player.push(this).
+        if (wolffsmodnpcsHasSolidHull())
+            callback.cancel();
     }
 
     @Unique

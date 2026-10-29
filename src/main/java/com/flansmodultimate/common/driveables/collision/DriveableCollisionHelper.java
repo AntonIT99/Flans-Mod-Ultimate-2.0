@@ -280,8 +280,6 @@ public final class DriveableCollisionHelper
     }
 
     /** Moves an entity with the surface it stood on, turning it with the hull as well. */
-    // The negated comparison also rejects NaN.
-    @SuppressWarnings("java:S1940")
     private void carry(Entity entity, int shape)
     {
         AABB box = entity.getBoundingBox();
@@ -294,7 +292,8 @@ public final class DriveableCollisionHelper
         double deltaY = vectorScratch[1] - footY;
         double deltaZ = vectorScratch[2] - footZ;
         double lengthSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
-        if (!(lengthSquared <= MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA))
+        // Continuity already limits the hull's translation. Its bow can follow a much longer arc during a small turn.
+        if (!Double.isFinite(lengthSquared))
             return;
         Vec3 before = entity.position();
         if (lengthSquared > 1.0E-12D)

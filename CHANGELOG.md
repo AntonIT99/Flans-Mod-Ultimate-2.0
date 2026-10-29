@@ -35,7 +35,7 @@
 * Suitable ground vehicle categories squash mobs they run over
 * Configurable driveable melee protection and weapon damage overrides
 * Configurable render and tracking distances for driveables and Flan NPC models
-* Smooth view and position for players standing on turning hulls and turrets
+* Smooth view and position for players standing on turning hulls and turrets, including the bows and sterns of large ships
 * Passenger guns mounted on a turret aim relative to the turret
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
 * Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards, and pieces thrown off a wreck coming to rest in the air instead of on the ground

@@ -226,7 +226,8 @@ public final class PartBodyCollisionHelper
         double dx = vector[0] - footX;
         double dy = vector[1] - box.minY;
         double dz = vector[2] - footZ;
-        if (dx * dx + dy * dy + dz * dz > MAX_CARRY * MAX_CARRY)
+        // Continuity already limits the owner's translation. A small turn can move the bow of a large ship much farther.
+        if (!Double.isFinite(dx) || !Double.isFinite(dy) || !Double.isFinite(dz))
             return;
         Vec3 before = entity.position();
         DriveableCollisionWorld.moveIgnoringHulls(entity, dx, dy, dz);
