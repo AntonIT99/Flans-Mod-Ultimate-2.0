@@ -268,13 +268,7 @@ public final class NpcRangedAttack
                     soundPlayed = FlansProjectiles.playShootSound(npc, muzzle.weapon().orElse(definition), held, secondary);
             }
             if (shotIndex == 0 && !dropped && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(selectedAmmo) || modelMuzzles))
-            {
-                float facing = hullYaw() + (state.isActive() ? state.turretAim().yaw() : 0F);
-                if (modelMuzzles && !FlansProjectiles.isGrenade(selectedAmmo))
-                    NpcMuzzleFlashes.shootParticles(npc, muzzle, origin, facing, NpcModels.scale(npc), secondary);
-                else
-                    FlansProjectiles.shootParticles(npc, muzzle, origin, facing, NpcModels.scale(npc));
-            }
+                FlansProjectiles.shootParticles(npc, muzzle, origin, hullYaw() + (state.isActive() ? state.turretAim().yaw() : 0F), NpcModels.scale(npc));
         }
 
         private void finishAttack()

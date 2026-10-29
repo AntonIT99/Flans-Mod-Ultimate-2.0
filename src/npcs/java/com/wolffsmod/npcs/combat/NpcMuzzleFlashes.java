@@ -21,23 +21,12 @@ public final class NpcMuzzleFlashes
 
     public static void fired(EntityNPCInterface npc, WeaponMuzzle muzzle, Vec3 direction, float hullYaw, boolean secondary)
     {
-        if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !hasModelFlash(npc, muzzle, secondary))
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || model == null || !(model.getInfoType() instanceof IDriveableType)
+            || !FlansProjectiles.hasMuzzleFlash(model.getInfoType(), muzzle, secondary)
+            || !((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(NpcWeaponOptions.Feature.MUZZLE_FLASHES))
             return;
         Vec3 localDirection = direction.normalize().yRot((float) Math.toRadians(hullYaw - 180F));
         NpcNetwork.sendToTracking(npc, new MuzzleFlashPacket(npc.getId(), muzzle.weapon().map(IContentType::getShortName).orElse(""), muzzle.offset(), localDirection));
-    }
-
-    /** Keeps authored particles, but uses the fallback flame only when no model flash is enabled. */
-    public static void shootParticles(EntityNPCInterface npc, WeaponMuzzle muzzle, Vec3 origin, float facing, float scale, boolean secondary)
-    {
-        if (!muzzle.particles().isEmpty() || !hasModelFlash(npc, muzzle, secondary))
-            FlansProjectiles.shootParticles(npc, muzzle, origin, facing, scale);
-    }
-
-    private static boolean hasModelFlash(EntityNPCInterface npc, WeaponMuzzle muzzle, boolean secondary)
-    {
-        FlanModelEntity model = NpcModels.flan(npc);
-        return model != null && model.getInfoType() instanceof IDriveableType && FlansProjectiles.hasMuzzleFlash(model.getInfoType(), muzzle, secondary)
-            && ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(NpcWeaponOptions.Feature.MUZZLE_FLASHES);
     }
 }
