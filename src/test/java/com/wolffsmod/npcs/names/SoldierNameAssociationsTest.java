@@ -84,7 +84,7 @@ class SoldierNameAssociationsTest
     {
         Path file = directory.resolve("nested/soldier-names.json");
         SoldierNameAssociations defaults = SoldierNameAssociations.read(file);
-        assertEquals(58, defaults.teams().size());
+        assertEquals(65, defaults.teams().size());
         assertEquals(70, defaults.find("gign", "gignAssault1").orElseThrow());
         assertEquals(0, defaults.find("WolffRome_Empire", "WolffRome_LegionaryHamata").orElseThrow());
         assertEquals(0, defaults.find("WolffRome_Republic", "WolffRome_Hastati").orElseThrow());
