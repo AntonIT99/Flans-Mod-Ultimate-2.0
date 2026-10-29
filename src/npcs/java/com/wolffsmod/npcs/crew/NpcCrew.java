@@ -24,6 +24,8 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -48,8 +50,9 @@ import java.util.*;
  * <p>
  * A crew member keeps its seat in synchronized entity data, so both sides seat it alike. A rider without a seat of its
  * own, such as one put on with Custom NPCs' mounter, takes the first free seat, the driver's first. A player on the
- * vehicle's side gets into a free gunner's seat, else a passenger seat, by using it, mans the gun of a gunner's seat, and
- * gets out when the vehicle is destroyed or they log out. Server thread unless a method says otherwise.
+ * vehicle's side gets into a free gunner's seat, else a passenger seat, by using it, moves to the next free seat with
+ * the seat key, mans the gun of a gunner's seat, and gets out when the vehicle is destroyed or they log out. Server
+ * thread unless a method says otherwise.
  * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -102,9 +105,9 @@ public final class NpcCrew
     }
 
     /**
-     * @return the seat a rider of the vehicle sits in: the one it was given, unless an earlier rider holds it, or else the
-     *         first seat no rider was given that it may take, the driver's first, in the order the riders got on. A player
-     *         never takes the driver's seat, and takes a gunner's seat before a passenger seat.
+     * @return the seat a rider of the vehicle sits in: the one it was given or moved to, unless an earlier rider holds it,
+     *         or else the first seat no rider holds that it may take, the driver's first, in the order the riders got on. A
+     *         player never takes the driver's seat, and takes a gunner's seat before a passenger seat.
      */
     public static Optional<WeaponMount> seatOf(EntityNPCInterface vehicle, Entity rider)
     {
@@ -113,14 +116,14 @@ public final class NpcCrew
             return Optional.empty();
         Map<Integer, Entity> claimed = new HashMap<>();
         for (Entity passenger : vehicle.getPassengers())
-            if (mount(mounts, seat(passenger)) != null)
-                claimed.putIfAbsent(seat(passenger), passenger);
-        if (claimed.get(seat(rider)) == rider)
-            return Optional.ofNullable(mount(mounts, seat(rider)));
+            if (mount(mounts, held(vehicle, passenger)) != null)
+                claimed.putIfAbsent(held(vehicle, passenger), passenger);
+        if (claimed.get(held(vehicle, rider)) == rider)
+            return Optional.ofNullable(mount(mounts, held(vehicle, rider)));
         List<WeaponMount> free = new ArrayList<>(mounts.stream().filter(mount -> !claimed.containsKey(mount.seat())).toList());
         for (Entity passenger : vehicle.getPassengers())
         {
-            if (claimed.get(seat(passenger)) == passenger)
+            if (claimed.get(held(vehicle, passenger)) == passenger)
                 continue;
             WeaponMount next = free.stream().filter(mount -> rank(passenger, mount) >= 0).min(Comparator.comparingInt(mount -> rank(passenger, mount))).orElse(null);
             if (next != null)
@@ -129,6 +132,50 @@ public final class NpcCrew
                 return Optional.ofNullable(next);
         }
         return Optional.empty();
+    }
+
+    /** @return the seat a rider holds: a crew member's own, or the one a rider without one moved to; else -1 */
+    private static int held(EntityNPCInterface vehicle, Entity rider)
+    {
+        int seat = seat(rider);
+        if (seat >= 0 || !(vehicle instanceof NpcCrewHolder holder))
+            return seat;
+        CompoundTag seats = holder.wolffsmodnpcsRiderSeats();
+        String id = rider.getStringUUID();
+        return id != null && seats.contains(id, Tag.TAG_INT) ? seats.getInt(id) : NO_SEAT;
+    }
+
+    /**
+     * Moves a player riding the vehicle to its next free seat after theirs, in seat order and wrapping round, as the seat
+     * key does in a Flan's driveable. The driver's seat is never one, since the vehicle drives itself. Every other rider
+     * without a crew seat keeps the seat it sits in. Server side.
+     *
+     * @return whether the player changed seats
+     */
+    public static boolean changeSeat(EntityNPCInterface vehicle, Player player)
+    {
+        if (player.getVehicle() != vehicle || !(vehicle instanceof NpcCrewHolder holder) || !vehicle.isAlive() || vehicle.isKilled())
+            return false;
+        List<WeaponMount> mounts = NpcVehicleState.of(vehicle).crewSeats(vehicle);
+        WeaponMount current = seatOf(vehicle, player).orElse(null);
+        if (current == null)
+            return false;
+        int from = mounts.indexOf(current);
+        for (int step = 1; step < mounts.size(); step++)
+        {
+            WeaponMount next = mounts.get((from + step) % mounts.size());
+            if (rank(player, next) < 0 || occupied(vehicle, next.seat()))
+                continue;
+            // Pin every rider without a crew seat where it sits, so that none slides into the seat the player leaves.
+            CompoundTag seats = new CompoundTag();
+            for (Entity passenger : vehicle.getPassengers())
+                if (seat(passenger) < 0)
+                    seatOf(vehicle, passenger).ifPresent(mount -> seats.putInt(passenger.getStringUUID(), mount.seat()));
+            seats.putInt(player.getStringUUID(), next.seat());
+            holder.wolffsmodnpcsRiderSeats(seats);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -211,6 +258,13 @@ public final class NpcCrew
             || !canCarry(vehicle, player).orElse(false))
             return false;
         player.stopRiding();
+        // A seat the player moved to on an earlier ride is no longer theirs.
+        if (vehicle instanceof NpcCrewHolder holder && holder.wolffsmodnpcsRiderSeats().contains(player.getStringUUID()))
+        {
+            CompoundTag seats = holder.wolffsmodnpcsRiderSeats().copy();
+            seats.remove(player.getStringUUID());
+            holder.wolffsmodnpcsRiderSeats(seats);
+        }
         return player.startRiding(vehicle, true);
     }
 

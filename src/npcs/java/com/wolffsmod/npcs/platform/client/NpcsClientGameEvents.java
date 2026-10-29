@@ -7,6 +7,8 @@ import com.wolffsmod.npcs.client.ClientBenchmark;
 import com.wolffsmod.npcs.client.GunnerSeatInput;
 import com.wolffsmod.npcs.client.NpcDebugLabels;
 import com.wolffsmod.npcs.client.NpcMuzzleFlashRenderer;
+import com.wolffsmod.npcs.client.NpcSeatMarkers;
+import com.wolffsmod.npcs.client.SeatChangeInput;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -39,6 +41,8 @@ public final class NpcsClientGameEvents
             return;
         BotKeys.tick();
         GunnerSeatInput.tick();
+        SeatChangeInput.tick();
+        NpcSeatMarkers.tick();
         NpcDebugLabels.tick();
     }
 

@@ -11,12 +11,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -103,6 +105,76 @@ class NpcCrewPassengerTest
             verify(enemy, never()).startRiding(any(), anyBoolean());
             verify(sneaking, never()).startRiding(any(), anyBoolean());
         }
+    }
+
+    @Test
+    void theSeatKeyMovesAPlayerToTheNextFreeSeatOtherThanTheDriversWhileOthersKeepTheirs()
+    {
+        EntityNPCInterface vehicle = holderVehicle();
+        Player moving = player(vehicle, "moving");
+        Player staying = player(vehicle, "staying");
+        when(vehicle.getPassengers()).thenReturn(List.of(moving, staying));
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER, SECOND_PASSENGER))
+        {
+            assertEquals(Optional.of(GUNNER), NpcCrew.seatOf(vehicle, moving));
+            // The first passenger seat is taken, so the player moves past it.
+            assertTrue(NpcCrew.changeSeat(vehicle, moving));
+            assertEquals(Optional.of(SECOND_PASSENGER), NpcCrew.seatOf(vehicle, moving));
+            // The other player does not slide into the gunner's seat the first one left.
+            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, staying));
+            // Past the last seat the player wraps round, past the driver's, to the gunner's.
+            assertTrue(NpcCrew.changeSeat(vehicle, moving));
+            assertEquals(Optional.of(GUNNER), NpcCrew.seatOf(vehicle, moving));
+            assertEquals(Optional.of(GUNNER), NpcCrew.mannedGun(moving));
+        }
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER))
+        {
+            // With every other seat taken there is nowhere to go.
+            assertFalse(NpcCrew.changeSeat(vehicle, staying));
+            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, staying));
+        }
+    }
+
+    @Test
+    void aPlayerGettingOnAgainNoLongerHoldsTheSeatTheyMovedToBefore()
+    {
+        EntityNPCInterface vehicle = holderVehicle();
+        Player player = player(vehicle, "player");
+        when(vehicle.getPassengers()).thenReturn(List.of(player));
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER); var drivers = mockStatic(NpcDrivers.class))
+        {
+            assertTrue(NpcCrew.changeSeat(vehicle, player));
+            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, player));
+            when(player.getVehicle()).thenReturn(null);
+            drivers.when(() -> NpcDrivers.ally(vehicle, player)).thenReturn(true);
+            assertTrue(NpcCrew.carry(vehicle, player));
+            assertEquals(Optional.of(GUNNER), NpcCrew.seatOf(vehicle, player));
+        }
+    }
+
+    /** @return a vehicle that keeps the seats its riders moved to, as Custom NPCs' entity does */
+    private static EntityNPCInterface holderVehicle()
+    {
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class, withSettings().extraInterfaces(NpcCrewHolder.class));
+        AtomicReference<CompoundTag> seats = new AtomicReference<>(new CompoundTag());
+        NpcCrewHolder holder = (NpcCrewHolder) vehicle;
+        when(holder.wolffsmodnpcsRiderSeats()).thenAnswer(invocation -> seats.get());
+        doAnswer(invocation ->
+        {
+            seats.set(invocation.getArgument(0));
+            return null;
+        }).when(holder).wolffsmodnpcsRiderSeats(any());
+        when(vehicle.isAlive()).thenReturn(true);
+        return vehicle;
+    }
+
+    private static Player player(EntityNPCInterface vehicle, String id)
+    {
+        Player player = mock(Player.class);
+        when(player.getStringUUID()).thenReturn(id);
+        when(player.getVehicle()).thenReturn(vehicle);
+        when(player.startRiding(vehicle, true)).thenReturn(true);
+        return player;
     }
 
     private static MockedStatic<NpcVehicleState> vehicleWith(EntityNPCInterface vehicle, WeaponMount... mounts)

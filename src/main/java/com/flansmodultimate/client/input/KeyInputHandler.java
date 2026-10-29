@@ -682,6 +682,12 @@ public final class KeyInputHandler
         return null;
     }
 
+    /** @return the bind that moves a rider to the next free seat; live only in a Flan's driveable */
+    public static KeyMapping changeSeatKey()
+    {
+        return changeSeatKey;
+    }
+
     @Nullable
     public static Driveable resolveDriveable(Player player)
     {

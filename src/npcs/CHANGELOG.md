@@ -16,7 +16,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * NPCs board, drive and fly the Flan's driveables players place, lead their targets, land planes and watch their fuel
 * Vehicle NPCs carry crews in their seats; crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
 * Seated crew face ahead of their vehicle or turret, while gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot
-* Friendly players can ride in passenger seats and man the gunner seats of vehicle NPCs
+* Friendly players can ride in passenger seats and man the gunner seats of vehicle NPCs, and change seats with Flan's change-seat key
 * NPC vehicles manoeuvre for a shot, back away from targets under their barrel and can be repaired
 * Guards can pick NPC vehicles, aircraft, mechas and AA guns as targets; Flan's driveables no longer clutter the Guard job's target list, and chosen targets leave Available Targets
 
@@ -34,5 +34,6 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * The Wolff's Mod tab in the Custom NPCs editor, with combat, crew, movement, naming, model and server pages
 * Flan model picker with previews and tooltips
 * NPC diagnosis, server limits, rules, census and benchmarks
+* Flan's debug mode marks the seats and seat-gun muzzles of vehicle NPCs, as it does for driveables
 * Server > Rules in the Wolff's Mod tab can turn off item drops from killed NPCs; their experience still drops either way
 * Scripting controls for Flan's features

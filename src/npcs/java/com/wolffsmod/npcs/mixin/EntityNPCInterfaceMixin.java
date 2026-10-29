@@ -155,6 +155,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private static final EntityDataAccessor<Integer> WOLFFSMODNPCS_CREW_SEAT = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.INT);
     @Unique
     private static final String WOLFFSMODNPCS_CREW_SEAT_KEY = "WolffsModCrewSeat";
+    /** Seats riders without a crew seat moved to, by rider id. Not saved: players get off when they log out. */
+    @Unique
+    private static final EntityDataAccessor<CompoundTag> WOLFFSMODNPCS_RIDER_SEATS = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.COMPOUND_TAG);
     @Unique
     private static final String WOLFFSMODNPCS_CREWED_AS_KEY = "WolffsModCrewedAs";
 
@@ -1044,6 +1047,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsDefineCrewSeat(CallbackInfo callback)
     {
         getEntityData().define(WOLFFSMODNPCS_CREW_SEAT, NpcCrew.NO_SEAT);
+        getEntityData().define(WOLFFSMODNPCS_RIDER_SEATS, new CompoundTag());
     }
 
     @Inject(method = {"readAdditionalSaveData", "m_7378_"}, at = @At("TAIL"))
@@ -1072,6 +1076,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public void wolffsmodnpcsCrewSeat(int seat)
     {
         getEntityData().set(WOLFFSMODNPCS_CREW_SEAT, Math.max(NpcCrew.NO_SEAT, seat));
+    }
+
+    @Override
+    public CompoundTag wolffsmodnpcsRiderSeats()
+    {
+        return getEntityData().get(WOLFFSMODNPCS_RIDER_SEATS);
+    }
+
+    @Override
+    public void wolffsmodnpcsRiderSeats(CompoundTag seats)
+    {
+        getEntityData().set(WOLFFSMODNPCS_RIDER_SEATS, seats);
     }
 
     @Override
