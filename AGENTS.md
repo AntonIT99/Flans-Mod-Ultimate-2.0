@@ -160,13 +160,27 @@ checking. They are read-only references: never edit them unless explicitly asked
 IntelliJ editor warnings are available headlessly through
 `scripts/idea-inspect.ps1`, which starts the local IDE headlessly once per call with the shared
 profile `.idea/inspectionProfiles/Project_Default.xml` (works while the IDE is open and
-alongside other runs).
+alongside other runs). The Minecraft Development plugin is taken from the local IntelliJ
+installation when present, so mixins and Minecraft APIs are understood; its
+`AddedMixinMembersNamePattern` is switched off, because it contradicts the mixin naming rule above.
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects
   files with uncommitted changes; `-Path <dir>` inspects a directory instead;
   `-MinSeverity WARNING` hides weak warnings; `-Json` gives machine-readable output.
-- Output lines are `file:line: [SEVERITY] InspectionId: message`. A run takes one to a few
-  minutes; give it a 10-minute timeout and run it once per task, not after every edit.
+- Start it in the background right after the last Java edit of a task and read the result before
+  reporting, so it overlaps `spotlessApply`, SonarLint and the build. Run it once per task, not
+  after every edit.
+- By default the whole-project inspections (duplicated code, unused declarations, spelling and
+  grammar, vulnerable libraries, Javadoc) are disabled: they analyse the whole dependency graph
+  however narrow the scope is. `-Full` adds them back; use it when the question
+  really is about dead code or duplication.
+- Every run indexes the project and takes one to a few minutes, so give it a 10-minute timeout. Keeping
+  the index between runs is not an option: with the indexes of an earlier run in place the headless IDE
+  analyses the file snapshot they were built from, and reports warnings for content that has since been
+  edited. What does carry over is the result cache under `build/idea-inspect/cache`, so re-running on an
+  unchanged working tree answers instantly; `-Rebuild` ignores it.
+- Output lines are `file:line: [SEVERITY] InspectionId: message`, followed by the problem count and
+  how the answer was produced (`cached`, `warm index`, `cold index`).
 - After editing Java, run it on the changed files, and fix warnings you introduced in touched
   code. Pre-existing warnings are fixed only when in scope; report remaining ones you chose
   to leave. Treat `LombokGetterMayBeUsed`-style suggestions per the Lombok rule above.
@@ -174,6 +188,11 @@ alongside other runs).
   `Boolean.TRUE.equals(...)`, which Sonar java:S5411 requires), keep the Sonar-compliant code.
 - If IntelliJ is not installed (`IDEA_HOME` unset and not found), say that this check could
   not be performed.
+- `scripts/idea-inspect-hook.ps1` wraps the check as a Claude Code `Stop` hook: it runs on the
+  changed Java and blocks once with the warnings, so the check cannot be forgotten. It costs
+  nothing when no Java changed or the result is cached. Register it in `.claude/settings.json`
+  under `hooks.Stop` as `powershell -NoProfile -ExecutionPolicy Bypass -File
+  scripts/idea-inspect-hook.ps1` with a 600-second timeout.
 
 ## Build and Validation
 
