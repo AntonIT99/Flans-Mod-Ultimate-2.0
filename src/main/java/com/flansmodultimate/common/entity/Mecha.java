@@ -318,6 +318,13 @@ public class Mecha extends Driveable implements MechaVisual
         return getMechaType() != null && handHoldsGun(!secondary) ? aimDirection() : null;
     }
 
+    /** A mecha points its hand guns with its arms, so its driver's triggers never fire along the hull alone. */
+    @Override
+    public boolean isDriverWeaponHullFixed(boolean secondary)
+    {
+        return false;
+    }
+
     private boolean handHoldsGun(boolean left)
     {
         return driveableData != null && driveableData.getMechaAddon(left ? EnumMechaSlotType.LEFT_TOOL : EnumMechaSlotType.RIGHT_TOOL).getItem() instanceof GunItem;

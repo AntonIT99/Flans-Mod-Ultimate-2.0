@@ -76,6 +76,7 @@
 ## Compatibility & API
 
 * The public API is now stable (1.6) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
+* Addons driving a seat can read how far the round its driver weapons have loaded reaches round where it goes off, and whether a weapon bank points along the hull rather than turning with the turret
 * Clients disconnect safely, naming the differing content packs, when their content pack registries do not match the server's
 * Fixed bullet damage to players outside Teams rounds
 * Server-side weapon authority and resource accounting fixes

@@ -2,9 +2,12 @@ package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.driveables.AircraftMode;
 import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.wolffsmod.npcs.combat.NpcBlastSafety;
+import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
@@ -14,6 +17,8 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.sim.TargetMotion;
+import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.ShipBearing;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,6 +47,13 @@ import java.util.function.Supplier;
  * driveable is steered along that path. A rider's own path follower hardly advances, so the driveable's progress along
  * the path is counted here. An aircraft flies straight to where the path ends, its {@link NpcPilot} at the controls. The
  * driveable's weapons are aimed at the NPC's target and fired once they point at it.
+ * </p>
+ *
+ * <p>
+ * Fighting takes the driveable off that path twice over. One whose weapons have something explosive loaded backs away
+ * from a target close enough for its own blast to catch it, and holds that bank's fire meanwhile. A ship then steams a
+ * course of its own, as {@link ShipBearing} lays it: bow on while it still has torpedoes or another bank fixed to its
+ * hull to fire, round its target once it has none, so that the turrets along its side bear.
  * </p>
  */
 @SuppressWarnings("unused") // Made only by the Custom NPCs entity mixin, which IntelliJ does not follow.
@@ -79,6 +91,8 @@ public final class NpcDriver
     /** Ticks a vehicle waits behind a driveable that stands in its way, and ticks it then drives on to find its way round. */
     private static final int WAIT_TICKS = 100;
     private static final int PASS_TICKS = 200;
+    /** Blocks past the reach of its own rounds a driveable pulls back to, so that it does not stop on the edge of its own blast. */
+    private static final double STANDOFF_MARGIN = 3D;
 
     /** Driveables the NPC gave up on, with the game time from which it may try them again. */
     private final Map<UUID, Long> refused = new HashMap<>();
@@ -130,6 +144,15 @@ public final class NpcDriver
     private final TargetMotion motion = new TargetMotion();
     @Nullable
     private UUID tracked;
+    /** What the driveable's weapons have loaded, as last read, and the game time of that reading. */
+    private long weaponsAt = Long.MIN_VALUE;
+    private double primaryBlast;
+    private double secondaryBlast;
+    /** Whether a bank that points along the hull, such as a ship's torpedo tubes, has a round left to fire. */
+    private boolean bowWeapon;
+    /** What a ship is doing with its target; null while it fights nothing. */
+    @Nullable
+    private ShipBearing.Course course;
     /** What the NPC did at the controls last tick, for the movement debug; null while it does not drive. */
     @Nullable
     private Report report;
@@ -191,11 +214,14 @@ public final class NpcDriver
     {
         long now = npc.level().getGameTime();
         begin(now);
+        refreshWeapons(seat, now);
         Vec3 position = driveable.position();
         double speed = lastPosition == null ? 0D : position.subtract(lastPosition).dot(heading);
         lastPosition = position;
         double arrival = Math.max(MIN_ARRIVAL, driveable.getBbWidth() * 0.5D + 1.5D);
-        Route route = route(npc, position, LOOKAHEAD + driveable.getBbWidth() * 0.5D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
+        Route route = fightingCourse(npc, seat, position, heading);
+        if (route == null)
+            route = route(npc, position, LOOKAHEAD + driveable.getBbWidth() * 0.5D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
         if (route == null)
         {
             anchor = null;
@@ -216,6 +242,88 @@ public final class NpcDriver
         report(mecha, route.steer(), controls, off, route.distance(), speed);
         act(npc, seat, driveable, mecha, controls, off);
         return true;
+    }
+
+    /**
+     * Where the driveable goes to fight, rather than along the NPC's path: out of the reach of its own rounds first, and
+     * then, for a ship, onto the bearing its weapons need. Null while the NPC's own path leads it.
+     *
+     * @param heading
+     *            where the driveable's forward control takes it, which it backs away along from a target right on top of it
+     */
+    @Nullable
+    private Route fightingCourse(EntityNPCInterface npc, ISeat seat, Vec3 position, Vec3 heading)
+    {
+        LivingEntity target = npc.getTarget();
+        if (target == null || !target.isAlive() || target.level() != npc.level())
+        {
+            course = null;
+            return null;
+        }
+        double distance = horizontal(position, target.position());
+        double standoff = NpcBlastSafety.standoff(npc, blastReach());
+        if (standoff > distance)
+        {
+            course = null;
+            double back = standoff - distance + STANDOFF_MARGIN;
+            return new Route(position.add(away(position, target.position(), heading).scale(back)), back);
+        }
+        if (!NpcEquipment.enabled(npc, Feature.SHIP_WEAPON_BEARING) || !ship(seat) || distance > Math.max(MIN_FIRE_RANGE, npc.stats.ranged.getRange()))
+        {
+            course = null;
+            return null;
+        }
+        // A ship steams on rather than stopping, so its goal stays a fixed lead ahead of it and it never brakes for it.
+        double hold = Math.max(standoff, NpcTactics.engagement(npc).preferred());
+        course = ShipBearing.course(bowWeapon, distance, hold, course);
+        return new Route(ShipBearing.point(course, position, target.position(), hold, (npc.getId() & 1) == 0 ? 1 : -1), ShipBearing.LEAD);
+    }
+
+    /** @return the horizontal unit direction from the target to the driveable, or straight back along its heading when it is right on top of it */
+    private static Vec3 away(Vec3 position, Vec3 target, Vec3 heading)
+    {
+        Vec3 offset = new Vec3(position.x - target.x, 0D, position.z - target.z);
+        return offset.lengthSqr() < 1.0E-4D ? heading.scale(-1D) : offset.normalize();
+    }
+
+    private static boolean ship(ISeat seat)
+    {
+        return seat.getDriveableType().map(IDriveableType::isShip).orElse(false);
+    }
+
+    /**
+     * Reads what the driveable's weapons have loaded now and then, rather than every tick: finding the round scans the
+     * driveable for it.
+     */
+    private void refreshWeapons(ISeat seat, long now)
+    {
+        if (weaponsAt != Long.MIN_VALUE && now >= weaponsAt && now - weaponsAt < NpcBlastSafety.REACH_INTERVAL)
+            return;
+        weaponsAt = now;
+        primaryBlast = seat.getDriverWeaponDetonation(false).map(NpcBlastSafety::reach).orElse(0D);
+        secondaryBlast = seat.getDriverWeaponDetonation(true).map(NpcBlastSafety::reach).orElse(0D);
+        bowWeapon = bowWeapon(seat, false) || bowWeapon(seat, true);
+    }
+
+    /** @return whether the bank points along the hull and has a round to fire, as a ship's torpedo tubes do until they are spent */
+    private static boolean bowWeapon(ISeat seat, boolean secondary)
+    {
+        return seat.isDriverWeaponHullFixed(secondary) && seat.getDriverWeaponBallistics(secondary).isPresent();
+    }
+
+    /**
+     * @return how far round where it goes off the furthest-reaching round the driveable's weapons have loaded reaches; 0
+     *         while the NPC drives nothing, or nothing it has loaded goes off
+     */
+    public double blastReach()
+    {
+        return Math.max(primaryBlast, secondaryBlast);
+    }
+
+    /** @return that reach for one bank alone, which decides whether that bank may fire now */
+    private double blastReach(boolean secondary)
+    {
+        return secondary ? secondaryBlast : primaryBlast;
     }
 
     /** Records that the NPC crews a driveable this tick, for the movement debug and to notice when it is thrown out. */
@@ -270,7 +378,8 @@ public final class NpcDriver
     {
         long now = npc.level().getGameTime();
         begin(now);
-        Set<DriveControl> controls = pilot.fly(npc, aircraft, mode, goal(npc));
+        refreshWeapons(seat, now);
+        Set<DriveControl> controls = pilot.fly(npc, aircraft, mode, goal(npc), NpcBlastSafety.standoff(npc, blastReach()));
         report = new Report(pilot.getPhase().name().toLowerCase(Locale.ROOT), pilot.getPoint(), controls, pilot::describe);
         // An aircraft that cannot get off the ground, for want of fuel or of room, is given up.
         if (stuck(aircraft.position(), pilot.isRolling(), now) && ++recoveries > GIVE_UP)
@@ -429,8 +538,7 @@ public final class NpcDriver
     {
         track(target, npc.level().getGameTime());
         Vec3 aimPoint = target.getBoundingBox().getCenter();
-        // The turret, or a mecha's arms, follows the main weapon, or the other one without it.
-        boolean secondary = seat.getDriverWeaponOrigin(false).isEmpty();
+        boolean secondary = turretBank(seat);
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         Optional<Vec3> launch = origin.map(from -> launch(npc, seat, secondary, aimPoint.subtract(from)));
         if (origin.isPresent() && launch.isPresent())
@@ -440,6 +548,20 @@ public final class NpcDriver
         boolean release = npc.level().getGameTime() % TRIGGER_RELEASE == 0;
         double range = Math.max(reach, npc.stats.ranged.getRange());
         seat.setAutomatedTriggers(!release && readyToFire(npc, seat, driveable, false, target, range), !release && readyToFire(npc, seat, driveable, true, target, range));
+    }
+
+    /**
+     * @return which of the driver's two banks the turret, or a mecha's arms, follows: the one that turns with it, since
+     *         a bank fixed to the hull, such as a ship's torpedo tubes, is laid by turning the whole driveable instead.
+     *         The main weapon otherwise, or the other one where the driveable has no main weapon
+     */
+    private static boolean turretBank(ISeat seat)
+    {
+        boolean primary = seat.getDriverWeaponOrigin(false).isPresent();
+        boolean secondary = seat.getDriverWeaponOrigin(true).isPresent();
+        if (!primary || !secondary)
+            return !primary && secondary;
+        return seat.isDriverWeaponHullFixed(false) && !seat.isDriverWeaponHullFixed(true);
     }
 
     /** Follows how the target moves, to lead it; a new target starts afresh. */
@@ -471,6 +593,9 @@ public final class NpcDriver
         Vec3 aimPoint = target.getBoundingBox().getCenter();
         Vec3 line = aimPoint.subtract(origin.get());
         if (line.lengthSqr() > range * range)
+            return false;
+        // What this bank has loaded would catch the driveable itself from here; it waits until the range has opened.
+        if (NpcBlastSafety.tooClose(npc, target, blastReach(secondary)))
             return false;
         Optional<WeaponBallistics> ballistics = seat.getDriverWeaponBallistics(secondary);
         if (ballistics.isPresent() && ballistics.get().dropped())
@@ -605,5 +730,10 @@ public final class NpcDriver
         ahead = DriveSteering.Traffic.NONE;
         waited = 0;
         passUntil = 0L;
+        weaponsAt = Long.MIN_VALUE;
+        primaryBlast = 0D;
+        secondaryBlast = 0D;
+        bowWeapon = false;
+        course = null;
     }
 }

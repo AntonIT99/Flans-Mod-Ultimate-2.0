@@ -7,6 +7,7 @@ package com.flansmodultimate.api.driveables;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.DetonationRadii;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -186,4 +187,25 @@ public interface ISeat
      *         for a mecha's hand guns. Server side.
      */
     Optional<WeaponBallistics> getDriverWeaponBallistics(boolean secondary);
+
+    /**
+     * Reads how far round its point of detonation the round the driveable's weapon of the driver's trigger has loaded
+     * now reaches, so that a driver can keep its driveable clear of its own blast.
+     *
+     * @param secondary
+     *            whether to describe the weapon of the secondary trigger rather than the primary one
+     * @return the radii of that round, empty wherever {@link #getDriverWeaponBallistics} is. Server side.
+     */
+    Optional<DetonationRadii> getDriverWeaponDetonation(boolean secondary);
+
+    /**
+     * Whether the driveable's weapon of the driver's trigger points along the hull rather than with the turret: a bow
+     * torpedo tube or a fixed forward gun, which only bears once the whole driveable is turned onto the target. A bank
+     * that turns with the turret, and one the driveable does not have, do not.
+     *
+     * @param secondary
+     *            whether to describe the weapon of the secondary trigger rather than the primary one
+     * @return whether aiming the seat leaves that weapon pointing where the hull does. Either side after content loading.
+     */
+    boolean isDriverWeaponHullFixed(boolean secondary);
 }

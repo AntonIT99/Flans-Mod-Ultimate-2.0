@@ -49,8 +49,6 @@ public final class NpcThrowing
     /** The margin and least distance of the cautious strategy, which also keeps out of a grenade's whole fragment radius. */
     private static final double CAUTIOUS_MARGIN = 3D;
     private static final double MIN_CAUTIOUS_DISTANCE = 6D;
-    /** Share of a grenade's fragment radius a thrower keeps out of: fragments that far off seldom hit, and do little. */
-    private static final double FRAGMENT_SHARE = 0.5D;
     /** Blocks round where it lands that a splash potion or its lingering cloud reaches, and that a firework's stars reach. */
     private static final double SPLASH_RADIUS = 4D;
     private static final double FIREWORK_RADIUS = 5D;
@@ -264,17 +262,12 @@ public final class NpcThrowing
     static double hazard(ItemStack stack)
     {
         if (FlansProjectiles.isProjectile(stack))
-            return FlansProjectiles.getDetonationRadii(stack).map(NpcThrowing::grenadeHazard).orElse(0D);
+            return FlansProjectiles.getDetonationRadii(stack).map(NpcBlastSafety::reach).orElse(0D);
         if (stack.getItem() instanceof ThrowablePotionItem)
             return harmful(stack) ? SPLASH_RADIUS : 0D;
         if (stack.is(Items.FIREWORK_ROCKET))
             return NpcPlatform.fireworkExplodes(stack) ? FIREWORK_RADIUS : 0D;
         return 0D;
-    }
-
-    private static double grenadeHazard(DetonationRadii radii)
-    {
-        return Math.max(Math.max(radii.explosion(), radii.blast()), Math.max(radii.fire(), radii.fragments() * FRAGMENT_SHARE));
     }
 
     /** @return whether a native throwable from the inventory is worth throwing at an enemy at all: a harmful potion, a fire charge or a firework with stars */

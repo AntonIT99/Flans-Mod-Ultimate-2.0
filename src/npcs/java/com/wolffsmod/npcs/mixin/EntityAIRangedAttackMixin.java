@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.driveables.ReloadCycle;
+import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.combat.NpcReloadFeedback;
@@ -166,7 +167,8 @@ public abstract class EntityAIRangedAttackMixin
         // driveable fights with the driveable's weapons.
         boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc);
         LivingEntity target = npc.getTarget();
-        if (target != null && state.holdsFire(npc, target))
+        // A target too close for the NPC's own explosive rounds is left alone until it has manoeuvred back out of their reach.
+        if (target != null && (state.holdsFire(npc, target) || NpcBlastSafety.tooClose(npc, target, state.blastReach())))
         {
             hold = true;
             // Custom NPCs stops advancing once it has seen its target for a while; it has to keep going for a clear shot.

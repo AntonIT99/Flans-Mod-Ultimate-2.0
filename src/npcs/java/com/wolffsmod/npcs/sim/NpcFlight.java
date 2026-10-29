@@ -5,6 +5,7 @@ import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
@@ -281,7 +282,8 @@ public final class NpcFlight
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
         yaw = MountMotion.turn(yaw, wanted, turnRate > 0 ? turnRate / 20F : HELICOPTER_TURN);
         double top = model == null ? Double.POSITIVE_INFINITY : model.topSpeed();
-        if (target != null && tooSteep(MountMotion.relative(aim, 0F).pitch(), state.hoverShotPitch()))
+        // It backs off from a target its guns cannot reach down or up to, and from one so close that its own rounds would catch it.
+        if (target != null && (tooSteep(MountMotion.relative(aim, 0F).pitch(), state.hoverShotPitch()) || NpcBlastSafety.tooClose(npc, target, state.blastReach())))
             motion = backOff(motion, away(npc.position(), target.position(), yaw), Math.min(BACK_OFF_SPEED, top));
         double horizontal = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
         double cap = horizontal > top ? top / horizontal : 1D;
@@ -479,16 +481,20 @@ public final class NpcFlight
     {
         Tactic tactic = NpcTactics.of(npc);
         double horizontal = Math.sqrt(npc.distanceToSqr(target.getX(), npc.getY(), target.getZ()));
+        // A plane carrying something explosive breaks off before it flies into its own blast, as one on a run breaks off past its target.
+        double pass = Math.max(PASS_DISTANCE, NpcBlastSafety.standoff(npc));
         if (tactic == Tactic.ORBIT)
         {
-            if (!orbitPass(horizontal, radius))
+            if (!orbitPass(horizontal, radius, pass))
                 return loiterYaw(npc.position(), new Vec3(target.getX(), npc.getY(), target.getZ()), radius, (npc.getId() & 1) == 0, yaw);
         }
         else
         {
             passing = false;
             orbitTicks = 0;
-            extending = tactic == Tactic.STRAFING_RUN && extending(extending, horizontal, Math.max(MIN_EXTEND, NpcTactics.engagement(npc).preferred()));
+            boolean runs = tactic == Tactic.STRAFING_RUN;
+            double extend = Math.max(MIN_EXTEND, runs ? NpcTactics.engagement(npc).preferred() : pass);
+            extending = (runs || pass > PASS_DISTANCE) && extending(extending, horizontal, extend, pass);
         }
         if (extending || horizontal <= 1D)
             return yaw;
@@ -508,6 +514,16 @@ public final class NpcFlight
      */
     boolean orbitPass(double horizontal, double radius)
     {
+        return orbitPass(horizontal, radius, PASS_DISTANCE);
+    }
+
+    /**
+     * @param pass
+     *            blocks from the target at which the pass is over: its own blast keeps a plane with explosive rounds
+     *            further out than {@link #PASS_DISTANCE}
+     */
+    boolean orbitPass(double horizontal, double radius, double pass)
+    {
         if (extending)
         {
             extending = horizontal < radius;
@@ -515,7 +531,7 @@ public final class NpcFlight
         }
         if (passing)
         {
-            if (horizontal >= PASS_DISTANCE && ++orbitTicks <= MAX_PASS_TICKS)
+            if (horizontal >= pass && ++orbitTicks <= MAX_PASS_TICKS)
                 return true;
             passing = false;
             orbitTicks = 0;
@@ -552,7 +568,17 @@ public final class NpcFlight
      */
     static boolean extending(boolean extending, double horizontal, double extend)
     {
-        return extending ? horizontal < extend : horizontal < PASS_DISTANCE;
+        return extending(extending, horizontal, extend, PASS_DISTANCE);
+    }
+
+    /**
+     * @param pass
+     *            blocks from the target at which the plane breaks off: its own blast keeps one with explosive rounds
+     *            further out than {@link #PASS_DISTANCE}
+     */
+    static boolean extending(boolean extending, double horizontal, double extend, double pass)
+    {
+        return extending ? horizontal < extend : horizontal < pass;
     }
 
     private static double loiterRadius(EntityNPCInterface npc)

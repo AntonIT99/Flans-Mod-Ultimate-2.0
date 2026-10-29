@@ -157,6 +157,8 @@ public final class NpcVehicleState
     private double shotSpeed = Double.NaN;
     private double shotGravity;
     private double shotDrag = 1D;
+    /** Blocks round where it goes off that the main weapon's round reaches, which the NPC keeps out of; 0 for one that does not. */
+    private double shotBlast;
     private int ballisticsAt = Integer.MIN_VALUE;
     private int sentSignature;
     private boolean sent;
@@ -276,6 +278,23 @@ public final class NpcVehicleState
         return active && layout != null && layout.drives();
     }
 
+    /** @return whether the NPC is a model a content pack files as a ship, however the pack files its entity */
+    public boolean isShip()
+    {
+        Layout current = active ? layout : null;
+        return current != null && current.model() instanceof IDriveableType driveable && driveable.isShip();
+    }
+
+    /**
+     * @return whether the main weapon points straight along the hull rather than turning with a turret, as a ship's bow
+     *         torpedo tubes do: the whole model has to be turned onto the target for it to bear
+     */
+    public boolean hullFixedWeapon()
+    {
+        Layout current = active ? layout : null;
+        return current != null && !current.turreted();
+    }
+
     /** Records a shot, so clients show the recoil. Server only. */
     public void fired(int firedBarrel)
     {
@@ -359,6 +378,8 @@ public final class NpcVehicleState
         solution = null;
         solvedFrom = null;
         reachablePitch = Float.NaN;
+        shotBlast = 0D;
+        ballisticsAt = Integer.MIN_VALUE;
         sent = false;
         received = false;
         shapeSignature = Integer.MIN_VALUE;
@@ -810,6 +831,16 @@ public final class NpcVehicleState
         shotGravity = shot.map(ProjectileShot::gravity).orElse(0D);
         shotDrag = shot.map(ProjectileShot::drag).orElse(1D);
         bombing = shot.map(ProjectileShot::dropped).orElse(false);
+        shotBlast = NpcBlastSafety.reach(NpcAmmunition.modelTemplate(npc));
+    }
+
+    /**
+     * @return how far round where it goes off the round the main weapon has loaded now reaches, so that the NPC keeps its
+     *         distance from its own blast; 0 while it is no model and for a round that does not go off
+     */
+    public double blastReach()
+    {
+        return active ? shotBlast : 0D;
     }
 
     /** @return the world direction, from where its rounds leave, a shot at its target leaves along; empty while it has none */

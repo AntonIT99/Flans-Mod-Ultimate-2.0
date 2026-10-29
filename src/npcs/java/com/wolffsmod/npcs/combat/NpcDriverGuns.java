@@ -141,6 +141,9 @@ public final class NpcDriverGuns
         EquippedWeaponProperties properties = FlansEquipment.getWeaponProperties(new ItemStack(weapon.getItem()), ammo).orElse(null);
         if (ammo.isEmpty() || properties == null)
             return;
+        // A mount loaded with something explosive waits until the target is out of its own blast.
+        if (NpcBlastSafety.tooClose(npc, context.target(), NpcBlastSafety.reach(ammo)))
+            return;
         for (int trigger = 0; trigger < MAX_SHOTS_PER_TICK && gun.cooldown < 1D; trigger++)
         {
             List<WeaponMuzzle> selected = selectedMuzzles(context, mount, gun, points);

@@ -1,9 +1,14 @@
 package com.wolffsmod.npcs.sim;
 
+import com.wolffsmod.npcs.combat.NpcBlastSafety;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState.GunReach;
+import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.ShipBearing;
+import com.wolffsmod.npcs.tactics.ShipBearing.Course;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,12 +20,15 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 
 /**
- * Takes a ground vehicle NPC to where its main weapon has a shot at its target. One whose gun cannot lower itself onto a
+ * Takes a ground vehicle or ship NPC to where its main weapon has a shot at its target. One standing inside the reach of
+ * its own explosive rounds backs away until they cannot catch it. One whose gun cannot lower itself onto a
  * target close below it, or raise itself onto one close above, backs away until the shot lies within its elevation, in
  * reverse when the way back lies behind it; so does one whose target stands under its barrel, nearer the turret than the
  * muzzle, where no elevation reaches it. One whose line of fire is blocked drives on toward its target, round what
- * blocks it as its path leads, until the line is clear. Whatever moves the NPC in a fight asks here before it stands it
- * still or closes it in. One per NPC, kept by its {@link NpcVehicleState}. Server thread.
+ * blocks it as its path leads, until the line is clear. A ship steams a course of its own instead, as
+ * {@link ShipBearing} lays it, since only its bow or its side brings its weapons to bear. Whatever moves the NPC in a
+ * fight asks here before it stands it still or closes it in. One per NPC, kept by its {@link NpcVehicleState}. Server
+ * thread.
  */
 public final class NpcFiringPosition
 {
@@ -45,6 +53,9 @@ public final class NpcFiringPosition
     @Nullable
     private Vec3 ordered;
     private long orderedAt;
+    /** What a ship is doing with its target, so that it does not flap between running in and turning away; null for anything else. */
+    @Nullable
+    private Course course;
 
     /**
      * Drives a ground vehicle NPC to where its main weapon has a shot at its target, when it has none from where it stands.
@@ -61,13 +72,15 @@ public final class NpcFiringPosition
         if (position.ordered != null)
             npc.getNavigation().stop();
         position.ordered = null;
+        position.course = null;
         return false;
     }
 
-    /** Whether the NPC is a ground vehicle that drives itself for a shot at a target it may fire at. */
+    /** Whether the NPC is a ground vehicle or ship that drives itself for a shot at a target it may fire at. */
     private static boolean applies(EntityNPCInterface npc, NpcVehicleState state, LivingEntity target)
     {
-        boolean switched = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.MANOEUVRE_TO_FIRE);
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        boolean switched = options.enabled(Feature.MANOEUVRE_TO_FIRE) || options.enabled(Feature.BLAST_STANDOFF) || options.enabled(Feature.SHIP_WEAPON_BEARING);
         return switched && TacticKind.of(npc) == TacticKind.VEHICLE && npc.isAlive() && !npc.isKilled() && target.isAlive() && target.level() == npc.level()
             && !(npc.isVehicle() && npc.ais.mountControl) && !state.getFlight().holdsFire();
     }
@@ -75,6 +88,23 @@ public final class NpcFiringPosition
     /** @return whether the vehicle is on its way to a shot */
     private boolean move(EntityNPCInterface npc, NpcVehicleState state, LivingEntity target)
     {
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        // Out of the reach of its own rounds first: there is no shot worth lining up from inside its own blast.
+        double standoff = NpcBlastSafety.standoff(npc);
+        double gap = npc.distanceTo(target);
+        if (standoff > gap)
+        {
+            backAway(npc, state, target, standoff - gap);
+            return true;
+        }
+        if (options.enabled(Feature.SHIP_WEAPON_BEARING) && state.isShip())
+        {
+            steam(npc, state, target, standoff);
+            return true;
+        }
+        course = null;
+        if (!options.enabled(Feature.MANOEUVRE_TO_FIRE))
+            return false;
         Optional<Vec3> origin = state.fireOrigin();
         if (origin.isEmpty())
             return false;
@@ -136,6 +166,28 @@ public final class NpcFiringPosition
     static OptionalDouble reachDistance(double horizontal, double reach, double range)
     {
         return horizontal >= reach || reach > range ? OptionalDouble.empty() : OptionalDouble.of(reach + BACK_MARGIN - horizontal);
+    }
+
+    /**
+     * Steams a ship so that its weapons bear: bow on to fire what is fixed to its hull, away again after a run, and round
+     * its target to bring its turrets to bear once it has nothing fixed to fire. It is sent on again whenever its course
+     * changes, and otherwise now and then, since the point it steams for moves along with it.
+     *
+     * @param standoff
+     *            blocks from its target the ship's own rounds would catch it within, which it never circles inside
+     */
+    private void steam(EntityNPCInterface npc, NpcVehicleState state, LivingEntity target, double standoff)
+    {
+        double hold = Math.max(standoff, NpcTactics.engagement(npc).preferred());
+        Course wanted = ShipBearing.course(state.hullFixedWeapon(), horizontal(npc.position(), target.position()), hold, course);
+        long now = npc.level().getGameTime();
+        boolean renew = ordered == null || wanted != course || npc.getNavigation().isDone() || now - orderedAt >= REPATH_TICKS;
+        course = wanted;
+        if (!renew)
+            return;
+        Vec3 point = ShipBearing.point(wanted, npc.position(), target.position(), hold, (npc.getId() & 1) == 0 ? 1 : -1);
+        npc.getNavigation().moveTo(point.x, point.y, point.z, 1D);
+        order(npc, point);
     }
 
     /** Backs the vehicle away from its target, or as near that way as it finds a path, far enough for its gun to reach it. */

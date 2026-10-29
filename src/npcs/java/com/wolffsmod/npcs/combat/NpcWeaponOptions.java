@@ -38,6 +38,16 @@ public final class NpcWeaponOptions
          * whose line of fire is blocked drives on, round what blocks it, until it has a clear shot.
          */
         MANOEUVRE_TO_FIRE(true),
+        /**
+         * A vehicle, aircraft or ship keeps out of the reach of its own explosive rounds: it holds its fire at a target
+         * too close for them and manoeuvres back to where it can fire them safely.
+         */
+        BLAST_STANDOFF(true),
+        /**
+         * A ship turns its bow onto its target for weapons fixed to its hull, such as torpedo tubes, and turns its side
+         * to it for its turrets once it has none of those left to fire.
+         */
+        SHIP_WEAPON_BEARING(true),
         /** Each manned seat gun picks its own target within its own arc, whatever the turret and the other guns fire at. */
         GUNNER_TARGETS(true),
         /** A seat gun nobody sits behind aims and fires by itself, as a crew member would man it, credited to the vehicle. */

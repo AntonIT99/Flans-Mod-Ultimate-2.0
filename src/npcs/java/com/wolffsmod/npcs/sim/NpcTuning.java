@@ -104,6 +104,8 @@ public final class NpcTuning
         TACTIC_DISTANCE(0, 0, 256),
         /** Blocks around it in which an NPC fighting from cover looks for some. */
         COVER_RADIUS(8, 2, 16),
+        /** Blocks a vehicle, aircraft or ship keeps beyond the reach of its own explosive rounds before it fires them. */
+        BLAST_MARGIN(4, 0, 64),
         /** Blocks around it in which an NPC that drives Flan's driveables looks for one to board. */
         BOARD_RANGE(16, 2, 64),
         /** Index into {@link Claim}. */
