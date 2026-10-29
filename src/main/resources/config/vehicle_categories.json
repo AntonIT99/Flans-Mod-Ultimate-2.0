@@ -98,7 +98,7 @@
             "RealMassKg": 15700,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 60.0,
-            "RealMaxReverseSpeedKmh": 11.0,
+            "RealMaxReverseSpeedKmh": 10.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
             "UseRealisticVehicleHealth": "true",
@@ -488,8 +488,8 @@
     "9A52-2 Smerch": {
         "properties": {
             "RealMassKg": 43700,
-            "RealEnginePowerHp": 525,
-            "RealMaxSpeedKmh": 60.0,
+            "RealEnginePowerHp": 518,
+            "RealMaxSpeedKmh": 60,
             "RealMaxReverseSpeedKmh": 15.0,
             "DriveType": "AWD",
             "RealTurnRateDegPerSec": 106.1,
@@ -500,7 +500,7 @@
             "ArmorRearMm": 0.0,
             "ArmorTopMm": 0.0,
             "ArmorBottomMm": 0.0,
-            "ShootDelayPrimarySeconds": 3.0
+            "ShootDelayPrimarySeconds": 3
         },
         "items": [
             "bm30"
@@ -567,7 +567,7 @@
         "properties": {
             "RealMassKg": 7000,
             "RealEnginePowerHp": 140,
-            "RealMaxSpeedKmh": 95.0,
+            "RealMaxSpeedKmh": 100,
             "RealMaxReverseSpeedKmh": 20.0,
             "DriveType": "AWD",
             "RealTurnRateDegPerSec": 168.0,
@@ -1556,12 +1556,12 @@
 
     "Admiral Kuznetsov (1991)": {
         "properties": {
-            "RealDisplacementT": 58600.0,
-            "RealEnginePowerHp": 200000,
+            "RealDisplacementT": 59100.0,
+            "RealEnginePowerHp": 200000.0,
             "RealMaxSpeedKn": 29.0,
             "RealMaxReverseSpeedKn": 11.6,
             "DriveType": "MARINE",
-            "RealDraftM": 10.0,
+            "RealDraftM": 9.76,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -1746,7 +1746,7 @@
             "RealMassKg": 13700,
             "RealEnginePowerHp": 250,
             "RealMaxSpeedKmh": 60.0,
-            "RealMaxReverseSpeedKmh": 6.0,
+            "RealMaxReverseSpeedKmh": 7.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -1774,9 +1774,9 @@
     "AMX-30B2": {
         "properties": {
             "RealMassKg": 37000,
-            "RealEnginePowerHp": 720,
+            "RealEnginePowerHp": 680,
             "RealMaxSpeedKmh": 65.0,
-            "RealMaxReverseSpeedKmh": 23.0,
+            "RealMaxReverseSpeedKmh": 65.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -2413,8 +2413,8 @@
 
     "BMP-2M Berezhok": {
         "properties": {
-            "RealMassKg": 16000,
-            "RealEnginePowerHp": 360,
+            "RealMassKg": 14500,
+            "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 65.0,
             "RealMaxReverseSpeedKmh": 11.0,
             "DriveType": "TRACKED",
@@ -2633,7 +2633,7 @@
         "properties": {
             "RealMassKg": 7000,
             "RealEnginePowerHp": 140,
-            "RealMaxSpeedKmh": 95.0,
+            "RealMaxSpeedKmh": 100,
             "RealMaxReverseSpeedKmh": 20.0,
             "DriveType": "AWD",
             "RealTurnRateDegPerSec": 168.0,
@@ -2767,9 +2767,9 @@
 
     "BTR-60PB": {
         "properties": {
-            "RealMassKg": 10300,
+            "RealMassKg": 10200,
             "RealEnginePowerHp": 180,
-            "RealMaxSpeedKmh": 80.0,
+            "RealMaxSpeedKmh": 80,
             "RealMaxReverseSpeedKmh": 15.0,
             "DriveType": "AWD",
             "RealTurnRateDegPerSec": 141.47,
@@ -2842,10 +2842,10 @@
 
     "BTR-80A (30mm armed configuration)": {
         "properties": {
-            "RealMassKg": 14550,
+            "RealMassKg": 14600,
             "RealEnginePowerHp": 260,
-            "RealMaxSpeedKmh": 80.0,
-            "RealMaxReverseSpeedKmh": 15.0,
+            "RealMaxSpeedKmh": 80,
+            "RealMaxReverseSpeedKmh": 12.0,
             "DriveType": "AWD",
             "RealTurnRateDegPerSec": 141.47,
             "UseRealisticVehicleHealth": "true",
@@ -3247,7 +3247,7 @@
             "RealMassKg": 62000,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 56.0,
-            "RealMaxReverseSpeedKmh": 36.0,
+            "RealMaxReverseSpeedKmh": 37.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -3273,7 +3273,7 @@
             "RealMassKg": 74000,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 56.0,
-            "RealMaxReverseSpeedKmh": 25.0,
+            "RealMaxReverseSpeedKmh": 38.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -3497,8 +3497,8 @@
         "properties": {
             "RealMassKg": 55000,
             "RealEnginePowerHp": 750,
-            "RealMaxSpeedKmh": 48.0,
-            "RealMaxReverseSpeedKmh": 9.0,
+            "RealMaxSpeedKmh": 48,
+            "RealMaxReverseSpeedKmh": 11.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -4599,7 +4599,7 @@
 
     "Flakpanzer Gepard": {
         "properties": {
-            "RealMassKg": 47300,
+            "RealMassKg": 46000,
             "RealEnginePowerHp": 830,
             "RealMaxSpeedKmh": 65.0,
             "RealMaxReverseSpeedKmh": 25.0,
@@ -4607,14 +4607,14 @@
             "RealTurnRateDegPerSec": 24,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "ArmorFrontMm": 70.0,
-            "ArmorSideMm": 35.0,
-            "ArmorRearMm": 25.0,
+            "ArmorFrontMm": 30,
+            "ArmorSideMm": 25,
+            "ArmorRearMm": 20,
             "ArmorTopMm": 15.0,
             "ArmorBottomMm": 15.0,
-            "TurretArmorFrontMm": 25.0,
-            "TurretArmorSideMm": 15.0,
-            "TurretArmorRearMm": 15.0,
+            "TurretArmorFrontMm": 25,
+            "TurretArmorSideMm": 20,
+            "TurretArmorRearMm": 20,
             "TurretArmorTopMm": 15.0,
             "PartArmorMm": [
                 "leftTrack 20",
@@ -4795,9 +4795,9 @@
 
     "FV101 Scorpion": {
         "properties": {
-            "RealMassKg": 8074,
+            "RealMassKg": 8070,
             "RealEnginePowerHp": 190,
-            "RealMaxSpeedKmh": 72.0,
+            "RealMaxSpeedKmh": 80,
             "RealMaxReverseSpeedKmh": 14.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
@@ -4856,9 +4856,9 @@
 
     "FV510 Warrior": {
         "properties": {
-            "RealMassKg": 25300,
+            "RealMassKg": 24000,
             "RealEnginePowerHp": 550,
-            "RealMaxSpeedKmh": 75.0,
+            "RealMaxSpeedKmh": 75,
             "RealMaxReverseSpeedKmh": 25.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
@@ -7002,10 +7002,10 @@
 
     "IT-1 Drakon": {
         "properties": {
-            "RealMassKg": 35000,
+            "RealMassKg": 34500,
             "RealEnginePowerHp": 580,
             "RealMaxSpeedKmh": 50.0,
-            "RealMaxReverseSpeedKmh": 7.0,
+            "RealMaxReverseSpeedKmh": 8.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
             "UseRealisticVehicleHealth": "true",
@@ -7405,9 +7405,9 @@
     "Kiev Project 1143": {
         "properties": {
             "RealDisplacementT": 41370.0,
-            "RealEnginePowerHp": 200000,
-            "RealMaxSpeedKn": 32.0,
-            "RealMaxReverseSpeedKn": 12.8,
+            "RealEnginePowerHp": 180000.0,
+            "RealMaxSpeedKn": 32.5,
+            "RealMaxReverseSpeedKn": 13.0,
             "DriveType": "MARINE",
             "RealDraftM": 8.95,
             "UseRealisticVehicleHealth": "true",
@@ -7436,12 +7436,12 @@
 
     "Kirov Project 1144 (1980)": {
         "properties": {
-            "RealDisplacementT": 28000.0,
-            "RealEnginePowerHp": 140000,
+            "RealDisplacementT": 25860.0,
+            "RealEnginePowerHp": 140000.0,
             "RealMaxSpeedKn": 31.0,
             "RealMaxReverseSpeedKn": 12.4,
             "DriveType": "MARINE",
-            "RealDraftM": 9.1,
+            "RealDraftM": 7.8,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -7450,7 +7450,7 @@
             "ArmorBulkheadMm": 0,
             "ArmorConningTowerMm": 0,
             "ArmorTorpedoBulgeMm": 0,
-            "ArmorMachineryMm": 76,
+            "ArmorMachineryMm": 0,
             "ArmorSuperstructureMm": 0,
             "ArmorBowMm": 0,
             "ArmorSternMm": 0,
@@ -7774,9 +7774,9 @@
 
     "Leclerc Series 1": {
         "properties": {
-            "RealMassKg": 54500,
+            "RealMassKg": 53700,
             "RealEnginePowerHp": 1500,
-            "RealMaxSpeedKmh": 71.0,
+            "RealMaxSpeedKmh": 72,
             "RealMaxReverseSpeedKmh": 38.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
@@ -8688,7 +8688,7 @@
             "RealMassKg": 46200,
             "RealEnginePowerHp": 810,
             "RealMaxSpeedKmh": 48.0,
-            "RealMaxReverseSpeedKmh": 8.0,
+            "RealMaxReverseSpeedKmh": 19.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -8886,8 +8886,8 @@
 
     "M163 VADS": {
         "properties": {
-            "RealMassKg": 12270,
-            "RealEnginePowerHp": 215,
+            "RealMassKg": 11200,
+            "RealEnginePowerHp": 212,
             "RealMaxSpeedKmh": 64.0,
             "RealMaxReverseSpeedKmh": 15.0,
             "DriveType": "TRACKED",
@@ -8935,7 +8935,7 @@
             "RealMassKg": 15200,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 69.0,
-            "RealMaxReverseSpeedKmh": 14.0,
+            "RealMaxReverseSpeedKmh": 15.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -9186,9 +9186,8 @@
 
     "Marder 1A1": {
         "properties": {
-            "RealMassKg": 28500,
-            "RealEnginePowerHp": 600,
-            "RealMaxSpeedKmh": 65.0,
+            "RealMassKg": 29200,
+            "RealMaxSpeedKmh": 65,
             "RealMaxReverseSpeedKmh": 25.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
@@ -9206,7 +9205,8 @@
             "PartArmorMm": [
                 "leftTrack 20",
                 "rightTrack 20"
-            ]
+            ],
+            "RealEnginePowerPS": 600
         },
         "items": [
             "marderifv"
@@ -9330,7 +9330,7 @@
 
     "MBT-70": {
         "properties": {
-            "RealMassKg": 50000,
+            "RealMassKg": 51700,
             "RealEnginePowerHp": 1475,
             "RealMaxSpeedKmh": 64.0,
             "RealMaxReverseSpeedKmh": 64.0,
@@ -9746,10 +9746,10 @@
 
     "Merkava Mk 1": {
         "properties": {
-            "RealMassKg": 63000,
+            "RealMassKg": 61000,
             "RealEnginePowerHp": 900,
-            "RealMaxSpeedKmh": 46.0,
-            "RealMaxReverseSpeedKmh": 9.0,
+            "RealMaxSpeedKmh": 54,
+            "RealMaxReverseSpeedKmh": 11.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -9776,7 +9776,7 @@
             "RealMassKg": 65000,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 64.0,
-            "RealMaxReverseSpeedKmh": 20.0,
+            "RealMaxReverseSpeedKmh": 64.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -10217,12 +10217,12 @@
 
     "Moskva Project 1123 (1967)": {
         "properties": {
-            "RealDisplacementT": 17500.0,
-            "RealEnginePowerHp": 90000,
-            "RealMaxSpeedKn": 29.0,
-            "RealMaxReverseSpeedKn": 11.6,
+            "RealDisplacementT": 15280.0,
+            "RealEnginePowerHp": 90000.0,
+            "RealMaxSpeedKn": 28.5,
+            "RealMaxReverseSpeedKn": 11.4,
             "DriveType": "MARINE",
-            "RealDraftM": 8.0,
+            "RealDraftM": 7.7,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -10251,7 +10251,7 @@
         "properties": {
             "RealMassKg": 11900,
             "RealEnginePowerHp": 240,
-            "RealMaxSpeedKmh": 61.0,
+            "RealMaxSpeedKmh": 61.5,
             "RealMaxReverseSpeedKmh": 10.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
@@ -10276,7 +10276,7 @@
         "properties": {
             "RealMassKg": 12000,
             "RealEnginePowerHp": 240,
-            "RealMaxSpeedKmh": 61.0,
+            "RealMaxSpeedKmh": 61.5,
             "RealMaxReverseSpeedKmh": 10.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
@@ -11713,12 +11713,12 @@
 
     "Project 61 Kashin (1962)": {
         "properties": {
-            "RealDisplacementT": 4510.0,
-            "RealEnginePowerHp": 72000,
-            "RealMaxSpeedKn": 35.0,
-            "RealMaxReverseSpeedKn": 14.0,
+            "RealDisplacementT": 4315.0,
+            "RealEnginePowerHp": 72000.0,
+            "RealMaxSpeedKn": 35.5,
+            "RealMaxReverseSpeedKn": 14.2,
             "DriveType": "MARINE",
-            "RealDraftM": 4.6,
+            "RealDraftM": 4.47,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -11746,11 +11746,11 @@
     "Project 205 Moskit missile boat": {
         "properties": {
             "RealDisplacementT": 209.0,
-            "RealEnginePowerHp": 12000,
-            "RealMaxSpeedKn": 38.0,
-            "RealMaxReverseSpeedKn": 15.2,
+            "RealEnginePowerHp": 12000.0,
+            "RealMaxSpeedKn": 38.5,
+            "RealMaxReverseSpeedKn": 15.4,
             "DriveType": "MARINE",
-            "RealDraftM": 1.8,
+            "RealDraftM": 1.73,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -11773,10 +11773,10 @@
 
     "Project 627 Kit (surfaced)": {
         "properties": {
-            "RealDisplacementT": 3065.0,
-            "RealEnginePowerHp": 35000,
-            "RealMaxSpeedKn": 15.0,
-            "RealMaxReverseSpeedKn": 6.0,
+            "RealDisplacementT": 3118.0,
+            "RealEnginePowerHp": 35000.0,
+            "RealMaxSpeedKn": 15.2,
+            "RealMaxReverseSpeedKn": 6.08,
             "DriveType": "MARINE",
             "RealDraftM": 5.65,
             "UseRealisticVehicleHealth": "true",
@@ -11801,12 +11801,12 @@
 
     "Project 633 Romeo (surfaced)": {
         "properties": {
-            "RealDisplacementT": 1475.0,
-            "RealEnginePowerHp": 4000,
+            "RealDisplacementT": 1330.0,
+            "RealEnginePowerHp": 4000.0,
             "RealMaxSpeedKn": 15.2,
             "RealMaxReverseSpeedKn": 6.08,
             "DriveType": "MARINE",
-            "RealDraftM": 4.7,
+            "RealDraftM": 4.6,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -11829,12 +11829,12 @@
 
     "Project 651 Juliett (surfaced)": {
         "properties": {
-            "RealDisplacementT": 3174.0,
-            "RealEnginePowerHp": 8000,
+            "RealDisplacementT": 3140.0,
+            "RealEnginePowerHp": 8000.0,
             "RealMaxSpeedKn": 16.0,
             "RealMaxReverseSpeedKn": 6.4,
             "DriveType": "MARINE",
-            "RealDraftM": 7.0,
+            "RealDraftM": 6.9,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -11858,11 +11858,11 @@
     "Project 667A Navaga (surfaced)": {
         "properties": {
             "RealDisplacementT": 7766.0,
-            "RealEnginePowerHp": 52000,
+            "RealEnginePowerHp": 40000.0,
             "RealMaxSpeedKn": 15.0,
             "RealMaxReverseSpeedKn": 6.0,
             "DriveType": "MARINE",
-            "RealDraftM": 8.0,
+            "RealDraftM": 7.9,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -11885,10 +11885,10 @@
 
     "Project 877 Paltus (surfaced)": {
         "properties": {
-            "RealDisplacementT": 2300.0,
-            "RealEnginePowerHp": 5900,
-            "RealMaxSpeedKn": 10.0,
-            "RealMaxReverseSpeedKn": 4.0,
+            "RealDisplacementT": 2325.0,
+            "RealEnginePowerHp": 4080.0,
+            "RealMaxSpeedKn": 10.7,
+            "RealMaxReverseSpeedKn": 4.28,
             "DriveType": "MARINE",
             "RealDraftM": 6.6,
             "UseRealisticVehicleHealth": "true",
@@ -11913,12 +11913,12 @@
 
     "Project 949A Antey (surfaced)": {
         "properties": {
-            "RealDisplacementT": 14700.0,
-            "RealEnginePowerHp": 98000,
-            "RealMaxSpeedKn": 15.0,
-            "RealMaxReverseSpeedKn": 6.0,
+            "RealDisplacementT": 14820.0,
+            "RealEnginePowerHp": 100000.0,
+            "RealMaxSpeedKn": 14.6,
+            "RealMaxReverseSpeedKn": 5.84,
             "DriveType": "MARINE",
-            "RealDraftM": 9.0,
+            "RealDraftM": 9.3,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -11942,11 +11942,11 @@
     "Project 956 Sarych (1980)": {
         "properties": {
             "RealDisplacementT": 7940.0,
-            "RealEnginePowerHp": 100000,
+            "RealEnginePowerHp": 100000.0,
             "RealMaxSpeedKn": 32.7,
             "RealMaxReverseSpeedKn": 13.08,
             "DriveType": "MARINE",
-            "RealDraftM": 6.5,
+            "RealDraftM": 5.96,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -11973,12 +11973,12 @@
 
     "Project 1134 Berkut": {
         "properties": {
-            "RealDisplacementT": 7500.0,
-            "RealEnginePowerHp": 90000,
+            "RealDisplacementT": 7170.0,
+            "RealEnginePowerHp": 92000.0,
             "RealMaxSpeedKn": 34.0,
             "RealMaxReverseSpeedKn": 13.6,
             "DriveType": "MARINE",
-            "RealDraftM": 6.8,
+            "RealDraftM": 5.6,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -13033,7 +13033,7 @@
 
     "Sejong the Great KDX-III": {
         "properties": {
-            "RealDisplacementT": 11000.0,
+            "RealDisplacementT": 10290,
             "RealEnginePowerHp": 100000,
             "RealMaxSpeedKn": 30.0,
             "RealMaxReverseSpeedKn": 12.0,
@@ -13183,12 +13183,12 @@
 
     "Slava Project 1164": {
         "properties": {
-            "RealDisplacementT": 12490.0,
-            "RealEnginePowerHp": 121000,
-            "RealMaxSpeedKn": 32.0,
-            "RealMaxReverseSpeedKn": 12.8,
+            "RealDisplacementT": 11280.0,
+            "RealEnginePowerHp": 130000.0,
+            "RealMaxSpeedKn": 32.5,
+            "RealMaxReverseSpeedKn": 13.0,
             "DriveType": "MARINE",
-            "RealDraftM": 8.4,
+            "RealDraftM": 6.28,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -13383,10 +13383,10 @@
 
     "Stridsfordon 9040C": {
         "properties": {
-            "RealMassKg": 28000,
+            "RealMassKg": 28500,
             "RealEnginePowerHp": 550,
             "RealMaxSpeedKmh": 70.0,
-            "RealMaxReverseSpeedKmh": 43.0,
+            "RealMaxReverseSpeedKmh": 45.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
             "UseRealisticVehicleHealth": "true",
@@ -13492,12 +13492,11 @@
 
     "Sturgeon-class submarine (surfaced)": {
         "properties": {
-            "RealDisplacementT": 4267.0,
             "RealEnginePowerHp": 15000,
             "RealMaxSpeedKn": 15.0,
             "RealMaxReverseSpeedKn": 6.0,
             "DriveType": "MARINE",
-            "RealDraftM": 8.9,
+            "RealDraftM": 8.8392,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -13511,7 +13510,8 @@
             "ArmorBowMm": 0,
             "ArmorSternMm": 0,
             "ArmorFlightDeckMm": 0,
-            "ShootDelayPrimarySeconds": 2
+            "ShootDelayPrimarySeconds": 2,
+            "RealDisplacementLongTons": 3860
         },
         "items": [
             "sturgeon"
@@ -14294,7 +14294,7 @@
             "RealMassKg": 36000,
             "RealEnginePowerHp": 580,
             "RealMaxSpeedKmh": 50.0,
-            "RealMaxReverseSpeedKmh": 7.0,
+            "RealMaxReverseSpeedKmh": 8.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -14382,7 +14382,7 @@
             "RealMassKg": 37000,
             "RealEnginePowerHp": 580,
             "RealMaxSpeedKmh": 50.0,
-            "RealMaxReverseSpeedKmh": 7.0,
+            "RealMaxReverseSpeedKmh": 8.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -14793,7 +14793,7 @@
 
     "T-90M": {
         "properties": {
-            "RealMassKg": 48000,
+            "RealMassKg": 50000,
             "RealEnginePowerHp": 1130,
             "RealMaxSpeedKmh": 60.0,
             "RealMaxReverseSpeedKmh": 4.0,
@@ -14995,11 +14995,11 @@
     "TK-208 Dmitri Donskoi (surfaced)": {
         "properties": {
             "RealDisplacementT": 23200.0,
-            "RealEnginePowerHp": 100000,
-            "RealMaxSpeedKn": 12.0,
-            "RealMaxReverseSpeedKn": 4.8,
+            "RealEnginePowerHp": 100000.0,
+            "RealMaxSpeedKn": 13.0,
+            "RealMaxReverseSpeedKn": 5.2,
             "DriveType": "MARINE",
-            "RealDraftM": 11.0,
+            "RealDraftM": 11.5,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -15802,8 +15802,7 @@
     "Type 10 (standard armor package)": {
         "properties": {
             "RealMassKg": 44000,
-            "RealEnginePowerHp": 1200,
-            "RealMaxSpeedKmh": 70.0,
+            "RealMaxSpeedKmh": 70,
             "RealMaxReverseSpeedKmh": 70.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
@@ -15822,7 +15821,8 @@
                 "leftTrack 20",
                 "rightTrack 20"
             ],
-            "ShootDelayPrimarySeconds": 5.0
+            "ShootDelayPrimarySeconds": 5.0,
+            "RealEnginePowerPS": 1200
         },
         "items": [
             "type10"
@@ -15890,12 +15890,12 @@
 
     "Type 054A frigate": {
         "properties": {
-            "RealDisplacementT": 4053.0,
-            "RealEnginePowerHp": 25340,
+            "RealDisplacementT": 3900,
+            "RealEnginePowerHp": 28200,
             "RealMaxSpeedKn": 27.0,
             "RealMaxReverseSpeedKn": 10.8,
             "DriveType": "MARINE",
-            "RealDraftM": 5.0,
+            "RealDraftM": 5,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -15923,8 +15923,7 @@
     "Type 61": {
         "properties": {
             "RealMassKg": 35000,
-            "RealEnginePowerHp": 570,
-            "RealMaxSpeedKmh": 45.0,
+            "RealMaxSpeedKmh": 45,
             "RealMaxReverseSpeedKmh": 8.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
@@ -15943,7 +15942,8 @@
                 "leftTrack 20",
                 "rightTrack 20"
             ],
-            "ShootDelayPrimarySeconds": 8.0
+            "ShootDelayPrimarySeconds": 8.0,
+            "RealEnginePowerPS": 570
         },
         "items": [
             "type61"
@@ -15991,9 +15991,8 @@
     "Type 74": {
         "properties": {
             "RealMassKg": 38000,
-            "RealEnginePowerHp": 750,
-            "RealMaxSpeedKmh": 53.0,
-            "RealMaxReverseSpeedKmh": 14.0,
+            "RealMaxSpeedKmh": 53,
+            "RealMaxReverseSpeedKmh": 7.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -16012,7 +16011,8 @@
                 "rightTrack 20"
             ],
             "ShootDelayPrimarySeconds": 8.0,
-            "UseAmmoGroup": "105mm L7"
+            "UseAmmoGroup": "105mm L7",
+            "RealEnginePowerPS": 720
         },
         "items": [
             "t74"
@@ -16024,7 +16024,7 @@
             "RealMassKg": 15000,
             "RealEnginePowerHp": 305,
             "RealMaxSpeedKmh": 100.0,
-            "RealMaxReverseSpeedKmh": 20.0,
+            "RealMaxReverseSpeedKmh": 11.0,
             "DriveType": "AWD",
             "RealTurnRateDegPerSec": 176.84,
             "UseRealisticVehicleHealth": "true",
@@ -16115,10 +16115,9 @@
 
     "Type 90": {
         "properties": {
-            "RealMassKg": 50200,
-            "RealEnginePowerHp": 1500,
-            "RealMaxSpeedKmh": 70.0,
-            "RealMaxReverseSpeedKmh": 42.0,
+            "RealMassKg": 50000,
+            "RealMaxSpeedKmh": 70,
+            "RealMaxReverseSpeedKmh": 34.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -16136,7 +16135,8 @@
                 "leftTrack 20",
                 "rightTrack 20"
             ],
-            "ShootDelayPrimarySeconds": 5.0
+            "ShootDelayPrimarySeconds": 5.0,
+            "RealEnginePowerPS": 1500
         },
         "items": [
             "type90"
@@ -16184,12 +16184,12 @@
 
     "Type 094 Jin (surfaced)": {
         "properties": {
-            "RealDisplacementT": 8000.0,
-            "RealEnginePowerHp": 30000,
+            "RealDisplacementT": 9000,
+            "RealEnginePowerHp": 20000,
             "RealMaxSpeedKn": 12.0,
             "RealMaxReverseSpeedKn": 4.8,
             "DriveType": "MARINE",
-            "RealDraftM": 9.0,
+            "RealDraftM": 7.5,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -16683,7 +16683,7 @@
             "RealMaxSpeedKn": 31.0,
             "RealMaxReverseSpeedKn": 12.4,
             "DriveType": "MARINE",
-            "RealDraftM": 9.1,
+            "RealDraftM": 6.31,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -16862,12 +16862,12 @@
 
     "USS Bremerton Los Angeles-class (surfaced)": {
         "properties": {
-            "RealDisplacementT": 6082.0,
+            "RealDisplacementT": 6080,
             "RealEnginePowerHp": 35000,
             "RealMaxSpeedKn": 20.0,
             "RealMaxReverseSpeedKn": 8.0,
             "DriveType": "MARINE",
-            "RealDraftM": 9.7,
+            "RealDraftM": 9.75,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -17475,7 +17475,7 @@
     "USS Nimitz CVN-68": {
         "properties": {
             "RealDisplacementT": 100000.0,
-            "RealEnginePowerHp": 260000,
+            "RealEnginePowerHp": 280000,
             "RealMaxSpeedKn": 30.0,
             "RealMaxReverseSpeedKn": 12.0,
             "DriveType": "MARINE",
@@ -17488,7 +17488,7 @@
             "ArmorBulkheadMm": 0,
             "ArmorConningTowerMm": 0,
             "ArmorTorpedoBulgeMm": 0,
-            "ArmorMachineryMm": 64,
+            "ArmorMachineryMm": 0,
             "ArmorSuperstructureMm": 0,
             "ArmorBowMm": 0,
             "ArmorSternMm": 0,
@@ -17563,12 +17563,12 @@
 
     "USS Robert E Lee SSBN-601 (surfaced)": {
         "properties": {
-            "RealDisplacementT": 5990.0,
-            "RealEnginePowerHp": 15000,
+            "RealDisplacementT": 5959.0,
+            "RealEnginePowerHp": 15000.0,
             "RealMaxSpeedKn": 16.0,
             "RealMaxReverseSpeedKn": 6.4,
             "DriveType": "MARINE",
-            "RealDraftM": 8.8,
+            "RealDraftM": 8.1,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "ArmorBeltMm": 0,
@@ -18936,7 +18936,7 @@
 
     "ZSU-23-4V Shilka": {
         "properties": {
-            "RealMassKg": 19000,
+            "RealMassKg": 20700,
             "RealEnginePowerHp": 280,
             "RealMaxSpeedKmh": 50.0,
             "RealMaxReverseSpeedKmh": 7.0,
@@ -18968,10 +18968,10 @@
 
     "ZSU-57-2": {
         "properties": {
-            "RealMassKg": 28200,
+            "RealMassKg": 28000,
             "RealEnginePowerHp": 520,
             "RealMaxSpeedKmh": 50.0,
-            "RealMaxReverseSpeedKmh": 7.0,
+            "RealMaxReverseSpeedKmh": 8.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 24,
             "UseRealisticVehicleHealth": "true",
@@ -19034,7 +19034,7 @@
             "RealMassKg": 38500,
             "RealEnginePowerHp": 730,
             "RealMaxSpeedKmh": 57.0,
-            "RealMaxReverseSpeedKmh": 10.0,
+            "RealMaxReverseSpeedKmh": 9.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -19062,10 +19062,10 @@
 
     "ZTZ-99": {
         "properties": {
-            "RealMassKg": 54000,
+            "RealMassKg": 51000,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 65.0,
-            "RealMaxReverseSpeedKmh": 12.0,
+            "RealMaxReverseSpeedKmh": 5.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",
@@ -19093,10 +19093,10 @@
 
     "ZTZ-99A": {
         "properties": {
-            "RealMassKg": 58000,
+            "RealMassKg": 55000,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 75.0,
-            "RealMaxReverseSpeedKmh": 30.0,
+            "RealMaxReverseSpeedKmh": 34.0,
             "DriveType": "TRACKED",
             "RealTurnRateDegPerSec": 28,
             "UseRealisticVehicleHealth": "true",

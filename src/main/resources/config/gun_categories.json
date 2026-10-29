@@ -4417,7 +4417,7 @@
     "Gryazev-Shipunov GSh-30-1": {
         "properties": {
             "MuzzleVelocity": 860,
-            "RoundsPerMin": 1200,
+            "RoundsPerMin": 1800,
             "Dispersion": 0.2
         },
         "items": [
