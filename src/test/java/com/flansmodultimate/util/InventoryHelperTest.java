@@ -1,5 +1,6 @@
 package com.flansmodultimate.util;
 
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -75,7 +76,7 @@ class InventoryHelperTest
     {
         ItemStack dye = new ItemStack(Items.RED_DYE);
         ItemStack tagged = dye.copy();
-        tagged.getOrCreateTag().putInt("Paint", 1);
+        ItemStackData.update(tagged, tag -> tag.putInt("Paint", 1));
         SimpleContainer inventory = new SimpleContainer(1);
         assertFalse(InventoryHelper.tryConsumeAll(inventory, tagged, List.of(dye), false));
         assertEquals(1, tagged.getCount());

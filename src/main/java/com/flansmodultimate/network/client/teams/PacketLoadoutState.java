@@ -139,7 +139,7 @@ public final class PacketLoadoutState implements IClientPacket
         data.writeByte(openScreen.ordinal());
         data.writeUtf(motd, 256);
         data.writeUtf(poolId);
-        data.writeComponent(poolName);
+        PacketIO.writeComponent(data, poolName);
         data.writeVarInt(rank);
         data.writeVarInt(experience);
         data.writeVarInt(experienceForNextRank);
@@ -157,7 +157,7 @@ public final class PacketLoadoutState implements IClientPacket
         {
             data.writeByte(entry.slot().ordinal());
             data.writeUtf(entry.typeId());
-            data.writeComponent(entry.name());
+            PacketIO.writeComponent(data, entry.name());
             data.writeVarInt(entry.unlockRank());
             PacketIO.writeItem(data, entry.preview());
         }
@@ -166,7 +166,7 @@ public final class PacketLoadoutState implements IClientPacket
         {
             data.writeUUID(box.id());
             data.writeUtf(box.boxId());
-            data.writeComponent(box.name());
+            PacketIO.writeComponent(data, box.name());
             data.writeBoolean(box.opened());
             data.writeUtf(box.rewardKey());
             PacketIO.writeItem(data, box.preview());
@@ -175,7 +175,7 @@ public final class PacketLoadoutState implements IClientPacket
         for (BoxTypeView box : boxTypes)
         {
             data.writeUtf(box.boxId());
-            data.writeComponent(box.name());
+            PacketIO.writeComponent(data, box.name());
             PacketIO.writeItem(data, box.preview());
             data.writeVarInt(box.unopened());
         }
@@ -195,7 +195,7 @@ public final class PacketLoadoutState implements IClientPacket
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
         motd = data.readUtf(256);
         poolId = data.readUtf();
-        poolName = data.readComponent();
+        poolName = PacketIO.readComponent(data);
         rank = data.readVarInt();
         experience = data.readVarInt();
         experienceForNextRank = data.readVarInt();
@@ -215,16 +215,16 @@ public final class PacketLoadoutState implements IClientPacket
         for (int i = 0; i < entryCount; i++)
         {
             int slot = data.readUnsignedByte();
-            entries.add(new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)], data.readUtf(), data.readComponent(), data.readVarInt(), PacketIO.readItem(data)));
+            entries.add(new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)], data.readUtf(), PacketIO.readComponent(data), data.readVarInt(), PacketIO.readItem(data)));
         }
         int boxCount = data.readVarInt();
         boxes = new ArrayList<>(boxCount);
         for (int i = 0; i < boxCount; i++)
-            boxes.add(new BoxView(data.readUUID(), data.readUtf(), data.readComponent(), data.readBoolean(), data.readUtf(), PacketIO.readItem(data)));
+            boxes.add(new BoxView(data.readUUID(), data.readUtf(), PacketIO.readComponent(data), data.readBoolean(), data.readUtf(), PacketIO.readItem(data)));
         int boxTypeCount = data.readVarInt();
         boxTypes = new ArrayList<>(boxTypeCount);
         for (int i = 0; i < boxTypeCount; i++)
-            boxTypes.add(new BoxTypeView(data.readUtf(), data.readComponent(), PacketIO.readItem(data), data.readVarInt()));
+            boxTypes.add(new BoxTypeView(data.readUtf(), PacketIO.readComponent(data), PacketIO.readItem(data), data.readVarInt()));
         rewards = data.readList(buf -> new RewardView(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readVarInt()));
     }
 

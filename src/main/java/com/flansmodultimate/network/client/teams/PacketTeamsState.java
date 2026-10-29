@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -277,13 +276,14 @@ public final class PacketTeamsState implements IClientPacket
         data.writeUtf(selectedTeam);
         data.writeUtf(selectedClass);
 
-        data.writeCollection(teamChoices, (buf, choice) ->
+        data.writeVarInt(teamChoices.size());
+        for (TeamChoice choice : teamChoices)
         {
-            buf.writeUtf(choice.id());
-            buf.writeUtf(choice.name());
-            buf.writeInt(choice.colour());
-            buf.writeComponent(choice.displayName());
-        });
+            data.writeUtf(choice.id());
+            data.writeUtf(choice.name());
+            data.writeInt(choice.colour());
+            PacketIO.writeComponent(data, choice.displayName());
+        }
         data.writeVarInt(classChoices.size());
         for (ClassChoice choice : classChoices)
         {
@@ -294,25 +294,29 @@ public final class PacketTeamsState implements IClientPacket
             data.writeVarInt(choice.used());
             data.writeVarInt(choice.capacity() + 1);
             PacketIO.writeItems(data, choice.loadout());
-            data.writeComponent(choice.displayName());
+            PacketIO.writeComponent(data, choice.displayName());
         }
-        data.writeCollection(teamScores, (buf, team) ->
+        data.writeVarInt(teamScores.size());
+        for (TeamScore team : teamScores)
         {
-            buf.writeUtf(team.id());
-            buf.writeUtf(team.name());
-            buf.writeInt(team.colour());
-            buf.writeVarInt(team.score());
-            buf.writeVarInt(team.sideId());
-            buf.writeCollection(team.players(), PacketTeamsState::writePlayer);
-            buf.writeComponent(team.displayName());
-        });
-        data.writeCollection(voteOptions, (buf, option) ->
+            data.writeUtf(team.id());
+            data.writeUtf(team.name());
+            data.writeInt(team.colour());
+            data.writeVarInt(team.score());
+            data.writeVarInt(team.sideId());
+            data.writeVarInt(team.players().size());
+            for (PlayerScore player : team.players())
+                writePlayer(data, player);
+            PacketIO.writeComponent(data, team.displayName());
+        }
+        data.writeVarInt(voteOptions.size());
+        for (VoteOption option : voteOptions)
         {
-            buf.writeUtf(option.mapName());
-            buf.writeUtf(option.gameType());
-            buf.writeComponent(option.teams());
-            buf.writeVarInt(option.votes());
-        });
+            data.writeUtf(option.mapName());
+            data.writeUtf(option.gameType());
+            PacketIO.writeComponent(data, option.teams());
+            data.writeVarInt(option.votes());
+        }
         data.writeVarInt(playerPrestige);
         data.writeVarInt(playerTeamId);
         data.writeVarInt(playerSideId);
@@ -340,7 +344,7 @@ public final class PacketTeamsState implements IClientPacket
         data.writeCollection(objectives, (buf, objective) -> objective.write(buf));
     }
 
-    private static void writePlayer(FriendlyByteBuf data, PlayerScore player)
+    private static void writePlayer(PacketBuffer data, PlayerScore player)
     {
         data.writeUtf(player.name());
         data.writeInt(player.score());
@@ -348,8 +352,8 @@ public final class PacketTeamsState implements IClientPacket
         data.writeVarInt(player.deaths());
         data.writeVarInt(player.zombieScore());
         data.writeUtf(player.playerClass());
-        data.writeComponent(player.displayName());
-        data.writeComponent(player.classDisplayName());
+        PacketIO.writeComponent(data, player.displayName());
+        PacketIO.writeComponent(data, player.classDisplayName());
     }
 
     @Override
@@ -371,15 +375,23 @@ public final class PacketTeamsState implements IClientPacket
         playerVote = data.readVarInt();
         selectedTeam = data.readUtf();
         selectedClass = data.readUtf();
-        teamChoices = data.readList(buf -> new TeamChoice(buf.readUtf(), buf.readUtf(), buf.readInt(), buf.readComponent()));
+        int teamCount = data.readVarInt();
+        teamChoices = new ArrayList<>(teamCount);
+        for (int i = 0; i < teamCount; i++)
+            teamChoices.add(new TeamChoice(data.readUtf(), data.readUtf(), data.readInt(), PacketIO.readComponent(data)));
         int classCount = data.readVarInt();
         classChoices = new ArrayList<>(classCount);
         for (int i = 0; i < classCount; i++)
-            classChoices
-                .add(new ClassChoice(data.readUtf(), data.readUtf(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readVarInt() - 1, PacketIO.readItems(data), data.readComponent()));
-        teamScores = data
-            .readList(buf -> new TeamScore(buf.readUtf(), buf.readUtf(), buf.readInt(), buf.readVarInt(), buf.readVarInt(), buf.readList(PacketTeamsState::readPlayer), buf.readComponent()));
-        voteOptions = data.readList(buf -> new VoteOption(buf.readUtf(), buf.readUtf(), buf.readComponent(), buf.readVarInt()));
+            classChoices.add(new ClassChoice(data.readUtf(), data.readUtf(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readVarInt() - 1, PacketIO.readItems(data),
+                PacketIO.readComponent(data)));
+        int scoreCount = data.readVarInt();
+        teamScores = new ArrayList<>(scoreCount);
+        for (int i = 0; i < scoreCount; i++)
+            teamScores.add(readTeamScore(data));
+        int voteCount = data.readVarInt();
+        voteOptions = new ArrayList<>(voteCount);
+        for (int i = 0; i < voteCount; i++)
+            voteOptions.add(new VoteOption(data.readUtf(), data.readUtf(), PacketIO.readComponent(data), data.readVarInt()));
         playerPrestige = data.readVarInt();
         playerTeamId = data.readVarInt();
         playerSideId = data.readVarInt();
@@ -399,9 +411,23 @@ public final class PacketTeamsState implements IClientPacket
         objectives = data.readList(ObjectiveSnapshot::read);
     }
 
-    private static PlayerScore readPlayer(FriendlyByteBuf data)
+    private static TeamScore readTeamScore(PacketBuffer data)
     {
-        return new PlayerScore(data.readUtf(), data.readInt(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readUtf(), data.readComponent(), data.readComponent());
+        String id = data.readUtf();
+        String name = data.readUtf();
+        int colour = data.readInt();
+        int score = data.readVarInt();
+        int sideId = data.readVarInt();
+        int playerCount = data.readVarInt();
+        List<PlayerScore> players = new ArrayList<>(playerCount);
+        for (int i = 0; i < playerCount; i++)
+            players.add(readPlayer(data));
+        return new TeamScore(id, name, colour, score, sideId, players, PacketIO.readComponent(data));
+    }
+
+    private static PlayerScore readPlayer(PacketBuffer data)
+    {
+        return new PlayerScore(data.readUtf(), data.readInt(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readUtf(), PacketIO.readComponent(data), PacketIO.readComponent(data));
     }
 
     @Override

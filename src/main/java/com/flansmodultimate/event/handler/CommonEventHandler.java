@@ -120,6 +120,7 @@ public final class CommonEventHandler
         ShootPointDebugCommand.register(event.getDispatcher());
         HitboxDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
+        ThrownGunDespawnCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
         VehicleCollisionDebugCommand.register(event.getDispatcher());

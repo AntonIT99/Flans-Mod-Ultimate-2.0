@@ -3,11 +3,10 @@ package com.flansmodultimate.network.client.teams;
 import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.flansmodultimate.platform.network.PacketBuffer;
-import io.netty.buffer.Unpooled;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -35,7 +34,7 @@ class PacketLoadoutNamesTest
         set(packet, "entries", List.of(new PacketLoadoutState.Entry(LoadoutSlot.values()[0], "sample_2", itemName, 3, ItemStack.EMPTY)));
         set(packet, "boxes", List.of(new PacketLoadoutState.BoxView(UUID.randomUUID(), "sample_box", boxName, false, "", ItemStack.EMPTY)));
         set(packet, "boxTypes", List.of(new PacketLoadoutState.BoxTypeView("sample_box", boxName, ItemStack.EMPTY, 2)));
-        PacketBuffer buffer = new PacketBuffer(new FriendlyByteBuf(Unpooled.buffer()));
+        PacketBuffer buffer = new PacketBuffer(TestPacketBuffers.buffer());
         try
         {
             packet.encodeInto(buffer);

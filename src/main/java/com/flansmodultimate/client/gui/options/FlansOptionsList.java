@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.gui.options;
 
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -124,7 +125,7 @@ public class FlansOptionsList extends ContainerObjectSelectionList<FlansOptionsL
     {
         for (AbstractWidget widget : widgets.values())
             if (widget instanceof EditBox input)
-                input.tick();
+                ClientPlatform.tick(input);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.network;
 
 import com.wolffsmod.npcs.names.FactionDisplayName;
+import com.wolffsmod.npcs.platform.network.NpcPacketIO;
 import com.wolffsmod.npcs.teams.FactionAllies;
 import com.wolffsmod.npcs.teams.FactionJoining;
 import com.wolffsmod.npcs.teams.FactionMembers;
@@ -37,7 +38,7 @@ public record FactionRelationsPacket(int entityId, @Nullable FactionRelations.Re
         void write(FriendlyByteBuf buffer)
         {
             buffer.writeVarInt(id);
-            buffer.writeComponent(name);
+            NpcPacketIO.writeComponent(buffer, name);
             buffer.writeInt(colour);
             buffer.writeCollection(enemies, FriendlyByteBuf::writeVarInt);
             buffer.writeCollection(allies, FriendlyByteBuf::writeVarInt);
@@ -49,7 +50,7 @@ public record FactionRelationsPacket(int entityId, @Nullable FactionRelations.Re
 
         static Entry read(FriendlyByteBuf buffer)
         {
-            return new Entry(buffer.readVarInt(), buffer.readComponent(), buffer.readInt(), buffer.readList(FriendlyByteBuf::readVarInt), buffer.readList(FriendlyByteBuf::readVarInt),
+            return new Entry(buffer.readVarInt(), NpcPacketIO.readComponent(buffer), buffer.readInt(), buffer.readList(FriendlyByteBuf::readVarInt), buffer.readList(FriendlyByteBuf::readVarInt),
                 buffer.readEnum(FactionJoining.Rule.class), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt());
         }
     }

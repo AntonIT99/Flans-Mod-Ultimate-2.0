@@ -8,6 +8,7 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.WeaponSwitch;
@@ -360,7 +361,7 @@ public final class NpcAmmunition
         {
             npc.inventory.weapons.remove(PROJECTILE_INDEX);
             // Flan ammunition counts its rounds in its tag, which a fresh item of it does not share.
-            int slot = find(npc, stack -> ammunition ? ItemStack.isSameItem(stack, template) && FlansProjectiles.hasRoundsLeft(stack) : ItemStack.isSameItemSameTags(stack, template));
+            int slot = find(npc, stack -> ammunition ? ItemStack.isSameItem(stack, template) && FlansProjectiles.hasRoundsLeft(stack) : NpcPlatform.isSameItemSameData(stack, template));
             if (slot >= 0)
                 swap(npc, PROJECTILE_INDEX, slot);
         }

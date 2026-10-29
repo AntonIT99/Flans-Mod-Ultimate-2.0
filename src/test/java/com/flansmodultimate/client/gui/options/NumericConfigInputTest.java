@@ -2,7 +2,7 @@ package com.flansmodultimate.client.gui.options;
 
 import com.flansmodultimate.config.ConfigSpecValues;
 import com.flansmodultimate.config.ModClientConfig;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,14 +13,14 @@ class NumericConfigInputTest
     @Test
     void allSettingsUsesInputsForWideRangesWhileQuickOptionsKeepTheirSliders()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder().push("Settings");
-        ForgeConfigSpec.IntValue wideCount = builder.defineInRange("count", 100, 0, Integer.MAX_VALUE);
+        Builder builder = new Builder().push("Settings");
+        IntValue wideCount = builder.defineInRange("count", 100, 0, Integer.MAX_VALUE);
         builder.defineInRange("smallCount", 5, 1, 20);
         builder.defineInRange("pitch", 0.5D, 0D, Float.MAX_VALUE);
         builder.defineInRange("opacity", 1D, 0D, 1D);
         ConfigTarget target = mock(ConfigTarget.class);
         when(target.spec()).thenReturn(builder.pop().build());
-        when(target.get(any())).thenAnswer(call -> ((ForgeConfigSpec.ConfigValue<?>) call.getArgument(0)).getDefault());
+        when(target.get(any())).thenAnswer(call -> ((ConfigValue<?>) call.getArgument(0)).getDefault());
         when(target.editable()).thenReturn(true);
 
         var options = ConfigOptionFactory.sections(target).get(0).options();
@@ -34,9 +34,9 @@ class NumericConfigInputTest
     @Test
     void acceptsDecimalsAndTheFullConfiguredRange()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-        ForgeConfigSpec.DoubleValue range = builder.defineInRange("range", 64D, 1D, 4096D);
-        ForgeConfigSpec.ValueSpec spec = ConfigSpecValues.valueSpec(builder.build(), range.getPath());
+        Builder builder = new Builder();
+        DoubleValue range = builder.defineInRange("range", 64D, 1D, 4096D);
+        ValueSpec spec = ConfigSpecValues.valueSpec(builder.build(), range.getPath());
 
         assertEquals(64.25D, NumericConfigInput.parse("64.25", spec, Double::valueOf).orElseThrow());
         assertEquals(1D, NumericConfigInput.parse("1", spec, Double::valueOf).orElseThrow());
@@ -48,9 +48,9 @@ class NumericConfigInputTest
     @Test
     void acceptsFullIntegerBoundsWithoutRoundingOrOverflow()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-        ForgeConfigSpec.IntValue count = builder.defineInRange("count", 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        ForgeConfigSpec.ValueSpec spec = ConfigSpecValues.valueSpec(builder.build(), count.getPath());
+        Builder builder = new Builder();
+        IntValue count = builder.defineInRange("count", 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        ValueSpec spec = ConfigSpecValues.valueSpec(builder.build(), count.getPath());
 
         assertEquals(Integer.MAX_VALUE, NumericConfigInput.parse("2147483647", spec, Integer::valueOf).orElseThrow());
         assertEquals(Integer.MIN_VALUE, NumericConfigInput.parse("-2147483648", spec, Integer::valueOf).orElseThrow());

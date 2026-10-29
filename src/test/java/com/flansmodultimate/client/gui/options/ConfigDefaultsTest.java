@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.gui.options;
 
 import com.flansmodultimate.config.ModClientConfig;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -26,7 +26,7 @@ class ConfigDefaultsTest
     @Test
     void countsOnlyDistinctEditableDisplayedValuesThatDifferFromDefaults()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        Builder builder = new Builder();
         var changed = builder.define("changed", true);
         var unchanged = builder.defineInRange("unchanged", 0.25D, 0D, 1D);
         var hidden = builder.define("hidden", true);
@@ -56,7 +56,7 @@ class ConfigDefaultsTest
     @Test
     void leavesAlreadyDefaultValuesUntouchedAndDoesNotFlushANoOpReset()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        Builder builder = new Builder();
         var changed = builder.define("changed", true);
         var unchanged = builder.defineInRange("unchanged", 5, 0, 10);
         builder.build();
@@ -81,7 +81,7 @@ class ConfigDefaultsTest
     @Test
     void restoresOnlyDisplayedValuesAndFlushesEachTargetOnce()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        Builder builder = new Builder();
         var visible = builder.define("visible", true);
         var decimal = builder.defineInRange("decimal", 0.25D, 0D, 1D);
         var hidden = builder.defineInRange("hidden", 12, 0, 100);
@@ -104,7 +104,7 @@ class ConfigDefaultsTest
     @Test
     void skipsLockedOrUnavailableServerSettingsWhileRestoringClientSettings()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        Builder builder = new Builder();
         var value = builder.define("value", false);
         builder.build();
         ConfigTarget client = editableTarget();
@@ -130,7 +130,7 @@ class ConfigDefaultsTest
     @Test
     void rechecksPermissionsAfterConfirmation()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        Builder builder = new Builder();
         var value = builder.define("value", true);
         builder.build();
         ConfigTarget target = editableTarget();
@@ -149,7 +149,7 @@ class ConfigDefaultsTest
     @Test
     void rebuildingTheScreenDropsPreviouslyDisplayedSettings()
     {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        Builder builder = new Builder();
         var value = builder.define("value", true);
         builder.build();
         ConfigTarget target = editableTarget();

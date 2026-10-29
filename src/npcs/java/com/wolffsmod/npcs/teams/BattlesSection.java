@@ -6,6 +6,7 @@ import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.ITeamsLiveRound;
 import com.flansmodultimate.api.teams.ITeamsRound;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.controllers.FactionController;
@@ -130,7 +131,7 @@ public final class BattlesSection
             CompoundTag entry = new CompoundTag();
             entry.putString(ID, team.getShortName());
             entry.putString(NAME, team.getName());
-            entry.putString("displayName", net.minecraft.network.chat.Component.Serializer.toJson(team.getNameComponent()));
+            entry.putString("displayName", NpcPlatform.componentToJson(team.getNameComponent()));
             entry.putInt(COLOUR, team.getTeamColour());
             return entry;
         }));
@@ -229,7 +230,7 @@ public final class BattlesSection
         CompoundTag tag = new CompoundTag();
         tag.putInt(ID, faction.id);
         tag.putString(NAME, faction.name);
-        tag.putString("displayName", net.minecraft.network.chat.Component.Serializer.toJson(com.wolffsmod.npcs.names.FactionDisplayName.of(faction)));
+        tag.putString("displayName", NpcPlatform.componentToJson(com.wolffsmod.npcs.names.FactionDisplayName.of(faction)));
         tag.putInt(COLOUR, faction.color & 0xFFFFFF);
         return tag;
     }

@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -282,7 +281,7 @@ public final class NpcThrowing
 
     private static boolean harmful(ItemStack potion)
     {
-        return NpcPlatform.potionEffects(potion).stream().anyMatch(effect -> effect.getEffect().getCategory() == MobEffectCategory.HARMFUL);
+        return NpcPlatform.potionEffects(potion).stream().anyMatch(NpcPlatform::isHarmful);
     }
 
     private static double reach(Kind kind)
@@ -363,8 +362,7 @@ public final class NpcThrowing
     private static boolean useful(LivingEntity target, ItemStack stack)
     {
         if (stack.getItem() instanceof ThrowablePotionItem)
-            return NpcPlatform.potionEffects(stack).stream()
-                .anyMatch(effect -> effect.getEffect().getCategory() == MobEffectCategory.HARMFUL && (effect.getEffect().isInstantenous() || !target.hasEffect(effect.getEffect())));
+            return NpcPlatform.potionEffects(stack).stream().anyMatch(effect -> NpcPlatform.isHarmful(effect) && NpcPlatform.wouldAffect(target, effect));
         if (stack.is(Items.FIRE_CHARGE))
             return !target.fireImmune() && !target.isOnFire();
         return true;

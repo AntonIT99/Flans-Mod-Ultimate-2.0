@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.client;
 import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.SoldierNamePacket;
+import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import com.wolffsmod.npcs.soldier.SoldierCloneNames;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
@@ -104,7 +105,7 @@ final class SoldierNameMenu extends GuiBasic
         if (field != null && !field.isFocused() && !field.getValue().equals(value))
         {
             field.setValue(value);
-            field.moveCursorToStart();
+            NpcClientPlatform.moveCursorToStart(field);
         }
     }
 

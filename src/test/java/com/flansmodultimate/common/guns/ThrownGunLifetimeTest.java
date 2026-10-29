@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.guns;
 
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
@@ -16,7 +17,7 @@ class ThrownGunLifetimeTest
         for (int seconds : new int[]{300, 900, 0, Integer.MAX_VALUE / 20})
         {
             data.setSeconds(seconds);
-            CompoundTag tag = data.save(new CompoundTag());
+            CompoundTag tag = data.save(new CompoundTag(), ItemStackData.builtInRegistries());
             assertEquals(seconds, ThrownGunLifetime.load(tag).seconds());
             assertTrue(data.isDirty());
         }
@@ -26,10 +27,10 @@ class ThrownGunLifetimeTest
     void resetAndMissingSavedValueFollowTheConfigDefault()
     {
         ThrownGunLifetime data = ThrownGunLifetime.load(new CompoundTag());
-        assertEquals(-1, data.save(new CompoundTag()).getInt("seconds"));
+        assertEquals(-1, data.save(new CompoundTag(), ItemStackData.builtInRegistries()).getInt("seconds"));
         data.setSeconds(120);
         data.setSeconds(-1);
-        assertEquals(-1, data.save(new CompoundTag()).getInt("seconds"));
+        assertEquals(-1, data.save(new CompoundTag(), ItemStackData.builtInRegistries()).getInt("seconds"));
     }
 
     @Test

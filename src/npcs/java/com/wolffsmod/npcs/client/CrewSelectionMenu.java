@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.crew.CrewSource;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.network.CrewClonePreviewPacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import noppes.npcs.CustomEntities;
@@ -329,7 +330,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         graphics.enableScissor(left, top, guiLeft + 392, top + LIST_HEIGHT);
         try
         {
-            drawNpc(graphics, preview, PREVIEW_LEFT + 56, LIST_TOP + LIST_HEIGHT - 8, 1.6F, 0, false);
+            NpcClientPlatform.drawNpc(this, graphics, preview, PREVIEW_LEFT + 56, LIST_TOP + LIST_HEIGHT - 8, 1.6F, 0, false);
         }
         finally
         {

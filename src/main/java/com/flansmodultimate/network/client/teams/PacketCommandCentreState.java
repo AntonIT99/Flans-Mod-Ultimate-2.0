@@ -4,6 +4,7 @@ import com.flansmodultimate.client.gui.centre.CommandCentreClient;
 import com.flansmodultimate.common.teams.centre.CommandCentre;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketIO;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +41,7 @@ public final class PacketCommandCentreState implements IClientPacket
         data.writeVarInt(feedback.size());
         for (CommandCentre.Feedback line : feedback)
         {
-            data.writeComponent(line.text());
+            PacketIO.writeComponent(data, line.text());
             data.writeBoolean(line.failure());
         }
     }
@@ -54,7 +55,7 @@ public final class PacketCommandCentreState implements IClientPacket
         int count = Math.min(data.readVarInt(), CommandCentre.MOST_FEEDBACK);
         List<CommandCentre.Feedback> lines = new ArrayList<>(count);
         for (int i = 0; i < count; i++)
-            lines.add(new CommandCentre.Feedback(data.readComponent(), data.readBoolean()));
+            lines.add(new CommandCentre.Feedback(PacketIO.readComponent(data), data.readBoolean()));
         feedback = List.copyOf(lines);
     }
 

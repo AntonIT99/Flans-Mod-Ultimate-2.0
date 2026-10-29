@@ -1,10 +1,9 @@
 package com.flansmodultimate.network.client.teams;
 
 import com.flansmodultimate.platform.network.PacketBuffer;
-import io.netty.buffer.Unpooled;
+import com.flansmodultimate.platform.network.TestPacketBuffers;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
@@ -25,7 +24,7 @@ class PacketTeamsDisplayNamesTest
         var player = new PacketTeamsState.PlayerScore("[Bot] Army", 5, 6, 7, 0, "Crewman", Component.literal("[Bot] ").append(teamName), className);
         set(packet, "teamScores", List.of(new PacketTeamsState.TeamScore("army_2", "Army", 0x123456, 5, 2, List.of(player), teamName)));
         set(packet, "voteOptions", List.of(new PacketTeamsState.VoteOption("Map", "TDM", teamName.copy().append(" vs ").append(teamName), 1)));
-        PacketBuffer buffer = new PacketBuffer(new FriendlyByteBuf(Unpooled.buffer()));
+        PacketBuffer buffer = new PacketBuffer(TestPacketBuffers.buffer());
         try
         {
             packet.encodeInto(buffer);

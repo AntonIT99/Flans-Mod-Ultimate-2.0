@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -70,6 +71,8 @@ class TeamFactionPacketTest
         when(inventory.getSelected()).thenReturn(wand);
         when(wand.getItem()).thenReturn(CustomItems.wand);
         ITeam team = mock(ITeam.class);
+        // Minecraft 1.21 rejects a null argument of a translated message.
+        when(team.getNameComponent()).thenReturn(Component.literal("Team"));
         when(team.getName()).thenReturn("Test team");
         IPlayerClass playerClass = mock(IPlayerClass.class);
         when(playerClass.getShortName()).thenReturn("class");

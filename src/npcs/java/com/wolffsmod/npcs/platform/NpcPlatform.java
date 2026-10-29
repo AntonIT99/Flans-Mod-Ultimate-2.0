@@ -9,9 +9,11 @@ import net.minecraftforge.fml.loading.FMLPaths;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
@@ -114,11 +116,35 @@ public final class NpcPlatform
         return PotionUtils.getMobEffects(stack);
     }
 
+    /** Whether the effect harms whoever it is applied to. */
+    public static boolean isHarmful(MobEffectInstance effect)
+    {
+        return effect.getEffect().getCategory() == MobEffectCategory.HARMFUL;
+    }
+
+    /** Whether applying the effect would change the entity: an instant effect, or one not already working on it. */
+    public static boolean wouldAffect(LivingEntity entity, MobEffectInstance effect)
+    {
+        return effect.getEffect().isInstantenous() || !entity.hasEffect(effect.getEffect());
+    }
+
     /** Whether a firework rocket carries stars, and so harms what is near where it bursts. */
     public static boolean fireworkExplodes(ItemStack stack)
     {
         CompoundTag fireworks = stack.getTagElement(FireworkRocketItem.TAG_FIREWORKS);
         return fireworks != null && !fireworks.getList(FireworkRocketItem.TAG_EXPLOSIONS, Tag.TAG_COMPOUND).isEmpty();
+    }
+
+    /** A text component as JSON, to keep in NBT. */
+    public static String componentToJson(Component component)
+    {
+        return Component.Serializer.toJson(component);
+    }
+
+    /** @return the text component of JSON written by {@link #componentToJson}, or null when there is none */
+    public static Component componentFromJson(String json)
+    {
+        return Component.Serializer.fromJson(json);
     }
 
     /** The folder of the game's configuration files. */

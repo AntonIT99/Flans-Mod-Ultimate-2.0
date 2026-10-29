@@ -296,8 +296,8 @@ public final class ModClientConfig
     static
     {
         builder.push("General Settings");
-        ENABLE_UNCENSORED_CONTENT = builder.comment(
-            "Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources. Restore Defaults preserves this preference.")
+        ENABLE_UNCENSORED_CONTENT = builder
+            .comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources. Restore Defaults preserves this preference.")
             .define("enableUncensoredContent", false);
         OPTIONS_BUTTON_PLACEMENT = builder.comment("""
             Where the button opening the Flan's Mod options screen is added.

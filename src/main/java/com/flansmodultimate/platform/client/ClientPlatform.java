@@ -62,6 +62,12 @@ public final class ClientPlatform
         box.tick();
     }
 
+    /** Puts a text field's cursor at the start of its text without selecting anything. */
+    public static void moveCursorToStart(EditBox box)
+    {
+        box.moveCursorToStart();
+    }
+
     /** Scales a label already turned to the camera so its text reads left to right, as name tags do. */
     public static void scaleCameraFacingLabel(PoseStack pose, float scale)
     {

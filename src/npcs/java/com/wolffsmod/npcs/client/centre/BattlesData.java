@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.client.centre;
 
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.teams.BattlesSection;
 import org.jetbrains.annotations.Nullable;
 
@@ -157,7 +158,7 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
 
     private static String displayName(CompoundTag tag)
     {
-        net.minecraft.network.chat.Component name = net.minecraft.network.chat.Component.Serializer.fromJson(tag.getString("displayName"));
+        net.minecraft.network.chat.Component name = NpcPlatform.componentFromJson(tag.getString("displayName"));
         return name == null ? tag.getString(BattlesSection.NAME) : name.getString();
     }
 

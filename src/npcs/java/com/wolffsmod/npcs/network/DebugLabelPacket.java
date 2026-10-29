@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.network;
 
+import com.wolffsmod.npcs.platform.network.NpcPacketIO;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 
@@ -18,7 +20,7 @@ public record DebugLabelPacket(int entityId, List<Component> lines)
     {
         buffer.writeVarInt(entityId);
         buffer.writeVarInt(lines.size());
-        lines.forEach(buffer::writeComponent);
+        lines.forEach(line -> NpcPacketIO.writeComponent(buffer, line));
     }
 
     public static DebugLabelPacket read(FriendlyByteBuf buffer)
@@ -29,7 +31,7 @@ public record DebugLabelPacket(int entityId, List<Component> lines)
             throw new IllegalArgumentException("Too many debug label lines: " + count);
         List<Component> lines = new ArrayList<>(count);
         for (int index = 0; index < count; index++)
-            lines.add(buffer.readComponent());
+            lines.add(NpcPacketIO.readComponent(buffer));
         return new DebugLabelPacket(entityId, List.copyOf(lines));
     }
 }

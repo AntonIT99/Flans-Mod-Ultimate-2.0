@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.network;
 
+import com.wolffsmod.npcs.platform.network.NpcPacketIO;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 
@@ -39,13 +41,14 @@ public record NpcRemotePacket(List<Entry> entries)
             out.writeDouble(entry.distanceSquared());
             out.writeVarInt(entry.factionId());
             out.writeUtf(entry.faction());
-            out.writeComponent(entry.displayName());
-            out.writeComponent(entry.displayFaction());
+            NpcPacketIO.writeComponent(out, entry.displayName());
+            NpcPacketIO.writeComponent(out, entry.displayFaction());
         });
     }
 
     public static NpcRemotePacket read(FriendlyByteBuf buffer)
     {
-        return new NpcRemotePacket(buffer.readList(in -> new Entry(in.readVarInt(), in.readUtf(), in.readDouble(), in.readVarInt(), in.readUtf(), in.readComponent(), in.readComponent())));
+        return new NpcRemotePacket(
+            buffer.readList(in -> new Entry(in.readVarInt(), in.readUtf(), in.readDouble(), in.readVarInt(), in.readUtf(), NpcPacketIO.readComponent(in), NpcPacketIO.readComponent(in))));
     }
 }

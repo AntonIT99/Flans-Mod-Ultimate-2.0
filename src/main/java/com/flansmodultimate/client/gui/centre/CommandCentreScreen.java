@@ -423,7 +423,7 @@ public final class CommandCentreScreen extends Screen
             EditBox box = new EditBox(font, x + 1, y + 1, width - 2, 16, hint);
             box.setMaxLength(FIELD_LENGTH);
             box.setValue(value);
-            box.moveCursorToStart();
+            ClientPlatform.moveCursorToStart(box);
             box.setHint(hint.copy().withStyle(ChatFormatting.DARK_GRAY));
             box.setResponder(text -> pageFields.put(key, new Field(text, true)));
             boxes.put(key, box);

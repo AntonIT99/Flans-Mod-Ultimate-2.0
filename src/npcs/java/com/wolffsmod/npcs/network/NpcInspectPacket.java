@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.network;
 
 import com.wolffsmod.npcs.diag.NpcInspection;
+import com.wolffsmod.npcs.platform.network.NpcPacketIO;
 import noppes.npcs.NoppesUtilServer;
 import noppes.npcs.entity.EntityNPCInterface;
 
@@ -43,7 +44,7 @@ public record NpcInspectPacket(int entityId, boolean request, List<Component> ef
     private static void writeLines(FriendlyByteBuf buffer, List<Component> lines)
     {
         buffer.writeVarInt(lines.size());
-        lines.forEach(buffer::writeComponent);
+        lines.forEach(line -> NpcPacketIO.writeComponent(buffer, line));
     }
 
     private static List<Component> readLines(FriendlyByteBuf buffer)
@@ -53,7 +54,7 @@ public record NpcInspectPacket(int entityId, boolean request, List<Component> ef
             throw new IllegalArgumentException("Too many diagnosis lines: " + count);
         List<Component> lines = new ArrayList<>(count);
         for (int index = 0; index < count; index++)
-            lines.add(buffer.readComponent());
+            lines.add(NpcPacketIO.readComponent(buffer));
         return List.copyOf(lines);
     }
 
