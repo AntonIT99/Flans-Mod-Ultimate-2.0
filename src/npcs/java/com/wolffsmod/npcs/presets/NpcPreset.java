@@ -23,10 +23,10 @@ import static com.wolffsmod.npcs.presets.NpcPresetSetting.*;
  */
 public enum NpcPreset
 {
-    MOB(List.of(), new Target(MOVING_TYPE, Values.WANDERING), new Target(WALKING_RANGE, 0), new Target(RETURN_TO_START, 0), new Target(NPC_INTERACTING, 0), new Target(RESPAWN, Values.RESPAWN_NO),
-        new Target(HIDE_BODY, 1), new Target(KEEP_WRECK, 0), new Target(DOOR_INTERACT, 2), new Target(CAN_SPRINT, 0), new Target(MOVEMENT, 0), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 0),
-        new Target(TACTIC, 0), new Target(TACTICAL_VARIANT, 0), new Target(SUBMARINE_DEPTH, 0), new Target(LAND_SPEED, 0), new Target(WATER_SPEED, 0), new Target(DRIVE_DRIVEABLES, 0),
-        new Target(ON_ATTACK, 0), new Target(ATTACK_HOSTILE_FACTIONS, Values.YES), new Target(DEFEND_FACTION_MEMBERS, Values.YES)),
+    MOB(List.of(), new Target(MOVING_TYPE, Values.WANDERING), new Target(WALKING_RANGE, 0), new Target(NPC_INTERACTING, 0), new Target(RESPAWN, Values.RESPAWN_NO), new Target(HIDE_BODY, 1),
+        new Target(KEEP_WRECK, 0), new Target(DOOR_INTERACT, 2), new Target(CAN_SPRINT, 0), new Target(MOVEMENT, 0), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 0), new Target(TACTIC, 0),
+        new Target(TACTICAL_VARIANT, 0), new Target(SUBMARINE_DEPTH, 0), new Target(LAND_SPEED, 0), new Target(WATER_SPEED, 0), new Target(DRIVE_DRIVEABLES, 0), new Target(ON_ATTACK, 0),
+        new Target(ATTACK_HOSTILE_FACTIONS, Values.YES), new Target(DEFEND_FACTION_MEMBERS, Values.YES)),
     /** A freely roaming person using equipped weapons. */
     HUMAN(MOB.targets, new Target(DOOR_INTERACT, Values.DOORS_OPEN), new Target(CAN_SPRINT, 1), new Target(ITEM_WEAPONS, 1)),
     /** Player movement, respawning and ammunition consumption. */
@@ -35,14 +35,14 @@ public enum NpcPreset
     VEHICLE(MOB.targets, new Target(TERRAIN, 1), new Target(HIDE_BODY, 0), new Target(KEEP_WRECK, 1), new Target(HURT_FLASH, 0), new Target(DEATH_ROTATION, 0), new Target(CAN_DROWN, 1),
         new Target(NO_FALL_DAMAGE, 1), new Target(POTION_IMMUNE, 3), new Target(IGNORE_COBWEB, 3), new Target(HEALTH_REGEN, 1), new Target(COMBAT_REGEN, 1), new Target(MODEL_WEAPON_STATS, 1),
         new Target(MODEL_SOUNDS, 1), new Target(DRIVING, 1), new Target(ENGINE_IDLE, 0), new Target(ENGINE_MOVEMENT, 1), new Target(DRIVER_GUNS, 1)),
-    /** Aircraft flight, circling where it was placed while it has nothing to fight, automatically adapted to helicopters. */
-    PLANE(VEHICLE.targets, new Target(RETURN_TO_START, 1), new Target(MOVEMENT, 1), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 1), new Target(TACTIC, NpcTuning.Tactic.STRAFING_RUN.ordinal())),
+    /** Aircraft flight automatically adapted to helicopters. */
+    PLANE(VEHICLE.targets, new Target(MOVEMENT, 1), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 1), new Target(TACTIC, NpcTuning.Tactic.STRAFING_RUN.ordinal())),
     /** Surface watercraft. */
     SHIP(VEHICLE.targets, new Target(MOVEMENT, 2), new Target(TERRAIN, 2)),
     /** A freely roaming creature that flees. */
     PASSIVE_CREATURE(MOB.targets, new Target(ON_ATTACK, 1), new Target(ITEM_WEAPONS, 0), new Target(ATTACK_HOSTILE_FACTIONS, Values.NO), new Target(DEFEND_FACTION_MEMBERS, Values.NO)),
-    /** A static weapon that stands still: it does not walk, whatever its model lends, and returns if displaced. */
-    TURRET(VEHICLE.targets, new Target(MOVING_TYPE, 0), new Target(RETURN_TO_START, 1), new Target(TACTIC, 2), new Target(DRIVING, 0), new Target(WALKING_SPEED, Values.FORCED_ZERO));
+    /** A static weapon that stands still: it does not walk, whatever its model lends, including when displaced. */
+    TURRET(VEHICLE.targets, new Target(MOVING_TYPE, 0), new Target(TACTIC, 2), new Target(DRIVING, 0), new Target(WALKING_SPEED, Values.FORCED_ZERO));
 
     /** What the preset sets, in the order its tooltip lists it: those of the preset it builds on first. */
     @Getter

@@ -27,7 +27,7 @@ class NpcPresetTest
         {
             assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.WALKING_RANGE, 0)));
             assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.RESPAWN, preset == NpcPreset.PLAYER ? 0 : 3)));
-            assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.RETURN_TO_START, preset == NpcPreset.TURRET || preset == NpcPreset.PLANE ? 1 : 0)));
+            assertFalse(preset.sets(NpcPresetSetting.RETURN_TO_START));
             assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.MOVING_TYPE, preset == NpcPreset.TURRET ? 0 : 1)));
             assertEquals(preset == NpcPreset.PLAYER, preset.sets(NpcPresetSetting.CONSUME_AMMO));
         }
@@ -38,7 +38,6 @@ class NpcPresetTest
     {
         assertTrue(NpcPreset.MOB.getTargets().contains(new Target(NpcPresetSetting.MOVING_TYPE, 1)));
         assertTrue(NpcPreset.MOB.getTargets().contains(new Target(NpcPresetSetting.WALKING_RANGE, 0)));
-        assertTrue(NpcPreset.MOB.getTargets().contains(new Target(NpcPresetSetting.RETURN_TO_START, 0)));
         assertTrue(NpcPreset.MOB.getTargets().contains(new Target(NpcPresetSetting.NPC_INTERACTING, 0)));
         assertTrue(NpcPreset.MOB.getTargets().contains(new Target(NpcPresetSetting.RESPAWN, 3)));
         assertTrue(NpcPreset.MOB.getTargets().contains(new Target(NpcPresetSetting.HIDE_BODY, 1)));

@@ -8,7 +8,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender
 * Flan NPC tactics for soldiers, vehicles and aircraft, including cover, peeking and Custom NPCs' own tactics with Flan's weapons
 * NPCs throw what they carry by per-kind strategies, and open carried parachutes when they fall
-* Presets in the Wolff's Mod tab, such as Mob-like and Player-like, with undo
+* Presets in the Wolff's Mod tab, such as Mob-like and Player-like, with undo; presets preserve the existing `Return to start` setting
 
 ## Vehicles, Aircraft & Mechas
 

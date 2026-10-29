@@ -138,13 +138,31 @@ class NpcPresetApplicationTest
         NpcPreset.HUMAN.apply(npc);
         assertEquals(0, npc.ais.movementType);
         assertEquals(0, npc.ais.walkingRange);
-        assertFalse(npc.ais.returnToStart);
         assertEquals(NpcTuning.Flight.NORMAL, tuning.flight());
         assertEquals(NpcTuning.Terrain.DEFAULT, tuning.terrain());
         assertEquals(NpcTuning.Tactic.CUSTOM_NPCS, tuning.tactic());
         assertTrue(options.enabled(Feature.CONSUME_AMMO));
         assertTrue(npc.ais.canSprint);
         assertEquals(1, npc.ais.doorInteract);
+    }
+
+    @Test
+    void everyPresetPreservesReturnToStartWhenAppliedMatchedAndUndone()
+    {
+        for (NpcPreset preset : NpcPreset.values())
+        {
+            for (boolean returnToStart : new boolean[]{false, true})
+            {
+                EntityNPCInterface npc = npc();
+                npc.ais.returnToStart = returnToStart;
+                NpcPresetRequests.apply(npc, preset);
+                assertEquals(returnToStart, npc.ais.returnToStart, preset.name());
+                npc.ais.returnToStart = !returnToStart;
+                assertTrue(preset.matches(npc), preset.name());
+                NpcPresetRequests.undo(npc);
+                assertEquals(!returnToStart, npc.ais.returnToStart, preset.name());
+            }
+        }
     }
 
     @Test
@@ -241,7 +259,7 @@ class NpcPresetApplicationTest
             NpcPresetPacket packet = NpcPresetPacket.read(buffer);
             assertTrue(packet.values().getBoolean("CanUndo"));
             assertEquals(1, packet.values().getInt("KEEP_WRECK"));
-            assertEquals(1, packet.values().getInt("RETURN_TO_START"));
+            assertEquals(npc.ais.returnToStart ? 1 : 0, packet.values().getInt("RETURN_TO_START"));
         }
         finally
         {
