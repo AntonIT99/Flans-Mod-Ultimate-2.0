@@ -24,7 +24,8 @@ class NpcEquipmentHookContractTest
         assertEquals(2, calls(method(goal, "()V", "tick", "m_8037_"), NPC, "m_6034_", "(DDD)V"));
         assertDoesNotThrow(() -> method(goal, "(Z)V", "navigate"));
         assertDoesNotThrow(() -> method(goal, "()V", "start", "m_8056_"));
-        assertDoesNotThrow(() -> method(goal, "()Z", "canUse", "m_8036_"));
+        // The unlimited-range redirect must affect only the wandering-distance check, not the post-combat return.
+        assertEquals(1, calls(method(goal, "()Z", "canUse", "m_8036_"), NPC, "isInRange", "(DDDD)Z"));
         assertTrue(goal.fields.stream().anyMatch(field -> field.name.equals("totalTicks") && field.desc.equals("I")));
     }
 

@@ -11,10 +11,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Optional physical return: replaces both tick teleport fallbacks with bounded retries, preserving destinations and goal eligibility. */
+/** Treats zero wandering range as unlimited for distance returns, and optionally replaces teleport recovery with bounded physical retries. */
 @Mixin(value = EntityAIReturn.class, remap = false)
 @SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
 public abstract class EntityAIReturnMixin
@@ -30,6 +31,13 @@ public abstract class EntityAIReturnMixin
     private void navigate(boolean intermediate)
     {
         throw new AssertionError();
+    }
+
+    @Redirect(method = {"canUse", "m_8036_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/EntityNPCInterface;isInRange(DDDD)Z"))
+    private boolean wolffsmodnpcsUnlimitedWanderingRange(EntityNPCInterface entity, double x, double y, double z, double range)
+    {
+        // This call only checks the wandering radius; the earlier post-combat return remains intact.
+        return range == 0 || entity.isInRange(x, y, z, range);
     }
 
     @Inject(method = {"canUse", "m_8036_"}, at = @At("RETURN"), cancellable = true)
