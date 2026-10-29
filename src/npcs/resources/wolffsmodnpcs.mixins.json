@@ -15,7 +15,6 @@
       "EntityProjectileMixin",
       "FactionMixin",
       "ItemNpcWandMixin",
-      "JobGuardMixin",
       "MarkovGeneratorMixin",
       "ModelDataMixin",
       "NoppesUtilServerMixin",

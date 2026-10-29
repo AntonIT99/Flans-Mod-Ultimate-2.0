@@ -22,7 +22,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Vehicles, aircraft and ships keep clear of their own blast: they hold their fire at a target close enough for their explosive rounds to catch them and pull back out of reach first (`Keep clear of own blast`, `Blast safety margin`)
 * Ships run in bow on to fire torpedoes and anything else fixed to their hull, turn away after each run, and circle their target so the turrets along their side bear once they have none left (`Ships turn to bear`)
 * Players can stand on the solid hull and turret of an NPC vehicle, which carries them smoothly as it drives and turns without running them over
-* Guards can pick NPC vehicles, aircraft, mechas and AA guns as targets; Flan's driveables no longer clutter the Guard job's target list, and chosen targets leave Available Targets
+* The Guard job's target lists leave out Flan's driveables and NPC models, and chosen targets leave Available Targets
 
 ## Teams Bots, Factions & Battles
 
