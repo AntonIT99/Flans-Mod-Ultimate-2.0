@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.distant.DistantRenderRange;
@@ -4436,11 +4437,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     @Nullable
     public WeaponBallistics getDriverWeaponBallistics(boolean secondary)
     {
-        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
         EnumWeaponType weapon = configType == null ? EnumWeaponType.NONE : configType.weaponType(secondary);
-        if (points.isEmpty() || weapon == EnumWeaponType.NONE || driveableData == null)
-            return null;
-        AmmoSelection selection = selectAmmo(points.get(0), weapon, secondary);
+        AmmoSelection selection = selectDriverWeaponAmmo(secondary);
         if (selection == null || !(selection.stack().getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bullet))
             return null;
         double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * bullet.getFallSpeed(), level());
@@ -4450,6 +4448,38 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
         float speed = new FiredShot(resolveFireableGun(selection, secondary), bullet, this, attacker, ShootableItem.getRoundsFired(selection.stack())).getMuzzleVelocity(false);
         return new WeaponBallistics(Math.max(0F, speed), gravity, drag, false);
+    }
+
+    /**
+     * @return how far round where it goes off the round the bank of the driver's trigger would fire now reaches, or
+     *         null with none loaded. Server side.
+     */
+    @Nullable
+    public DetonationRadii getDriverWeaponDetonation(boolean secondary)
+    {
+        AmmoSelection selection = selectDriverWeaponAmmo(secondary);
+        return selection == null ? null : ExternalProjectileSupport.detonationRadii(selection.stack()).orElse(null);
+    }
+
+    /**
+     * @return whether the bank of the driver's trigger fires along the hull rather than with the turret, as a bow
+     *         torpedo tube or a fixed forward gun does; false for a bank the driveable does not have
+     */
+    public boolean isDriverWeaponHullFixed(boolean secondary)
+    {
+        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
+        return !points.isEmpty() && !isTurretMountedPart(points.get(0).getRootPos().getPart());
+    }
+
+    /** @return the round the bank of the driver's trigger would fire now, or null with none loaded. Server side. */
+    @Nullable
+    private AmmoSelection selectDriverWeaponAmmo(boolean secondary)
+    {
+        List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
+        EnumWeaponType weapon = configType == null ? EnumWeaponType.NONE : configType.weaponType(secondary);
+        if (points.isEmpty() || weapon == EnumWeaponType.NONE || driveableData == null)
+            return null;
+        return selectAmmo(points.get(0), weapon, secondary);
     }
 
     // Base implementation of a hook; overriding subclasses use the parameter.
@@ -6016,18 +6046,24 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Model-local pivot that turret-mounted part boxes rotate around, the same
-     * one {@link #turretPointToLocal} turns shoot points round.
+     * Model-local pivot that turret-mounted part boxes rotate around.
+     *
+     * <p>
+     * The pivot is authored in the same type-file geometry coordinates as the
+     * boxes it turns, so it takes the part-box frame's own conversion
+     * ({@link #partFrameToModelLocal}) rather than the movement basis: like the
+     * boxes, an aircraft's pivot takes no half-turn.
+     * </p>
      */
     public Vec3 getCollisionTurretPivot()
     {
-        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOrigin());
+        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : partFrameToModelLocal(LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin()));
     }
 
-    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret. */
+    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret; see {@link #getCollisionTurretPivot}. */
     public Vec3 getCollisionTurretOffset()
     {
-        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOriginOffset());
+        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : partFrameToModelLocal(LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset()));
     }
 
     /**

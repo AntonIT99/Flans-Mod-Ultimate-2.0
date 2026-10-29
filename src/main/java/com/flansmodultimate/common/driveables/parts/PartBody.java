@@ -12,7 +12,6 @@ import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PartBodyHit;
 import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.PlaneType;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,14 +106,8 @@ public final class PartBody implements IPartBody
 
     public static PartBody of(DriveableType type)
     {
-        boolean plane = type instanceof PlaneType;
-        return new PartBody(type, type.getHealth(), configuredLocal(LegacyDriveableCoordinates.toLocal(type.getTurretOrigin()), plane),
-            configuredLocal(LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset()), plane));
-    }
-
-    private static Vec3 configuredLocal(Vec3 local, boolean plane)
-    {
-        return plane ? LegacyDriveableCoordinates.applyPlaneModelFacing(local) : local;
+        // The pivot is authored in the same geometry coordinates as the boxes it turns, so it takes their frame.
+        return new PartBody(type, type.getHealth(), mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOrigin())), mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset())));
     }
 
     private void add(EnumDriveablePart part, CollisionBox box)
