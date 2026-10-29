@@ -17,7 +17,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * NPCs board, drive and fly the Flan's driveables players place, lead their targets, land planes and watch their fuel
 * Vehicle NPCs carry crews in their seats; crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
 * Seated crew face ahead of their vehicle or turret, while gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot
-* Friendly players can ride in passenger seats and man the gunner seats of vehicle NPCs, and change seats with Flan's change-seat key
+* Friendly players can ride in passenger seats, occupy empty driver seats and man the gunner seats of vehicle NPCs, and change seats with Flan's change-seat key; the NPC still drives when a player occupies its driver seat
 * NPC vehicles manoeuvre for a shot, back away from targets under their barrel and can be repaired
 * Vehicles, aircraft and ships keep clear of their own blast: they hold their fire at a target close enough for their explosive rounds to catch them and pull back out of reach first (`Keep clear of own blast`, `Blast safety margin`)
 * Ships run in bow on to fire torpedoes and anything else fixed to their hull, turn away after each run, and circle their target so the turrets along their side bear once they have none left (`Ships turn to bear`)
