@@ -85,7 +85,7 @@
 
 ## Content Packs
 
-* New Warhammer 40k and Warfare 44 classes and teams, and Germany WW2 classes
+* New Warfare 44, Germany WW2, Warhammer 40k classes and teams
 * Sniper classes carry scopes; new WW2 riflemen
 * Classes can override skins for several models
 * New Roman shields
