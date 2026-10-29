@@ -35,10 +35,10 @@
 * Suitable ground vehicle categories squash mobs they run over
 * Configurable driveable melee protection and weapon damage overrides
 * Configurable render and tracking distances for driveables and Flan NPC models
-* Smooth view and position for players standing on turning hulls and turrets
+* Smooth view and position for players standing on turning hulls and turrets, including the bows and sterns of large ships
 * Passenger guns mounted on a turret aim relative to the turret
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
-* Fixed aircraft part hitboxes and collision meshes facing backwards, which also left pieces of a plane or helicopter wreck hanging in the air
+* Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards, and pieces thrown off a wreck coming to rest in the air instead of on the ground
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
 
@@ -55,12 +55,14 @@
 * RPM and reload time overlap, and rocket launchers fire faster; guns, AA guns and driveable weapons firing single-round ammunition wait the shorter of their reload time and rate of fire between shots
 * Fixed attachment points (including MP34 and red dot), the Springfield, Kar98k, flare gun, Olympia, WW2 flamethrower and creeper explosions
 * Fixed the melee sound playing twice, gun idle sounds and Apocalypse entities
+* Stereo content-pack sounds now fade with distance like mono sounds, including vehicle engines and weapons used by players and NPCs
 
 ## Rendering & Performance
 
 * GPU mesh caching and size culling draw only visible ranges and skip hidden batches
 * Oculus/Iris shader packs: correct glow layers and muzzle flashes, and a cheaper shadow pass
 * Sodium and Embeddium fast vertex writing, and EntityCulling compatibility
+* Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters
 * Clouds no longer draw over Flan particles
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`
 * Faster content startup and creative search
@@ -76,7 +78,8 @@
 
 ## Compatibility & API
 
-* The public API is now stable (1.7) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
+* The public API is now stable (1.8) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
+* Addon seat occupants can preserve their seat's body rotation when riding living mounts (`IFlanSeatOccupant.flansmodultimateHasSeatBodyRotation`)
 * Addon entities can play a sound the way the mod plays the same kind of sound, carrying as far and as loudly as a gun shot, a reload, a throw or an engine does on that server (`SoundRange`, `FlansEntitySounds.getRange`, `FlansEntitySounds.playClip`)
 * Addons can tell the mod's own content from other mods' by the namespaces it registers under (`FlansModApi.getModNamespaces`)
 * Addons driving a seat can read how far the round its driver weapons have loaded reaches round where it goes off, and whether a weapon bank points along the hull rather than turning with the turret

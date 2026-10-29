@@ -401,17 +401,14 @@ public class PacketFlanExplosionParticles implements IClientPacket
         RandomSource random = level.random;
         double rise = explosionRadius * COLUMN_RISE_PER_RADIUS;
         double foot = explosionRadius * COLUMN_FOOT_SHARE;
-        // The source is authored as a fifteen-second smoke-screen emitter. Explosion columns use
-        // only a brief tail of that effect, while direct flansmod.smoker / bigsmoke uses remain
-        // long-lived for smoke screens.
-        float columnLifetime = ExplosionVisuals.smokeColumnLifetimeScale(explosionRadius);
+        float columnLifetime = ExplosionVisuals.lifetimeScale(explosionRadius);
 
         for (int i = 0; i < count; i++)
         {
             double angle = random.nextDouble() * Mth.TWO_PI;
             double distance = random.nextDouble() * foot;
 
-            ClientHooks.RENDER.spawnParticle(FlanParticles.FM_BIG_SMOKE, position.x + Math.cos(angle) * distance, position.y, position.z + Math.sin(angle) * distance, Math.cos(angle) * rise * 0.15D,
+            ClientHooks.RENDER.spawnParticle(FlanParticles.LARGE_SMOKE, position.x + Math.cos(angle) * distance, position.y, position.z + Math.sin(angle) * distance, Math.cos(angle) * rise * 0.15D,
                 rise * (0.7D + random.nextDouble() * 0.6D), Math.sin(angle) * rise * 0.15D, 1.0F, columnLifetime);
         }
     }

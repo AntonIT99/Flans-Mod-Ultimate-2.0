@@ -131,7 +131,6 @@ class ExplosionVisualsTest
         assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(TWENTY_MM_KG)));
         assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(EIGHTY_EIGHT_MM_KG)), "ordinary tank gunnery should not raise a column");
         assertTrue(ExplosionVisuals.smokeColumnCount(crater(STURMTIGER_CHARGE_KG)) > 0);
-        assertEquals(0.2F, ExplosionVisuals.smokeColumnLifetimeScale(crater(STURMTIGER_CHARGE_KG)), 0.0001F, "an explosion should use only a brief tail of the smoke-screen particle");
     }
 
     @ParameterizedTest(name = "a crater radius of {0} produces no degenerate visuals")

@@ -12,6 +12,7 @@ import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PartBodyHit;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.PlaneType;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -104,10 +105,34 @@ public final class PartBody implements IPartBody
         setPose(PartBodyPose.REST);
     }
 
+    /**
+     * A body wearing the parts of a driveable definition.
+     *
+     * <p>
+     * Aircraft boxes reach {@code DriveableType} turned to the flight basis a plane entity
+     * simulates in, because that is the frame {@code Driveable} poses them from. A stand-in is
+     * posed from the vanilla yaw its model is drawn at, which carries that half-turn already, so
+     * its boxes and the pivot they turn around are taken back to the authored geometry frame
+     * instead. Posing them in the flight basis left an aircraft's hitboxes facing backwards.
+     * </p>
+     */
     public static PartBody of(DriveableType type)
     {
-        // The pivot is authored in the same geometry coordinates as the boxes it turns, so it takes their frame.
-        return new PartBody(type, type.getHealth(), mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOrigin())), mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset())));
+        Map<EnumDriveablePart, CollisionBox> boxes = type.getHealth();
+        if (type instanceof PlaneType)
+        {
+            Map<EnumDriveablePart, CollisionBox> authored = new EnumMap<>(EnumDriveablePart.class);
+            boxes.forEach((part, box) -> authored.put(part, box == null ? null : halfTurn(box)));
+            boxes = authored;
+        }
+        return new PartBody(type, boxes, mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOrigin())), mirror(LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset())));
+    }
+
+    /** Turns a box round the model's vertical axis; its own inverse, so it also undoes the plane facing. */
+    private static CollisionBox halfTurn(CollisionBox box)
+    {
+        return CollisionBox.inWorldUnits(box.getHealth(), -(box.getX() + box.getWidth()), box.getY(), -(box.getZ() + box.getDepth()), box.getWidth(), box.getHeight(), box.getDepth(),
+            box.getPenetrationResistance(), box.getCrewDamageMultiplier());
     }
 
     private void add(EnumDriveablePart part, CollisionBox box)

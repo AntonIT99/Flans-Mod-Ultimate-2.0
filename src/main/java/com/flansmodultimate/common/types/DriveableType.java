@@ -75,15 +75,17 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         debugHitboxRevision++;
     }
 
-    /** Inverse of SetupPart parsing. */
-    public float[] debugHitboxPixels(CollisionBox box)
+    /** Inverse of SetupPart parsing, including plane facing. */
+    public float[] debugHitboxPixels(CollisionBox runtime)
     {
+        CollisionBox box = this instanceof PlaneType ? applyPlaneModelFacing(runtime) : runtime;
         return new float[]{-(box.getZ() + box.getDepth()) * 16F, box.getY() * 16F, box.getX() * 16F, box.getDepth() * 16F, box.getHeight() * 16F, box.getWidth() * 16F};
     }
 
     public CollisionBox debugHitboxFromPixels(float hp, float[] geometry, float resistance, float crew)
     {
-        return new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3], geometry[4], geometry[5], resistance, crew);
+        CollisionBox box = new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3], geometry[4], geometry[5], resistance, crew);
+        return this instanceof PlaneType ? applyPlaneModelFacing(box) : box;
     }
 
     /** Original, unscaled definitions retained so repeated finalization is idempotent. */
@@ -694,8 +696,15 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             float crew = !composite && values.length > start + 9 ? parseLegacyFloat(values[start + 9]) : defaultCrewMultiplier;
             CollisionBox box = new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]), parseLegacyFloat(values[start + 3]), parseLegacyFloat(values[start + 4]),
                 parseLegacyFloat(values[start + 5]), parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew);
-            health.put(part, box);
+            health.put(part, this instanceof PlaneType ? applyPlaneModelFacing(box) : box);
         });
+    }
+
+    /** Plane models face the opposite way to the simulation frame, as seats and wheels already account for. */
+    private static CollisionBox applyPlaneModelFacing(CollisionBox box)
+    {
+        return CollisionBox.inWorldUnits(box.getHealth(), -(box.getX() + box.getWidth()), box.getY(), -(box.getZ() + box.getDepth()), box.getWidth(), box.getHeight(), box.getDepth(),
+            box.getPenetrationResistance(), box.getCrewDamageMultiplier());
     }
 
     private void readWeapons(TypeFile file)

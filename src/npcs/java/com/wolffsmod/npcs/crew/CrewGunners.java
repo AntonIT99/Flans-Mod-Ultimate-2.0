@@ -435,6 +435,6 @@ public final class CrewGunners
         if (first && options.enabled(Feature.FIRE_SOUNDS))
             FlansProjectiles.playShootSound(gunner, weapon, ItemStack.EMPTY, false);
         if (options.enabled(Feature.SHOOT_PARTICLES))
-            FlansProjectiles.shootParticles(context.vehicle(), muzzle, origin, facing, NpcModels.scale(context.vehicle()));
+            NpcMuzzleFlashes.shootParticles(context.vehicle(), muzzle, origin, facing, NpcModels.scale(context.vehicle()), false);
     }
 }

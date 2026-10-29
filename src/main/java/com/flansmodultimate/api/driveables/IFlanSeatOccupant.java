@@ -24,4 +24,16 @@ public interface IFlanSeatOccupant
     {
         return true;
     }
+
+    /**
+     * Read on the client render thread while riding. An occupant whose seat supplies its body yaw can opt out of the
+     * vanilla living-mount body clamp, which would otherwise turn its torso back towards the mount's body instead of
+     * its seat or gun. Does not change the sitting animation or head rotation.
+     *
+     * @return whether the renderer should preserve this occupant's own body yaw while mounted
+     */
+    default boolean flansmodultimateHasSeatBodyRotation()
+    {
+        return false;
+    }
 }

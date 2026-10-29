@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.FlightPerformance;
@@ -219,6 +220,10 @@ public final class NpcFlight
     public void tick(EntityNPCInterface npc)
     {
         Flight type = type(npc);
+        // Custom NPCs' flying travel keeps running after death, but never applies gravity itself.
+        // Even the Normal flight setting must let a destroyed aircraft model fall.
+        if (npc.isKilled() && npc.ais.movementType == 1 && (type != Flight.NORMAL || automatic(model(npc)) != Flight.NORMAL))
+            npc.setDeltaMovement(npc.getDeltaMovement().add(0D, -0.08D * FlansModApi.getGravityFactor(npc.level()), 0D));
         if (type == Flight.NORMAL || npc.isKilled())
         {
             flying = false;

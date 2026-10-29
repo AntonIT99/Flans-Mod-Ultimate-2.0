@@ -3,6 +3,7 @@ package com.flansmodultimate.platform.event;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.sound.SoundSpatialization;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -12,6 +13,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent;
+import net.neoforged.neoforge.client.event.sound.PlayStreamingSourceEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 import net.minecraft.util.Mth;
@@ -26,6 +29,18 @@ public final class ClientGameEvents
 {
     private ClientGameEvents()
     {}
+
+    @SubscribeEvent
+    public static void onPlaySoundSource(PlaySoundSourceEvent event)
+    {
+        SoundSpatialization.apply(event.getSound(), event.getChannel());
+    }
+
+    @SubscribeEvent
+    public static void onPlayStreamingSource(PlayStreamingSourceEvent event)
+    {
+        SoundSpatialization.apply(event.getSound(), event.getChannel());
+    }
 
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event)

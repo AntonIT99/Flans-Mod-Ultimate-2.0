@@ -6047,24 +6047,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Model-local pivot that turret-mounted part boxes rotate around.
-     *
-     * <p>
-     * The pivot is authored in the same type-file geometry coordinates as the
-     * boxes it turns, so it takes the part-box frame's own conversion
-     * ({@link #partFrameToModelLocal}) rather than the movement basis: like the
-     * boxes, an aircraft's pivot takes no half-turn.
-     * </p>
+     * Model-local pivot that turret-mounted part boxes rotate around, the same
+     * one {@link #turretPointToLocal} turns shoot points round.
      */
     public Vec3 getCollisionTurretPivot()
     {
-        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : partFrameToModelLocal(LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin()));
+        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOrigin());
     }
 
-    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret; see {@link #getCollisionTurretPivot}. */
+    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret. */
     public Vec3 getCollisionTurretOffset()
     {
-        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : partFrameToModelLocal(LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset()));
+        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOriginOffset());
     }
 
     /**

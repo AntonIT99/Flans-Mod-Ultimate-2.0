@@ -206,7 +206,7 @@ public final class NpcDriverGuns
             return false;
         NpcMuzzleFlashes.fired(npc, muzzle, direction, state.getHullYaw(), secondary);
         if (options.enabled(Feature.SHOOT_PARTICLES))
-            FlansProjectiles.shootParticles(npc, muzzle, origin, state.getHullYaw() + state.turretAim().yaw(), NpcModels.scale(npc));
+            NpcMuzzleFlashes.shootParticles(npc, muzzle, origin, state.getHullYaw() + state.turretAim().yaw(), NpcModels.scale(npc), secondary);
         return true;
     }
 }

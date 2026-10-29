@@ -33,7 +33,7 @@ import java.util.Set;
 
 /**
  * Custom NPCs' factions.
- * Persists the optional aggression toward the monsters covered by GetsAttacked, display-only team name bindings, the
+ * Persists the optional aggression toward hostile mobs, display-only team name bindings, the
  * factions it is allied with, its own friendly fire settings and who may join it.
  *
  * <ul>

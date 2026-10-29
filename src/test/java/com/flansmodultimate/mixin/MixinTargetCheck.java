@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
@@ -279,13 +280,17 @@ public final class MixinTargetCheck
         int ordinal = ordinalValue instanceof Integer explicit ? explicit : -1;
         Object opcodeValue = value(point, "opcode");
         int opcode = opcodeValue instanceof Integer explicit ? explicit : -1;
-        int occurrences = switch (kind)
+        return switch (kind)
         {
-            case "INVOKE", "INVOKE_ASSIGN", "INVOKE_STRING" -> countCalls(method, target);
-            case "FIELD" -> countFields(method, target, opcode);
-            case "NEW" -> countNew(method, target);
-            default -> 1; // HEAD, RETURN, TAIL, LOAD, STORE and constants are found in any method with a body.
+            case "INVOKE", "INVOKE_ASSIGN", "INVOKE_STRING" -> occursOften(countCalls(method, target), ordinal);
+            case "FIELD" -> occursOften(countFields(method, target, opcode), ordinal);
+            case "NEW" -> matchesNew(method, target, ordinal);
+            default -> occursOften(1, ordinal); // HEAD, RETURN, TAIL, LOAD, STORE and constants are found in any method with a body.
         };
+    }
+
+    private static boolean occursOften(int occurrences, int ordinal)
+    {
         return ordinal < 0 ? occurrences > 0 : occurrences > ordinal;
     }
 
@@ -327,22 +332,39 @@ public final class MixinTargetCheck
         return count;
     }
 
-    private static int countNew(MethodNode method, String target)
+    /**
+     * Mirrors Mixin's {@code BeforeNew}: the ordinal counts every {@code NEW} of the type, whatever constructor follows it,
+     * and a descriptor then only needs a matching constructor call somewhere after the selected {@code NEW}.
+     */
+    private static boolean matchesNew(MethodNode method, String target, int ordinal)
     {
         String type = target;
-        String arguments = null;
+        String constructor = null;
         if (target.startsWith("("))
         {
-            arguments = target.substring(0, target.indexOf(')') + 1);
+            constructor = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getArgumentTypes(target));
             type = Type.getReturnType(target).getInternalName();
         }
-        int count = 0;
+        int index = 0;
         for (AbstractInsnNode instruction : method.instructions)
         {
-            if (instruction instanceof MethodInsnNode call && call.name.equals("<init>") && call.owner.equals(type) && (arguments == null || call.desc.startsWith(arguments)))
-                count++;
+            if (!(instruction instanceof TypeInsnNode created) || created.getOpcode() != Opcodes.NEW || !created.desc.equals(type))
+                continue;
+            if ((ordinal < 0 || ordinal == index) && (constructor == null || hasConstructorAfter(created, type, constructor)))
+                return true;
+            index++;
         }
-        return count;
+        return false;
+    }
+
+    private static boolean hasConstructorAfter(AbstractInsnNode created, String type, String constructor)
+    {
+        for (AbstractInsnNode instruction = created.getNext(); instruction != null; instruction = instruction.getNext())
+        {
+            if (instruction instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>") && call.owner.equals(type) && call.desc.equals(constructor))
+                return true;
+        }
+        return false;
     }
 
     private static boolean hasConstant(MethodNode method, AnnotationNode constant)

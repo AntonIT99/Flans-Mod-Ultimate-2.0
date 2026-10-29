@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import noppes.npcs.client.EntityUtil;
 import noppes.npcs.client.gui.roles.GuiNpcGuard;
@@ -15,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 
@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Custom NPCs' Guard job page. Lists the content-pack NPC models (vehicles, planes, mechas, AA guns) as targets next to
- * the vanilla and modded mobs, hides Flan's Mod driveables and other non-mob entities, and keeps targets already in Current Targets out of Available Targets.
+ * Custom NPCs' Guard job page. Hides content-pack NPC models, Flan's Mod driveables and other non-mob entities from the
+ * target lists, and keeps targets already in Current Targets out of Available Targets.
  */
-@SuppressWarnings({"FieldCanBeLocal", "UnresolvedMixinReference"})
+@SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = GuiNpcGuard.class, remap = false)
 public abstract class GuiNpcGuardMixin
 {
@@ -41,13 +41,16 @@ public abstract class GuiNpcGuardMixin
     private GuiCustomScrollNop scroll1;
 
     @Redirect(method = {"init", "buttonEvent"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/client/EntityUtil;getAllEntities(Lnet/minecraft/world/level/Level;Z)Ljava/util/HashMap;"))
-    private HashMap<String, ResourceLocation> wolffsmodnpcsGuardTargets(Level level, boolean includeNpcs)
+    private HashMap<String, ResourceLocation> wolffsmodnpcsGuardTargets(Level level, boolean withNpcs)
     {
-        HashMap<String, ResourceLocation> entities = EntityUtil.getAllEntities(level, includeNpcs);
-        // Driveables, guns, seats and the like are living entities only to Minecraft; guards cannot target them.
-        entities.values().removeIf(id -> WOLFFSMODNPCS_FLAN_NAMESPACES.contains(id.getNamespace()) && BuiltInRegistries.ENTITY_TYPE.get(id).getCategory() == MobCategory.MISC);
-        for (FlanModelEntityType type : FlanModelEntities.getEntityTypes())
-            entities.putIfAbsent(type.getDescriptionId(), BuiltInRegistries.ENTITY_TYPE.getKey(type));
+        HashMap<String, ResourceLocation> entities = EntityUtil.getAllEntities(level, withNpcs);
+        // Driveables, guns, seats and the like are living entities only to Minecraft; guards cannot target them. Content-pack
+        // NPC models are never in a level as themselves: summoned, they become Custom NPCs, which guards do not target.
+        entities.values().removeIf(id ->
+        {
+            EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+            return type == null || type instanceof FlanModelEntityType || WOLFFSMODNPCS_FLAN_NAMESPACES.contains(id.getNamespace()) && type.getCategory() == MobCategory.MISC;
+        });
         return entities;
     }
 

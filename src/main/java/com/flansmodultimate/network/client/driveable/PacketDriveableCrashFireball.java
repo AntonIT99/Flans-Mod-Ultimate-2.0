@@ -84,7 +84,7 @@ public class PacketDriveableCrashFireball implements IClientPacket
 
         int smoke = Math.min(MAX_SMOKE, emitters * 8);
         for (int i = 0; i < smoke; i++)
-            spawn(FlanParticles.FM_BIG_SMOKE, offset(random, size * 0.6F), scatter(random, size * 0.02F, size * 0.06F), 1F);
+            spawn(FlanParticles.LARGE_SMOKE, offset(random, size * 0.6F), scatter(random, size * 0.02F, size * 0.06F), 1F);
 
         int debris = Math.min(MAX_DEBRIS, emitters * 6);
         for (int i = 0; i < debris; i++)

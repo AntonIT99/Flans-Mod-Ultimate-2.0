@@ -88,6 +88,8 @@ public final class DetachedPieces
     {
         private final Capture capture = new Capture();
         private DriveableVisual visual;
+        /** The corners of the geometry the piece draws, relative to its pivot, in world axes at the moment it left. */
+        private Vector3f[] corners = new Vector3f[0];
         /** The point the piece spins around, relative to the capture's origin. */
         private Vector3f pivot;
         private Vec3 offset = Vec3.ZERO;
@@ -137,13 +139,18 @@ public final class DetachedPieces
      *
      * @param pivot
      *            world point the piece spins around, usually the centre of its main part
+     * @param corners
+     *            world points the piece's geometry reaches, so it comes to rest on its own lowest
+     *            corner rather than on the pivot inside it; empty falls back to the pivot
      * @param velocity
      *            initial world velocity in blocks per tick
      * @param burning
      *            whether it leaves on fire and is drawn scorched
      * @return false when the entity was never drawn or pieces are turned off
      */
-    public static boolean spawn(Entity entity, Set<EnumDriveablePart> parts, Vec3 pivot, Vec3 velocity, float spin, boolean burning)
+    // One call site hands over everything a piece needs to leave the machine it was part of.
+    @SuppressWarnings("java:S107")
+    public static boolean spawn(Entity entity, Set<EnumDriveablePart> parts, Vec3 pivot, List<Vec3> corners, Vec3 velocity, float spin, boolean burning)
     {
         Capture capture = CAPTURES.get(entity);
         int limit = maxPieces();
@@ -157,6 +164,12 @@ public final class DetachedPieces
         piece.visual = PieceVisuals.of(capture.visual, parts, burning);
         Vec3 relativePivot = pivot.subtract(capture.origin);
         piece.pivot = new Vector3f((float) relativePivot.x, (float) relativePivot.y, (float) relativePivot.z);
+        piece.corners = new Vector3f[corners.size()];
+        for (int index = 0; index < corners.size(); index++)
+        {
+            Vec3 corner = corners.get(index).subtract(pivot);
+            piece.corners[index] = new Vector3f((float) corner.x, (float) corner.y, (float) corner.z);
+        }
         piece.velocity = velocity;
         piece.spinAxis = new Vector3f(random.nextFloat() - 0.5F, random.nextFloat() - 0.5F, random.nextFloat() - 0.5F);
         if (piece.spinAxis.lengthSquared() < 1.0E-4F)
@@ -236,10 +249,11 @@ public final class DetachedPieces
             velocity = new Vec3(-velocity.x * BOUNCE, velocity.y, -velocity.z * BOUNCE);
             piece.spin *= 0.7F;
         }
-        double ground = groundBelow(level, worldPivot(piece, next));
-        if (Double.isFinite(ground) && worldPivot(piece, next).y <= ground)
+        double underside = worldPivot(piece, next).y - drop(piece);
+        double ground = groundBelow(level, new Vec3(worldPivot(piece, next).x, underside, worldPivot(piece, next).z));
+        if (Double.isFinite(ground) && underside <= ground)
         {
-            next = new Vec3(next.x, next.y + ground - worldPivot(piece, next).y, next.z);
+            next = new Vec3(next.x, next.y + ground - underside, next.z);
             velocity = new Vec3(velocity.x * GROUND_FRICTION, -velocity.y * BOUNCE, velocity.z * GROUND_FRICTION);
             piece.spin *= 0.55F;
             if (Math.abs(velocity.y) < 0.06D && velocity.horizontalDistanceSqr() < 0.004D)
@@ -263,6 +277,19 @@ public final class DetachedPieces
             DamageParticles.puff(DamageParticles.BLACK_SMOKE, centre, 0D, 0.03D, 0D, 0.5F + 0.4F * fade, 50 + random.nextInt(30), false);
         if (random.nextFloat() < 0.4F * fade * DamageParticles.density())
             DamageParticles.puff(DamageParticles.FIRE, centre, 0D, 0.04D, 0D, 0.35F + 0.3F * fade, 12, false);
+    }
+
+    /**
+     * @return how far the piece's lowest drawn corner hangs below its pivot as it is turned now,
+     *         so a wing settles on the ground instead of around the point it spins about
+     */
+    private static double drop(Piece piece)
+    {
+        double lowest = 0D;
+        Vector3f corner = new Vector3f();
+        for (Vector3f point : piece.corners)
+            lowest = Math.min(lowest, piece.rotation.transform(corner.set(point)).y);
+        return -lowest;
     }
 
     private static Vec3 worldPivot(Piece piece, Vec3 offset)

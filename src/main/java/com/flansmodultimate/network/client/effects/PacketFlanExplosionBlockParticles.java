@@ -75,7 +75,7 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
         // how much crater they are meant to represent.
         float t = Mth.clamp((radius - MIN_SCALE_RADIUS) / (MAX_SCALE_RADIUS - MIN_SCALE_RADIUS), 0.0F, 1.0F);
         float particleScale = 1.0F + t * (MAX_PARTICLE_SCALE - 1.0F);
-        String smokeParticle = radius >= BIG_SMOKE_RADIUS ? FlanParticles.FM_BIG_SMOKE : FlanParticles.SMOKE;
+        String smokeParticle = radius >= BIG_SMOKE_RADIUS ? FlanParticles.LARGE_SMOKE : FlanParticles.SMOKE;
 
         // The debris thrown out of the crater clears on the same schedule as the rest of the
         // explosion: a cannon round kicking up a single block should not leave smoke hanging
