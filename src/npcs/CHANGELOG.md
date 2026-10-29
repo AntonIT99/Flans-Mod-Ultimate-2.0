@@ -4,7 +4,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Soldiers
 
-* Custom NPCs use Flan's guns, grenades, throwables, melee weapons, shields and armour, with reloads, ammunition from their inventory and Flan's sounds and muzzle flashes
+* Custom NPCs use Flan's guns, grenades, throwables, melee weapons, shields and armour, with reloads, ammunition from their inventory and Flan's sounds and muzzle flashes; the sounds an NPC makes carry as far, and as loudly, as the same weapon in a player's hands
 * Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender
 * Flan NPC tactics for soldiers, vehicles and aircraft, including cover, peeking and Custom NPCs' own tactics with Flan's weapons
 * NPCs throw what they carry by per-kind strategies, and open carried parachutes when they fall
@@ -13,7 +13,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Vehicles, Aircraft & Mechas
 
-* NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight and take damage like their driveables, with part hitboxes, armour and HEAT overrides
+* NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight, sound and take damage like their driveables, with part hitboxes, armour and HEAT overrides
 * NPCs board, drive and fly the Flan's driveables players place, lead their targets, land planes and watch their fuel
 * Vehicle NPCs carry crews in their seats; crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
 * Seated crew face ahead of their vehicle or turret, while gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot

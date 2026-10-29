@@ -287,7 +287,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = {"playStepSound", "m_7355_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsEngineReplacesSteps(BlockPos pos, BlockState state, CallbackInfo callback)
     {
-        if (NpcPresentation.of((EntityNPCInterface) (Object) this).getVehicleSounds().resolve((EntityNPCInterface) (Object) this, true).isPresent())
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (NpcPresentation.of(npc).getVehicleSounds().resolve(npc, true).isPresent() || wolffsmodnpcsPlaysFlanSound(npc, 4))
             callback.cancel();
     }
 
@@ -296,8 +297,29 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsEngineReplacesIdle(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        if (npc.getTarget() == null && NpcPresentation.of(npc).getVehicleSounds().resolve(npc, NpcVehicleSounds.moving(npc)).isPresent())
+        if (npc.getTarget() != null)
+            return;
+        if (NpcPresentation.of(npc).getVehicleSounds().resolve(npc, NpcVehicleSounds.moving(npc)).isPresent() || wolffsmodnpcsPlaysFlanSound(npc, 0))
             callback.cancel();
+    }
+
+    /**
+     * Plays a Flan content sound a Custom NPCs sound slot holds the way the machine it comes from sounds: as far, and as
+     * loudly, as a driveable's engine, rather than at the fixed volume and radius Custom NPCs gives its own sounds. A
+     * sound from anywhere else stays Custom NPCs', so its voices keep their own category and distance.
+     *
+     * @return whether the sound was taken over, so that Custom NPCs must not play it as well
+     */
+    @Unique
+    private static boolean wolffsmodnpcsPlaysFlanSound(EntityNPCInterface npc, int slot)
+    {
+        String sound = npc.advanced.getSound(slot);
+        if (!NpcSounds.isFlanSound(sound))
+            return false;
+        // Both sides reach this; the server's broadcast is what every listener hears, the client's local copy would double it.
+        if (!npc.level().isClientSide)
+            NpcSounds.play(npc, sound, SoundRange.VEHICLE);
+        return true;
     }
 
     // Equipment

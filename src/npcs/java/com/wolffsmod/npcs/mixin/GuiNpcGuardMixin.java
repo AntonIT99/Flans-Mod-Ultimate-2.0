@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.FlansModApi;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import noppes.npcs.client.EntityUtil;
@@ -33,7 +33,7 @@ public abstract class GuiNpcGuardMixin
 {
     /** Namespaces of Flan's Mod entities; their MISC types are machines and technical entities rather than mobs. */
     @Unique
-    private static final Set<String> WOLFFSMODNPCS_FLAN_NAMESPACES = Set.of(FlansMod.MOD_ID, FlansMod.FLANSMOD_ID, FlansMod.APOCALYPSE_ID);
+    private static final Set<String> WOLFFSMODNPCS_FLAN_NAMESPACES = FlansModApi.getModNamespaces();
 
     @Shadow
     private JobGuard role;

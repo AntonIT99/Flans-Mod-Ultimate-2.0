@@ -1,7 +1,9 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.entity.SoundRange;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcSounds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -59,8 +61,12 @@ public final class NpcThrowables
         Vec3 origin = npc.getEyePosition();
         if (launch(npc, level, ammunition, flight, origin, direction(npc, target, origin, flight, highArc), Mth.clamp(npc.stats.ranged.getShotCount(), 1, 10)))
         {
-            SoundEvent sound = npc.stats.ranged.getSoundEvent(0);
-            npc.playSound(sound == null ? flight.sound() : sound, sound == null ? 1F : 2F, 1F);
+            // The NPC's own sound stands in for the item's, and then carries as far as a thrown Flan weapon's.
+            String own = npc.stats.ranged.getSound(0);
+            if (own == null)
+                npc.playSound(flight.sound(), 1F, 1F);
+            else
+                NpcSounds.play(npc, own, SoundRange.THROW);
             // One item a trigger, as for a player, whatever the NPC's shot count.
             if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
                 NpcAmmunition.consume(npc, ammunition);

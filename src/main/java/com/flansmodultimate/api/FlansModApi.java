@@ -5,6 +5,7 @@
  */
 package com.flansmodultimate.api;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.content.IContentPack;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.teams.IPlayerClass;
@@ -34,8 +35,23 @@ import java.util.*;
 @ApiStatus.Experimental
 public final class FlansModApi
 {
+    private static final Set<String> NAMESPACES = Set.of(FlansMod.MOD_ID, FlansMod.FLANSMOD_ID, FlansMod.APOCALYPSE_ID);
+
     private FlansModApi()
     {}
+
+    /**
+     * The namespaces Flan's Mod Ultimate registers under, so that an addon walking a registry or reading an identifier
+     * can tell the mod's own content from another mod's: {@code flansmodultimate} for the mod itself, {@code flansmod}
+     * for everything the content packs define, items, blocks, entities and sounds alike, and {@code flansmodapocalypse}
+     * for the Apocalypse module. Readable on either side at any time.
+     *
+     * @return the namespaces, unmodifiable
+     */
+    public static Set<String> getModNamespaces()
+    {
+        return NAMESPACES;
+    }
 
     /**
      * Reads the range, set by the server, within which NPCs using the Flan distance settings are sent to clients. An

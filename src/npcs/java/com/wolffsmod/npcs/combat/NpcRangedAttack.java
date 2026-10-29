@@ -6,12 +6,14 @@ import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.entity.EntityTypeProperties;
 import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
+import com.flansmodultimate.api.entity.SoundRange;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.properties.NpcSounds;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import com.wolffsmod.npcs.sim.*;
@@ -23,7 +25,6 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -276,11 +277,8 @@ public final class NpcRangedAttack
                 // Every usual barrel count divides 120, so the remainder still names the barrel after the trip to the client.
                 state.fired(Math.floorMod(sequence, 120));
             if (!soundPlayed)
-            {
-                SoundEvent sound = npc.stats.ranged.getSoundEvent(0);
-                if (sound != null)
-                    npc.playSound(sound, 2F, 1F);
-            }
+                // The NPC's own firing sound stands in for the model's, and carries as far as a gun's.
+                NpcSounds.play(npc, npc.stats.ranged.getSound(0), SoundRange.GUN_FIRE);
             // A held Flan gun that fired the round itself, rather than a model's mount, raises and cycles like a native shot.
             if (!modelMuzzles && !FlansProjectiles.isGrenade(ammo) && FlansEquipment.getWeaponProperties(held, ItemStack.EMPTY).isPresent())
                 FlansEquipment.animateShot(npc, InteractionHand.MAIN_HAND);

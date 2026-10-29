@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.entity.SoundRange;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.FlansMelee;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
@@ -7,6 +8,7 @@ import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcSounds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -17,7 +19,6 @@ import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
@@ -232,12 +233,10 @@ public final class NpcItemAttacks
         return fired;
     }
 
-    /** The NPC's own firing sound, played in place of the item's when the NPC keeps its own. */
+    /** The NPC's own firing sound, played in place of the item's when the NPC keeps its own, carrying as far as a gun's. */
     private static void playOwnFiringSound(EntityNPCInterface npc)
     {
-        SoundEvent sound = npc.stats.ranged.getSoundEvent(0);
-        if (sound != null)
-            npc.playSound(sound, 2F, 1F);
+        NpcSounds.play(npc, npc.stats.ranged.getSound(0), SoundRange.GUN_FIRE);
     }
 
     private static boolean throwFlan(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)

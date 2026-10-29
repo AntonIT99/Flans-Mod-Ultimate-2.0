@@ -14,7 +14,10 @@ import net.minecraft.world.entity.Entity;
 import java.util.OptionalInt;
 import java.util.UUID;
 
-/** Server-controlled Flan engine audio for external living entities. No client classes are loaded by this API. */
+/**
+ * Server-controlled Flan audio for external living entities: looping engine clips and one-shot clips that carry as far,
+ * and as loudly, as the mod's own entities. No client classes are loaded by this API.
+ */
 @ApiStatus.Experimental
 public final class FlansEntitySounds
 {
@@ -57,6 +60,42 @@ public final class FlansEntitySounds
     }
 
     /**
+     * Plays one sound once where the source stands, heard as far and as loudly as the mod's own entities play the same
+     * kind of sound: the radius both selects the listeners and sets the volume, which fades out linearly at its edge.
+     * Unlike {@link #playEngineSound} the clip stays where it started rather than following the source, as a gun shot
+     * does. Server thread only.
+     *
+     * @param source
+     *            live emitting entity, which gives the position and is skipped while it is silent
+     * @param sound
+     *            registered sound event ID; an unqualified path selects the flansmod namespace
+     * @param range
+     *            audible radius in blocks, normally {@link #getRange(SoundRange)} for the sound's role
+     * @param distort
+     *            whether the pitch varies from clip to clip, as a gun shot's does
+     * @return whether audio was sent; false for invalid or silent sources and sound IDs
+     */
+    // Part of the API contract, as playEngineSound's result is: an addon that falls back to its own audio needs to know.
+    @SuppressWarnings("UnusedReturnValue")
+    public static boolean playClip(Entity source, String sound, float range, boolean distort)
+    {
+        return EntitySoundSupport.playClip(source, sound, range, distort);
+    }
+
+    /**
+     * Reads the radius the server gives one kind of sound, so an addon's entities are heard like the mod's own.
+     * Read either side after common config synchronization.
+     *
+     * @param role
+     *            what the sound is for
+     * @return audible radius in blocks, which also sets the volume
+     */
+    public static float getRange(SoundRange role)
+    {
+        return EntitySoundSupport.range(role);
+    }
+
+    /**
      * Reads the resolved Flan sound asset's measured length, independent of authored type timer overrides. Either side after loading.
      *
      * @param sound
@@ -68,7 +107,10 @@ public final class FlansEntitySounds
         return EntitySoundSupport.length(sound);
     }
 
-    /** @return current server engine sound radius in blocks; read either side after common config synchronization */
+    /**
+     * @return current server engine sound radius in blocks, the same value as {@link #getRange(SoundRange)} for
+     *         {@link SoundRange#VEHICLE}; read either side after common config synchronization
+     */
     public static float getDefaultEngineRange()
     {
         return EntitySoundSupport.defaultRange();
