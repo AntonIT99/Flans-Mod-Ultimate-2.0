@@ -319,8 +319,9 @@ public final class NpcCrew
 
     private static void face(LivingEntity crew, float facing, float look)
     {
-        crew.setYBodyRot(facing);
-        float head = facing + Mth.clamp(Mth.wrapDegrees(look - facing), -HEAD_TURN, HEAD_TURN);
+        float body = crew.yBodyRot + Mth.wrapDegrees(facing - crew.yBodyRot);
+        crew.setYBodyRot(body);
+        float head = body + Mth.clamp(Mth.wrapDegrees(look - body), -HEAD_TURN, HEAD_TURN);
         crew.setYHeadRot(head);
         crew.setYRot(head);
     }

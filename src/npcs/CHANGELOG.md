@@ -16,7 +16,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight, sound and take damage like their driveables, with part hitboxes, armour and HEAT overrides; destroyed planes and helicopters fall under gravity; vehicle muzzle flashes replace the fallback flame particle while preserving authored shooting particles
 * NPCs board, drive and fly the Flan's driveables players place, lead their targets, land planes and watch their fuel
 * Vehicle NPCs carry crews in their seats; crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
-* Seated crew face ahead of their vehicle or turret, while gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot
+* Seated crew keep their body aligned with their seat through rendering and turns across 180 degrees; gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot; NPCs riding normal aircraft inherit pitch and roll like players
 * Friendly players can ride in passenger seats, occupy empty driver seats and man the gunner seats of vehicle NPCs, and change seats with Flan's change-seat key; the NPC still drives when a player occupies its driver seat
 * NPC vehicles manoeuvre for a shot, back away from targets under their barrel and can be repaired
 * Vehicles, aircraft and ships keep clear of their own blast: they hold their fire at a target close enough for their explosive rounds to catch them and pull back out of reach first (`Keep clear of own blast`, `Blast safety margin`)

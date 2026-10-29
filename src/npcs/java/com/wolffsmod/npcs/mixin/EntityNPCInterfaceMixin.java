@@ -91,7 +91,7 @@ import java.util.*;
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
  * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.
  * A falling NPC opens a parachute it carries and steers it toward its target.</li>
- * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner.</li>
+ * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner; crew keep their seat's body heading through rendering.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
  * deals with its crew when destroyed or deleted. A crew member keeps its seat in synchronized data, holds its fire as driver or
  * gunner, appears seated with empty hands while aboard, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
@@ -1034,6 +1034,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     // Crew
+
+    @Override
+    public boolean flansmodultimateHasSeatBodyRotation()
+    {
+        return NpcCrew.vehicleOf(this).isPresent();
+    }
 
     @Override
     protected boolean canAddPassenger(Entity passenger)
