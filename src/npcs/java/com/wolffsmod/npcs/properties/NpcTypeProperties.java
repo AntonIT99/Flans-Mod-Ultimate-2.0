@@ -351,8 +351,8 @@ public final class NpcTypeProperties
     {
         long flags = 0L;
         for (Feature feature : Feature.values())
-            // Maintenance does not affect inherited model properties; its ordinal must not alias a model flag.
-            if (feature != Feature.AUTOMATIC_REPAIRS && options.enabled(feature))
+            // Maintenance and returning home do not affect inherited model properties; their ordinals must not alias a model flag.
+            if (feature != Feature.AUTOMATIC_REPAIRS && feature != Feature.RETURN_WHEN_INACTIVE && options.enabled(feature))
                 flags |= 1L << feature.ordinal();
         return flags;
     }

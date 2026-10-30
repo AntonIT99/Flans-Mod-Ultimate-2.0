@@ -59,7 +59,12 @@ public final class NpcWeaponOptions
         /** A plane or helicopter model flies at its definition's speeds, climb rate and control rates. */
         MODEL_FLIGHT(true),
         /** Timed maintenance, carrier servicing, buoyancy recovery and fuel-backed nanorepair; manual tool healing remains separate. */
-        AUTOMATIC_REPAIRS(true);
+        AUTOMATIC_REPAIRS(true),
+        /**
+         * An NPC with Return to start that is left away from home while it does not simulate, outside the simulation
+         * distance or resting beyond its dormant range, is sent straight back once no player is near enough to see it go.
+         */
+        RETURN_WHEN_INACTIVE(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

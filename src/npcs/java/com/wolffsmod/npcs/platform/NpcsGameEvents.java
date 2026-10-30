@@ -12,6 +12,7 @@ import com.wolffsmod.npcs.names.SoldierNameAssociations;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.sim.NpcActivity;
+import com.wolffsmod.npcs.sim.NpcInactiveReturn;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
 import com.wolffsmod.npcs.teams.FriendlyFireCommands;
@@ -74,7 +75,10 @@ public final class NpcsGameEvents
     public static void levelTick(TickEvent.LevelTickEvent event)
     {
         if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel level)
+        {
             NpcActivity.levelTick(level);
+            NpcInactiveReturn.levelTick(level);
+        }
     }
 
     @SubscribeEvent

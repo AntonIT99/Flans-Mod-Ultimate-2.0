@@ -10,6 +10,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * NPCs throw what they carry by per-kind strategies, and open carried parachutes when they fall
 * Presets in the Wolff's Mod tab, such as Mob-like and Player-like, with undo; presets preserve the existing `Return to start` setting
 * Wandering range `0` allows unlimited roaming without triggering `Return to start` for distance; returning after combat and on respawn is preserved
+* `Teleport home when inactive` (Advanced > Performance & debug > Activity): NPCs with `Return to start` left away from home outside the simulation distance, or resting beyond their dormant range, are sent straight back once no player is near enough to see them go
 
 ## Vehicles, Aircraft & Mechas
 

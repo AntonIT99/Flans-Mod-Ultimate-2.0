@@ -176,6 +176,8 @@
   "wolffsmodnpcs.tuning.handling_mode.help": "Inherit reads the selected model's compatible handling values, or the documented fallback if unavailable. Custom starts from the effective value rounded to the existing integer editor units. Switching to Inherit clears this numeric override. Saved positive values remain Custom. Driver policy and actual driven Flan vehicles are unchanged.",
   "wolffsmodnpcs.weapons.return_home_teleport": "Allow return-home teleport",
   "wolffsmodnpcs.weapons.return_home_teleport.help": "Yes keeps Custom NPCs automatic teleport recovery when returning home. No requires physical travel and retries a finished or failed path at most every 40 game ticks (about 2 seconds). An unreachable NPC can remain stranded. Requires Custom NPCs Return to start; does not affect scripted teleports.",
+  "wolffsmodnpcs.weapons.return_when_inactive": "Teleport home when inactive",
+  "wolffsmodnpcs.weapons.return_when_inactive.help": "Yes sends the NPC straight back to its start position while it is not simulating: beyond the server's simulation distance, where it cannot walk home, or resting beyond its dormant range. Only when it would walk home anyway, never while a player is near enough to see it vanish, and once its start position is loaded. Requires Custom NPCs Return to start; NPCs riding something or with an owner stay put.",
   "commands.wolffsmodnpcs.benchmark.busy": "A benchmark is already running.",
   "commands.wolffsmodnpcs.benchmark.client_started": "NPC client benchmark: measuring %s seconds after a %s second warm-up. Keep the NPCs in view.",
   "commands.wolffsmodnpcs.benchmark.idle": "No benchmark is running.",
