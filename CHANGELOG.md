@@ -35,7 +35,7 @@
 * Suitable ground vehicle categories squash mobs they run over
 * Configurable driveable melee protection and weapon damage overrides
 * Configurable render and tracking distances for driveables and Flan NPC models
-* Smooth view and position for players standing on turning hulls and turrets, including the bows and sterns of large ships
+* Smooth view and position for players standing or walking on moving hulls and turrets, including large ships; fixed sudden turns and drops from unstable carry transforms and replayed movement when server time is synchronized
 * Passenger guns mounted on a turret aim relative to the turret
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
 * Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards, and pieces thrown off a wreck coming to rest in the air instead of on the ground
@@ -44,6 +44,7 @@
 
 ## Weapons
 
+* Default ammunition selection prefers compatible rounds from the weapon's own content pack, including for `/defaultammo`
 * Historically supported firing modes for source-pack weapons, including semi-auto selectors and two- or three-round bursts
 * Variable zoom for modern scopes (binoculars up to 40x), with new default keybinds
 * New `MeleeSpeed` and `MeleeRange`, updated melee statistics and lightsaber balance
