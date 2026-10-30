@@ -61,7 +61,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         this(FlansModEntities.flagEntity.get(), level);
         setBaseId(base.getUUID());
         setTeamId(base.getOwnerId());
-        setPos(base.getX(), base.getY() + 2D, base.getZ());
+        setPos(base.getX(), base.getY() + base.getPoleHeight() - 1D, base.getZ());
     }
 
     @Override
@@ -103,7 +103,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
             {
                 setTeamId(base.getOwnerId());
                 showTeam(TeamsManager.getInstance().getTeamForBase(base));
-                setPos(base.getX(), base.getY() + 2D, base.getZ());
+                setPos(base.getX(), base.getY() + base.getPoleHeight() - 1D, base.getZ());
             }
         }
     }
@@ -155,7 +155,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         returnTicks = 0;
         Flagpole base = getBase();
         if (base != null)
-            setPos(base.getX(), base.getY() + 2D, base.getZ());
+            setPos(base.getX(), base.getY() + base.getPoleHeight() - 1D, base.getZ());
     }
 
     public boolean isHome()

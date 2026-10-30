@@ -625,6 +625,7 @@
   "options.flansmodultimate.defaultADSSpreadMultiplierShotgun": "Standard-Streuung beim Zielen (Schrotflinte)",
   "options.flansmodultimate.defaultArmorDurability": "Standard-Rüstungshaltbarkeit",
   "options.flansmodultimate.defaultArmorEnchantability": "Standard-Rüstungsverzauberbarkeit",
+  "options.flansmodultimate.defaultFlagpoleHeight": "Standardhöhe der Fahnenmasten",
   "options.flansmodultimate.deployedGunRenderDistance": "Darstellungsdistanz aufgestellte Waffen",
   "options.flansmodultimate.deployedGunTrackingRange": "Verfolgungsreichweite aufgestellte Waffen",
   "options.flansmodultimate.digitalAmmoDefaultAmount": "Standardmenge digitale Munition",

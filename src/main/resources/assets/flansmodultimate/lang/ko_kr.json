@@ -270,6 +270,7 @@
   "options.flansmodultimate.bulletFlybyVolume": "탄환 통과 음량",
   "options.flansmodultimate.bulletSnapshotDivisor": "지연 보정 핑 제수",
   "options.flansmodultimate.bulletSnapshotMin": "지연 보정 최솟값",
+  "options.flansmodultimate.defaultFlagpoleHeight": "기본 깃대 높이",
   "options.flansmodultimate.disableCrosshairWhileScoped": "조준 중 십자선 비활성화",
   "options.flansmodultimate.distance.blocks": "%s 블록",
   "options.flansmodultimate.distance.tracking_limit": "서버 추적 설정: %s 블록. 서버 시야 거리와 추적 배율이 실제 표시 범위를 제한할 수 있습니다.",

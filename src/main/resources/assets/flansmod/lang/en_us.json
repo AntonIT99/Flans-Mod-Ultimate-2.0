@@ -42,6 +42,8 @@
   "gui.flansmod.teams.name": "Name",
   "gui.flansmod.teams.no_round": "No Teams round is active",
   "gui.flansmod.teams.on_objective": "On objective",
+  "gui.flansmod.teams.pole_height": "Pole height:",
+  "gui.flansmod.teams.pole_height_range": "Height in blocks (%s–%s)",
   "gui.flansmod.teams.rank_up": "Rank Up!",
   "gui.flansmod.teams.rank_up_detail": "Promoted to rank %s",
   "gui.flansmod.teams.required_prestige": "Required prestige: %s",

@@ -623,6 +623,7 @@
   "options.flansmodultimate.defaultADSSpreadMultiplierShotgun": "Default ADS Spread (Shotgun)",
   "options.flansmodultimate.defaultArmorDurability": "Default Armor Durability",
   "options.flansmodultimate.defaultArmorEnchantability": "Default Armor Enchantability",
+  "options.flansmodultimate.defaultFlagpoleHeight": "Default Flagpole Height",
   "options.flansmodultimate.deployedGunRenderDistance": "Deployed Gun Render Distance",
   "options.flansmodultimate.deployedGunTrackingRange": "Deployed Gun Tracking Range",
   "options.flansmodultimate.digitalAmmoDefaultAmount": "Digital Ammo Default Amount",

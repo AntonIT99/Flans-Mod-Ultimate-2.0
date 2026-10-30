@@ -2,8 +2,9 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.item.ItemOpStick;
-import com.flansmodultimate.common.teams.ITeamBase;
+import com.flansmodultimate.common.teams.ITeamFlagpole;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
@@ -20,11 +21,14 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -37,8 +41,9 @@ import java.util.Set;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public final class Flagpole extends FlanSpawnEntity implements ITeamBase
+public final class Flagpole extends FlanSpawnEntity implements ITeamFlagpole
 {
+    private static final String NBT_POLE_HEIGHT = "pole_height";
     private static final String NBT_DEFAULT_OWNER = "default_owner";
     private static final String NBT_OWNER = "owner";
     private static final String NBT_NAME = "name";
@@ -51,6 +56,7 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
     private static final EntityDataAccessor<Integer> DATA_OWNER = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> DATA_NAME = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<String> DATA_MAP = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> DATA_POLE_HEIGHT = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.INT);
 
     @Nullable
     private UUID flagId;
@@ -60,6 +66,9 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
     {
         super(type, level);
         noPhysics = true;
+        if (!level.isClientSide)
+            setPoleHeight(ModCommonConfig.defaultFlagpoleHeight());
+        refreshDimensions();
     }
 
     public Flagpole(Level level, Vec3 position)
@@ -75,6 +84,38 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
         data.define(DATA_OWNER, 0);
         data.define(DATA_NAME, "Default Base");
         data.define(DATA_MAP, "");
+        // A fixed wire default ensures a server's configured height is included in spawn data.
+        data.define(DATA_POLE_HEIGHT, ModCommonConfig.DEFAULT_FLAGPOLE_HEIGHT);
+    }
+
+    @Override
+    public int getPoleHeight()
+    {
+        return entityData.get(DATA_POLE_HEIGHT);
+    }
+
+    @Override
+    public void setPoleHeight(int height)
+    {
+        entityData.set(DATA_POLE_HEIGHT, Mth.clamp(height, ModCommonConfig.MIN_FLAGPOLE_HEIGHT, ModCommonConfig.MAX_FLAGPOLE_HEIGHT));
+        Flag flag = getFlag();
+        if (flag != null && flag.isHome())
+            flag.setPos(getX(), getY() + getPoleHeight() - 1D, getZ());
+    }
+
+    @Override
+    public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key)
+    {
+        super.onSyncedDataUpdated(key);
+        if (DATA_POLE_HEIGHT.equals(key))
+            refreshDimensions();
+    }
+
+    @NotNull
+    @Override
+    public EntityDimensions getDimensions(@NotNull Pose pose)
+    {
+        return EntityDimensions.scalable(0.75F, getPoleHeight());
     }
 
     @Override
@@ -100,7 +141,7 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
         }
         else if (flag.isHome())
         {
-            flag.setPos(getX(), getY() + 2D, getZ());
+            flag.setPos(getX(), getY() + getPoleHeight() - 1D, getZ());
         }
     }
 
@@ -166,6 +207,7 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
         setOwnerId(tag.getInt(NBT_OWNER));
         setBaseName(tag.getString(NBT_NAME));
         setMapId(tag.getString(NBT_MAP));
+        setPoleHeight(tag.contains(NBT_POLE_HEIGHT, Tag.TAG_ANY_NUMERIC) ? tag.getInt(NBT_POLE_HEIGHT) : ModCommonConfig.defaultFlagpoleHeight());
         flagId = tag.hasUUID(NBT_FLAG) ? tag.getUUID(NBT_FLAG) : null;
         objectIds.clear();
         for (Tag entry : tag.getList(NBT_OBJECTS, Tag.TAG_COMPOUND))
@@ -183,6 +225,7 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
         tag.putInt(NBT_OWNER, getOwnerId());
         tag.putString(NBT_NAME, getBaseName());
         tag.putString(NBT_MAP, getMapId());
+        tag.putInt(NBT_POLE_HEIGHT, getPoleHeight());
         if (flagId != null)
             tag.putUUID(NBT_FLAG, flagId);
         ListTag objects = new ListTag();

@@ -42,6 +42,8 @@
   "gui.flansmod.teams.name": "이름",
   "gui.flansmod.teams.no_round": "현재 진행 중인 팀 라운드가 없습니다",
   "gui.flansmod.teams.on_objective": "목표 지점에 있음",
+  "gui.flansmod.teams.pole_height": "깃대 높이:",
+  "gui.flansmod.teams.pole_height_range": "블록 단위 높이 (%s–%s)",
   "gui.flansmod.teams.rank_up": "계급 상승!",
   "gui.flansmod.teams.rank_up_detail": "계급 %s(으)로 진급",
   "gui.flansmod.teams.required_prestige": "필요 프레스티지: %s",

@@ -29,6 +29,7 @@ public record CommonConfigSnapshot(
     double maxPlayerHealth,
     boolean enableKillMessages,
     boolean showDistanceInKillMessage,
+    int defaultFlagpoleHeight,
     int bulletSnapshotMin,
     int bulletSnapshotDivisor,
     int bulletTrackingRange,
@@ -171,7 +172,7 @@ public record CommonConfigSnapshot(
     boolean forceUncensoredContent
 )
 {
-    public static final int CURRENT_VERSION = 47;
+    public static final int CURRENT_VERSION = 48;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -197,6 +198,7 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.maxPlayerHealth);
         buf.writeBoolean(s.enableKillMessages);
         buf.writeBoolean(s.showDistanceInKillMessage);
+        buf.writeVarInt(s.defaultFlagpoleHeight);
         buf.writeVarInt(s.bulletSnapshotMin);
         buf.writeVarInt(s.bulletSnapshotDivisor);
         buf.writeVarInt(s.bulletTrackingRange);
@@ -374,6 +376,7 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),

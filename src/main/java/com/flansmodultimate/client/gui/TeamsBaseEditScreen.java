@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.teams.TeamsRound;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketBaseEditState;
 import com.flansmodultimate.network.server.teams.PacketBaseEditAction;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -23,6 +25,7 @@ public final class TeamsBaseEditScreen extends Screen
     private final PacketBaseEditState state;
     private final List<Button> mapButtons = new ArrayList<>();
     private EditBox nameField;
+    private EditBox heightField;
     private Button noTeamButton;
     private Button spectatorButton;
     private Button teamButton;
@@ -56,6 +59,15 @@ public final class TeamsBaseEditScreen extends Screen
         nameField.setValue(state.getBaseName());
         addRenderableWidget(nameField);
         setInitialFocus(nameField);
+
+        String heightValue = heightField == null ? Integer.toString(state.getPoleHeight()) : heightField.getValue();
+        heightField = new EditBox(font, left + 210, top + 61, 38, 12, Component.translatable("gui.flansmod.teams.pole_height"));
+        heightField.setMaxLength(2);
+        heightField.setFilter(value -> value.chars().allMatch(Character::isDigit));
+        heightField.setValue(heightValue);
+        heightField.setTooltip(Tooltip.create(Component.translatable("gui.flansmod.teams.pole_height_range", ModCommonConfig.MIN_FLAGPOLE_HEIGHT, ModCommonConfig.MAX_FLAGPOLE_HEIGHT)));
+        heightField.visible = state.getPoleHeight() > 0;
+        addRenderableWidget(heightField);
 
         // Nobody, the spectators, then one team slot of a round, stepped through with the arrows beside it.
         noTeamButton = addRenderableWidget(Button.builder(Component.literal("No Team"), ignored -> selectOwner(0)).bounds(left + 6, top + 38, 58, 20).build());
@@ -139,13 +151,24 @@ public final class TeamsBaseEditScreen extends Screen
         graphics.drawString(font, title, left + 6, top + 6, 0xFFFFFF, false);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.base_name"), left + 6, top + 24, 0xFFFFFF, false);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.map"), left + 6, top + 64, 0xFFFFFF, false);
+        if (heightField.visible)
+            graphics.drawString(font, Component.translatable("gui.flansmod.teams.pole_height"), left + 72, top + 64, 0xFFFFFF, false);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override
     public void onClose()
     {
-        PacketHandler.sendToServer(new PacketBaseEditAction(state.getBaseId(), nameField.getValue(), selectedMap, selectedOwner));
+        int poleHeight;
+        try
+        {
+            poleHeight = Integer.parseInt(heightField.getValue());
+        }
+        catch (NumberFormatException ignored)
+        {
+            poleHeight = state.getPoleHeight();
+        }
+        PacketHandler.sendToServer(new PacketBaseEditAction(state.getBaseId(), nameField.getValue(), selectedMap, selectedOwner, poleHeight));
         super.onClose();
     }
 

@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.block.entity.CapturePointBlockEntity;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketBaseEditState;
 import com.flansmodultimate.network.client.teams.PacketCapturePointEditState;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -32,6 +34,7 @@ public final class TeamsCapturePointEditScreen extends Screen
     private final List<Button> mapButtons = new ArrayList<>();
     private EditBox nameField;
     private EditBox radiusField;
+    private EditBox heightField;
     private Button previousPage;
     private Button nextPage;
     private char selectedSymbol;
@@ -79,6 +82,15 @@ public final class TeamsCapturePointEditScreen extends Screen
         radiusField.setFilter(value -> value.chars().allMatch(Character::isDigit));
         radiusField.setValue(Integer.toString(state.getCaptureRadius()));
         addRenderableWidget(radiusField);
+
+        String heightValue = heightField == null ? Integer.toString(state.getPoleHeight()) : heightField.getValue();
+        heightField = new EditBox(font, left + 210, top + 85, 38, 12, Component.translatable("gui.flansmod.teams.pole_height"));
+        heightField.setMaxLength(2);
+        heightField.setFilter(value -> value.chars().allMatch(Character::isDigit));
+        heightField.setValue(heightValue);
+        heightField.setTooltip(Tooltip.create(Component.translatable("gui.flansmod.teams.pole_height_range", ModCommonConfig.MIN_FLAGPOLE_HEIGHT, ModCommonConfig.MAX_FLAGPOLE_HEIGHT)));
+        heightField.visible = state.getPoleHeight() > 0;
+        addRenderableWidget(heightField);
 
         for (int i = 0; i < OWNER_IDS.length; i++)
         {
@@ -153,6 +165,8 @@ public final class TeamsCapturePointEditScreen extends Screen
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.base_name"), left + 6, top + 24, 0xFFFFFF, false);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.capture_point.radius"), left + 6, top + 69, 0xFFFFFF, false);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.map"), left + 6, top + 88, 0xFFFFFF, false);
+        if (heightField.visible)
+            graphics.drawString(font, Component.translatable("gui.flansmod.teams.pole_height"), left + 72, top + 88, 0xFFFFFF, false);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -168,7 +182,16 @@ public final class TeamsCapturePointEditScreen extends Screen
         {
             radius = state.getCaptureRadius();
         }
-        PacketHandler.sendToServer(new PacketCapturePointEditAction(state.getPointId(), nameField.getValue(), selectedSymbol, radius, selectedOwner, selectedMap));
+        int poleHeight;
+        try
+        {
+            poleHeight = Integer.parseInt(heightField.getValue());
+        }
+        catch (NumberFormatException ignored)
+        {
+            poleHeight = state.getPoleHeight();
+        }
+        PacketHandler.sendToServer(new PacketCapturePointEditAction(state.getPointId(), nameField.getValue(), selectedSymbol, radius, selectedOwner, selectedMap, poleHeight));
         super.onClose();
     }
 

@@ -26,15 +26,17 @@ public final class PacketCapturePointEditAction implements IServerPacket
     private char symbol = CapturePointBlockEntity.FIRST_SYMBOL;
     private int captureRadius = CapturePointBlockEntity.DEFAULT_RADIUS;
     private int ownerId;
+    private int poleHeight;
     private String mapId = "";
 
-    public PacketCapturePointEditAction(UUID pointId, String pointName, char symbol, int captureRadius, int ownerId, String mapId)
+    public PacketCapturePointEditAction(UUID pointId, String pointName, char symbol, int captureRadius, int ownerId, String mapId, int poleHeight)
     {
         this.pointId = pointId;
         this.pointName = pointName;
         this.symbol = symbol;
         this.captureRadius = captureRadius;
         this.ownerId = ownerId;
+        this.poleHeight = poleHeight;
         this.mapId = mapId;
     }
 
@@ -46,6 +48,7 @@ public final class PacketCapturePointEditAction implements IServerPacket
         data.writeChar(symbol);
         data.writeVarInt(captureRadius);
         data.writeVarInt(ownerId);
+        data.writeVarInt(poleHeight);
         data.writeUtf(mapId, 128);
     }
 
@@ -57,6 +60,7 @@ public final class PacketCapturePointEditAction implements IServerPacket
         symbol = data.readChar();
         captureRadius = data.readVarInt();
         ownerId = data.readVarInt();
+        poleHeight = data.readVarInt();
         mapId = data.readUtf(128);
     }
 
@@ -71,6 +75,7 @@ public final class PacketCapturePointEditAction implements IServerPacket
             return;
 
         point.applySettings(pointName, symbol, captureRadius);
+        point.setPoleHeight(poleHeight);
         int owner = ownerId == 1 ? 0 : Math.max(0, Math.min(MAX_OWNER_ID, ownerId));
         if (owner != point.getDefaultOwnerId())
             point.setDefaultOwnerId(owner);

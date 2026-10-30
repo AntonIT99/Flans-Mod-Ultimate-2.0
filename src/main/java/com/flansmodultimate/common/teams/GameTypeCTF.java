@@ -65,6 +65,10 @@ public final class GameTypeCTF extends GameTypeTDM
         for (Flag flag : manager.getFlags())
         {
             AABB reach = flag.getBoundingBox().inflate(TOUCH_REACH, TOUCH_HEIGHT, TOUCH_REACH);
+            Flagpole base = flag.getBase();
+            if (flag.isHome() && base != null)
+                // Keep ground-level interaction at the legacy flag height, even on taller poles.
+                reach = reach.move(0D, base.getY() + 2D - flag.getY(), 0D);
             for (LivingEntity fighter : level.getEntitiesOfClass(LivingEntity.class, reach, entity -> entity.isAlive() && TeamsCombatants.getCombatantTeam(manager, entity) != null))
                 flagTouched(manager, fighter, flag);
         }

@@ -270,6 +270,7 @@
   "options.flansmodultimate.bulletFlybyVolume": "弾丸通過音量",
   "options.flansmodultimate.bulletSnapshotDivisor": "ラグ補正のPing除数",
   "options.flansmodultimate.bulletSnapshotMin": "ラグ補正の最小値",
+  "options.flansmodultimate.defaultFlagpoleHeight": "旗竿の既定の高さ",
   "options.flansmodultimate.disableCrosshairWhileScoped": "照準中のクロスヘアを無効化",
   "options.flansmodultimate.distance.blocks": "%s ブロック",
   "options.flansmodultimate.distance.tracking_limit": "サーバーの追跡設定：%s ブロック。サーバーの描画距離と追跡倍率により表示が制限されます。",

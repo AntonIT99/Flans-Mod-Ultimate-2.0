@@ -17,6 +17,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class LegacyGameplayConfigTest
 {
     @Test
+    void defaultFlagpoleHeightIsTallerAndAcceptsOnlySupportedHeights()
+    {
+        assertSetting(ModCommonConfig.configSpec, 5, "Teams Settings", "defaultFlagpoleHeight");
+        var spec = java.util.Objects.requireNonNull(ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "defaultFlagpoleHeight")));
+        assertTrue(spec.test(2) && spec.test(5) && spec.test(64));
+        assertFalse(spec.test(1) || spec.test(65) || spec.test("5"));
+    }
+
+    @Test
     void vehicleThrottleDecayMultiplierKeepsTheFasterDefaultAndAcceptsOnlyItsRange()
     {
         assertSetting(ModCommonConfig.configSpec, 4D, "Vehicle Physics Settings", "vehicleThrottleDecayMultiplier");

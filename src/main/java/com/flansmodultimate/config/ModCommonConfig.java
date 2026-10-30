@@ -31,6 +31,10 @@ import java.util.function.Supplier;
 public final class ModCommonConfig
 {
     private static final String SECTION_TEAMS = "Teams Settings";
+    public static final int DEFAULT_FLAGPOLE_HEIGHT = 5;
+    public static final int MIN_FLAGPOLE_HEIGHT = 2;
+    public static final int MAX_FLAGPOLE_HEIGHT = 64;
+    private static final Supplier<Integer> DEFAULT_FLAGPOLE_HEIGHT_VALUE;
     public static final ForgeConfigSpec configSpec;
     public static final IntValue THROWN_GUN_DESPAWN_SECONDS;
     public static final BooleanValue FORCE_UNCENSORED_CONTENT;
@@ -362,6 +366,10 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push(SECTION_TEAMS);
+        DEFAULT_FLAGPOLE_HEIGHT_VALUE = builder
+            .comment("Default pole height in blocks for Teams bases and capture points, including existing poles without a saved height.",
+                "Each pole keeps its height once saved; edit individual heights with the ownership stick.")
+            .defineInRange("defaultFlagpoleHeight", DEFAULT_FLAGPOLE_HEIGHT, MIN_FLAGPOLE_HEIGHT, MAX_FLAGPOLE_HEIGHT);
         BULLET_SNAPSHOT_MIN = builder.comment("Lag compensation: number of player snapshots (ticks) every bullet rewinds its targets by, before the shooter's ping is considered.",
             "A bullet uses the snapshot bulletSnapshotMin + ping / bulletSnapshotDivisor. Can also be changed in game with /teams admin bltss.").defineInRange("bulletSnapshotMin", 0, 0, 100);
         BULLET_SNAPSHOT_DIVISOR = builder.comment("Lag compensation: milliseconds of shooter ping per additional snapshot of rewind. 0 ignores the shooter's ping.")
@@ -714,8 +722,8 @@ public final class ModCommonConfig
 
             DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
             BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
-            BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(),
-            DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
+            DEFAULT_FLAGPOLE_HEIGHT_VALUE.get(), BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(),
+            AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(), CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(), ARMSHOT_DAMAGE_MODIFIER.get().floatValue(), LEGSHOT_MODIFIER.get().floatValue(),
             VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(), DRIVEABLE_COLLISIONS_BREAK_BLOCKS.get(), AUTO_REFILL_VEHICLE_AMMO.get(), GUNS_IN_DESTROYED_PARTS_WORK.get(),
@@ -1194,6 +1202,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null || config.showDistanceInKillMessage();
+    }
+
+    /** Starting height for new poles and older saves without an individual height. */
+    public static int defaultFlagpoleHeight()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_FLAGPOLE_HEIGHT : Math.max(MIN_FLAGPOLE_HEIGHT, Math.min(MAX_FLAGPOLE_HEIGHT, config.defaultFlagpoleHeight()));
     }
 
     /** Lag compensation: snapshots every bullet rewinds by before the shooter's ping is considered. */

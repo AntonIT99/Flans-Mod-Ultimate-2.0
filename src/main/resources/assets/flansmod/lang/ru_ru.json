@@ -42,6 +42,8 @@
   "gui.flansmod.teams.name": "Имя",
   "gui.flansmod.teams.no_round": "Раунд команд не активен",
   "gui.flansmod.teams.on_objective": "На точке",
+  "gui.flansmod.teams.pole_height": "Высота флагштока:",
+  "gui.flansmod.teams.pole_height_range": "Высота в блоках (%s–%s)",
   "gui.flansmod.teams.rank_up": "Повышение!",
   "gui.flansmod.teams.rank_up_detail": "Присвоен ранг %s",
   "gui.flansmod.teams.required_prestige": "Требуемый престиж: %s",

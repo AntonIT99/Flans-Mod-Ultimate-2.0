@@ -270,6 +270,7 @@
   "options.flansmodultimate.bulletFlybyVolume": "Громкость пролетающих пуль",
   "options.flansmodultimate.bulletSnapshotDivisor": "Делитель пинга компенсации задержки",
   "options.flansmodultimate.bulletSnapshotMin": "Минимум компенсации задержки",
+  "options.flansmodultimate.defaultFlagpoleHeight": "Высота флагштока по умолчанию",
   "options.flansmodultimate.disableCrosshairWhileScoped": "Отключить перекрестие при прицеливании",
   "options.flansmodultimate.distance.blocks": "%s блоков",
   "options.flansmodultimate.distance.tracking_limit": "Отслеживание сервера: %s блоков. Дальность обзора и масштаб отслеживания сервера могут ограничивать видимость.",

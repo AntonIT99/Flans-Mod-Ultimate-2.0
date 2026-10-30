@@ -3,6 +3,7 @@ package com.flansmodultimate.network.client.teams;
 import com.flansmodultimate.client.gui.TeamsCapturePointEditScreen;
 import com.flansmodultimate.common.block.entity.CapturePointBlockEntity;
 import com.flansmodultimate.common.teams.ITeamCapturePoint;
+import com.flansmodultimate.common.teams.ITeamFlagpole;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
@@ -27,6 +28,7 @@ public final class PacketCapturePointEditState implements IClientPacket
     private char symbol = CapturePointBlockEntity.FIRST_SYMBOL;
     private int captureRadius = CapturePointBlockEntity.DEFAULT_RADIUS;
     private int ownerId;
+    private int poleHeight;
     private String selectedMap = "";
     private List<PacketBaseEditState.MapChoice> maps = List.of();
 
@@ -38,6 +40,7 @@ public final class PacketCapturePointEditState implements IClientPacket
         packet.symbol = point.getSymbol();
         packet.captureRadius = point.getCaptureRadius();
         packet.ownerId = point.getDefaultOwnerId();
+        packet.poleHeight = point instanceof ITeamFlagpole pole ? pole.getPoleHeight() : 0;
         packet.selectedMap = point.getMapId();
         packet.maps = manager.getMaps().stream().filter(map -> map.getDimension().equals(point.getDimension())).map(map -> new PacketBaseEditState.MapChoice(map.getShortName(), map.getName()))
             .toList();
@@ -52,6 +55,7 @@ public final class PacketCapturePointEditState implements IClientPacket
         data.writeChar(symbol);
         data.writeVarInt(captureRadius);
         data.writeVarInt(ownerId);
+        data.writeVarInt(poleHeight);
         data.writeUtf(selectedMap, 128);
         data.writeCollection(maps, (buf, map) ->
         {
@@ -68,6 +72,7 @@ public final class PacketCapturePointEditState implements IClientPacket
         symbol = data.readChar();
         captureRadius = data.readVarInt();
         ownerId = data.readVarInt();
+        poleHeight = data.readVarInt();
         selectedMap = data.readUtf(128);
         maps = data.readList(buf -> new PacketBaseEditState.MapChoice(buf.readUtf(128), buf.readUtf(128)));
     }

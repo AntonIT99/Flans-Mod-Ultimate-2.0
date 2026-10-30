@@ -270,6 +270,7 @@
   "options.flansmodultimate.bulletFlybyVolume": "子弹掠过音量",
   "options.flansmodultimate.bulletSnapshotDivisor": "延迟补偿延迟除数",
   "options.flansmodultimate.bulletSnapshotMin": "延迟补偿最小值",
+  "options.flansmodultimate.defaultFlagpoleHeight": "默认旗杆高度",
   "options.flansmodultimate.disableCrosshairWhileScoped": "瞄准时禁用准星",
   "options.flansmodultimate.distance.blocks": "%s 格",
   "options.flansmodultimate.distance.tracking_limit": "服务器追踪设置：%s 格。服务器视距和追踪缩放可能限制实际可见距离。",

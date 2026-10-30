@@ -270,6 +270,7 @@
   "options.flansmodultimate.bulletFlybyVolume": "Volume de projéteis próximos",
   "options.flansmodultimate.bulletSnapshotDivisor": "Divisor de ping da compensação de latência",
   "options.flansmodultimate.bulletSnapshotMin": "Compensação de latência mínima",
+  "options.flansmodultimate.defaultFlagpoleHeight": "Altura padrão do mastro",
   "options.flansmodultimate.disableCrosshairWhileScoped": "Desativar mira ao mirar",
   "options.flansmodultimate.distance.blocks": "%s blocos",
   "options.flansmodultimate.distance.tracking_limit": "Rastreamento do servidor: %s blocos. A distância de visão e a escala de rastreamento podem limitar a visibilidade.",

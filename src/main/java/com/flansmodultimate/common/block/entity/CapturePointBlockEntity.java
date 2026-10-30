@@ -3,6 +3,7 @@ package com.flansmodultimate.common.block.entity;
 import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,8 +30,9 @@ import java.util.*;
  * The capture point of the Labjac fork: a flag on a pole that the team standing around it runs
  * up, and a Teams base whose connected spawners follow whoever holds it.
  */
-public final class CapturePointBlockEntity extends FlanBlockEntity implements ITeamCapturePoint
+public final class CapturePointBlockEntity extends FlanBlockEntity implements ITeamCapturePoint, ITeamFlagpole
 {
+    private static final String NBT_POLE_HEIGHT = "pole_height";
     public static final String DEFAULT_NAME = "Capture Point";
     public static final int DEFAULT_RADIUS = 16;
     public static final int MAX_RADIUS = 256;
@@ -57,6 +60,8 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
     private static final float CLIENT_PROGRESS_GLIDE_MILLIS = 550F;
 
     private UUID objectId = UUID.randomUUID();
+    @Getter
+    private int poleHeight = ModCommonConfig.defaultFlagpoleHeight();
     private int defaultOwnerId;
     private CaptureState state = CaptureState.NEUTRAL;
     private String baseName = DEFAULT_NAME;
@@ -81,7 +86,12 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
 
     public CapturePointBlockEntity(BlockPos pos, BlockState state)
     {
-        super(FlansModBlocks.capturePointBlockEntity.get(), pos, state);
+        this(FlansModBlocks.capturePointBlockEntity.get(), pos, state);
+    }
+
+    CapturePointBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state)
+    {
+        super(type, pos, state);
     }
 
     @Override
@@ -114,6 +124,7 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
         tag.putString(NBT_MAP, mapId);
         tag.putFloat(NBT_YAW, yaw);
         tag.putInt(NBT_RADIUS, captureRadius);
+        tag.putInt(NBT_POLE_HEIGHT, poleHeight);
         if (roundId != null)
             tag.putUUID(NBT_ROUND, roundId);
         tag.putString(NBT_DISPLAY_TEAM, displayTeam);
@@ -140,6 +151,9 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
         mapId = tag.getString(NBT_MAP);
         yaw = tag.getFloat(NBT_YAW);
         captureRadius = tag.contains(NBT_RADIUS) ? Mth.clamp(tag.getInt(NBT_RADIUS), 1, MAX_RADIUS) : DEFAULT_RADIUS;
+        poleHeight = tag.contains(NBT_POLE_HEIGHT, Tag.TAG_ANY_NUMERIC)
+            ? Mth.clamp(tag.getInt(NBT_POLE_HEIGHT), ModCommonConfig.MIN_FLAGPOLE_HEIGHT, ModCommonConfig.MAX_FLAGPOLE_HEIGHT)
+            : ModCommonConfig.defaultFlagpoleHeight();
         roundId = tag.hasUUID(NBT_ROUND) ? tag.getUUID(NBT_ROUND) : null;
         displayTeam = tag.getString(NBT_DISPLAY_TEAM);
         objectIds.clear();
@@ -191,6 +205,13 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
     public void setYaw(float yaw)
     {
         this.yaw = Mth.wrapDegrees(yaw);
+        setChangedAndSync();
+    }
+
+    @Override
+    public void setPoleHeight(int height)
+    {
+        poleHeight = Mth.clamp(height, ModCommonConfig.MIN_FLAGPOLE_HEIGHT, ModCommonConfig.MAX_FLAGPOLE_HEIGHT);
         setChangedAndSync();
     }
 

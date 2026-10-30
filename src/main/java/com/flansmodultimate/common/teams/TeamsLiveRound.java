@@ -121,6 +121,7 @@ public final class TeamsLiveRound implements ITeamsLiveRound
         for (Flag flag : manager.getFlags())
         {
             Flagpole base = flag.getBase();
+            // The capture destination stays within ground-level reach regardless of the visible pole height.
             Vec3 home = base == null ? flag.position() : new Vec3(base.getX(), base.getY() + 2D, base.getZ());
             flags.add(new TeamsFlag(flag.getObjectId(), manager.getTeamForBase(base), flag.position(), home, flag.isHome(), flag.getCarrierId()));
         }
