@@ -334,6 +334,7 @@
   "options.flansmodultimate.particleDistanceScale": "Scala distanza particelle",
   "options.flansmodultimate.playerAimPose": "Postura di mira dei giocatori",
   "options.flansmodultimate.playerAimPose.tooltip": "Come tutti i giocatori tengono le armi. Libera scelta lascia decidere ogni giocatore con la propria impostazione; Forzata e Dinamica valgono per tutti. Vale per tutto il server.",
+  "options.flansmodultimate.showBotKillsInKillFeed": "Mostra uccisioni tra bot",
   "options.flansmodultimate.showCrosshairWhileScoped": "Mostra mirino durante la mira",
   "options.flansmodultimate.showDetailedItemDescriptions": "Mostra descrizioni dettagliate degli oggetti",
   "options.flansmodultimate.showDistanceInKillMessage": "Mostra distanza nei messaggi di uccisione",

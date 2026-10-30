@@ -643,6 +643,8 @@ public final class CommonEventHandler
     {
         if (!ModCommonConfig.enableKillMessages() || !(source.getEntity() instanceof LivingEntity killer) || killer == victim || !isKillFeedFighter(killer))
             return;
+        if (!ModCommonConfig.showBotKillsInKillFeed() && !(killer instanceof ServerPlayer) && !(victim instanceof ServerPlayer))
+            return;
         InfoType weapon = findKillingWeapon(source, killer);
         if (weapon == null)
             return;

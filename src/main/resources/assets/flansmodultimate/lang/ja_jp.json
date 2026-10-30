@@ -334,6 +334,7 @@
   "options.flansmodultimate.particleDistanceScale": "パーティクル距離倍率",
   "options.flansmodultimate.playerAimPose": "プレイヤーのエイム姿勢",
   "options.flansmodultimate.playerAimPose.tooltip": "全プレイヤーの銃の持ち方です。自由選択では各プレイヤーが自分の設定で選べます。常時と動的は全員に適用されます。サーバー全体に適用されます。",
+  "options.flansmodultimate.showBotKillsInKillFeed": "ボット同士のキルを表示",
   "options.flansmodultimate.showCrosshairWhileScoped": "照準中にクロスヘアを表示",
   "options.flansmodultimate.showDetailedItemDescriptions": "アイテムの詳細説明を表示",
   "options.flansmodultimate.showDistanceInKillMessage": "キルメッセージに距離を表示",

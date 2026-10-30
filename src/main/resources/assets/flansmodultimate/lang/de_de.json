@@ -825,6 +825,7 @@
   "options.flansmodultimate.shootablesCanBreakGlass": "Geschosse können Glas zerbrechen",
   "options.flansmodultimate.showAmmoHud": "Munitions-HUD zeigen",
   "options.flansmodultimate.showArmorDamageAbsorptionBar": "Rüstungs-Absorptionsleiste",
+  "options.flansmodultimate.showBotKillsInKillFeed": "Bot-Abschüsse im Kampfprotokoll anzeigen",
   "options.flansmodultimate.showCasingEjections": "Hülsenauswurf zeigen",
   "options.flansmodultimate.showCrosshairWhileScoped": "Fadenkreuz beim Zielen anzeigen",
   "options.flansmodultimate.showDetailedItemDescriptions": "Detaillierte Gegenstandsbeschreibungen anzeigen",

@@ -334,6 +334,7 @@
   "options.flansmodultimate.particleDistanceScale": "粒子距离倍率",
   "options.flansmodultimate.playerAimPose": "玩家瞄准姿势",
   "options.flansmodultimate.playerAimPose.tooltip": "所有玩家持枪的方式。自由选择：由每位玩家通过自己的设置决定；强制和动态对所有人生效。适用于整个服务器。",
+  "options.flansmodultimate.showBotKillsInKillFeed": "在击杀消息中显示机器人互杀",
   "options.flansmodultimate.showCrosshairWhileScoped": "瞄准时显示准星",
   "options.flansmodultimate.showDetailedItemDescriptions": "显示详细物品说明",
   "options.flansmodultimate.showDistanceInKillMessage": "在击杀消息中显示距离",

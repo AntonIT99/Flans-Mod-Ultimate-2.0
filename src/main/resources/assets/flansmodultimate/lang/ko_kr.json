@@ -334,6 +334,7 @@
   "options.flansmodultimate.particleDistanceScale": "파티클 거리 배율",
   "options.flansmodultimate.playerAimPose": "플레이어 조준 자세",
   "options.flansmodultimate.playerAimPose.tooltip": "모든 플레이어가 총을 드는 방식입니다. 자유 선택은 각 플레이어가 자신의 설정으로 고르고, 고정과 동적은 모두에게 적용됩니다. 서버 전체에 적용됩니다.",
+  "options.flansmodultimate.showBotKillsInKillFeed": "봇 간 처치 표시",
   "options.flansmodultimate.showCrosshairWhileScoped": "조준 중 십자선 표시",
   "options.flansmodultimate.showDetailedItemDescriptions": "아이템 상세 설명 표시",
   "options.flansmodultimate.showDistanceInKillMessage": "처치 메시지에 거리 표시",

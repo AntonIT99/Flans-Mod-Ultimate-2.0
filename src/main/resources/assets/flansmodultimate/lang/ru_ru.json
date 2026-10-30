@@ -334,6 +334,7 @@
   "options.flansmodultimate.particleDistanceScale": "Масштаб дальности частиц",
   "options.flansmodultimate.playerAimPose": "Поза прицеливания игроков",
   "options.flansmodultimate.playerAimPose.tooltip": "Как все игроки держат оружие. «Свободный выбор» позволяет каждому выбрать своей настройкой; «Постоянная» и «Динамическая» действуют на всех. Действует на весь сервер.",
+  "options.flansmodultimate.showBotKillsInKillFeed": "Показывать убийства между ботами",
   "options.flansmodultimate.showCrosshairWhileScoped": "Показывать перекрестие при прицеливании",
   "options.flansmodultimate.showDetailedItemDescriptions": "Подробные описания предметов",
   "options.flansmodultimate.showDistanceInKillMessage": "Показывать дистанцию в сообщениях об убийствах",

@@ -169,10 +169,11 @@ public record CommonConfigSnapshot(
     double bulletFlybyRangeMultiplier,
     int driveableWreckLifetime,
     double driveableMeleeDamageThreshold,
-    boolean forceUncensoredContent
+    boolean forceUncensoredContent,
+    boolean showBotKillsInKillFeed
 )
 {
-    public static final int CURRENT_VERSION = 48;
+    public static final int CURRENT_VERSION = 49;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -349,6 +350,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.driveableWreckLifetime);
         buf.writeDouble(s.driveableMeleeDamageThreshold);
         buf.writeBoolean(s.forceUncensoredContent);
+        buf.writeBoolean(s.showBotKillsInKillFeed);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -516,6 +518,7 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readVarInt(),
             buf.readDouble(),
+            buf.readBoolean(),
             buf.readBoolean()
         );
     }

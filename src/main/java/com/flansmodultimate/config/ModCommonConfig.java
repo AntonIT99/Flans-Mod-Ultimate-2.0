@@ -154,6 +154,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> BONUS_REGEN_FOOD_LIMIT;
     private static final Supplier<Double> MAX_PLAYER_HEALTH;
     private static final Supplier<Boolean> ENABLE_KILL_MESSAGES;
+    private static final BooleanValue SHOW_BOT_KILLS_IN_KILL_FEED;
     private static final Supplier<Boolean> SHOW_DISTANCE_IN_KILL_MESSAGE;
     private static final Supplier<Integer> BULLET_SNAPSHOT_MIN;
     private static final Supplier<Integer> BULLET_SNAPSHOT_DIVISOR;
@@ -362,6 +363,8 @@ public final class ModCommonConfig
             .defineInRange("maxPlayerHealth", DEFAULT_MAX_PLAYER_HEALTH, 0.5D, 100D);
         ENABLE_KILL_MESSAGES = builder.comment("Announce kills made with Flan's weapons in the kill feed and in a Flan's Mod death message.",
             "When disabled, the kill feed stays empty and deaths use the plain vanilla-style death messages.").define("enableKillMessages", true);
+        SHOW_BOT_KILLS_IN_KILL_FEED = builder.comment("Include kills where neither the killer nor the victim is a player in the battle kill feed.",
+            "When false, only kills involving a player as killer or victim appear. Requires enableKillMessages.").define("showBotKillsInKillFeed", true);
         SHOW_DISTANCE_IN_KILL_MESSAGE = builder.comment("Include the distance between the killer and the victim in Flan's Mod death messages.").define("showDistanceInKillMessage", true);
         builder.pop();
 
@@ -770,7 +773,7 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get());
+            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1198,6 +1201,12 @@ public final class ModCommonConfig
         return config == null || config.enableKillMessages();
     }
 
+    public static boolean showBotKillsInKillFeed()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.showBotKillsInKillFeed();
+    }
+
     public static boolean showDistanceInKillMessage()
     {
         CommonConfigSnapshot config = get();
@@ -1438,7 +1447,8 @@ public final class ModCommonConfig
         BULLET_HIT_SOUND_RANGE(() -> ModCommonConfig.BULLET_HIT_SOUND_RANGE, QuickSection.SOUNDS),
         GRENADE_STICK_SOUND_RANGE(() -> ModCommonConfig.GRENADE_STICK_SOUND_RANGE, QuickSection.SOUNDS),
         GRENADE_FLASH_SOUND_RANGE(() -> ModCommonConfig.GRENADE_FLASH_SOUND_RANGE, QuickSection.SOUNDS),
-        OVERRIDE_PACK_SOUND_RANGES(() -> ModCommonConfig.OVERRIDE_PACK_SOUND_RANGES, QuickSection.SOUNDS);
+        OVERRIDE_PACK_SOUND_RANGES(() -> ModCommonConfig.OVERRIDE_PACK_SOUND_RANGES, QuickSection.SOUNDS),
+        SHOW_BOT_KILLS_IN_KILL_FEED(() -> ModCommonConfig.SHOW_BOT_KILLS_IN_KILL_FEED, QuickSection.SERVER);
         // spotless:on
 
         /** Deferred so that the enum can be loaded before the outer config spec is built. */
