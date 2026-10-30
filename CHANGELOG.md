@@ -14,6 +14,7 @@
 
 ## Teams
 
+* Unassigned flagpole bases default to the first map in their dimension when placed or loaded; the Operator Stick can still change their map
 * Teams bases and capture points have configurable pole heights (`defaultFlagpoleHeight`, now 5 blocks instead of 3), editable separately with the ownership stick
 * Domination and Conquest rounds can be played attackers against defenders
 * Multi-team alliances

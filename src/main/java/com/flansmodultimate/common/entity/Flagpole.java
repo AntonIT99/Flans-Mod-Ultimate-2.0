@@ -150,7 +150,12 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamFlagpole
     {
         super.onEntityAdded();
         if (!level().isClientSide)
-            TeamsManager.getInstance().registerBase(this);
+        {
+            TeamsManager manager = TeamsManager.getInstance();
+            if (StringUtils.isBlank(getMapId()))
+                manager.getMaps().stream().filter(map -> map.getDimension().equals(getDimension())).findFirst().ifPresent(map -> setMapId(map.getShortName()));
+            manager.registerBase(this);
+        }
     }
 
     @Override
