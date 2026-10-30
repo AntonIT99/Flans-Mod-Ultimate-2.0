@@ -5,3 +5,6 @@
 src/generated/**/.cache/cache text eol=lf
 src/generated/**/*.json text eol=lf
 *.zip filter=lfs diff=lfs merge=lfs -text
+
+# Content-pack definitions may use LF or CRLF; a CR at the end of a line is not trailing whitespace.
+*.txt whitespace=cr-at-eol
