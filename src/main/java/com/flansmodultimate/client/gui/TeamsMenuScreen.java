@@ -1,8 +1,10 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
+import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.server.teams.PacketCommandCentreAction;
 import com.flansmodultimate.network.server.teams.PacketTeamsAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +19,8 @@ import java.util.function.Supplier;
 
 /**
  * What the Teams menu key opens: one entry each for team selection, class selection and the scoreboard, so the three
- * share a single default key. Each entry asks the server for its screen exactly as the dedicated key binds do.
+ * share a single default key. Operators also get a command centre shortcut. Each entry asks the server for its screen
+ * exactly as the dedicated key binds do.
  */
 public final class TeamsMenuScreen extends Screen
 {
@@ -28,6 +31,7 @@ public final class TeamsMenuScreen extends Screen
     private static final int FOOTER_HEIGHT = 7;
     private static final List<Entry> ENTRIES = List.of(new Entry("gui.flansmod.teams.choose_team", PacketTeamsAction::openTeamMenu),
         new Entry("gui.flansmod.teams.choose_class", PacketTeamsAction::openClassMenu), new Entry("gui.flansmod.teams.scores", PacketTeamsAction::openScoreboard));
+    private boolean showCommandCentre;
 
     private record Entry(String titleKey, Supplier<PacketTeamsAction> request)
     {}
@@ -40,6 +44,7 @@ public final class TeamsMenuScreen extends Screen
     @Override
     protected void init()
     {
+        showCommandCentre = minecraft.player != null && minecraft.player.hasPermissions(FlansCommandCentre.PERMISSION_LEVEL);
         int left = width / 2 - PANEL_WIDTH / 2;
         int top = panelTop();
         for (int i = 0; i < ENTRIES.size(); i++)
@@ -47,6 +52,12 @@ public final class TeamsMenuScreen extends Screen
             Entry entry = ENTRIES.get(i);
             addRenderableWidget(Button.builder(Component.translatable(entry.titleKey()), ignored -> open(entry)).bounds(left + 10, top + HEADER_HEIGHT + 2 + ROW_HEIGHT * i, 236, 20).build());
         }
+        if (showCommandCentre)
+            addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.centre.title"), ignored ->
+            {
+                onClose();
+                PacketHandler.sendToServer(PacketCommandCentreAction.open());
+            }).bounds(left + 10, top + HEADER_HEIGHT + 2 + ROW_HEIGHT * ENTRIES.size(), 236, 20).build());
     }
 
     /** Closes this menu first, so a refusal the server sends to chat is not hidden behind it. */
@@ -58,7 +69,12 @@ public final class TeamsMenuScreen extends Screen
 
     private int panelTop()
     {
-        return height / 2 - (HEADER_HEIGHT + ROW_HEIGHT * ENTRIES.size() + FOOTER_HEIGHT) / 2;
+        return height / 2 - (HEADER_HEIGHT + ROW_HEIGHT * rowCount() + FOOTER_HEIGHT) / 2;
+    }
+
+    private int rowCount()
+    {
+        return ENTRIES.size() + (showCommandCentre ? 1 : 0);
     }
 
     @Override
@@ -68,9 +84,9 @@ public final class TeamsMenuScreen extends Screen
         int left = width / 2 - PANEL_WIDTH / 2;
         int top = panelTop();
         graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top, 0, 0, PANEL_WIDTH, HEADER_HEIGHT, 256, 256);
-        for (int row = 0; row < ENTRIES.size(); row++)
+        for (int row = 0; row < rowCount(); row++)
             graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + HEADER_HEIGHT + ROW_HEIGHT * row, 0, 48, PANEL_WIDTH, ROW_HEIGHT, 256, 256);
-        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + HEADER_HEIGHT + ROW_HEIGHT * ENTRIES.size(), 0, 73, PANEL_WIDTH, FOOTER_HEIGHT, 256, 256);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + HEADER_HEIGHT + ROW_HEIGHT * rowCount(), 0, 73, PANEL_WIDTH, FOOTER_HEIGHT, 256, 256);
         graphics.drawString(font, title, left + 8, top + 7, 0xFFFFFF, true);
         super.render(graphics, mouseX, mouseY, partialTick);
     }

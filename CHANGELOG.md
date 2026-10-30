@@ -24,7 +24,7 @@
 * Lag compensation settings `bulletSnapshotMin` and `bulletSnapshotDivisor` (`/teams bltss`, `/teams showbltss`)
 * Spectators cannot pick up items during a round; item spawner items float above their plate and only the owning team can take them
 * Configurable Teams HUD control reminders
-* The Teams key (U, now `Teams Menu`) opens a menu with team selection, class selection and the scoreboard; the scoreboard and class keys are now unbound by default, freeing I and O (saved key settings are kept)
+* The Teams key (U, now `Teams Menu`) opens a menu with team selection, class selection and the scoreboard, plus a Teams Command Centre shortcut for players with operator command permissions; the scoreboard and class keys are now unbound by default, freeing I and O (saved key settings are kept)
 * Team selection opens on login only while a playable round is live
 * Class selection tooltips show the full class name above its requirements
 
