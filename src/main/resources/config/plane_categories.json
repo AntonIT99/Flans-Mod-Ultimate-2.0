@@ -408,6 +408,40 @@
         ]
     },
 
+    "Bell D-188 naval adaptation (F3L pack designation)": {
+        "properties": {
+            "RealMassKg": 10849,
+            "RealEngineThrustKn": 92.52,
+            "RealMaxSpeedKmh": 2443,
+            "RealWingSpanM": 7.24,
+            "RealWingAreaM2": 18.02,
+            "RealClimbRateMs": 120,
+            "RealTurnRateDegPerSec": 36.64,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f3l"
+        ]
+    },
+
+    "Bell D-188A (F-109A pack designation)": {
+        "properties": {
+            "RealMassKg": 10849,
+            "RealEngineThrustKn": 92.52,
+            "RealMaxSpeedKmh": 2443,
+            "RealWingSpanM": 7.24,
+            "RealWingAreaM2": 18.02,
+            "RealClimbRateMs": 120,
+            "RealTurnRateDegPerSec": 36.64,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-109a"
+        ]
+    },
+
     "Bell OH-58D Kiowa Warrior": {
         "properties": {
             "RealTurnRateDegPerSec": 24.86,
@@ -790,6 +824,40 @@
         ]
     },
 
+    "Canadair Sabre Mk 5 (Mk 6 airframe profile)": {
+        "properties": {
+            "RealMassKg": 6628,
+            "RealEngineThrustKn": 28.24,
+            "RealMaxSpeedKmh": 1114,
+            "RealWingSpanM": 11.31,
+            "RealWingAreaM2": 28.08,
+            "RealClimbRateMs": 55,
+            "RealTurnRateDegPerSec": 23.45,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "cl13a5"
+        ]
+    },
+
+    "Canadair Sabre Mk 6": {
+        "properties": {
+            "RealMassKg": 6628,
+            "RealEngineThrustKn": 33.36,
+            "RealMaxSpeedKmh": 1122,
+            "RealWingSpanM": 11.31,
+            "RealWingAreaM2": 28.08,
+            "RealClimbRateMs": 61.2,
+            "RealTurnRateDegPerSec": 23.45,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "cl13b"
+        ]
+    },
+
     "Caproni Campini N.1": {
         "properties": {
             "RealTurnRateDegPerSec": 20.08,
@@ -804,6 +872,40 @@
         },
         "items": [
             "caproni"
+        ]
+    },
+
+    "Cessna O-1E Bird Dog (O-1C flight-profile surrogate)": {
+        "properties": {
+            "RealMassKg": 1102,
+            "RealMaxSpeedKmh": 185,
+            "RealWingSpanM": 10.97,
+            "RealWingAreaM2": 16.2,
+            "RealClimbRateMs": 5.8,
+            "RealTurnRateDegPerSec": 24.18,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 213
+        },
+        "items": [
+            "o-1e"
+        ]
+    },
+
+    "Cessna O-2 Skymaster": {
+        "properties": {
+            "RealMassKg": 2449,
+            "RealMaxSpeedKmh": 320,
+            "RealWingSpanM": 11.58,
+            "RealWingAreaM2": 18.81,
+            "RealClimbRateMs": 6,
+            "RealTurnRateDegPerSec": 22.91,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 420
+        },
+        "items": [
+            "attacker_0-2skymaster"
         ]
     },
 
@@ -1003,6 +1105,40 @@
         ]
     },
 
+    "Convair F-102A Delta Dagger": {
+        "properties": {
+            "RealMassKg": 11110,
+            "RealEngineThrustKn": 75.62,
+            "RealMaxSpeedKmh": 1328,
+            "RealWingSpanM": 11.61,
+            "RealWingAreaM2": 64.6,
+            "RealClimbRateMs": 66,
+            "RealTurnRateDegPerSec": 22.85,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-102a"
+        ]
+    },
+
+    "Convair F-106A Delta Dart": {
+        "properties": {
+            "RealMassKg": 16102.93,
+            "RealEngineThrustKn": 108.98,
+            "RealMaxSpeedKmh": 2454,
+            "RealWingSpanM": 11.659,
+            "RealWingAreaM2": 64.828,
+            "RealClimbRateMs": 150,
+            "RealTurnRateDegPerSec": 22.75,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-106a"
+        ]
+    },
+
     "Curtiss P-40E Warhawk": {
         "properties": {
             "RealTurnRateDegPerSec": 27.97,
@@ -1051,6 +1187,23 @@
         },
         "items": [
             "soc3seagull"
+        ]
+    },
+
+    "Curtiss-Wright XF-87 (F-87A pack designation)": {
+        "properties": {
+            "RealMassKg": 22634,
+            "RealEngineThrustKn": 53.38,
+            "RealMaxSpeedKmh": 970,
+            "RealWingSpanM": 18.29,
+            "RealWingAreaM2": 56,
+            "RealClimbRateMs": 13.25,
+            "RealTurnRateDegPerSec": 14.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-87a"
         ]
     },
 
@@ -3064,6 +3217,23 @@
         ]
     },
 
+    "Lockheed F-94C Starfire": {
+        "properties": {
+            "RealMassKg": 8301,
+            "RealEngineThrustKn": 38.92,
+            "RealMaxSpeedKmh": 1030,
+            "RealWingSpanM": 12.93,
+            "RealWingAreaM2": 21.63,
+            "RealClimbRateMs": 40.5,
+            "RealTurnRateDegPerSec": 20.51,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-94c"
+        ]
+    },
+
     "Lockheed F-117A Nighthawk": {
         "properties": {
             "RealTurnRateDegPerSec": 20.08,
@@ -3175,6 +3345,57 @@
         "items": [
             "p80",
             "f-80c"
+        ]
+    },
+
+    "Lockheed T-33A Shooting Star": {
+        "properties": {
+            "RealMassKg": 5475,
+            "RealEngineThrustKn": 24.02,
+            "RealMaxSpeedKmh": 970,
+            "RealWingSpanM": 11.849,
+            "RealWingAreaM2": 21.81,
+            "RealClimbRateMs": 24.7,
+            "RealTurnRateDegPerSec": 22.39,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "t-33a"
+        ]
+    },
+
+    "Lockheed XF-90A (F-90A pack designation)": {
+        "properties": {
+            "RealMassKg": 12363,
+            "RealEngineThrustKn": 36.48,
+            "RealMaxSpeedKmh": 1064,
+            "RealWingSpanM": 12.2,
+            "RealWingAreaM2": 32,
+            "RealClimbRateMs": 28.2,
+            "RealTurnRateDegPerSec": 21.74,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-90a"
+        ]
+    },
+
+    "Lockheed YF-12A (F-12A pack designation)": {
+        "properties": {
+            "RealMassKg": 63502.93,
+            "RealEngineThrustKn": 266.89,
+            "RealMaxSpeedKmh": 3187,
+            "RealWingSpanM": 18.288,
+            "RealWingAreaM2": 167.225,
+            "RealClimbRateMs": 60,
+            "RealTurnRateDegPerSec": 14.5,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-12a"
         ]
     },
 
@@ -3361,6 +3582,23 @@
         },
         "items": [
             "f_a-18c"
+        ]
+    },
+
+    "McDonnell F-101B Voodoo": {
+        "properties": {
+            "RealMassKg": 20713,
+            "RealEngineThrustKn": 150.35,
+            "RealMaxSpeedKmh": 1825,
+            "RealWingSpanM": 12.09,
+            "RealWingAreaM2": 34.2,
+            "RealClimbRateMs": 80,
+            "RealTurnRateDegPerSec": 21.94,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-101b"
         ]
     },
 
@@ -4327,6 +4565,23 @@
         ]
     },
 
+    "Mitsubishi T-2": {
+        "properties": {
+            "RealMassKg": 9675,
+            "RealEngineThrustKn": 63.52,
+            "RealMaxSpeedKmh": 1700,
+            "RealWingSpanM": 7.88,
+            "RealWingAreaM2": 21.8,
+            "RealClimbRateMs": 177.83,
+            "RealTurnRateDegPerSec": 33.66,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "mitsut2"
+        ]
+    },
+
     "Morane-Saulnier Type L (80 hp)": {
         "properties": {
             "RealTurnRateDegPerSec": 23.68,
@@ -4607,6 +4862,126 @@
         ]
     },
 
+    "North American F-82G Twin Mustang": {
+        "properties": {
+            "RealMassKg": 11608,
+            "RealMaxSpeedKmh": 742,
+            "RealWingSpanM": 15.62,
+            "RealWingAreaM2": 37.9,
+            "RealClimbRateMs": 10,
+            "RealTurnRateDegPerSec": 16.98,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 4500
+        },
+        "items": [
+            "f-82g"
+        ]
+    },
+
+    "North American F-86D Sabre": {
+        "properties": {
+            "RealMassKg": 9060.51,
+            "RealEngineThrustKn": 34.03,
+            "RealMaxSpeedKmh": 1224.72,
+            "RealWingSpanM": 11.303,
+            "RealWingAreaM2": 26.75,
+            "RealClimbRateMs": 61,
+            "RealTurnRateDegPerSec": 23.47,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-86d"
+        ]
+    },
+
+    "North American F-86F-2 Sabre (F-86F-30 flight profile)": {
+        "properties": {
+            "RealMassKg": 6894,
+            "RealEngineThrustKn": 26.3,
+            "RealMaxSpeedKmh": 1110,
+            "RealWingSpanM": 11.31,
+            "RealWingAreaM2": 28.08,
+            "RealClimbRateMs": 50.83,
+            "RealTurnRateDegPerSec": 23.45,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f86f2"
+        ]
+    },
+
+    "North American F-86F-40 Sabre": {
+        "properties": {
+            "RealMassKg": 6894,
+            "RealEngineThrustKn": 26.3,
+            "RealMaxSpeedKmh": 1106,
+            "RealWingSpanM": 11.91,
+            "RealWingAreaM2": 29.12,
+            "RealClimbRateMs": 46,
+            "RealTurnRateDegPerSec": 22.27,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f86f40",
+            "f-86f"
+        ]
+    },
+
+    "North American F-100C Super Sabre (D-model flight-profile surrogate)": {
+        "properties": {
+            "RealMassKg": 15444.39,
+            "RealEngineThrustKn": 71.17,
+            "RealMaxSpeedKmh": 1464.5,
+            "RealWingSpanM": 11.81,
+            "RealWingAreaM2": 37.161,
+            "RealClimbRateMs": 114,
+            "RealTurnRateDegPerSec": 22.46,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-100c"
+        ]
+    },
+
+    "North American F-100F Super Sabre (D-model flight-profile surrogate)": {
+        "properties": {
+            "RealMassKg": 15444.39,
+            "RealEngineThrustKn": 71.17,
+            "RealMaxSpeedKmh": 1464.5,
+            "RealWingSpanM": 11.81,
+            "RealWingAreaM2": 37.161,
+            "RealClimbRateMs": 114,
+            "RealTurnRateDegPerSec": 22.46,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-100f"
+        ]
+    },
+
+    "North American F-107A": {
+        "properties": {
+            "RealMassKg": 18033,
+            "RealEngineThrustKn": 108.98,
+            "RealMaxSpeedKmh": 2084,
+            "RealWingSpanM": 11.15,
+            "RealWingAreaM2": 35,
+            "RealClimbRateMs": 203,
+            "RealTurnRateDegPerSec": 23.79,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-107a"
+        ]
+    },
+
     "North American Mustang Mk IA": {
         "properties": {
             "RealTurnRateDegPerSec": 28.22,
@@ -4699,6 +5074,23 @@
         ]
     },
 
+    "North American XF-108 Rapier (design projection)": {
+        "properties": {
+            "RealMassKg": 34527,
+            "RealEngineThrustKn": 260.67,
+            "RealMaxSpeedKmh": 3190,
+            "RealWingSpanM": 17.5,
+            "RealWingAreaM2": 173.4,
+            "RealClimbRateMs": 230,
+            "RealTurnRateDegPerSec": 15.16,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-108a"
+        ]
+    },
+
     "Northrop F-5E Tiger II": {
         "properties": {
             "RealTurnRateDegPerSec": 32.75,
@@ -4716,6 +5108,23 @@
         "items": [
             "f5",
             "f-5e"
+        ]
+    },
+
+    "Northrop F-89D Scorpion": {
+        "properties": {
+            "RealMassKg": 16869,
+            "RealEngineThrustKn": 64.05,
+            "RealMaxSpeedKmh": 1038,
+            "RealWingSpanM": 18.199,
+            "RealWingAreaM2": 56.3,
+            "RealClimbRateMs": 38,
+            "RealTurnRateDegPerSec": 14.58,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-89d"
         ]
     },
 
@@ -4960,6 +5369,40 @@
         ]
     },
 
+    "Republic F-84F Thunderstreak": {
+        "properties": {
+            "RealMassKg": 12701,
+            "RealEngineThrustKn": 32.12,
+            "RealMaxSpeedKmh": 1119,
+            "RealWingSpanM": 10.25,
+            "RealWingAreaM2": 30,
+            "RealClimbRateMs": 42,
+            "RealTurnRateDegPerSec": 25.88,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-84f"
+        ]
+    },
+
+    "Republic F-84G Thunderjet": {
+        "properties": {
+            "RealMassKg": 8457,
+            "RealEngineThrustKn": 24.91,
+            "RealMaxSpeedKmh": 1001,
+            "RealWingSpanM": 11.1,
+            "RealWingAreaM2": 24,
+            "RealClimbRateMs": 23.21,
+            "RealTurnRateDegPerSec": 23.9,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-84g"
+        ]
+    },
+
     "Republic P-47D Thunderbolt": {
         "properties": {
             "RealTurnRateDegPerSec": 25.63,
@@ -4976,6 +5419,23 @@
             "p47silver",
             "44_p47d",
             "p47b"
+        ]
+    },
+
+    "Republic XF-103 (turbojet design condition)": {
+        "properties": {
+            "RealMassKg": 17466,
+            "RealEngineThrustKn": 66.72,
+            "RealMaxSpeedKmh": 3187,
+            "RealWingSpanM": 10.5,
+            "RealWingAreaM2": 37.2,
+            "RealClimbRateMs": 97,
+            "RealTurnRateDegPerSec": 25.26,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "f-103a"
         ]
     },
 
@@ -5338,6 +5798,23 @@
         },
         "items": [
             "sopwithtriplane"
+        ]
+    },
+
+    "SPAD S.A-2": {
+        "properties": {
+            "RealMassKg": 674,
+            "RealMaxSpeedKmh": 140,
+            "RealWingSpanM": 9.55,
+            "RealWingAreaM2": 25.36,
+            "RealClimbRateMs": 2.56,
+            "RealTurnRateDegPerSec": 27.78,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "RealEnginePowerHp": 110
+        },
+        "items": [
+            "lightfighter-biplane_spad_a.2"
         ]
     },
 
