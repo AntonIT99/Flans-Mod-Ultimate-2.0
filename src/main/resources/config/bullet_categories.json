@@ -12,6 +12,16 @@
         ]
     },
 
+    "4.73x33mm DM11 Caseless": {
+        "properties": {
+            "Mass": 3.25,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "4.73x33mm_caselessammunition"
+        ]
+    },
+
     "5.45x39mm 7N6": {
         "properties": {
             "Mass": 3.4,
@@ -78,6 +88,16 @@
         },
         "items": [
             "aaiacrammo"
+        ]
+    },
+
+    "5.56x45mm GP90": {
+        "properties": {
+            "Mass": 4.1,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "swiss"
         ]
     },
 
@@ -160,6 +180,19 @@
         ]
     },
 
+    "5.6x15mmR .22 LR Subsonic": {
+        "properties": {
+            "Mass": 2.6,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "awcamphibianammo",
+            "awcamphibianammomod2",
+            "rugerammo"
+        ]
+    },
+
     "5.7x28mm FN": {
         "properties": {
             "Mass": 2.0,
@@ -200,6 +233,33 @@
         "items": [
             "qbuammo",
             "qjyammo"
+        ]
+    },
+
+    "6.5x50mmSR Arisaka": {
+        "properties": {
+            "Mass": 9.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "type38ammo",
+            "44_type3899ammo",
+            "type_96_mag",
+            "fedorovammo",
+            "6.5mmtype38cartridge"
+        ]
+    },
+
+    "6.5x50mmSR Arisaka Type 30 Ball": {
+        "properties": {
+            "Mass": 10.1,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "arisakaammo",
+            "type38ammot"
         ]
     },
 
@@ -330,6 +390,18 @@
         ]
     },
 
+    "7.62x38mmR Nagant FMJ": {
+        "properties": {
+            "Mass": 7.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "m1895ammo",
+            "m1894ammo"
+        ]
+    },
+
     "7.62x39mm 57-N-231": {
         "properties": {
             "Mass": 7.9,
@@ -367,6 +439,18 @@
         ]
     },
 
+    "7.62x51mm AP (Generic)": {
+        "properties": {
+            "Mass": 9.7,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0,
+            "PenetrationAt100m": 7
+        },
+        "items": [
+            "gfs_7mmhvy"
+        ]
+    },
+
     "7.62x51mm M62 Tracer": {
         "properties": {
             "Mass": 9.2,
@@ -377,6 +461,18 @@
             "battlerifletracer50",
             "brenammol4",
             "gfs_7mmtr"
+        ]
+    },
+
+    "7.62x51mm M80 M134 Aircraft Belt": {
+        "properties": {
+            "Mass": 9.5,
+            "MuzzleVelocity": 850,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "planeammo_m134minigunammo"
         ]
     },
 
@@ -416,6 +512,51 @@
             "sr_awp_ammo",
             "lmg_mg3_ammo",
             "gfs_7mm"
+        ]
+    },
+
+    "7.62x51mmR .30-30 Winchester 150gr": {
+        "properties": {
+            "Mass": 9.72,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "rar_464spx_ammo"
+        ]
+    },
+
+    "7.62x54mmR 57-N-323S": {
+        "properties": {
+            "Mass": 9.6,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "dp28ammo",
+            "nagantammo",
+            "dragunovammo",
+            "44_dp28ammo",
+            "44_dt28ammo",
+            "44_mosinnagantammo",
+            "44_svt40ammo",
+            "avt40ammo",
+            "ww2_ammo_shkas",
+            "ww2_ammo_ussr762mm",
+            "mosinammo",
+            "win1895ammo",
+            "guerrillarifleammo",
+            "nagantammot",
+            "svt40ammo",
+            "pm1910ap",
+            "pm1910tracer",
+            "dt28ammo",
+            "shkasammo",
+            "pkmbox",
+            "pktbox",
+            "sv98ammo",
+            "7.62mmmosinnagantcartridge",
+            "lmg_ukm2013_ammo",
+            "carbondp28ammo"
         ]
     },
 
@@ -545,6 +686,57 @@
         },
         "items": [
             "turkiyerifleammot"
+        ]
+    },
+
+    "7.7x56mmR .303 British G Mark VI Tracer": {
+        "properties": {
+            "Mass": 10.3,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "sevencaltracer"
+        ]
+    },
+
+    "7.7x56mmR .303 British High Explosive": {
+        "properties": {
+            "Mass": 11.3,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 1
+        },
+        "items": [
+            "browning303ammozero"
+        ]
+    },
+
+    "7.7x56mmR .303 British Mk VII": {
+        "properties": {
+            "Mass": 11.3,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "brenammo30",
+            "brenammo100",
+            "vickerskammo100",
+            "leeenfieldammo",
+            "44_brenammo",
+            "44_leeenfieldammo",
+            "brenm5ammo50",
+            "brenm5ammo200",
+            "ww2_ammo_m1919",
+            "ww2_ammo_type97",
+            "lewisgunammo",
+            "lewisgunammo95rounds",
+            "lewisgunammo205rounds",
+            "leeenfieldammot",
+            "vickersbelt",
+            "vickersbelttracer",
+            "browning303ammo",
+            "sevencal",
+            "pg_7.7mm_browning_ammo",
+            "sevencalheavy"
         ]
     },
 
@@ -711,6 +903,87 @@
         ]
     },
 
+    "8x27mmR French Ordnance": {
+        "properties": {
+            "Mass": 7.8,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "mdle1892ammo",
+            "modele1892ammo"
+        ]
+    },
+
+    "8x50mmR Lebel Balle D": {
+        "properties": {
+            "Mass": 12.8,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "chauchautammo",
+            "chauchatammo",
+            "mle1914belt",
+            "berthierammo",
+            "lebelammo",
+            "shitmgammo",
+            "8mmlebel",
+            "8mmlebelt",
+            "mle1914belttracer",
+            "berthierammot",
+            "berthierpunjabi",
+            "berthierpunjabit"
+        ]
+    },
+
+    "8x50mmR Steyr M90": {
+        "properties": {
+            "Mass": 15.8,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "m95ammo",
+            "manlickerammo"
+        ]
+    },
+
+    "8x50mmR Steyr Tracer": {
+        "properties": {
+            "Mass": 13.4,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "manlickerammot"
+        ]
+    },
+
+    "8x56mmR Mannlicher": {
+        "properties": {
+            "Mass": 13,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "manlickerammo31",
+            "manlickerammo31t",
+            "31mammo"
+        ]
+    },
+
+    "8x58mmR Danish Krag": {
+        "properties": {
+            "Mass": 15.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "8mmkrab",
+            "8mmkrabt"
+        ]
+    },
+
     "8x59mm M35 Breda Ball": {
         "properties": {
             "Mass": 13.5,
@@ -856,6 +1129,18 @@
         ]
     },
 
+    "9x33mmR .357 Magnum": {
+        "properties": {
+            "Mass": 10.2,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "357magnum",
+            "hg_barracuda_ammo"
+        ]
+    },
+
     "9x39mm SP-5 Subsonic": {
         "properties": {
             "Mass": 16.1,
@@ -895,7 +1180,8 @@
             "FlakParticles": 0
         },
         "items": [
-            "ump40ammo"
+            "ump40ammo",
+            "h_kumpammo"
         ]
     },
 
@@ -910,6 +1196,17 @@
         ]
     },
 
+    "10.4x38mmR Vetterli Rimfire": {
+        "properties": {
+            "Mass": 20.4,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "vetterliammo"
+        ]
+    },
+
     "10.7mm .42 LeMat Round Ball": {
         "properties": {
             "Mass": 7.1,
@@ -918,6 +1215,58 @@
         },
         "items": [
             "lematammo"
+        ]
+    },
+
+    "10.75x58mmR Berdan": {
+        "properties": {
+            "Mass": 24,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "berdan2ammo"
+        ]
+    },
+
+    "10.9x33mmR .44 Magnum 240gr": {
+        "properties": {
+            "Mass": 15.55,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "hg_superredhawk_ammo"
+        ]
+    },
+
+    "11x23mmR .44 Henry Rimfire": {
+        "properties": {
+            "Mass": 13.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "henryammo"
+        ]
+    },
+
+    "11x59mmR Gras Mle 1874 Ball": {
+        "properties": {
+            "Mass": 25,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "grasammo"
+        ]
+    },
+
+    "11.15x60mmR Mauser M71 Ball": {
+        "properties": {
+            "Mass": 25,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "g71ammo"
         ]
     },
 
@@ -982,6 +1331,19 @@
         ]
     },
 
+    "11.6x19mmR .455 Webley": {
+        "properties": {
+            "Mass": 17.2,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "webleyammo",
+            "44_webleyammo",
+            "hg_webleymk6_ammo"
+        ]
+    },
+
     "12.2mm .48 Minie Ball": {
         "properties": {
             "Mass": 22,
@@ -990,6 +1352,17 @@
         },
         "items": [
             "bp48roundminie"
+        ]
+    },
+
+    "12.7x33mmRB .50 Action Express": {
+        "properties": {
+            "Mass": 19.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "deserteagleammo"
         ]
     },
 
@@ -1071,6 +1444,19 @@
         ]
     },
 
+    "12.7x99mm M8 API (Generic)": {
+        "properties": {
+            "Mass": 40.3,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 20,
+            "MuzzleVelocity": 890
+        },
+        "items": [
+            "twelvecalincendiary",
+            "gfs_12mminc"
+        ]
+    },
+
     "12.7x108mm B-32 API": {
         "properties": {
             "Mass": 48.0,
@@ -1099,6 +1485,34 @@
         ]
     },
 
+    "13x63mmB": {
+        "properties": {
+            "AddRound": [
+                "Pzgr.L'Spur 1 38 0 750 30 flansmod.fmtracerred",
+                "Sprgr. 1 34 3 710 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "propertyModes": {
+            "AddRound": "replace"
+        },
+        "items": [
+            "44_mg131ammo"
+        ]
+    },
+
+    "13x64mmB MG 131": {
+        "properties": {
+            "Mass": 34,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 1,
+            "PenetrationAt100m": 12
+        },
+        "items": [
+            "mg131ammo"
+        ]
+    },
+
     "13.2mm .52 Sharps Linen Cartridge": {
         "properties": {
             "Mass": 30.2,
@@ -1107,6 +1521,17 @@
         },
         "items": [
             "52calammo"
+        ]
+    },
+
+    "13.2x92mmSR TuF SmK": {
+        "properties": {
+            "Mass": 51.5,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 26
+        },
+        "items": [
+            "tankgewehrammo"
         ]
     },
 
@@ -1121,6 +1546,41 @@
         ]
     },
 
+    "13.9x99mmB .55 Boys Mk I Ball": {
+        "properties": {
+            "Mass": 47.6,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 22,
+            "FlakParticles": 0
+        },
+        "items": [
+            "boysrifleammo"
+        ]
+    },
+
+    "14x22mmR .56-56 Spencer": {
+        "properties": {
+            "Mass": 22.7,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "spencerammo"
+        ]
+    },
+
+    "14.5x114mm B-32 API": {
+        "properties": {
+            "Mass": 64,
+            "MuzzleVelocity": 1000,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 40
+        },
+        "items": [
+            "14.5mm_b-32_ammo_ap_"
+        ]
+    },
+
     "14.5x114mm BS-41": {
         "properties": {
             "Mass": 64,
@@ -1128,7 +1588,8 @@
             "PenetrationAt100m": 40
         },
         "items": [
-            "ptrdammo"
+            "ptrdammo",
+            "14.5mmammo"
         ]
     },
 
@@ -1221,6 +1682,92 @@
         ]
     },
 
+    "18.5x70mmR 12 Gauge 00 Buckshot": {
+        "properties": {
+            "Mass": 3.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "trenchgunammo",
+            "12gaugeshell",
+            "12gbuckshotammo",
+            "12gaugebuckshell",
+            "12gaugeminishell",
+            "12gaugetestshell",
+            "doubletroubleshell",
+            "megadestroyershells",
+            "aaicawsbuckshotammo",
+            "mpp12gauge",
+            "sg_vepr12_8roundsshotshell_buckshot_",
+            "12gauge_shotshell_buckshot_"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Birdshot": {
+        "properties": {
+            "Mass": 1.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "12gbirdshotammo",
+            "12gaugebirdshotshell",
+            "12gaugebirdshotpellets"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Flechette": {
+        "properties": {
+            "Mass": 0.7,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "12gflechetteammo",
+            "12gpoisonedflechetteammo",
+            "aaicawsflechettiammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge High Explosive": {
+        "properties": {
+            "Mass": 30.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 5
+        },
+        "items": [
+            "12gheammo",
+            "aaicawsexplosiveammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Incendiary": {
+        "properties": {
+            "Mass": 3.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "12gaugeshellincendiary",
+            "12gincendiaryammo"
+        ]
+    },
+
+    "18.5x70mmR 12 Gauge Rifled Slug": {
+        "properties": {
+            "Mass": 28.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "44_model10trenchgunammo",
+            "12gslugammo",
+            "12gaugeslugshell",
+            "mpp12gaugeslug"
+        ]
+    },
+
     "19mm Nordenfelt": {
         "properties": {
             "Mass": 450,
@@ -1243,6 +1790,19 @@
         },
         "items": [
             "44_20mmaircraftammo"
+        ]
+    },
+
+    "20mm Incendiary Autocannon Round (Generic)": {
+        "properties": {
+            "Mass": 148,
+            "MuzzleVelocity": 780,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.004,
+            "PenetrationAt100m": 23
+        },
+        "items": [
+            "twentycalincendiary"
         ]
     },
 
@@ -1317,6 +1877,57 @@
         ]
     },
 
+    "20x70mmRB Becker AP-T": {
+        "properties": {
+            "Mass": 130,
+            "MuzzleVelocity": 500,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "becker20mmap"
+        ]
+    },
+
+    "20x70mmRB Becker HE-T": {
+        "properties": {
+            "Mass": 130,
+            "MuzzleVelocity": 500,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.01
+        },
+        "items": [
+            "becker20mmhe"
+        ]
+    },
+
+    "20x72mmRB Type 99-1": {
+        "properties": {
+            "Mass": 128,
+            "MuzzleVelocity": 600,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 11,
+            "PenetrationAt100m": 10
+        },
+        "items": [
+            "ww2_ammo_type99",
+            "type99mk1ammo"
+        ]
+    },
+
+    "20x80mmRB MG FF": {
+        "properties": {
+            "Mass": 92,
+            "MuzzleVelocity": 585,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 24,
+            "PenetrationAt100m": 8
+        },
+        "items": [
+            "ww2_ammo_mgff",
+            "mgffammo"
+        ]
+    },
+
     "20x82mm": {
         "properties": {
             "Mass": 120.0,
@@ -1341,6 +1952,20 @@
         },
         "items": [
             "ho05ammo"
+        ]
+    },
+
+    "20x99mmR ShVAK": {
+        "properties": {
+            "Mass": 96,
+            "MuzzleVelocity": 815,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 6,
+            "PenetrationAt100m": 22
+        },
+        "items": [
+            "shvakammo",
+            "20mmt60"
         ]
     },
 
@@ -1372,6 +1997,68 @@
         ]
     },
 
+    "20x102mm M50 Aircraft AP Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "ap_i 3 99.79 0 1030 34",
+                "he_frag_i 1 99.79 17.762 1030 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air20mm"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "20x102mm M50 Aircraft HE Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "he_frag_i 3 99.79 17.762 1030 0",
+                "ap_i 1 99.79 0 1030 34"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air20mmhe"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "20x102mm M50 Aircraft Incendiary Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "ap_i 1 99.79 0 1030 34",
+                "he_frag_i 3 99.79 17.762 1030 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air20mminc"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "20x102mm M50 Aircraft Tracer Loading": {
+        "properties": {
+            "Mass": 99.79,
+            "MuzzleVelocity": 1030,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 34.0,
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "gfs_air20mmtrcr"
+        ]
+    },
+
     "20x102mm M61 Vulcan": {
         "properties": {
             "Mass": 102,
@@ -1384,6 +2071,18 @@
         "items": [
             "shellnato20mm",
             "vulcan"
+        ]
+    },
+
+    "20x102mm Phalanx Mk 149 APDS (Generic)": {
+        "properties": {
+            "Mass": 100,
+            "MuzzleVelocity": 1100,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 50
+        },
+        "items": [
+            "ciwsammo"
         ]
     },
 
@@ -1470,6 +2169,62 @@
         ]
     },
 
+    "20x138mmB Flak 30/38": {
+        "properties": {
+            "AddToAmmoGroup": "20mm Flak 38",
+            "Mass": 115,
+            "MuzzleVelocity": 900,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 6,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "flakvierlingammo",
+            "ww2_shell_german20mmaa",
+            "ships_shell_german20mmaa",
+            "20mmpz280rnd",
+            "20mmpz280rndhe",
+            "pz.2f_shell_he_"
+        ],
+        "exceptions": {
+            "AddToAmmoGroup": [
+                "ww2_shell_german20mmaa"
+            ]
+        }
+    },
+
+    "20x138mmB Flak 38 Mixed Belt": {
+        "properties": {
+            "AddRound": [
+                "Sprgr.L'Spur 7 115 6.2 930 0 flansmod.fmtracerred",
+                "Brsprgr.L'Spur 7 120 2.4 900 0 flansmod.fmtracerred",
+                "Pzgr.L'Spur.Zerl 6 148 0 800 23 flansmod.fmtracerred"
+            ],
+            "AddToAmmoGroup": "20mm Flak 38"
+        },
+        "propertyModes": {
+            "AddRound": "replace"
+        },
+        "items": [
+            "ww2_shell_german20mmaa",
+            "aagun_2cm_flakvierling38_ammo_aa_",
+            "aa20mmratte"
+        ]
+    },
+
+    "20x138mmB Pzgr. Lspur AP-T": {
+        "properties": {
+            "Mass": 148,
+            "MuzzleVelocity": 780,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 31,
+            "AddToAmmoGroup": "20mm KwK 30/38"
+        },
+        "items": [
+            "pz.2f_shell_ap_"
+        ]
+    },
+
     "20x139mm DM43 API-T": {
         "properties": {
             "Mass": 111,
@@ -1527,6 +2282,34 @@
         ]
     },
 
+    "20x140mmB wz.38 FK AP": {
+        "properties": {
+            "Mass": 134,
+            "MuzzleVelocity": 856,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 40,
+            "AddToAmmoGroup": "20mm wz.38 FK"
+        },
+        "items": [
+            "tks20mm_shell_ap_"
+        ]
+    },
+
+    "20x140mmB wz.38 FK HE (Flak 30 charge surrogate)": {
+        "properties": {
+            "Mass": 134,
+            "MuzzleVelocity": 856,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.01,
+            "PenetrationAt100m": 5,
+            "AddToAmmoGroup": "20mm wz.38 FK",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "tks20mm_shell_he_"
+        ]
+    },
+
     "20x142mm Type 98": {
         "properties": {
             "Mass": 162,
@@ -1537,6 +2320,81 @@
         },
         "items": [
             "20mmtype98"
+        ]
+    },
+
+    "23x115mm DU AP (Fictional)": {
+        "properties": {
+            "Mass": 175,
+            "MuzzleVelocity": 710,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 36.25
+        },
+        "items": [
+            "gfs_23mmdu"
+        ]
+    },
+
+    "23x115mm GSh-23 Aircraft AP Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "ap_i 3 175 0 710 29",
+                "he_frag_i 1 174 27.874 700 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air23mm"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "23x115mm GSh-23 Aircraft HE Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "he_frag_i 3 174 27.874 700 0",
+                "ap_i 1 175 0 710 29"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air23mmhe"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "23x115mm GSh-23 Aircraft Incendiary Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "ap_i 1 175 0 710 29",
+                "he_frag_i 3 174 27.874 700 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air23mminc"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "23x115mm GSh-23 Aircraft Tracer Loading": {
+        "properties": {
+            "Mass": 176.0,
+            "MuzzleVelocity": 710.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.026796,
+            "PenetrationAt100m": 0.0,
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "gfs_air23mmtrcr"
         ]
     },
 
@@ -1564,6 +2422,124 @@
         },
         "items": [
             "23ammoshort"
+        ]
+    },
+
+    "23x152mmB BZT API-T": {
+        "properties": {
+            "Mass": 190.0,
+            "MuzzleVelocity": 970.0,
+            "FallSpeed": 1.0,
+            "AddToAmmoGroup": "23mm 2A7"
+        },
+        "items": [
+            "23mm"
+        ]
+    },
+
+    "23x152mmB OFZ HEI": {
+        "properties": {
+            "Mass": 183.0,
+            "MuzzleVelocity": 980.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.028489999999999998,
+            "AddToAmmoGroup": "23mm 2A7"
+        },
+        "items": [
+            "23mmhe"
+        ]
+    },
+
+    "23x152mmB VYa-23": {
+        "properties": {
+            "Mass": 200,
+            "MuzzleVelocity": 905,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 19,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "ww2_ammo_wja23",
+            "vya23ammo"
+        ]
+    },
+
+    "23x152mmB ZU-23 AA Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "OFZ_HEI 3 183 28.49 980 0",
+                "BZT_API-T 1 190 0 970 45 flansmod.fmtracerred"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "23x152mm_ammo_aa_"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "25mm Aircraft AP Belt (M791 surrogate) (Generic)": {
+        "properties": {
+            "AddRound": [
+                "M791_APDS-T 1 134 0 1345 80 flansmod.fmtracerred",
+                "he_i 1 180 34.56 1100 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air25mm"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "25mm Aircraft HE Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "he_i 3 180 34.56 1100 0",
+                "sap_hei_t 1 185 20.48 1100 0 flansmod.fmtracerred"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air25mmhe"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "25mm Aircraft Incendiary Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "sap_hei_t 1 185 20.48 1100 0 flansmod.fmtracerred",
+                "he_i 1 180 34.56 1100 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air25mminc"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "25mm Aircraft Tracer Loading (PGU-32 surrogate) (Generic)": {
+        "properties": {
+            "Mass": 185,
+            "MuzzleVelocity": 1100,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.02048,
+            "PenetrationAt100m": 20,
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "gfs_air25mmtrcr"
         ]
     },
 
@@ -1634,6 +2610,21 @@
         ]
     },
 
+    "25x137mm PGU-47 APEX (Filler surrogate)": {
+        "properties": {
+            "Mass": 222,
+            "MuzzleVelocity": 970,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.02048,
+            "PenetrationAt100m": 20,
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "gfs_air25mmapex"
+        ]
+    },
+
     "25x163mm Type 96 AP Round": {
         "properties": {
             "AddToAmmoGroup": "25mm Type 96",
@@ -1666,6 +2657,99 @@
         ]
     },
 
+    "25x183mmB 51B APDS-T (Generic Loading)": {
+        "properties": {
+            "Mass": 150,
+            "MuzzleVelocity": 1250,
+            "FallSpeed": 1.0,
+            "AddToAmmoGroup": "25mm ZPT90"
+        },
+        "items": [
+            "25mmapdschina"
+        ]
+    },
+
+    "25x183mmB 79F HEI-T (Type 87 surrogate)": {
+        "properties": {
+            "Mass": 250.0,
+            "MuzzleVelocity": 1050.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.02926,
+            "AddToAmmoGroup": "25mm ZPT90"
+        },
+        "items": [
+            "25mmhechina"
+        ]
+    },
+
+    "25x194mmR Hotchkiss Mle 1934": {
+        "properties": {
+            "Mass": 320,
+            "MuzzleVelocity": 900,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 40
+        },
+        "items": [
+            "25mmapx"
+        ]
+    },
+
+    "27x145mm BK 27 AP Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "aphe 1 260 7.808 1025 20",
+                "ball_t_shell 1 260 0 1025 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air27mm"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "27x145mm BK 27 Ball-T": {
+        "properties": {
+            "Mass": 260,
+            "MuzzleVelocity": 1025,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 0,
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "gfs_air27mmtrcr"
+        ]
+    },
+
+    "27x145mm BK 27 HE (APHE surrogate)": {
+        "properties": {
+            "Mass": 260,
+            "MuzzleVelocity": 1025,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.007808,
+            "PenetrationAt100m": 20
+        },
+        "items": [
+            "gfs_air27mmhe"
+        ]
+    },
+
+    "27x145mm BK 27 Incendiary (APHE surrogate)": {
+        "properties": {
+            "Mass": 260,
+            "MuzzleVelocity": 1025,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.007808,
+            "PenetrationAt100m": 20
+        },
+        "items": [
+            "gfs_air27mminc"
+        ]
+    },
+
     "27x145mm BK 27 Mixed Belt": {
         "properties": {
             "AddRound": [
@@ -1678,6 +2762,23 @@
         },
         "items": [
             "mauserammo"
+        ]
+    },
+
+    "28x199mmR 1.1-inch/75 AA Round": {
+        "properties": {
+            "AddToAmmoGroup": "1.1-inch/75 AA",
+            "Mass": 416,
+            "MuzzleVelocity": 823,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 20,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "28mmammo",
+            "28mmammoquad",
+            "28mmammohet",
+            "28mmammohetquad"
         ]
     },
 
@@ -1696,6 +2797,19 @@
         ]
     },
 
+    "30mm Incendiary Autocannon Round (Generic)": {
+        "properties": {
+            "Mass": 330,
+            "MuzzleVelocity": 800,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.05,
+            "PenetrationAt100m": 30
+        },
+        "items": [
+            "thirtycalincendiary"
+        ]
+    },
+
     "30x29mm VOG-30 HE-Frag": {
         "properties": {
             "Mass": 275.0,
@@ -1708,6 +2822,21 @@
         "items": [
             "ag30ammo",
             "ag30ammo50"
+        ]
+    },
+
+    "30x90mmRB MK 108": {
+        "properties": {
+            "Mass": 330,
+            "MuzzleVelocity": 505,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 110,
+            "PenetrationAt100m": 10
+        },
+        "items": [
+            "ww2_ammo_mk108",
+            "mk108cannonammo",
+            "mk108ammo"
         ]
     },
 
@@ -1791,6 +2920,24 @@
         ]
     },
 
+    "30x155mm NR-30 Aircraft Belt": {
+        "properties": {
+            "AddRound": [
+                "he_frag_i 1 400 67.144 780 0",
+                "ap_t 1 403 0 785 47 flansmod.fmtracerred",
+                "he_frag_i 1 400 67.144 780 0",
+                "aphe 1 401 22.484 780 47"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "30mmammo"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
     "30x155mm NR-30 Mixed Belt": {
         "properties": {
             "AddRound": [
@@ -1859,6 +3006,18 @@
         ]
     },
 
+    "30x165mm GSh DU AP (Fictional)": {
+        "properties": {
+            "Mass": 390,
+            "MuzzleVelocity": 870,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 51.25
+        },
+        "items": [
+            "gfs_30mmdu2"
+        ]
+    },
+
     "30x165mm GSh-6-30 Mixed Belt": {
         "properties": {
             "AddRound": [
@@ -1869,6 +3028,68 @@
         },
         "items": [
             "30gsh"
+        ]
+    },
+
+    "30x165mm GSh-30 Aircraft AP Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "ap_t 3 400 0 860 53 flansmod.fmtracerred",
+                "he_frag_i 1 390 74.69 860 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air30mm"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "30x165mm GSh-30 Aircraft HE Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "he_frag_i 3 390 74.69 860 0",
+                "ap_t 1 400 0 860 53 flansmod.fmtracerred"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air30mmhe"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "30x165mm GSh-30 Aircraft Incendiary Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "ap_t 1 400 0 860 53 flansmod.fmtracerred",
+                "he_frag_i 3 390 74.69 860 0"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_air30mminc"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
+    "30x165mm GSh-30 Aircraft Tracer Loading": {
+        "properties": {
+            "Mass": 400.0,
+            "MuzzleVelocity": 860.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 53.0,
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "gfs_air30mmtrcr"
         ]
     },
 
@@ -1938,6 +3159,22 @@
         ]
     },
 
+    "30x170mm HS831 AA Belt (Generic)": {
+        "properties": {
+            "AddRound": [
+                "AP-T 1 360 0 1080 50 flansmod.fmtracerred",
+                "HE-T 1 360 96 1080 0 flansmod.fmtracerred"
+            ],
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "30mmaagunammo"
+        ],
+        "propertyModes": {
+            "AddRound": "replace"
+        }
+    },
+
     "30x170mm L13A2 HE-T (HS831 surrogate)": {
         "properties": {
             "Mass": 360.0,
@@ -1956,10 +3193,12 @@
             "Mass": 300.0,
             "MuzzleVelocity": 1175.0,
             "FallSpeed": 1.0,
-            "AddToAmmoGroup": "30mm RARDEN"
+            "AddToAmmoGroup": "30mm RARDEN",
+            "PenetrationAt100m": 101
         },
         "items": [
-            "rardenap"
+            "rardenap",
+            "rarden"
         ]
     },
 
@@ -1971,7 +3210,8 @@
             "AddToAmmoGroup": "30mm MK30-2"
         },
         "items": [
-            "30mmairburst"
+            "30mmairburst",
+            "gfs_ifv30mmab"
         ]
     },
 
@@ -2022,6 +3262,71 @@
             "avengerammo",
             "avengerammo300",
             "avengerammo1200"
+        ]
+    },
+
+    "30x173mm PGU-14/B API": {
+        "properties": {
+            "Mass": 395,
+            "MuzzleVelocity": 1013,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 77
+        },
+        "items": [
+            "gfs_30mmdu"
+        ]
+    },
+
+    "30x184mmB MK 103": {
+        "properties": {
+            "Mass": 330,
+            "MuzzleVelocity": 860,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 80,
+            "PenetrationAt100m": 95
+        },
+        "items": [
+            "mk103ammo"
+        ]
+    },
+
+    "35x228mm Aircraft AP Belt (Generic)": {
+        "properties": {
+            "Mass": 550,
+            "MuzzleVelocity": 1175,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 40
+        },
+        "items": [
+            "gfs_air35mm"
+        ]
+    },
+
+    "35x228mm Aircraft HEI-T Tracer": {
+        "properties": {
+            "Mass": 550,
+            "MuzzleVelocity": 1175,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.2304,
+            "PenetrationAt100m": 0,
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "gfs_air35mmtrcr"
+        ]
+    },
+
+    "35x228mm Aircraft Incendiary (HEI-T surrogate)": {
+        "properties": {
+            "Mass": 550,
+            "MuzzleVelocity": 1175,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.2304,
+            "PenetrationAt100m": 0
+        },
+        "items": [
+            "gfs_air35mminc"
         ]
     },
 
@@ -2166,6 +3471,19 @@
         ]
     },
 
+    "37mm Mle 1892 AP (SA18)": {
+        "properties": {
+            "Mass": 500,
+            "MuzzleVelocity": 388,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 20,
+            "AddToAmmoGroup": "37mm SA 18"
+        },
+        "items": [
+            "renaultft17_shell_ap_"
+        ]
+    },
+
     "37mm Mle 1937 APCR": {
         "properties": {
             "Mass": 700,
@@ -2232,6 +3550,34 @@
         ]
     },
 
+    "37mm Type 94 APHE (Type 94 tank gun)": {
+        "properties": {
+            "Mass": 700.0,
+            "MuzzleVelocity": 575.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.011,
+            "PenetrationAt100m": 33.0,
+            "AddToAmmoGroup": "37mm Type 94",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "type95ha-go_shell_ap_"
+        ]
+    },
+
+    "37x145mmR M4": {
+        "properties": {
+            "Mass": 608,
+            "MuzzleVelocity": 610,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 39,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "37mmm4ammo"
+        ]
+    },
+
     "37x155mm NS-37": {
         "properties": {
             "Mass": 735,
@@ -2255,7 +3601,55 @@
             "PenetrationAt100m": 30
         },
         "items": [
-            "37mmtype94"
+            "37mmtype94",
+            "37mmshell"
+        ]
+    },
+
+    "37x263mmB Flak 18/36/37": {
+        "properties": {
+            "Mass": 640,
+            "MuzzleVelocity": 820,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 21,
+            "PenetrationAt100m": 35
+        },
+        "items": [
+            "44_flak37ammo",
+            "ww2_shell_german37mmaa",
+            "37mmammo",
+            "flak37ammo",
+            "flak37ammoap",
+            "flak37ammoshipborne"
+        ]
+    },
+
+    "37x263mmB Hartkern Pzgr.40 (BK 3.7)": {
+        "properties": {
+            "Mass": 405,
+            "MuzzleVelocity": 1140,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 140,
+            "AddToAmmoGroup": "37mm BK 3.7"
+        },
+        "items": [
+            "planeammo_3.7cm_ju87g-2_ammo"
+        ]
+    },
+
+    "37x380mmR SK C/30": {
+        "properties": {
+            "Mass": 745,
+            "MuzzleVelocity": 1000,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 24,
+            "PenetrationAt100m": 40
+        },
+        "items": [
+            "37mmammobox",
+            "37mmammobox240",
+            "37mmammobox360",
+            "37mmammoboxtracer"
         ]
     },
 
@@ -2372,6 +3766,93 @@
         "items": [
             "40mmgrenade",
             "gfs_40mmgrenade"
+        ]
+    },
+
+    "40x158mmR QF 2-pdr Pom-Pom": {
+        "properties": {
+            "Mass": 907,
+            "MuzzleVelocity": 701,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 71,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "2pdrpomfpomfammo",
+            "2pdrpomfpomfammohv",
+            "2pdrpomfpomfammohvt"
+        ]
+    },
+
+    "40x311mmR Bofors": {
+        "properties": {
+            "Mass": 900,
+            "MuzzleVelocity": 881,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 62,
+            "PenetrationAt100m": 50
+        },
+        "items": [
+            "44_bofors40mmammo",
+            "boforsammo",
+            "40mmammobox",
+            "40mmammo250",
+            "40mmammotracer",
+            "boforsammoap",
+            "boforsammoac130",
+            "gfs_ifv40mmhe",
+            "aagun_40mm_bofors_ammo_aa_",
+            "40mmaaammo"
+        ]
+    },
+
+    "40x311mmR Bofors 36M AP": {
+        "properties": {
+            "Mass": 940,
+            "MuzzleVelocity": 850,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 55
+        },
+        "items": [
+            "40mmshellhungary"
+        ]
+    },
+
+    "40x364mmR Bofors PFHE": {
+        "properties": {
+            "Mass": 880,
+            "MuzzleVelocity": 1005,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 100,
+            "PenetrationAt100m": 15
+        },
+        "items": [
+            "40mmammoaa"
+        ]
+    },
+
+    "40x365mmR Kulsgr m/90 HE-VT": {
+        "properties": {
+            "Mass": 880.0,
+            "MuzzleVelocity": 1015.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.1908,
+            "AddToAmmoGroup": "40mm Bofors L70"
+        },
+        "items": [
+            "cv90ammohe"
+        ]
+    },
+
+    "40x365mmR Slpprj m/90 APFSDS-T": {
+        "properties": {
+            "Mass": 500.0,
+            "MuzzleVelocity": 1465.0,
+            "FallSpeed": 1.0,
+            "AddToAmmoGroup": "40mm Bofors L70"
+        },
+        "items": [
+            "cv90ammoap"
         ]
     },
 
@@ -2918,6 +4399,32 @@
         ]
     },
 
+    "57x121mmR Ho-401": {
+        "properties": {
+            "Mass": 1500,
+            "MuzzleVelocity": 495,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 100,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "57mmho401"
+        ]
+    },
+
+    "58mm PG-16 HEAT Rocket": {
+        "properties": {
+            "Mass": 2050,
+            "MuzzleVelocity": 130,
+            "ExplosiveMassTNTKg": 1.6,
+            "PenetrationAt100m": 300,
+            "HEAT": "true"
+        },
+        "items": [
+            "rl_rpg-16_ammo"
+        ]
+    },
+
     "60mm M6A3 Bazooka HEAT Rocket": {
         "properties": {
             "Mass": 1590,
@@ -2998,6 +4505,39 @@
         ]
     },
 
+    "70mm APKWS (M151 Warhead)": {
+        "properties": {
+            "Mass": 11300,
+            "MuzzleVelocity": 700,
+            "ExplosiveMassTNTKg": 1.33
+        },
+        "items": [
+            "gfs_hydraapkws"
+        ]
+    },
+
+    "70mm CRV7 (M151 Warhead Surrogate)": {
+        "properties": {
+            "Mass": 13600,
+            "MuzzleVelocity": 1090,
+            "ExplosiveMassTNTKg": 1.33
+        },
+        "items": [
+            "crv7ammo"
+        ]
+    },
+
+    "70mm FFAR Unguided Rocket (Generic)": {
+        "properties": {
+            "Mass": 10400,
+            "MuzzleVelocity": 700,
+            "ExplosiveMassTNTKg": 1.33
+        },
+        "items": [
+            "unguidedrocket"
+        ]
+    },
+
     "70mm Hydra 70 Rocket": {
         "properties": {
             "Mass": 10400,
@@ -3025,6 +4565,19 @@
         ]
     },
 
+    "70mm Mk 4 FFAR M247 HEAT (Hydra warhead surrogate)": {
+        "properties": {
+            "Mass": 8300,
+            "MuzzleVelocity": 739,
+            "ExplosiveMassTNTKg": 1.04,
+            "PenetrationAt100m": 290,
+            "HEAT": "true"
+        },
+        "items": [
+            "planeammo_mk.4_mightymouse_rocket_heat_"
+        ]
+    },
+
     "72.5mm PG-26 HEAT Rocket": {
         "properties": {
             "Mass": 1800.0,
@@ -3037,6 +4590,21 @@
         },
         "items": [
             "rpg26rocket"
+        ]
+    },
+
+    "73mm OG-9 HE-Frag (OG15VM round)": {
+        "properties": {
+            "Mass": 3700,
+            "MuzzleVelocity": 290,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.735,
+            "PenetrationAt100m": 11,
+            "AddToAmmoGroup": "73mm 2A28 Grom",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "73mm_og15vm_shell_he_"
         ]
     },
 
@@ -3714,6 +5282,21 @@
         ]
     },
 
+    "76mm L29 HESH-T (Fill Estimate)": {
+        "properties": {
+            "Mass": 5390,
+            "MuzzleVelocity": 533,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 1.6,
+            "PenetrationAt100m": 90,
+            "AddToAmmoGroup": "76mm L23",
+            "HESH": "true"
+        },
+        "items": [
+            "hesh76"
+        ]
+    },
+
     "76mm Long Tank AP (Generic)": {
         "properties": {
             "Mass": 7000.0,
@@ -3725,6 +5308,19 @@
         },
         "items": [
             "44_76apshelllong"
+        ]
+    },
+
+    "76mm Low-Pressure APDS (Fictional)": {
+        "properties": {
+            "Mass": 1800,
+            "MuzzleVelocity": 900,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 120,
+            "AddToAmmoGroup": "76mm L23"
+        },
+        "items": [
+            "apds76"
         ]
     },
 
@@ -3892,6 +5488,21 @@
         "items": [
             "ww2_shell_ussr76mmhe",
             "russian76heshell"
+        ]
+    },
+
+    "76mm OF-350M HE (KT-28)": {
+        "properties": {
+            "Mass": 6200.0,
+            "MuzzleVelocity": 387.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.71,
+            "PenetrationAt100m": 11.0,
+            "AddToAmmoGroup": "76mm KT-28",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "t-35_shell_he_"
         ]
     },
 
@@ -4089,6 +5700,20 @@
         ]
     },
 
+    "81mm M1 Mortar HE Bomb (Generic)": {
+        "properties": {
+            "Mass": 3180,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 900,
+            "FragType": "HE_SHELL",
+            "MuzzleVelocity": 210,
+            "AddToAmmoGroup": "81mm M1 Mortar"
+        },
+        "items": [
+            "mortar_81mm_m1_shell_he_"
+        ]
+    },
+
     "81mm Mortar HE Bomb": {
         "properties": {
             "Mass": 3180,
@@ -4111,6 +5736,20 @@
         },
         "items": [
             "mortar81mm"
+        ]
+    },
+
+    "82mm O-832DU HE Mortar Bomb": {
+        "properties": {
+            "Mass": 3100,
+            "MuzzleVelocity": 272,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.4,
+            "PenetrationAt100m": 12,
+            "AddToAmmoGroup": "82mm 2B9 Vasilek"
+        },
+        "items": [
+            "mortar_82mm_2b9vasilek_shell_he_"
         ]
     },
 
@@ -4565,7 +6204,8 @@
             "ww2_shell_german88mmhe",
             "ww2_shell_german88mmkwk36he",
             "german88heshell",
-            "8.8cmkwk36shellhe"
+            "8.8cmkwk36shellhe",
+            "aagun_8.8cm_flak18_shell_aa_"
         ]
     },
 
@@ -4626,6 +6266,19 @@
         ]
     },
 
+    "90mm Low-Pressure APDS (Fictional)": {
+        "properties": {
+            "Mass": 2100,
+            "MuzzleVelocity": 1000,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 160,
+            "AddToAmmoGroup": "90mm Cockerill Mk III"
+        },
+        "items": [
+            "apds90"
+        ]
+    },
+
     "90mm M82 APHE": {
         "properties": {
             "AddToAmmoGroup": "90mm M3",
@@ -4637,7 +6290,8 @@
         },
         "items": [
             "90mmap",
-            "44_90apcbcshell"
+            "44_90apcbcshell",
+            "90mmaphe"
         ]
     },
 
@@ -4666,6 +6320,23 @@
         "items": [
             "90mmheat",
             "90mmheatfs"
+        ]
+    },
+
+    "90mm M625A1 HESH-T": {
+        "properties": {
+            "Mass": 4500,
+            "MuzzleVelocity": 800,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 1.73,
+            "PenetrationAt100m": 102,
+            "AddToAmmoGroup": "90mm Cockerill Mk III",
+            "HESH": "true",
+            "TrailParticles": "true",
+            "TrailParticleType": "flansmod.fmtracerred"
+        },
+        "items": [
+            "hesh90"
         ]
     },
 
@@ -4711,6 +6382,19 @@
         ]
     },
 
+    "90mm Tank APHE (Generic)": {
+        "properties": {
+            "Mass": 10940,
+            "MuzzleVelocity": 808,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 133,
+            "PenetrationAt100m": 164
+        },
+        "items": [
+            "90mm"
+        ]
+    },
+
     "90mm/50 Naval APCBC Shell": {
         "properties": {
             "Mass": 10100,
@@ -4739,6 +6423,21 @@
         ]
     },
 
+    "94mm Shell Mk 1 HE (32-pdr)": {
+        "properties": {
+            "Mass": 12700.0,
+            "MuzzleVelocity": 1043.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.92,
+            "PenetrationAt100m": 30.0,
+            "AddToAmmoGroup": "94mm 32-pdr",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "a39tortoise_shell_he_"
+        ]
+    },
+
     "94mm Shot Mark 1 APCBC": {
         "properties": {
             "Mass": 12600,
@@ -4760,6 +6459,19 @@
         },
         "items": [
             "94mmapds"
+        ]
+    },
+
+    "94mm Shot Mk 1 APCBC (32-pdr)": {
+        "properties": {
+            "Mass": 14500.0,
+            "MuzzleVelocity": 929.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 253.0,
+            "AddToAmmoGroup": "94mm 32-pdr"
+        },
+        "items": [
+            "a39tortoise_shell_ap_"
         ]
     },
 
@@ -4800,6 +6512,21 @@
         },
         "items": [
             "100mmapfsds"
+        ]
+    },
+
+    "100mm 3OF32 HE-Frag": {
+        "properties": {
+            "Mass": 15600.0,
+            "MuzzleVelocity": 250.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 2.6,
+            "PenetrationAt100m": 31.0,
+            "AddToAmmoGroup": "100mm 2A70",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "gfs_100mmhef"
         ]
     },
 
@@ -5047,6 +6774,35 @@
         ]
     },
 
+    "105mm DM23A1 APFSDS (M111 ballistic surrogate)": {
+        "properties": {
+            "Mass": 3700.0,
+            "MuzzleVelocity": 1501.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 291.0,
+            "AddToAmmoGroup": "105mm L7"
+        },
+        "items": [
+            "105mm_dm23a1_shell_ap_"
+        ]
+    },
+
+    "105mm DM512 HESH": {
+        "properties": {
+            "Mass": 11200.0,
+            "MuzzleVelocity": 732.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 4.3,
+            "PenetrationAt100m": 127.0,
+            "AddToAmmoGroup": "105mm L7",
+            "HESH": "true",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "105mm_dm512_shell_he_"
+        ]
+    },
+
     "105mm Feldhaubitze M.12 Shell": {
         "properties": {
             "Mass": 14000,
@@ -5071,6 +6827,23 @@
         "items": [
             "105apds",
             "apds105"
+        ]
+    },
+
+    "105mm L35 HESH": {
+        "properties": {
+            "Mass": 11400.0,
+            "MuzzleVelocity": 720.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 3.2,
+            "PenetrationAt100m": 127.0,
+            "AddToAmmoGroup": "105mm L7",
+            "HESH": "true",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "hesh105",
+            "105mmhesh"
         ]
     },
 
@@ -5101,7 +6874,8 @@
             "AddToAmmoGroup": "105mm L7"
         },
         "items": [
-            "105mmapdsus"
+            "105mmapdsus",
+            "gfs_105mmapfsds"
         ]
     },
 
@@ -5114,6 +6888,19 @@
         },
         "items": [
             "105mmapfsds"
+        ]
+    },
+
+    "105mm M900 APFSDS": {
+        "properties": {
+            "Mass": 3800.0,
+            "MuzzleVelocity": 1505.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 521.0,
+            "AddToAmmoGroup": "105mm M68A1"
+        },
+        "items": [
+            "gfs_105mmm900"
         ]
     },
 
@@ -5145,6 +6932,21 @@
         },
         "items": [
             "rpg29ammo"
+        ]
+    },
+
+    "105mm Pzgr.rot APCBC (K 18)": {
+        "properties": {
+            "Mass": 15600.0,
+            "MuzzleVelocity": 822.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.357,
+            "PenetrationAt100m": 184.0,
+            "AddToAmmoGroup": "105mm K 18",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "105mmaphe"
         ]
     },
 
@@ -5189,6 +6991,18 @@
         ]
     },
 
+    "105mm Type 74 APDS (Generic)": {
+        "properties": {
+            "Mass": 4000.0,
+            "MuzzleVelocity": 1478.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 347.0
+        },
+        "items": [
+            "105mm"
+        ]
+    },
+
     "107mm Type 63 HE Rocket": {
         "properties": {
             "Mass": 18800,
@@ -5214,6 +7028,17 @@
         "items": [
             "panzerfaust3ammoevolved",
             "panzerfaust3ammoevolvedsub"
+        ]
+    },
+
+    "110mm LARS DM21 HE Rocket (Generic)": {
+        "properties": {
+            "Mass": 35000,
+            "MuzzleVelocity": 640,
+            "ExplosiveMassTNTKg": 2.5
+        },
+        "items": [
+            "gfs_110mm"
         ]
     },
 
@@ -5316,6 +7141,46 @@
         ]
     },
 
+    "115mm 3BM4 APFSDS (3UBM9 complete-round designation)": {
+        "properties": {
+            "Mass": 4000.0,
+            "MuzzleVelocity": 1615.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 280.0,
+            "AddToAmmoGroup": "115mm U-5TS"
+        },
+        "items": [
+            "115mm_3ubm9_shell_ap_"
+        ]
+    },
+
+    "115mm 3OF11 HE (3UOF6 complete-round designation)": {
+        "properties": {
+            "Mass": 14900.0,
+            "MuzzleVelocity": 905.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 2.6,
+            "PenetrationAt100m": 31.0,
+            "AddToAmmoGroup": "115mm U-5TS",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "115mm_3uof6_shell_he_"
+        ]
+    },
+
+    "115mm Tank APFSDS (Generic)": {
+        "properties": {
+            "Mass": 4000.0,
+            "MuzzleVelocity": 1615.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 347.0
+        },
+        "items": [
+            "115mm"
+        ]
+    },
+
     "117mm Napoleon Canister": {
         "properties": {
             "Mass": 5580,
@@ -5402,7 +7267,10 @@
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 2.1,
             "PenetrationAt100m": 480.0,
-            "AddToAmmoGroup": "120mm Rh-120 L/55",
+            "AddToAmmoGroup": [
+                "120mm Rh-120 L/55",
+                "120mm Rh-120 L/44"
+            ],
             "HEAT": "true",
             "FragType": "HE_SHELL"
         },
@@ -5414,7 +7282,10 @@
 
     "120mm DM12A1 HEAT-MP-T": {
         "properties": {
-            "AddToAmmoGroup": "120mm Rh-120 L/55",
+            "AddToAmmoGroup": [
+                "120mm Rh-120 L/55",
+                "120mm Rh-120 L/44"
+            ],
             "Mass": 14100,
             "MuzzleVelocity": 1140,
             "FallSpeed": 1.0,
@@ -5435,7 +7306,10 @@
             "MuzzleVelocity": 1640.0,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 407.0,
-            "AddToAmmoGroup": "120mm Rh-120 L/55"
+            "AddToAmmoGroup": [
+                "120mm Rh-120 L/55",
+                "120mm Rh-120 L/44"
+            ]
         },
         "items": [
             "dm23",
@@ -5450,7 +7324,10 @@
             "MuzzleVelocity": 1640.0,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 480.0,
-            "AddToAmmoGroup": "120mm Rh-120 L/55"
+            "AddToAmmoGroup": [
+                "120mm Rh-120 L/55",
+                "120mm Rh-120 L/44"
+            ]
         },
         "items": [
             "dm33"
@@ -5459,7 +7336,10 @@
 
     "120mm DM43 APFSDS": {
         "properties": {
-            "AddToAmmoGroup": "120mm Rh-120 L/55",
+            "AddToAmmoGroup": [
+                "120mm Rh-120 L/55",
+                "120mm Rh-120 L/44"
+            ],
             "Mass": 4300,
             "MuzzleVelocity": 1650,
             "FallSpeed": 1.0,
@@ -5781,6 +7661,19 @@
         ]
     },
 
+    "120mm Navy Short Gun AP Shell (Fictional)": {
+        "properties": {
+            "Mass": 13000,
+            "MuzzleVelocity": 290,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 40,
+            "AddToAmmoGroup": "120mm Navy Short Gun"
+        },
+        "items": [
+            "navy12cmspg_shell_ap_"
+        ]
+    },
+
     "120mm Obus de Rupture": {
         "properties": {
             "Mass": 22000,
@@ -5873,6 +7766,18 @@
         ]
     },
 
+    "120mm Tank APFSDS (Generic)": {
+        "properties": {
+            "Mass": 4300.0,
+            "MuzzleVelocity": 1670.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 468.0
+        },
+        "items": [
+            "apfsds"
+        ]
+    },
+
     "120mm Tank HE Shell": {
         "properties": {
             "Mass": 12900,
@@ -5908,6 +7813,49 @@
         },
         "items": [
             "type10ap"
+        ]
+    },
+
+    "120mm XM112 HVAT (Fictional)": {
+        "properties": {
+            "Mass": 13000,
+            "MuzzleVelocity": 400,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 3,
+            "PenetrationAt100m": 800,
+            "HEAT": "true"
+        },
+        "items": [
+            "gfs_120mmxm112"
+        ]
+    },
+
+    "120mm XM1111 MRM-CE (Guided HEAT surrogate)": {
+        "properties": {
+            "Mass": 13000,
+            "MuzzleVelocity": 400,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 3,
+            "PenetrationAt100m": 800,
+            "HEAT": "true"
+        },
+        "items": [
+            "gfs_120mmxm1111"
+        ]
+    },
+
+    "120mm/45 3rd Year Type 0 HE Shell": {
+        "properties": {
+            "Mass": 20300,
+            "MuzzleVelocity": 825,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 1.7,
+            "PenetrationAt100m": 20,
+            "FragType": "HE_SHELL",
+            "AddToAmmoGroup": "120mm/45 3rd Year Type"
+        },
+        "items": [
+            "12cmshell"
         ]
     },
 
@@ -6071,7 +8019,8 @@
         "items": [
             "3bm42",
             "125mmapfsds",
-            "gfs_125mmapfsds"
+            "gfs_125mmapfsds",
+            "125mm_3vbm17_shell_ap_"
         ]
     },
 
@@ -6126,6 +8075,18 @@
         ]
     },
 
+    "125mm 3BM70 Vacuum-2 (3BM60 conservative surrogate)": {
+        "properties": {
+            "Mass": 5100.0,
+            "MuzzleVelocity": 1660.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 578.0
+        },
+        "items": [
+            "gfs_125mm3bm70"
+        ]
+    },
+
     "125mm 3OF26 HE-Frag": {
         "properties": {
             "AddToAmmoGroup": "125mm 2A46M-5",
@@ -6138,7 +8099,8 @@
         },
         "items": [
             "shell125mm3of26",
-            "125mmhe"
+            "125mmhe",
+            "125mm_3vof36_shell_he_"
         ]
     },
 
@@ -6591,6 +8553,18 @@
         ]
     },
 
+    "130mm K30 Kooryong Rocket (Grad charge surrogate)": {
+        "properties": {
+            "Mass": 54000,
+            "MuzzleVelocity": 950,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 9.856000000000002
+        },
+        "items": [
+            "gfs_130mm"
+        ]
+    },
+
     "132mm M-13 Katyusha Rocket": {
         "properties": {
             "Mass": 42500,
@@ -6741,6 +8715,20 @@
         ]
     },
 
+    "149mm Panzerfaust 100 HEAT Warhead": {
+        "properties": {
+            "Mass": 2900,
+            "MuzzleVelocity": 60,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 200,
+            "HEAT": "true",
+            "ExplosiveMassTNTg": 950
+        },
+        "items": [
+            "rl_panzerfaust100_ammo"
+        ]
+    },
+
     "150mm Gr.36": {
         "properties": {
             "AddToAmmoGroup": "150mm sFH 18",
@@ -6752,7 +8740,8 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "ww2_shell_german150mmhe"
+            "ww2_shell_german150mmhe",
+            "hummel_shell__he_"
         ]
     },
 
@@ -6884,6 +8873,21 @@
         ]
     },
 
+    "152mm 3OF39 Krasnopol": {
+        "properties": {
+            "Mass": 50800,
+            "MuzzleVelocity": 800,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 9.856,
+            "PenetrationAt100m": 25,
+            "AddToAmmoGroup": "152mm 2A64/2A65",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "krasnopol"
+        ]
+    },
+
     "152mm B-35 AP Shell": {
         "properties": {
             "Mass": 55000,
@@ -6959,6 +8963,19 @@
         },
         "items": [
             "6inchshellap"
+        ]
+    },
+
+    "152mm Death Howitzer Shell (Fictional)": {
+        "properties": {
+            "Mass": 45400,
+            "MuzzleVelocity": 855,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 3.6,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "kilmont"
         ]
     },
 
@@ -7050,6 +9067,39 @@
         ]
     },
 
+    "152mm Msta HE Shell (OF-45 surrogate)": {
+        "properties": {
+            "Mass": 45400,
+            "MuzzleVelocity": 855,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 3.6,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "mstaexplosive",
+            "mstaexplosiveh",
+            "mstaexplosivel",
+            "mstatracer",
+            "mstatracerh",
+            "mstatracerl"
+        ]
+    },
+
+    "152mm Msta HEAT Shell (BP-540 surrogate)": {
+        "properties": {
+            "Mass": 18900.0,
+            "MuzzleVelocity": 682.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 3.7,
+            "PenetrationAt100m": 380.0,
+            "HEAT": "true",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "mstaarmorpiercing"
+        ]
+    },
+
     "152mm Naval Shell (Russian, Obsolete)": {
         "properties": {
             "Mass": 41400,
@@ -7060,6 +9110,18 @@
         },
         "items": [
             "152mmrusshell"
+        ]
+    },
+
+    "152mm Nuclear Artillery Shell (Generic)": {
+        "properties": {
+            "Mass": 43000,
+            "MuzzleVelocity": 684,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 2000000
+        },
+        "items": [
+            "mstanuclear"
         ]
     },
 
@@ -7236,6 +9298,19 @@
         ]
     },
 
+    "155mm Vista Mark 9 Shell (Fictional)": {
+        "properties": {
+            "Mass": 43000,
+            "MuzzleVelocity": 684,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 6.62,
+            "PenetrationAt100m": 25
+        },
+        "items": [
+            "vistaammo"
+        ]
+    },
+
     "155mm W82 Nuclear Shell": {
         "properties": {
             "Mass": 43000,
@@ -7300,6 +9375,22 @@
         },
         "items": [
             "155mmlrlap"
+        ]
+    },
+
+    "165mm L33A1 HESH": {
+        "properties": {
+            "Mass": 30600.0,
+            "MuzzleVelocity": 259.0,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 20.3,
+            "PenetrationAt100m": 203.0,
+            "AddToAmmoGroup": "165mm L9",
+            "HESH": "true",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "hesh165"
         ]
     },
 
@@ -7899,6 +9990,21 @@
         "items": [
             "12inmkxvapshell",
             "12inmkxvapshellsalvo"
+        ]
+    },
+
+    "305mm/45 HE Mark IIa": {
+        "properties": {
+            "Mass": 386000,
+            "MuzzleVelocity": 823,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 48.3,
+            "PenetrationAt100m": 30,
+            "AddToAmmoGroup": "305mm/45 Mark X",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "12inshell"
         ]
     },
 
@@ -8623,6 +10729,21 @@
         ]
     },
 
+    "460mm Type 0 HE Shell": {
+        "properties": {
+            "Mass": 1360000,
+            "MuzzleVelocity": 805,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 61.7,
+            "PenetrationAt100m": 30,
+            "AddToAmmoGroup": "460mm Type 94",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "navyshell"
+        ]
+    },
+
     "460mm Type 3 Sanshikidan Shell": {
         "properties": {
             "Mass": 1360000,
@@ -9269,19 +11390,6 @@
         ]
     },
 
-    "5.6x15mmR .22 LR Subsonic": {
-        "properties": {
-            "Mass": 2.6,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "awcamphibianammo",
-            "awcamphibianammomod2",
-            "rugerammo"
-        ]
-    },
-
     "5V24 V-600 Volna Missile": {
         "properties": {
             "Mass": 912000,
@@ -9302,211 +11410,6 @@
         },
         "items": [
             "v55r"
-        ]
-    },
-
-    "6.5x50mmSR Arisaka": {
-        "properties": {
-            "Mass": 9.0,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "type38ammo",
-            "44_type3899ammo",
-            "type_96_mag",
-            "fedorovammo",
-            "6.5mmtype38cartridge"
-        ]
-    },
-
-    "6.5x50mmSR Arisaka Type 30 Ball": {
-        "properties": {
-            "Mass": 10.1,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "arisakaammo",
-            "type38ammot"
-        ]
-    },
-
-    "7.7x56mmR .303 British G Mark VI Tracer": {
-        "properties": {
-            "Mass": 10.3,
-            "FallSpeed": 1.0
-        },
-        "items": [
-            "sevencaltracer"
-        ]
-    },
-
-    "7.7x56mmR .303 British High Explosive": {
-        "properties": {
-            "Mass": 11.3,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 1
-        },
-        "items": [
-            "browning303ammozero"
-        ]
-    },
-
-    "7.7x56mmR .303 British Mk VII": {
-        "properties": {
-            "Mass": 11.3,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "brenammo30",
-            "brenammo100",
-            "vickerskammo100",
-            "leeenfieldammo",
-            "44_brenammo",
-            "44_leeenfieldammo",
-            "brenm5ammo50",
-            "brenm5ammo200",
-            "ww2_ammo_m1919",
-            "ww2_ammo_type97",
-            "lewisgunammo",
-            "lewisgunammo95rounds",
-            "lewisgunammo205rounds",
-            "leeenfieldammot",
-            "vickersbelt",
-            "vickersbelttracer",
-            "browning303ammo",
-            "sevencal",
-            "pg_7.7mm_browning_ammo"
-        ]
-    },
-
-    "7.62x38mmR Nagant FMJ": {
-        "properties": {
-            "Mass": 7.0,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "m1895ammo",
-            "m1894ammo"
-        ]
-    },
-
-    "7.62x54mmR 57-N-323S": {
-        "properties": {
-            "Mass": 9.6,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "dp28ammo",
-            "nagantammo",
-            "dragunovammo",
-            "44_dp28ammo",
-            "44_dt28ammo",
-            "44_mosinnagantammo",
-            "44_svt40ammo",
-            "avt40ammo",
-            "ww2_ammo_shkas",
-            "ww2_ammo_ussr762mm",
-            "mosinammo",
-            "win1895ammo",
-            "guerrillarifleammo",
-            "nagantammot",
-            "svt40ammo",
-            "pm1910ap",
-            "pm1910tracer",
-            "dt28ammo",
-            "shkasammo",
-            "pkmbox",
-            "pktbox",
-            "sv98ammo",
-            "7.62mmmosinnagantcartridge",
-            "lmg_ukm2013_ammo",
-            "carbondp28ammo"
-        ]
-    },
-
-    "8x27mmR French Ordnance": {
-        "properties": {
-            "Mass": 7.8,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "mdle1892ammo",
-            "modele1892ammo"
-        ]
-    },
-
-    "8x50mmR Lebel Balle D": {
-        "properties": {
-            "Mass": 12.8,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "chauchautammo",
-            "chauchatammo",
-            "mle1914belt",
-            "berthierammo",
-            "lebelammo",
-            "shitmgammo",
-            "8mmlebel",
-            "8mmlebelt",
-            "mle1914belttracer",
-            "berthierammot",
-            "berthierpunjabi",
-            "berthierpunjabit"
-        ]
-    },
-
-    "8x50mmR Steyr M90": {
-        "properties": {
-            "Mass": 15.8,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "m95ammo",
-            "manlickerammo"
-        ]
-    },
-
-    "8x50mmR Steyr Tracer": {
-        "properties": {
-            "Mass": 13.4,
-            "FallSpeed": 1.0
-        },
-        "items": [
-            "manlickerammot"
-        ]
-    },
-
-    "8x56mmR Mannlicher": {
-        "properties": {
-            "Mass": 13,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "manlickerammo31",
-            "manlickerammo31t",
-            "31mammo"
-        ]
-    },
-
-    "8x58mmR Danish Krag": {
-        "properties": {
-            "Mass": 15.5,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "8mmkrab",
-            "8mmkrabt"
         ]
     },
 
@@ -9601,6 +11504,20 @@
             "iglaammo",
             "sam_9k38ammo_aa_",
             "gfs_igla"
+        ]
+    },
+
+    "9M111 Fagot": {
+        "properties": {
+            "Mass": 11300,
+            "MuzzleVelocity": 186,
+            "ExplosiveMassTNTKg": 2.88,
+            "PenetrationAt100m": 400,
+            "HEAT": "true",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "9m111_fagot_missile_heat_"
         ]
     },
 
@@ -9799,468 +11716,17 @@
         ]
     },
 
-    "9x33mmR .357 Magnum": {
+    "12-pdr Mountain Howitzer HE (Napoleon shell surrogate)": {
         "properties": {
-            "Mass": 10.2,
+            "Mass": 4037,
+            "MuzzleVelocity": 439,
             "FallSpeed": 1.0,
-            "FlakParticles": 0
+            "ExplosiveMassTNTg": 170,
+            "PenetrationAt100m": 10,
+            "AddToAmmoGroup": "12-pdr Mountain Howitzer"
         },
         "items": [
-            "357magnum"
-        ]
-    },
-
-    "10.4x38mmR Vetterli Rimfire": {
-        "properties": {
-            "Mass": 20.4,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "vetterliammo"
-        ]
-    },
-
-    "10.75x58mmR Berdan": {
-        "properties": {
-            "Mass": 24,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "berdan2ammo"
-        ]
-    },
-
-    "11.6x19mmR .455 Webley": {
-        "properties": {
-            "Mass": 17.2,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "webleyammo",
-            "44_webleyammo",
-            "hg_webleymk6_ammo"
-        ]
-    },
-
-    "11.15x60mmR Mauser M71 Ball": {
-        "properties": {
-            "Mass": 25,
-            "FallSpeed": 1.0
-        },
-        "items": [
-            "g71ammo"
-        ]
-    },
-
-    "11x23mmR .44 Henry Rimfire": {
-        "properties": {
-            "Mass": 13.0,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "henryammo"
-        ]
-    },
-
-    "11x59mmR Gras Mle 1874 Ball": {
-        "properties": {
-            "Mass": 25,
-            "FallSpeed": 1.0
-        },
-        "items": [
-            "grasammo"
-        ]
-    },
-
-    "12.7x33mmRB .50 Action Express": {
-        "properties": {
-            "Mass": 19.0,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "deserteagleammo"
-        ]
-    },
-
-    "13.2x92mmSR TuF SmK": {
-        "properties": {
-            "Mass": 51.5,
-            "FallSpeed": 1.0,
-            "PenetrationAt100m": 26
-        },
-        "items": [
-            "tankgewehrammo"
-        ]
-    },
-
-    "13.9x99mmB .55 Boys Mk I Ball": {
-        "properties": {
-            "Mass": 47.6,
-            "FallSpeed": 1.0,
-            "PenetrationAt100m": 22,
-            "FlakParticles": 0
-        },
-        "items": [
-            "boysrifleammo"
-        ]
-    },
-
-    "13x63mmB": {
-        "properties": {
-            "AddRound": [
-                "Pzgr.L'Spur 1 38 0 750 30 flansmod.fmtracerred",
-                "Sprgr. 1 34 3 710 0"
-            ],
-            "FallSpeed": 1.0
-        },
-        "propertyModes": {
-            "AddRound": "replace"
-        },
-        "items": [
-            "44_mg131ammo"
-        ]
-    },
-
-    "13x64mmB MG 131": {
-        "properties": {
-            "Mass": 34,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 1,
-            "PenetrationAt100m": 12
-        },
-        "items": [
-            "mg131ammo"
-        ]
-    },
-
-    "14x22mmR .56-56 Spencer": {
-        "properties": {
-            "Mass": 22.7,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "spencerammo"
-        ]
-    },
-
-    "18.5x70mmR 12 Gauge 00 Buckshot": {
-        "properties": {
-            "Mass": 3.5,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "trenchgunammo",
-            "12gaugeshell",
-            "12gbuckshotammo",
-            "12gaugebuckshell",
-            "12gaugeminishell",
-            "12gaugetestshell",
-            "doubletroubleshell",
-            "megadestroyershells",
-            "aaicawsbuckshotammo",
-            "mpp12gauge",
-            "sg_vepr12_8roundsshotshell_buckshot_",
-            "12gauge_shotshell_buckshot_"
-        ]
-    },
-
-    "18.5x70mmR 12 Gauge Birdshot": {
-        "properties": {
-            "Mass": 1.5,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "12gbirdshotammo",
-            "12gaugebirdshotshell",
-            "12gaugebirdshotpellets"
-        ]
-    },
-
-    "18.5x70mmR 12 Gauge Flechette": {
-        "properties": {
-            "Mass": 0.7,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "12gflechetteammo",
-            "12gpoisonedflechetteammo",
-            "aaicawsflechettiammo"
-        ]
-    },
-
-    "18.5x70mmR 12 Gauge High Explosive": {
-        "properties": {
-            "Mass": 30.0,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 5
-        },
-        "items": [
-            "12gheammo",
-            "aaicawsexplosiveammo"
-        ]
-    },
-
-    "18.5x70mmR 12 Gauge Incendiary": {
-        "properties": {
-            "Mass": 3.5,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "12gaugeshellincendiary",
-            "12gincendiaryammo"
-        ]
-    },
-
-    "18.5x70mmR 12 Gauge Rifled Slug": {
-        "properties": {
-            "Mass": 28.0,
-            "FallSpeed": 1.0,
-            "FlakParticles": 0
-        },
-        "items": [
-            "44_model10trenchgunammo",
-            "12gslugammo",
-            "12gaugeslugshell",
-            "mpp12gaugeslug"
-        ]
-    },
-
-    "20x70mmRB Becker AP-T": {
-        "properties": {
-            "Mass": 130,
-            "MuzzleVelocity": 500,
-            "FallSpeed": 1.0
-        },
-        "items": [
-            "becker20mmap"
-        ]
-    },
-
-    "20x70mmRB Becker HE-T": {
-        "properties": {
-            "Mass": 130,
-            "MuzzleVelocity": 500,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 0.01
-        },
-        "items": [
-            "becker20mmhe"
-        ]
-    },
-
-    "20x72mmRB Type 99-1": {
-        "properties": {
-            "Mass": 128,
-            "MuzzleVelocity": 600,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 11,
-            "PenetrationAt100m": 10
-        },
-        "items": [
-            "ww2_ammo_type99",
-            "type99mk1ammo"
-        ]
-    },
-
-    "20x80mmRB MG FF": {
-        "properties": {
-            "Mass": 92,
-            "MuzzleVelocity": 585,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 24,
-            "PenetrationAt100m": 8
-        },
-        "items": [
-            "ww2_ammo_mgff",
-            "mgffammo"
-        ]
-    },
-
-    "20x99mmR ShVAK": {
-        "properties": {
-            "Mass": 96,
-            "MuzzleVelocity": 815,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 6,
-            "PenetrationAt100m": 22
-        },
-        "items": [
-            "shvakammo",
-            "20mmt60"
-        ]
-    },
-
-    "20x138mmB Flak 30/38": {
-        "properties": {
-            "AddToAmmoGroup": "20mm Flak 38",
-            "Mass": 115,
-            "MuzzleVelocity": 900,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 6,
-            "PenetrationAt100m": 25
-        },
-        "items": [
-            "flakvierlingammo",
-            "ww2_shell_german20mmaa",
-            "ships_shell_german20mmaa",
-            "20mmpz280rnd",
-            "20mmpz280rndhe",
-            "pz.2f_shell_he_"
-        ],
-        "exceptions": {
-            "AddToAmmoGroup": [
-                "ww2_shell_german20mmaa"
-            ]
-        }
-    },
-
-    "20x138mmB Flak 38 Mixed Belt": {
-        "properties": {
-            "AddRound": [
-                "Sprgr.L'Spur 7 115 6.2 930 0 flansmod.fmtracerred",
-                "Brsprgr.L'Spur 7 120 2.4 900 0 flansmod.fmtracerred",
-                "Pzgr.L'Spur.Zerl 6 148 0 800 23 flansmod.fmtracerred"
-            ],
-            "AddToAmmoGroup": "20mm Flak 38"
-        },
-        "propertyModes": {
-            "AddRound": "replace"
-        },
-        "items": [
-            "ww2_shell_german20mmaa",
-            "aagun_2cm_flakvierling38_ammo_aa_",
-            "aa20mmratte"
-        ]
-    },
-
-    "23x152mmB BZT API-T": {
-        "properties": {
-            "Mass": 190.0,
-            "MuzzleVelocity": 970.0,
-            "FallSpeed": 1.0,
-            "AddToAmmoGroup": "23mm 2A7"
-        },
-        "items": [
-            "23mm"
-        ]
-    },
-
-    "23x152mmB OFZ HEI": {
-        "properties": {
-            "Mass": 183.0,
-            "MuzzleVelocity": 980.0,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 0.028489999999999998,
-            "AddToAmmoGroup": "23mm 2A7"
-        },
-        "items": [
-            "23mmhe"
-        ]
-    },
-
-    "23x152mmB VYa-23": {
-        "properties": {
-            "Mass": 200,
-            "MuzzleVelocity": 905,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 19,
-            "PenetrationAt100m": 25
-        },
-        "items": [
-            "ww2_ammo_wja23",
-            "vya23ammo"
-        ]
-    },
-
-    "25x183mmB 51B APDS-T (Generic Loading)": {
-        "properties": {
-            "Mass": 150,
-            "MuzzleVelocity": 1250,
-            "FallSpeed": 1.0,
-            "AddToAmmoGroup": "25mm ZPT90"
-        },
-        "items": [
-            "25mmapdschina"
-        ]
-    },
-
-    "25x183mmB 79F HEI-T (Type 87 surrogate)": {
-        "properties": {
-            "Mass": 250.0,
-            "MuzzleVelocity": 1050.0,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 0.02926,
-            "AddToAmmoGroup": "25mm ZPT90"
-        },
-        "items": [
-            "25mmhechina"
-        ]
-    },
-
-    "25x194mmR Hotchkiss Mle 1934": {
-        "properties": {
-            "Mass": 320,
-            "MuzzleVelocity": 900,
-            "FallSpeed": 1.0,
-            "PenetrationAt100m": 40
-        },
-        "items": [
-            "25mmapx"
-        ]
-    },
-
-    "28x199mmR 1.1-inch/75 AA Round": {
-        "properties": {
-            "AddToAmmoGroup": "1.1-inch/75 AA",
-            "Mass": 416,
-            "MuzzleVelocity": 823,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 20,
-            "PenetrationAt100m": 25
-        },
-        "items": [
-            "28mmammo",
-            "28mmammoquad",
-            "28mmammohet",
-            "28mmammohetquad"
-        ]
-    },
-
-    "30x90mmRB MK 108": {
-        "properties": {
-            "Mass": 330,
-            "MuzzleVelocity": 505,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 110,
-            "PenetrationAt100m": 10
-        },
-        "items": [
-            "ww2_ammo_mk108",
-            "mk108cannonammo",
-            "mk108ammo"
-        ]
-    },
-
-    "30x184mmB MK 103": {
-        "properties": {
-            "Mass": 330,
-            "MuzzleVelocity": 860,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 80,
-            "PenetrationAt100m": 95
-        },
-        "items": [
-            "mk103ammo"
+            "12pounderhowitzer_shell_he_"
         ]
     },
 
@@ -10289,140 +11755,6 @@
         ]
     },
 
-    "37x145mmR M4": {
-        "properties": {
-            "Mass": 608,
-            "MuzzleVelocity": 610,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 39,
-            "PenetrationAt100m": 25
-        },
-        "items": [
-            "37mmm4ammo"
-        ]
-    },
-
-    "37x263mmB Flak 18/36/37": {
-        "properties": {
-            "Mass": 640,
-            "MuzzleVelocity": 820,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 21,
-            "PenetrationAt100m": 35
-        },
-        "items": [
-            "44_flak37ammo",
-            "ww2_shell_german37mmaa",
-            "37mmammo",
-            "flak37ammo",
-            "flak37ammoap",
-            "flak37ammoshipborne"
-        ]
-    },
-
-    "37x380mmR SK C/30": {
-        "properties": {
-            "Mass": 745,
-            "MuzzleVelocity": 1000,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 24,
-            "PenetrationAt100m": 40
-        },
-        "items": [
-            "37mmammobox",
-            "37mmammobox240",
-            "37mmammobox360",
-            "37mmammoboxtracer"
-        ]
-    },
-
-    "40x158mmR QF 2-pdr Pom-Pom": {
-        "properties": {
-            "Mass": 907,
-            "MuzzleVelocity": 701,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 71,
-            "PenetrationAt100m": 25
-        },
-        "items": [
-            "2pdrpomfpomfammo",
-            "2pdrpomfpomfammohv",
-            "2pdrpomfpomfammohvt"
-        ]
-    },
-
-    "40x311mmR Bofors": {
-        "properties": {
-            "Mass": 900,
-            "MuzzleVelocity": 881,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 62,
-            "PenetrationAt100m": 50
-        },
-        "items": [
-            "44_bofors40mmammo",
-            "boforsammo",
-            "40mmammobox",
-            "40mmammo250",
-            "40mmammotracer",
-            "boforsammoap",
-            "boforsammoac130",
-            "gfs_ifv40mmhe",
-            "aagun_40mm_bofors_ammo_aa_",
-            "40mmaaammo"
-        ]
-    },
-
-    "40x311mmR Bofors 36M AP": {
-        "properties": {
-            "Mass": 940,
-            "MuzzleVelocity": 850,
-            "FallSpeed": 1.0,
-            "PenetrationAt100m": 55
-        },
-        "items": [
-            "40mmshellhungary"
-        ]
-    },
-
-    "40x364mmR Bofors PFHE": {
-        "properties": {
-            "Mass": 880,
-            "MuzzleVelocity": 1005,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 100,
-            "PenetrationAt100m": 15
-        },
-        "items": [
-            "40mmammoaa"
-        ]
-    },
-
-    "40x365mmR Kulsgr m/90 HE-VT": {
-        "properties": {
-            "Mass": 880.0,
-            "MuzzleVelocity": 1015.0,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 0.1908,
-            "AddToAmmoGroup": "40mm Bofors L70"
-        },
-        "items": [
-            "cv90ammohe"
-        ]
-    },
-
-    "40x365mmR Slpprj m/90 APFSDS-T": {
-        "properties": {
-            "Mass": 500.0,
-            "MuzzleVelocity": 1465.0,
-            "FallSpeed": 1.0,
-            "AddToAmmoGroup": "40mm Bofors L70"
-        },
-        "items": [
-            "cv90ammoap"
-        ]
-    },
-
     "57-90mm Naval Bombardment Shell (Generic)": {
         "properties": {
             "Mass": 6000,
@@ -10434,19 +11766,6 @@
         "items": [
             "navalbombardmentshellxs",
             "navalraidingshellxs"
-        ]
-    },
-
-    "57x121mmR Ho-401": {
-        "properties": {
-            "Mass": 1500,
-            "MuzzleVelocity": 495,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 100,
-            "PenetrationAt100m": 25
-        },
-        "items": [
-            "57mmho401"
         ]
     },
 
@@ -10581,7 +11900,8 @@
         },
         "items": [
             "44_250kg500lbbomb",
-            "generic500lbbomb"
+            "generic500lbbomb",
+            "gfs_250kg"
         ]
     },
 
@@ -10634,7 +11954,20 @@
             "FragType": "HIGH_FRAG"
         },
         "items": [
-            "submunition"
+            "submunition",
+            "gfs_clustermunition"
+        ]
+    },
+
+    "500kg General-Purpose Bomb (Generic)": {
+        "properties": {
+            "Mass": 500000,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 250,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "gfs_500kg"
         ]
     },
 
@@ -10648,6 +11981,43 @@
         "items": [
             "generic2000lbbomb",
             "kirovrabomb"
+        ]
+    },
+
+    "1000kg General-Purpose Bomb (Generic)": {
+        "properties": {
+            "Mass": 1000000,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 500,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "1000kgbomb",
+            "gfs_1000kg"
+        ]
+    },
+
+    "AAM-3 (AIM-9L warhead surrogate)": {
+        "properties": {
+            "Mass": 91000,
+            "MuzzleVelocity": 850,
+            "ExplosiveMassTNTKg": 4.6,
+            "FragType": "HE_SHELL",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "aam3"
+        ]
+    },
+
+    "AAM-4 (AMRAAM warhead surrogate)": {
+        "properties": {
+            "Mass": 220000,
+            "MuzzleVelocity": 1360,
+            "ExplosiveMassTNTKg": 23
+        },
+        "items": [
+            "aam4"
         ]
     },
 
@@ -10676,6 +12046,19 @@
         },
         "items": [
             "ab9ammo"
+        ]
+    },
+
+    "Advanced Multi-Purpose Missile (Fictional)": {
+        "properties": {
+            "Mass": 226800.0,
+            "MuzzleVelocity": 306.0,
+            "ExplosiveMassTNTKg": 51.2,
+            "FragType": "HE_SHELL",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "sniperbomb"
         ]
     },
 
@@ -10745,6 +12128,17 @@
             "agm65d",
             "gfs_agm65",
             "maverick"
+        ]
+    },
+
+    "AGM-88B HARM (Filler Estimate)": {
+        "properties": {
+            "Mass": 360000,
+            "MuzzleVelocity": 680,
+            "ExplosiveMassTNTKg": 32.89
+        },
+        "items": [
+            "agm88"
         ]
     },
 
@@ -10897,6 +12291,19 @@
         ]
     },
 
+    "AIM-9E Sidewinder (AIM-9B warhead surrogate)": {
+        "properties": {
+            "Mass": 74000,
+            "MuzzleVelocity": 578.0,
+            "ExplosiveMassTNTKg": 7.6,
+            "FragType": "HE_SHELL",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "aim9emissile"
+        ]
+    },
+
     "AIM-9J Sidewinder": {
         "properties": {
             "Mass": 76900.0,
@@ -10971,7 +12378,9 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "hj10"
+            "hj10",
+            "gfs_hj10",
+            "gfs_hj10sub"
         ]
     },
 
@@ -11141,6 +12550,20 @@
         },
         "items": [
             "ballistabolt"
+        ]
+    },
+
+    "Bamboo Spear Contact Token (Fictional)": {
+        "properties": {
+            "Damage": 3,
+            "DamageVsLiving": 3,
+            "DamageVsVehicles": 3,
+            "DamageVsPlanes": 3,
+            "MuzzleVelocity": 20,
+            "FallSpeed": 0
+        },
+        "items": [
+            "bamboospear_ammo"
         ]
     },
 
@@ -11546,7 +12969,8 @@
             "FragType": "AIRBURST_AP"
         },
         "items": [
-            "cbu87"
+            "cbu87",
+            "gfs_cluster"
         ]
     },
 
@@ -11761,6 +13185,21 @@
         ]
     },
 
+    "Early Vehicle ATGM (Generic)": {
+        "properties": {
+            "Mass": 27800.0,
+            "MuzzleVelocity": 286.0,
+            "ExplosiveMassTNTKg": 5.7,
+            "PenetrationAt100m": 431.0,
+            "HEAT": "true",
+            "FragType": "HE_SHELL",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "earlyatgm"
+        ]
+    },
+
     "Energy Cannon Powerpack, Fighter (Fictional)": {
         "properties": {
             "Damage": 38,
@@ -11872,6 +13311,19 @@
         },
         "items": [
             "minigunexplosiveammo"
+        ]
+    },
+
+    "F-1N-60 Rifle Grenade (F1 Fill Surrogate)": {
+        "properties": {
+            "Mass": 630,
+            "MuzzleVelocity": 45,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.06,
+            "FragType": "HIGH_FRAG"
+        },
+        "items": [
+            "gl_kbkgwz.1960_ammo_he_"
         ]
     },
 
@@ -12211,6 +13663,18 @@
         },
         "items": [
             "gbu24"
+        ]
+    },
+
+    "GBU-31 JDAM (Mk 84 Warhead)": {
+        "properties": {
+            "Mass": 925000,
+            "ExplosiveMassTNTKg": 578.6,
+            "FragType": "GP_BOMB",
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "gfs_jdam"
         ]
     },
 
@@ -12925,6 +14389,18 @@
         ]
     },
 
+    "Lancaster Large Bomb (Generic)": {
+        "properties": {
+            "Mass": 1814000,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 907,
+            "FragType": "GP_BOMB"
+        },
+        "items": [
+            "planebomb_largebomb_lancasteronly_"
+        ]
+    },
+
     "Large Canister Shot (Generic)": {
         "properties": {
             "Mass": 45000,
@@ -12946,7 +14422,8 @@
             "FragType": "GP_BOMB"
         },
         "items": [
-            "largebomb"
+            "largebomb",
+            "planebomb_largebomb"
         ]
     },
 
@@ -13097,7 +14574,8 @@
             "44_88sub",
             "44_90sub",
             "44_100sub",
-            "44_122sub"
+            "44_122sub",
+            "gfs_apfsdssub"
         ]
     },
 
@@ -13136,6 +14614,18 @@
         },
         "items": [
             "littleboy"
+        ]
+    },
+
+    "Long-Range Tank Shell (Generic)": {
+        "properties": {
+            "Mass": 4300.0,
+            "MuzzleVelocity": 1670.0,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 468.0
+        },
+        "items": [
+            "snipertank"
         ]
     },
 
@@ -13298,6 +14788,18 @@
         ]
     },
 
+    "Meteor BVRAAM (AMRAAM Charge Surrogate)": {
+        "properties": {
+            "Mass": 190000,
+            "MuzzleVelocity": 1360,
+            "ExplosiveMassTNTKg": 23
+        },
+        "items": [
+            "gfs_meteor",
+            "meteor"
+        ]
+    },
+
     "MG-2042 Round (Fictional)": {
         "properties": {
             "Mass": 9.5,
@@ -13438,6 +14940,20 @@
         ]
     },
 
+    "MQ-9 Guided AGM (Generic)": {
+        "properties": {
+            "Mass": 45700,
+            "MuzzleVelocity": 425,
+            "ExplosiveMassTNTKg": 11,
+            "PenetrationAt100m": 1000,
+            "HEAT": "true",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "advancedagm"
+        ]
+    },
+
     "Napalm Incendiary Tank (Generic)": {
         "properties": {
             "Mass": 340000.0,
@@ -13447,7 +14963,8 @@
             "FragType": "LOW_FRAG"
         },
         "items": [
-            "napalm"
+            "napalm",
+            "hellbomb"
         ]
     },
 
@@ -13816,6 +15333,20 @@
         ]
     },
 
+    "PGN-60 Rifle Grenade (Generic)": {
+        "properties": {
+            "Mass": 580,
+            "MuzzleVelocity": 50,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 0.368,
+            "PenetrationAt100m": 200,
+            "HEAT": "true"
+        },
+        "items": [
+            "gl_kbkgwz.1960_ammo_heat_"
+        ]
+    },
+
     "PHASR Dazzler Beam (Fictional)": {
         "properties": {
             "Damage": 0,
@@ -13962,6 +15493,18 @@
         },
         "items": [
             "plumbatae"
+        ]
+    },
+
+    "Pre-Industrial Round Shot (Generic)": {
+        "properties": {
+            "Mass": 5580,
+            "MuzzleVelocity": 439,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 50
+        },
+        "items": [
+            "cannonball"
         ]
     },
 
@@ -14362,6 +15905,17 @@
         ]
     },
 
+    "RIM-116 Block 1 (Warhead Fill Estimate)": {
+        "properties": {
+            "Mass": 73500,
+            "MuzzleVelocity": 680,
+            "ExplosiveMassTNTKg": 5.25
+        },
+        "items": [
+            "ram1missile"
+        ]
+    },
+
     "RIM-161 SM-3 Block IIA Kinetic Interceptor": {
         "properties": {
             "Mass": 2250000,
@@ -14697,6 +16251,56 @@
         ]
     },
 
+    "Second-Generation Vehicle ATGM (Generic)": {
+        "properties": {
+            "Mass": 16500.0,
+            "MuzzleVelocity": 470.0,
+            "ExplosiveMassTNTKg": 5.8,
+            "PenetrationAt100m": 700.0,
+            "HEAT": "true",
+            "FragType": "HE_SHELL",
+            "HasSubmunitions": "false"
+        },
+        "items": [
+            "mk2atgm"
+        ]
+    },
+
+    "Semi-Armour-Piercing Bomb (Generic)": {
+        "properties": {
+            "Mass": 227000,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 56.75,
+            "FragType": "THICK_CASE"
+        },
+        "items": [
+            "tankkiller",
+            "bunkerbuster"
+        ]
+    },
+
+    "Shared Full-Power Machine-Gun Round (Generic)": {
+        "properties": {
+            "Mass": 9.5,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "30calammo"
+        ]
+    },
+
+    "Shared Intermediate Rifle Round (Generic)": {
+        "properties": {
+            "Mass": 4.0,
+            "FallSpeed": 1.0,
+            "FlakParticles": 0
+        },
+        "items": [
+            "5.56mm_ammo"
+        ]
+    },
+
     "Signal Flare (Generic)": {
         "properties": {
             "Mass": 90.0,
@@ -14769,7 +16373,8 @@
             "FragType": "GP_BOMB"
         },
         "items": [
-            "smallbomb"
+            "smallbomb",
+            "planebomb_smallbomb"
         ]
     },
 
@@ -14845,6 +16450,16 @@
         ]
     },
 
+    "Spetsnaz Ballistic Knife Blade (Generic)": {
+        "properties": {
+            "Mass": 100,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "sptsnazkife_ammo"
+        ]
+    },
+
     "Spike-LR ATGM": {
         "properties": {
             "Mass": 10500.0,
@@ -14885,6 +16500,32 @@
         ]
     },
 
+    "Starstreak HVM (Combined Dart Effect)": {
+        "properties": {
+            "Mass": 14000.0,
+            "MuzzleVelocity": 1189.0,
+            "ExplosiveMassTNTKg": 1.6,
+            "PenetrationAt100m": 30.0,
+            "HasSubmunitions": "false",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "psam_starstreakammo_aa_"
+        ]
+    },
+
+    "Storm Shadow (BROACH Fill Estimate)": {
+        "properties": {
+            "Mass": 1300000,
+            "MuzzleVelocity": 300,
+            "ExplosiveMassTNTKg": 130,
+            "FragType": "THICK_CASE"
+        },
+        "items": [
+            "stormshadow"
+        ]
+    },
+
     "Sturmkugel Round (Fictional)": {
         "properties": {
             "Mass": 120,
@@ -14908,6 +16549,35 @@
         },
         "items": [
             "tlsammo"
+        ]
+    },
+
+    "Tank Anti-Personnel HE Shell (Generic)": {
+        "properties": {
+            "Mass": 6760,
+            "MuzzleVelocity": 594,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 680,
+            "PenetrationAt100m": 10,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "railgun"
+        ]
+    },
+
+    "Tank HEAT Shell (Generic)": {
+        "properties": {
+            "Mass": 19000,
+            "MuzzleVelocity": 905,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 2.8,
+            "PenetrationAt100m": 550,
+            "HEAT": "true",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "armor"
         ]
     },
 
@@ -15021,6 +16691,47 @@
         },
         "items": [
             "type3sanshiki"
+        ]
+    },
+
+    "Type 79 Jyu-MAT": {
+        "properties": {
+            "Mass": 19900.0,
+            "MuzzleVelocity": 200.0,
+            "ExplosiveMassTNTKg": 5.5,
+            "PenetrationAt100m": 700.0,
+            "HEAT": "true",
+            "HasSubmunitions": "false",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "gfs_type-79"
+        ]
+    },
+
+    "Type 91 SAM (Stinger physical surrogate)": {
+        "properties": {
+            "Mass": 10100,
+            "MuzzleVelocity": 750,
+            "ExplosiveMassTNTg": 600
+        },
+        "items": [
+            "gfs_type93"
+        ]
+    },
+
+    "Type 96 MPMS (Type 79 Warhead Surrogate)": {
+        "properties": {
+            "Mass": 60000,
+            "MuzzleVelocity": 200.0,
+            "ExplosiveMassTNTKg": 5.5,
+            "PenetrationAt100m": 700.0,
+            "HEAT": "true",
+            "HasSubmunitions": "false",
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "gfs_type96"
         ]
     },
 
@@ -15246,6 +16957,39 @@
         ]
     },
 
+    "VLS Anti-Air Missile (Fictional)": {
+        "properties": {
+            "Mass": 590000,
+            "MuzzleVelocity": 1000,
+            "ExplosiveMassTNTKg": 68
+        },
+        "items": [
+            "vlsaa"
+        ]
+    },
+
+    "VLS Anti-Ship Missile (Fictional)": {
+        "properties": {
+            "Mass": 690800.0,
+            "MuzzleVelocity": 290,
+            "ExplosiveMassTNTKg": 127.4
+        },
+        "items": [
+            "vlsas"
+        ]
+    },
+
+    "VLS Land-Attack Missile (Fictional)": {
+        "properties": {
+            "Mass": 1443000,
+            "MuzzleVelocity": 250,
+            "ExplosiveMassTNTKg": 222.895
+        },
+        "items": [
+            "vlsal"
+        ]
+    },
+
     "Walkure Plasma Bolt (Fictional)": {
         "properties": {
             "Damage": 38.3,
@@ -15257,6 +17001,18 @@
         },
         "items": [
             "valkyrieammo"
+        ]
+    },
+
+    "WE.177A Nuclear Bomb (10 kt Setting)": {
+        "properties": {
+            "Mass": 272000,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 10000000,
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "we177"
         ]
     },
 
@@ -15279,6 +17035,17 @@
         },
         "items": [
             "yj18"
+        ]
+    },
+
+    "YJ-81 (C-802A Warhead Surrogate)": {
+        "properties": {
+            "Mass": 610000,
+            "MuzzleVelocity": 290,
+            "ExplosiveMassTNTKg": 82.5
+        },
+        "items": [
+            "gfs_yj81"
         ]
     },
 

@@ -61,7 +61,7 @@
     "460mm Type 94 Triple Mount": {
         "properties": {
             "RoundsPerMin": 5.142857,
-            "ReloadTime": 233.333333,
+            "ReloadTime": 234,
             "Dispersion": 0.2,
             "RealMassKg": 2774000,
             "UseRealisticVehicleHealth": "true"
