@@ -6,6 +6,7 @@ import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.WeaponOverrides;
 import com.flansmodultimate.api.equipment.WeaponTraits;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
+import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.physics.ModPhysics;
@@ -323,7 +324,7 @@ public final class EquipmentSupport
         ShootableType ammunition = ((ShootableItem) loaded.stack().getItem()).getConfigType();
         ModUtils.dropItem(holder.level(), holder, ammunition.getDropItemOnShoot(), ammunition.getContentPack());
         ModUtils.dropItem(holder.level(), holder, type.getDropItemOnShoot(), type.getContentPack());
-        if (type.getKnockback() > 0F && !holder.isCrouching())
+        if (type.getKnockback() > 0F && !ProneSupport.isBraced(holder))
             holder.setDeltaMovement(holder.getDeltaMovement().subtract(holder.getLookAngle().scale(type.getKnockback() * 0.1D)));
         ShootableItem.consumeRound(loaded.stack());
         item.setBulletItemStack(stack, loaded.stack(), loaded.slot(), holder.level().registryAccess());

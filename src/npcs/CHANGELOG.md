@@ -8,6 +8,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender
 * Flan NPC tactics for soldiers, vehicles and aircraft, including cover, peeking and Custom NPCs' own tactics with Flan's weapons
 * NPCs throw what they carry by per-kind strategies, and open carried parachutes when they fall
+* NPCs with Custom NPCs' crawling animation fire with their gun's prone accuracy and hold their gun forward along the body
 * Presets in the Wolff's Mod tab, such as Mob-like and Player-like, with undo; presets preserve the existing `Return to start` setting
 * Wandering range `0` allows unlimited roaming without triggering `Return to start` for distance; returning after combat and on respawn is preserved
 * `Teleport home when inactive` (Advanced > Performance & debug > Activity): NPCs with `Return to start` left away from home outside the simulation distance, or resting beyond their dormant range, are sent straight back once no player is near enough to see them go

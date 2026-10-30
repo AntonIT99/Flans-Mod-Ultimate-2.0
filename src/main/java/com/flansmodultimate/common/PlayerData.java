@@ -84,6 +84,12 @@ public class PlayerData
      */
     @Getter @Setter
     private boolean shownAiming;
+    /** Whether the player lies prone: decided by the server, and on clients as the server last said. */
+    @Getter @Setter
+    private boolean prone;
+    /** Server side: the game time when the player last lay down or stood up. */
+    @Getter @Setter
+    private long proneChangeTime = Long.MIN_VALUE / 2;
     /** The speed of the minigun the player is using */
     @Getter @Setter
     private float minigunSpeed;

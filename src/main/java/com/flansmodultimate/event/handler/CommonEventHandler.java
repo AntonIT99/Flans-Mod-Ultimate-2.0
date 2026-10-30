@@ -236,6 +236,7 @@ public final class CommonEventHandler
     public static void onPlayerTick(Player player)
     {
         PlayerData.getInstance(player).tick(player);
+        ProneSupport.tick(player);
 
         if (!player.level().isClientSide)
         {
@@ -264,6 +265,8 @@ public final class CommonEventHandler
             // Player data outlives the connection, so a player who disconnected while
             // aiming would come back still aiming until they next raised the sights.
             PlayerData.getInstance(sp).setScoped(false);
+            // The client remembers players across connections; a player always arrives standing.
+            ProneSupport.sendState(sp, sp);
             GunArmPoses.syncPlayer(sp);
             HeldItemPresentation.sendTo(sp, sp);
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
@@ -288,7 +291,15 @@ public final class CommonEventHandler
             player.setHealth(player.getMaxHealth());
     }
 
-    /** A player coming into view brings how they hold their guns, which only changes when they change it. */
+    /** The client builds a new player entity in the new dimension, which stands up. */
+    @SubscribeEvent
+    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event)
+    {
+        if (event.getEntity() instanceof ServerPlayer player)
+            ProneSupport.reset(player);
+    }
+
+    /** A player coming into view brings how they hold their guns and whether they lie prone, which only change when they change them. */
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event)
     {
@@ -297,7 +308,10 @@ public final class CommonEventHandler
         if (event.getTarget() instanceof LivingEntity holder)
             HeldItemPresentation.sendTo(holder, tracker);
         if (event.getTarget() instanceof ServerPlayer target)
+        {
             GunArmPoses.sendPlayerState(target, tracker);
+            ProneSupport.sendState(target, tracker);
+        }
         else if (event.getTarget() instanceof Driveable driveable)
             driveable.sendPartStateTo(tracker);
     }
@@ -314,6 +328,7 @@ public final class CommonEventHandler
         DistantSync.unsubscribe(event.getEntity().getUUID());
         EntityTrackingPins.unpin(event.getEntity().getUUID());
         regenTimers.remove(event.getEntity().getUUID());
+        ProneSupport.forget(event.getEntity());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);
     }
@@ -342,6 +357,7 @@ public final class CommonEventHandler
     {
         if (event.getEntity() instanceof ServerPlayer player)
         {
+            ProneSupport.reset(player);
             applyMaxHealth(player);
             // A player respawning after death starts at full health, including any health the setting added
             if (!event.isEndConquered())

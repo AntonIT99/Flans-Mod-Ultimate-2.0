@@ -2,6 +2,7 @@ package com.wolffsmod.npcs;
 
 import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.mojang.logging.LogUtils;
+import com.wolffsmod.npcs.combat.NpcPosture;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
@@ -38,6 +39,7 @@ public class NpcsMod
         NpcNetworkPlatform.init(modEventBus);
         TeamsBots.register();
         FriendlyFire.register();
+        NpcPosture.register();
         FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);
         modEventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(FlansScriptApi::register));
     }

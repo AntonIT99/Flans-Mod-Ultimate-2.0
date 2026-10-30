@@ -3,9 +3,11 @@ package com.flansmodultimate.common.raytracing;
 import com.flansmodultimate.api.equipment.ArmPoseRule;
 import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
 import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
+import com.flansmodultimate.common.guns.ProneArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
@@ -184,6 +186,10 @@ public class PlayerSnapshot
         if (swimAmount > 0F)
             animateSwimming(p, swimAmount, limbSwing, attackTime, rightArm, leftArm, rightLeg, leftLeg);
 
+        // Guns held forward along a prone body, as EquipmentAnimationSupport.prone poses the model
+        ProneArmPoses.resolve(gunPoses, rightHanded, headPitch * Mth.DEG_TO_RAD, (headYaw - bodyYaw) * Mth.DEG_TO_RAD, ProneSupport.lyingAmount(p, swimAmount))
+            .ifPresent(prone -> poseProne(prone, head, rightArm, leftArm));
+
         customArm(p, InteractionHand.MAIN_HAND, rightHanded ? rightArm : leftArm);
         customArm(p, InteractionHand.OFF_HAND, rightHanded ? leftArm : rightArm);
 
@@ -267,6 +273,15 @@ public class PlayerSnapshot
             root.rotate(PlaneRiderRotation.at(plane, partialTick, bodyYaw));
 
         return root.scale(-MODEL_SCALE, -MODEL_SCALE, MODEL_SCALE).translate(0F, -1.501F, 0F);
+    }
+
+    private static void poseProne(ProneArmPoses.Result prone, Part head, Part rightArm, Part leftArm)
+    {
+        head.rotate(prone.head());
+        if (prone.rightArm() != null)
+            rightArm.rotate(prone.rightArm());
+        if (prone.leftArm() != null)
+            leftArm.rotate(prone.leftArm());
     }
 
     private static float sleepDirectionToRotation(Direction direction)
@@ -680,6 +695,13 @@ public class PlayerSnapshot
             this.x = x;
             this.y = y;
             this.z = z;
+        }
+
+        private void rotate(ProneArmPoses.Rotation rotation)
+        {
+            xRot = rotation.x();
+            yRot = rotation.y();
+            zRot = rotation.z();
         }
     }
 }

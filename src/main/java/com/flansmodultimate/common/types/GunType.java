@@ -107,6 +107,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public static final float DEFAULT_RECOIL_CONTROL = 0.8F;
     public static final float DEFAULT_RECOIL_CONTROL_SPRINTING = 0.9F;
     public static final float DEFAULT_RECOIL_CONTROL_SNEAKING = 0.7F;
+    /** Lying prone, the ground carries the gun: unless stated, the sneaking control applied twice. */
+    public static final float DEFAULT_RECOIL_CONTROL_PRONE = DEFAULT_RECOIL_CONTROL_SNEAKING * DEFAULT_RECOIL_CONTROL_SNEAKING;
 
     /* Countering gun recoil can be modelled with angle=n^tick where n is the coefficient here. */
     /**
@@ -121,6 +123,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * The above variable but for sneaking.
      */
     protected float recoilCounterCoefficientSneaking = DEFAULT_RECOIL_CONTROL_SNEAKING;
+    /**
+     * The above variable but for lying prone; unset (NaN) takes the sneaking one squared.
+     */
+    protected float recoilCounterCoefficientProne = Float.NaN;
 
     // Ammo & Reload Variables
     /**
@@ -186,6 +192,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CIRCLE;
     protected float walkSpreadModifier = 1.8F;
     protected float sneakSpreadModifier = 0.63F;
+    /** Spread multiplier while lying prone; unset (NaN) takes the sneaking one squared. */
+    protected float proneSpreadModifier = Float.NaN;
     protected float sprintSpreadModifier = 7.0F;
     protected float airborneSpreadModifier = 1.5F;
     /**
@@ -798,6 +806,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         recoilPitch = readValue("Recoil", recoilPitch, file);
         recoilCounterCoefficient = readValue("CounterRecoilForce", recoilCounterCoefficient, file);
         recoilCounterCoefficientSneaking = readValue("CounterRecoilForceSneaking", recoilCounterCoefficientSneaking, file);
+        recoilCounterCoefficientProne = readValue("CounterRecoilForceProne", recoilCounterCoefficientProne, file);
         recoilCounterCoefficientSprinting = readValue("CounterRecoilForceSprinting", recoilCounterCoefficientSprinting, file);
         recoilYaw = readValue("RecoilYaw", recoilYaw, file);
         rndRecoilPitchRange = readValue("RandomRecoilRange", rndRecoilPitchRange, file);
@@ -846,6 +855,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         walkSpreadModifier = readValue("WalkSpreadMultiplier", walkSpreadModifier, file);
         sneakSpreadModifier = readValue("SneakSpreadModifier", sneakSpreadModifier, file);
         sneakSpreadModifier = readValue("SneakSpreadMultiplier", sneakSpreadModifier, file);
+        proneSpreadModifier = readValue("ProneSpreadModifier", proneSpreadModifier, file);
+        proneSpreadModifier = readValue("ProneSpreadMultiplier", proneSpreadModifier, file);
         sprintSpreadModifier = readValue("SprintSpreadModifier", sprintSpreadModifier, file);
         sprintSpreadModifier = readValue("SprintSpreadMultiplier", sprintSpreadModifier, file);
         airborneSpreadModifier = readValue("AirborneSpreadModifier", airborneSpreadModifier, file);
@@ -1677,6 +1688,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             case SNEAKING :
                 stackSpread *= sneakSpreadModifier;
                 break;
+            case PRONE :
+                stackSpread *= getProneSpreadModifier();
+                break;
             default :
                 break;
         }
@@ -1687,6 +1701,12 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         }
 
         return stackSpread * (readDispersion ? ModCommonConfig.get().gunDispersionModifier() : ModCommonConfig.get().gunAccuracySpreadModifier());
+    }
+
+    /** The spread multiplier while lying prone: as stated, or else the sneaking one squared, so prone always steadies more. */
+    public float getProneSpreadModifier()
+    {
+        return Float.isNaN(proneSpreadModifier) ? sneakSpreadModifier * sneakSpreadModifier : proneSpreadModifier;
     }
 
     public float getSpread(@Nullable ItemStack stack)
@@ -1746,7 +1766,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         switch (enumMovement)
         {
-            case SNEAKING :
+            // Lying prone braces the gun at least as well as sneaking.
+            case SNEAKING, PRONE :
                 if (decreaseRecoilPitch != 0)
                 {
                     // backwards compatibility
@@ -1813,7 +1834,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         switch (enumMovement)
         {
-            case SNEAKING :
+            case SNEAKING, PRONE :
                 stackRecoilYaw = sneakingYawRecoil(stackRecoilYaw, decreaseRecoilYaw, recoilSneakingMultiplierYaw);
                 break;
             case SPRINTING :
@@ -1985,10 +2006,21 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public float getRecoilControl(ItemStack stack, boolean isSprinting, boolean isSneaking)
     {
+        return getRecoilControl(stack, isSprinting, isSneaking, false);
+    }
+
+    /**
+     * Get the recoil counter coefficient of the gun, taking into account attachments. Lying prone, which the ground
+     * supports, comes before sneaking.
+     */
+    public float getRecoilControl(ItemStack stack, boolean isSprinting, boolean isSneaking, boolean isProne)
+    {
         float control;
 
         if (isSprinting)
             control = recoilCounterCoefficientSprinting;
+        else if (isProne)
+            control = Float.isNaN(recoilCounterCoefficientProne) ? recoilCounterCoefficientSneaking * recoilCounterCoefficientSneaking : recoilCounterCoefficientProne;
         else if (isSneaking)
             control = recoilCounterCoefficientSneaking;
         else
@@ -1998,6 +2030,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         {
             if (isSprinting)
                 control *= attachment.recoilControlMultiplierSprinting;
+            else if (isProne)
+                control *= attachment.getRecoilControlMultiplierProne();
             else if (isSneaking)
                 control *= attachment.recoilControlMultiplierSneaking;
             else

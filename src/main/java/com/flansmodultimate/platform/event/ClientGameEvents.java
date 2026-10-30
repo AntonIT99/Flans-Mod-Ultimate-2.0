@@ -1,11 +1,13 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.ProneClient;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.sound.SoundSpatialization;
 import com.flansmodultimate.common.driveables.collision.HullCarry;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
@@ -56,6 +58,12 @@ public final class ClientGameEvents
         }
         ClientEventHandler.onClientTick();
         com.flansmodultimate.apocalyse.event.handler.ClientEventHandler.onClientTick();
+    }
+
+    @SubscribeEvent
+    public static void onMovementInputUpdate(MovementInputUpdateEvent event)
+    {
+        ProneClient.filterMovementInput(event.getEntity(), event.getInput());
     }
 
     @SubscribeEvent

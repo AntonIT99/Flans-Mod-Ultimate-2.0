@@ -130,6 +130,7 @@ public final class TooltipKeys
     public static final String PHYSICS_WING_AREA = "tooltip.flansmodultimate.physics.wingArea";
     public static final String PHYSICS_WING_LOADING = "tooltip.flansmodultimate.physics.wingLoading";
     public static final String PHYSICS_WING_SPAN = "tooltip.flansmodultimate.physics.wingSpan";
+    public static final String PRONE = "tooltip.flansmodultimate.prone";
     public static final String RECOIL = "tooltip.flansmodultimate.recoil";
     public static final String RECOIL_CONTROL = "tooltip.flansmodultimate.recoil_control";
     public static final String RELOAD_TIME = "tooltip.flansmodultimate.reload_time";

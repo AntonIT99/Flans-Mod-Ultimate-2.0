@@ -74,6 +74,7 @@ public record CommonConfigSnapshot(
     boolean muzzleFlashParticlesDefault,
     EnumPlayerAimPose playerAimPose,
     EnumEntityAimPose entityAimPose,
+    boolean allowProne,
 
     boolean shootablesCanBreakGlass,
     float newDamageSystemDamageReference,
@@ -170,7 +171,7 @@ public record CommonConfigSnapshot(
     boolean forceUncensoredContent
 )
 {
-    public static final int CURRENT_VERSION = 46;
+    public static final int CURRENT_VERSION = 47;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -241,6 +242,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.muzzleFlashParticlesDefault);
         buf.writeEnum(s.playerAimPose);
         buf.writeEnum(s.entityAimPose);
+        buf.writeBoolean(s.allowProne);
 
         buf.writeBoolean(s.shootablesCanBreakGlass);
         buf.writeFloat(s.newDamageSystemDamageReference);
@@ -417,6 +419,7 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readEnum(EnumPlayerAimPose.class),
             buf.readEnum(EnumEntityAimPose.class),
+            buf.readBoolean(),
 
             buf.readBoolean(),
             buf.readFloat(),

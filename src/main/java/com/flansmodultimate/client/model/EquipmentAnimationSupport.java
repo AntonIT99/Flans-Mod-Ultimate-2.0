@@ -3,8 +3,10 @@ package com.flansmodultimate.client.model;
 import com.flansmodultimate.api.client.equipment.ArmorPoseStep;
 import com.flansmodultimate.api.equipment.ArmPoseRule;
 import com.flansmodultimate.api.equipment.IEquipmentPolicy;
+import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
+import com.flansmodultimate.common.guns.ProneArmPoses;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -59,7 +61,40 @@ public final class EquipmentAnimationSupport
         for (InteractionHand hand : InteractionHand.values())
             if (GunArmPoses.classify(entity.getItemInHand(hand)) == GunArmPoses.HandItem.SHIELD)
                 hand(model, entity, hand, GunArmPoses.Arm.ONE_ARM);
+        prone(model, entity, Mth.wrapDegrees(entity.getYHeadRot() - entity.yBodyRot), entity.getXRot());
         customArms(model, entity);
+    }
+
+    /**
+     * Holds the guns of an entity lying prone forward along its body, towards where it looks, in place of the native crawling
+     * stroke; see {@link ProneArmPoses}.
+     *
+     * @param headYaw
+     *            the head's yaw relative to the body, in degrees
+     * @param headPitch
+     *            the head's pitch, in degrees
+     */
+    public static void prone(HumanoidModel<?> model, LivingEntity entity, float headYaw, float headPitch)
+    {
+        float lying = ProneSupport.lyingAmount(entity, model.swimAmount);
+        if (lying <= 0F)
+            return;
+        ProneArmPoses.resolve(GunArmPoses.resolve(entity), entity.getMainArm() == HumanoidArm.RIGHT, headPitch * Mth.DEG_TO_RAD, headYaw * Mth.DEG_TO_RAD, lying).ifPresent(prone ->
+        {
+            rotate(model.head, prone.head());
+            model.hat.copyFrom(model.head);
+            if (prone.rightArm() != null)
+                rotate(model.rightArm, prone.rightArm());
+            if (prone.leftArm() != null)
+                rotate(model.leftArm, prone.leftArm());
+        });
+    }
+
+    private static void rotate(ModelPart part, ProneArmPoses.Rotation rotation)
+    {
+        part.xRot = rotation.x();
+        part.yRot = rotation.y();
+        part.zRot = rotation.z();
     }
 
     private static void hand(HumanoidModel<?> model, LivingEntity entity, InteractionHand hand, GunArmPoses.Arm pose)

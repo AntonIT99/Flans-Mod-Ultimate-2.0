@@ -340,22 +340,25 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
                 float sprintingControlValue = configType.getRecoilControl(stack, true, false);
                 float sneakingControlValue = configType.getRecoilControl(stack, false, true);
                 float normalControlValue = configType.getRecoilControl(stack, false, false);
+                float proneControlValue = configType.getRecoilControl(stack, false, false, true);
 
                 final float EPS = 0.0001F;
                 boolean isDefault = Math.abs(sprintingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SPRINTING) < EPS && Math.abs(sneakingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SNEAKING) < EPS
-                    && Math.abs(normalControlValue - GunType.DEFAULT_RECOIL_CONTROL) < EPS;
+                    && Math.abs(normalControlValue - GunType.DEFAULT_RECOIL_CONTROL) < EPS && Math.abs(proneControlValue - GunType.DEFAULT_RECOIL_CONTROL_PRONE) < EPS;
 
                 if (!isDefault)
                 {
                     String sprintingControl = IFlanItem.formatFloat(1F - sprintingControlValue);
                     String sneakingControl = IFlanItem.formatFloat(1F - sneakingControlValue);
                     String normalControl = IFlanItem.formatFloat(1F - normalControlValue);
+                    String proneControl = IFlanItem.formatFloat(1F - proneControlValue);
 
                     tooltipComponents.add(Component.translatable(TooltipKeys.RECOIL_CONTROL).append(": ").withStyle(ChatFormatting.BLUE));
                     tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.SPRINTING).withStyle(ChatFormatting.RED)).append(" ")
-                        .append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)));
+                        .append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)).append(" ")
+                        .append(Component.translatable(TooltipKeys.PRONE).withStyle(ChatFormatting.DARK_GREEN)));
                     tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED).append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
+                        .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)).append(Component.literal(" " + proneControl).withStyle(ChatFormatting.DARK_GREEN)));
                 }
             }
 

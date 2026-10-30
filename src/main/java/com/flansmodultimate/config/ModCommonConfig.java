@@ -196,6 +196,7 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> MUZZLE_FLASH_PARTICLES_DEFAULT;
     private static final EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
     private static final EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
+    private static final BooleanValue ALLOW_PRONE;
 
     private static final BooleanValue BULLET_FLYBY_SOUNDS;
     private static final DoubleValue BULLET_FLYBY_RANGE_MULTIPLIER;
@@ -459,6 +460,7 @@ public final class ModCommonConfig
             ENFORCED: a held gun always keeps the arms raised in the aiming pose.
             DYNAMIC: a gun is raised only while the mob is firing it. Shields always stay raised.
             """).defineEnum("entityAimPose", EnumEntityAimPose.DYNAMIC);
+        ALLOW_PRONE = builder.comment("Whether players can lie prone with the Go Prone key. Lying still on the ground narrows a gun's spread by its ProneSpreadModifier.").define("allowProne", true);
         builder.pop();
 
         builder.push("Shootable Settings");
@@ -725,7 +727,7 @@ public final class ModCommonConfig
             GUN_DAMAGE_MODIFIER.get().floatValue(), GUN_RECOIL_MODIFIER.get().floatValue(), GUN_DISPERSION_MODIFIER.get().floatValue(), GUN_ACCURACY_SPREAD_MODIFIER.get().floatValue(),
             DEFAULT_ADS_SPREAD_MULTIPLIER.get().floatValue(), DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN.get().floatValue(), CANCEL_RELOAD_ON_WEAPON_SWITCH.get(), COMBINE_AMMO_ON_RELOAD.get(),
             AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get(), REALISTIC_RECOIL.get(), ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(), DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT.get(), MUZZLE_FLASH_PARTICLES_DEFAULT.get(),
-            PLAYER_AIM_POSE.get(), ENTITY_AIM_POSE.get(),
+            PLAYER_AIM_POSE.get(), ENTITY_AIM_POSE.get(), ALLOW_PRONE.get(),
 
             SHOOTABLES_CAN_BREAK_GLASS.get(), NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(), NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE.get().floatValue(), NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE.get().floatValue(),
@@ -1227,6 +1229,12 @@ public final class ModCommonConfig
         return config == null ? EnumEntityAimPose.DYNAMIC : config.entityAimPose();
     }
 
+    public static boolean isProneDisabled()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && !config.allowProne();
+    }
+
     public static int driveableTrackingRange()
     {
         CommonConfigSnapshot config = get();
@@ -1396,6 +1404,7 @@ public final class ModCommonConfig
         SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS, QuickSection.SERVER),
         PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE, QuickSection.SERVER),
         ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE, QuickSection.SERVER),
+        ALLOW_PRONE(() -> ModCommonConfig.ALLOW_PRONE, QuickSection.SERVER),
         DRIVEABLE_TRACKING_RANGE(() -> ModCommonConfig.DRIVEABLE_TRACKING_RANGE, QuickSection.SERVER),
         FLAN_NPC_TRACKING_RANGE(() -> ModCommonConfig.FLAN_NPC_TRACKING_RANGE, QuickSection.SERVER),
         RELOAD_SOUND_RANGE(() -> ModCommonConfig.RELOAD_SOUND_RANGE, QuickSection.SOUNDS),

@@ -60,6 +60,8 @@ public class AttachmentType extends PaintableType implements IScope
     protected float recoilControlMultiplier = 1F;
     protected float recoilControlMultiplierSneaking = 1F;
     protected float recoilControlMultiplierSprinting = 1F;
+    /** Unset (NaN) takes the sneaking one. */
+    protected float recoilControlMultiplierProne = Float.NaN;
     /** Another stacking variable for damage */
     @Getter
     protected float damageMultiplier = 1F;
@@ -188,6 +190,7 @@ public class AttachmentType extends PaintableType implements IScope
         recoilMultiplier = readValue("RecoilMultiplier", recoilMultiplier, file);
         recoilControlMultiplier = readValue("RecoilControlMultiplier", recoilControlMultiplier, file);
         recoilControlMultiplierSneaking = readValue("RecoilControlMultiplierSneaking", recoilControlMultiplierSneaking, file);
+        recoilControlMultiplierProne = readValue("RecoilControlMultiplierProne", recoilControlMultiplierProne, file);
         recoilControlMultiplierSprinting = readValue("RecoilControlMultiplierSprinting", recoilControlMultiplierSprinting, file);
         bulletSpeedMultiplier = readValue("BulletSpeedMultiplier", bulletSpeedMultiplier, file);
         shootDelayMultiplier = readValue("ShootDelayMultiplier", shootDelayMultiplier, file);
@@ -217,6 +220,12 @@ public class AttachmentType extends PaintableType implements IScope
 
         if (overlayName.equals("none"))
             overlayName = StringUtils.EMPTY;
+    }
+
+    /** The return to center force multiplier while lying prone: as stated, or else the sneaking one. */
+    public float getRecoilControlMultiplierProne()
+    {
+        return Float.isNaN(recoilControlMultiplierProne) ? recoilControlMultiplierSneaking : recoilControlMultiplierProne;
     }
 
     @Override
