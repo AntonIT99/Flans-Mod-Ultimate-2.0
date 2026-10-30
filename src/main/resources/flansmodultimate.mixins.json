@@ -21,6 +21,7 @@
       "CapeLayerMixin",
       "ChannelAccessor",
       "CreateWorldScreenApocalypseMixin",
+      "DeathScreenAccessor",
       "DriveableCameraMixin",
       "EntityRendererMixin",
       "ForceDarkLightMixin",

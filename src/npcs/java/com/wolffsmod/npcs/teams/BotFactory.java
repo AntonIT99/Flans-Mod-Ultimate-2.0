@@ -125,6 +125,10 @@ public final class BotFactory
         // A clone may keep the weapons and armour its maker gave it instead of the class's loadout.
         if (!added || !order.force().isKeepCloneEquipment())
             FlanSoldierLoadout.apply(npc, selection);
+        // A class carries a grenade or two per life, as for a player, so a bot throws them at any enemy it can safely reach
+        // rather than saving them for a group the plain NPC default waits for. A clone keeps the strategy its maker chose.
+        if (!added)
+            NpcTuning.of(npc).set(Value.GRENADE_USE, NpcTuning.Throwing.FREQUENT.ordinal());
         // Only clients know the class skin and whether it needs the 64x32 model, so each client puts it on.
         if (npc instanceof EntityCustomNpc custom && !order.force().usesClone() && !playerClass.getSkinOverrideVariants().isEmpty())
         {

@@ -8,6 +8,7 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +61,9 @@ public final class PacketTeamsState implements IClientPacket
     {}
     public record VoteOption(String mapName, String gameType, Component teams, int votes)
     {}
+    /** Where the headquarters of a side lie, for the deployment map. */
+    public record HeadquartersMarker(int sideId, double x, double z)
+    {}
     /** Viewer-independent data, built once for each broadcast rather than once per player. */
     public record SharedScoreboard(List<TeamScore> teamScores, List<VoteOption> voteOptions, List<ObjectiveSnapshot> objectives)
     {}
@@ -101,6 +105,8 @@ public final class PacketTeamsState implements IClientPacket
     private TeamsMap.ImageCrop deployImageCrop = TeamsMap.ImageCrop.FULL;
     private List<DeployLayoutEntry> deployLayout = List.of();
     private List<ObjectiveSnapshot> objectives = List.of();
+    @Getter
+    private List<HeadquartersMarker> headquarters = List.of();
     /** Whether a round has just ended, which is what makes a blank {@link #winnerId} a draw. */
     private boolean roundDecided;
     private String winnerId = "";
@@ -195,6 +201,7 @@ public final class PacketTeamsState implements IClientPacket
         deployImage = map.getDeployImage();
         deployImageCrop = map.getDeployImageCrop();
         deployLayout = map.getDeployLayout();
+        headquarters = manager.getHeadquartersPositions().entrySet().stream().map(entry -> new HeadquartersMarker(entry.getKey(), entry.getValue().x, entry.getValue().z)).toList();
     }
 
     public static SharedScoreboard createSharedScoreboard(TeamsManager manager)
@@ -342,6 +349,12 @@ public final class PacketTeamsState implements IClientPacket
             buf.writeFloat(entry.y());
         });
         data.writeCollection(objectives, (buf, objective) -> objective.write(buf));
+        data.writeCollection(headquarters, (buf, marker) ->
+        {
+            buf.writeVarInt(marker.sideId());
+            buf.writeDouble(marker.x());
+            buf.writeDouble(marker.z());
+        });
     }
 
     private static void writePlayer(PacketBuffer data, PlayerScore player)
@@ -409,6 +422,7 @@ public final class PacketTeamsState implements IClientPacket
         deployImageCrop = TeamsMap.ImageCrop.normalised(data.readFloat(), data.readFloat(), data.readFloat(), data.readFloat());
         deployLayout = data.readList(buf -> new DeployLayoutEntry(buf.readUtf(DeployLayoutEntry.MAX_KEY_LENGTH), buf.readFloat(), buf.readFloat()));
         objectives = data.readList(ObjectiveSnapshot::read);
+        headquarters = data.readList(buf -> new HeadquartersMarker(buf.readVarInt(), buf.readDouble(), buf.readDouble()));
     }
 
     private static TeamScore readTeamScore(PacketBuffer data)

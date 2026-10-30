@@ -18,6 +18,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,12 @@ import java.util.List;
 /**
  * The deployment map of Conquest and Assault, ported from the Labjac fork. It takes the place of
  * the death screen: the dead pick headquarters or a capture point their team holds and come back
- * there once the deployment delay has run out.
+ * there once the deployment delay has run out. The death message shows over the world for a moment first, as the death
+ * screen would, before the map fades in.
  *
  * <p>
- * Operators can switch to an edit mode in which the spawn choices are dragged to where they
+ * Without an image of its own the map is the terrain itself, with every choice where it lies in the world. Operators
+ * of a map that has an image can switch to an edit mode in which the spawn choices are dragged to where they
  * belong on the map image and the image is cropped by its corner handles; leaving the mode saves
  * the layout with the map.
  * </p>
@@ -50,11 +53,21 @@ public final class TeamsDeployScreen extends Screen
     private static final int LINE_COLOUR = 0xAA1C1C1C;
     /** How long a chosen spawn waits for the server before the choice is offered again. */
     private static final long DEPLOY_TIMEOUT_MILLIS = 5000L;
+    /** How long the death message shows over the world before the map comes up. */
+    private static final long DEATH_INTRO_MILLIS = 2500L;
+    /** How long the map takes to fade in after the death message. */
+    private static final long MAP_FADE_MILLIS = 600L;
+    /** How often the terrain picture is drawn again, for chunks that loaded or changed meanwhile. */
+    private static final long TERRAIN_REFRESH_MILLIS = 10000L;
+    /** Blocks of terrain shown around the outermost points, at least. */
+    private static final double TERRAIN_MIN_PADDING = 24D;
     /**
      * When the death being waited out happened. Kept outside the screen because the class menu
      * replaces it and brings back a new one, which must not start the deployment delay over.
      */
     private static long deathMillis;
+    /** What killed the player, shown before the map; kept for the same reason as {@link #deathMillis}. */
+    private static Component deathCause = Component.empty();
 
     private enum Status
     {
@@ -118,10 +131,16 @@ public final class TeamsDeployScreen extends Screen
     private String checkedImage;
     @Nullable
     private ResourceLocation imageTexture;
+    /** The terrain the points are shown on when the map has no image of its own. */
+    @Nullable
+    private DeployTerrainMap terrain;
+    private long terrainMillis;
 
-    public TeamsDeployScreen()
+    /** Takes the place of the death screen, whose message it shows first. */
+    public TeamsDeployScreen(Component causeOfDeath)
     {
         this(false);
+        deathCause = causeOfDeath;
     }
 
     public TeamsDeployScreen(boolean manuallyOpened)
@@ -136,6 +155,13 @@ public final class TeamsDeployScreen extends Screen
     private static void startDeath()
     {
         deathMillis = System.currentTimeMillis();
+        deathCause = Component.empty();
+    }
+
+    /** Milliseconds since the death this screen waits out, or {@link Long#MAX_VALUE} when it was opened by hand. */
+    private long sinceDeath()
+    {
+        return manuallyOpened ? Long.MAX_VALUE : System.currentTimeMillis() - openedMillis;
     }
 
     /** Forgets the death the delay was counted from, once the player is back or has left the server. */
@@ -148,7 +174,16 @@ public final class TeamsDeployScreen extends Screen
     protected void init()
     {
         layoutSignature = "";
+        // The picture keeps the proportions of the map frame, which a resize changes.
+        terrainMillis = 0L;
         refresh();
+    }
+
+    @Override
+    public void removed()
+    {
+        closeTerrain();
+        super.removed();
     }
 
     @Override
@@ -189,6 +224,14 @@ public final class TeamsDeployScreen extends Screen
         if (state == null)
             return;
         List<ObjectiveSnapshot> objectives = TeamsClientState.objectives();
+        if (!terrainShown(state))
+            closeTerrain();
+        else if (System.currentTimeMillis() - terrainMillis > TERRAIN_REFRESH_MILLIS)
+        {
+            rebuildTerrain(state, objectives);
+            // The points are placed on the new picture.
+            layoutSignature = "";
+        }
         StringBuilder signature = new StringBuilder().append(editMode).append(state.getPlayerTeamId()).append(state.getSideIds()).append(width).append('x').append(height);
         objectives.forEach(objective -> signature.append(objective.id()).append(objective.symbol()).append(objective.name()));
         state.getDeployLayout().forEach(entry -> signature.append(entry.key()).append(entry.x()).append(entry.y()));
@@ -240,15 +283,94 @@ public final class TeamsDeployScreen extends Screen
         return team == null ? Component.translatable("gui.flansmod.teams.deploy.headquarters") : Component.literal(state.getSideName(team.sideId()));
     }
 
-    /** Puts a choice where the saved layout has it, or on the default row for one that was never placed. */
+    /**
+     * Puts a choice where it lies on the terrain, or where the saved layout has it on the map image, or on the default row
+     * for one that was never placed.
+     */
     private void addNode(PacketTeamsState state, Node node, int defaultX, int defaultY)
     {
         DeployLayoutEntry saved = state.getDeployLayout().stream().filter(entry -> entry.key().equals(node.key)).findFirst().orElse(null);
         int x = saved == null ? defaultX : MAP_LEFT + Math.round(saved.x() * mapWidth());
         int y = saved == null ? defaultY : MAP_TOP + Math.round(saved.y() * mapHeight());
+        Vec2 world = worldPosition(state, node);
+        if (terrain != null && world != null)
+        {
+            x = MAP_LEFT + Math.round(terrain.u(world.x) * mapWidth());
+            y = MAP_TOP + Math.round(terrain.v(world.y) * mapHeight());
+        }
         node.x = Mth.clamp(x, MAP_LEFT + 8, MAP_LEFT + mapWidth() - 8);
         node.y = Mth.clamp(y, MAP_TOP + 8, MAP_TOP + mapHeight() - 8);
         nodes.add(node);
+    }
+
+    /** Where a choice lies in the world, as block x and z, or null for a headquarters the server did not place. */
+    @Nullable
+    private static Vec2 worldPosition(PacketTeamsState state, Node node)
+    {
+        if (node.objective != null)
+            return new Vec2((float) node.objective.x(), (float) node.objective.z());
+        return state.getHeadquarters().stream().filter(marker -> node.key.equals(DeployLayoutEntry.HQ_PREFIX + marker.sideId())).findFirst()
+            .map(marker -> new Vec2((float) marker.x(), (float) marker.z())).orElse(null);
+    }
+
+    // --- Terrain ---
+
+    /** The terrain is the map unless the round's map has an image of its own, which is also the only thing the edit mode lays out. */
+    private boolean terrainShown(PacketTeamsState state)
+    {
+        return !editMode && imageTexture(state.getDeployImage()) == null;
+    }
+
+    private boolean canEditLayout(PacketTeamsState state)
+    {
+        return state.canEditDeployLayout() && imageTexture(state.getDeployImage()) != null;
+    }
+
+    /** Draws the terrain around every capture point and headquarters, framed to the proportions of the map. */
+    private void rebuildTerrain(PacketTeamsState state, List<ObjectiveSnapshot> objectives)
+    {
+        closeTerrain();
+        terrainMillis = System.currentTimeMillis();
+        double minX = Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+        for (ObjectiveSnapshot objective : objectives)
+        {
+            minX = Math.min(minX, objective.x() - objective.radius());
+            minZ = Math.min(minZ, objective.z() - objective.radius());
+            maxX = Math.max(maxX, objective.x() + objective.radius());
+            maxZ = Math.max(maxZ, objective.z() + objective.radius());
+        }
+        for (PacketTeamsState.HeadquartersMarker marker : state.getHeadquarters())
+        {
+            minX = Math.min(minX, marker.x());
+            minZ = Math.min(minZ, marker.z());
+            maxX = Math.max(maxX, marker.x());
+            maxZ = Math.max(maxZ, marker.z());
+        }
+        if (minX > maxX || minecraft == null)
+            return;
+        double padding = Math.max(TERRAIN_MIN_PADDING, Math.max(maxX - minX, maxZ - minZ) * 0.12D);
+        double spanX = maxX - minX + 2D * padding;
+        double spanZ = maxZ - minZ + 2D * padding;
+        // Blocks stay square: the shorter side of the area grows until it has the proportions of the frame.
+        double aspect = mapWidth() / (double) Math.max(1, mapHeight());
+        if (spanX / spanZ < aspect)
+            spanX = spanZ * aspect;
+        else
+            spanZ = spanX / aspect;
+        double centreX = (minX + maxX) / 2D;
+        double centreZ = (minZ + maxZ) / 2D;
+        terrain = DeployTerrainMap.build(minecraft, centreX - spanX / 2D, centreZ - spanZ / 2D, centreX + spanX / 2D, centreZ + spanZ / 2D);
+    }
+
+    private void closeTerrain()
+    {
+        if (terrain != null)
+            terrain.close();
+        terrain = null;
+        terrainMillis = 0L;
     }
 
     private void updateNodeStates(PacketTeamsState state, List<ObjectiveSnapshot> objectives)
@@ -339,6 +461,12 @@ public final class TeamsDeployScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
+        long sinceDeath = sinceDeath();
+        if (sinceDeath < DEATH_INTRO_MILLIS)
+        {
+            renderDeathIntro(graphics, sinceDeath);
+            return;
+        }
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         PacketTeamsState state = TeamsClientState.get();
         if (state == null)
@@ -371,10 +499,35 @@ public final class TeamsDeployScreen extends Screen
 
         if (!editMode)
             renderButton(graphics, Component.translatable("gui.flansmod.teams.deploy.class"), MARGIN, CLASS_BUTTON_WIDTH, mouseX, mouseY);
-        if (state.canEditDeployLayout())
+        if (canEditLayout(state))
             renderButton(graphics, Component.translatable(editMode ? "gui.flansmod.teams.deploy.save" : "gui.flansmod.teams.deploy.edit"), width - MARGIN - EDIT_BUTTON_WIDTH, EDIT_BUTTON_WIDTH,
                 mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
+        if (sinceDeath < DEATH_INTRO_MILLIS + MAP_FADE_MILLIS)
+        {
+            // The map comes up out of black rather than replacing the death message at once.
+            int alpha = Mth.clamp(Math.round(255F * (1F - (sinceDeath - DEATH_INTRO_MILLIS) / (float) MAP_FADE_MILLIS)), 0, 255);
+            graphics.pose().pushPose();
+            graphics.pose().translate(0F, 0F, 400F);
+            graphics.fill(0, 0, width, height, alpha << 24);
+            graphics.pose().popPose();
+        }
+    }
+
+    /** The death message over the reddened world, as the death screen would show it, before the map takes over. */
+    private void renderDeathIntro(GuiGraphics graphics, long sinceDeath)
+    {
+        graphics.fillGradient(0, 0, width, height, 0x60500000, 0xA0803030);
+        // The last moments darken towards the black the map fades in from.
+        float darkening = Mth.clamp((sinceDeath - (DEATH_INTRO_MILLIS - MAP_FADE_MILLIS)) / (float) MAP_FADE_MILLIS, 0F, 1F);
+        graphics.pose().pushPose();
+        graphics.pose().translate(width / 2F, height / 4F, 0F);
+        graphics.pose().scale(2F, 2F, 1F);
+        graphics.drawCenteredString(font, Component.translatable("deathScreen.title"), 0, 0, 0xFFFFFF);
+        graphics.pose().popPose();
+        graphics.drawCenteredString(font, deathCause, width / 2, height / 4 + 30, 0xFFFFFF);
+        if (darkening > 0F)
+            graphics.fill(0, 0, width, height, Math.round(255F * darkening) << 24);
     }
 
     private void renderMap(GuiGraphics graphics, PacketTeamsState state)
@@ -385,6 +538,16 @@ public final class TeamsDeployScreen extends Screen
         int bottom = top + mapHeight();
         graphics.fill(left - 4, top - 4, right + 4, bottom + 4, 0xE6101010);
         graphics.fill(left - 1, top - 1, right + 1, bottom + 1, 0xD2B8B8B8);
+        if (terrain != null && terrainShown(state))
+        {
+            graphics.blit(terrain.getLocation(), left, top, mapWidth(), mapHeight(), 0F, 0F, 1, 1, 1, 1);
+            // A faint grid gives the eye a sense of distance on open ground.
+            for (int x = left + 24; x < right; x += 24)
+                graphics.fill(x, top, x + 1, bottom, 0x14FFFFFF);
+            for (int y = top + 24; y < bottom; y += 24)
+                graphics.fill(left, y, right, y + 1, 0x14FFFFFF);
+            return;
+        }
         ResourceLocation image = imageTexture(state.getDeployImage());
         if (image == null)
         {
@@ -492,9 +655,11 @@ public final class TeamsDeployScreen extends Screen
     public boolean mouseClicked(double mouseX, double mouseY, int button)
     {
         PacketTeamsState state = TeamsClientState.get();
+        if (sinceDeath() < DEATH_INTRO_MILLIS + MAP_FADE_MILLIS)
+            return true;
         if (button != 0 || state == null || deployed)
             return super.mouseClicked(mouseX, mouseY, button);
-        if (state.canEditDeployLayout() && inButton(mouseX, mouseY, width - MARGIN - EDIT_BUTTON_WIDTH, EDIT_BUTTON_WIDTH))
+        if (canEditLayout(state) && inButton(mouseX, mouseY, width - MARGIN - EDIT_BUTTON_WIDTH, EDIT_BUTTON_WIDTH))
         {
             toggleEditMode(state);
             return true;

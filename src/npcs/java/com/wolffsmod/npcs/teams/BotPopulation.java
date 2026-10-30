@@ -69,7 +69,7 @@ final class BotPopulation
         for (int i = active.size(); i < target; i++)
         {
             BotSlot slot = battle.newSlot(team.getShortName(), BotSlot.Source.INFANTRY, -1);
-            slot.setRole(pickClass(team, force, random));
+            slot.setRole(pickClass(battle, team, force, random));
             BotSquad squad = looseSquad(battle, team.getShortName());
             squad.getSlots().add(slot.getId());
             slot.setSquad(squad.getId());
@@ -174,7 +174,7 @@ final class BotPopulation
         for (String playerClass : template.roster())
         {
             BotSlot slot = battle.newSlot(team.getShortName(), BotSlot.Source.SQUAD, entry);
-            slot.setRole(offered.contains(playerClass) ? playerClass : pickClass(team, force, random));
+            slot.setRole(offered.contains(playerClass) ? playerClass : pickClass(battle, team, force, random));
             slot.setSquad(squad.getId());
             squad.getSlots().add(slot.getId());
         }
@@ -244,29 +244,49 @@ final class BotPopulation
         return squad.getSlots().stream().map(battle.getSlots()::get).filter(Objects::nonNull).allMatch(slot -> slot.getSpawns() > 0 && slot.getEntity() == null && !slot.isQueued());
     }
 
-    /** A class of the team by the settings' weights; every class weighs the same while none is listed. */
-    static String pickClass(ITeam team, BotSettings.TeamForce force, RandomGenerator random)
+    /**
+     * A class of the team for a new soldier, spread over the classes by the settings' weights: every class weighs the same
+     * while none is listed. The soldiers the team already fields are counted, so even a small force has every class it can
+     * fit instead of whatever a draw happened to give it.
+     */
+    static String pickClass(BotBattle battle, ITeam team, BotSettings.TeamForce force, RandomGenerator random)
     {
-        List<? extends IPlayerClass> classes = team.getClasses();
-        if (classes.isEmpty())
-            return "";
-        int[] weights = new int[classes.size()];
-        int sum = 0;
-        for (int i = 0; i < classes.size(); i++)
+        List<String> classes = team.getClasses().stream().map(IPlayerClass::getShortName).toList();
+        Map<String, Integer> fielded = new HashMap<>();
+        for (BotSlot slot : battle.getSlots().values())
+            if (!slot.isRetired() && slot.getTeam().equals(team.getShortName()) && slot.getSource() != BotSlot.Source.VEHICLE)
+                fielded.merge(slot.getRole(), 1, Integer::sum);
+        return pickClass(classes, force.getClassWeights(), fielded, random);
+    }
+
+    /**
+     * The class the next soldier takes so that the classes keep to their weights: the one that would be furthest below its
+     * share with that soldier, at random among equals. Classes without weight are left out unless none has any.
+     *
+     * @param fielded
+     *            soldiers already fielded, by class
+     * @return the class, or empty when there is none
+     */
+    static String pickClass(List<String> classes, Map<String, Integer> weights, Map<String, Integer> fielded, RandomGenerator random)
+    {
+        boolean weighted = classes.stream().anyMatch(playerClass -> weights.getOrDefault(playerClass, 0) > 0);
+        List<String> best = new ArrayList<>();
+        double lowest = Double.MAX_VALUE;
+        for (String playerClass : classes)
         {
-            weights[i] = force.getClassWeights().isEmpty() ? 1 : force.getClassWeights().getOrDefault(classes.get(i).getShortName(), 0);
-            sum += weights[i];
+            int weight = weighted ? weights.getOrDefault(playerClass, 0) : 1;
+            if (weight <= 0)
+                continue;
+            double share = (fielded.getOrDefault(playerClass, 0) + 1D) / weight;
+            if (share < lowest)
+            {
+                lowest = share;
+                best.clear();
+            }
+            if (share == lowest)
+                best.add(playerClass);
         }
-        if (sum <= 0)
-            return classes.get(random.nextInt(classes.size())).getShortName();
-        int ticket = random.nextInt(sum);
-        for (int i = 0; i < classes.size(); i++)
-        {
-            ticket -= weights[i];
-            if (ticket < 0)
-                return classes.get(i).getShortName();
-        }
-        return classes.get(classes.size() - 1).getShortName();
+        return best.isEmpty() ? "" : best.get(random.nextInt(best.size()));
     }
 
     // --- Spending ---

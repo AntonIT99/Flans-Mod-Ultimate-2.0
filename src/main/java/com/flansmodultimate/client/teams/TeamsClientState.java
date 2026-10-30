@@ -19,6 +19,8 @@ public final class TeamsClientState
     private static PacketTeamsState snapshot;
     /** Capture points of the running round; refreshed more often than the full snapshot. */
     private static List<ObjectiveSnapshot> objectives = List.of();
+    /** Whether the round that just ended still has its result banner to show when the scoreboard comes up. */
+    private static boolean resultBannerPending;
 
     public static PacketTeamsState get()
     {
@@ -150,18 +152,19 @@ public final class TeamsClientState
         objectives = update.getObjectives();
         if (roundJustDecided)
             TeamsRoundResult.announce(update);
+        resultBannerPending = update.isRoundDecided() && (roundJustDecided || resultBannerPending);
         if (update.getOpenScreen() == PacketTeamsState.OpenScreen.NONE && minecraft.screen instanceof TeamsSelectScreen)
             return;
         switch (update.getOpenScreen())
         {
             case TEAM_SELECT -> minecraft.setScreen(new TeamsSelectScreen(false));
             case CLASS_SELECT -> minecraft.setScreen(new TeamsSelectScreen(true));
-            case SCOREBOARD -> minecraft.setScreen(new TeamsScoreScreen());
+            case SCOREBOARD -> showScoreboard(minecraft);
             case VOTING -> minecraft.setScreen(new TeamsVotingScreen());
             case DEPLOY -> minecraft.setScreen(new TeamsDeployScreen(true));
             case CLOSE -> {
                 if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen || minecraft.screen instanceof TeamsVotingScreen
-                    || minecraft.screen instanceof TeamsDeployScreen deploy && deploy.isManuallyOpened())
+                    || minecraft.screen instanceof TeamsRoundEndScreen || minecraft.screen instanceof TeamsDeployScreen deploy && deploy.isManuallyOpened())
                     minecraft.setScreen(null);
             }
             case NONE -> {
@@ -171,9 +174,19 @@ public final class TeamsClientState
         }
     }
 
+    /** Shows the result of a round that just ended first, which gives way to the scoreboard by itself. */
+    private static void showScoreboard(Minecraft minecraft)
+    {
+        if (minecraft.screen instanceof TeamsRoundEndScreen)
+            return;
+        minecraft.setScreen(resultBannerPending ? new TeamsRoundEndScreen() : new TeamsScoreScreen());
+        resultBannerPending = false;
+    }
+
     public static void clear()
     {
         snapshot = null;
+        resultBannerPending = false;
         objectives = List.of();
         TeamsDeployScreen.resetDeath();
     }

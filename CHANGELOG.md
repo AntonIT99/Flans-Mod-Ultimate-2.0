@@ -31,6 +31,8 @@
 * The Teams key (U, now `Teams Menu`) opens a menu with team selection, class selection and the scoreboard, plus a Teams Command Centre shortcut for players with operator command permissions; the scoreboard and class keys are now unbound by default, freeing I and O (saved key settings are kept)
 * Team selection opens on login only while a playable round is live
 * Class selection tooltips show the full class name above its requirements
+* A finished round opens with a Victory, Defeat or Draw banner showing the winners' flag, each side's final score and your own score, kills and deaths, before the scoreboard
+* In Conquest and Assault the death message shows for a moment before the deployment map fades in, and the map shows the real terrain around the capture points and headquarters unless the Teams map has a deployment image
 
 ## Vehicles, Aircraft & Ships
 

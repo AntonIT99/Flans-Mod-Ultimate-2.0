@@ -28,6 +28,7 @@ import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.config.*;
+import com.flansmodultimate.mixin.DeathScreenAccessor;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.driveable.PacketDriveableDamage;
 import com.flansmodultimate.network.server.driveable.PacketRequestDismount;
@@ -103,8 +104,8 @@ public final class ClientEventHandler
         Screen safeScreen = ContentMismatchScreens.safeScreen(event.getNewScreen());
         if (safeScreen != null && safeScreen != event.getNewScreen())
             event.setNewScreen(safeScreen);
-        if (event.getNewScreen() instanceof DeathScreen && TeamsClientState.usesDeployment())
-            event.setNewScreen(new TeamsDeployScreen());
+        if (event.getNewScreen() instanceof DeathScreen death && TeamsClientState.usesDeployment())
+            event.setNewScreen(new TeamsDeployScreen(((DeathScreenAccessor) death).flansmodultimateCauseOfDeath()));
     }
 
     /** Adds the mod's options button to the vanilla options screen and pause menu, as configured. */

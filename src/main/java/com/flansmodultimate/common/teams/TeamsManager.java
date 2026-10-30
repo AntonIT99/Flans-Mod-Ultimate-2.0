@@ -1942,6 +1942,24 @@ public final class TeamsManager
         return bases.isEmpty() ? Optional.empty() : Optional.of(bases.get(random.nextInt(bases.size())).getTeamObjectPosition().add(0D, 1D, 0D));
     }
 
+    /**
+     * Where the headquarters of each side of the round lie, for the deployment map: the middle of the bases its teams own
+     * that are no capture point, by side id. A side without any is left out.
+     */
+    public Map<Integer, Vec3> getHeadquartersPositions()
+    {
+        TeamsRound round = getCurrentRound().orElse(null);
+        if (round == null)
+            return Map.of();
+        Map<Integer, List<Vec3>> bySide = new TreeMap<>();
+        liveBases.values().stream().filter(base -> !(base instanceof ITeamCapturePoint)).filter(base -> base.getMapId().equals(round.getMapId()))
+            .filter(base -> base.getOwnerId() >= TeamsRound.FIRST_TEAM_ID)
+            .forEach(base -> bySide.computeIfAbsent(round.getSideId(base.getOwnerId()), ignored -> new ArrayList<>()).add(base.getTeamObjectPosition()));
+        Map<Integer, Vec3> positions = new TreeMap<>();
+        bySide.forEach((side, bases) -> positions.put(side, bases.stream().reduce(Vec3.ZERO, Vec3::add).scale(1D / bases.size())));
+        return positions;
+    }
+
     /** The loaded capture points of the map being played, in play order: by letter, then by id. */
     public List<ITeamCapturePoint> getCapturePoints()
     {
