@@ -78,7 +78,9 @@
             "ah1zgreen",
             "ah1zgrey",
             "ah1zviper",
-            "ah1z"
+            "ah1z",
+            "gfs_ah1z",
+            "ah-1z"
         ]
     },
 
@@ -97,7 +99,9 @@
         },
         "items": [
             "apacheah64",
-            "apacheblackd"
+            "apacheblackd",
+            "gfs_ah64",
+            "ah-64d"
         ]
     },
 
@@ -114,7 +118,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "b7a"
+            "b7a",
+            "divebomber_b7aryusei"
         ]
     },
 
@@ -308,7 +313,8 @@
         },
         "items": [
             "lancaster",
-            "lancaster_b_mk_i"
+            "lancaster_b_mk_i",
+            "heavybomber_lancaster"
         ]
     },
 
@@ -379,7 +385,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "ah-1g"
+            "ah-1g",
+            "attackheli_ah-1ghueycobra"
         ]
     },
 
@@ -467,7 +474,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "uh-1c"
+            "uh-1c",
+            "uh1c"
         ]
     },
 
@@ -501,7 +509,8 @@
             "ShootDelayPrimary": 0
         },
         "items": [
-            "uh-1y"
+            "uh-1y",
+            "gfs_uh1y"
         ]
     },
 
@@ -632,7 +641,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "b52"
+            "b52",
+            "b-52h"
         ]
     },
 
@@ -649,7 +659,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "e3d"
+            "e3d",
+            "e-3d"
         ]
     },
 
@@ -739,6 +750,25 @@
         },
         "items": [
             "sea_harrier"
+        ]
+    },
+
+    "British Army Apache AH Mk 1 (AH-64D profile, RTM322 engines)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 21.76,
+            "RealMassKg": 10433,
+            "RealEnginePowerHp": 4200,
+            "RealMaxSpeedKmh": 265,
+            "RealRotorDiameterM": 14.63,
+            "RealClimbRateMs": 12.7,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "ShootDelaySecondarySeconds": 2.5,
+            "ShootDelaySecondary": 0
+        },
+        "items": [
+            "apache",
+            "apachegreen"
         ]
     },
 
@@ -865,7 +895,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "chengdu"
+            "chengdu",
+            "gfs_j20"
         ]
     },
 
@@ -1253,7 +1284,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "skyraider"
+            "skyraider",
+            "a-1h"
         ]
     },
 
@@ -1272,7 +1304,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "a4"
+            "a4",
+            "a-4c"
         ]
     },
 
@@ -1458,7 +1491,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "ec665uht"
+            "ec665uht",
+            "gfs_ec665"
         ]
     },
 
@@ -1496,7 +1530,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "a10c"
+            "a10c",
+            "a-10a"
         ]
     },
 
@@ -1514,7 +1549,9 @@
         },
         "items": [
             "a10",
-            "modernwarfare_a10"
+            "modernwarfare_a10",
+            "gfs_a10c",
+            "a-10c"
         ]
     },
 
@@ -1758,6 +1795,26 @@
         ]
     },
 
+    "Galm F-15 Eagle (Fictional)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.25,
+            "RealMassKg": 19690,
+            "RealEngineThrustKn": 169.26,
+            "RealMaxSpeedKmh": 2610.0,
+            "RealWingSpanM": 13.1,
+            "RealWingAreaM2": 56.4,
+            "RealClimbRateMs": 280.0,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "ShootDelaySecondarySeconds": 0.25,
+            "ShootDelaySecondary": 0
+        },
+        "items": [
+            "galmone",
+            "galmtwo"
+        ]
+    },
+
     "General Atomics MQ-9 Reaper": {
         "properties": {
             "RealTurnRateDegPerSec": 13.2,
@@ -1950,7 +2007,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "f8f"
+            "f8f",
+            "f8f-1"
         ]
     },
 
@@ -1967,7 +2025,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "f9f"
+            "f9f",
+            "f9f-2"
         ]
     },
 
@@ -2359,7 +2418,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "oh-6a"
+            "oh-6a",
+            "oh-6b"
         ]
     },
 
@@ -2569,6 +2629,23 @@
         ]
     },
 
+    "Junkers Ju 87 D-3 (D-1 flight-profile surrogate)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 23.06,
+            "RealMassKg": 6600,
+            "RealEnginePowerPS": 1400,
+            "RealMaxSpeedKmh": 410,
+            "RealWingSpanM": 13.805,
+            "RealWingAreaM2": 31.9,
+            "RealClimbRateMs": 8.6,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "divebomber_ju87d-3"
+        ]
+    },
+
     "Junkers Ju 87 G-1": {
         "properties": {
             "RealTurnRateDegPerSec": 23.06,
@@ -2584,6 +2661,23 @@
         "items": [
             "ju87g1",
             "44_ju87g1"
+        ]
+    },
+
+    "Junkers Ju 87 G-2 (G-1 flight-profile surrogate)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 23.06,
+            "RealMassKg": 5530,
+            "RealEnginePowerPS": 1400,
+            "RealMaxSpeedKmh": 348,
+            "RealWingSpanM": 15.0,
+            "RealWingAreaM2": 31.9,
+            "RealClimbRateMs": 9.4,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "attacker_ju87g-2"
         ]
     },
 
@@ -2638,7 +2732,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "ka27"
+            "ka27",
+            "ka-27"
         ]
     },
 
@@ -2674,7 +2769,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "ka52"
+            "ka52",
+            "gfs_ka52"
         ]
     },
 
@@ -2927,7 +3023,8 @@
             "RealEnginePowerHp": 19640
         },
         "items": [
-            "ac-130u"
+            "ac-130u",
+            "gfs_ac-130u"
         ]
     },
 
@@ -2944,7 +3041,8 @@
             "RealEnginePowerHp": 16200
         },
         "items": [
-            "c-130e"
+            "c-130e",
+            "gfs_c-130e"
         ]
     },
 
@@ -3022,7 +3120,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "f35a"
+            "f35a",
+            "f-35a"
         ]
     },
 
@@ -3074,7 +3173,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "p80"
+            "p80",
+            "f-80c"
         ]
     },
 
@@ -3127,7 +3227,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "canberra"
+            "canberra",
+            "b-57b"
         ]
     },
 
@@ -3163,7 +3264,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "harrierusmc"
+            "harrierusmc",
+            "av-8b"
         ]
     },
 
@@ -3224,6 +3326,25 @@
         ]
     },
 
+    "McDonnell Douglas F-15J Eagle (F-15C flight-profile surrogate)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 20.25,
+            "RealMassKg": 19690,
+            "RealEngineThrustKn": 169.26,
+            "RealMaxSpeedKmh": 2610.0,
+            "RealWingSpanM": 13.1,
+            "RealWingAreaM2": 56.4,
+            "RealClimbRateMs": 280.0,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "ShootDelaySecondarySeconds": 0.25,
+            "ShootDelaySecondary": 0
+        },
+        "items": [
+            "f15j"
+        ]
+    },
+
     "McDonnell Douglas F/A-18C Hornet": {
         "properties": {
             "RealTurnRateDegPerSec": 23.07,
@@ -3256,7 +3377,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "goblinoplane"
+            "goblinoplane",
+            "f-85a"
         ]
     },
 
@@ -3274,7 +3396,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "ah6j"
+            "ah6j",
+            "gfs_ah6j"
         ]
     },
 
@@ -3312,6 +3435,23 @@
         },
         "items": [
             "bf109f4"
+        ]
+    },
+
+    "Messerschmitt Bf 109 fighter-bomber (Generic)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 32.07,
+            "RealMassKg": 3100,
+            "RealEnginePowerPS": 1475,
+            "RealMaxSpeedKmh": 630,
+            "RealWingSpanM": 9.925,
+            "RealWingAreaM2": 16.05,
+            "RealClimbRateMs": 14.1,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "fighter-bomber_bf109"
         ]
     },
 
@@ -3502,7 +3642,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "littlebird"
+            "littlebird",
+            "mh-6e"
         ]
     },
 
@@ -3648,6 +3789,25 @@
         },
         "items": [
             "mig17missile"
+        ]
+    },
+
+    "Mikoyan-Gurevich MiG-19PT (MiG-19S flight-profile surrogate)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 29.47,
+            "RealMassKg": 7350,
+            "RealEngineThrustKn": 63.74,
+            "RealMaxSpeedKmh": 1451.0,
+            "RealWingSpanM": 9.0,
+            "RealWingAreaM2": 25.2,
+            "RealClimbRateMs": 190.0,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true",
+            "ShootDelaySecondarySeconds": 4.0,
+            "ShootDelaySecondary": 0
+        },
+        "items": [
+            "mig19pt"
         ]
     },
 
@@ -3897,7 +4057,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "mi24p"
+            "mi24p",
+            "utilityheli_mi24phind"
         ]
     },
 
@@ -3915,7 +4076,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "mi28"
+            "mi28",
+            "gfs_mi28"
         ]
     },
 
@@ -3955,7 +4117,8 @@
             "ww2_plane_a6m_1b",
             "ww2_plane_a6m_1c",
             "ww2_plane_a6m_1d",
-            "zero"
+            "zero",
+            "fighter-bomber_a6m2"
         ]
     },
 
@@ -4332,7 +4495,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "q5"
+            "q5",
+            "gfs_q5"
         ]
     },
 
@@ -4461,6 +4625,23 @@
         ]
     },
 
+    "North American P-51 fighter-bomber (Generic)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 28.22,
+            "RealMassKg": 4175,
+            "RealEnginePowerHp": 1490,
+            "RealMaxSpeedKmh": "703",
+            "RealWingSpanM": "11.28",
+            "RealWingAreaM2": "21.83",
+            "RealClimbRateMs": 16.3,
+            "ReadWeaponsFromGunTypes": "true",
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "fighter-bomber_mustang"
+        ]
+    },
+
     "North American P-51B Mustang": {
         "properties": {
             "RealTurnRateDegPerSec": 28.22,
@@ -4496,7 +4677,8 @@
             "ww2_plane_p51_1b",
             "ww2_plane_p51_1c",
             "44_p51dmustang",
-            "mustang"
+            "mustang",
+            "f-51d"
         ]
     },
 
@@ -4532,7 +4714,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "f5"
+            "f5",
+            "f-5e"
         ]
     },
 
@@ -4568,7 +4751,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "tornado"
+            "tornado",
+            "gfs_tornadogr4"
         ]
     },
 
@@ -4812,7 +4996,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "b-1b"
+            "b-1b",
+            "gfs_b1b"
         ]
     },
 
@@ -5063,7 +5248,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "sh60b"
+            "sh60b",
+            "sh-60b"
         ]
     },
 
@@ -5133,7 +5319,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "camel"
+            "camel",
+            "lightfighter-biplane_sopwithcamel"
         ]
     },
 
@@ -5280,7 +5467,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "su33"
+            "su33",
+            "gfs_su33"
         ]
     },
 
@@ -5318,7 +5506,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "su35"
+            "su35",
+            "gfs_su35"
         ]
     },
 
@@ -5337,7 +5526,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "su39"
+            "su39",
+            "gfs_su39"
         ]
     },
 
@@ -5376,7 +5566,8 @@
         },
         "items": [
             "sugoisu57m",
-            "putin"
+            "putin",
+            "gfs_su57"
         ]
     },
 
@@ -5394,6 +5585,23 @@
         },
         "items": [
             "spitfireultimate"
+        ]
+    },
+
+    "Supermarine Spitfire fighter-bomber (Generic)": {
+        "properties": {
+            "RealTurnRateDegPerSec": 28.35,
+            "RealMassKg": 3004,
+            "RealEnginePowerHp": 1470,
+            "RealMaxSpeedKmh": 595,
+            "RealWingSpanM": 11.227,
+            "RealWingAreaM2": 22.49,
+            "RealClimbRateMs": 13.2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "fighter-bomber_spitfire"
         ]
     },
 
@@ -5668,7 +5876,8 @@
         "items": [
             "f4u4",
             "ww2_plane_f4u_1a",
-            "ww2_plane_f4u_2a"
+            "ww2_plane_f4u_2a",
+            "f4u-4"
         ]
     },
 
@@ -5719,7 +5928,8 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
-            "f5u1"
+            "f5u1",
+            "f5u-1"
         ]
     },
 
@@ -5775,7 +5985,8 @@
             "ShootDelaySecondary": 0
         },
         "items": [
-            "xian"
+            "xian",
+            "gfs_h6k"
         ]
     },
 
@@ -5795,7 +6006,8 @@
             "ww2_plane_yak3_1a",
             "ww2_plane_yak3_1aneu",
             "ww2_plane_yak3_1b",
-            "ww2_plane_yak3_1c"
+            "ww2_plane_yak3_1c",
+            "fighter-bomber_yak-3"
         ]
     },
 

@@ -416,6 +416,20 @@
         ]
     },
 
+    "Diving Suit Costume (Chest)": {
+        "properties": {
+            "Defence": "0.08",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 3,
+            "Toughness": 0,
+            "Submarine": "true"
+        },
+        "items": [
+            "diversuet"
+        ]
+    },
+
     "Fictional Springlock Costume (Chest)": {
         "properties": {
             "Defence": "0.08",
@@ -426,6 +440,68 @@
         },
         "items": [
             "fred"
+        ]
+    },
+
+    "Future Combat Trooper Armour (Boots)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "0.67",
+            "ArmorPoints": 2,
+            "Toughness": 1
+        },
+        "items": [
+            "nscdboots",
+            "srboots",
+            "ugfboots"
+        ]
+    },
+
+    "Future Combat Trooper Armour (Chest)": {
+        "properties": {
+            "Defence": "0.16",
+            "BulletDefence": "0.19",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 6,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "nscdbody",
+            "srbody",
+            "ugfbody"
+        ]
+    },
+
+    "Future Combat Trooper Armour (Helmet)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.07",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 2,
+            "Toughness": 1
+        },
+        "items": [
+            "nscdhelmet",
+            "sr_helmet",
+            "ugf_helmet"
+        ]
+    },
+
+    "Future Combat Trooper Armour (Legs)": {
+        "properties": {
+            "Defence": "0.12",
+            "BulletDefence": "0.14",
+            "PenetrationResistance": "1.24",
+            "ArmorPoints": 4,
+            "Toughness": 1,
+            "MoveSpeedModifier": "0.98"
+        },
+        "items": [
+            "nscdlegs",
+            "srlegs",
+            "ugflegs"
         ]
     },
 
@@ -462,6 +538,19 @@
             "germanstahlhelmgasmaskblack",
             "germanstahlhelmgasmaskfeldgrau",
             "russiangasmask"
+        ]
+    },
+
+    "Generic Cloth Costume (Chest)": {
+        "properties": {
+            "Defence": "0.04",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "fubuki"
         ]
     },
 
@@ -757,7 +846,17 @@
             "klanmask",
             "moonman",
             "tedhair",
-            "yakubbrain"
+            "yakubbrain",
+            "brithat",
+            "parahat",
+            "pravdahat",
+            "rommelhat",
+            "tsarhat",
+            "fsoviethat",
+            "blackhelmet",
+            "bananahat",
+            "booniehat_blue",
+            "booniehat_red"
         ]
     },
 
@@ -1518,7 +1617,18 @@
             "winterclothes",
             "diabetonerfed",
             "klanrobe",
-            "neanderthalloin"
+            "neanderthalloin",
+            "catear",
+            "catear2",
+            "catear3",
+            "dogear",
+            "dogear2",
+            "foxear",
+            "foxear2",
+            "americavest",
+            "bananavest",
+            "katusha",
+            "heisters"
         ]
     },
 
@@ -1622,7 +1732,16 @@
             "wh40k_armor_commissarlegs_1a",
             "yugoslavianpants",
             "farmerpants",
-            "fishingpants"
+            "fishingpants",
+            "americapants",
+            "bananapants",
+            "blackpants",
+            "britpants",
+            "fsovietpants",
+            "parapants",
+            "pravdapants",
+            "rommelpants",
+            "tsarpants"
         ]
     },
 
@@ -1640,7 +1759,26 @@
             "macarthur",
             "pierce",
             "rockwell",
-            "roundglasses"
+            "roundglasses",
+            "dronehat",
+            "tankistvision",
+            "fmask",
+            "fmask2",
+            "ika",
+            "headset",
+            "dallas",
+            "wolf",
+            "chains",
+            "houston",
+            "hoxton",
+            "clover",
+            "dragan",
+            "jacket",
+            "bonnie",
+            "sokol",
+            "jiro",
+            "haribote",
+            "sox"
         ]
     },
 
@@ -1823,7 +1961,48 @@
             "waterwalkingboots",
             "wh40k_armor_catachanboots_1a",
             "wh40k_armor_commissarboots_1a",
-            "yugoslavianboots"
+            "yugoslavianboots",
+            "americashoes",
+            "bananashoes",
+            "blackshoes",
+            "britshoes",
+            "fsovietboots",
+            "mjerryboots",
+            "parashoes",
+            "pravdashoes",
+            "rommelshoes",
+            "tsarboots"
+        ]
+    },
+
+    "Generic Reinforced Uniform (Chest)": {
+        "properties": {
+            "Defence": "0.06",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 2,
+            "Toughness": 0
+        },
+        "items": [
+            "blackcoat",
+            "britcoat",
+            "pravdacoat",
+            "fsovietcoat",
+            "rommelcoat",
+            "tsarcoat"
+        ]
+    },
+
+    "Generic Reinforced Uniform Costume (Chest)": {
+        "properties": {
+            "Defence": "0.08",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 3,
+            "Toughness": 0
+        },
+        "items": [
+            "jgsdf"
         ]
     },
 
@@ -1910,7 +2089,9 @@
         "items": [
             "bulldozerbody",
             "juggernautbody",
-            "juggernautbodybrown"
+            "juggernautbodybrown",
+            "cirasvest",
+            "vdv"
         ]
     },
 
@@ -1928,7 +2109,9 @@
             "juggernauthelmetbrown",
             "stonikhelm",
             "droydhelmet",
-            "natorhelmet"
+            "natorhelmet",
+            "jugghelmclosed",
+            "jugghelmopen"
         ]
     },
 
@@ -1993,6 +2176,28 @@
         ]
     },
 
+    "Modern Assault Armour Costume (Chest)": {
+        "properties": {
+            "Defence": "0.26",
+            "BulletDefence": "0.24",
+            "PenetrationResistance": "1.90",
+            "ArmorPoints": 9,
+            "Toughness": 2,
+            "MoveSpeedModifier": "0.97"
+        },
+        "items": [
+            "us_assault",
+            "us_assault_puls",
+            "gsg-9",
+            "jagerbataillon25",
+            "swat",
+            "swat_b",
+            "raid",
+            "sobr",
+            "cowjuggsuit"
+        ]
+    },
+
     "Modern Ballistic Vest": {
         "properties": {
             "Defence": "0.16",
@@ -2004,7 +2209,9 @@
         },
         "items": [
             "bodyarmour",
-            "swatbody"
+            "swatbody",
+            "fsovietinfantrycoat",
+            "paracoat"
         ]
     },
 
@@ -2080,7 +2287,8 @@
             "pasgtnakedblk",
             "pasgtnakedtn",
             "pasgtnaked",
-            "khb2000"
+            "khb2000",
+            "mjerryhat"
         ]
     },
 
@@ -2202,7 +2410,9 @@
             "marinebody",
             "opafbody",
             "sasbody",
-            "spetsnazbody"
+            "spetsnazbody",
+            "pmc",
+            "mjerryvest"
         ]
     },
 
@@ -2221,7 +2431,8 @@
             "marinepants",
             "opafpants",
             "saspants",
-            "spetsnazpants"
+            "spetsnazpants",
+            "mjerrypants"
         ]
     },
 
@@ -2257,6 +2468,20 @@
         ]
     },
 
+    "Night-Vision Goggles": {
+        "properties": {
+            "Defence": "0.01",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0,
+            "NightVision": "true"
+        },
+        "items": [
+            "pnv-57"
+        ]
+    },
+
     "Powered Exoskeleton Armour (Boots)": {
         "properties": {
             "Defence": "0.10",
@@ -2266,7 +2491,8 @@
             "Toughness": 3
         },
         "items": [
-            "exoskeletonboots"
+            "exoskeletonboots",
+            "godboots"
         ]
     },
 
@@ -2280,7 +2506,8 @@
             "MoveSpeedModifier": "0.95"
         },
         "items": [
-            "exoskeletonbody"
+            "exoskeletonbody",
+            "godcoat"
         ]
     },
 
@@ -2293,7 +2520,8 @@
             "Toughness": 3
         },
         "items": [
-            "exoskeletonhelmet"
+            "exoskeletonhelmet",
+            "godhat"
         ]
     },
 
@@ -2308,7 +2536,8 @@
         },
         "items": [
             "exoskeletonlegs",
-            "sotnikskeleton"
+            "sotnikskeleton",
+            "godpants"
         ]
     },
 
@@ -2979,7 +3208,8 @@
             "ssh68",
             "stahlhelm",
             "gk80",
-            "gk80woodland"
+            "gk80woodland",
+            "americahat"
         ]
     },
 

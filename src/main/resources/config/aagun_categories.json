@@ -45,6 +45,32 @@
         ]
     },
 
+    "12-Pounder Field Cannon (Generic)": {
+        "properties": {
+            "RoundsPerMin": 2,
+            "ReloadTime": 600,
+            "Dispersion": 2,
+            "RealMassKg": 1066,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "cannon"
+        ]
+    },
+
+    "460mm Type 94 Triple Mount": {
+        "properties": {
+            "RoundsPerMin": 5.142857,
+            "ReloadTime": 233.333333,
+            "Dispersion": 0.2,
+            "RealMassKg": 2774000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "yamato"
+        ]
+    },
+
     "Automated Sentry Gun (Fictional)": {
         "properties": {
             "RoundsPerMin": 1000.0,
@@ -54,6 +80,19 @@
         },
         "items": [
             "sentrygun"
+        ]
+    },
+
+    "Automatic Sentry Machine Gun (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 800,
+            "ReloadTime": 160,
+            "Dispersion": 0.35,
+            "RealMassKg": 50,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "gfs_m5sentry"
         ]
     },
 

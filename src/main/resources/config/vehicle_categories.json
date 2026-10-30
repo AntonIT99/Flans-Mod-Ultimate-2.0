@@ -63,7 +63,8 @@
             "UseAmmoGroup": "20mm Flak 38"
         },
         "items": [
-            "flakvierling"
+            "flakvierling",
+            "aagun_2cm_flakvierling38"
         ]
     },
 
@@ -140,7 +141,8 @@
             ]
         },
         "items": [
-            "tungusta"
+            "tungusta",
+            "gfs_gfs_tungusta"
         ]
     },
 
@@ -432,7 +434,8 @@
         },
         "items": [
             "44_flak88",
-            "flak88"
+            "flak88",
+            "aagun_8.8cm_flak18"
         ]
     },
 
@@ -1347,7 +1350,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "12.7cmaamount"
+            "12.7cmaamount",
+            "aagun_12.7cm_type89"
         ]
     },
 
@@ -1381,7 +1385,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "155mmtriplegunmount"
+            "155mmtriplegunmount",
+            "navalgun_15.5cm_3rdyeartype"
         ]
     },
 
@@ -1491,12 +1496,16 @@
             "ArmorSideMm": 152,
             "ArmorRearMm": 102,
             "ArmorBottomMm": 35,
-            "PartArmorMm": ["leftTrack 25", "rightTrack 25"],
+            "PartArmorMm": [
+                "leftTrack 25",
+                "rightTrack 25"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "a39"
+            "a39",
+            "tankdestroyer_a39tortoise"
         ]
     },
 
@@ -1521,7 +1530,8 @@
             ]
         },
         "items": [
-            "aav7"
+            "aav7",
+            "gfs_aav7"
         ]
     },
 
@@ -1962,7 +1972,8 @@
             "ShootDelayPrimarySeconds": 10.0
         },
         "items": [
-            "as90"
+            "as90",
+            "as90tan"
         ]
     },
 
@@ -2347,7 +2358,9 @@
             "ShootDelayPrimarySeconds": 0.5
         },
         "items": [
-            "bm21"
+            "bm21",
+            "spg_bm-21grad",
+            "gfs_bm21"
         ]
     },
 
@@ -2378,7 +2391,8 @@
             "UseAmmoGroup": "73mm 2A28"
         },
         "items": [
-            "bmp1"
+            "bmp1",
+            "ifv_bmp-1"
         ]
     },
 
@@ -2407,7 +2421,8 @@
             ]
         },
         "items": [
-            "bmp2"
+            "bmp2",
+            "ifv_bmp-2"
         ]
     },
 
@@ -2436,7 +2451,8 @@
             ]
         },
         "items": [
-            "bmp2m"
+            "bmp2m",
+            "gfs_bmp2m"
         ]
     },
 
@@ -2517,7 +2533,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "bmwr75"
+            "bmwr75",
+            "bike_bmwr75"
         ]
     },
 
@@ -2560,7 +2577,8 @@
         },
         "items": [
             "44_bofors40mm",
-            "bofors"
+            "bofors",
+            "aagun_40mm_bofors"
         ]
     },
 
@@ -2836,7 +2854,8 @@
             "TurretArmorTopMm": 6.0
         },
         "items": [
-            "btr80"
+            "btr80",
+            "ifv_btr-80"
         ]
     },
 
@@ -3519,7 +3538,8 @@
             "UseAmmoGroup": "120mm L11"
         },
         "items": [
-            "chieftain"
+            "chieftain",
+            "chieftaincamo"
         ]
     },
 
@@ -3999,6 +4019,29 @@
         ]
     },
 
+    "Damaged Opel Blitz truck (Generic)": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 39.79,
+            "RealMassKg": 3300,
+            "RealEnginePowerPS": 30,
+            "RealMaxSpeedKmh": 20,
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": 5,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "opelblitzdamaged",
+            "opelblitzdamagedak"
+        ]
+    },
+
     "Design A-150 Battleship": {
         "properties": {
             "RealTurnRateDegPerSec": 0.92,
@@ -4050,7 +4093,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "dickermax"
+            "dickermax",
+            "dicker_max"
         ]
     },
 
@@ -4678,13 +4722,17 @@
             "TurretArmorRearMm": 16,
             "TurretArmorTopMm": 0,
             "RealMaxReverseSpeedKmh": 7,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
             "UseAmmoGroup": "20mm Flak 38",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "ww2_vehicle_flakpanzeriv_1a"
+            "ww2_vehicle_flakpanzeriv_1a",
+            "aatank_flakpanzeriv"
         ]
     },
 
@@ -4820,7 +4868,8 @@
             "UseAmmoGroup": "76mm L23"
         },
         "items": [
-            "scorpion"
+            "scorpion",
+            "scorpiontan"
         ]
     },
 
@@ -4850,7 +4899,8 @@
             "UseAmmoGroup": "30mm RARDEN"
         },
         "items": [
-            "fv107"
+            "fv107",
+            "fv107tan"
         ]
     },
 
@@ -4880,7 +4930,8 @@
             "UseAmmoGroup": "30mm RARDEN"
         },
         "items": [
-            "warriorg"
+            "warriorg",
+            "warrior"
         ]
     },
 
@@ -4934,7 +4985,9 @@
         },
         "items": [
             "challyii",
-            "teapot"
+            "teapot",
+            "chally",
+            "challyg"
         ]
     },
 
@@ -4981,7 +5034,8 @@
             "ArmorBottomMm": 8.0
         },
         "items": [
-            "tigr"
+            "tigr",
+            "gfs_tigr"
         ]
     },
 
@@ -5073,7 +5127,8 @@
         "items": [
             "44_gmctruck",
             "ww2_vehicle_gmctruck_1a",
-            "ww2_vehicle_gmctruck_2a"
+            "ww2_vehicle_gmctruck_2a",
+            "truck_gmccckw"
         ]
     },
 
@@ -5122,7 +5177,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "civil_vehicle_ateam_1a"
+            "civil_vehicle_ateam_1a",
+            "van_paydayvan"
         ]
     },
 
@@ -5227,6 +5283,40 @@
         "items": [
             "m3halftrack",
             "44_m3halftrack"
+        ]
+    },
+
+    "Hanomag SS 100 and Meillerwagen (A4 transport)": {
+        "properties": {
+            "RealMassKg": 22000,
+            "RealEnginePowerPS": 100,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 45,
+            "RealMaxReverseSpeedKmh": 15,
+            "RealTurnRateDegPerSec": 47.75,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "meillerwagen",
+            "meillerwagenr"
+        ]
+    },
+
+    "Hanomag SS 100 and Meillerwagen (empty)": {
+        "properties": {
+            "RealMassKg": 18000,
+            "RealEnginePowerPS": 100,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 45,
+            "RealMaxReverseSpeedKmh": 15,
+            "RealTurnRateDegPerSec": 47.75,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "meillerwagenn",
+            "meillerwagenrn"
         ]
     },
 
@@ -6083,13 +6173,17 @@
             "TurretArmorSideMm": 10,
             "TurretArmorRearMm": 10,
             "TurretArmorTopMm": 0,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
             "UseAmmoGroup": "150mm sFH 18",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "ww2_vehicle_panzerhaubitzehummel_1a"
+            "ww2_vehicle_panzerhaubitzehummel_1a",
+            "spg_hummel"
         ]
     },
 
@@ -7089,13 +7183,17 @@
             "ArmorTopMm": 8,
             "ArmorBottomMm": 10,
             "RealMaxReverseSpeedKmh": 6,
-            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
+            "PartArmorMm": [
+                "leftTrack 10",
+                "rightTrack 10"
+            ],
             "UseAmmoGroup": "75mm KwK/PaK 40",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "hetzer"
+            "hetzer",
+            "tankdestroyer_pzjg38_t_hetzer"
         ]
     },
 
@@ -7243,7 +7341,8 @@
             "UseAmmoGroup": "120mm Rh-120 L/55"
         },
         "items": [
-            "blackpanther"
+            "blackpanther",
+            "gfs_k2a1"
         ]
     },
 
@@ -7579,7 +7678,10 @@
             "TurretArmorSideMm": 75,
             "TurretArmorRearMm": 75,
             "TurretArmorTopMm": 30,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": "44_verylargeheshell 40000",
@@ -7590,7 +7692,8 @@
         },
         "items": [
             "kv2normal",
-            "44_kv2"
+            "44_kv2",
+            "kv2"
         ]
     },
 
@@ -7745,7 +7848,8 @@
             "TurretArmorTopMm": 10.0
         },
         "items": [
-            "lavad"
+            "lavad",
+            "gfs_lavad"
         ]
     },
 
@@ -7798,7 +7902,8 @@
             "ShootDelayPrimarySeconds": 6.0
         },
         "items": [
-            "leclercs1"
+            "leclercs1",
+            "leclerc"
         ]
     },
 
@@ -7860,7 +7965,8 @@
             "UseAmmoGroup": "105mm L7"
         },
         "items": [
-            "l1a1"
+            "l1a1",
+            "mbt_leopard1a1"
         ]
     },
 
@@ -7895,7 +8001,8 @@
         },
         "items": [
             "leo2a4",
-            "l2a4"
+            "l2a4",
+            "leo_2a4"
         ]
     },
 
@@ -7983,7 +8090,8 @@
         },
         "items": [
             "leopard2a7",
-            "l2a7"
+            "l2a7",
+            "gfs_l2a7"
         ]
     },
 
@@ -8270,7 +8378,9 @@
             "UseAmmoGroup": "105mm L7"
         },
         "items": [
-            "m1abrams105"
+            "m1abrams105",
+            "m1abrams",
+            "mbt_m1abrams"
         ]
     },
 
@@ -8359,7 +8469,8 @@
             "UseAmmoGroup": "120mm M256"
         },
         "items": [
-            "m1a1hcabrams"
+            "m1a1hcabrams",
+            "gfs_m1a1fep"
         ]
     },
 
@@ -8386,7 +8497,8 @@
             "UseAmmoGroup": "120mm M256"
         },
         "items": [
-            "m1a2sep"
+            "m1a2sep",
+            "m1a2"
         ]
     },
 
@@ -8413,7 +8525,9 @@
             "UseAmmoGroup": "120mm M256"
         },
         "items": [
-            "jewbrams"
+            "jewbrams",
+            "gfs_m1a2",
+            "gfs_m1a2trophy"
         ]
     },
 
@@ -8488,7 +8602,8 @@
             ]
         },
         "items": [
-            "m2a2"
+            "m2a2",
+            "gfs_m2a2"
         ]
     },
 
@@ -8880,7 +8995,8 @@
             "ShootDelayPrimarySeconds": 1.0
         },
         "items": [
-            "himars"
+            "himars",
+            "gfs_m142"
         ]
     },
 
@@ -8926,7 +9042,8 @@
             "ShootDelayPrimarySeconds": 15
         },
         "items": [
-            "bgmtow"
+            "bgmtow",
+            "gfs_tow"
         ]
     },
 
@@ -8956,7 +9073,8 @@
             "ShootDelayPrimarySeconds": 12.0
         },
         "items": [
-            "sheridan"
+            "sheridan",
+            "m551sheridan"
         ]
     },
 
@@ -8982,7 +9100,10 @@
             "hmmwv2",
             "hmmwv3",
             "hmmwv4",
-            "humvee"
+            "humvee",
+            "m998",
+            "m998a1",
+            "gmv"
         ]
     },
 
@@ -9025,7 +9146,10 @@
             "ArmorBottomMm": 8.0
         },
         "items": [
-            "m1116"
+            "m1116",
+            "gfs_humv",
+            "gfs_humgmv",
+            "gfs_hummk19"
         ]
     },
 
@@ -9068,7 +9192,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "napoleoncannon"
+            "napoleoncannon",
+            "12pounderfieldgun"
         ]
     },
 
@@ -9354,7 +9479,8 @@
             "ShootDelayPrimarySeconds": 6.0
         },
         "items": [
-            "mbt70"
+            "mbt70",
+            "kpz70"
         ]
     },
 
@@ -9376,7 +9502,10 @@
             "RealMaxReverseSpeedKmh": 5,
             "ArmorTopMm": 13,
             "ArmorBottomMm": 13,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -9397,7 +9526,9 @@
         },
         "items": [
             "lee",
-            "44_m3lee"
+            "44_m3lee",
+            "rebel",
+            "polk"
         ]
     },
 
@@ -9697,7 +9828,10 @@
             "TurretArmorSideMm": 76,
             "TurretArmorRearMm": 76,
             "TurretArmorTopMm": 25,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "ReadWeaponsFromGunTypes": "true",
             "UseRealisticVehicleHealth": "true",
             "AmmoMass": [
@@ -9719,7 +9853,9 @@
         },
         "items": [
             "pershing",
-            "44_m26"
+            "44_m26",
+            "m26a",
+            "m26_pershing"
         ]
     },
 
@@ -9741,6 +9877,80 @@
         },
         "items": [
             "buggyeyedbenz"
+        ]
+    },
+
+    "Mercedes-Benz G4 W31": {
+        "properties": {
+            "RealMassKg": 4300,
+            "RealEnginePowerPS": 110,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 67,
+            "RealMaxReverseSpeedKmh": 12,
+            "RealTurnRateDegPerSec": 125.45,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "w31",
+            "w31ak",
+            "w31m"
+        ]
+    },
+
+    "Mercedes-Benz SS (27/140/200 PS)": {
+        "properties": {
+            "RealMassKg": 2100,
+            "RealEnginePowerPS": 200,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 170,
+            "RealMaxReverseSpeedKmh": 20,
+            "RealTurnRateDegPerSec": 386.52,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ss",
+            "ssblack",
+            "sswehr"
+        ]
+    },
+
+    "Mercedes-Benz SSK (250 PS)": {
+        "properties": {
+            "RealMassKg": 1650,
+            "RealEnginePowerPS": 250,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 192,
+            "RealMaxReverseSpeedKmh": 20,
+            "RealTurnRateDegPerSec": 470.12,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ssk",
+            "sskflug"
+        ]
+    },
+
+    "Mercedes-Benz SSKL (1931)": {
+        "properties": {
+            "RealMassKg": 1500,
+            "RealEnginePowerPS": 300,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 235,
+            "RealMaxReverseSpeedKmh": 20,
+            "RealTurnRateDegPerSec": 575.41,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "sskl1",
+            "sskl2",
+            "sskl3",
+            "sskl4",
+            "sskl5",
+            "sskl6"
         ]
     },
 
@@ -9871,7 +10081,8 @@
             "TurretArmorTopMm": 0
         },
         "items": [
-            "phalanxciws"
+            "phalanxciws",
+            "gfs_ciwsphalanx"
         ]
     },
 
@@ -9937,7 +10148,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "ml20"
+            "ml20",
+            "howitzer_152mm_ml-20"
         ]
     },
 
@@ -10493,7 +10705,91 @@
         "items": [
             "44_opelblitz",
             "ww2_vehicle_opelblitz_1a",
-            "ww2_vehicle_opelblitz_2a"
+            "ww2_vehicle_opelblitz_2a",
+            "truck_opelblitz"
+        ]
+    },
+
+    "Opel Blitz Kfz 305 (empty)": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 212.21,
+            "RealMassKg": 3300,
+            "RealEnginePowerPS": 68,
+            "RealMaxSpeedKmh": 80,
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": 12,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "opelblitzcce",
+            "opelblitzcceak",
+            "opelblitztne",
+            "opelblitztneak"
+        ]
+    },
+
+    "Opel Blitz Kfz 305 (loaded)": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 212.21,
+            "RealMassKg": 5800,
+            "RealEnginePowerPS": 68,
+            "RealMaxSpeedKmh": 80,
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": 12,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "opelblitzccf1",
+            "opelblitzccf1ak",
+            "opelblitzccfb",
+            "opelblitzccfbak",
+            "opelblitzccft",
+            "opelblitzccftak",
+            "opelblitztcfb",
+            "opelblitztcfbak",
+            "opelblitztnf1",
+            "opelblitztnf1ak",
+            "opelblitztnf2",
+            "opelblitztnf2ak"
+        ]
+    },
+
+    "Opel Blitz Kfz 385 Tankwagen": {
+        "properties": {
+            "SquashMobs": "true",
+            "RealTurnRateDegPerSec": 212.21,
+            "RealMassKg": 5800,
+            "RealEnginePowerPS": 68,
+            "RealMaxSpeedKmh": 80,
+            "DriveType": "RWD",
+            "RealMaxReverseSpeedKmh": 12,
+            "ArmorFrontMm": 0,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "tankwagen",
+            "tankwagenak",
+            "tankwagenh",
+            "tankwagenakh"
         ]
     },
 
@@ -11080,7 +11376,10 @@
             "TurretArmorRearMm": 30,
             "TurretArmorTopMm": 16,
             "RealMaxReverseSpeedKmh": 7,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
             "UseAmmoGroup": "75mm KwK/PaK 40",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
@@ -11114,7 +11413,8 @@
             "44_panzerivh",
             "ww2_vehicle_panzeriv_2a",
             "panzerkampfvageniv",
-            "panzer"
+            "panzer",
+            "mediumtank_pz.4h"
         ]
     },
 
@@ -11166,7 +11466,10 @@
             "TurretArmorRearMm": "80 21",
             "TurretArmorTopMm": 40,
             "RealMaxReverseSpeedKmh": 9,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "UseAmmoGroup": "88mm KwK/Pak 43",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
@@ -11199,7 +11502,8 @@
             "tigerdos",
             "44_tiger2",
             "tigerii",
-            "ww2_vehicle_tigerii_1a"
+            "ww2_vehicle_tigerii_1a",
+            "tiger2"
         ]
     },
 
@@ -11250,7 +11554,10 @@
             "TurretArmorSideMm": 45,
             "TurretArmorRearMm": 45,
             "TurretArmorTopMm": 16,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "UseAmmoGroup": "75mm KwK/PaK 42",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
@@ -11278,7 +11585,8 @@
         "items": [
             "44_pantherg",
             "44_panthercommand",
-            "ww2_vehicle_panther_1a"
+            "ww2_vehicle_panther_1a",
+            "pantherg"
         ]
     },
 
@@ -11300,7 +11608,10 @@
             "TurretArmorRearMm": 80,
             "TurretArmorTopMm": 25,
             "RealMaxReverseSpeedKmh": 10,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "UseAmmoGroup": "88mm KwK/Flak 36",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
@@ -11322,7 +11633,9 @@
             ]
         },
         "items": [
-            "44_tigerp"
+            "44_tigerp",
+            "porsche",
+            "porschegpan"
         ]
     },
 
@@ -11345,7 +11658,10 @@
             "TurretArmorTopMm": 25,
             "RealMaxReverseSpeedKmh": 8,
             "TurretArmorFrontMm": 100,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "UseAmmoGroup": "88mm KwK/Flak 36",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
@@ -11367,7 +11683,8 @@
             ]
         },
         "items": [
-            "ww2_vehicle_tigeri_1a"
+            "ww2_vehicle_tigeri_1a",
+            "heavytank_pz.6etiger"
         ]
     },
 
@@ -11447,13 +11764,17 @@
             "TurretArmorRearMm": 200,
             "TurretArmorTopMm": 60,
             "RealMaxReverseSpeedKmh": 20,
-            "PartArmorMm": ["leftTrack 25", "rightTrack 25"],
+            "PartArmorMm": [
+                "leftTrack 25",
+                "rightTrack 25"
+            ],
             "UseAmmoGroup": "128mm KwK/Pak 44",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "maus"
+            "maus",
+            "superheavytank_pz.8maus"
         ]
     },
 
@@ -11531,7 +11852,8 @@
             ]
         },
         "items": [
-            "pgz95"
+            "pgz95",
+            "gfs_pgz95"
         ]
     },
 
@@ -12152,14 +12474,18 @@
             "TurretArmorSideMm": 22,
             "TurretArmorRearMm": 22,
             "TurretArmorTopMm": 22,
-            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
+            "PartArmorMm": [
+                "leftTrack 10",
+                "rightTrack 10"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
             "renaultmale",
             "renaultfemale",
-            "ww2_vehicle_renault17_1a"
+            "ww2_vehicle_renault17_1a",
+            "lighttank_renaultft-17"
         ]
     },
 
@@ -13016,7 +13342,10 @@
             "TurretArmorSideMm": 8,
             "TurretArmorRearMm": 8,
             "TurretArmorTopMm": 0,
-            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
+            "PartArmorMm": [
+                "leftTrack 10",
+                "rightTrack 10"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -13027,7 +13356,8 @@
             "sdkfz251d",
             "sdkfz251dambush",
             "sdkfz251ddesert",
-            "sdkfz251dsnow"
+            "sdkfz251dsnow",
+            "apc_sd.kfz.251hanomag"
         ]
     },
 
@@ -13377,7 +13707,77 @@
             ]
         },
         "items": [
-            "spzpuma"
+            "spzpuma",
+            "gfs_spzpuma"
+        ]
+    },
+
+    "Static chair prop (Generic)": {
+        "properties": {
+            "RealMassKg": 10,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "interior_chair1",
+            "interior_chair2",
+            "interior_chair3"
+        ]
+    },
+
+    "Static cushion prop (Generic)": {
+        "properties": {
+            "RealMassKg": 2,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "interior_zabuton"
+        ]
+    },
+
+    "Static heated table prop (Generic)": {
+        "properties": {
+            "RealMassKg": 30,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "interior_kotatsu"
+        ]
+    },
+
+    "Static radio prop (Generic)": {
+        "properties": {
+            "RealMassKg": 10,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "interior_radio"
+        ]
+    },
+
+    "Static sofa prop (Generic)": {
+        "properties": {
+            "RealMassKg": 60,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "interior_sofa"
+        ]
+    },
+
+    "Static storage box prop (Generic)": {
+        "properties": {
+            "RealMassKg": 20,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "storagebox_blue",
+            "storagebox_red"
         ]
     },
 
@@ -13628,13 +14028,17 @@
             "TurretArmorSideMm": 80,
             "TurretArmorRearMm": 80,
             "TurretArmorTopMm": 40,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
             "sturmtiger",
-            "sturmtigerop"
+            "sturmtigerop",
+            "spg_sturmtiger"
         ]
     },
 
@@ -13928,7 +14332,8 @@
             "UseAmmoGroup": "90mm T15E1"
         },
         "items": [
-            "44_t26e1"
+            "44_t26e1",
+            "t26_superpershing"
         ]
     },
 
@@ -14003,7 +14408,8 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "t14mbt"
+            "t14mbt",
+            "gfs_t14"
         ]
     },
 
@@ -14146,7 +14552,10 @@
             "TurretArmorSideMm": 75,
             "TurretArmorRearMm": 52,
             "TurretArmorTopMm": 20,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
             "UseAmmoGroup": "85mm D-5S/ZiS-S-53",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
@@ -14179,7 +14588,9 @@
             "t3485",
             "44_t3485",
             "t34",
-            "ww2_vehicle_t34_2a"
+            "ww2_vehicle_t34_2a",
+            "t-34_85",
+            "mediumtank_t-34-85"
         ]
     },
 
@@ -14252,12 +14663,16 @@
             "TurretArmorSideMm": 20,
             "TurretArmorRearMm": 21,
             "TurretArmorTopMm": 11,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "t35"
+            "t35",
+            "heavytank_t35"
         ]
     },
 
@@ -14285,7 +14700,8 @@
             "UseAmmoGroup": "100mm D-10S"
         },
         "items": [
-            "t44"
+            "t44",
+            "t-44_100"
         ]
     },
 
@@ -14316,7 +14732,8 @@
             "UseAmmoGroup": "100mm D-10T"
         },
         "items": [
-            "t55"
+            "t55",
+            "t55a"
         ]
     },
 
@@ -14404,7 +14821,8 @@
             "UseAmmoGroup": "115mm U-5TS"
         },
         "items": [
-            "t62"
+            "t62",
+            "mbt_t-62"
         ]
     },
 
@@ -14543,7 +14961,10 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "t72a"
+            "t72a",
+            "t72",
+            "iraq",
+            "gfs_t72m1"
         ]
     },
 
@@ -14605,7 +15026,8 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "t72b3m"
+            "t72b3m",
+            "gfs_t72b3m"
         ]
     },
 
@@ -14729,7 +15151,9 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "t80bv"
+            "t80bv",
+            "t80",
+            "t80clone"
         ]
     },
 
@@ -14756,7 +15180,8 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "t84"
+            "t84",
+            "gfs_t84m"
         ]
     },
 
@@ -14787,7 +15212,9 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "t90a"
+            "t90a",
+            "gfs_t90a",
+            "gfs_t90s"
         ]
     },
 
@@ -14872,7 +15299,8 @@
             "UseAmmoGroup": "125mm 2A46M-5"
         },
         "items": [
-            "t90"
+            "t90",
+            "gfs_t90ms"
         ]
     },
 
@@ -15039,7 +15467,8 @@
         },
         "items": [
             "tks",
-            "tks20"
+            "tks20",
+            "llighttank_tksmg"
         ]
     },
 
@@ -15061,13 +15490,17 @@
             "TurretArmorSideMm": 89,
             "TurretArmorRearMm": 89,
             "TurretArmorTopMm": 25,
-            "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
+            "PartArmorMm": [
+                "leftTrack 20",
+                "rightTrack 20"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "UseAmmoGroup": "76mm QF 17-pdr"
         },
         "items": [
-            "tog2redemption"
+            "tog2redemption",
+            "tog"
         ]
     },
 
@@ -15124,7 +15557,8 @@
             "ShootDelayPrimarySeconds": 0.5
         },
         "items": [
-            "tos"
+            "tos",
+            "gfs_tos1a"
         ]
     },
 
@@ -15204,7 +15638,8 @@
             "UseAmmoGroup": "73mm 2A28"
         },
         "items": [
-            "toyotabmp1turret"
+            "toyotabmp1turret",
+            "gfs_technicaltank"
         ]
     },
 
@@ -15225,7 +15660,8 @@
             "ArmorBottomMm": 0
         },
         "items": [
-            "toyotadshk"
+            "toyotadshk",
+            "gfs_technicalgun"
         ]
     },
 
@@ -15269,7 +15705,8 @@
             "ShootDelayPrimarySeconds": 10
         },
         "items": [
-            "toyotaspg"
+            "toyotaspg",
+            "gfs_technicalrifle"
         ]
     },
 
@@ -15291,7 +15728,8 @@
             "ShootDelayPrimarySeconds": 0.2
         },
         "items": [
-            "toyotas5"
+            "toyotas5",
+            "gfs_technicalmlrs"
         ]
     },
 
@@ -15825,7 +16263,8 @@
             "RealEnginePowerPS": 1200
         },
         "items": [
-            "type10"
+            "type10",
+            "gfs_type10"
         ]
     },
 
@@ -16058,7 +16497,10 @@
             "ArmorRearMm": 17,
             "ArmorTopMm": 10,
             "ArmorBottomMm": 10,
-            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
+            "PartArmorMm": [
+                "leftTrack 10",
+                "rightTrack 10"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -16080,7 +16522,8 @@
             "UseAmmoGroup": "57mm Type 97"
         },
         "items": [
-            "44_igo"
+            "44_igo",
+            "mediumtank_type89m"
         ]
     },
 
@@ -16109,7 +16552,8 @@
             ]
         },
         "items": [
-            "type89"
+            "type89",
+            "gfs_type89"
         ]
     },
 
@@ -16229,7 +16673,10 @@
             "RealMaxReverseSpeedKmh": 10,
             "ArmorBottomMm": 9,
             "TurretArmorTopMm": 9,
-            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
+            "PartArmorMm": [
+                "leftTrack 10",
+                "rightTrack 10"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -16251,7 +16698,8 @@
         },
         "items": [
             "hago",
-            "44_hago"
+            "44_hago",
+            "lighttank_type95ha-go"
         ]
     },
 
@@ -16340,7 +16788,10 @@
             "TurretArmorSideMm": 25,
             "TurretArmorRearMm": 25,
             "TurretArmorTopMm": 12,
-            "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "PartArmorMm": [
+                "leftTrack 15",
+                "rightTrack 15"
+            ],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -16371,7 +16822,8 @@
         },
         "items": [
             "chiha",
-            "44_chiha"
+            "44_chiha",
+            "mediumtank_type97chi-ha"
         ]
     },
 
@@ -16610,7 +17062,8 @@
             "ArmorBottomMm": 0.0
         },
         "items": [
-            "ural"
+            "ural",
+            "truck_ural4320"
         ]
     },
 
@@ -18418,7 +18871,8 @@
             "kubel",
             "44_kubelwagenmg34",
             "44_kubelwagenmg42",
-            "ww2_vehicle_vwtype82_1a"
+            "ww2_vehicle_vwtype82_1a",
+            "militarycar_kubelwagen"
         ]
     },
 
@@ -18497,7 +18951,8 @@
             "jeep",
             "sasjeep",
             "ww2_vehicle_willyjeep_1a",
-            "ww2_vehicle_willyjeep_1ausa"
+            "ww2_vehicle_willyjeep_1ausa",
+            "militarycar_willysmb"
         ]
     },
 
@@ -18566,7 +19021,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "wurfrahmen40"
+            "wurfrahmen40",
+            "spg_28cm_sd.kfz.251_1wurfrahmen40"
         ]
     },
 
@@ -18841,7 +19297,8 @@
         },
         "items": [
             "44_zis3",
-            "zis3"
+            "zis3",
+            "atgun_76.2mm_zis-3"
         ]
     },
 
@@ -18962,7 +19419,8 @@
             "ReloadTimePrimary": 600
         },
         "items": [
-            "zsu234"
+            "zsu234",
+            "aatank_zsu-23-4shilka"
         ]
     },
 
@@ -19087,7 +19545,9 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "norinco99"
+            "norinco99",
+            "norinco",
+            "gfs_type99"
         ]
     },
 
@@ -19118,7 +19578,8 @@
             "UseAmmoGroup": "125mm 2A46"
         },
         "items": [
-            "ztz99a"
+            "ztz99a",
+            "gfs_type99a2"
         ]
     },
 
@@ -19137,7 +19598,74 @@
             "ReloadTimePrimary": 160
         },
         "items": [
-            "zsu23"
+            "zsu23",
+            "aagun_zu_23_2"
+        ]
+    },
+
+    "Zundapp K 800 (1937 solo)": {
+        "properties": {
+            "RealMassKg": 300,
+            "RealEnginePowerPS": 22,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 125,
+            "RealMaxReverseSpeedKmh": 3,
+            "RealTurnRateDegPerSec": 568.41,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "zundappcn"
+        ]
+    },
+
+    "Zundapp K 800 sidecar combination": {
+        "properties": {
+            "RealMassKg": 450,
+            "RealEnginePowerPS": 22,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 95,
+            "RealMaxReverseSpeedKmh": 3,
+            "RealTurnRateDegPerSec": 377.99,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "zundappc"
+        ]
+    },
+
+    "Zundapp KS 750 sidecar combination": {
+        "properties": {
+            "RealMassKg": 660,
+            "RealEnginePowerPS": 26,
+            "DriveType": "AWD",
+            "RealMaxSpeedKmh": 95,
+            "RealMaxReverseSpeedKmh": 5.6,
+            "RealTurnRateDegPerSec": 377.99,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "zundapp",
+            "zundappak"
+        ]
+    },
+
+    "Zundapp KS 750 solo adaptation (Generic)": {
+        "properties": {
+            "RealMassKg": 400,
+            "RealEnginePowerPS": 26,
+            "DriveType": "RWD",
+            "RealMaxSpeedKmh": 95,
+            "RealMaxReverseSpeedKmh": 5.6,
+            "RealTurnRateDegPerSec": 431.99,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "zundappn",
+            "zundappakn"
         ]
     }
 }
