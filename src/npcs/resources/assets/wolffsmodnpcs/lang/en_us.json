@@ -1376,7 +1376,7 @@
   "wolffsmodnpcs.tuning.server_name_tag_range": "Name tag range",
   "wolffsmodnpcs.tuning.server_name_tag_range.help": "Blocks within which players see the name tags of NPCs. 0 hides them. Applies at once to every player. Operators only.",
   "wolffsmodnpcs.tuning.server_item_drops": "Item drops",
-  "wolffsmodnpcs.tuning.server_item_drops.help": "Whether a killed NPC drops any of its items. Its experience still drops either way. Operators only.",
+  "wolffsmodnpcs.tuning.server_item_drops.help": "Whether a killed NPC drops any of its items; off by default. Teams bots then drop what the Teams weaponDrops and armourDrops rules let a player drop. Its experience still drops either way. Operators only.",
   "wolffsmodnpcs.tuning.server_friendly_fire_npcs": "Between allied NPCs",
   "wolffsmodnpcs.tuning.server_friendly_fire_npcs.help": "Whether NPCs of one faction or of allied factions harm each other, for factions without a setting of their own. Teams rounds follow their own rules. Same as /flansnpcfriendlyfire npcs. Operators only.",
   "wolffsmodnpcs.tuning.server_friendly_fire_npcs.default": "Common config",

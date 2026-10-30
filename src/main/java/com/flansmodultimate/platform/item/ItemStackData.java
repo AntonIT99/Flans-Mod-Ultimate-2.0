@@ -36,6 +36,16 @@ public final class ItemStackData
         return tag == null ? new CompoundTag() : tag.copy();
     }
 
+    /**
+     * Returns the stack's own data for reading only, without the cost of {@link #copy}, which matters for getters asked many
+     * times a tick. Never modify the result or keep it: edit through {@link #copy} and {@link #set} or {@link #update}.
+     */
+    public static CompoundTag view(ItemStack stack)
+    {
+        CompoundTag tag = stack.getTag();
+        return tag == null ? new CompoundTag() : tag;
+    }
+
     public static void set(ItemStack stack, CompoundTag tag)
     {
         stack.setTag(tag.isEmpty() ? null : tag.copy());

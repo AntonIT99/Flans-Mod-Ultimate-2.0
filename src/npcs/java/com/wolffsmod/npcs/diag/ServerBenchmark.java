@@ -122,6 +122,9 @@ public final class ServerBenchmark
         if (current == null)
             return;
         NpcProfiler.ServerSample sample = NpcProfiler.drainServer();
+        // A run started by a command in the middle of a tick has no start for that tick to measure from.
+        if (current.started == 0L)
+            return;
         if (current.warmUp > 0)
         {
             if (--current.warmUp == 0)

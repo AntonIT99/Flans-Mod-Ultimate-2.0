@@ -181,6 +181,27 @@ public final class NpcPlatform
 
     // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
     @SuppressWarnings({"java:S1172", "unused"})
+    public static int punchLevel(LivingEntity holder, ItemStack item)
+    {
+        return item.getEnchantmentLevel(Enchantments.PUNCH_ARROWS);
+    }
+
+    // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static int flameLevel(LivingEntity holder, ItemStack item)
+    {
+        return item.getEnchantmentLevel(Enchantments.FLAMING_ARROWS);
+    }
+
+    // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static int infinityLevel(LivingEntity holder, ItemStack item)
+    {
+        return item.getEnchantmentLevel(Enchantments.INFINITY_ARROWS);
+    }
+
+    // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
+    @SuppressWarnings({"java:S1172", "unused"})
     public static int multishotLevel(LivingEntity holder, ItemStack item)
     {
         return item.getEnchantmentLevel(Enchantments.MULTISHOT);
@@ -190,7 +211,7 @@ public final class NpcPlatform
     @SuppressWarnings({"java:S1172", "unused"})
     public static int fireAspectLevel(LivingEntity holder, ItemStack item)
     {
-        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FIRE_ASPECT, item);
+        return item.getEnchantmentLevel(Enchantments.FIRE_ASPECT);
     }
 
     /** Melee damage the item's enchantments add against a generic target. */

@@ -1,7 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -55,6 +54,6 @@ public final class NpcReloadFeedback
 
     private static boolean isGun(ItemStack stack)
     {
-        return !stack.isEmpty() && FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).filter(EquippedWeaponProperties::ranged).filter(properties -> !properties.throwable()).isPresent();
+        return !stack.isEmpty() && FlansEquipment.getWeaponKind(stack).filter(kind -> kind.ranged() && !kind.throwable()).isPresent();
     }
 }

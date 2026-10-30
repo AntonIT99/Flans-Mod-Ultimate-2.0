@@ -1376,7 +1376,7 @@
   "wolffsmodnpcs.tuning.server_name_tag_range": "Reichweite der Namensschilder",
   "wolffsmodnpcs.tuning.server_name_tag_range.help": "Blöcke, innerhalb derer Spieler die Namensschilder von NPCs sehen. 0 blendet sie aus. Wirkt sofort für alle Spieler. Nur für Operatoren.",
   "wolffsmodnpcs.tuning.server_item_drops": "Gegenstände fallen lassen",
-  "wolffsmodnpcs.tuning.server_item_drops.help": "Ob ein getöteter NPC Gegenstände fallen lässt. Seine Erfahrung fällt in jedem Fall. Nur für Operatoren.",
+  "wolffsmodnpcs.tuning.server_item_drops.help": "Ob ein getöteter NPC Gegenstände fallen lässt; standardmäßig aus. Teams-Bots lassen dann fallen, was die Teams-Regeln weaponDrops und armourDrops einem Spieler erlauben. Seine Erfahrung fällt in jedem Fall. Nur für Operatoren.",
   "wolffsmodnpcs.tuning.server_friendly_fire_npcs": "Zwischen verbündeten NPCs",
   "wolffsmodnpcs.tuning.server_friendly_fire_npcs.help": "Ob NPCs einer Fraktion oder verbündeter Fraktionen einander schaden, für Fraktionen ohne eigene Einstellung. Teams-Runden folgen ihren eigenen Regeln. Wie /flansnpcfriendlyfire npcs. Nur für Operatoren.",
   "wolffsmodnpcs.tuning.server_friendly_fire_npcs.default": "Allgemeine Konfiguration",

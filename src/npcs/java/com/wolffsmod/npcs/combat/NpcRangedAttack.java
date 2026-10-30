@@ -286,7 +286,7 @@ public final class NpcRangedAttack
                 // The NPC's own firing sound stands in for the model's, and carries as far as a gun's.
                 NpcSounds.play(npc, npc.stats.ranged.getSound(0), SoundRange.GUN_FIRE);
             // A held Flan gun that fired the round itself, rather than a model's mount, raises and cycles like a native shot.
-            if (!modelMuzzles && !FlansProjectiles.isGrenade(ammo) && FlansEquipment.getWeaponProperties(held, ItemStack.EMPTY).isPresent())
+            if (!modelMuzzles && !FlansProjectiles.isGrenade(ammo) && FlansEquipment.getWeaponKind(held).isPresent())
                 FlansEquipment.animateShot(npc, InteractionHand.MAIN_HAND);
             // Native Flan entities have their own hit handling rather than Custom NPCs' IProjectile wrapper.
             EventHooks.onNPCRangedLaunched(npc, event);

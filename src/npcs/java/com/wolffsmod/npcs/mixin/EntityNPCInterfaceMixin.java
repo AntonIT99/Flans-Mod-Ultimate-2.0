@@ -116,8 +116,9 @@ import java.util.*;
  */
 @Mixin(value = EntityNPCInterface.class, remap = false)
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
-// instanceof checks on this are valid, and the overrides keep the target signatures.
-@SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
+// instanceof checks on this are valid, and the overrides keep the target signatures. The synchronized data it adds belongs
+// to the target class, which IntelliJ does not see as this class.
+@SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference", "WrongEntityDataParameterClass"})
 public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     implements
         IEquipmentPolicy,
@@ -160,6 +161,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private static final EntityDataAccessor<CompoundTag> WOLFFSMODNPCS_RIDER_SEATS = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.COMPOUND_TAG);
     @Unique
     private static final String WOLFFSMODNPCS_CREWED_AS_KEY = "WolffsModCrewedAs";
+    /** Ticks between checks of armor attributes while neither the armor nor the switches change. */
+    @Unique
+    private static final int WOLFFSMODNPCS_ARMOR_REFRESH = 20;
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
@@ -183,6 +187,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private int wolffsmodnpcsRound;
     @Unique
     private boolean wolffsmodnpcsLastDistanceManaged;
+    /**
+     * The armor worn when its attributes were last applied, by armor slot index, null before that, and the switches they
+     * were applied with. Mixin cannot merge an array initializer, hence the empty array.
+     */
+    @Unique
+    private final ItemStack[] wolffsmodnpcsArmorSeen = new ItemStack[4];
+    @Unique
+    private int wolffsmodnpcsArmorRules = -1;
 
     @Unique
     private final NpcEngineAudio wolffsmodnpcsEngineAudio = new NpcEngineAudio();
@@ -492,8 +504,45 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         }
     }
 
+    /**
+     * Brings the attributes worn armor lends the NPC in line with its switches. Reading a piece's attributes posts an event
+     * each time, so this runs when the armor or the switches change, as vanilla applies armor attributes, and once a second
+     * in case something else reset them.
+     */
     @Unique
     private void wolffsmodnpcsUpdateArmorAttributes()
+    {
+        int rules = (flansArmorEffects() ? 1 : 0) | (NpcEquipment.inherits((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_KNOCKBACK) ? 2 : 0);
+        // Always compared, so that the pieces worn now are remembered.
+        boolean armorChanged = wolffsmodnpcsArmorChanged();
+        if (!armorChanged && rules == wolffsmodnpcsArmorRules && (tickCount + getId()) % WOLFFSMODNPCS_ARMOR_REFRESH != 0)
+            return;
+        wolffsmodnpcsArmorRules = rules;
+        wolffsmodnpcsApplyArmorAttributes();
+    }
+
+    /** @return whether any armor piece differs from when its attributes were last applied, remembering the pieces worn now */
+    @Unique
+    private boolean wolffsmodnpcsArmorChanged()
+    {
+        boolean changed = false;
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (!NpcPlatform.isHumanoidArmor(slot))
+                continue;
+            ItemStack armor = getItemBySlot(slot);
+            ItemStack seen = wolffsmodnpcsArmorSeen[slot.getIndex()];
+            if (seen == null || !ItemStack.matches(seen, armor))
+            {
+                wolffsmodnpcsArmorSeen[slot.getIndex()] = armor.copy();
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    @Unique
+    private void wolffsmodnpcsApplyArmorAttributes()
     {
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
@@ -988,8 +1037,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     // Custom NPCs sets the step height field on every move; Forge's getStepHeight() and the path search read this.
+    // Forge deprecates the method; javac warns about overriding it, which IntelliJ does not see.
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "RedundantSuppression"})
     public float maxUpStep()
     {
         // Asked for while the entity is still being constructed, before it has settings to look at.

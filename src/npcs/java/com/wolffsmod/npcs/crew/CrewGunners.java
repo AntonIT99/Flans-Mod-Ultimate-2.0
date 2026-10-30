@@ -52,8 +52,9 @@ public final class CrewGunners
     private static final int MAX_SHOTS_PER_TICK = 8;
     /** Pause, in ticks, of a gun whose definition states none. */
     private static final double MIN_SHOT_DELAY = 1D;
-    /** Ticks between looks at how a gun's round flies. */
+    /** Ticks between looks at how a gun's round flies, and at what it fires and how it reloads. */
     private static final int BALLISTICS_INTERVAL = 20;
+    private static final int SUPPLY_INTERVAL = 20;
 
     private final Map<Integer, Gun> guns = new HashMap<>();
     /** The players who hold the trigger of the gun they man. */
@@ -91,6 +92,13 @@ public final class CrewGunners
         private double speed = Double.NaN;
         private double gravity;
         private double drag = 1D;
+        /** What the gun fires and how it reloads, looked up every so often for the gunner they were looked up for. */
+        private ItemStack ammo = ItemStack.EMPTY;
+        @Nullable
+        private ReloadCycle cycle;
+        @Nullable
+        private LivingEntity suppliedFor;
+        private int suppliedAt = Integer.MIN_VALUE;
     }
 
     /** Runs once per server tick of the vehicle, after its seat guns have been aimed. */
@@ -125,8 +133,9 @@ public final class CrewGunners
         triggers.retainAll(manning);
         if (!engages(vehicle, options, target, state))
             return;
+        Map<Entity, WeaponMount> seating = NpcCrew.seating(vehicle);
         for (WeaponMount mount : state.crewSeats(vehicle))
-            gunner(vehicle, options, mount).ifPresent(gunner -> fire(context, gunner, mount));
+            gunner(vehicle, options, mount, seating).ifPresent(gunner -> fire(context, gunner, mount));
     }
 
     /** Holds or lets go of the trigger of the seat gun a player mans in this vehicle, as their client says. */
@@ -148,14 +157,14 @@ public final class CrewGunners
      * @return who fires the seat's gun: the crew member sitting behind it, or the vehicle itself for a seat nobody sits in
      *         while its guns fire unmanned; none for a seat without a gun of its own, or one another rider sits in
      */
-    private static Optional<EntityNPCInterface> gunner(EntityNPCInterface vehicle, NpcWeaponOptions options, WeaponMount mount)
+    private static Optional<EntityNPCInterface> gunner(EntityNPCInterface vehicle, NpcWeaponOptions options, WeaponMount mount, Map<Entity, WeaponMount> seating)
     {
         if (mount.driver() || mount.gun().isEmpty())
             return Optional.empty();
-        Optional<EntityNPCInterface> crew = NpcCrew.occupant(vehicle, mount.seat());
+        Optional<EntityNPCInterface> crew = NpcCrew.occupant(seating, mount.seat());
         if (crew.isPresent())
             return options.enabled(Feature.MANNED_GUNS_FIRE) ? crew : Optional.empty();
-        return options.enabled(Feature.UNMANNED_GUNS_FIRE) && !NpcCrew.occupied(vehicle, mount.seat()) ? Optional.of(vehicle) : Optional.empty();
+        return options.enabled(Feature.UNMANNED_GUNS_FIRE) && !NpcCrew.occupied(seating, mount.seat()) ? Optional.of(vehicle) : Optional.empty();
     }
 
     /** Whether the vehicle has a target its seat guns may fire at at all. */
@@ -170,18 +179,37 @@ public final class CrewGunners
     private void fire(Context context, EntityNPCInterface gunner, WeaponMount mount)
     {
         Gun gun = guns.computeIfAbsent(mount.seat(), seat -> new Gun());
-        ItemStack ammo = NpcAmmunition.crewGunTemplate(context.vehicle(), gunner, mount.gun().orElseThrow());
-        LivingEntity target = target(context, mount, gun);
+        supply(context, gunner, mount, gun);
+        ItemStack ammo = gun.ammo;
+        // Where the gun's rounds leave from as it is laid now, which choosing and laying on a target both go by.
+        Vec3 origin = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, context.state().turretAim(), context.state().seatAim(mount.seat()))
+            .map(muzzle -> NpcModels.world(context.vehicle(), context.model(), muzzle.offset(), context.state().getHullYaw())).orElse(null);
+        LivingEntity target = target(context, mount, gun, origin);
         if (target != gun.laidOn)
         {
             gun.laidOn = target;
             gun.sightCheckedAt = Integer.MIN_VALUE;
         }
         Vec3 aimPoint = NpcVehicleState.aimPoint(target);
-        ReloadCycle cycle = FlansEntityTypes.getSeatReloadCycle(context.definition(), mount.seat(), ammo).orElse(null);
-        if (ammo.isEmpty() || cycle == null || !lay(context, gunner, mount, gun, ammo, target))
+        ReloadCycle cycle = gun.cycle;
+        if (ammo.isEmpty() || cycle == null || origin == null || !lay(context, gunner, mount, gun, ammo, origin, target))
             return;
         shoot(context, gunner, mount, gun, ammo, cycle, aimPoint);
+    }
+
+    /**
+     * Looks up what the gun fires and how it reloads every so often, and at once for another gunner: neither changes from
+     * tick to tick, and working them out means building ammunition and reading the gun's definition.
+     */
+    private static void supply(Context context, EntityNPCInterface gunner, WeaponMount mount, Gun gun)
+    {
+        int now = context.vehicle().tickCount;
+        if (gunner == gun.suppliedFor && now - gun.suppliedAt < SUPPLY_INTERVAL && now >= gun.suppliedAt)
+            return;
+        gun.suppliedFor = gunner;
+        gun.suppliedAt = now;
+        gun.ammo = NpcAmmunition.crewGunTemplate(context.vehicle(), gunner, mount.gun().orElseThrow());
+        gun.cycle = FlansEntityTypes.getSeatReloadCycle(context.definition(), mount.seat(), gun.ammo).orElse(null);
     }
 
     /** Lays the gun a player mans where they look, and fires it along its barrel while they hold the trigger. */
@@ -241,14 +269,11 @@ public final class CrewGunners
      *         bears on nothing, and at once when its target dies or the vehicle's movement takes it out of the gun's reach.
      *         While it bears on nothing it is laid on the vehicle's target, ready for when the hull or turret turns.
      */
-    private static LivingEntity target(Context context, WeaponMount mount, Gun gun)
+    private static LivingEntity target(Context context, WeaponMount mount, Gun gun, @Nullable Vec3 origin)
     {
         if (!context.options().enabled(Feature.GUNNER_TARGETS))
             return context.target();
         EntityNPCInterface vehicle = context.vehicle();
-        NpcVehicleState state = context.state();
-        Vec3 origin = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat()))
-            .map(muzzle -> NpcModels.world(vehicle, context.model(), muzzle.offset(), state.getHullYaw())).orElse(null);
         LivingEntity current = gun.target;
         boolean lost = current != null && (origin == null || !fightable(vehicle, current) || !reachable(context, mount, gun, origin, current));
         int interval = current == null ? SIGHT_INTERVAL : TARGET_INTERVAL;
@@ -295,7 +320,7 @@ public final class CrewGunners
         double range = vehicle.stats.ranged.getRange();
         List<LivingEntity> candidates = new ArrayList<>(vehicle.level().getEntitiesOfClass(LivingEntity.class, vehicle.getBoundingBox().inflate(range), candidate -> candidate != context.target()
             && candidate != last && candidate.getRootVehicle() != vehicle.getRootVehicle() && fightable(vehicle, candidate) && inArc(context, mount, origin, candidate)));
-        if (context.target() != last && inArc(context, mount, origin, context.target()))
+        if (context.target() != null && context.target() != last && inArc(context, mount, origin, context.target()))
             candidates.add(context.target());
         candidates.sort(Comparator.comparingDouble(vehicle::distanceToSqr));
         NPCAttackSelector enemies = new NPCAttackSelector(vehicle);
@@ -347,14 +372,11 @@ public final class CrewGunners
      *
      * @return whether it may fire now: it is ready, the target is within the vehicle's firing range and the gun points there
      */
-    private static boolean lay(Context context, EntityNPCInterface gunner, WeaponMount mount, Gun gun, ItemStack ammo, LivingEntity target)
+    private static boolean lay(Context context, EntityNPCInterface gunner, WeaponMount mount, Gun gun, ItemStack ammo, Vec3 origin, LivingEntity target)
     {
         EntityNPCInterface vehicle = context.vehicle();
         NpcVehicleState state = context.state();
-        Optional<WeaponMuzzle> muzzle = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat()));
-        if (muzzle.isEmpty())
-            return false;
-        Vec3 lead = lead(context, gunner, mount.gun().orElseThrow(), ammo, gun, NpcModels.world(vehicle, context.model(), muzzle.get().offset(), state.getHullYaw()), target);
+        Vec3 lead = lead(context, gunner, mount.gun().orElseThrow(), ammo, gun, origin, target);
         state.leadSeat(mount.seat(), lead);
         return gun.cooldown < 1D && target.distanceTo(vehicle) <= vehicle.stats.ranged.getRange() && aligned(context, mount, lead);
     }

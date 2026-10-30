@@ -27,7 +27,6 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -195,7 +194,7 @@ public final class NpcItemAttacks
         // Thrown from the projectile slot or the inventory, which loses the stack once it is used up.
         if (weapon != npc.getMainHandItem())
             return FlansProjectiles.isGrenade(weapon) ? grenade(npc, target, weapon) : throwFlan(npc, target, weapon);
-        if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isPresent())
+        if (FlansEquipment.getWeaponKind(weapon).isPresent())
             return fireFlan(npc, target, InteractionHand.MAIN_HAND);
         if (FlansProjectiles.isGrenade(weapon))
             return grenade(npc, target, weapon);
@@ -295,7 +294,7 @@ public final class NpcItemAttacks
             return;
         InteractionHand hand = NpcEquipment.meleeHand(npc);
         ItemStack weapon = hand == InteractionHand.OFF_HAND ? npc.getOffhandItem() : npc.getMainHandItem();
-        if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isEmpty())
+        if (FlansEquipment.getWeaponKind(weapon).isEmpty())
             return;
         if (NpcEquipment.enabled(npc, Feature.GUN_MELEE_ANIMATION))
             FlansEquipment.animateMelee(npc, hand);
@@ -361,11 +360,11 @@ public final class NpcItemAttacks
         if (!(ammo.getItem() instanceof ArrowItem arrowItem) || !bow.getAllSupportedProjectiles().test(ammo))
             return false;
         AbstractArrow arrow = bow.customArrow(arrowItem.createArrow(npc.level(), ammo, npc));
-        int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, weapon);
+        int power = NpcPlatform.powerLevel(npc, weapon);
         if (power > 0)
             arrow.setBaseDamage(arrow.getBaseDamage() + power * 0.5D + 0.5D);
-        arrow.setKnockback(EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, weapon));
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, weapon) > 0)
+        arrow.setKnockback(NpcPlatform.punchLevel(npc, weapon));
+        if (NpcPlatform.flameLevel(npc, weapon) > 0)
             arrow.setSecondsOnFire(100);
         arrow.setCritArrow(true);
         float speed = speed(npc, 3F);
@@ -373,7 +372,7 @@ public final class NpcItemAttacks
         if (!NpcEquipment.inherits(npc, EquipmentProperty.RANGED_DAMAGE))
             arrow.setBaseDamage(npc.stats.ranged.getStrength() / speed);
         shoot(arrow, npc, target, speed, inaccuracy(npc), 0.05D);
-        boolean infinite = ammo.is(Items.ARROW) && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, weapon) > 0;
+        boolean infinite = ammo.is(Items.ARROW) && NpcPlatform.infinityLevel(npc, weapon) > 0;
         arrow.pickup = infinite ? AbstractArrow.Pickup.CREATIVE_ONLY : AbstractArrow.Pickup.ALLOWED;
         if (!npc.level().addFreshEntity(arrow))
             return false;
@@ -392,7 +391,7 @@ public final class NpcItemAttacks
             if (ammo.isEmpty() || !crossbow.getAllSupportedProjectiles().test(ammo))
                 return false;
             ListTag projectiles = new ListTag();
-            int count = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, weapon) > 0 ? 3 : 1;
+            int count = NpcPlatform.multishotLevel(npc, weapon) > 0 ? 3 : 1;
             for (int i = 0; i < count; i++)
                 projectiles.add(ammo.copyWithCount(1).save(new CompoundTag()));
             weapon.getOrCreateTag().put("ChargedProjectiles", projectiles);

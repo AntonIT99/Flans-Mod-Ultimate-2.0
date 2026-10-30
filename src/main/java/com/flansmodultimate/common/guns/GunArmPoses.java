@@ -206,7 +206,7 @@ public final class GunArmPoses
     {
         if (stack.isEmpty())
             return HandItem.EMPTY;
-        if (stack.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation())
+        if (stack.getItem() instanceof GunItem gunItem)
             return gunItem.getConfigType().isShield() ? HandItem.SHIELD : HandItem.GUN;
         return HandItem.OTHER;
     }

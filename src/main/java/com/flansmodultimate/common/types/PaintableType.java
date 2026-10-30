@@ -40,9 +40,9 @@ public abstract class PaintableType extends InfoType
     // Paintjobs
     /** The list of all available paintjobs for this gun */
     @Getter
-    protected Map<Integer, Paintjob> paintjobs = new LinkedHashMap<>();
+    protected final Map<Integer, Paintjob> paintjobs = new LinkedHashMap<>();
     @Getter
-    protected Map<Integer, Paintjob> nonLegendaryPaintjobs = new LinkedHashMap<>();
+    protected final Map<Integer, Paintjob> nonLegendaryPaintjobs = new LinkedHashMap<>();
     /** The default paintjob for this gun. This is created automatically in the load process from existing info */
     @Getter
     protected Paintjob defaultPaintjob;
@@ -156,7 +156,7 @@ public abstract class PaintableType extends InfoType
 
     public int getPaintjobId(ItemStack stack)
     {
-        return ItemStackData.copy(stack).getInt(IPaintableItem.NBT_PAINTJOB_ID);
+        return ItemStackData.view(stack).getInt(IPaintableItem.NBT_PAINTJOB_ID);
     }
 
     public Paintjob getPaintjob(ItemStack stack)

@@ -85,6 +85,23 @@ class AmmoGroupTest
     }
 
     @Test
+    void aGunKeepsItsResolvedAmmoUntilMoreJoinsAndHandsOutAListOfTheCallersOwn()
+    {
+        BulletType early = bullet("agtGunEarly", "AddToAmmoGroup AgtCalibreH");
+
+        GunType gun = new GunType();
+        gun.read(new TypeFile("agtCachedGun", EnumType.GUN, PACK, List.of("ShortName agtCachedGun", "UseAmmoGroup AgtCalibreH")));
+        assertEquals(List.of(early), gun.getAmmoTypes());
+        assertTrue(gun.hasAmmoTypes());
+        // A caller may change the list it was given without changing what the gun takes.
+        gun.getAmmoTypes().clear();
+        assertEquals(List.of(early), gun.getAmmoTypes());
+
+        BulletType late = bullet("agtGunLate", "AddToAmmoGroup AgtCalibreH");
+        assertEquals(List.of(early, late), gun.getAmmoTypes());
+    }
+
+    @Test
     void oneAmmoItemMayBelongToSeveralGroupsAndOneWeaponMayUseSeveral()
     {
         BulletType shared = bullet("agtShared", "AddToAmmoGroup AgtCalibreF", "AddToAmmoGroup AgtCalibreG");

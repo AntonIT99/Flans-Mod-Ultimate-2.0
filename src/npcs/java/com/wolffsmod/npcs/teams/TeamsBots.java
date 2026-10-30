@@ -23,6 +23,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -549,6 +550,19 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             return;
         }
         npc.delete();
+    }
+
+    /**
+     * A bot that dies drops what the Teams {@code weaponDrops} and {@code armourDrops} rules let a dying player drop, in a
+     * round or a battle outside one; other NPCs keep their own drops.
+     *
+     * @param drops
+     *            the drops of the bot's drop event, changed in place
+     */
+    public static void entityDrops(LivingEntity victim, Collection<ItemEntity> drops)
+    {
+        if (!victim.level().isClientSide && BotTag.isBot(victim))
+            FlansTeams.applyDeathDropRules(drops);
     }
 
     /**

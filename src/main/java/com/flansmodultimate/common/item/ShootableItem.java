@@ -55,7 +55,7 @@ public abstract class ShootableItem extends FlanItem
             return stack.getCount();
         }
 
-        CompoundTag tag = ItemStackData.copy(stack);
+        CompoundTag tag = ItemStackData.view(stack);
         if (tag.contains(NBT_ROUNDS))
         {
             return tag.getInt(NBT_ROUNDS);

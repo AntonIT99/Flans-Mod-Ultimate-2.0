@@ -1,7 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -84,7 +84,7 @@ public final class NpcThrowing
             return null;
         if (FlansProjectiles.isGrenade(stack))
             return Kind.GRENADE;
-        if (FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).filter(EquippedWeaponProperties::throwable).isPresent())
+        if (FlansEquipment.getWeaponKind(stack).filter(WeaponKind::throwable).isPresent())
             return Kind.THROWN_WEAPON;
         return NpcThrowables.flight(stack) != null ? Kind.NATIVE : null;
     }

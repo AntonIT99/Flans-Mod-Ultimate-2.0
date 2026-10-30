@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import noppes.npcs.EventHooks;
@@ -153,7 +154,11 @@ class NpcDualMeleeTest
         try (var equipment = mockStatic(FlansEquipment.class))
         {
             equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(gunProperties));
+            WeaponKind gunKind = new WeaponKind(gunProperties.ranged(), gunProperties.throwable(), gunProperties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(gun)).thenReturn(Optional.of(gunKind));
             equipment.when(() -> FlansEquipment.getWeaponProperties(sword, ItemStack.EMPTY)).thenReturn(Optional.of(shieldProperties));
+            WeaponKind swordKind = new WeaponKind(shieldProperties.ranged(), shieldProperties.throwable(), shieldProperties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(sword)).thenReturn(Optional.of(swordKind));
             assertTrue(NpcEquipment.meleeWeapon(gun));
             // Even a shield with damaging item attributes must be left to blocking.
             assertFalse(NpcEquipment.meleeWeapon(sword));
@@ -240,7 +245,10 @@ class NpcDualMeleeTest
         try (var equipment = mockStatic(FlansEquipment.class))
         {
             equipment.when(() -> FlansEquipment.getWeaponProperties(sword, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            WeaponKind swordKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(sword)).thenReturn(Optional.of(swordKind));
             equipment.when(() -> FlansEquipment.getWeaponProperties(axe, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            equipment.when(() -> FlansEquipment.getWeaponKind(axe)).thenReturn(Optional.of(swordKind));
             NpcItemAttacks.meleeFeedback(npc);
             assertTrue(NpcItemAttacks.melee(npc, target()));
             NpcItemAttacks.meleeFeedback(npc);

@@ -5,6 +5,7 @@ import com.flansmodultimate.api.driveables.IAAGunType;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
@@ -301,12 +302,12 @@ public final class NpcAmmunition
             return false;
         if (FlansProjectiles.isGrenade(stack))
             return NpcEquipment.enabled(npc, Feature.GRENADES);
-        return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).filter(weapon -> weapon.throwable() && !weapon.shield()).isPresent() && !FlansEquipment.isDeployable(stack);
+        return FlansEquipment.getWeaponKind(stack).filter(kind -> kind.throwable() && !kind.shield()).isPresent() && !FlansEquipment.isDeployable(stack);
     }
 
     private static boolean usableGun(EntityNPCInterface npc, ItemStack stack)
     {
-        Optional<EquippedWeaponProperties> weapon = FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY);
+        Optional<WeaponKind> weapon = FlansEquipment.getWeaponKind(stack);
         return weapon.isPresent() && weapon.get().ranged() && !weapon.get().throwable() && !weapon.get().shield() && !FlansEquipment.isDeployable(stack)
             && (FlansEquipment.hasLoadedRound(stack) || hasAmmunition(npc, stack));
     }

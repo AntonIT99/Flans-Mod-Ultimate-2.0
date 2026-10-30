@@ -122,8 +122,11 @@ public final class NpcEquipment
     {
         if (item.isEmpty() || shield(item))
             return false;
-        Optional<EquippedWeaponProperties> flan = FlansEquipment.getWeaponProperties(item, ItemStack.EMPTY);
-        return flan.filter(EquippedWeaponProperties::shield).isEmpty() && (flan.filter(properties -> properties.meleeDamage() > 0D).isPresent() || meleeDamage(item) > 1D);
+        Optional<WeaponKind> kind = FlansEquipment.getWeaponKind(item);
+        if (kind.filter(WeaponKind::shield).isPresent())
+            return false;
+        // Only a Flan gun is worth working out all of its statistics for its melee damage.
+        return (kind.isPresent() && FlansEquipment.getWeaponProperties(item, ItemStack.EMPTY).filter(properties -> properties.meleeDamage() > 0D).isPresent()) || meleeDamage(item) > 1D;
     }
 
     /**
@@ -196,7 +199,7 @@ public final class NpcEquipment
     {
         if (FlansProjectiles.isGrenade(stack))
             return true;
-        if (FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(EquippedWeaponProperties::ranged).orElse(false))
+        if (FlansEquipment.getWeaponKind(stack).map(WeaponKind::ranged).orElse(false))
             return true;
         return stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem || stack.getItem() instanceof TridentItem || stack.getItem() instanceof ThrowablePotionItem
             || stack.is(Items.SNOWBALL) || stack.is(Items.EGG) || stack.is(Items.ENDER_PEARL) || stack.getItem() instanceof NpcWeaponAdapter;
@@ -239,8 +242,8 @@ public final class NpcEquipment
     private static boolean offHandFlanGun(EntityNPCInterface npc)
     {
         ItemStack held = npc.getOffhandItem();
-        // Whether it is a gun does not depend on its ammunition, so none is looked up.
-        return !held.isEmpty() && FlansEquipment.getWeaponProperties(held, ItemStack.EMPTY).filter(properties -> properties.ranged() && !properties.throwable() && !properties.shield()).isPresent();
+        // Whether it is a gun depends on its definition alone.
+        return !held.isEmpty() && FlansEquipment.getWeaponKind(held).filter(kind -> kind.ranged() && !kind.throwable() && !kind.shield()).isPresent();
     }
 
     /**
@@ -289,8 +292,12 @@ public final class NpcEquipment
         // Grenades get a visible half-second wind-up; native throwable guns retain their authored charge time.
         if (FlansProjectiles.isGrenade(stack))
             return 10;
-        return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(properties -> properties.throwable() ? Math.max(1, properties.chargeTime()) : 0)
-            .orElseGet(() -> vanillaChargeTime(stack, holder));
+        Optional<WeaponKind> kind = FlansEquipment.getWeaponKind(stack);
+        if (kind.isEmpty())
+            return vanillaChargeTime(stack, holder);
+        if (!kind.get().throwable())
+            return 0;
+        return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(properties -> Math.max(1, properties.chargeTime())).orElse(1);
     }
 
     private static int vanillaChargeTime(ItemStack stack, LivingEntity holder)

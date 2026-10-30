@@ -26,6 +26,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -33,6 +34,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IAmmoOverrideUser
 {
     private static final String KEY_MELEE_DAMAGE = "MeleeDamage";
+    /** The fastest a minigun spins; content packs have never been able to set it. */
+    private static final float MINIGUN_MAX_SPEED = 30F;
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
     /** The vanilla trident's charge time */
@@ -42,7 +45,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected static final float DEFAULT_SHIELD_MAX_BLOCKABLE_MELEE_DAMAGE = 10F;
 
     /** Extended Recoil System */
-    protected GunRecoil recoil = new GunRecoil();
+    protected final GunRecoil recoil = new GunRecoil();
     @Getter
     protected boolean useFancyRecoil;
 
@@ -133,19 +136,21 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * The list of bullet types that can be used in this gun
      */
     @Getter
-    protected Set<String> ammo = new LinkedHashSet<>();
+    protected final Set<String> ammo = new LinkedHashSet<>();
     /**
      * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these
      * names is usable in this gun, exactly as if it had been listed individually.
      */
     @Getter
-    protected Set<String> ammoGroups = new LinkedHashSet<>();
+    protected final Set<String> ammoGroups = new LinkedHashSet<>();
     /** Per-ammunition statistic overrides declared by this gun. */
     @Getter
     protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
     /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
     @Getter
     protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
+    /** The ammunition the gun takes, as last resolved, with the ammunition revision it was resolved at. */
+    private final AtomicReference<ResolvedAmmo> resolvedAmmo = new AtomicReference<>();
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
@@ -266,11 +271,6 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected float minigunStartSpeed = 15F;
-    /**
-     * The maximum speed a minigun mode gun can reach
-     */
-    @Getter
-    protected float minigunMaxSpeed = 30F;
     /**
      * Whether this gun can be used underwater
      */
@@ -580,14 +580,14 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * The path the melee weapon takes
      */
     @Getter
-    protected ArrayList<Vector3f> meleePath = new ArrayList<>();
+    protected final ArrayList<Vector3f> meleePath = new ArrayList<>();
     @Getter
-    protected ArrayList<Vector3f> meleePathAngles = new ArrayList<>();
+    protected final ArrayList<Vector3f> meleePathAngles = new ArrayList<>();
     /**
      * The points on the melee weapon that damage is actually done from.
      */
     @Getter
-    protected ArrayList<Vector3f> meleeDamagePoints = new ArrayList<>();
+    protected final ArrayList<Vector3f> meleeDamagePoints = new ArrayList<>();
     @Getter
     protected boolean useCustomMeleeWhenShoot;
 
@@ -710,7 +710,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * The list of allowed attachments for this gun
      */
     @Getter
-    protected List<AttachmentType> allowedAttachments = new ArrayList<>();
+    protected final List<AttachmentType> allowedAttachments = new ArrayList<>();
     /**
      * Whether each attachment slot is available
      */
@@ -838,6 +838,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ShootableType.readAmmoGroups(file, ammoGroups);
         ammoOverrides = readAmmoOverrides(file);
         removedAmmo = RemovedAmmo.read(file);
+        resolvedAmmo.set(null);
 
         // Lock on settings
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
@@ -1127,9 +1128,17 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         return ModCommonConfig.packSoundRange(distantSoundRange, ModCommonConfig.get().gunFireSoundRange() * 1.5F);
     }
 
+    // Named after the definition's CanShootUnderwater flag; callers naturally ask whether a gun cannot.
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canShootUnderwater()
     {
         return canShootUnderwater;
+    }
+
+    /** @return the maximum speed a minigun mode gun can reach */
+    public float getMinigunMaxSpeed()
+    {
+        return MINIGUN_MAX_SPEED;
     }
 
     public boolean shouldShowCrosshair()
@@ -1168,6 +1177,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         return shootSound;
     }
 
+    // Named after the definition's ShowMuzzleFlashParticles flag; callers naturally ask whether a gun shows none.
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean shouldShowMuzzleFlashParticles()
     {
         CommonConfigSnapshot config = ModCommonConfig.get();
@@ -1267,7 +1278,34 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         return Optional.ofNullable(overlay).orElse(FlansModTextures.FALLBACK_TEXTURE);
     }
 
+    /** @return the ammunition the gun takes, as a list of the caller's own */
     public List<ShootableType> getAmmoTypes()
+    {
+        return new ArrayList<>(resolvedAmmoTypes());
+    }
+
+    /** @return whether the gun takes any ammunition, without copying the list */
+    public boolean hasAmmoTypes()
+    {
+        return !resolvedAmmoTypes().isEmpty();
+    }
+
+    /**
+     * Resolves the ammunition by name across every content pack, which guns ask for constantly, so the result is kept
+     * until the ammunition the packs register changes.
+     */
+    private List<ShootableType> resolvedAmmoTypes()
+    {
+        int revision = ShootableType.getAmmoGroupRevision();
+        ResolvedAmmo cached = resolvedAmmo.get();
+        if (cached != null && cached.revision() == revision)
+            return cached.types();
+        List<ShootableType> resolved = List.copyOf(resolveAmmoTypes());
+        resolvedAmmo.set(new ResolvedAmmo(revision, resolved));
+        return resolved;
+    }
+
+    private List<ShootableType> resolveAmmoTypes()
     {
         List<ShootableType> ammoInGunType = ShootableType.findAmmoTypes(ammo, contentPack);
         List<ShootableType> ammoFromAdditionalMapping = ShootableType.getAdditionalAmmoMapping().getOrDefault(originalShortName, List.of());
@@ -1527,7 +1565,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public AttachmentType getAttachment(ItemStack gun, String name)
     {
         checkForTags(gun);
-        CompoundTag tag = ItemStackData.copy(gun);
+        CompoundTag tag = ItemStackData.view(gun);
         CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
         CompoundTag data = attachments.getCompound(name);
         return AttachmentType.getFromNBT(data);
@@ -1539,7 +1577,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public ItemStack getAttachmentItemStack(ItemStack gun, String name)
     {
         checkForTags(gun);
-        CompoundTag tag = ItemStackData.copy(gun);
+        CompoundTag tag = ItemStackData.view(gun);
         CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
         CompoundTag stackTag = attachments.getCompound(name);
         return ItemStackData.parseBuiltIn(stackTag);
@@ -1550,6 +1588,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public void checkForTags(ItemStack gun)
     {
+        // Asked before every attachment read: a gun that has its tags is only looked at, not copied.
+        if (ItemStackData.view(gun).contains(GunItem.NBT_ATTACHMENTS, Tag.TAG_COMPOUND))
+            return;
         // Ensure the root tag exists
         CompoundTag tag = ItemStackData.copy(gun);
 
@@ -2083,7 +2124,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public boolean isToggledOn(@Nullable ItemStack stack)
     {
-        return stack == null || !ItemStackData.copy(stack).getBoolean(GunItem.NBT_TOGGLED_OFF);
+        return stack == null || !ItemStackData.view(stack).getBoolean(GunItem.NBT_TOGGLED_OFF);
     }
 
     public void setToggledOn(ItemStack stack, boolean on)
@@ -2153,7 +2194,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public boolean getSecondaryFire(ItemStack stack)
     {
-        CompoundTag tag = ItemStackData.copy(stack);
+        CompoundTag tag = ItemStackData.view(stack);
 
         if (!tag.contains(GunItem.NBT_SECONDARY_FIRE))
         {
@@ -2229,37 +2270,45 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public EnumFireMode getFireMode(@Nullable ItemStack stack)
     {
-        if (stack != null)
+        if (stack == null)
+            return mode;
+
+        // Check for secondary fire mode
+        AttachmentType grip = getGrip(stack);
+        if (grip != null && getSecondaryFire(stack))
+            return grip.secondaryFireMode;
+
+        // Check for any mode overrides from attachments
+        for (AttachmentType attachment : getCurrentAttachments(stack))
         {
-            // Check for secondary fire mode
-            if (getGrip(stack) != null && getSecondaryFire(stack))
-                return getGrip(stack).secondaryFireMode;
-
-            // Check for any mode overrides from attachments
-            for (AttachmentType attachment : getCurrentAttachments(stack))
-            {
-                if (attachment.modeOverride != null)
-                    return attachment.modeOverride;
-            }
-
-            // Set the fire mode from the gun stack
-            CompoundTag tag = ItemStackData.copy(stack);
-            if (tag.contains(GunItem.NBT_GUN_MODE))
-            {
-                EnumFireMode stored = EnumFireMode.getFireMode(tag.getString(GunItem.NBT_GUN_MODE));
-                for (EnumFireMode allowed : submode)
-                {
-                    if (allowed == stored)
-                        return stored;
-                }
-            }
-
-            // Reset fire mode to default for the gun stack
-            EnumFireMode defaultMode = (submode != null && submode.length > 0) ? submode[0] : mode;
-            setFireMode(stack, defaultMode);
+            if (attachment.modeOverride != null)
+                return attachment.modeOverride;
         }
 
+        // Set the fire mode from the gun stack
+        EnumFireMode stored = storedFireMode(stack);
+        if (stored != null)
+            return stored;
+
+        // Reset fire mode to default for the gun stack
+        setFireMode(stack, submode.length > 0 ? submode[0] : mode);
         return mode;
+    }
+
+    /** @return the fire mode stored on the gun stack, while it is one of the gun's own modes; null otherwise */
+    @Nullable
+    private EnumFireMode storedFireMode(ItemStack stack)
+    {
+        CompoundTag tag = ItemStackData.view(stack);
+        if (!tag.contains(GunItem.NBT_GUN_MODE))
+            return null;
+        EnumFireMode stored = EnumFireMode.getFireMode(tag.getString(GunItem.NBT_GUN_MODE));
+        for (EnumFireMode allowed : submode)
+        {
+            if (allowed == stored)
+                return stored;
+        }
+        return null;
     }
 
     public GunRecoil getRecoil(ItemStack stack)
@@ -2289,4 +2338,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         secondaryUnSwitchTime = GunHandlingTiming.switchTicks(readValue("SecondaryUnSwitchTime", secondaryUnSwitchTime, file));
         secondarySwitchMovement = readValue("SecondarySwitchMovement", secondarySwitchMovement, file);
     }
+
+    private record ResolvedAmmo(int revision, List<ShootableType> types)
+    {}
 }

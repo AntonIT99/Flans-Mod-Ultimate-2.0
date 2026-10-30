@@ -111,27 +111,45 @@ public final class NpcCrew
      */
     public static Optional<WeaponMount> seatOf(EntityNPCInterface vehicle, Entity rider)
     {
+        return Optional.ofNullable(seating(vehicle).get(rider));
+    }
+
+    /**
+     * @return the seat each rider of the vehicle sits in, as {@link #seatOf} gives it, worked out for all of them at once;
+     *         riders without a seat are left out
+     */
+    public static Map<Entity, WeaponMount> seating(EntityNPCInterface vehicle)
+    {
         List<WeaponMount> mounts = NpcVehicleState.of(vehicle).crewSeats(vehicle);
-        if (mounts.isEmpty())
-            return Optional.empty();
+        List<Entity> passengers = vehicle.getPassengers();
+        if (mounts.isEmpty() || passengers.isEmpty())
+            return Map.of();
+        int[] held = new int[passengers.size()];
         Map<Integer, Entity> claimed = new HashMap<>();
-        for (Entity passenger : vehicle.getPassengers())
-            if (mount(mounts, held(vehicle, passenger)) != null)
-                claimed.putIfAbsent(held(vehicle, passenger), passenger);
-        if (claimed.get(held(vehicle, rider)) == rider)
-            return Optional.ofNullable(mount(mounts, held(vehicle, rider)));
-        List<WeaponMount> free = new ArrayList<>(mounts.stream().filter(mount -> !claimed.containsKey(mount.seat())).toList());
-        for (Entity passenger : vehicle.getPassengers())
+        for (int index = 0; index < passengers.size(); index++)
         {
-            if (claimed.get(held(vehicle, passenger)) == passenger)
+            held[index] = held(vehicle, passengers.get(index));
+            if (mount(mounts, held[index]) != null)
+                claimed.putIfAbsent(held[index], passengers.get(index));
+        }
+        Map<Entity, WeaponMount> seating = new HashMap<>();
+        List<WeaponMount> free = new ArrayList<>(mounts.stream().filter(mount -> !claimed.containsKey(mount.seat())).toList());
+        for (int index = 0; index < passengers.size(); index++)
+        {
+            Entity passenger = passengers.get(index);
+            if (claimed.get(held[index]) == passenger)
+            {
+                seating.put(passenger, mount(mounts, held[index]));
                 continue;
+            }
             WeaponMount next = free.stream().min(Comparator.comparingInt(mount -> rank(passenger, mount))).orElse(null);
             if (next != null)
+            {
                 free.remove(next);
-            if (passenger == rider)
-                return Optional.ofNullable(next);
+                seating.put(passenger, next);
+            }
         }
-        return Optional.empty();
+        return seating;
     }
 
     /** @return the seat a rider holds: a crew member's own, or the one a rider without one moved to; else -1 */
@@ -142,7 +160,7 @@ public final class NpcCrew
             return seat;
         CompoundTag seats = holder.wolffsmodnpcsRiderSeats();
         String id = rider.getStringUUID();
-        return id != null && seats.contains(id, Tag.TAG_INT) ? seats.getInt(id) : NO_SEAT;
+        return seats.contains(id, Tag.TAG_INT) ? seats.getInt(id) : NO_SEAT;
     }
 
     /**
@@ -223,10 +241,19 @@ public final class NpcCrew
         return vehicleOf(entity).flatMap(vehicle -> seatOf(vehicle, entity).map(mount -> !NpcCrewSettings.of(vehicle).isSeatVisible(mount.seat()))).orElse(false);
     }
 
-    /** @return the living crew member sitting in a seat of the vehicle */
-    public static Optional<EntityNPCInterface> occupant(EntityNPCInterface vehicle, int seat)
+    /**
+     * @param seating
+     *            the seats the vehicle's riders sit in, as {@link #seating} gives them
+     * @return the living crew member sitting in a seat of the vehicle
+     */
+    public static Optional<EntityNPCInterface> occupant(Map<Entity, WeaponMount> seating, int seat)
     {
-        return crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled() && seatOf(vehicle, member).map(WeaponMount::seat).orElse(NO_SEAT) == seat).findFirst();
+        for (Map.Entry<Entity, WeaponMount> seated : seating.entrySet())
+        {
+            if (seated.getValue().seat() == seat && seated.getKey() instanceof EntityNPCInterface member && seat(member) >= 0 && member.isAlive() && !member.isKilled())
+                return Optional.of(member);
+        }
+        return Optional.empty();
     }
 
     /**
@@ -419,7 +446,17 @@ public final class NpcCrew
     /** @return whether any rider, including a player, occupies this model seat; either side */
     public static boolean occupied(EntityNPCInterface vehicle, int seat)
     {
-        return vehicle.getPassengers().stream().anyMatch(passenger -> seatOf(vehicle, passenger).map(WeaponMount::seat).orElse(NO_SEAT) == seat);
+        return occupied(seating(vehicle), seat);
+    }
+
+    /**
+     * @param seating
+     *            the seats the vehicle's riders sit in, as {@link #seating} gives them
+     * @return whether any rider, including a player, occupies this model seat
+     */
+    public static boolean occupied(Map<Entity, WeaponMount> seating, int seat)
+    {
+        return seating.values().stream().anyMatch(mount -> mount.seat() == seat);
     }
 
     /** Seats an NPC that is already in the level as crew in a seat of the vehicle. */

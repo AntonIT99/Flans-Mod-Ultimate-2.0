@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -59,6 +60,8 @@ class NpcEquipmentRefillTest
             when(properties.ranged()).thenReturn(true);
             when(properties.throwable()).thenReturn(throwable);
             equipment.when(() -> FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            WeaponKind stackKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(stack)).thenReturn(Optional.of(stackKind));
             return stack;
         }
 

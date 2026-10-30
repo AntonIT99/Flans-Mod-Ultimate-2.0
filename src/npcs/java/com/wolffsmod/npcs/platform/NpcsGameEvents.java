@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -99,6 +100,12 @@ public final class NpcsGameEvents
     public static void livingDeath(LivingDeathEvent event)
     {
         TeamsBots.entityDied(event.getEntity(), event.getSource());
+    }
+
+    @SubscribeEvent
+    public static void livingDrops(LivingDropsEvent event)
+    {
+        TeamsBots.entityDrops(event.getEntity(), event.getDrops());
     }
 
     @SubscribeEvent

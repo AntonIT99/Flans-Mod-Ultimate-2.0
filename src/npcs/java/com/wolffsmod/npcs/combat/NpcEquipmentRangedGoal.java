@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcWatch;
@@ -96,10 +97,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     /** A throwable gun with a melee attack closes in while it waits for its next throw. */
     public static boolean rushes(EntityNPCInterface npc)
     {
-        return of(npc)
-            .map(goal -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.ITEM_WEAPONS) && goal.main.lastThrowable && !goal.main.cadence.ready() && NpcEquipment.meleeWeapon(npc.getMainHandItem())
-                && FlansEquipment.getWeaponProperties(NpcEquipment.rangedWeapon(npc), ItemStack.EMPTY).filter(EquippedWeaponProperties::throwable).isPresent())
-            .orElse(false);
+        return of(npc).map(goal -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.ITEM_WEAPONS) && goal.main.lastThrowable && !goal.main.cadence.ready()
+            && NpcEquipment.meleeWeapon(npc.getMainHandItem()) && FlansEquipment.getWeaponKind(NpcEquipment.rangedWeapon(npc)).filter(WeaponKind::throwable).isPresent()).orElse(false);
     }
 
     @Override
@@ -255,7 +254,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         int chargeTime = NpcEquipment.chargeTime(weapon, npc);
         if (chargeTime > 0 && charging++ < chargeTime)
         {
-            boolean throwable = FlansProjectiles.isGrenade(weapon) || FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).map(EquippedWeaponProperties::throwable).orElse(false);
+            boolean throwable = FlansProjectiles.isGrenade(weapon) || FlansEquipment.getWeaponKind(weapon).map(WeaponKind::throwable).orElse(false);
             if (throwable)
             {
                 if (NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.WEAPON_ANIMATIONS))

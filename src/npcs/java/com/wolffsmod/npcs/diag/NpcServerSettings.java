@@ -79,8 +79,8 @@ public final class NpcServerSettings extends NpcSavedData
         FRIENDLY_FIRE_NPCS(0, 0, 2, "FriendlyFireNpcs"),
         /** Index into {@link com.wolffsmod.npcs.teams.FriendlyFire.Setting}: whether NPCs and the players they are friendly to harm each other. */
         FRIENDLY_FIRE_PLAYERS(0, 0, 2, "FriendlyFirePlayers"),
-        /** Whether a killed NPC drops any of its items; its experience is unaffected. */
-        ITEM_DROPS(1, 0, 1, "ItemDrops");
+        /** Whether a killed NPC drops any of its items; its experience is unaffected. Off unless an operator turns it on. */
+        ITEM_DROPS(0, 0, 1, "ItemDrops");
 
         @Getter
         private final int fallback;

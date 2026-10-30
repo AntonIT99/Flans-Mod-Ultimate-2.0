@@ -3,6 +3,7 @@ package com.flansmodultimate.common.guns;
 import com.flansmodultimate.api.equipment.EquippedArmorProperties;
 import com.flansmodultimate.api.equipment.EquippedShieldProperties;
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.equipment.WeaponOverrides;
 import com.flansmodultimate.api.equipment.WeaponTraits;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
@@ -73,10 +74,24 @@ public final class EquipmentSupport
         EquippedWeaponProperties.Impact impact = type.isThrowable()
             ? new EquippedWeaponProperties.Impact(1D, 0.5D, 1D, 0D, SoundEvents.TRIDENT_HIT.getLocation().toString(), SoundEvents.TRIDENT_HIT_GROUND.getLocation().toString(), false)
             : impact(ammo);
-        return Optional.of(new EquippedWeaponProperties(type.isThrowable() || !type.getAmmoTypes().isEmpty(), type.isThrowable(), type.isShield(), damage, type.getMeleeDamage(preview, false), speed,
-            type.getSpread(preview), type.getNumBullets(preview, ammo), type.getShootDelay(preview), item.getActualReloadTime(preview, ItemStackData.builtInRegistries(), ItemStack.EMPTY),
-            type.getThrowChargeTime(), type.getMeleeTime(), type.getShootSound(preview, false), mode.isAutomaticFire(), mode == EnumFireMode.MINIGUN ? type.getMinigunStartSpeed() : 0F,
+        return Optional.of(new EquippedWeaponProperties(ranged(type), type.isThrowable(), type.isShield(), damage, type.getMeleeDamage(preview, false), speed, type.getSpread(preview),
+            type.getNumBullets(preview, ammo), type.getShootDelay(preview), item.getActualReloadTime(preview, ItemStackData.builtInRegistries(), ItemStack.EMPTY), type.getThrowChargeTime(),
+            type.getMeleeTime(), type.getShootSound(preview, false), mode.isAutomaticFire(), mode == EnumFireMode.MINIGUN ? type.getMinigunStartSpeed() : 0F,
             mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F, impact));
+    }
+
+    /** The kind flags of {@link #weapon}, read from the definition alone without copying the stack. */
+    public static Optional<WeaponKind> kind(ItemStack stack)
+    {
+        if (!(stack.getItem() instanceof GunItem item))
+            return Optional.empty();
+        GunType type = item.getConfigType();
+        return Optional.of(new WeaponKind(ranged(type), type.isThrowable(), type.isShield()));
+    }
+
+    private static boolean ranged(GunType type)
+    {
+        return type.isThrowable() || type.hasAmmoTypes();
     }
 
     public static OptionalDouble armorPenetration(ItemStack stack, ItemStack spare)
@@ -302,10 +317,11 @@ public final class EquipmentSupport
 
     private static void firingSounds(LivingEntity holder, GunType type, ItemStack stack, boolean lastRound)
     {
+        // A gun whose definition names no shoot sound has none at all.
         String sound = type.getShootSound(stack, lastRound);
-        if (!sound.isBlank())
+        if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(holder, type.getGunSoundRange(), sound, type.isDistortSound(), type.isSilencedSound(stack));
-        if (!type.getDistantShootSound().isBlank())
+        if (StringUtils.isNotBlank(type.getDistantShootSound()))
             PacketHandler.sendToDonut(holder.level().dimension(), holder.position(), type.getGunSoundRange(), type.getDistantSoundRange(),
                 new PacketPlaySound(holder.position(), type.getDistantSoundRange(), type.getDistantShootSound(), false, false, null));
     }

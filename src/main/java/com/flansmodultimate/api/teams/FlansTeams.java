@@ -6,6 +6,7 @@
 package com.flansmodultimate.api.teams;
 
 import com.flansmodultimate.common.teams.TeamsCombatants;
+import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsListeners;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.Team;
@@ -15,8 +16,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -122,6 +125,20 @@ public final class FlansTeams
     {
         if (manager().isPresent())
             TeamsCombatants.release(entity);
+    }
+
+    /**
+     * Applies the server's Teams {@code weaponDrops} and {@code armourDrops} rules to what a dying addon combatant drops, as
+     * they apply to a dying player: with weapon drops off its guns, driveables and rounds are removed, and with smart drops
+     * each gun type drops once as a bundle carrying the matching ammunition. Server thread, from the entity's
+     * {@code LivingDropsEvent}.
+     *
+     * @param drops
+     *            the drops of that event, changed in place
+     */
+    public static void applyDeathDropRules(Collection<ItemEntity> drops)
+    {
+        manager().ifPresent(manager -> TeamsDeathDrops.apply(manager, drops));
     }
 
     /**

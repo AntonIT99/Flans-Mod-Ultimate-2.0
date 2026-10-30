@@ -10,7 +10,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * NPCs throw what they carry by per-kind strategies, and open carried parachutes when they fall
 * NPCs with Custom NPCs' crawling animation fire with their gun's prone accuracy and hold their gun forward along the body
 * Presets in the Wolff's Mod tab, such as Mob-like and Player-like, with undo; presets preserve the existing `Return to start` setting
-* NPCs look for and keep targets out to their aggro range instead of only Custom NPCs' `NpcNavRange`, so planes and helicopters flying high above their targets spot and hold them; aircraft models fight no faster than lets them come round within their aggro range, so fast planes no longer fly off out of the simulated area; planes fly straight on to gain room when their target is too close beside them to turn onto, rather than circling it, and keep their target while they come round
+* NPCs look for and keep targets out to their aggro range instead of only Custom NPCs' `NpcNavRange`, so planes and helicopters flying high above their targets spot and hold them; aircraft models fight no faster than lets them come round within their aggro range, so fast planes no longer fly off out of the simulated area; planes fly straight on to gain room when their target is too close beside them to turn onto, rather than circling it, and keep their target while they come round; planes and helicopters that see their goal head straight for it instead of searching a path through the air, and `Efficient path searches` covers flying NPCs too, so a single bomber no longer stalls the server
 * Wandering range `0` allows unlimited roaming without triggering `Return to start` for distance; returning after combat and on respawn is preserved
 * `Teleport home when inactive` (Advanced > Performance & debug > Activity): NPCs with `Return to start` left away from home outside the simulation distance, or resting beyond their dormant range, are sent straight back once no player is near enough to see them go
 
@@ -44,5 +44,5 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Flan model picker with previews and tooltips
 * NPC diagnosis, including a flying plane's speed and circle radius, server limits, rules, census and benchmarks
 * Flan's debug mode marks the seats and seat-gun muzzles of vehicle NPCs, as it does for driveables
-* Server > Rules in the Wolff's Mod tab can turn off item drops from killed NPCs; their experience still drops either way
+* Killed NPCs drop no items unless Server > Rules in the Wolff's Mod tab turns item drops on; Teams bots then drop what the Teams `weaponDrops` and `armourDrops` rules let a dying player drop. Their experience still drops either way
 * Scripting controls for Flan's features

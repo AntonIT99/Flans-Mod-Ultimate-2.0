@@ -55,6 +55,18 @@ public final class FlansEquipment
     }
 
     /**
+     * Tells weapons apart without the cost of {@link #getWeaponProperties}, which copies the stack and works out every
+     * statistic with its attachments and ammunition.
+     *
+     * @return whether a Flan gun item attacks at range, is thrown or is a shield, by its definition alone; empty for any
+     *         other item; either side
+     */
+    public static Optional<WeaponKind> getWeaponKind(ItemStack weapon)
+    {
+        return EquipmentSupport.kind(weapon);
+    }
+
+    /**
      * @param ammunition
      *            ammunition to measure the magazine with when the gun holds none; may be empty
      * @return the sight magnification and magazine capacity of a Flan gun, or empty for any other item; either side
@@ -348,6 +360,8 @@ public final class FlansEquipment
      *            hand holding the gun
      * @return whether the gun declares a melee sound and it was sent
      */
+    // Part of the API contract for addons, though the mod's own callers do not need the answer.
+    @SuppressWarnings("UnusedReturnValue")
     public static boolean playMeleeSound(LivingEntity holder, InteractionHand hand)
     {
         return EquipmentSupport.meleeSound(holder, hand);

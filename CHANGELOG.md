@@ -70,6 +70,7 @@
 * Clouds no longer draw over Flan particles
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`
 * Faster content startup and creative search
+* Guns read their attachments, fire mode and loaded ammunition without copying their item data each time and look up the ammunition they take once, which makes firing, reloading and battles much cheaper for the server
 
 ## Settings & Commands
 
@@ -88,6 +89,7 @@
 * Addon entities can play a sound the way the mod plays the same kind of sound, carrying as far and as loudly as a gun shot, a reload, a throw or a vehicle or plane engine does on that server (`SoundRange`, `FlansEntitySounds.getRange`, `FlansEntitySounds.playClip`)
 * Addons can tell the mod's own content from other mods' by the namespaces it registers under (`FlansModApi.getModNamespaces`)
 * Addons can call their own lying-down entities prone, so they fire with prone accuracy and hold their guns forward (`FlansPostures.addProneRule`, `FlansPostures.isProne`)
+* Addons can tell whether a Flan gun item fires, is thrown or is a shield from its definition alone, far cheaper than reading all of its statistics every tick (`FlansEquipment.getWeaponKind`), and make their dying combatants follow the Teams `weaponDrops` and `armourDrops` rules (`FlansTeams.applyDeathDropRules`)
 * Addons driving a seat can read how far the round its driver weapons have loaded reaches round where it goes off, and whether a weapon bank points along the hull rather than turning with the turret
 * Clients disconnect safely, naming the differing content packs, when their content pack registries do not match the server's
 * Fixed bullet damage to players outside Teams rounds
