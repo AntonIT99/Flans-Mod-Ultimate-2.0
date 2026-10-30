@@ -26,6 +26,7 @@
 * Configurable Teams HUD control reminders
 * The Teams key (U, now `Teams Menu`) opens a menu with team selection, class selection and the scoreboard; the scoreboard and class keys are now unbound by default, freeing I and O (saved key settings are kept)
 * Team selection opens on login only while a playable round is live
+* Class selection tooltips show the full class name above its requirements
 
 ## Vehicles, Aircraft & Ships
 

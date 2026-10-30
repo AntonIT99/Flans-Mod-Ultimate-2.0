@@ -171,14 +171,15 @@ public final class TeamsSelectScreen extends Screen
             }
             int y = top + 24 + 24 * row;
             if (mouseX >= left + 9 && mouseX < left + 82 && mouseY >= y && mouseY < y + 20)
-                graphics.renderComponentTooltip(font, classRequirements(choice), mouseX, mouseY);
+                graphics.renderComponentTooltip(font, classTooltip(choice), mouseX, mouseY);
         }
     }
 
-    /** What a class asks of the player, and how many of its limited slots are taken. */
-    private static List<Component> classRequirements(PacketTeamsState.ClassChoice choice)
+    /** The full class name, its requirements, and how many of its limited slots are taken. */
+    private static List<Component> classTooltip(PacketTeamsState.ClassChoice choice)
     {
         List<Component> lines = new ArrayList<>();
+        lines.add(choice.displayName().copy());
         lines.add(Component.translatable("gui.flansmod.teams.required_rank", choice.unlockLevel()));
         if (choice.requiredPrestige() > 0)
             lines.add(Component.translatable("gui.flansmod.teams.required_prestige", choice.requiredPrestige()));
