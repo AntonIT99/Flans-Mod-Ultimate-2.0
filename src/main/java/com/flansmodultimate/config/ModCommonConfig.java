@@ -196,6 +196,7 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> MUZZLE_FLASH_PARTICLES_DEFAULT;
     private static final EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
     private static final EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
+    private static final BooleanValue ALLOW_PRONE;
 
     private static final BooleanValue BULLET_FLYBY_SOUNDS;
     private static final DoubleValue BULLET_FLYBY_RANGE_MULTIPLIER;
@@ -227,6 +228,7 @@ public final class ModCommonConfig
     private static final DoubleValue GUN_FIRE_SOUND_RANGE;
     private static final DoubleValue EXPLOSION_SOUND_RANGE;
     private static final DoubleValue VEHICLE_SOUND_RANGE;
+    private static final DoubleValue PLANE_SOUND_RANGE;
     private static final DoubleValue VEHICLE_UTILITY_SOUND_RANGE;
     private static final DoubleValue VEHICLE_FLARE_SOUND_RANGE;
     private static final DoubleValue VEHICLE_LOCK_ON_SOUND_RANGE;
@@ -458,6 +460,7 @@ public final class ModCommonConfig
             ENFORCED: a held gun always keeps the arms raised in the aiming pose.
             DYNAMIC: a gun is raised only while the mob is firing it. Shields always stay raised.
             """).defineEnum("entityAimPose", EnumEntityAimPose.DYNAMIC);
+        ALLOW_PRONE = builder.comment("Whether players can lie prone with the Go Prone key. Lying still on the ground narrows a gun's spread by its ProneSpreadModifier.").define("allowProne", true);
         builder.pop();
 
         builder.push("Shootable Settings");
@@ -524,9 +527,11 @@ public final class ModCommonConfig
         GUN_FIRE_SOUND_RANGE = builder.comment("Range in blocks for gun fire sound packets (also determines volume).").defineInRange("gunFireSoundRange", 128.0, 1.0, 4096.0);
         EXPLOSION_SOUND_RANGE = builder.comment("Maximum range in blocks at which explosions are heard. Each explosion is heard at 6 blocks per block of blast radius (at least 48), up to this cap.")
             .defineInRange("explosionSoundRange", 1024.0, 1.0, 4096.0);
-        VEHICLE_SOUND_RANGE = builder.comment("Default range in blocks for vehicle engines, movement, seats and mecha footsteps. Content-pack sound ranges override this default.")
-            .defineInRange("vehicleSoundRange", 50.0, 1.0, 4096.0);
-        VEHICLE_UTILITY_SOUND_RANGE = builder.comment("Range in blocks for mecha tools and rocket packs.").defineInRange("vehicleUtilitySoundRange", 64.0, 1.0, 4096.0);
+        VEHICLE_SOUND_RANGE = builder.comment("Range in blocks for the engine start, running and reverse sounds of ground vehicles, ships and mechas, and for walker and mecha footsteps.",
+            "StartSoundRange, EngineSoundRange and BackSoundRange in a content pack can replace it, see overridePackSoundRanges.").defineInRange("vehicleSoundRange", 128.0, 1.0, 4096.0);
+        PLANE_SOUND_RANGE = builder.comment("Range in blocks for the engine start, running and reverse sounds of planes and helicopters.",
+            "StartSoundRange, EngineSoundRange and BackSoundRange in a content pack can replace it, see overridePackSoundRanges.").defineInRange("planeSoundRange", 256.0, 1.0, 4096.0);
+        VEHICLE_UTILITY_SOUND_RANGE = builder.comment("Range in blocks for mecha tools, rocket packs and turret traverse sounds.").defineInRange("vehicleUtilitySoundRange", 64.0, 1.0, 4096.0);
         VEHICLE_FLARE_SOUND_RANGE = builder.comment("Range in blocks for vehicle flare sounds.").defineInRange("vehicleFlareSoundRange", 96.0, 1.0, 4096.0);
         VEHICLE_LOCK_ON_SOUND_RANGE = builder.comment("Range in blocks for the lock-on sound heard by the vehicle operator.").defineInRange("vehicleLockOnSoundRange", 10.0, 1.0, 4096.0);
         VEHICLE_LOCKED_ON_SOUND_RANGE = builder.comment("Default range in blocks for a vehicle's incoming lock warning. LockedOnSoundRange in a content pack overrides this default.")
@@ -536,7 +541,7 @@ public final class ModCommonConfig
         GRENADE_STICK_SOUND_RANGE = builder.comment("Range in blocks for the sound of a grenade sticking to a surface. StickSoundRange in a content pack can replace it.")
             .defineInRange("grenadeStickSoundRange", 10.0, 1.0, 4096.0);
         GRENADE_FLASH_SOUND_RANGE = builder.comment("Range in blocks for the sound of a flash grenade going off. FlashSoundRange in a content pack can replace it.")
-            .defineInRange("grenadeFlashSoundRange", 16.0, 1.0, 4096.0);
+            .defineInRange("grenadeFlashSoundRange", 64.0, 1.0, 4096.0);
         OVERRIDE_PACK_SOUND_RANGES = builder.comment("Whether the sound ranges above replace the *SoundRange values of content packs, so every pack sounds alike.",
             "When false, a pack's GunSoundRange, ReloadSoundRange, EngineSoundRange and similar lines take precedence.").define("overridePackSoundRanges", true);
         builder.pop();
@@ -722,7 +727,7 @@ public final class ModCommonConfig
             GUN_DAMAGE_MODIFIER.get().floatValue(), GUN_RECOIL_MODIFIER.get().floatValue(), GUN_DISPERSION_MODIFIER.get().floatValue(), GUN_ACCURACY_SPREAD_MODIFIER.get().floatValue(),
             DEFAULT_ADS_SPREAD_MULTIPLIER.get().floatValue(), DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN.get().floatValue(), CANCEL_RELOAD_ON_WEAPON_SWITCH.get(), COMBINE_AMMO_ON_RELOAD.get(),
             AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get(), REALISTIC_RECOIL.get(), ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(), DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT.get(), MUZZLE_FLASH_PARTICLES_DEFAULT.get(),
-            PLAYER_AIM_POSE.get(), ENTITY_AIM_POSE.get(),
+            PLAYER_AIM_POSE.get(), ENTITY_AIM_POSE.get(), ALLOW_PRONE.get(),
 
             SHOOTABLES_CAN_BREAK_GLASS.get(), NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(), NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE.get().floatValue(), NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE.get().floatValue(),
@@ -732,7 +737,7 @@ public final class ModCommonConfig
 
             RELOAD_SOUND_RANGE.get().floatValue(), GUN_ACTION_SOUND_RANGE.get().floatValue(), MELEE_SOUND_RANGE.get().floatValue(), GRENADE_THROW_SOUND_RANGE.get().floatValue(),
             GUN_LOCK_ON_SOUND_RANGE.get().floatValue(), GUN_FIRE_SOUND_RANGE.get().floatValue(), EXPLOSION_SOUND_RANGE.get().floatValue(), VEHICLE_SOUND_RANGE.get().floatValue(),
-            VEHICLE_UTILITY_SOUND_RANGE.get().floatValue(), VEHICLE_FLARE_SOUND_RANGE.get().floatValue(), VEHICLE_LOCK_ON_SOUND_RANGE.get().floatValue(),
+            PLANE_SOUND_RANGE.get().floatValue(), VEHICLE_UTILITY_SOUND_RANGE.get().floatValue(), VEHICLE_FLARE_SOUND_RANGE.get().floatValue(), VEHICLE_LOCK_ON_SOUND_RANGE.get().floatValue(),
             VEHICLE_LOCKED_ON_SOUND_RANGE.get().floatValue(), BULLET_HIT_SOUND_RANGE.get().floatValue(), GRENADE_STICK_SOUND_RANGE.get().floatValue(), GRENADE_FLASH_SOUND_RANGE.get().floatValue(),
             OVERRIDE_PACK_SOUND_RANGES.get(),
 
@@ -1224,6 +1229,12 @@ public final class ModCommonConfig
         return config == null ? EnumEntityAimPose.DYNAMIC : config.entityAimPose();
     }
 
+    public static boolean isProneDisabled()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && !config.allowProne();
+    }
+
     public static int driveableTrackingRange()
     {
         CommonConfigSnapshot config = get();
@@ -1393,6 +1404,7 @@ public final class ModCommonConfig
         SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS, QuickSection.SERVER),
         PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE, QuickSection.SERVER),
         ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE, QuickSection.SERVER),
+        ALLOW_PRONE(() -> ModCommonConfig.ALLOW_PRONE, QuickSection.SERVER),
         DRIVEABLE_TRACKING_RANGE(() -> ModCommonConfig.DRIVEABLE_TRACKING_RANGE, QuickSection.SERVER),
         FLAN_NPC_TRACKING_RANGE(() -> ModCommonConfig.FLAN_NPC_TRACKING_RANGE, QuickSection.SERVER),
         RELOAD_SOUND_RANGE(() -> ModCommonConfig.RELOAD_SOUND_RANGE, QuickSection.SOUNDS),
@@ -1403,6 +1415,7 @@ public final class ModCommonConfig
         GUN_FIRE_SOUND_RANGE(() -> ModCommonConfig.GUN_FIRE_SOUND_RANGE, QuickSection.SOUNDS),
         EXPLOSION_SOUND_RANGE(() -> ModCommonConfig.EXPLOSION_SOUND_RANGE, QuickSection.SOUNDS),
         VEHICLE_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_SOUND_RANGE, QuickSection.SOUNDS),
+        PLANE_SOUND_RANGE(() -> ModCommonConfig.PLANE_SOUND_RANGE, QuickSection.SOUNDS),
         VEHICLE_UTILITY_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_UTILITY_SOUND_RANGE, QuickSection.SOUNDS),
         VEHICLE_FLARE_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_FLARE_SOUND_RANGE, QuickSection.SOUNDS),
         VEHICLE_LOCK_ON_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_LOCK_ON_SOUND_RANGE, QuickSection.SOUNDS),

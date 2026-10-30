@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.guns.handler;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -60,7 +61,7 @@ public final class PlayerShootingHandler implements ShootingHandler
 
         ModUtils.dropItem(level, player, gunType.getDropItemOnShoot(), gunType.getContentPack());
 
-        if (gunType.getKnockback() > 0F && !player.isCrouching())
+        if (gunType.getKnockback() > 0F && !ProneSupport.isBraced(player))
             knockbackOppositeLook(player, gunType.getKnockback());
 
         ShootableItem.consumeRound(bulletStack);

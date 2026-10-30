@@ -116,6 +116,7 @@ public final class ModClientConfig
     public final EnumAimType aimType;
     public final EnumGunBlockInteraction gunBlockInteraction;
     public final boolean predictDriveableMovement;
+    public final boolean holdToProne;
 
     public final boolean combineAmmoOnReload;
     public final boolean ammoToUpperInventoryOnReload;
@@ -249,6 +250,7 @@ public final class ModClientConfig
     public static final EnumValue<EnumAimType> AIM_TYPE;
     public static final EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
     public static final BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
+    public static final BooleanValue HOLD_TO_PRONE;
 
     private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
     private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
@@ -524,6 +526,7 @@ public final class ModClientConfig
         PREDICT_DRIVEABLE_MOVEMENT = builder.comment(
             "Simulate the vehicle or plane you are driving on your own client, so it answers the controls at once instead of a network round trip later. The server stays authoritative and corrects any difference. Off shows only the movement the server reports.")
             .define("predictDriveableMovement", true);
+        HOLD_TO_PRONE = builder.comment("Lie prone only while the Go Prone key is held, instead of each press switching between lying down and standing up.").define("holdToProne", false);
         builder.pop();
 
         builder.push("Reload Settings");
@@ -696,6 +699,7 @@ public final class ModClientConfig
         aimType = AIM_TYPE.get();
         gunBlockInteraction = GUN_BLOCK_INTERACTION.get();
         predictDriveableMovement = PREDICT_DRIVEABLE_MOVEMENT.get();
+        holdToProne = HOLD_TO_PRONE.get();
 
         combineAmmoOnReload = COMBINE_AMMO_ON_RELOAD.get();
         ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();

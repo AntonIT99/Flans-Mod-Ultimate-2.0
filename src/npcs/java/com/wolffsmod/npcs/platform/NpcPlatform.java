@@ -25,6 +25,7 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -168,6 +169,13 @@ public final class NpcPlatform
     public static Holder<Attribute> reachAttribute()
     {
         return Attributes.ENTITY_INTERACTION_RANGE;
+    }
+
+    /** Entity interaction reach in blocks, including the creative-mode bonus. */
+    // A seam: 1.21.1 vanilla applies the creative bonus as an attribute modifier; the 1.20.1 platform reads Forge's reach.
+    public static double entityInteractionRange(Player player)
+    {
+        return player.entityInteractionRange();
     }
 
     /** How deep the entity stands in water, in blocks. */

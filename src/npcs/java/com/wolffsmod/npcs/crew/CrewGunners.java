@@ -1,24 +1,14 @@
 package com.wolffsmod.npcs.crew;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.api.driveables.ReloadCycle;
-import com.flansmodultimate.api.driveables.WeaponMount;
-import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
-import com.flansmodultimate.api.projectiles.FlansProjectiles;
-import com.flansmodultimate.api.projectiles.ProjectileParameters;
-import com.flansmodultimate.api.projectiles.ProjectileShot;
-import com.wolffsmod.npcs.combat.NpcAmmunition;
-import com.wolffsmod.npcs.combat.NpcMuzzleFlashes;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.projectiles.*;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.sim.MountMotion;
-import com.wolffsmod.npcs.sim.NpcModels;
-import com.wolffsmod.npcs.sim.NpcRepairs;
-import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.sim.*;
 import noppes.npcs.ai.selector.NPCAttackSelector;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -31,15 +21,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The seat guns of a vehicle NPC that its crew man, or that aim and fire by themselves in seats nobody sits in, as the
@@ -234,16 +216,24 @@ public final class CrewGunners
             if (origin == null || (aimPoint != null && !clear(vehicle, gun, origin, aimPoint)) || !launch(context, gunner, mount, ammo, gun, origin, muzzle))
                 return;
             effects(context, gunner, weapon, muzzle, origin, state.seatFacing(mount), shot == 0);
-            gun.sequence = gun.sequence >= Integer.MAX_VALUE / 2 ? 0 : gun.sequence + 1;
-            gun.fired++;
-            if (gun.fired >= cycle.volleys())
-            {
-                gun.fired = 0;
-                gun.cooldown += cycle.reloadTicks();
-            }
-            else
-                gun.cooldown += Math.max(cycle.shotDelay(), MIN_SHOT_DELAY / MAX_SHOTS_PER_TICK);
+            afterShot(context, gunner, weapon, gun, cycle);
         }
+    }
+
+    /** Advances the magazine and barrel sequence, starting one reload with its sound when the magazine is spent. */
+    private static void afterShot(Context context, LivingEntity gunner, IContentType weapon, Gun gun, ReloadCycle cycle)
+    {
+        gun.sequence = gun.sequence >= Integer.MAX_VALUE / 2 ? 0 : gun.sequence + 1;
+        gun.fired++;
+        if (gun.fired >= cycle.volleys())
+        {
+            gun.fired = 0;
+            gun.cooldown += cycle.reloadTicks();
+            if (context.options().enabled(Feature.RELOAD_SOUNDS) && weapon.getItem() != null)
+                FlansEquipment.playReloadSound(gunner, new ItemStack(weapon.getItem()));
+        }
+        else
+            gun.cooldown += Math.max(cycle.shotDelay(), MIN_SHOT_DELAY / MAX_SHOTS_PER_TICK);
     }
 
     /**

@@ -74,6 +74,7 @@ public record CommonConfigSnapshot(
     boolean muzzleFlashParticlesDefault,
     EnumPlayerAimPose playerAimPose,
     EnumEntityAimPose entityAimPose,
+    boolean allowProne,
 
     boolean shootablesCanBreakGlass,
     float newDamageSystemDamageReference,
@@ -99,6 +100,7 @@ public record CommonConfigSnapshot(
     float gunFireSoundRange,
     float explosionSoundRange,
     float vehicleSoundRange,
+    float planeSoundRange,
     float vehicleUtilitySoundRange,
     float vehicleFlareSoundRange,
     float vehicleLockOnSoundRange,
@@ -169,7 +171,7 @@ public record CommonConfigSnapshot(
     boolean forceUncensoredContent
 )
 {
-    public static final int CURRENT_VERSION = 46;
+    public static final int CURRENT_VERSION = 47;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -240,6 +242,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.muzzleFlashParticlesDefault);
         buf.writeEnum(s.playerAimPose);
         buf.writeEnum(s.entityAimPose);
+        buf.writeBoolean(s.allowProne);
 
         buf.writeBoolean(s.shootablesCanBreakGlass);
         buf.writeFloat(s.newDamageSystemDamageReference);
@@ -265,6 +268,7 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.gunFireSoundRange);
         buf.writeFloat(s.explosionSoundRange);
         buf.writeFloat(s.vehicleSoundRange);
+        buf.writeFloat(s.planeSoundRange);
         buf.writeFloat(s.vehicleUtilitySoundRange);
         buf.writeFloat(s.vehicleFlareSoundRange);
         buf.writeFloat(s.vehicleLockOnSoundRange);
@@ -415,6 +419,7 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readEnum(EnumPlayerAimPose.class),
             buf.readEnum(EnumEntityAimPose.class),
+            buf.readBoolean(),
 
             buf.readBoolean(),
             buf.readFloat(),
@@ -432,6 +437,7 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readDouble(),
 
+            buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),

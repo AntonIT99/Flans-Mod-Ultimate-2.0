@@ -551,7 +551,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("target_search", Feature.PROGRESSIVE_SEARCH, Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Feature.STAGGER_NEAR_SEARCH),
             Tab.named("search_bands", Feature.ADVANCED_SEARCH_INTERVALS, Value.SEARCH_BAND_0_INTERVAL, Value.SEARCH_BAND_1_INTERVAL, Value.SEARCH_BAND_2_INTERVAL,
                 Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL),
-            Tab.named("activity", Feature.STAY_ACTIVE, Value.ACTIVE_RANGE, Value.DORMANT_RANGE),
+            Tab.named("activity", Feature.STAY_ACTIVE, Value.ACTIVE_RANGE, Value.DORMANT_RANGE, Feature.RETURN_WHEN_INACTIVE),
             Tab.named("debug", Feature.PATH_DEBUG, Feature.AIM_DEBUG)),
         /** What the server finds of this NPC: the values it acts on and what it is doing; its tabs lay out lines, not rows. */
         DIAGNOSIS(Section.ADVANCED, Scope.ALL, Tab.named(EFFECTIVE_TAB), Tab.named(LIVE_TAB)),

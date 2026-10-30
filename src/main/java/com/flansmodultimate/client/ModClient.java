@@ -683,7 +683,7 @@ public class ModClient
 
     private static void computeImpulseForFancyRecoil(LocalPlayer player)
     {
-        float recoilToAdd = playerRecoil.update(player.isCrouching(), currentScope != null, (float) player.getDeltaMovement().length());
+        float recoilToAdd = playerRecoil.update(ProneSupport.isBraced(player), currentScope != null, (float) player.getDeltaMovement().length());
 
         if (player.getVehicle() instanceof Seat seat && seat.getSeatInfo() != null)
         {
@@ -739,16 +739,16 @@ public class ModClient
 
         if (mainHand.getItem() instanceof GunItem mainHandGunItem && offhand.getItem() instanceof GunItem offhandGunItem)
         {
-            recoilControl = Math.max(mainHandGunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching()),
-                offhandGunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching()));
+            recoilControl = Math.max(mainHandGunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching(), ProneSupport.isProne(player)),
+                offhandGunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching(), ProneSupport.isProne(player)));
         }
         else if (mainHand.getItem() instanceof GunItem gunItem)
         {
-            recoilControl = gunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching());
+            recoilControl = gunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching(), ProneSupport.isProne(player));
         }
         else if (offhand.getItem() instanceof GunItem gunItem)
         {
-            recoilControl = gunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching());
+            recoilControl = gunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching(), ProneSupport.isProne(player));
         }
 
         playerRecoilPitch *= recoilControl;

@@ -1,5 +1,16 @@
 {
 
+    "12-Pounder Solid Round Shot": {
+        "properties": {
+            "Mass": 5443,
+            "FragType": "DEFAULT",
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "12pounderfieldgun_shell_round_"
+        ]
+    },
+
     "20x28mm HE Airburst Grenade": {
         "properties": {
             "Mass": 110,
@@ -100,7 +111,8 @@
             "FragType": "THICK_CASE"
         },
         "items": [
-            "ww2mine"
+            "ww2mine",
+            "anti-tankmine"
         ]
     },
 
@@ -111,7 +123,8 @@
             "FragType": "THICK_CASE"
         },
         "items": [
-            "bomb"
+            "bomb",
+            "grenadier"
         ]
     },
 
@@ -136,7 +149,8 @@
             "FragType": "DEFAULT"
         },
         "items": [
-            "c4"
+            "c4",
+            "remotebomb_c4"
         ]
     },
 
@@ -146,7 +160,8 @@
             "FragType": "DEFAULT"
         },
         "items": [
-            "gasgrenade"
+            "gasgrenade",
+            "syriabomb"
         ]
     },
 
@@ -159,6 +174,17 @@
         },
         "items": [
             "creeperexplode"
+        ]
+    },
+
+    "Cryogenic Concussion Grenade (Fictional)": {
+        "properties": {
+            "ExplosiveMassTNTg": 150,
+            "FragType": "LOW_FRAG",
+            "ThrowSpeedMs": 12
+        },
+        "items": [
+            "nitrogenbomb"
         ]
     },
 
@@ -247,6 +273,17 @@
         ]
     },
 
+    "Handheld Napalm Grenade (Generic)": {
+        "properties": {
+            "ExplosiveMassTNTg": 150,
+            "FragType": "LOW_FRAG",
+            "ThrowSpeedMs": 12
+        },
+        "items": [
+            "napalmbomb"
+        ]
+    },
+
     "Heavy Improvised Demolition Charge (Generic)": {
         "properties": {
             "ExplosiveMassTNTKg": 3,
@@ -257,6 +294,17 @@
         ]
     },
 
+    "Improvised Impact Grenade (Fictional)": {
+        "properties": {
+            "ExplosiveMassTNTg": 80,
+            "FragType": "HE_GRENADE",
+            "ThrowSpeedMs": 12
+        },
+        "items": [
+            "grenadelauncher"
+        ]
+    },
+
     "Inert Thrown Object (Generic)": {
         "properties": {
             "ThrowSpeedMs": 12,
@@ -264,7 +312,12 @@
         },
         "items": [
             "rock",
-            "fleshlump"
+            "fleshlump",
+            "t-hawk",
+            "t-hawk_tan",
+            "lightsord",
+            "vectorblade",
+            "bowler"
         ]
     },
 
@@ -351,7 +404,8 @@
             "FragCount": 700
         },
         "items": [
-            "claymore"
+            "claymore",
+            "mine_claymore"
         ]
     },
 
@@ -375,7 +429,8 @@
             "FragType": "HIGH_FRAG"
         },
         "items": [
-            "m67"
+            "m67",
+            "grenade_m67"
         ]
     },
 
@@ -485,7 +540,11 @@
             "44_smallammopouch",
             "beartrap",
             "mwammobag",
-            "mwmedicbag"
+            "mwmedicbag",
+            "motionsensormod1",
+            "motionsensormod2",
+            "decoy",
+            "m87_stungrenade"
         ]
     },
 
@@ -519,6 +578,17 @@
         },
         "items": [
             "rdg2"
+        ]
+    },
+
+    "Reactive Banana Fragmentation Grenade (Fictional)": {
+        "properties": {
+            "ExplosiveMassTNTg": 80,
+            "FragType": "STD_FRAG",
+            "ThrowSpeedMs": 12
+        },
+        "items": [
+            "bananabomb"
         ]
     },
 

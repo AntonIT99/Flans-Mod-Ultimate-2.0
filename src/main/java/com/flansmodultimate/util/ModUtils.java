@@ -378,6 +378,11 @@ public final class ModUtils
                 return EnumMovement.WALKING;
             }
 
+            if (ProneSupport.isProne(entity))
+            {
+                return EnumMovement.PRONE;
+            }
+
             if (entity.isCrouching())
             {
                 return EnumMovement.SNEAKING;

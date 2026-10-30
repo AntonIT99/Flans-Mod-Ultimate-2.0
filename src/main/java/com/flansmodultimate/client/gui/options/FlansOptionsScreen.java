@@ -84,8 +84,8 @@ public class FlansOptionsScreen extends Screen
                 ModClientConfig.MUZZLE_FLASH_STYLE)),
         new QuickSection("rendering", List.of(ModClientConfig.ENABLE_GPU_MODEL_CACHE, ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER, ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)),
         new QuickSection("gameplay",
-            List.of(ModClientConfig.AIM_TYPE, ModClientConfig.AIM_POSE, ModClientConfig.GUN_BLOCK_INTERACTION, ModClientConfig.DRIVEABLE_SPEED_UNIT, ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT,
-                ModClientConfig.ENABLE_UNCENSORED_CONTENT, ModClientConfig.OPTIONS_BUTTON_PLACEMENT)),
+            List.of(ModClientConfig.AIM_TYPE, ModClientConfig.AIM_POSE, ModClientConfig.HOLD_TO_PRONE, ModClientConfig.GUN_BLOCK_INTERACTION, ModClientConfig.DRIVEABLE_SPEED_UNIT,
+                ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT, ModClientConfig.ENABLE_UNCENSORED_CONTENT, ModClientConfig.OPTIONS_BUTTON_PLACEMENT)),
         new QuickSection(DISTANT_HORIZONS_SECTION, List.of(ModClientConfig.DISTANT_HORIZONS_INTEGRATION, ModClientConfig.DISTANT_HORIZONS_RANGEFINDER, ModClientConfig.DISTANT_HORIZONS_CONTACTS,
             ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS, ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));
 

@@ -99,7 +99,7 @@ import java.util.*;
  * gunner, appears seated with empty hands while aboard, breathes aboard and may be shielded, attackers aiming at the vehicle instead. A seat gun a crew member mans fires at the
  * vehicle's target. Optional driver guns fire beside the main weapon using compatible inventory ammunition or their defaults.
  * Crew whose seats let them get out to fight do so near the vehicle's target, jumping by parachute from an aircraft above it.
- * A player on the vehicle's side who uses it without sneaking gets into a free gunner's or passenger seat, and mans the
+ * A player on the vehicle's side who uses it without sneaking gets into the empty seat they click or another free seat when using the body, and mans the
  * gun of a gunner's seat.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
@@ -323,7 +323,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return false;
         // Both sides reach this; the server's broadcast is what every listener hears, the client's local copy would double it.
         if (!npc.level().isClientSide)
-            NpcSounds.play(npc, sound, SoundRange.VEHICLE);
+            NpcSounds.play(npc, sound, NpcVehicleSounds.engineRange(npc));
         return true;
     }
 

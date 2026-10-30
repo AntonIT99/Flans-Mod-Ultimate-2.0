@@ -3,7 +3,9 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
@@ -57,11 +59,12 @@ class NpcDriverGunsTest
         private final IContentType weapon = mock(IContentType.class);
         private final List<Integer> fired = new ArrayList<>();
         private final List<Vec3> directions = new ArrayList<>();
+        private final ProjectileShot shot;
         private int tick;
 
         private Battle()
         {
-            ProjectileShot shot = mock(ProjectileShot.class);
+            shot = mock(ProjectileShot.class);
             options.set(Feature.DRIVER_GUNS, true);
             options.set(Feature.ALTERNATE_BARRELS, false);
             ServerLevel level = mock(ServerLevel.class);
@@ -104,6 +107,8 @@ class NpcDriverGunsTest
             when(properties.reloadTime()).thenReturn(3D);
             equipment.when(() -> FlansEquipment.getWeaponProperties(any(), eq(ammo))).thenReturn(Optional.of(properties));
             WeaponMuzzle muzzle = new WeaponMuzzle(Vec3.ZERO, Optional.of(weapon), List.of());
+            // The main attack fires the primary group; the secondary one is the extra bank these guns fire.
+            projectiles.when(() -> FlansProjectiles.getMuzzles(definition, false, 0, false)).thenReturn(List.of(new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of())));
             projectiles.when(() -> FlansProjectiles.getMuzzles(definition, true, 0, false, MountAim.REST)).thenReturn(List.of(muzzle));
             projectiles.when(() -> FlansProjectiles.getRoundsPerItem(ammo)).thenReturn(2);
             projectiles.when(() -> FlansProjectiles.prepare(eq(npc), eq(ammo), eq(ItemStack.EMPTY), eq(weapon), eq(definition), eq(true), any())).thenReturn(Optional.of(shot));
@@ -175,6 +180,25 @@ class NpcDriverGunsTest
             assertEquals(List.of(0, 2), battle.fired);
             battle.projectiles.verify(() -> FlansProjectiles.getMuzzles(battle.definition, true, 0, true, MountAim.REST));
             battle.projectiles.verify(() -> FlansProjectiles.getMuzzles(battle.definition, true, 1, true, MountAim.REST));
+        }
+    }
+
+    @Test
+    void theOtherGroupsShellsFireAtTheModelsOwnCadenceAndReload()
+    {
+        try (Battle battle = new Battle(); MockedStatic<FlansEntityTypes> types = mockStatic(FlansEntityTypes.class))
+        {
+            // A group of muzzles without a gun of their own, such as a tank's shells, fires as the model fires that group.
+            WeaponMuzzle bore = new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of());
+            battle.projectiles.when(() -> FlansProjectiles.getMuzzles(battle.definition, true, 0, false, MountAim.REST)).thenReturn(List.of(bore));
+            ItemStack shells = new ItemStack(Items.GOLD_NUGGET);
+            battle.ammunition.when(() -> NpcAmmunition.bankTemplate(battle.npc, battle.definition, true)).thenReturn(shells);
+            types.when(() -> FlansEntityTypes.getReloadCycle(battle.definition, true, shells)).thenReturn(Optional.of(new ReloadCycle(2, 3D, 10D, OptionalInt.empty())));
+            battle.projectiles.when(() -> FlansProjectiles.prepare(eq(battle.npc), eq(shells), eq(ItemStack.EMPTY), isNull(), eq(battle.definition), eq(true), any()))
+                .thenReturn(Optional.of(battle.shot));
+            battle.advance(14);
+            // Two rounds three ticks apart, then the ten-tick reload.
+            assertEquals(List.of(0, 3, 13), battle.fired);
         }
     }
 

@@ -4,6 +4,7 @@ import com.flansmod.client.model.*;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.AimPoseClient;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.ProneClient;
 import com.flansmodultimate.client.gui.GunAmmoSelectScreen;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.hud.VehicleOpticsHud;
@@ -72,6 +73,7 @@ public final class KeyInputHandler
     private static final KeyMapping teamsEditorKey = key("teams_editor", InputConstants.UNKNOWN.getValue(), KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping commandCentreKey = key("command_centre", GLFW.GLFW_KEY_F7, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping proneKey = key("prone", InputConstants.KEY_Z, KeyContexts.IN_GAME, CATEGORY_GENERAL);
 
     // Every driveable: planes, ground vehicles and mechas alike.
     private static final KeyMapping driveableInventoryKey = key("driveable.inventory", InputConstants.KEY_R, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
@@ -123,7 +125,7 @@ public final class KeyInputHandler
      * Mounting a driveable takes the other branch, so these can share a key with
      * a driveable bind without either losing anything.
      */
-    private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey, preferredAmmoKey, secondaryModeKey, toggleKey, increaseZoomKey, decreaseZoomKey);
+    private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey, preferredAmmoKey, secondaryModeKey, toggleKey, increaseZoomKey, decreaseZoomKey, proneKey);
 
     private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey, driveablePlayerInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
         changeSeatKey, doorKey, engineKey, flareKey, repairKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
@@ -202,6 +204,7 @@ public final class KeyInputHandler
         register.accept(teamsEditorKey);
         register.accept(commandCentreKey);
         register.accept(toggleAimPoseKey);
+        register.accept(proneKey);
         register.accept(driveableInventoryKey);
         register.accept(primaryKey);
         register.accept(primaryAlternativeKey);
@@ -371,6 +374,7 @@ public final class KeyInputHandler
         boolean noScreen = mc.screen == null;
 
         discardInactiveClicks();
+        ProneClient.checkKey(proneKey, player, noScreen);
         if (player != null && resolveControllable(player) != null)
         {
             updateDriveableControls(mc, player, noScreen);

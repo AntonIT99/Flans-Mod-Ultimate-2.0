@@ -405,9 +405,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
 
     public Optional<ShootableType> getDefaultAmmo()
     {
-        if (!ammo.isEmpty())
-            return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
-        return getAmmoTypes().stream().findFirst();
+        return ShootableType.findDefaultAmmo(getAmmoTypes(), contentPack);
     }
 
     public float getDamageForDisplay(ShootableType type)

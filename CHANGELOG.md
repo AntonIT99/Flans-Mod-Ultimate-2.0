@@ -35,7 +35,7 @@
 * Suitable ground vehicle categories squash mobs they run over
 * Configurable driveable melee protection and weapon damage overrides
 * Configurable render and tracking distances for driveables and Flan NPC models
-* Smooth view and position for players standing on turning hulls and turrets, including the bows and sterns of large ships
+* Smooth view and position for players standing or walking on moving hulls and turrets, including large ships; fixed sudden turns and drops from unstable carry transforms and replayed movement when server time is synchronized
 * Passenger guns mounted on a turret aim relative to the turret
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
 * Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards, and pieces thrown off a wreck coming to rest in the air instead of on the ground
@@ -44,8 +44,10 @@
 
 ## Weapons
 
+* Default ammunition selection prefers compatible rounds from the weapon's own content pack, including for `/defaultammo`
 * Historically supported firing modes for source-pack weapons, including semi-auto selectors and two- or three-round bursts
 * Variable zoom for modern scopes (binoculars up to 40x), with new default keybinds
+* Lie prone with the new Go Prone key (Z): lying still narrows a gun's spread by its new `ProneSpreadModifier` (default: the gun's `SneakSpreadModifier` squared), the ground gives stronger recoil control than sneaking (`CounterRecoilForceProne`, default: `CounterRecoilForceSneaking` squared; attachments `RecoilControlMultiplierProne`), recoil and knockback are reduced as when sneaking, guns are held forward along the body and hitboxes follow; jumping stands you up, the `holdToProne` client setting makes the key hold-to-lie and the `allowProne` server setting turns prone off. Players crawling under low blocks count as prone too
 * New `MeleeSpeed` and `MeleeRange`, updated melee statistics and lightsaber balance
 * Tactical reloads with configurable magazine bonuses, timed secondary-mode switching and grips shown only in secondary mode where configured
 * Held guns and grenades are placed exactly as in 1.7.10, and the left hand mirrors the right
@@ -75,13 +77,15 @@
 * Improved command help and discoverable `/flansmodultimate` aliases
 * `/flandebug` is now `/flansdebug` (also `/flansmodultimate debug`)
 * Uncensored preferences are kept, and vanilla gamerules are exposed in the settings
+* Engines carry further: `vehicleSoundRange` now defaults to 128 blocks (was 50), and planes and helicopters have their own `planeSoundRange` (256); turret traverse sounds use `vehicleUtilitySoundRange` and placement sounds `reloadSoundRange`; `grenadeFlashSoundRange` now defaults to 64 (was 16). Existing config files keep their values
 
 ## Compatibility & API
 
-* The public API is now stable (1.8) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
+* The public API is now stable (1.9) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
 * Addon seat occupants can preserve their seat's body rotation when riding living mounts (`IFlanSeatOccupant.flansmodultimateHasSeatBodyRotation`)
-* Addon entities can play a sound the way the mod plays the same kind of sound, carrying as far and as loudly as a gun shot, a reload, a throw or an engine does on that server (`SoundRange`, `FlansEntitySounds.getRange`, `FlansEntitySounds.playClip`)
+* Addon entities can play a sound the way the mod plays the same kind of sound, carrying as far and as loudly as a gun shot, a reload, a throw or a vehicle or plane engine does on that server (`SoundRange`, `FlansEntitySounds.getRange`, `FlansEntitySounds.playClip`)
 * Addons can tell the mod's own content from other mods' by the namespaces it registers under (`FlansModApi.getModNamespaces`)
+* Addons can call their own lying-down entities prone, so they fire with prone accuracy and hold their guns forward (`FlansPostures.addProneRule`, `FlansPostures.isProne`)
 * Addons driving a seat can read how far the round its driver weapons have loaded reaches round where it goes off, and whether a weapon bank points along the hull rather than turning with the turret
 * Clients disconnect safely, naming the differing content packs, when their content pack registries do not match the server's
 * Fixed bullet damage to players outside Teams rounds
@@ -95,4 +99,5 @@
 * Classes can override skins for several models
 * New Roman shields
 * Updated vehicle armour, categories and textures
+* More accurate vehicle, aircraft, gun emplacement and weapon names in the Official, Warfare 44, Manus and Germany WW2 packs
 * Fixed the Modern Warfare Cobra resting above its skids and its rotor, stub wings and tail boom being hard to hit

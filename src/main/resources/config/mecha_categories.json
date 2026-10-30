@@ -27,7 +27,14 @@
         "items": [
             "alphatitan",
             "hapa",
-            "prinzmech"
+            "prinzmech",
+            "bm",
+            "omega",
+            "bfpa",
+            "bfpw",
+            "bfp",
+            "bfpb",
+            "bfpd"
         ]
     },
 
@@ -50,6 +57,16 @@
             "delandephant",
             "romaphant",
             "mughalphant"
+        ]
+    },
+
+    "Banana assault walker operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 10000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "bm"
         ]
     },
 
@@ -117,7 +134,20 @@
             "coloradomech",
             "madcat",
             "wh40k_mecha_warhound_1a",
-            "zerotitan"
+            "zerotitan",
+            "hbm",
+            "fafnir",
+            "peregrine",
+            "peregrineb",
+            "peregrined",
+            "peregrines",
+            "peregrinesr",
+            "peregrinew",
+            "zerotitanii",
+            "rex",
+            "monster",
+            "monsternavy",
+            "monsterwhite"
         ]
     },
 
@@ -131,6 +161,16 @@
         ]
     },
 
+    "Heavy Banana walker operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 15000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "hbm"
+        ]
+    },
+
     "Horse operational mass estimate (Generic)": {
         "properties": {
             "RealMassKg": 550,
@@ -139,6 +179,18 @@
         "items": [
             "horsey",
             "horseyclassical"
+        ]
+    },
+
+    "HWR-00 Mk II Monster canonical operational mass (Fictional)": {
+        "properties": {
+            "RealMassKg": 285500,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "monster",
+            "monsternavy",
+            "monsterwhite"
         ]
     },
 
@@ -169,6 +221,35 @@
         },
         "items": [
             "nakedelephant"
+        ]
+    },
+
+    "Peregrine II operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 50000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "peregrine",
+            "peregrineb",
+            "peregrined",
+            "peregrines",
+            "peregrinesr",
+            "peregrinew"
+        ]
+    },
+
+    "Prawn exosuit operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 5000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "bfpa",
+            "bfpw",
+            "bfp",
+            "bfpb",
+            "bfpd"
         ]
     },
 
@@ -236,6 +317,36 @@
         ]
     },
 
+    "Scaled Metal Gear REX operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 60000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "rex"
+        ]
+    },
+
+    "Type IV Omega operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 10000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "omega"
+        ]
+    },
+
+    "Type IX Fafnir operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 60000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "fafnir"
+        ]
+    },
+
     "Utility / unarmored animal chassis (Generic)": {
         "properties": {
             "RealMaxSpeedKmh": 15,
@@ -266,6 +377,16 @@
         },
         "items": [
             "wh40k_mecha_warhound_1a"
+        ]
+    },
+
+    "Zero Titan II operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 30000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "zerotitanii"
         ]
     },
 

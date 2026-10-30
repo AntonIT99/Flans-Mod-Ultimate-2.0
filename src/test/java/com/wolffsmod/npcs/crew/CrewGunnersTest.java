@@ -1,18 +1,14 @@
 package com.wolffsmod.npcs.crew;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.api.driveables.ReloadCycle;
-import com.flansmodultimate.api.driveables.WeaponMount;
-import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
-import com.wolffsmod.npcs.combat.NpcAmmunition;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
@@ -32,11 +28,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -202,7 +194,7 @@ class CrewGunnersTest
     }
 
     @Test
-    void aPlayerGunnerLaysTheGunWhereTheyLookAndFiresOnlyWhileHoldingTheTrigger()
+    void aPlayerGunnerAimsFiresAndReloadsWithDelaysAndSoundsWhileHoldingTheTrigger()
     {
         EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
         Player player = mock(Player.class);
@@ -220,12 +212,14 @@ class CrewGunnersTest
         options.set(Feature.PASSENGER_GUNS, true);
         options.set(Feature.FIRE_SOUNDS, false);
         options.set(Feature.SHOOT_PARTICLES, false);
+        options.set(Feature.RELOAD_SOUNDS, true);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
         Vec3 barrel = new Vec3(0D, 0D, -1D);
         NpcVehicleState state = mock(NpcVehicleState.class, invocation -> invocation.getMethod().getReturnType() == Vec3.class ? barrel : RETURNS_DEEP_STUBS.answer(invocation));
         when(state.turretAim()).thenReturn(MountAim.REST);
         IContentType definition = mock(IContentType.class);
         IContentType weapon = mock(IContentType.class);
+        when(weapon.getItem()).thenReturn(Items.STICK);
         FlanModelEntity model = mock(FlanModelEntity.class);
         when(model.getInfoType()).thenReturn(definition);
         WeaponMount mount = new WeaponMount(1, false, false, new MountAim(-180F, -90F), new MountAim(180F, 90F), 10F, 10F, Vec3.ZERO, Vec3.ZERO, Optional.of(weapon));
@@ -238,14 +232,15 @@ class CrewGunnersTest
             var crew = mockStatic(NpcCrew.class);
             var ammunition = mockStatic(NpcAmmunition.class);
             var types = mockStatic(FlansEntityTypes.class);
-            var projectiles = mockStatic(FlansProjectiles.class))
+            var projectiles = mockStatic(FlansProjectiles.class);
+            var equipment = mockStatic(FlansEquipment.class))
         {
             models.when(() -> NpcModels.flan(vehicle)).thenReturn(model);
             models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
             crew.when(() -> NpcCrew.mannedGun(player)).thenReturn(Optional.of(mount));
             ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, player, weapon)).thenReturn(ammo);
-            types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
+            types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 6D, OptionalInt.empty())));
             projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any()))
                 .thenReturn(Optional.of(new WeaponMuzzle(Vec3.ZERO, Optional.of(weapon), List.of())));
             projectiles.when(() -> FlansProjectiles.prepare(eq(player), eq(ammo), eq(ItemStack.EMPTY), eq(weapon), isNull(), eq(false), any())).thenReturn(Optional.of(shot));
@@ -257,10 +252,35 @@ class CrewGunnersTest
             guns.tick(vehicle);
             // Fired along the barrel, as the gun has turned so far, with the hit credited to the player.
             verify(shot, times(1)).launch(Vec3.ZERO, barrel, false);
+            equipment.verifyNoInteractions();
+            guns.tick(vehicle);
+            verify(shot, times(1)).launch(Vec3.ZERO, barrel, false);
+            guns.tick(vehicle);
+            verify(shot, times(2)).launch(Vec3.ZERO, barrel, false);
+            // Emptying the magazine starts one reload, with its own sound even though firing sounds are disabled.
+            equipment.verify(() -> FlansEquipment.playReloadSound(eq(player), argThat(stack -> stack.is(Items.STICK))));
+            guns.trigger(player, false);
+            for (int tick = 0; tick < 3; tick++)
+                guns.tick(vehicle);
+            guns.trigger(player, true);
+            guns.tick(vehicle);
+            guns.tick(vehicle);
+            verify(shot, times(2)).launch(Vec3.ZERO, barrel, false);
+            guns.tick(vehicle);
+            verify(shot, times(3)).launch(Vec3.ZERO, barrel, false);
+            // Disabling reload sounds silences the next reload without shortening its delay.
+            options.set(Feature.RELOAD_SOUNDS, false);
+            guns.tick(vehicle);
+            guns.tick(vehicle);
+            verify(shot, times(4)).launch(Vec3.ZERO, barrel, false);
+            for (int tick = 0; tick < 5; tick++)
+                guns.tick(vehicle);
+            verify(shot, times(4)).launch(Vec3.ZERO, barrel, false);
+            equipment.verify(() -> FlansEquipment.playReloadSound(eq(player), argThat(stack -> stack.is(Items.STICK))), times(1));
             guns.trigger(player, false);
             for (int tick = 0; tick < 10; tick++)
                 guns.tick(vehicle);
-            verify(shot, times(1)).launch(Vec3.ZERO, barrel, false);
+            verify(shot, times(4)).launch(Vec3.ZERO, barrel, false);
             // A trigger left held by someone who no longer mans the gun is let go.
             guns.trigger(player, true);
             crew.when(() -> NpcCrew.mannedGun(player)).thenReturn(Optional.empty());
@@ -268,7 +288,7 @@ class CrewGunnersTest
             crew.when(() -> NpcCrew.mannedGun(player)).thenReturn(Optional.of(mount));
             for (int tick = 0; tick < 10; tick++)
                 guns.tick(vehicle);
-            verify(shot, times(1)).launch(Vec3.ZERO, barrel, false);
+            verify(shot, times(4)).launch(Vec3.ZERO, barrel, false);
         }
     }
 

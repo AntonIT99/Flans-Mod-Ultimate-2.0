@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -25,6 +26,45 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcEquipment
 {
+    static final int PRIMARY_ARMED = 1;
+    static final int SECONDARY_ARMED = 2;
+    /** Which weapon groups of each model have weapons, as {@link #PRIMARY_ARMED} and {@link #SECONDARY_ARMED} bits; a loaded definition does not change. */
+    private static final Map<IContentType, Integer> ARMED_GROUPS = Collections.synchronizedMap(new WeakHashMap<>());
+
+    /**
+     * @param model
+     *            the AA gun or driveable whose model the NPC wears, or null
+     * @return whether the model's secondary weapon group drives the NPC's main attack: as its switch says, unless the group
+     *         it chooses has no weapon and the other has, as on a bomber whose only group is its bombs
+     */
+    public static boolean secondaryBank(NpcWeaponOptions options, @Nullable IContentType model)
+    {
+        boolean chosen = options.enabled(Feature.SECONDARY_BANK);
+        return model == null ? chosen : secondaryBank(chosen, ARMED_GROUPS.computeIfAbsent(model, NpcEquipment::armedGroups));
+    }
+
+    /**
+     * @param chosen
+     *            whether the switch chooses the secondary group
+     * @param armed
+     *            which groups have weapons, as {@link #PRIMARY_ARMED} and {@link #SECONDARY_ARMED} bits
+     */
+    static boolean secondaryBank(boolean chosen, int armed)
+    {
+        boolean chosenArmed = (armed & (chosen ? SECONDARY_ARMED : PRIMARY_ARMED)) != 0;
+        boolean otherArmed = (armed & (chosen ? PRIMARY_ARMED : SECONDARY_ARMED)) != 0;
+        // Only an empty chosen group gives way, and only to one that has a weapon.
+        if (!chosenArmed && otherArmed)
+            return !chosen;
+        return chosen;
+    }
+
+    private static int armedGroups(IContentType model)
+    {
+        int primary = FlansProjectiles.getMuzzles(model, false, 0, false).isEmpty() ? 0 : PRIMARY_ARMED;
+        return primary | (FlansProjectiles.getMuzzles(model, true, 0, false).isEmpty() ? 0 : SECONDARY_ARMED);
+    }
+
     /** @return whether the NPC's switch is on; on the server, whether it uses up ammunition also follows the server's rule */
     public static boolean enabled(EntityNPCInterface npc, Feature feature)
     {

@@ -1,8 +1,11 @@
 package com.wolffsmod.npcs.properties;
 
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.entity.EngineSound;
 import com.flansmodultimate.api.entity.FlansEntitySounds;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.entity.SoundRange;
+import com.wolffsmod.npcs.model.FlanModelKind;
 import lombok.Getter;
 import lombok.Setter;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -40,7 +43,14 @@ public final class NpcVehicleSounds
 
     public void initializeCustom(EntityNPCInterface npc)
     {
-        initializeCustom(defaultSound(npc, false), defaultSound(npc, true), FlansEntitySounds.getDefaultEngineRange());
+        initializeCustom(defaultSound(npc, false), defaultSound(npc, true), FlansEntitySounds.getRange(engineRange(npc)));
+    }
+
+    /** @return the sound role of the NPC's engine: a plane's when it is drawn as a plane or helicopter, otherwise a vehicle's */
+    public static SoundRange engineRange(EntityNPCInterface npc)
+    {
+        boolean plane = NpcPresentation.vehicleType(npc).filter(type -> FlanModelKind.of(type) == FlanModelKind.PLANE && !(type instanceof IDriveableType driveable && driveable.isShip())).isPresent();
+        return plane ? SoundRange.PLANE : SoundRange.VEHICLE;
     }
 
     void initializeCustom(Optional<EngineSound> idleDefaults, Optional<EngineSound> movementDefaults, float serverRange)
@@ -66,7 +76,7 @@ public final class NpcVehicleSounds
     {
         modelDefaults = true;
         legacyMovement = new CompoundTag();
-        float range = FlansEntitySounds.getDefaultEngineRange();
+        float range = FlansEntitySounds.getRange(engineRange(npc));
         idle.resetToVehicle(defaultSound(npc, false), range);
         movement.resetToVehicle(defaultSound(npc, true), range);
     }

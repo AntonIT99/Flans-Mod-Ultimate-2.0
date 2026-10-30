@@ -162,6 +162,39 @@ class NpcFlightAndDepthTest
     }
 
     @Test
+    void aPlaneCannotTurnOntoATargetInsideItsTurningCircle()
+    {
+        // Heading 0 flies toward positive z; turning toward a point to its side, it turns round a centre 64 blocks off that side.
+        Vec3 plane = new Vec3(0D, 80D, 0D);
+        assertTrue(NpcFlight.insideTurn(plane, 0F, new Vec3(30D, 64D, 0D), 64D), "close beside it");
+        assertTrue(NpcFlight.insideTurn(plane, 0F, new Vec3(-100D, 64D, 10D), 64D), "inside the circle on the other side");
+        assertFalse(NpcFlight.insideTurn(plane, 0F, new Vec3(140D, 64D, 0D), 64D), "beyond the far side of the circle");
+        // Ahead or behind, it can turn onto the target.
+        assertFalse(NpcFlight.insideTurn(plane, 0F, new Vec3(0D, 64D, 200D), 64D));
+        assertFalse(NpcFlight.insideTurn(plane, 0F, new Vec3(5D, 64D, -50D), 64D));
+        // Flying on straight past it, the plane leaves a point beside it behind, outside its circle.
+        assertFalse(NpcFlight.insideTurn(new Vec3(0D, 80D, 100D), 0F, new Vec3(30D, 64D, 0D), 64D));
+    }
+
+    @Test
+    void aFastPlaneFightsNoFasterThanLetsItComeRoundWithinItsAggroRange()
+    {
+        // At the combat speed the circle it turns in at its tightest is as wide as its aggro range.
+        double speed = NpcFlight.combatSpeed(128D, 0);
+        double tightest = NpcFlight.turnRadius(speed, NpcFlight.maxTurn(0, speed, true)) * NpcFlight.CIRCLE_MARGIN;
+        assertEquals(128D, tightest * 2D, 0.01D);
+        // Banked at its steepest, that is about 2.2 blocks a tick: a B-17 at its top speed of 4.8 would turn 470 blocks across.
+        assertEquals(2.24D, speed, 0.01D);
+        assertTrue(NpcFlight.turnRadius(4.8D, NpcFlight.maxTurn(0, 4.8D, true)) * 2D > 450D);
+        // A wider aggro range lets it fight faster; a set turn rate decides its circle instead of its bank.
+        assertTrue(NpcFlight.combatSpeed(256D, 0) > speed);
+        double set = NpcFlight.combatSpeed(128D, 40);
+        assertEquals(128D, NpcFlight.turnRadius(set, NpcFlight.maxTurn(40, set, true)) * NpcFlight.CIRCLE_MARGIN * 2D, 0.01D);
+        // However small its aggro range, it is never told to fly slower than a plane stalls.
+        assertEquals(NpcFlight.STALL_SPEED, NpcFlight.combatSpeed(1D, 0));
+    }
+
+    @Test
     void aSubmarineHoldsItsDepthAndRidesHigherOverShallows()
     {
         assertEquals(4, NpcSubmarine.effectiveDepth(4, 20));

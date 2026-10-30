@@ -1,15 +1,18 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.ProneClient;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.sound.SoundSpatialization;
+import com.flansmodultimate.common.driveables.collision.HullCarry;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
@@ -53,6 +56,7 @@ public final class ClientGameEvents
     @SubscribeEvent
     public static void onClientTickStart(ClientTickEvent.Pre event)
     {
+        HullCarry.beginClientTick();
         ClientEventHandler.onClientTickStart();
     }
 
@@ -61,6 +65,12 @@ public final class ClientGameEvents
     {
         ClientEventHandler.onClientTick();
         com.flansmodultimate.apocalyse.event.handler.ClientEventHandler.onClientTick();
+    }
+
+    @SubscribeEvent
+    public static void onMovementInputUpdate(MovementInputUpdateEvent event)
+    {
+        ProneClient.filterMovementInput(event.getEntity(), event.getInput());
     }
 
     @SubscribeEvent

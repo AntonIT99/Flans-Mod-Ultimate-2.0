@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.Unique;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 
 import java.util.function.Predicate;
@@ -19,6 +18,7 @@ import java.util.function.Predicate;
  * Custom NPCs' target acquisition.
  *
  * <ul>
+ * <li>Targets are looked for, and kept, out to the NPC's aggro range rather than only Custom NPCs' navigation range.</li>
  * <li>With progressive search, targets are looked for in distance bands on their own schedules, nearest candidates first,
  * instead of testing every entity within aggro range on each search.</li>
  * <li>A target the NPC already has is kept for a margin beyond its aggro range, so tactical manoeuvres do not lose it.</li>
@@ -44,16 +44,20 @@ public abstract class NpcNearestAttackableTargetGoalMixin<T extends LivingEntity
         if (mob instanceof EntityNPCInterface resting && NpcDormancy.dormant(resting))
             return false;
         if (!(mob instanceof EntityNPCInterface npc) || !NpcTargetSearch.enabled(mob))
+        {
+            // The conditions took their range when the goal was made; the aggro range may have changed since.
+            targetConditions.range(NpcTargetSearch.range(mob));
             return super.canUse();
+        }
         if (wolffsmodnpcsSearch == null)
             wolffsmodnpcsSearch = new NpcTargetSearch();
-        target = wolffsmodnpcsSearch.find(npc, targetConditions, mob.getAttributeValue(Attributes.FOLLOW_RANGE));
+        target = wolffsmodnpcsSearch.find(npc, targetConditions, NpcTargetSearch.range(mob));
         return target != null;
     }
 
     @Override
     protected double getFollowDistance()
     {
-        return super.getFollowDistance() + NpcTargetSearch.margin(mob);
+        return NpcTargetSearch.range(mob) + NpcTargetSearch.margin(mob);
     }
 }

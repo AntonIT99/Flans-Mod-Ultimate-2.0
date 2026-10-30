@@ -69,6 +69,7 @@ public final class EntitySoundSupport
             case BULLET_HIT -> config.bulletHitSoundRange();
             case EXPLOSION -> config.explosionSoundRange();
             case VEHICLE -> config.vehicleSoundRange();
+            case PLANE -> config.planeSoundRange();
             case VEHICLE_UTILITY -> config.vehicleUtilitySoundRange();
         };
     }

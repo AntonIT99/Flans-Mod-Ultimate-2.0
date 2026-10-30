@@ -102,6 +102,16 @@ public final class NpcVehicleState
     /** Whether the main weapon drops bombs rather than firing at the target. */
     @Getter
     private boolean bombing;
+    /** Whether the weapon group beside the main attack drops bombs, and how they fall, as last read. */
+    private boolean otherBombs;
+    private double otherGravity;
+    private double otherDrag = 1D;
+    /**
+     * Whether a plane flies a bomb run at its target, level over it rather than diving on it: its main weapon drops bombs,
+     * or the group beside it does and the target is worth them.
+     */
+    @Getter
+    private boolean bombRun;
     /**
      * Degrees the model is pitched nose down, negative nose up, and rolled to its right, the right side down: the attitude of
      * a plane in flight, level otherwise.
@@ -184,6 +194,17 @@ public final class NpcVehicleState
     private float targetAttitudeBank;
     private float previousAttitudePitch;
     private float previousAttitudeBank;
+
+    /**
+     * A bomb let go now.
+     *
+     * @param meeting
+     *            where it has to come down to meet the target
+     * @param hits
+     *            whether it comes down within reach of the target
+     */
+    public record BombDrop(Vec3 meeting, boolean hits)
+    {}
 
     /**
      * What the selected model offers, resolved once per model and weapon bank.
@@ -360,6 +381,8 @@ public final class NpcVehicleState
         gunAligned = true;
         hullAligned = true;
         bombing = false;
+        otherBombs = false;
+        bombRun = false;
         bombPoint = null;
         attitudePitch = 0F;
         attitudeBank = 0F;
@@ -394,7 +417,7 @@ public final class NpcVehicleState
         FlanModelKind kind = FlanModelKind.of(definition);
         if (definition == null || kind == null)
             return null;
-        boolean secondary = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.SECONDARY_BANK);
+        boolean secondary = NpcEquipment.secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), definition);
         if (layout != null && layout.model() == definition && layout.secondary() == secondary)
             return layout;
         Layout created = Layout.of(definition, kind, secondary);
@@ -468,12 +491,29 @@ public final class NpcVehicleState
         aimTurret(current, options, tuning, wanted, tolerance);
         reachablePitch = wanted != null && !bombing && current.kind() == FlanModelKind.VEHICLE ? reachablePitch(current.driver(), current.turreted(), wanted, tolerance) : Float.NaN;
         gunAligned = aligned;
-        bombPoint = null;
-        // A bomb is let go when it would come down on the target, whatever the switches say: from anywhere else it misses.
-        if (engaged && bombing)
-            aligned = bombsAway(npc, current, target, options);
+        planBombing(npc, current, engaged ? target : null, options);
         aimSeats(npc, current, options, engaged ? target : null);
         sync(npc, held);
+    }
+
+    /**
+     * Decides whether the NPC flies a bomb run at the target, and where its bombs have to come down. A bomb of the main
+     * weapon is let go when it would come down on the target, whatever the switches say: from anywhere else it misses. The
+     * group beside the main attack lets its own bombs go; the plane only has to fly over where they meet the target.
+     *
+     * @param target
+     *            the living target the NPC fights, or null
+     */
+    private void planBombing(EntityNPCInterface npc, Layout current, @Nullable LivingEntity target, NpcWeaponOptions options)
+    {
+        bombPoint = null;
+        bombRun = target != null && (bombing || otherBombs && NpcBombTargets.worthBombing(target));
+        if (target == null || !bombRun)
+            return;
+        if (bombing)
+            aligned = bombsAway(npc, current, target, options);
+        else
+            bombPoint = bombDrop(npc, npc.position(), otherGravity, otherDrag, target, options).meeting();
     }
 
     private static boolean driving(EntityNPCInterface npc)
@@ -832,6 +872,10 @@ public final class NpcVehicleState
         shotDrag = shot.map(ProjectileShot::drag).orElse(1D);
         bombing = shot.map(ProjectileShot::dropped).orElse(false);
         shotBlast = NpcBlastSafety.reach(NpcAmmunition.modelTemplate(npc));
+        Optional<ProjectileShot> other = NpcDriverGuns.preview(npc);
+        otherBombs = other.map(ProjectileShot::dropped).orElse(false);
+        otherGravity = other.map(ProjectileShot::gravity).orElse(0D);
+        otherDrag = other.map(ProjectileShot::drag).orElse(1D);
     }
 
     /**
@@ -906,19 +950,29 @@ public final class NpcVehicleState
     {
         FlanModelEntity model = NpcModels.flan(npc);
         Vec3 origin = model != null && current.muzzle() != null ? NpcModels.world(npc, model, current.muzzle(), hullYaw) : npc.position();
-        WeaponAim.Fall fall = WeaponAim.fall(origin, npc.getDeltaMovement(), shotGravity, shotDrag, target.getY());
+        BombDrop drop = bombDrop(npc, origin, shotGravity, shotDrag, target, options);
+        bombPoint = drop.meeting();
+        return drop.hits();
+    }
+
+    /**
+     * Where a bomb let go now, from the origin at the NPC's velocity, falling as given, meets the target, and whether it comes
+     * down within reach of it. A moving target is met where it will be when the bomb lands, as far as the NPC leads its targets.
+     */
+    public BombDrop bombDrop(EntityNPCInterface npc, Vec3 origin, double gravity, double drag, LivingEntity target, NpcWeaponOptions options)
+    {
+        WeaponAim.Fall fall = WeaponAim.fall(origin, npc.getDeltaMovement(), gravity, drag, target.getY());
         Vec3 meeting = target.position();
         if (options.enabled(Feature.LEAD_TARGET))
         {
             Vec3 velocity = options.enabled(Feature.ADVANCED_LEAD) ? motionOf(target).map(TargetMotion::velocity).orElse(target.getDeltaMovement()) : target.getDeltaMovement();
             meeting = meeting.add(velocity.x * fall.ticks(), 0D, velocity.z * fall.ticks());
         }
-        bombPoint = meeting;
         if (origin.y < target.getY() + MIN_BOMB_HEIGHT)
-            return false;
+            return new BombDrop(meeting, false);
         double x = fall.impact().x - meeting.x;
         double z = fall.impact().z - meeting.z;
-        return x * x + z * z <= BOMB_RADIUS * BOMB_RADIUS;
+        return new BombDrop(meeting, x * x + z * z <= BOMB_RADIUS * BOMB_RADIUS);
     }
 
     /** The point of a target a shot is aimed at: the middle of a large body, the chest of a smaller one. */

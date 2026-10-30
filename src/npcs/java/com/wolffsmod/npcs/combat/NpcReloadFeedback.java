@@ -22,7 +22,7 @@ public final class NpcReloadFeedback
     {
         IContentType model = NpcTypeProperties.of(npc).model();
         if (model != null && NpcEquipment.enabled(npc, Feature.RELOAD_SOUNDS))
-            FlansProjectiles.playReloadSound(npc, model, NpcEquipment.enabled(npc, Feature.SECONDARY_BANK));
+            FlansProjectiles.playReloadSound(npc, model, NpcEquipment.secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), model));
     }
 
     /** The model's main gun works its next round into the breech. */

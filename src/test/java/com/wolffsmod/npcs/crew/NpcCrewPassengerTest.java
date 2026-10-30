@@ -98,7 +98,7 @@ class NpcCrewPassengerTest
         when(vehicle.getPassengers()).thenReturn(List.of());
         when(sneaking.isSecondaryUseActive()).thenReturn(true);
         when(ally.startRiding(vehicle, true)).thenReturn(true);
-        try (var states = vehicleWith(vehicle, DRIVER); var drivers = mockStatic(NpcDrivers.class))
+        try (var states = vehicleWith(vehicle, DRIVER); var drivers = mockStatic(NpcDrivers.class); var interactions = mockStatic(NpcSeatInteraction.class))
         {
             drivers.when(() -> NpcDrivers.ally(vehicle, ally)).thenReturn(true);
             drivers.when(() -> NpcDrivers.ally(vehicle, sneaking)).thenReturn(true);
@@ -153,7 +153,7 @@ class NpcCrewPassengerTest
         EntityNPCInterface vehicle = holderVehicle();
         Player player = player(vehicle, "player");
         when(vehicle.getPassengers()).thenReturn(List.of(player));
-        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER); var drivers = mockStatic(NpcDrivers.class))
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER); var drivers = mockStatic(NpcDrivers.class); var interactions = mockStatic(NpcSeatInteraction.class))
         {
             assertTrue(NpcCrew.changeSeat(vehicle, player));
             assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, player));
@@ -161,6 +161,55 @@ class NpcCrewPassengerTest
             drivers.when(() -> NpcDrivers.ally(vehicle, player)).thenReturn(true);
             assertTrue(NpcCrew.carry(vehicle, player));
             assertEquals(Optional.of(GUNNER), NpcCrew.seatOf(vehicle, player));
+        }
+    }
+
+    @Test
+    void clickingAnyEmptySeatBoardsThatSeatAndKeepsOtherRidersInPlace()
+    {
+        for (WeaponMount target : List.of(DRIVER, GUNNER, FIRST_PASSENGER, SECOND_PASSENGER))
+        {
+            EntityNPCInterface vehicle = holderVehicle();
+            Player boarding = player(vehicle, "boarding");
+            when(boarding.getVehicle()).thenReturn(null);
+            when(vehicle.getPassengers()).thenReturn(List.of());
+            try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER, SECOND_PASSENGER);
+                var drivers = mockStatic(NpcDrivers.class);
+                var interactions = mockStatic(NpcSeatInteraction.class))
+            {
+                drivers.when(() -> NpcDrivers.ally(vehicle, boarding)).thenReturn(true);
+                interactions.when(() -> NpcSeatInteraction.pick(vehicle, boarding)).thenReturn(Optional.of(new NpcSeatInteraction.Hit(target, Vec3.ZERO)));
+                assertTrue(NpcCrew.carry(vehicle, boarding));
+                when(vehicle.getPassengers()).thenReturn(List.of(boarding));
+                assertEquals(Optional.of(target), NpcCrew.seatOf(vehicle, boarding));
+                Player next = player(vehicle, "next");
+                when(next.getVehicle()).thenReturn(null);
+                drivers.when(() -> NpcDrivers.ally(vehicle, next)).thenReturn(true);
+                WeaponMount free = target == GUNNER ? FIRST_PASSENGER : GUNNER;
+                interactions.when(() -> NpcSeatInteraction.pick(vehicle, next)).thenReturn(Optional.of(new NpcSeatInteraction.Hit(free, Vec3.ZERO)));
+                assertTrue(NpcCrew.carry(vehicle, next));
+                when(vehicle.getPassengers()).thenReturn(List.of(boarding, next));
+                assertEquals(Optional.of(target), NpcCrew.seatOf(vehicle, boarding));
+                assertEquals(Optional.of(free), NpcCrew.seatOf(vehicle, next));
+            }
+        }
+    }
+
+    @Test
+    void clickingAnOccupiedSeatDoesNotBoardAnotherSeat()
+    {
+        EntityNPCInterface vehicle = holderVehicle();
+        Player aboard = player(vehicle, "aboard");
+        Player boarding = player(vehicle, "boarding");
+        when(boarding.getVehicle()).thenReturn(null);
+        when(vehicle.getPassengers()).thenReturn(List.of(aboard));
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER); var drivers = mockStatic(NpcDrivers.class); var interactions = mockStatic(NpcSeatInteraction.class))
+        {
+            drivers.when(() -> NpcDrivers.ally(vehicle, boarding)).thenReturn(true);
+            interactions.when(() -> NpcSeatInteraction.pick(vehicle, boarding)).thenReturn(Optional.of(new NpcSeatInteraction.Hit(GUNNER, Vec3.ZERO)));
+            assertFalse(NpcCrew.carry(vehicle, boarding));
+            verify(boarding, never()).startRiding(any(), anyBoolean());
+            assertEquals(Optional.of(GUNNER), NpcCrew.seatOf(vehicle, aboard));
         }
     }
 

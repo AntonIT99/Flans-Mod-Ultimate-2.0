@@ -716,6 +716,12 @@ public abstract class ShootableType extends InfoType
         return findAmmoTypes(Set.of(shortname), contentPack).stream().findFirst();
     }
 
+    /** Prefer the first compatible round from the weapon's own pack, then the first compatible round overall. */
+    public static Optional<ShootableType> findDefaultAmmo(List<ShootableType> ammoTypes, IContentProvider contentPack)
+    {
+        return ammoTypes.stream().filter(type -> Objects.equals(type.getContentPack(), contentPack)).findFirst().or(() -> ammoTypes.stream().findFirst());
+    }
+
     private void readExplosionShake(TypeFile file)
     {
         powerShake = readValue("powerShake", powerShake, file);

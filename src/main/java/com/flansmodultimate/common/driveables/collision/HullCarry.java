@@ -20,11 +20,18 @@ import net.minecraft.world.entity.Entity;
  * </p>
  *
  * <p>
+ * Carries are grouped by a local tick counter. World game time is synchronized from the server and can repeat or
+ * rewind, so it cannot distinguish consecutive simulation ticks reliably.
+ * </p>
+ *
+ * <p>
  * Client only; only the client level's thread touches it.
  * </p>
  */
 public final class HullCarry
 {
+    private static long clientTick;
+
     private long tickTime = Long.MIN_VALUE;
     private boolean applied;
     private double carriedX;
@@ -33,18 +40,24 @@ public final class HullCarry
     private float carriedYaw;
     private int viewTick = Integer.MIN_VALUE;
 
+    /** Begins one local client tick, independently of time updates received from the server. Client thread only. */
+    public static void beginClientTick()
+    {
+        clientTick++;
+    }
+
     /** Records that a hull moved and turned an entity, after the move. */
     public static void noteCarry(Entity entity, double x, double y, double z, float yaw)
     {
         if (entity.level().isClientSide && entity instanceof HullCarriedEntity carried)
-            carried.flansmodultimateHullCarry().carried(entity.level().getGameTime(), entity.tickCount, x, y, z, yaw);
+            carried.flansmodultimateHullCarry().carried(clientTick, entity.tickCount, x, y, z, yaw);
     }
 
-    void carried(long gameTime, int tickCount, double x, double y, double z, float yaw)
+    void carried(long localTick, int tickCount, double x, double y, double z, float yaw)
     {
-        if (tickTime != gameTime)
+        if (tickTime != localTick)
         {
-            tickTime = gameTime;
+            tickTime = localTick;
             applied = false;
             carriedX = carriedY = carriedZ = 0D;
             carriedYaw = 0F;
@@ -62,7 +75,7 @@ public final class HullCarry
      */
     public void startTick(Entity entity)
     {
-        if (applied || tickTime != entity.level().getGameTime())
+        if (applied || tickTime != clientTick)
             return;
         applied = true;
         entity.xo -= carriedX;

@@ -16,7 +16,10 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 
-/** Keeps off-hand shields steady through attacks and applies explicit held-item arm rotations after native animation. */
+/**
+ * Keeps off-hand shields steady through attacks, holds the guns of a prone entity forward along its lying body, and applies
+ * explicit held-item arm rotations after native animation.
+ */
 @Mixin(HumanoidModel.class)
 public abstract class HumanoidModelMixin
 {
@@ -55,6 +58,8 @@ public abstract class HumanoidModelMixin
     @Inject(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", at = @At("TAIL"))
     private void flansmodultimateCustomArmRotations(LivingEntity entity, float swing, float amount, float age, float yaw, float pitch, CallbackInfo callback)
     {
-        EquipmentAnimationSupport.customArms((HumanoidModel<?>) (Object) this, entity);
+        HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
+        EquipmentAnimationSupport.prone(model, entity, yaw, pitch);
+        EquipmentAnimationSupport.customArms(model, entity);
     }
 }

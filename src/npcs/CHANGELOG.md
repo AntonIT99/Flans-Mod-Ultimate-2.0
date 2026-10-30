@@ -8,20 +8,24 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender
 * Flan NPC tactics for soldiers, vehicles and aircraft, including cover, peeking and Custom NPCs' own tactics with Flan's weapons
 * NPCs throw what they carry by per-kind strategies, and open carried parachutes when they fall
+* NPCs with Custom NPCs' crawling animation fire with their gun's prone accuracy and hold their gun forward along the body
 * Presets in the Wolff's Mod tab, such as Mob-like and Player-like, with undo; presets preserve the existing `Return to start` setting
+* NPCs look for and keep targets out to their aggro range instead of only Custom NPCs' `NpcNavRange`, so planes and helicopters flying high above their targets spot and hold them; aircraft models fight no faster than lets them come round within their aggro range, so fast planes no longer fly off out of the simulated area; planes fly straight on to gain room when their target is too close beside them to turn onto, rather than circling it, and keep their target while they come round
 * Wandering range `0` allows unlimited roaming without triggering `Return to start` for distance; returning after combat and on respawn is preserved
+* `Teleport home when inactive` (Advanced > Performance & debug > Activity): NPCs with `Return to start` left away from home outside the simulation distance, or resting beyond their dormant range, are sent straight back once no player is near enough to see them go
 
 ## Vehicles, Aircraft & Mechas
 
 * NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight, sound and take damage like their driveables, with part hitboxes, armour and HEAT overrides; destroyed planes and helicopters fall under gravity; vehicle muzzle flashes replace the fallback flame particle while preserving authored shooting particles
 * NPCs board, drive and fly the Flan's driveables players place, lead their targets, land planes and watch their fuel
-* Vehicle NPCs carry crews in their seats; crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
+* Vehicle NPCs carry crews in their seats; seat guns use normal magazine reload delays and sounds, crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
 * Seated crew keep their body aligned with their seat through rendering and turns across 180 degrees; gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot; NPCs riding normal aircraft inherit pitch and roll like players
-* Friendly players can ride in passenger seats, occupy empty driver seats and man the gunner seats of vehicle NPCs, and change seats with Flan's change-seat key; the NPC still drives when a player occupies its driver seat
+* Friendly players can right-click any empty seat at its position to board vehicle NPCs, including seats outside the central hitbox, occupy empty driver seats and man gunner seats, and change seats with Flan's change-seat key; the NPC still drives when a player occupies its driver seat
 * NPC vehicles manoeuvre for a shot, back away from targets under their barrel and can be repaired
 * Vehicles, aircraft and ships keep clear of their own blast: they hold their fire at a target close enough for their explosive rounds to catch them and pull back out of reach first (`Keep clear of own blast`, `Blast safety margin`)
 * Ships run in bow on to fire torpedoes and anything else fixed to their hull, turn away after each run, and circle their target so the turrets along their side bear once they have none left (`Ships turn to bear`)
-* Players can stand on the solid hull and turret of an NPC vehicle, which carries them smoothly as it drives and turns without running them over or pushing them off; carrying also works at the bows and sterns of large ships
+* Vehicle, plane and mecha NPCs fire both weapon groups of their model by default (`Fire both weapon groups`): the group beside the main attack fires its guns, shells, rockets and bombs at its own cadence, and its bombs fall only on vehicles and other large targets on the ground, which planes approach in a level bomb run; a model whose chosen group is empty, such as a bomber that only carries bombs, attacks with its other group
+* Players can stand and walk on the solid hull and turret of an NPC vehicle, which carries them smoothly without running them over or pushing them off; fixed sudden turns and drops from unstable carry transforms, including on large ships, and replayed movement when server time is synchronized
 * The Guard job's target lists leave out Flan's driveables and NPC models, and chosen targets leave Available Targets
 
 ## Teams Bots, Factions & Battles
@@ -38,7 +42,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 * The Wolff's Mod tab in the Custom NPCs editor, with combat, crew, movement, naming, model and server pages
 * Flan model picker with previews and tooltips
-* NPC diagnosis, server limits, rules, census and benchmarks
+* NPC diagnosis, including a flying plane's speed and circle radius, server limits, rules, census and benchmarks
 * Flan's debug mode marks the seats and seat-gun muzzles of vehicle NPCs, as it does for driveables
 * Server > Rules in the Wolff's Mod tab can turn off item drops from killed NPCs; their experience still drops either way
 * Scripting controls for Flan's features
