@@ -50,7 +50,7 @@ import java.util.*;
  * <p>
  * A crew member keeps its seat in synchronized entity data, so both sides seat it alike. A rider without a seat of its
  * own, such as one put on with Custom NPCs' mounter, takes the first free seat, the driver's first. A player on the
- * vehicle's side gets into a free gunner's seat, else a passenger seat, else the driver's seat, by using it, moves to the next free seat with
+ * vehicle's side gets into the empty seat they click, or a free gunner's seat, else a passenger seat, else the driver's seat when using its body, moves to the next free seat with
  * the seat key, mans the gun of a gunner's seat, and gets out when the vehicle is destroyed or they log out. Server
  * thread unless a method says otherwise.
  * </p>
@@ -168,9 +168,7 @@ public final class NpcCrew
                 continue;
             // Pin every rider without a crew seat where it sits, so that none slides into the seat the player leaves.
             CompoundTag seats = new CompoundTag();
-            for (Entity passenger : vehicle.getPassengers())
-                if (seat(passenger) < 0)
-                    seatOf(vehicle, passenger).ifPresent(mount -> seats.putInt(passenger.getStringUUID(), mount.seat()));
+            pinRiders(vehicle, seats);
             seats.putInt(player.getStringUUID(), next.seat());
             holder.wolffsmodnpcsRiderSeats(seats);
             return true;
@@ -246,8 +244,8 @@ public final class NpcCrew
     }
 
     /**
-     * Seats a player in a free gunner's, passenger or driver's seat of a vehicle that is on their side, as when they use it without
-     * sneaking.
+     * Seats a player in the empty seat they click on a vehicle that is on their side, without sneaking. Using the body
+     * instead takes a free gunner's, passenger or driver's seat, in that order.
      * Server side.
      *
      * @return whether the player got on; otherwise the vehicle answers them as any NPC would
@@ -257,15 +255,34 @@ public final class NpcCrew
         if (player.isSecondaryUseActive() || player.isSpectator() || player.getVehicle() == vehicle || !vehicle.isAlive() || vehicle.isKilled() || !NpcDrivers.ally(vehicle, player)
             || !canCarry(vehicle, player).orElse(false))
             return false;
+        NpcSeatInteraction.Hit clicked = NpcSeatInteraction.pick(vehicle, player).orElse(null);
+        if (clicked != null && (occupied(vehicle, clicked.mount().seat()) || !(vehicle instanceof NpcCrewHolder)))
+            return false;
         player.stopRiding();
-        // A seat the player moved to on an earlier ride is no longer theirs.
-        if (vehicle instanceof NpcCrewHolder holder && holder.wolffsmodnpcsRiderSeats().contains(player.getStringUUID()))
+        CompoundTag seats = null;
+        if (vehicle instanceof NpcCrewHolder holder)
         {
-            CompoundTag seats = holder.wolffsmodnpcsRiderSeats().copy();
+            seats = holder.wolffsmodnpcsRiderSeats().copy();
+            // Keep existing riders in place when a later rider chooses a seat ahead of them in the seat order.
+            if (clicked != null)
+                pinRiders(vehicle, seats);
             seats.remove(player.getStringUUID());
-            holder.wolffsmodnpcsRiderSeats(seats);
+            if (clicked != null)
+                seats.putInt(player.getStringUUID(), clicked.mount().seat());
         }
-        return player.startRiding(vehicle, true);
+        if (!player.startRiding(vehicle, true))
+            return false;
+        if (vehicle instanceof NpcCrewHolder holder)
+            holder.wolffsmodnpcsRiderSeats(seats);
+        return true;
+    }
+
+    /** Keeps riders without an assigned crew seat at their current positions before another rider chooses a seat. */
+    private static void pinRiders(EntityNPCInterface vehicle, CompoundTag seats)
+    {
+        for (Entity passenger : vehicle.getPassengers())
+            if (seat(passenger) < 0)
+                seatOf(vehicle, passenger).ifPresent(mount -> seats.putInt(passenger.getStringUUID(), mount.seat()));
     }
 
     /**
@@ -399,7 +416,8 @@ public final class NpcCrew
         return boarded;
     }
 
-    static boolean occupied(EntityNPCInterface vehicle, int seat)
+    /** @return whether any rider, including a player, occupies this model seat; either side */
+    public static boolean occupied(EntityNPCInterface vehicle, int seat)
     {
         return vehicle.getPassengers().stream().anyMatch(passenger -> seatOf(vehicle, passenger).map(WeaponMount::seat).orElse(NO_SEAT) == seat);
     }

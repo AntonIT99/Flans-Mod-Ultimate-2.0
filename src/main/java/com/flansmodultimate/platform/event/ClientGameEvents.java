@@ -3,6 +3,7 @@ package com.flansmodultimate.platform.event;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.sound.SoundSpatialization;
+import com.flansmodultimate.common.driveables.collision.HullCarry;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
@@ -49,6 +50,7 @@ public final class ClientGameEvents
     {
         if (event.phase == TickEvent.Phase.START)
         {
+            HullCarry.beginClientTick();
             ClientEventHandler.onClientTickStart();
             return;
         }

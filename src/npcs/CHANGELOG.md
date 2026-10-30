@@ -15,13 +15,13 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 * NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight, sound and take damage like their driveables, with part hitboxes, armour and HEAT overrides; destroyed planes and helicopters fall under gravity; vehicle muzzle flashes replace the fallback flame particle while preserving authored shooting particles
 * NPCs board, drive and fly the Flan's driveables players place, lead their targets, land planes and watch their fuel
-* Vehicle NPCs carry crews in their seats; crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
+* Vehicle NPCs carry crews in their seats; seat guns use normal magazine reload delays and sounds, crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
 * Seated crew keep their body aligned with their seat through rendering and turns across 180 degrees; gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot; NPCs riding normal aircraft inherit pitch and roll like players
-* Friendly players can ride in passenger seats, occupy empty driver seats and man the gunner seats of vehicle NPCs, and change seats with Flan's change-seat key; the NPC still drives when a player occupies its driver seat
+* Friendly players can right-click any empty seat at its position to board vehicle NPCs, including seats outside the central hitbox, occupy empty driver seats and man gunner seats, and change seats with Flan's change-seat key; the NPC still drives when a player occupies its driver seat
 * NPC vehicles manoeuvre for a shot, back away from targets under their barrel and can be repaired
 * Vehicles, aircraft and ships keep clear of their own blast: they hold their fire at a target close enough for their explosive rounds to catch them and pull back out of reach first (`Keep clear of own blast`, `Blast safety margin`)
 * Ships run in bow on to fire torpedoes and anything else fixed to their hull, turn away after each run, and circle their target so the turrets along their side bear once they have none left (`Ships turn to bear`)
-* Players can stand on the solid hull and turret of an NPC vehicle, which carries them smoothly as it drives and turns without running them over or pushing them off; carrying also works at the bows and sterns of large ships
+* Players can stand and walk on the solid hull and turret of an NPC vehicle, which carries them smoothly without running them over or pushing them off; fixed sudden turns and drops from unstable carry transforms, including on large ships, and replayed movement when server time is synchronized
 * The Guard job's target lists leave out Flan's driveables and NPC models, and chosen targets leave Available Targets
 
 ## Teams Bots, Factions & Battles

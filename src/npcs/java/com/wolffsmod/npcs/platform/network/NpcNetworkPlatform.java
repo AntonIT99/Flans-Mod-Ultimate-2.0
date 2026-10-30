@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.*;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -18,10 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * Version boundary for the module's packets. Forge 1.20.1 numbers them on one {@link SimpleChannel} in the order they are
@@ -31,7 +25,7 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcNetworkPlatform
 {
-    private static final String VERSION = "10";
+    private static final String VERSION = "11";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
     private static int nextId;
 

@@ -17,6 +17,7 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -157,6 +158,12 @@ public final class NpcPlatform
     public static Attribute reachAttribute()
     {
         return ForgeMod.ENTITY_REACH.get();
+    }
+
+    /** Entity interaction reach in blocks, including the loader's creative-mode bonus. */
+    public static double entityInteractionRange(Player player)
+    {
+        return player.getEntityReach();
     }
 
     /** How deep the entity stands in water, in blocks. */

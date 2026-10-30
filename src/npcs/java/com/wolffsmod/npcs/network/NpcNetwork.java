@@ -49,6 +49,7 @@ public final class NpcNetwork
             () -> com.wolffsmod.npcs.client.NpcClientPackets::crewClonePreview, CrewClonePreviewPacket::handle);
         NpcNetworkPlatform.toServer("gunner_trigger", GunnerTriggerPacket.class, GunnerTriggerPacket::write, GunnerTriggerPacket::read, GunnerTriggerPacket::handle);
         NpcNetworkPlatform.toServer("change_seat", ChangeSeatPacket.class, ChangeSeatPacket::write, ChangeSeatPacket::read, ChangeSeatPacket::handle);
+        NpcNetworkPlatform.toServer("board_seat", BoardSeatPacket.class, BoardSeatPacket::write, BoardSeatPacket::read, BoardSeatPacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerReportPacket packet)
@@ -177,6 +178,11 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(ChangeSeatPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendToServer(BoardSeatPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }

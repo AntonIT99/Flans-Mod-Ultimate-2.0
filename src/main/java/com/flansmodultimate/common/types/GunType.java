@@ -1235,11 +1235,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     public Optional<ShootableType> getDefaultAmmo()
     {
-        if (!ammo.isEmpty())
-        {
-            return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
-        }
-        return getAmmoTypes().stream().findFirst();
+        return ShootableType.findDefaultAmmo(getAmmoTypes(), contentPack);
     }
 
     @Override

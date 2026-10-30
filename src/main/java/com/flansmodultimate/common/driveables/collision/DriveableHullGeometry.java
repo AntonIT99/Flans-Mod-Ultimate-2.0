@@ -50,6 +50,8 @@ public final class DriveableHullGeometry
     private static final int[][] FRAMES = {{0, 1, 3, 4}, {6, 5, 7, 2}, {1, 0, 2, 5}, {7, 4, 6, 3}};
 
     private final List<DriveableCollisionProfile.Shape> shapes;
+    /** The same local corners define a shape's carry frame in every world pose; entries are null for flat shapes. */
+    private final int[][] frameCorners;
     private final Pose pose = new Pose();
     private final double[] axisScratch = new double[3];
     private Slot current;
@@ -69,6 +71,9 @@ public final class DriveableHullGeometry
     public DriveableHullGeometry(@NotNull DriveableCollisionProfile profile)
     {
         shapes = profile.getShapes();
+        frameCorners = new int[shapes.size()][];
+        for (int index = 0; index < shapes.size(); index++)
+            frameCorners[index] = selectFrame(shapes.get(index).coordinates());
         current = new Slot(shapes.size());
         previous = new Slot(shapes.size());
     }
@@ -504,7 +509,8 @@ public final class DriveableHullGeometry
         }
     }
 
-    private static void build(Slot slot, int index)
+    @SuppressWarnings("SuspiciousNameCombination") // Cross products intentionally exchange axis components.
+    private void build(Slot slot, int index)
     {
         double[] points = slot.vertices[index];
         double[] bounds = slot.bounds[index];
@@ -559,7 +565,7 @@ public final class DriveableHullGeometry
             extents[axis * 2] = min;
             extents[axis * 2 + 1] = max;
         }
-        slot.frameValid[index] = buildFrame(points, slot.frames[index]);
+        slot.frameValid[index] = buildFrame(points, frameCorners[index], slot.frames[index]);
     }
 
     private static int addTriangleNormal(double[] axes, int count, double[] points, int a, int b, int c)
@@ -596,14 +602,12 @@ public final class DriveableHullGeometry
     }
 
     /**
-     * Stores an affine frame (origin, edge columns, inverse rows) spanned by
-     * four corners. A rigid transform preserves each point's coordinates in it,
-     * which is what lets a riding entity be carried without inverting the
-     * pose and turret rotations.
+     * Chooses the most stable corner tetrahedron once, in the unposed shape. Choosing again in world space lets
+     * rounding change the winner between equal-volume tetrahedra, which maps riders to different corners and invents turns.
      */
     // The negated comparison also rejects NaN.
     @SuppressWarnings("java:S1940")
-    private static boolean buildFrame(double[] points, double[] frame)
+    private static int @Nullable [] selectFrame(double[] points)
     {
         int[] best = null;
         double bestDeterminant = 0D;
@@ -617,15 +621,28 @@ public final class DriveableHullGeometry
             }
         }
         if (best == null || !(Math.abs(bestDeterminant) > FRAME_EPSILON))
+            return null;
+        return best;
+    }
+
+    /** Stores a posed affine frame (origin, edge columns, inverse rows) using the shape's fixed reference corners. */
+    // The negated comparison also rejects NaN.
+    @SuppressWarnings("java:S1940")
+    private static boolean buildFrame(double[] points, int @Nullable [] corners, double[] frame)
+    {
+        if (corners == null)
+            return false;
+        double determinant = frameDeterminant(points, corners);
+        if (!(Math.abs(determinant) > FRAME_EPSILON))
             return false;
 
-        int origin = best[0] * 3;
+        int origin = corners[0] * 3;
         frame[0] = points[origin];
         frame[1] = points[origin + 1];
         frame[2] = points[origin + 2];
         for (int column = 0; column < 3; column++)
         {
-            int corner = best[column + 1] * 3;
+            int corner = corners[column + 1] * 3;
             frame[3 + column * 3] = points[corner] - frame[0];
             frame[4 + column * 3] = points[corner + 1] - frame[1];
             frame[5 + column * 3] = points[corner + 2] - frame[2];
@@ -639,15 +656,15 @@ public final class DriveableHullGeometry
         double e3X = frame[9];
         double e3Y = frame[10];
         double e3Z = frame[11];
-        frame[12] = (e2Y * e3Z - e2Z * e3Y) / bestDeterminant;
-        frame[13] = (e2Z * e3X - e2X * e3Z) / bestDeterminant;
-        frame[14] = (e2X * e3Y - e2Y * e3X) / bestDeterminant;
-        frame[15] = (e3Y * e1Z - e3Z * e1Y) / bestDeterminant;
-        frame[16] = (e3Z * e1X - e3X * e1Z) / bestDeterminant;
-        frame[17] = (e3X * e1Y - e3Y * e1X) / bestDeterminant;
-        frame[18] = (e1Y * e2Z - e1Z * e2Y) / bestDeterminant;
-        frame[19] = (e1Z * e2X - e1X * e2Z) / bestDeterminant;
-        frame[20] = (e1X * e2Y - e1Y * e2X) / bestDeterminant;
+        frame[12] = (e2Y * e3Z - e2Z * e3Y) / determinant;
+        frame[13] = (e2Z * e3X - e2X * e3Z) / determinant;
+        frame[14] = (e2X * e3Y - e2Y * e3X) / determinant;
+        frame[15] = (e3Y * e1Z - e3Z * e1Y) / determinant;
+        frame[16] = (e3Z * e1X - e3X * e1Z) / determinant;
+        frame[17] = (e3X * e1Y - e3Y * e1X) / determinant;
+        frame[18] = (e1Y * e2Z - e1Z * e2Y) / determinant;
+        frame[19] = (e1Z * e2X - e1X * e2Z) / determinant;
+        frame[20] = (e1X * e2Y - e1Y * e2X) / determinant;
         return true;
     }
 
