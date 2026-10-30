@@ -30,7 +30,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Teams Bots, Factions & Battles
 
-* Teams bots: NPC soldiers, squads and vehicles that fight Teams rounds, with player orders, a commander seat, transports, class roles, suppression and squad leading
+* Teams bots: NPC soldiers, squads and vehicles that fight Teams rounds, with player orders (`Squad orders` key, O), a commander seat, transports, class roles, suppression and squad leading
 * Manage Custom NPCs factions for battles: branches of Flan's teams, alliances, wars and peace between factions
 * Players can join and leave factions; factions are invite-only by default, and operators choose who may join, the leave penalty and the rejoin cooldown
 * `Attack Mobs` in Global > Factions: every NPC of the faction hunts hostile mobs on sight, slimes and ghasts included, without needing the Guard job

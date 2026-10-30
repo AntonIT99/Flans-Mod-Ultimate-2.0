@@ -24,6 +24,7 @@
 * Lag compensation settings `bulletSnapshotMin` and `bulletSnapshotDivisor` (`/teams bltss`, `/teams showbltss`)
 * Spectators cannot pick up items during a round; item spawner items float above their plate and only the owning team can take them
 * Configurable Teams HUD control reminders
+* The Teams key (U, now `Teams Menu`) opens a menu with team selection, class selection and the scoreboard; the scoreboard and class keys are now unbound by default, freeing I and O (saved key settings are kept)
 * Team selection opens on login only while a playable round is live
 
 ## Vehicles, Aircraft & Ships
@@ -37,6 +38,7 @@
 * Configurable render and tracking distances for driveables and Flan NPC models
 * Smooth view and position for players standing or walking on moving hulls and turrets, including large ships; fixed sudden turns and drops from unstable carry transforms and replayed movement when server time is synchronized
 * Passenger guns mounted on a turret aim relative to the turret
+* The Change Seat key now defaults to Numpad Enter instead of Numpad 0, which Custom NPCs uses to reset scenes (saved key settings are kept)
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
 * Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards, and pieces thrown off a wreck coming to rest in the air instead of on the ground
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity

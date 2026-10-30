@@ -15,8 +15,11 @@ public final class BotKeys
 {
     private static final String CATEGORY = "key.categories.wolffsmodnpcs";
 
-    /** Opens the squad order screen, which asks the server for the squads the player may order. */
-    public static final KeyMapping SQUAD_ORDERS = new KeyMapping("key.wolffsmodnpcs.squad_orders", InputConstants.KEY_P, CATEGORY);
+    /**
+     * Opens the squad order screen, which asks the server for the squads the player may order. O for orders; P belongs
+     * to vanilla's social interactions screen.
+     */
+    public static final KeyMapping SQUAD_ORDERS = new KeyMapping("key.wolffsmodnpcs.squad_orders", InputConstants.KEY_O, CATEGORY);
 
     /** Once a client tick, outside screens. */
     public static void tick()
