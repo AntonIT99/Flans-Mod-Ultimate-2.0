@@ -34,12 +34,14 @@ import java.util.Optional;
  * Both keep a minimum altitude above the terrain under and ahead of them and hold their fire, without giving their
  * target up, while they are below it. A plane never stops: it flies along its heading and comes round in a circle,
  * toward its target or about its home while it has none, or, roaming, about where it is, moving on now and then; never
- * tighter than it turns at its speed. Its tactic may instead circle its target, turning in for a gun pass now and then,
+ * tighter than it turns at its speed, and it keeps its target for as far as coming round carries it. Its tactic may instead
+ * circle its target, turning in for a gun pass now and then,
  * or carry it on past the target after each pass, holding its fire, before it comes round again. On a gun run it dives or
  * climbs to put its nose on the target, as its fixed guns need; a bomber flies over its target level. A helicopter may
  * hover and turns its hull toward its target. Custom NPCs' flying movement still supplies the climb and descent toward its own goals in between. An aircraft model
  * flies at its definition's speeds, climb rate and control rates: a plane with nothing to fight cruises just above the speed
- * it needs to fly and builds up to its top speed to fight, gains speed in a dive and loses it in a climb, never below the
+ * it needs to fly and builds up to its top speed to fight, though no faster than lets it come round within its aggro
+ * range, gains speed in a dive and loses it in a climb, never below the
  * speed it needs to fly, and turns as tightly as its steepest bank allows at its speed. One instance per NPC, server side.
  * </p>
  */
@@ -103,6 +105,9 @@ public final class NpcFlight
     static final double PATH_GRAVITY = 0.098D;
     /** Fastest a plane flying its model turns, in degrees per tick, however slow it is. */
     static final float MAX_COORDINATED_TURN = 6F;
+    /** Fastest combat speed looked for, in blocks per tick, and halvings that find it. */
+    private static final double MAX_COMBAT_SPEED = 64D;
+    private static final int COMBAT_SPEED_STEPS = 32;
     /** Least and most a model's control rates scale the default pitch and roll rates by. */
     private static final double MIN_AUTHORITY = 0.25D;
     private static final double MAX_AUTHORITY = 3D;
@@ -117,6 +122,8 @@ public final class NpcFlight
     private boolean attackAllowed = true;
     /** Whether a plane on a strafing run carries on past its target, holding its fire, before it comes round again. */
     private boolean extending;
+    /** Whether a plane flies straight on because its target lies too close beside it to turn onto, until it has room to. */
+    private boolean gainingRoom;
     private boolean flying;
     private float yaw;
     /**
@@ -139,6 +146,13 @@ public final class NpcFlight
     private Vec3 roamCentre;
     /** Ticks a roaming plane has circled its point. */
     private int roamTicks;
+    /** Blocks per tick a plane flew at this tick, the radius of the tightest circle it turns at that speed, and of the one it flies; 0 while it does not fly as a plane. */
+    @Getter
+    private double flownSpeed;
+    @Getter
+    private double tightestCircle;
+    @Getter
+    private double circle;
 
     /** @return how the NPC flies: as its flight type says, Automatic resolved by its model; Normal unless it moves by flying */
     public static Flight type(EntityNPCInterface npc)
@@ -192,6 +206,22 @@ public final class NpcFlight
         return type == Flight.PLANE ? PLANE_CLIMB : HELICOPTER_CLIMB;
     }
 
+    /**
+     * @return blocks beyond its aggro range a plane keeps its target: as far as coming round in its tightest circle carries it,
+     *         so a fast plane does not lose its target on every turn; 0 while it does not fly as a plane
+     */
+    public double keepMargin()
+    {
+        return tightestCircle * 2D;
+    }
+
+    private void forgetCircle()
+    {
+        flownSpeed = 0D;
+        tightestCircle = 0D;
+        circle = 0D;
+    }
+
     /** @return whether the aircraft is too low to attack and climbing back */
     public boolean holdsFire()
     {
@@ -206,14 +236,19 @@ public final class NpcFlight
         if (!attackAllowed)
             return "ALTITUDE_RECOVERY";
         if (type(npc) == Flight.PLANE)
-        {
-            if (npc.getTarget() == null)
-                return roams(npc) ? "ROAM" : "LOITER";
-            if (extending)
-                return "EXTEND";
-            return NpcTactics.of(npc) == Tactic.ORBIT && !passing ? "ORBIT" : "ATTACK_RUN";
-        }
+            return planeState(npc);
         return npc.getNavigation().isDone() ? "HOVERING" : "REPOSITIONING";
+    }
+
+    private String planeState(EntityNPCInterface npc)
+    {
+        if (npc.getTarget() == null)
+            return roams(npc) ? "ROAM" : "LOITER";
+        if (extending)
+            return "EXTEND";
+        if (gainingRoom)
+            return "GAINING_ROOM";
+        return NpcTactics.of(npc) == Tactic.ORBIT && !passing ? "ORBIT" : "ATTACK_RUN";
     }
 
     /** Runs once per tick after the NPC has moved. */
@@ -229,12 +264,14 @@ public final class NpcFlight
             flying = false;
             attackAllowed = true;
             extending = false;
+            gainingRoom = false;
             passing = false;
             orbitTicks = 0;
             pitch = 0F;
             bank = 0F;
             airspeed = 0D;
             roamCentre = null;
+            forgetCircle();
             return;
         }
         if (!flying)
@@ -255,7 +292,10 @@ public final class NpcFlight
         if (type == Flight.PLANE)
             flyPlane(npc, tuning, model, engaged ? target : null, vertical, minimum);
         else
+        {
+            forgetCircle();
             flyHelicopter(npc, tuning, model, engaged ? target : null, vertical);
+        }
         npc.setYRot(yaw);
         npc.setYBodyRot(yaw);
     }
@@ -345,18 +385,16 @@ public final class NpcFlight
         // Guns are led at where the target will be; a bomber flies over where its bomb meets the target.
         NpcVehicleState state = NpcVehicleState.of(npc);
         Vec3 toTarget = target == null ? Vec3.ZERO : state.bombPoint().orElse(target.position()).subtract(npc.position());
-        Vec3 aim = target != null && !state.isBombing() ? state.aimDirection().orElse(toTarget) : toTarget;
+        Vec3 aim = target != null && !state.isBombRun() ? state.aimDirection().orElse(toTarget) : toTarget;
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
-        double speed = flightSpeed(tuning, model, target == null, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
+        double combat = target == null ? 0D : combatSpeed(npc.stats.aggroRange, turnRate);
+        double speed = flightSpeed(tuning, model, combat, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
+        flownSpeed = speed;
         // No circle is tighter than the plane turns at its speed, with some turn to spare to stay on it.
-        double tightest = turnRadius(speed, maxTurn(turnRate, speed, model != null)) * CIRCLE_MARGIN;
+        tightestCircle = turnRadius(speed, maxTurn(turnRate, speed, model != null)) * CIRCLE_MARGIN;
+        circle = Math.max(tightestCircle, target != null && NpcTactics.of(npc) == Tactic.ORBIT ? orbitRadius(npc) : loiterRadius(npc));
         float wanted;
-        double circle;
-        if (target != null && NpcTactics.of(npc) == Tactic.ORBIT)
-            circle = Math.max(tightest, orbitRadius(npc));
-        else
-            circle = Math.max(tightest, loiterRadius(npc));
         if (target != null)
         {
             // After the fight a roaming plane circles wherever the fight has left it.
@@ -367,6 +405,7 @@ public final class NpcFlight
         {
             wanted = idleYaw(npc, circle);
             extending = false;
+            gainingRoom = false;
             passing = false;
             orbitTicks = 0;
         }
@@ -395,20 +434,23 @@ public final class NpcFlight
     }
 
     /**
-     * @param idle
-     *            whether the plane has nothing to fight, and cruises
+     * @param combat
+     *            blocks per tick the plane fights at most, so that it comes round within its aggro range; 0 while it has
+     *            nothing to fight, and cruises
      * @param measured
      *            blocks per tick the plane flew along its flight path during the last tick
      * @return blocks per tick the plane flies at this tick: its set cruise or plane speed, the airspeed its model builds up
-     *         toward its cruise or top speed, or its own between stall and top speed
+     *         toward its cruise speed or, fighting, its top speed held to the combat speed, or its own between stall and top speed
      */
-    private double flightSpeed(NpcTuning tuning, @Nullable FlightPerformance model, boolean idle, double measured)
+    private double flightSpeed(NpcTuning tuning, @Nullable FlightPerformance model, double combat, double measured)
     {
+        boolean idle = combat <= 0D;
         int set = tuning.get(Value.FLIGHT_SPEED);
         int cruise = idle ? tuning.get(Value.CRUISE_SPEED) : 0;
         if (model == null || (set > 0 && cruise == 0))
             return planeSpeed(cruise > 0 ? cruise : set, measured);
-        double throttle = idle ? cruiseSpeed(cruise, model) : model.topSpeed();
+        // Below the least speed its model flies at, the combat speed holds it at that speed: it can turn no tighter.
+        double throttle = idle ? cruiseSpeed(cruise, model) : Math.min(model.topSpeed(), combat);
         airspeed = modelSpeed(airspeed > 0D ? airspeed : measured, model.minimumSpeed(), throttle, model.topSpeed(), pitch);
         return airspeed;
     }
@@ -484,6 +526,7 @@ public final class NpcFlight
      */
     private float attackYaw(EntityNPCInterface npc, LivingEntity target, Vec3 aim, double radius)
     {
+        gainingRoom = false;
         Tactic tactic = NpcTactics.of(npc);
         double horizontal = Math.sqrt(npc.distanceToSqr(target.getX(), npc.getY(), target.getZ()));
         // A plane carrying something explosive breaks off before it flies into its own blast, as one on a run breaks off past its target.
@@ -503,7 +546,29 @@ public final class NpcFlight
         }
         if (extending || horizontal <= 1D)
             return yaw;
-        return MountMotion.yaw(aim);
+        // A target inside the circle the plane would turn on toward it cannot be reached by turning, only circled: it flies
+        // straight on until the target lies outside that circle, and turns in for its run from there.
+        gainingRoom = insideTurn(npc.position(), yaw, target.position(), tightestCircle);
+        return gainingRoom ? yaw : MountMotion.yaw(aim);
+    }
+
+    /**
+     * @param heading
+     *            degrees the plane flies toward
+     * @param radius
+     *            blocks across from its centre the circle is that the plane turns on
+     * @return whether the point lies inside the circle the plane would turn on toward it, on the side the point lies
+     */
+    static boolean insideTurn(Vec3 position, float heading, Vec3 point, double radius)
+    {
+        Vec3 forward = Vec3.directionFromRotation(0F, heading);
+        double x = point.x - position.x;
+        double z = point.z - position.z;
+        // The plane turns toward the side the point lies on, round a centre a radius off that side.
+        double side = forward.x * z - forward.z * x >= 0D ? radius : -radius;
+        double fromCentreX = x + forward.z * side;
+        double fromCentreZ = z - forward.x * side;
+        return fromCentreX * fromCentreX + fromCentreZ * fromCentreZ < radius * radius;
     }
 
     /**
@@ -559,7 +624,7 @@ public final class NpcFlight
     private boolean attacks(EntityNPCInterface npc, Vec3 aim)
     {
         boolean circling = NpcTactics.of(npc) == Tactic.ORBIT && !passing;
-        return attackAllowed && !extending && !circling && !NpcVehicleState.of(npc).isBombing() && Math.abs(MountMotion.relative(aim, yaw).yaw()) <= DIVE_CONE;
+        return attackAllowed && !extending && !circling && !NpcVehicleState.of(npc).isBombRun() && Math.abs(MountMotion.relative(aim, yaw).yaw()) <= DIVE_CONE;
     }
 
     /**
@@ -654,6 +719,35 @@ public final class NpcFlight
     {
         double next = current + (throttle - current) * THRUST_RESPONSE + PATH_GRAVITY * Math.sin(Math.toRadians(pitch));
         return Mth.clamp(next, Math.min(minimum, top), top);
+    }
+
+    /**
+     * A plane flying its model fights no faster than lets it come round within its aggro range: at full speed a fast plane
+     * turns hundreds of blocks wide, which carries it away from its fight and out of the area the server simulates.
+     *
+     * @param aggroRange
+     *            blocks out to which the plane looks for and fights its target
+     * @param turnRate
+     *            the turn rate setting; 0 for none
+     * @return blocks per tick at which the circle the plane turns in at its tightest is as wide as its aggro range
+     */
+    static double combatSpeed(double aggroRange, int turnRate)
+    {
+        double radius = aggroRange * 0.5D / CIRCLE_MARGIN;
+        // The circle widens with speed, so the fastest speed that still fits is found by halving.
+        double low = 0D;
+        double high = 1D;
+        while (turnRadius(high, maxTurn(turnRate, high, true)) < radius && high < MAX_COMBAT_SPEED)
+            high *= 2D;
+        for (int step = 0; step < COMBAT_SPEED_STEPS; step++)
+        {
+            double middle = (low + high) * 0.5D;
+            if (turnRadius(middle, maxTurn(turnRate, middle, true)) <= radius)
+                low = middle;
+            else
+                high = middle;
+        }
+        return Math.max(STALL_SPEED, low);
     }
 
     /**

@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
 import java.util.ArrayList;
@@ -212,6 +213,18 @@ public final class NpcTargetSearch
         return found;
     }
 
+    /**
+     * @return blocks out to which the mob looks for a target, and keeps one before any margin: an NPC's aggro range, or its
+     *         follow range where that reaches further. Custom NPCs resets the follow range to its navigation range whenever
+     *         an NPC loads, and searching only that far in a straight line leaves an aircraft high above its targets blind
+     *         to all but those almost under it, and drops a target as soon as its turn carries it out that far.
+     */
+    public static double range(Mob mob)
+    {
+        double follow = mob.getAttributeValue(Attributes.FOLLOW_RANGE);
+        return mob instanceof EntityNPCInterface npc ? Math.max(follow, npc.stats.aggroRange) : follow;
+    }
+
     /** @return the NPC's own interval, or the server's when the NPC states none */
     static int interval(int own, int server)
     {
@@ -221,7 +234,7 @@ public final class NpcTargetSearch
     /**
      * @return blocks beyond its aggro range at which the NPC keeps the target it has. Left to itself, an NPC that
      *         circles, stalks or dodges keeps it for as far as its manoeuvre carries it, and one of the mod's own tactics for
-     *         as far as its tactic distance.
+     *         as far as its tactic distance. A plane keeps it for as far as coming round in its tightest circle carries it.
      */
     public static int margin(Mob mob)
     {
@@ -233,7 +246,8 @@ public final class NpcTargetSearch
             tactical = tactic.usesDistance() ? Math.max(MIN_TACTICAL_MARGIN, NpcTactics.reach(npc, tactic)) : 0;
         else
             tactical = manoeuvres(CustomNpcsPlatform.tacticalVariant(npc)) ? Math.max(MIN_TACTICAL_MARGIN, CustomNpcsPlatform.tacticalRange(npc)) : 0;
-        return Math.max(tactical, NpcTuning.of(npc).get(Value.TARGET_MARGIN));
+        int turn = (int) Math.ceil(NpcVehicleState.of(npc).getFlight().keepMargin());
+        return Math.max(Math.max(tactical, turn), NpcTuning.of(npc).get(Value.TARGET_MARGIN));
     }
 
     /** @return whether a Custom NPCs tactical variant moves the NPC beyond where it would attack from: not Rush, not None */

@@ -80,7 +80,7 @@ public final class NpcRangedControls
     {
         FlanModelEntity model = npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity flan ? flan : null;
         IContentType definition = model == null ? null : model.getInfoType();
-        boolean secondary = options.enabled(Feature.SECONDARY_BANK);
+        boolean secondary = NpcEquipment.secondaryBank(options, definition);
         List<WeaponMuzzle> muzzles = definition != null && options.enabled(Feature.MODEL_MUZZLES) ? FlansProjectiles.getMuzzles(definition, secondary, 0, false) : List.of();
         if (muzzles.isEmpty())
             muzzles = List.of(new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of()));

@@ -118,7 +118,7 @@ public final class NpcAmmunition
         if (weapon == null)
             return projectile;
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        boolean secondary = options.enabled(Feature.SECONDARY_BANK);
+        boolean secondary = NpcEquipment.secondaryBank(options, weapon);
         // Anything but Flan ammunition in the projectile slot is the NPC's own Custom NPCs projectile.
         if (!projectile.isEmpty() && (slotChoice(npc) || !FlansProjectiles.isProjectile(projectile) || FlansEquipment.acceptsAmmunition(weapon, secondary, projectile)))
             return projectile;
@@ -153,7 +153,7 @@ public final class NpcAmmunition
         IContentType weapon = modelWeapon(npc);
         if (weapon == null || FlansProjectiles.isProjectile(fired))
             return fired;
-        boolean secondary = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.SECONDARY_BANK);
+        boolean secondary = NpcEquipment.secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), weapon);
         return FlansEquipment.createDefaultAmmunition(weapon, secondary).orElse(fired);
     }
 
@@ -178,6 +178,19 @@ public final class NpcAmmunition
     public static ItemStack driverGunTemplate(EntityNPCInterface npc, IContentType gun)
     {
         return gunTemplate(npc, gun).orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+    }
+
+    /**
+     * Compatible inventory ammunition for a weapon group of the NPC's model that has no gun of its own, such as a tank's shell
+     * bank or a plane's bombs, then that group's default; templates are never consumed.
+     */
+    public static ItemStack bankTemplate(EntityNPCInterface npc, IContentType model, boolean secondary)
+    {
+        ItemStack projectile = stack(npc.inventory.getProjectile());
+        if (FlansEquipment.acceptsAmmunition(model, secondary, projectile))
+            return projectile;
+        return inventory(npc).stream().filter(candidate -> FlansEquipment.acceptsAmmunition(model, secondary, candidate)).findFirst()
+            .orElseGet(() -> FlansEquipment.createDefaultAmmunition(model, secondary).orElse(ItemStack.EMPTY));
     }
 
     /** Compatible vehicle ammunition, then an NPC gunner's ammunition, then the seat gun's default; templates are never consumed. */

@@ -10,10 +10,12 @@ import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.sim.NpcDormancy;
+import com.wolffsmod.npcs.sim.NpcFlight;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcTactics;
 import lombok.AccessLevel;
@@ -90,6 +92,10 @@ public final class NpcInspection
         NpcTacticState tactic = NpcTacticState.of(npc);
         lines.add(Component.translatable(KEY + "live_tactic", tactic.getPhase().name().toLowerCase(Locale.ROOT),
             Component.translatable(KEY + (tactic.isReloading(npc.level().getGameTime()) ? "reloading" : "ready"))));
+        NpcFlight flight = NpcVehicleState.of(npc).getFlight();
+        if (flight.getCircle() > 0D)
+            lines.add(Component.translatable(KEY + "live_flight", flight.state(npc).toLowerCase(Locale.ROOT), decimal(flight.getFlownSpeed()), decimal(flight.getCircle()),
+                decimal(flight.getTightestCircle())));
         lines.add(state(npc));
         if (counters == null || now - counters.getSince() <= 0)
         {

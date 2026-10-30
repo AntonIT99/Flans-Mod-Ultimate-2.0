@@ -95,7 +95,7 @@ public final class NpcTypeProperties
      */
     private void inspect(NpcWeaponOptions options, NpcCombatSettings combat, @Nullable IContentType selected, ItemStack reference, double modelHealth, ModelRanges ranges)
     {
-        boolean secondary = options.enabled(Feature.SECONDARY_BANK);
+        boolean secondary = NpcEquipment.secondaryBank(options, selected);
         type = Optional.ofNullable(selected).flatMap(value -> FlansEntityTypes.getProperties(value, secondary, options.enabled(Feature.MODEL_MUZZLES))).orElse(null);
         // Without a round of its own the NPC still bursts and reloads as the model's default ammunition would.
         boolean followsCycle = type != null && FlansProjectiles.isProjectile(reference) && options.enabled(Feature.RELOAD_CYCLE) && type.shootDelay().isPresent();
