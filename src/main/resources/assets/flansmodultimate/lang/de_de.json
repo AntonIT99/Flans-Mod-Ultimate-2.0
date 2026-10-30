@@ -787,6 +787,7 @@
   "options.flansmodultimate.planePitchAt100": "Flugzeug-Tonhöhe bei 100 % Gas",
   "options.flansmodultimate.planePitchAt50": "Flugzeug-Tonhöhe bei 50 % Gas",
   "options.flansmodultimate.planePitchBase": "Flugzeug-Tonhöhe im Leerlauf",
+  "options.flansmodultimate.planeSoundRange": "Reichweite Flugzeuggeräusch",
   "options.flansmodultimate.playerAimPose": "Zielhaltung der Spieler",
   "options.flansmodultimate.playerAimPose.tooltip": "Wie alle Spieler Waffen halten. Freie Wahl lässt jeden Spieler mit seiner eigenen Zielhaltung wählen; Erzwungen und Dynamisch gelten für alle. Gilt für den ganzen Server.",
   "options.flansmodultimate.predictDriveableMovement": "Gefahrene Bewegung vorhersagen",

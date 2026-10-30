@@ -99,6 +99,7 @@ public record CommonConfigSnapshot(
     float gunFireSoundRange,
     float explosionSoundRange,
     float vehicleSoundRange,
+    float planeSoundRange,
     float vehicleUtilitySoundRange,
     float vehicleFlareSoundRange,
     float vehicleLockOnSoundRange,
@@ -265,6 +266,7 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.gunFireSoundRange);
         buf.writeFloat(s.explosionSoundRange);
         buf.writeFloat(s.vehicleSoundRange);
+        buf.writeFloat(s.planeSoundRange);
         buf.writeFloat(s.vehicleUtilitySoundRange);
         buf.writeFloat(s.vehicleFlareSoundRange);
         buf.writeFloat(s.vehicleLockOnSoundRange);
@@ -432,6 +434,7 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readDouble(),
 
+            buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),

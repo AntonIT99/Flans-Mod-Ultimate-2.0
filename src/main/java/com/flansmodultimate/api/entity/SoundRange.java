@@ -34,8 +34,10 @@ public enum SoundRange
     BULLET_HIT,
     /** An explosion going off ({@code explosionSoundRange}). */
     EXPLOSION,
-    /** A driveable's engine, idle and movement sounds ({@code vehicleSoundRange}). */
+    /** A ground vehicle's, ship's or mecha's engine, idle and movement sounds ({@code vehicleSoundRange}). */
     VEHICLE,
+    /** A plane's or helicopter's engine, idle and movement sounds ({@code planeSoundRange}). */
+    PLANE,
     /** A mecha tool or a rocket pack ({@code vehicleUtilitySoundRange}). */
     VEHICLE_UTILITY
 }

@@ -785,6 +785,7 @@
   "options.flansmodultimate.planePitchAt100": "Plane Pitch At 100% Throttle",
   "options.flansmodultimate.planePitchAt50": "Plane Pitch At 50% Throttle",
   "options.flansmodultimate.planePitchBase": "Plane Pitch At Idle",
+  "options.flansmodultimate.planeSoundRange": "Plane Sound Range",
   "options.flansmodultimate.playerAimPose": "Player Aim Pose",
   "options.flansmodultimate.playerAimPose.tooltip": "How every player holds guns. Free Choice lets each player pick with their own Aim Pose setting; Enforced and Dynamic apply to everyone. Applies to the whole server.",
   "options.flansmodultimate.predictDriveableMovement": "Predict Driven Movement",

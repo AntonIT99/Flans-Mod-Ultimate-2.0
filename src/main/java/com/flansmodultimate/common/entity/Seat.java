@@ -559,12 +559,12 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         boolean playPitch = pitchMoving && !(seatInfo.isYawBeforePitch() && yawMoving);
         if (yawMoving && yawSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getYawSound()))
         {
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), seatInfo.getYawSound(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleUtilitySoundRange(), seatInfo.getYawSound(), false);
             yawSoundDelay = seatInfo.getYawSoundLength();
         }
         if (playPitch && pitchSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getPitchSound()))
         {
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), seatInfo.getPitchSound(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleUtilitySoundRange(), seatInfo.getPitchSound(), false);
             pitchSoundDelay = seatInfo.getPitchSoundLength();
         }
     }

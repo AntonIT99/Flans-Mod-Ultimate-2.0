@@ -1688,10 +1688,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         String primarySound = configType.getPlaceSoundPrimary();
         String secondarySound = configType.getPlaceSoundSecondary();
+        // Placement readies the weapon banks, so it carries as far as their reload does.
         if (StringUtils.isNotBlank(primarySound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), primarySound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().reloadSoundRange(), primarySound, false);
         if (StringUtils.isNotBlank(secondarySound) && !secondarySound.equals(primarySound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), secondarySound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().reloadSoundRange(), secondarySound, false);
     }
 
     /**

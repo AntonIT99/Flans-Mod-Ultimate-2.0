@@ -318,7 +318,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return false;
         // Both sides reach this; the server's broadcast is what every listener hears, the client's local copy would double it.
         if (!npc.level().isClientSide)
-            NpcSounds.play(npc, sound, SoundRange.VEHICLE);
+            NpcSounds.play(npc, sound, NpcVehicleSounds.engineRange(npc));
         return true;
     }
 

@@ -108,8 +108,9 @@ public final class FlansEntitySounds
     }
 
     /**
-     * @return current server engine sound radius in blocks, the same value as {@link #getRange(SoundRange)} for
-     *         {@link SoundRange#VEHICLE}; read either side after common config synchronization
+     * @return current server ground vehicle engine sound radius in blocks, the same value as {@link #getRange(SoundRange)}
+     *         for {@link SoundRange#VEHICLE}; planes use {@link SoundRange#PLANE}. Read either side after common config
+     *         synchronization
      */
     public static float getDefaultEngineRange()
     {

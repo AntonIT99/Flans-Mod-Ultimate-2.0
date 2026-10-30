@@ -328,17 +328,23 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     public float getStartSoundRange()
     {
-        return ModCommonConfig.packSoundRange(startSoundRange, ModCommonConfig.get().vehicleSoundRange());
+        return ModCommonConfig.packSoundRange(startSoundRange, configEngineSoundRange());
     }
 
     public float getEngineSoundRange()
     {
-        return ModCommonConfig.packSoundRange(engineSoundRange, ModCommonConfig.get().vehicleSoundRange());
+        return ModCommonConfig.packSoundRange(engineSoundRange, configEngineSoundRange());
     }
 
     public float getBackSoundRange()
     {
-        return ModCommonConfig.packSoundRange(backSoundRange, ModCommonConfig.get().vehicleSoundRange());
+        return ModCommonConfig.packSoundRange(backSoundRange, configEngineSoundRange());
+    }
+
+    /** Aircraft are heard further than ground vehicles, so they can be heard coming; a plane-type ship sounds like a vehicle. */
+    private float configEngineSoundRange()
+    {
+        return this instanceof PlaneType && !isShip() ? ModCommonConfig.get().planeSoundRange() : ModCommonConfig.get().vehicleSoundRange();
     }
 
     public float getLockedOnSoundRange()
