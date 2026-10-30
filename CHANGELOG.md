@@ -99,4 +99,5 @@
 * Classes can override skins for several models
 * New Roman shields
 * Updated vehicle armour, categories and textures
+* More accurate vehicle, aircraft, gun emplacement and weapon names in the Official, Warfare 44, Manus and Germany WW2 packs
 * Fixed the Modern Warfare Cobra resting above its skids and its rotor, stub wings and tail boom being hard to hit
