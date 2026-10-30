@@ -118,6 +118,10 @@
 
     "Black-Powder Hand Bomb (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "ExplosiveMassTNTg": 190,
             "FragType": "THICK_CASE"
@@ -143,7 +147,10 @@
 
     "C4 Plastic Explosive": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 8,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 1000,
             "ExplosiveMassTNTg": 760,
             "FragType": "DEFAULT"
@@ -156,6 +163,10 @@
 
     "Chemical Gas Grenade (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "FragType": "DEFAULT"
         },
@@ -179,9 +190,12 @@
 
     "Cryogenic Concussion Grenade (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "ExplosiveMassTNTg": 150,
-            "FragType": "LOW_FRAG",
-            "ThrowSpeedMs": 12
+            "FragType": "LOW_FRAG"
         },
         "items": [
             "nitrogenbomb"
@@ -190,7 +204,10 @@
 
     "Dynamite Stick": {
         "properties": {
-            "ThrowSpeedMs": 8,
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 250,
             "ExplosiveMassTNTg": 230,
             "FragType": "DEFAULT"
@@ -202,6 +219,10 @@
 
     "F1 Fragmentation Grenade": {
         "properties": {
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 600,
             "ExplosiveMassTNTg": "60",
             "FragType": "STD_FRAG",
@@ -224,7 +245,10 @@
 
     "Frag Grenade, Imperial (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "ExplosiveMassTNTg": "75",
             "FragType": "STD_FRAG",
@@ -275,9 +299,12 @@
 
     "Handheld Napalm Grenade (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "ExplosiveMassTNTg": 150,
-            "FragType": "LOW_FRAG",
-            "ThrowSpeedMs": 12
+            "FragType": "LOW_FRAG"
         },
         "items": [
             "napalmbomb"
@@ -323,7 +350,10 @@
 
     "Krak Grenade (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 10,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 1200,
             "ExplosiveMassTNTg": "850",
             "FragType": "THICK_CASE",
@@ -336,6 +366,10 @@
 
     "Kugelrohrhandgranate": {
         "properties": {
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "ExplosiveMassTNTg": "60",
             "FragType": "STD_FRAG",
@@ -373,7 +407,10 @@
 
     "M8 HC Smoke Grenade": {
         "properties": {
-            "ThrowSpeedMs": 10,
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 540,
             "FragType": "DEFAULT",
             "Fuse": 100
@@ -385,6 +422,10 @@
 
     "M18 Coloured Smoke Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 538.64,
             "FragType": "DEFAULT",
             "Fuse": 30
@@ -411,6 +452,10 @@
 
     "M26 Fragmentation Grenade": {
         "properties": {
+            "ThrowSpeedMs": 15,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 453.592,
             "ExplosiveMassTNTg": 207.38,
             "FragType": "PREFORMED",
@@ -423,7 +468,10 @@
 
     "M67 Fragmentation Hand Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 15,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 400,
             "ExplosiveMassTNTg": "205",
             "FragType": "HIGH_FRAG"
@@ -436,6 +484,10 @@
 
     "M1914 Fragmentation Grenade (TNT Loading)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 720,
             "ExplosiveMassTNTg": 400,
             "FragType": "SLEEVE_FRAG",
@@ -448,6 +500,10 @@
 
     "Medical Grenade (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -458,6 +514,9 @@
     "Mills Bomb": {
         "properties": {
             "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 765,
             "ExplosiveMassTNTg": "75",
             "FragType": "STD_FRAG",
@@ -470,7 +529,10 @@
 
     "Mk 2 Pineapple Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 595,
             "ExplosiveMassTNTg": "85",
             "FragType": "STD_FRAG",
@@ -485,6 +547,9 @@
     "Molotov Cocktail": {
         "properties": {
             "ThrowSpeedMs": 10,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 750,
             "FragType": "LOW_FRAG",
             "Fuse": 80
@@ -496,7 +561,10 @@
 
     "Nebelhandgranate 39": {
         "properties": {
-            "ThrowSpeedMs": 10,
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 800,
             "FragType": "DEFAULT",
             "Fuse": 100
@@ -508,6 +576,10 @@
 
     "No.27 White Phosphorus Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 440,
             "FragType": "DEFAULT"
         },
@@ -518,7 +590,10 @@
 
     "No. 73 Mk I Anti-Tank Grenade": {
         "properties": {
-            "ThrowSpeedMs": 6,
+            "ThrowSpeedMs": 8,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 2000,
             "ExplosiveMassTNTKg": "1.179",
             "FragType": "DEFAULT"
@@ -573,6 +648,10 @@
 
     "RDG-2 Smoke Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "FragType": "DEFAULT"
         },
@@ -583,9 +662,12 @@
 
     "Reactive Banana Fragmentation Grenade (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "ExplosiveMassTNTg": 80,
-            "FragType": "STD_FRAG",
-            "ThrowSpeedMs": 12
+            "FragType": "STD_FRAG"
         },
         "items": [
             "bananabomb"
@@ -594,6 +676,10 @@
 
     "RGD-5 Fragmentation Grenade": {
         "properties": {
+            "ThrowSpeedMs": 15,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 310,
             "ExplosiveMassTNTg": 110,
             "FragType": "LOW_FRAG",
@@ -606,7 +692,10 @@
 
     "RGD-33 Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "ExplosiveMassTNTg": "85",
             "FragType": "SLEEVE_FRAG",
@@ -619,6 +708,10 @@
 
     "RGO Defensive Fragmentation Grenade": {
         "properties": {
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 530,
             "ExplosiveMassTNTg": 135,
             "FragType": "PREFORMED",
@@ -631,6 +724,10 @@
 
     "RKG-3 Anti-Tank Grenade": {
         "properties": {
+            "ThrowSpeedMs": 10,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 1070,
             "ExplosiveMassTNTg": 402.5,
             "FragType": "THICK_CASE"
@@ -658,7 +755,10 @@
 
     "Satchel": {
         "properties": {
-            "ThrowSpeedMs": 6,
+            "ThrowSpeedMs": 5,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 5000,
             "ExplosiveMassTNTKg": "3",
             "FragType": "DEFAULT"
@@ -670,6 +770,10 @@
 
     "Semtex Adhesive Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "ExplosiveMassTNTg": 400,
             "FragType": "LOW_FRAG"
@@ -681,6 +785,10 @@
 
     "Smart Fragmentation Grenade (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "ExplosiveMassTNTg": 180,
             "FragType": "HIGH_FRAG"
@@ -705,7 +813,10 @@
 
     "Stielhandgranate 24": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 15,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 595,
             "ExplosiveMassTNTg": "165",
             "FragType": "LOW_FRAG",
@@ -720,7 +831,10 @@
 
     "Stielhandgranate 43": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 15,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 600,
             "ExplosiveMassTNTg": "165",
             "FragType": "SLEEVE_FRAG",
@@ -733,6 +847,10 @@
 
     "Stielhandgranate Geballte Ladung": {
         "properties": {
+            "ThrowSpeedMs": 8,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 2000,
             "ExplosiveMassTNTKg": "1.2",
             "FragType": "LOW_FRAG",
@@ -748,6 +866,9 @@
     "Support And Effect Grenade (Fictional)": {
         "properties": {
             "ThrowSpeedMs": 12,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Damage": 0,
             "Explosion": 0
         },
@@ -759,7 +880,10 @@
 
     "Thermal Detonator (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 14,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "ExplosiveMassTNTKg": "1",
             "FragType": "LOW_FRAG",
@@ -774,7 +898,10 @@
 
     "Thermal Detonator Class A (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 10,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 1500,
             "ExplosiveMassTNTKg": "3",
             "FragType": "LOW_FRAG",
@@ -811,7 +938,10 @@
 
     "Type 97 Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 15,
+            "HoldToThrow": "true",
+            "OverhandThrowSpeedMultiplier": 1.0,
+            "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 450,
             "ExplosiveMassTNTg": "65",
             "FragType": "STD_FRAG",

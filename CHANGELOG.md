@@ -8,7 +8,7 @@
 * Driveable repairs and carrier servicing, with repair tools, the Blowtorch, a repair progress display and an operator command to fully repair a driveable
 * New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings
 * Reimplemented missing features of Flan's Mod Ultimate 1.7.10, including Teams rule commands, lag compensation settings, death drop rules, item spawners, `ShootWithOpenDoor`, kill messages with distance and hit markers
-* New combat effects: screen shake and camera recoil, tracer beams and mixed belts, hold-to-throw grenades, thermal vision scopes, hot rounds and team IFF strobes, explosion shake, fly-by sounds and suppression
+* New combat effects: screen shake and camera recoil, tracer beams and mixed belts, hold-to-throw grenades with weight-based category speeds and weaker underhand tosses (hold and release attack for overhand, use for underhand), thermal vision scopes, hot rounds and team IFF strobes, explosion shake, fly-by sounds and suppression
 * Large rendering performance improvements and shader pack compatibility (Oculus/Iris)
 * Faster content loading and startup
 
