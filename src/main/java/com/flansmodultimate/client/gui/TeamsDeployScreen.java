@@ -137,10 +137,10 @@ public final class TeamsDeployScreen extends Screen
     private long terrainMillis;
 
     /** Takes the place of the death screen, whose message it shows first. */
-    public TeamsDeployScreen(Component causeOfDeath)
+    public TeamsDeployScreen(@Nullable Component causeOfDeath)
     {
         this(false);
-        deathCause = causeOfDeath;
+        deathCause = causeOfDeath == null ? Component.empty() : causeOfDeath;
     }
 
     public TeamsDeployScreen(boolean manuallyOpened)
