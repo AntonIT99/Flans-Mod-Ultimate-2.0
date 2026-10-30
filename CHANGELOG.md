@@ -73,6 +73,7 @@
 * Clouds no longer draw over Flan particles
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`
 * Faster content startup and creative search
+* The Forge loading screen shows content pack progress: which pack is loading, why a pack is being reprocessed, Java model compilation and a final summary
 * Guns read their attachments, fire mode and loaded ammunition without copying their item data each time and look up the ammunition they take once, which makes firing, reloading and battles much cheaper for the server
 
 ## Settings & Commands
