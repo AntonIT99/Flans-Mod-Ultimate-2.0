@@ -96,6 +96,7 @@
 
 ## Content Packs
 
+* 38 new national and historical flags in Wolff's Flag Pack, including Spain, Turkey, China, Romania, Yugoslavia and several historical German states
 * New Warfare 44, Germany WW2, Warhammer 40k classes and teams
 * Sniper classes carry scopes; new WW2 riflemen
 * Classes can override skins for several models
