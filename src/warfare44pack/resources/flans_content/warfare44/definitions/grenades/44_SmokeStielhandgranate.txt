@@ -47,6 +47,6 @@ ExplodeParticles 5
 ExplodeParticleType flansmod.Smoker1
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
-SmokeTime 250
+SmokeTime 300
 SmokeRadius 5
 SmokeParticleType flansmod.Smoker1
