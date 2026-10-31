@@ -229,7 +229,7 @@ public final class BotFactory
         npc.setHealth(Math.max(1F, share * stats.getMaxHealth()));
         int fastest = scaled(training.getInt(NBT_DELAY_MIN), difficulty.delay(), 1);
         ranged.setDelay(fastest, Math.max(fastest, scaled(training.getInt(NBT_DELAY_MAX), difficulty.delay(), 1)));
-        BotSuppression.rebase(npc, ranged.getAccuracy());
+        NpcSuppression.rebase(npc, ranged.getAccuracy());
     }
 
     /**

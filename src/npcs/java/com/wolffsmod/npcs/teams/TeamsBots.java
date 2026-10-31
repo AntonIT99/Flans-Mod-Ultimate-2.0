@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.teams.FlansTeams;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.ITeamsListener;
@@ -65,7 +64,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         FlansTeams.addListener(INSTANCE);
         FlansTeams.addRespawnRule(INSTANCE);
         FlansTeams.addSpawnProvider(INSTANCE);
-        FlansProjectiles.addSuppressionListener(BotSuppression.INSTANCE);
         NpcTargetSearch.setPriority(BotTargeting::rank);
     }
 
@@ -125,7 +123,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     {
         BotRadio.forget();
         BotDuties.forget();
-        BotSuppression.forget(server);
+        NpcSuppression.forget(server);
         BotRoles.forget();
     }
 
@@ -139,15 +137,19 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return BotLeaders.spawnFor(player.getServer(), current, player, ThreadLocalRandom.current());
     }
 
-    /** @return where a bot should go for its squad's task, or empty for an NPC that is no bot of a battle or has no task */
+    /**
+     * @return where an NPC should go: for its duty, such as healing an ally or falling back, or else, for a bot, for its
+     *         squad's task; empty while it has neither
+     */
     static Optional<BotCommander.Order> orderFor(EntityNPCInterface npc)
     {
         MinecraftServer server = npc.getServer();
-        if (BotBattles.isEmpty() || server == null)
+        if (server == null)
             return Optional.empty();
-        // A duty, such as healing an ally or falling back, comes before the squad's task.
         Optional<BotCommander.Order> duty = BotDuties.destination(npc).map(spot -> new BotCommander.Order(spot, DUTY_ARRIVAL, BotRole.INFANTRY, SquadTask.Kind.HOLD));
-        return duty.isPresent() ? duty : BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
+        if (duty.isPresent() || BotBattles.isEmpty() || !BotTag.isBot(npc))
+            return duty;
+        return BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
     }
 
     /** @return the bots of the round being played, for commands; empty between rounds */
@@ -196,7 +198,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             if (current.getSettings().isEnabled() && current.getFactions().isEmpty())
                 current.getFactions().putAll(BotFactions.setUp(live.get().getRound()));
             upkeep(server, level, current, now, random);
-            BotSuppression.tick(level);
             eliminate(server, level, current);
             // The world saves the round as it is now, whenever it is saved next.
             BotRoundStore.get(server).setDirty();

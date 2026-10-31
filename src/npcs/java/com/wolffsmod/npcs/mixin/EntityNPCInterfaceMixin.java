@@ -31,7 +31,9 @@ import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
 import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -42,6 +44,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -108,8 +111,12 @@ import java.util.*;
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
- * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data. A bot holds its
- * fire until it has reacted to a newly seen target, as its difficulty says, and keeps track of whether it still sees it.</li>
+ * <li>Teams bots and duties: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.
+ * Any NPC with a duty carries it out once a second and walks to it the same way. An NPC holds its fire until it has reacted to a newly seen target, as its
+ * human limits or a bot's difficulty say, and keeps track of whether it still sees it.</li>
+ * <li>Peaceful: Teams bots attack players on Peaceful too, and any other NPC while the server's Peaceful combat setting is on.</li>
+ * <li>Name tags for allies only: whether an NPC shows its name tag to allies only reaches clients with its spawn data, and clients read its faction from its
+ * synchronized data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Bound content names remain translatable components for nameplates, chat and death messages; raw display fields stay canonical.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, or an editor shows the NPC's live statistics, the whole tick of
@@ -145,8 +152,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcTacticState.Holder,
         NpcCrewHolder,
         NpcMeleeState.Holder,
-        NpcDriver.Holder
+        NpcDriver.Holder,
+        AllyNameTags.Holder
 {
+    // Named by Custom NPCs.
+    @SuppressWarnings("java:S116") @Shadow @Final
+    private static EntityDataAccessor<Integer> FactionData;
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
     @Unique
@@ -472,7 +483,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         goalSelector.addGoal(1, wolffsmodnpcsThrowGoal);
         wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
-        // Only a Teams bot uses it: it carries the bot to its squad's task while the bot has nobody to fight.
+        // It carries a Teams bot to its squad's task, and any NPC to its duty, while it has nobody to fight.
         wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
         goalSelector.addGoal(3, wolffsmodnpcsObjectiveGoal);
         wolffsmodnpcsApproachGoal = null;
@@ -525,6 +536,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (level().isClientSide)
             return;
         NpcSkill.watch(npc);
+        NpcDuties.tick(npc);
         NpcSprinting.tick(npc);
         NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
@@ -828,13 +840,16 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             callback.setReturnValue(false);
     }
 
-    // Teams bots
+    // Peaceful
 
-    /** Custom NPCs never takes a player as a target on Peaceful; Teams bots fight players on every difficulty. */
+    /**
+     * Custom NPCs never takes a player as a target on Peaceful unless its own config allows it; Teams bots fight players on
+     * every difficulty, and other NPCs too while the server's Peaceful combat setting is on.
+     */
     @Inject(method = {"canAttack", "m_6779_"}, at = @At("HEAD"), cancellable = true)
-    private void wolffsmodnpcsBotsIgnorePeaceful(LivingEntity target, CallbackInfoReturnable<Boolean> callback)
+    private void wolffsmodnpcsFightOnPeaceful(LivingEntity target, CallbackInfoReturnable<Boolean> callback)
     {
-        if (target instanceof Player && BotTag.isBot(this))
+        if (target instanceof Player && level().getDifficulty() == Difficulty.PEACEFUL && (BotTag.isBot(this) || NpcServerRules.peacefulCombat((EntityNPCInterface) (Object) this)))
             callback.setReturnValue(target.canBeSeenAsEnemy());
     }
 
@@ -968,6 +983,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         callback.getReturnValue().put(WOLFFSMODNPCS_TYPE_DEFAULTS, NpcTypeProperties.of(npc).syncDefaults(npc));
         BotTag.writeClient(npc, callback.getReturnValue());
+        AllyNameTags.writeClient(npc, callback.getReturnValue());
     }
 
     @ModifyVariable(method = "readSpawnData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("HEAD"), argsOnly = true)
@@ -985,7 +1001,15 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (tag.contains(WOLFFSMODNPCS_TYPE_DEFAULTS))
             NpcTypeProperties.of(npc).readSyncedDefaults(npc, tag.getCompound(WOLFFSMODNPCS_TYPE_DEFAULTS));
         BotTag.readClient(npc, tag);
+        AllyNameTags.readClient(npc, tag);
         NpcSkins.resolveOnClient(npc);
+    }
+
+    /** Clients cannot rely on {@code getFaction()}, which looks the faction up among those they may not know. */
+    @Override
+    public int wolffsmodnpcsFactionId()
+    {
+        return getEntityData().get(FactionData);
     }
 
     // Vehicle simulation

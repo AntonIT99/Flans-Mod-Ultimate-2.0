@@ -4,6 +4,7 @@ import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.client.teams.FlansTeamsClient;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.wolffsmod.npcs.client.ClientAllyFactions;
 import com.wolffsmod.npcs.client.ClientServerSettings;
 import com.wolffsmod.npcs.client.FlanModelBounds;
 import com.wolffsmod.npcs.client.FlanNameplatePlacement;
@@ -26,7 +27,8 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 
 /**
  * Sets the name tag and name text ranges from the server settings, raises Flan labels above their model, preserves tint with hurt flashes disabled, hides killed bodies without death rotation
- * and hides the name tags of Teams bots from players of the other sides when only allies should see them. Resolves bound titles through the viewer's resources.
+ * and hides the name tags of Teams bots from players of the other sides, and of other NPCs from players their faction is not friendly to, when only allies should see them. Resolves bound titles
+ * through the viewer's resources.
  */
 @Mixin(value = RenderNPCInterface.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
@@ -56,10 +58,18 @@ public abstract class NpcNameplateMixin
             callback.cancel();
     }
 
-    /** A Teams bot whose name tags only allies see shows none to a player of another side. */
+    /**
+     * A Teams bot whose name tags only allies see shows none to a player of another side, and any other NPC whose name tag
+     * only allies see none to a player its faction is not friendly to.
+     */
     @Inject(method = "renderLivingLabel", at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsAlliesOnlyLabel(EntityNPCInterface npc, PoseStack pose, MultiBufferSource buffers, int light, CallbackInfo callback)
     {
+        if (ClientAllyFactions.hidesNameTag(npc))
+        {
+            callback.cancel();
+            return;
+        }
         BotTag.readClient(npc).filter(bot -> bot.nameplates() == BotSettings.Nameplates.ALLIES).ifPresent(bot ->
         {
             boolean ally = FlansModApi.getTeam(bot.team()).map(FlansTeamsClient::isAllyOfLocalPlayer).orElse(false);

@@ -79,7 +79,18 @@ public final class NpcWeaponOptions
          * An NPC on foot that an enemy beyond its reach is shooting at gets out of that enemy's sight, then moves up on it
          * from cover to cover, instead of walking up to it in the open.
          */
-        OUTRANGED_COVER(true);
+        OUTRANGED_COVER(true),
+        /** The NPC's hits leave a player at least half a heart, one of its human limits. */
+        NON_LETHAL(false),
+        /**
+         * Rounds of the enemy passing close to an NPC on foot suppress it, as near misses suppress players: it aims worse,
+         * and once pinned down it stops advancing until the fire lets up.
+         */
+        SUPPRESSIBLE(false),
+        /** An NPC on foot looks at the enemies its weapons suit first: an anti-tank soldier at armour, any other at infantry. */
+        SUITED_TARGETS(false),
+        /** Only players its faction is friendly to see the NPC's name tag. */
+        ALLY_NAME_TAGS(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

@@ -18,6 +18,10 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * NPCs that fight back can no longer be picked off from beyond their aggro range: an enemy that hits them or fires close past them stays their target, however far off, for `Remember attackers` seconds after its last shot (15 by default), and one with nobody else to fight turns on a shooter firing past it. `Call out attackers` lets allies of the same faction within that radius take the enemy on too; one that cannot reach its own target turns on it when it can (Tactics > Return fire)
 * NPCs on foot shot at from beyond their reach take cover from the shooter and move up on it from cover to cover instead of walking at it in the open (`Take cover when outranged`, Tactics > Return fire)
 * `Firing range from weapon` (Detection & ranges): an NPC fires, and notices enemies, as far as the spread of the weapon it holds still lets it hit, within a limit for its kind of weapon, so a scoped rifle outranges a sub-machine gun; its own worse accuracy shortens the range
+* Human limits for any NPC (Aiming > Human limits): reaction time, aim settling time, first-shot aim error, lead share, damage to players and `Never kill players`, filled in from the Teams bot difficulty levels by `Skill level` or set by hand; they put no limit on an NPC by default, and a Teams bot fights with its own again once it leaves its battle
+* `Suppressed by near misses` (Tactics > Return fire): enemy rounds passing close to an NPC on foot make it aim worse, and once pinned down it moves no closer to its target until the fire lets up
+* Duties for any NPC on foot (Tactics > Duties): `Duty` makes it a medic, engineer, support or anti-tank soldier for the players and NPCs its faction is friendly to, by hand or from its equipment, `Fall back below health` sends it to a medic or home when badly hurt, and `Prefer suited targets` makes anti-tank soldiers look at armour first and everyone else at infantry, as Teams bots do
+* `Name tag for allies only` (Effects): only players the NPC's faction is friendly to see its name tag
 
 ## Vehicles, Aircraft & Mechas
 
@@ -35,7 +39,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Teams Bots, Factions & Battles
 
-* Teams bots attack enemy players on Peaceful difficulty too, which Custom NPCs otherwise forbids
+* NPCs attack players on Peaceful difficulty too, which Custom NPCs otherwise forbids: Teams bots always, other NPCs while `Fight players on Peaceful` (Server > Rules) is on, as it is by default
 * Bot difficulty, set for a round, skirmish or war and independent of the world's difficulty: `ace` (no human limits), `elite` (the default: full use of the equipment with a human's reaction), `veteran`, `regular`, `recruit` and `cinematic`. Lower levels react later to a newly seen target, need longer for their aim to settle, lead moving targets less and make less of their equipment; `cinematic` bots also deal a quarter of their damage to players and never kill them, while still killing each other. A changed level reaches the bots already in the field within a second of saving the settings
 * Teams soldiers follow the round regeneration rule and heal half a heart every five seconds by default; medical healing and vehicle repairs remain independent
 * Teams bots made from a class fire as far as their weapon and level let them hit, about 128 blocks with an accurate rifle and up to 256 with a scoped one, and call out whoever shoots at them to the bots within 48 blocks, so a player sniping them from afar draws their fire and their marksmen and vehicles

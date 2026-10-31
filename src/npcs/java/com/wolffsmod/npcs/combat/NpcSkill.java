@@ -1,6 +1,11 @@
 package com.wolffsmod.npcs.combat;
 
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.sim.NpcSight;
+import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,10 +24,10 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 /**
- * Human limits on how an NPC fights, which Teams bots take from their round's difficulty: how long it takes to open fire on
- * a target it has just seen, how far its first rounds go astray until its aim settles, how much of a moving target's run it
- * allows for, and how hard it hits players. Kept in the NPC's persistent data; an NPC without them fights without limits.
- * Server thread.
+ * Human limits on how an NPC fights: how long it takes to open fire on a target it has just seen, how far its first rounds
+ * go astray until its aim settles, how much of a moving target's run it allows for, and how hard it hits players. Every NPC
+ * has its own, set in the Wolff's Mod tab, which by default put no limit on it. A Teams bot takes those of its battle's
+ * difficulty instead, kept in its persistent data until it leaves the battle. Server thread.
  *
  * @param reactionTicks
  *            ticks between first seeing a target and the first shot at it
@@ -42,7 +47,7 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     /** No limits at all. */
     public static final NpcSkill NONE = new NpcSkill(0, 0, 0F, 1F, 1F, false);
 
-    /** Key of the limits in the NPC's persistent data. */
+    /** Key of a battle's limits in the NPC's persistent data. */
     private static final String KEY = "WolffsModSkill";
     private static final String NBT_REACTION = "reaction";
     private static final String NBT_SETTLE = "settle";
@@ -56,8 +61,36 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     private static final int WATCH_INTERVAL = 4;
     /** The least health, in hit points, a non-lethal NPC leaves a player. */
     private static final float SPARED_HEALTH = 1F;
+    /** Steps of the aim error setting per degree, and of the share settings per whole. */
+    private static final float ERROR_STEPS = 10F;
+    private static final float PERCENT = 100F;
     /** What each limited NPC knows about its current target. */
     private static final Map<Entity, Engagement> ENGAGEMENTS = new WeakHashMap<>();
+
+    /**
+     * Ready-made limits, from none at all down to those of a film extra: the Teams difficulties, and what an NPC's own limits
+     * can be filled in from. Saves hold the index, so a new level goes at the end.
+     */
+    @Getter
+    @RequiredArgsConstructor
+    public enum Level
+    {
+        // spotless:off
+        /** Fills nothing in: the limits stand as they were set. */
+        CUSTOM(NONE),
+        /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
+        ACE(NONE),
+        /** A human's reaction: about as hard as a skilled player. */
+        ELITE(new NpcSkill(2, 5, 2F, 1F, 1F, false)),
+        VETERAN(new NpcSkill(5, 12, 4F, 0.95F, 1F, false)),
+        REGULAR(new NpcSkill(8, 20, 6F, 0.85F, 1F, false)),
+        RECRUIT(new NpcSkill(16, 40, 9F, 0.6F, 1F, false)),
+        /** Shoots a lot and rarely hits, and never kills a player: for filming battles. */
+        CINEMATIC(new NpcSkill(30, 60, 12F, 0.3F, 0.25F, true));
+        // spotless:on
+
+        private final NpcSkill skill;
+    }
 
     /** The extra error of one trigger pull, in degrees, shared by every round it fires so that pellets stay together. */
     public record AimError(float yaw, float pitch)
@@ -91,13 +124,9 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
         }
     }
 
+    /** Gives the entity a battle's limits, which come before its own, even when they are none, until they are cleared. */
     public static void write(Entity entity, NpcSkill skill)
     {
-        if (skill.equals(NONE))
-        {
-            clear(entity);
-            return;
-        }
         CompoundTag tag = new CompoundTag();
         tag.putInt(NBT_REACTION, skill.reactionTicks());
         tag.putInt(NBT_SETTLE, skill.settleTicks());
@@ -108,20 +137,47 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
         entity.getPersistentData().put(KEY, tag);
     }
 
+    /** Takes a battle's limits off the entity, which then fights within its own again. */
     public static void clear(Entity entity)
     {
         entity.getPersistentData().remove(KEY);
         ENGAGEMENTS.remove(entity);
     }
 
-    /** @return the limits on how the entity fights; {@link #NONE} for one without any */
+    /** @return the limits on how the entity fights: its battle's, or else an NPC's own; {@link #NONE} for anyone else */
     public static NpcSkill of(Entity entity)
     {
         if (!entity.getPersistentData().contains(KEY, Tag.TAG_COMPOUND))
-            return NONE;
+            return entity instanceof EntityNPCInterface npc ? own(npc) : NONE;
         CompoundTag tag = entity.getPersistentData().getCompound(KEY);
         return new NpcSkill(Math.max(0, tag.getInt(NBT_REACTION)), Math.max(0, tag.getInt(NBT_SETTLE)), Math.max(0F, tag.getFloat(NBT_ERROR)), Mth.clamp(tag.getFloat(NBT_LEAD), 0F, 1F),
             Math.max(0F, tag.getFloat(NBT_PLAYER_DAMAGE)), tag.getBoolean(NBT_NON_LETHAL));
+    }
+
+    /** @return the limits the NPC's own settings put on how it fights; none for an NPC built without the settings, as a bare test double is */
+    public static NpcSkill own(EntityNPCInterface npc)
+    {
+        if (!(npc.stats instanceof NpcWeaponSettings settings))
+            return NONE;
+        NpcTuning tuning = settings.wolffsmodnpcsTuning();
+        return new NpcSkill(tuning.get(Value.REACTION_TIME), tuning.get(Value.AIM_SETTLE_TIME), tuning.get(Value.AIM_ERROR) / ERROR_STEPS, tuning.get(Value.LEAD_SHARE) / PERCENT,
+            tuning.get(Value.PLAYER_DAMAGE) / PERCENT, settings.wolffsmodnpcsWeaponOptions().enabled(Feature.NON_LETHAL));
+    }
+
+    /** Fills the NPC's own limits in from a level and notes the level; {@link Level#CUSTOM} keeps the values as they are. */
+    public static void apply(EntityNPCInterface npc, Level level)
+    {
+        NpcTuning tuning = NpcTuning.of(npc);
+        tuning.set(Value.SKILL_LEVEL, level.ordinal());
+        if (level == Level.CUSTOM)
+            return;
+        NpcSkill skill = level.getSkill();
+        tuning.set(Value.REACTION_TIME, skill.reactionTicks());
+        tuning.set(Value.AIM_SETTLE_TIME, skill.settleTicks());
+        tuning.set(Value.AIM_ERROR, Math.round(skill.startError() * ERROR_STEPS));
+        tuning.set(Value.LEAD_SHARE, Math.round(skill.lead() * PERCENT));
+        tuning.set(Value.PLAYER_DAMAGE, Math.round(skill.playerDamage() * PERCENT));
+        ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.NON_LETHAL, skill.nonLethal());
     }
 
     /** Notes, every few ticks, whether a limited NPC still sees its target, so that a target it lost sight of has to be found again. */

@@ -35,7 +35,8 @@ public final class NpcTypeProperties
      * Switches that change nothing a model lends the NPC; there are more switches than bits in the signature, so theirs must
      * not stand for a model switch.
      */
-    private static final Set<Feature> UNINHERITED = EnumSet.of(Feature.AUTOMATIC_REPAIRS, Feature.RETURN_WHEN_INACTIVE, Feature.LIMB_HITBOXES, Feature.WEAPON_FIRING_RANGE, Feature.OUTRANGED_COVER);
+    private static final Set<Feature> UNINHERITED = EnumSet.of(Feature.AUTOMATIC_REPAIRS, Feature.RETURN_WHEN_INACTIVE, Feature.LIMB_HITBOXES, Feature.WEAPON_FIRING_RANGE, Feature.OUTRANGED_COVER,
+        Feature.NON_LETHAL, Feature.SUPPRESSIBLE, Feature.SUITED_TARGETS, Feature.ALLY_NAME_TAGS);
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
     private LivingEntity lastModel;

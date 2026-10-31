@@ -69,6 +69,7 @@ class NpcThrownWeaponTest
                 npc.inventory = new DataInventory(npc);
                 npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
                 when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
+                when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).thenReturn(new NpcWeaponOptions());
                 IItemStack wrapped = mock(IItemStack.class);
                 when(wrapped.getMCItemStack()).thenReturn(throwable);
                 if (!inHand)
@@ -207,6 +208,7 @@ class NpcThrownWeaponTest
             NpcTuning tuning = new NpcTuning();
             tuning.set(Value.GRENADE_USE, Throwing.RANGED_SLOT.ordinal());
             when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(tuning);
+            when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).thenReturn(new NpcWeaponOptions());
             npc.stats.ranged = mock(DataRanged.class);
             when(npc.stats.ranged.getRange()).thenReturn(32);
             when(npc.isInRange(target, 32D)).thenReturn(true);

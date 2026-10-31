@@ -93,6 +93,13 @@ public final class NpcServerRules
         return consumesAmmo(server == null ? null : server.ammoPolicy(), own);
     }
 
+    /** @return whether the NPC may attack players on Peaceful difficulty, as the server's setting says; never off the server thread */
+    public static boolean peacefulCombat(EntityNPCInterface npc)
+    {
+        NpcServerSettings server = npc.level().isClientSide ? null : NpcServerSettings.of(npc);
+        return server != null && server.peacefulCombat();
+    }
+
     static boolean consumesAmmo(@Nullable NpcServerSettings.AmmoPolicy policy, boolean own)
     {
         if (policy == null)

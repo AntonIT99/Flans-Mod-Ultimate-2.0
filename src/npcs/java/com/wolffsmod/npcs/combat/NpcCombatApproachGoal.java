@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
 import com.wolffsmod.npcs.tactics.NpcWeaponRange;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.entity.LivingEntity;
@@ -11,7 +12,8 @@ import java.util.EnumSet;
 /**
  * Brings an NPC that fights with an equipped ranged weapon into position: it closes in until its target is within firing
  * range and in sight, then stands while {@link NpcEquipmentRangedGoal} fires. It runs at the priority of Custom NPCs' own
- * attack goal, below the tactical movement Custom NPCs chose, which takes the NPC over whenever it has somewhere to go.
+ * attack goal, below the tactical movement Custom NPCs chose, which takes the NPC over whenever it has somewhere to go. A
+ * soldier pinned down by fire stands too.
  */
 public final class NpcCombatApproachGoal extends Goal
 {
@@ -41,7 +43,8 @@ public final class NpcCombatApproachGoal extends Goal
         LivingEntity target = npc.getTarget();
         if (target == null)
             return;
-        if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target))
+        // Pinned down by fire, it moves no closer until the fire lets up.
+        if (!NpcSuppression.isPinned(npc) && (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target)))
             npc.getNavigation().moveTo(target, 1D);
         else
             npc.getNavigation().stop();

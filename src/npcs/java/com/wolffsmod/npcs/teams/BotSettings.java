@@ -99,14 +99,14 @@ public final class BotSettings
     {
         // spotless:off
         /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
-        ACE(1F, 1F, 1F, 1F, NpcSkill.NONE),
+        ACE(1F, 1F, 1F, 1F, NpcSkill.Level.ACE),
         /** Its equipment's full potential, with a human's reaction: about as hard as a skilled player. The default. */
-        ELITE(1F, 1F, 1F, 1F, new NpcSkill(2, 5, 2F, 1F, 1F, false)),
-        VETERAN(0.95F, 1F, 1F, 1.1F, new NpcSkill(5, 12, 4F, 0.95F, 1F, false)),
-        REGULAR(0.85F, 0.9F, 1F, 1.2F, new NpcSkill(8, 20, 6F, 0.85F, 1F, false)),
-        RECRUIT(0.6F, 0.75F, 0.8F, 1.5F, new NpcSkill(16, 40, 9F, 0.6F, 1F, false)),
+        ELITE(1F, 1F, 1F, 1F, NpcSkill.Level.ELITE),
+        VETERAN(0.95F, 1F, 1F, 1.1F, NpcSkill.Level.VETERAN),
+        REGULAR(0.85F, 0.9F, 1F, 1.2F, NpcSkill.Level.REGULAR),
+        RECRUIT(0.6F, 0.75F, 0.8F, 1.5F, NpcSkill.Level.RECRUIT),
         /** Shoots a lot and rarely hits, and never kills a player: for filming battles. Bots still kill each other. */
-        CINEMATIC(0.5F, 0.7F, 1F, 1.8F, new NpcSkill(30, 60, 12F, 0.3F, 0.25F, true));
+        CINEMATIC(0.5F, 0.7F, 1F, 1.8F, NpcSkill.Level.CINEMATIC);
         // spotless:on
 
         private final float accuracy;
@@ -114,15 +114,15 @@ public final class BotSettings
         private final float health;
         private final float delay;
         /** Reaction, aim settling, lead and damage to players. */
-        private final NpcSkill skill;
+        private final NpcSkill.Level level;
 
-        Difficulty(float accuracy, float aggro, float health, float delay, NpcSkill skill)
+        Difficulty(float accuracy, float aggro, float health, float delay, NpcSkill.Level level)
         {
             this.accuracy = accuracy;
             this.aggro = aggro;
             this.health = health;
             this.delay = delay;
-            this.skill = skill;
+            this.level = level;
         }
 
         /** Whether the level changes the stats of a bot's loadout or clone at all. */
@@ -134,7 +134,7 @@ public final class BotSettings
         /** The human limits on how bots of this level fight. */
         public NpcSkill skill()
         {
-            return skill;
+            return level.getSkill();
         }
 
         /** Factor on the ranged accuracy, which stays within 0 to 100. */

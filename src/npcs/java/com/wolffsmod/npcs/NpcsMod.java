@@ -11,6 +11,7 @@ import com.wolffsmod.npcs.scripting.FlansScriptApi;
 import com.wolffsmod.npcs.tactics.NpcThreats;
 import com.wolffsmod.npcs.teams.BattlesSection;
 import com.wolffsmod.npcs.teams.FriendlyFire;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -41,6 +42,7 @@ public class NpcsMod
         NpcNetworkPlatform.init(modEventBus);
         TeamsBots.register();
         FlansProjectiles.addSuppressionListener(NpcThreats.INSTANCE);
+        FlansProjectiles.addSuppressionListener(NpcSuppression.INSTANCE);
         FriendlyFire.register();
         NpcPosture.register();
         FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);

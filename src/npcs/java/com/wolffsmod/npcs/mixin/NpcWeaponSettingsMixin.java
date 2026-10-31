@@ -7,6 +7,7 @@ import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
 import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataRanged;
 import noppes.npcs.entity.data.DataStats;
@@ -26,6 +27,8 @@ import net.minecraft.nbt.CompoundTag;
  * <li>A newly created NPC starts with the server's aggro and firing ranges, gunfight distances by default instead of Custom
  * NPCs' melee-scale ones; a saved NPC keeps the ranges it was saved with until an operator applies the server's ranges to
  * every NPC, and remembers whether it has taken them. It remembers the same of the server's search intervals.</li>
+ * <li>An NPC suppressed by fire is saved with the accuracy it gets back once the suppression wears off, not the worse one it aims with meanwhile.</li>
+ * <li>Turning the switch that shows its name tag to allies only on or off sends the NPC to clients again, as they learn of it with its spawn data.</li>
  * </ul>
  */
 @SuppressWarnings("AddedMixinMembersNamePattern")
@@ -36,6 +39,9 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     private static final String WOLFFSMODNPCS_RANGE_GENERATION = "WolffsModRangeGeneration";
     @Unique
     private static final String WOLFFSMODNPCS_SEARCH_GENERATION = "WolffsModSearchGeneration";
+    /** Key Custom NPCs saves the ranged accuracy under. */
+    @Unique
+    private static final String WOLFFSMODNPCS_ACCURACY_KEY = "Accuracy";
 
     @Shadow
     public int aggroRange;
@@ -65,6 +71,9 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     private int wolffsmodnpcsRangeGeneration;
     @Unique
     private int wolffsmodnpcsSearchGeneration;
+    /** Whether the name tag showed to allies only before the stats were loaded, to tell clients when that changes. */
+    @Unique
+    private boolean wolffsmodnpcsAllyNameTagsBefore;
 
     // Defaults
 
@@ -87,6 +96,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     private void wolffsmodnpcsRetainHealth(CompoundTag tag, CallbackInfo callback)
     {
         wolffsmodnpcsProperties.beforeStatsLoad(npc);
+        wolffsmodnpcsAllyNameTagsBefore = wolffsmodnpcsOptions.enabled(NpcWeaponOptions.Feature.ALLY_NAME_TAGS);
     }
 
     @Inject(method = "readToNBT", at = @At("TAIL"))
@@ -102,6 +112,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         wolffsmodnpcsSearchGeneration = compound.getInt(WOLFFSMODNPCS_SEARCH_GENERATION);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
+        if (npc != null && wolffsmodnpcsAllyNameTagsBefore != wolffsmodnpcsOptions.enabled(NpcWeaponOptions.Feature.ALLY_NAME_TAGS))
+            npc.updateClient = true;
     }
 
     @Inject(method = "save", at = @At("RETURN"))
@@ -116,6 +128,8 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
         callback.getReturnValue().putInt(WOLFFSMODNPCS_RANGE_GENERATION, wolffsmodnpcsRangeGeneration);
         callback.getReturnValue().putInt(WOLFFSMODNPCS_SEARCH_GENERATION, wolffsmodnpcsSearchGeneration);
         wolffsmodnpcsProperties.saveDefaults(Component.STATS, callback.getReturnValue());
+        if (npc != null)
+            NpcSuppression.accuracyBefore(npc).ifPresent(accuracy -> callback.getReturnValue().putInt(WOLFFSMODNPCS_ACCURACY_KEY, accuracy));
     }
 
     @Override

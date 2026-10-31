@@ -7,6 +7,7 @@ import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcCover.Cover;
 import com.wolffsmod.npcs.tactics.TacticDecision.Order;
 import com.wolffsmod.npcs.tactics.TacticDecision.Situation;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -83,6 +84,13 @@ public final class NpcTacticSteering
     private static void follow(EntityNPCInterface npc, Order order, NpcTacticState memory, LivingEntity target, long now)
     {
         PathNavigation navigation = npc.getNavigation();
+        if (NpcSuppression.isPinned(npc) && advances(npc, order, target))
+        {
+            // Pinned down by fire, it moves no closer to its target until the fire lets up; it may still fall back.
+            navigation.stop();
+            memory.order(null, now);
+            return;
+        }
         switch (order.move())
         {
             case STAND -> {
@@ -107,5 +115,16 @@ public final class NpcTacticSteering
                 }
             }
         }
+    }
+
+    /** Whether the order takes the NPC closer to its target. */
+    private static boolean advances(EntityNPCInterface npc, Order order, LivingEntity target)
+    {
+        return switch (order.move())
+        {
+            case STAND -> false;
+            case CLOSE_IN -> true;
+            case GO_TO -> Objects.requireNonNull(order.point()).distanceToSqr(target.position()) < npc.distanceToSqr(target);
+        };
     }
 }

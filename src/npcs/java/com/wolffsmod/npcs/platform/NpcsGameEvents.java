@@ -14,9 +14,12 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.sim.NpcInactiveReturn;
+import com.wolffsmod.npcs.teams.AllyNameTags;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
 import com.wolffsmod.npcs.teams.FriendlyFireCommands;
+import com.wolffsmod.npcs.teams.NpcDuties;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import com.wolffsmod.npcs.teams.SkirmishCommands;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import com.wolffsmod.npcs.teams.WarCommands;
@@ -96,6 +99,9 @@ public final class NpcsGameEvents
         NpcServerSettings.serverTick(event.getServer());
         NpcWatch.serverTick(event.getServer().getTickCount());
         TeamsBots.serverTick(event.getServer());
+        NpcSuppression.serverTick(event.getServer());
+        NpcDuties.serverTick(event.getServer());
+        AllyNameTags.serverTick(event.getServer());
     }
 
     @SubscribeEvent
@@ -126,6 +132,7 @@ public final class NpcsGameEvents
         NpcActivity.clear();
         NpcWatch.clear();
         NpcSkill.forget();
+        AllyNameTags.serverStopping();
     }
 
     @SubscribeEvent

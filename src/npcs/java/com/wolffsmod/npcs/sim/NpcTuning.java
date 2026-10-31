@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import noppes.npcs.entity.EntityNPCInterface;
 
@@ -165,7 +166,23 @@ public final class NpcTuning
          */
         THREAT_MEMORY(15, 0, 120),
         /** Blocks within which allied NPCs learn who is shooting at the NPC and fight back too; 0 tells nobody. */
-        ALERT_RADIUS(0, 0, 128);
+        ALERT_RADIUS(0, 0, 128),
+        /** Index into {@link NpcSkill.Level}; choosing one fills in the human limits, which stay editable. */
+        SKILL_LEVEL(NpcSkill.Level.ACE.ordinal(), 0, NpcSkill.Level.values().length - 1),
+        /** Ticks between first seeing a target and the first shot at it. */
+        REACTION_TIME(0, 0, 200),
+        /** Ticks, from the first shot on, over which the extra aim error dies away. */
+        AIM_SETTLE_TIME(0, 0, 400),
+        /** Greatest extra aim error of the first shot, in tenths of a degree. */
+        AIM_ERROR(0, 0, 450),
+        /** Share, in percent, of a moving target's run the NPC allows for while it leads its target. */
+        LEAD_SHARE(100, 0, 100),
+        /** Share, in percent, of its damage the NPC deals to players. */
+        PLAYER_DAMAGE(100, 0, 400),
+        /** Index into {@link Duty}. */
+        DUTY(0, 0, Duty.values().length - 1),
+        /** Percent of its health below which a soldier falls back to a medic or its home; 0 never falls back. */
+        RETREAT_HEALTH(0, 0, 90);
 
         private final int fallback;
         private final int minimum;
@@ -403,6 +420,23 @@ public final class NpcTuning
         ROLLING_ONLY, ALLOW
     }
 
+    /** What a soldier does for its allies besides fighting, as Teams bots do for their squad. Saves hold the index, so a new duty goes at the end. */
+    public enum Duty
+    {
+        /** Fights and nothing else. */
+        NONE,
+        /** The duty its equipment suggests: a medical tool makes a medic, a repair tool an engineer, and so on. */
+        FROM_EQUIPMENT,
+        /** Heals hurt allies near it. */
+        MEDIC,
+        /** Repairs damaged allied vehicles near it. */
+        ENGINEER,
+        /** Hands out ammunition to allies near it. */
+        SUPPORT,
+        /** Goes after enemy vehicles before anything else. */
+        ANTI_TANK
+    }
+
     public NpcTuning()
     {
         reset();
@@ -451,6 +485,11 @@ public final class NpcTuning
     public Tactic tactic()
     {
         return Tactic.values()[get(Value.TACTIC)];
+    }
+
+    public Duty duty()
+    {
+        return Duty.values()[get(Value.DUTY)];
     }
 
     /** @return the strategy a {@link Throwing} value holds */

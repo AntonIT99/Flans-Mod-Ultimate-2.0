@@ -3,6 +3,9 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.sim.TacticKind;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -13,8 +16,9 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.Optional;
 
 /**
- * Which enemies soldier bots look at first: anti-tank soldiers go for armour, everyone else for infantry, so riflemen do
- * not waste themselves on tanks while there is infantry to fight. Server thread.
+ * Which enemies soldiers look at first: anti-tank soldiers go for armour, everyone else for infantry, so riflemen do not
+ * waste themselves on tanks while there is infantry to fight. Soldier bots always do; any other NPC on foot while its
+ * switch is on, an anti-tank soldier by its duty or its equipment. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class BotTargeting
@@ -22,12 +26,17 @@ final class BotTargeting
     private static final int FIRST = 0;
     private static final int LATER = 1;
 
-    /** @return 0 for a candidate a bot looks at first, 1 for one it looks at after those; 0 for every NPC that is no soldier bot */
+    /** @return 0 for a candidate a soldier looks at first, 1 for one it looks at after those; 0 for every candidate of anyone else */
     static int rank(EntityNPCInterface npc, LivingEntity candidate)
     {
         Optional<BotBattle> current = BotBattles.of(npc);
         if (current.isEmpty())
-            return FIRST;
+        {
+            if (!NpcEquipment.enabled(npc, Feature.SUITED_TARGETS) || BotTag.isBot(npc) || TacticKind.of(npc) != TacticKind.STANDARD)
+                return FIRST;
+            boolean antiTank = NpcDuties.role(npc) == BotSettings.ClassRole.ANTI_TANK;
+            return NpcDuties.armoured(candidate) == antiTank ? FIRST : LATER;
+        }
         BotBattle battle = current.get();
         BotSlot slot = BotBattles.slotOf(battle, npc).orElse(null);
         if (slot == null || slot.isVehicle())
@@ -36,7 +45,7 @@ final class BotTargeting
         return armoured(battle, candidate) == antiTank ? FIRST : LATER;
     }
 
-    /** Whether an entity is armour: a vehicle or mecha bot, or someone riding a vehicle or mecha. Aircraft are not. */
+    /** Whether an entity is armour: a vehicle or mecha bot, or else armour as anyone outside the battle counts. Aircraft are not. */
     static boolean armoured(BotBattle battle, Entity entity)
     {
         Integer slotId = battle.getSlotOfEntity().get(entity.getUUID());
@@ -46,6 +55,12 @@ final class BotTargeting
             BotSquad squad = battle.getSquads().get(slot.getSquad());
             return squad == null || squad.getRole() == BotRole.ARMOR || squad.getRole() == BotRole.NAVAL || squad.getRole() == BotRole.AA;
         }
+        return NpcDuties.armoured(entity);
+    }
+
+    /** Whether someone rides a vehicle or mecha. */
+    static boolean ridesArmour(Entity entity)
+    {
         Entity vehicle = entity.getRootVehicle();
         if (vehicle == entity)
             return false;
