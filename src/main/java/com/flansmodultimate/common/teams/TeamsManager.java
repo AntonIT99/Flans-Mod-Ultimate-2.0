@@ -2204,6 +2204,28 @@ public final class TeamsManager
         return base == null ? null : getCurrentRound().map(round -> round.getTeam(base.getOwnerId() - 2)).orElse(null);
     }
 
+    /** Resolves a flag's appearance outside a round only when the map's configured rounds agree on its owner. */
+    @Nullable
+    public Team getDisplayTeamForBase(@Nullable ITeamBase base)
+    {
+        if (base == null || base.getOwnerId() < TeamsRound.FIRST_TEAM_ID)
+            return null;
+        TeamsRound current = getCurrentRound().filter(round -> round.getMapId().equals(base.getMapId())).orElse(null);
+        if (current != null)
+            return current.getTeam(base.getOwnerId() - TeamsRound.FIRST_TEAM_ID);
+        Team owner = null;
+        for (TeamsRound round : getRounds())
+        {
+            if (!round.getMapId().equals(base.getMapId()))
+                continue;
+            Team candidate = round.getTeam(base.getOwnerId() - TeamsRound.FIRST_TEAM_ID);
+            if (candidate == null || owner != null && !owner.equals(candidate))
+                return null;
+            owner = candidate;
+        }
+        return owner;
+    }
+
     @Nullable
     public Flag getFlagCarriedBy(Entity carrier)
     {

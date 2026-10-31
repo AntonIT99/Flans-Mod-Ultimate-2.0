@@ -102,7 +102,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
             if (base != null)
             {
                 setTeamId(base.getOwnerId());
-                showTeam(TeamsManager.getInstance().getTeamForBase(base));
+                showTeam(TeamsManager.getInstance().getDisplayTeamForBase(base));
                 setPos(base.getX(), base.getY() + base.getPoleHeight() - 1D, base.getZ());
             }
         }

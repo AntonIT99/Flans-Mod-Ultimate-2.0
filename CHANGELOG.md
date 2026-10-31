@@ -14,6 +14,8 @@
 
 ## Teams
 
+* Owned flag poles show their team's color or flag texture outside rounds when the rounds configured for their map identify the owner unambiguously
+
 * Teams weapon drop rules also cover grenades and tools such as bandages for players and bots
 
 * Spawn protection: players cannot be hurt for a few seconds after taking the field in a round, until they fire, throw, swing or hit an enemy; set the time with `/teams spawnProtection <seconds>` (default 3, 0 turns it off, at most 60) or on the Protection tab of the command centre's Rules page
