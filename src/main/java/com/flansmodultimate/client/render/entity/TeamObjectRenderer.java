@@ -31,9 +31,6 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
     private static final float RIGHT_ANGLE = Mth.HALF_PI;
     /** Degrees per tick a dropped flag turns on the spot. */
     private static final float CARRIED_SPIN_SPEED = 2F;
-    /** Width bounds, in blocks, of a flag drawn from an image; the legacy flag skins were 3:2. */
-    private static final float MIN_IMAGE_FLAG_WIDTH = 1F;
-    private static final float MAX_IMAGE_FLAG_WIDTH = 2F;
 
     private final ModelPart pole;
     private final ModelPart flag;
@@ -114,11 +111,11 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
 
     /**
      * A team's flag image on one upright sheet a block tall, seen from both sides, flying from the
-     * pole at the origin as the plain model flag does. Its width follows the image within bounds.
+     * pole at the origin as the plain model flag does. Its width follows the image aspect ratio without distortion.
      */
     public static void renderFlagImage(TeamFlagTextures.FlagTexture image, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
-        float width = Mth.clamp(image.aspect(), MIN_IMAGE_FLAG_WIDTH, MAX_IMAGE_FLAG_WIDTH);
+        float width = image.aspect();
         VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(image.location()));
         PoseStack.Pose pose = poseStack.last();
         VertexPlatform.vertex(vertices, pose, 0F, 0F, 0F, 1F, 1F, 1F, 1F, 0F, 1F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 0F, 1F);
