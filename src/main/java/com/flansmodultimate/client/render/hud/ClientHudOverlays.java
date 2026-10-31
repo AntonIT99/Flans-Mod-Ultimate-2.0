@@ -80,6 +80,8 @@ public final class ClientHudOverlays
     private static final int TEAM_COLOUR_LEFT_U = 0;
     private static final int TEAM_COLOUR_RIGHT_U = 62;
     private static final int KILL_MESSAGE_LINE_HEIGHT = 16;
+    /** Baseline of the newest kill feed line, kept above the ammo and fire mode HUD rows. */
+    private static final int KILL_MESSAGE_BOTTOM = 48;
     private static final String KILL_MESSAGE_GAP = "     ";
     private static final String KILL_MESSAGE_HEADSHOT_GAP = "         ";
     private static final int HEADSHOT_SYMBOL_SIZE = 16;
@@ -1064,8 +1066,8 @@ public final class ClientHudOverlays
                 victimLabel = victimLabel.copy().append(" [").append(message.getWeapon().getHoverName()).append("]");
             String victim = victimLabel.getString();
             String gap = message.isHeadshot() ? KILL_MESSAGE_HEADSHOT_GAP : KILL_MESSAGE_GAP;
-            int textY = sh - 32 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
-            int iconY = sh - 36 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
+            int textY = sh - KILL_MESSAGE_BOTTOM - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
+            int iconY = sh - KILL_MESSAGE_BOTTOM - 4 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
 
             Component line = Component.empty().append(message.getKiller()).append(Component.literal(gap)).append(victimLabel);
             g.drawString(font, line, sw - font.width(killer + gap + victim) - 6, textY, HUD_WHITE, true);

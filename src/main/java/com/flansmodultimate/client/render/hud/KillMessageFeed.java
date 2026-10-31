@@ -20,7 +20,7 @@ public final class KillMessageFeed
     /** Ticks one message stays on screen. */
     private static final int MESSAGE_LIFETIME = 200;
     /** Older messages are pushed up and dropped once they leave the feed. */
-    private static final int MAX_LINES = 10;
+    private static final int MAX_LINES = 6;
 
     private static final List<Entry> MESSAGES = new ArrayList<>();
 
