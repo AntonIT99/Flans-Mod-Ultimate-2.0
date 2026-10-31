@@ -313,6 +313,8 @@
   "options.flansmodultimate.gpuModelCacheMegabytes": "GPU 모델 캐시 메모리",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip": "GPU 모델 캐시가 사용할 수 있는 비디오 메모리입니다. 자동은 비디오 메모리의 16분의 1(128~512 MiB)을 사용합니다. /flansrenderstats가 최근 두 프레임에 그린 메시의 제거를 보고하면 늘리세요.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic": "이 컴퓨터의 자동 값: %s MiB (보고된 비디오 메모리 %s MiB).",
+  "options.flansmodultimate.fragSparkMultiplier": "파편 불꽃 배율",
+  "options.flansmodultimate.fragSparkMultiplier.tooltip": "파편 불꽃 수에 배율을 적용합니다. 유효 파편 수와 최대 파편 불꽃 수가 상한입니다.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic_unreported": "이 컴퓨터의 자동 값: %s MiB (드라이버가 비디오 메모리를 보고하지 않음).",
   "options.flansmodultimate.gunDevMode": "총기 개발 모드",
   "options.flansmodultimate.hitMarkerAlpha": "명중 표시 불투명도",

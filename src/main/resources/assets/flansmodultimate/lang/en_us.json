@@ -716,6 +716,8 @@
   "options.flansmodultimate.gpuModelCacheMegabytes": "GPU Model Cache Memory",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip": "Video memory the GPU model cache may use. Automatic takes a sixteenth of video memory, from 128 to 512 MiB. Raise it if /flansrenderstats reports evictions of meshes drawn in the last two frames.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic": "Automatic on this computer: %s MiB (%s MiB video memory reported).",
+  "options.flansmodultimate.fragSparkMultiplier": "Fragmentation Spark Multiplier",
+  "options.flansmodultimate.fragSparkMultiplier.tooltip": "Multiplies fragmentation sparks, capped by the effective fragment count and Max Fragmentation Sparks.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic_unreported": "Automatic on this computer: %s MiB (the driver does not report video memory).",
   "options.flansmodultimate.grenadeFlashSoundRange": "Flash Grenade Sound Range",
   "options.flansmodultimate.grenadeRenderDistance": "Grenade Render Distance",

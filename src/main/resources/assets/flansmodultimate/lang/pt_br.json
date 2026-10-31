@@ -313,6 +313,8 @@
   "options.flansmodultimate.gpuModelCacheMegabytes": "Memória do cache GPU de modelos",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip": "Memória de vídeo que o cache GPU de modelos pode usar. Automático usa um dezesseis avos da memória de vídeo, de 128 a 512 MiB. Aumente se /flansrenderstats relatar remoções de malhas desenhadas nos dois últimos quadros.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic": "Automático neste computador: %s MiB (%s MiB de memória de vídeo informados).",
+  "options.flansmodultimate.fragSparkMultiplier": "Multiplicador de faíscas de fragmentação",
+  "options.flansmodultimate.fragSparkMultiplier.tooltip": "Multiplica as faíscas de fragmentação, limitadas pelos fragmentos efetivos e pelo máximo de faíscas de fragmentação.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic_unreported": "Automático neste computador: %s MiB (o driver não informa a memória de vídeo).",
   "options.flansmodultimate.gunDevMode": "Modo de desenvolvimento de armas",
   "options.flansmodultimate.hitMarkerAlpha": "Marcador de acerto: opacidade",

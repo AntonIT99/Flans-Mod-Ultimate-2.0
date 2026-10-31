@@ -93,6 +93,8 @@
 * Uncensored preferences are kept, and vanilla gamerules are exposed in the settings
 * Engines carry further: `vehicleSoundRange` now defaults to 128 blocks (was 50), and planes and helicopters have their own `planeSoundRange` (256); turret traverse sounds use `vehicleUtilitySoundRange` and placement sounds `reloadSoundRange`; `grenadeFlashSoundRange` now defaults to 64 (was 16). Existing config files keep their values
 
+* Added the missing label and tooltip for `fragSparkMultiplier` in all supported languages
+
 ## Compatibility & API
 
 * The public API is now stable (1.9) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key

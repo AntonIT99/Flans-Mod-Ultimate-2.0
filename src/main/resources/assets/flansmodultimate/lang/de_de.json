@@ -718,6 +718,8 @@
   "options.flansmodultimate.gpuModelCacheMegabytes": "GPU-Modellcache-Speicher",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip": "Videospeicher, den der GPU-Modellcache nutzen darf. Automatisch nimmt ein Sechzehntel des Videospeichers, 128 bis 512 MiB. Erhöhen, wenn /flansrenderstats Verdrängungen von Meshes aus den letzten zwei Frames meldet.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic": "Automatisch auf diesem Computer: %s MiB (%s MiB Videospeicher gemeldet).",
+  "options.flansmodultimate.fragSparkMultiplier": "Multiplikator für Splitterfunken",
+  "options.flansmodultimate.fragSparkMultiplier.tooltip": "Multipliziert die Splitterfunken, begrenzt durch die effektive Splitteranzahl und die maximale Anzahl an Splitterfunken.",
   "options.flansmodultimate.gpuModelCacheMegabytes.tooltip.automatic_unreported": "Automatisch auf diesem Computer: %s MiB (der Treiber meldet keinen Videospeicher).",
   "options.flansmodultimate.grenadeFlashSoundRange": "Reichweite Blendgranatengeräusch",
   "options.flansmodultimate.grenadeRenderDistance": "Darstellungsdistanz Granaten",
