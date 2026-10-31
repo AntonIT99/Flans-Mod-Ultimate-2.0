@@ -672,6 +672,9 @@ public final class ClientHudOverlays
         ModClientConfig config = ModClientConfig.get();
         if (!config.showAmmoHud)
             return;
+        LocalPlayer spectatorCheck = Minecraft.getInstance().player;
+        if (spectatorCheck != null && spectatorCheck.isSpectator())
+            return;
         if (config.ammoHudLayout.isLegacy())
         {
             renderLegacyPlayerAmmo(g, sw, sh, config.ammoHudLayout);

@@ -81,6 +81,7 @@
 * Better hit registration: players' shots meet moving players and NPCs where the shooter saw them, allowing for the client's movement smoothing as well as ping (`bulletSnapshotMin` now adds to it), bullets fired over fences and walls are no longer stopped by their invisible upper collision box, and rounds that strike a player or NPC always deal their damage instead of being swallowed by the damage cooldown of an explosion, fire or melee hit just before; in debug mode, contacts predicted only by the client are drawn grey
 * Fixed attachment points (including MP34 and red dot), the Springfield, Kar98k, flare gun, Olympia, WW2 flamethrower and creeper explosions
 * Fixed the melee sound playing twice, gun idle sounds and Apocalypse entities
+* Fixed the ammo HUD staying visible in spectator mode after holding a gun
 * Stereo content-pack sounds now fade with distance like mono sounds, including vehicle engines and weapons used by players and NPCs
 
 ## Rendering & Performance
