@@ -1,0 +1,5 @@
+{
+  "version": "1.20.1",
+  "loader": "forge",
+  "port": 25571
+}

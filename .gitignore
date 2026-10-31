@@ -53,3 +53,6 @@ reports/temp
 
 # Optional spark profile analysis dependencies
 /tools/spark/node_modules/
+
+# Optional headless development clients
+/tools/mineflayer/node_modules/

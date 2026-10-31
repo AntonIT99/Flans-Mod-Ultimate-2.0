@@ -13,6 +13,16 @@ Recheck them against the target branch during future merges.
 
 ## Minecraft 1.20.1 / Forge → Minecraft 1.21.1 / NeoForge
 
+### Optional Mineflayer development clients
+
+The separate Node bridge uses Forge's FML3 login wrapper on 1.20.1 and NeoForge's
+configuration payload negotiation on 1.21.1. Forge snapshots expose registry IDs
+during login. NeoForge additionally needs the optional `mineflayerdev` source set
+to export the running server's payload registrations, including CustomNPCs.
+This development module is never packaged into released artifacts. Both bridges
+derive Flan packet IDs from their checkout's registration order; Forge uses a
+combined byte discriminator and NeoForge separate VarInt envelopes by direction.
+
 ### Optional spark development profiler
 
 Both versions use `scripts/spark.gradle` and `tools/spark/target.json` to pin and

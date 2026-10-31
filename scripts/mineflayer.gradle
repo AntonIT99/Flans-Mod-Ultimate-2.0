@@ -1,0 +1,21 @@
+// Optional local test server; no bot library or development server ships in jars.
+File mineflayerDirectory = layout.buildDirectory.dir('mineflayer/server').get().asFile
+def prepareMineflayer = tasks.register('prepareMineflayerServer', Exec) {
+    group = 'development'
+    description = 'Prepare an isolated, loopback-only Mineflayer test server using existing EULA acceptance.'
+    workingDir rootDir
+    commandLine 'node', file('tools/mineflayer/prepare.mjs').absolutePath
+}
+
+if (project.hasProperty('withMineflayer'))
+{
+    minecraft.runs.named('server') {
+        workingDirectory mineflayerDirectory.absolutePath
+        property 'terminal.jline', 'false'
+        property 'terminal.ansi', 'false'
+    }
+    tasks.matching { it.name == 'runServer' }.configureEach {
+        dependsOn prepareMineflayer
+        doFirst { JavaExec task -> task.standardInput = System.in }
+    }
+}

@@ -15,6 +15,13 @@ HTTP fallback documented there if tools are unavailable in the current session.
 For performance profiling, read `docs/spark.md`. Spark loads in default dev runs;
 use the matching `spark_<minecraft version>` analysis MCP server or `-PwithoutSpark` to opt out.
 
+## Headless multiplayer testing
+
+For headless multiplayer test players, read `docs/mineflayer.md`. Use the
+matching `mineflayer_<minecraft version>` MCP server and isolated
+`runServer -PwithMineflayer` profile. Check `get_server_status` before joining;
+bots do not replace real-client rendering, GUI or modded-physics checks.
+
 ## Task-specific workflows
 
 - For version-dependent changes or work ported between maintained branches, read

@@ -1,0 +1,17 @@
+{
+  "name": "flans-development-mineflayer",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "smoke": "node smoke.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "mineflayer": "4.39.0",
+    "minecraft-data": "3.119.0",
+    "minecraft-protocol": "1.68.0",
+    "zod": "3.25.76"
+  }
+}
