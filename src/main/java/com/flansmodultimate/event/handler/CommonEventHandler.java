@@ -27,6 +27,7 @@ import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.config.PacketContentFingerprint;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.gun.PacketGunShootClient;
 import com.flansmodultimate.network.client.teams.PacketKillMessage;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
@@ -632,7 +633,12 @@ public final class CommonEventHandler
             PlayerData.getInstance(player).playerKilled();
         // The respawned player is not aiming, which is not otherwise sent unless they aim again
         if (entity instanceof ServerPlayer player)
+        {
+            // Death bypasses the gun tick that normally tells clients to stop firing.
+            for (InteractionHand hand : InteractionHand.values())
+                PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
             GunArmPoses.syncPlayer(player);
+        }
     }
 
     /**
