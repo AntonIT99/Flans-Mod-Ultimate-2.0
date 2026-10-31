@@ -1,0 +1,8 @@
+{
+  "version": "1.20.1",
+  "loader": "forge",
+  "port": 9876,
+  "secondPort": 9874,
+  "modVersion": "0.4.21",
+  "sha256": "e560c7697df95aad308b089ece1cfb4538c978bdb21cf8e0e44f45eda79b4412"
+}

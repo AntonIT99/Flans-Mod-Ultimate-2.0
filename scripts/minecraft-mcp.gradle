@@ -1,0 +1,61 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+
+// Optional developer tool: neither the downloaded jar nor Node dependencies ship.
+def mcpTarget = new JsonSlurper().parse(file('tools/minecraft-mcp/target.json'))
+String mcpName = "minecraft-mcp-${mcpTarget.version}-${mcpTarget.loader}-v${mcpTarget.modVersion}.jar"
+String mcpUrl = "https://github.com/langyo/minecraft-mod-mcp/releases/download/v${mcpTarget.modVersion}/${mcpName}"
+String mcpHash = mcpTarget.sha256
+def mcpJar = layout.buildDirectory.file("minecraft-mcp/${mcpName}")
+def downloadMcp = tasks.register('prepareMinecraftMcp') {
+    group = 'development'
+    description = 'Download the pinned Minecraft MCP development mod and verify its SHA-256.'
+    inputs.property('url', mcpUrl)
+    inputs.property('sha256', mcpHash)
+    outputs.file(mcpJar)
+    doLast {
+        File output = mcpJar.get().asFile
+        output.parentFile.mkdirs()
+        File partial = new File(output.parentFile, output.name + '.part')
+        try
+        {
+            def connection = URI.create(mcpUrl).toURL().openConnection()
+            connection.connectTimeout = 30000
+            connection.readTimeout = 60000
+            connection.getInputStream().withCloseable { input -> partial.withOutputStream { it << input } }
+            String actual = MessageDigest.getInstance('SHA-256').digest(partial.bytes).encodeHex().toString()
+            if (actual != mcpHash)
+                throw new GradleException("Minecraft MCP SHA-256 mismatch: ${actual}")
+            java.nio.file.Files.move(partial.toPath(), output.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        }
+        finally
+        {
+            partial.delete()
+        }
+    }
+}
+
+if (project.hasProperty('withMinecraftMcp'))
+{
+    // Forge production jars use SRG names; ForgeGradle must remap this mod too.
+    // Use the verified setup output as a named artifact so fg.deobf can process it.
+    File preparedJar = mcpJar.get().asFile
+    if (!preparedJar.isFile())
+        throw new GradleException('Run gradlew prepareMinecraftMcp without -PwithMinecraftMcp before launching.')
+    if (MessageDigest.getInstance('SHA-256').digest(preparedJar.bytes).encodeHex().toString() != mcpHash)
+        throw new GradleException('Minecraft MCP jar failed SHA-256 verification; rerun prepareMinecraftMcp --rerun-tasks.')
+    repositories.flatDir {
+        dirs preparedJar.parentFile
+        content { includeGroup 'local.minecraft-mcp' }
+    }
+    dependencies.add('runtimeOnly', fg.deobf("local.minecraft-mcp:${mcpName.substring(0, mcpName.length() - 4)}:${mcpTarget.modVersion}"))
+    minecraft.runs.configureEach {
+        if (name.startsWith('client'))
+        {
+            property 'mcp.port', (name == 'client2' ? mcpTarget.secondPort : mcpTarget.port).toString()
+            property 'mcp.background_input', 'true'
+            property 'mcp.mod.version', mcpTarget.modVersion.toString()
+            property 'mcp.mod.loader', mcpTarget.loader.toString()
+        }
+    }
+}

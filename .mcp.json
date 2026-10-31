@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "minecraft_1_20_1": {
+      "args": [
+        "tools/minecraft-mcp/bridge.mjs"
+      ],
+      "type": "stdio",
+      "command": "node"
+    }
+  }
+}

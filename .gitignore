@@ -47,3 +47,6 @@ reports/temp
 
 # Local Maven repository written by the publishing tasks
 /repo
+
+# Agent Minecraft MCP bridge dependencies
+/tools/minecraft-mcp/node_modules/

@@ -699,3 +699,6 @@ abstract class EncryptOptionalContent extends DefaultTask {
         logger.lifecycle("Encrypted ${files.size()} optional resource(s) into ${bundle}.")
     }
 }
+
+// Optional agent-driven Minecraft client testing.
+apply from: 'scripts/minecraft-mcp.gradle'
