@@ -1,8 +1,10 @@
 package com.flansmodultimate.client.render.hud;
 
+import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.teams.ObjectiveMode;
 import com.flansmodultimate.common.teams.ObjectiveSnapshot;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.client.teams.PacketTeamsState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -89,14 +91,14 @@ public final class TeamsObjectiveHud
         {
             // Defenders are measured in objectives they still hold, attackers in reinforcements left.
             int holding = (int) objectives.stream().filter(objective -> !objective.state().isHeldBy(state.getAttackingTeamId())).count();
-            drawBar(graphics, font, leftX, right.colour(), holding, objectives.size(), true);
-            drawBar(graphics, font, rightX, left.colour(), limit - left.score(), limit, false);
+            drawBar(graphics, font, leftX, right, holding, objectives.size(), true);
+            drawBar(graphics, font, rightX, left, limit - left.score(), limit, false);
         }
         else
         {
             // Every point the enemy scores is a ticket this side has lost.
-            drawBar(graphics, font, leftX, left.colour(), limit - right.score(), limit, false);
-            drawBar(graphics, font, rightX, right.colour(), limit - left.score(), limit, true);
+            drawBar(graphics, font, leftX, left, limit - right.score(), limit, false);
+            drawBar(graphics, font, rightX, right, limit - left.score(), limit, true);
         }
         int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
         drawCentred(graphics, font, String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60), centre, TOP + 1, 0.72F, TEXT);
@@ -138,7 +140,7 @@ public final class TeamsObjectiveHud
             graphics.fill(x - 1, TOP - 1, x + SIDE_BAR_WIDTH + 1, TOP + BAR_HEIGHT + 1, BAR_OUTLINE);
             graphics.fill(x, TOP, x + SIDE_BAR_WIDTH, TOP + BAR_HEIGHT, BAR_BACKGROUND);
             graphics.fill(x, TOP, x + fill, TOP + BAR_HEIGHT, 0xFF000000 | side.colour());
-            drawCentred(graphics, font, Integer.toString(side.score()), x + SIDE_BAR_WIDTH / 2, TOP + 1, 0.62F, 0xFFFFFFFF);
+            drawScore(graphics, font, side, side.score(), x + SIDE_BAR_WIDTH / 2);
         }
     }
 
@@ -195,17 +197,34 @@ public final class TeamsObjectiveHud
         return dx * dx + dz * dz;
     }
 
-    private static void drawBar(GuiGraphics graphics, Font font, int x, int teamColour, int remaining, int total, boolean fillFromLeft)
+    private static void drawBar(GuiGraphics graphics, Font font, int x, PacketTeamsState.TeamScore team, int remaining, int total, boolean fillFromLeft)
     {
         int value = Math.max(0, remaining);
         int fill = Math.min(BAR_WIDTH, Math.round(BAR_WIDTH * (value / (float) Math.max(1, total))));
         graphics.fill(x - 1, TOP - 1, x + BAR_WIDTH + 1, TOP + BAR_HEIGHT + 1, BAR_OUTLINE);
         graphics.fill(x, TOP, x + BAR_WIDTH, TOP + BAR_HEIGHT, BAR_BACKGROUND);
         if (fillFromLeft)
-            graphics.fill(x, TOP, x + fill, TOP + BAR_HEIGHT, 0xFF000000 | teamColour);
+            graphics.fill(x, TOP, x + fill, TOP + BAR_HEIGHT, 0xFF000000 | team.colour());
         else
-            graphics.fill(x + BAR_WIDTH - fill, TOP, x + BAR_WIDTH, TOP + BAR_HEIGHT, 0xFF000000 | teamColour);
-        drawCentred(graphics, font, Integer.toString(value), x + BAR_WIDTH / 2, TOP + 1, 0.62F, 0xFFFFFFFF);
+            graphics.fill(x + BAR_WIDTH - fill, TOP, x + BAR_WIDTH, TOP + BAR_HEIGHT, 0xFF000000 | team.colour());
+        drawScore(graphics, font, team, value, x + BAR_WIDTH / 2);
+    }
+
+    /** Centres the count together with the team's optional flag. */
+    private static void drawScore(GuiGraphics graphics, Font font, PacketTeamsState.TeamScore team, int value, int centreX)
+    {
+        String text = Integer.toString(value);
+        TeamFlagTextures.FlagTexture flag = TeamFlagTextures.get(Team.getTeam(team.id()));
+        if (flag == null)
+        {
+            drawCentred(graphics, font, text, centreX, TOP + 1, 0.62F, 0xFFFFFFFF);
+            return;
+        }
+        int flagWidth = Math.max(1, Math.min(12, Math.round(BAR_HEIGHT * flag.aspect())));
+        int textWidth = Math.round(font.width(text) * 0.62F);
+        int left = centreX - (flagWidth + 2 + textWidth) / 2;
+        TeamFlagTextures.draw(graphics, flag, left, TOP, flagWidth, BAR_HEIGHT);
+        drawCentred(graphics, font, text, left + flagWidth + 2 + textWidth / 2, TOP + 1, 0.62F, 0xFFFFFFFF);
     }
 
     private static void drawObjective(GuiGraphics graphics, Font font, PacketTeamsState state, ObjectiveSnapshot objective, int x, int y, boolean active)

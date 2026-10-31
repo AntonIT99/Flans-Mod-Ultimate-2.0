@@ -26,7 +26,7 @@
 * Teams bases and capture points have configurable pole heights (`defaultFlagpoleHeight`, now 5 blocks instead of 3), editable separately with the ownership stick
 * Domination and Conquest rounds can be played attackers against defenders
 * Multi-team alliances
-* Team flags fly on Capture the Flag flags, base allegiance banners and team selection buttons; flagpole and capture-point flags preserve the PNG aspect ratio at any width, and flags can also be loaded from an http(s) PNG link (`loadTeamFlagsFromUrls` turns this off)
+* Team flags fly on Capture the Flag flags, base allegiance banners and team selection buttons, and appear beside objective HUD ticket counts; flagpole and capture-point flags preserve the PNG aspect ratio at any width, and flags can also be loaded from an http(s) PNG link (`loadTeamFlagsFromUrls` turns this off)
 * Default team flag textures; `team_categories.json` assigns shared flags to matching internal and external content-pack teams, including legacy flag references
 * Base allegiance banners linked to Teams bases
 * Deathmatch names a single MVP and spawns players at any team's spawns
