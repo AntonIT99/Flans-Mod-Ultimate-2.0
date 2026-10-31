@@ -5,7 +5,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 ## Soldiers
 
 * Custom NPCs use Flan's guns, grenades, throwables, melee weapons, shields and armour, with reloads, ammunition from their inventory and Flan's sounds and muzzle flashes; the sounds an NPC makes carry as far, and as loudly, as the same weapon in a player's hands
-* Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender
+* Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender; NPCs whose random Custom NPCs preset skin is missing wear Steve instead of the missing texture
 * Flan NPC tactics for soldiers, vehicles and aircraft, including cover, peeking and Custom NPCs' own tactics with Flan's weapons
 * NPCs throw what they carry by per-kind strategies, and open carried parachutes when they fall
 * NPCs with Custom NPCs' crawling animation fire with their gun's prone accuracy and hold their gun forward along the body

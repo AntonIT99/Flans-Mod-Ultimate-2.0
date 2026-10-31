@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.entity.EntityCustomNpc;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -19,17 +20,22 @@ import java.util.Objects;
 /**
  * Puts the skins the server could only mark on the client's copies of NPCs: a class's skin, on the 64x32 model when it
  * is an old 2:1 sheet, and a vehicle model's texture in its paintjob. Applied each time the server sends the NPC, which
- * resets it to what the server holds. Client side.
+ * resets it to what the server holds. A plain skin whose texture no resource pack provides, such as some of the preset
+ * skins Custom NPCs gives new NPCs at random, becomes Steve. Client side.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcSkinResolver
 {
+    private static final String STEVE = "customnpcs:textures/entity/humanmale/steve.png";
+
     public static void apply(EntityCustomNpc npc)
     {
         if (NpcSkins.applies(npc, NpcSkins.MODEL_SKIN_KEY))
             applyModelTexture(npc);
         else if (NpcSkins.applies(npc, NpcSkins.CLASS_SKIN_KEY))
             applyClassSkin(npc);
+        else
+            replaceMissingSkin(npc);
     }
 
     private static void applyModelTexture(EntityCustomNpc npc)
@@ -59,6 +65,14 @@ public final class NpcSkinResolver
             npc.modelData.extra = extra;
         }
         wear(npc, skin);
+    }
+
+    private static void replaceMissingSkin(EntityCustomNpc npc)
+    {
+        // Skin type 0 is a resource texture; player and URL skins are downloaded.
+        ResourceLocation skin = npc.display.skinType == 0 ? ResourceLocation.tryParse(npc.display.getSkinTexture()) : null;
+        if (skin != null && Minecraft.getInstance().getResourceManager().getResource(skin).isEmpty())
+            wear(npc, ResourceLocation.parse(STEVE));
     }
 
     private static void wear(EntityCustomNpc npc, ResourceLocation texture)
