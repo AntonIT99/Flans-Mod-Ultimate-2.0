@@ -803,7 +803,7 @@ public final class TeamsManager
     {
         // Tickets in the objective modes: reinforcements for the attackers of an Assault, score to reach otherwise.
         if (gameType.getObjectiveMode() != ObjectiveMode.NONE)
-            return gameType.getObjectiveMode() == ObjectiveMode.ASSAULT ? 100 : 300;
+            return gameType.getObjectiveMode() == ObjectiveMode.ASSAULT ? 100 : 60;
         if (gameType instanceof GameTypeCTF)
             return 5;
         if (gameType instanceof GameTypeTDM)

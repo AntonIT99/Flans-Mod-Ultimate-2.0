@@ -14,6 +14,8 @@
 
 ## Teams
 
+* Conquest and Domination default to `killticketvalue 1`, `scorelimit 60` and `ticketdraininterval 100` (five seconds), preserving the relative value of kills and objective control; saved game type settings and round limits are kept
+
 * Owned flag poles show their team's color or flag texture outside rounds when the rounds configured for their map identify the owner unambiguously
 
 * Teams weapon drop rules also cover grenades and tools such as bandages for players and bots
