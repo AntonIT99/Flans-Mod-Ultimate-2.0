@@ -50,3 +50,6 @@ reports/temp
 
 # Agent Minecraft MCP bridge dependencies
 /tools/minecraft-mcp/node_modules/
+
+# Optional spark profile analysis dependencies
+/tools/spark/node_modules/
