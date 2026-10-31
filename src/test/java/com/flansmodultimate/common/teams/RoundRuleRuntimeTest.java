@@ -272,7 +272,8 @@ class RoundRuleRuntimeTest
         when(fixture.player.isPassenger()).thenReturn(false);
         when(fixture.player.isFallFlying()).thenReturn(true);
         assertFalse(fixture.runtime.mayCarryFlag(fixture.player));
-        when(fixture.manager.getFlagCarriedBy(fixture.player)).thenReturn(mock(Flag.class));
+        Flag flag = mock(Flag.class);
+        when(fixture.manager.getFlagCarriedBy(fixture.player)).thenReturn(flag);
         assertFalse(fixture.runtime.mayMount(fixture.player));
         assertTrue(fixture.runtime.blocksItemUse(fixture.player, new ItemStack(Items.BOW)));
         assertFalse(fixture.runtime.blocksItemUse(fixture.player, new ItemStack(Items.STONE)));
