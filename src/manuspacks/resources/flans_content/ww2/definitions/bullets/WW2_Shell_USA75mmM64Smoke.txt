@@ -41,9 +41,9 @@ Fire 0
 HitSound bomb
 
 // Effects
-SmokeTime 250
-SmokeParticleType cloud
-SmokeRadius 5
+SmokeTime 400
+SmokeParticleType flansmod.smoker1
+SmokeRadius 6
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
 SmokeTrail True

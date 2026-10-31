@@ -37,9 +37,9 @@ Explosion 0
 Fire 0
 
 // Effects
-SmokeTime 250
+SmokeTime 600
 SmokeParticleType flansmod.smoker1
-SmokeRadius 5
+SmokeRadius 10
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
 SmokeTrail True
