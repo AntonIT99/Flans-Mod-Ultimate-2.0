@@ -3,8 +3,10 @@ package com.flansmodultimate.common.teams;
 import com.flansmodultimate.api.teams.ITeamsRespawnRule;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -130,6 +132,29 @@ class RoundRuleRuntimeTest
         assertTrue(fixture.runtime.getVehicles().prepare(first, fixture.team));
         fixture.runtime.getVehicles().placementFailed(first);
         assertTrue(fixture.runtime.getVehicles().prepare(fixture.vehicle(), fixture.team));
+    }
+
+    @Test
+    void reloadingAWreckDoesNotRestartItsReplacementCooldown()
+    {
+        Fixture fixture = new Fixture();
+        fixture.rules.set(RoundRule.VEHICLE_LIMIT, "1");
+        fixture.rules.set(RoundRule.VEHICLE_REPLACEMENT_SECONDS, "10");
+        fixture.start();
+        Driveable first = fixture.driveable();
+        Driveable replacement = fixture.driveable();
+        RoundVehicleLimits limits = fixture.runtime.getVehicles();
+        assertTrue(limits.prepare(first, fixture.team));
+        limits.left(first);
+        when(first.isWreck()).thenReturn(true);
+        // The reservation can still be active in a save when its entity loads as a wreck.
+        limits.joined(first);
+        when(fixture.manager.getRoundElapsedTicks()).thenReturn(199);
+        assertFalse(limits.prepare(replacement, fixture.team));
+        when(fixture.manager.getRoundElapsedTicks()).thenReturn(200);
+        limits.tick();
+        limits.joined(first);
+        assertTrue(limits.prepare(replacement, fixture.team));
     }
 
     @Test
@@ -323,6 +348,17 @@ class RoundRuleRuntimeTest
             when(gun.level()).thenReturn(level);
             when(gun.getPersistentData()).thenReturn(new CompoundTag());
             return gun;
+        }
+
+        private Driveable driveable()
+        {
+            Driveable driveable = mock(Driveable.class);
+            VehicleType type = mock(VehicleType.class);
+            when(driveable.getConfigType()).thenReturn(type);
+            when(driveable.getUUID()).thenReturn(UUID.randomUUID());
+            when(driveable.level()).thenReturn(level);
+            when(driveable.getPersistentData()).thenReturn(new CompoundTag());
+            return driveable;
         }
     }
 }

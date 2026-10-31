@@ -85,6 +85,11 @@ public final class RoundVehicleLimits
         RoundRule category = category(entity);
         if (!manager.isRoundRunning() || category == null || entity.level() != manager.getCurrentLevel())
             return;
+        if (entity instanceof Driveable driveable && driveable.isWreck())
+        {
+            release(entity.getUUID());
+            return;
+        }
         CompoundTag tag = entity.getPersistentData().getCompound(STAMP);
         if (tag.hasUUID(ROUND) && tag.getUUID(ROUND).equals(manager.getRoundInstanceId()))
         {
