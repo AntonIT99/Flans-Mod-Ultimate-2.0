@@ -17,6 +17,16 @@ dependencies.add('testImplementation', npcsSourceSet.output)
 // Equipment integration tests exercise the installed NPC inventory; dev runtime already provides the dependency.
 dependencies.add('testCompileOnly', fg.deobf(customNpcsDependency))
 
+// Real-server regression tests are a separate development mod and never enter npcsJar.
+def npcGameTestSourceSet = sourceSets.create('npcGameTest') {
+    compileClasspath += npcsSourceSet.compileClasspath + npcsSourceSet.output
+    runtimeClasspath += npcsSourceSet.runtimeClasspath
+}
+minecraft.runs.named('gameTestServer') {
+    workingDirectory file('run/gametest')
+    mods.maybeCreate('wolffsmodnpcstests').source(npcGameTestSourceSet)
+}
+
 // Keep the Custom NPCs hook in this optional artifact, including its own refmap.
 mixin.add(npcsSourceSet, 'wolffsmodnpcs.refmap.json')
 tasks.named('npcsJar') {

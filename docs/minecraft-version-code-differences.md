@@ -158,10 +158,7 @@ layer; recheck Forge/NeoForge custom armor model hooks on each target branch.
 Multi-target mixins into Custom NPCs data classes must mark their own field
 shadows explicitly `remap = false`, even when the mixin itself disables remapping.
 Mixin rejects a remappable shadow shared by multiple targets during runtime
-validation. The installed 20260711 Custom NPCs jar also fails in Forge's
-`GameTestServer`: its world-directory lookup attempts to load client Minecraft
-and returns null on that server subtype. Common NPC equipment mixins load before
-that third-party failure; this harness cannot verify live combat or editor behavior.
+validation.
 
 Throw presentation on master adds a transient `ITEM_STACK` entity-data accessor
 to the existing `EntityNPCInterfaceMixin`. A client-only branch in its paired
@@ -173,6 +170,25 @@ lets the common pose resolver and throwable gun model predicate use the player's
 throw pose without changing the real active-use item. Preserve this separation
 when adapting to render-state extraction on newer branches; do not put temporary
 items into server inventory for rendering.
+
+### Custom NPCs headless GameTests
+
+Both installed Custom NPCs builds assume that every non-dedicated server is a
+client's integrated server. The NPC module's `CustomNpcsMixin` redirects only the
+`isDedicatedServer` call in `getLevelSaveDirectory` so `GameTestServer` skips the
+client-only directory lookup and uses its actual world path. The Forge 1.20.1
+20260711 build targets the `(String, boolean)` overload and remaps the vanilla
+invocation; NeoForge 1.21.1's 20251230 build targets `(String)` with Mojang names.
+Forge's external-saving and world-specific-save rules remain upstream behavior.
+
+Run `gradlew runGameTestServer` in either worktree. The development-only
+`npcGameTest` source set supplies save-directory and NPC tick/NBT smoke tests,
+loaded as `wolffsmodnpcstests` only for this run and excluded from released jars.
+Its isolated game directory is `run/gametest`; no client world or installed
+standalone packs are needed. Add tests under `src/npcGameTest/java` and templates
+under its resources: `data/flansmodultimate/structures` on 1.20.1,
+`data/flansmodultimate/structure` on 1.21.1. This exercises real server lifecycle
+and entity hooks; client editor behavior still requires a client run.
 
 ### NPC static world-model rendering
 

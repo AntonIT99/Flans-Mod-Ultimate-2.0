@@ -1,0 +1,8 @@
+modLoader="lowcodefml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="wolffsmodnpcstests"
+version="1.0"
+displayName="NPC GameTests (development only)"

@@ -46,6 +46,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Tools
 
+* Custom NPCs can run on the headless `GameTestServer` without trying to load client classes when opening its save directory
 * The Wolff's Mod tab in the Custom NPCs editor, with combat, crew, movement, naming, model and server pages
 * Flan model picker with previews and tooltips
 * NPC diagnosis, including a flying plane's speed and circle radius, server limits, rules, census and benchmarks
