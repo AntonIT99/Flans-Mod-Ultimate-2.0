@@ -99,7 +99,12 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
     {
         super.onLoad();
         if (level instanceof ServerLevel)
-            TeamsManager.getInstance().registerBase(this);
+        {
+            TeamsManager manager = TeamsManager.getInstance();
+            if (StringUtils.isBlank(getMapId()))
+                manager.getMaps().stream().filter(map -> map.getDimension().equals(getDimension())).findFirst().ifPresent(map -> setMapId(map.getShortName()));
+            manager.registerBase(this);
+        }
     }
 
     @Override

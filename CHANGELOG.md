@@ -16,7 +16,7 @@
 
 * `showBotKillsInKillFeed` controls whether the battle kill feed includes bot-versus-bot kills, also available in quick access Server settings; disable it to show only kills involving a player
 
-* Unassigned flagpole bases default to the first map in their dimension when placed or loaded; the Operator Stick can still change their map
+* Unassigned flagpole bases and capture points default to the first map in their dimension when placed or loaded; the Operator Stick can still change their map
 * Teams bases and capture points have configurable pole heights (`defaultFlagpoleHeight`, now 5 blocks instead of 3), editable separately with the ownership stick
 * Domination and Conquest rounds can be played attackers against defenders
 * Multi-team alliances
