@@ -1,0 +1,50 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+
+// Optional developer tool: neither the downloaded jar nor Node dependencies ship.
+def mcpTarget = new JsonSlurper().parse(file('tools/minecraft-mcp/target.json'))
+String mcpName = "minecraft-mcp-${mcpTarget.version}-${mcpTarget.loader}-v${mcpTarget.modVersion}.jar"
+String mcpUrl = "https://github.com/langyo/minecraft-mod-mcp/releases/download/v${mcpTarget.modVersion}/${mcpName}"
+String mcpHash = mcpTarget.sha256
+def mcpJar = layout.buildDirectory.file("minecraft-mcp/${mcpName}")
+def downloadMcp = tasks.register('prepareMinecraftMcp') {
+    group = 'development'
+    description = 'Download the pinned Minecraft MCP development mod and verify its SHA-256.'
+    inputs.property('url', mcpUrl)
+    inputs.property('sha256', mcpHash)
+    outputs.file(mcpJar)
+    doLast {
+        File output = mcpJar.get().asFile
+        output.parentFile.mkdirs()
+        File partial = new File(output.parentFile, output.name + '.part')
+        try
+        {
+            def connection = URI.create(mcpUrl).toURL().openConnection()
+            connection.connectTimeout = 30000
+            connection.readTimeout = 60000
+            connection.getInputStream().withCloseable { input -> partial.withOutputStream { it << input } }
+            String actual = MessageDigest.getInstance('SHA-256').digest(partial.bytes).encodeHex().toString()
+            if (actual != mcpHash)
+                throw new GradleException("Minecraft MCP SHA-256 mismatch: ${actual}")
+            java.nio.file.Files.move(partial.toPath(), output.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        }
+        finally
+        {
+            partial.delete()
+        }
+    }
+}
+
+if (project.hasProperty('withMinecraftMcp'))
+{
+    dependencies.add('localRuntime', files(mcpJar).builtBy(downloadMcp))
+    neoForge.runs.configureEach {
+        if (name.startsWith('client'))
+        {
+            systemProperty 'mcp.port', (name == 'client2' ? mcpTarget.secondPort : mcpTarget.port).toString()
+            systemProperty 'mcp.background_input', 'true'
+            systemProperty 'mcp.mod.version', mcpTarget.modVersion.toString()
+            systemProperty 'mcp.mod.loader', mcpTarget.loader.toString()
+        }
+    }
+}

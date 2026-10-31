@@ -1,0 +1,8 @@
+{
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "port": 9875,
+  "secondPort": 9873,
+  "modVersion": "0.4.21",
+  "sha256": "9baaa2fadd1924fef2878093143479ff1d87adfd6198784b089dd6a8b0bba081"
+}

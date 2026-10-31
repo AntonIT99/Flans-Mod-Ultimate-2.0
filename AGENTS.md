@@ -2,6 +2,16 @@
 
 Nested `AGENTS.md` files add rules for their directories.
 
+## In-game testing with Minecraft MCP
+
+For client UI, rendering or gameplay verification, read `docs/minecraft-mcp.md`.
+Use the optional `-PwithMinecraftMcp` Gradle flag and the MCP server matching
+this checkout's Minecraft version. Check `get_minecraft_status` before acting;
+the bridge pins the loader and port and checks the MCP mod version.
+Setup and agent registration are
+available through `scripts/setup-minecraft-mcp.ps1 -RegisterCodex`. Use the
+HTTP fallback documented there if tools are unavailable in the current session.
+
 ## Task-specific workflows
 
 - For version-dependent changes or work ported between maintained branches, read

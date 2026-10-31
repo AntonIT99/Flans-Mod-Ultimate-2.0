@@ -1,0 +1,10 @@
+{
+  "name": "flans-development-minecraft-mcp",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "minecraft-mod-mcp": "0.4.21"
+  }
+}
