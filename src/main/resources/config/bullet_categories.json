@@ -4096,7 +4096,7 @@
             "Mass": 800,
             "MuzzleVelocity": 60,
             "FallSpeed": 1.0,
-            "SmokeTime": 300,
+            "SmokeTime": 1200,
             "SmokeRadius": 4,
             "PenetrationAt100m": 5
         },
@@ -4817,7 +4817,7 @@
             "Mass": 6620,
             "MuzzleVelocity": 594,
             "FallSpeed": 1.0,
-            "SmokeTime": 400,
+            "SmokeTime": 1600,
             "SmokeRadius": 6,
             "ExplosiveMassTNTg": 36,
             "FragType": "LOW_FRAG"
@@ -4877,7 +4877,7 @@
             "Mass": 6214,
             "MuzzleVelocity": 540,
             "FallSpeed": 1.0,
-            "SmokeTime": 400,
+            "SmokeTime": 1600,
             "SmokeRadius": 6,
             "ExplosiveMassTNTg": 62,
             "FragType": "LOW_FRAG"
@@ -5429,7 +5429,7 @@
             "Mass": 3450,
             "MuzzleVelocity": 274,
             "FallSpeed": 1.0,
-            "SmokeTime": 500,
+            "SmokeTime": 2000,
             "SmokeRadius": 6
         },
         "items": [
@@ -5740,7 +5740,7 @@
             "Mass": 3180,
             "MuzzleVelocity": 200,
             "FallSpeed": 1.0,
-            "SmokeTime": 500,
+            "SmokeTime": 2000,
             "SmokeRadius": 8,
             "PenetrationAt100m": 5
         },
@@ -5890,7 +5890,7 @@
             "Mass": 2200.0,
             "MuzzleVelocity": 240,
             "FallSpeed": 1.0,
-            "SmokeTime": 500,
+            "SmokeTime": 2000,
             "SmokeRadius": 8,
             "ExplosiveMassTNTKg": 0.01536,
             "HasSubmunitions": "false"
@@ -7513,7 +7513,7 @@
             "Mass": 17300,
             "MuzzleVelocity": 670,
             "FallSpeed": 1.0,
-            "SmokeTime": 600,
+            "SmokeTime": 2400,
             "SmokeRadius": 10,
             "ExplosiveMassTNTg": 138,
             "FragType": "LOW_FRAG"
@@ -7655,7 +7655,7 @@
             "Mass": 12900,
             "MuzzleVelocity": 1000,
             "FallSpeed": 1.0,
-            "SmokeTime": 600,
+            "SmokeTime": 2400,
             "SmokeRadius": 10
         },
         "items": [
@@ -7973,7 +7973,7 @@
             "Mass": 23000,
             "MuzzleVelocity": 850,
             "FallSpeed": 1.0,
-            "SmokeTime": 640,
+            "SmokeTime": 2560,
             "SmokeRadius": 10.5
         },
         "items": [
@@ -14060,7 +14060,7 @@
             "Mass": 10130.0,
             "MuzzleVelocity": 739.0,
             "FallSpeed": 1.0,
-            "SmokeTime": 800,
+            "SmokeTime": 3200,
             "SmokeRadius": 12,
             "ExplosiveMassTNTKg": 0.0
         },
@@ -14208,7 +14208,7 @@
             "Mass": 100,
             "MuzzleVelocity": 60,
             "FallSpeed": 1.0,
-            "SmokeTime": 200,
+            "SmokeTime": 800,
             "SmokeRadius": 3
         },
         "items": [
@@ -16452,7 +16452,7 @@
             "Mass": 20000,
             "MuzzleVelocity": 850,
             "FallSpeed": 1.0,
-            "SmokeTime": 600,
+            "SmokeTime": 2400,
             "SmokeRadius": 10,
             "PenetrationAt100m": 5
         },
