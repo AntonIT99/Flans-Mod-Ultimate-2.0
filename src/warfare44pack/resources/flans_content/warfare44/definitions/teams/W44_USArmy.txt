@@ -34,4 +34,5 @@ AddClass W44_USArmyAssaultGreaseGun
 AddClass W44_USArmyRiflemanSpringfield
 AddClass W44_USArmyTrenchRaider
 AddClass W44_USArmyScoutWinchester
+AddClass W44_USArmyNightScoutCarbine
 AddClass W44_USArmyFieldMedic

@@ -1,0 +1,16 @@
+// Identity
+Name Night Scout (Sniperscope Carbine)
+ShortName W44_USArmyNightScoutCarbine
+Description Night fighter with an M3 infrared sniperscope carbine.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 10
+
+// Items
+AddItem 44_M1Carbine+44_M3InfraredScope
+AddItem 44_M1CarbineAmmo 5
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
+AddItem 44_Bandage

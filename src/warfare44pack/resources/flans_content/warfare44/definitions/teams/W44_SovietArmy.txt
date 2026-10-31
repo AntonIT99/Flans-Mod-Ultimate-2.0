@@ -28,5 +28,6 @@ AddClass W44_SovietArmyPilot
 
 // Specialist weapon choices
 AddClass W44_SovietArmyRiflemanSKS
+AddClass W44_SovietArmyMarksmanSVT40
 AddClass W44_SovietArmyMachineGunnerDT28
 AddClass W44_SovietArmyFieldMedic

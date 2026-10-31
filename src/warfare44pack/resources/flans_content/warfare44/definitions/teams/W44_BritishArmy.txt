@@ -29,4 +29,5 @@ AddClass W44_BritishArmyPilot
 // Specialist weapon choices
 AddClass W44_BritishArmyRiflemanLeeEnfieldIII
 AddClass W44_BritishArmyAssaultSterling
+AddClass W44_BritishArmyCommandoSten
 AddClass W44_BritishArmyFieldMedic

@@ -26,3 +26,4 @@ AddClass W44_FallschirmjagerSquadLeader
 
 // Specialist weapon choices
 AddClass W44_FallschirmjagerAutomaticRiflemanFG42
+AddClass W44_FallschirmjagerMarksmanFG42

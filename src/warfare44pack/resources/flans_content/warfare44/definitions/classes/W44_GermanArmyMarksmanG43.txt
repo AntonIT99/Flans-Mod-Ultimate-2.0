@@ -1,0 +1,17 @@
+// Identity
+Name Marksman (Gewehr 43)
+ShortName W44_GermanArmyMarksmanG43
+Description Designated marksman with a ZF 4 scoped Gewehr 43.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Items
+AddItem 44_G43+44_ZF4Scope
+AddItem 44_G43Ammo 4
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
+AddItem 44_Binoculars
+AddItem 44_Bandage
