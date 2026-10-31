@@ -3,6 +3,7 @@ Name Japanese
 ShortName japaneseTeam
 
 // Appearance
+VictoryFlagTexture flag_team_japan_ww2
 TextColour White
 TeamColour 255 255 255
 Hat japaneseHelmet

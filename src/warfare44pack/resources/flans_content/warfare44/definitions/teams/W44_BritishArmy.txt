@@ -3,6 +3,7 @@ Name British Army
 ShortName W44_BritishArmy
 
 // Appearance
+VictoryFlagTexture flag_team_uk
 TextColour Gold
 TeamColour 180 145 65
 Hat 44_BritishBrodieHelmet

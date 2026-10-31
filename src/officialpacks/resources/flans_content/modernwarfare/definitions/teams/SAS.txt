@@ -3,6 +3,7 @@ Name British SAS
 ShortName sas
 
 // Appearance
+VictoryFlagTexture flag_team_uk
 TextColour Green
 TeamColour 0 150 0
 Hat sasHelmet

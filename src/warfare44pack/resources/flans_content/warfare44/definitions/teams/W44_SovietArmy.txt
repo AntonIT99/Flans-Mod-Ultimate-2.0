@@ -3,6 +3,7 @@ Name Soviet Army
 ShortName W44_SovietArmy
 
 // Appearance
+VictoryFlagTexture flag_team_ussr_ww2.svg
 TextColour Red
 TeamColour 180 60 50
 Hat 44_SovietSummerObr43Helmet

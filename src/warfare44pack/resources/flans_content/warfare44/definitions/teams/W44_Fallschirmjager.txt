@@ -3,6 +3,7 @@ Name German Fallschirmjager
 ShortName W44_Fallschirmjager
 
 // Appearance
+VictoryFlagTexture flag_team_germany_ww2
 TextColour Dark_Aqua
 TeamColour 60 125 125
 Hat 44_FallschirmjagerCamoM38Stahlhelm

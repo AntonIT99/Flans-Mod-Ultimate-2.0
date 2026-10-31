@@ -3,6 +3,7 @@ Name French GIGN
 ShortName gign
 
 // Appearance
+VictoryFlagTexture flag_team_france
 TextColour Aqua
 TeamColour 0 50 255
 Hat gignHelmet

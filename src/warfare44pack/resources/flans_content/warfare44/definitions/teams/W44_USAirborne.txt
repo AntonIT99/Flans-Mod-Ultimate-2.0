@@ -3,6 +3,7 @@ Name US Airborne
 ShortName W44_USAirborne
 
 // Appearance
+VictoryFlagTexture flag_team_usa_1912-1959
 TextColour Blue
 TeamColour 70 120 180
 Hat 44_AmericanM1HelmetNetting

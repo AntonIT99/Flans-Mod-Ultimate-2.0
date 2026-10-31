@@ -3,6 +3,7 @@ Name Russian Spetsnaz
 ShortName spetsnaz
 
 // Appearance
+VictoryFlagTexture flag_team_russia
 TextColour Red
 TeamColour 128 0 0
 Hat spetsnazHelmet

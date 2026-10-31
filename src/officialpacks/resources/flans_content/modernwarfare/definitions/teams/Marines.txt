@@ -3,6 +3,7 @@ Name U.S. Marines
 ShortName marines
 
 // Appearance
+VictoryFlagTexture flag_team_usa
 TextColour Blue
 TeamColour 0 0 128
 Hat marineHelmet

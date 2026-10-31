@@ -3,6 +3,7 @@ Name German KSK
 ShortName ksk
 
 // Appearance
+VictoryFlagTexture flag_team_germany
 TextColour Grey
 TeamColour 40 40 40
 Hat kskHelmet

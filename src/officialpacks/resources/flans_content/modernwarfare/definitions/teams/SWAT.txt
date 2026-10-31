@@ -3,6 +3,7 @@ Name SWAT
 ShortName swat
 
 // Appearance
+VictoryFlagTexture flag_team_usa
 TextColour White
 TeamColour 0 0 0
 Hat SWATHelmet

@@ -3,6 +3,7 @@ Name American Infantry
 ShortName OfficialWW2_AmericanInfantryTeam
 
 // Appearance
+VictoryFlagTexture flag_team_usa_1912-1959
 TextColour Green
 TeamColour 0 255 0
 Hat AmericanAssaultHelmet

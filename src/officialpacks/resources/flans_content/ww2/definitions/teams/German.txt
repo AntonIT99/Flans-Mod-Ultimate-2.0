@@ -3,6 +3,7 @@ Name German
 ShortName germanTeam
 
 // Appearance
+VictoryFlagTexture flag_team_germany_ww2
 TextColour Grey
 TeamColour 64 64 64
 Hat germanHelmet

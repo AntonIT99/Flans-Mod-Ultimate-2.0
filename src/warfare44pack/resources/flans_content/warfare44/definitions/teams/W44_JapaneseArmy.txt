@@ -3,6 +3,7 @@ Name Japanese Army
 ShortName W44_JapaneseArmy
 
 // Appearance
+VictoryFlagTexture flag_team_japan_ww2
 TextColour Yellow
 TeamColour 190 170 90
 Hat 44_JapaneseType3FieldCap

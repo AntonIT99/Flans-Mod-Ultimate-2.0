@@ -3,6 +3,7 @@ Name German Army
 ShortName W44_GermanArmy
 
 // Appearance
+VictoryFlagTexture flag_team_germany_ww2
 TextColour Gray
 TeamColour 140 150 145
 Hat 44_GermanM42FeldgrauStahlhelm
