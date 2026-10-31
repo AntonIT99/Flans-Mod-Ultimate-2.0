@@ -682,3 +682,4 @@ abstract class EncryptOptionalContent extends DefaultTask {
 // Optional agent-driven Minecraft client testing.
 apply from: 'scripts/minecraft-mcp.gradle'
 apply from: 'scripts/spark.gradle'
+apply from: 'scripts/mineflayer.gradle'

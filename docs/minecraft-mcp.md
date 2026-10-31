@@ -1,5 +1,8 @@
 # Agent-driven Minecraft testing
 
+For optional headless multiplayer test players, see [Mineflayer](mineflayer.md).
+Use real MCP-controlled clients for rendering, GUI and modded-client behavior.
+
 For optional performance captures and agent-readable call trees, see
 [spark profiling](spark.md).
 
