@@ -516,7 +516,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("gun_movement", Scope.MODELS, Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.MANOEUVRE_TO_FIRE, Feature.PASSENGER_GUNS,
                 Feature.TURRET_LOCKED)),
         PROTECTION(Section.PROTECTION, Scope.ALL,
-            Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES),
+            Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES, Feature.LIMB_HITBOXES),
             Tab.named(ARMOUR_TAB, Scope.MODELS, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR),
             Tab.named(PARTS_TAB, Scope.DRIVEABLES, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES,
                 Feature.HITBOX_OUTLINES)),
@@ -1690,7 +1690,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
                 case SLOPE_PHYSICS -> Scope.VEHICLES;
                 case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
-                case DRIVE_DRIVEABLES -> Scope.STANDARD;
+                case DRIVE_DRIVEABLES, LIMB_HITBOXES -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }

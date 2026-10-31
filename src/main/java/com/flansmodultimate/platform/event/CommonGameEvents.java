@@ -1,6 +1,7 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.raytracing.EntityPositionHistory;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.platform.forge.ForgeDamageContext;
 import net.minecraftforge.event.TickEvent;
@@ -22,7 +23,8 @@ import net.minecraft.server.level.ServerPlayer;
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CommonGameEvents
 {
-    private CommonGameEvents() {}
+    private CommonGameEvents()
+    {}
 
     @SubscribeEvent
     public static void onMobFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event)
@@ -56,6 +58,7 @@ public final class CommonGameEvents
     @SubscribeEvent
     public static void onLivingTick(LivingEvent.LivingTickEvent event)
     {
+        EntityPositionHistory.record(event.getEntity());
         CommonEventHandler.onLivingTick(event.getEntity());
     }
 

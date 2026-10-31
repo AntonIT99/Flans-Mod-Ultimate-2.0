@@ -722,7 +722,7 @@ public class GunItemHandler
 
     private void applyPlayerHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, PlayerBulletHit hit, int pointIdx, Vector3f dPos)
     {
-        Player attackedPlayer = hit.getHitbox().player;
+        LivingEntity attackedPlayer = hit.getHitbox().entity;
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
 
         boolean didHurt = attackedPlayer.hurt(FlansMelee.source(attacker, itemstack), damage);

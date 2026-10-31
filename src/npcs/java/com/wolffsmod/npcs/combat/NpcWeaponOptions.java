@@ -64,7 +64,12 @@ public final class NpcWeaponOptions
          * An NPC with Return to start that is left away from home while it does not simulate, outside the simulation
          * distance or resting beyond its dormant range, is sent straight back once no player is near enough to see it go.
          */
-        RETURN_WHEN_INACTIVE(false);
+        RETURN_WHEN_INACTIVE(false),
+        /**
+         * Flan rounds hit an NPC drawn with the player model limb by limb, as they hit players: headshots and the other
+         * hit zones scale their damage, and the armour piece of the part struck resists them.
+         */
+        LIMB_HITBOXES(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

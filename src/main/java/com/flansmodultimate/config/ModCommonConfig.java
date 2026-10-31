@@ -373,8 +373,9 @@ public final class ModCommonConfig
             .comment("Default pole height in blocks for Teams bases and capture points, including existing poles without a saved height.",
                 "Each pole keeps its height once saved; edit individual heights with the ownership stick.")
             .defineInRange("defaultFlagpoleHeight", DEFAULT_FLAGPOLE_HEIGHT, MIN_FLAGPOLE_HEIGHT, MAX_FLAGPOLE_HEIGHT);
-        BULLET_SNAPSHOT_MIN = builder.comment("Lag compensation: number of player snapshots (ticks) every bullet rewinds its targets by, before the shooter's ping is considered.",
-            "A bullet uses the snapshot bulletSnapshotMin + ping / bulletSnapshotDivisor. Can also be changed in game with /teams admin bltss.").defineInRange("bulletSnapshotMin", 0, 0, 100);
+        BULLET_SNAPSHOT_MIN = builder.comment("Lag compensation: extra ticks every player's shot rewinds its targets by, before the shooter's ping is considered.",
+            "A shot tests players and NPCs where they were bulletSnapshotMin + ping / bulletSnapshotDivisor + 3 ticks ago, the 3 being the client's movement smoothing.",
+            "Can also be changed in game with /teams admin bltss.").defineInRange("bulletSnapshotMin", 0, 0, 100);
         BULLET_SNAPSHOT_DIVISOR = builder.comment("Lag compensation: milliseconds of shooter ping per additional snapshot of rewind. 0 ignores the shooter's ping.")
             .defineInRange("bulletSnapshotDivisor", 50, 0, 1000);
         builder.pop();

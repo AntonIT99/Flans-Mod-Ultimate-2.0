@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.raytracing;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.entity.HumanoidBody;
+import com.flansmodultimate.api.entity.IFlanHumanoidBody;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.parts.PartBodies;
 import com.flansmodultimate.common.driveables.parts.PartBody;
@@ -8,6 +10,7 @@ import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.raytracing.hits.*;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -16,14 +19,18 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.*;
 
@@ -35,20 +42,28 @@ public class Raytracer
      * hitbox inflation, the swept box of a fast mover and lag-compensated player snapshots.
      */
     private static final double ENTITY_SEARCH_MARGIN = 10D;
+    /** Fastest a target is expected to move per tick, which bounds how far a rewound target can be from where it is now */
+    private static final double REWIND_TARGET_SPEED = 0.5D;
 
-    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter,
+    /**
+     * @param rewindTicks
+     *            how far behind the server the shooter saw its targets, from {@link LagCompensation#rewindTicks}; 0 for a shot aimed on the server
+     */
+    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int rewindTicks,
         float gunPenetration, float bulletHitBoxSize, BulletType type)
     {
         // Create a list for all bullet hits
         List<BulletHit> hits = new ArrayList<>();
 
         final Vec3 destination = origin.add(motion);
+        final long gameTime = level.getGameTime();
 
         // Query only entities along the ray segment. Driveable hulls reach well past
         // their compact entity box, so they get a separate class-filtered query sized
         // by the largest hull radius instead of widening the search for every entity.
         AABB segment = new AABB(origin, destination);
-        AABB search = segment.inflate(Math.min(motion.length(), ENTITY_SEARCH_MARGIN));
+        double margin = Math.min(Math.max(motion.length(), (rewindTicks + LagCompensation.WINDOW_TICKS) * REWIND_TARGET_SPEED), ENTITY_SEARCH_MARGIN);
+        AABB search = segment.inflate(margin);
         List<Entity> candidates = new ArrayList<>(ModUtils.queryEntities(level, bullet, search, entity -> !(entity instanceof Driveable)));
         candidates.addAll(ModUtils.queryEntities(level, bullet, segment.inflate(DriveableType.getMaxBulletDetectionRadius()), Driveable.class, null));
 
@@ -63,9 +78,9 @@ public class Raytracer
             if (entity instanceof Driveable driveable)
                 checkDriveableHit(driveable, origin, motion, owner, hits);
             else if (entity instanceof Player player)
-                checkPlayerHit(player, origin, motion, pingOfShooter, bulletHitBoxSize, hits);
+                checkPlayerHit(player, origin, motion, gameTime, rewindTicks, bulletHitBoxSize, hits);
             else
-                checkEntityHit(entity, origin, motion, bulletHitBoxSize, hits);
+                checkEntityHit(entity, origin, motion, gameTime, rewindTicks, bulletHitBoxSize, hits);
         }
 
         hits = raytraceBlock(level, origin, Vec3.ZERO, motion, motion.normalize().scale(0.5), hits, gunPenetration, null, type);
@@ -111,71 +126,33 @@ public class Raytracer
         }
     }
 
-    private static void checkPlayerHit(Player player, Vec3 origin, Vec3 motion, int pingOfShooter, float hitBoxSize, List<BulletHit> hits)
+    private static void checkPlayerHit(Player player, Vec3 origin, Vec3 motion, long gameTime, int rewindTicks, float hitBoxSize, List<BulletHit> hits)
     {
         PlayerData data = PlayerData.getInstance(player);
-        boolean shouldDoNormalHitDetect = false;
 
         // Login uses the Teams spectator placeholder even outside a round; it must not grant survival immunity.
         if (player.isSpectator() || FlansMod.teamsManager.isRoundRunning() && Team.SPECTATORS.equals(data.getTeam()))
             return;
 
-        SnapshotSelection selection = SnapshotSelection.selectSnapshotForPing(data, pingOfShooter);
+        List<PlayerSnapshot> snapshots = LagCompensation.playerSnapshots(data, gameTime, rewindTicks);
 
         // If we couldn't get any snapshot at all, fall back to normal hit detection
-        if (selection.snapshot() == null)
-            shouldDoNormalHitDetect = true;
-        else
-            performSnapshotRaytrace(data, selection, origin, motion, hits);
-
-        if (shouldDoNormalHitDetect)
+        if (snapshots.isEmpty())
+        {
             performNormalPlayerHitboxRaytrace(player, origin, motion, hitBoxSize, hits);
-    }
+            return;
+        }
 
-    private static void performSnapshotRaytrace(PlayerData data, SnapshotSelection selection, Vec3 origin, Vec3 motion, List<BulletHit> hits)
-    {
-        PlayerSnapshot snapshot = selection.snapshot();
-        int snapshotToTry = selection.snapshotIndex();
-        float snapshotPortion = selection.snapshotPortion();
-
-        boolean snapshotBeforeExists = snapshotToTry != 0 && data.getSnapshots()[snapshotToTry - 1] != null;
-        boolean snapshotAfterExists = snapshotToTry + 1 < data.getSnapshots().length && data.getSnapshots()[snapshotToTry + 1] != null;
-
-        float bias = 0.25F;
-        float offset = snapshotPortion + bias;
-
-        float lb = offset - 0.5F;
-        float ub = offset + 0.5F;
-
-        List<BulletHit> onStepHits;
-        List<BulletHit> altStepHits = new ArrayList<>();
-
-        if (offset > 0.5F && snapshotAfterExists)
+        // The first snapshot the shot meets counts, so one pass cannot hit the same player in several poses.
+        for (PlayerSnapshot snapshot : snapshots)
         {
-            // Timestep t and t+1
-            onStepHits = snapshot.raytrace(origin, motion, lb, 1F);
-            if (onStepHits.isEmpty())
+            List<BulletHit> snapshotHits = snapshot.raytrace(origin, motion, 0F, 1F);
+            if (!snapshotHits.isEmpty())
             {
-                altStepHits = data.getSnapshots()[snapshotToTry + 1].raytrace(origin, motion, 0F, lb);
+                hits.addAll(snapshotHits);
+                return;
             }
         }
-        else if (offset < 0.5F && snapshotBeforeExists)
-        {
-            // Timestep t and t-1
-            onStepHits = snapshot.raytrace(origin, motion, 0F, ub);
-            if (onStepHits.isEmpty())
-            {
-                altStepHits = data.getSnapshots()[snapshotToTry - 1].raytrace(origin, motion, ub, 1F);
-            }
-        }
-        else
-        {
-            // Timestep t ONLY
-            onStepHits = snapshot.raytrace(origin, motion, 0F, 1F);
-        }
-
-        hits.addAll(onStepHits);
-        hits.addAll(altStepHits);
     }
 
     private static void performNormalPlayerHitboxRaytrace(Player player, Vec3 origin, Vec3 motion, double hitBoxSize, List<BulletHit> hits)
@@ -209,11 +186,118 @@ public class Raytracer
         return hitLambda;
     }
 
-    private static void checkEntityHit(Entity entity, Vec3 origin, Vec3 motion, float hitBoxSize, List<BulletHit> hits)
+    private static void checkEntityHit(Entity entity, Vec3 origin, Vec3 motion, long gameTime, int rewindTicks, float hitBoxSize, List<BulletHit> hits)
     {
-        EntityHit hit = findHitAgainstEntityAndParts(entity, origin, motion, hitBoxSize);
+        if (entity instanceof IFlanHumanoidBody humanoid && entity instanceof LivingEntity living)
+        {
+            checkHumanoidHit(living, humanoid, origin, motion, gameTime, rewindTicks, hitBoxSize, hits);
+            return;
+        }
+        EntityHit hit = findRewoundHit(entity, origin, motion, gameTime, rewindTicks, hitBoxSize);
+        if (hit == null)
+            hit = findHitAgainstEntityAndParts(entity, origin, motion, hitBoxSize);
         if (hit != null)
             hits.add(new EntityHit(hit.getEntity(), hit.getIntersectTime(), hit.getImpact()));
+    }
+
+    /**
+     * A humanoid is first tested by its boxes, where the shooter saw it and where it is now, as any entity. Only when the
+     * round crosses one are its limbs built, once, in their current pose, and tested at each box crossed, the box the
+     * shooter saw first; a round that passes between them misses, as it would miss a player.
+     */
+    private static void checkHumanoidHit(LivingEntity entity, IFlanHumanoidBody humanoid, Vec3 origin, Vec3 motion, long gameTime, int rewindTicks, float hitBoxSize, List<BulletHit> hits)
+    {
+        final double len2 = motion.lengthSqr();
+        final boolean noMotion = len2 <= 1e-9;
+        AABB current = entity.getBoundingBox();
+        EntityHit boxHit = null;
+        // How far each box crossed lies from where the entity is now, which moves the round onto the limbs instead
+        List<Vec3> offsets = new ArrayList<>(2 * LagCompensation.WINDOW_TICKS + 2);
+        for (AABB box : LagCompensation.entityBoxes(entity, gameTime, rewindTicks))
+        {
+            EntityHit hit = tryHitBox(entity, box.inflate(hitBoxSize), origin, motion, len2, noMotion);
+            if (hit == null)
+                continue;
+            boxHit = boxHit == null ? hit : boxHit;
+            offsets.add(new Vec3((current.minX + current.maxX - box.minX - box.maxX) / 2D, current.minY - box.minY, (current.minZ + current.maxZ - box.minZ - box.maxZ) / 2D));
+        }
+        EntityHit currentHit = findHitAgainstEntityAndParts(entity, origin, motion, hitBoxSize);
+        if (currentHit != null)
+        {
+            boxHit = boxHit == null ? currentHit : boxHit;
+            offsets.add(Vec3.ZERO);
+        }
+        if (boxHit == null)
+            return;
+
+        Optional<HumanoidBody> body = humanoid.flansmodultimateHumanoidBody();
+        if (body.isEmpty())
+        {
+            hits.add(boxHit);
+            return;
+        }
+        PlayerSnapshot snapshot = new PlayerSnapshot(entity, 1F, body.get());
+        for (Vec3 offset : offsets)
+        {
+            List<BulletHit> limbHits = snapshot.raytrace(origin.add(offset), motion, 0F, 1F);
+            if (!limbHits.isEmpty())
+            {
+                hits.addAll(limbHits);
+                return;
+            }
+        }
+        if (!entity.level().isClientSide && ClientHooks.RENDER.isDebugMode())
+            showMissedLimbs(snapshot, offsets.get(0), boxHit.getImpact());
+    }
+
+    /**
+     * Debug mode: a round crossed a humanoid's box but none of its limbs. Marks where it entered the box in magenta and
+     * outlines the limbs where the server tested them, at the box the shooter saw, so they can be compared with the model.
+     */
+    private static void showMissedLimbs(PlayerSnapshot snapshot, Vec3 offset, Vec3 impact)
+    {
+        ClientHooks.RENDER.spawnDebugDot(impact, 1000, 1F, 0F, 1F);
+        Vec3 base = new Vec3(snapshot.pos.x, snapshot.pos.y, snapshot.pos.z).subtract(offset);
+        for (PlayerHitbox hitbox : snapshot.hitboxes)
+        {
+            Vec3[] corners = new Vec3[8];
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3f corner = new Vector3f(hitbox.o.x + ((i & 1) != 0 ? hitbox.d.x : 0F), hitbox.o.y + ((i & 2) != 0 ? hitbox.d.y : 0F), hitbox.o.z + ((i & 4) != 0 ? hitbox.d.z : 0F));
+                hitbox.transform.transformPosition(corner);
+                corners[i] = base.add(corner.x, corner.y, corner.z);
+            }
+            float green = hitbox.type == EnumHitboxType.HEAD ? 1F : 0F;
+            for (int i = 0; i < 8; i++)
+            {
+                // Each edge joins corners that differ in one axis
+                for (int axis = 1; axis < 8; axis <<= 1)
+                {
+                    if ((i & axis) == 0)
+                        ClientHooks.RENDER.spawnDebugVector(corners[i], corners[i | axis].subtract(corners[i]), 1000, 1F, green, 1F);
+                }
+            }
+        }
+    }
+
+    /**
+     * Tests the entity where the shooter saw it, from its recorded boxes. Without a record for that time the entity
+     * is tested where it is now instead.
+     */
+    @Nullable
+    private static EntityHit findRewoundHit(Entity entity, Vec3 origin, Vec3 motion, long gameTime, int rewindTicks, float bulletHitBoxSize)
+    {
+        if (entity.getParts() != null)
+            return null;
+        final double len2 = motion.lengthSqr();
+        final boolean noMotion = len2 <= 1e-9;
+        for (AABB box : LagCompensation.entityBoxes(entity, gameTime, rewindTicks))
+        {
+            EntityHit hit = tryHitBox(entity, box.inflate(bulletHitBoxSize), origin, motion, len2, noMotion);
+            if (hit != null)
+                return hit;
+        }
+        return null;
     }
 
     /**
@@ -317,7 +401,7 @@ public class Raytracer
         // Ray trace the bullet by comparing its next position to its current position
         Vec3 nextPosVec = posVec.add(motion);
 
-        BlockHitResult hit = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity) null));
+        BlockHitResult hit = clipBlocks(level, posVec, nextPosVec);
 
         if (hit.getType() == HitResult.Type.BLOCK)
         {
@@ -348,6 +432,36 @@ public class Raytracer
                 hits = raytraceBlock(level, hit.getLocation().add(direction), hitVec.add(direction), motion, direction, hits, penetration, pos, type);
         }
         return hits;
+    }
+
+    /**
+     * The first block a shot from {@code from} to {@code to} strikes, using {@link #shotShape}.
+     */
+    public static BlockHitResult clipBlocks(BlockGetter level, Vec3 from, Vec3 to)
+    {
+        return BlockGetter.traverseBlocks(from, to, level, (getter, pos) ->
+        {
+            BlockState state = getter.getBlockState(pos);
+            return getter.clipWithInteractionOverride(from, to, pos, shotShape(getter, pos, state), state);
+        }, getter ->
+        {
+            Vec3 back = from.subtract(to);
+            return BlockHitResult.miss(to, Direction.getNearest(back.x, back.y, back.z), BlockPos.containing(to));
+        });
+    }
+
+    /**
+     * The shape of a block that stops shots. Only blocks with a collision shape stop them, so grass, flowers and
+     * cobwebs let them through, but they are struck where they are drawn: fences and walls collide half a block
+     * above their top, which would stop shots fired over them.
+     */
+    public static VoxelShape shotShape(BlockGetter level, BlockPos pos, BlockState state)
+    {
+        VoxelShape collision = state.getCollisionShape(level, pos, CollisionContext.empty());
+        if (collision.isEmpty())
+            return collision;
+        VoxelShape outline = state.getShape(level, pos, CollisionContext.empty());
+        return outline.isEmpty() ? collision : outline;
     }
 
     /**

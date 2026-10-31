@@ -68,13 +68,15 @@ import java.util.*;
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
- * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
+ * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling. The entity box always
+ * has the size Custom NPCs works out for the NPC, on both sides, which it otherwise misses on several changes.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
  * a playing engine sound replaces the Custom NPCs step and idle sounds.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
  * resists knockback while it is a vehicle. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
  * melee against protected riders reaches their vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
- * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
+ * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC. Drawn with the player
+ * model it is hit limb by limb by Flan rounds, headshots included, as players are.</li>
  * <li>Friendly fire: hits from NPCs of the same faction and from players the faction is friendly to land where friendly fire is
  * on, and a hit from a friend never turns the NPC or its faction on that friend.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung. Grenades and
@@ -131,6 +133,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IEngineSoundSource,
         IMechaEquipment,
         IFlanPartTarget,
+        IFlanHumanoidBody,
         IFlanRepairTarget,
         NpcVehicleStateHolder,
         NpcThrowPresentation,
@@ -490,10 +493,25 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return NpcEquipment.combatProjectile((EntityNPCInterface) (Object) this);
     }
 
+    /**
+     * Keeps the entity box at the size Custom NPCs works out for the NPC. It registers its NPCs at 1 x 1 block and resizes the
+     * box on only some of the changes that size depends on: a client reading the spawn data, an animation change, mounting.
+     * An NPC created on the server kept a block-high box there, and one that got off a vehicle kept the 77% box of a rider,
+     * so rounds, arrows and melee aimed at its chest or head passed over it.
+     */
+    @Unique
+    private void wolffsmodnpcsKeepBoxSized()
+    {
+        EntityDimensions size = getDimensions(getPose());
+        if (Float.compare(NpcPlatform.width(size), getBbWidth()) != 0 || Float.compare(NpcPlatform.height(size), getBbHeight()) != 0)
+            refreshDimensions();
+    }
+
     @Inject(method = {"tick", "m_8119_"}, at = @At("TAIL"))
     private void wolffsmodnpcsEquipmentTick(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        wolffsmodnpcsKeepBoxSized();
         if (level().isClientSide)
             return;
         NpcSprinting.tick(npc);
@@ -775,6 +793,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public boolean flansmodultimateModelArmour()
     {
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.MODEL_ARMOUR);
+    }
+
+    @Override
+    public Optional<HumanoidBody> flansmodultimateHumanoidBody()
+    {
+        return NpcHumanoidBody.of((EntityNPCInterface) (Object) this);
     }
 
     @ModifyVariable(method = {"hurt", "m_6469_"}, at = @At("HEAD"), argsOnly = true)

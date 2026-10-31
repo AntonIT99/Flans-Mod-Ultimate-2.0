@@ -1604,6 +1604,8 @@
   "wolffsmodnpcs.weapons.hull_faces_travel.help": "Ein Fahrzeug fährt dorthin, wohin seine Wanne zeigt, und seine Wanne dreht sich mit begrenzter Rate dorthin, wohin es will, während der Turm auf dem Ziel bleibt. Der Sockel eines Flakgeschützes behält seine Richtung. Flugzeuge und Mechas drehen sich wie jeder NPC.",
   "wolffsmodnpcs.weapons.invulnerable": "Unverwundbar",
   "wolffsmodnpcs.weapons.invulnerable.help": "Jeden Schaden ignorieren. Der Befehl /kill und die Leere wirken weiterhin.",
+  "wolffsmodnpcs.weapons.limb_hitboxes": "Körperteil-Hitboxen",
+  "wolffsmodnpcs.weapons.limb_hitboxes.help": "Flan-Geschosse treffen Kopf, Rumpf, Arme und Beine eines NPCs mit Spielermodell wie bei Spielern: Kopftreffer richten mehr Schaden an, und das Rüstungsteil des getroffenen Körperteils hält das Geschoss auf. Ein Geschoss zwischen den Gliedmaßen hindurch verfehlt. Nein kehrt zur eigenen Hitbox des NPCs zurück. NPCs mit dem Modell eines anderen Wesens oder die außerhalb eines Sitzes liegen, sitzen oder kriechen verwenden stets ihre eigene Hitbox.",
   "wolffsmodnpcs.weapons.item_armor": "Rüstung verwenden",
   "wolffsmodnpcs.weapons.armor_potion_effects": "Rüstungstrankeffekte",
   "wolffsmodnpcs.weapons.armor_potion_effects.help": "Erlaubt getragener Flan-Rüstung, Trankeffekte wie Resistenz und Regeneration zu verleihen. Nein entfernt Rüstungstrankeffekte; Rüstungsschutz, Attribute und Bewegungsboni bleiben erhalten. Erfordert Rüstung verwenden.",

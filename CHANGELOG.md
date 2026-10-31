@@ -73,6 +73,7 @@
 * Configurable despawn time for recoverable thrown guns
 * RPM and reload time overlap, and rocket launchers fire faster; guns, AA guns and driveable weapons firing single-round ammunition wait the shorter of their reload time and rate of fire between shots
 * Fixed attachment points (including MP34 and red dot), the Springfield, Kar98k, flare gun, Olympia, WW2 flamethrower and creeper explosions
+* Better hit registration: players' shots meet moving players and NPCs where the shooter saw them, allowing for the client's movement smoothing as well as ping (`bulletSnapshotMin` now adds to it), bullets fired over fences and walls are no longer stopped by their invisible upper collision box, and rounds that strike a player or NPC always deal their damage instead of being swallowed by the damage cooldown of an explosion, fire or melee hit just before; in debug mode, contacts predicted only by the client are drawn grey
 * Fixed the melee sound playing twice, gun idle sounds and Apocalypse entities
 * Stereo content-pack sounds now fade with distance like mono sounds, including vehicle engines and weapons used by players and NPCs
 
@@ -111,6 +112,7 @@
 * Addons can call their own lying-down entities prone, so they fire with prone accuracy and hold their guns forward (`FlansPostures.addProneRule`, `FlansPostures.isProne`)
 * Addons can tell whether a Flan gun item fires, is thrown or is a shield from its definition alone, far cheaper than reading all of its statistics every tick (`FlansEquipment.getWeaponKind`), and make their dying combatants follow the Teams `weaponDrops` and `armourDrops` rules (`FlansTeams.applyDeathDropRules`)
 * Addons driving a seat can read how far the round its driver weapons have loaded reaches round where it goes off, and whether a weapon bank points along the hull rather than turning with the turret
+* Addon entities drawn with the player model can be hit limb by limb like players, with headshots, hit zone damage modifiers and per-piece armour, by stating the proportions they are drawn with (`IFlanHumanoidBody`, `HumanoidBody`); debug mode outlines their limb hitboxes
 * Clients disconnect safely, naming the differing content packs, when their content pack registries do not match the server's
 * Fixed bullet damage to players outside Teams rounds
 * Server-side weapon authority and resource accounting fixes

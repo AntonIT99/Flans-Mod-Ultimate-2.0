@@ -351,8 +351,8 @@ public final class NpcTypeProperties
     {
         long flags = 0L;
         for (Feature feature : Feature.values())
-            // Maintenance and returning home do not affect inherited model properties; their ordinals must not alias a model flag.
-            if (feature != Feature.AUTOMATIC_REPAIRS && feature != Feature.RETURN_WHEN_INACTIVE && options.enabled(feature))
+            // Maintenance, returning home and limb hitboxes do not affect inherited model properties; their ordinals must not alias a model flag.
+            if (feature != Feature.AUTOMATIC_REPAIRS && feature != Feature.RETURN_WHEN_INACTIVE && feature != Feature.LIMB_HITBOXES && options.enabled(feature))
                 flags |= 1L << feature.ordinal();
         return flags;
     }

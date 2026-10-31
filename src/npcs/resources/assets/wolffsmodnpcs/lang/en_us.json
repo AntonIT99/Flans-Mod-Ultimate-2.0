@@ -1604,6 +1604,8 @@
   "wolffsmodnpcs.weapons.hull_faces_travel.help": "A vehicle drives where its hull points and its hull turns toward where it wants to go at a limited rate, while the turret stays on target. An AA gun's base keeps its facing. Planes and mechas turn like any NPC.",
   "wolffsmodnpcs.weapons.invulnerable": "Invulnerable",
   "wolffsmodnpcs.weapons.invulnerable.help": "Ignore all damage. The /kill command and the void still apply.",
+  "wolffsmodnpcs.weapons.limb_hitboxes": "Limb hitboxes",
+  "wolffsmodnpcs.weapons.limb_hitboxes.help": "Flan rounds hit the head, body, arms and legs of an NPC drawn with the player model, as they hit players: headshots deal more damage, and the armour piece of the part struck resists the round. A round passing between the limbs misses. No goes back to the NPC's own hitbox. NPCs with another mob's model, or lying, sitting or crawling outside a seat, always use their own hitbox.",
   "wolffsmodnpcs.weapons.item_armor": "Use equipped armor",
   "wolffsmodnpcs.weapons.armor_potion_effects": "Armor potion effects",
   "wolffsmodnpcs.weapons.armor_potion_effects.help": "Allow equipped Flan armor to grant potion effects, including Resistance and Regeneration. No removes armor-granted potion effects while keeping armor protection, attributes and movement bonuses. Requires Use equipped armor.",

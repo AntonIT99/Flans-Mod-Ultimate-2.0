@@ -8,6 +8,7 @@ import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.physics.ModPhysics;
+import com.flansmodultimate.common.raytracing.LagCompensation;
 import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.BlockHit;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -20,7 +21,6 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.ParticleNameCodec;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
-import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
@@ -96,8 +96,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected boolean lastHitHeadshot = false;
     protected float lastHitPenAmount = 1F;
 
-    /** If this is non-zero, then the player raytrace code will look back in time to when the player thinks their bullet should have hit */
-    protected int pingOfShooter;
+    /** Ticks the raytrace looks back in time, to where the shooting player saw its targets; 0 for a shot aimed on the server */
+    protected int rewindTicks;
 
     /** For homing missiles */
     protected Entity lockedOnTo; // For homing missiles
@@ -459,7 +459,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 return;
             }
 
-            updatePingOfShooter(level);
+            updateRewindTicks(level);
             handleSubmunitionsTimers();
             handleVLSTimer();
             initLookAndOrigin();
@@ -549,10 +549,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         checkForUUIDs = false;
     }
 
-    protected void updatePingOfShooter(Level level)
+    protected void updateRewindTicks(Level level)
     {
         if (!level.isClientSide)
-            firedShot.getPlayerAttacker().ifPresent(player -> pingOfShooter = EntityPlatform.latency(player));
+            rewindTicks = LagCompensation.rewindTicks(firedShot);
     }
 
     protected void handleSubmunitionsTimers()
@@ -705,7 +705,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         Vec3 origin = position();
         Vec3 traceMotion = velocity;
         List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir < 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity,
-            pingOfShooter, 0F, getHitboxSize(), configType);
+            rewindTicks, 0F, getHitboxSize(), configType);
 
         float feedbackProgress = 1F;
 

@@ -11,6 +11,7 @@ import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.raytracing.LagCompensation;
 import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.*;
 import com.flansmodultimate.common.types.*;
@@ -194,7 +195,7 @@ public final class ShootingHelper
             if (bulletType.isCanSpotEntityDriveable())
                 driveableHit.getDriveable().setEntityMarker(200);
 
-            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 0F, 0F, 1F);
+            spawnHitDebugDot(level, hit, 0F, 0F, 1F);
             showHitMarker = true;
         }
         else if (bulletHit instanceof PlayerBulletHit playerHit)
@@ -211,7 +212,7 @@ public final class ShootingHelper
             if (bullet != null)
                 bullet.getPenetrationLosses().add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.EnumType.PLAYER));
 
-            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 0F, 0F);
+            spawnHitDebugDot(level, hit, 1F, 0F, 0F);
             showHitMarker = true;
         }
         else if (bulletHit instanceof PartBodyHit partHit)
@@ -222,7 +223,7 @@ public final class ShootingHelper
             penetratingPower = entityHitData.penetratingPower();
             lastHitPenAmount = entityHitData.lastHitPenAmount();
 
-            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 0.5F, 0F);
+            spawnHitDebugDot(level, hit, 1F, 0.5F, 0F);
             showHitMarker = true;
         }
         else if (bulletHit instanceof EntityHit entityHit && entityHit.getEntity() != null)
@@ -234,14 +235,14 @@ public final class ShootingHelper
             penetratingPower = entityHitData.penetratingPower();
             lastHitPenAmount = entityHitData.lastHitPenAmount();
 
-            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 1F, 0F);
+            spawnHitDebugDot(level, hit, 1F, 1F, 0F);
             showHitMarker = true;
         }
         else if (bulletHit instanceof BlockHit bh && bh.getHitResult().getType() == HitResult.Type.BLOCK)
         {
             penetratingPower = handleBlockHit(level, bh.getHitResult(), shootingMotion, shot, penetratingPower, bullet);
 
-            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 0F, 1F, 0F);
+            spawnHitDebugDot(level, hit, 0F, 1F, 0F);
         }
 
         if (penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))
@@ -310,6 +311,26 @@ public final class ShootingHelper
         return new HitData(penetratingPower, lastHitPenAmount, hitData.lastHitHeadshot());
     }
 
+    /**
+     * Lets a round's damage land whatever hurt the target just before. Vanilla and Custom NPCs drop, or cut down, any
+     * hit within half a second of the last one unless it is stronger, so splash from an explosion, fire or a melee
+     * blow would swallow the bullets that follow it. Rapid fire relies on the same reset after each hit.
+     */
+    public static void clearDamageCooldown(Entity entity)
+    {
+        if (entity instanceof LivingEntity living)
+            living.invulnerableTime = 0;
+    }
+
+    /** Debug dots for the server's contacts keep their colour; the contacts a client's copy of the round predicts are grey */
+    private static void spawnHitDebugDot(Level level, Vec3 hit, float red, float green, float blue)
+    {
+        if (level.isClientSide)
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, 0.5F, 0.5F, 0.5F);
+        else
+            ClientHooks.RENDER.spawnDebugDot(hit, 1000, red, green, blue);
+    }
+
     /** Whether a driveable carries someone the shooter's fire spares, so that the round leaves it unharmed. */
     private static boolean carriesFriend(@Nullable Seat[] seats, @Nullable LivingEntity shooter)
     {
@@ -325,6 +346,7 @@ public final class ShootingHelper
 
     private static boolean hurt(Entity entity, @Nullable PartBodyHit partHit, DamageSource source, float damage)
     {
+        clearDamageCooldown(entity);
         if (partHit != null && entity instanceof IFlanPartTarget target)
             return target.flansmodultimateHurtPart(partHit.getPart().getShortName(), source, damage);
         return entity.hurt(source, damage);
@@ -760,8 +782,8 @@ public final class ShootingHelper
         Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getSpreadPattern());
 
         HitData hitData = new HitData(getInitialPenetratingPower(shot), 0F, false);
-        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F,
-            shot.getBulletType());
+        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, LagCompensation.rewindTicks(shot),
+            hitData.penetratingPower(), 0F, shot.getBulletType());
         Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;
         Vec3 feedbackEnd = shootingOrigin.add(shootingVector);

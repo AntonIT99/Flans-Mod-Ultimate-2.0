@@ -31,7 +31,7 @@ public class BulletHitEvent extends FlanCancellableEvent
         }
         else if (hit instanceof PlayerBulletHit playerBulletHit)
         {
-            hitEntity = playerBulletHit.getHitbox().player;
+            hitEntity = playerBulletHit.getHitbox().entity;
         }
         else if (hit instanceof EntityHit || hit instanceof PartBodyHit)
         {
