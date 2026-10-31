@@ -284,6 +284,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             slot.setLastSeen(now);
             slot.setLastPosition(npc.position());
             boolean dead = !npc.isAlive() || npc.isKilled();
+            if (!dead)
+                keepTrained(npc, current.getSettings().getDifficulty());
             if (dead && slot.getDiedAt() == 0)
                 fallenUnreported(current, slot, now);
             if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && slot.isRetired())
@@ -296,6 +298,17 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             // The NPC was removed without dying, by a command or another mod.
             fallen(current, slot, now);
             forget(current, slot);
+        }
+    }
+
+    /** Trains a bot and the crew riding in it again once the round's difficulty has changed, so a saved level takes effect at once. */
+    private static void keepTrained(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    {
+        BotFactory.keepTrained(npc, difficulty);
+        for (Entity passenger : npc.getPassengers())
+        {
+            if (passenger instanceof EntityNPCInterface crew)
+                BotFactory.keepTrained(crew, difficulty);
         }
     }
 

@@ -80,6 +80,16 @@ final class BotSuppression implements ISuppressionListener
         npc.stats.ranged.setAccuracy((int) Math.round(accuracy * kept));
     }
 
+    /** Takes a bot's newly trained accuracy as the one it gets back once suppression wears off, and aims worse from it meanwhile. */
+    static void rebase(EntityNPCInterface npc, int accuracy)
+    {
+        State state = STATES.get(npc.getUUID());
+        if (state == null)
+            return;
+        STATES.put(npc.getUUID(), new State(state.level(), state.tick(), accuracy));
+        aim(npc, accuracy, state.at(npc.level().getGameTime()));
+    }
+
     /** Whether a bot is pinned down by fire and holds where it is. */
     static boolean isPinned(Entity npc)
     {
