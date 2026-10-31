@@ -93,22 +93,32 @@ public final class ParticleHelper
      */
     private static int spawnMeasured(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
     {
+        Particle particle = createFromString(s, x, y, z, vx, vy, vz, scale, lifetimeScale);
+        return particle == null ? NO_PARTICLE : particle.getLifetime();
+    }
+
+    /** Creates a particle through the shared budget, allowing a smoke source to retain ownership of it. */
+    @Nullable
+    @SuppressWarnings("java:S107") // Mirrors the existing particle API's position, velocity, scale and lifetime options.
+    static Particle createFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
+    {
         if (!shouldSpawn(x, y, z))
-            return NO_PARTICLE;
+            return null;
 
         String normalized = normalize(s);
         if (normalized == null)
         {
             warnCouldNotParse(s);
-            return NO_PARTICLE;
+            return null;
         }
 
         Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);
         if (legacyRequest.isPresent())
         {
-            if (!spawnLegacyResourceParticle(legacyRequest.get(), BlockPos.containing(x, y, z), x, y, z, vx, vy, vz, scale, lifetimeScale))
+            Particle particle = spawnLegacyResourceParticle(legacyRequest.get(), BlockPos.containing(x, y, z), x, y, z, vx, vy, vz, scale, lifetimeScale);
+            if (particle == null)
                 warnCouldNotParse(s);
-            return NO_PARTICLE;
+            return particle;
         }
 
         // Legacy entity-effect particles take their colour from the velocity, so they are not cached by name.
@@ -121,15 +131,16 @@ public final class ParticleHelper
         if (opt.isEmpty())
         {
             warnCouldNotParse(s);
-            return NO_PARTICLE;
+            return null;
         }
 
         Particle particle = Minecraft.getInstance().particleEngine.createParticle(opt.get(), x, y, z, vx, vy, vz);
         if (particle == null)
-            return NO_PARTICLE;
+            return null;
 
         scaleParticle(particle, scale);
-        return scaleLifetime(particle, lifetimeScale);
+        scaleLifetime(particle, lifetimeScale);
+        return particle;
     }
 
     /**
@@ -181,6 +192,7 @@ public final class ParticleHelper
     public static void tick()
     {
         ParticleWind.tick();
+        SmokeClouds.tick();
         ExplosionSpectacle.tick();
         if (ACTIVE_EMISSIONS.isEmpty() && SMOKE_SHELLS.isEmpty())
             return;
@@ -342,44 +354,42 @@ public final class ParticleHelper
         addParticle(LegacyBlockParticle.create(minecraft.level, state, sourcePos, variant, x, y, z, vx, vy, vz), scale, 1.0F);
     }
 
-    private static boolean spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale,
+    @Nullable
+    private static Particle spawnLegacyResourceParticle(LegacyResourceRequest request, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale,
         float lifetimeScale)
     {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
-            return true;
+            return null;
 
         ClientLevel level = minecraft.level;
         switch (request.kind())
         {
             case ICON_CRACK :
             {
-                Optional<ItemStack> stack = getLegacyItemStack(request.resourceId());
-                if (stack.isEmpty())
-                    return false;
-                addParticle(new LegacyItemParticle(level, stack.get(), x, y, z, vx, vy, vz), scale, lifetimeScale);
-                return true;
+                return getLegacyItemStack(request.resourceId()).map(stack -> addParticle(new LegacyItemParticle(level, stack, x, y, z, vx, vy, vz), scale, lifetimeScale)).orElse(null);
             }
             case BLOCK_CRACK, BLOCK_DUST :
             {
                 Optional<BlockState> state = ModUtils.getBlockState(request.resourceId());
                 if (state.isEmpty())
-                    return false;
+                    return null;
                 LegacyBlockParticle.Variant variant = request.kind() == LegacyResourceKind.BLOCK_DUST ? LegacyBlockParticle.Variant.DUST : LegacyBlockParticle.Variant.CRACK;
-                addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale, lifetimeScale);
-                return true;
+                return addParticle(LegacyBlockParticle.create(level, state.get(), sourcePos, variant, x, y, z, vx, vy, vz), scale, lifetimeScale);
             }
         }
-        return false;
+        return null;
     }
 
-    private static void addParticle(Particle particle, float scale, float lifetimeScale)
+    @Nullable
+    private static Particle addParticle(Particle particle, float scale, float lifetimeScale)
     {
         if (particle == null)
-            return;
+            return null;
         scaleParticle(particle, scale);
         scaleLifetime(particle, lifetimeScale);
         Minecraft.getInstance().particleEngine.add(particle);
+        return particle;
     }
 
     private static void scaleParticle(Particle particle, float scale)
@@ -394,14 +404,11 @@ public final class ParticleHelper
      * lifetime short instead simply ends it early, which is exactly how a brief detonation should
      * clear. The floor of one tick keeps a heavily shortened particle visible for a frame rather
      * than having it vanish before it is ever drawn.
-     *
-     * @return the lifetime the particle ended up with, in ticks
      */
-    private static int scaleLifetime(Particle particle, float lifetimeScale)
+    private static void scaleLifetime(Particle particle, float lifetimeScale)
     {
         if (Float.isFinite(lifetimeScale) && lifetimeScale > 0F && lifetimeScale != 1.0F)
             particle.setLifetime(Math.max(1, Math.round(particle.getLifetime() * lifetimeScale)));
-        return particle.getLifetime();
     }
 
     /**
@@ -487,7 +494,7 @@ public final class ParticleHelper
 
     private static boolean takeFromBudget(ClientLevel level, @Nullable ModClientConfig config)
     {
-        int tickBudget = config == null ? 2048 : config.maxFlansParticlesPerTick;
+        int tickBudget = config == null ? 128 : config.maxFlansParticlesPerTick;
         long gameTime = level.getGameTime();
         if (particleBudgetTick != gameTime)
         {

@@ -522,7 +522,10 @@ public final class ModCommonConfig
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);
         ENTITY_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending entity-hit particle packets to clients.").defineInRange("entityHitParticleRange", 64.0, 1.0, 4096.0);
         BLOCK_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending block-hit particle packets to clients.").defineInRange("blockHitParticleRange", 64.0, 1.0, 4096.0);
-        SMOKE_PARTICLES_COUNT = builder.comment("Number of smoke particles spawned per smoke packet.").defineInRange("smokeParticlesCount", 50, 0, 10000);
+        SMOKE_PARTICLES_COUNT = builder
+            .comment("Requested smoke particles per projectile per tick; SmokeParticlesCount in a definition overrides this value.",
+                "Clients limit each sustained smoke source to 2 new particles per tick and 64 live particles, independently of the global particle budget.")
+            .defineInRange("smokeParticlesCount", 50, 0, 10000);
         SMOKE_PARTICLES_RANGE = builder.comment("Range in blocks for sending smoke particle packets to clients.").defineInRange("smokeParticlesRange", 32.0, 1.0, 4096.0);
         builder.pop();
 

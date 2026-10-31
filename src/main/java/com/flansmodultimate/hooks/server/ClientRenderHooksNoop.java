@@ -56,6 +56,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public void spawnSmokeCloud(int sourceId, Vec3 position, int count, String particleType)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void tickDriveableDamageEffects(Driveable driveable)
     {
         /* no-op */

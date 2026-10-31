@@ -20,12 +20,20 @@ public class PacketFlak implements IClientPacket
     private int numParticles;
     /** Particle type */
     private String particleType;
+    /** Non-negative only for a persistent projectile smoke source, not a one-off flak burst. */
+    private int smokeSourceId = -1;
 
     public PacketFlak(Vec3 position, int n, String s)
     {
         this.position = position;
         numParticles = n;
         particleType = s;
+    }
+
+    public PacketFlak(Vec3 position, int n, String s, int smokeSourceId)
+    {
+        this(position, n, s);
+        this.smokeSourceId = smokeSourceId;
     }
 
     @Override
@@ -36,6 +44,7 @@ public class PacketFlak implements IClientPacket
         data.writeDouble(position.z);
         data.writeInt(numParticles);
         ParticleNameCodec.write(data, particleType);
+        data.writeInt(smokeSourceId);
     }
 
     @Override
@@ -44,11 +53,18 @@ public class PacketFlak implements IClientPacket
         position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         numParticles = data.readInt();
         particleType = ParticleNameCodec.read(data);
+        smokeSourceId = data.readInt();
     }
 
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
+        if (smokeSourceId >= 0)
+        {
+            ClientHooks.RENDER.spawnSmokeCloud(smokeSourceId, position, numParticles, particleType);
+            return;
+        }
+
         for (int i = 0; i < numParticles; i++)
         {
             double ox = position.x + level.random.nextGaussian();

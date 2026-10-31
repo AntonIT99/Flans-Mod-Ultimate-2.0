@@ -82,6 +82,7 @@
 * Oculus/Iris shader packs: correct glow layers and muzzle flashes, and a cheaper shadow pass
 * Sodium and Embeddium fast vertex writing, and EntityCulling compatibility
 * Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters
+* Smoke grenades and shells have separate emission and live-particle limits for each source, including existing content packs; `flansmod.smoker` and `flansmod.smoker1` form smoke at their origin instead of throwing multiplying smoke emitters away from the detonation
 * Clouds no longer draw over Flan particles
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`
 * Faster content startup and creative search
@@ -90,6 +91,7 @@
 
 ## Settings & Commands
 
+* `maxFlansParticlesPerTick` now defaults to 128 and has a maximum of 4096; it limits new particles per tick, not the total still alive
 * Reorganized quick options, with precise sound range inputs, numeric inputs for wide ranges and themed General Settings sections
 * Restore Defaults per screen, previewing which settings change
 * New server settings `maxPlayerHealth`, `gunDevMode`, `enableKillMessages` and `showDistanceInKillMessage`; new client settings `showHitMarker` with colour and opacity, and `showDetailedItemDescriptions`

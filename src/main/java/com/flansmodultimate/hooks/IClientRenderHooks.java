@@ -65,6 +65,9 @@ public interface IClientRenderHooks
     /** A vehicle smoke-launcher shell, flown and burst entirely on the client. */
     void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks);
 
+    /** Updates a projectile's smoke cloud with its own bounded particle allowance. */
+    void spawnSmokeCloud(int sourceId, Vec3 position, int count, String particleType);
+
     /** Gives off the smoke, fire, steam and sparks of the driveable's damage and, once it is a wreck, of its burning out. Client tick. */
     void tickDriveableDamageEffects(Driveable driveable);
 
