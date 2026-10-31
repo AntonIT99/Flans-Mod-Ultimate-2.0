@@ -51,7 +51,10 @@ const management = new Set([
 for (const tool of TOOLS) {
   if (management.has(tool.name)) continue;
   server.registerTool(tool.name, {
-    description: tool.description,
+    // Upstream's schema incorrectly says the user must click the overlay first.
+    description: tool.name === "enter_control_mode"
+      ? "Enter MCP control mode directly through the API. No manual overlay click is required in the pinned mod version. Verify control_mode is true before input; call exit_control_mode when finished."
+      : tool.description,
     inputSchema: tool.inputSchema,
   }, async (params) => {
     try {

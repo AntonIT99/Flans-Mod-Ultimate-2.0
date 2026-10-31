@@ -68,11 +68,17 @@ bridge process with `FMU_MCP_PORT` set to that version's second-client port.
    incomplete; use screenshots and coordinates for those controls. In these dev
    environments, upstream button labels may also be blank, IDs may all be zero,
    and widgets may appear twice. Prefer observed indexes or coordinates to IDs.
-4. For interactive tests, activate the mod's MCP overlay/pause-screen control
-   button in Minecraft, then call `enter_control_mode`. If the mod requests a
-   user handoff, report that concrete requirement. Inspection is available
-   without taking control. `mcp.background_input=true` keeps injected input inside
-   Minecraft rather than moving or confining the Windows desktop cursor.
+4. For interactive tests, call `enter_control_mode` directly on the matching
+   MCP server and verify that the result contains `"control_mode": true`.
+   No manual overlay click or user handoff is required by the pinned mod version;
+   direct takeover was verified on both Forge 1.20.1 and NeoForge 1.21.1. The
+   upstream tool description and its "ESC > MCP Take Over" error hint are stale;
+   the adapter corrects the tool description. If input reports "not in control
+   mode", call `enter_control_mode` and check its result before retrying input.
+   Report an actual takeover error instead of assuming that a click is needed.
+   Inspection is available without taking control. `mcp.background_input=true`
+   keeps injected input inside Minecraft rather than moving or confining the
+   Windows desktop cursor.
 5. Test in a disposable development world. Use `execute_command` to arrange items,
    entities and game mode when useful, then exercise the actual input flow with
    `press_key`, `click`, `use_item`, and the configured mod key bindings. Capture
