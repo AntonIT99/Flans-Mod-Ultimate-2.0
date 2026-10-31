@@ -7,9 +7,11 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /** Client-only snapshot store. Server snapshots remain the sole source of truth. */
@@ -25,6 +27,15 @@ public final class TeamsClientState
     public static PacketTeamsState get()
     {
         return snapshot;
+    }
+
+    /** The round clock also names the optional phases whose match clock is stopped. */
+    public static String clock(PacketTeamsState state)
+    {
+        if (state.isRoundRunning() && (state.isStaging() || state.isOvertime()))
+            return Component.translatable(state.isStaging() ? "gui.flansmodultimate.teams.warmup" : "gui.flansmodultimate.teams.overtime").getString();
+        int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
+        return String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60);
     }
 
     public static boolean vehiclesCanZoom()
@@ -47,8 +58,10 @@ public final class TeamsClientState
         Player viewer = minecraft.player;
         if (!hasActiveRound() || viewer == null || renderedPlayer == viewer || isTeamsSpectator(viewer))
             return false;
-        if (isTeamsSpectator(renderedPlayer))
+        if (snapshot.isHideAllNameplates() || isTeamsSpectator(renderedPlayer))
             return true;
+        if (snapshot.isShowEnemyNameplates())
+            return false;
         if (!snapshot.isSortedByTeam())
             return true;
 

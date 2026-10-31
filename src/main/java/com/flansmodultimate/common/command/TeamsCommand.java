@@ -114,6 +114,7 @@ public final class TeamsCommand
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getShortName), builder)).executes(TeamsCommand::giveRewardBox))))
             .then(addMapAdminCommands(adminCommands()));
         addLabjacCommands(root);
+        RoundRulesCommand.register(root);
         TeamsEditorCommand.addTo(root);
 
         com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> node = dispatcher.register(root);

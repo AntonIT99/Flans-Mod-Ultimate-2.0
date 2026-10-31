@@ -199,7 +199,8 @@ public class GunItemHandler
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
-        if (item.configType.isDeployable() || !gunCanBeHandled(player) || FlansMod.teamsManager.isPacifism())
+        if (item.configType.isDeployable() || !gunCanBeHandled(player) || FlansMod.teamsManager.isPacifism() || FlansMod.teamsManager.getRoundRuleRuntime().blocksCombat(player)
+            || FlansMod.teamsManager.getRoundRuleRuntime().blocksItemUse(player, gunStack))
             return;
         if ((!item.configType.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;

@@ -14,6 +14,8 @@
 
 ## Teams
 
+* Opt-in round rules, configurable in the Teams command centre: shared respawn waves, limited lives, objective overtime, per-side vehicle limits and replacement delays, capture restrictions, protected headquarters, warm-up and ready checks, team-switch restrictions, flag-carrier equipment and movement restrictions, and nameplate, kill-message and spectator controls; server defaults and per-round overrides are saved and apply at the next round start
+
 * Conquest and Domination default to `killticketvalue 1`, `scorelimit 60` and `ticketdraininterval 100` (five seconds), preserving the relative value of kills and objective control; saved game type settings and round limits are kept
 
 * Optional `/teams restoreBlocks true` restores changed map blocks and block entities after a round ends, stops or switches, including explosion damage and broken glass; changes are saved across server restarts

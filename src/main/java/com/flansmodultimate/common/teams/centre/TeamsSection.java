@@ -129,6 +129,10 @@ public final class TeamsSection
         });
         tag.put(POOLS, pools);
         CompoundTag rules = rules(manager);
+        rules.put("roundRuleDefaults", manager.getRoundRuleDefaults().save());
+        CompoundTag roundOverrides = new CompoundTag();
+        rounds.forEach(round -> roundOverrides.put(round.getId().toString(), round.getRules().save()));
+        rules.put("roundRuleOverrides", roundOverrides);
         rules.put(GAME_RULES, gameRules(player));
         tag.put(RULES, rules);
         tag.put(SETTINGS, settings(manager));

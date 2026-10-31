@@ -251,6 +251,12 @@ public abstract class GameType
         return manager.findSpawnPoint(player, false).orElse(null);
     }
 
+    /** A decisive win independent of the clock; objective modes can separate timeout wins to permit overtime. */
+    public boolean hasWinnerBeforeTimeLimit(TeamsManager manager, Team team)
+    {
+        return hasWinner(manager, team);
+    }
+
     public boolean hasWinner(TeamsManager manager, Team team)
     {
         return manager.getTeamScore(team) >= manager.getCurrentRound().map(TeamsRound::getScoreLimit).orElse(Integer.MAX_VALUE);

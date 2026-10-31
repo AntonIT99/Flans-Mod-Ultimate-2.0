@@ -73,6 +73,18 @@ public final class PacketTeamsState implements IClientPacket
 
     private OpenScreen openScreen = OpenScreen.NONE;
     private boolean enabled;
+    @Getter
+    private boolean hideAllNameplates;
+    @Getter
+    private boolean showEnemyNameplates;
+    @Getter
+    private boolean requireReady;
+    @Getter
+    private boolean ready;
+    @Getter
+    private boolean staging;
+    @Getter
+    private boolean overtime;
     private boolean vehiclesCanZoom;
     private boolean roundRunning;
     private boolean sortedByTeam;
@@ -121,6 +133,13 @@ public final class PacketTeamsState implements IClientPacket
         PacketTeamsState packet = new PacketTeamsState();
         packet.openScreen = openScreen;
         packet.enabled = manager.isEnabled();
+        var roundRules = manager.getRoundRuleRuntime();
+        packet.showEnemyNameplates = roundRules.rules().enabled(RoundRule.SHOW_ENEMY_NAMEPLATES);
+        packet.hideAllNameplates = roundRules.rules().enabled(com.flansmodultimate.common.teams.RoundRule.HIDE_ALL_NAMEPLATES);
+        packet.requireReady = roundRules.rules().enabled(com.flansmodultimate.common.teams.RoundRule.REQUIRE_READY);
+        packet.ready = roundRules.isReady(viewer);
+        packet.staging = roundRules.isStaging();
+        packet.overtime = roundRules.isOvertime();
         packet.vehiclesCanZoom = manager.isVehiclesCanZoom();
         packet.roundRunning = manager.isRoundRunning();
         packet.timeLeftTicks = manager.getRoundTimeLeftTicks();
@@ -269,6 +288,12 @@ public final class PacketTeamsState implements IClientPacket
     {
         data.writeByte(openScreen.ordinal());
         data.writeBoolean(enabled);
+        data.writeBoolean(hideAllNameplates);
+        data.writeBoolean(showEnemyNameplates);
+        data.writeBoolean(requireReady);
+        data.writeBoolean(ready);
+        data.writeBoolean(staging);
+        data.writeBoolean(overtime);
         data.writeBoolean(vehiclesCanZoom);
         data.writeBoolean(roundRunning);
         data.writeBoolean(sortedByTeam);
@@ -375,6 +400,12 @@ public final class PacketTeamsState implements IClientPacket
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
         enabled = data.readBoolean();
+        hideAllNameplates = data.readBoolean();
+        showEnemyNameplates = data.readBoolean();
+        requireReady = data.readBoolean();
+        ready = data.readBoolean();
+        staging = data.readBoolean();
+        overtime = data.readBoolean();
         vehiclesCanZoom = data.readBoolean();
         roundRunning = data.readBoolean();
         sortedByTeam = data.readBoolean();

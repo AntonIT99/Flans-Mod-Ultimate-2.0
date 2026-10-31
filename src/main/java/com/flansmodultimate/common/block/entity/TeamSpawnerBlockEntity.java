@@ -115,11 +115,11 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
                 if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
                 {
                     Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D, pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D, 0F, null,
-                        template.copyWithCount(1));
+                        template.copyWithCount(1), spawner.getOwningTeam());
                     spawned = driveable;
                 }
                 else if (template.getItem() instanceof AAGunItem aaGunItem)
-                    spawned = aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null);
+                    spawned = aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null, spawner.getOwningTeam());
                 if (spawned != null)
                     spawned.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
                 continue;

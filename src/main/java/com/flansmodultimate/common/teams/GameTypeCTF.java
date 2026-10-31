@@ -78,7 +78,7 @@ public final class GameTypeCTF extends GameTypeTDM
     private void flagTouched(TeamsManager manager, LivingEntity fighter, Flag flag)
     {
         Flagpole base = flag.getBase();
-        if (base == null || !manager.isBaseInCurrentMap(base))
+        if (base == null || !manager.isBaseInCurrentMap(base) || !manager.getRoundRuleRuntime().mayCarryFlag(fighter))
             return;
         Team fighterTeam = TeamsCombatants.getTeam(fighter);
         Team flagTeam = manager.getTeamForBase(base);

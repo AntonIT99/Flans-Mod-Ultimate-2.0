@@ -992,8 +992,7 @@ public final class ClientHudOverlays
     /** Remaining round time as m:ss, like the legacy banner. */
     private static String timeText(PacketTeamsState state)
     {
-        int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
-        return String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60);
+        return TeamsClientState.clock(state);
     }
 
     /** With more than two sides the banner has no end for each, so their scores go in a row under the clock, each in its colour. */

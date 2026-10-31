@@ -32,6 +32,7 @@ public final class TeamsMenuScreen extends Screen
     private static final List<Entry> ENTRIES = List.of(new Entry("gui.flansmod.teams.choose_team", PacketTeamsAction::openTeamMenu),
         new Entry("gui.flansmod.teams.choose_class", PacketTeamsAction::openClassMenu), new Entry("gui.flansmod.teams.scores", PacketTeamsAction::openScoreboard));
     private boolean showCommandCentre;
+    private boolean showReady;
 
     private record Entry(String titleKey, Supplier<PacketTeamsAction> request)
     {}
@@ -42,9 +43,12 @@ public final class TeamsMenuScreen extends Screen
     }
 
     @Override
+    @SuppressWarnings("DataFlowIssue") // Screen assigns minecraft before calling init.
     protected void init()
     {
         showCommandCentre = minecraft.player != null && minecraft.player.hasPermissions(FlansCommandCentre.PERMISSION_LEVEL);
+        var state = com.flansmodultimate.client.teams.TeamsClientState.get();
+        showReady = state != null && state.isStaging() && state.isRequireReady();
         int left = width / 2 - PANEL_WIDTH / 2;
         int top = panelTop();
         for (int i = 0; i < ENTRIES.size(); i++)
@@ -52,12 +56,18 @@ public final class TeamsMenuScreen extends Screen
             Entry entry = ENTRIES.get(i);
             addRenderableWidget(Button.builder(Component.translatable(entry.titleKey()), ignored -> open(entry)).bounds(left + 10, top + HEADER_HEIGHT + 2 + ROW_HEIGHT * i, 236, 20).build());
         }
+        if (showReady && state != null)
+            addRenderableWidget(Button.builder(Component.translatable(state.isReady() ? "gui.flansmodultimate.teams.unready" : "gui.flansmodultimate.teams.ready"), ignored ->
+            {
+                onClose();
+                PacketHandler.sendToServer(PacketTeamsAction.toggleReady());
+            }).bounds(left + 10, top + HEADER_HEIGHT + 2 + ROW_HEIGHT * ENTRIES.size(), 236, 20).build());
         if (showCommandCentre)
             addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.centre.title"), ignored ->
             {
                 onClose();
                 PacketHandler.sendToServer(PacketCommandCentreAction.open());
-            }).bounds(left + 10, top + HEADER_HEIGHT + 2 + ROW_HEIGHT * ENTRIES.size(), 236, 20).build());
+            }).bounds(left + 10, top + HEADER_HEIGHT + 2 + ROW_HEIGHT * (ENTRIES.size() + (showReady ? 1 : 0)), 236, 20).build());
     }
 
     /** Closes this menu first, so a refusal the server sends to chat is not hidden behind it. */
@@ -74,7 +84,7 @@ public final class TeamsMenuScreen extends Screen
 
     private int rowCount()
     {
-        return ENTRIES.size() + (showCommandCentre ? 1 : 0);
+        return ENTRIES.size() + (showCommandCentre ? 1 : 0) + (showReady ? 1 : 0);
     }
 
     @Override

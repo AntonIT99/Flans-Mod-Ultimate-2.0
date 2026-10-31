@@ -657,6 +657,9 @@ public final class CommonEventHandler
      */
     private static void sendKillMessage(LivingEntity victim, DamageSource source)
     {
+        if (TeamsCombatants.getPlayingTeam(FlansMod.teamsManager, victim) != null
+            && FlansMod.teamsManager.getRoundRuleRuntime().rules().enabled(com.flansmodultimate.common.teams.RoundRule.HIDE_KILL_MESSAGES))
+            return;
         if (!ModCommonConfig.enableKillMessages() || !(source.getEntity() instanceof LivingEntity killer) || killer == victim || !isKillFeedFighter(killer))
             return;
         if (!ModCommonConfig.showBotKillsInKillFeed() && !(killer instanceof ServerPlayer) && !(victim instanceof ServerPlayer))

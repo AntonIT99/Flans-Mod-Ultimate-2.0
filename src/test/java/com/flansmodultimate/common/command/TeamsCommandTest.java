@@ -35,6 +35,19 @@ class TeamsCommandTest
     }
 
     @Test
+    void roundRulesAndReadinessHaveExecutableCommands()
+    {
+        assertRuns("teams ready");
+        assertRuns("teams ready false");
+        assertRuns("teams admin roundrule defaults respawnWaveSeconds 15");
+        assertRuns("teams admin roundrule 0 playerLives 3");
+        assertRuns("teams admin roundrule 0 playerLives inherit");
+        assertRuns("teams admin roundrule 0 playerLives");
+        assertRuns("teams admin roundrule 0 flagBannedItems \"minecraft:bow,minecraft:crossbow\"");
+        assertRuns("teams admin roundrule 0 flagBannedItems \"\"");
+    }
+
+    @Test
     void regenerationAndStopAreAvailableAtTheRoot()
     {
         assertRuns("teams regeneration true");

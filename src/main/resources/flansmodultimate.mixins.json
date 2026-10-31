@@ -15,7 +15,8 @@
       "LivingEntityWaterWalkingMixin",
       "PlayerDriveableEdgeMixin",
       "ProjectileUtilAAGunHullMixin",
-      "ServerGamePacketListenerDriveableMixin"
+      "ServerGamePacketListenerDriveableMixin",
+      "ServerPlayerMixin"
   ],
   "client": [
       "BufferSourceAccessor",

@@ -126,12 +126,20 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         return configType.isHoldToThrow() && throwGrenade(player.level(), player, stack, true, underhand);
     }
 
+    private static boolean roundAllowsThrow(Level level, Player player, ItemStack stack)
+    {
+        if (level.isClientSide)
+            return true;
+        var rules = FlansMod.teamsManager.getRoundRuleRuntime();
+        return !rules.blocksCombat(player) && !rules.blocksItemUse(player, stack);
+    }
+
     private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand)
     {
         PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade
-        if (configType.isCanThrow() && !FlansMod.teamsManager.isPacifism() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
+        if (configType.isCanThrow() && !FlansMod.teamsManager.isPacifism() && roundAllowsThrow(level, player, stack) && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
         {
             // Delay the next throw / weapon fire / whatnot
             data.setShootTimeRight(configType.getThrowDelay());

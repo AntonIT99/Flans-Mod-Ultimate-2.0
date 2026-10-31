@@ -138,6 +138,11 @@ public final class TeamsManager
     private static TeamsManager instance;
 
     @Getter
+    private RoundRules roundRuleDefaults = new RoundRules();
+    @Getter
+    private final RoundRuleRuntime roundRuleRuntime = new RoundRuleRuntime(this);
+
+    @Getter
     private boolean explosionsBreakBlocks = true;
     @Getter @Setter
     private boolean canBreakGlass = true;
@@ -293,6 +298,7 @@ public final class TeamsManager
         saveRuntime();
         liveBases.clear();
         liveObjects.clear();
+        roundRuleRuntime.clear();
         server = null;
         savedData = null;
     }
@@ -736,6 +742,20 @@ public final class TeamsManager
         return true;
     }
 
+    /** Changes a saved override or server default. A running match keeps the snapshot it started with. */
+    public boolean setRoundRule(int index, RoundRule rule, @Nullable String value)
+    {
+        if (index < -1 || index >= getRounds().size())
+            return false;
+        RoundRules target = index < 0 ? roundRuleDefaults : getRounds().get(index).getRules();
+        if (value == null)
+            target.inherit(rule);
+        else
+            target.set(rule, value);
+        saveRuntime();
+        return true;
+    }
+
     /**
      * Changes the length and score limit of a round of the rotation. A round being played takes the new score limit at
      * once and keeps its clock; the new length counts from the next time it starts.
@@ -853,6 +873,7 @@ public final class TeamsManager
                 round.markSkipped();
         });
         liveBases.values().stream().filter(this::isBaseInCurrentMap).forEach(ITeamBase::startRound);
+        roundRuleRuntime.start(next, roundRuleDefaults);
         updateActiveChunkTickets(true);
 
         for (ServerPlayer player : getServer().getPlayerList().getPlayers())
@@ -991,6 +1012,7 @@ public final class TeamsManager
         liveBases.values().forEach(ITeamBase::roundCleanup);
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
         roundRunning = false;
+        roundRuleRuntime.clear();
         currentRoundId = null;
         roundInstanceId = null;
         lastWinnerId = "";
@@ -1032,6 +1054,24 @@ public final class TeamsManager
         if (!roundRunning)
             return;
 
+        tickRound();
+    }
+
+    private void tickRound()
+    {
+        roundRuleRuntime.tick();
+        if (roundRuleRuntime.tickWarmup())
+        {
+            if (server.getTickCount() % 20 == 0)
+                saveRuntime();
+            return;
+        }
+        Optional<Team> eliminatedWinner = roundRuleRuntime.eliminationWinner();
+        if (eliminatedWinner.isPresent())
+        {
+            finishRound(eliminatedWinner.get());
+            return;
+        }
         roundElapsedTicks++;
         roundTimeLeftTicks = Math.max(0, roundTimeLeftTicks - 1);
         getCurrentGameType().ifPresent(type -> type.tick(this));
@@ -1043,8 +1083,8 @@ public final class TeamsManager
             autoBalanceIfNeeded();
 
         boolean winner = getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream()).map(Team::getTeam).filter(java.util.Objects::nonNull)
-            .anyMatch(team -> getCurrentGameType().map(type -> type.hasWinner(this, team)).orElse(false));
-        if (winner || roundTimeLeftTicks <= 0)
+            .anyMatch(team -> getCurrentGameType().map(type -> type.hasWinnerBeforeTimeLimit(this, team)).orElse(false));
+        if (winner || roundTimeLeftTicks <= 0 && !roundRuleRuntime.extendAtTimeLimit())
             finishRound();
         else if (roundElapsedTicks % 20 == 0)
             saveRuntime();
@@ -1054,6 +1094,8 @@ public final class TeamsManager
     public void setRoundTimeLeftTicks(int ticks)
     {
         roundTimeLeftTicks = Math.max(0, ticks);
+        if (roundTimeLeftTicks > 0)
+            roundRuleRuntime.resumeClock();
         saveRuntime();
         syncAll(PacketTeamsState.OpenScreen.NONE);
     }
@@ -1343,6 +1385,7 @@ public final class TeamsManager
         }
         data.setBuilder(false);
         data.setNewTeam(team);
+        roundRuleRuntime.teamChosen(player, team);
         if (force || !player.isAlive())
             data.setTeam(team);
         if (team == Team.SPECTATORS)
@@ -1360,7 +1403,7 @@ public final class TeamsManager
     {
         Optional<TeamsRound> round = getCurrentRound();
         Optional<com.flansmodultimate.common.teams.GameType> type = getCurrentGameType();
-        return round.isEmpty() || type.isEmpty() || type.get().getTeamsCanSpawnAs(this, round.get(), player).contains(team);
+        return roundRuleRuntime.mayChooseTeam(player, team) && (round.isEmpty() || type.isEmpty() || type.get().getTeamsCanSpawnAs(this, round.get(), player).contains(team));
     }
 
     public boolean selectBuilder(ServerPlayer player)
@@ -1618,6 +1661,7 @@ public final class TeamsManager
             data.setPlayerClass(playerClass);
             data.setNewPlayerClass(playerClass);
         }
+        roundRuleRuntime.loggedIn(player);
         // The joining client starts with no assignments at all, so resend them in full
         syncPlayerClassSkins(true);
         // A stale running flag without a playable round (no rotation, missing map) must not open an empty team screen
@@ -1632,6 +1676,7 @@ public final class TeamsManager
 
     public void playerLoggedOut(ServerPlayer player)
     {
+        roundRuleRuntime.loggedOut(player);
         if (roundRunning)
             getCurrentGameType().ifPresent(type -> type.playerQuit(this, player));
         dropFlag(player);
@@ -1641,6 +1686,7 @@ public final class TeamsManager
 
     public void playerDied(ServerPlayer player, net.minecraft.world.damagesource.DamageSource source)
     {
+        roundRuleRuntime.died(player);
         getCurrentGameType().ifPresent(type -> type.playerKilled(this, player, source));
         dropFlag(player);
         announceCombatantKilled(player, source);
@@ -1664,6 +1710,8 @@ public final class TeamsManager
         data.applyPendingTeamSelection();
         if (!roundRunning || data.getTeam() == null)
             return;
+        if (roundRuleRuntime.holdRespawn(player, reason))
+            return;
         if (reason != null && data.getTeam() != Team.SPECTATORS && !mayRespawn(player, data.getTeam(), reason))
         {
             // Held back by an addon's rule: the player stays on their team, watching until the round ends.
@@ -1686,16 +1734,22 @@ public final class TeamsManager
         }
         else
             data.setSpawnProtectionTicks(0);
-        spawnPosition(player, data.getTeam(), reason).ifPresent(position ->
+        teleportToRoundSpawn(player, data.getTeam(), reason);
+        if (immediate)
+            player.setHealth(player.getMaxHealth());
+        getCurrentGameType().ifPresent(type -> type.playerRespawned(this, player));
+        roundRuleRuntime.spawned(player);
+    }
+
+    private void teleportToRoundSpawn(ServerPlayer player, Team team, @Nullable ITeamsRespawnRule.Reason reason)
+    {
+        spawnPosition(player, team, reason).ifPresent(position ->
         {
             TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
             ServerLevel level = map == null ? null : getServer().getLevel(map.getDimension());
             if (level != null)
                 player.teleportTo(level, position.x, position.y, position.z, player.getYRot(), player.getXRot());
         });
-        if (immediate)
-            player.setHealth(player.getMaxHealth());
-        getCurrentGameType().ifPresent(type -> type.playerRespawned(this, player));
     }
 
     /** Where a player appears: where an addon's spawn provider puts them, or at the game type's spawn point. */
@@ -2389,6 +2443,8 @@ public final class TeamsManager
         if (tag.isEmpty())
             return;
 
+        roundRuleDefaults = RoundRules.load(tag.getCompound("round_rule_defaults"));
+        roundRuleRuntime.load(tag.getCompound("round_rule_state"));
         queuedRoundId = tag.hasUUID(NBT_QUEUED_ROUND) ? tag.getUUID(NBT_QUEUED_ROUND) : null;
         roundInstanceId = tag.hasUUID(NBT_ROUND_INSTANCE) ? tag.getUUID(NBT_ROUND_INSTANCE) : null;
         lastWinnerId = tag.getString(NBT_WINNER);
@@ -2501,6 +2557,8 @@ public final class TeamsManager
             return;
 
         CompoundTag tag = savedData.runtime;
+        tag.put("round_rule_defaults", roundRuleDefaults.save());
+        tag.put("round_rule_state", roundRuleRuntime.save());
         tag.putBoolean(NBT_ENABLED, enabled);
         tag.putBoolean(NBT_ROUND_RUNNING, roundRunning);
 

@@ -18,7 +18,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The objective banner of Domination, Conquest and Assault, ported from the Labjac fork: what
@@ -81,8 +80,7 @@ public final class TeamsObjectiveHud
         if (sideIds.size() > 2)
         {
             drawSideBars(graphics, font, state, sideIds, centre, limit);
-            int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
-            String line = state.getMapName() + "  " + String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60) + "  " + state.getGameType();
+            String line = state.getMapName() + "  " + TeamsClientState.clock(state) + "  " + state.getGameType();
             drawCentred(graphics, font, line, centre, TOP + 9, 0.62F, TEXT);
             drawObjectives(graphics, font, state, player, objectives, shown, standingOn, centre);
             return true;
@@ -100,8 +98,7 @@ public final class TeamsObjectiveHud
             drawBar(graphics, font, leftX, left, limit - right.score(), limit, false);
             drawBar(graphics, font, rightX, right, limit - left.score(), limit, true);
         }
-        int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
-        drawCentred(graphics, font, String.format(Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60), centre, TOP + 1, 0.72F, TEXT);
+        drawCentred(graphics, font, TeamsClientState.clock(state), centre, TOP + 1, 0.72F, TEXT);
         drawCentred(graphics, font, state.getMapName(), leftX + BAR_WIDTH / 2, TOP + 9, 0.62F, TEXT);
         drawCentred(graphics, font, state.getGameType(), rightX + BAR_WIDTH / 2, TOP + 9, 0.62F, TEXT);
         drawObjectives(graphics, font, state, player, objectives, shown, standingOn, centre);

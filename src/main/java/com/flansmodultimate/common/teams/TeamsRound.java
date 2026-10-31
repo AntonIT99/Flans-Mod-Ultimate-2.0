@@ -56,6 +56,7 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     private static final String NBT_EXTENSIONS = "extensions";
     private static final String NBT_ATTACKING_SIDE = "attacking_side";
 
+    private RoundRules rules = new RoundRules();
     private final UUID id;
     private final String mapId;
     private final String gameTypeId;
@@ -413,6 +414,7 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     public CompoundTag save()
     {
         CompoundTag tag = new CompoundTag();
+        tag.put("rules", rules.save());
         tag.putUUID(NBT_ID, id);
         tag.putString(NBT_MAP, mapId);
         tag.putString(NBT_GAME_TYPE, gameTypeId);
@@ -443,6 +445,7 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
         UUID id = tag.hasUUID(NBT_ID) ? tag.getUUID(NBT_ID) : UUID.randomUUID();
         TeamsRound round = new TeamsRound(id, tag.getString(NBT_MAP), tag.getString(NBT_GAME_TYPE), teams, sides, tag.getInt(NBT_TIME_LIMIT), tag.getInt(NBT_SCORE_LIMIT), tag.getFloat(NBT_POPULARITY),
             tag.getInt(NBT_ROUNDS_SINCE_PLAYED));
+        round.rules = RoundRules.load(tag.getCompound("rules"));
         round.setAttackingSide(tag.contains(NBT_ATTACKING_SIDE) ? tag.getInt(NBT_ATTACKING_SIDE) : -1);
         CompoundTag extensionTag = tag.getCompound(NBT_EXTENSIONS);
         for (String key : extensionTag.getAllKeys())
