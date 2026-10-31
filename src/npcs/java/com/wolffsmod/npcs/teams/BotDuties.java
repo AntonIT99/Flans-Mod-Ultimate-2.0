@@ -49,8 +49,13 @@ final class BotDuties
     private static final double ARMOUR_RANGE = 64D;
     /** Blocks a falling back soldier looks for a medic within. */
     private static final double MEDIC_SEARCH = 48D;
-    /** Ticks between two heals or repairs by one bot, and before one player gets ammunition again. */
-    private static final long ACTION_TICKS = 40L;
+    /**
+     * Ticks between two repairs by one engineer, before one vehicle is repaired again, between two heals by one medic, before one patient is healed again, and before one player gets ammunition again.
+     */
+    private static final long REPAIR_TICKS = 5L * 20L;
+    private static final long VEHICLE_TICKS = 10L * 20L;
+    private static final long HEAL_TICKS = 5L * 20L;
+    private static final long PATIENT_TICKS = 10L * 20L;
     private static final long SUPPLY_TICKS = 30L * 20L;
     /** Ticks a soldier falls back at most. */
     private static final long RETREAT_TICKS = 30L * 20L;
@@ -75,6 +80,8 @@ final class BotDuties
     private static final Map<UUID, Vec3> DESTINATIONS = new HashMap<>();
     private static final Map<UUID, Long> LAST_ACTION = new HashMap<>();
     private static final Map<UUID, Long> SUPPLIED = new HashMap<>();
+    private static final Map<UUID, Long> HEALED = new HashMap<>();
+    private static final Map<UUID, Long> REPAIRED = new HashMap<>();
     private static final Map<UUID, Long> RETREATING = new HashMap<>();
 
     /** @return where a bot goes for its duty, ahead of its squad's task, or empty while it has none */
@@ -88,6 +95,8 @@ final class BotDuties
         DESTINATIONS.clear();
         LAST_ACTION.clear();
         SUPPLIED.clear();
+        HEALED.clear();
+        REPAIRED.clear();
         RETREATING.clear();
     }
 
@@ -103,6 +112,8 @@ final class BotDuties
         }
         LAST_ACTION.values().removeIf(tick -> now - tick > SUPPLY_TICKS);
         SUPPLIED.values().removeIf(tick -> now - tick > SUPPLY_TICKS);
+        HEALED.values().removeIf(tick -> now - tick >= PATIENT_TICKS);
+        REPAIRED.values().removeIf(tick -> now - tick >= VEHICLE_TICKS);
     }
 
     /** Carries out a soldier's duty, as its class's role says. */
@@ -188,7 +199,7 @@ final class BotDuties
 
     private static void heal(ServerLevel level, EntityNPCInterface medic, Fighter self, List<Fighter> fighters, long now)
     {
-        Optional<Fighter> hurt = fighters.stream().filter(other -> other.side() == self.side() && !other.vehicle() && share(other.entity()) < HURT)
+        Optional<Fighter> hurt = fighters.stream().filter(other -> other.side() == self.side() && !other.vehicle() && share(other.entity()) < HURT && !HEALED.containsKey(other.entity().getUUID()))
             .filter(other -> other.entity().distanceTo(medic) <= MEDIC_RANGE).min(Comparator.comparingDouble(other -> share(other.entity())));
         if (hurt.isEmpty())
             return;
@@ -198,10 +209,11 @@ final class BotDuties
             DESTINATIONS.put(medic.getUUID(), patient.position());
             return;
         }
-        if (busy(medic, now))
+        if (busy(medic, now, HEAL_TICKS))
             return;
         int kitAmount = BotRoles.kit(Objects.requireNonNull(self.slot()).getRole()).healAmount();
         patient.heal(kitAmount > 0 ? kitAmount : BotRoles.DEFAULT_AMOUNT);
+        HEALED.put(patient.getUUID(), now);
         effect(level, ParticleTypes.HEART, patient.position().add(0D, patient.getBbHeight(), 0D));
         medic.swing(InteractionHand.MAIN_HAND);
     }
@@ -223,7 +235,7 @@ final class BotDuties
             DESTINATIONS.put(engineer.getUUID(), damaged.position());
             return;
         }
-        if (busy(engineer, now))
+        if (busy(engineer, now, REPAIR_TICKS))
             return;
         boolean repaired = false;
         for (ItemStack tool : com.wolffsmod.npcs.combat.NpcAmmunition.supplies(engineer))
@@ -237,6 +249,7 @@ final class BotDuties
         }
         if (repaired)
         {
+            REPAIRED.put(damaged.getUUID(), now);
             effect(level, ParticleTypes.HAPPY_VILLAGER, damaged.position().add(0D, damaged.getBbHeight() / 2D, 0D));
             engineer.swing(InteractionHand.MAIN_HAND);
         }
@@ -259,7 +272,8 @@ final class BotDuties
             if (damaged && friendly)
                 candidates.add(entity);
         }
-        return candidates.stream().filter(BotDuties::repairable).min(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(engineer))).orElse(null);
+        return candidates.stream().filter(candidate -> !REPAIRED.containsKey(candidate.getUUID()) && repairable(candidate))
+            .min(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(engineer))).orElse(null);
     }
 
     private static boolean repairable(Entity entity)
@@ -352,10 +366,10 @@ final class BotDuties
     }
 
     /** Whether a bot healed or repaired too recently to do it again; otherwise it counts as doing it now. */
-    private static boolean busy(Entity bot, long now)
+    private static boolean busy(Entity bot, long now, long cooldown)
     {
         Long last = LAST_ACTION.get(bot.getUUID());
-        if (last != null && now - last < ACTION_TICKS)
+        if (last != null && now - last < cooldown)
             return true;
         LAST_ACTION.put(bot.getUUID(), now);
         return false;
