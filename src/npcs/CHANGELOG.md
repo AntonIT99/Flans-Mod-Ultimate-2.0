@@ -50,5 +50,5 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Flan model picker with previews and tooltips
 * NPC diagnosis, including a flying plane's speed and circle radius, server limits, rules, census and benchmarks
 * Flan's debug mode marks the seats and seat-gun muzzles of vehicle NPCs, as it does for driveables
-* Killed NPCs drop no items unless Server > Rules in the Wolff's Mod tab turns item drops on; Teams bots then drop what the Teams `weaponDrops` and `armourDrops` rules let a dying player drop. Their experience still drops either way
+* Killed NPCs drop no items unless Server > Rules in the Wolff's Mod tab turns item drops on; Teams bots then drop what the Teams `weaponDrops` and `armourDrops` rules let a dying player drop, including grenades and bandages. Their experience still drops either way
 * Scripting controls for Flan's features
