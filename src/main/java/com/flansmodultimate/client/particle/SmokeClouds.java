@@ -21,13 +21,13 @@ public final class SmokeClouds
 {
     private static final int MAX_CLOUDS = 32;
     private static final int MAX_PARTICLES_PER_TICK = 2;
-    private static final int MAX_LIVE_PARTICLES = 64;
-    private static final int MAX_LIFETIME = 40;
+    private static final int MAX_LIVE_PARTICLES = 96;
+    private static final int MAX_LIFETIME = 60;
     private static final Map<Integer, Cloud> CLOUDS = new HashMap<>();
     private static ClientLevel currentLevel;
 
     /** A packet refreshes one source; additional packets in the same client tick cannot multiply its allowance. */
-    public static void emit(int sourceId, Vec3 position, int requested, String particleType)
+    public static void emit(int sourceId, Vec3 position, int requested, String particleType, float smokeRadius)
     {
         ClientLevel level = Minecraft.getInstance().level;
         useLevel(level);
@@ -45,24 +45,35 @@ public final class SmokeClouds
 
         int count = cloud.request(level.getGameTime(), requested);
         String visibleParticle = visibleParticle(particleType);
+        float extent = visualRadius(smokeRadius);
+        float radiusScale = extent / 5F;
         // Keep ordinary legacy/vanilla smoke dense enough to screen a grenade's surroundings with fewer puffs.
-        float scale = switch (visibleParticle)
+        float scale = (switch (visibleParticle)
         {
             case FlanParticles.CLOUD, FlanParticles.EXPLODE, FlanParticles.SMOKE, FlanParticles.LARGE_SMOKE -> 5F;
             default -> 1F;
-        };
+        }) * radiusScale * 0.6F;
         for (int i = 0; i < count; i++)
         {
-            // A bounded, symmetric cloud around the source, never another ballistic smoke shell.
+            // Puffs fill the whole smoke radius evenly, as a low dome, never another ballistic smoke shell.
             double angle = level.random.nextDouble() * Mth.TWO_PI;
-            double radius = Math.sqrt(level.random.nextDouble()) * 2D;
+            double radius = Math.sqrt(level.random.nextDouble()) * extent * 0.85D;
             double x = position.x + Math.cos(angle) * radius;
-            double y = position.y + 0.25D + level.random.nextDouble() * 1.5D;
+            double y = position.y + (0.1D + level.random.nextDouble() * 0.5D * (1D - radius / extent)) * extent;
             double z = position.z + Math.sin(angle) * radius;
             Particle particle = ParticleHelper.createFromString(visibleParticle, x, y, z, 0D, 0D, 0D, scale, 1F);
             if (particle != null)
+            {
+                particle.setLifetime(MAX_LIFETIME);
                 cloud.track(particle);
+            }
         }
+    }
+
+    /** Extreme gameplay radii must not become screen-filling particle quads. */
+    static float visualRadius(float radius)
+    {
+        return Float.isFinite(radius) ? Mth.clamp(radius, 0.25F, 16F) : 5F;
     }
 
     /** Drops finished sources and releases every reference when changing or leaving a world. */

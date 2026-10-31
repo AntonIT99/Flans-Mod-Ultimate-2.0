@@ -500,6 +500,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "射手ノックバック",
   "tooltip.flansmodultimate.shot": "射撃",
   "tooltip.flansmodultimate.silenced": "消音済み",
+  "tooltip.flansmodultimate.smoke_radius": "煙の半径",
+  "tooltip.flansmodultimate.smoke_time": "煙の持続時間",
   "tooltip.flansmodultimate.sprinting": "ダッシュ中",
   "tooltip.flansmodultimate.suppressed": "[サプレッサー装着]",
   "tooltip.flansmodultimate.switch_delay": "切り替え遅延",

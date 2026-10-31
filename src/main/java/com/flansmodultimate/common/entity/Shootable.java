@@ -212,8 +212,8 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
             return true;
 
         ShootableType type = getConfigType();
-        PacketHandler.sendToAllAround(new PacketFlak(position(), type.getSmokeParticlesCount(), type.getSmokeParticleType(), getId()), position(), ModCommonConfig.smokeParticlesRange(),
-            level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(position(), type.getSmokeParticlesCount(), type.getSmokeParticleType(), getId(), type.getSmokeRadius()), position(),
+            ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         double radius = type.getSmokeRadius();
         double radiusSquared = radius * radius;

@@ -500,6 +500,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "射手后坐",
   "tooltip.flansmodultimate.shot": "弹丸数",
   "tooltip.flansmodultimate.silenced": "已消音",
+  "tooltip.flansmodultimate.smoke_radius": "烟雾半径",
+  "tooltip.flansmodultimate.smoke_time": "烟雾持续时间",
   "tooltip.flansmodultimate.sprinting": "疾跑",
   "tooltip.flansmodultimate.suppressed": "[已消音]",
   "tooltip.flansmodultimate.switch_delay": "切换延迟",

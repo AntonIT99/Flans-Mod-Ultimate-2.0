@@ -19,7 +19,7 @@ class PacketFlakTest
             PacketBuffer buffer = new PacketBuffer(TestPacketBuffers.buffer());
             try
             {
-                PacketFlak packet = source < 0 ? new PacketFlak(new Vec3(12D, 64D, -8D), 50, "flansmod.Smoker1") : new PacketFlak(new Vec3(12D, 64D, -8D), 50, "flansmod.Smoker1", source);
+                PacketFlak packet = source < 0 ? new PacketFlak(new Vec3(12D, 64D, -8D), 50, "flansmod.Smoker1") : new PacketFlak(new Vec3(12D, 64D, -8D), 50, "flansmod.Smoker1", source, 10.5F);
                 packet.encodeInto(buffer);
                 PacketFlak decoded = new PacketFlak();
                 decoded.decodeInto(buffer);
@@ -32,6 +32,8 @@ class PacketFlakTest
                 assertEquals(50, buffer.readInt());
                 assertEquals("flansmod.Smoker1", ParticleNameCodec.read(buffer));
                 assertEquals(source, buffer.readInt());
+                if (source >= 0)
+                    assertEquals(10.5F, buffer.readFloat());
                 assertEquals(0, buffer.readableBytes());
             }
             finally

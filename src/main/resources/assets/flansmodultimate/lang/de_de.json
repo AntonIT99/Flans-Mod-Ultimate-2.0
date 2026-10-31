@@ -1041,6 +1041,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "Schützenrückstoß",
   "tooltip.flansmodultimate.shot": "Projektile",
   "tooltip.flansmodultimate.silenced": "Schallgedämpft",
+  "tooltip.flansmodultimate.smoke_radius": "Rauchreichweite",
+  "tooltip.flansmodultimate.smoke_time": "Rauchdauer",
   "tooltip.flansmodultimate.sprinting": "sprintend",
   "tooltip.flansmodultimate.suppressed": "[Schallgedämpft]",
   "tooltip.flansmodultimate.switch_delay": "Wechselverzögerung",

@@ -243,6 +243,11 @@ public abstract class ShootableItem extends FlanItem
         BulletType bulletType = configType instanceof BulletType type ? type : null;
         List<RoundView> rounds = bulletType == null ? List.of() : roundViews(bulletType, context);
 
+        if (configType.getSmokeTime() > 0 && configType.getSmokeRadius() > 0F)
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SMOKE_RADIUS), IFlanItem.formatFloat(configType.getSmokeRadius(), 1) + " m"));
+        if (configType.getSmokeTime() > 0)
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SMOKE_TIME), IFlanItem.formatFloat(configType.getSmokeTime() / 20F, 2) + " s"));
+
         int numBullets = context != null ? context.numBullets() : configType.getNumBullets();
         if (numBullets > 1)
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOT), String.valueOf(numBullets)));

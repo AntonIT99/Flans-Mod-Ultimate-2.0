@@ -22,6 +22,7 @@ public class PacketFlak implements IClientPacket
     private String particleType;
     /** Non-negative only for a persistent projectile smoke source, not a one-off flak burst. */
     private int smokeSourceId = -1;
+    private float smokeRadius = 5F;
 
     public PacketFlak(Vec3 position, int n, String s)
     {
@@ -36,6 +37,12 @@ public class PacketFlak implements IClientPacket
         this.smokeSourceId = smokeSourceId;
     }
 
+    public PacketFlak(Vec3 position, int n, String s, int smokeSourceId, float smokeRadius)
+    {
+        this(position, n, s, smokeSourceId);
+        this.smokeRadius = smokeRadius;
+    }
+
     @Override
     public void encodeInto(PacketBuffer data)
     {
@@ -45,6 +52,8 @@ public class PacketFlak implements IClientPacket
         data.writeInt(numParticles);
         ParticleNameCodec.write(data, particleType);
         data.writeInt(smokeSourceId);
+        if (smokeSourceId >= 0)
+            data.writeFloat(smokeRadius);
     }
 
     @Override
@@ -54,6 +63,8 @@ public class PacketFlak implements IClientPacket
         numParticles = data.readInt();
         particleType = ParticleNameCodec.read(data);
         smokeSourceId = data.readInt();
+        if (smokeSourceId >= 0)
+            smokeRadius = data.readFloat();
     }
 
     @Override
@@ -61,7 +72,7 @@ public class PacketFlak implements IClientPacket
     {
         if (smokeSourceId >= 0)
         {
-            ClientHooks.RENDER.spawnSmokeCloud(smokeSourceId, position, numParticles, particleType);
+            ClientHooks.RENDER.spawnSmokeCloud(smokeSourceId, position, numParticles, particleType, smokeRadius);
             return;
         }
 

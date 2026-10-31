@@ -500,6 +500,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "Empurrão no atirador",
   "tooltip.flansmodultimate.shot": "Disparo",
   "tooltip.flansmodultimate.silenced": "Silenciado",
+  "tooltip.flansmodultimate.smoke_radius": "Raio de fumaça",
+  "tooltip.flansmodultimate.smoke_time": "Duração da fumaça",
   "tooltip.flansmodultimate.sprinting": "correndo",
   "tooltip.flansmodultimate.suppressed": "[Suprimido]",
   "tooltip.flansmodultimate.switch_delay": "Atraso de troca",

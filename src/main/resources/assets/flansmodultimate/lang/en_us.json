@@ -1038,6 +1038,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "Shooter Knockback",
   "tooltip.flansmodultimate.shot": "Shot",
   "tooltip.flansmodultimate.silenced": "Silenced",
+  "tooltip.flansmodultimate.smoke_radius": "Smoke Radius",
+  "tooltip.flansmodultimate.smoke_time": "Smoke Duration",
   "tooltip.flansmodultimate.sprinting": "sprinting",
   "tooltip.flansmodultimate.suppressed": "[Suppressed]",
   "tooltip.flansmodultimate.switch_delay": "Switch Delay",

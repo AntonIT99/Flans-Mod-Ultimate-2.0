@@ -500,6 +500,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "Recul du tireur",
   "tooltip.flansmodultimate.shot": "Projectiles",
   "tooltip.flansmodultimate.silenced": "Silencieux",
+  "tooltip.flansmodultimate.smoke_radius": "Rayon de fumée",
+  "tooltip.flansmodultimate.smoke_time": "Durée de fumée",
   "tooltip.flansmodultimate.sprinting": "en sprint",
   "tooltip.flansmodultimate.suppressed": "[Silencieux]",
   "tooltip.flansmodultimate.switch_delay": "Délai de changement",

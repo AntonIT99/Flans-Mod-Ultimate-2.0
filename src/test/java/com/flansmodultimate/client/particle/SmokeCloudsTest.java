@@ -13,6 +13,16 @@ import static org.mockito.Mockito.*;
 class SmokeCloudsTest
 {
     @Test
+    void radiusScalesCloudCoverageButExtremeDefinitionsStayBounded()
+    {
+        assertEquals(5F, SmokeClouds.visualRadius(5F));
+        assertEquals(10.5F, SmokeClouds.visualRadius(10.5F));
+        assertEquals(16F, SmokeClouds.visualRadius(250F));
+        assertEquals(0.25F, SmokeClouds.visualRadius(-1F));
+        assertEquals(5F, SmokeClouds.visualRadius(Float.NaN));
+    }
+
+    @Test
     void oneSourceCannotSpendTheGlobalBudgetOrCatchUpWithABurstOfPackets()
     {
         SmokeClouds.Cloud cloud = new SmokeClouds.Cloud();
@@ -39,7 +49,7 @@ class SmokeCloudsTest
     {
         SmokeClouds.Cloud cloud = new SmokeClouds.Cloud();
         List<Particle> particles = new ArrayList<>();
-        for (int tick = 0; tick < 32; tick++)
+        for (int tick = 0; tick < 48; tick++)
         {
             int count = cloud.request(tick, 50);
             assertEquals(2, count);
@@ -49,14 +59,14 @@ class SmokeCloudsTest
                 when(particle.isAlive()).thenReturn(true);
                 when(particle.getLifetime()).thenReturn(300);
                 cloud.track(particle);
-                verify(particle).setLifetime(40);
+                verify(particle).setLifetime(60);
                 particles.add(particle);
             }
         }
-        assertEquals(0, cloud.request(32, 50));
+        assertEquals(0, cloud.request(48, 50));
         when(particles.get(0).isAlive()).thenReturn(false);
-        assertEquals(1, cloud.request(33, 50));
-        assertFalse(cloud.isFinished(34));
+        assertEquals(1, cloud.request(49, 50));
+        assertFalse(cloud.isFinished(50));
         particles.forEach(particle -> when(particle.isAlive()).thenReturn(false));
         assertTrue(cloud.isFinished(100));
     }
@@ -70,8 +80,8 @@ class SmokeCloudsTest
         when(particle.isAlive()).thenReturn(true);
         when(particle.getLifetime()).thenReturn(300);
         cloud.track(particle);
-        assertFalse(cloud.isFinished(40));
-        assertTrue(cloud.isFinished(41), "the allowance expires even when the engine dropped the particle without removing it");
+        assertFalse(cloud.isFinished(60));
+        assertTrue(cloud.isFinished(61), "the allowance expires even when the engine dropped the particle without removing it");
     }
 
     @Test

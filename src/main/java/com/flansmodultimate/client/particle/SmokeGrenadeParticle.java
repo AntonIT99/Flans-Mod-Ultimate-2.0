@@ -27,7 +27,7 @@ public class SmokeGrenadeParticle extends ParticleBase
     @Override
     protected void updateVisuals()
     {
-        quadSize = scaleMultiplier * (0.75F + 1.75F * Math.min(1F, age / 20F));
+        quadSize = scaleMultiplier * (1.125F + 2.625F * Math.min(1F, age / 20F));
         alpha = 0.75F * Math.min(1F, age / 6F) * Math.max(0F, Math.min(1F, (lifetime - age) / 12F));
         setSpriteFromAge(sprites);
     }

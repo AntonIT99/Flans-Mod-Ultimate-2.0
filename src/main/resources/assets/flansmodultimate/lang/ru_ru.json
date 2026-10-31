@@ -500,6 +500,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "Отдача стрелка",
   "tooltip.flansmodultimate.shot": "Выстрел",
   "tooltip.flansmodultimate.silenced": "С глушителем",
+  "tooltip.flansmodultimate.smoke_radius": "Радиус дыма",
+  "tooltip.flansmodultimate.smoke_time": "Длительность дыма",
   "tooltip.flansmodultimate.sprinting": "в беге",
   "tooltip.flansmodultimate.suppressed": "[Подавлено]",
   "tooltip.flansmodultimate.switch_delay": "Задержка переключения",

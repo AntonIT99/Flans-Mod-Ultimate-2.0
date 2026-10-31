@@ -500,6 +500,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "사수 넉백",
   "tooltip.flansmodultimate.shot": "사격",
   "tooltip.flansmodultimate.silenced": "소음기 장착",
+  "tooltip.flansmodultimate.smoke_radius": "연막 반경",
+  "tooltip.flansmodultimate.smoke_time": "연막 지속 시간",
   "tooltip.flansmodultimate.sprinting": "달리는 중",
   "tooltip.flansmodultimate.suppressed": "[소음 억제]",
   "tooltip.flansmodultimate.switch_delay": "전환 지연",

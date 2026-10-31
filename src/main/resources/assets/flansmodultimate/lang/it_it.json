@@ -500,6 +500,8 @@
   "tooltip.flansmodultimate.shooter_knockback": "Contraccolpo tiratore",
   "tooltip.flansmodultimate.shot": "Colpo",
   "tooltip.flansmodultimate.silenced": "Silenziato",
+  "tooltip.flansmodultimate.smoke_radius": "Raggio del fumo",
+  "tooltip.flansmodultimate.smoke_time": "Durata del fumo",
   "tooltip.flansmodultimate.sprinting": "in sprint",
   "tooltip.flansmodultimate.suppressed": "[Soppresso]",
   "tooltip.flansmodultimate.switch_delay": "Ritardo cambio",
