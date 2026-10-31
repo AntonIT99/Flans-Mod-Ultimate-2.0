@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui.centre;
 
 import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.teams.centre.TeamsSection;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -57,7 +58,10 @@ final class RulesPage extends TeamsPage
         int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT;
         switch (tab)
         {
-            case PROTECTION -> switches(view, data.rules(), PROTECTION, left, y + 16, width);
+            case PROTECTION -> {
+                switches(view, data.rules(), PROTECTION, left, y + 16, width);
+                initSpawnProtection(view, data.rules(), left, spawnProtectionTop(y + 16), width);
+            }
             case COMBAT -> {
                 switches(view, data.rules(), COMBAT, left, y + 16, width);
                 // Weapon drops take the slot after the last switch.
@@ -123,6 +127,25 @@ final class RulesPage extends TeamsPage
             int y = top + (i / 2) * ROW;
             toggle(view, tr(RULE + rule), rules.getBoolean(rule), x, y, columnWidth, tr(RULE + rule + ".tip"), enabled -> run(view, "teams", rule, enabled));
         }
+    }
+
+    /** The row of the spawn protection time, the slot after the last protection switch. */
+    private static int spawnProtectionTop(int rowsTop)
+    {
+        return rowsTop + (PROTECTION.size() + 1) / 2 * ROW;
+    }
+
+    private static void initSpawnProtection(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
+    {
+        int columnWidth = (width - GAP) / 2;
+        int fieldWidth = 48;
+        int buttonWidth = 40;
+        int x = left + columnWidth - fieldWidth - buttonWidth - GAP;
+        view.addField(TeamsSection.SPAWN_PROTECTION, x, top, fieldWidth, Integer.toString(rules.getInt(TeamsSection.SPAWN_PROTECTION)), tr("seconds"))
+            .setTooltip(Tooltip.create(tr(RULE + TeamsSection.SPAWN_PROTECTION + ".tip")));
+        button(view, tr("set"), x + fieldWidth + GAP, top, buttonWidth,
+            () -> number(view, TeamsSection.SPAWN_PROTECTION, 0, TeamsManager.MAX_SPAWN_PROTECTION_SECONDS, tr(RULE + TeamsSection.SPAWN_PROTECTION))
+                .ifPresent(seconds -> run(view, "teams", TeamsSection.SPAWN_PROTECTION, seconds)));
     }
 
     private static void initCleanup(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
@@ -210,6 +233,7 @@ final class RulesPage extends TeamsPage
                 int y = rowsTop + (TeamsSection.LIFETIMES.size() + 1) / 2 * ROW + 10;
                 label(view, graphics, tr(SEA_LEVEL), left + 2, y + 5, columnWidth - 104, CentreStyle.TEXT);
             }
+            case PROTECTION -> label(view, graphics, tr(RULE + TeamsSection.SPAWN_PROTECTION), left + 2, spawnProtectionTop(rowsTop) + 5, columnWidth - 104, CentreStyle.TEXT);
             case GAME_TYPE -> renderGameType(view, graphics, data, left, rowsTop, width, columnWidth);
             default -> {
                 // The switches name themselves.

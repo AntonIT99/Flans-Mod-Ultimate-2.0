@@ -435,7 +435,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife> <seconds>"),
+                "Rules: /teams <explosions|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -481,7 +481,14 @@ public final class TeamsCommand
                     .executes(TeamsCommand::setWeaponDrops)))
             .then(lifeSetting("mgLife", "MGs", TeamsManager::setMgLife)).then(lifeSetting("planeLife", "Planes", TeamsManager::setPlaneLife))
             .then(lifeSetting("vehicleLife", "Vehicles", TeamsManager::setVehicleLife)).then(lifeSetting("mechaLife", "Mechas", TeamsManager::setMechaLife))
-            .then(lifeSetting("aaLife", "AA guns", TeamsManager::setAaLife))
+            .then(lifeSetting("aaLife", "AA guns", TeamsManager::setAaLife)).then(Commands.literal("spawnProtection").requires(source -> source.hasPermission(2))
+                .then(Commands.argument(SECONDS, IntegerArgumentType.integer(0, TeamsManager.MAX_SPAWN_PROTECTION_SECONDS)).executes(context ->
+                {
+                    int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+                    manager().setSpawnProtectionSeconds(seconds);
+                    manager().saveSettings();
+                    return success(context, seconds > 0 ? "Players will be protected for " + seconds + SECONDS_SUFFIX + " after spawning" : "Spawn protection disabled");
+                })))
             .then(Commands.literal("useRotation").requires(source -> source.hasPermission(2)).then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(context ->
             {
                 // A fixed rotation is the opposite of voting for the next round

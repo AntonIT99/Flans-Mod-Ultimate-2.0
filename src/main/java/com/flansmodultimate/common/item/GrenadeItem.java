@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.teams.TeamsSpawnProtection;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -137,7 +138,10 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
             // Spawn the entity server side
             if (!level.isClientSide)
+            {
                 level.addFreshEntity(byHand ? Grenade.thrownByHand(level, configType, player, underhand) : new Grenade(level, configType, player));
+                TeamsSpawnProtection.end(player);
+            }
 
             // Consume an item (non-creative)
             if (!player.getAbilities().instabuild)

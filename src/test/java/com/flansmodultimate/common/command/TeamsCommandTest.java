@@ -104,9 +104,9 @@ class TeamsCommandTest
             "teams admin round attackers 1 none", "teams admin round attackers 1 2", "teams admin round remove 1", "teams admin round add stalingrad con us+uk vs germany 15 300",
             "teams admin map add stalingrad Stalingrad Factory", "teams admin map rename stalingrad Stalingrad", "teams admin map image stalingrad stalingrad_map",
             "teams admin map bounds stalingrad -10 60 -10 120 90 140", "teams admin map clearBounds stalingrad", "teams admin map remove stalingrad", "teams weaponDrops smart", "teams seaLevel 62",
-            "teams seaLevel default", "teams admin arena", "teams admin survival", "teams admin setvariable scorelimit 300", "teams admin setvariable friendlyfire true", "teams admin voting false",
-            "teams admin roundsGenerator true", "teams admin votingTime 20", "teams admin scoreDisplayTime 10", "teams admin rankUpdateTime 0", "teams admin autobalancetime 120",
-            "teams admin motd Welcome to the front", "teams admin xpmultiplier 1.5", "teams admin loadoutpool none", "teams admin bltss 2 10"));
+            "teams spawnProtection 3", "teams seaLevel default", "teams admin arena", "teams admin survival", "teams admin setvariable scorelimit 300", "teams admin setvariable friendlyfire true",
+            "teams admin voting false", "teams admin roundsGenerator true", "teams admin votingTime 20", "teams admin scoreDisplayTime 10", "teams admin rankUpdateTime 0",
+            "teams admin autobalancetime 120", "teams admin motd Welcome to the front", "teams admin xpmultiplier 1.5", "teams admin loadoutpool none", "teams admin bltss 2 10"));
         com.flansmodultimate.common.teams.centre.TeamsSection.SWITCHES.forEach(rule -> lines.add("teams " + rule + " true"));
         com.flansmodultimate.common.teams.centre.TeamsSection.LIFETIMES.forEach(rule -> lines.add("teams " + rule + " 120"));
         lines.forEach(TeamsCommandTest::assertRuns);

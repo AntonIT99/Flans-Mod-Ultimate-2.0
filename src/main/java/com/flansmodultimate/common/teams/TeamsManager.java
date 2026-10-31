@@ -30,6 +30,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -78,6 +79,7 @@ public final class TeamsManager
     private static final String NBT_VEHICLES_CAN_ZOOM = "vehicles_can_zoom";
     private static final String NBT_OVERRIDE_HUNGER = "override_hunger";
     private static final String NBT_REGENERATION = "regeneration";
+    private static final String NBT_SPAWN_PROTECTION = "spawn_protection";
     private static final String NBT_BREAK_VEHICLES = "break_vehicles";
     private static final String NBT_PLACE_VEHICLES = "place_vehicles";
     private static final String NBT_WEAPON_DROPS = "weapon_drops";
@@ -108,6 +110,10 @@ public final class TeamsManager
     private static final int AUTO_BALANCE_WARNING_TICKS = 200;
     /** Delay between a Teams respawn and the automatic reload of the gun in the first hotbar slot. */
     private static final int RESPAWN_RELOAD_DELAY_TICKS = 5;
+    /** Default seconds a player taking the field in a round cannot be hurt, unless they attack first. */
+    public static final int DEFAULT_SPAWN_PROTECTION_SECONDS = 3;
+    /** Upper bound of {@link #spawnProtectionSeconds}, so a typo cannot make a whole round invulnerable. */
+    public static final int MAX_SPAWN_PROTECTION_SECONDS = 60;
     public static final String DEFAULT_MOTD = "Welcome to the Teams server";
 
     public enum EnumWeaponDrop
@@ -156,6 +162,9 @@ public final class TeamsManager
     private boolean overrideHunger = true;
     @Getter @Setter
     private boolean regeneration = true;
+    /** Seconds a player who takes the field cannot be hurt, ending early when they attack; 0 turns it off. */
+    @Getter
+    private int spawnProtectionSeconds = DEFAULT_SPAWN_PROTECTION_SECONDS;
     @Getter @Setter
     private boolean survivalCanBreakVehicles = true;
     @Getter @Setter
@@ -413,6 +422,11 @@ public final class TeamsManager
     {
         this.explosionsBreakBlocks = explosionsBreakBlocks;
         saveRuntime();
+    }
+
+    public void setSpawnProtectionSeconds(int seconds)
+    {
+        spawnProtectionSeconds = Mth.clamp(seconds, 0, MAX_SPAWN_PROTECTION_SECONDS);
     }
 
     public void setForceAdventureMode(boolean forceAdventureMode)
@@ -1642,7 +1656,10 @@ public final class TeamsManager
             player.getInventory().selected = 0;
             player.connection.send(new ClientboundSetCarriedItemPacket(0));
             data.setRespawnReloadTicks(RESPAWN_RELOAD_DELAY_TICKS);
+            TeamsSpawnProtection.grant(player, data, spawnProtectionSeconds);
         }
+        else
+            data.setSpawnProtectionTicks(0);
         spawnPosition(player, data.getTeam(), reason).ifPresent(position ->
         {
             TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
@@ -2376,6 +2393,7 @@ public final class TeamsManager
             vehiclesNeedFuel = tag.getBoolean(NBT_FUEL);
         vehiclesCanZoom = tag.contains(NBT_VEHICLES_CAN_ZOOM) && tag.getBoolean(NBT_VEHICLES_CAN_ZOOM);
         regeneration = !tag.contains(NBT_REGENERATION) || tag.getBoolean(NBT_REGENERATION);
+        spawnProtectionSeconds = tag.contains(NBT_SPAWN_PROTECTION) ? Mth.clamp(tag.getInt(NBT_SPAWN_PROTECTION), 0, MAX_SPAWN_PROTECTION_SECONDS) : DEFAULT_SPAWN_PROTECTION_SECONDS;
         if (tag.contains(NBT_OVERRIDE_HUNGER))
             overrideHunger = tag.getBoolean(NBT_OVERRIDE_HUNGER);
         if (tag.contains(NBT_BREAK_VEHICLES))
@@ -2492,6 +2510,7 @@ public final class TeamsManager
         tag.putBoolean(NBT_VEHICLES_CAN_ZOOM, vehiclesCanZoom);
         tag.putBoolean(NBT_OVERRIDE_HUNGER, overrideHunger);
         tag.putBoolean(NBT_REGENERATION, regeneration);
+        tag.putInt(NBT_SPAWN_PROTECTION, spawnProtectionSeconds);
         tag.putBoolean(NBT_BREAK_VEHICLES, survivalCanBreakVehicles);
         tag.putBoolean(NBT_PLACE_VEHICLES, survivalCanPlaceVehicles);
         tag.putInt(NBT_WEAPON_DROPS, weaponDrops.ordinal());

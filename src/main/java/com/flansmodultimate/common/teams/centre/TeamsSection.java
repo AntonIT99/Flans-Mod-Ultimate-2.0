@@ -71,6 +71,8 @@ public final class TeamsSection
     public static final String DEFAULT_SCORE = "default_score";
     public static final String WEAPON_DROPS = "weaponDrops";
     public static final String SEA_LEVEL = "seaLevel";
+    /** Seconds of Teams spawn protection, by the {@code /teams} command that sets it. */
+    public static final String SPAWN_PROTECTION = "spawnProtection";
 
     /**
      * The boolean rules, by the {@code /teams} command that sets each; {@code noHunger} in the screen is the legacy
@@ -269,6 +271,7 @@ public final class TeamsSection
         tag.putInt("vehicleLife", manager.getVehicleLife());
         tag.putInt("mechaLife", manager.getMechaLife());
         tag.putInt("aaLife", manager.getAaLife());
+        tag.putInt(SPAWN_PROTECTION, manager.getSpawnProtectionSeconds());
         manager.getSeaLevelOverride().ifPresent(level -> tag.putInt(SEA_LEVEL, level));
         return tag;
     }

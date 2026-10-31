@@ -22,6 +22,7 @@ import com.flansmodultimate.common.teams.TeamsCombatants;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.teams.TeamsRegeneration;
+import com.flansmodultimate.common.teams.TeamsSpawnProtection;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.*;
 import com.flansmodultimate.content.ContentManager;
@@ -437,13 +438,20 @@ public final class CommonEventHandler
 
     /**
      * Whether incoming damage is cancelled before any processing: entities riding Flan vehicles are immune,
-     * the Teams game type or an addon's friendly fire rule may reject the attack, and a shield may block a melee hit or a
-     * thrown projectile.
+     * the Teams game type or an addon's friendly fire rule may reject the attack, Teams spawn protection may spare a player
+     * who just took the field, and a shield may block a melee hit or a thrown projectile.
      */
     public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source, float amount)
     {
         if (!entity.level().isClientSide && (isRejectedByTeams(entity, source) || FriendlyFireRules.sparesDamage(entity, source)))
             return true;
+        if (!entity.level().isClientSide)
+        {
+            // Hitting an enemy ends the attacker's own spawn protection, whether or not the victim is protected.
+            TeamsSpawnProtection.attacked(entity, source);
+            if (TeamsSpawnProtection.spares(entity, source))
+                return true;
+        }
 
         boolean cancel = FlansMelee.protectRider(entity, source, amount);
 

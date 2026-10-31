@@ -11,6 +11,7 @@ import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.raytracing.*;
 import com.flansmodultimate.common.raytracing.hits.*;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.TeamsSpawnProtection;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
@@ -157,6 +158,7 @@ public class GunItemHandler
         if (StringUtils.isNotBlank(item.configType.getMeleeSound()))
             PacketPlaySound.sendSoundPacket(player, item.configType.getMeleeSoundRange(), item.configType.getMeleeSound(), item.configType.isDistortSound());
 
+        TeamsSpawnProtection.end(player);
         data.doMelee(player, item.configType.getMeleeTime(), item.configType);
         PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
     }
@@ -183,6 +185,7 @@ public class GunItemHandler
         if (player.getAbilities().instabuild)
             thrown.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
         level.addFreshEntity(thrown);
+        TeamsSpawnProtection.end(player);
 
         if (StringUtils.isNotBlank(type.getShootSound()))
             PacketPlaySound.sendSoundPacket(player, type.getGunSoundRange(), type.getShootSound(), type.isDistortSound(), type.isSilencedSound(gunStack));
@@ -239,6 +242,7 @@ public class GunItemHandler
             ShootingHandler handler = new PlayerShootingHandler(level, player, hand, gunStack, ammoSlot.stack(), ammoSlot.index());
             boolean lastBullet = isLastBullet(gunStack, level.registryAccess());
 
+            TeamsSpawnProtection.end(player);
             ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack, (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(),
                 handler);
 
