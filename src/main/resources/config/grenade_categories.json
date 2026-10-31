@@ -269,7 +269,7 @@
             "Mass": 1000,
             "FragType": "DEFAULT",
             "SmokeTime": 2000,
-            "SmokeRadius": 6
+            "SmokeRadius": 10
         },
         "items": [
             "gasmine"
@@ -820,7 +820,7 @@
             "Mass": 500,
             "FragType": "DEFAULT",
             "SmokeTime": 1600,
-            "SmokeRadius": 5,
+            "SmokeRadius": 10,
             "Fuse": 80
         },
         "items": [
