@@ -66,6 +66,7 @@
 * Sodium and Embeddium fast vertex writing, and EntityCulling compatibility
 * Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters
 * Clouds no longer draw over Flan particles
+* Fixed scrambled textures on bullet block-impact particles, block dust and item fragments on Minecraft 1.21.1
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`
 * Faster content startup and creative search
 

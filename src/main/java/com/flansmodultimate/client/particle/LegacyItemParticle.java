@@ -64,24 +64,25 @@ public final class LegacyItemParticle extends TextureSheetParticle
     @Override
     protected float getU0()
     {
-        return sprite.getU((uo + 1.0F) / 4.0F * 16.0F);
+        // Since 1.21, sprite interpolation takes normalized coordinates rather than 0..16 pixels.
+        return sprite.getU((uo + 1.0F) / 4.0F);
     }
 
     @Override
     protected float getU1()
     {
-        return sprite.getU(uo / 4.0F * 16.0F);
+        return sprite.getU(uo / 4.0F);
     }
 
     @Override
     protected float getV0()
     {
-        return sprite.getV(vo / 4.0F * 16.0F);
+        return sprite.getV(vo / 4.0F);
     }
 
     @Override
     protected float getV1()
     {
-        return sprite.getV((vo + 1.0F) / 4.0F * 16.0F);
+        return sprite.getV((vo + 1.0F) / 4.0F);
     }
 }
