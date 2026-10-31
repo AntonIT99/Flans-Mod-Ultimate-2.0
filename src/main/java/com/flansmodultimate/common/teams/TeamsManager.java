@@ -142,6 +142,8 @@ public final class TeamsManager
     @Getter @Setter
     private boolean canBreakGlass = true;
     @Getter @Setter
+    private boolean restoreBlocks;
+    @Getter @Setter
     private boolean canBreakGuns = true;
     @Getter @Setter
     private boolean driveablesBreakBlocks = true;
@@ -825,6 +827,7 @@ public final class TeamsManager
 
         announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
+        restoreRoundBlocks();
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
@@ -958,10 +961,32 @@ public final class TeamsManager
         return ModCommonConfig.bulletSnapshotDivisor();
     }
 
+    /** Records the first state of a position, including secondary changes such as fire. */
+    public void recordRoundBlock(ServerLevel level, BlockPos pos, net.minecraft.world.level.block.state.BlockState replacement)
+    {
+        if (server != level.getServer() || savedData == null || !restoreBlocks || (!roundRunning && intermissionPhase == IntermissionPhase.NONE))
+            return;
+        TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
+        if (map == null || !map.getDimension().equals(level.dimension()) || map.getBounds() != null && !map.getBounds().contains(new Vec3(pos.getX(), pos.getY(), pos.getZ())))
+            return;
+        savedData.blockJournal.capture(level, pos, replacement);
+        savedData.setDirty();
+    }
+
+    private void restoreRoundBlocks()
+    {
+        if (savedData != null && server != null)
+        {
+            savedData.blockJournal.restore(server);
+            savedData.setDirty();
+        }
+    }
+
     public void stopRound()
     {
         announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
+        restoreRoundBlocks();
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
@@ -1106,6 +1131,7 @@ public final class TeamsManager
         outOfBoundsSeconds.clear();
         roundRunning = false;
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
+        restoreRoundBlocks();
         awardRoundStats();
         voteOptionIds.clear();
         intermissionPhase = IntermissionPhase.NONE;
@@ -2393,6 +2419,7 @@ public final class TeamsManager
                 voteOptionIds.add(option.getUUID(NBT_ID));
         }
 
+        restoreBlocks = tag.getBoolean("restore_blocks");
         if (tag.contains(NBT_EXPLOSIONS))
             explosionsBreakBlocks = tag.getBoolean(NBT_EXPLOSIONS);
         if (tag.contains(NBT_BREAK_GLASS))
@@ -2519,6 +2546,7 @@ public final class TeamsManager
         }
 
         tag.put(NBT_VOTE_OPTIONS, voteOptions);
+        tag.putBoolean("restore_blocks", restoreBlocks);
         tag.putBoolean(NBT_EXPLOSIONS, explosionsBreakBlocks);
         tag.putBoolean(NBT_BREAK_GLASS, canBreakGlass);
         tag.putBoolean(NBT_BREAK_GUNS, canBreakGuns);

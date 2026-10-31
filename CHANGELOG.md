@@ -16,6 +16,8 @@
 
 * Conquest and Domination default to `killticketvalue 1`, `scorelimit 60` and `ticketdraininterval 100` (five seconds), preserving the relative value of kills and objective control; saved game type settings and round limits are kept
 
+* Optional `/teams restoreBlocks true` restores changed map blocks and block entities after a round ends, stops or switches, including explosion damage and broken glass; changes are saved across server restarts
+
 * Owned flag poles show their team's color or flag texture outside rounds when the rounds configured for their map identify the owner unambiguously
 
 * Teams weapon drop rules also cover grenades and tools such as bandages for players and bots
