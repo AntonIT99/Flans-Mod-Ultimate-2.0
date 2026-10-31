@@ -53,6 +53,8 @@
 
 ## Weapons
 
+* Built-in gun categories balance recoil by cartridge, weapon weight, action and mounting, with consistent recovery and reduced recoil when crouching or prone
+* `gunRecoilModifier` now also scales `FancyRecoil`, so the global setting works with both gun recoil systems
 * Default ammunition selection prefers compatible rounds from the weapon's own content pack, including for `/defaultammo`
 * Historically supported firing modes for source-pack weapons, including semi-auto selectors and two- or three-round bursts
 * Variable zoom for modern scopes (binoculars up to 40x), with new default keybinds

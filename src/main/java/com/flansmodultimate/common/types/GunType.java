@@ -2320,6 +2320,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         stackRecoil.applyModifier(loadedRecoilMultiplier(stack));
 
+        stackRecoil.applyModifier(ModCommonConfig.get().gunRecoilModifier());
+
         return stackRecoil;
     }
 
