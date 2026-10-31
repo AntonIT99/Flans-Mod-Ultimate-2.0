@@ -42,6 +42,8 @@
   "gui.flansmodultimate.apocalypse_choice.new_world": "此世界是否包含末日维度？\n\n包含该维度创建的世界，在之后移除 Flan's Mod Ultimate 后将无法再打开。不包含该维度创建的世界仍可在没有模组的情况下打开，只有 Flan's 的方块、物品和载具会消失。\n\n此选择对该世界是永久的。",
   "gui.flansmodultimate.apocalypse_choice.save_failed": "无法将选择保存到此世界：%s",
   "gui.flansmodultimate.apocalypse_choice.title": "Flan's Mod 末日维度",
+  "gui.flansmodultimate.centre.preset.arena.tip": "explosions = false\nvehiclesBreakBlocks = false\nfuelNeeded = false\narmourDrops = false\nbombs = true\nshells = true\nbullets = true\nforceAdventure = true\noverrideHunger = true\ncanBreakGuns = true\ncanBreakGlass = false\nweaponDrops = smart\nmgLife = 120 s\nplaneLife = 120 s\nvehicleLife = 120 s\nmechaLife = 120 s\naaLife = 120 s",
+  "gui.flansmodultimate.centre.preset.survival.tip": "explosions = true\nvehiclesBreakBlocks = true\nbombs = true\nshells = true\nbullets = true\ncanBreakGuns = true\ncanBreakGlass = true\nsurvivalCanBreakVehicles = true\nsurvivalCanPlaceVehicles = true\narmourDrops = true\nfuelNeeded = true\nforceAdventure = false\noverrideHunger = false\nweaponDrops = on\nmgLife = 0\nplaneLife = 0\nvehicleLife = 0\nmechaLife = 0\naaLife = 0",
   "gui.flansmodultimate.centre.rule.regeneration": "被动生命恢复",
   "gui.flansmodultimate.centre.rule.regeneration.tip": "回合中玩家和机器人每五秒恢复半颗心",
   "gui.flansmodultimate.centre.rule.spawnProtection": "出生保护",

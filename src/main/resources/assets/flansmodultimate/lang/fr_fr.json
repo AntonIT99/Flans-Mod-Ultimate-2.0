@@ -42,6 +42,8 @@
   "gui.flansmodultimate.apocalypse_choice.new_world": "Ce monde doit-il inclure la dimension Apocalypse ?\n\nUn monde créé avec elle ne pourra plus être ouvert si Flan's Mod Ultimate est retiré plus tard. Un monde créé sans elle pourra toujours être ouvert sans le mod ; seuls les blocs, objets et véhicules de Flan's disparaîtraient.\n\nCe choix est définitif pour ce monde.",
   "gui.flansmodultimate.apocalypse_choice.save_failed": "Impossible d'enregistrer le choix dans ce monde : %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Dimension Apocalypse de Flan's Mod",
+  "gui.flansmodultimate.centre.preset.arena.tip": "explosions = false\nvehiclesBreakBlocks = false\nfuelNeeded = false\narmourDrops = false\nbombs = true\nshells = true\nbullets = true\nforceAdventure = true\noverrideHunger = true\ncanBreakGuns = true\ncanBreakGlass = false\nweaponDrops = smart\nmgLife = 120 s\nplaneLife = 120 s\nvehicleLife = 120 s\nmechaLife = 120 s\naaLife = 120 s",
+  "gui.flansmodultimate.centre.preset.survival.tip": "explosions = true\nvehiclesBreakBlocks = true\nbombs = true\nshells = true\nbullets = true\ncanBreakGuns = true\ncanBreakGlass = true\nsurvivalCanBreakVehicles = true\nsurvivalCanPlaceVehicles = true\narmourDrops = true\nfuelNeeded = true\nforceAdventure = false\noverrideHunger = false\nweaponDrops = on\nmgLife = 0\nplaneLife = 0\nvehicleLife = 0\nmechaLife = 0\naaLife = 0",
   "gui.flansmodultimate.centre.rule.regeneration": "Régénération passive",
   "gui.flansmodultimate.centre.rule.regeneration.tip": "Les joueurs et les bots récupèrent un demi-cœur toutes les cinq secondes pendant les manches",
   "gui.flansmodultimate.centre.rule.spawnProtection": "Protection au déploiement",

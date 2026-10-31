@@ -42,6 +42,8 @@
   "gui.flansmodultimate.apocalypse_choice.new_world": "Включить в этот мир измерение Апокалипсиса?\n\nМир, созданный с ним, больше нельзя будет открыть, если позже удалить Flan's Mod Ultimate. Мир без него можно будет открыть и без мода; исчезнут только блоки, предметы и техника Flan's.\n\nЭтот выбор для мира окончательный.",
   "gui.flansmodultimate.apocalypse_choice.save_failed": "Не удалось сохранить выбор в этом мире: %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Измерение Апокалипсиса Flan's Mod",
+  "gui.flansmodultimate.centre.preset.arena.tip": "explosions = false\nvehiclesBreakBlocks = false\nfuelNeeded = false\narmourDrops = false\nbombs = true\nshells = true\nbullets = true\nforceAdventure = true\noverrideHunger = true\ncanBreakGuns = true\ncanBreakGlass = false\nweaponDrops = smart\nmgLife = 120 s\nplaneLife = 120 s\nvehicleLife = 120 s\nmechaLife = 120 s\naaLife = 120 s",
+  "gui.flansmodultimate.centre.preset.survival.tip": "explosions = true\nvehiclesBreakBlocks = true\nbombs = true\nshells = true\nbullets = true\ncanBreakGuns = true\ncanBreakGlass = true\nsurvivalCanBreakVehicles = true\nsurvivalCanPlaceVehicles = true\narmourDrops = true\nfuelNeeded = true\nforceAdventure = false\noverrideHunger = false\nweaponDrops = on\nmgLife = 0\nplaneLife = 0\nvehicleLife = 0\nmechaLife = 0\naaLife = 0",
   "gui.flansmodultimate.centre.rule.regeneration": "Пассивная регенерация",
   "gui.flansmodultimate.centre.rule.regeneration.tip": "Игроки и боты восстанавливают половину сердца каждые пять секунд во время раундов",
   "gui.flansmodultimate.centre.rule.spawnProtection": "Защита при появлении",

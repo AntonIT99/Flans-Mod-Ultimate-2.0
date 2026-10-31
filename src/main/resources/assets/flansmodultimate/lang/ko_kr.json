@@ -42,6 +42,8 @@
   "gui.flansmodultimate.apocalypse_choice.new_world": "이 세계에 아포칼립스 차원을 포함할까요?\n\n이 차원을 포함해 만든 세계는 나중에 Flan's Mod Ultimate를 제거하면 더 이상 열 수 없습니다. 포함하지 않고 만든 세계는 모드 없이도 열 수 있으며, Flan's의 블록, 아이템, 탈것만 사라집니다.\n\n이 선택은 이 세계에서 영구적입니다.",
   "gui.flansmodultimate.apocalypse_choice.save_failed": "이 세계에 선택을 저장하지 못했습니다: %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Flan's Mod 아포칼립스 차원",
+  "gui.flansmodultimate.centre.preset.arena.tip": "explosions = false\nvehiclesBreakBlocks = false\nfuelNeeded = false\narmourDrops = false\nbombs = true\nshells = true\nbullets = true\nforceAdventure = true\noverrideHunger = true\ncanBreakGuns = true\ncanBreakGlass = false\nweaponDrops = smart\nmgLife = 120 s\nplaneLife = 120 s\nvehicleLife = 120 s\nmechaLife = 120 s\naaLife = 120 s",
+  "gui.flansmodultimate.centre.preset.survival.tip": "explosions = true\nvehiclesBreakBlocks = true\nbombs = true\nshells = true\nbullets = true\ncanBreakGuns = true\ncanBreakGlass = true\nsurvivalCanBreakVehicles = true\nsurvivalCanPlaceVehicles = true\narmourDrops = true\nfuelNeeded = true\nforceAdventure = false\noverrideHunger = false\nweaponDrops = on\nmgLife = 0\nplaneLife = 0\nvehicleLife = 0\nmechaLife = 0\naaLife = 0",
   "gui.flansmodultimate.centre.rule.regeneration": "자연 회복",
   "gui.flansmodultimate.centre.rule.regeneration.tip": "라운드 중 플레이어와 봇이 5초마다 하트 반 칸을 회복합니다",
   "gui.flansmodultimate.centre.rule.spawnProtection": "스폰 보호",
