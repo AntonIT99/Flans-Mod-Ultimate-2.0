@@ -305,6 +305,21 @@ public final class BotSettings
                 crewClasses.put(post, value);
         }
 
+        /**
+         * @param classes
+         *            the short names of the team's classes
+         * @return the weight each of the classes is given by: its listed weight, 0 for one left out, or 1 for each while
+         *         none of them has a weight
+         */
+        public Map<String, Integer> effectiveClassWeights(List<String> classes)
+        {
+            boolean weighted = classes.stream().anyMatch(playerClass -> classWeights.getOrDefault(playerClass, 0) > 0);
+            Map<String, Integer> weights = new LinkedHashMap<>();
+            for (String playerClass : classes)
+                weights.put(playerClass, weighted ? Math.max(0, classWeights.getOrDefault(playerClass, 0)) : 1);
+            return weights;
+        }
+
         /** Whether bots are made from a Custom NPCs clone rather than as plain NPCs. */
         public boolean usesClone()
         {

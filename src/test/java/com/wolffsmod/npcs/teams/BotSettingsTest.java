@@ -8,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,6 +20,21 @@ class BotSettingsTest
     void aRoundWithoutSettingsHasNoBots()
     {
         assertFalse(BotSettings.load(new CompoundTag()).isEnabled());
+    }
+
+    @Test
+    void classesWeighOneEachUntilOneOfTheTeamsHasAWeight()
+    {
+        BotSettings.TeamForce force = new BotSettings.TeamForce();
+        List<String> classes = List.of("rifleman", "mg", "medic");
+        assertEquals(Map.of("rifleman", 1, "mg", 1, "medic", 1), force.effectiveClassWeights(classes));
+        // A weight for a class the team does not offer weighs nothing, as when bots are given classes.
+        force.getClassWeights().put("sniper", 5);
+        assertEquals(Map.of("rifleman", 1, "mg", 1, "medic", 1), force.effectiveClassWeights(classes));
+        force.getClassWeights().put("rifleman", 3);
+        force.getClassWeights().put("mg", 0);
+        assertEquals(Map.of("rifleman", 3, "mg", 0, "medic", 0), force.effectiveClassWeights(classes));
+        assertEquals(List.copyOf(classes), List.copyOf(force.effectiveClassWeights(classes).keySet()));
     }
 
     @Test

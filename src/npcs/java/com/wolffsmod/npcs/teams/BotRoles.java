@@ -49,6 +49,15 @@ public final class BotRoles
         return KITS.computeIfAbsent(playerClass, name -> FlansModApi.getPlayerClass(name).map(found -> detect(found.createStartingItems())).orElse(new Kit(BotSettings.ClassRole.RIFLEMAN, 0, 0)));
     }
 
+    /**
+     * @return the role starting items suggest, as a class carrying them gets it unless its team sets one; worked out
+     *         afresh, outside the server's cache, so any thread may ask
+     */
+    public static BotSettings.ClassRole suggested(List<ItemStack> items)
+    {
+        return detect(items).role();
+    }
+
     /** Forgets what classes carry, so content and class edits are taken up by the next round. */
     static void forget()
     {

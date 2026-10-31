@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.platform.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.client.gui.custom.components.CustomGuiEntityDisplay;
 import noppes.npcs.shared.client.gui.components.GuiBasic;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -36,6 +37,15 @@ public final class NpcClientPlatform
     public static void drawNpc(GuiBasic screen, GuiGraphics graphics, LivingEntity entity, int x, int y, float zoom, int rotation, boolean followMouse)
     {
         screen.drawNpc(graphics, entity, x, y, zoom, rotation, followMouse);
+    }
+
+    /**
+     * Draws an NPC preview on a screen that is not one of Custom NPCs', standing at a screen position and turned to the
+     * mouse, through the entity display Custom NPCs' own screens use.
+     */
+    public static void drawNpc(GuiGraphics graphics, LivingEntity entity, int x, int y, float zoom, int mouseX, int mouseY)
+    {
+        CustomGuiEntityDisplay.drawEntity(graphics, entity, x, y, zoom, 0, mouseX, mouseY, 0F, 0F, true, true);
     }
 
     /** Scales a label already turned to the camera so its text reads left to right, as name tags do. */

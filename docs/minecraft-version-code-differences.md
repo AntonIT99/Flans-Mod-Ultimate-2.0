@@ -237,6 +237,15 @@ simple rendering retains the detached model's scale. Recheck that local-variable
 layout for another Custom NPCs build. The preview and nameplate share the NPC
 module's `FlanModelBounds` helper and the existing public geometry API.
 
+The Teams bot editor's pickers (`BotPickerScreen` and its subclasses) are vanilla
+screens rather than Custom NPCs ones. They draw clone and class previews through
+`NpcClientPlatform.drawNpc(GuiGraphics, LivingEntity, x, y, zoom, mouseX, mouseY)`,
+which calls Custom NPCs' `CustomGuiEntityDisplay.drawEntity` with a zero GUI origin;
+the NeoForge 1.21.1 build's overload lacks the trailing flag, as for the `GuiBasic`
+variant. `BotPickerScreen` turns pages in `mouseScrolled`, which gains a horizontal
+axis on 1.21, and asks for clone lists and previews with `BotClonesPacket`, whose
+handler reads `ServerCloneController` for operators only.
+
 On Forge 1.20.1, the NPC module keeps its Custom NPCs mixins in
 `com.wolffsmod.npcs.mixin` and its buffer adapter in
 `com.wolffsmod.npcs.platform.render`. Its client-only `NpcRenderContextMixin`

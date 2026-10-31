@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.client.BotEditorScreen;
 import com.wolffsmod.npcs.client.BotOrdersScreen;
+import com.wolffsmod.npcs.client.BotPickerScreen;
 import com.wolffsmod.npcs.client.GuiWolffsMod;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -40,7 +41,7 @@ public abstract class TooltipMixin
     @Unique
     private static boolean wolffsmodnpcsOwnScreen(Screen screen)
     {
-        return screen instanceof GuiWolffsMod || screen instanceof BotEditorScreen || screen instanceof BotOrdersScreen;
+        return screen instanceof GuiWolffsMod || screen instanceof BotEditorScreen || screen instanceof BotPickerScreen || screen instanceof BotOrdersScreen;
     }
 
     /** Whether the text, or a part appended to it, is one of the module's translations. */
