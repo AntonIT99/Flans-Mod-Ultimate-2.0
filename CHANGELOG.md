@@ -85,6 +85,7 @@
 * Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters
 * Smoke grenades and shells have separate emission and live-particle limits for each source, including existing content packs; `flansmod.smoker` and `flansmod.smoker1` form broad smoke clouds at their origin instead of throwing multiplying smoke emitters away from the detonation; Warfare 44 M8 and Star Wars Smoke Detonator grenades reuse this smoke effect; `SmokeRadius` scales cloud size and the cloud fills the whole radius, positive `SmokeRadius` and `SmokeTime` appear in tooltips, and source packs balance smoke radius and duration by shell size and role, with smaller areas for traps and self-use effects; built-in smoke grenade, gas grenade and smoke shell categories set `SmokeTime` and `SmokeRadius` from real burn times
 * Clouds no longer draw over Flan particles
+* Gun attachments such as scopes follow the gun's first-person recoil and sight offset instead of staying in place while the gun kicks back
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`
 * Faster content startup and creative search
 * The Forge loading screen shows content pack progress: which pack is loading, why a pack is being reprocessed, Java model compilation and a final summary
