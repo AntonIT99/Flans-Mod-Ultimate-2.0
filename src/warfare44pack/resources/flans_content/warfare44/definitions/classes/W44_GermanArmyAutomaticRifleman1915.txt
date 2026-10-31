@@ -9,5 +9,7 @@ UnlockLevel 0
 // Items
 AddItem 44_Modell1915
 AddItem 44_Modell1915Ammo 6
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
 AddItem 44_stielhandgranate 2
 AddItem 44_Bandage

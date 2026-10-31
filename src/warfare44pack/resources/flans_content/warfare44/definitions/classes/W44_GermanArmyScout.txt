@@ -14,5 +14,7 @@ Chest 44_GermanSplittermusterCamoSmock
 // Items
 AddItem 44_Kar98k+44_ZF39Scope
 AddItem 44_Kar98kAmmo 4
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
 AddItem 44_Binoculars
 AddItem 44_Bandage

@@ -11,6 +11,8 @@ ClassLimitPercent 15
 // Items
 AddItem 44_M1903Springfield+44_Unertl8XScope
 AddItem 44_M1903SpringfieldAmmo 4
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
 AddItem 44_Binoculars
 AddItem 44_Bandage
 AddItem 44_Parachute

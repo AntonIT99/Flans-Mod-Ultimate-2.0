@@ -10,5 +10,7 @@ ClassLimitPercent 20
 // Items
 AddItem 44_M1919A630Cal
 AddItem 44_30CalAmmo 3
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
 AddItem 44_AmmoBag
 AddItem 44_Bandage

@@ -10,5 +10,7 @@ ClassLimitPercent 20
 // Items
 AddItem 44_Type99
 AddItem 44_Type99Ammo 6
+AddItem 44_Type14Nambu
+AddItem 44_Type14NambuAmmo 2
 AddItem 44_AmmoBag
 AddItem 44_Bandage
