@@ -12,6 +12,9 @@ Setup and agent registration are
 available through `scripts/setup-minecraft-mcp.ps1 -RegisterCodex`. Use the
 HTTP fallback documented there if tools are unavailable in the current session.
 
+For performance profiling, read `docs/spark.md`. Spark loads in default dev runs;
+use the matching `spark_<minecraft version>` analysis MCP server or `-PwithoutSpark` to opt out.
+
 ## Task-specific workflows
 
 - For version-dependent changes or work ported between maintained branches, read

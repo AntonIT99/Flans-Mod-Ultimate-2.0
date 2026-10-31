@@ -1,5 +1,10 @@
 {
   "mcpServers": {
+    "spark_1_20_1": {
+      "args": ["tools/spark/bridge.mjs"],
+      "type": "stdio",
+      "command": "node"
+    },
     "minecraft_1_20_1": {
       "args": [
         "tools/minecraft-mcp/bridge.mjs"

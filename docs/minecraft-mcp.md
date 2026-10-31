@@ -1,5 +1,8 @@
 # Agent-driven Minecraft testing
 
+For optional performance captures and agent-readable call trees, see
+[spark profiling](spark.md).
+
 [Minecraft Mod MCP](https://github.com/langyo/minecraft-mod-mcp) is an optional
 development mod for inspecting and operating a running Minecraft client. It is
 not included in published Flan's Mod jars or content packs. Version 0.4.21 is

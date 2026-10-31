@@ -13,6 +13,16 @@ Recheck them against the target branch during future merges.
 
 ## Minecraft 1.20.1 / Forge → Minecraft 1.21.1 / NeoForge
 
+### Optional spark development profiler
+
+Both versions use `scripts/spark.gradle` and `tools/spark/target.json` to pin and
+verify spark in default development runs (`-PwithoutSpark` opts out). Forge 1.20.1
+remaps the pinned Modrinth Maven artifact through `fg.deobf` and verifies the raw
+artifact before each run; NeoForge 1.21.1 uses a task-backed verified `localRuntime`
+file. Preserve that distinction
+when porting the script. The Node analysis bridge and profiling workflow are shared;
+neither the profiler nor its analysis dependencies ship in mod or content-pack jars.
+
 ### Content-loading package on master
 
 On `master` (Forge 1.20.1), the content-loading implementation now lives in

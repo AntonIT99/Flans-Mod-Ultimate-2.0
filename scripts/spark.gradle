@@ -1,0 +1,51 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+
+// Development runtime tooling, never embedded in mod or content-pack artifacts.
+def sparkTarget = new JsonSlurper().parse(file('tools/spark/target.json'))
+if (sparkTarget.minecraftVersion != minecraft_version)
+    throw new GradleException('The spark target does not match this checkout Minecraft version.')
+String sparkDependency = "maven.modrinth:spark:${sparkTarget.modrinthVersion}"
+String sparkHash = sparkTarget.sha512
+def sparkJar = layout.buildDirectory.file("spark/spark-${sparkTarget.modVersion}.jar")
+
+repositories.maven {
+    url = 'https://api.modrinth.com/maven'
+    content { includeModule 'maven.modrinth', 'spark' }
+}
+configurations.create('sparkDevelopment') {
+    canBeConsumed = false
+    transitive = false
+}
+dependencies.add('sparkDevelopment', sparkDependency)
+def sparkArtifact = configurations.sparkDevelopment.incoming.artifactView {}.files
+
+def prepareSpark = tasks.register('prepareSpark') {
+    group = 'development'
+    description = 'Resolve the pinned spark development mod and verify its SHA-512.'
+    inputs.files(sparkArtifact)
+    inputs.property('sha512', sparkHash)
+    outputs.file(sparkJar)
+    outputs.upToDateWhen {
+        File output = sparkJar.get().asFile
+        output.isFile() && MessageDigest.getInstance('SHA-512').digest(output.bytes).encodeHex().toString() == sparkHash
+    }
+    doLast {
+        File input = sparkArtifact.singleFile
+        String actual = MessageDigest.getInstance('SHA-512').digest(input.bytes).encodeHex().toString()
+        if (actual != sparkHash)
+            throw new GradleException("spark SHA-512 mismatch: ${actual}")
+        File output = sparkJar.get().asFile
+        output.parentFile.mkdirs()
+        java.nio.file.Files.copy(input.toPath(), output.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    }
+}
+
+if (!project.hasProperty('withoutSpark'))
+{
+    // ForgeGradle remaps the production artifact's SRG names for development runs.
+    dependencies.add('runtimeOnly', fg.deobf(sparkDependency))
+    tasks.matching { it.name.startsWith('run') || it.name.startsWith('prepareRun') }.configureEach {
+        dependsOn prepareSpark
+    }
+}
