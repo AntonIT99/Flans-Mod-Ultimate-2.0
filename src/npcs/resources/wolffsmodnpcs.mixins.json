@@ -6,6 +6,7 @@
   "mixins": [
       "CmdCloneMixin",
       "CmdNPCMixin",
+      "CustomNpcsMixin",
       "DataInventoryMixin",
       "EntityAIRangedAttackMixin",
       "EntityAIReturnMixin",

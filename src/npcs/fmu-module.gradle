@@ -18,3 +18,19 @@ dependencies.add('testImplementation', npcsSourceSet.output)
 neoForge.accessTransformers.from(file('src/npcs/customnpcs-accesstransformer.cfg'))
 // Equipment integration tests exercise the installed NPC inventory; the test runtime already provides the dependency.
 dependencies.add('testCompileOnly', customNpcsDependency)
+
+// Real-server regression tests are a separate development mod and never enter npcsJar.
+def npcGameTestSourceSet = sourceSets.create('npcGameTest') {
+    compileClasspath += npcsSourceSet.compileClasspath + npcsSourceSet.output
+    runtimeClasspath += npcsSourceSet.runtimeClasspath
+}
+def npcGameTestMod = neoForge.mods.create('wolffsmodnpcstests') {
+    sourceSet npcGameTestSourceSet
+}
+neoForge.runs.configureEach {
+    if (name != 'gameTestServer')
+        loadedMods = provider { neoForge.mods.findAll { it != npcGameTestMod } }
+}
+neoForge.runs.named('gameTestServer') {
+    gameDirectory = file('run/gametest')
+}
