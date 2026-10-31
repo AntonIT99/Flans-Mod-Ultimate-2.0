@@ -21,6 +21,7 @@ import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.teams.TeamsCombatants;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.TeamsRegeneration;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.*;
 import com.flansmodultimate.content.ContentManager;
@@ -244,7 +245,7 @@ public final class CommonEventHandler
             int regenTimer = regenTimers.merge(player.getUUID(), 1, Integer::sum);
             if (regenTimer >= ModCommonConfig.get().bonusRegenTickDelay())
             {
-                if (player.getFoodData().getFoodLevel() >= ModCommonConfig.get().bonusRegenFoodLimit())
+                if (!TeamsRegeneration.applies(player) && player.getFoodData().getFoodLevel() >= ModCommonConfig.get().bonusRegenFoodLimit())
                     player.heal(ModCommonConfig.get().bonusRegenAmount());
                 regenTimers.put(player.getUUID(), 0);
             }
@@ -415,6 +416,7 @@ public final class CommonEventHandler
             return;
 
         HeldItemPresentation.tick(living);
+        TeamsRegeneration.tick(living);
 
         if (living instanceof Player || living instanceof Mob)
         {
@@ -651,7 +653,7 @@ public final class CommonEventHandler
             return;
         if (!ModCommonConfig.showBotKillsInKillFeed() && !(killer instanceof ServerPlayer) && !(victim instanceof ServerPlayer))
             return;
-        InfoType weapon = findKillingWeapon(source, killer);
+        InfoType weapon = FlanDamageSources.getWeaponType(source).orElse(null);
         if (weapon == null)
             return;
 
@@ -667,24 +669,6 @@ public final class CommonEventHandler
     private static String killFeedName(LivingEntity entity)
     {
         return entity instanceof ServerPlayer player ? player.getGameProfile().getName() : entity.getName().getString();
-    }
-
-    /**
-     * The icon shown in the feed. Projectiles know the gun that fired them and thrown guns know themselves;
-     * melee kills fall back to the weapon the killer is holding.
-     */
-    @Nullable
-    private static InfoType findKillingWeapon(DamageSource source, LivingEntity killer)
-    {
-        if (source.getDirectEntity() instanceof Bullet bullet && bullet.getFiredShot() != null && bullet.getFiredShot().getFireableGun() != null)
-            return bullet.getFiredShot().getFireableGun().getType();
-        if (source.getDirectEntity() instanceof Shootable shootable)
-            return shootable.getConfigType();
-        if (source.getDirectEntity() instanceof ThrownGun thrownGun)
-            return thrownGun.getGunType();
-        if (!FlanDamageSources.isShootableDamage(source) && !source.is(FlanDamageSources.MELEE) && !source.is(FlanDamageSources.EXPLOSION))
-            return null;
-        return killer.getMainHandItem().getItem() instanceof GunItem gunItem ? gunItem.getConfigType() : null;
     }
 
     private static ChatFormatting teamColour(LivingEntity entity)

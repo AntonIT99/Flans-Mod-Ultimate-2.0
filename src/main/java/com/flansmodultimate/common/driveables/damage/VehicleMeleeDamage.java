@@ -4,6 +4,8 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.item.IFlanItem;
+import com.flansmodultimate.common.types.InfoType;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.chat.Component;
@@ -13,6 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Optional;
 import java.util.Set;
 
 /** Melee rules shared by hulls, proxies, protected riders and NPC model targets. */
@@ -64,6 +67,12 @@ public final class VehicleMeleeDamage
         return weapon.getItem() instanceof GunItem ? new WeaponSource(original, weapon) : original;
     }
 
+    /** The striking weapon, including an offhand weapon, retained when the melee source was composed. */
+    public static Optional<InfoType> weaponType(DamageSource source)
+    {
+        return source instanceof WeaponSource hit && hit.weapon.getItem() instanceof IFlanItem<?> item ? Optional.of(item.getConfigType()) : Optional.empty();
+    }
+
     public static boolean protectRider(LivingEntity rider, DamageSource source, float amount)
     {
         Entity vehicle = rider.getVehicle();
@@ -89,7 +98,7 @@ public final class VehicleMeleeDamage
         @Override
         public @NotNull Component getLocalizedDeathMessage(@NotNull LivingEntity killed)
         {
-            return original.getLocalizedDeathMessage(killed);
+            return FlanDamageSources.deathMessage(original, killed, weapon.getHoverName());
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render.hud;
 
 import com.flansmodultimate.FlansModTextures;
+import com.flansmodultimate.api.parts.IFlanDamageModel;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DriveableArmorDebugHud;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
@@ -33,7 +34,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.*;
 
 import java.util.*;
 
@@ -166,6 +171,7 @@ public final class ClientHudOverlays
         renderTeamInfo(g, sw);
         renderTeamsControls(g, sw, sh);
         renderKillMessages(g, sw, sh);
+        renderHealingTarget(g, sw, sh);
         renderVehicleDebug(g, sw, sh);
     };
 
@@ -1013,6 +1019,32 @@ public final class ClientHudOverlays
         return state.getTeamScores().stream().flatMap(team -> team.players().stream()).filter(entry -> entry.name().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 
+    /** Medical tools reveal the living target in reach, independently of Teams state. */
+    private static void renderHealingTarget(GuiGraphics g, int sw, int sh)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.level == null || mc.options.hideGui || player.isSpectator())
+            return;
+        boolean healing = false;
+        for (InteractionHand hand : InteractionHand.values())
+            if (player.getItemInHand(hand).getItem() instanceof ToolItem tool && tool.getConfigType().isHealPlayers())
+                healing = true;
+        if (!healing)
+            return;
+        Vec3 start = player.getEyePosition();
+        Vec3 end = start.add(player.getViewVector(1F).scale(5D));
+        HitResult block = mc.level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        end = block.getLocation();
+        EntityHitResult hit = ProjectileUtil.getEntityHitResult(mc.level, player, start, end, player.getBoundingBox().expandTowards(end.subtract(start)).inflate(1D),
+            entity -> entity instanceof LivingEntity living && living.isAlive() && !living.isSpectator());
+        if (hit == null || !(hit.getEntity() instanceof LivingEntity target) || target instanceof IFlanDamageModel model && model.flansmodultimateDamageModel().isPresent())
+            return;
+        int percent = Mth.clamp(Math.round(target.getHealth() * 100F / Math.max(1F, target.getMaxHealth())), 0, 100);
+        Component text = Component.translatable("hud.flansmodultimate.healing_target", target.getDisplayName(), Math.round(target.getHealth()), Math.round(target.getMaxHealth()), percent);
+        g.drawString(mc.font, text, (sw - mc.font.width(text)) / 2, sh / 2 + 18, healthColor(percent), true);
+    }
+
     /**
      * Kill feed in the bottom right corner: killer, weapon icon, an extra crosshair for a
      * headshot, and the victim, each line rising as newer kills come in.
@@ -1027,12 +1059,15 @@ public final class ClientHudOverlays
         for (KillMessageFeed.Entry message : KillMessageFeed.getMessages())
         {
             String killer = message.getKiller().getString();
-            String victim = message.getVictim().getString();
+            Component victimLabel = message.getVictim().copy();
+            if (!message.getWeapon().isEmpty())
+                victimLabel = victimLabel.copy().append(" [").append(message.getWeapon().getHoverName()).append("]");
+            String victim = victimLabel.getString();
             String gap = message.isHeadshot() ? KILL_MESSAGE_HEADSHOT_GAP : KILL_MESSAGE_GAP;
             int textY = sh - 32 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
             int iconY = sh - 36 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
 
-            Component line = Component.empty().append(message.getKiller()).append(Component.literal(gap)).append(message.getVictim());
+            Component line = Component.empty().append(message.getKiller()).append(Component.literal(gap)).append(victimLabel);
             g.drawString(font, line, sw - font.width(killer + gap + victim) - 6, textY, HUD_WHITE, true);
 
             if (!message.getWeapon().isEmpty())

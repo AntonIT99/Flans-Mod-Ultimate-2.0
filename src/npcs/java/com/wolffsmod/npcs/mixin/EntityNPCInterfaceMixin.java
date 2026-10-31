@@ -6,6 +6,7 @@ import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.entity.*;
 import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.parts.*;
+import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.*;
@@ -55,6 +56,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 /**
+ * Teams controls passive regeneration for round soldiers; medical healing and vehicle repairs stay independent.
  * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed.
  *
  * <ul>
@@ -466,6 +468,19 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             wolffsmodnpcsApproachGoal = new NpcCombatApproachGoal(npc);
             goalSelector.addGoal(priority, wolffsmodnpcsApproachGoal);
         });
+    }
+
+    // Teams owns passive healing during a round; explicit healing and vehicle repairs remain independent.
+    @Redirect(method = {"aiStep", "m_8107_"}, at = @At(value = "FIELD", target = "Lnoppes/npcs/entity/data/DataStats;healthRegen:I", opcode = Opcodes.GETFIELD))
+    private int wolffsmodnpcsRoundHealthRegen(noppes.npcs.entity.data.DataStats stats)
+    {
+        return FlansTeams.usesRoundRegeneration((EntityNPCInterface) (Object) this) ? 0 : stats.healthRegen;
+    }
+
+    @Redirect(method = {"aiStep", "m_8107_"}, at = @At(value = "FIELD", target = "Lnoppes/npcs/entity/data/DataStats;combatRegen:I", opcode = Opcodes.GETFIELD))
+    private int wolffsmodnpcsRoundCombatRegen(noppes.npcs.entity.data.DataStats stats)
+    {
+        return FlansTeams.usesRoundRegeneration((EntityNPCInterface) (Object) this) ? 0 : stats.combatRegen;
     }
 
     /** An equipped ranged weapon gets the ranged attack and the ranged variant of the NPC's tactic. */

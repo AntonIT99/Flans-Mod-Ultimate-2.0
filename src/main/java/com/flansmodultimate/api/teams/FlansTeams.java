@@ -54,6 +54,20 @@ public final class FlansTeams
     }
 
     /**
+     * Whether Teams replaces this entity's native passive healing with the round regeneration rule.
+     * Addons should skip their automatic regeneration when true, including when the rule is off.
+     * Medical items, effects and repairs remain independent. Server thread only.
+     *
+     * @param entity
+     *            living entity to check
+     * @return whether the round owns its passive regeneration
+     */
+    public static boolean usesRoundRegeneration(LivingEntity entity)
+    {
+        return manager().isPresent() && com.flansmodultimate.common.teams.TeamsRegeneration.applies(entity);
+    }
+
+    /**
      * @return the entries of the rotation in their order, immutable
      */
     public static List<ITeamsRound> getRounds()

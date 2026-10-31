@@ -212,7 +212,8 @@ public class FiredShot
      */
     public DamageSource getDamageSource(boolean headshot, Level level, @Nullable Bullet bullet)
     {
-        return FlanDamageSources.createDamageSource(level, (bullet != null) ? bullet : shooter, attacker, headshot ? FlanDamageSources.HEADSHOT : FlanDamageSources.SHOOTABLE);
+        return FlanDamageSources.createDamageSource(level, (bullet != null) ? bullet : shooter, attacker, headshot ? FlanDamageSources.HEADSHOT : FlanDamageSources.SHOOTABLE,
+            fireableGun != null ? fireableGun.getType() : bulletType);
     }
 
     public Optional<ServerPlayer> getPlayerAttacker()

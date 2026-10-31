@@ -30,6 +30,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Teams Bots, Factions & Battles
 
+* Teams soldiers follow the round regeneration rule and heal half a heart every five seconds by default; medical healing and vehicle repairs remain independent
+
 * Teams bots: NPC soldiers, squads and vehicles that fight Teams rounds, with player orders (`Squad orders` key, O), a commander seat, transports, class roles, every class of the team fielded in proportion to its weight, grenades thrown at any enemy in safe reach, suppression and squad leading; bots approach CTF flags at ground level even on taller poles
 * Manage Custom NPCs factions for battles: branches of Flan's teams, alliances, wars and peace between factions
 * Players can join and leave factions; factions are invite-only by default, and operators choose who may join, the leave penalty and the rejoin cooldown

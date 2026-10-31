@@ -14,6 +14,11 @@
 
 ## Teams
 
+* `/teams regeneration <true|false>` controls passive healing for players and bots during rounds; the default is now half a heart every five seconds, preserving the value of medical supplies
+* `/teams stop` stops the current round, with the same cleanup as `/teams admin stop`
+* Kill messages and the kill feed name the weapon, grenade or vehicle responsible
+* Holding a healing tool in either hand shows the health of the living target within five blocks, including players and Flan soldiers, inside and outside rounds; vehicle models are excluded
+
 * `showBotKillsInKillFeed` controls whether the battle kill feed includes bot-versus-bot kills, also available in quick access Server settings; disable it to show only kills involving a player
 
 * Unassigned flagpole bases and capture points default to the first map in their dimension when placed or loaded; the Operator Stick can still change their map

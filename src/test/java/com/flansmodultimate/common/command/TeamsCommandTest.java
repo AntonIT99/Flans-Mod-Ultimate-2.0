@@ -35,6 +35,15 @@ class TeamsCommandTest
     }
 
     @Test
+    void regenerationAndStopAreAvailableAtTheRoot()
+    {
+        assertRuns("teams regeneration true");
+        assertRuns("teams regeneration false");
+        assertRuns("teams stop");
+        assertRuns("teams admin stop");
+    }
+
+    @Test
     void aRoundIsAddedFromSidesSeparatedByVs()
     {
         assertRuns("teams admin round add arena tdm red vs blue 15 50");

@@ -44,7 +44,7 @@ public final class NpcRunOver
         AABB box = own.inflate(reach, VERTICAL_REACH, reach);
         for (LivingEntity victim : npc.level().getEntitiesOfClass(LivingEntity.class, box,
             candidate -> candidate != npc && candidate.isAlive() && !spared(npc, candidate) && !onTop(own, candidate.getY())))
-            victim.hurt(npc.damageSources().mobAttack(npc), (float) damage.getAsDouble());
+            victim.hurt(FlansEntityTypes.collisionDamageSource(npc, npc), (float) damage.getAsDouble());
     }
 
     /**

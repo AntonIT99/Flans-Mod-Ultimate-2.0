@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -336,8 +335,7 @@ public final class DriveableCollisionHelper
         if (amount <= 0F)
             return;
         Entity controller = driveable.getControllingEntity();
-        DamageSource unmannedSource = controller instanceof LivingEntity living ? driveable.level().damageSources().mobAttack(living) : driveable.level().damageSources().flyIntoWall();
-        DamageSource source = controller instanceof Player player ? driveable.level().damageSources().playerAttack(player) : unmannedSource;
+        DamageSource source = com.flansmodultimate.common.FlanDamageSources.vehicleImpact(driveable, controller);
         candidate.hurt(source, amount);
     }
 

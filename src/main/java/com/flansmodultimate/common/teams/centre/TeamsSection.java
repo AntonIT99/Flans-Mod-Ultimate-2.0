@@ -77,7 +77,7 @@ public final class TeamsSection
      * {@code overrideHunger}.
      */
     public static final List<String> SWITCHES = List.of("explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles", "survivalCanPlaceVehicles", "forceAdventure",
-        "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp");
+        "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp");
     /** How long abandoned driveables last, by the {@code /teams} command that sets each, in seconds. */
     public static final List<String> LIFETIMES = List.of("mgLife", "planeLife", "vehicleLife", "mechaLife", "aaLife");
 
@@ -253,6 +253,7 @@ public final class TeamsSection
         tag.putBoolean("bullets", manager.isBulletsEnabled());
         tag.putBoolean("armourDrops", manager.isArmourDrops());
         tag.putBoolean("overrideHunger", manager.isOverrideHunger());
+        tag.putBoolean("regeneration", manager.isRegeneration());
         tag.putBoolean("alliedSpawns", manager.isAlliedSpawnSharing());
         tag.putBoolean("fuelNeeded", manager.isVehiclesNeedFuelSetting());
         tag.putBoolean("vehiclesCanZoom", manager.isVehiclesCanZoom());

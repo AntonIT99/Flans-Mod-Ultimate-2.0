@@ -1,16 +1,18 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.common.driveables.collision.DriveableCollisionWorld;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
+import com.flansmodultimate.common.teams.TeamsRegeneration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+
 /**
- * Treats a driveable hull as ground for sneaking edge protection.
+ * Treats a driveable hull as ground for sneaking edge protection and leaves peaceful healing to Teams during rounds.
  *
  * <p>
  * Vanilla only probes blocks for the ground under a sneaking player, so on a
@@ -20,6 +22,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(Player.class)
 public abstract class PlayerDriveableEdgeMixin
 {
+    @Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;heal(F)V"))
+    private void flansmodultimatePeacefulRoundRegeneration(Player player, float pHealAmount)
+    {
+        if (!TeamsRegeneration.applies(player))
+            player.heal(pHealAmount);
+    }
+
     @Redirect(method = {"maybeBackOffFromEdge",
         "isAboveGround"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;noCollision(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z"))
     private boolean flansmodultimateNoDriveableHullBelow(Level level, Entity entity, AABB box)

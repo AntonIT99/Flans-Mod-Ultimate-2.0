@@ -9,6 +9,7 @@
       "ConnectionMixin",
       "EntityMixin",
       "EntityTrackingDistanceMixin",
+      "FoodDataMixin",
       "HandshakeHandlerMixin",
       "LevelDriveableHullsMixin",
       "LivingEntityWaterWalkingMixin",

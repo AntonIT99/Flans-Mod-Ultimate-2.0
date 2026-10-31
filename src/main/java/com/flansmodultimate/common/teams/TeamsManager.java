@@ -77,6 +77,7 @@ public final class TeamsManager
     private static final String NBT_FUEL = "fuel";
     private static final String NBT_VEHICLES_CAN_ZOOM = "vehicles_can_zoom";
     private static final String NBT_OVERRIDE_HUNGER = "override_hunger";
+    private static final String NBT_REGENERATION = "regeneration";
     private static final String NBT_BREAK_VEHICLES = "break_vehicles";
     private static final String NBT_PLACE_VEHICLES = "place_vehicles";
     private static final String NBT_WEAPON_DROPS = "weapon_drops";
@@ -153,6 +154,8 @@ public final class TeamsManager
     private boolean vehiclesCanZoom;
     @Getter @Setter
     private boolean overrideHunger = true;
+    @Getter @Setter
+    private boolean regeneration = true;
     @Getter @Setter
     private boolean survivalCanBreakVehicles = true;
     @Getter @Setter
@@ -2372,6 +2375,7 @@ public final class TeamsManager
         if (tag.contains(NBT_FUEL))
             vehiclesNeedFuel = tag.getBoolean(NBT_FUEL);
         vehiclesCanZoom = tag.contains(NBT_VEHICLES_CAN_ZOOM) && tag.getBoolean(NBT_VEHICLES_CAN_ZOOM);
+        regeneration = !tag.contains(NBT_REGENERATION) || tag.getBoolean(NBT_REGENERATION);
         if (tag.contains(NBT_OVERRIDE_HUNGER))
             overrideHunger = tag.getBoolean(NBT_OVERRIDE_HUNGER);
         if (tag.contains(NBT_BREAK_VEHICLES))
@@ -2487,6 +2491,7 @@ public final class TeamsManager
         tag.putBoolean(NBT_FUEL, vehiclesNeedFuel);
         tag.putBoolean(NBT_VEHICLES_CAN_ZOOM, vehiclesCanZoom);
         tag.putBoolean(NBT_OVERRIDE_HUNGER, overrideHunger);
+        tag.putBoolean(NBT_REGENERATION, regeneration);
         tag.putBoolean(NBT_BREAK_VEHICLES, survivalCanBreakVehicles);
         tag.putBoolean(NBT_PLACE_VEHICLES, survivalCanPlaceVehicles);
         tag.putInt(NBT_WEAPON_DROPS, weaponDrops.ordinal());
