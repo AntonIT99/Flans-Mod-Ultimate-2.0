@@ -79,6 +79,7 @@ import java.util.*;
  * model it is hit limb by limb by Flan rounds, headshots included, as players are.</li>
  * <li>Friendly fire: hits from NPCs of the same faction and from players the faction is friendly to land where friendly fire is
  * on, and a hit from a friend never turns the NPC or its faction on that friend.</li>
+ * <li>Teams bots take players as targets on Peaceful too, which Custom NPCs otherwise forbids.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung. Grenades and
  * other throwables the NPC carries anywhere are thrown as its main weapon or now and then beside its other attacks, as their
  * strategy says, by a goal of their own whose wind-up holds the NPC's other ranged attacks.
@@ -814,6 +815,16 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (!level().isClientSide && (FlansMelee.protectRider((EntityNPCInterface) (Object) this, source, amount) || NpcCrew.shielded(this, source, amount)
             || NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount)))
             callback.setReturnValue(false);
+    }
+
+    // Teams bots
+
+    /** Custom NPCs never takes a player as a target on Peaceful; Teams bots fight players on every difficulty. */
+    @Inject(method = {"canAttack", "m_6779_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsBotsIgnorePeaceful(LivingEntity target, CallbackInfoReturnable<Boolean> callback)
+    {
+        if (target instanceof Player && BotTag.isBot(this))
+            callback.setReturnValue(target.canBeSeenAsEnemy());
     }
 
     // Friendly fire
