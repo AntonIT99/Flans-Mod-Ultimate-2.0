@@ -438,7 +438,6 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.CLIMB_RATE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
         Map.entry(Feature.MODEL_FLIGHT, Need.on(Feature.TYPE_PROPERTIES)),
         Map.entry(Value.TACTIC_DISTANCE, Need.choice(Value.TACTIC, Arrays.stream(NpcTuning.Tactic.values()).filter(NpcTuning.Tactic::usesDistance).toArray(Enum<?>[]::new))),
-        Map.entry(Value.COVER_RADIUS, Need.choice(Value.TACTIC, NpcTuning.Tactic.COVER)),
         Map.entry(Value.BLAST_MARGIN, Need.on(Feature.BLAST_STANDOFF)),
         Map.entry(Feature.DRIVING, Need.on(Feature.HULL_FACES_TRAVEL)),
         Map.entry(Value.HULL_TURN_RATE, Need.on(Feature.HULL_FACES_TRAVEL)),
@@ -520,8 +519,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named(ARMOUR_TAB, Scope.MODELS, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR),
             Tab.named(PARTS_TAB, Scope.DRIVEABLES, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES,
                 Feature.HITBOX_OUTLINES)),
-        TACTICS(Section.BEHAVIOUR, Scope.ALL, Tab.of(Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING)),
-        DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
+        TACTICS(Section.BEHAVIOUR, Scope.ALL,
+            Tab.named("tactic_movement", Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING),
+            Tab.named("return_fire", Value.THREAT_MEMORY, Value.ALERT_RADIUS, Feature.OUTRANGED_COVER)),
+        DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Feature.WEAPON_FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
         PATHFINDING(Section.BEHAVIOUR, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
         MOVEMENT(Section.TRAVEL, Scope.ALL,
             Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Feature.STEP_CLIMB, Value.STEP_HEIGHT, Feature.SLOPE_PHYSICS),
@@ -927,7 +928,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         return switch (kind)
         {
-            case STANDARD -> List.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH, Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.TACTIC);
+            case STANDARD -> List.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH, Range.AGGRO_RANGE, Range.FIRING_RANGE, Feature.WEAPON_FIRING_RANGE,
+                Value.SIGHT, Value.TACTIC);
             case VEHICLE -> List.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS, Feature.PART_HITBOXES, Value.DRIVE_PRESET, Value.TERRAIN, Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.TACTIC);
             case PLANE ->
                 List.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS, Feature.PART_HITBOXES, Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.TACTIC);
@@ -1690,7 +1692,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
                 case SLOPE_PHYSICS -> Scope.VEHICLES;
                 case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
-                case DRIVE_DRIVEABLES, LIMB_HITBOXES -> Scope.STANDARD;
+                case DRIVE_DRIVEABLES, LIMB_HITBOXES, WEAPON_FIRING_RANGE, OUTRANGED_COVER -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }

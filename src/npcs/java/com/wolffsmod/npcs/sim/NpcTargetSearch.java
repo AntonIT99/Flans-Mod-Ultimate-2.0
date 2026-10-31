@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -231,7 +232,7 @@ public final class NpcTargetSearch
     }
 
     /**
-     * @return blocks out to which the mob looks for a target, and keeps one before any margin: an NPC's aggro range, or its
+     * @return blocks out to which the mob looks for a target, and keeps one before any margin: an NPC's aggro range, which its weapon may extend, or its
      *         follow range where that reaches further. Custom NPCs resets the follow range to its navigation range whenever
      *         an NPC loads, and searching only that far in a straight line leaves an aircraft high above its targets blind
      *         to all but those almost under it, and drops a target as soon as its turn carries it out that far.
@@ -239,7 +240,7 @@ public final class NpcTargetSearch
     public static double range(Mob mob)
     {
         double follow = mob.getAttributeValue(Attributes.FOLLOW_RANGE);
-        return mob instanceof EntityNPCInterface npc ? Math.max(follow, npc.stats.aggroRange) : follow;
+        return mob instanceof EntityNPCInterface npc ? Math.max(follow, NpcWeaponRange.aggro(npc)) : follow;
     }
 
     /** @return the NPC's own interval, or the server's when the NPC states none */

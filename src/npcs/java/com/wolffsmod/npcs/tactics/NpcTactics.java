@@ -48,7 +48,7 @@ public final class NpcTactics
      */
     public static Engagement engagement(EntityNPCInterface npc)
     {
-        return Engagement.of(npc.stats.ranged.getRange(), NpcTuning.of(npc).get(Value.TACTIC_DISTANCE), role(npc), NpcBlastSafety.standoff(npc));
+        return Engagement.of(NpcWeaponRange.firing(npc), NpcTuning.of(npc).get(Value.TACTIC_DISTANCE), role(npc), NpcBlastSafety.standoff(npc));
     }
 
     /** @return the role of the ranged weapon the NPC holds; a projectile fired from the slot alone counts as a rifle */

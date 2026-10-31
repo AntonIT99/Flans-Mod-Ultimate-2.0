@@ -16,8 +16,11 @@ import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcOutrangedGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.NpcThreats;
+import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -51,8 +54,10 @@ public final class NpcInspection
         NpcTuning tuning = NpcTuning.of(npc);
         NpcTypeProperties properties = NpcTypeProperties.of(npc);
         List<Component> lines = new ArrayList<>();
-        lines.add(range("aggro", npc.stats.aggroRange, properties.covers(NpcTypeProperty.AGGRO_RANGE)));
-        lines.add(range("firing", npc.stats.ranged.getRange(), properties.covers(NpcTypeProperty.RANGE)));
+        int weapon = NpcWeaponRange.weapon(npc);
+        lines.add(range("aggro", NpcWeaponRange.aggro(npc), properties.covers(NpcTypeProperty.AGGRO_RANGE), weapon > npc.stats.aggroRange));
+        lines.add(range("firing", NpcWeaponRange.firing(npc), properties.covers(NpcTypeProperty.RANGE), weapon > 0));
+        lines.add(threats(tuning));
         if (options.enabled(Feature.PROGRESSIVE_SEARCH))
         {
             lines.add(Component.translatable(KEY + "search", interval(tuning.get(Value.SEARCH_NEAR_INTERVAL), settings.getSearchNearInterval()),
@@ -89,6 +94,9 @@ public final class NpcInspection
         else
             lines.add(Component.translatable(KEY + "live_target", target.getName(), decimal(Math.sqrt(npc.distanceToSqr(target))),
                 Component.translatable(KEY + (npc.getSensing().hasLineOfSight(target) ? "sight" : "no_sight"))));
+        LivingEntity threat = NpcThreats.threat(npc);
+        if (threat != null)
+            lines.add(Component.translatable(KEY + (NpcOutrangedGoal.outranged(npc) ? "live_threat_outranged" : "live_threat"), threat.getName(), decimal(Math.sqrt(npc.distanceToSqr(threat)))));
         NpcTacticState tactic = NpcTacticState.of(npc);
         lines.add(Component.translatable(KEY + "live_tactic", tactic.getPhase().name().toLowerCase(Locale.ROOT),
             Component.translatable(KEY + (tactic.isReloading(npc.level().getGameTime()) ? "reloading" : "ready"))));
@@ -111,9 +119,28 @@ public final class NpcInspection
         return lines;
     }
 
-    private static Component range(String name, int value, boolean model)
+    /** @return how long the NPC keeps an enemy shooting at it, and how far it calls that enemy out */
+    private static Component threats(NpcTuning tuning)
     {
-        Component from = Component.translatable(KEY + (model ? "from_model" : "from_npc"));
+        int memory = tuning.get(Value.THREAT_MEMORY);
+        int alert = tuning.get(Value.ALERT_RADIUS);
+        Component kept = memory > 0 ? Component.translatable(KEY + "threats_kept", memory) : Component.translatable(KEY + "threats_let_go");
+        Component told = alert > 0 ? Component.translatable(KEY + "threats_told", alert) : Component.translatable(KEY + "threats_untold");
+        return Component.translatable(KEY + "threats", kept, told);
+    }
+
+    /**
+     * @param weapon
+     *            whether the NPC's weapon gives the range
+     */
+    private static Component range(String name, int value, boolean model, boolean weapon)
+    {
+        String source = "from_npc";
+        if (weapon)
+            source = "from_weapon";
+        else if (model)
+            source = "from_model";
+        Component from = Component.translatable(KEY + source);
         if (value >= NpcMobility.rangeLimit())
             from = Component.translatable(KEY + "from_limit", from, NpcMobility.rangeLimit());
         return Component.translatable(KEY + name, value, from);

@@ -158,7 +158,14 @@ public final class NpcTuning
         /** Mass in kilograms, weighed against engine power for the inherited acceleration; 0 takes the model's own, where it states one. */
         MASS(0, 0, 1_000_000),
         /** Reference engine power in kilowatts, weighed against mass for the inherited acceleration; 0 takes the model's own, where it states one. */
-        ENGINE_POWER(0, 0, 100_000);
+        ENGINE_POWER(0, 0, 100_000),
+        /**
+         * Seconds an NPC that fights back keeps an enemy that hit or shot at it as its target, however far beyond its aggro
+         * range, after the last shot; 0 lets it go there as Custom NPCs does.
+         */
+        THREAT_MEMORY(15, 0, 120),
+        /** Blocks within which allied NPCs learn who is shooting at the NPC and fight back too; 0 tells nobody. */
+        ALERT_RADIUS(0, 0, 128);
 
         private final int fallback;
         private final int minimum;

@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.entity.LivingEntity;
@@ -40,7 +41,7 @@ public final class NpcCombatApproachGoal extends Goal
         LivingEntity target = npc.getTarget();
         if (target == null)
             return;
-        if (!npc.isInRange(target, npc.stats.ranged.getRange()) || !npc.getSensing().hasLineOfSight(target))
+        if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target))
             npc.getNavigation().moveTo(target, 1D);
         else
             npc.getNavigation().stop();

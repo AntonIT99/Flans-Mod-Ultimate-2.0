@@ -238,6 +238,8 @@ class NpcThrownWeaponTest
                 var attacks = mockStatic(NpcItemAttacks.class, CALLS_REAL_METHODS))
             {
                 options.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
+                // The NPC throws within its own firing range, not one its weapon would give it.
+                options.when(() -> NpcEquipment.enabled(npc, Feature.WEAPON_FIRING_RANGE)).thenReturn(false);
                 options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(false);
                 NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
                 vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);

@@ -31,6 +31,11 @@ import java.util.*;
 /** Per-NPC inheritance cache. Only the live NPC owns gameplay state; its selected model supplies definitions. */
 public final class NpcTypeProperties
 {
+    /**
+     * Switches that change nothing a model lends the NPC; there are more switches than bits in the signature, so theirs must
+     * not stand for a model switch.
+     */
+    private static final Set<Feature> UNINHERITED = EnumSet.of(Feature.AUTOMATIC_REPAIRS, Feature.RETURN_WHEN_INACTIVE, Feature.LIMB_HITBOXES, Feature.WEAPON_FIRING_RANGE, Feature.OUTRANGED_COVER);
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
     private LivingEntity lastModel;
@@ -351,8 +356,7 @@ public final class NpcTypeProperties
     {
         long flags = 0L;
         for (Feature feature : Feature.values())
-            // Maintenance, returning home and limb hitboxes do not affect inherited model properties; their ordinals must not alias a model flag.
-            if (feature != Feature.AUTOMATIC_REPAIRS && feature != Feature.RETURN_WHEN_INACTIVE && feature != Feature.LIMB_HITBOXES && options.enabled(feature))
+            if (!UNINHERITED.contains(feature) && options.enabled(feature))
                 flags |= 1L << feature.ordinal();
         return flags;
     }

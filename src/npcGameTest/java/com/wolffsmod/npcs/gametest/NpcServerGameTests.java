@@ -1,9 +1,11 @@
 package com.wolffsmod.npcs.gametest;
 
+import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.CustomNpcs;
+import noppes.npcs.ai.selector.NPCAttackSelector;
 import noppes.npcs.controllers.FactionController;
 import noppes.npcs.entity.EntityCustomNpc;
 
@@ -42,6 +44,21 @@ public class NpcServerGameTests
         {
             CustomNpcs.EnableExternalSaving = externalSaving;
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "npc_empty")
+    public static void attackSelectorTakesTheNpcsRanges(GameTestHelper helper)
+    {
+        var npc = helper.spawn(CustomEntities.entityCustomNpc, 1, 1, 1);
+        var other = helper.spawn(CustomEntities.entityCustomNpc, 2, 1, 1);
+        npc.setNoAi(true);
+        other.setNoAi(true);
+        // Loading the selector applies its mixin, which fails the load when one of its targets is missing.
+        NPCAttackSelector selector = new NPCAttackSelector(npc);
+        helper.assertFalse(selector.isEntityApplicable(npc), "An NPC must never select itself");
+        helper.assertTrue(NpcWeaponRange.aggro(npc) == npc.stats.aggroRange, "Without a weapon range the NPC's own aggro range applies");
+        selector.isEntityApplicable(other);
         helper.succeed();
     }
 

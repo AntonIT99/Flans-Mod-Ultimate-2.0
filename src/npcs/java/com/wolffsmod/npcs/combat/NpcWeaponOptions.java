@@ -69,7 +69,17 @@ public final class NpcWeaponOptions
          * Flan rounds hit an NPC drawn with the player model limb by limb, as they hit players: headshots and the other
          * hit zones scale their damage, and the armour piece of the part struck resists them.
          */
-        LIMB_HITBOXES(true);
+        LIMB_HITBOXES(true),
+        /**
+         * An NPC holding a ranged weapon fires as far as the weapon's spread still hits a man-sized target, within a limit for
+         * its kind of weapon, instead of at its own firing range, and notices enemies at least that far out.
+         */
+        WEAPON_FIRING_RANGE(false),
+        /**
+         * An NPC on foot that an enemy beyond its reach is shooting at gets out of that enemy's sight, then moves up on it
+         * from cover to cover, instead of walking up to it in the open.
+         */
+        OUTRANGED_COVER(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

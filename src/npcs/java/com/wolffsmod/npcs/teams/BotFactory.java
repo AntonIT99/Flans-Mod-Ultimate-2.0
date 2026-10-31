@@ -62,6 +62,8 @@ public final class BotFactory
     private static final int INVENTORY_SLOTS = 9;
     /** Custom NPCs' best ranged accuracy. */
     private static final int MAX_ACCURACY = 100;
+    /** Blocks within which a bot tells the bots of its side who is shooting at it, unless its clone has a radius of its own. */
+    static final int ALERT_RADIUS = 48;
     /** Key, in the persistent data, of the level a bot was trained to and the stats it was trained from. */
     private static final String NBT_TRAINING = "WolffsModTraining";
     private static final String NBT_LEVEL = "level";
@@ -138,7 +140,11 @@ public final class BotFactory
         // A class carries a grenade or two per life, as for a player, so a bot throws them at any enemy it can safely reach
         // rather than saving them for a group the plain NPC default waits for. A clone keeps the strategy its maker chose.
         if (!added)
+        {
             NpcTuning.of(npc).set(Value.GRENADE_USE, NpcTuning.Throwing.FREQUENT.ordinal());
+            // Riflemen reach as far as their aim lets them hit, marksmen further, and their level's aim narrows that.
+            ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.WEAPON_FIRING_RANGE, true);
+        }
         // Only clients know the class skin and whether it needs the 64x32 model, so each client puts it on.
         if (npc instanceof EntityCustomNpc custom && !order.force().usesClone() && !playerClass.getSkinOverrideVariants().isEmpty())
         {
@@ -372,6 +378,10 @@ public final class BotFactory
         npc.ais.setStartPos(BlockPos.containing(position));
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);
+        // A bot calls out who is shooting at it to the bots around it, so that one picked off from afar draws their fire.
+        NpcTuning tuning = NpcTuning.of(npc);
+        if (tuning.get(Value.ALERT_RADIUS) == 0)
+            tuning.set(Value.ALERT_RADIUS, ALERT_RADIUS);
         boolean vehicle = membership == Membership.VEHICLE;
         BotTag.write(npc, new BotTag.Data(order.instance(), order.slot().getId(), order.team().getShortName(), vehicle, settings.getNameplates(), membership == Membership.CREW, false));
         float weight = switch (membership)

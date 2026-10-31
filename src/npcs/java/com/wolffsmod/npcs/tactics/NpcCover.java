@@ -57,15 +57,42 @@ public final class NpcCover
     @Nullable
     public static Cover find(EntityNPCInterface npc, LivingEntity target, int radius, Engagement engagement)
     {
-        Search search = new Search(npc, target, engagement);
+        Search search = new Search(npc, target);
         BlockPos origin = npc.blockPosition();
         for (int ring = 0; ring <= radius && search.budget > 0; ring++)
         {
             for (BlockPos stand : ring(origin, ring))
             {
-                Cover cover = search.test(stand);
+                Cover cover = search.test(stand, engagement);
                 if (cover != null)
                     return cover;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds a place hidden from the enemy, with no place to fire from beside it: where an NPC out of its reach waits or
+     * moves up to.
+     *
+     * @param origin
+     *            the block the search starts round
+     * @param radius
+     *            blocks round the origin searched, ring by ring from the nearest
+     * @param farthest
+     *            blocks from the enemy the place may be at most
+     * @return the hidden place nearest the origin, or null where there is none
+     */
+    @Nullable
+    public static BlockPos hide(EntityNPCInterface npc, LivingEntity enemy, BlockPos origin, int radius, double farthest)
+    {
+        Search search = new Search(npc, enemy);
+        for (int ring = 0; ring <= radius && search.budget > 0; ring++)
+        {
+            for (BlockPos stand : ring(origin, ring))
+            {
+                if (search.hidden(stand, farthest))
+                    return stand;
             }
         }
         return null;
@@ -91,33 +118,37 @@ public final class NpcCover
     {
         private final EntityNPCInterface npc;
         private final LivingEntity target;
-        private final Engagement engagement;
         private final Level level;
         private final Vec3 targetEyes;
         private final double eyeHeight;
         private int budget = MAX_HIDDEN_TESTS;
 
-        private Search(EntityNPCInterface npc, LivingEntity target, Engagement engagement)
+        private Search(EntityNPCInterface npc, LivingEntity target)
         {
             this.npc = npc;
             this.target = target;
-            this.engagement = engagement;
             this.level = npc.level();
             this.targetEyes = target.getEyePosition();
             this.eyeHeight = npc.getEyeHeight();
         }
 
         @Nullable
-        private Cover test(BlockPos stand)
+        private Cover test(BlockPos stand, Engagement engagement)
         {
-            double distance = Vec3.atBottomCenterOf(stand).distanceTo(target.position());
-            if (budget <= 0 || distance < MIN_TARGET_DISTANCE || distance > engagement.firing() || !standable(stand))
-                return null;
-            budget--;
-            if (NpcSight.clear(level, targetEyes, eyes(stand, eyeHeight), 0, npc))
+            if (!hidden(stand, engagement.firing()))
                 return null;
             BlockPos peek = peek(stand);
             return peek == null ? null : new Cover(stand, peek);
+        }
+
+        /** @return whether the NPC can stand in the block, no farther from the target than given, where the target cannot see it */
+        private boolean hidden(BlockPos stand, double farthest)
+        {
+            double distance = Vec3.atBottomCenterOf(stand).distanceTo(target.position());
+            if (budget <= 0 || distance < MIN_TARGET_DISTANCE || distance > farthest || !standable(stand))
+                return false;
+            budget--;
+            return !NpcSight.clear(level, targetEyes, eyes(stand, eyeHeight), 0, npc);
         }
 
         /** @return a block a step or two aside from the hidden one where the NPC can stand and see the target */

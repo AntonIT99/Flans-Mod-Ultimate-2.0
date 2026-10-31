@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -139,7 +140,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         main.spinSpeed *= 0.9F;
         off.spinSpeed *= 0.9F;
         npc.getLookControl().setLookAt(target, 30F, 30F);
-        if (!npc.isInRange(target, npc.stats.ranged.getRange()) || !npc.getSensing().hasLineOfSight(target))
+        if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target))
         {
             cancelUse();
             // A reload goes on out of sight, which is where an NPC fighting from cover goes to reload.
