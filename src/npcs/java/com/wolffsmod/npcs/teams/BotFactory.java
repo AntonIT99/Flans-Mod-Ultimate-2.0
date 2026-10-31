@@ -6,6 +6,7 @@ import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.teams.*;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.*;
@@ -184,10 +185,14 @@ public final class BotFactory
         return Optional.of(npc);
     }
 
-    /** Scales how well a bot fights by the round's difficulty: aim, how far it notices enemies, health and rate of fire. */
+    /**
+     * Sets how well a bot fights by the round's difficulty: scales its aim, how far it notices enemies, its health and
+     * rate of fire, and gives it the level's reaction, aim settling, lead and damage to players.
+     */
     static void train(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
     {
-        if (difficulty == BotSettings.Difficulty.DEFAULT)
+        NpcSkill.write(npc, difficulty.skill());
+        if (!difficulty.scalesStats())
             return;
         DataStats stats = npc.stats;
         DataRanged ranged = stats.ranged;

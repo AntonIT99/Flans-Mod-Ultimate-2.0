@@ -89,13 +89,33 @@ class BotSettingsTest
     void difficultyPlayerTicketsAndCloneEquipmentSurviveSavingAndLoading()
     {
         BotSettings settings = new BotSettings();
-        settings.setDifficulty(BotSettings.Difficulty.ELITE);
+        settings.setDifficulty(BotSettings.Difficulty.CINEMATIC);
         settings.setPlayerTickets(false);
         settings.team("Germans").setKeepCloneEquipment(true);
         BotSettings loaded = BotSettings.load(settings.save());
-        assertEquals(BotSettings.Difficulty.ELITE, loaded.getDifficulty());
+        assertEquals(BotSettings.Difficulty.CINEMATIC, loaded.getDifficulty());
         assertFalse(loaded.isPlayerTickets());
         assertTrue(loaded.team("Germans").isKeepCloneEquipment());
+    }
+
+    @Test
+    void difficultiesGoFromTheBestDownAndNoneMakesABotBetterThanItsEquipment()
+    {
+        BotSettings.Difficulty[] levels = BotSettings.Difficulty.values();
+        assertEquals(BotSettings.Difficulty.ACE, levels[0]);
+        assertFalse(levels[0].scalesStats());
+        assertEquals(0, levels[0].skill().reactionTicks());
+        for (int index = 1; index < levels.length; index++)
+        {
+            BotSettings.Difficulty better = levels[index - 1];
+            BotSettings.Difficulty level = levels[index];
+            assertTrue(level.skill().reactionTicks() > better.skill().reactionTicks(), level + " reacts slower than " + better);
+            assertTrue(level.skill().settleTicks() >= better.skill().settleTicks(), level + " settles its aim no faster than " + better);
+            assertTrue(level.skill().lead() <= better.skill().lead(), level + " leads no better than " + better);
+            assertTrue(level.accuracy() <= 1F && level.aggro() <= 1F && level.health() <= 1F && level.delay() >= 1F, level + " stays within its equipment");
+        }
+        assertTrue(BotSettings.Difficulty.CINEMATIC.skill().nonLethal());
+        assertFalse(BotSettings.Difficulty.RECRUIT.skill().nonLethal());
     }
 
     @Test
@@ -105,7 +125,7 @@ class BotSettingsTest
         old.remove("difficulty");
         old.remove("player_tickets");
         BotSettings loaded = BotSettings.load(old);
-        assertEquals(BotSettings.Difficulty.DEFAULT, loaded.getDifficulty());
+        assertEquals(BotSettings.Difficulty.ELITE, loaded.getDifficulty());
         assertTrue(loaded.isPlayerTickets());
     }
 

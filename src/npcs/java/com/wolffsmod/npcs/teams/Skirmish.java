@@ -121,7 +121,7 @@ final class Skirmish
     private int respawnSeconds = 15;
     /** Tickets each side may spend on bringing bots back; 0 for no limit. */
     private int tickets;
-    private BotSettings.Difficulty difficulty = BotSettings.Difficulty.DEFAULT;
+    private BotSettings.Difficulty difficulty = BotSettings.Difficulty.ELITE;
     /** Whether its bots cannot be hurt while it rests during a Teams round. */
     private boolean protection = true;
     /** The map whose markers its bots use, such as route points; empty for none. */
@@ -271,7 +271,7 @@ final class Skirmish
         skirmish.respawn = tag.getBoolean(NBT_RESPAWN);
         skirmish.respawnSeconds = Math.max(0, tag.getInt(NBT_RESPAWN_SECONDS));
         skirmish.tickets = Math.max(0, tag.getInt(NBT_TICKETS));
-        skirmish.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.DEFAULT);
+        skirmish.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.ELITE);
         skirmish.protection = tag.getBoolean(NBT_PROTECTION);
         skirmish.markerMap = tag.getString(NBT_MARKERS);
         skirmish.war = tag.hasUUID(NBT_WAR) ? tag.getUUID(NBT_WAR) : null;

@@ -107,7 +107,8 @@ import java.util.*;
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
- * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
+ * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data. A bot holds its
+ * fire until it has reacted to a newly seen target, as its difficulty says, and keeps track of whether it still sees it.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Bound content names remain translatable components for nameplates, chat and death messages; raw display fields stay canonical.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, or an editor shows the NPC's live statistics, the whole tick of
@@ -515,6 +516,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         wolffsmodnpcsKeepBoxSized();
         if (level().isClientSide)
             return;
+        NpcSkill.watch(npc);
         NpcSprinting.tick(npc);
         NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
@@ -753,8 +755,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
         // A gun whose turret has been shot off stays silent, and an NPC at the wheel fights with the driveable's weapons.
         // A throw being wound up beside the NPC's other attacks holds them meanwhile.
+        // A bot that has only just seen its target has not reacted yet.
         if (NpcRepairs.active(npc) || wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc)
-            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc))
+            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc) || NpcSkill.holdsFire(npc, target))
         {
             callback.cancel();
             return;

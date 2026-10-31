@@ -16,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.control.LookControl;
@@ -220,6 +221,7 @@ class NpcLauncherReloadTest
     private static EntityNPCInterface engagedNpc(LivingEntity target) throws ReflectiveOperationException
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        when(npc.getPersistentData()).thenReturn(new CompoundTag());
         var aiField = EntityNPCInterface.class.getField("ais");
         aiField.setAccessible(true);
         aiField.set(npc, new DataAI(npc));

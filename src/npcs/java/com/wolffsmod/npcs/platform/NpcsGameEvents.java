@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.platform;
 import com.wolffsmod.npcs.NpcDistanceCommands;
 import com.wolffsmod.npcs.NpcFactionCommands;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcBenchmarkCommands;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
@@ -23,6 +24,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -102,6 +104,14 @@ public final class NpcsGameEvents
         TeamsBots.entityDied(event.getEntity(), event.getSource());
     }
 
+    /** Fired after armour and absorption, just before the health is taken, so a non-lethal NPC knows how much the player has left. */
+    @SubscribeEvent
+    public static void livingDamage(LivingDamageEvent event)
+    {
+        if (!event.getEntity().level().isClientSide)
+            event.setAmount(NpcSkill.damageTo(event.getEntity(), event.getSource(), event.getAmount()));
+    }
+
     @SubscribeEvent
     public static void livingDrops(LivingDropsEvent event)
     {
@@ -115,6 +125,7 @@ public final class NpcsGameEvents
         TeamsBots.serverStopping(event.getServer());
         NpcActivity.clear();
         NpcWatch.clear();
+        NpcSkill.forget();
     }
 
     @SubscribeEvent

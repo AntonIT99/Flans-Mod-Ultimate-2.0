@@ -33,6 +33,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 ## Teams Bots, Factions & Battles
 
 * Teams bots attack enemy players on Peaceful difficulty too, which Custom NPCs otherwise forbids
+* Bot difficulty, set for a round, skirmish or war and independent of the world's difficulty: `ace` (no human limits), `elite` (the default: full use of the equipment with a human's reaction), `veteran`, `regular`, `recruit` and `cinematic`. Lower levels react later to a newly seen target, need longer for their aim to settle, lead moving targets less and make less of their equipment; `cinematic` bots also deal a quarter of their damage to players and never kill them, while still killing each other
 * Teams soldiers follow the round regeneration rule and heal half a heart every five seconds by default; medical healing and vehicle repairs remain independent
 
 * Teams bots: NPC soldiers, squads and vehicles that fight Teams rounds, with player orders (`Squad orders` key, O), a commander seat, transports, class roles (a medic heals and an engineer repairs once every five seconds, and the same ally or vehicle at most every ten seconds), every class of the team fielded in proportion to its weight, grenades thrown at any enemy in safe reach, suppression and squad leading; bots approach CTF flags at ground level even on taller poles

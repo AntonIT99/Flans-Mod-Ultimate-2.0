@@ -113,7 +113,7 @@ final class War
     private int mostEngagements = 3;
     /** Seconds a side must stand alone in the other's chunk to take it. */
     private int flipSeconds = 60;
-    private BotSettings.Difficulty difficulty = BotSettings.Difficulty.DEFAULT;
+    private BotSettings.Difficulty difficulty = BotSettings.Difficulty.ELITE;
     /** Engagements opened so far, to name the next. */
     private int count;
 
@@ -233,7 +233,7 @@ final class War
         war.range = Math.max(16, tag.getInt(NBT_RANGE));
         war.mostEngagements = Math.max(1, tag.getInt(NBT_MOST));
         war.flipSeconds = Math.max(5, tag.getInt(NBT_FLIP));
-        war.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.DEFAULT);
+        war.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.ELITE);
         war.count = tag.getInt(NBT_COUNT);
         return Optional.of(war);
     }

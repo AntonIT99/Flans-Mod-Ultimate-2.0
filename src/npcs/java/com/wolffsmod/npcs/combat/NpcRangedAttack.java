@@ -107,6 +107,8 @@ public final class NpcRangedAttack
         private final float damage;
         private final int shotCount;
         private NpcEvent.RangedLaunchedEvent event;
+        /** The extra error of this trigger pull, while the NPC's aim settles on its target. */
+        private NpcSkill.AimError aimError = NpcSkill.AimError.NONE;
         private boolean modelMuzzles;
         private boolean fired;
         private boolean soundPlayed;
@@ -147,6 +149,8 @@ public final class NpcRangedAttack
         private boolean fire()
         {
             event = new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, damage);
+            if (target != null)
+                aimError = NpcSkill.aimError(npc, target);
             List<WeaponMuzzle> muzzles = muzzles();
             modelMuzzles = !muzzles.isEmpty();
             if (!modelMuzzles)
@@ -233,7 +237,7 @@ public final class NpcRangedAttack
             // Only a preview has no target, and a preview never launches.
             LivingEntity aimed = Objects.requireNonNull(target);
             Vec3 from = throughCover(origin, NpcVehicleState.aimPoint(aimed));
-            Vec3 direction = barrels ? state.barrelDirection(npc, fixed) : led(shot, from, aimed);
+            Vec3 direction = aimError.apply(barrels ? state.barrelDirection(npc, fixed) : led(shot, from, aimed));
             if (shot.launch(from, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
             // A bomb falls away from the bay without a flash.
@@ -248,7 +252,16 @@ public final class NpcRangedAttack
         private Vec3 led(ProjectileShot shot, Vec3 from, LivingEntity aimed)
         {
             boolean arc = options.enabled(Feature.BALLISTIC_AIM);
-            return state.lead(NpcVehicleState.aimPoint(aimed).subtract(from), aimed, options, shot.speed(), arc ? shot.gravity() : 0D, arc ? shot.drag() : 1D, highArc);
+            Vec3 displacement = NpcVehicleState.aimPoint(aimed).subtract(from);
+            double gravity = arc ? shot.gravity() : 0D;
+            double drag = arc ? shot.drag() : 1D;
+            Vec3 led = state.lead(displacement, aimed, options, shot.speed(), gravity, drag, highArc);
+            float share = NpcSkill.leadShare(npc);
+            if (share >= 1F)
+                return led;
+            // An NPC that allows for only part of the target's run aims between the full lead and where the target stands.
+            Vec3 still = ProjectileAim.direction(displacement, Vec3.ZERO, shot.speed(), gravity, drag, highArc);
+            return still.lerp(led, share).normalize();
         }
 
         /** An NPC that fires through transparent blocks launches from beyond them, so the round is not stopped by what it aimed through. */

@@ -198,6 +198,8 @@ public final class NpcEquipmentRangedGoal extends Goal
             return;
         if (charge(weapon))
             return;
+        if (NpcSkill.holdsFire(npc, target))
+            return;
         aim(target);
         fire(main, target, weapon, properties.map(value -> value.automaticFire() && !value.throwable()).orElse(false));
     }
@@ -222,7 +224,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         if (off.spinSpeed < properties.get().spinUpMaximum())
             off.spinSpeed += 2F;
-        if (reload(off, weapon) || !off.cadence.ready() || off.spinSpeed < properties.get().spinUpThreshold())
+        if (reload(off, weapon) || !off.cadence.ready() || off.spinSpeed < properties.get().spinUpThreshold() || NpcSkill.holdsFire(npc, target))
             return;
         // A weapon being drawn or charged in the main hand keeps the NPC's aim.
         if (alone || !npc.isUsingItem() || NpcEquipment.shield(npc.getUseItem()))

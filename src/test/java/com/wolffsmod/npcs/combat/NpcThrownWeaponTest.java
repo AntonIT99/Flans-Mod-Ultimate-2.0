@@ -17,6 +17,7 @@ import noppes.npcs.entity.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -51,6 +52,7 @@ class NpcThrownWeaponTest
             for (boolean consume : List.of(false, true))
             {
                 EntityNPCInterface npc = mock(EntityNPCInterface.class);
+                when(npc.getPersistentData()).thenReturn(new CompoundTag());
                 LivingEntity target = mock(LivingEntity.class);
                 ServerLevel level = mock(ServerLevel.class);
                 when(npc.level()).thenReturn(level);
@@ -112,6 +114,7 @@ class NpcThrownWeaponTest
     void aConsumedMainHandThrowableIsImmediatelyReplacedByAnInventoryGunAndAmmo()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        when(npc.getPersistentData()).thenReturn(new CompoundTag());
         LivingEntity target = mock(LivingEntity.class);
         ServerLevel level = mock(ServerLevel.class);
         when(npc.level()).thenReturn(level);
@@ -172,6 +175,7 @@ class NpcThrownWeaponTest
         for (boolean grenade : List.of(false, true))
         {
             EntityNPCInterface npc = mock(EntityNPCInterface.class, withSettings().extraInterfaces(NpcThrowPresentation.class, NpcEquipmentRangedGoal.Holder.class));
+            when(npc.getPersistentData()).thenReturn(new CompoundTag());
             var aiField = EntityNPCInterface.class.getField("ais");
             aiField.setAccessible(true);
             aiField.set(npc, new DataAI(npc));

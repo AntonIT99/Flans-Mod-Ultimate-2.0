@@ -163,7 +163,7 @@ public final class BotEditorScreen extends Screen
     private void initRules(int left)
     {
         int width = LABEL_WIDTH + FIELD_WIDTH;
-        addRenderableWidget(enumButton(left, y(0), width, "difficulty", BotSettings.Difficulty.values(), settings.getDifficulty(), settings::setDifficulty));
+        addRenderableWidget(difficultyButton(left, y(0), width));
         addRenderableWidget(switchButton(left, y(1), width, "player_tickets", settings.isPlayerTickets(), settings::setPlayerTickets));
         addRenderableWidget(switchButton(left, y(2), width, "radio", settings.isRadio(), settings::setRadio));
         addRenderableWidget(switchButton(left, y(3), width, "suppression", settings.isSuppression(), settings::setSuppression));
@@ -310,6 +310,15 @@ public final class BotEditorScreen extends Screen
         box.setValue(value);
         fields.put(key, addRenderableWidget(box));
         labels.add(new Label(Component.translatable(PREFIX + key), x, y(row) + 6));
+    }
+
+    /** The bot difficulty, whose tooltip details what the chosen level does. */
+    private CycleButton<BotSettings.Difficulty> difficultyButton(int x, int y, int width)
+    {
+        return CycleButton.<BotSettings.Difficulty>builder(level -> Component.literal(level.name().toLowerCase(Locale.ROOT))).withValues(BotSettings.Difficulty.values())
+            .withInitialValue(settings.getDifficulty())
+            .withTooltip(level -> Tooltip.create(Component.translatable("wolffsmodnpcs.centre.difficulty." + level.name().toLowerCase(Locale.ROOT) + ".tip")))
+            .create(x, y, width, 20, Component.translatable(PREFIX + "difficulty"), (button, chosen) -> settings.setDifficulty(chosen));
     }
 
     private <E extends Enum<E>> CycleButton<E> enumButton(int x, int y, int width, String key, E[] values, E value, Consumer<E> setter)

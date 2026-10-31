@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.crew.CrewPost;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -90,25 +91,50 @@ public final class BotSettings
     }
 
     /**
-     * How well bots fight, by scaling what their loadout or clone gives them: aim, how far they notice enemies, health,
-     * and the pause between their shots.
+     * How well bots fight, from the best down: how much of what their loadout or clone gives them they make use of (aim,
+     * how far they notice enemies, health and the pause between their shots), and the human limits on their fighting.
+     * No level makes a bot better than its equipment.
      */
     public enum Difficulty
     {
-        /** Bots fight as their loadout or clone makes them. */
-        DEFAULT(1F, 1F, 1F, 1F), RECRUIT(0.6F, 0.75F, 0.8F, 1.5F), REGULAR(0.85F, 0.9F, 1F, 1.2F), VETERAN(1.15F, 1.15F, 1.25F, 0.85F), ELITE(1.35F, 1.3F, 1.5F, 0.7F);
+        // spotless:off
+        /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
+        ACE(1F, 1F, 1F, 1F, NpcSkill.NONE),
+        /** Its equipment's full potential, with a human's reaction: about as hard as a skilled player. The default. */
+        ELITE(1F, 1F, 1F, 1F, new NpcSkill(2, 5, 2F, 1F, 1F, false)),
+        VETERAN(0.95F, 1F, 1F, 1.1F, new NpcSkill(5, 12, 4F, 0.95F, 1F, false)),
+        REGULAR(0.85F, 0.9F, 1F, 1.2F, new NpcSkill(8, 20, 6F, 0.85F, 1F, false)),
+        RECRUIT(0.6F, 0.75F, 0.8F, 1.5F, new NpcSkill(16, 40, 9F, 0.6F, 1F, false)),
+        /** Shoots a lot and rarely hits, and never kills a player: for filming battles. Bots still kill each other. */
+        CINEMATIC(0.5F, 0.7F, 1F, 1.8F, new NpcSkill(30, 60, 12F, 0.3F, 0.25F, true));
+        // spotless:on
 
         private final float accuracy;
         private final float aggro;
         private final float health;
         private final float delay;
+        /** Reaction, aim settling, lead and damage to players. */
+        private final NpcSkill skill;
 
-        Difficulty(float accuracy, float aggro, float health, float delay)
+        Difficulty(float accuracy, float aggro, float health, float delay, NpcSkill skill)
         {
             this.accuracy = accuracy;
             this.aggro = aggro;
             this.health = health;
             this.delay = delay;
+            this.skill = skill;
+        }
+
+        /** Whether the level changes the stats of a bot's loadout or clone at all. */
+        public boolean scalesStats()
+        {
+            return Float.compare(accuracy, 1F) != 0 || Float.compare(aggro, 1F) != 0 || Float.compare(health, 1F) != 0 || Float.compare(delay, 1F) != 0;
+        }
+
+        /** The human limits on how bots of this level fight. */
+        public NpcSkill skill()
+        {
+            return skill;
         }
 
         /** Factor on the ranged accuracy, which stays within 0 to 100. */
@@ -154,7 +180,7 @@ public final class BotSettings
     private int abandonChance = 25;
     /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
     private int rubberBand;
-    private Difficulty difficulty = Difficulty.DEFAULT;
+    private Difficulty difficulty = Difficulty.ELITE;
     /** Whether players, too, spend their side's tickets when they respawn, once the side has a ticket limit. */
     private boolean playerTickets = true;
     /** Whether bots call out on the radio what happens at the objectives. */
@@ -431,7 +457,7 @@ public final class BotSettings
         settings.squadSize = tag.contains(NBT_SQUAD_SIZE) ? Math.max(1, tag.getInt(NBT_SQUAD_SIZE)) : settings.squadSize;
         settings.abandonChance = tag.contains(NBT_ABANDON) ? Math.max(0, Math.min(100, tag.getInt(NBT_ABANDON))) : settings.abandonChance;
         settings.rubberBand = Math.max(0, tag.getInt(NBT_RUBBER_BAND));
-        settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.DEFAULT);
+        settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.ELITE);
         settings.playerTickets = !tag.contains(NBT_PLAYER_TICKETS) || tag.getBoolean(NBT_PLAYER_TICKETS);
         settings.radio = !tag.contains(NBT_RADIO) || tag.getBoolean(NBT_RADIO);
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;

@@ -218,7 +218,7 @@ final class WarsPage extends BattlePage
         int y = top + 3 * ROW;
         List<String> difficulties = data.choices().difficulties();
         if (!difficulties.isEmpty())
-            choice(view, tr("war.difficulty"), difficulties, keep(difficulties, rules.difficulty(), difficulties.get(0)), difficulty -> value("difficulty", difficulty), x, y, half,
+            difficultyChoice(view, tr("war.difficulty"), difficulties, keep(difficulties, rules.difficulty(), difficulties.get(0)), x, y, half,
                 difficulty -> run(view, "teams war set", name, "difficulty", difficulty));
         int scopeWidth = (half - GAP) / 2;
         button(view, tr("war.scope_all"), x + half + GAP, y, scopeWidth, tr("war.scope_all.tip"), () -> run(view, SCOPE, name, "all")).active = !war.scope().isEmpty();
