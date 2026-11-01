@@ -22,6 +22,9 @@ public final class RecipeJsonGenerator
 {
     private static final String KEY_RESULT = "result";
     private static final String KEY_COUNT = "count";
+    private static final String KEY_INGREDIENT = "ingredient";
+    private static final String KEY_INGREDIENTS = "ingredients";
+    private static final List<String> ADVANCEMENT_LAYOUTS = List.of("advancements", "advancement");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String SHAPED_SUFFIX = "_shaped";
     private static final String SHAPELESS_SUFFIX = "_shapeless";
@@ -42,28 +45,47 @@ public final class RecipeJsonGenerator
     {
         for (InfoType config : items)
         {
-            for (String fileName : getRecipeFileNames(config))
-                for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
-                    if (!Files.isRegularFile(format.resolve(dataFolder).resolve(fileName)))
-                        return true;
-
-            if (!config.hasCraftingRecipe())
-                continue;
-            Path modernRecipe = RecipeDataCompatibility.Format.MODERN.resolve(dataFolder).resolve(getCraftingFileName(config));
-            try
-            {
-                JsonObject recipe = JsonParser.parseString(Files.readString(modernRecipe, StandardCharsets.UTF_8)).getAsJsonObject();
-                JsonObject result = recipe.getAsJsonObject(KEY_RESULT);
-                if (result == null || (result.has(KEY_COUNT) && (result.get(KEY_COUNT).getAsInt() < 1 || result.get(KEY_COUNT).getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config))))
-                    return true;
-            }
-            catch (RuntimeException | IOException exception)
-            {
-                FlansLog.log.warn("Could not inspect generated recipe {}; regenerating it", modernRecipe, exception);
+            if (hasMissingOutputs(config, dataFolder) || hasInvalidModernResult(config, dataFolder))
                 return true;
-            }
         }
         return false;
+    }
+
+    private static boolean hasMissingOutputs(InfoType config, Path dataFolder)
+    {
+        for (String fileName : getRecipeFileNames(config))
+        {
+            for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
+                if (!Files.isRegularFile(format.resolve(dataFolder).resolve(fileName)))
+                    return true;
+            for (Path folder : advancementFolders(dataFolder))
+                if (!Files.isRegularFile(folder.resolve(fileName)))
+                    return true;
+        }
+        return false;
+    }
+
+    private static boolean hasInvalidModernResult(InfoType config, Path dataFolder)
+    {
+        if (!config.hasCraftingRecipe())
+            return false;
+        Path modernRecipe = RecipeDataCompatibility.Format.MODERN.resolve(dataFolder).resolve(getCraftingFileName(config));
+        try
+        {
+            JsonObject recipe = JsonParser.parseString(Files.readString(modernRecipe, StandardCharsets.UTF_8)).getAsJsonObject();
+            JsonObject result = recipe.getAsJsonObject(KEY_RESULT);
+            return result == null || (result.has(KEY_COUNT) && (result.get(KEY_COUNT).getAsInt() < 1 || result.get(KEY_COUNT).getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config)));
+        }
+        catch (RuntimeException | IOException exception)
+        {
+            FlansLog.log.warn("Could not inspect generated recipe {}; regenerating it", modernRecipe, exception);
+            return true;
+        }
+    }
+
+    private static List<Path> advancementFolders(Path dataFolder)
+    {
+        return ADVANCEMENT_LAYOUTS.stream().map(folder -> dataFolder.resolve(folder).resolve("recipes")).toList();
     }
 
     public static void writeRecipes(InfoType config, Path dataFolder)
@@ -78,6 +100,8 @@ public final class RecipeJsonGenerator
 
         deleteGeneratedRecipes(config, legacyFolder);
         deleteGeneratedRecipes(config, modernFolder);
+        for (Path folder : advancementFolders(dataFolder))
+            deleteGeneratedRecipes(config, folder);
 
         if (config.hasCraftingRecipe())
         {
@@ -96,6 +120,20 @@ public final class RecipeJsonGenerator
     {
         for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
             writeRecipe(format.resolve(dataFolder).resolve(fileName), RecipeDataCompatibility.formatGenerated(recipe, config, format));
+        List<JsonObject> ingredients = new ArrayList<>();
+        if (recipe.has("key"))
+            recipe.getAsJsonObject("key").entrySet().forEach(entry -> ingredients.add(entry.getValue().getAsJsonObject()));
+        if (recipe.has(KEY_INGREDIENTS))
+            recipe.getAsJsonArray(KEY_INGREDIENTS).forEach(ingredient -> ingredients.add(ingredient.getAsJsonObject()));
+        if (recipe.has(KEY_INGREDIENT))
+            ingredients.add(recipe.getAsJsonObject(KEY_INGREDIENT));
+        String recipeId = FlansMod.FLANSMOD_ID + ":" + fileName.substring(0, fileName.length() - FileUtils.JSON_EXTENSION.length());
+        JsonObject advancement = RecipeBookAdvancement.create(recipeId, ingredients);
+        for (Path output : advancementFolders(dataFolder))
+        {
+            if (FileUtils.tryCreateDirectories(output))
+                writeRecipe(output.resolve(fileName), advancement);
+        }
     }
 
     private static JsonObject createShapedRecipe(InfoType config)
@@ -172,7 +210,7 @@ public final class RecipeJsonGenerator
 
         JsonObject root = new JsonObject();
         root.addProperty("type", "minecraft:crafting_shapeless");
-        root.add("ingredients", ingredients);
+        root.add(KEY_INGREDIENTS, ingredients);
         root.add(KEY_RESULT, createResult(config));
 
         return root;
@@ -183,7 +221,7 @@ public final class RecipeJsonGenerator
         JsonObject root = new JsonObject();
 
         root.addProperty("type", "minecraft:smelting");
-        root.add("ingredient", createIngredient(config.getSmeltableFrom(), config));
+        root.add(KEY_INGREDIENT, createIngredient(config.getSmeltableFrom(), config));
         root.addProperty(KEY_RESULT, FlansMod.FLANSMOD_ID + ":" + config.getShortName());
         root.addProperty("experience", 0.0F);
         root.addProperty("cookingtime", 200);

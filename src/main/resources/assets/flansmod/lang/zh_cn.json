@@ -75,5 +75,17 @@
   "gui.flansmod.teams.wait_for_vehicle": "等待存活载具",
   "item.flansmod.flagpole": "旗杆",
   "item.flansmod.op_stick": "队伍管理棒",
-  "item.flansmod.rainbowpaintcan": "彩虹油漆罐"
+  "item.flansmod.rainbowpaintcan": "彩虹油漆罐",
+  "jei.flansmod.acid_bucket": "在末日维度中，用空桶收集硫酸源方块。",
+  "jei.flansmod.engine_hint": "所需引擎必须为同一种兼容型号。工作台会选择可用的最快引擎组。",
+  "jei.flansmod.engines": "%s 个同型号引擎",
+  "jei.flansmod.gun_box": "枪械箱",
+  "jei.flansmod.lab_stone": "在末日维度的建筑中开采实验室石块。",
+  "jei.flansmod.materials": "材料",
+  "jei.flansmod.no_engine": "未安装兼容引擎。",
+  "jei.flansmod.rainbow_paint": "此涂装材料没有内置生存模式配方。可在创造模式中获取，或使用服务器提供的配方。",
+  "jei.flansmod.sulphur": "开采末日维度中的硫磺矿床可获得硫磺粉。",
+  "jei.flansmod.sulphur_block": "生成于末日维度地形中。开采后掉落硫磺粉。硫磺方块物品没有内置生存模式获取途径；请使用创造模式或服务器提供的配方。",
+  "jei.flansmod.teams_items": "用于设置 Teams 地图的物品。可在创造模式中获取，或使用 /teams getSticks（需要管理员权限）。",
+  "jei.flansmod.vehicle_assembly": "载具组装"
 }

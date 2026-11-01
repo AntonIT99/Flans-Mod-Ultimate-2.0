@@ -130,6 +130,9 @@
 
 ## Compatibility & API
 
+* Optional JEI integration shows vehicle assembly and gun-box recipes with material quantities, compatible engines and crafting stations, plus acquisition hints for core items without ordinary recipes
+* Built-in crafting and furnace recipes, and generated legacy content-pack recipes, unlock in Minecraft's recipe book when a player collects a relevant ingredient
+
 * The public API is now stable (1.9) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
 * Addon seat occupants can preserve their seat's body rotation when riding living mounts (`IFlanSeatOccupant.flansmodultimateHasSeatBodyRotation`)
 * Addon entities can play a sound the way the mod plays the same kind of sound, carrying as far and as loudly as a gun shot, a reload, a throw or a vehicle or plane engine does on that server (`SoundRange`, `FlansEntitySounds.getRange`, `FlansEntitySounds.playClip`)

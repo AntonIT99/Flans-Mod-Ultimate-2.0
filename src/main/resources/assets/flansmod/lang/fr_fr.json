@@ -75,5 +75,17 @@
   "gui.flansmod.teams.wait_for_vehicle": "Attendre le véhicule survivant",
   "item.flansmod.flagpole": "Base de drapeau",
   "item.flansmod.op_stick": "Bâton d'administration des équipes",
-  "item.flansmod.rainbowpaintcan": "Pot de peinture arc-en-ciel"
+  "item.flansmod.rainbowpaintcan": "Pot de peinture arc-en-ciel",
+  "jei.flansmod.acid_bucket": "Remplissez un seau vide à une source d’acide sulfurique dans la dimension Apocalypse.",
+  "jei.flansmod.engine_hint": "Utilisez un seul type de moteur compatible pour tous les moteurs requis. L’établi choisit le lot disponible le plus rapide.",
+  "jei.flansmod.engines": "%s moteurs identiques",
+  "jei.flansmod.gun_box": "Caisse d’armes",
+  "jei.flansmod.lab_stone": "Récupérez la pierre de laboratoire des structures de la dimension Apocalypse.",
+  "jei.flansmod.materials": "Matériaux",
+  "jei.flansmod.no_engine": "Aucun moteur compatible installé.",
+  "jei.flansmod.rainbow_paint": "Ingrédient de peinture sans recette de survie intégrée. Disponible en mode Créatif ou via les recettes du serveur.",
+  "jei.flansmod.sulphur": "Extrayez les dépôts de soufre de la dimension Apocalypse pour obtenir du soufre en poudre.",
+  "jei.flansmod.sulphur_block": "Présent dans le terrain de l’Apocalypse. Son extraction donne du soufre en poudre. Le bloc n’a pas de méthode d’obtention intégrée en survie ; utilisez le mode Créatif ou une recette du serveur.",
+  "jei.flansmod.teams_items": "Objet de configuration des cartes Teams. Disponible en mode Créatif ou avec /teams getSticks (droits d’opérateur requis).",
+  "jei.flansmod.vehicle_assembly": "Assemblage de véhicules"
 }

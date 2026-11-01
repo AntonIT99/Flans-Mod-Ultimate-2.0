@@ -321,6 +321,14 @@ tasks.register('staticAnalysis') {
 
 repositories {
     flatDir { dir 'libs' }
+    maven {
+        url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev'
+            includeGroup 'net.mezzdev.config'
+        }
+    }
     // Distant Horizons publishes its API and mod jars on Modrinth only. Not exclusive: ForgeGradle serves
     // the remapped mod jar of -PwithDistantHorizons from its own repository under the same group.
     maven {
@@ -337,6 +345,13 @@ dependencies {
 
     compileOnly "org.jetbrains:annotations:$version_jetbrains_annotations"
     compileOnly lombokDependency
+
+    // JEI discovers the client plugin only when installed; the API never ships in our jar.
+    compileOnly fg.deobf('mezz.jei:jei-1.20.1-common-api:15.20.0.135')
+    compileOnly fg.deobf('mezz.jei:jei-1.20.1-forge-api:15.20.0.135')
+    // Keep the dev runtime compatible with the JEI hooks in the pinned Custom NPCs mod.
+    if (project.hasProperty('withJei'))
+        runtimeOnly fg.deobf('mezz.jei:jei-1.20.1-forge:15.20.0.135')
 
     testImplementation platform("org.junit:junit-bom:$version_junit")
     testImplementation 'org.junit.jupiter:junit-jupiter'

@@ -115,6 +115,10 @@ Legacy packs are loaded through the mod's content-loading system. The optional *
 
 For local development, `packsManagerJar` bundles the contents of `run/flan` into the jar's `flan/` directory and writes `[<Minecraft version>] Flan's Mod Ultimate Packs Manager-<version>.jar` to `build/libs/`.
 
+Crafting-table and furnace recipes appear in Minecraft's recipe book after you collect a relevant ingredient. Legacy pack recipes receive these unlocks automatically when their recipe data is generated. Recipes supplied separately by a data pack keep that pack's own unlock rules.
+
+With optional **JEI 15.20 or newer** installed on Forge 1.20.1, recipe lookups also show vehicle assembly and gun-box purchases, their material quantities, compatible engines and crafting stations. Vehicle assembly works at either the Vehicle Crafting Table or Gun Modification Table; gun-box purchases require the particular box shown in the recipe. Click a custom crafting screen's title to open its JEI category. JEI shows the requirements; crafting still happens through the workbench's own controls. For development, add `-PwithJei` to `runClient`.
+
 ## Development Notes
 
 - Java sources are compiled with UTF-8 encoding.

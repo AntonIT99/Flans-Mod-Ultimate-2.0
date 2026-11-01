@@ -75,5 +75,17 @@
   "gui.flansmod.teams.wait_for_vehicle": "Auf überlebendes Fahrzeug warten",
   "item.flansmod.flagpole": "Flaggenmast",
   "item.flansmod.op_stick": "Teams-Administrationsstab",
-  "item.flansmod.rainbowpaintcan": "Regenbogen-Farbeimer"
+  "item.flansmod.rainbowpaintcan": "Regenbogen-Farbeimer",
+  "jei.flansmod.acid_bucket": "Fülle einen leeren Eimer an einer Schwefelsäurequelle in der Apokalypse-Dimension.",
+  "jei.flansmod.engine_hint": "Alle benötigten Motoren müssen vom selben kompatiblen Typ sein. Die Werkbank wählt den schnellsten verfügbaren Satz.",
+  "jei.flansmod.engines": "%s gleiche Motoren",
+  "jei.flansmod.gun_box": "Waffenkiste",
+  "jei.flansmod.lab_stone": "Baue Laborstein aus Bauwerken in der Apokalypse-Dimension ab.",
+  "jei.flansmod.materials": "Materialien",
+  "jei.flansmod.no_engine": "Kein kompatibler Motor installiert.",
+  "jei.flansmod.rainbow_paint": "Lackierungszutat ohne eingebautes Überlebensrezept. Im Kreativmodus oder über serverseitig bereitgestellte Rezepte erhältlich.",
+  "jei.flansmod.sulphur": "Baue Schwefelvorkommen in der Apokalypse-Dimension ab, um Schwefelpulver zu erhalten.",
+  "jei.flansmod.sulphur_block": "Kommt im Gelände der Apokalypse vor. Beim Abbau entsteht Schwefelpulver. Der Blockgegenstand hat keinen eingebauten Überlebens-Bezugsweg; nutze den Kreativmodus oder ein vom Server bereitgestelltes Rezept.",
+  "jei.flansmod.teams_items": "Gegenstand zum Einrichten von Teams-Karten. Im Kreativmodus oder mit /teams getSticks erhältlich (Operatorrechte erforderlich).",
+  "jei.flansmod.vehicle_assembly": "Fahrzeugmontage"
 }

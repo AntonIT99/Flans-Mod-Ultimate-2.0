@@ -75,5 +75,17 @@
   "gui.flansmod.teams.wait_for_vehicle": "Wait for surviving vehicle",
   "item.flansmod.flagpole": "Teams Flagpole",
   "item.flansmod.op_stick": "Teams Operator Stick",
-  "item.flansmod.rainbowpaintcan": "Rainbow Paintcan"
+  "item.flansmod.rainbowpaintcan": "Rainbow Paintcan",
+  "jei.flansmod.acid_bucket": "Fill an empty bucket from a sulphuric acid source in the Apocalypse dimension.",
+  "jei.flansmod.engine_hint": "Use one compatible engine type for all required engines. The workbench selects the fastest available set.",
+  "jei.flansmod.engines": "%s matching engines",
+  "jei.flansmod.gun_box": "Gun Box",
+  "jei.flansmod.lab_stone": "Mine laboratory stone from structures in the Apocalypse dimension.",
+  "jei.flansmod.materials": "Materials",
+  "jei.flansmod.no_engine": "No compatible engine installed.",
+  "jei.flansmod.rainbow_paint": "Paintjob ingredient with no built-in survival recipe. Available in Creative mode or through server-provided recipes.",
+  "jei.flansmod.sulphur": "Mine sulphur deposits in the Apocalypse dimension to obtain sulphur powder.",
+  "jei.flansmod.sulphur_block": "Occurs in Apocalypse terrain. Mining yields sulphur powder. The block item has no built-in survival acquisition method; obtain it in Creative mode or through a server-provided recipe.",
+  "jei.flansmod.teams_items": "Teams map setup item. Available in Creative mode or with /teams getSticks (operator permission required).",
+  "jei.flansmod.vehicle_assembly": "Vehicle Assembly"
 }

@@ -75,5 +75,17 @@
   "gui.flansmod.teams.wait_for_vehicle": "Attendi il veicolo superstite",
   "item.flansmod.flagpole": "Asta bandiera squadre",
   "item.flansmod.op_stick": "Bastone operatore squadre",
-  "item.flansmod.rainbowpaintcan": "Barattolo di vernice arcobaleno"
+  "item.flansmod.rainbowpaintcan": "Barattolo di vernice arcobaleno",
+  "jei.flansmod.acid_bucket": "Riempi un secchio vuoto da una sorgente di acido solforico nella dimensione Apocalisse.",
+  "jei.flansmod.engine_hint": "Usa un unico tipo di motore compatibile per tutti i motori richiesti. Il banco sceglie il gruppo disponibile più veloce.",
+  "jei.flansmod.engines": "%s motori uguali",
+  "jei.flansmod.gun_box": "Cassa delle armi",
+  "jei.flansmod.lab_stone": "Estrai la pietra da laboratorio dalle strutture nella dimensione Apocalisse.",
+  "jei.flansmod.materials": "Materiali",
+  "jei.flansmod.no_engine": "Nessun motore compatibile installato.",
+  "jei.flansmod.rainbow_paint": "Ingrediente per verniciature senza ricetta di sopravvivenza integrata. Disponibile in Creativa o tramite ricette del server.",
+  "jei.flansmod.sulphur": "Estrai i giacimenti di zolfo nella dimensione Apocalisse per ottenere polvere di zolfo.",
+  "jei.flansmod.sulphur_block": "Presente nel terreno dell’Apocalisse. L’estrazione produce polvere di zolfo. Il blocco non ha un metodo di acquisizione integrato in sopravvivenza; usa Creativa o una ricetta del server.",
+  "jei.flansmod.teams_items": "Oggetto per configurare mappe Teams. Disponibile in Creativa o con /teams getSticks (richiede permessi da operatore).",
+  "jei.flansmod.vehicle_assembly": "Assemblaggio veicoli"
 }
