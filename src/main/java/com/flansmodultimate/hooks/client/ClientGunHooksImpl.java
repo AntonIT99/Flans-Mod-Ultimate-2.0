@@ -58,25 +58,22 @@ public class ClientGunHooksImpl implements IClientGunHooks
     }
 
     @Override
-    public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    public void animateLocalShot(Player player, InteractionHand hand)
     {
-        float shootTime = data.getShootTime(hand);
-        while (shootTime <= 0F)
+        ItemStack gunStack = player.getItemInHand(hand);
+        if (!(gunStack.getItem() instanceof GunItem gunItem))
+            return;
+
+        doShoot(gunItem.getConfigType(), ModClient.getGunAnimations(player, hand));
+        addScreenShake(gunItem.getConfigType());
+
+        if (gunItem.getConfigType().isUseFancyRecoil())
+            ModClient.getPlayerRecoil().addRecoil(gunItem.getConfigType().getRecoil(gunStack));
+        else
         {
-            doShoot(gunItem.getConfigType(), animations);
-            addScreenShake(gunItem.getConfigType());
-
-            if (gunItem.getConfigType().isUseFancyRecoil())
-                ModClient.getPlayerRecoil().addRecoil(gunItem.getConfigType().getRecoil(gunStack));
-            else
-            {
-                ModClient.setPlayerRecoilPitch(ModClient.getPlayerRecoilPitch() + gunItem.getConfigType().getRecoilPitch(gunStack, ModUtils.getEnumMovement(player)));
-                ModClient.setPlayerRecoilYaw(ModClient.getPlayerRecoilYaw() + gunItem.getConfigType().getRecoilYaw(gunStack, ModUtils.getEnumMovement(player)));
-            }
-
-            shootTime += gunItem.getConfigType().getShootDelay(gunStack);
+            ModClient.setPlayerRecoilPitch(ModClient.getPlayerRecoilPitch() + gunItem.getConfigType().getRecoilPitch(gunStack, ModUtils.getEnumMovement(player)));
+            ModClient.setPlayerRecoilYaw(ModClient.getPlayerRecoilYaw() + gunItem.getConfigType().getRecoilYaw(gunStack, ModUtils.getEnumMovement(player)));
         }
-        data.setShootTime(hand, shootTime);
 
         DebugHelper.spawnDebugDot(player.getEyePosition(0.0F), 1000, 1F, 1F, 1F);
     }
@@ -199,10 +196,6 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
         // Switch Delay
         handleGunSwitchDelay(gunItem, data, animations, hand);
-
-        // Client Shooting
-        if (data.isShooting(hand))
-            shootGunItem(gunItem, level, player, data, animations, gunStack, hand);
 
         if (ModClient.getSwitchTime() <= 0)
         {

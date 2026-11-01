@@ -1,6 +1,5 @@
 package com.flansmodultimate.hooks.server;
 
-import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -30,7 +29,7 @@ public class ClientGunHooksNoop implements IClientGunHooks
     }
 
     @Override
-    public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    public void animateLocalShot(Player player, InteractionHand hand)
     {
         /* no-op */
     }

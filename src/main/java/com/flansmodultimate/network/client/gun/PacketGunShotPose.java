@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client.gun;
 
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-/** A mob or another player fired the gun in one of its hands:raises that gun for a moment in the dynamic aim pose and plays its shot animation and muzzle flash model. */
+/** A confirmed gun shot: raises the aim pose and plays the shot effects, including recoil for the local player. */
 @NoArgsConstructor
 public class PacketGunShotPose implements IClientPacket
 {
@@ -52,14 +53,22 @@ public class PacketGunShotPose implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
+        handleShot(player, level, ClientHooks.GUN);
+    }
+
+    void handleShot(Player player, Level level, IClientGunHooks hooks)
+    {
         if (level.getEntity(entityId) instanceof LivingEntity shooter)
         {
-            // A player's own shots already reach them through the shooting state and their local shot animation.
-            if (shooter == player)
-                return;
             GunArmPoses.recordShot(shooter, hand);
             if (animate)
-                ClientHooks.GUN.animateRemoteShot(shooter, hand);
+            {
+                // A shot event cannot be lost when start/stop state updates arrive between client ticks.
+                if (shooter == player)
+                    hooks.animateLocalShot(player, hand);
+                else
+                    hooks.animateRemoteShot(shooter, hand);
+            }
         }
     }
 }

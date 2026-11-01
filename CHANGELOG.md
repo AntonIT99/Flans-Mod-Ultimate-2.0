@@ -72,6 +72,7 @@
 
 ## Weapons
 
+* Fixed shots sometimes having no recoil or firing animation when shooting-state updates arrive between client ticks
 * Fixed automatic weapon firing animations and muzzle flashes continuing after death and respawn without firing
 * Built-in gun categories balance recoil by cartridge, weapon weight, action and mounting, with consistent recovery and reduced recoil when crouching or prone
 * `gunRecoilModifier` now also scales `FancyRecoil`, so the global setting works with both gun recoil systems
