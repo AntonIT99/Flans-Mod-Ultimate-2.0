@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.paintjob;
 
+import com.flansmodultimate.FlansModItems;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.platform.PlatformEnvironment;
@@ -8,8 +9,10 @@ import lombok.Setter;
 import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -69,6 +72,29 @@ public class Paintjob
     public List<ItemStack> getDyesNeeded()
     {
         return dyesNeeded.stream().map(Supplier::get).toList();
+    }
+
+    public boolean hasDyeCost()
+    {
+        return getDyesNeeded().stream().anyMatch(stack -> !stack.isEmpty() && stack.getItem() instanceof DyeItem);
+    }
+
+    /** One additional rainbow can replaces all ordinary dyes; other mandatory costs remain payable. */
+    @Unmodifiable
+    public List<ItemStack> getDyesNeeded(boolean useRainbowPaint)
+    {
+        List<ItemStack> required = getDyesNeeded();
+        if (!useRainbowPaint || !hasDyeCost())
+            return required;
+
+        List<ItemStack> alternative = new ArrayList<>();
+        for (ItemStack stack : required)
+        {
+            if (!(stack.getItem() instanceof DyeItem))
+                alternative.add(stack.copy());
+        }
+        alternative.add(new ItemStack(FlansModItems.rainbowPaintcan.get()));
+        return List.copyOf(alternative);
     }
 
     @Override

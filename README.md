@@ -119,6 +119,8 @@ Crafting-table and furnace recipes appear in Minecraft's recipe book after you c
 
 With optional **JEI 15.20 or newer** installed on Forge 1.20.1, recipe lookups also show vehicle assembly and gun-box purchases, their material quantities, compatible engines and crafting stations. Vehicle assembly works at either the Vehicle Crafting Table or Gun Modification Table; gun-box purchases require the particular box shown in the recipe. Click a custom crafting screen's title to open its JEI category. JEI shows the requirements; crafting still happens through the workbench's own controls. For development, add `-PwithJei` to `runClient`.
 
+At the Paintjob Table or Gun Modification Table, left-click a paintjob to pay its listed ingredients. Right-click its icon to replace all ordinary dyes with one rainbow paint can. Any rainbow cans already listed for a special paintjob are additional: a paintjob requiring dyes and one can costs two cans with this option. Hover over the icon to see the total can cost. Free paintjobs remain free.
+
 ## Development Notes
 
 - Java sources are compiled with UTF-8 encoding.
