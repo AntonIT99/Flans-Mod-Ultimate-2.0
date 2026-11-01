@@ -22,6 +22,8 @@ AddClass W44_FallschirmjagerAssault
 
 // Automatic rifles and machine guns
 AddClass W44_FallschirmjagerSupport
+AddClass W44_FallschirmjagerAmmoBearer
+AddClass W44_FallschirmjagerMachineGunnerMG42
 AddClass W44_FallschirmjagerAutomaticRiflemanFG42
 
 // Reconnaissance and marksmen

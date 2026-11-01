@@ -1,0 +1,16 @@
+// Identity
+Name Rifleman (Sumpftarn M43)
+ShortName W44_GermanArmyRiflemanSumpftarnM43
+Description Rifleman wearing the pack Sumpftarn M43 smock with an unscoped Kar98k.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanSumpftarnM43CamoSmock
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 8
+AddItem 44_stielhandgranate 2
+AddItem 44_Bandage

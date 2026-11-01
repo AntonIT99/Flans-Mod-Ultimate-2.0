@@ -1,0 +1,16 @@
+// Identity
+Name MG Ammunition Bearer
+ShortName W44_USArmyAmmoBearer
+Description Rifleman carrying spare machine-gun ammunition and a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_M1Garand
+AddItem 44_M1GarandAmmo 4
+AddItem 44_BARAmmo 3
+AddItem 44_30CalAmmo 2
+AddItem 44_AmmoBag
+AddItem 44_Bandage

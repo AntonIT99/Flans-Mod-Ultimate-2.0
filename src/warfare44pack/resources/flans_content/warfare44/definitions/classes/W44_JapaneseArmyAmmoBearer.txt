@@ -1,0 +1,15 @@
+// Identity
+Name MG Ammunition Bearer
+ShortName W44_JapaneseArmyAmmoBearer
+Description Rifleman carrying spare machine-gun ammunition and a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Type99Rifle
+AddItem 44_Type3899Ammo 4
+AddItem 44_Type99Ammo 4
+AddItem 44_AmmoBag
+AddItem 44_Bandage

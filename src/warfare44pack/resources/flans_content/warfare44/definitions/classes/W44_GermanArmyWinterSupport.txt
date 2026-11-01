@@ -1,0 +1,20 @@
+// Identity
+Name Support (MG42, Winter Greatcoat)
+ShortName W44_GermanArmyWinterSupport
+Description MG42 gunner in a Stahlhelm and greatcoat with a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_GermanM42FeldgrauStahlhelm
+Chest 44_GermanM43GreatCoat
+
+// Items
+AddItem 44_Mg42
+AddItem 44_Mg42Ammo 6
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
+AddItem 44_AmmoBag
+AddItem 44_Bandage

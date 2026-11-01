@@ -1,0 +1,18 @@
+// Identity
+Name Field Medic (Syringe, M1943)
+ShortName W44_USAirborneFieldMedicM1943
+Description Late-war airborne loadout wearing the pack standard M1943 jacket and trousers.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_AmericanM1943CombatFieldUniformChest
+Legs 44_AmericanM1943CombatFieldUniformPants
+
+// Items
+AddItem 44_MedicalBag
+AddItem 44_Bandage 4
+AddItem 44_Parachute
+AddItem 44_Syringe
+AddItem 44_Morphine 5

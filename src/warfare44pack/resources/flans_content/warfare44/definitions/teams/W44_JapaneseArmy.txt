@@ -23,6 +23,7 @@ AddClass W44_JapaneseArmyAssault
 
 // Automatic rifles and machine guns
 AddClass W44_JapaneseArmySupport
+AddClass W44_JapaneseArmyAmmoBearer
 
 // Reconnaissance and marksmen
 AddClass W44_JapaneseArmyScout

@@ -24,6 +24,7 @@ AddClass W44_BritishArmyAssault
 
 // Automatic rifles and machine guns
 AddClass W44_BritishArmySupport
+AddClass W44_BritishArmyAmmoBearer
 
 // Reconnaissance and marksmen
 AddClass W44_BritishArmyScout

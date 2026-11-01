@@ -140,7 +140,7 @@
 ## Content Packs
 
 * 38 new national and historical flags in Wolff's Flag Pack, including Spain, Turkey, China, Romania, Yugoslavia and several historical German states
-* New Warfare 44, Germany WW2, Warhammer 40k classes and teams; Warfare 44 class menus group related roles and weapon variants, use every uniform piece across winter, military police, camouflage and command loadouts, and label experimental, legacy and postwar equipment choices
+* New Warfare 44, Germany WW2, Warhammer 40k classes and teams; Warfare 44 class menus group related roles and weapon variants, use every uniform piece across winter, military police, camouflage and command loadouts, and label experimental, legacy and postwar equipment choices; additional Warfare 44 loadouts include winter BAR, Thompson, M3, MG34, MG42 and MP40 variants, M1943 airborne uniforms, a Sumpftarn M43 rifleman, an MG42 Fallschirmjager and rifle-equipped MG ammunition bearers for all seven teams
 * Sniper classes carry scopes, including attachments resolved from legacy mixed-case shortnames; new WW2 riflemen; Warfare 44 scouts, machine gunners and automatic riflemen carry faction sidearms and spare ammunition; new Warfare 44 specialist classes use the ZF 4, ZF 41, PU and M3 infrared scopes and the Sten suppressor (Gewehr 43 and FG 42 marksmen, Kar98k sharpshooter, SVT-40 marksman, sniperscope carbine night scout, Sten Mk II(S) commando)
 * Classes can override skins for several models
 * New Roman shields

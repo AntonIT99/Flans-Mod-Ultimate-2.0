@@ -22,11 +22,15 @@ AddClass W44_USArmyWinterRifleman
 
 // Assault and grenadiers
 AddClass W44_USArmyAssault
+AddClass W44_USArmyWinterAssault
 AddClass W44_USArmyAssaultGreaseGun
+AddClass W44_USArmyWinterAssaultGreaseGun
 AddClass W44_USArmyTrenchRaider
 
 // Automatic rifles and machine guns
 AddClass W44_USArmySupport
+AddClass W44_USArmyAmmoBearer
+AddClass W44_USArmyWinterSupport
 AddClass W44_USArmyMachineGunnerM1919A4
 AddClass W44_USArmyMachineGunnerM1919A6
 

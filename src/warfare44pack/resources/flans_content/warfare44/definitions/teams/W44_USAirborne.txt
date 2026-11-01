@@ -16,28 +16,42 @@ AllowedForRoundsGenerator False
 
 // Riflemen and uniform variants
 AddClass W44_USAirborneRifleman
+AddClass W44_USAirborneRiflemanM1943
 AddClass W44_USAirborneCarbine
+AddClass W44_USAirborneCarbineM1943
 
 // Assault and grenadiers
 AddClass W44_USAirborneAssault
+AddClass W44_USAirborneAssaultM1943
 AddClass W44_USAirborneAssaultGreaseGun
+AddClass W44_USAirborneAssaultGreaseGunM1943
 
 // Automatic rifles and machine guns
 AddClass W44_USAirborneSupport
+AddClass W44_USAirborneSupportM1943
+AddClass W44_USAirborneAmmoBearer
+AddClass W44_USAirborneAmmoBearerM1943
 AddClass W44_USAirborneMachineGunnerM1919A6
+AddClass W44_USAirborneMachineGunnerM1919A6M1943
 
 // Reconnaissance and marksmen
 AddClass W44_USAirborneScout
+AddClass W44_USAirborneScoutM1943
 
 // Anti-tank
 AddClass W44_USAirborneAntiTank
+AddClass W44_USAirborneAntiTankM1943
 
 // Engineers and military police
 AddClass W44_USAirborneEngineer
+AddClass W44_USAirborneEngineerM1943
 
 // Medical support
 AddClass W44_USAirborneMedic
+AddClass W44_USAirborneMedicM1943
 AddClass W44_USAirborneFieldMedic
+AddClass W44_USAirborneFieldMedicM1943
 
 // Command
 AddClass W44_USAirborneSquadLeader
+AddClass W44_USAirborneSquadLeaderM1943
