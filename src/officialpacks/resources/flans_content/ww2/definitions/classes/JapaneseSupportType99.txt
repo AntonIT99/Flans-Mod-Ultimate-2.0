@@ -1,0 +1,10 @@
+// Identity
+Name Machine Gunner (Type 99)
+ShortName OfficialWW2_JapaneseSupportType99
+
+// Items
+AddItem type99
+AddItem type99Ammo 5
+AddItem type14
+AddItem type14Ammo 2
+AddItem ww2Knife

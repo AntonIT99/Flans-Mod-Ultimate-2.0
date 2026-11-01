@@ -1,0 +1,10 @@
+// Identity
+Name Anti-Tank (PIAT)
+ShortName OfficialWW2_BritishSupportPIAT
+
+// Items
+AddItem leeEnfield
+AddItem leeEnfieldAmmo 3
+AddItem PIAT
+AddItem PIATAmmo 2
+AddItem ww2Knife

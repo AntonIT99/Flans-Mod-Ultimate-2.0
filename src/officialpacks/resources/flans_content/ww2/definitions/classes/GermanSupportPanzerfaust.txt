@@ -1,0 +1,10 @@
+// Identity
+Name Anti-Tank (Panzerfaust)
+ShortName OfficialWW2_GermanSupportPanzerfaust
+
+// Items
+AddItem kar98k
+AddItem kar98kAmmo 4
+AddItem panzerfaust
+AddItem panzerfaustAmmo 2
+AddItem ww2Knife

@@ -32,7 +32,9 @@ AddClass W44_USArmySupport
 AddClass W44_USArmyAmmoBearer
 AddClass W44_USArmyWinterSupport
 AddClass W44_USArmyMachineGunnerM1919A4
+AddClass W44_USArmyWinterMachineGunnerM1919A4
 AddClass W44_USArmyMachineGunnerM1919A6
+AddClass W44_USArmyWinterMachineGunnerM1919A6
 
 // Reconnaissance and marksmen
 AddClass W44_USArmyScout
@@ -44,6 +46,7 @@ AddClass W44_USArmyAntiTank
 
 // Engineers and military police
 AddClass W44_USArmyEngineer
+AddClass W44_USArmyWinterEngineer
 AddClass W44_USArmyMilitaryPolice
 
 // Medical support

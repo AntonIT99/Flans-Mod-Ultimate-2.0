@@ -1,0 +1,12 @@
+// Identity
+Name Pilot
+ShortName OfficialWW2_GermanRiflemanPilot
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat pilotHelmet
+
+// Items
+AddItem luger
+AddItem lugerAmmo 3
+AddItem ww2Parachute
+AddItem ww2Knife

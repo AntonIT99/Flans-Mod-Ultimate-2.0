@@ -1,0 +1,18 @@
+// Identity
+Name Anti-Tank (Panzerschreck, Winter Greatcoat)
+ShortName W44_GermanArmyWinterAntiTank
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanM43GreatCoat
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 3
+AddItem 44_Panzerschreck
+AddItem 44_PanzerschreckAmmo 2
+AddItem 44_Smokestielhandgranate
+AddItem 44_Bandage

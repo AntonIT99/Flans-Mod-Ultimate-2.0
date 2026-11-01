@@ -16,6 +16,7 @@ AllowedForRoundsGenerator False
 
 // Riflemen and uniform variants
 AddClass W44_GermanArmyRifleman
+AddClass W44_GermanArmyRiflemanSplittermuster
 AddClass W44_GermanArmyRiflemanSumpftarnM43
 AddClass W44_GermanArmyRiflemanG43
 AddClass W44_GermanArmyRiflemanSumpftarn1945
@@ -31,11 +32,13 @@ AddClass W44_GermanArmyWaffenM44Grenadier
 
 // Automatic rifles and machine guns
 AddClass W44_GermanArmySupport
+AddClass W44_GermanArmyMachineGunnerMG42Sumpftarn
 AddClass W44_GermanArmyAmmoBearer
 AddClass W44_GermanArmyWinterSupport
 AddClass W44_GermanArmyMachineGunnerMG15
 AddClass W44_GermanArmyMachineGunnerMG26t
 AddClass W44_GermanArmyMachineGunnerMG34
+AddClass W44_GermanArmyMachineGunnerMG34Sumpftarn
 AddClass W44_GermanArmyWinterMachineGunnerMG34
 AddClass W44_GermanArmyWaffenM42MachineGunner
 
@@ -47,6 +50,9 @@ AddClass W44_GermanArmyScoutSumpftarn
 
 // Anti-tank
 AddClass W44_GermanArmyAntiTank
+AddClass W44_GermanArmyWinterPanzerfaust
+AddClass W44_GermanArmyPanzerfaust
+AddClass W44_GermanArmyWinterAntiTank
 
 // Engineers and military police
 AddClass W44_GermanArmyEngineer

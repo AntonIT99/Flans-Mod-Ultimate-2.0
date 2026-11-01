@@ -14,7 +14,12 @@ Shoes britishDesertBoots
 // Classes
 AddClass OfficialWW2_BritishScout
 AddClass OfficialWW2_BritishAssault
+AddClass OfficialWW2_BritishAssaultThompson
 AddClass OfficialWW2_BritishSupport
+AddClass OfficialWW2_BritishSupportPIATAmmoBearer
+AddClass OfficialWW2_BritishSupportPIAT
+AddClass OfficialWW2_BritishSupportBren
 AddClass OfficialWW2_BritishEngineer
 AddClass OfficialWW2_BritishRifleman
+AddClass OfficialWW2_BritishRiflemanPilot
 AddClass OfficialWW2_BritishMedic

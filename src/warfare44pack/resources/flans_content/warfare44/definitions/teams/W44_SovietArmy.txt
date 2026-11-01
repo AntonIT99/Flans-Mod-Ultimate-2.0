@@ -43,6 +43,8 @@ AddClass W44_SovietArmyFieldMedic
 
 // Command
 AddClass W44_SovietArmySquadLeader
+AddClass W44_SovietArmySquadLeaderSVT40
+AddClass W44_SovietArmySquadLeaderMosin
 
 // Vehicle and air crews
 AddClass W44_SovietArmyTankCrew

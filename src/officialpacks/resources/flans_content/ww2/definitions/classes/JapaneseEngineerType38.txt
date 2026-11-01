@@ -1,0 +1,9 @@
+// Identity
+Name Engineer (Type 38)
+ShortName OfficialWW2_JapaneseEngineerType38
+
+// Items
+AddItem type38
+AddItem type38Ammo 4
+AddItem ww2Mine 2
+AddItem ww2Knife

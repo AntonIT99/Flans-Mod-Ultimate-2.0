@@ -15,6 +15,9 @@ Shoes japaneseBoots
 AddClass OfficialWW2_JapaneseScout
 AddClass OfficialWW2_JapaneseAssault
 AddClass OfficialWW2_JapaneseSupport
+AddClass OfficialWW2_JapaneseSupportType99
 AddClass OfficialWW2_JapaneseEngineer
+AddClass OfficialWW2_JapaneseEngineerType38
 AddClass OfficialWW2_JapaneseRifleman
+AddClass OfficialWW2_JapaneseRiflemanPilot
 AddClass OfficialWW2_JapaneseMedic

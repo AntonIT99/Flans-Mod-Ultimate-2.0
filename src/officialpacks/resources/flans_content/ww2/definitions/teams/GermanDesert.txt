@@ -17,4 +17,5 @@ AddClass OfficialWW2_GermanAssault
 AddClass OfficialWW2_GermanSupport
 AddClass OfficialWW2_GermanEngineer
 AddClass OfficialWW2_GermanRifleman
+AddClass OfficialWW2_GermanRiflemanPilot
 AddClass OfficialWW2_GermanMedic

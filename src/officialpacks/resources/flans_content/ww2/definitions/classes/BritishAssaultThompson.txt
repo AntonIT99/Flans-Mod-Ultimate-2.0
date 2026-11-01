@@ -1,0 +1,9 @@
+// Identity
+Name Assault (Thompson)
+ShortName OfficialWW2_BritishAssaultThompson
+
+// Items
+AddItem thompson
+AddItem thompsonAmmo 4
+AddItem millsBomb 3
+AddItem ww2Knife

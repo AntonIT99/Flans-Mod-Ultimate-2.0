@@ -16,6 +16,7 @@ AllowedForRoundsGenerator False
 
 // Riflemen and uniform variants
 AddClass W44_FallschirmjagerRifleman
+AddClass W44_FallschirmjagerRiflemanG43
 
 // Assault and grenadiers
 AddClass W44_FallschirmjagerAssault

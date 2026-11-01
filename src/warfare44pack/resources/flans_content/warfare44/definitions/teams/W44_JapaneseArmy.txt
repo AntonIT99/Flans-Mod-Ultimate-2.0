@@ -33,6 +33,7 @@ AddClass W44_JapaneseArmyAntiTank
 
 // Engineers and military police
 AddClass W44_JapaneseArmyEngineer
+AddClass W44_JapaneseArmyEngineerType38
 
 // Medical support
 AddClass W44_JapaneseArmyMedic

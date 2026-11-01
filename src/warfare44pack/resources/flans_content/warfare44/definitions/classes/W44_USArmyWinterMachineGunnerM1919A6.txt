@@ -1,0 +1,18 @@
+// Identity
+Name Machine Gunner (M1919A6, Winter Greatcoat)
+ShortName W44_USArmyWinterMachineGunnerM1919A6
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_AmericanGreatCoat
+
+// Items
+AddItem 44_M1919A630Cal
+AddItem 44_30CalAmmo 3
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
+AddItem 44_AmmoBag
+AddItem 44_Bandage

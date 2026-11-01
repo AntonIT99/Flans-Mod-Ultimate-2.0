@@ -1,0 +1,12 @@
+// Identity
+Name Pilot
+ShortName OfficialWW2_JapaneseRiflemanPilot
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat pilotHelmet
+
+// Items
+AddItem type14
+AddItem type14Ammo 3
+AddItem ww2Parachute
+AddItem ww2Knife

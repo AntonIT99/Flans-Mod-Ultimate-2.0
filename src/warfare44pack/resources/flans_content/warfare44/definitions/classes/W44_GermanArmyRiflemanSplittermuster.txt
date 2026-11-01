@@ -1,0 +1,15 @@
+// Identity
+Name Rifleman (Splittermuster)
+ShortName W44_GermanArmyRiflemanSplittermuster
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanSplittermusterCamoSmock
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 8
+AddItem 44_stielhandgranate 2
+AddItem 44_Bandage
