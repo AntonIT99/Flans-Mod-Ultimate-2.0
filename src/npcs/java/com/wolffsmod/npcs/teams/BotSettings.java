@@ -91,46 +91,42 @@ public final class BotSettings
     }
 
     /**
-     * How well bots fight, from the best down: how much of what their loadout or clone gives them they make use of (aim,
-     * how far they notice enemies, health and the pause between their shots), and the human limits on their fighting.
-     * No level makes a bot better than its equipment.
+     * How well bots fight, from the best down: how much of what their loadout or clone gives them they make use of (aim
+     * and how far they notice enemies), and the human limits on their fighting. Every level keeps the health and rate of
+     * fire bots are given, and none makes a bot better than its equipment.
      */
     public enum Difficulty
     {
         // spotless:off
         /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
-        ACE(1F, 1F, 1F, 1F, NpcSkill.Level.ACE),
+        ACE(1F, 1F, NpcSkill.Level.ACE),
         /** Nearly its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
-        ELITE(0.95F, 1F, 1F, 1.05F, NpcSkill.Level.ELITE),
-        VETERAN(0.85F, 0.95F, 1F, 1.2F, NpcSkill.Level.VETERAN),
+        ELITE(0.95F, 1F, NpcSkill.Level.ELITE),
+        VETERAN(0.85F, 0.95F, NpcSkill.Level.VETERAN),
         /** The default. */
-        REGULAR(0.7F, 0.85F, 0.9F, 1.4F, NpcSkill.Level.REGULAR),
+        REGULAR(0.7F, 0.85F, NpcSkill.Level.REGULAR),
         /** Below Regular, hits on players start to deal less damage. */
-        RECRUIT(0.55F, 0.75F, 0.8F, 1.6F, NpcSkill.Level.RECRUIT),
+        RECRUIT(0.55F, 0.75F, NpcSkill.Level.RECRUIT),
         /** Shoots a lot and rarely hits, and deals half its damage to players. */
-        TRAINEE(0.45F, 0.65F, 0.7F, 1.9F, NpcSkill.Level.TRAINEE);
+        TRAINEE(0.45F, 0.65F, NpcSkill.Level.TRAINEE);
         // spotless:on
 
         private final float accuracy;
         private final float aggro;
-        private final float health;
-        private final float delay;
         /** Reaction, aim settling, lead and damage to players. */
         private final NpcSkill.Level level;
 
-        Difficulty(float accuracy, float aggro, float health, float delay, NpcSkill.Level level)
+        Difficulty(float accuracy, float aggro, NpcSkill.Level level)
         {
             this.accuracy = accuracy;
             this.aggro = aggro;
-            this.health = health;
-            this.delay = delay;
             this.level = level;
         }
 
         /** Whether the level changes the stats of a bot's loadout or clone at all. */
         public boolean scalesStats()
         {
-            return Float.compare(accuracy, 1F) != 0 || Float.compare(aggro, 1F) != 0 || Float.compare(health, 1F) != 0 || Float.compare(delay, 1F) != 0;
+            return Float.compare(accuracy, 1F) != 0 || Float.compare(aggro, 1F) != 0;
         }
 
         /** The human limits on how bots of this level fight. */
@@ -149,18 +145,6 @@ public final class BotSettings
         public float aggro()
         {
             return aggro;
-        }
-
-        /** Factor on the most health bots have. */
-        public float health()
-        {
-            return health;
-        }
-
-        /** Factor on the ticks between shots; below 1 is faster. */
-        public float delay()
-        {
-            return delay;
         }
     }
 

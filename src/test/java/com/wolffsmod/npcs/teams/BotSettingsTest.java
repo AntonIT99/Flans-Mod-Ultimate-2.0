@@ -140,7 +140,7 @@ class BotSettingsTest
             assertTrue(level.skill().reactionTicks() > better.skill().reactionTicks(), level + " reacts slower than " + better);
             assertTrue(level.skill().settleTicks() >= better.skill().settleTicks(), level + " settles its aim no faster than " + better);
             assertTrue(level.skill().lead() <= better.skill().lead(), level + " leads no better than " + better);
-            assertTrue(level.accuracy() <= 1F && level.aggro() <= 1F && level.health() <= 1F && level.delay() >= 1F, level + " stays within its equipment");
+            assertTrue(level.accuracy() <= 1F && level.aggro() <= 1F, level + " stays within its equipment");
         }
         for (BotSettings.Difficulty level : levels)
         {

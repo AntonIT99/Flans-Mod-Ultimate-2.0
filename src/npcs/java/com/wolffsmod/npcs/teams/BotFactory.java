@@ -201,8 +201,8 @@ public final class BotFactory
     }
 
     /**
-     * Sets how well a bot fights by the round's difficulty: scales its aim, how far it notices enemies, its health and
-     * rate of fire, and gives it the level's reaction, aim settling, lead and damage to players.
+     * Sets how well a bot fights by the round's difficulty: scales its aim and how far it notices enemies, and gives it the
+     * level's reaction, aim settling, lead and damage to players. Its health and rate of fire stay as they were given.
      */
     static void train(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
     {
@@ -225,11 +225,12 @@ public final class BotFactory
         stats.setAggroRange(scaled(training.getInt(NBT_AGGRO), difficulty.aggro(), 1));
         FlansTeams.applyBotHealthOverride(npc, false);
         float share = npc.getMaxHealth() > 0F ? npc.getHealth() / npc.getMaxHealth() : 1F;
-        stats.setMaxHealth(scaled(training.getInt(NBT_HEALTH), difficulty.health(), 1));
+        // Health and rate of fire stay as the loadout or clone gave them, which also undoes the scaling of earlier versions.
+        stats.setMaxHealth(Math.max(1, training.getInt(NBT_HEALTH)));
         // A bot trained again in the field keeps the share of its health it had.
         npc.setHealth(Math.max(1F, share * stats.getMaxHealth()));
-        int fastest = scaled(training.getInt(NBT_DELAY_MIN), difficulty.delay(), 1);
-        ranged.setDelay(fastest, Math.max(fastest, scaled(training.getInt(NBT_DELAY_MAX), difficulty.delay(), 1)));
+        int fastest = Math.max(1, training.getInt(NBT_DELAY_MIN));
+        ranged.setDelay(fastest, Math.max(fastest, training.getInt(NBT_DELAY_MAX)));
         NpcSuppression.rebase(npc, ranged.getAccuracy());
         FlansTeams.applyBotHealthOverride(npc, true);
     }
