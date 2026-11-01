@@ -1,0 +1,24 @@
+// Identity
+Name Squad Leader (Leibermuster, 1945)
+ShortName W44_GermanArmySquadLeaderLeibermuster
+Description Late-war leader with MP 40 and scarce 1945 Leibermuster clothing; the pack field cap is an interpretation.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_GermanM43LeibermusterHat
+Chest 44_GermanPzGrenadierLeibermusterChest
+Legs 44_GermanFeldgrauPants
+Shoes 44_GermanBoots
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 4
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
+AddItem 44_Binoculars
+AddItem 44_Smokestielhandgranate 3
+AddItem 44_Bandage

@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman (Type 38)
+ShortName W44_JapaneseArmyRiflemanType38
+Description Rifleman with the older Type 38 Arisaka, still used alongside the Type 99.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Type38
+AddItem 44_Type3899Ammo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

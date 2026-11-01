@@ -1,0 +1,16 @@
+// Identity
+Name Rifleman (Winter Greatcoat)
+ShortName W44_USArmyWinterRifleman
+Description Winter infantry with an M1 Garand and wool greatcoat.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_AmericanGreatCoat
+
+// Items
+AddItem 44_M1Garand
+AddItem 44_M1GarandAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

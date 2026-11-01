@@ -1,0 +1,20 @@
+// Identity
+Name Military Police (M1 Carbine)
+ShortName W44_USArmyMilitaryPolice
+Description Military policeman with MP-marked helmet and jacket, a carbine and sidearm.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_AmericanMPOfficerHelmet
+Chest 44_AmericanMPOfficerChest
+Legs 44_AmericanM1941CombatFieldUniformPants
+
+// Items
+AddItem 44_M1Carbine
+AddItem 44_M1CarbineAmmo 3
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
+AddItem 44_Bandage

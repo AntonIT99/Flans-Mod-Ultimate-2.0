@@ -1,0 +1,21 @@
+// Identity
+Name Waffen-SS Grenadier (M44)
+ShortName W44_GermanArmyWaffenM44Grenadier
+Description Late-war Waffen-SS grenadier with StG 44 and M44 camouflage suit; the matching pack helmet cover represents a nonstandard combination.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_WaffenM44CamoStahlhelm
+Chest 44_WaffenM44CamoChest
+Legs 44_WaffenM44CamoPants
+
+// Items
+AddItem 44_Stg44
+AddItem 44_Stg44Ammo 4
+AddItem 44_stielhandgranate
+AddItem 44_Smokestielhandgranate 2
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

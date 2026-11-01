@@ -1,0 +1,20 @@
+// Identity
+Name Waffen-SS Machine Gunner (M42)
+ShortName W44_GermanArmyWaffenM42MachineGunner
+Description Waffen-SS gunner with MG 34 and the pack M42 camouflage smock and helmet cover.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_WaffenM42CamoStahlhelm
+Chest 44_WaffenM42CamoChest
+
+// Items
+AddItem 44_Mg34
+AddItem 44_Mg34Ammo 6
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
+AddItem 44_AmmoBag
+AddItem 44_Bandage

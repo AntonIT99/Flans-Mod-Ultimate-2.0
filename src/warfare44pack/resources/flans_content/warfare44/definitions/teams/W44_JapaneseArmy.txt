@@ -14,18 +14,35 @@ Shoes 44_JapaneseBoots
 // Rounds: select opponents manually to keep scenarios coherent.
 AllowedForRoundsGenerator False
 
-// Classes
+// Riflemen and uniform variants
 AddClass W44_JapaneseArmyRifleman
+AddClass W44_JapaneseArmyRiflemanType38
+
+// Assault and grenadiers
 AddClass W44_JapaneseArmyAssault
+
+// Automatic rifles and machine guns
 AddClass W44_JapaneseArmySupport
-AddClass W44_JapaneseArmyMedic
-AddClass W44_JapaneseArmyEngineer
-AddClass W44_JapaneseArmyAntiTank
+
+// Reconnaissance and marksmen
 AddClass W44_JapaneseArmyScout
+
+// Anti-tank
+AddClass W44_JapaneseArmyAntiTank
+
+// Engineers and military police
+AddClass W44_JapaneseArmyEngineer
+
+// Medical support
+AddClass W44_JapaneseArmyMedic
+AddClass W44_JapaneseArmyFieldMedic
+
+// Command
 AddClass W44_JapaneseArmySquadLeader
+
+// Vehicle and air crews
 AddClass W44_JapaneseArmyTankCrew
 AddClass W44_JapaneseArmyPilot
 
-// Specialist weapon choices
+// Optional experimental, legacy and postwar equipment
 AddClass W44_JapaneseArmyAssaultType2
-AddClass W44_JapaneseArmyFieldMedic

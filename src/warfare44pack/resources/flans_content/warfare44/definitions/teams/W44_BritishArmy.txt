@@ -14,20 +14,36 @@ Shoes 44_BritishBoots
 // Rounds: select opponents manually to keep scenarios coherent.
 AllowedForRoundsGenerator False
 
-// Classes
+// Riflemen and uniform variants
 AddClass W44_BritishArmyRifleman
+AddClass W44_BritishArmyRiflemanLeeEnfieldIII
+AddClass W44_BritishArmyCommandoSten
+
+// Assault and grenadiers
 AddClass W44_BritishArmyAssault
+
+// Automatic rifles and machine guns
 AddClass W44_BritishArmySupport
-AddClass W44_BritishArmyMedic
-AddClass W44_BritishArmyEngineer
-AddClass W44_BritishArmyAntiTank
+
+// Reconnaissance and marksmen
 AddClass W44_BritishArmyScout
+
+// Anti-tank
+AddClass W44_BritishArmyAntiTank
+
+// Engineers and military police
+AddClass W44_BritishArmyEngineer
+
+// Medical support
+AddClass W44_BritishArmyMedic
+AddClass W44_BritishArmyFieldMedic
+
+// Command
 AddClass W44_BritishArmySquadLeader
+
+// Vehicle and air crews
 AddClass W44_BritishArmyTankCrew
 AddClass W44_BritishArmyPilot
 
-// Specialist weapon choices
-AddClass W44_BritishArmyRiflemanLeeEnfieldIII
+// Optional experimental, legacy and postwar equipment
 AddClass W44_BritishArmyAssaultSterling
-AddClass W44_BritishArmyCommandoSten
-AddClass W44_BritishArmyFieldMedic

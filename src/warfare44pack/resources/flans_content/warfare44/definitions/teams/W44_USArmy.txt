@@ -14,25 +14,44 @@ Shoes 44_AmericanBoots
 // Rounds: select opponents manually to keep scenarios coherent.
 AllowedForRoundsGenerator False
 
-// Classes
+// Riflemen and uniform variants
 AddClass W44_USArmyRifleman
 AddClass W44_USArmyRifleman1941
+AddClass W44_USArmyRiflemanSpringfield
+AddClass W44_USArmyWinterRifleman
+
+// Assault and grenadiers
 AddClass W44_USArmyAssault
+AddClass W44_USArmyAssaultGreaseGun
+AddClass W44_USArmyTrenchRaider
+
+// Automatic rifles and machine guns
 AddClass W44_USArmySupport
-AddClass W44_USArmyMedic
-AddClass W44_USArmyEngineer
-AddClass W44_USArmyAntiTank
+AddClass W44_USArmyMachineGunnerM1919A4
+AddClass W44_USArmyMachineGunnerM1919A6
+
+// Reconnaissance and marksmen
 AddClass W44_USArmyScout
+AddClass W44_USArmyScoutWinchester
+AddClass W44_USArmyNightScoutCarbine
+
+// Anti-tank
+AddClass W44_USArmyAntiTank
+
+// Engineers and military police
+AddClass W44_USArmyEngineer
+AddClass W44_USArmyMilitaryPolice
+
+// Medical support
+AddClass W44_USArmyMedic
+AddClass W44_USArmyFieldMedic
+
+// Command
 AddClass W44_USArmySquadLeader
+
+// Vehicle and air crews
 AddClass W44_USArmyTankCrew
 AddClass W44_USArmyPilot
 
-// Specialist weapon choices
-AddClass W44_USArmyMachineGunnerM1919A4
-AddClass W44_USArmyMachineGunnerM1919A6
-AddClass W44_USArmyAssaultGreaseGun
-AddClass W44_USArmyRiflemanSpringfield
-AddClass W44_USArmyTrenchRaider
-AddClass W44_USArmyScoutWinchester
-AddClass W44_USArmyNightScoutCarbine
-AddClass W44_USArmyFieldMedic
+// Optional experimental, legacy and postwar equipment
+AddClass W44_USArmyPostwarScout

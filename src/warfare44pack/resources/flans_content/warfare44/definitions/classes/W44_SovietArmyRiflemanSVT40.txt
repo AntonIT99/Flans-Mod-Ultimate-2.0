@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman (SVT-40)
+ShortName W44_SovietArmyRiflemanSVT40
+Description Self-loading rifleman with SVT-40 and spare magazines.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_SVT40
+AddItem 44_SVT40Ammo 6
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage
