@@ -381,8 +381,10 @@ public final class BotSettings
      * @param carry
      *            the squad template it carries to the front and unloads there, or drops by parachute from the air; empty
      *            for none
+     * @param paintjobs
+     *            allowed definition-local paintjob IDs; empty permits every available paintjob
      */
-    public record VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry)
+    public record VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry, List<Integer> paintjobs)
     {
         private static final String NBT_TYPE = "type";
         private static final String NBT_COUNT = "count";
@@ -391,6 +393,13 @@ public final class BotSettings
         private static final String NBT_TICKET_COST = "ticket_cost";
         private static final String NBT_SPAWNER = "spawner";
         private static final String NBT_CARRY = "carry";
+        private static final String NBT_PAINTJOBS = "paintjobs";
+
+        /** Legacy allocations retain their default paintjob. An empty list explicitly allows every paintjob. */
+        public VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry)
+        {
+            this(type, count, budget, respawnSeconds, ticketCost, spawner, carry, List.of(0));
+        }
 
         public VehicleEntry
         {
@@ -399,6 +408,7 @@ public final class BotSettings
             respawnSeconds = Math.max(0, respawnSeconds);
             ticketCost = Math.max(0, ticketCost);
             carry = carry == null ? "" : carry;
+            paintjobs = paintjobs.stream().filter(id -> id >= 0).distinct().toList();
         }
 
         CompoundTag save()
@@ -412,13 +422,15 @@ public final class BotSettings
             if (spawner != null)
                 tag.putUUID(NBT_SPAWNER, spawner);
             tag.putString(NBT_CARRY, carry);
+            tag.putIntArray(NBT_PAINTJOBS, paintjobs);
             return tag;
         }
 
         static VehicleEntry load(CompoundTag tag)
         {
             return new VehicleEntry(tag.getString(NBT_TYPE), tag.getInt(NBT_COUNT), tag.getInt(NBT_BUDGET), tag.getInt(NBT_RESPAWN), tag.getInt(NBT_TICKET_COST),
-                tag.hasUUID(NBT_SPAWNER) ? tag.getUUID(NBT_SPAWNER) : null, tag.getString(NBT_CARRY));
+                tag.hasUUID(NBT_SPAWNER) ? tag.getUUID(NBT_SPAWNER) : null, tag.getString(NBT_CARRY),
+                tag.contains(NBT_PAINTJOBS) ? Arrays.stream(tag.getIntArray(NBT_PAINTJOBS)).boxed().toList() : List.of(0));
         }
     }
 

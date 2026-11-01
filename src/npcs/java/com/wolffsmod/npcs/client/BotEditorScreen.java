@@ -259,10 +259,12 @@ public final class BotEditorScreen extends Screen
         String name = teams().get(team);
         BotSettings.TeamForce force = settings.team(name);
         addPickerButton(left, 1, "squads", squadsSummary(force), () -> new BotSquadsPicker(this, name, force));
-        addField(left, 2, VEHICLES, BotSettingsText.formatVehicles(force.getVehicles()));
+        addPickerButton(left, 2, VEHICLES,
+            Component.translatable("wolffsmodnpcs.picker.vehicles.total", force.getVehicles().size(), force.getVehicles().stream().mapToInt(BotSettings.VehicleEntry::count).sum()),
+            () -> new BotVehiclesPicker(this, name, force));
         addPickerButton(left, 3, "roles", rolesSummary(force), () -> new BotRolesPicker(this, name, force));
         addCrewButtons(left, name, force);
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.editor.vehicles_help"), left, y(5) + 6));
+        labels.add(new Label(Component.translatable("wolffsmodnpcs.picker.vehicles.help"), left, y(5) + 6));
     }
 
     private void initTemplates(int left)
@@ -527,7 +529,9 @@ public final class BotEditorScreen extends Screen
             }
             case RULES -> settings.setRetreatHealth(Math.max(0, Math.min(100, number(RETREAT, settings.getRetreatHealth()))));
             case TEAM -> commitTeam();
-            case FORCES -> commitForces();
+            case FORCES -> {
+                // Forces are applied by their pickers.
+            }
             case TEMPLATES, PRESETS -> {
                 // Templates and presets are saved on their own, with their buttons.
             }
@@ -542,17 +546,6 @@ public final class BotEditorScreen extends Screen
         BotSettings.TeamForce force = settings.team(teams().get(team));
         force.setCount(Math.max(0, number(COUNT, force.getCount())));
         force.setBudget(Math.max(0, number(BUDGET, force.getBudget())));
-    }
-
-    /** The forces page's vehicles; its squads, class roles and crew classes are set by their pickers. */
-    private void commitForces()
-    {
-        if (teams().isEmpty() || !fields.containsKey(VEHICLES))
-            return;
-        BotSettings.TeamForce force = settings.team(teams().get(team));
-        List<BotSettings.VehicleEntry> vehicles = BotSettingsText.parseVehicles(text(VEHICLES), force.getVehicles());
-        force.getVehicles().clear();
-        force.getVehicles().addAll(vehicles);
     }
 
     private String text(String key)

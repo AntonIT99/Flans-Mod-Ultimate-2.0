@@ -17,6 +17,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class BotSettingsTest
 {
     @Test
+    void vehiclePaintjobChoicesSurviveNbtAndTextAndLegacyAllocationsKeepDefault()
+    {
+        for (List<Integer> jobs : List.of(List.<Integer>of(), List.of(0, 3, 7)))
+        {
+            BotSettings.VehicleEntry entry = new BotSettings.VehicleEntry("tank", 2, 0, 10, 1, null, "", jobs);
+            assertEquals(entry, BotSettings.VehicleEntry.load(entry.save()));
+            assertEquals(List.of(entry), BotSettingsText.parseVehicles(BotSettingsText.formatVehicles(List.of(entry)), List.of()));
+        }
+        BotSettings.VehicleEntry legacy = new BotSettings.VehicleEntry("tank", 1, 0, 0, 1, null, "");
+        CompoundTag old = legacy.save();
+        old.remove("paintjobs");
+        assertEquals(List.of(0), BotSettings.VehicleEntry.load(old).paintjobs());
+    }
+
+    @Test
     void aRoundWithoutSettingsHasNoBots()
     {
         assertFalse(BotSettings.load(new CompoundTag()).isEnabled());

@@ -195,8 +195,8 @@ final class Skirmishes
     {
         force.setBudget(force.getCount());
         force.getSquads().replaceAll(squad -> new BotSettings.SquadEntry(squad.template(), squad.count(), squad.count()));
-        force.getVehicles()
-            .replaceAll(vehicle -> new BotSettings.VehicleEntry(vehicle.type(), vehicle.count(), vehicle.count(), vehicle.respawnSeconds(), vehicle.ticketCost(), vehicle.spawner(), vehicle.carry()));
+        force.getVehicles().replaceAll(vehicle -> new BotSettings.VehicleEntry(vehicle.type(), vehicle.count(), vehicle.count(), vehicle.respawnSeconds(), vehicle.ticketCost(), vehicle.spawner(),
+            vehicle.carry(), vehicle.paintjobs()));
         return force;
     }
 

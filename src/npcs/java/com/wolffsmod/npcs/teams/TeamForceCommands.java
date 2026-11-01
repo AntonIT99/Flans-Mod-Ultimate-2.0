@@ -199,7 +199,8 @@ final class TeamForceCommands
             {
                 BotSettings.VehicleEntry entry = vehicles.get(i);
                 if (entry.type().equals(type))
-                    vehicles.set(i, new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), entry.respawnSeconds(), entry.ticketCost(), entry.spawner(), template));
+                    vehicles.set(i,
+                        new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), entry.respawnSeconds(), entry.ticketCost(), entry.spawner(), template, entry.paintjobs()));
             }
         }, template.isEmpty() ? text("carry_none", type) : text("carry", type, template));
     }

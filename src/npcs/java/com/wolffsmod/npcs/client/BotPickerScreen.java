@@ -528,6 +528,11 @@ public abstract class BotPickerScreen extends Screen
 
     private void renderModel(GuiGraphics graphics, LivingEntity entity, int top, int bottom, int mouseX, int mouseY)
     {
+        if (entity instanceof com.wolffsmod.npcs.model.FlanModelEntity vehicle)
+        {
+            FlanModelMenuPreview.render(graphics, vehicle, "", 35, previewLeft + GAP, top, previewLeft + previewWidth - GAP, bottom);
+            return;
+        }
         float zoom = Math.min(MAX_ZOOM, (bottom - top) / MODEL_PIXELS_PER_ZOOM);
         graphics.enableScissor(previewLeft, top, previewLeft + previewWidth, bottom);
         try

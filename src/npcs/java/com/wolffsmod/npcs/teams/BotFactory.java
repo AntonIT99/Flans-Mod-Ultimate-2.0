@@ -163,7 +163,13 @@ public final class BotFactory
     public static Optional<EntityNPCInterface> vehicle(ServerLevel level, Order order, float yaw, RandomGenerator random)
     {
         Optional<FlanModelEntityType> type = FlanModelNpcs.type(order.slot().getRole());
-        Optional<EntityCustomNpc> spawned = FlanModelNpcs.spawn(level, order.slot().getRole(), order.position(), yaw);
+        List<Integer> allowed = order.slot().getEntry() >= 0 && order.slot().getEntry() < order.force().getVehicles().size()
+            ? order.force().getVehicles().get(order.slot().getEntry()).paintjobs()
+            : List.of(0);
+        List<Integer> available = type.map(FlanModelEntityType::getInfoType).map(IContentType::getPaintjobVariants).orElse(List.of()).stream().map(com.flansmodultimate.api.content.PaintjobVariant::id)
+            .filter(id -> allowed.isEmpty() || allowed.contains(id)).toList();
+        int paintjob = available.isEmpty() ? 0 : available.get(random.nextInt(available.size()));
+        Optional<EntityCustomNpc> spawned = FlanModelNpcs.spawn(level, order.slot().getRole(), order.position(), yaw, paintjob);
         if (type.isEmpty() || spawned.isEmpty())
             return Optional.empty();
         EntityCustomNpc npc = spawned.get();

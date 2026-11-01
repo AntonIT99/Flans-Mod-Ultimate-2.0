@@ -33,7 +33,7 @@ public final class FlanModelMenuPreview
             return;
         float lift = modelType.getShape().modelHeight();
         AABB bounds = FlanModelBounds.of(model);
-        ResourceLocation texture = ResourceLocation.tryParse(skin);
+        ResourceLocation texture = skin.isBlank() ? null : ResourceLocation.tryParse(skin);
         if (texture == null)
             texture = model.getModelTexture();
         if (texture == null)

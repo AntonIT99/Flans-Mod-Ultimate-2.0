@@ -1087,7 +1087,7 @@
   "wolffsmodnpcs.editor.vehicle_crews": "Vehicle crews",
   "wolffsmodnpcs.editor.vehicle_crews.tip": "Whether vehicle bots spawn with soldiers of their team in their seats. The Forces page chooses the class that crews each kind of seat.",
   "wolffsmodnpcs.editor.vehicles": "Vehicles",
-  "wolffsmodnpcs.editor.vehicles.tip": "The team's vehicles as type:count[:budget[:respawn s[:ticket cost[:carried template]]]], separated by commas.\nType: short name of a vehicle, plane, mecha or AA gun. Count: how many at once. Budget: how many in all, 0 for no limit. Respawn: seconds, 0 for the round's. Carried template: a squad template it brings to the front.\nExample: panzer4:2, opel_blitz:1:0:30:1:rifle_squad",
+  "wolffsmodnpcs.editor.vehicles.tip": "Choose vehicle types and quantities, then edit their spawn settings and carried squads.",
   "wolffsmodnpcs.editor.vehicles_help": "Vehicles: type:count[:budget[:respawn s[:ticket cost[:carried template]]]], ...",
   "wolffsmodnpcs.faction.attack_mobs": "Attack Mobs",
   "wolffsmodnpcs.friendly_fire.faction_reset": "%s: friendly fire %s now follows the world: %s",
@@ -2365,4 +2365,29 @@
   "wolffsmodnpcs.weapons.weapon_firing_range.help": "An NPC holding a ranged weapon fires as far as the spread it fires with still hits a man-sized target about two times in five, instead of at the firing range above, and notices enemies at least that far out: about 128 blocks with an accurate rifle, 60 to 110 with a sub-machine gun, automatic rifle or machine gun, up to 256 with a gun whose sight magnifies three times or more, at most 48 with a shotgun and 96 with a launcher. A worse accuracy of its own, as a lower Teams difficulty or suppression gives it, shortens the range. Thrown weapons, and NPCs without a ranged weapon in hand, keep the firing range above. Teams bots made from a class use it.",
   "wolffsmodnpcs.weapons.wings_folded": "Wings in second position",
   "wolffsmodnpcs.weapons.wings_folded.help": "Draw variable or folding wings in their second position."
+,
+  "wolffsmodnpcs.picker.vehicles.title": "Vehicles — %s",
+  "wolffsmodnpcs.picker.vehicles.hint": "Search by name or shortname. Set how many fight at once; … opens allocation settings.",
+  "wolffsmodnpcs.picker.vehicles.help": "Choose squads and vehicles above; configure their crews below.",
+  "wolffsmodnpcs.picker.vehicles.total": "%s allocations · %s vehicles",
+  "wolffsmodnpcs.picker.vehicles.count": "Vehicles at once (0 excludes this allocation)",
+  "wolffsmodnpcs.picker.vehicles.missing": "Missing content: this vehicle cannot spawn.",
+  "wolffsmodnpcs.picker.vehicles.budget": "Total spawn limit (0: unlimited)",
+  "wolffsmodnpcs.picker.vehicles.respawn": "Respawn seconds (0: round)",
+  "wolffsmodnpcs.picker.vehicles.tickets": "Tickets per respawn",
+  "wolffsmodnpcs.picker.vehicles.none": "None",
+  "wolffsmodnpcs.picker.vehicles.carry": "Carried squad"
+,
+  "wolffsmodnpcs.picker.vehicles.category": "Category",
+  "wolffsmodnpcs.picker.vehicles.category.mechas": "Mechas",
+  "wolffsmodnpcs.picker.vehicles.category.planes": "Planes",
+  "wolffsmodnpcs.picker.vehicles.category.ships": "Ships",
+  "wolffsmodnpcs.picker.vehicles.category.vehicles": "Vehicles",
+  "wolffsmodnpcs.picker.vehicles.category.aa": "AA guns",
+  "wolffsmodnpcs.picker.vehicles.pack": "Pack",
+  "wolffsmodnpcs.picker.vehicles.all_packs": "All packs"
+,
+  "wolffsmodnpcs.picker.vehicles.paintjobs": "Paintjobs…",
+  "wolffsmodnpcs.picker.vehicles.paintjobs.all": "Allow all paintjobs",
+  "wolffsmodnpcs.picker.vehicles.paintjobs.all_selected": "✓ All paintjobs allowed"
 }
