@@ -2,7 +2,7 @@
 
 First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
-* Teams NPC vehicles respect each vehicle spawner's allowed categories and exact definitions; excluded vehicles wait for an eligible spawner instead of appearing at infantry spawn points
+* Teams NPC vehicles respect each vehicle spawner's allowed categories, exact definitions and all-at-once or sequential deployment setting; vehicles and soldiers spread across eligible spawners and search for clear nearby spaces, waiting when none are available; excluded vehicles wait for an eligible vehicle spawner instead of appearing at infantry spawn points
 
 ## Soldiers
 

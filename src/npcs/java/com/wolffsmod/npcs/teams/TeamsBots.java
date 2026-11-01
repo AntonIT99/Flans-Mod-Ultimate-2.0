@@ -51,8 +51,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     private static final int LOST_TICKS = 100;
     /** Ticks before a spawn that found no spawn point is tried again. */
     private static final int RETRY_TICKS = 200;
-    /** Spawn points nearest its squad's task a soldier may appear at. */
-    private static final int NEAREST_SPAWNS = 3;
     /** Blocks from where its duty sends it within which a bot counts as there. */
     private static final double DUTY_ARRIVAL = 2D;
 
@@ -399,11 +397,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     static Optional<EntityNPCInterface> spawnAt(ServerLevel level, BotBattle current, BotSlot slot, long now, RandomGenerator random, @Nullable Vec3 at)
     {
         ITeam team = current.team(slot.getTeam()).orElse(null);
-        Vec3 position = team == null || at != null ? at : spawnPoint(current, slot, team, random);
-        if (position != null && slot.isVehicle() && FlanModelNpcs.type(slot.getRole()).map(type -> BotRole.of(type.getKind(), type.getInfoType()) == BotRole.NAVAL).orElse(false))
-            position = FlansTeams.findShipSpawn(level, position).orElse(null);
+        Deployment deployment = team == null ? null : deployment(level, current, slot, team, random, at).orElse(null);
         Integer faction = current.getFactions().get(slot.getTeam());
-        if (team == null || position == null || faction == null)
+        if (team == null || deployment == null || faction == null)
         {
             slot.setRespawnAt(now + RETRY_TICKS);
             return Optional.empty();
@@ -413,8 +409,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         String nameList = squad == null || squad.getTemplate().isEmpty()
             ? force.getNameList()
             : SquadTemplates.get().find(squad.getTemplate()).map(SquadTemplate::nameList).filter(list -> !list.isEmpty()).orElse(force.getNameList());
-        BotFactory.Order order = new BotFactory.Order(slot, team, faction, current.getSettings(), force, current.getInstance(), position, nameList, current.getGround().round().isPresent());
-        Optional<EntityNPCInterface> npc = slot.isVehicle() ? BotFactory.vehicle(level, order, random.nextFloat() * 360F, random) : BotFactory.soldier(level, order, random);
+        BotFactory.Order order = new BotFactory.Order(slot, team, faction, current.getSettings(), force, current.getInstance(), deployment.position(), nameList,
+            current.getGround().round().isPresent());
+        Optional<EntityNPCInterface> npc = slot.isVehicle() ? BotFactory.vehicle(level, order, deployment.yaw(), random) : BotFactory.soldier(level, order, random);
         if (npc.isEmpty())
         {
             NpcsMod.log.warn("Teams bot of team {} could not be made as {}", slot.getTeam(), slot.getRole());
@@ -422,6 +419,10 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             return npc;
         }
         BotPopulation.charge(current, slot);
+        Map<Vec3, Integer> uses = slot.isVehicle() ? current.getVehicleSpawnUses() : current.getSoldierSpawnUses();
+        uses.merge(deployment.source().origin(), 1, Integer::sum);
+        if (slot.isVehicle() && deployment.source().spawner() != null)
+            BotSpawnPlacement.recordSpawner(npc.get(), deployment.source().spawner().id());
         slot.setSpawns(slot.getSpawns() + 1);
         slot.setEntity(npc.get().getUUID());
         slot.setDiedAt(0);
@@ -435,12 +436,34 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return npc;
     }
 
-    /**
-     * Where a slot's bot appears: a vehicle at a vehicle spawner its team holds, the one its settings name if any; a
-     * soldier at the team's spawn point nearest its squad's task. Null when the team has no spawn point.
-     */
-    @Nullable
-    private static Vec3 spawnPoint(BotBattle current, BotSlot slot, ITeam team, RandomGenerator random)
+    private record SpawnPoint(Vec3 origin, @Nullable TeamsSpawner spawner)
+    {}
+
+    private record Deployment(SpawnPoint source, Vec3 position, float yaw)
+    {}
+
+    private static Optional<Deployment> deployment(ServerLevel level, BotBattle current, BotSlot slot, ITeam team, RandomGenerator random, @Nullable Vec3 at)
+    {
+        float yaw = random.nextFloat() * 360F;
+        List<SpawnPoint> points = at == null ? spawnPoints(level, current, slot, team, random) : List.of(new SpawnPoint(at, null));
+        for (SpawnPoint point : points)
+        {
+            Optional<Vec3> position = position(level, slot, point, yaw);
+            if (position.isPresent())
+                return Optional.of(new Deployment(point, position.get(), yaw));
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Vec3> position(ServerLevel level, BotSlot slot, SpawnPoint point, float yaw)
+    {
+        if (point.spawner() != null && !point.spawner().npcSpawnAll() && BotSpawnPlacement.stagingOccupied(level, point.spawner().id(), point.origin()))
+            return Optional.empty();
+        return slot.isVehicle() ? FlanModelNpcs.type(slot.getRole()).flatMap(type -> BotSpawnPlacement.vehicle(level, type, point.origin(), yaw)) : BotSpawnPlacement.soldier(level, point.origin());
+    }
+
+    /** Tries the least-used eligible origins first, retaining explicit assignments and squad rally points. */
+    private static List<SpawnPoint> spawnPoints(ServerLevel level, BotBattle current, BotSlot slot, ITeam team, RandomGenerator random)
     {
         if (slot.isVehicle())
         {
@@ -448,28 +471,34 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             UUID wanted = slot.getEntry() < vehicles.size() ? vehicles.get(slot.getEntry()).spawner() : null;
             List<TeamsSpawner> spawners = current.getGround().spawners().stream()
                 .filter(spawner -> spawner.kind() == TeamsSpawner.Kind.VEHICLE && spawner.owner() != null && spawner.owner().getShortName().equals(slot.getTeam()))
-                .filter(spawner -> wanted == null || wanted.equals(spawner.id())).toList();
+                .filter(spawner -> spawner.dimension().equals(level.dimension())).filter(spawner -> wanted == null || wanted.equals(spawner.id())).toList();
             spawners = spawners.stream().filter(spawner -> FlanModelNpcs.type(slot.getRole()).map(type -> spawner.npcPolicy().allows(type.getInfoType())).orElse(false)).toList();
             if (!spawners.isEmpty())
-                return Vec3.atBottomCenterOf(spawners.get(random.nextInt(spawners.size())).position().above());
+            {
+                List<SpawnPoint> points = spawners.stream().map(spawner -> new SpawnPoint(Vec3.atBottomCenterOf(spawner.position().above()), spawner)).toList();
+                return orderSpawns(points, current.getVehicleSpawnUses(), null, random);
+            }
             if (current.getGround().round().isPresent())
-                return null;
+                return List.of();
         }
         List<Vec3> positions = current.getGround().spawnPositions(team);
         if (positions.isEmpty())
-            return null;
+            return List.of();
         BotSquad squad = current.getSquads().get(slot.getSquad());
         // A squad's fallen come back at its rally point while it has one.
         if (squad != null && squad.getRally() != null)
-            return squad.getRally();
+            return List.of(new SpawnPoint(squad.getRally(), null));
         SquadTask task = squad == null ? null : squad.getTask();
-        if (task != null)
-        {
-            // Spread over the few spawn points nearest the task, so a whole squad does not appear on one block.
-            List<Vec3> nearest = positions.stream().sorted(Comparator.comparingDouble(position -> position.distanceToSqr(task.target()))).limit(NEAREST_SPAWNS).toList();
-            return nearest.get(random.nextInt(nearest.size()));
-        }
-        return positions.get(random.nextInt(positions.size()));
+        return orderSpawns(positions.stream().map(position -> new SpawnPoint(position, null)).toList(), slot.isVehicle() ? current.getVehicleSpawnUses() : current.getSoldierSpawnUses(),
+            task == null ? null : task.target(), random);
+    }
+
+    private static List<SpawnPoint> orderSpawns(List<SpawnPoint> points, Map<Vec3, Integer> uses, @Nullable Vec3 target, RandomGenerator random)
+    {
+        List<Vec3> origins = BotSpawnPlacement.order(points.stream().map(SpawnPoint::origin).toList(), uses, target, random);
+        Map<Vec3, SpawnPoint> byOrigin = new HashMap<>();
+        points.forEach(point -> byOrigin.put(point.origin(), point));
+        return origins.stream().map(byOrigin::get).toList();
     }
 
     // --- Winning by attrition ---

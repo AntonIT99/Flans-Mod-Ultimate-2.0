@@ -16,7 +16,7 @@
 
 ## Teams
 
-* Item and vehicle spawners open a seconds-entry window for their spawn delay (default 20 seconds); player spawners no longer offer the unused delay setting; vehicle spawners support AA guns, default to waiting until their previous vehicle is destroyed or leaves the map, offer a nearby-only replacement mode, and allow NPC vehicles by all, none, multiple categories or exact definitions
+* All spawners offer a base-assignment menu and show their base's team color before a round starts; item and vehicle spawners have a spawn delay in seconds (default 20), while vehicle spawners support AA guns, wait for their previous vehicle to be destroyed or leave the map by default, offer a nearby-only replacement mode, allow NPC vehicles by all, none, multiple categories or exact definitions, and select between spawning all ready NPC vehicles into clear nearby spaces (default) or deploying them one after another
 
 * Ship vehicle spawners use the nearest clear water surface within 64 blocks, and wait to spawn when no water is available in loaded chunks
 

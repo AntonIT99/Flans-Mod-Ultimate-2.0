@@ -2,6 +2,8 @@ package com.flansmodultimate.network.server.teams;
 
 import com.flansmodultimate.api.teams.SpawnerNpcPolicy;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
+import com.flansmodultimate.common.teams.ITeamBase;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.AllArgsConstructor;
@@ -24,6 +26,14 @@ public final class PacketSpawnerEditAction implements IServerPacket
     private int seconds;
     private boolean waitForVehicle = true;
     private SpawnerNpcPolicy npcPolicy = SpawnerNpcPolicy.ALL;
+    private boolean npcSpawnAll = true;
+    private boolean updateBase;
+    private UUID baseId;
+
+    public PacketSpawnerEditAction(BlockPos pos, UUID objectId, int seconds, boolean waitForVehicle, SpawnerNpcPolicy npcPolicy)
+    {
+        this(pos, objectId, seconds, waitForVehicle, npcPolicy, true, false, null);
+    }
 
     public PacketSpawnerEditAction(BlockPos pos, UUID objectId, int seconds)
     {
@@ -38,6 +48,11 @@ public final class PacketSpawnerEditAction implements IServerPacket
         data.writeVarInt(seconds);
         data.writeBoolean(waitForVehicle);
         data.writeNbt(npcPolicy.save());
+        data.writeBoolean(npcSpawnAll);
+        data.writeBoolean(updateBase);
+        data.writeBoolean(baseId != null);
+        if (baseId != null)
+            data.writeUUID(baseId);
     }
 
     @Override
@@ -48,6 +63,9 @@ public final class PacketSpawnerEditAction implements IServerPacket
         seconds = data.readVarInt();
         waitForVehicle = data.readBoolean();
         npcPolicy = SpawnerNpcPolicy.load(java.util.Objects.requireNonNull(data.readNbt()));
+        npcSpawnAll = data.readBoolean();
+        updateBase = data.readBoolean();
+        baseId = data.readBoolean() ? data.readUUID() : null;
     }
 
     @Override
@@ -55,12 +73,27 @@ public final class PacketSpawnerEditAction implements IServerPacket
     {
         if (!player.hasPermissions(2) || player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) > 64D || !level.getChunkSource().hasChunk(pos.getX() >> 4, pos.getZ() >> 4))
             return;
-        if (level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner && spawner.getObjectId().equals(objectId))
-        {
-            if (seconds < 1 || seconds > TeamSpawnerBlockEntity.MAX_SPAWN_DELAY_SECONDS)
-                return;
-            spawner.setSpawnDelaySeconds(seconds);
-            spawner.setVehicleSettings(waitForVehicle, npcPolicy);
-        }
+        if (!(level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner) || !spawner.getObjectId().equals(objectId))
+            return;
+        if (spawner.getMode() != TeamSpawnerBlockEntity.Mode.PLAYER && (seconds < 1 || seconds > TeamSpawnerBlockEntity.MAX_SPAWN_DELAY_SECONDS))
+            return;
+        TeamsManager manager = TeamsManager.getInstance();
+        ITeamBase base = updateBase && baseId != null ? manager.getBase(baseId).orElse(null) : null;
+        if (updateBase && baseId != null && (base == null || !base.getDimension().equals(level.dimension())))
+            return;
+        spawner.setSpawnDelaySeconds(seconds);
+        spawner.setVehicleSettings(waitForVehicle, npcPolicy);
+        spawner.setNpcSpawnAll(npcSpawnAll);
+        assignBase(manager, spawner, base);
+    }
+
+    private void assignBase(TeamsManager manager, TeamSpawnerBlockEntity spawner, ITeamBase base)
+    {
+        if (!updateBase)
+            return;
+        if (base == null)
+            manager.disconnectObject(spawner);
+        else
+            manager.connectObject(base, spawner);
     }
 }

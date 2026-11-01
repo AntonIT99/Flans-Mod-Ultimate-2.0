@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -42,6 +43,9 @@ final class BotBattle
     private final Set<UUID> fieldedPlayers = new HashSet<>();
     /** Where each player leading a squad chose to come back after dying. */
     private final Map<UUID, BotLeaders.SpawnChoice> spawnChoices = new HashMap<>();
+    /** Successful deployments per origin, used to spread the next wave across every eligible spawn. */
+    private final Map<Vec3, Integer> soldierSpawnUses = new HashMap<>();
+    private final Map<Vec3, Integer> vehicleSpawnUses = new HashMap<>();
     @Setter
     private int nextSlot = 1;
     @Setter

@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -2016,7 +2017,8 @@ public final class TeamsManager
                 case ITEM -> TeamsSpawner.Kind.ITEM;
                 case VEHICLE -> TeamsSpawner.Kind.VEHICLE;
             };
-            spawners.add(new TeamsSpawner(spawner.getObjectId(), kind, spawner.getDimension(), spawner.getBlockPos(), base.getObjectId(), getTeamForBase(base), spawner.getNpcPolicy()));
+            spawners.add(new TeamsSpawner(spawner.getObjectId(), kind, spawner.getDimension(), spawner.getBlockPos(), base.getObjectId(), getTeamForBase(base), spawner.getNpcPolicy(),
+                spawner.isNpcSpawnAll()));
         }
         return List.copyOf(spawners);
     }
@@ -2226,6 +2228,21 @@ public final class TeamsManager
     public Optional<ITeamBase> getBase(UUID id)
     {
         return Optional.ofNullable(liveBases.get(id));
+    }
+
+    public List<ITeamBase> getBases(ResourceKey<Level> dimension)
+    {
+        return liveBases.values().stream().filter(base -> base.getDimension().equals(dimension))
+            .sorted(Comparator.comparing(ITeamBase::getMapId).thenComparing(ITeamBase::getBaseName).thenComparing(ITeamBase::getObjectId)).toList();
+    }
+
+    public void disconnectObject(ITeamObject object)
+    {
+        UUID previous = object.getBaseId();
+        if (previous != null)
+            getBase(previous).ifPresent(base -> base.removeObject(object.getObjectId()));
+        object.setBaseId(null);
+        markDirty();
     }
 
     public Optional<ITeamObject> getObject(UUID id)

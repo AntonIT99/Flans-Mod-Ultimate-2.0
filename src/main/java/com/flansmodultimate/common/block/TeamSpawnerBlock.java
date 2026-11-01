@@ -94,10 +94,9 @@ public final class TeamSpawnerBlock extends FlanEntityBlock
             spawner.addTemplate(held.copyWithCount(held.getCount()));
             player.displayClientMessage(Component.literal("Added " + held.getHoverName().getString() + " to this spawner"), false);
         }
-        else if (held.isEmpty() && spawner.getMode() != TeamSpawnerBlockEntity.Mode.PLAYER)
+        else
         {
-            PacketHandler.sendTo(new PacketSpawnerEditState(pos, spawner.getObjectId(), spawner.getSpawnDelayTicks(), spawner.getMode() == TeamSpawnerBlockEntity.Mode.VEHICLE,
-                spawner.isWaitForVehicle(), spawner.getNpcPolicy()), serverPlayer);
+            PacketHandler.sendTo(PacketSpawnerEditState.of(spawner), serverPlayer);
         }
         return InteractionResult.CONSUME;
     }

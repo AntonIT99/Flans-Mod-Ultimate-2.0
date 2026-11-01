@@ -94,7 +94,7 @@ public final class BotFactory
     /** @return the new soldier, already in the level, or empty when the team offers no class */
     public static Optional<EntityNPCInterface> soldier(ServerLevel level, Order order, RandomGenerator random)
     {
-        Vec3 position = freeSpot(level, order.position(), random);
+        Vec3 position = order.position();
         return soldier(level, order, order.slot().getRole(), position, random, npc ->
         {
             name(npc, order, random);
@@ -173,6 +173,9 @@ public final class BotFactory
         if (type.isEmpty() || spawned.isEmpty())
             return Optional.empty();
         EntityCustomNpc npc = spawned.get();
+        // The hull used for clearance must already face its validated yaw before the next bot is placed this tick.
+        npc.setYBodyRot(yaw);
+        npc.yBodyRotO = yaw;
         IContentType definition = type.get().getInfoType();
         BotRole role = BotRole.of(type.get().getKind(), definition);
         NpcTuning tuning = NpcTuning.of(npc);
