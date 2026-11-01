@@ -131,7 +131,7 @@
 ## Compatibility & API
 
 * Optional JEI integration shows vehicle assembly and gun-box recipes with material quantities, compatible engines and crafting stations, plus acquisition hints for core items without ordinary recipes
-* Built-in crafting and furnace recipes, and generated legacy content-pack recipes, unlock in Minecraft's recipe book when a player collects a relevant ingredient
+* Built-in crafting and furnace recipes, and generated legacy content-pack recipes, unlock in Minecraft's recipe book when a player collects a relevant ingredient; rainbow paint cans can be crafted from an empty bucket and eight different dyes, and Silk Touch can collect sulphur blocks while ordinary mining still yields sulphur powder
 
 * The public API is now stable (1.9) and organized into domain packages, including Teams support for non-player combatants, friendly fire rules, the command centre, debug-mode markers and the change-seat key
 * Addon seat occupants can preserve their seat's body rotation when riding living mounts (`IFlanSeatOccupant.flansmodultimateHasSeatBodyRotation`)

@@ -104,9 +104,9 @@
   "jei.flansmod.lab_stone": "Baue Laborstein aus Bauwerken in der Apokalypse-Dimension ab.",
   "jei.flansmod.materials": "Materialien",
   "jei.flansmod.no_engine": "Kein kompatibler Motor installiert.",
-  "jei.flansmod.rainbow_paint": "Lackierungszutat ohne eingebautes Überlebensrezept. Im Kreativmodus oder über serverseitig bereitgestellte Rezepte erhältlich.",
+  "jei.flansmod.rainbow_paint": "Stelle eine Dose aus einem leeren Eimer her, umgeben von rotem, orangem, gelbem, hellgrünem, türkisem, blauem, violettem und magentafarbenem Farbstoff.",
   "jei.flansmod.sulphur": "Baue Schwefelvorkommen in der Apokalypse-Dimension ab, um Schwefelpulver zu erhalten.",
-  "jei.flansmod.sulphur_block": "Kommt im Gelände der Apokalypse vor. Beim Abbau entsteht Schwefelpulver. Der Blockgegenstand hat keinen eingebauten Überlebens-Bezugsweg; nutze den Kreativmodus oder ein vom Server bereitgestelltes Rezept.",
+  "jei.flansmod.sulphur_block": "Baue Schwefelvorkommen mit Behutsamkeit ab, um den Block zu erhalten. Normaler Abbau liefert Schwefelpulver.",
   "jei.flansmod.teams_items": "Gegenstand zum Einrichten von Teams-Karten. Im Kreativmodus oder mit /teams getSticks erhältlich (Operatorrechte erforderlich).",
   "jei.flansmod.vehicle_assembly": "Fahrzeugmontage"
 }

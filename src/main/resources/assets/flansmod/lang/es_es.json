@@ -104,9 +104,9 @@
   "jei.flansmod.lab_stone": "Extrae piedra de laboratorio de las estructuras de la dimensión Apocalipsis.",
   "jei.flansmod.materials": "Materiales",
   "jei.flansmod.no_engine": "No hay motores compatibles instalados.",
-  "jei.flansmod.rainbow_paint": "Ingrediente de pintura sin receta de supervivencia integrada. Disponible en Creativo o mediante recetas del servidor.",
+  "jei.flansmod.rainbow_paint": "Fabrica una lata con un cubo vacío rodeado de tintes rojo, naranja, amarillo, lima, cian, azul, morado y magenta.",
   "jei.flansmod.sulphur": "Extrae depósitos de azufre de la dimensión Apocalipsis para obtener azufre en polvo.",
-  "jei.flansmod.sulphur_block": "Aparece en el terreno del Apocalipsis. Al extraerlo se obtiene azufre en polvo. El bloque no tiene un método de obtención en supervivencia integrado; usa Creativo o una receta del servidor.",
+  "jei.flansmod.sulphur_block": "Extrae depósitos de azufre con Toque de seda para obtener el bloque. La extracción normal proporciona azufre en polvo.",
   "jei.flansmod.teams_items": "Objeto para configurar mapas de Teams. Disponible en Creativo o con /teams getSticks (requiere permisos de operador).",
   "jei.flansmod.vehicle_assembly": "Montaje de vehículos"
 }

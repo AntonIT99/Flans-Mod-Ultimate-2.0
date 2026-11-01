@@ -104,9 +104,9 @@
   "jei.flansmod.lab_stone": "Mine laboratory stone from structures in the Apocalypse dimension.",
   "jei.flansmod.materials": "Materials",
   "jei.flansmod.no_engine": "No compatible engine installed.",
-  "jei.flansmod.rainbow_paint": "Paintjob ingredient with no built-in survival recipe. Available in Creative mode or through server-provided recipes.",
+  "jei.flansmod.rainbow_paint": "Craft one can using an empty bucket surrounded by red, orange, yellow, lime, cyan, blue, purple and magenta dyes.",
   "jei.flansmod.sulphur": "Mine sulphur deposits in the Apocalypse dimension to obtain sulphur powder.",
-  "jei.flansmod.sulphur_block": "Occurs in Apocalypse terrain. Mining yields sulphur powder. The block item has no built-in survival acquisition method; obtain it in Creative mode or through a server-provided recipe.",
+  "jei.flansmod.sulphur_block": "Mine sulphur deposits with Silk Touch to collect the block. Ordinary mining yields sulphur powder.",
   "jei.flansmod.teams_items": "Teams map setup item. Available in Creative mode or with /teams getSticks (operator permission required).",
   "jei.flansmod.vehicle_assembly": "Vehicle Assembly"
 }

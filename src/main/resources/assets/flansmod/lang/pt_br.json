@@ -104,9 +104,9 @@
   "jei.flansmod.lab_stone": "Minere pedra de laboratório das estruturas na dimensão Apocalipse.",
   "jei.flansmod.materials": "Materiais",
   "jei.flansmod.no_engine": "Nenhum motor compatível instalado.",
-  "jei.flansmod.rainbow_paint": "Ingrediente de pintura sem receita de sobrevivência integrada. Disponível no Criativo ou por receitas do servidor.",
+  "jei.flansmod.rainbow_paint": "Fabrique uma lata com um balde vazio cercado por corantes vermelho, laranja, amarelo, verde-limão, ciano, azul, roxo e magenta.",
   "jei.flansmod.sulphur": "Minere depósitos de enxofre na dimensão Apocalipse para obter enxofre em pó.",
-  "jei.flansmod.sulphur_block": "Encontrado no terreno do Apocalipse. A mineração fornece enxofre em pó. O bloco não tem método de obtenção integrado na sobrevivência; use o Criativo ou uma receita do servidor.",
+  "jei.flansmod.sulphur_block": "Minere depósitos de enxofre com Toque suave para obter o bloco. A mineração normal fornece enxofre em pó.",
   "jei.flansmod.teams_items": "Item para configurar mapas do Teams. Disponível no Criativo ou com /teams getSticks (requer permissão de operador).",
   "jei.flansmod.vehicle_assembly": "Montagem de veículos"
 }

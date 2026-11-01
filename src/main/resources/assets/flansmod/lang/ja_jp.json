@@ -104,9 +104,9 @@
   "jei.flansmod.lab_stone": "アポカリプス次元の建造物から研究所の石を採掘します。",
   "jei.flansmod.materials": "材料",
   "jei.flansmod.no_engine": "対応するエンジンがありません。",
-  "jei.flansmod.rainbow_paint": "サバイバル用の標準レシピがない塗装材料です。クリエイティブモードやサーバー独自のレシピで入手できます。",
+  "jei.flansmod.rainbow_paint": "空のバケツを赤、橙、黄、黄緑、青緑、青、紫、赤紫の染料で囲むと、塗料缶を1個作れます。",
   "jei.flansmod.sulphur": "アポカリプス次元の硫黄鉱床を採掘すると硫黄の粉を入手できます。",
-  "jei.flansmod.sulphur_block": "アポカリプスの地形に生成され、採掘すると硫黄の粉を落とします。ブロック自体には標準のサバイバル入手方法がありません。クリエイティブモードやサーバー独自のレシピをご利用ください。",
+  "jei.flansmod.sulphur_block": "シルクタッチで硫黄鉱床を採掘するとブロックを入手できます。通常の採掘では硫黄の粉が手に入ります。",
   "jei.flansmod.teams_items": "Teams マップ設定用のアイテムです。クリエイティブモードまたは /teams getSticks で入手できます（管理者権限が必要）。",
   "jei.flansmod.vehicle_assembly": "乗り物の組み立て"
 }

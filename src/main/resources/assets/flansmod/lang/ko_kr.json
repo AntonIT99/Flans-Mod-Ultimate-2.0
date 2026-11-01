@@ -104,9 +104,9 @@
   "jei.flansmod.lab_stone": "아포칼립스 차원의 구조물에서 실험실 돌을 채굴합니다.",
   "jei.flansmod.materials": "재료",
   "jei.flansmod.no_engine": "호환되는 엔진이 없습니다.",
-  "jei.flansmod.rainbow_paint": "기본 생존 제작법이 없는 도색 재료입니다. 크리에이티브 모드 또는 서버에서 제공하는 제작법으로 얻을 수 있습니다.",
+  "jei.flansmod.rainbow_paint": "빈 양동이를 빨간색, 주황색, 노란색, 연두색, 청록색, 파란색, 보라색, 자홍색 염료로 둘러싸면 페인트 통 1개를 제작할 수 있습니다.",
   "jei.flansmod.sulphur": "아포칼립스 차원의 유황 광상을 채굴하면 유황 가루를 얻습니다.",
-  "jei.flansmod.sulphur_block": "아포칼립스 지형에 생성되며 채굴 시 유황 가루를 떨어뜨립니다. 블록 아이템 자체에는 기본 생존 획득 방법이 없습니다. 크리에이티브 모드 또는 서버 제작법을 이용하세요.",
+  "jei.flansmod.sulphur_block": "섬세한 손길로 유황 광상을 채굴하면 블록 자체를 얻습니다. 일반 채굴 시 유황 가루를 얻습니다.",
   "jei.flansmod.teams_items": "Teams 지도 설정용 아이템입니다. 크리에이티브 모드 또는 /teams getSticks로 얻을 수 있습니다(관리자 권한 필요).",
   "jei.flansmod.vehicle_assembly": "차량 조립"
 }

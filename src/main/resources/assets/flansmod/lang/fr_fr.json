@@ -104,9 +104,9 @@
   "jei.flansmod.lab_stone": "Récupérez la pierre de laboratoire des structures de la dimension Apocalypse.",
   "jei.flansmod.materials": "Matériaux",
   "jei.flansmod.no_engine": "Aucun moteur compatible installé.",
-  "jei.flansmod.rainbow_paint": "Ingrédient de peinture sans recette de survie intégrée. Disponible en mode Créatif ou via les recettes du serveur.",
+  "jei.flansmod.rainbow_paint": "Fabriquez un pot avec un seau vide entouré de teintures rouge, orange, jaune, vert clair, cyan, bleue, violette et magenta.",
   "jei.flansmod.sulphur": "Extrayez les dépôts de soufre de la dimension Apocalypse pour obtenir du soufre en poudre.",
-  "jei.flansmod.sulphur_block": "Présent dans le terrain de l’Apocalypse. Son extraction donne du soufre en poudre. Le bloc n’a pas de méthode d’obtention intégrée en survie ; utilisez le mode Créatif ou une recette du serveur.",
+  "jei.flansmod.sulphur_block": "Extrayez les dépôts de soufre avec Toucher de soie pour récupérer le bloc. L’extraction normale donne du soufre en poudre.",
   "jei.flansmod.teams_items": "Objet de configuration des cartes Teams. Disponible en mode Créatif ou avec /teams getSticks (droits d’opérateur requis).",
   "jei.flansmod.vehicle_assembly": "Assemblage de véhicules"
 }
