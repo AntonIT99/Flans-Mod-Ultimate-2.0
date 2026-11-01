@@ -92,6 +92,11 @@ public final class TeamsCommand
             manager().stopRound();
             return success(context, "Round stopped");
         }));
+        root.then(Commands.literal("restart").requires(source -> source.hasPermission(2)).executes(context ->
+        {
+            manager().stopRound();
+            return manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND);
+        }));
         root = addRuleCommands(root)
             .then(Commands.literal("start").requires(source -> source.hasPermission(2))
                 .executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND)))
@@ -444,7 +449,7 @@ public final class TeamsCommand
                 "Maps and Labjac rules: /teams <addMap|addMapWithBounds|removeMap|renameMap|setMapImage|addRound|removeRound|listRotation>, /teams <pacifism|movieProp> <true|false>, /teams seaLevel <y|default>, /teams shake <strength>, /teams setRank <rank> [player]"),
                 false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Administration: /teams stop; /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|rankUpdateTime|votingTime|autobalancetime|roundsGenerator|start|next|setnext|stop|arena|survival|kit|map|round|setvariable|ping|bltss>"),
+                "Administration: /teams stop; /teams restart; /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|rankUpdateTime|votingTime|autobalancetime|roundsGenerator|start|next|setnext|stop|arena|survival|kit|map|round|setvariable|ping|bltss>"),
                 false);
         }
         return 1;

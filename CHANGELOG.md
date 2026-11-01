@@ -34,7 +34,7 @@
 
 * Spawn protection: players cannot be hurt for a few seconds after taking the field in a round, until they fire, throw, swing or hit an enemy; set the time with `/teams spawnProtection <seconds>` (default 3, 0 turns it off, at most 60) or on the Protection tab of the command centre's Rules page
 * `/teams regeneration <true|false>` controls passive healing for players and bots during rounds; the default is now half a heart every five seconds, preserving the value of medical supplies
-* `/teams stop` stops the current round, with the same cleanup as `/teams admin stop`
+* `/teams stop` stops the current round, with the same cleanup as `/teams admin stop`; operators can use `/teams restart` to stop it and immediately start the next configured round
 * Kill messages and the kill feed name the weapon, grenade or vehicle responsible
 * Holding a healing tool in either hand shows the health of the living target within five blocks, including players and Flan soldiers, inside and outside rounds; vehicle models are excluded
 
