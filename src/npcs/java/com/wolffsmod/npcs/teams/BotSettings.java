@@ -197,7 +197,7 @@ public final class BotSettings
     /** Whether players leading a squad may place a rally point for themselves and their squad to spawn at. */
     private boolean rallyPoints = true;
     /** Whether vehicle bots spawn with soldiers of their team in their seats. */
-    private boolean vehicleCrews;
+    private boolean vehicleCrews = true;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
     /** What one team fields. */
@@ -509,7 +509,7 @@ public final class BotSettings
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;
         settings.suppression = !tag.contains(NBT_SUPPRESSION) || tag.getBoolean(NBT_SUPPRESSION);
         settings.rallyPoints = !tag.contains(NBT_RALLY) || tag.getBoolean(NBT_RALLY);
-        settings.vehicleCrews = tag.getBoolean(NBT_VEHICLE_CREWS);
+        settings.vehicleCrews = !tag.contains(NBT_VEHICLE_CREWS) || tag.getBoolean(NBT_VEHICLE_CREWS);
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));

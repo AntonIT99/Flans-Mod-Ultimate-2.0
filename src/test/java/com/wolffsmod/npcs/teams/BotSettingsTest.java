@@ -258,6 +258,11 @@ class BotSettingsTest
         assertEquals("tank_crewman", loaded.team("germany").crewClass(CrewPost.DRIVER));
         assertEquals("", loaded.team("germany").crewClass(CrewPost.GUNNER), "a blank class is picked by weight");
         assertEquals(BotSettings.TeamForce.NO_CREW, loaded.team("germany").crewClass(CrewPost.PASSENGER));
-        assertFalse(BotSettings.load(new BotSettings().save()).isVehicleCrews(), "vehicles spawn empty unless crews are switched on");
+        assertTrue(new BotSettings().isVehicleCrews(), "vehicles spawn with crews by default");
+        CompoundTag legacy = settings.save();
+        legacy.remove("vehicle_crews");
+        assertTrue(BotSettings.load(legacy).isVehicleCrews(), "missing crew settings use the default");
+        settings.setVehicleCrews(false);
+        assertFalse(BotSettings.load(settings.save()).isVehicleCrews(), "explicitly disabled crews stay disabled");
     }
 }
