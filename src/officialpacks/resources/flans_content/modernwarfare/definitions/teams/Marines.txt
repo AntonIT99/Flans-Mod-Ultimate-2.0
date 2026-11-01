@@ -19,3 +19,7 @@ AddClass marineAssault1
 AddClass marineAssault2
 AddClass marineMedic1
 AddClass marineEngineer1
+AddClass marineDesignatedMarksman
+AddClass marineShotgun
+AddClass marineAntiTank
+AddClass marineAmmoBearer

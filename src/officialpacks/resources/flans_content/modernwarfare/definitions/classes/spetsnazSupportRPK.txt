@@ -1,0 +1,16 @@
+// Identity
+Name Support (RPK)
+ShortName spetsnazSupportRPK
+Description RPK gunner carrying a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem rpk
+AddItem rpkAmmo 4
+AddItem makarov
+AddItem makarovAmmo 2
+AddItem mwAmmoBag
+AddItem mwKnife

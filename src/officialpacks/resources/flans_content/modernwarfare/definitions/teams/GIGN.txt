@@ -19,3 +19,7 @@ AddClass gignAssault1
 AddClass gignAssault2
 AddClass gignMedic1
 AddClass gignEngineer1
+AddClass gignAssaultMP5
+AddClass gignShield
+AddClass gignShotgun
+AddClass gignAssaultMP5Balaclava

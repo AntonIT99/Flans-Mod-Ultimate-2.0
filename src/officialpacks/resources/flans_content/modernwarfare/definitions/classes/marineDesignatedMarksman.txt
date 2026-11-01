@@ -1,0 +1,16 @@
+// Identity
+Name Designated Marksman (M14)
+ShortName marineDesignatedMarksman
+Description Scoped M14 rifleman with binoculars and a sidearm.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 15
+
+// Items
+AddItem m14+flanMW4xScope
+AddItem m14Ammo 4
+AddItem m9
+AddItem m9Ammo 2
+AddItem mwBinoculars
+AddItem mwKnife

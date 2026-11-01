@@ -19,3 +19,7 @@ AddClass kskAssault1
 AddClass kskAssault2
 AddClass kskMedic1
 AddClass kskEngineer1
+AddClass kskAssaultHK416
+AddClass kskMP7
+AddClass kskAntiTank
+AddClass kskMP7Balaclava

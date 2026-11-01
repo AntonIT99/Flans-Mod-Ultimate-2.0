@@ -1,0 +1,14 @@
+// Identity
+Name Shotgun Officer (Remington 870)
+ShortName swatShotgun
+Description Close-range specialist carrying buckshot and a sidearm.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem r870
+AddItem 12gbuckshotAmmo 24
+AddItem glock
+AddItem glockAmmo 2
+AddItem mwKnife

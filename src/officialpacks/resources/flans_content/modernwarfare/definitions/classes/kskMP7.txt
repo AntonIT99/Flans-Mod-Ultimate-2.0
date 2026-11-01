@@ -1,0 +1,14 @@
+// Identity
+Name Compact Weapon Specialist (MP7)
+ShortName kskMP7
+Description Primary weapon, spare ammunition and a sidearm for a focused infantry loadout.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem mp7
+AddItem mp7Ammo 5
+AddItem usp
+AddItem uspAmmo 2
+AddItem mwKnife

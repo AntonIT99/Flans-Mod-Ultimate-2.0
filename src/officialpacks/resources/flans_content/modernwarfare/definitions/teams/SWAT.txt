@@ -18,3 +18,7 @@ AddClass SWATShield
 AddClass SWATFumigator
 AddClass SWATCombatMedic
 AddClass SWATBulldozer
+AddClass swatEntryMP5
+AddClass swatShotgun
+AddClass swatPistolShield
+AddClass swatEntryMP5Balaclava

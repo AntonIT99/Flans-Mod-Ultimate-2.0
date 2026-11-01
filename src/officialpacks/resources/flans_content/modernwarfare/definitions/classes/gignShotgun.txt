@@ -1,0 +1,14 @@
+// Identity
+Name Shotgun Specialist (M1014)
+ShortName gignShotgun
+Description Close-range specialist carrying buckshot and a sidearm.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem m1014
+AddItem 12gbuckshotAmmo 24
+AddItem m1911
+AddItem m1911Ammo 2
+AddItem mwKnife

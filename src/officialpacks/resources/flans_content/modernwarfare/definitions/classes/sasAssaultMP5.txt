@@ -1,0 +1,14 @@
+// Identity
+Name Assault (MP5)
+ShortName sasAssaultMP5
+Description Primary weapon, spare ammunition and a sidearm for a focused infantry loadout.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem mp5
+AddItem mp5Ammo 5
+AddItem sigP226
+AddItem sigP226Ammo 2
+AddItem mwKnife

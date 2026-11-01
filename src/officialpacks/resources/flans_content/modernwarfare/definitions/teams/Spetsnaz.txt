@@ -19,3 +19,6 @@ AddClass spetsnazAssault1
 AddClass spetsnazAssault2
 AddClass spetsnazMedic1
 AddClass spetsnazEngineer1
+AddClass spetsnazRiflemanAK74
+AddClass spetsnazSupportRPK
+AddClass spetsnazAntiTank

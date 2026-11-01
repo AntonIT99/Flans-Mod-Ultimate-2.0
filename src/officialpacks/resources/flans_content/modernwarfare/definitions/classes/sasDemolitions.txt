@@ -1,0 +1,17 @@
+// Identity
+Name Demolitions
+ShortName sasDemolitions
+Description Rifle-equipped demolition specialist with C4 and a remote detonator.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem fnscar
+AddItem fnscarAmmo 3
+AddItem sigP226
+AddItem sigP226Ammo 2
+AddItem c4 2
+AddItem c4Remote
+AddItem mwKnife
