@@ -145,6 +145,8 @@
 
 ## Content Packs
 
+* Added a crafting-table recipe for the Manus Ships German 20 cm Ship Gun used by Prinz Eugen
+
 * Modern Warfare teams gain dedicated marksman, shotgun, anti-tank, ammunition bearer, demolition, MP5, HK416, MP7, AK74, RPK and pistol-and-shield loadouts, including suppressed MP5 and balaclava variants
 
 * Official WW2 teams gain dedicated Bren, DP-28 and Type 99 gunners, PIAT, bazooka, Panzerschreck and Panzerfaust specialists, PIAT ammunition bearers, Thompson assault troops, Springfield riflemen, Type 38 engineers and national pilot loadouts
