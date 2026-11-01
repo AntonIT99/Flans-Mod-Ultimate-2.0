@@ -6,6 +6,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DriveableArmorDebugHud;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
 import com.flansmodultimate.client.gui.TeamsRankUpPopup;
+import com.flansmodultimate.client.input.GrenadeThrowInput;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.render.effects.SuppressionOverlay;
 import com.flansmodultimate.client.teams.TeamsClientState;
@@ -71,6 +72,13 @@ public final class ClientHudOverlays
     private static final int HUD_YELLOW = 0xFFD700;
     private static final int HUD_ORANGE = 0xFF8C00;
     private static final int HUD_RED = 0xFF0000;
+    private static final int THROW_CHARGE_BAR_WIDTH = 32;
+    private static final int THROW_CHARGE_BAR_HEIGHT = 3;
+    /** Gap between the crosshair centre and the top of the throw charge bar */
+    private static final int THROW_CHARGE_BAR_OFFSET = 10;
+    private static final int THROW_CHARGE_BACKGROUND = 0x80000000;
+    private static final int THROW_CHARGE_FILL = 0xFFFFFFFF;
+    private static final int THROW_CHARGE_FULL = 0xFF24FF62;
     private static final int TEAM_INFO_HALF_WIDTH = 43;
     private static final int TEAM_INFO_HEIGHT = 27;
     private static final int TEAM_INFO_U = 85;
@@ -169,6 +177,7 @@ public final class ClientHudOverlays
         renderAAGunHud(g, partialTick, sw);
         renderDeployedGunHud(g, sw);
         renderPlayerAmmo(g, sw, sh);
+        renderGrenadeThrowCharge(g, partialTick, sw, sh);
         renderDigitalAmmo(g, sh);
         renderTeamInfo(g, sw);
         renderTeamsControls(g, sw, sh);
@@ -1021,6 +1030,22 @@ public final class ClientHudOverlays
     private static PacketTeamsState.PlayerScore findPlayerScore(PacketTeamsState state, String name)
     {
         return state.getTeamScores().stream().flatMap(team -> team.players().stream()).filter(entry -> entry.name().equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
+    /** Bar under the crosshair filling up while a hold-to-throw grenade charges, turning green at full speed. */
+    private static void renderGrenadeThrowCharge(GuiGraphics g, float partialTick, int sw, int sh)
+    {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || player.isSpectator())
+            return;
+        float charge = GrenadeThrowInput.chargeProgress(player, partialTick);
+        if (charge < 0F)
+            return;
+        int left = (sw - THROW_CHARGE_BAR_WIDTH) / 2;
+        int top = sh / 2 + THROW_CHARGE_BAR_OFFSET;
+        g.fill(left - 1, top - 1, left + THROW_CHARGE_BAR_WIDTH + 1, top + THROW_CHARGE_BAR_HEIGHT + 1, THROW_CHARGE_BACKGROUND);
+        int filled = Math.round(charge * THROW_CHARGE_BAR_WIDTH);
+        g.fill(left, top, left + filled, top + THROW_CHARGE_BAR_HEIGHT, charge >= 1F ? THROW_CHARGE_FULL : THROW_CHARGE_FILL);
     }
 
     /** Medical tools reveal the living target in reach, independently of Teams state. */

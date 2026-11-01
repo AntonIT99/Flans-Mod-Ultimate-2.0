@@ -107,7 +107,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         ItemStack stack = player.getItemInHand(hand);
 
         // A hold-to-throw grenade leaves the hand only when its button is released (see PacketGrenadeThrow)
-        if (!configType.isHoldToThrow() && throwGrenade(level, player, stack, false, false))
+        if (!configType.isHoldToThrow() && throwGrenade(level, player, stack, false, false, 1F))
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
 
         // Nothing special happened, fall back
@@ -119,11 +119,13 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
      *
      * @param underhand
      *            true for an underhand toss (use button), false for an overhand throw (attack button)
+     * @param charge
+     *            how much of its full speed the grenade is thrown with, from 0 to 1
      * @return whether a grenade was thrown
      */
-    public boolean throwByHand(Player player, ItemStack stack, boolean underhand)
+    public boolean throwByHand(Player player, ItemStack stack, boolean underhand, float charge)
     {
-        return configType.isHoldToThrow() && throwGrenade(player.level(), player, stack, true, underhand);
+        return configType.isHoldToThrow() && throwGrenade(player.level(), player, stack, true, underhand, charge);
     }
 
     private static boolean roundAllowsThrow(Level level, Player player, ItemStack stack)
@@ -134,7 +136,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         return !rules.blocksCombat(player) && !rules.blocksItemUse(player, stack);
     }
 
-    private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand)
+    private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand, float charge)
     {
         PlayerData data = PlayerData.getInstance(player);
 
@@ -147,7 +149,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
             // Spawn the entity server side
             if (!level.isClientSide)
             {
-                level.addFreshEntity(byHand ? Grenade.thrownByHand(level, configType, player, underhand) : new Grenade(level, configType, player));
+                level.addFreshEntity(byHand ? Grenade.thrownByHand(level, configType, player, underhand, charge) : new Grenade(level, configType, player));
                 TeamsSpawnProtection.end(player);
             }
 

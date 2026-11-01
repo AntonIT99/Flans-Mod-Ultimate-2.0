@@ -13,7 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Sent when a player releases the button held on a hold-to-throw grenade, from the Labjac Edition.
+ * Sent when a player releases the button held on a hold-to-throw grenade, from the Labjac Edition, with the charge of the throw.
  * The server only throws when the held grenade really is a hold-to-throw grenade the player may throw now.
  */
 @NoArgsConstructor
@@ -22,17 +22,21 @@ public class PacketGrenadeThrow implements IServerPacket
 {
     /** True for an underhand toss (use button), false for an overhand throw (attack button) */
     private boolean underhand;
+    /** How much of its full speed the grenade is thrown with, from 0 to 1; the server clamps it */
+    private float charge;
 
     @Override
     public void encodeInto(PacketBuffer data)
     {
         data.writeBoolean(underhand);
+        data.writeFloat(charge);
     }
 
     @Override
     public void decodeInto(PacketBuffer data)
     {
         underhand = data.readBoolean();
+        charge = data.readFloat();
     }
 
     @Override
@@ -42,6 +46,6 @@ public class PacketGrenadeThrow implements IServerPacket
             return;
         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (stack.getItem() instanceof GrenadeItem grenadeItem)
-            grenadeItem.throwByHand(player, stack, underhand);
+            grenadeItem.throwByHand(player, stack, underhand, charge);
     }
 }

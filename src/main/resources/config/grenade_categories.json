@@ -120,7 +120,7 @@
 
     "Black-Powder Hand Bomb (Generic)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 22,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -149,7 +149,7 @@
 
     "C4 Plastic Explosive": {
         "properties": {
-            "ThrowSpeedMs": 8,
+            "ThrowSpeedMs": 16,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -165,7 +165,7 @@
 
     "Chemical Gas Grenade (Generic)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -194,7 +194,7 @@
 
     "Cryogenic Concussion Grenade (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -208,7 +208,7 @@
 
     "Dynamite Stick": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -223,7 +223,7 @@
 
     "F1 Fragmentation Grenade": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 23,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -249,7 +249,7 @@
 
     "Frag Grenade, Imperial (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -305,7 +305,7 @@
 
     "Handheld Napalm Grenade (Generic)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 22,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -340,7 +340,7 @@
 
     "Inert Thrown Object (Generic)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 22,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -356,7 +356,7 @@
 
     "Krak Grenade (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 10,
+            "ThrowSpeedMs": 18,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -372,7 +372,7 @@
 
     "Kugelrohrhandgranate": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -413,7 +413,7 @@
 
     "M8 HC Smoke Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 23,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -430,7 +430,7 @@
 
     "M18 Coloured Smoke Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 23,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -462,7 +462,7 @@
 
     "M26 Fragmentation Grenade": {
         "properties": {
-            "ThrowSpeedMs": 15,
+            "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -478,7 +478,7 @@
 
     "M67 Fragmentation Hand Grenade": {
         "properties": {
-            "ThrowSpeedMs": 15,
+            "ThrowSpeedMs": 26,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -494,7 +494,7 @@
 
     "M1914 Fragmentation Grenade (TNT Loading)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 22,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -510,7 +510,7 @@
 
     "Medical Grenade (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -523,7 +523,7 @@
 
     "Mills Bomb": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 22,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -539,7 +539,7 @@
 
     "Mk 2 Pineapple Grenade": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 23,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -556,7 +556,7 @@
 
     "Molotov Cocktail": {
         "properties": {
-            "ThrowSpeedMs": 10,
+            "ThrowSpeedMs": 18,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -571,7 +571,7 @@
 
     "Nebelhandgranate 39": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -588,7 +588,7 @@
 
     "No.27 White Phosphorus Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -604,7 +604,7 @@
 
     "No. 73 Mk I Anti-Tank Grenade": {
         "properties": {
-            "ThrowSpeedMs": 8,
+            "ThrowSpeedMs": 13,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -662,7 +662,7 @@
 
     "RDG-2 Smoke Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -678,7 +678,7 @@
 
     "Reactive Banana Fragmentation Grenade (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -692,7 +692,7 @@
 
     "RGD-5 Fragmentation Grenade": {
         "properties": {
-            "ThrowSpeedMs": 15,
+            "ThrowSpeedMs": 26,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -708,7 +708,7 @@
 
     "RGD-33 Grenade": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 26,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -724,7 +724,7 @@
 
     "RGO Defensive Fragmentation Grenade": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -740,7 +740,7 @@
 
     "RKG-3 Anti-Tank Grenade": {
         "properties": {
-            "ThrowSpeedMs": 10,
+            "ThrowSpeedMs": 20,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -771,7 +771,7 @@
 
     "Satchel": {
         "properties": {
-            "ThrowSpeedMs": 5,
+            "ThrowSpeedMs": 8,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -786,7 +786,7 @@
 
     "Semtex Adhesive Grenade": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -801,7 +801,7 @@
 
     "Smart Fragmentation Grenade (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -816,7 +816,7 @@
 
     "Smoke And Gas Detonator (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 24,
             "Mass": 500,
             "FragType": "DEFAULT",
             "SmokeTime": 1600,
@@ -831,7 +831,7 @@
 
     "Stielhandgranate 24": {
         "properties": {
-            "ThrowSpeedMs": 15,
+            "ThrowSpeedMs": 27,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -849,7 +849,7 @@
 
     "Stielhandgranate 43": {
         "properties": {
-            "ThrowSpeedMs": 15,
+            "ThrowSpeedMs": 27,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -865,7 +865,7 @@
 
     "Stielhandgranate Geballte Ladung": {
         "properties": {
-            "ThrowSpeedMs": 8,
+            "ThrowSpeedMs": 14,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -883,7 +883,7 @@
 
     "Support And Effect Grenade (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 12,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -898,7 +898,7 @@
 
     "Thermal Detonator (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 14,
+            "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -916,7 +916,7 @@
 
     "Thermal Detonator Class A (Fictional)": {
         "properties": {
-            "ThrowSpeedMs": 10,
+            "ThrowSpeedMs": 16,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
@@ -956,7 +956,7 @@
 
     "Type 97 Grenade": {
         "properties": {
-            "ThrowSpeedMs": 15,
+            "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
             "UnderhandThrowSpeedMultiplier": 0.4,
