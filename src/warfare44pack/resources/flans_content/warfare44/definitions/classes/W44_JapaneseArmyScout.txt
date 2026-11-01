@@ -11,5 +11,7 @@ ClassLimitPercent 15
 // Items
 AddItem 44_Type99Rifle+44_Type97Scope
 AddItem 44_Type3899Ammo 4
+AddItem 44_Type14Nambu
+AddItem 44_Type14NambuAmmo 2
 AddItem 44_Binoculars
 AddItem 44_Bandage

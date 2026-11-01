@@ -2,6 +2,7 @@ package com.flansmodultimate.client.gui.centre;
 
 import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.teams.centre.TeamsSection;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -28,6 +29,7 @@ final class RulesPage extends TeamsPage
     private static final String SCORE_LIMIT = "scorelimit";
     private static final String SCORE_LIMIT_TEXT = "score_limit";
     private static final String RULE = "rule.";
+    private static final String TEAMS = "teams";
     private static final String VARIABLE = "variable.";
     private static final String GAME_RULE = "gamerule.";
     private static final String SET_VARIABLE = "teams admin setvariable";
@@ -36,7 +38,7 @@ final class RulesPage extends TeamsPage
 
     private enum Tab
     {
-        PROTECTION, COMBAT, CLEANUP, GAME_TYPE, MINECRAFT
+        PROTECTION, COMBAT, HEALTH, CLEANUP, GAME_TYPE, MINECRAFT
     }
 
     private Tab tab = Tab.PROTECTION;
@@ -57,7 +59,10 @@ final class RulesPage extends TeamsPage
         int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT;
         switch (tab)
         {
-            case PROTECTION -> switches(view, data.rules(), PROTECTION, left, y + 16, width);
+            case PROTECTION -> {
+                switches(view, data.rules(), PROTECTION, left, y + 16, width);
+                initSpawnProtection(view, data.rules(), left, spawnProtectionTop(y + 16), width);
+            }
             case COMBAT -> {
                 switches(view, data.rules(), COMBAT, left, y + 16, width);
                 // Weapon drops take the slot after the last switch.
@@ -66,6 +71,7 @@ final class RulesPage extends TeamsPage
                 choice(view, tr(RULE + "weaponDrops"), WEAPON_DROPS, data.rules().getString(TeamsSection.WEAPON_DROPS), mode -> tr("weapon_drops." + mode), left + (slot % 2) * (columnWidth + GAP),
                     y + 16 + (slot / 2) * ROW, columnWidth, mode -> run(view, "teams weaponDrops", mode)).setTooltip(Tooltip.create(tr(RULE + "weaponDrops.tip")));
             }
+            case HEALTH -> initHealth(view, data.rules(), left, y + 16, width);
             case CLEANUP -> initCleanup(view, data.rules(), left, y + 16, width);
             case GAME_TYPE -> initGameType(view, data, left, y + 16, width);
             case MINECRAFT -> initMinecraftRules(view, data.rules().getCompound(TeamsSection.GAME_RULES), left, y + 16, width);
@@ -121,12 +127,47 @@ final class RulesPage extends TeamsPage
             String rule = names.get(i);
             int x = left + (i % 2) * (columnWidth + GAP);
             int y = top + (i / 2) * ROW;
-            toggle(view, tr(RULE + rule), rules.getBoolean(rule), x, y, columnWidth, tr(RULE + rule + ".tip"), enabled -> run(view, "teams", rule, enabled));
+            toggle(view, tr(RULE + rule), rules.getBoolean(rule), x, y, columnWidth, tr(RULE + rule + ".tip"), enabled -> run(view, TEAMS, rule, enabled));
+        }
+    }
+
+    /** The row of the spawn protection time, the slot after the last protection switch. */
+    private static int spawnProtectionTop(int rowsTop)
+    {
+        return rowsTop + (PROTECTION.size() + 1) / 2 * ROW;
+    }
+
+    private static void initSpawnProtection(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
+    {
+        int columnWidth = (width - GAP) / 2;
+        int fieldWidth = 48;
+        int buttonWidth = 40;
+        int x = left + columnWidth - fieldWidth - buttonWidth - GAP;
+        view.addField(TeamsSection.SPAWN_PROTECTION, x, top, fieldWidth, Integer.toString(rules.getInt(TeamsSection.SPAWN_PROTECTION)), tr("seconds"))
+            .setTooltip(Tooltip.create(tr(RULE + TeamsSection.SPAWN_PROTECTION + ".tip")));
+        button(view, tr("set"), x + fieldWidth + GAP, top, buttonWidth,
+            () -> number(view, TeamsSection.SPAWN_PROTECTION, 0, TeamsManager.MAX_SPAWN_PROTECTION_SECONDS, tr(RULE + TeamsSection.SPAWN_PROTECTION))
+                .ifPresent(seconds -> run(view, TEAMS, TeamsSection.SPAWN_PROTECTION, seconds)));
+    }
+
+    private static void initHealth(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
+    {
+        toggle(view, tr(RULE + "bodyPartDamageModifiers"), rules.getBoolean("bodyPartDamageModifiers"), left, top, width, tr(RULE + "bodyPartDamageModifiers.tip"),
+            enabled -> run(view, "teams bodyPartDamageModifiers", enabled));
+        int row = 1;
+        for (String rule : List.of("playerHealth", "botHealth"))
+        {
+            int x = left + width - 100;
+            int y = top + row++ * ROW;
+            view.addField(rule, x, y, 56, Integer.toString(rules.getInt(rule)), tr(RULE + rule)).setTooltip(Tooltip.create(tr(RULE + rule + ".tip")));
+            button(view, tr("set"), x + 60, y, 40, () -> number(view, rule, 0, TeamsManager.MAX_HEALTH_OVERRIDE, tr(RULE + rule)).ifPresent(health -> run(view, TEAMS, rule, health)));
         }
     }
 
     private static void initCleanup(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
     {
+        toggle(view, tr(RULE + "restoreBlocks"), rules.getBoolean("restoreBlocks"), left, top, width, tr(RULE + "restoreBlocks.tip"), enabled -> run(view, "teams restoreBlocks", enabled));
+        top += ROW;
         int columnWidth = (width - GAP) / 2;
         int fieldWidth = 48;
         int buttonWidth = 40;
@@ -136,7 +177,7 @@ final class RulesPage extends TeamsPage
             int x = left + (i % 2) * (columnWidth + GAP) + columnWidth - fieldWidth - buttonWidth - GAP;
             int y = top + (i / 2) * ROW;
             view.addField(rule, x, y, fieldWidth, Integer.toString(rules.getInt(rule)), tr("seconds"));
-            button(view, tr("set"), x + fieldWidth + GAP, y, buttonWidth, () -> number(view, rule, 0, Integer.MAX_VALUE, tr(RULE + rule)).ifPresent(seconds -> run(view, "teams", rule, seconds)));
+            button(view, tr("set"), x + fieldWidth + GAP, y, buttonWidth, () -> number(view, rule, 0, Integer.MAX_VALUE, tr(RULE + rule)).ifPresent(seconds -> run(view, TEAMS, rule, seconds)));
         }
         int y = top + (TeamsSection.LIFETIMES.size() + 1) / 2 * ROW + 10;
         int x = left + columnWidth - fieldWidth - buttonWidth - GAP;
@@ -202,6 +243,7 @@ final class RulesPage extends TeamsPage
         switch (tab)
         {
             case CLEANUP -> {
+                rowsTop += ROW;
                 for (int i = 0; i < TeamsSection.LIFETIMES.size(); i++)
                 {
                     String rule = TeamsSection.LIFETIMES.get(i);
@@ -210,6 +252,13 @@ final class RulesPage extends TeamsPage
                 int y = rowsTop + (TeamsSection.LIFETIMES.size() + 1) / 2 * ROW + 10;
                 label(view, graphics, tr(SEA_LEVEL), left + 2, y + 5, columnWidth - 104, CentreStyle.TEXT);
             }
+            case HEALTH -> {
+                int row = 1;
+                for (String rule : List.of("playerHealth", "botHealth"))
+                    label(view, graphics, tr(RULE + rule), left + 2, rowsTop + row++ * ROW + 5, width - 104, CentreStyle.TEXT);
+                paragraph(view, graphics, tr("health.help"), left + 2, rowsTop + 3 * ROW + GAP, width - 4, CentreStyle.MUTED);
+            }
+            case PROTECTION -> label(view, graphics, tr(RULE + TeamsSection.SPAWN_PROTECTION), left + 2, spawnProtectionTop(rowsTop) + 5, columnWidth - 104, CentreStyle.TEXT);
             case GAME_TYPE -> renderGameType(view, graphics, data, left, rowsTop, width, columnWidth);
             default -> {
                 // The switches name themselves.

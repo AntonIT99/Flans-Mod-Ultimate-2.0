@@ -1,11 +1,14 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -69,10 +72,13 @@ public final class BotTag
             BotSettings.parse(BotSettings.Nameplates.class, tag.getString(NBT_NAMEPLATES), BotSettings.Nameplates.DEFAULT), tag.getBoolean(NBT_CREW), tag.getBoolean(NBT_ENLISTED)));
     }
 
-    /** Takes the bot data off an NPC, which then is no bot any more. */
+    /** Takes the bot data off an NPC, which then is no bot any more and fights without the round's limits. */
     public static void clear(Entity entity)
     {
         entity.getPersistentData().remove(KEY);
+        NpcSkill.clear(entity);
+        if (entity instanceof LivingEntity living)
+            FlansTeams.applyBotHealthOverride(living, false);
     }
 
     /** Whether the entity carries bot data at all, from any round. */

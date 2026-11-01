@@ -3,6 +3,7 @@ Name Soviet Army
 ShortName W44_SovietArmy
 
 // Appearance
+VictoryFlagTexture flag_team_ussr_ww2.svg
 TextColour Red
 TeamColour 180 60 50
 Hat 44_SovietSummerObr43Helmet
@@ -13,19 +14,38 @@ Shoes 44_SovietSummerObr43Boots
 // Rounds: select opponents manually to keep scenarios coherent.
 AllowedForRoundsGenerator False
 
-// Classes
+// Riflemen and uniform variants
 AddClass W44_SovietArmyRifleman
+AddClass W44_SovietArmyRiflemanSVT40
+
+// Assault and grenadiers
 AddClass W44_SovietArmyAssault
+AddClass W44_SovietArmyAssaultPPS43
+
+// Automatic rifles and machine guns
 AddClass W44_SovietArmySupport
-AddClass W44_SovietArmyMedic
-AddClass W44_SovietArmyEngineer
-AddClass W44_SovietArmyAntiTank
+AddClass W44_SovietArmyMachineGunnerDT28
+
+// Reconnaissance and marksmen
 AddClass W44_SovietArmyScout
+AddClass W44_SovietArmyMarksmanSVT40
+
+// Anti-tank
+AddClass W44_SovietArmyAntiTank
+
+// Engineers and military police
+AddClass W44_SovietArmyEngineer
+
+// Medical support
+AddClass W44_SovietArmyMedic
+AddClass W44_SovietArmyFieldMedic
+
+// Command
 AddClass W44_SovietArmySquadLeader
+
+// Vehicle and air crews
 AddClass W44_SovietArmyTankCrew
 AddClass W44_SovietArmyPilot
 
-// Specialist weapon choices
+// Optional experimental, legacy and postwar equipment
 AddClass W44_SovietArmyRiflemanSKS
-AddClass W44_SovietArmyMachineGunnerDT28
-AddClass W44_SovietArmyFieldMedic

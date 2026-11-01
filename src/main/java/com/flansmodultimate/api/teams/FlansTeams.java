@@ -6,6 +6,7 @@
 package com.flansmodultimate.api.teams;
 
 import com.flansmodultimate.common.teams.TeamsCombatants;
+import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsListeners;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.Team;
@@ -15,8 +16,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +51,36 @@ public final class FlansTeams
     public static Optional<ITeamsLiveRound> getRunningRound()
     {
         return manager().flatMap(manager -> manager.getLiveRound().map(ITeamsLiveRound.class::cast));
+    }
+
+    /**
+     * Whether Teams replaces this entity's native passive healing with the round regeneration rule.
+     * Addons should skip their automatic regeneration when true, including when the rule is off.
+     * Medical items, effects and repairs remain independent. Server thread only.
+     *
+     * @param entity
+     *            living entity to check
+     * @return whether the round owns its passive regeneration
+     */
+    public static boolean usesRoundRegeneration(LivingEntity entity)
+    {
+        return manager().isPresent() && com.flansmodultimate.common.teams.TeamsRegeneration.applies(entity);
+    }
+
+    /**
+     * Applies the server's global bot maximum-health override, including between rounds, preserving the remaining health
+     * percentage. Call after updating an addon's own health attributes, and when bot membership changes. The modifier is
+     * saved with the entity so health survives loading; passing false removes it and restores the entity's own maximum.
+     * Does nothing off the server thread or without a running server.
+     *
+     * @param entity
+     *            an addon's living bot or former bot
+     * @param bot
+     *            whether the entity currently belongs to the addon's bot forces
+     */
+    public static void applyBotHealthOverride(LivingEntity entity, boolean bot)
+    {
+        manager().ifPresent(manager -> com.flansmodultimate.common.teams.TeamsHealth.apply(entity, bot ? manager.getBotHealth() : 0));
     }
 
     /**
@@ -122,6 +155,20 @@ public final class FlansTeams
     {
         if (manager().isPresent())
             TeamsCombatants.release(entity);
+    }
+
+    /**
+     * Applies the server's Teams {@code weaponDrops} and {@code armourDrops} rules to what a dying addon combatant drops, as
+     * they apply to a dying player: with weapon drops off its guns, driveables and rounds are removed, and with smart drops
+     * each gun type drops once as a bundle carrying the matching ammunition. Server thread, from the entity's
+     * {@code LivingDropsEvent}.
+     *
+     * @param drops
+     *            the drops of that event, changed in place
+     */
+    public static void applyDeathDropRules(Collection<ItemEntity> drops)
+    {
+        manager().ifPresent(manager -> TeamsDeathDrops.apply(manager, drops));
     }
 
     /**

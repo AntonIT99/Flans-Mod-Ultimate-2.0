@@ -21,7 +21,7 @@ public final class PacketTeamsAction implements IServerPacket
 {
     public enum Action
     {
-        SELECT_TEAM, SELECT_CLASS, CAST_VOTE, OPEN_TEAM, OPEN_CLASS, OPEN_SCOREBOARD
+        SELECT_TEAM, SELECT_CLASS, CAST_VOTE, OPEN_TEAM, OPEN_CLASS, OPEN_SCOREBOARD, TOGGLE_READY
     }
 
     private Action action = Action.OPEN_SCOREBOARD;
@@ -46,6 +46,11 @@ public final class PacketTeamsAction implements IServerPacket
     public static PacketTeamsAction castVote(int option)
     {
         return new PacketTeamsAction(Action.CAST_VOTE, Integer.toString(option));
+    }
+
+    public static PacketTeamsAction toggleReady()
+    {
+        return new PacketTeamsAction(Action.TOGGLE_READY, "");
     }
 
     public static PacketTeamsAction openTeamMenu()
@@ -84,6 +89,11 @@ public final class PacketTeamsAction implements IServerPacket
         TeamsManager manager = TeamsManager.getInstance();
         switch (action)
         {
+            case TOGGLE_READY -> {
+                if (!manager.getRoundRuleRuntime().ready(player, !manager.getRoundRuleRuntime().isReady(player)))
+                    player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.ready_unavailable"));
+                manager.syncPlayer(player, PacketTeamsState.OpenScreen.NONE);
+            }
             case OPEN_TEAM -> {
                 if (manager.getCurrentLoadoutPool().isPresent())
                     manager.syncLoadouts(player, PacketLoadoutState.OpenScreen.HUB, 0, "");

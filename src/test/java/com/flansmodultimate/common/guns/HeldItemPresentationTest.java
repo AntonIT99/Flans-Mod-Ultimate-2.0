@@ -159,7 +159,6 @@ class HeldItemPresentationTest
         when(type.isShield()).thenReturn(true);
         GunItem shield = mock(GunItem.class);
         when(shield.getConfigType()).thenReturn(type);
-        when(shield.useAimingAnimation()).thenReturn(true);
         ItemStack shieldStack = mock(ItemStack.class);
         when(shieldStack.getItem()).thenReturn(shield);
         when(holder.getOffhandItem()).thenReturn(shieldStack);

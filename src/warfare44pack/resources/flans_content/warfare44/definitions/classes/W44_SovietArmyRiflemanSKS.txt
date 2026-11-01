@@ -1,7 +1,7 @@
 // Identity
-Name Rifleman (SKS)
+Name Rifleman (SKS, Trials / Postwar)
 ShortName W44_SovietArmyRiflemanSKS
-Description Rifleman (SKS) with compatible ammunition and the national infantry kit.
+Description Optional SKS loadout for trials or postwar scenarios, not standard 1944 rifle equipment.
 
 // Availability
 UnlockLevel 0

@@ -91,7 +91,7 @@ final class BotTransports
         for (int i = 0; i < roster.size(); i++)
         {
             BotSlot slot = battle.newSlot(transport.getTeam(), BotSlot.Source.CARGO, transport.getEntry());
-            slot.setRole(offered.contains(roster.get(i)) ? roster.get(i) : BotPopulation.pickClass(team.get(), battle.getSettings().team(transport.getTeam()), random));
+            slot.setRole(offered.contains(roster.get(i)) ? roster.get(i) : BotPopulation.pickClass(battle, team.get(), battle.getSettings().team(transport.getTeam()), random));
             slot.setSquad(cargo.getId());
             cargo.getSlots().add(slot.getId());
             if (!BotPopulation.canAfford(battle, slot))

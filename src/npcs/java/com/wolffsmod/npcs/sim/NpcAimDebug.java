@@ -8,8 +8,11 @@ import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.combat.ProjectileAim;
 import com.wolffsmod.npcs.network.DebugLabelPacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
+import com.wolffsmod.npcs.tactics.NpcOutrangedGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.NpcThreats;
+import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -81,8 +84,8 @@ public final class NpcAimDebug
         }
         if (phase % RING_INTERVAL == 0)
         {
-            ring(level, npc, npc.stats.aggroRange, AGGRO);
-            ring(level, npc, npc.stats.ranged.getRange(), FIRING);
+            ring(level, npc, NpcWeaponRange.aggro(npc), AGGRO);
+            ring(level, npc, NpcWeaponRange.firing(npc), FIRING);
         }
         DebugLabelPacket label = new DebugLabelPacket(npc.getId(), lines(npc, target, sight, lead));
         for (ServerPlayer player : level.players())
@@ -125,7 +128,10 @@ public final class NpcAimDebug
         boolean reloading = tactic.isReloading(npc.level().getGameTime());
         lines.add(Component.translatable(KEY + "tactic", Component.translatable("wolffsmodnpcs.tuning.tactic." + NpcTactics.of(npc).name().toLowerCase(Locale.ROOT)),
             tactic.getPhase().name().toLowerCase(Locale.ROOT), Component.translatable(KEY + (reloading ? "reloading" : "ready"))));
-        lines.add(Component.translatable(KEY + "ranges", npc.stats.aggroRange, npc.stats.ranged.getRange()));
+        lines.add(Component.translatable(KEY + "ranges", NpcWeaponRange.aggro(npc), NpcWeaponRange.firing(npc)));
+        LivingEntity threat = NpcThreats.threat(npc);
+        if (threat != null)
+            lines.add(Component.translatable(KEY + (NpcOutrangedGoal.outranged(npc) ? "threat_outranged" : "threat"), threat.getName(), decimal(Math.sqrt(npc.distanceToSqr(threat)))));
         if (lead != null && target != null)
             lines.add(Component.translatable(KEY + "lead", decimal(lead.point().distanceTo(target.getBoundingBox().getCenter())), decimal(lead.ticks())));
         return lines;

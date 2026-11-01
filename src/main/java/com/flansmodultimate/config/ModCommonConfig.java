@@ -31,6 +31,10 @@ import java.util.function.Supplier;
 public final class ModCommonConfig
 {
     private static final String SECTION_TEAMS = "Teams Settings";
+    public static final int DEFAULT_FLAGPOLE_HEIGHT = 5;
+    public static final int MIN_FLAGPOLE_HEIGHT = 2;
+    public static final int MAX_FLAGPOLE_HEIGHT = 64;
+    private static final Supplier<Integer> DEFAULT_FLAGPOLE_HEIGHT_VALUE;
     public static final ModConfigSpec configSpec;
     public static final IntValue THROWN_GUN_DESPAWN_SECONDS;
     public static final BooleanValue FORCE_UNCENSORED_CONTENT;
@@ -150,6 +154,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> BONUS_REGEN_FOOD_LIMIT;
     private static final Supplier<Double> MAX_PLAYER_HEALTH;
     private static final Supplier<Boolean> ENABLE_KILL_MESSAGES;
+    private static final BooleanValue SHOW_BOT_KILLS_IN_KILL_FEED;
     private static final Supplier<Boolean> SHOW_DISTANCE_IN_KILL_MESSAGE;
     private static final Supplier<Integer> BULLET_SNAPSHOT_MIN;
     private static final Supplier<Integer> BULLET_SNAPSHOT_DIVISOR;
@@ -358,12 +363,19 @@ public final class ModCommonConfig
             .defineInRange("maxPlayerHealth", DEFAULT_MAX_PLAYER_HEALTH, 0.5D, 100D);
         ENABLE_KILL_MESSAGES = builder.comment("Announce kills made with Flan's weapons in the kill feed and in a Flan's Mod death message.",
             "When disabled, the kill feed stays empty and deaths use the plain vanilla-style death messages.").define("enableKillMessages", true);
+        SHOW_BOT_KILLS_IN_KILL_FEED = builder.comment("Include kills where neither the killer nor the victim is a player in the battle kill feed.",
+            "When false, only kills involving a player as killer or victim appear. Requires enableKillMessages.").define("showBotKillsInKillFeed", true);
         SHOW_DISTANCE_IN_KILL_MESSAGE = builder.comment("Include the distance between the killer and the victim in Flan's Mod death messages.").define("showDistanceInKillMessage", true);
         builder.pop();
 
         builder.push(SECTION_TEAMS);
-        BULLET_SNAPSHOT_MIN = builder.comment("Lag compensation: number of player snapshots (ticks) every bullet rewinds its targets by, before the shooter's ping is considered.",
-            "A bullet uses the snapshot bulletSnapshotMin + ping / bulletSnapshotDivisor. Can also be changed in game with /teams admin bltss.").defineInRange("bulletSnapshotMin", 0, 0, 100);
+        DEFAULT_FLAGPOLE_HEIGHT_VALUE = builder
+            .comment("Default pole height in blocks for Teams bases and capture points, including existing poles without a saved height.",
+                "Each pole keeps its height once saved; edit individual heights with the ownership stick.")
+            .defineInRange("defaultFlagpoleHeight", DEFAULT_FLAGPOLE_HEIGHT, MIN_FLAGPOLE_HEIGHT, MAX_FLAGPOLE_HEIGHT);
+        BULLET_SNAPSHOT_MIN = builder.comment("Lag compensation: extra ticks every player's shot rewinds its targets by, before the shooter's ping is considered.",
+            "A shot tests players and NPCs where they were bulletSnapshotMin + ping / bulletSnapshotDivisor + 3 ticks ago, the 3 being the client's movement smoothing.",
+            "Can also be changed in game with /teams admin bltss.").defineInRange("bulletSnapshotMin", 0, 0, 100);
         BULLET_SNAPSHOT_DIVISOR = builder.comment("Lag compensation: milliseconds of shooter ping per additional snapshot of rewind. 0 ignores the shooter's ping.")
             .defineInRange("bulletSnapshotDivisor", 50, 0, 1000);
         builder.pop();
@@ -511,7 +523,10 @@ public final class ModCommonConfig
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);
         ENTITY_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending entity-hit particle packets to clients.").defineInRange("entityHitParticleRange", 64.0, 1.0, 4096.0);
         BLOCK_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending block-hit particle packets to clients.").defineInRange("blockHitParticleRange", 64.0, 1.0, 4096.0);
-        SMOKE_PARTICLES_COUNT = builder.comment("Number of smoke particles spawned per smoke packet.").defineInRange("smokeParticlesCount", 50, 0, 10000);
+        SMOKE_PARTICLES_COUNT = builder
+            .comment("Requested smoke particles per projectile per tick; SmokeParticlesCount in a definition overrides this value.",
+                "Clients limit each sustained smoke source to 2 new particles per tick and 64 live particles, independently of the global particle budget.")
+            .defineInRange("smokeParticlesCount", 50, 0, 10000);
         SMOKE_PARTICLES_RANGE = builder.comment("Range in blocks for sending smoke particle packets to clients.").defineInRange("smokeParticlesRange", 32.0, 1.0, 4096.0);
         builder.pop();
 
@@ -714,8 +729,8 @@ public final class ModCommonConfig
 
             DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
             BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
-            BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(),
-            DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
+            DEFAULT_FLAGPOLE_HEIGHT_VALUE.get(), BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(),
+            AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(), CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(), ARMSHOT_DAMAGE_MODIFIER.get().floatValue(), LEGSHOT_MODIFIER.get().floatValue(),
             VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(), DRIVEABLE_COLLISIONS_BREAK_BLOCKS.get(), AUTO_REFILL_VEHICLE_AMMO.get(), GUNS_IN_DESTROYED_PARTS_WORK.get(),
@@ -762,7 +777,7 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get());
+            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1190,10 +1205,23 @@ public final class ModCommonConfig
         return config == null || config.enableKillMessages();
     }
 
+    public static boolean showBotKillsInKillFeed()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.showBotKillsInKillFeed();
+    }
+
     public static boolean showDistanceInKillMessage()
     {
         CommonConfigSnapshot config = get();
         return config == null || config.showDistanceInKillMessage();
+    }
+
+    /** Starting height for new poles and older saves without an individual height. */
+    public static int defaultFlagpoleHeight()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_FLAGPOLE_HEIGHT : Math.max(MIN_FLAGPOLE_HEIGHT, Math.min(MAX_FLAGPOLE_HEIGHT, config.defaultFlagpoleHeight()));
     }
 
     /** Lag compensation: snapshots every bullet rewinds by before the shooter's ping is considered. */
@@ -1423,7 +1451,8 @@ public final class ModCommonConfig
         BULLET_HIT_SOUND_RANGE(() -> ModCommonConfig.BULLET_HIT_SOUND_RANGE, QuickSection.SOUNDS),
         GRENADE_STICK_SOUND_RANGE(() -> ModCommonConfig.GRENADE_STICK_SOUND_RANGE, QuickSection.SOUNDS),
         GRENADE_FLASH_SOUND_RANGE(() -> ModCommonConfig.GRENADE_FLASH_SOUND_RANGE, QuickSection.SOUNDS),
-        OVERRIDE_PACK_SOUND_RANGES(() -> ModCommonConfig.OVERRIDE_PACK_SOUND_RANGES, QuickSection.SOUNDS);
+        OVERRIDE_PACK_SOUND_RANGES(() -> ModCommonConfig.OVERRIDE_PACK_SOUND_RANGES, QuickSection.SOUNDS),
+        SHOW_BOT_KILLS_IN_KILL_FEED(() -> ModCommonConfig.SHOW_BOT_KILLS_IN_KILL_FEED, QuickSection.SERVER);
         // spotless:on
 
         /** Deferred so that the enum can be loaded before the outer config spec is built. */

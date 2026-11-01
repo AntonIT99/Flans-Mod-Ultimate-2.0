@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.crew.CrewPost;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -90,25 +91,48 @@ public final class BotSettings
     }
 
     /**
-     * How well bots fight, by scaling what their loadout or clone gives them: aim, how far they notice enemies, health,
-     * and the pause between their shots.
+     * How well bots fight, from the best down: how much of what their loadout or clone gives them they make use of (aim
+     * and how far they notice enemies), and the human limits on their fighting. Every level keeps the health and rate of
+     * fire bots are given, and none makes a bot better than its equipment.
      */
     public enum Difficulty
     {
-        /** Bots fight as their loadout or clone makes them. */
-        DEFAULT(1F, 1F, 1F, 1F), RECRUIT(0.6F, 0.75F, 0.8F, 1.5F), REGULAR(0.85F, 0.9F, 1F, 1.2F), VETERAN(1.15F, 1.15F, 1.25F, 0.85F), ELITE(1.35F, 1.3F, 1.5F, 0.7F);
+        // spotless:off
+        /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
+        ACE(1F, 1F, NpcSkill.Level.ACE),
+        /** Nearly its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
+        ELITE(0.95F, 1F, NpcSkill.Level.ELITE),
+        VETERAN(0.85F, 0.95F, NpcSkill.Level.VETERAN),
+        /** The default. */
+        REGULAR(0.7F, 0.85F, NpcSkill.Level.REGULAR),
+        /** Below Regular, hits on players start to deal less damage. */
+        RECRUIT(0.55F, 0.75F, NpcSkill.Level.RECRUIT),
+        /** Shoots a lot and rarely hits, and deals half its damage to players. */
+        TRAINEE(0.45F, 0.65F, NpcSkill.Level.TRAINEE);
+        // spotless:on
 
         private final float accuracy;
         private final float aggro;
-        private final float health;
-        private final float delay;
+        /** Reaction, aim settling, lead and damage to players. */
+        private final NpcSkill.Level level;
 
-        Difficulty(float accuracy, float aggro, float health, float delay)
+        Difficulty(float accuracy, float aggro, NpcSkill.Level level)
         {
             this.accuracy = accuracy;
             this.aggro = aggro;
-            this.health = health;
-            this.delay = delay;
+            this.level = level;
+        }
+
+        /** Whether the level changes the stats of a bot's loadout or clone at all. */
+        public boolean scalesStats()
+        {
+            return Float.compare(accuracy, 1F) != 0 || Float.compare(aggro, 1F) != 0;
+        }
+
+        /** The human limits on how bots of this level fight. */
+        public NpcSkill skill()
+        {
+            return level.getSkill();
         }
 
         /** Factor on the ranged accuracy, which stays within 0 to 100. */
@@ -121,18 +145,6 @@ public final class BotSettings
         public float aggro()
         {
             return aggro;
-        }
-
-        /** Factor on the most health bots have. */
-        public float health()
-        {
-            return health;
-        }
-
-        /** Factor on the ticks between shots; below 1 is faster. */
-        public float delay()
-        {
-            return delay;
         }
     }
 
@@ -154,7 +166,7 @@ public final class BotSettings
     private int abandonChance = 25;
     /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
     private int rubberBand;
-    private Difficulty difficulty = Difficulty.DEFAULT;
+    private Difficulty difficulty = Difficulty.REGULAR;
     /** Whether players, too, spend their side's tickets when they respawn, once the side has a ticket limit. */
     private boolean playerTickets = true;
     /** Whether bots call out on the radio what happens at the objectives. */
@@ -277,6 +289,21 @@ public final class BotSettings
                 crewClasses.remove(post);
             else
                 crewClasses.put(post, value);
+        }
+
+        /**
+         * @param classes
+         *            the short names of the team's classes
+         * @return the weight each of the classes is given by: its listed weight, 0 for one left out, or 1 for each while
+         *         none of them has a weight
+         */
+        public Map<String, Integer> effectiveClassWeights(List<String> classes)
+        {
+            boolean weighted = classes.stream().anyMatch(playerClass -> classWeights.getOrDefault(playerClass, 0) > 0);
+            Map<String, Integer> weights = new LinkedHashMap<>();
+            for (String playerClass : classes)
+                weights.put(playerClass, weighted ? Math.max(0, classWeights.getOrDefault(playerClass, 0)) : 1);
+            return weights;
         }
 
         /** Whether bots are made from a Custom NPCs clone rather than as plain NPCs. */
@@ -431,7 +458,7 @@ public final class BotSettings
         settings.squadSize = tag.contains(NBT_SQUAD_SIZE) ? Math.max(1, tag.getInt(NBT_SQUAD_SIZE)) : settings.squadSize;
         settings.abandonChance = tag.contains(NBT_ABANDON) ? Math.max(0, Math.min(100, tag.getInt(NBT_ABANDON))) : settings.abandonChance;
         settings.rubberBand = Math.max(0, tag.getInt(NBT_RUBBER_BAND));
-        settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.DEFAULT);
+        settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.REGULAR);
         settings.playerTickets = !tag.contains(NBT_PLAYER_TICKETS) || tag.getBoolean(NBT_PLAYER_TICKETS);
         settings.radio = !tag.contains(NBT_RADIO) || tag.getBoolean(NBT_RADIO);
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;

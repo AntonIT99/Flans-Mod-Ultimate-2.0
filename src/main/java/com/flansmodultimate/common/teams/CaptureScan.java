@@ -40,12 +40,17 @@ public final class CaptureScan
             double dz = entity.getZ() - centre.z;
             if (dx * dx + dz * dz > radiusSquared || Math.abs(entity.getY() - centre.y) > radius)
                 continue;
+            if (manager.getRoundRuleRuntime().rules().enabled(RoundRule.CAPTURE_ON_FOOT_ONLY) && entity.isPassenger())
+                continue;
             float weight = TeamsCombatants.getCaptureWeight(manager, entity);
             Team team = weight > 0F ? TeamsCombatants.getTeam(entity) : null;
             int sideId = round.getSideId(team);
             if (sideId >= TeamsRound.FIRST_TEAM_ID)
                 scan.add(sideId, entity, weight);
         }
+        int maximum = manager.getRoundRuleRuntime().rules().number(RoundRule.MAX_CAPTURE_WEIGHT);
+        if (maximum > 0)
+            scan.weightByTeam.replaceAll((side, weight) -> Math.min(weight, maximum));
         return scan;
     }
 

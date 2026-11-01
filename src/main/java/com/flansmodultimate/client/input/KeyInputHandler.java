@@ -6,6 +6,7 @@ import com.flansmodultimate.client.AimPoseClient;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.ProneClient;
 import com.flansmodultimate.client.gui.GunAmmoSelectScreen;
+import com.flansmodultimate.client.gui.TeamsMenuScreen;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.hud.VehicleOpticsHud;
 import com.flansmodultimate.common.PlayerData;
@@ -67,9 +68,11 @@ public final class KeyInputHandler
     private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_PAGEUP, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_PAGEDOWN, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping debugKey = key("debug", InputConstants.KEY_F10, KeyContexts.UNIVERSAL, CATEGORY_GENERAL);
+    // The Teams menu reaches team, class and scoreboard alike, so the direct
+    // binds start unbound and leave their keys to binds used outside Teams.
     private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyContexts.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyContexts.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.UNKNOWN.getValue(), KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.UNKNOWN.getValue(), KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsEditorKey = key("teams_editor", InputConstants.UNKNOWN.getValue(), KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping commandCentreKey = key("command_centre", GLFW.GLFW_KEY_F7, KeyContexts.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyContexts.IN_GAME, CATEGORY_GENERAL);
@@ -81,7 +84,8 @@ public final class KeyInputHandler
     private static final KeyMapping primaryAlternativeKey = key("driveable.primary_alternative", InputConstants.UNKNOWN.getValue(), EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping secondaryKey = mouseKey("driveable.secondary", GLFW.GLFW_MOUSE_BUTTON_RIGHT, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping secondaryAlternativeKey = key("driveable.secondary_alternative", InputConstants.UNKNOWN.getValue(), EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
-    private static final KeyMapping changeSeatKey = key("driveable.change_seat", InputConstants.KEY_NUMPAD0, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    // Custom NPCs takes numpad 0 to 3 for its scene keys.
+    private static final KeyMapping changeSeatKey = key("driveable.change_seat", InputConstants.KEY_NUMPADENTER, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping doorKey = key("driveable.door", InputConstants.KEY_K, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping engineKey = key("driveable.engine", InputConstants.KEY_SEMICOLON, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping repairKey = key("driveable.repair", InputConstants.KEY_I, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
@@ -172,6 +176,12 @@ public final class KeyInputHandler
     public static boolean isCommandCentreKey(int keyCode, int scanCode)
     {
         return commandCentreKey.matches(keyCode, scanCode);
+    }
+
+    /** Whether a key pressed in a screen is the one that opens the Teams menu, which closes it again. */
+    public static boolean isTeamsMenuKey(int keyCode, int scanCode)
+    {
+        return teamsMenuKey.matches(keyCode, scanCode);
     }
 
     /** The key bound to the Teams command centre, as the controls screen names it. */
@@ -436,7 +446,7 @@ public final class KeyInputHandler
         }
 
         if (noScreen && teamsMenuKey.consumeClick())
-            PacketHandler.sendToServer(PacketTeamsAction.openTeamMenu());
+            mc.setScreen(new TeamsMenuScreen());
         if (noScreen && teamsScoresKey.consumeClick() && !repairClaimsScoreKey())
             PacketHandler.sendToServer(PacketTeamsAction.openScoreboard());
         if (noScreen && teamsClassKey.consumeClick())

@@ -26,6 +26,6 @@ public class PlayerBulletHit extends BulletHit
     @Override
     public Entity getEntity()
     {
-        return hitbox.player;
+        return hitbox.entity;
     }
 }

@@ -19,8 +19,8 @@ import java.util.*;
 public final class GameTypeConquest extends GameTypeObjective
 {
     private static final int DEFAULT_CAPTURE_TICKS = 500;
-    private static final int DEFAULT_TICKET_DRAIN_INTERVAL = 20;
-    private static final int DEFAULT_KILL_TICKET_VALUE = 5;
+    private static final int DEFAULT_TICKET_DRAIN_INTERVAL = 100;
+    private static final int DEFAULT_KILL_TICKET_VALUE = 1;
     private static final int DEFAULT_DEPLOY_DELAY_SECONDS = 5;
 
     private int ticketDrainInterval = DEFAULT_TICKET_DRAIN_INTERVAL;

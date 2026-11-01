@@ -34,7 +34,7 @@ public final class CommandCentreClient
 
     static
     {
-        for (ICommandCentrePage builtIn : List.of(new OverviewPage(), new RotationPage(), new MapsPage(), new RulesPage(), new ServerPage()))
+        for (ICommandCentrePage builtIn : List.of(new OverviewPage(), new RotationPage(), new MapsPage(), new RulesPage(), new RoundRulesPage(), new ServerPage()))
             PAGES.put(builtIn.getId(), builtIn);
     }
 
@@ -53,6 +53,11 @@ public final class CommandCentreClient
     static Optional<RotationPage> rotationPage()
     {
         return PAGES.get(RotationPage.ID) instanceof RotationPage rotation ? Optional.of(rotation) : Optional.empty();
+    }
+
+    static Optional<RoundRulesPage> roundRulesPage()
+    {
+        return PAGES.get(RoundRulesPage.ID) instanceof RoundRulesPage rules ? Optional.of(rules) : Optional.empty();
     }
 
     static String shownPage()

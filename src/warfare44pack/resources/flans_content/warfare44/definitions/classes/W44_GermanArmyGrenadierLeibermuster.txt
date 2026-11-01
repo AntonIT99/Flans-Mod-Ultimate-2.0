@@ -1,0 +1,20 @@
+// Identity
+Name Grenadier (Leibermuster, 1945)
+ShortName W44_GermanArmyGrenadierLeibermuster
+Description Late-war grenadier with StG 44 and scarce 1945 Leibermuster clothing; the pack helmet cover is an interpretation.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 15
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_GermanM42LeibermusterStahlhelm
+Chest 44_GermanPzGrenadierLeibermusterChest
+
+// Items
+AddItem 44_Stg44
+AddItem 44_Stg44Ammo 4
+AddItem 44_stielhandgranate
+AddItem 44_Smokestielhandgranate 2
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

@@ -334,8 +334,8 @@ final class SkirmishesPage extends BattlePage
             choice(view, tr("skirmish.intent"), choices.intents(), keep(choices.intents(), rules.intent(), choices.intents().get(0)), intent -> value("intent", intent), x, y, half,
                 intent -> run(view, SET, name, "intent", intent)).setTooltip(Tooltip.create(tr("skirmish.intent.tip")));
         if (!choices.difficulties().isEmpty())
-            choice(view, tr("skirmish.difficulty"), choices.difficulties(), keep(choices.difficulties(), rules.difficulty(), choices.difficulties().get(0)),
-                difficulty -> value("difficulty", difficulty), right, y, half, difficulty -> run(view, SET, name, "difficulty", difficulty)).active = skirmish.draft();
+            difficultyChoice(view, tr("skirmish.difficulty"), choices.difficulties(), keep(choices.difficulties(), rules.difficulty(), choices.difficulties().get(0)), right, y, half,
+                difficulty -> run(view, SET, name, "difficulty", difficulty)).active = skirmish.draft();
         y += ROW;
         String minutesKey = "minutes@" + skirmish.name();
         if (!choices.ends().isEmpty())

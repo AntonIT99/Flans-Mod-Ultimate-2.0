@@ -26,7 +26,7 @@ final class BotCrews
             return;
         NpcCrew.fill(level, vehicle, (crewLevel, crewed, seat) ->
         {
-            String playerClass = playerClass(order, order.force().crewClass(seat.post()), random);
+            String playerClass = playerClass(battle, order, order.force().crewClass(seat.post()), random);
             return playerClass.isEmpty() ? Optional.empty() : BotFactory.crewman(crewLevel, order, playerClass, crewed.position(), random);
         });
     }
@@ -35,13 +35,13 @@ final class BotCrews
      * @return the class named for a kind of seat when the team offers it, none for {@link BotSettings.TeamForce#NO_CREW}, and
      *         otherwise one picked by the class weights; empty for none
      */
-    private static String playerClass(BotFactory.Order order, String wanted, RandomGenerator random)
+    private static String playerClass(BotBattle battle, BotFactory.Order order, String wanted, RandomGenerator random)
     {
         if (BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(wanted))
             return "";
         if (order.team().getClasses().stream().map(IContentType::getShortName).anyMatch(wanted::equals))
             return wanted;
-        return BotPopulation.pickClass(order.team(), order.force(), random);
+        return BotPopulation.pickClass(battle, order.team(), order.force(), random);
     }
 
     /** @return the place in the force a crew member's vehicle fills, for scoring the crew's kills to the vehicle */

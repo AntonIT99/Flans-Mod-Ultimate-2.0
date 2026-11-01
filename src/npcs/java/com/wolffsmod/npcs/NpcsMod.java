@@ -1,14 +1,17 @@
 package com.wolffsmod.npcs;
 
 import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.mojang.logging.LogUtils;
 import com.wolffsmod.npcs.combat.NpcPosture;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
 import com.wolffsmod.npcs.scripting.FlansScriptApi;
+import com.wolffsmod.npcs.tactics.NpcThreats;
 import com.wolffsmod.npcs.teams.BattlesSection;
 import com.wolffsmod.npcs.teams.FriendlyFire;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -37,6 +40,8 @@ public class NpcsMod
         NpcNetwork.register();
         NpcNetworkPlatform.init(modEventBus);
         TeamsBots.register();
+        FlansProjectiles.addSuppressionListener(NpcThreats.INSTANCE);
+        FlansProjectiles.addSuppressionListener(NpcSuppression.INSTANCE);
         FriendlyFire.register();
         NpcPosture.register();
         FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);

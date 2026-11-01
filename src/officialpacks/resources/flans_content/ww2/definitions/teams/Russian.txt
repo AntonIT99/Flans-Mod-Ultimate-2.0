@@ -3,6 +3,7 @@ Name Soviet
 ShortName russianTeam
 
 // Appearance
+VictoryFlagTexture flag_team_ussr_ww2.svg
 TextColour Red
 TeamColour 255 0 0
 Hat russianHelmet

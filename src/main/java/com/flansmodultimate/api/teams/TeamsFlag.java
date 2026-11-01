@@ -23,7 +23,7 @@ import java.util.UUID;
  * @param position
  *            where the flag is now, in world coordinates: at its base, on its carrier or where it was dropped
  * @param home
- *            where the flag stands at its base, which is where an enemy flag is brought to be captured
+ *            the capture destination at its base, kept at interaction height even when the pole is taller
  * @param atHome
  *            whether the flag stands at its base
  * @param carrier

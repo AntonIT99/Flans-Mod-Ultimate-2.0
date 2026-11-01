@@ -33,8 +33,8 @@ Fuse 200
 Fire 0
 
 // Smoke and effects
-SmokeTime 250
-SmokeRadius 5
+SmokeTime 640
+SmokeRadius 10.5
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
 

@@ -141,6 +141,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_FRIENDLY_FIRE_NPCS_ID = 1224;
     private static final int SERVER_FRIENDLY_FIRE_PLAYERS_ID = 1225;
     private static final int SERVER_ITEM_DROPS_ID = 1226;
+    private static final int SERVER_PEACEFUL_COMBAT_ID = 1227;
+    private static final int SERVER_CINEMATIC_ID = 1228;
     /** The first of the labels a page of read-only lines lays out, one per line or table cell. */
     private static final int LINE_LABEL_ID = 1500;
     /** Room for the lines of a page of read-only lines. */
@@ -269,7 +271,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         FREEZE_AI(SERVER_FREEZE_ID, Setting.FREEZE_AI), STAY_ACTIVE_LIMIT(SERVER_STAY_ACTIVE_LIMIT_ID, Setting.STAY_ACTIVE_LIMIT), PATH_BUDGET(SERVER_PATH_BUDGET_ID, Setting.PATH_BUDGET),
         HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY),
         NAME_TAG_RANGE(SERVER_NAME_TAG_RANGE_ID, Setting.NAME_TAG_RANGE), ITEM_DROPS(SERVER_ITEM_DROPS_ID, Setting.ITEM_DROPS),
-        FRIENDLY_FIRE_NPCS(SERVER_FRIENDLY_FIRE_NPCS_ID, Setting.FRIENDLY_FIRE_NPCS), FRIENDLY_FIRE_PLAYERS(SERVER_FRIENDLY_FIRE_PLAYERS_ID, Setting.FRIENDLY_FIRE_PLAYERS);
+        FRIENDLY_FIRE_NPCS(SERVER_FRIENDLY_FIRE_NPCS_ID, Setting.FRIENDLY_FIRE_NPCS), FRIENDLY_FIRE_PLAYERS(SERVER_FRIENDLY_FIRE_PLAYERS_ID, Setting.FRIENDLY_FIRE_PLAYERS),
+        PEACEFUL_COMBAT(SERVER_PEACEFUL_COMBAT_ID, Setting.PEACEFUL_COMBAT), CINEMATIC(SERVER_CINEMATIC_ID, Setting.CINEMATIC);
         // spotless:on
 
         private final int id;
@@ -298,7 +301,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
         private boolean toggle()
         {
-            return this == PROFILING || this == FREEZE_AI || this == ITEM_DROPS;
+            return this == PROFILING || this == FREEZE_AI || this == ITEM_DROPS || this == PEACEFUL_COMBAT || this == CINEMATIC;
         }
 
         /** @return the named choices of a row that is one, or none */
@@ -438,7 +441,6 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.CLIMB_RATE, Need.choice(Value.FLIGHT_TYPE, NpcTuning.Flight.PLANE, NpcTuning.Flight.HELICOPTER, NpcTuning.Flight.AUTO)),
         Map.entry(Feature.MODEL_FLIGHT, Need.on(Feature.TYPE_PROPERTIES)),
         Map.entry(Value.TACTIC_DISTANCE, Need.choice(Value.TACTIC, Arrays.stream(NpcTuning.Tactic.values()).filter(NpcTuning.Tactic::usesDistance).toArray(Enum<?>[]::new))),
-        Map.entry(Value.COVER_RADIUS, Need.choice(Value.TACTIC, NpcTuning.Tactic.COVER)),
         Map.entry(Value.BLAST_MARGIN, Need.on(Feature.BLAST_STANDOFF)),
         Map.entry(Feature.DRIVING, Need.on(Feature.HULL_FACES_TRAVEL)),
         Map.entry(Value.HULL_TURN_RATE, Need.on(Feature.HULL_FACES_TRAVEL)),
@@ -488,7 +490,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.PLANE_LANDING_DELAY, Need.on(Feature.DRIVE_DRIVEABLES)),
         Map.entry(Value.HOVER_HEIGHT, Need.on(Feature.DRIVE_DRIVEABLES)),
         Map.entry(Value.HELICOPTER_LANDING_DELAY, Need.on(Feature.DRIVE_DRIVEABLES)),
-        Map.entry(Value.LOW_FUEL, Need.on(Feature.DRIVE_DRIVEABLES)));
+        Map.entry(Value.LOW_FUEL, Need.on(Feature.DRIVE_DRIVEABLES)),
+        Map.entry(Value.LEAD_SHARE, Need.on(Feature.LEAD_TARGET)));
     // spotless:on
 
     /** A page of the tab, listed on the overview under its section in the order given here. */
@@ -514,14 +517,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         AIMING(Section.TARGETING, Scope.ALL,
             Tab.named("target_tracking", Feature.LEAD_TARGET, Feature.ADVANCED_LEAD, Feature.BALLISTIC_AIM, Feature.FIRE_WHEN_ALIGNED, Value.ALIGN_TOLERANCE),
             Tab.named("gun_movement", Scope.MODELS, Feature.GRADUAL_AIM, Value.AIM_SPEED_YAW, Value.AIM_SPEED_PITCH, Feature.HULL_ASSISTS_AIM, Feature.MANOEUVRE_TO_FIRE, Feature.PASSENGER_GUNS,
-                Feature.TURRET_LOCKED)),
+                Feature.TURRET_LOCKED),
+            Tab.named("human_limits", Value.SKILL_LEVEL, Value.REACTION_TIME, Value.AIM_SETTLE_TIME, Value.AIM_ERROR, Value.LEAD_SHARE, Value.PLAYER_DAMAGE, Feature.NON_LETHAL)),
         PROTECTION(Section.PROTECTION, Scope.ALL,
-            Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES),
+            Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES, Feature.LIMB_HITBOXES),
             Tab.named(ARMOUR_TAB, Scope.MODELS, Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR),
             Tab.named(PARTS_TAB, Scope.DRIVEABLES, Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS, Feature.BROKEN_PARTS_PASS, Feature.PART_REPAIR, Feature.SOLID_HITBOXES,
                 Feature.HITBOX_OUTLINES)),
-        TACTICS(Section.BEHAVIOUR, Scope.ALL, Tab.of(Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING)),
-        DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
+        TACTICS(Section.BEHAVIOUR, Scope.ALL,
+            Tab.named("tactic_movement", Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING),
+            Tab.named("return_fire", Value.THREAT_MEMORY, Value.ALERT_RADIUS, Feature.OUTRANGED_COVER, Feature.SUPPRESSIBLE),
+            Tab.named("duties", Scope.STANDARD, Value.DUTY, Value.RETREAT_HEALTH, Feature.SUITED_TARGETS)),
+        DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Feature.WEAPON_FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
         PATHFINDING(Section.BEHAVIOUR, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
         MOVEMENT(Section.TRAVEL, Scope.ALL,
             Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Feature.STEP_CLIMB, Value.STEP_HEIGHT, Feature.SLOPE_PHYSICS),
@@ -542,7 +549,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         ANIMATIONS(Section.LOOK, Scope.STANDARD,
             Tab.named("equipment_animation", Value.AIM_POSE, Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
             Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
-        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES, Feature.MUZZLE_FLASHES)),
+        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES, Feature.MUZZLE_FLASHES, Feature.ALLY_NAME_TAGS)),
         SOUNDS(Section.LOOK, Scope.ALL,
             Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
@@ -559,7 +566,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL, ServerRow.SEARCH_BUDGET)),
         SERVER_RULES(Section.SERVER, Scope.ALL,
             Tab.named(SERVER_RANGES_TAB, ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE),
-            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE, ServerRow.ITEM_DROPS),
+            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE, ServerRow.ITEM_DROPS, ServerRow.PEACEFUL_COMBAT, ServerRow.CINEMATIC),
             Tab.named("friendly_fire", ServerRow.FRIENDLY_FIRE_NPCS, ServerRow.FRIENDLY_FIRE_PLAYERS)),
         SERVER_LIMITS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.FREEZE_AI, ServerRow.STAY_ACTIVE_LIMIT, ServerRow.PATH_BUDGET)),
         /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
@@ -927,7 +934,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         return switch (kind)
         {
-            case STANDARD -> List.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH, Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.SIGHT, Value.TACTIC);
+            case STANDARD -> List.of(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.CONSUME_AMMO, Value.WEAPON_SWITCH, Range.AGGRO_RANGE, Range.FIRING_RANGE, Feature.WEAPON_FIRING_RANGE,
+                Value.SIGHT, Value.TACTIC);
             case VEHICLE -> List.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS, Feature.PART_HITBOXES, Value.DRIVE_PRESET, Value.TERRAIN, Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.TACTIC);
             case PLANE ->
                 List.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS, Feature.PART_HITBOXES, Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Range.AGGRO_RANGE, Range.FIRING_RANGE, Value.TACTIC);
@@ -1644,6 +1652,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         }
         else
             options.set(feature, value == 1);
+        if (feature == Feature.NON_LETHAL)
+            NpcTuning.of(npc).set(Value.SKILL_LEVEL, NpcSkill.Level.CUSTOM.ordinal());
     }
 
     /** @return the landing gear the NPC draws: down, up, or dynamic, by its choice on the gear row */
@@ -1690,7 +1700,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
                 case SLOPE_PHYSICS -> Scope.VEHICLES;
                 case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
-                case DRIVE_DRIVEABLES -> Scope.STANDARD;
+                case DRIVE_DRIVEABLES, LIMB_HITBOXES, WEAPON_FIRING_RANGE, OUTRANGED_COVER, SUPPRESSIBLE, SUITED_TARGETS -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }
@@ -1704,7 +1714,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case HULL_TURN_RATE -> Scope.HULLS;
                 case STEP_HEIGHT -> Scope.GROUND_MACHINES;
                 case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL,
-                    GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> Scope.STANDARD;
+                    GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE, DUTY, RETREAT_HEALTH -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }
@@ -1823,6 +1833,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case TACTIC -> NpcTuning.Tactic.values();
             case TAKE_DRIVEABLES -> NpcTuning.Claim.values();
             case GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> NpcTuning.Throwing.values();
+            case SKILL_LEVEL -> NpcSkill.Level.values();
+            case DUTY -> NpcTuning.Duty.values();
             default -> new Enum<?>[0];
         };
     }
@@ -1842,12 +1854,27 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         NpcTuning tuning = NpcTuning.of(npc);
         if (value == Value.DRIVE_PRESET)
             tuning.applyPreset(NpcTuning.DrivePreset.values()[Math.max(0, Math.min(NpcTuning.DrivePreset.values().length - 1, number))]);
+        else if (value == Value.SKILL_LEVEL)
+            NpcSkill.apply(npc, NpcSkill.Level.values()[Value.SKILL_LEVEL.clamp(number)]);
         else
         {
+            int before = tuning.get(value);
             tuning.set(value, number);
             if (presetValue(value))
                 tuning.set(Value.DRIVE_PRESET, NpcTuning.DrivePreset.CUSTOM.ordinal());
+            if (skillValue(value) && tuning.get(value) != before)
+                tuning.set(Value.SKILL_LEVEL, NpcSkill.Level.CUSTOM.ordinal());
         }
+    }
+
+    /** Whether editing the value by hand means the NPC's human limits no longer follow their level. */
+    private static boolean skillValue(Value value)
+    {
+        return switch (value)
+        {
+            case REACTION_TIME, AIM_SETTLE_TIME, AIM_ERROR, LEAD_SHARE, PLAYER_DAMAGE -> true;
+            default -> false;
+        };
     }
 
     /** The control of a setting of the whole server, read-only until the server has sent the values. */

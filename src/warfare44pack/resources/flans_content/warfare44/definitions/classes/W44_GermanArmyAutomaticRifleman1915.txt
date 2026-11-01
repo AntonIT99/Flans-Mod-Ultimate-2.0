@@ -1,7 +1,7 @@
 // Identity
-Name Automatic Rifleman (Modell 1915)
+Name Automatic Rifleman (Modell 1915, Legacy)
 ShortName W44_GermanArmyAutomaticRifleman1915
-Description Automatic Rifleman (Modell 1915) with compatible ammunition and the national infantry kit.
+Description Legacy weapon option using the pack Modell 1915; not a standard WWII infantry automatic rifle.
 
 // Availability
 UnlockLevel 0
@@ -9,5 +9,7 @@ UnlockLevel 0
 // Items
 AddItem 44_Modell1915
 AddItem 44_Modell1915Ammo 6
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
 AddItem 44_stielhandgranate 2
 AddItem 44_Bandage

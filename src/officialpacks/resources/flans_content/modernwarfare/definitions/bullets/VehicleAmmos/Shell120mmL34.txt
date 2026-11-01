@@ -36,7 +36,7 @@ Fire 0
 
 // Smoke and effects
 SmokeTime 600
-SmokeRadius 5
+SmokeRadius 10
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
 

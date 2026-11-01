@@ -1,0 +1,20 @@
+// Identity
+Name Scout (Sumpftarn M43)
+ShortName W44_GermanArmyScoutSumpftarn
+Description Sniper wearing the pack Sumpftarn M43 smock with a scoped Kar98k.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanSumpftarnM43CamoSmock
+
+// Items
+AddItem 44_Kar98k+44_ZF39Scope
+AddItem 44_Kar98kAmmo 4
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
+AddItem 44_Binoculars
+AddItem 44_Bandage

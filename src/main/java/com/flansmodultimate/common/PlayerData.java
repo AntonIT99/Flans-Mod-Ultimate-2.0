@@ -124,6 +124,9 @@ public class PlayerData
     /** Ticks until the gun in the first hotbar slot is reloaded automatically after a Teams respawn; 0 when none is pending. */
     @Setter
     private int respawnReloadTicks;
+    /** Ticks a Teams respawn leaves the player unharmed for; 0 when unprotected. See {@code TeamsSpawnProtection}. */
+    @Getter @Setter
+    private int spawnProtectionTicks;
     /**
      * The player's own reload inventory preferences, sent by the client on login and whenever they are changed.
      * Null means the player never announced a preference (vanilla or outdated client), in which case the
@@ -407,6 +410,8 @@ public class PlayerData
         {
             tickIdleSounds((ServerPlayer) player);
             tickRespawnReload((ServerPlayer) player);
+            if (spawnProtectionTicks > 0)
+                spawnProtectionTicks--;
             GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
         }
 

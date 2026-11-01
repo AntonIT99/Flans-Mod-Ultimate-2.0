@@ -87,6 +87,11 @@ public final class TeamsCommand
             })).then(booleanSetting("explosions", TeamsCommand::setExplosions)).then(booleanSetting("forceAdventure", TeamsCommand::setForceAdventure))
             .then(booleanSetting("forceAdventureMode", TeamsCommand::setForceAdventure)).then(booleanSetting("fuelNeeded", TeamsCommand::setFuelNeeded))
             .then(booleanSetting("vehiclesCanZoom", TeamsCommand::setVehiclesCanZoom));
+        root.then(Commands.literal("stop").requires(source -> source.hasPermission(2)).executes(context ->
+        {
+            manager().stopRound();
+            return success(context, "Round stopped");
+        }));
         root = addRuleCommands(root)
             .then(Commands.literal("start").requires(source -> source.hasPermission(2))
                 .executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND)))
@@ -109,6 +114,7 @@ public final class TeamsCommand
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getShortName), builder)).executes(TeamsCommand::giveRewardBox))))
             .then(addMapAdminCommands(adminCommands()));
         addLabjacCommands(root);
+        RoundRulesCommand.register(root);
         TeamsEditorCommand.addTo(root);
 
         com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> node = dispatcher.register(root);
@@ -430,7 +436,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|forceAdventure|fuelNeeded|vehiclesCanZoom|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife> <seconds>"),
+                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -438,7 +444,7 @@ public final class TeamsCommand
                 "Maps and Labjac rules: /teams <addMap|addMapWithBounds|removeMap|renameMap|setMapImage|addRound|removeRound|listRotation>, /teams <pacifism|movieProp> <true|false>, /teams seaLevel <y|default>, /teams shake <strength>, /teams setRank <rank> [player]"),
                 false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Administration: /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|rankUpdateTime|votingTime|autobalancetime|roundsGenerator|start|next|setnext|stop|arena|survival|kit|map|round|setvariable|ping|bltss>"),
+                "Administration: /teams stop; /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|rankUpdateTime|votingTime|autobalancetime|roundsGenerator|start|next|setnext|stop|arena|survival|kit|map|round|setvariable|ping|bltss>"),
                 false);
         }
         return 1;
@@ -455,7 +461,11 @@ public final class TeamsCommand
      */
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> addRuleCommands(com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        root.then(rule("overrideHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? NO_LONGER : "now") + " get hungry during rounds"))
+        root.then(rule("bodyPartDamageModifiers", TeamsManager::setBodyPartDamageModifiers, enabled -> "Body-part damage modifiers set to " + enabled))
+            .then(healthSetting("playerHealth", TeamsManager::setPlayerHealth)).then(healthSetting("botHealth", TeamsManager::setBotHealth))
+            .then(rule("restoreBlocks", TeamsManager::setRestoreBlocks, enabled -> "Round block restoration set to " + enabled))
+            .then(rule("regeneration", TeamsManager::setRegeneration, enabled -> "Passive regeneration for players and bots set to " + enabled))
+            .then(rule("overrideHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? NO_LONGER : "now") + " get hungry during rounds"))
             .then(rule("noHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? NO_LONGER : "now") + " get hungry during rounds"))
             .then(rule("bombs", TeamsManager::setBombsEnabled, enabled -> "Bombs are now " + (enabled ? ENABLED : DISABLED)))
             .then(rule("allowBombs", TeamsManager::setBombsEnabled, enabled -> "Bombs are now " + (enabled ? ENABLED : DISABLED)))
@@ -475,7 +485,14 @@ public final class TeamsCommand
                     .executes(TeamsCommand::setWeaponDrops)))
             .then(lifeSetting("mgLife", "MGs", TeamsManager::setMgLife)).then(lifeSetting("planeLife", "Planes", TeamsManager::setPlaneLife))
             .then(lifeSetting("vehicleLife", "Vehicles", TeamsManager::setVehicleLife)).then(lifeSetting("mechaLife", "Mechas", TeamsManager::setMechaLife))
-            .then(lifeSetting("aaLife", "AA guns", TeamsManager::setAaLife))
+            .then(lifeSetting("aaLife", "AA guns", TeamsManager::setAaLife)).then(Commands.literal("spawnProtection").requires(source -> source.hasPermission(2))
+                .then(Commands.argument(SECONDS, IntegerArgumentType.integer(0, TeamsManager.MAX_SPAWN_PROTECTION_SECONDS)).executes(context ->
+                {
+                    int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+                    manager().setSpawnProtectionSeconds(seconds);
+                    manager().saveSettings();
+                    return success(context, seconds > 0 ? "Players will be protected for " + seconds + SECONDS_SUFFIX + " after spawning" : "Spawn protection disabled");
+                })))
             .then(Commands.literal("useRotation").requires(source -> source.hasPermission(2)).then(Commands.argument(VALUE, BoolArgumentType.bool()).executes(context ->
             {
                 // A fixed rotation is the opposite of voting for the next round
@@ -507,6 +524,17 @@ public final class TeamsCommand
             manager().saveSettings();
             return success(context, message.get(enabled));
         });
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> healthSetting(String name, java.util.function.ObjIntConsumer<TeamsManager> setter)
+    {
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).then(Commands.argument(VALUE, IntegerArgumentType.integer(0, TeamsManager.MAX_HEALTH_OVERRIDE)).executes(context ->
+        {
+            int health = IntegerArgumentType.getInteger(context, VALUE);
+            setter.accept(manager(), health);
+            manager().saveSettings();
+            return success(context, name + (health == 0 ? " uses the entity's own maximum health" : " maximum health set to " + health + " HP"));
+        }));
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> lifeSetting(String name, String what, java.util.function.ObjIntConsumer<TeamsManager> setter)

@@ -48,8 +48,8 @@ public abstract class ShootableType extends InfoType
      */
     private static final Map<String, AmmoGroup> ammoGroups = new LinkedHashMap<>();
     /**
-     * Incremented whenever a shootable type joins a group, so consumers caching resolved ammo lists can tell
-     * that a group grew after their cache was built.
+     * Incremented whenever a shootable type registers, is added for another weapon or joins a group, so consumers
+     * caching resolved ammo lists can tell that the ammunition they resolve changed after their cache was built.
      */
     @Getter
     private static int ammoGroupRevision;
@@ -254,10 +254,10 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected boolean explosionBreaksBlocks = true;
     /** Explosion blast damage vs various classes of entities */
-    protected DamageStats explosionBlastDamage = new DamageStats();
+    protected final DamageStats explosionBlastDamage = new DamageStats();
     /** Explosion frag damage vs various classes of entities */
     @Getter
-    protected DamageStats explosionFragDamage = new DamageStats();
+    protected final DamageStats explosionFragDamage = new DamageStats();
     protected EnumFragType fragType = EnumFragType.DEFAULT;
     /** The name of the item to drop upon detonating */
     @Getter
@@ -304,6 +304,7 @@ public abstract class ShootableType extends InfoType
         super.onItemRegistration(registeredItemId);
         registeredAmmoList.putIfAbsent(contentPack, new HashMap<>());
         registeredAmmoList.get(contentPack).put(originalShortName, this);
+        incrementAmmoGroupRevision();
     }
 
     /** Reads a weapon modifier, keeping the current factor when the authored one is not usable. */
@@ -318,7 +319,11 @@ public abstract class ShootableType extends InfoType
     {
         super.read(file);
 
-        readLines("AddAmmoFor", file).ifPresent(lines -> lines.forEach(type -> additionalAmmoMapping.computeIfAbsent(type, key -> new ArrayList<>()).add(this)));
+        readLines("AddAmmoFor", file).ifPresent(lines -> lines.forEach(type ->
+        {
+            additionalAmmoMapping.computeIfAbsent(type, key -> new ArrayList<>()).add(this);
+            incrementAmmoGroupRevision();
+        }));
         readValuesInLines("AddToAmmoGroup", file).ifPresent(lines -> lines.forEach(values -> joinAmmoGroup(values, file)));
 
         // Item Stuff

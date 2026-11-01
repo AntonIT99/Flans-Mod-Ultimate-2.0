@@ -148,12 +148,12 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     /**
      * A hold-to-throw grenade released by hand, from the Labjac Edition: overhand when the attack button was
-     * held, underhand when the use button was.
+     * held, underhand when the use button was, at the given charge of its full speed.
      */
-    public static Grenade thrownByHand(Level level, GrenadeType grenadeType, @NotNull LivingEntity thrower, boolean underhand)
+    public static Grenade thrownByHand(Level level, GrenadeType grenadeType, @NotNull LivingEntity thrower, boolean underhand, float charge)
     {
         Grenade grenade = new Grenade(level, grenadeType, thrower);
-        grenade.setDeltaMovement(grenadeType.handThrowVelocity(grenade.getDeltaMovement(), underhand));
+        grenade.setDeltaMovement(grenadeType.handThrowVelocity(grenade.getDeltaMovement(), underhand, charge));
         return grenade;
     }
 

@@ -6,6 +6,8 @@ package com.flansmodultimate.common.item.tooltip;
  */
 public final class TooltipKeys
 {
+    public static final String SMOKE_RADIUS = "tooltip.flansmodultimate.smoke_radius";
+    public static final String SMOKE_TIME = "tooltip.flansmodultimate.smoke_time";
     private TooltipKeys()
     {}
 

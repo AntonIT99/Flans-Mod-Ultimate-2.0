@@ -1,0 +1,16 @@
+// Identity
+Name Waffen-SS Rifleman (Palmenmuster)
+ShortName W44_GermanArmyWaffenPalmenmuster
+Description Waffen-SS infantry with Kar98k and an early-war palm-pattern camouflage smock.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanPalmenmusterChest
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 8
+AddItem 44_stielhandgranate 2
+AddItem 44_Bandage

@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.soldier;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcAmmunition;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout.Kind;
@@ -50,7 +51,7 @@ class FlanSoldierLoadoutTest
         @Override
         public boolean loads(String gun, String ammunition)
         {
-            return gun.equals("bow") ? ammunition.equals("arrowAmmo") : ammunition.equals(gun.replace("Gun", "Ammo"));
+            return ammunition.equals(gun.equals("bow") ? "arrowAmmo" : gun.replace("Gun", "Ammo"));
         }
     };
 
@@ -85,6 +86,8 @@ class FlanSoldierLoadoutTest
         try (var equipment = mockStatic(FlansEquipment.class))
         {
             equipment.when(() -> FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY)).thenReturn(Optional.of(melee));
+            WeaponKind stackKind = new WeaponKind(melee.ranged(), melee.throwable(), melee.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(stack)).thenReturn(Optional.of(stackKind));
             assertEquals(Kind.WEAPON, FlanSoldierLoadout.kind(stack));
             equipment.when(() -> FlansEquipment.isDeployable(stack)).thenReturn(true);
             assertEquals(Kind.OTHER, FlanSoldierLoadout.kind(stack));

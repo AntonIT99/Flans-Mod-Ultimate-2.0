@@ -21,6 +21,15 @@ public final class NpcClientPlatform
         screen.renderBackground(graphics, mouseX, mouseY, partialTick);
     }
 
+    /**
+     * Draws an NPC preview on a screen that is not one of Custom NPCs', standing at a screen position and turned to the
+     * mouse, through the entity display Custom NPCs' own screens use.
+     */
+    public static void drawNpc(GuiGraphics graphics, LivingEntity entity, int x, int y, float zoom, int mouseX, int mouseY)
+    {
+        CustomGuiEntityDisplay.drawEntity(graphics, entity, x, y, zoom, 0, mouseX, mouseY, 0F, 0F, true);
+    }
+
     /** Scales a label already turned to the camera so its text reads left to right, as name tags do. */
     public static void scaleCameraFacingLabel(PoseStack pose, float scale)
     {

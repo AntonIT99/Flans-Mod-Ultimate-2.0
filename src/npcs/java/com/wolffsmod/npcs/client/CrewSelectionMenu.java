@@ -5,14 +5,10 @@ import com.flansmodultimate.api.teams.IPlayerClass;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.SkinOverrideVariant;
 import com.wolffsmod.npcs.crew.CrewSource;
-import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.network.CrewClonePreviewPacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
-import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
 import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
-import noppes.npcs.CustomEntities;
-import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.packets.Packets;
 import noppes.npcs.packets.server.SPacketCloneList;
@@ -26,7 +22,6 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -291,15 +286,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         if (index < 0 || index >= playerClasses.size())
             return;
         // Random previews the first variant, while the setting still randomizes each server-side spawn.
-        FlanSoldierSelection selection = new FlanSoldierSelection(teamIndex < 0 ? null : teams.get(teamIndex), playerClasses.get(index), chosenSkin);
-        EntityCustomNpc model = new EntityCustomNpc(CustomEntities.entityCustomNpc, minecraft.level);
-        FlanSoldierLoadout.Equipment equipment = FlanSoldierLoadout.equipment(selection);
-        model.inventory.armor = equipment.armour();
-        model.inventory.weapons = equipment.weapons();
-        selection.write(model.modelData.extra);
-        NpcSkins.markClassSkin(model);
-        NpcSkinResolver.apply(model);
-        preview = model;
+        preview = NpcPreviews.ofClass(minecraft.level, new FlanSoldierSelection(teamIndex < 0 ? null : teams.get(teamIndex), playerClasses.get(index), chosenSkin));
     }
 
     void receive(CrewClonePreviewPacket packet)
@@ -308,11 +295,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
             || minecraft.level == null)
             return;
         previewToken = null;
-        if (packet.data().isEmpty())
-            return;
-        preview = EntityType.create(packet.data(), minecraft.level).filter(EntityNPCInterface.class::isInstance).map(EntityNPCInterface.class::cast).orElse(null);
-        if (preview != null)
-            NpcSkins.resolveOnClient(preview);
+        preview = NpcPreviews.ofClone(minecraft.level, packet.data()).orElse(null);
     }
 
     @Override

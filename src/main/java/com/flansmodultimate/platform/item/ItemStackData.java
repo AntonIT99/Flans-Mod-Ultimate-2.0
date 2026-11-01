@@ -40,6 +40,18 @@ public final class ItemStackData
         return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
     }
 
+    /**
+     * Returns the stack's own data for reading only, without the cost of {@link #copy}, which matters for getters asked many
+     * times a tick. Never modify the result or keep it: edit through {@link #copy} and {@link #set} or {@link #update}.
+     */
+    // getUnsafe is deprecated only to warn that the component's tag must stay unmodified, which this method's contract requires.
+    @SuppressWarnings("deprecation")
+    public static CompoundTag view(ItemStack stack)
+    {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data == null ? new CompoundTag() : data.getUnsafe();
+    }
+
     public static void set(ItemStack stack, CompoundTag tag)
     {
         if (tag.isEmpty())

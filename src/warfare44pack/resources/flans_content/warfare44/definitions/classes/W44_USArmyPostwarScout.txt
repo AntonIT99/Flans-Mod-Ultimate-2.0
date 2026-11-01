@@ -1,0 +1,20 @@
+// Identity
+Name Scout (Mitchell Cover, Postwar)
+ShortName W44_USArmyPostwarScout
+Description Postwar equipment option with a Mitchell helmet cover and Model 70; the inherited field uniform is a pack approximation, not a complete Vietnam uniform.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_AmericanM1HelmetMitchellCamo
+
+// Items
+AddItem 44_WinchesterModel70+44_Unertl8XScope
+AddItem 44_WinchesterModel70Ammo 4
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
+AddItem 44_Binoculars
+AddItem 44_Bandage

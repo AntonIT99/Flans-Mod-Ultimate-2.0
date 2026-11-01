@@ -138,6 +138,14 @@ abstract class BattlePage implements ICommandCentrePage
         return view.addWidget(CycleButton.builder(names).withValues(values).withInitialValue(value).create(x, y, width, WIDGET_HEIGHT, label, (button, chosen) -> onChange.accept(chosen)));
     }
 
+    /** A choice of bot difficulty, whose tooltip details what the chosen level does. */
+    @SuppressWarnings("java:S107") // The widget position, size, label and action, as every widget helper here takes them.
+    static CycleButton<String> difficultyChoice(ICommandCentreView view, Component label, List<String> values, String value, int x, int y, int width, Consumer<String> onChange)
+    {
+        return view.addWidget(CycleButton.builder((String level) -> value("difficulty", level)).withValues(values).withInitialValue(value)
+            .withTooltip(level -> Tooltip.create(tr("difficulty." + level + ".tip"))).create(x, y, width, WIDGET_HEIGHT, label, (button, chosen) -> onChange.accept(chosen)));
+    }
+
     /** Runs a command of words joined by spaces. */
     static void run(ICommandCentreView view, Object... words)
     {

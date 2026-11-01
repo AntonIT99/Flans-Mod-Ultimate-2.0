@@ -19,13 +19,15 @@ public final class PacketBaseEditAction implements IServerPacket
     private String baseName = "";
     private String mapId = "";
     private int ownerId;
+    private int poleHeight;
 
-    public PacketBaseEditAction(UUID baseId, String baseName, String mapId, int ownerId)
+    public PacketBaseEditAction(UUID baseId, String baseName, String mapId, int ownerId, int poleHeight)
     {
         this.baseId = baseId;
         this.baseName = baseName;
         this.mapId = mapId;
         this.ownerId = ownerId;
+        this.poleHeight = poleHeight;
     }
 
     @Override
@@ -35,6 +37,7 @@ public final class PacketBaseEditAction implements IServerPacket
         data.writeUtf(baseName, 60);
         data.writeUtf(mapId, 128);
         data.writeVarInt(ownerId);
+        data.writeVarInt(poleHeight);
     }
 
     @Override
@@ -44,6 +47,7 @@ public final class PacketBaseEditAction implements IServerPacket
         baseName = data.readUtf(60);
         mapId = data.readUtf(128);
         ownerId = data.readVarInt();
+        poleHeight = data.readVarInt();
     }
 
     @Override
@@ -57,6 +61,8 @@ public final class PacketBaseEditAction implements IServerPacket
             return;
 
         base.setBaseName(baseName);
+        if (base instanceof ITeamFlagpole pole)
+            pole.setPoleHeight(poleHeight);
         // Any team slot a round could have may own a base; a round with fewer teams leaves the rest unowned.
         base.setDefaultOwnerId(Math.max(0, Math.min(ownerId, TeamsRound.MAX_TEAMS + 1)));
         manager.getMap(mapId).filter(map -> map.getDimension().equals(base.getDimension())).ifPresent(map -> manager.assignBaseToMap(base, map));

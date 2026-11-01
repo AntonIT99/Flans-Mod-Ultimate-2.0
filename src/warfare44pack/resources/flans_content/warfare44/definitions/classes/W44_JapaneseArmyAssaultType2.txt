@@ -1,7 +1,7 @@
 // Identity
-Name Assault (Type 2 SMG)
+Name Assault (Type 2, Experimental)
 ShortName W44_JapaneseArmyAssaultType2
-Description Assault (Type 2 SMG) with compatible ammunition and the national infantry kit.
+Description Experimental submachine-gun option, not a standard Japanese infantry loadout.
 
 // Availability
 UnlockLevel 0

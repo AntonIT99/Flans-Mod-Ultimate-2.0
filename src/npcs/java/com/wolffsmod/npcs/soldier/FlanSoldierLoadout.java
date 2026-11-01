@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.soldier;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.*;
 import lombok.AccessLevel;
@@ -152,7 +153,7 @@ public final class FlanSoldierLoadout
             return Kind.THROWABLE;
         if (FlansProjectiles.isProjectile(stack) || stack.getItem() instanceof ArrowItem || stack.getItem() instanceof FireworkRocketItem)
             return Kind.AMMUNITION;
-        Optional<EquippedWeaponProperties> weapon = FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY);
+        Optional<WeaponKind> weapon = FlansEquipment.getWeaponKind(stack);
         if (NpcEquipment.shield(stack) || weapon.isPresent() && weapon.get().shield())
             return Kind.SHIELD;
         if (weapon.isEmpty())
@@ -164,7 +165,8 @@ public final class FlanSoldierLoadout
             return Kind.OTHER;
         if (weapon.get().ranged())
             return Kind.GUN;
-        return weapon.get().meleeDamage() > 1D ? Kind.WEAPON : Kind.OTHER;
+        // Only a Flan weapon that is no gun needs its statistics worked out, for its melee damage.
+        return FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(EquippedWeaponProperties::meleeDamage).orElse(0D) > 1D ? Kind.WEAPON : Kind.OTHER;
     }
 
     /**

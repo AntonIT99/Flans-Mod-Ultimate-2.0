@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman (Winter Greatcoat)
+ShortName W44_GermanArmyWinterRifleman
+Description Winter infantry with a Kar98k, M43 field cap and greatcoat.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_GermanM43FeldgrauHat
+Chest 44_GermanM43GreatCoat
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 8
+AddItem 44_stielhandgranate 2
+AddItem 44_Bandage

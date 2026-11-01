@@ -46,13 +46,10 @@ public class PacketGunShootClient implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
+        // UUID-keyed state survives entity replacement during respawn, including a temporarily unloaded player.
+        PlayerData.getClientInstance(playerUUID).setShooting(hand, isShooting);
         Player shootingPlayer = level.getPlayerByUUID(playerUUID);
-        if (shootingPlayer != null)
-        {
-            PlayerData data = PlayerData.getInstance(shootingPlayer);
-            data.setShooting(hand, isShooting);
-            if (isShooting)
-                GunArmPoses.recordShot(shootingPlayer, hand);
-        }
+        if (shootingPlayer != null && isShooting)
+            GunArmPoses.recordShot(shootingPlayer, hand);
     }
 }

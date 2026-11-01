@@ -3,6 +3,7 @@ Name German Fallschirmjager
 ShortName W44_Fallschirmjager
 
 // Appearance
+VictoryFlagTexture flag_team_germany_ww2
 TextColour Dark_Aqua
 TeamColour 60 125 125
 Hat 44_FallschirmjagerCamoM38Stahlhelm
@@ -13,15 +14,28 @@ Shoes 44_GermanBoots
 // Rounds: select opponents manually to keep scenarios coherent.
 AllowedForRoundsGenerator False
 
-// Classes
+// Riflemen and uniform variants
 AddClass W44_FallschirmjagerRifleman
-AddClass W44_FallschirmjagerAssault
-AddClass W44_FallschirmjagerSupport
-AddClass W44_FallschirmjagerMedic
-AddClass W44_FallschirmjagerEngineer
-AddClass W44_FallschirmjagerAntiTank
-AddClass W44_FallschirmjagerScout
-AddClass W44_FallschirmjagerSquadLeader
 
-// Specialist weapon choices
+// Assault and grenadiers
+AddClass W44_FallschirmjagerAssault
+
+// Automatic rifles and machine guns
+AddClass W44_FallschirmjagerSupport
 AddClass W44_FallschirmjagerAutomaticRiflemanFG42
+
+// Reconnaissance and marksmen
+AddClass W44_FallschirmjagerScout
+AddClass W44_FallschirmjagerMarksmanFG42
+
+// Anti-tank
+AddClass W44_FallschirmjagerAntiTank
+
+// Engineers and military police
+AddClass W44_FallschirmjagerEngineer
+
+// Medical support
+AddClass W44_FallschirmjagerMedic
+
+// Command
+AddClass W44_FallschirmjagerSquadLeader

@@ -1,7 +1,7 @@
 // Identity
-Name Assault (Sterling)
+Name Assault (Sterling L2A3, Postwar)
 ShortName W44_BritishArmyAssaultSterling
-Description Assault (Sterling) with compatible ammunition and the national infantry kit.
+Description Postwar Sterling L2A3 option using inherited battledress; this is not the wartime Patchett prototype.
 
 // Availability
 UnlockLevel 0

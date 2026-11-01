@@ -3,6 +3,7 @@ Name German Army
 ShortName W44_GermanArmy
 
 // Appearance
+VictoryFlagTexture flag_team_germany_ww2
 TextColour Gray
 TeamColour 140 150 145
 Hat 44_GermanM42FeldgrauStahlhelm
@@ -13,23 +14,51 @@ Shoes 44_GermanBoots
 // Rounds: select opponents manually to keep scenarios coherent.
 AllowedForRoundsGenerator False
 
-// Classes
+// Riflemen and uniform variants
 AddClass W44_GermanArmyRifleman
+AddClass W44_GermanArmyRiflemanG43
+AddClass W44_GermanArmyRiflemanSumpftarn1945
+AddClass W44_GermanArmyWaffenPalmenmuster
+AddClass W44_GermanArmyWinterRifleman
+
+// Assault and grenadiers
 AddClass W44_GermanArmyAssault
+AddClass W44_GermanArmyAssaultStG44
+AddClass W44_GermanArmyGrenadierLeibermuster
+AddClass W44_GermanArmyWaffenM44Grenadier
+
+// Automatic rifles and machine guns
 AddClass W44_GermanArmySupport
-AddClass W44_GermanArmyMedic
-AddClass W44_GermanArmyEngineer
-AddClass W44_GermanArmyAntiTank
+AddClass W44_GermanArmyMachineGunnerMG15
+AddClass W44_GermanArmyMachineGunnerMG26t
+AddClass W44_GermanArmyMachineGunnerMG34
+AddClass W44_GermanArmyWaffenM42MachineGunner
+
+// Reconnaissance and marksmen
 AddClass W44_GermanArmyScout
+AddClass W44_GermanArmyMarksmanG43
+AddClass W44_GermanArmySharpshooterZF41
+AddClass W44_GermanArmyScoutSumpftarn
+
+// Anti-tank
+AddClass W44_GermanArmyAntiTank
+
+// Engineers and military police
+AddClass W44_GermanArmyEngineer
+
+// Medical support
+AddClass W44_GermanArmyMedic
+AddClass W44_GermanArmyFieldMedic
+
+// Command
 AddClass W44_GermanArmySquadLeader
+AddClass W44_GermanArmySquadLeaderPPK
+AddClass W44_GermanArmyOfficer
+AddClass W44_GermanArmySquadLeaderLeibermuster
+
+// Vehicle and air crews
 AddClass W44_GermanArmyTankCrew
 AddClass W44_GermanArmyPilot
 
-// Specialist weapon choices
-AddClass W44_GermanArmyRiflemanG43
-AddClass W44_GermanArmyAssaultStG44
-AddClass W44_GermanArmyMachineGunnerMG15
-AddClass W44_GermanArmyMachineGunnerMG26t
+// Optional experimental, legacy and postwar equipment
 AddClass W44_GermanArmyAutomaticRifleman1915
-AddClass W44_GermanArmySquadLeaderPPK
-AddClass W44_GermanArmyFieldMedic

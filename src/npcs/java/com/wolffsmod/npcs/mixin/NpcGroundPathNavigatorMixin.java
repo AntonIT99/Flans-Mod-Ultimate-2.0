@@ -37,9 +37,7 @@ import java.util.Set;
 public abstract class NpcGroundPathNavigatorMixin extends GroundPathNavigation
 {
     @Unique
-    private long wolffsmodnpcsNextPursuit = Long.MIN_VALUE;
-    @Unique
-    private int wolffsmodnpcsPursued = -1;
+    private final NpcPursuit wolffsmodnpcsPursuit = new NpcPursuit();
 
     protected NpcGroundPathNavigatorMixin(Mob mob, Level level)
     {
@@ -51,18 +49,10 @@ public abstract class NpcGroundPathNavigatorMixin extends GroundPathNavigation
     @Override
     public boolean moveTo(@NotNull Entity entity, double speed)
     {
-        int interval = NpcMobility.pursuitInterval(mob);
-        if (interval > 1)
+        if (wolffsmodnpcsPursuit.keeps(mob, entity, level.getGameTime(), path != null && !path.isDone()))
         {
-            long now = level.getGameTime();
-            if (entity.getId() == wolffsmodnpcsPursued && now < wolffsmodnpcsNextPursuit && path != null && !path.isDone())
-            {
-                speedModifier = speed;
-                return true;
-            }
-            // A new pursuit starts at a moment of the NPC's own; afterwards it keeps the interval.
-            wolffsmodnpcsNextPursuit = now + interval + (entity.getId() == wolffsmodnpcsPursued ? 0 : Math.floorMod(mob.getId(), interval));
-            wolffsmodnpcsPursued = entity.getId();
+            speedModifier = speed;
+            return true;
         }
         return super.moveTo(entity, speed);
     }

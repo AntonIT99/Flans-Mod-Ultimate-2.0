@@ -1,0 +1,14 @@
+// Identity
+Name Carbine Rifleman (M1A1)
+ShortName W44_USAirborneCarbine
+Description Airborne carbine carrier with the folding-stock M1A1 and parachute.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_M1Carbine
+AddItem 44_M1CarbineAmmo 6
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage
+AddItem 44_Parachute

@@ -1,6 +1,5 @@
 package com.flansmodultimate.hooks;
 
-import com.flansmod.client.model.GunAnimations;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -20,7 +19,8 @@ public interface IClientGunHooks
 
     void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand);
 
-    void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand);
+    /** Applies recoil, screen shake and the model animation once for a confirmed local shot. */
+    void animateLocalShot(Player player, InteractionHand hand);
 
     /** Plays the shot animation, muzzle flash model included, of a gun fired by a mob or another player. */
     void animateRemoteShot(LivingEntity shooter, InteractionHand hand);

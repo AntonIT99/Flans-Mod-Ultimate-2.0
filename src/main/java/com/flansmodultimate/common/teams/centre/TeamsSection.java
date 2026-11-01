@@ -71,13 +71,16 @@ public final class TeamsSection
     public static final String DEFAULT_SCORE = "default_score";
     public static final String WEAPON_DROPS = "weaponDrops";
     public static final String SEA_LEVEL = "seaLevel";
+    /** Seconds of Teams spawn protection, by the {@code /teams} command that sets it. */
+    public static final String SPAWN_PROTECTION = "spawnProtection";
 
     /**
      * The boolean rules, by the {@code /teams} command that sets each; {@code noHunger} in the screen is the legacy
      * {@code overrideHunger}.
      */
-    public static final List<String> SWITCHES = List.of("explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles", "survivalCanPlaceVehicles", "forceAdventure",
-        "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp");
+    public static final List<String> SWITCHES = List.of("restoreBlocks", "bodyPartDamageModifiers", "explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles",
+        "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom",
+        "movieProp");
     /** How long abandoned driveables last, by the {@code /teams} command that sets each, in seconds. */
     public static final List<String> LIFETIMES = List.of("mgLife", "planeLife", "vehicleLife", "mechaLife", "aaLife");
 
@@ -127,6 +130,10 @@ public final class TeamsSection
         });
         tag.put(POOLS, pools);
         CompoundTag rules = rules(manager);
+        rules.put("roundRuleDefaults", manager.getRoundRuleDefaults().save());
+        CompoundTag roundOverrides = new CompoundTag();
+        rounds.forEach(round -> roundOverrides.put(round.getId().toString(), round.getRules().save()));
+        rules.put("roundRuleOverrides", roundOverrides);
         rules.put(GAME_RULES, gameRules(player));
         tag.put(RULES, rules);
         tag.put(SETTINGS, settings(manager));
@@ -240,6 +247,10 @@ public final class TeamsSection
     private static CompoundTag rules(TeamsManager manager)
     {
         CompoundTag tag = new CompoundTag();
+        tag.putBoolean("restoreBlocks", manager.isRestoreBlocks());
+        tag.putBoolean("bodyPartDamageModifiers", manager.isBodyPartDamageModifiers());
+        tag.putInt("playerHealth", manager.getPlayerHealth());
+        tag.putInt("botHealth", manager.getBotHealth());
         tag.putBoolean("explosions", manager.isExplosionsBreakBlocks());
         tag.putBoolean("canBreakGlass", manager.isCanBreakGlass());
         tag.putBoolean("canBreakGuns", manager.isCanBreakGuns());
@@ -253,6 +264,7 @@ public final class TeamsSection
         tag.putBoolean("bullets", manager.isBulletsEnabled());
         tag.putBoolean("armourDrops", manager.isArmourDrops());
         tag.putBoolean("overrideHunger", manager.isOverrideHunger());
+        tag.putBoolean("regeneration", manager.isRegeneration());
         tag.putBoolean("alliedSpawns", manager.isAlliedSpawnSharing());
         tag.putBoolean("fuelNeeded", manager.isVehiclesNeedFuelSetting());
         tag.putBoolean("vehiclesCanZoom", manager.isVehiclesCanZoom());
@@ -268,6 +280,7 @@ public final class TeamsSection
         tag.putInt("vehicleLife", manager.getVehicleLife());
         tag.putInt("mechaLife", manager.getMechaLife());
         tag.putInt("aaLife", manager.getAaLife());
+        tag.putInt(SPAWN_PROTECTION, manager.getSpawnProtectionSeconds());
         manager.getSeaLevelOverride().ifPresent(level -> tag.putInt(SEA_LEVEL, level));
         return tag;
     }

@@ -46,6 +46,6 @@ TrailParticleType flansmod.fmsmoke
 FlakParticles 0
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
-SmokeTime 250
-SmokeRadius 5
-SmokeParticleType cloud
+SmokeTime 400
+SmokeRadius 6
+SmokeParticleType flansmod.smoker1

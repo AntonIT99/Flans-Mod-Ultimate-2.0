@@ -3,6 +3,7 @@ package com.flansmodultimate.client.render.entity;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.teams.TeamFlagTextures;
 import com.flansmodultimate.common.entity.Flag;
+import com.flansmodultimate.common.teams.ITeamFlagpole;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -22,7 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
-/** Port of the legacy ModelFlagpole: the three-block pole and the flag that flies from it. */
+/** Port of the legacy ModelFlagpole, with adjustable pole height and the flag that flies from it. */
 public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T>
 {
     private static final int TEXTURE_WIDTH = 64;
@@ -30,9 +31,6 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
     private static final float RIGHT_ANGLE = Mth.HALF_PI;
     /** Degrees per tick a dropped flag turns on the spot. */
     private static final float CARRIED_SPIN_SPEED = 2F;
-    /** Width bounds, in blocks, of a flag drawn from an image; the legacy flag skins were 3:2. */
-    private static final float MIN_IMAGE_FLAG_WIDTH = 1F;
-    private static final float MAX_IMAGE_FLAG_WIDTH = 2F;
 
     private final ModelPart pole;
     private final ModelPart flag;
@@ -92,21 +90,32 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
         }
         else
         {
-            poseStack.scale(-1F, -1F, 1F);
-            pole.render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY);
+            renderPole(pole, entity instanceof ITeamFlagpole base ? base.getPoleHeight() : 3, poseStack, vertices, packedLight);
         }
 
         poseStack.popPose();
         super.render(entity, yaw, partialTick, poseStack, buffer, packedLight);
     }
 
+    /** Stretches the shaft to its chosen height while keeping the foot at its original size. */
+    public static void renderPole(ModelPart pole, int height, PoseStack poseStack, VertexConsumer vertices, int packedLight)
+    {
+        poseStack.pushPose();
+        poseStack.scale(-1F, -1F, 1F);
+        pole.getChild("base").render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY);
+        poseStack.scale(1F, height / 3F, 1F);
+        pole.getChild("upper").render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY);
+        pole.getChild("lower").render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY);
+        poseStack.popPose();
+    }
+
     /**
      * A team's flag image on one upright sheet a block tall, seen from both sides, flying from the
-     * pole at the origin as the plain model flag does. Its width follows the image within bounds.
+     * pole at the origin as the plain model flag does. Its width follows the image aspect ratio without distortion.
      */
     public static void renderFlagImage(TeamFlagTextures.FlagTexture image, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
-        float width = Mth.clamp(image.aspect(), MIN_IMAGE_FLAG_WIDTH, MAX_IMAGE_FLAG_WIDTH);
+        float width = image.aspect();
         VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(image.location()));
         PoseStack.Pose pose = poseStack.last();
         VertexPlatform.vertex(vertices, pose, 0F, 0F, 0F, 1F, 1F, 1F, 1F, 0F, 1F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 0F, 1F);

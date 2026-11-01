@@ -113,11 +113,6 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         return false;
     }
 
-    public boolean useAimingAnimation()
-    {
-        return true;
-    }
-
     @Override
     protected int useDuration(@NotNull ItemStack stack, @Nullable LivingEntity user)
     {
@@ -666,17 +661,13 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         if (gun.isEmpty())
             return ItemStack.EMPTY;
 
-        CompoundTag tag = ItemStackData.copy(gun);
+        // Only read: the stack parsed from it carries a tag of its own.
+        CompoundTag tag = ItemStackData.view(gun);
 
         String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
 
         if (!tag.contains(nbt, Tag.TAG_LIST))
-        {
-            ListTag list = new ListTag();
-            for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
-                list.add(new CompoundTag());
             return ItemStack.EMPTY;
-        }
 
         ListTag list = tag.getList(nbt, Tag.TAG_COMPOUND);
         if (id < 0 || id >= list.size())
@@ -793,7 +784,7 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         if (!scope.hasVariableZoom())
             return scope.getZoomFactor();
 
-        CompoundTag tag = ItemStackData.copy(gun);
+        CompoundTag tag = ItemStackData.view(gun);
         float current = tag.contains(NBT_CURRENT_ZOOM, Tag.TAG_FLOAT) ? tag.getFloat(NBT_CURRENT_ZOOM) : ScopeZoom.maximum(scope);
         return ScopeZoom.clamp(current, scope);
     }

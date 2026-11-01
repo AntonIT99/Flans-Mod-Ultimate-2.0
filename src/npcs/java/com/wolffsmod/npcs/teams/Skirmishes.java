@@ -235,27 +235,21 @@ final class Skirmishes
             adopted = true;
         }
         int tick = server.getTickCount();
-        boolean upkeep = tick % UPKEEP_INTERVAL == 0;
         boolean round = FlansTeams.getRunningRound().isPresent();
-        Set<ServerLevel> fighting = new HashSet<>();
         for (Skirmish skirmish : List.copyOf(store.all()))
-            tick(server, store, skirmish, tick, round).ifPresent(fighting::add);
-        if (upkeep)
-            fighting.forEach(BotSuppression::tick);
+            tick(server, store, skirmish, tick, round);
     }
 
     /**
      * Runs one skirmish one tick: its bots rest while a round is played or it is paused, fight otherwise, and are removed a
      * while after it was decided.
-     *
-     * @return the level it is fought in, when its bots fought this tick
      */
-    private static Optional<ServerLevel> tick(MinecraftServer server, SkirmishStore store, Skirmish skirmish, int tick, boolean round)
+    private static void tick(MinecraftServer server, SkirmishStore store, Skirmish skirmish, int tick, boolean round)
     {
         BotBattle battle = skirmish.getBattle();
         ServerLevel level = server.getLevel(skirmish.getDimension());
         if (battle == null || level == null)
-            return Optional.empty();
+            return;
         long now = level.getGameTime();
         boolean resting = round || skirmish.getState() == Skirmish.State.PAUSED;
         if (tick % UPKEEP_INTERVAL == 0)
@@ -268,12 +262,10 @@ final class Skirmishes
         {
             if (now - skirmish.getEndedAt() >= END_LINGER)
                 stop(server, skirmish);
-            return Optional.empty();
+            return;
         }
-        if (resting)
-            return Optional.empty();
-        fight(server, level, skirmish, battle, tick, now);
-        return Optional.of(level);
+        if (!resting)
+            fight(server, level, skirmish, battle, tick, now);
     }
 
     private static void fight(MinecraftServer server, ServerLevel level, Skirmish skirmish, BotBattle battle, int tick, long now)

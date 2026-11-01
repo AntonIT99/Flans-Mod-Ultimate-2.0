@@ -3,6 +3,7 @@ package com.flansmodultimate.client.input;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.item.GrenadeItem;
+import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.gun.PacketGrenadeThrow;
 import lombok.AccessLevel;
@@ -14,9 +15,11 @@ import net.minecraft.world.entity.player.Player;
 
 /**
  * Client side of the Labjac Edition's hold-to-throw grenades. Holding attack and releasing it throws
- * overhand, holding use and releasing it tosses underhand. The release is sent to the server, which
- * validates and throws. The button pressed first decides the throw. Switching items, opening a screen
- * or getting into a vehicle while holding puts the grenade away without throwing it.
+ * overhand, holding use and releasing it tosses underhand. A quick click throws at full speed; holding
+ * longer charges the throw from no speed up to full speed, like a bow, and the HUD shows the charge.
+ * The release is sent to the server, which validates and throws. The button pressed first decides the
+ * throw. Switching items, opening a screen or getting into a vehicle while holding puts the grenade away
+ * without throwing it.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GrenadeThrowInput
@@ -27,6 +30,8 @@ public final class GrenadeThrowInput
     }
 
     private static Hold hold = Hold.NONE;
+    /** Ticks the held button has been down since the tick it was pressed */
+    private static int heldTicks;
 
     /** Samples the attack and use buttons once per client tick. */
     public static void tick()
@@ -44,20 +49,40 @@ public final class GrenadeThrowInput
         switch (hold)
         {
             case NONE -> {
+                heldTicks = 0;
                 if (attackDown)
                     hold = Hold.OVERHAND;
                 else if (useDown)
                     hold = Hold.UNDERHAND;
             }
             case OVERHAND -> {
-                if (!attackDown)
-                    release(false);
+                if (attackDown)
+                    heldTicks++;
+                else
+                    release(heldGrenade(player), false);
             }
             case UNDERHAND -> {
-                if (!useDown)
-                    release(true);
+                if (useDown)
+                    heldTicks++;
+                else
+                    release(heldGrenade(player), true);
             }
         }
+    }
+
+    /**
+     * Charge of the throw being held, from 0 to 1, for the HUD; -1 when no throw is charging, including
+     * during the quick click window that throws at full speed.
+     */
+    public static float chargeProgress(Player player, float partialTick)
+    {
+        if (hold == Hold.NONE || !isHoldingHoldToThrowGrenade(player))
+            return -1F;
+        GrenadeType type = heldGrenade(player);
+        float held = heldTicks + partialTick;
+        if (held <= GrenadeType.QUICK_THROW_TICKS || type.getThrowChargeTime() <= 0)
+            return -1F;
+        return type.handThrowCharge(held);
     }
 
     /** Whether the player holds, in the main hand, a grenade that is thrown by holding a button. */
@@ -75,9 +100,14 @@ public final class GrenadeThrowInput
         hold = Hold.NONE;
     }
 
-    private static void release(boolean underhand)
+    private static GrenadeType heldGrenade(Player player)
+    {
+        return ((GrenadeItem) player.getMainHandItem().getItem()).getConfigType();
+    }
+
+    private static void release(GrenadeType type, boolean underhand)
     {
         hold = Hold.NONE;
-        PacketHandler.sendToServer(new PacketGrenadeThrow(underhand));
+        PacketHandler.sendToServer(new PacketGrenadeThrow(underhand, type.handThrowCharge(heldTicks)));
     }
 }

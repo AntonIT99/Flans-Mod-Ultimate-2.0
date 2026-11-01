@@ -5,15 +5,19 @@ import com.flansmodultimate.api.teams.FlansTeams;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.ITeamsRound;
 import com.wolffsmod.npcs.crew.CrewPost;
+import com.wolffsmod.npcs.crew.CrewSource;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
+import com.wolffsmod.npcs.network.BotClonesPacket;
 import com.wolffsmod.npcs.network.BotEditorActionPacket;
 import com.wolffsmod.npcs.network.BotEditorStatePacket;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.controllers.ServerCloneController;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -37,6 +41,25 @@ public final class BotEditor
     {
         if (player.hasPermissions(PERMISSION))
             NpcNetwork.sendTo(player, state(round));
+    }
+
+    /**
+     * Answers the editor's clone picker: the clones saved in a tab, or the data of one of them for its preview. Only a
+     * listed clone is read, which also keeps names that are paths out of the clone files.
+     */
+    public static void clones(ServerPlayer player, BotClonesPacket packet)
+    {
+        ServerCloneController clones = ServerCloneController.Instance;
+        if (!player.hasPermissions(PERMISSION) || clones == null || packet.tab() < 1 || packet.tab() > CrewSource.MAX_CLONE_TAB)
+            return;
+        List<String> names = clones.getClones(packet.tab());
+        if (packet.name().isEmpty())
+        {
+            NpcNetwork.sendTo(player, packet.answer(names, new CompoundTag()));
+            return;
+        }
+        CompoundTag clone = names.contains(packet.name()) ? clones.getCloneData(null, packet.name(), packet.tab()) : null;
+        NpcNetwork.sendTo(player, packet.answer(List.of(), clone == null ? new CompoundTag() : clone));
     }
 
     public static void handle(ServerPlayer player, BotEditorActionPacket packet)

@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.platform;
 import com.wolffsmod.npcs.NpcDistanceCommands;
 import com.wolffsmod.npcs.NpcFactionCommands;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcBenchmarkCommands;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
@@ -13,18 +14,25 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.sim.NpcInactiveReturn;
+import com.wolffsmod.npcs.sim.NpcServerRules;
+import com.wolffsmod.npcs.teams.AllyNameTags;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
 import com.wolffsmod.npcs.teams.FriendlyFireCommands;
+import com.wolffsmod.npcs.teams.NpcDuties;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import com.wolffsmod.npcs.teams.SkirmishCommands;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import com.wolffsmod.npcs.teams.WarCommands;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
@@ -95,12 +103,42 @@ public final class NpcsGameEvents
         NpcServerSettings.serverTick(event.getServer());
         NpcWatch.serverTick(event.getServer().getTickCount());
         TeamsBots.serverTick(event.getServer());
+        NpcSuppression.serverTick(event.getServer());
+        NpcDuties.serverTick(event.getServer());
+        AllyNameTags.serverTick(event.getServer());
+    }
+
+    /** Runs first, so that a player Cinematic mode keeps alive counts as no death to anyone. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void cinematicDeath(LivingDeathEvent event)
+    {
+        if (!event.getEntity().level().isClientSide && NpcServerRules.survivesCinematic(event.getEntity(), event.getSource()))
+            event.setCanceled(true);
     }
 
     @SubscribeEvent
     public static void livingDeath(LivingDeathEvent event)
     {
         TeamsBots.entityDied(event.getEntity(), event.getSource());
+    }
+
+    /**
+     * Fired after armour and absorption, just before the health is taken, so a non-lethal NPC and Cinematic mode know how much
+     * the player has left.
+     */
+    @SubscribeEvent
+    public static void livingDamage(LivingDamageEvent.Pre event)
+    {
+        if (event.getEntity().level().isClientSide)
+            return;
+        float amount = NpcSkill.damageTo(event.getEntity(), event.getSource(), event.getNewDamage());
+        event.setNewDamage(NpcServerRules.cinematicDamage(event.getEntity(), event.getSource(), amount));
+    }
+
+    @SubscribeEvent
+    public static void livingDrops(LivingDropsEvent event)
+    {
+        TeamsBots.entityDrops(event.getEntity(), event.getDrops());
     }
 
     @SubscribeEvent
@@ -110,6 +148,8 @@ public final class NpcsGameEvents
         TeamsBots.serverStopping(event.getServer());
         NpcActivity.clear();
         NpcWatch.clear();
+        NpcSkill.forget();
+        AllyNameTags.serverStopping();
     }
 
     @SubscribeEvent

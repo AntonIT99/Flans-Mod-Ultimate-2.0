@@ -64,7 +64,33 @@ public final class NpcWeaponOptions
          * An NPC with Return to start that is left away from home while it does not simulate, outside the simulation
          * distance or resting beyond its dormant range, is sent straight back once no player is near enough to see it go.
          */
-        RETURN_WHEN_INACTIVE(false);
+        RETURN_WHEN_INACTIVE(false),
+        /**
+         * Flan rounds hit an NPC drawn with the player model limb by limb, as they hit players: headshots and the other
+         * hit zones scale their damage, and the armour piece of the part struck resists them.
+         */
+        LIMB_HITBOXES(true),
+        /**
+         * An NPC holding a ranged weapon fires as far as the weapon's spread still hits a man-sized target, within a limit for
+         * its kind of weapon, instead of at its own firing range, and notices enemies at least that far out.
+         */
+        WEAPON_FIRING_RANGE(false),
+        /**
+         * An NPC on foot that an enemy beyond its reach is shooting at gets out of that enemy's sight, then moves up on it
+         * from cover to cover, instead of walking up to it in the open.
+         */
+        OUTRANGED_COVER(true),
+        /** The NPC's hits leave a player at least half a heart, one of its human limits. */
+        NON_LETHAL(false),
+        /**
+         * Rounds of the enemy passing close to an NPC on foot suppress it, as near misses suppress players: it aims worse,
+         * and once pinned down it stops advancing until the fire lets up.
+         */
+        SUPPRESSIBLE(false),
+        /** An NPC on foot looks at the enemies its weapons suit first: an anti-tank soldier at armour, any other at infantry. */
+        SUITED_TARGETS(false),
+        /** Only players its faction is friendly to see the NPC's name tag. */
+        ALLY_NAME_TAGS(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

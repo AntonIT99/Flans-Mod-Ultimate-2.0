@@ -21,12 +21,15 @@ import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.teams.TeamsCombatants;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.TeamsRegeneration;
+import com.flansmodultimate.common.teams.TeamsSpawnProtection;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.*;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.config.PacketContentFingerprint;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.gun.PacketGunShootClient;
 import com.flansmodultimate.network.client.teams.PacketKillMessage;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
@@ -249,7 +252,7 @@ public final class CommonEventHandler
             int regenTimer = regenTimers.merge(player.getUUID(), 1, Integer::sum);
             if (regenTimer >= ModCommonConfig.get().bonusRegenTickDelay())
             {
-                if (player.getFoodData().getFoodLevel() >= ModCommonConfig.get().bonusRegenFoodLimit())
+                if (!TeamsRegeneration.applies(player) && player.getFoodData().getFoodLevel() >= ModCommonConfig.get().bonusRegenFoodLimit())
                     player.heal(ModCommonConfig.get().bonusRegenAmount());
                 regenTimers.put(player.getUUID(), 0);
             }
@@ -290,11 +293,13 @@ public final class CommonEventHandler
     {
         AttributeInstance maxHealth = player.getAttribute(Attributes.MAX_HEALTH);
         double configured = ModCommonConfig.maxPlayerHealth();
-        if (maxHealth == null || maxHealth.getBaseValue() == configured)
-            return;
-        maxHealth.setBaseValue(configured);
-        if (player.getHealth() > player.getMaxHealth())
-            player.setHealth(player.getMaxHealth());
+        if (maxHealth != null && maxHealth.getBaseValue() != configured)
+        {
+            maxHealth.setBaseValue(configured);
+            if (player.getHealth() > player.getMaxHealth())
+                player.setHealth(player.getMaxHealth());
+        }
+        com.flansmodultimate.common.teams.TeamsHealth.apply(player, FlansMod.teamsManager.getPlayerHealth());
     }
 
     /** The client builds a new player entity in the new dimension, which stands up. */
@@ -420,6 +425,7 @@ public final class CommonEventHandler
             return;
 
         HeldItemPresentation.tick(living);
+        TeamsRegeneration.tick(living);
 
         if (living instanceof Player || living instanceof Mob)
         {
@@ -440,13 +446,20 @@ public final class CommonEventHandler
 
     /**
      * Whether incoming damage is cancelled before any processing: entities riding Flan vehicles are immune,
-     * the Teams game type or an addon's friendly fire rule may reject the attack, and a shield may block a melee hit or a
-     * thrown projectile.
+     * the Teams game type or an addon's friendly fire rule may reject the attack, Teams spawn protection may spare a player
+     * who just took the field, and a shield may block a melee hit or a thrown projectile.
      */
     public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source, float amount)
     {
         if (!entity.level().isClientSide && (isRejectedByTeams(entity, source) || FriendlyFireRules.sparesDamage(entity, source)))
             return true;
+        if (!entity.level().isClientSide)
+        {
+            // Hitting an enemy ends the attacker's own spawn protection, whether or not the victim is protected.
+            TeamsSpawnProtection.attacked(entity, source);
+            if (TeamsSpawnProtection.spares(entity, source))
+                return true;
+        }
 
         boolean cancel = FlansMelee.protectRider(entity, source, amount);
 
@@ -638,7 +651,12 @@ public final class CommonEventHandler
             PlayerData.getInstance(player).playerKilled();
         // The respawned player is not aiming, which is not otherwise sent unless they aim again
         if (entity instanceof ServerPlayer player)
+        {
+            // Death bypasses the gun tick that normally tells clients to stop firing.
+            for (InteractionHand hand : InteractionHand.values())
+                PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
             GunArmPoses.syncPlayer(player);
+        }
     }
 
     /**
@@ -647,9 +665,14 @@ public final class CommonEventHandler
      */
     private static void sendKillMessage(LivingEntity victim, DamageSource source)
     {
+        if (TeamsCombatants.getPlayingTeam(FlansMod.teamsManager, victim) != null
+            && FlansMod.teamsManager.getRoundRuleRuntime().rules().enabled(com.flansmodultimate.common.teams.RoundRule.HIDE_KILL_MESSAGES))
+            return;
         if (!ModCommonConfig.enableKillMessages() || !(source.getEntity() instanceof LivingEntity killer) || killer == victim || !isKillFeedFighter(killer))
             return;
-        InfoType weapon = findKillingWeapon(source, killer);
+        if (!ModCommonConfig.showBotKillsInKillFeed() && !(killer instanceof ServerPlayer) && !(victim instanceof ServerPlayer))
+            return;
+        InfoType weapon = FlanDamageSources.getWeaponType(source).orElse(null);
         if (weapon == null)
             return;
 
@@ -665,24 +688,6 @@ public final class CommonEventHandler
     private static String killFeedName(LivingEntity entity)
     {
         return entity instanceof ServerPlayer player ? player.getGameProfile().getName() : entity.getName().getString();
-    }
-
-    /**
-     * The icon shown in the feed. Projectiles know the gun that fired them and thrown guns know themselves;
-     * melee kills fall back to the weapon the killer is holding.
-     */
-    @Nullable
-    private static InfoType findKillingWeapon(DamageSource source, LivingEntity killer)
-    {
-        if (source.getDirectEntity() instanceof Bullet bullet && bullet.getFiredShot() != null && bullet.getFiredShot().getFireableGun() != null)
-            return bullet.getFiredShot().getFireableGun().getType();
-        if (source.getDirectEntity() instanceof Shootable shootable)
-            return shootable.getConfigType();
-        if (source.getDirectEntity() instanceof ThrownGun thrownGun)
-            return thrownGun.getGunType();
-        if (!FlanDamageSources.isShootableDamage(source) && !source.is(FlanDamageSources.MELEE) && !source.is(FlanDamageSources.EXPLOSION))
-            return null;
-        return killer.getMainHandItem().getItem() instanceof GunItem gunItem ? gunItem.getConfigType() : null;
     }
 
     private static ChatFormatting teamColour(LivingEntity entity)

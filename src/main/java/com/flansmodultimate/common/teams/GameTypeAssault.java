@@ -156,6 +156,17 @@ public final class GameTypeAssault extends GameTypeObjective
     @Override
     public boolean hasWinner(TeamsManager manager, Team team)
     {
+        return hasWinner(manager, team, true);
+    }
+
+    @Override
+    public boolean hasWinnerBeforeTimeLimit(TeamsManager manager, Team team)
+    {
+        return hasWinner(manager, team, false);
+    }
+
+    private boolean hasWinner(TeamsManager manager, Team team, boolean includeTimeout)
+    {
         TeamsRound round = manager.getCurrentRound().orElse(null);
         if (round == null)
             return false;
@@ -164,7 +175,7 @@ public final class GameTypeAssault extends GameTypeObjective
         if (sideId == getAttackingTeamId(round))
             return attackersWon;
         return !attackersWon && sideId == getDefendingTeamId(round)
-            && (manager.getRoundTimeLeftTicks() <= 0 || manager.getTeamScore(round.getSideLeader(getAttackingTeamId(round))) >= round.getScoreLimit());
+            && (includeTimeout && manager.getRoundTimeLeftTicks() <= 0 || manager.getTeamScore(round.getSideLeader(getAttackingTeamId(round))) >= round.getScoreLimit());
     }
 
     @Nullable

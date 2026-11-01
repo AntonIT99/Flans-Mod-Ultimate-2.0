@@ -1,0 +1,17 @@
+// Identity
+Name Rifleman (Sumpftarn M45, Interpretation)
+ShortName W44_GermanArmyRiflemanSumpftarn1945
+Description Late-war camouflage option using the pack Sumpftarn M45 suit; this combination is an interpretation rather than a documented standard issue.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanSumpftarnM45Chest
+Legs 44_GermanSumpftarnM45Pants
+
+// Items
+AddItem 44_G43
+AddItem 44_G43Ammo 6
+AddItem 44_stielhandgranate 2
+AddItem 44_Bandage

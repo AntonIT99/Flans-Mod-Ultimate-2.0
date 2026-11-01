@@ -96,7 +96,7 @@ class CrewGunnersTest
             models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
             states.when(() -> NpcVehicleState.aimPoint(target)).thenReturn(new Vec3(0D, 0D, -10D));
-            crew.when(() -> NpcCrew.occupant(vehicle, 1)).thenReturn(Optional.of(gunner));
+            crew.when(() -> NpcCrew.occupant(anyMap(), eq(1))).thenReturn(Optional.of(gunner));
             ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, gunner, weapon)).thenReturn(ammo);
             types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
             projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any())).thenReturn(Optional.of(muzzle));
@@ -109,7 +109,7 @@ class CrewGunnersTest
             guns.tick(vehicle);
             verify(shot, times(1)).launch(Vec3.ZERO, direction, false);
             options.set(Feature.MANNED_GUNS_FIRE, true);
-            crew.when(() -> NpcCrew.occupant(vehicle, 1)).thenReturn(Optional.empty());
+            crew.when(() -> NpcCrew.occupant(anyMap(), eq(1))).thenReturn(Optional.empty());
             guns.tick(vehicle);
             verify(shot, times(1)).launch(Vec3.ZERO, direction, false);
         }
@@ -161,7 +161,7 @@ class CrewGunnersTest
             models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
             states.when(() -> NpcVehicleState.aimPoint(target)).thenReturn(new Vec3(0D, 0D, -10D));
-            crew.when(() -> NpcCrew.occupant(vehicle, 1)).thenReturn(Optional.empty());
+            crew.when(() -> NpcCrew.occupant(anyMap(), eq(1))).thenReturn(Optional.empty());
             ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, vehicle, weapon)).thenReturn(ammo);
             types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
             projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any()))
@@ -175,7 +175,7 @@ class CrewGunnersTest
             guns.tick(vehicle);
             verify(shot, times(1)).launch(Vec3.ZERO, direction, false);
             // A rider who is no crew member, such as a player, keeps the gun silent.
-            crew.when(() -> NpcCrew.occupied(vehicle, 1)).thenReturn(true);
+            crew.when(() -> NpcCrew.occupied(anyMap(), eq(1))).thenReturn(true);
             for (int tick = 0; tick < 10; tick++)
                 guns.tick(vehicle);
             verify(shot, times(1)).launch(Vec3.ZERO, direction, false);
@@ -380,7 +380,7 @@ class CrewGunnersTest
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
             states.when(() -> NpcVehicleState.aimPoint(aside)).thenReturn(targetPoint);
             states.when(() -> NpcVehicleState.aimPoint(ahead)).thenReturn(otherPoint);
-            crew.when(() -> NpcCrew.occupant(vehicle, 1)).thenReturn(Optional.of(gunner));
+            crew.when(() -> NpcCrew.occupant(anyMap(), eq(1))).thenReturn(Optional.of(gunner));
             ammunition.when(() -> NpcAmmunition.crewGunTemplate(vehicle, gunner, weapon)).thenReturn(ammo);
             types.when(() -> FlansEntityTypes.getSeatReloadCycle(definition, 1, ammo)).thenReturn(Optional.of(new ReloadCycle(2, 2D, 4D, OptionalInt.empty())));
             projectiles.when(() -> FlansProjectiles.getSeatMuzzle(eq(definition), eq(1), anyInt(), eq(MountAim.REST), any()))

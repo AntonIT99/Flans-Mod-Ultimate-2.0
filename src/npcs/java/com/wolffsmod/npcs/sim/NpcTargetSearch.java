@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,10 +21,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -53,15 +53,28 @@ public final class NpcTargetSearch
     @FunctionalInterface
     public interface Priority
     {
+        // The default ranks everything alike; the Teams bots install a ranking of their own at runtime.
+        @SuppressWarnings("SameReturnValue")
         int rank(EntityNPCInterface npc, LivingEntity candidate);
     }
 
     private static final AtomicReference<Priority> PRIORITY = new AtomicReference<>((npc, candidate) -> 0);
+    /** Candidates in the order a band tests them: by rank, then nearest first. */
+    private static final Comparator<Ranked> RANKED_ORDER = Comparator.comparingInt(Ranked::rank).thenComparingDouble(Ranked::distance);
 
     private final long[] searched = new long[BANDS.length];
     private boolean started;
     /** Game time a due search was first put off by the server's limit, or {@link Long#MIN_VALUE} while none waits. */
     private long waitingSince = Long.MIN_VALUE;
+
+    /**
+     * A candidate of a band search.
+     *
+     * @param distance
+     *            squared blocks from the searching NPC
+     */
+    private record Ranked(LivingEntity entity, int rank, double distance)
+    {}
 
     /** Sets how candidates are ranked ahead of their distance. */
     public static void setPriority(Priority priority)
@@ -191,16 +204,21 @@ public final class NpcTargetSearch
             return entity != npc && entity.isAlive() && distance > innerSquared && distance <= outerSquared;
         });
         Priority priority = PRIORITY.get();
-        Map<LivingEntity, Integer> ranks = new HashMap<>();
-        candidates.forEach(candidate -> ranks.put(candidate, priority.rank(npc, candidate)));
-        candidates.sort(Comparator.<LivingEntity, Integer>comparing(ranks::get).thenComparingDouble(npc::distanceToSqr));
+        // Each candidate's rank and distance are worked out once, not on every comparison of the sort.
+        Ranked[] ranked = new Ranked[candidates.size()];
+        for (int index = 0; index < ranked.length; index++)
+        {
+            LivingEntity candidate = candidates.get(index);
+            ranked[index] = new Ranked(candidate, priority.rank(npc, candidate), npc.distanceToSqr(candidate));
+        }
+        Arrays.sort(ranked, RANKED_ORDER);
         LivingEntity found = null;
         int tested = 0;
-        for (int index = 0; index < candidates.size() && found == null; index++)
+        for (int index = 0; index < ranked.length && found == null; index++)
         {
             tested++;
-            if (conditions.test(npc, candidates.get(index)))
-                found = candidates.get(index);
+            if (conditions.test(npc, ranked[index].entity()))
+                found = ranked[index].entity();
         }
         if (started != 0L)
         {
@@ -214,7 +232,7 @@ public final class NpcTargetSearch
     }
 
     /**
-     * @return blocks out to which the mob looks for a target, and keeps one before any margin: an NPC's aggro range, or its
+     * @return blocks out to which the mob looks for a target, and keeps one before any margin: an NPC's aggro range, which its weapon may extend, or its
      *         follow range where that reaches further. Custom NPCs resets the follow range to its navigation range whenever
      *         an NPC loads, and searching only that far in a straight line leaves an aircraft high above its targets blind
      *         to all but those almost under it, and drops a target as soon as its turn carries it out that far.
@@ -222,7 +240,7 @@ public final class NpcTargetSearch
     public static double range(Mob mob)
     {
         double follow = mob.getAttributeValue(Attributes.FOLLOW_RANGE);
-        return mob instanceof EntityNPCInterface npc ? Math.max(follow, npc.stats.aggroRange) : follow;
+        return mob instanceof EntityNPCInterface npc ? Math.max(follow, NpcWeaponRange.aggro(npc)) : follow;
     }
 
     /** @return the NPC's own interval, or the server's when the NPC states none */

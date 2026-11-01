@@ -7,6 +7,7 @@ import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.entity.EntityNPCInterface;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,10 +27,10 @@ import static org.mockito.Mockito.*;
 
 class NpcCrewPassengerTest
 {
-    private static final WeaponMount DRIVER = mount(0, true, Optional.empty());
-    private static final WeaponMount GUNNER = mount(1, false, Optional.of(mock(IContentType.class)));
-    private static final WeaponMount FIRST_PASSENGER = mount(2, false, Optional.empty());
-    private static final WeaponMount SECOND_PASSENGER = mount(3, false, Optional.empty());
+    private static final WeaponMount DRIVER = mount(0, true, null);
+    private static final WeaponMount GUNNER = mount(1, false, mock(IContentType.class));
+    private static final WeaponMount FIRST_PASSENGER = mount(2, false, null);
+    private static final WeaponMount SECOND_PASSENGER = mount(3, false, null);
 
     @BeforeAll
     static void bootstrap() throws ReflectiveOperationException
@@ -58,6 +60,34 @@ class NpcCrewPassengerTest
             // Only the player in the gunner's seat mans a gun.
             assertEquals(Optional.of(GUNNER), NpcCrew.mannedGun(first));
             assertEquals(Optional.empty(), NpcCrew.mannedGun(second));
+        }
+    }
+
+    @Test
+    void theSeatingOfAllRidersAgreesWithEachRidersSeatAndTellsWhoMansEachSeat()
+    {
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
+        EntityNPCInterface gunner = mock(EntityNPCInterface.class, withSettings().extraInterfaces(NpcCrewHolder.class));
+        Player passenger = mock(Player.class);
+        when(((NpcCrewHolder) gunner).wolffsmodnpcsCrewSeat()).thenReturn(GUNNER.seat());
+        when(gunner.isAlive()).thenReturn(true);
+        when(vehicle.getPassengers()).thenReturn(List.of(gunner, passenger));
+        try (var states = vehicleWith(vehicle, DRIVER, GUNNER, FIRST_PASSENGER))
+        {
+            Map<Entity, WeaponMount> seating = NpcCrew.seating(vehicle);
+            // The crew member keeps its own seat; the player takes a passenger seat before the driver's.
+            assertEquals(Map.of(gunner, GUNNER, passenger, FIRST_PASSENGER), seating);
+            assertEquals(Optional.of(GUNNER), NpcCrew.seatOf(vehicle, gunner));
+            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, passenger));
+            assertEquals(Optional.of(gunner), NpcCrew.occupant(seating, GUNNER.seat()));
+            // A player is a rider, not a crew member.
+            assertEquals(Optional.empty(), NpcCrew.occupant(seating, FIRST_PASSENGER.seat()));
+            assertTrue(NpcCrew.occupied(seating, FIRST_PASSENGER.seat()));
+            assertFalse(NpcCrew.occupied(seating, DRIVER.seat()));
+            // A knocked out crew member still holds its seat but mans nothing.
+            when(gunner.isKilled()).thenReturn(true);
+            assertEquals(Optional.empty(), NpcCrew.occupant(seating, GUNNER.seat()));
+            assertTrue(NpcCrew.occupied(vehicle, GUNNER.seat()));
         }
     }
 
@@ -247,8 +277,8 @@ class NpcCrewPassengerTest
         return states;
     }
 
-    private static WeaponMount mount(int seat, boolean driver, Optional<IContentType> gun)
+    private static WeaponMount mount(int seat, boolean driver, @Nullable IContentType gun)
     {
-        return new WeaponMount(seat, driver, false, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, gun);
+        return new WeaponMount(seat, driver, false, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, Optional.ofNullable(gun));
     }
 }

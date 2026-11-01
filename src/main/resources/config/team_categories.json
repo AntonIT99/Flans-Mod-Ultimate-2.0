@@ -1,0 +1,400 @@
+{
+
+    "China": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_china"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "plagf",
+            "plamodern",
+            "plamoderndesert",
+            "plamodernmarines"
+        ]
+    },
+
+    "France": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_france"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "francemodernd",
+            "francemodernw",
+            "franceww2",
+            "gign"
+        ]
+    },
+
+    "Germany - modern": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_germany"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "bnd",
+            "heer",
+            "heerdesert",
+            "heerfrostbite",
+            "ksk"
+        ]
+    },
+
+    "Germany - World War I": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_germany_ww1"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "germanww1"
+        ]
+    },
+
+    "Germany - World War II": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_germany_ww2"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "german",
+            "germandesert",
+            "germandesertteam",
+            "germanforest",
+            "germanforestteam",
+            "germansnow",
+            "germansnowteam",
+            "germanteam",
+            "germanyafrika",
+            "germanyearly",
+            "germanymidwar",
+            "germanysnow",
+            "officialww2_germaninfantryteam",
+            "panzerkorps",
+            "w44_fallschirmjager",
+            "w44_germanarmy",
+            "waffenss",
+            "wolffgermany_afrikakorps",
+            "wolffgermany_croatianlegionfeldgrau",
+            "wolffgermany_croatianlegionsteingrau",
+            "wolffgermany_easternvolunteersfeldgrau",
+            "wolffgermany_easternvolunteerssteingrau",
+            "wolffgermany_frenchlegionfeldgrau",
+            "wolffgermany_frenchlegionsteingrau",
+            "wolffgermany_generalcorps",
+            "wolffgermany_grossdeutschlandfeldgrau",
+            "wolffgermany_grossdeutschlandsteingrau",
+            "wolffgermany_heercamouflage",
+            "wolffgermany_heerfeldgrau",
+            "wolffgermany_heersteingrau",
+            "wolffgermany_heerwinter",
+            "wolffgermany_leibstandarte",
+            "wolffgermany_luftwaffe",
+            "wolffgermany_party",
+            "wolffgermany_securitycorps",
+            "wolffgermany_spanishvolunteersfeldgrau",
+            "wolffgermany_specialcorpsbelgianfeldgrau",
+            "wolffgermany_specialcorpsbelgiansteingrau",
+            "wolffgermany_specialcorpscamouflage",
+            "wolffgermany_specialcorpsdanishfeldgrau",
+            "wolffgermany_specialcorpsestonianfeldgrau",
+            "wolffgermany_specialcorpsestoniansteingrau",
+            "wolffgermany_specialcorpsfeldgrau",
+            "wolffgermany_specialcorpsfrenchsteingrau",
+            "wolffgermany_specialcorpslatvianfeldgrau",
+            "wolffgermany_specialcorpslatviansteingrau",
+            "wolffgermany_specialcorpsrussiansteingrau",
+            "wolffgermany_specialcorpssteingrau",
+            "wolffgermany_specialcorpsukrainiansteingrau",
+            "wolffgermany_specialcorpswinter",
+            "wolffgermany_walloonlegionfeldgrau"
+        ]
+    },
+
+    "Israel": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_isreal"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "idf"
+        ]
+    },
+
+    "Italy - World War II": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_italy_1861-1946"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "italian"
+        ]
+    },
+
+    "Japan - modern": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_japan"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "jgsdf"
+        ]
+    },
+
+    "Japan - World War II": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_japan_ww2"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "japanese",
+            "japaneseearly",
+            "japaneselate",
+            "japaneseteam",
+            "w44_japanesearmy"
+        ]
+    },
+
+    "Rome": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_spqr"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "wolffrome_empire",
+            "wolffrome_republic"
+        ]
+    },
+
+    "Russia - modern": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_russia"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "ru",
+            "rusmodern",
+            "rusmodernd",
+            "rusmodernfrostbite",
+            "rusmodernmarines",
+            "spetsnaz",
+            "ukraineinvasionru",
+            "winterspetsnaz"
+        ]
+    },
+
+    "Russia - World War I": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_russia_ww1"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "russiaww1"
+        ]
+    },
+
+    "Soviet Union - Cold War": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_ussr"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "sovietcw",
+            "soviettankists"
+        ]
+    },
+
+    "Soviet Union - World War II": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_ussr_ww2.svg"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "russian",
+            "russianseelow",
+            "russianteam",
+            "sovietearly",
+            "w44_sovietarmy"
+        ]
+    },
+
+    "Star Wars - Galactic Empire": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_galactic_empire"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "wolffstarwars_imperial"
+        ]
+    },
+
+    "Star Wars - Galactic Republic": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_galactic_republic"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "wolffstarwars_republic187p2",
+            "wolffstarwars_republic212p1",
+            "wolffstarwars_republic212p2",
+            "wolffstarwars_republic327p1",
+            "wolffstarwars_republic41p1",
+            "wolffstarwars_republic442p1",
+            "wolffstarwars_republic442p2",
+            "wolffstarwars_republic501p1",
+            "wolffstarwars_republic501p2",
+            "wolffstarwars_republickaminosecurity",
+            "wolffstarwars_republicshockp2",
+            "wolffstarwars_republicstandardp1",
+            "wolffstarwars_republicstandardp2"
+        ]
+    },
+
+    "Star Wars - Jedi Order": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_jedi"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "wolffstarwars_jediorder"
+        ]
+    },
+
+    "Star Wars - Separatist Alliance": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_cis"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "wolffstarwars_separatistgeonosis",
+            "wolffstarwars_separatiststandard"
+        ]
+    },
+
+    "Star Wars - Sith Order": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_sith"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "wolffstarwars_sithorder"
+        ]
+    },
+
+    "Ukraine": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_ukraine"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "ukrmodern",
+            "ukrmoderndefenders"
+        ]
+    },
+
+    "United Kingdom": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_uk"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "alliedww1",
+            "british",
+            "britishdesert",
+            "britishdesertteam",
+            "britishelalamein",
+            "britishmidwar",
+            "britishteam",
+            "britmodern",
+            "sas",
+            "w44_britisharmy"
+        ]
+    },
+
+    "United States - modern": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_usa"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "americancitizens",
+            "bf2us",
+            "fbi",
+            "marines",
+            "swat",
+            "us",
+            "us_pilot",
+            "usa",
+            "usa80s",
+            "usavietnam",
+            "usmc",
+            "usmcdesert",
+            "wintermarines"
+        ]
+    },
+
+    "United States - World War II": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_usa_1912-1959"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "american",
+            "americanmarines",
+            "americanmarineslate",
+            "americansnow",
+            "americansnowteam",
+            "americanteam",
+            "officialww2_americaninfantryteam",
+            "w44_usairborne",
+            "w44_usarmy",
+            "wolffgermany_americangeneralcorps"
+        ]
+    }
+
+}

@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.teams.TeamsSpawnProtection;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -106,7 +107,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         ItemStack stack = player.getItemInHand(hand);
 
         // A hold-to-throw grenade leaves the hand only when its button is released (see PacketGrenadeThrow)
-        if (!configType.isHoldToThrow() && throwGrenade(level, player, stack, false, false))
+        if (!configType.isHoldToThrow() && throwGrenade(level, player, stack, false, false, 1F))
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
 
         // Nothing special happened, fall back
@@ -118,26 +119,39 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
      *
      * @param underhand
      *            true for an underhand toss (use button), false for an overhand throw (attack button)
+     * @param charge
+     *            how much of its full speed the grenade is thrown with, from 0 to 1
      * @return whether a grenade was thrown
      */
-    public boolean throwByHand(Player player, ItemStack stack, boolean underhand)
+    public boolean throwByHand(Player player, ItemStack stack, boolean underhand, float charge)
     {
-        return configType.isHoldToThrow() && throwGrenade(player.level(), player, stack, true, underhand);
+        return configType.isHoldToThrow() && throwGrenade(player.level(), player, stack, true, underhand, charge);
     }
 
-    private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand)
+    private static boolean roundAllowsThrow(Level level, Player player, ItemStack stack)
+    {
+        if (level.isClientSide)
+            return true;
+        var rules = FlansMod.teamsManager.getRoundRuleRuntime();
+        return !rules.blocksCombat(player) && !rules.blocksItemUse(player, stack);
+    }
+
+    private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand, float charge)
     {
         PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade
-        if (configType.isCanThrow() && !FlansMod.teamsManager.isPacifism() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
+        if (configType.isCanThrow() && !FlansMod.teamsManager.isPacifism() && roundAllowsThrow(level, player, stack) && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)
         {
             // Delay the next throw / weapon fire / whatnot
             data.setShootTimeRight(configType.getThrowDelay());
 
             // Spawn the entity server side
             if (!level.isClientSide)
-                level.addFreshEntity(byHand ? Grenade.thrownByHand(level, configType, player, underhand) : new Grenade(level, configType, player));
+            {
+                level.addFreshEntity(byHand ? Grenade.thrownByHand(level, configType, player, underhand, charge) : new Grenade(level, configType, player));
+                TeamsSpawnProtection.end(player);
+            }
 
             // Consume an item (non-creative)
             if (!player.getAbilities().instabuild)

@@ -1,0 +1,17 @@
+// Identity
+Name Marksman (SVT-40)
+ShortName W44_SovietArmyMarksmanSVT40
+Description Sniper with a PU scoped SVT-40.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Items
+AddItem 44_SVT40+44_PUScope
+AddItem 44_SVT40Ammo 4
+AddItem 44_TT33
+AddItem 44_TT33Ammo 2
+AddItem 44_Binoculars
+AddItem 44_Bandage

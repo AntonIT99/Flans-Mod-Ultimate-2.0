@@ -1,0 +1,14 @@
+// Identity
+Name Commando (Sten Mk II(S))
+ShortName W44_BritishArmyCommandoSten
+Description Commando raider with a suppressed Sten.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 15
+
+// Items
+AddItem 44_Sten+44_Suppressor
+AddItem 44_StenAmmo 5
+AddItem 44_Mk2Frag
+AddItem 44_Bandage

@@ -9,6 +9,7 @@ import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.PlatformLoadingProgress;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.*;
 import lombok.*;
@@ -204,14 +205,30 @@ public class ContentManager
             if (PlatformEnvironment.isClient())
                 legacyTextures.prepare(contentPacks, workers);
 
-            for (IContentProvider provider : contentPacks)
-                loadContentPack(provider, reader);
+            int reprocessed = 0;
+            try (PlatformLoadingProgress.Bar bar = PlatformLoadingProgress.bar("Flan's Mod: content packs", contentPacks.size()))
+            {
+                for (IContentProvider provider : contentPacks)
+                {
+                    bar.label("Loading " + provider.getName());
+                    if (loadContentPack(provider, reader, bar))
+                        reprocessed++;
+                    bar.increment();
+                }
+            }
 
             long postLoadStart = System.nanoTime();
+            PlatformLoadingProgress.message("Flan's Mod: measuring sound lengths");
             applyMeasuredSoundLengths(workers);
+            PlatformLoadingProgress.message("Flan's Mod: resolving content references");
             resolveDeferredContentReferences();
+            PlatformLoadingProgress.message("Flan's Mod: measuring muzzle points");
             applyMeasuredMuzzles();
             long end = System.nanoTime();
+
+            int types = configs.values().stream().mapToInt(List::size).sum();
+            PlatformLoadingProgress
+                .message(String.format(Locale.ROOT, "Flan's Mod: %d pack(s), %d reprocessed, %d types in %.1f s", contentPacks.size(), reprocessed, types, (end - loadStart) / 1_000_000_000.0));
 
             if (FlansLog.log.isInfoEnabled())
             {
@@ -229,7 +246,8 @@ public class ContentManager
         FileUtils.deleteDirectoryIfEmpty(tempRoot);
     }
 
-    private static void loadContentPack(IContentProvider provider, ContentPackReader reader)
+    /** Returns whether the pack was reprocessed. */
+    private static boolean loadContentPack(IContentProvider provider, ContentPackReader reader, PlatformLoadingProgress.Bar bar)
     {
         long startTime = System.currentTimeMillis();
 
@@ -239,7 +257,7 @@ public class ContentManager
         legacyTextures.initialize(provider);
 
         if (!provider.isArchive())
-            compileJavaModelsIfNeeded(provider);
+            compileJavaModelsIfNeeded(provider, bar);
 
         boolean preprocessed = provider.isPreprocessed();
         boolean preLoadAssets = false;
@@ -302,17 +320,27 @@ public class ContentManager
         {
             long endTime = System.currentTimeMillis();
             FlansLog.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), endTime - startTime);
-            return;
+            return false;
         }
 
         boolean archiveExtracted = false;
         boolean assetsComplete = false;
         boolean dataComplete = false;
+        boolean reprocessing = unpackArchive || preLoadAssets || preLoadData;
+
+        if (reprocessing)
+        {
+            String reasons = reprocessingReasons(processingCache, idAliasNeedsUpdate, preLoadAssets);
+            bar.label("Reprocessing " + provider.getName() + ": " + reasons);
+            if (unpackArchive)
+            {
+                FlansLog.log.info("Reprocessing {}...", provider.getName());
+                FlansLog.log.info("{}: Reprocessing reasons: {}", provider.getName(), reasons);
+            }
+        }
 
         if (unpackArchive)
         {
-            FlansLog.log.info("Reprocessing {}...", provider.getName());
-            logReprocessingReasons(provider, processingCache, idAliasNeedsUpdate, preLoadAssets);
             FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
             archiveExtracted = FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
         }
@@ -320,7 +348,7 @@ public class ContentManager
         if (archiveExtracted || !provider.isArchive())
         {
             if (archiveExtracted)
-                compileJavaModelsIfNeeded(provider);
+                compileJavaModelsIfNeeded(provider, bar);
 
             ContentPackAssets.createMcMeta(provider);
 
@@ -357,6 +385,7 @@ public class ContentManager
 
         long endTime = System.currentTimeMillis();
         FlansLog.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
+        return reprocessing;
     }
 
     private static void loadTypes(IContentProvider provider, ContentPackReader reader)
@@ -460,6 +489,7 @@ public class ContentManager
         int tools = 0;
 
         FlansLog.log.info("Validating content references...");
+        PlatformLoadingProgress.message("Flan's Mod: validating content references");
         for (ArrayList<InfoType> providerConfigs : configs.values())
         {
             for (InfoType config : providerConfigs)
@@ -711,10 +741,8 @@ public class ContentManager
         FlansMod.registerBlock(shortName, config.getType(), () -> BlockFactory.createBlock(config));
     }
 
-    private static void logReprocessingReasons(IContentProvider provider, ContentProcessingCache cache, boolean idAliasNeedsUpdate, boolean preLoadAssets)
+    private static String reprocessingReasons(ContentProcessingCache cache, boolean idAliasNeedsUpdate, boolean preLoadAssets)
     {
-        if (!FlansLog.log.isInfoEnabled())
-            return;
         List<String> reasons = new ArrayList<>();
         boolean forceRegen = ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds();
         if (forceRegen)
@@ -726,7 +754,7 @@ public class ContentManager
             reasons.add("texture aliases changed");
         if ((PlatformEnvironment.isClient() && !assetsCurrent) || !cache.dataCurrent())
             reasons.add(cache.regenerationReason(PlatformEnvironment.isClient()));
-        FlansLog.log.info("{}: Reprocessing reasons: {}", provider.getName(), String.join("; ", reasons));
+        return String.join("; ", reasons);
     }
 
     private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData, boolean idAliasNeedsUpdate)
@@ -734,7 +762,7 @@ public class ContentManager
         return provider.isArchive() && (preLoadAssets || preLoadData || idAliasNeedsUpdate);
     }
 
-    private static void compileJavaModelsIfNeeded(IContentProvider provider)
+    private static void compileJavaModelsIfNeeded(IContentProvider provider, PlatformLoadingProgress.Bar bar)
     {
         if (!PlatformEnvironment.isClient())
             return;
@@ -752,6 +780,7 @@ public class ContentManager
                 return;
             }
 
+            bar.label("Compiling Java models for " + provider.getName());
             JavaModelCompiler.compileJavaModels(provider);
             // Compiled classes are written into the pack.
             ContentFileCache.forget(provider.isArchive() ? provider.getExtractedPath() : provider.getPath());

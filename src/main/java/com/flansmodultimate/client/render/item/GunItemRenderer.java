@@ -151,6 +151,7 @@ public final class GunItemRenderer
                 poseStack.translate(0F, -scopeModel.getRenderOffset() + model.getGunOffset() / 16F, 0F);
             }
         }
+        poseStack.pushPose();
         poseStack.scale(modelScale, modelScale, modelScale);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
         boolean cull = useCulling(model.getType(), poseStack);
@@ -174,8 +175,11 @@ public final class GunItemRenderer
         renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
 
-        renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
+        // Attachments apply the gun's model scale themselves, but must still follow the recoil and sight offset
         renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
+        poseStack.popPose();
+
+        renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
     }
 
     private static boolean shouldRenderGun(ModelGun model, ItemDisplayContext itemDisplayContext, ItemStack item)

@@ -11,6 +11,7 @@ import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 
 /** Client handlers of the module's own packets. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -79,13 +80,22 @@ public final class NpcClientPackets
             Minecraft.getInstance().setScreen(new BotOrdersScreen(packet));
     }
 
-    /** Opens the bot editor, or shows the new state in it. */
+    /** Opens the bot editor, or shows the new state in it, also while one of its pickers is open over it. */
     public static void botEditor(BotEditorStatePacket packet)
     {
-        if (Minecraft.getInstance().screen instanceof BotEditorScreen screen)
-            screen.update(packet);
+        Screen screen = Minecraft.getInstance().screen;
+        if (screen instanceof BotPickerScreen picker)
+            screen = picker.parent();
+        if (screen instanceof BotEditorScreen editor)
+            editor.update(packet);
         else
             Minecraft.getInstance().setScreen(new BotEditorScreen(packet));
+    }
+
+    public static void botClones(BotClonesPacket packet)
+    {
+        if (Minecraft.getInstance().screen instanceof BotClonePicker picker)
+            picker.receive(packet);
     }
 
     public static void waypoints(BotWaypointsPacket packet)

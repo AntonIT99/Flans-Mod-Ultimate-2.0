@@ -8,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,6 +20,33 @@ class BotSettingsTest
     void aRoundWithoutSettingsHasNoBots()
     {
         assertFalse(BotSettings.load(new CompoundTag()).isEnabled());
+    }
+
+    @Test
+    void regularIsTheDefaultButSavedDifficultiesArePreserved()
+    {
+        assertEquals(BotSettings.Difficulty.REGULAR, new BotSettings().getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, BotSettings.load(new CompoundTag()).getDifficulty());
+        BotSettings saved = new BotSettings();
+        saved.setDifficulty(BotSettings.Difficulty.ELITE);
+        assertEquals(BotSettings.Difficulty.ELITE, BotSettings.load(saved.save()).getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, new Skirmish(UUID.randomUUID(), "test", net.minecraft.world.level.Level.OVERWORLD).getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, new War(UUID.randomUUID(), "test").getDifficulty());
+    }
+
+    @Test
+    void classesWeighOneEachUntilOneOfTheTeamsHasAWeight()
+    {
+        BotSettings.TeamForce force = new BotSettings.TeamForce();
+        List<String> classes = List.of("rifleman", "mg", "medic");
+        assertEquals(Map.of("rifleman", 1, "mg", 1, "medic", 1), force.effectiveClassWeights(classes));
+        // A weight for a class the team does not offer weighs nothing, as when bots are given classes.
+        force.getClassWeights().put("sniper", 5);
+        assertEquals(Map.of("rifleman", 1, "mg", 1, "medic", 1), force.effectiveClassWeights(classes));
+        force.getClassWeights().put("rifleman", 3);
+        force.getClassWeights().put("mg", 0);
+        assertEquals(Map.of("rifleman", 3, "mg", 0, "medic", 0), force.effectiveClassWeights(classes));
+        assertEquals(List.copyOf(classes), List.copyOf(force.effectiveClassWeights(classes).keySet()));
     }
 
     @Test
@@ -89,13 +117,36 @@ class BotSettingsTest
     void difficultyPlayerTicketsAndCloneEquipmentSurviveSavingAndLoading()
     {
         BotSettings settings = new BotSettings();
-        settings.setDifficulty(BotSettings.Difficulty.ELITE);
+        settings.setDifficulty(BotSettings.Difficulty.TRAINEE);
         settings.setPlayerTickets(false);
         settings.team("Germans").setKeepCloneEquipment(true);
         BotSettings loaded = BotSettings.load(settings.save());
-        assertEquals(BotSettings.Difficulty.ELITE, loaded.getDifficulty());
+        assertEquals(BotSettings.Difficulty.TRAINEE, loaded.getDifficulty());
         assertFalse(loaded.isPlayerTickets());
         assertTrue(loaded.team("Germans").isKeepCloneEquipment());
+    }
+
+    @Test
+    void difficultiesGoFromTheBestDownAndNoneMakesABotBetterThanItsEquipment()
+    {
+        BotSettings.Difficulty[] levels = BotSettings.Difficulty.values();
+        assertEquals(BotSettings.Difficulty.ACE, levels[0]);
+        assertFalse(levels[0].scalesStats());
+        assertEquals(0, levels[0].skill().reactionTicks());
+        for (int index = 1; index < levels.length; index++)
+        {
+            BotSettings.Difficulty better = levels[index - 1];
+            BotSettings.Difficulty level = levels[index];
+            assertTrue(level.skill().reactionTicks() > better.skill().reactionTicks(), level + " reacts slower than " + better);
+            assertTrue(level.skill().settleTicks() >= better.skill().settleTicks(), level + " settles its aim no faster than " + better);
+            assertTrue(level.skill().lead() <= better.skill().lead(), level + " leads no better than " + better);
+            assertTrue(level.accuracy() <= 1F && level.aggro() <= 1F, level + " stays within its equipment");
+        }
+        for (BotSettings.Difficulty level : levels)
+        {
+            assertFalse(level.skill().nonLethal(), level + " leaves sparing players to Cinematic mode");
+            assertEquals(level.compareTo(BotSettings.Difficulty.REGULAR) <= 0, level.skill().playerDamage() >= 1F, level + " softens its hits on players only below Regular");
+        }
     }
 
     @Test
@@ -105,7 +156,7 @@ class BotSettingsTest
         old.remove("difficulty");
         old.remove("player_tickets");
         BotSettings loaded = BotSettings.load(old);
-        assertEquals(BotSettings.Difficulty.DEFAULT, loaded.getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, loaded.getDifficulty());
         assertTrue(loaded.isPlayerTickets());
     }
 

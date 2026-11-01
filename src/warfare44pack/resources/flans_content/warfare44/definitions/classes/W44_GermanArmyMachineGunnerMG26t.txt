@@ -10,5 +10,7 @@ ClassLimitPercent 20
 // Items
 AddItem 44_Mg26t
 AddItem 44_Mg26tAmmo 6
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
 AddItem 44_AmmoBag
 AddItem 44_Bandage

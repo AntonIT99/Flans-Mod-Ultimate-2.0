@@ -3,9 +3,11 @@ package com.flansmodultimate.common.item;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.tooltip.*;
+import com.flansmodultimate.common.teams.TeamsCombatants;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.util.ModUtils;
@@ -85,6 +87,12 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     @Nullable
     public D spawnDriveable(Level level, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack)
     {
+        return spawnDriveable(level, x, y, z, yaw, placer, sourceStack, placer == null ? null : TeamsCombatants.getPlayingTeam(TeamsManager.getInstance(), placer));
+    }
+
+    @Nullable
+    public D spawnDriveable(Level level, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack, @Nullable Team roundTeam)
+    {
         if (level.isClientSide)
             return null;
         ItemStack entityStack = sourceStack == null || sourceStack.isEmpty() ? new ItemStack(this) : sourceStack.copyWithCount(1);
@@ -98,7 +106,17 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
             driveable.discard();
             return null;
         }
-        return level.addFreshEntity(driveable) ? driveable : null;
+        var limits = TeamsManager.getInstance().getRoundRuleRuntime().getVehicles();
+        if (!limits.prepare(driveable, roundTeam))
+        {
+            driveable.discard();
+            return null;
+        }
+        if (level.addFreshEntity(driveable))
+            return driveable;
+        limits.placementFailed(driveable);
+        driveable.discard();
+        return null;
     }
 
     protected abstract D createDriveable(Level level, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack);

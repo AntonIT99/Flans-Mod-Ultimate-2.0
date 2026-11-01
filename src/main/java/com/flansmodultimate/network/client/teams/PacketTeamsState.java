@@ -8,6 +8,7 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +61,9 @@ public final class PacketTeamsState implements IClientPacket
     {}
     public record VoteOption(String mapName, String gameType, Component teams, int votes)
     {}
+    /** Where the headquarters of a side lie, for the deployment map. */
+    public record HeadquartersMarker(int sideId, double x, double z)
+    {}
     /** Viewer-independent data, built once for each broadcast rather than once per player. */
     public record SharedScoreboard(List<TeamScore> teamScores, List<VoteOption> voteOptions, List<ObjectiveSnapshot> objectives)
     {}
@@ -69,6 +73,18 @@ public final class PacketTeamsState implements IClientPacket
 
     private OpenScreen openScreen = OpenScreen.NONE;
     private boolean enabled;
+    @Getter
+    private boolean hideAllNameplates;
+    @Getter
+    private boolean showEnemyNameplates;
+    @Getter
+    private boolean requireReady;
+    @Getter
+    private boolean ready;
+    @Getter
+    private boolean staging;
+    @Getter
+    private boolean overtime;
     private boolean vehiclesCanZoom;
     private boolean roundRunning;
     private boolean sortedByTeam;
@@ -101,6 +117,8 @@ public final class PacketTeamsState implements IClientPacket
     private TeamsMap.ImageCrop deployImageCrop = TeamsMap.ImageCrop.FULL;
     private List<DeployLayoutEntry> deployLayout = List.of();
     private List<ObjectiveSnapshot> objectives = List.of();
+    @Getter
+    private List<HeadquartersMarker> headquarters = List.of();
     /** Whether a round has just ended, which is what makes a blank {@link #winnerId} a draw. */
     private boolean roundDecided;
     private String winnerId = "";
@@ -115,6 +133,13 @@ public final class PacketTeamsState implements IClientPacket
         PacketTeamsState packet = new PacketTeamsState();
         packet.openScreen = openScreen;
         packet.enabled = manager.isEnabled();
+        var roundRules = manager.getRoundRuleRuntime();
+        packet.showEnemyNameplates = roundRules.rules().enabled(RoundRule.SHOW_ENEMY_NAMEPLATES);
+        packet.hideAllNameplates = roundRules.rules().enabled(com.flansmodultimate.common.teams.RoundRule.HIDE_ALL_NAMEPLATES);
+        packet.requireReady = roundRules.rules().enabled(com.flansmodultimate.common.teams.RoundRule.REQUIRE_READY);
+        packet.ready = roundRules.isReady(viewer);
+        packet.staging = roundRules.isStaging();
+        packet.overtime = roundRules.isOvertime();
         packet.vehiclesCanZoom = manager.isVehiclesCanZoom();
         packet.roundRunning = manager.isRoundRunning();
         packet.timeLeftTicks = manager.getRoundTimeLeftTicks();
@@ -195,6 +220,7 @@ public final class PacketTeamsState implements IClientPacket
         deployImage = map.getDeployImage();
         deployImageCrop = map.getDeployImageCrop();
         deployLayout = map.getDeployLayout();
+        headquarters = manager.getHeadquartersPositions().entrySet().stream().map(entry -> new HeadquartersMarker(entry.getKey(), entry.getValue().x, entry.getValue().z)).toList();
     }
 
     public static SharedScoreboard createSharedScoreboard(TeamsManager manager)
@@ -262,6 +288,12 @@ public final class PacketTeamsState implements IClientPacket
     {
         data.writeByte(openScreen.ordinal());
         data.writeBoolean(enabled);
+        data.writeBoolean(hideAllNameplates);
+        data.writeBoolean(showEnemyNameplates);
+        data.writeBoolean(requireReady);
+        data.writeBoolean(ready);
+        data.writeBoolean(staging);
+        data.writeBoolean(overtime);
         data.writeBoolean(vehiclesCanZoom);
         data.writeBoolean(roundRunning);
         data.writeBoolean(sortedByTeam);
@@ -342,6 +374,12 @@ public final class PacketTeamsState implements IClientPacket
             buf.writeFloat(entry.y());
         });
         data.writeCollection(objectives, (buf, objective) -> objective.write(buf));
+        data.writeCollection(headquarters, (buf, marker) ->
+        {
+            buf.writeVarInt(marker.sideId());
+            buf.writeDouble(marker.x());
+            buf.writeDouble(marker.z());
+        });
     }
 
     private static void writePlayer(PacketBuffer data, PlayerScore player)
@@ -362,6 +400,12 @@ public final class PacketTeamsState implements IClientPacket
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
         enabled = data.readBoolean();
+        hideAllNameplates = data.readBoolean();
+        showEnemyNameplates = data.readBoolean();
+        requireReady = data.readBoolean();
+        ready = data.readBoolean();
+        staging = data.readBoolean();
+        overtime = data.readBoolean();
         vehiclesCanZoom = data.readBoolean();
         roundRunning = data.readBoolean();
         sortedByTeam = data.readBoolean();
@@ -409,6 +453,7 @@ public final class PacketTeamsState implements IClientPacket
         deployImageCrop = TeamsMap.ImageCrop.normalised(data.readFloat(), data.readFloat(), data.readFloat(), data.readFloat());
         deployLayout = data.readList(buf -> new DeployLayoutEntry(buf.readUtf(DeployLayoutEntry.MAX_KEY_LENGTH), buf.readFloat(), buf.readFloat()));
         objectives = data.readList(ObjectiveSnapshot::read);
+        headquarters = data.readList(buf -> new HeadquartersMarker(buf.readVarInt(), buf.readDouble(), buf.readDouble()));
     }
 
     private static TeamScore readTeamScore(PacketBuffer data)

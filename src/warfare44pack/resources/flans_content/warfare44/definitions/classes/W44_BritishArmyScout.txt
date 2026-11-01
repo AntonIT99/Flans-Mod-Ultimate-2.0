@@ -11,5 +11,7 @@ ClassLimitPercent 15
 // Items
 AddItem 44_LeeEnfield4+44_No32MkIIScope
 AddItem 44_LeeEnfieldAmmo 4
+AddItem 44_Webley
+AddItem 44_WebleyAmmo 2
 AddItem 44_Binoculars
 AddItem 44_Bandage

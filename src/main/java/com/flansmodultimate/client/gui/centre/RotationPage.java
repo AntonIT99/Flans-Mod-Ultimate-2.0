@@ -150,6 +150,8 @@ final class RotationPage extends TeamsPage
                 run(view, "teams admin round limits", index, minutes.getAsInt(), score.getAsInt());
         });
         y += ROW;
+        button(view, tr("round_rules.title"), x, y, width, () -> RoundRulesPage.open(view, round.id()));
+        y += ROW;
         button(view, tr("remove_round"), x, y, width, () -> view.confirm(tr("remove_round.confirm", data.title(round)), () -> run(view, "teams admin round remove", index)));
     }
 

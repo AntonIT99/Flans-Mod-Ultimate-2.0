@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -63,7 +64,10 @@ class NpcEquipmentPropertiesTest
         {
             EquippedWeaponProperties gun = gun();
             equipment.when(() -> FlansEquipment.getWeaponProperties(pistol, ItemStack.EMPTY)).thenReturn(Optional.of(gun));
+            WeaponKind pistolKind = new WeaponKind(gun.ranged(), gun.throwable(), gun.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(pistol)).thenReturn(Optional.of(pistolKind));
             equipment.when(() -> FlansEquipment.getWeaponProperties(rifle, ItemStack.EMPTY)).thenReturn(Optional.of(gun));
+            equipment.when(() -> FlansEquipment.getWeaponKind(rifle)).thenReturn(Optional.of(pistolKind));
             EntityNPCInterface swordAndPistol = npc(sword, pistol);
             assertTrue(NpcEquipment.offHandPrimary(swordAndPistol));
             assertSame(pistol, NpcEquipment.rangedWeapon(swordAndPistol));

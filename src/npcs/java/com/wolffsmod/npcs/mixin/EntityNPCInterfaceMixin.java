@@ -6,6 +6,7 @@ import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.entity.*;
 import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.parts.*;
+import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.*;
@@ -19,6 +20,7 @@ import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.tactics.CustomNpcTacticGoal;
+import com.wolffsmod.npcs.tactics.NpcOutrangedGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.teams.*;
@@ -30,6 +32,7 @@ import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
 import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -42,6 +45,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -57,6 +61,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 /**
+ * Teams controls passive regeneration for round soldiers; medical healing and vehicle repairs stay independent.
  * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed.
  *
  * <ul>
@@ -68,15 +73,18 @@ import java.util.*;
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
- * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
+ * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling. The entity box always
+ * has the size Custom NPCs works out for the NPC, on both sides, which it otherwise misses on several changes.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
  * a playing engine sound replaces the Custom NPCs step and idle sounds.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
  * resists knockback while it is a vehicle. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
  * melee against protected riders reaches their vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
- * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC.</li>
+ * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC. Drawn with the player
+ * model it is hit limb by limb by Flan rounds, headshots included, as players are.</li>
  * <li>Friendly fire: hits from NPCs of the same faction and from players the faction is friendly to land where friendly fire is
  * on, and a hit from a friend never turns the NPC or its faction on that friend.</li>
+ * <li>Teams bots take players as targets on Peaceful too, which Custom NPCs otherwise forbids.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung. Grenades and
  * other throwables the NPC carries anywhere are thrown as its main weapon or now and then beside its other attacks, as their
  * strategy says, by a goal of their own whose wind-up holds the NPC's other ranged attacks.
@@ -104,7 +112,12 @@ import java.util.*;
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
- * <li>Teams bots: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.</li>
+ * <li>Teams bots and duties: a bot walks to its squad's task while it has nobody to fight, and its team and name tag rule reach clients with its spawn data.
+ * Any NPC with a duty carries it out once a second and walks to it the same way. An NPC holds its fire until it has reacted to a newly seen target, as its
+ * human limits or a bot's difficulty say, and keeps track of whether it still sees it.</li>
+ * <li>Peaceful: Teams bots attack players on Peaceful too, and any other NPC while the server's Peaceful combat setting is on.</li>
+ * <li>Name tags for allies only: whether an NPC shows its name tag to allies only reaches clients with its spawn data, and clients read its faction from its
+ * synchronized data.</li>
  * <li>Skins only clients know: a client puts the class skin or the model texture the server marked on its copy of the NPC whenever the server sends it.</li>
  * <li>Bound content names remain translatable components for nameplates, chat and death messages; raw display fields stay canonical.</li>
  * <li>Diagnostics: while a benchmark or the profiler measures, or an editor shows the NPC's live statistics, the whole tick of
@@ -118,8 +131,9 @@ import java.util.*;
  */
 @Mixin(value = EntityNPCInterface.class, remap = false)
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
-// instanceof checks on this are valid, and the overrides keep the target signatures.
-@SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
+// instanceof checks on this are valid, and the overrides keep the target signatures. The synchronized data it adds belongs
+// to the target class, which IntelliJ does not see as this class.
+@SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference", "WrongEntityDataParameterClass"})
 public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     implements
         IEquipmentPolicy,
@@ -130,6 +144,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IEngineSoundSource,
         IMechaEquipment,
         IFlanPartTarget,
+        IFlanHumanoidBody,
         IFlanRepairTarget,
         NpcVehicleStateHolder,
         NpcThrowPresentation,
@@ -138,11 +153,15 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         NpcTacticState.Holder,
         NpcCrewHolder,
         NpcMeleeState.Holder,
-        NpcDriver.Holder
+        NpcDriver.Holder,
+        AllyNameTags.Holder
 {
     @Shadow
     private int taskCount;
 
+    // Named by Custom NPCs.
+    @SuppressWarnings("java:S116") @Shadow @Final
+    private static EntityDataAccessor<Integer> FactionData;
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
     @Unique
@@ -165,6 +184,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private static final EntityDataAccessor<CompoundTag> WOLFFSMODNPCS_RIDER_SEATS = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.COMPOUND_TAG);
     @Unique
     private static final String WOLFFSMODNPCS_CREWED_AS_KEY = "WolffsModCrewedAs";
+    /** Ticks between checks of armor attributes while neither the armor nor the switches change. */
+    @Unique
+    private static final int WOLFFSMODNPCS_ARMOR_REFRESH = 20;
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
@@ -179,6 +201,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private NpcBoardingGoal wolffsmodnpcsBoardingGoal;
     @Unique
+    private NpcOutrangedGoal wolffsmodnpcsOutrangedGoal;
+    @Unique
     private final NpcDriver wolffsmodnpcsDriver = new NpcDriver();
     @Unique
     private final NpcTacticState wolffsmodnpcsTacticState = new NpcTacticState();
@@ -188,6 +212,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private int wolffsmodnpcsRound;
     @Unique
     private boolean wolffsmodnpcsLastDistanceManaged;
+    /**
+     * The armor worn when its attributes were last applied, by armor slot index, null before that, and the switches they
+     * were applied with. Mixin cannot merge an array initializer, hence the empty array.
+     */
+    @Unique
+    private final ItemStack[] wolffsmodnpcsArmorSeen = new ItemStack[4];
+    @Unique
+    private int wolffsmodnpcsArmorRules = -1;
 
     @Unique
     private final NpcEngineAudio wolffsmodnpcsEngineAudio = new NpcEngineAudio();
@@ -419,7 +451,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
      * The firing goal and the goal that throws now and then beside it claim no flag, so their priority does not matter. A tactic of the mod's own comes first, before the
      * tactical movement Custom NPCs registered. The approach goal takes the priority of Custom NPCs' attack goal: that
      * tactical movement then wins the NPC's movement, and melee, which only starts within melee range where the approach
-     * ends, takes over from it there. Walking to a driveable to board comes before everything else that moves the NPC.
+     * ends, takes over from it there. Walking to a driveable to board comes before everything else that moves the NPC, and
+     * taking cover from an enemy shooting from beyond the NPC's reach right after it.
      */
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
@@ -430,6 +463,10 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             goalSelector.removeGoal(wolffsmodnpcsBoardingGoal);
         wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
         goalSelector.addGoal(0, wolffsmodnpcsBoardingGoal);
+        if (wolffsmodnpcsOutrangedGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsOutrangedGoal);
+        wolffsmodnpcsOutrangedGoal = new NpcOutrangedGoal(npc);
+        goalSelector.addGoal(0, wolffsmodnpcsOutrangedGoal);
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
         if (wolffsmodnpcsThrowGoal != null)
@@ -450,7 +487,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         goalSelector.addGoal(1, wolffsmodnpcsThrowGoal);
         wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
-        // Only a Teams bot uses it: it carries the bot to its squad's task while the bot has nobody to fight.
+        // It carries a Teams bot to its squad's task, and any NPC to its duty, while it has nobody to fight.
         wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
         goalSelector.addGoal(3, wolffsmodnpcsObjectiveGoal);
         wolffsmodnpcsApproachGoal = null;
@@ -477,18 +514,49 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     /** An equipped ranged weapon gets the ranged attack and the ranged form of the restored tactical movement. */
+    // Teams owns passive healing during a round; explicit healing and vehicle repairs remain independent.
+    @Redirect(method = "aiStep", at = @At(value = "FIELD", target = "Lnoppes/npcs/entity/data/DataStats;healthRegen:I", opcode = Opcodes.GETFIELD))
+    private int wolffsmodnpcsRoundHealthRegen(noppes.npcs.entity.data.DataStats stats)
+    {
+        return FlansTeams.usesRoundRegeneration((EntityNPCInterface) (Object) this) ? 0 : stats.healthRegen;
+    }
+
+    @Redirect(method = "aiStep", at = @At(value = "FIELD", target = "Lnoppes/npcs/entity/data/DataStats;combatRegen:I", opcode = Opcodes.GETFIELD))
+    private int wolffsmodnpcsRoundCombatRegen(noppes.npcs.entity.data.DataStats stats)
+    {
+        return FlansTeams.usesRoundRegeneration((EntityNPCInterface) (Object) this) ? 0 : stats.combatRegen;
+    }
+
+    /** An equipped ranged weapon gets the ranged attack and the ranged variant of the NPC's tactic. */
     @Redirect(method = "setResponse", at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataInventory;getProjectile()Lnoppes/npcs/api/item/IItemStack;"))
     private IItemStack wolffsmodnpcsWeaponChoosesResponse(DataInventory inventory)
     {
         return NpcEquipment.combatProjectile((EntityNPCInterface) (Object) this);
     }
 
+    /**
+     * Keeps the entity box at the size Custom NPCs works out for the NPC. It registers its NPCs at 1 x 1 block and resizes the
+     * box on only some of the changes that size depends on: a client reading the spawn data, an animation change, mounting.
+     * An NPC created on the server kept a block-high box there, and one that got off a vehicle kept the 77% box of a rider,
+     * so rounds, arrows and melee aimed at its chest or head passed over it.
+     */
+    @Unique
+    private void wolffsmodnpcsKeepBoxSized()
+    {
+        EntityDimensions size = getDimensions(getPose());
+        if (Float.compare(NpcPlatform.width(size), getBbWidth()) != 0 || Float.compare(NpcPlatform.height(size), getBbHeight()) != 0)
+            refreshDimensions();
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void wolffsmodnpcsEquipmentTick(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        wolffsmodnpcsKeepBoxSized();
         if (level().isClientSide)
             return;
+        NpcSkill.watch(npc);
+        NpcDuties.tick(npc);
         NpcSprinting.tick(npc);
         NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
@@ -512,8 +580,45 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         }
     }
 
+    /**
+     * Brings the attributes worn armor lends the NPC in line with its switches. Reading a piece's attributes posts an event
+     * each time, so this runs when the armor or the switches change, as vanilla applies armor attributes, and once a second
+     * in case something else reset them.
+     */
     @Unique
     private void wolffsmodnpcsUpdateArmorAttributes()
+    {
+        int rules = (flansArmorEffects() ? 1 : 0) | (NpcEquipment.inherits((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_KNOCKBACK) ? 2 : 0);
+        // Always compared, so that the pieces worn now are remembered.
+        boolean armorChanged = wolffsmodnpcsArmorChanged();
+        if (!armorChanged && rules == wolffsmodnpcsArmorRules && (tickCount + getId()) % WOLFFSMODNPCS_ARMOR_REFRESH != 0)
+            return;
+        wolffsmodnpcsArmorRules = rules;
+        wolffsmodnpcsApplyArmorAttributes();
+    }
+
+    /** @return whether any armor piece differs from when its attributes were last applied, remembering the pieces worn now */
+    @Unique
+    private boolean wolffsmodnpcsArmorChanged()
+    {
+        boolean changed = false;
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (!NpcPlatform.isHumanoidArmor(slot))
+                continue;
+            ItemStack armor = getItemBySlot(slot);
+            ItemStack seen = wolffsmodnpcsArmorSeen[slot.getIndex()];
+            if (seen == null || !ItemStack.matches(seen, armor))
+            {
+                wolffsmodnpcsArmorSeen[slot.getIndex()] = armor.copy();
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    @Unique
+    private void wolffsmodnpcsApplyArmorAttributes()
     {
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
@@ -690,8 +795,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         // The fallback ranged AI waits by itself; this stops scripts and anything else that pulls the trigger.
         // A gun whose turret has been shot off stays silent, and an NPC at the wheel fights with the driveable's weapons.
         // A throw being wound up beside the NPC's other attacks holds them meanwhile.
+        // A bot that has only just seen its target has not reacted yet.
         if (NpcRepairs.active(npc) || wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc)
-            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc))
+            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc) || NpcSkill.holdsFire(npc, target))
         {
             callback.cancel();
             return;
@@ -733,6 +839,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.MODEL_ARMOUR);
     }
 
+    @Override
+    public Optional<HumanoidBody> flansmodultimateHumanoidBody()
+    {
+        return NpcHumanoidBody.of((EntityNPCInterface) (Object) this);
+    }
+
     @ModifyVariable(method = "hurt", at = @At("HEAD"), argsOnly = true)
     private float wolffsmodnpcsVehicleMeleeDamage(float amount, DamageSource source, float originalAmount)
     {
@@ -746,6 +858,21 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (!level().isClientSide && (FlansMelee.protectRider((EntityNPCInterface) (Object) this, source, amount) || NpcCrew.shielded(this, source, amount)
             || NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount)))
             callback.setReturnValue(false);
+    }
+
+    // Peaceful
+
+    /**
+     * Vanilla never lets a mob attack a player on Peaceful; Teams bots fight players on every difficulty, and other NPCs too
+     * while the server's Peaceful combat setting is on. The installed NeoForge build inherits vanilla's {@code canAttack}
+     * rather than overriding it as the Forge build does, so the rule is added as an override instead of an injection.
+     */
+    @Override
+    public boolean canAttack(LivingEntity target)
+    {
+        if (target instanceof Player && level().getDifficulty() == Difficulty.PEACEFUL && (BotTag.isBot(this) || NpcServerRules.peacefulCombat((EntityNPCInterface) (Object) this)))
+            return target.canBeSeenAsEnemy();
+        return super.canAttack(target);
     }
 
     // Friendly fire
@@ -878,6 +1005,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         callback.getReturnValue().put(WOLFFSMODNPCS_TYPE_DEFAULTS, NpcTypeProperties.of(npc).syncDefaults(npc));
         BotTag.writeClient(npc, callback.getReturnValue());
+        AllyNameTags.writeClient(npc, callback.getReturnValue());
     }
 
     @ModifyVariable(method = "readSpawnData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("HEAD"), argsOnly = true)
@@ -895,7 +1023,15 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (tag.contains(WOLFFSMODNPCS_TYPE_DEFAULTS))
             NpcTypeProperties.of(npc).readSyncedDefaults(npc, tag.getCompound(WOLFFSMODNPCS_TYPE_DEFAULTS));
         BotTag.readClient(npc, tag);
+        AllyNameTags.readClient(npc, tag);
         NpcSkins.resolveOnClient(npc);
+    }
+
+    /** Clients cannot rely on {@code getFaction()}, which looks the faction up among those they may not know. */
+    @Override
+    public int wolffsmodnpcsFactionId()
+    {
+        return getEntityData().get(FactionData);
     }
 
     // Vehicle simulation

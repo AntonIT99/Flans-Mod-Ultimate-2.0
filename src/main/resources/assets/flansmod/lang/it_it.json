@@ -42,6 +42,8 @@
   "gui.flansmod.teams.name": "Nome",
   "gui.flansmod.teams.no_round": "Nessun round a squadre è attivo",
   "gui.flansmod.teams.on_objective": "Sull'obiettivo",
+  "gui.flansmod.teams.pole_height": "Altezza asta:",
+  "gui.flansmod.teams.pole_height_range": "Altezza in blocchi (%s–%s)",
   "gui.flansmod.teams.rank_up": "Promozione!",
   "gui.flansmod.teams.rank_up_detail": "Promosso al grado %s",
   "gui.flansmod.teams.required_prestige": "Prestigio richiesto: %s",

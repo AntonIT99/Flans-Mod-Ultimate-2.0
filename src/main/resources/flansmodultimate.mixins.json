@@ -8,11 +8,13 @@
     "ConnectionMixin",
     "EntityMixin",
     "EntityTrackingDistanceMixin",
+    "FoodDataMixin",
     "LevelDriveableHullsMixin",
     "LivingEntityWaterWalkingMixin",
     "PlayerDriveableEdgeMixin",
     "ProjectileUtilAAGunHullMixin",
     "ServerGamePacketListenerDriveableMixin",
+    "ServerPlayerMixin",
     "SyncRegistriesMixin"
   ],
   "client": [
@@ -20,6 +22,7 @@
     "CapeLayerMixin",
     "ChannelAccessor",
     "CreateWorldScreenApocalypseMixin",
+    "DeathScreenAccessor",
     "DriveableCameraMixin",
     "EntityRendererMixin",
     "ForceDarkLightMixin",

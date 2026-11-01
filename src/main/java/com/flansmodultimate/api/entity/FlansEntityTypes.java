@@ -22,8 +22,10 @@ import com.flansmodultimate.common.types.DriveableMobilityProfiles;
 import com.flansmodultimate.common.types.EntityTypePropertySupport;
 import com.flansmodultimate.common.types.GroundPropulsionProfiles;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -39,6 +41,21 @@ public final class FlansEntityTypes
 {
     private FlansEntityTypes()
     {}
+
+    /**
+     * Creates impact damage attributed to a vehicle or an entity wearing a Flan damage model.
+     * The source keeps the vehicle identity for kill messages and credits its controller. Server thread only.
+     *
+     * @param vehicle
+     *            live vehicle or model wearer
+     * @param controller
+     *            responsible driver, or null for an unmanned vehicle
+     * @return damage source to pass to the victim's hurt method
+     */
+    public static DamageSource collisionDamageSource(Entity vehicle, @Nullable Entity controller)
+    {
+        return com.flansmodultimate.common.FlanDamageSources.vehicleImpact(vehicle, controller);
+    }
 
     /**
      * Reads ground-vehicle steering and reverse limits without creating an entity. Either side after content loading.

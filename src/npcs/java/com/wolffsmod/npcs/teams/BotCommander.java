@@ -112,7 +112,8 @@ final class BotCommander
                 carrier = level.getEntity(flag.carrier());
             carrierSide = carrier == null ? -1 : battle.getGround().sideOf(carrier);
         }
-        return new Doctrine.FlagView(owner, flag.position(), flag.home(), flag.atHome(), carrierSide);
+        // Approach a home flag at the foot of its pole, rather than trying to climb a tall mast.
+        return new Doctrine.FlagView(owner, flag.atHome() ? flag.home() : flag.position(), flag.home(), flag.atHome(), carrierSide);
     }
 
     /** Where every living player and bot of the round is, by side. */

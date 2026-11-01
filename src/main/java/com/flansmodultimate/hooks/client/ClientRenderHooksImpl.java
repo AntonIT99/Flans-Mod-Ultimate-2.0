@@ -91,6 +91,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
+    public void spawnSmokeCloud(int sourceId, Vec3 position, int count, String particleType, float radius)
+    {
+        SmokeClouds.emit(sourceId, position, count, particleType, radius);
+    }
+
+    @Override
     public void tickDriveableDamageEffects(Driveable driveable)
     {
         DriveableDamageEffects.tick(driveable);

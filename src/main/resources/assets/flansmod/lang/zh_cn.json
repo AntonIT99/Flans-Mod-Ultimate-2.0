@@ -42,6 +42,8 @@
   "gui.flansmod.teams.name": "名称",
   "gui.flansmod.teams.no_round": "当前没有进行中的队伍回合",
   "gui.flansmod.teams.on_objective": "已在目标点",
+  "gui.flansmod.teams.pole_height": "旗杆高度：",
+  "gui.flansmod.teams.pole_height_range": "高度（方块，%s–%s）",
   "gui.flansmod.teams.rank_up": "军衔提升！",
   "gui.flansmod.teams.rank_up_detail": "晋升至军衔 %s",
   "gui.flansmod.teams.required_prestige": "所需声望：%s",

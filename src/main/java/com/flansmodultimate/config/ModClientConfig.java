@@ -497,8 +497,8 @@ public final class ModClientConfig
             .defineInRange("fullParticleDensityShare", 0.25D, 0D, 1D);
         DISTANT_PARTICLE_DENSITY = builder.comment("Fraction of Flan's Mod particles retained at the edge of each effect's drawing distance.").defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
         MAX_FLANS_PARTICLES_PER_TICK = builder
-            .comment("Maximum particles Flan's Mod may create in one client tick. Nearby particles are considered first by normal packet and entity processing order.")
-            .defineInRange("maxFlansParticlesPerTick", 2048, 16, 100000);
+            .comment("Maximum new particles Flan's Mod may create in one client tick, not the total still alive.", "Effects share this budget in normal packet and entity processing order.")
+            .defineInRange("maxFlansParticlesPerTick", 128, 16, 4096);
         MAX_FRAG_SPARKS = builder.comment("Maximum fragmentation sparks from one explosion. The overall maxFlansParticlesPerTick budget can limit the visible result further.")
             .defineInRange("maxFragSparks", 512, 0, 100000);
         FRAG_SPARK_MULTIPLIER = builder.comment(

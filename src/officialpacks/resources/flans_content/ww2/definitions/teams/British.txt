@@ -3,6 +3,7 @@ Name British
 ShortName britishTeam
 
 // Appearance
+VictoryFlagTexture flag_team_uk
 TextColour Blue
 TeamColour 0 0 255
 Hat britishHelmet

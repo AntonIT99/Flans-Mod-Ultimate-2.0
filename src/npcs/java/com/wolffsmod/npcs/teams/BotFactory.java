@@ -6,6 +6,7 @@ import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.teams.*;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.*;
@@ -28,6 +29,7 @@ import noppes.npcs.entity.data.DataStats;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -60,6 +62,16 @@ public final class BotFactory
     private static final int INVENTORY_SLOTS = 9;
     /** Custom NPCs' best ranged accuracy. */
     private static final int MAX_ACCURACY = 100;
+    /** Blocks within which a bot tells the bots of its side who is shooting at it, unless its clone has a radius of its own. */
+    static final int ALERT_RADIUS = 48;
+    /** Key, in the persistent data, of the level a bot was trained to and the stats it was trained from. */
+    private static final String NBT_TRAINING = "WolffsModTraining";
+    private static final String NBT_LEVEL = "level";
+    private static final String NBT_ACCURACY = "accuracy";
+    private static final String NBT_AGGRO = "aggro";
+    private static final String NBT_HEALTH = "health";
+    private static final String NBT_DELAY_MIN = "delay_min";
+    private static final String NBT_DELAY_MAX = "delay_max";
 
     /**
      * What a bot is made with.
@@ -125,6 +137,14 @@ public final class BotFactory
         // A clone may keep the weapons and armour its maker gave it instead of the class's loadout.
         if (!added || !order.force().isKeepCloneEquipment())
             FlanSoldierLoadout.apply(npc, selection);
+        // A class carries a grenade or two per life, as for a player, so a bot throws them at any enemy it can safely reach
+        // rather than saving them for a group the plain NPC default waits for. A clone keeps the strategy its maker chose.
+        if (!added)
+        {
+            NpcTuning.of(npc).set(Value.GRENADE_USE, NpcTuning.Throwing.FREQUENT.ordinal());
+            // Riflemen reach as far as their aim lets them hit, marksmen further, and their level's aim narrows that.
+            ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.WEAPON_FIRING_RANGE, true);
+        }
         // Only clients know the class skin and whether it needs the 64x32 model, so each client puts it on.
         if (npc instanceof EntityCustomNpc custom && !order.force().usesClone() && !playerClass.getSkinOverrideVariants().isEmpty())
         {
@@ -180,18 +200,56 @@ public final class BotFactory
         return Optional.of(npc);
     }
 
-    /** Scales how well a bot fights by the round's difficulty: aim, how far it notices enemies, health and rate of fire. */
+    /**
+     * Sets how well a bot fights by the round's difficulty: scales its aim and how far it notices enemies, and gives it the
+     * level's reaction, aim settling, lead and damage to players. Its health and rate of fire stay as they were given.
+     */
     static void train(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
     {
-        if (difficulty == BotSettings.Difficulty.DEFAULT)
-            return;
         DataStats stats = npc.stats;
         DataRanged ranged = stats.ranged;
-        ranged.setAccuracy(Math.max(0, Math.min(MAX_ACCURACY, Math.round(ranged.getAccuracy() * difficulty.accuracy()))));
-        stats.setAggroRange(Math.max(1, Math.round(stats.getAggroRange() * difficulty.aggro())));
-        stats.setMaxHealth(Math.max(1, Math.round(stats.getMaxHealth() * difficulty.health())));
-        int fastest = Math.max(1, Math.round(ranged.getDelayMin() * difficulty.delay()));
-        ranged.setDelay(fastest, Math.max(fastest, Math.round(ranged.getDelayMax() * difficulty.delay())));
+        // The stats the loadout or clone gave, kept the first time, so that a later level scales them rather than the last level's.
+        CompoundTag training = npc.getPersistentData().getCompound(NBT_TRAINING);
+        if (!training.contains(NBT_LEVEL))
+        {
+            training.putInt(NBT_ACCURACY, ranged.getAccuracy());
+            training.putInt(NBT_AGGRO, stats.getAggroRange());
+            training.putInt(NBT_HEALTH, stats.getMaxHealth());
+            training.putInt(NBT_DELAY_MIN, ranged.getDelayMin());
+            training.putInt(NBT_DELAY_MAX, ranged.getDelayMax());
+        }
+        training.putString(NBT_LEVEL, difficulty.name());
+        npc.getPersistentData().put(NBT_TRAINING, training);
+        NpcSkill.write(npc, difficulty.skill());
+        ranged.setAccuracy(Math.min(MAX_ACCURACY, scaled(training.getInt(NBT_ACCURACY), difficulty.accuracy(), 0)));
+        stats.setAggroRange(scaled(training.getInt(NBT_AGGRO), difficulty.aggro(), 1));
+        FlansTeams.applyBotHealthOverride(npc, false);
+        float share = npc.getMaxHealth() > 0F ? npc.getHealth() / npc.getMaxHealth() : 1F;
+        // Health and rate of fire stay as the loadout or clone gave them, which also undoes the scaling of earlier versions.
+        stats.setMaxHealth(Math.max(1, training.getInt(NBT_HEALTH)));
+        // A bot trained again in the field keeps the share of its health it had.
+        npc.setHealth(Math.max(1F, share * stats.getMaxHealth()));
+        int fastest = Math.max(1, training.getInt(NBT_DELAY_MIN));
+        ranged.setDelay(fastest, Math.max(fastest, training.getInt(NBT_DELAY_MAX)));
+        NpcSuppression.rebase(npc, ranged.getAccuracy());
+        FlansTeams.applyBotHealthOverride(npc, true);
+    }
+
+    /**
+     * Trains a bot again when its round's difficulty has changed since it was trained, as after its settings are saved.
+     * An NPC that joined as it was and was never trained is left alone.
+     */
+    static void keepTrained(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    {
+        CompoundTag training = npc.getPersistentData().getCompound(NBT_TRAINING);
+        if (training.contains(NBT_LEVEL) && !training.getString(NBT_LEVEL).equals(difficulty.name()))
+            train(npc, difficulty);
+    }
+
+    /** @return the stat scaled by a level's factor, a factor of 1 leaving it exactly as it was */
+    static int scaled(int base, float factor, int least)
+    {
+        return Float.compare(factor, 1F) == 0 ? base : Math.max(least, Math.round(base * factor));
     }
 
     /**
@@ -323,6 +381,10 @@ public final class BotFactory
         npc.ais.setStartPos(BlockPos.containing(position));
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);
+        // A bot calls out who is shooting at it to the bots around it, so that one picked off from afar draws their fire.
+        NpcTuning tuning = NpcTuning.of(npc);
+        if (tuning.get(Value.ALERT_RADIUS) == 0)
+            tuning.set(Value.ALERT_RADIUS, ALERT_RADIUS);
         boolean vehicle = membership == Membership.VEHICLE;
         BotTag.write(npc, new BotTag.Data(order.instance(), order.slot().getId(), order.team().getShortName(), vehicle, settings.getNameplates(), membership == Membership.CREW, false));
         float weight = switch (membership)

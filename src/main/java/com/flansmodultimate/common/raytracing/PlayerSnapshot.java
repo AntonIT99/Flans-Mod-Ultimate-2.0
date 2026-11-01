@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.raytracing;
 
+import com.flansmodultimate.api.entity.HumanoidBody;
 import com.flansmodultimate.api.equipment.ArmPoseRule;
 import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
 import com.flansmodultimate.common.entity.Plane;
@@ -37,22 +38,25 @@ import java.util.List;
  * {@code HumanoidModel.setupAnim}, placed with the same transforms as {@code PlayerRenderer}.
  * Everything used here is available on the server as well. Not replicated: death and upside-down
  * rotations, slim arms (the skin model is only known client-side) and gun animations in third person.
+ * <p>
+ * Humanoid NPCs ({@link com.flansmodultimate.api.entity.IFlanHumanoidBody}) get the same boxes, sized and placed by the proportions they are drawn with.
  */
 public class PlayerSnapshot
 {
     public static final int NUM_PLAYER_SNAPSHOTS = 20;
 
-    /** {@code PlayerRenderer} scales the model down to this size */
-    private static final float MODEL_SCALE = 0.9375F;
     private static final float PIXEL = 1F / 16F;
+    /** A player as {@code PlayerRenderer} draws it, standing and crouching */
+    private static final HumanoidBody PLAYER = HumanoidBody.standard(HumanoidBody.PLAYER_SCALE, 0F);
+    private static final HumanoidBody CROUCHING_PLAYER = HumanoidBody.standard(HumanoidBody.PLAYER_SCALE, -0.125F);
 
-    /** The player this snapshot is for */
-    public final Player player;
-    /** The player's position at the point the snapshot was taken */
+    /** The player or humanoid NPC this snapshot is for */
+    public final LivingEntity entity;
+    /** The entity's position at the point the snapshot was taken */
     public final Vector3f pos;
-    /** The player's velocity at the point the snapshot was taken */
+    /** The entity's velocity at the point the snapshot was taken */
     public final Vector3f vel;
-    /** The hitboxes for this player */
+    /** The hitboxes for this entity */
     public final List<PlayerHitbox> hitboxes = new ArrayList<>();
     /** The time at which this snapshot was taken */
     public final long time;
@@ -69,7 +73,16 @@ public class PlayerSnapshot
      */
     public PlayerSnapshot(Player p, float partialTick)
     {
-        player = p;
+        this(p, partialTick, p.isCrouching() ? CROUCHING_PLAYER : PLAYER);
+    }
+
+    /**
+     * @param shape
+     *            the proportions the entity is drawn with
+     */
+    public PlayerSnapshot(LivingEntity p, float partialTick, HumanoidBody shape)
+    {
+        entity = p;
         time = p.level().getGameTime();
         pos = new Vector3f((float) Mth.lerp(partialTick, p.xOld, p.getX()), (float) Mth.lerp(partialTick, p.yOld, p.getY()), (float) Mth.lerp(partialTick, p.zOld, p.getZ()));
         vel = JomlUtils.fromVec3(p.getDeltaMovement());
@@ -193,16 +206,16 @@ public class PlayerSnapshot
         customArm(p, InteractionHand.MAIN_HAND, rightHanded ? rightArm : leftArm);
         customArm(p, InteractionHand.OFF_HAND, rightHanded ? leftArm : rightArm);
 
-        Matrix4f root = rootTransform(p, partialTick, bodyYaw, crouching, swimAmount);
+        Matrix4f root = rootTransform(p, partialTick, bodyYaw, shape, swimAmount);
 
-        addBox(partTransform(root, head), -4F, -8F, -4F, 8F, 8F, 8F, EnumHitboxType.HEAD);
-        addBox(partTransform(root, body), -4F, 0F, -2F, 8F, 12F, 4F, EnumHitboxType.BODY);
-        Matrix4f rightArmTransform = partTransform(root, rightArm);
-        Matrix4f leftArmTransform = partTransform(root, leftArm);
+        addBox(partTransform(root, head, shape.head()), -4F, -8F, -4F, 8F, 8F, 8F, EnumHitboxType.HEAD);
+        addBox(partTransform(root, body, shape.body()), -4F, 0F, -2F, 8F, 12F, 4F, EnumHitboxType.BODY);
+        Matrix4f rightArmTransform = partTransform(root, rightArm, shape.rightArm());
+        Matrix4f leftArmTransform = partTransform(root, leftArm, shape.leftArm());
         addBox(rightArmTransform, -3F, -2F, -2F, 4F, 12F, 4F, EnumHitboxType.RIGHTARM);
         addBox(leftArmTransform, -1F, -2F, -2F, 4F, 12F, 4F, EnumHitboxType.LEFTARM);
-        addBox(partTransform(root, rightLeg), -2F, 0F, -2F, 4F, 12F, 4F, EnumHitboxType.LEGS);
-        addBox(partTransform(root, leftLeg), -2F, 0F, -2F, 4F, 12F, 4F, EnumHitboxType.LEGS);
+        addBox(partTransform(root, rightLeg, shape.rightLeg()), -2F, 0F, -2F, 4F, 12F, 4F, EnumHitboxType.LEGS);
+        addBox(partTransform(root, leftLeg, shape.leftLeg()), -2F, 0F, -2F, 4F, 12F, 4F, EnumHitboxType.LEGS);
 
         addShieldBox(p.getMainHandItem(), rightHanded ? rightArmTransform : leftArmTransform, !rightHanded, EnumHitboxType.RIGHTITEM);
         addShieldBox(p.getOffhandItem(), rightHanded ? leftArmTransform : rightArmTransform, rightHanded, EnumHitboxType.LEFTITEM);
@@ -212,9 +225,9 @@ public class PlayerSnapshot
      * Model space relative to the player's feet, as set up by PlayerRenderer: render offset, bed offset,
      * body rotations (sleeping, riptide, elytra, swimming), then the renderer's flip, scale and model origin.
      */
-    private static Matrix4f rootTransform(Player p, float partialTick, float bodyYaw, boolean crouching, float swimAmount)
+    private static Matrix4f rootTransform(LivingEntity p, float partialTick, float bodyYaw, HumanoidBody shape, float swimAmount)
     {
-        Matrix4f root = new Matrix4f().translate(0F, crouching ? -0.125F : 0F, 0F);
+        Matrix4f root = new Matrix4f().translate(0F, shape.offsetY(), 0F);
 
         boolean sleeping = p.hasPose(Pose.SLEEPING);
         Direction bedDirection = sleeping ? p.getBedOrientation() : null;
@@ -272,7 +285,7 @@ public class PlayerSnapshot
         if (p.getVehicle() instanceof Seat seat && seat.getDriveable() instanceof Plane plane)
             root.rotate(PlaneRiderRotation.at(plane, partialTick, bodyYaw));
 
-        return root.scale(-MODEL_SCALE, -MODEL_SCALE, MODEL_SCALE).translate(0F, -1.501F, 0F);
+        return root.scale(-shape.scaleX(), -shape.scaleY(), shape.scaleZ()).translate(0F, -1.501F, 0F);
     }
 
     private static void poseProne(ProneArmPoses.Result prone, Part head, Part rightArm, Part leftArm)
@@ -310,7 +323,7 @@ public class PlayerSnapshot
         };
     }
 
-    private static void customArm(Player player, InteractionHand hand, Part arm)
+    private static void customArm(LivingEntity player, InteractionHand hand, Part arm)
     {
         ArmPoseRule rule = HeldItemPresentation.rule(player, hand);
         if (rule.pose() == ArmPoseRule.Pose.RELAXED && GunArmPoses.classify(player.getItemInHand(hand)) != GunArmPoses.HandItem.SHIELD)
@@ -331,7 +344,7 @@ public class PlayerSnapshot
      * @param mainTwoHanded
      *            whether the vanilla main hand pose is two-handed, which only matters for the off hand
      */
-    private static ArmPose armPose(Player p, InteractionHand hand, boolean mainTwoHanded)
+    private static ArmPose armPose(LivingEntity p, InteractionHand hand, boolean mainTwoHanded)
     {
         ItemStack stack = p.getItemInHand(hand);
         if (stack.isEmpty())
@@ -372,7 +385,7 @@ public class PlayerSnapshot
     }
 
     /** Applies both arm poses in HumanoidModel.setupAnim's order */
-    private static void poseArms(Player p, boolean rightHanded, ArmPose rightPose, ArmPose leftPose, Part head, Part rightArm, Part leftArm)
+    private static void poseArms(LivingEntity p, boolean rightHanded, ArmPose rightPose, ArmPose leftPose, Part head, Part rightArm, Part leftArm)
     {
         if (p.isUsingItem())
         {
@@ -397,7 +410,7 @@ public class PlayerSnapshot
      * Vanilla poses only the arm of an item in use. ModClient.oneArmThrow also applies the gun pose of the
      * other arm, before drawing the throwing arm back from where it swung.
      */
-    private static void poseUsingArm(Player p, ArmPose pose, ArmPose otherPose, Part head, Part arm, Part otherArm, float side)
+    private static void poseUsingArm(LivingEntity p, ArmPose pose, ArmPose otherPose, Part head, Part arm, Part otherArm, float side)
     {
         if (pose == ArmPose.THROW && (otherPose == ArmPose.ONE_AIM || otherPose == ArmPose.BOTH_AIM || otherPose == ArmPose.SUPPORT))
         {
@@ -414,7 +427,7 @@ public class PlayerSnapshot
      * @param side
      *            {@code 1} when {@code arm} is the right arm, {@code -1} for the left arm
      */
-    private static void poseArm(Player p, ArmPose pose, Part head, Part arm, Part otherArm, float side)
+    private static void poseArm(LivingEntity p, ArmPose pose, Part head, Part arm, Part otherArm, float side)
     {
         switch (pose)
         {
@@ -486,13 +499,13 @@ public class PlayerSnapshot
         }
     }
 
-    private static HumanoidArm attackArm(Player p)
+    private static HumanoidArm attackArm(LivingEntity p)
     {
         return p.swingingArm == InteractionHand.MAIN_HAND ? p.getMainArm() : p.getMainArm().getOpposite();
     }
 
     /** Mirrors HumanoidModel.setupAttackAnimation */
-    private static void animateAttack(Player p, float attackTime, Part head, Part body, Part rightArm, Part leftArm)
+    private static void animateAttack(LivingEntity p, float attackTime, Part head, Part body, Part rightArm, Part leftArm)
     {
         if (attackTime <= 0F)
             return;
@@ -532,7 +545,7 @@ public class PlayerSnapshot
     }
 
     /** Mirrors the swimming and crawling part of HumanoidModel.setupAnim */
-    private static void animateSwimming(Player p, float swimAmount, float limbSwing, float attackTime, Part rightArm, Part leftArm, Part rightLeg, Part leftLeg)
+    private static void animateSwimming(LivingEntity p, float swimAmount, float limbSwing, float attackTime, Part rightArm, Part leftArm, Part rightLeg, Part leftLeg)
     {
         float cycle = limbSwing % 26F;
         HumanoidArm attackArm = attackArm(p);
@@ -593,16 +606,20 @@ public class PlayerSnapshot
         return from + amount * delta;
     }
 
-    /** Positions a model part like ModelPart.translateAndRotate */
-    private static Matrix4f partTransform(Matrix4f root, Part part)
+    /**
+     * Positions a model part like ModelPart.translateAndRotate, after moving it by its proportions' offset as a part
+     * with its own offset is drawn, and scales it about its pivot.
+     */
+    private static Matrix4f partTransform(Matrix4f root, Part part, HumanoidBody.Part shape)
     {
-        return new Matrix4f(root).translate(part.x * PIXEL, part.y * PIXEL, part.z * PIXEL).rotateZYX(part.zRot, part.yRot, part.xRot);
+        return new Matrix4f(root).translate((part.x + shape.offsetX()) * PIXEL, (part.y + shape.offsetY()) * PIXEL, (part.z + shape.offsetZ()) * PIXEL).rotateZYX(part.zRot, part.yRot, part.xRot)
+            .scale(shape.scaleX(), shape.scaleY(), shape.scaleZ());
     }
 
     /** Adds a box given in model pixels */
     private void addBox(Matrix4f transform, float minX, float minY, float minZ, float sizeX, float sizeY, float sizeZ, EnumHitboxType type)
     {
-        hitboxes.add(new PlayerHitbox(player, transform, new Vector3f(minX, minY, minZ).mul(PIXEL), new Vector3f(sizeX, sizeY, sizeZ).mul(PIXEL), vel, type));
+        hitboxes.add(new PlayerHitbox(entity, transform, new Vector3f(minX, minY, minZ).mul(PIXEL), new Vector3f(sizeX, sizeY, sizeZ).mul(PIXEL), vel, type));
     }
 
     /**
@@ -629,7 +646,7 @@ public class PlayerSnapshot
 
         com.flansmod.common.vector.Vector3f origin = gunType.getShieldOrigin();
         com.flansmod.common.vector.Vector3f dimensions = gunType.getShieldDimensions();
-        hitboxes.add(new PlayerHitbox(player, transform, new Vector3f(origin.x, origin.y, origin.z), new Vector3f(dimensions.x, dimensions.y, dimensions.z), vel, type));
+        hitboxes.add(new PlayerHitbox(entity, transform, new Vector3f(origin.x, origin.y, origin.z), new Vector3f(dimensions.x, dimensions.y, dimensions.z), vel, type));
     }
 
     public List<BulletHit> raytrace(Vector3f origin, Vector3f motion)

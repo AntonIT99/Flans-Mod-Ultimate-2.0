@@ -17,6 +17,9 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 public class GrenadeType extends ShootableType
 {
     protected static final float DEFAULT_BOUNCINESS = 0.9F;
+    /** Ticks a hold-to-throw button may be held and still throw at full speed, as a quick click. */
+    public static final int QUICK_THROW_TICKS = 4;
+    protected static final int DEFAULT_THROW_CHARGE_TIME = 20;
 
     // Misc
     /** The damage imparted by smacking someone over the head with this grenade */
@@ -48,6 +51,9 @@ public class GrenadeType extends ShootableType
     protected float overhandThrowSpeedMultiplier = 1F;
     @Getter
     protected float underhandThrowSpeedMultiplier = 0.45F;
+    /** Ticks a hold-to-throw button must be held past a quick click to charge a throw from no speed to full speed */
+    @Getter
+    protected int throwChargeTime = DEFAULT_THROW_CHARGE_TIME;
     /** Horizontal speed kept after bouncing off a floor or ceiling */
     @Getter
     protected float grenadeGroundFriction = 1F;
@@ -230,6 +236,7 @@ public class GrenadeType extends ShootableType
         holdToThrow = readValue("HoldToThrow", holdToThrow, file);
         overhandThrowSpeedMultiplier = nonNegative(readValue("OverhandThrowSpeedMultiplier", overhandThrowSpeedMultiplier, file), 1F);
         underhandThrowSpeedMultiplier = nonNegative(readValue("UnderhandThrowSpeedMultiplier", underhandThrowSpeedMultiplier, file), 0.45F);
+        throwChargeTime = Math.max(0, readValue("ThrowChargeTime", throwChargeTime, file));
         grenadeGroundFriction = nonNegative(readValue("GrenadeGroundFriction", grenadeGroundFriction, file), 1F);
         grenadeAirDrag = nonNegative(readValue("GrenadeAirDrag", grenadeAirDrag, file), 1F);
         float defaultStopSpeed = holdToThrow ? 0.03F : 0F;
@@ -237,16 +244,33 @@ public class GrenadeType extends ShootableType
     }
 
     /**
-     * Turns an ordinary throw of this grenade into a hand throw. Overhand throws lob half again as high; underhand
-     * tosses climb at 0.6 times the rate with a small upward kick. Both are scaled by their throw speed multiplier.
+     * How much of its full speed a hold-to-throw grenade is thrown with after its button was held for the given
+     * ticks. A quick click throws at full speed; holding longer charges the throw from no speed up to full speed
+     * over {@link #throwChargeTime} ticks, like a bow.
      */
-    public Vec3 handThrowVelocity(Vec3 legacyThrow, boolean underhand)
+    public float handThrowCharge(float heldTicks)
+    {
+        if (heldTicks <= QUICK_THROW_TICKS || throwChargeTime <= 0)
+            return 1F;
+        return Math.min(1F, (heldTicks - QUICK_THROW_TICKS) / throwChargeTime);
+    }
+
+    /**
+     * Turns an ordinary throw of this grenade into a hand throw. Overhand throws lob half again as high; underhand
+     * tosses climb at 0.6 times the rate with a small upward kick. The lob only steers the throw: its speed is the
+     * ordinary throw speed scaled by the throw speed multiplier and by the charge, from 0 to 1.
+     */
+    public Vec3 handThrowVelocity(Vec3 legacyThrow, boolean underhand, float charge)
     {
         float multiplier = underhand ? underhandThrowSpeedMultiplier : overhandThrowSpeedMultiplier;
         double y = legacyThrow.y * multiplier * (underhand ? 0.6D : 1.5D);
         if (underhand)
             y += 0.08D * throwSpeed;
-        return new Vec3(legacyThrow.x * multiplier, y, legacyThrow.z * multiplier);
+        Vec3 direction = new Vec3(legacyThrow.x * multiplier, y, legacyThrow.z * multiplier);
+        // A forged or corrupt charge from a client throws at full speed, which a quick click may do anyway
+        float clampedCharge = Float.isFinite(charge) ? Math.max(0F, Math.min(1F, charge)) : 1F;
+        double speed = legacyThrow.length() * multiplier * clampedCharge;
+        return direction.normalize().scale(speed);
     }
 
     private static float nonNegative(float value, float fallback)

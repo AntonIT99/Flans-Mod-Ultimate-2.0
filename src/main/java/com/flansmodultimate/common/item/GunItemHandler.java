@@ -11,6 +11,7 @@ import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.raytracing.*;
 import com.flansmodultimate.common.raytracing.hits.*;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.TeamsSpawnProtection;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
@@ -157,6 +158,7 @@ public class GunItemHandler
         if (StringUtils.isNotBlank(item.configType.getMeleeSound()))
             PacketPlaySound.sendSoundPacket(player, item.configType.getMeleeSoundRange(), item.configType.getMeleeSound(), item.configType.isDistortSound());
 
+        TeamsSpawnProtection.end(player);
         data.doMelee(player, item.configType.getMeleeTime(), item.configType);
         PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
     }
@@ -183,6 +185,7 @@ public class GunItemHandler
         if (player.getAbilities().instabuild)
             thrown.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
         level.addFreshEntity(thrown);
+        TeamsSpawnProtection.end(player);
 
         if (StringUtils.isNotBlank(type.getShootSound()))
             PacketPlaySound.sendSoundPacket(player, type.getGunSoundRange(), type.getShootSound(), type.isDistortSound(), type.isSilencedSound(gunStack));
@@ -196,7 +199,8 @@ public class GunItemHandler
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
-        if (item.configType.isDeployable() || !gunCanBeHandled(player) || FlansMod.teamsManager.isPacifism())
+        if (item.configType.isDeployable() || !gunCanBeHandled(player) || FlansMod.teamsManager.isPacifism() || FlansMod.teamsManager.getRoundRuleRuntime().blocksCombat(player)
+            || FlansMod.teamsManager.getRoundRuleRuntime().blocksItemUse(player, gunStack))
             return;
         if ((!item.configType.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;
@@ -239,6 +243,7 @@ public class GunItemHandler
             ShootingHandler handler = new PlayerShootingHandler(level, player, hand, gunStack, ammoSlot.stack(), ammoSlot.index());
             boolean lastBullet = isLastBullet(gunStack, level.registryAccess());
 
+            TeamsSpawnProtection.end(player);
             ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack, (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(),
                 handler);
 
@@ -722,7 +727,7 @@ public class GunItemHandler
 
     private void applyPlayerHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, PlayerBulletHit hit, int pointIdx, Vector3f dPos)
     {
-        Player attackedPlayer = hit.getHitbox().player;
+        LivingEntity attackedPlayer = hit.getHitbox().entity;
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
 
         boolean didHurt = attackedPlayer.hurt(FlansMelee.source(attacker, itemstack), damage);

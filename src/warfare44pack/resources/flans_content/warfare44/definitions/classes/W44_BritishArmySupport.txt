@@ -10,5 +10,7 @@ ClassLimitPercent 20
 // Items
 AddItem 44_Bren
 AddItem 44_BrenAmmo 6
+AddItem 44_Webley
+AddItem 44_WebleyAmmo 2
 AddItem 44_AmmoBag
 AddItem 44_Bandage

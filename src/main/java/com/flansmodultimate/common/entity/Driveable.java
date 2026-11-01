@@ -1729,7 +1729,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         boolean flooded = isUnderWater() && !configType.isWorksUnderWater();
         // Pacifism, the other Labjac rule, holds every driveable where it stands.
-        if (flooded || !level().isClientSide && FlansMod.teamsManager.isPacifism())
+        if (flooded || !level().isClientSide && (FlansMod.teamsManager.isPacifism() || FlansMod.teamsManager.getRoundRuleRuntime().blocksCombat(this)))
             setThrottle(0F);
         else if (movieProp)
             setThrottle(1F);
@@ -2667,7 +2667,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean weaponEnabled(EnumWeaponType weapon)
     {
-        if (FlansMod.teamsManager.isPacifism())
+        if ((FlansMod.teamsManager.isPacifism() || FlansMod.teamsManager.getRoundRuleRuntime().blocksCombat(this)))
             return false;
         return switch (weapon)
         {

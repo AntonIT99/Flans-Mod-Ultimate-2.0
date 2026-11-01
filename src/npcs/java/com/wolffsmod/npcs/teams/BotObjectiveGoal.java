@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Walks, drives or flies a bot to where its squad's task puts it, while it has nobody to fight. Long ways are strung
  * through the map's route markers and covered a stretch at a time, which keeps each path search short; a fight on the
- * way takes over, and the bot carries on once it is over.
+ * way takes over, and the bot carries on once it is over. Any NPC with a duty, bot or not, walks to its duty the same way.
  */
 public final class BotObjectiveGoal extends Goal
 {
@@ -60,7 +60,7 @@ public final class BotObjectiveGoal extends Goal
         if (--cooldown > 0)
             return false;
         cooldown = CHECK_INTERVAL;
-        if (npc.level().isClientSide || !BotTag.isBot(npc) || !free())
+        if (npc.level().isClientSide || !free())
             return false;
         order = TeamsBots.orderFor(npc).orElse(null);
         return order != null && away(order);
@@ -141,7 +141,7 @@ public final class BotObjectiveGoal extends Goal
     /** Whether the bot is free to move: alive, not fighting, not riding and not pinned down by fire. */
     private boolean free()
     {
-        return npc.isAlive() && !npc.isKilled() && npc.getTarget() == null && !npc.isPassenger() && !BotSuppression.isPinned(npc);
+        return npc.isAlive() && !npc.isKilled() && npc.getTarget() == null && !npc.isPassenger() && !NpcSuppression.isPinned(npc);
     }
 
     private boolean away(BotCommander.Order current)

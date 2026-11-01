@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
@@ -16,6 +17,7 @@ import noppes.npcs.entity.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -50,6 +52,7 @@ class NpcThrownWeaponTest
             for (boolean consume : List.of(false, true))
             {
                 EntityNPCInterface npc = mock(EntityNPCInterface.class);
+                when(npc.getPersistentData()).thenReturn(new CompoundTag());
                 LivingEntity target = mock(LivingEntity.class);
                 ServerLevel level = mock(ServerLevel.class);
                 when(npc.level()).thenReturn(level);
@@ -66,6 +69,7 @@ class NpcThrownWeaponTest
                 npc.inventory = new DataInventory(npc);
                 npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
                 when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
+                when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).thenReturn(new NpcWeaponOptions());
                 IItemStack wrapped = mock(IItemStack.class);
                 when(wrapped.getMCItemStack()).thenReturn(throwable);
                 if (!inHand)
@@ -80,6 +84,8 @@ class NpcThrownWeaponTest
                     options.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
                     options.when(() -> NpcEquipment.enabled(npc, Feature.CONSUME_AMMO)).thenReturn(consume);
                     equipment.when(() -> FlansEquipment.getWeaponProperties(throwable, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+                    WeaponKind throwableKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
+                    equipment.when(() -> FlansEquipment.getWeaponKind(throwable)).thenReturn(Optional.of(throwableKind));
                     equipment.when(() -> FlansEquipment.prepareThrow(npc, throwable)).thenReturn(Optional.of(shot));
                     assertTrue(NpcEquipment.ranged(npc));
                     assertFalse(NpcItemAttacks.ranged(npc, target));
@@ -109,6 +115,7 @@ class NpcThrownWeaponTest
     void aConsumedMainHandThrowableIsImmediatelyReplacedByAnInventoryGunAndAmmo()
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        when(npc.getPersistentData()).thenReturn(new CompoundTag());
         LivingEntity target = mock(LivingEntity.class);
         ServerLevel level = mock(ServerLevel.class);
         when(npc.level()).thenReturn(level);
@@ -145,7 +152,11 @@ class NpcThrownWeaponTest
         {
             options.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
             equipment.when(() -> FlansEquipment.getWeaponProperties(throwable, ItemStack.EMPTY)).thenReturn(Optional.of(thrownProperties));
+            WeaponKind throwableKind = new WeaponKind(thrownProperties.ranged(), thrownProperties.throwable(), thrownProperties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(throwable)).thenReturn(Optional.of(throwableKind));
             equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(gunProperties));
+            WeaponKind gunKind = new WeaponKind(gunProperties.ranged(), gunProperties.throwable(), gunProperties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(gun)).thenReturn(Optional.of(gunKind));
             equipment.when(() -> FlansEquipment.prepareThrow(npc, throwable)).thenReturn(Optional.of(shot));
             equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, ammunition)).thenReturn(true);
             assertTrue(NpcItemAttacks.ranged(npc, target));
@@ -165,6 +176,7 @@ class NpcThrownWeaponTest
         for (boolean grenade : List.of(false, true))
         {
             EntityNPCInterface npc = mock(EntityNPCInterface.class, withSettings().extraInterfaces(NpcThrowPresentation.class, NpcEquipmentRangedGoal.Holder.class));
+            when(npc.getPersistentData()).thenReturn(new CompoundTag());
             var aiField = EntityNPCInterface.class.getField("ais");
             aiField.setAccessible(true);
             aiField.set(npc, new DataAI(npc));
@@ -196,6 +208,7 @@ class NpcThrownWeaponTest
             NpcTuning tuning = new NpcTuning();
             tuning.set(Value.GRENADE_USE, Throwing.RANGED_SLOT.ordinal());
             when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(tuning);
+            when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).thenReturn(new NpcWeaponOptions());
             npc.stats.ranged = mock(DataRanged.class);
             when(npc.stats.ranged.getRange()).thenReturn(32);
             when(npc.isInRange(target, 32D)).thenReturn(true);
@@ -227,6 +240,8 @@ class NpcThrownWeaponTest
                 var attacks = mockStatic(NpcItemAttacks.class, CALLS_REAL_METHODS))
             {
                 options.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
+                // The NPC throws within its own firing range, not one its weapon would give it.
+                options.when(() -> NpcEquipment.enabled(npc, Feature.WEAPON_FIRING_RANGE)).thenReturn(false);
                 options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(false);
                 NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
                 vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
@@ -241,7 +256,10 @@ class NpcThrownWeaponTest
                 else
                 {
                     equipment.when(() -> FlansEquipment.getWeaponProperties(throwable, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+                    WeaponKind throwableKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
+                    equipment.when(() -> FlansEquipment.getWeaponKind(throwable)).thenReturn(Optional.of(throwableKind));
                     equipment.when(() -> FlansEquipment.getWeaponProperties(spare, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+                    equipment.when(() -> FlansEquipment.getWeaponKind(spare)).thenReturn(Optional.of(throwableKind));
                     equipment.when(() -> FlansEquipment.prepareThrow(npc, throwable)).thenReturn(Optional.of(shot));
                     equipment.when(() -> FlansEquipment.prepareThrow(npc, spare)).thenReturn(Optional.of(shot));
                 }

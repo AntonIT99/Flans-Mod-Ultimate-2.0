@@ -221,6 +221,8 @@ public final class TeamsScoreScreen extends Screen
     {
         if (!state.isRoundRunning())
             return Component.translatable("gui.flansmod.teams.round_over").getString();
+        if (state.isStaging() || state.isOvertime())
+            return TeamsClientState.clock(state);
         int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
         return Component.translatable("gui.flansmod.teams.time_left", seconds / 60, String.format("%02d", seconds % 60)).getString();
     }

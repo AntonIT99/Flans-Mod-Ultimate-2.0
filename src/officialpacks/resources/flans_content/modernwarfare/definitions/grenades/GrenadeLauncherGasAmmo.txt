@@ -43,10 +43,11 @@ MeleeDamage 4
 FragType DEFAULT
 
 // Smoke and effects
-SmokeTime 400
+SmokeTime 200
+SmokeParticleType flansmod.smoker1
 SmokeEffect 15 100 0
 SmokeEffect 2 100 0
-SmokeRadius 5
+SmokeRadius 3
 
 // Sounds and particles
 TrailParticles false

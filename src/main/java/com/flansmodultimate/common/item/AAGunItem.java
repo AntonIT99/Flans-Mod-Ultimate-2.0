@@ -2,8 +2,11 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.teams.TeamsCombatants;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.util.ModUtils;
@@ -62,8 +65,9 @@ public class AAGunItem extends FlanItem implements IFlanItem<AAGunType>
 
         if (!level.isClientSide)
         {
-            AAGun aaGun = new AAGun(level, configType, supportPos.getX() + 0.5D, supportPos.getY() + 1.0D, supportPos.getZ() + 0.5D, player);
-            level.addFreshEntity(aaGun);
+            Entity aaGun = spawnAAGun(level, supportPos.getX() + 0.5D, supportPos.getY() + 1.0D, supportPos.getZ() + 0.5D, player);
+            if (aaGun == null)
+                return InteractionResultHolder.fail(stack);
 
             if (!player.getAbilities().instabuild)
                 stack.shrink(1);
@@ -72,12 +76,29 @@ public class AAGunItem extends FlanItem implements IFlanItem<AAGunType>
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
+    @Nullable
     public Entity spawnAAGun(Level level, double x, double y, double z, @Nullable Player placer)
     {
+        return spawnAAGun(level, x, y, z, placer, placer == null ? null : TeamsCombatants.getPlayingTeam(TeamsManager.getInstance(), placer));
+    }
+
+    @Nullable
+    public Entity spawnAAGun(Level level, double x, double y, double z, @Nullable Player placer, @Nullable Team roundTeam)
+    {
+        if (level.isClientSide)
+            return null;
         AAGun aaGun = new AAGun(level, configType, x, y, z, placer);
-        if (!level.isClientSide)
-            level.addFreshEntity(aaGun);
-        return aaGun;
+        var limits = TeamsManager.getInstance().getRoundRuleRuntime().getVehicles();
+        if (!limits.prepare(aaGun, roundTeam))
+        {
+            aaGun.discard();
+            return null;
+        }
+        if (level.addFreshEntity(aaGun))
+            return aaGun;
+        limits.placementFailed(aaGun);
+        aaGun.discard();
+        return null;
     }
 
     private static BlockHitResult raytracePlacement(Level level, Player player)

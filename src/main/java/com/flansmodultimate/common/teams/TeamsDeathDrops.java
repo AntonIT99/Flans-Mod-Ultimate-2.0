@@ -2,11 +2,11 @@ package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
-import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.PlaneItem;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.item.VehicleItem;
 import com.flansmodultimate.common.types.GunType;
 import lombok.AccessLevel;
@@ -25,10 +25,10 @@ import java.util.List;
  * as the 1.7.10 {@code TeamsManager#playerDrops} handler did.
  *
  * <ul>
- *     <li>{@code on}: everything drops normally.</li>
- *     <li>{@code off}: guns, planes, vehicles, AA guns and bullets are removed.</li>
- *     <li>{@code smart}: each gun type drops once, as a gun bundle carrying the dead player's matching
- *     ammunition; the remaining weapon items are removed.</li>
+ * <li>{@code on}: everything drops normally.</li>
+ * <li>{@code off}: guns, planes, vehicles, AA guns, ammunition, grenades and tools are removed.</li>
+ * <li>{@code smart}: each gun type drops once, as a gun bundle carrying the dead player's matching
+ * ammunition; the remaining weapon items are removed.</li>
  * </ul>
  * With {@code armourDrops} off, Flan's armour is removed as well.
  */
@@ -40,7 +40,8 @@ public final class TeamsDeathDrops
         if (manager.getWeaponDrops() == TeamsManager.EnumWeaponDrop.SMART_DROPS)
             bundleGuns(drops);
 
-        drops.removeIf(entity -> {
+        drops.removeIf(entity ->
+        {
             ItemStack stack = entity.getItem();
             if (stack.isEmpty())
                 return true;
@@ -87,7 +88,6 @@ public final class TeamsDeathDrops
 
     private static boolean isWeapon(Item item)
     {
-        return item instanceof GunItem || item instanceof PlaneItem || item instanceof VehicleItem
-            || item instanceof AAGunItem || item instanceof BulletItem;
+        return item instanceof GunItem || item instanceof PlaneItem || item instanceof VehicleItem || item instanceof AAGunItem || item instanceof ShootableItem || item instanceof ToolItem;
     }
 }

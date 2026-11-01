@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -15,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.control.LookControl;
@@ -70,6 +72,8 @@ class NpcLauncherReloadTest
             options.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
             options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(true);
             equipment.when(() -> FlansEquipment.getWeaponProperties(main, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            WeaponKind mainKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(main)).thenReturn(Optional.of(mainKind));
             for (InteractionHand hand : InteractionHand.values())
             {
                 ItemStack weapon = hand == InteractionHand.MAIN_HAND ? main : off;
@@ -136,6 +140,8 @@ class NpcLauncherReloadTest
             options.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
             options.when(() -> NpcEquipment.flan(npc, InteractionHand.MAIN_HAND)).thenReturn(Optional.of(properties));
             equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            WeaponKind gunKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(gun)).thenReturn(Optional.of(gunKind));
             ammunition.when(() -> NpcAmmunition.nothingToLoad(npc, gun)).thenReturn(true);
             NpcEquipmentRangedGoal goal = new NpcEquipmentRangedGoal(npc);
             // Each engagement restarts the goal, which forgets that the last reload failed.
@@ -178,6 +184,8 @@ class NpcLauncherReloadTest
             options.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
             options.when(() -> NpcEquipment.flan(npc, InteractionHand.MAIN_HAND)).thenReturn(Optional.of(properties));
             equipment.when(() -> FlansEquipment.getWeaponProperties(gun, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
+            WeaponKind gunKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
+            equipment.when(() -> FlansEquipment.getWeaponKind(gun)).thenReturn(Optional.of(gunKind));
             boolean[] loaded = {false};
             equipment.when(() -> FlansEquipment.hasLoadedRound(gun)).thenAnswer(call -> loaded[0]);
             attacks.when(() -> NpcItemAttacks.loadFlanGun(npc, InteractionHand.MAIN_HAND)).thenAnswer(call ->
@@ -213,6 +221,7 @@ class NpcLauncherReloadTest
     private static EntityNPCInterface engagedNpc(LivingEntity target) throws ReflectiveOperationException
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        when(npc.getPersistentData()).thenReturn(new CompoundTag());
         var aiField = EntityNPCInterface.class.getField("ais");
         aiField.setAccessible(true);
         aiField.set(npc, new DataAI(npc));

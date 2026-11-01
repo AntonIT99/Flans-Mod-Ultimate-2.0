@@ -153,7 +153,7 @@ public class PlayerClass extends InfoType implements IPlayerClass
             int generic = 0;
             for (int i = 1; i < parts.length; i++)
             {
-                AttachmentType attachment = AttachmentType.getAttachment(parts[i]);
+                AttachmentType attachment = InfoType.getInfoType(parts[i], contentPack) instanceof AttachmentType type ? type : null;
                 ItemStack attachmentStack = attachment == null ? ItemStack.EMPTY : ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
                 if (attachment == null || attachmentStack.isEmpty())
                     continue;

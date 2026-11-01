@@ -31,9 +31,8 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
     private static final int NEUTRAL_COLOUR = 0xB8B8B8;
     /** Height of the bottom edge of the flag on a neutral point and on one fully held. */
     private static final float FLAG_LOW = 0.25F;
-    private static final float FLAG_HIGH = 2F;
     private static final double LABEL_RANGE_SQUARED = 48D * 48D;
-    private static final float LABEL_HEIGHT = 3.6F;
+    private static final float LABEL_OFFSET = 0.6F;
     private static final float LABEL_SCALE = 0.026F;
     /** As far as the legacy capture point was drawn. */
     private static final int VIEW_DISTANCE = 140;
@@ -56,17 +55,14 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
     public void render(@NotNull CapturePointBlockEntity point, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         Team team = point.getDisplayTeam().isBlank() ? null : Team.getTeam(point.getDisplayTeam());
-        float lift = Mth.lerp(point.getClientProgress(), FLAG_LOW, FLAG_HIGH);
+        float lift = Mth.lerp(point.getClientProgress(), FLAG_LOW, point.getPoleHeight() - 1F);
 
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(-point.getYaw()));
 
         VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(FlansModTextures.TEXTURE_FLAGPOLE));
-        poseStack.pushPose();
-        poseStack.scale(-1F, -1F, 1F);
-        pole.render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY);
-        poseStack.popPose();
+        TeamObjectRenderer.renderPole(pole, point.getPoleHeight(), poseStack, vertices, packedLight);
 
         poseStack.translate(0F, lift, 0F);
         TeamFlagTextures.FlagTexture image = TeamFlagTextures.get(team);
@@ -89,7 +85,7 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
         if (dispatcher.camera == null || dispatcher.camera.getPosition().distanceToSqr(centre) > LABEL_RANGE_SQUARED)
             return;
         poseStack.pushPose();
-        poseStack.translate(0.5F, LABEL_HEIGHT, 0.5F);
+        poseStack.translate(0.5F, point.getPoleHeight() + LABEL_OFFSET, 0.5F);
         poseStack.mulPose(dispatcher.camera.rotation());
         ClientPlatform.scaleCameraFacingLabel(poseStack, LABEL_SCALE);
         Matrix4f pose = poseStack.last().pose();

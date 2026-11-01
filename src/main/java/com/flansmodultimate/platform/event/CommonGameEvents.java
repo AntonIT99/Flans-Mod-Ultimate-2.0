@@ -1,6 +1,7 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.raytracing.EntityPositionHistory;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -51,6 +52,14 @@ public final class CommonGameEvents
     {
         if (event.getPlayer() instanceof ServerPlayer player && !CommonEventHandler.canPickUp(player, event.getItemEntity()))
             event.setCanPickup(TriState.FALSE);
+    }
+
+    @SubscribeEvent
+    public static void onEntityTickStart(EntityTickEvent.Pre event)
+    {
+        // Forge's LivingTickEvent fires as the tick starts; the position history records the box from before this tick's move.
+        if (event.getEntity() instanceof LivingEntity living)
+            EntityPositionHistory.record(living);
     }
 
     @SubscribeEvent
