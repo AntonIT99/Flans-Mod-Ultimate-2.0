@@ -91,24 +91,24 @@ public final class BotSettings
     }
 
     /**
-     * How well bots fight, from the best down: how much of what their loadout or clone gives them they make use of (aim
+     * How well bots fight, from the easiest up: how much of what their loadout or clone gives them they make use of (aim
      * and how far they notice enemies), and the human limits on their fighting. Every level keeps the health and rate of
      * fire bots are given, and none makes a bot better than its equipment.
      */
     public enum Difficulty
     {
         // spotless:off
-        /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
-        ACE(1F, 1F, NpcSkill.Level.ACE),
-        /** Nearly its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
-        ELITE(0.95F, 1F, NpcSkill.Level.ELITE),
-        VETERAN(0.85F, 0.95F, NpcSkill.Level.VETERAN),
-        /** The default. */
-        REGULAR(0.7F, 0.85F, NpcSkill.Level.REGULAR),
+        /** Shoots a lot and rarely hits, and deals half its damage to players. */
+        TRAINEE(0.45F, 0.65F, NpcSkill.Level.TRAINEE),
         /** Below Regular, hits on players start to deal less damage. */
         RECRUIT(0.55F, 0.75F, NpcSkill.Level.RECRUIT),
-        /** Shoots a lot and rarely hits, and deals half its damage to players. */
-        TRAINEE(0.45F, 0.65F, NpcSkill.Level.TRAINEE);
+        /** The default. */
+        REGULAR(0.7F, 0.85F, NpcSkill.Level.REGULAR),
+        VETERAN(0.85F, 0.95F, NpcSkill.Level.VETERAN),
+        /** Nearly its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
+        ELITE(0.95F, 1F, NpcSkill.Level.ELITE),
+        /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
+        ACE(1F, 1F, NpcSkill.Level.ACE);
         // spotless:on
 
         private final float accuracy;

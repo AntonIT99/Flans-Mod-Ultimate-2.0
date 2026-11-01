@@ -127,16 +127,17 @@ class BotSettingsTest
     }
 
     @Test
-    void difficultiesGoFromTheBestDownAndNoneMakesABotBetterThanItsEquipment()
+    void difficultiesGoFromTheEasiestUpAndNoneMakesABotBetterThanItsEquipment()
     {
         BotSettings.Difficulty[] levels = BotSettings.Difficulty.values();
-        assertEquals(BotSettings.Difficulty.ACE, levels[0]);
-        assertFalse(levels[0].scalesStats());
-        assertEquals(0, levels[0].skill().reactionTicks());
+        assertEquals(BotSettings.Difficulty.TRAINEE, levels[0]);
+        assertEquals(BotSettings.Difficulty.ACE, levels[levels.length - 1]);
+        assertFalse(BotSettings.Difficulty.ACE.scalesStats());
+        assertEquals(0, BotSettings.Difficulty.ACE.skill().reactionTicks());
         for (int index = 1; index < levels.length; index++)
         {
-            BotSettings.Difficulty better = levels[index - 1];
-            BotSettings.Difficulty level = levels[index];
+            BotSettings.Difficulty better = levels[index];
+            BotSettings.Difficulty level = levels[index - 1];
             assertTrue(level.skill().reactionTicks() > better.skill().reactionTicks(), level + " reacts slower than " + better);
             assertTrue(level.skill().settleTicks() >= better.skill().settleTicks(), level + " settles its aim no faster than " + better);
             assertTrue(level.skill().lead() <= better.skill().lead(), level + " leads no better than " + better);
@@ -145,7 +146,7 @@ class BotSettingsTest
         for (BotSettings.Difficulty level : levels)
         {
             assertFalse(level.skill().nonLethal(), level + " leaves sparing players to Cinematic mode");
-            assertEquals(level.compareTo(BotSettings.Difficulty.REGULAR) <= 0, level.skill().playerDamage() >= 1F, level + " softens its hits on players only below Regular");
+            assertEquals(level.compareTo(BotSettings.Difficulty.REGULAR) >= 0, level.skill().playerDamage() >= 1F, level + " softens its hits on players only below Regular");
         }
     }
 
