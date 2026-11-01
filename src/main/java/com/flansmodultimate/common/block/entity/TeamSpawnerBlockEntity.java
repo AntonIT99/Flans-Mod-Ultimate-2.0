@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansModBlocks;
-import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
@@ -111,15 +110,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             ItemStack template = spawner.templates.get(index);
             if (spawner.mode == Mode.VEHICLE)
             {
-                Entity spawned = null;
-                if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
-                {
-                    Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D, pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D, 0F, null,
-                        template.copyWithCount(1), spawner.getOwningTeam());
-                    spawned = driveable;
-                }
-                else if (template.getItem() instanceof AAGunItem aaGunItem)
-                    spawned = aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null, spawner.getOwningTeam());
+                Entity spawned = spawner.spawnVehicle(serverLevel, pos, template);
                 if (spawned != null)
                     spawned.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
                 continue;
@@ -130,6 +121,27 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
             level.addFreshEntity(item);
         }
+    }
+
+    @Nullable
+    private Entity spawnVehicle(ServerLevel level, BlockPos pos, ItemStack template)
+    {
+        if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
+        {
+            Vec3 spawnPosition = Vec3.atBottomCenterOf(pos.above());
+            if (driveableItem.getConfigType().isShip())
+            {
+                spawnPosition = TeamsShipSpawns.find(level, spawnPosition).orElse(null);
+                if (spawnPosition == null || !level.getEntities((Entity) null, new AABB(BlockPos.containing(spawnPosition)).inflate(8D),
+                    entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER) && objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
+                    return null;
+            }
+            return driveableItem.spawnDriveable(level, spawnPosition.x, spawnPosition.y + driveableItem.getConfigType().getYOffset(), spawnPosition.z, 0F, null, template.copyWithCount(1),
+                getOwningTeam());
+        }
+        if (template.getItem() instanceof AAGunItem aaGunItem)
+            return aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null, getOwningTeam());
+        return null;
     }
 
     @Override

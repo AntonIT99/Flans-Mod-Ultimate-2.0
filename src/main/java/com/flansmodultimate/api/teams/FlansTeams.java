@@ -9,15 +9,18 @@ import com.flansmodultimate.common.teams.TeamsCombatants;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsListeners;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.TeamsShipSpawns;
 import com.flansmodultimate.common.types.Team;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,6 +47,22 @@ public final class FlansTeams
 {
     private FlansTeams()
     {}
+
+    /**
+     * Finds the nearest clear water surface for a Teams ship or ship bot, at most 64 blocks from the requested
+     * position in three dimensions. Searches loaded chunks only, including underground water. The result is the
+     * bottom centre of the block above water; callers apply their model's placement offset. Server thread only.
+     *
+     * @param level
+     *            server level in which to spawn
+     * @param origin
+     *            requested spawn position, in blocks
+     * @return a water surface position, or empty when none is available; callers must postpone spawning when empty
+     */
+    public static Optional<Vec3> findShipSpawn(ServerLevel level, Vec3 origin)
+    {
+        return TeamsShipSpawns.find(level, origin);
+    }
 
     /**
      * @return the round being played, or empty between rounds and while Teams is disabled

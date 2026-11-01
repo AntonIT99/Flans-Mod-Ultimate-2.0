@@ -9,6 +9,7 @@ import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -399,6 +400,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     {
         ITeam team = current.team(slot.getTeam()).orElse(null);
         Vec3 position = team == null || at != null ? at : spawnPoint(current, slot, team, random);
+        if (position != null && slot.isVehicle() && FlanModelNpcs.type(slot.getRole()).map(type -> BotRole.of(type.getKind(), type.getInfoType()) == BotRole.NAVAL).orElse(false))
+            position = FlansTeams.findShipSpawn(level, position).orElse(null);
         Integer faction = current.getFactions().get(slot.getTeam());
         if (team == null || position == null || faction == null)
         {
