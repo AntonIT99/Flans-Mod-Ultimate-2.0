@@ -15,14 +15,13 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,7 +33,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * By default the surroundings up to 32 blocks are searched often and on a cadence shared by all NPCs, so a formation reacts
  * together. Optional overrides give each band its own interval and stagger nearby searches too. Each band farther out is searched at a moment of its own per NPC, so a crowd does not
  * search the horizon in the same tick. Within a band the nearest candidates are tested first and the search stops at
- * the first one that qualifies, which saves the line-of-sight checks on everything behind it.
+ * the first one that qualifies, which saves the line-of-sight checks on everything behind it; they are picked out one
+ * at a time rather than the whole band being put in order, since usually only the first one is needed. The candidates
+ * come from {@link NpcCombatants}, the level's shared list, so a crowd of NPCs does not ask the level for largely the
+ * same entities over and over.
  * </p>
  */
 public final class NpcTargetSearch
@@ -59,22 +61,18 @@ public final class NpcTargetSearch
     }
 
     private static final AtomicReference<Priority> PRIORITY = new AtomicReference<>((npc, candidate) -> 0);
-    /** Candidates in the order a band tests them: by rank, then nearest first. */
-    private static final Comparator<Ranked> RANKED_ORDER = Comparator.comparingInt(Ranked::rank).thenComparingDouble(Ranked::distance);
+    /**
+     * The candidates of the band being scanned, their ranks and their squared distances, reused between searches so that no
+     * search allocates. Only the server thread scans, one band at a time.
+     */
+    private static LivingEntity[] scratchEntities = new LivingEntity[0];
+    private static int[] scratchRanks = new int[0];
+    private static double[] scratchDistances = new double[0];
 
     private final long[] searched = new long[BANDS.length];
     private boolean started;
     /** Game time a due search was first put off by the server's limit, or {@link Long#MIN_VALUE} while none waits. */
     private long waitingSince = Long.MIN_VALUE;
-
-    /**
-     * A candidate of a band search.
-     *
-     * @param distance
-     *            squared blocks from the searching NPC
-     */
-    private record Ranked(LivingEntity entity, int rank, double distance)
-    {}
 
     /** Sets how candidates are ranked ahead of their distance. */
     public static void setPriority(Priority priority)
@@ -196,39 +194,135 @@ public final class NpcTargetSearch
     {
         boolean watched = NpcWatch.watched(npc);
         long started = NpcProfiler.server() || watched ? System.nanoTime() : 0L;
-        double innerSquared = inner * inner;
-        double outerSquared = outer * outer;
-        List<LivingEntity> candidates = npc.level().getEntitiesOfClass(LivingEntity.class, npc.getBoundingBox().inflate(outer), entity ->
-        {
-            double distance = npc.distanceToSqr(entity);
-            return entity != npc && entity.isAlive() && distance > innerSquared && distance <= outerSquared;
-        });
-        Priority priority = PRIORITY.get();
-        // Each candidate's rank and distance are worked out once, not on every comparison of the sort.
-        Ranked[] ranked = new Ranked[candidates.size()];
-        for (int index = 0; index < ranked.length; index++)
-        {
-            LivingEntity candidate = candidates.get(index);
-            ranked[index] = new Ranked(candidate, priority.rank(npc, candidate), npc.distanceToSqr(candidate));
-        }
-        Arrays.sort(ranked, RANKED_ORDER);
-        LivingEntity found = null;
-        int tested = 0;
-        for (int index = 0; index < ranked.length && found == null; index++)
-        {
-            tested++;
-            if (conditions.test(npc, ranked[index].entity()))
-                found = ranked[index].entity();
-        }
+        int candidates = collect(npc, inner, outer);
+        Selected selected = select(npc, conditions, candidates);
+        releaseScratch(candidates);
         if (started != 0L)
         {
             long nanos = System.nanoTime() - started;
             if (NpcProfiler.server())
-                NpcProfiler.targetSearch(band, candidates.size(), tested, found != null, nanos);
+                NpcProfiler.targetSearch(band, candidates, selected.tested(), selected.entity() != null, nanos);
             if (watched)
                 NpcWatch.targetSearch(npc, nanos);
         }
+        return selected.entity();
+    }
+
+    /**
+     * The outcome of testing a band's candidates.
+     *
+     * @param entity
+     *            the one that qualified, or null when none did
+     * @param tested
+     *            how many the band's conditions were applied to
+     */
+    private record Selected(@Nullable LivingEntity entity, int tested)
+    {}
+
+    /**
+     * Tests the candidates in the scratch arrays, the one that matters most first. The nearest candidate that matters is
+     * picked out of the rest rather than the whole band being put in order: the search stops at the first one that
+     * qualifies, which is almost always the first one picked, so the rest is never compared at all.
+     */
+    private static Selected select(EntityNPCInterface npc, TargetingConditions conditions, int candidates)
+    {
+        int tested = 0;
+        int remaining = candidates;
+        while (remaining > 0)
+        {
+            int best = best(remaining);
+            LivingEntity candidate = scratchEntities[best];
+            remaining--;
+            scratchEntities[best] = scratchEntities[remaining];
+            scratchRanks[best] = scratchRanks[remaining];
+            scratchDistances[best] = scratchDistances[remaining];
+            tested++;
+            if (conditions.test(npc, candidate))
+                return new Selected(candidate, tested);
+        }
+        return new Selected(null, tested);
+    }
+
+    /** @return the index of the candidate that matters most of the first so many: lowest rank, then nearest */
+    private static int best(int remaining)
+    {
+        int best = 0;
+        for (int index = 1; index < remaining; index++)
+        {
+            if (scratchRanks[index] < scratchRanks[best] || scratchRanks[index] == scratchRanks[best] && scratchDistances[index] < scratchDistances[best])
+                best = index;
+        }
+        return best;
+    }
+
+    /**
+     * Puts the candidates of one band into the scratch arrays, out of the level's shared list rather than a query of its
+     * own. Distances are measured against the live entity, exactly as a query of the band would have selected them. Off a
+     * server level there is no shared list, so the band is queried as it used to be.
+     *
+     * @return how many candidates were found
+     */
+    private static int collect(EntityNPCInterface npc, double inner, double outer)
+    {
+        double innerSquared = inner * inner;
+        double outerSquared = outer * outer;
+        Priority priority = PRIORITY.get();
+        int found = 0;
+        if (npc.level() instanceof ServerLevel level)
+        {
+            NpcCombatants combatants = NpcCombatants.of(level);
+            for (int index = 0; index < combatants.size(); index++)
+                found = offer(npc, combatants.get(index).entity(), innerSquared, outerSquared, priority, found);
+        }
+        else
+        {
+            for (LivingEntity entity : npc.level().getEntitiesOfClass(LivingEntity.class, npc.getBoundingBox().inflate(outer), entity -> true))
+                found = offer(npc, entity, innerSquared, outerSquared, priority, found);
+        }
         return found;
+    }
+
+    /**
+     * Takes one candidate of the band, whichever list it came from.
+     *
+     * @param found
+     *            how many candidates the scratch holds
+     * @return how many it holds afterwards
+     */
+    private static int offer(EntityNPCInterface npc, LivingEntity entity, double innerSquared, double outerSquared, Priority priority, int found)
+    {
+        if (entity == npc || !entity.isAlive())
+            return found;
+        double distance = npc.distanceToSqr(entity);
+        if (distance <= innerSquared || distance > outerSquared)
+            return found;
+        if (found == scratchEntities.length)
+            growScratch();
+        scratchEntities[found] = entity;
+        scratchRanks[found] = priority.rank(npc, entity);
+        scratchDistances[found] = distance;
+        return found + 1;
+    }
+
+    private static void growScratch()
+    {
+        int capacity = Math.max(32, scratchEntities.length * 2);
+        LivingEntity[] entities = new LivingEntity[capacity];
+        int[] ranks = new int[capacity];
+        double[] distances = new double[capacity];
+        System.arraycopy(scratchEntities, 0, entities, 0, scratchEntities.length);
+        System.arraycopy(scratchRanks, 0, ranks, 0, scratchRanks.length);
+        System.arraycopy(scratchDistances, 0, distances, 0, scratchDistances.length);
+        scratchEntities = entities;
+        scratchRanks = ranks;
+        scratchDistances = distances;
+    }
+
+    /** The scratch outlives the search, so it must not keep the candidates of a finished one from being collected. */
+    private static void releaseScratch(int candidates)
+    {
+        for (int index = 0; index < candidates; index++)
+            scratchEntities[index] = null;
     }
 
     /**

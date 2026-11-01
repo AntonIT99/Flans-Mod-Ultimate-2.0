@@ -214,6 +214,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
      */
     @Unique
     private final ItemStack[] wolffsmodnpcsArmorSeen = new ItemStack[4];
+    /**
+     * The very stack objects last compared, by armor slot index, so an unchanged piece is recognized by identity and its
+     * tags are never compared again. Mixin cannot merge an array initializer, hence the empty array.
+     */
+    @Unique
+    private final ItemStack[] wolffsmodnpcsArmorWorn = new ItemStack[4];
     @Unique
     private int wolffsmodnpcsArmorRules = -1;
 
@@ -455,37 +461,42 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         NpcSprinting.removeLegacyGoal(goalSelector);
+        // Every goal of the mod's own outlives a rebuild of Custom NPCs' tasks: each is re-registered, never replaced, so
+        // that a rebuild in the middle of a battle discards neither an ongoing reload, a throwable's cooldown nor a
+        // tactic's memory, and costs no garbage. Only the approach goal depends on what the rebuild found.
         if (wolffsmodnpcsBoardingGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsBoardingGoal);
-        wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
+        else
+            wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
         goalSelector.addGoal(0, wolffsmodnpcsBoardingGoal);
         if (wolffsmodnpcsOutrangedGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsOutrangedGoal);
-        wolffsmodnpcsOutrangedGoal = new NpcOutrangedGoal(npc);
+        else
+            wolffsmodnpcsOutrangedGoal = new NpcOutrangedGoal(npc);
         goalSelector.addGoal(0, wolffsmodnpcsOutrangedGoal);
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
-        if (wolffsmodnpcsThrowGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsThrowGoal);
-        if (wolffsmodnpcsTacticGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsTacticGoal);
-        if (wolffsmodnpcsObjectiveGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsObjectiveGoal);
-        if (wolffsmodnpcsApproachGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
-        // Rebuilding Custom NPCs' tasks must not discard an ongoing reload or a throwable's cooldown.
-        if (wolffsmodnpcsItemGoal == null)
+        else
             wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
-        // Its cooldowns outlast a rebuild too, or a rebuild would let the NPC throw again at once.
-        if (wolffsmodnpcsThrowGoal == null)
+        if (wolffsmodnpcsThrowGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsThrowGoal);
+        else
             wolffsmodnpcsThrowGoal = new NpcThrowGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsThrowGoal);
-        wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
+        if (wolffsmodnpcsTacticGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsTacticGoal);
+        else
+            wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
         // It carries a Teams bot to its squad's task, and any NPC to its duty, while it has nobody to fight.
-        wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
+        if (wolffsmodnpcsObjectiveGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsObjectiveGoal);
+        else
+            wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
         goalSelector.addGoal(3, wolffsmodnpcsObjectiveGoal);
+        if (wolffsmodnpcsApproachGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
         wolffsmodnpcsApproachGoal = null;
         goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal() instanceof EntityAIAttackTarget).mapToInt(WrappedGoal::getPriority).findFirst().ifPresent(priority ->
         {
@@ -577,7 +588,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         wolffsmodnpcsApplyArmorAttributes();
     }
 
-    /** @return whether any armor piece differs from when its attributes were last applied, remembering the pieces worn now */
+    /**
+     * @return whether any armor piece differs from when its attributes were last applied, remembering the pieces worn now.
+     *         The stack the NPC hands back is compared by identity first: it is the same object from tick to tick unless
+     *         something swapped the piece, so a battle of hundreds of soldiers pays for no deep comparison of their armor
+     *         tags every tick. An edit of a worn stack in place is not seen that way, and is picked up by the refresh that
+     *         applies the attributes once a second regardless.
+     */
     @Unique
     private boolean wolffsmodnpcsArmorChanged()
     {
@@ -587,7 +604,10 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             if (!NpcPlatform.isHumanoidArmor(slot))
                 continue;
             ItemStack armor = getItemBySlot(slot);
+            if (wolffsmodnpcsArmorWorn[slot.getIndex()] == armor)
+                continue;
             ItemStack seen = wolffsmodnpcsArmorSeen[slot.getIndex()];
+            wolffsmodnpcsArmorWorn[slot.getIndex()] = armor;
             if (seen == null || !ItemStack.matches(seen, armor))
             {
                 wolffsmodnpcsArmorSeen[slot.getIndex()] = armor.copy();

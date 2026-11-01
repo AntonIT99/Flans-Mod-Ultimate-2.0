@@ -11,7 +11,6 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -74,14 +73,13 @@ public final class NpcActivity
         }
         int limit = NpcServerSettings.get(level.getServer()).get(NpcServerSettings.Setting.STAY_ACTIVE_LIMIT);
         List<Candidate> candidates = new ArrayList<>();
-        for (Entity entity : level.getAllEntities())
+        NpcCombatants combatants = NpcCombatants.of(level);
+        for (int index = 0; index < combatants.npcSize(); index++)
         {
-            if (entity instanceof EntityNPCInterface npc)
-            {
-                double nearest = nearestPlayer(level, npc);
-                if (nearest >= 0D)
-                    candidates.add(new Candidate(npc, nearest));
-            }
+            EntityNPCInterface npc = combatants.npc(index).npc();
+            double nearest = npc == null ? -1D : nearestPlayer(level, npc);
+            if (nearest >= 0D)
+                candidates.add(new Candidate(npc, nearest));
         }
         if (limit > 0)
             candidates.sort(Comparator.comparingDouble(Candidate::distanceSquared));

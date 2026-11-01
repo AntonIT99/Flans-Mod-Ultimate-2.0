@@ -7,6 +7,7 @@ import com.wolffsmod.npcs.combat.NpcAmmunition;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
+import com.wolffsmod.npcs.sim.NpcCombatants;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
@@ -184,11 +185,17 @@ public final class NpcDuties
     {
         List<Fighter> fighters = new ArrayList<>();
         fighters.add(self);
-        for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, npc.getBoundingBox().inflate(SCAN_RANGE), other -> alive(npc, other)))
+        AABB area = npc.getBoundingBox().inflate(SCAN_RANGE);
+        NpcCombatants combatants = NpcCombatants.of(level);
+        for (int index = 0; index < combatants.size(); index++)
         {
+            NpcCombatants.Combatant combatant = combatants.get(index);
+            LivingEntity other = combatant.entity();
+            if (!area.intersects(combatant.bounds()) || !alive(npc, other))
+                continue;
             OptionalInt side = sideOf(npc, other);
             if (side.isPresent())
-                fighters.add(other instanceof EntityNPCInterface fellow ? fighter(fellow, side.getAsInt()) : new Fighter(other, side.getAsInt(), null, false, 0));
+                fighters.add(combatant.npc() != null ? fighter(combatant.npc(), side.getAsInt()) : new Fighter(other, side.getAsInt(), null, false, 0));
         }
         return fighters;
     }

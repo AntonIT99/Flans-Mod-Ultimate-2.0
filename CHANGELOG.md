@@ -100,6 +100,8 @@
 ## Rendering & Performance
 
 * GPU mesh caching and size culling draw only visible ranges and skip hidden batches
+* Flan armour is drawn through the GPU mesh cache like vehicles and guns, each body part as one batch, which is what a battle of hundreds of uniformed soldiers spent most of its frame time on
+* Armour level of detail leaves out uniform parts too small to see, with `Enable Armor LOD` and `Armor LOD Strength` in quick options and `minimumArmorPartPixelSize` / `maximumArmorLodPartPixelSize` in the client config. Parts are measured by the size they project to, so a scope brings a distant soldier's full detail back, and no armour piece is ever hidden
 * Oculus/Iris shader packs: correct glow layers and muzzle flashes, and a cheaper shadow pass
 * Sodium and Embeddium fast vertex writing, and EntityCulling compatibility
 * Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters

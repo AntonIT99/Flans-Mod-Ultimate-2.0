@@ -59,6 +59,13 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Factions, Skirmishes, Wars and Bots pages in the Teams command centre
 * Configurable friendly fire between NPCs, players and allies (`wolffsmodnpcs-common.toml`, `/flansnpcfriendlyfire`, Server > Rules > Friendly fire in the Wolff's Mod tab)
 
+## Performance
+
+* NPCs far from every player work out their decisions every second or every fourth tick instead of every tick, which is what a large battle spends its tick time on. Their movement, physics, damage and shots keep running every tick, and an NPC in a seat or drawn as a vehicle, aircraft, mecha or AA gun always decides every tick. `aiTickLod`, with its distances and periods, turns this off or retunes it in `wolffsmodnpcs-common.toml`
+* NPC path searches run on worker threads, so a crowd asking for paths no longer lengthens the server tick: an NPC keeps the path it has and takes the new one a tick or two later (`asyncPathfinding`)
+* `budgetTargetMillisPerTick` works out the target and path search limits from how long the server's ticks are taking, so a battle gives up search cadence rather than tick rate and operators need not guess numbers for their hardware; 0 keeps the `SearchBudget` and `PathBudget` settings as they are set
+* Target searches, call-outs to allies and duties read one list of the level's living entities, taken once a tick, instead of every NPC asking the level for the entities near itself over and over; a target search also picks out the nearest candidate that matters instead of putting a whole band in order
+
 ## Tools
 
 * Custom NPCs can run on the headless `GameTestServer` without trying to load client classes when opening its save directory

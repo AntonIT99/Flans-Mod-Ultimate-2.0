@@ -19,6 +19,7 @@
       "FlyNodeEvaluatorMixin",
       "ItemNpcWandMixin",
       "MarkovGeneratorMixin",
+      "MobMixin",
       "ModelDataMixin",
       "NoppesUtilServerMixin",
       "NPCAttackSelectorMixin",

@@ -239,7 +239,8 @@ public final class WorldModelPreview
         pose.popPose();
     }
 
-    static boolean perspectiveProjection(Matrix4f projection)
+    /** Whether the matrix projects perspectively: an ordinary world pass rather than a menu's orthographic one. */
+    public static boolean perspectiveProjection(Matrix4f projection)
     {
         return projection.isFinite() && Math.abs(projection.m33()) < 1E-6F && Math.abs(projection.m23()) > 1E-6F;
     }
