@@ -100,14 +100,15 @@ public final class BotSettings
         // spotless:off
         /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
         ACE(1F, 1F, 1F, 1F, NpcSkill.Level.ACE),
-        /** Its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
-        ELITE(1F, 1F, 1F, 1F, NpcSkill.Level.ELITE),
-        VETERAN(0.95F, 1F, 1F, 1.1F, NpcSkill.Level.VETERAN),
+        /** Nearly its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
+        ELITE(0.95F, 1F, 1F, 1.05F, NpcSkill.Level.ELITE),
+        VETERAN(0.85F, 0.95F, 1F, 1.2F, NpcSkill.Level.VETERAN),
         /** The default. */
-        REGULAR(0.85F, 0.9F, 1F, 1.2F, NpcSkill.Level.REGULAR),
-        RECRUIT(0.6F, 0.75F, 0.8F, 1.5F, NpcSkill.Level.RECRUIT),
-        /** Shoots a lot and rarely hits, and never kills a player: for filming battles. Bots still kill each other. */
-        CINEMATIC(0.5F, 0.7F, 1F, 1.8F, NpcSkill.Level.CINEMATIC);
+        REGULAR(0.7F, 0.85F, 0.9F, 1.4F, NpcSkill.Level.REGULAR),
+        /** Below Regular, hits on players start to deal less damage. */
+        RECRUIT(0.55F, 0.75F, 0.8F, 1.6F, NpcSkill.Level.RECRUIT),
+        /** Shoots a lot and rarely hits, and deals half its damage to players. */
+        TRAINEE(0.45F, 0.65F, 0.7F, 1.9F, NpcSkill.Level.TRAINEE);
         // spotless:on
 
         private final float accuracy;

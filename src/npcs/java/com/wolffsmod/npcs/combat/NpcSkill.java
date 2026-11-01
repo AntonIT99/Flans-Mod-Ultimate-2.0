@@ -68,7 +68,7 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     private static final Map<Entity, Engagement> ENGAGEMENTS = new WeakHashMap<>();
 
     /**
-     * Ready-made limits, from none at all down to those of a film extra: the Teams difficulties, and what an NPC's own limits
+     * Ready-made limits, from none at all down to those of a trainee: the Teams difficulties, and what an NPC's own limits
      * can be filled in from. Saves hold the index, so a new level goes at the end.
      */
     @Getter
@@ -81,12 +81,13 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
         /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
         ACE(NONE),
         /** A human's reaction: about as hard as a skilled player. */
-        ELITE(new NpcSkill(2, 5, 2F, 1F, 1F, false)),
-        VETERAN(new NpcSkill(5, 12, 4F, 0.95F, 1F, false)),
-        REGULAR(new NpcSkill(8, 20, 6F, 0.85F, 1F, false)),
-        RECRUIT(new NpcSkill(16, 40, 9F, 0.6F, 1F, false)),
-        /** Shoots a lot and rarely hits, and never kills a player: for filming battles. */
-        CINEMATIC(new NpcSkill(30, 60, 12F, 0.3F, 0.25F, true));
+        ELITE(new NpcSkill(5, 12, 3F, 0.95F, 1F, false)),
+        VETERAN(new NpcSkill(10, 24, 5F, 0.85F, 1F, false)),
+        REGULAR(new NpcSkill(16, 36, 8F, 0.7F, 1F, false)),
+        /** Below Regular, hits on players start to deal less damage. */
+        RECRUIT(new NpcSkill(24, 50, 11F, 0.5F, 0.75F, false)),
+        /** Shoots a lot and rarely hits, and deals half its damage to players. */
+        TRAINEE(new NpcSkill(34, 70, 14F, 0.3F, 0.5F, false));
         // spotless:on
 
         private final NpcSkill skill;

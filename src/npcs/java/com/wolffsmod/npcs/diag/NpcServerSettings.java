@@ -23,7 +23,7 @@ import java.util.List;
  * and firing ranges a new NPC starts with, which an operator can hand to every NPC as well, the ranges an AA gun,
  * vehicle, plane or mecha model lends the NPC wearing it, the limits that keep many NPCs from overloading the server,
  * whether every NPC is frozen, the health and ammunition rules every NPC follows, whether allies harm each other, whether a
- * killed NPC drops its items, and whether NPCs fight players on Peaceful. Saved with the world, edited from the Server page of the Wolff's Mod tab by operators.
+ * killed NPC drops its items, whether NPCs fight players on Peaceful, and whether players can die at all. Saved with the world, edited from the Server page of the Wolff's Mod tab by operators.
  */
 public final class NpcServerSettings extends NpcSavedData
 {
@@ -82,7 +82,9 @@ public final class NpcServerSettings extends NpcSavedData
         /** Whether a killed NPC drops any of its items; its experience is unaffected. Off unless an operator turns it on. */
         ITEM_DROPS(0, 0, 1, "ItemDrops"),
         /** Whether NPCs attack players on Peaceful difficulty too, which Custom NPCs otherwise forbids. On unless an operator turns it off. */
-        PEACEFUL_COMBAT(1, 0, 1, "PeacefulCombat");
+        PEACEFUL_COMBAT(1, 0, 1, "PeacefulCombat"),
+        /** Whether players cannot die, for filming battles: every hit leaves them at least half a heart. Off unless an operator turns it on. */
+        CINEMATIC(0, 0, 1, "Cinematic");
 
         @Getter
         private final int fallback;
@@ -255,6 +257,12 @@ public final class NpcServerSettings extends NpcSavedData
     public boolean peacefulCombat()
     {
         return get(Setting.PEACEFUL_COMBAT) == 1;
+    }
+
+    /** @return whether players cannot die */
+    public boolean cinematic()
+    {
+        return get(Setting.CINEMATIC) == 1;
     }
 
     /**

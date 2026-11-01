@@ -14,6 +14,7 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.network.ServerControlPacket;
 import com.wolffsmod.npcs.sim.NpcActivity;
 import com.wolffsmod.npcs.sim.NpcInactiveReturn;
+import com.wolffsmod.npcs.sim.NpcServerRules;
 import com.wolffsmod.npcs.teams.AllyNameTags;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
@@ -33,6 +34,7 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -104,18 +106,31 @@ public final class NpcsGameEvents
         AllyNameTags.serverTick(event.getServer());
     }
 
+    /** Runs first, so that a player Cinematic mode keeps alive counts as no death to anyone. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void cinematicDeath(LivingDeathEvent event)
+    {
+        if (!event.getEntity().level().isClientSide && NpcServerRules.survivesCinematic(event.getEntity(), event.getSource()))
+            event.setCanceled(true);
+    }
+
     @SubscribeEvent
     public static void livingDeath(LivingDeathEvent event)
     {
         TeamsBots.entityDied(event.getEntity(), event.getSource());
     }
 
-    /** Fired after armour and absorption, just before the health is taken, so a non-lethal NPC knows how much the player has left. */
+    /**
+     * Fired after armour and absorption, just before the health is taken, so a non-lethal NPC and Cinematic mode know how much
+     * the player has left.
+     */
     @SubscribeEvent
     public static void livingDamage(LivingDamageEvent event)
     {
-        if (!event.getEntity().level().isClientSide)
-            event.setAmount(NpcSkill.damageTo(event.getEntity(), event.getSource(), event.getAmount()));
+        if (event.getEntity().level().isClientSide)
+            return;
+        float amount = NpcSkill.damageTo(event.getEntity(), event.getSource(), event.getAmount());
+        event.setAmount(NpcServerRules.cinematicDamage(event.getEntity(), event.getSource(), amount));
     }
 
     @SubscribeEvent

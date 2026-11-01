@@ -117,11 +117,11 @@ class BotSettingsTest
     void difficultyPlayerTicketsAndCloneEquipmentSurviveSavingAndLoading()
     {
         BotSettings settings = new BotSettings();
-        settings.setDifficulty(BotSettings.Difficulty.CINEMATIC);
+        settings.setDifficulty(BotSettings.Difficulty.TRAINEE);
         settings.setPlayerTickets(false);
         settings.team("Germans").setKeepCloneEquipment(true);
         BotSettings loaded = BotSettings.load(settings.save());
-        assertEquals(BotSettings.Difficulty.CINEMATIC, loaded.getDifficulty());
+        assertEquals(BotSettings.Difficulty.TRAINEE, loaded.getDifficulty());
         assertFalse(loaded.isPlayerTickets());
         assertTrue(loaded.team("Germans").isKeepCloneEquipment());
     }
@@ -142,8 +142,11 @@ class BotSettingsTest
             assertTrue(level.skill().lead() <= better.skill().lead(), level + " leads no better than " + better);
             assertTrue(level.accuracy() <= 1F && level.aggro() <= 1F && level.health() <= 1F && level.delay() >= 1F, level + " stays within its equipment");
         }
-        assertTrue(BotSettings.Difficulty.CINEMATIC.skill().nonLethal());
-        assertFalse(BotSettings.Difficulty.RECRUIT.skill().nonLethal());
+        for (BotSettings.Difficulty level : levels)
+        {
+            assertFalse(level.skill().nonLethal(), level + " leaves sparing players to Cinematic mode");
+            assertEquals(level.compareTo(BotSettings.Difficulty.REGULAR) <= 0, level.skill().playerDamage() >= 1F, level + " softens its hits on players only below Regular");
+        }
     }
 
     @Test

@@ -13,7 +13,11 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
@@ -26,6 +30,8 @@ import net.minecraft.world.level.Level;
 public final class NpcServerRules
 {
     private static final double SAME = 1.0E-6D;
+    /** The least health, in hit points, Cinematic mode leaves a player. */
+    private static final float SPARED_HEALTH = 1F;
     /** The NPC's own search intervals, which following the server's sets back to 0. */
     private static final Value[] OWN_INTERVALS = {Value.SEARCH_NEAR_INTERVAL, Value.SEARCH_FAR_INTERVAL, Value.SEARCH_BAND_0_INTERVAL, Value.SEARCH_BAND_1_INTERVAL, Value.SEARCH_BAND_2_INTERVAL,
         Value.SEARCH_BAND_3_INTERVAL, Value.SEARCH_BAND_4_INTERVAL, Value.SEARCH_BAND_5_INTERVAL};
@@ -104,6 +110,47 @@ public final class NpcServerRules
     {
         NpcServerSettings server = npc.level().isClientSide ? null : NpcServerSettings.of(npc);
         return server != null && server.peacefulCombat();
+    }
+
+    /**
+     * @return the damage a player takes from a hit, after armour, as the server's Cinematic mode allows: never enough to kill
+     *         them
+     */
+    public static float cinematicDamage(LivingEntity victim, DamageSource source, float amount)
+    {
+        return cinematic(victim, source) ? spared(victim.getHealth(), amount) : amount;
+    }
+
+    /**
+     * Keeps a player alive whom something killed without a hit Cinematic mode could soften, such as damage set straight on
+     * their health.
+     *
+     * @return whether the player was kept alive, and their death is to be cancelled
+     */
+    public static boolean survivesCinematic(LivingEntity victim, DamageSource source)
+    {
+        if (!cinematic(victim, source))
+            return false;
+        victim.setHealth(SPARED_HEALTH);
+        return true;
+    }
+
+    /** @return the damage that leaves {@link #SPARED_HEALTH} of the health, at most the damage dealt */
+    static float spared(float health, float amount)
+    {
+        return Math.min(amount, Math.max(0F, health - SPARED_HEALTH));
+    }
+
+    /**
+     * Whether Cinematic mode spares the player from the damage: everything but what nothing stops, as falling out of the
+     * world or {@code /kill}, which would otherwise leave them stuck.
+     */
+    private static boolean cinematic(LivingEntity victim, DamageSource source)
+    {
+        if (!(victim instanceof ServerPlayer) || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY))
+            return false;
+        NpcServerSettings server = NpcServerSettings.of(victim);
+        return server != null && server.cinematic();
     }
 
     static boolean consumesAmmo(@Nullable NpcServerSettings.AmmoPolicy policy, boolean own)

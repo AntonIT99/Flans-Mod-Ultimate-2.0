@@ -142,6 +142,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_FRIENDLY_FIRE_PLAYERS_ID = 1225;
     private static final int SERVER_ITEM_DROPS_ID = 1226;
     private static final int SERVER_PEACEFUL_COMBAT_ID = 1227;
+    private static final int SERVER_CINEMATIC_ID = 1228;
     /** The first of the labels a page of read-only lines lays out, one per line or table cell. */
     private static final int LINE_LABEL_ID = 1500;
     /** Room for the lines of a page of read-only lines. */
@@ -271,7 +272,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY),
         NAME_TAG_RANGE(SERVER_NAME_TAG_RANGE_ID, Setting.NAME_TAG_RANGE), ITEM_DROPS(SERVER_ITEM_DROPS_ID, Setting.ITEM_DROPS),
         FRIENDLY_FIRE_NPCS(SERVER_FRIENDLY_FIRE_NPCS_ID, Setting.FRIENDLY_FIRE_NPCS), FRIENDLY_FIRE_PLAYERS(SERVER_FRIENDLY_FIRE_PLAYERS_ID, Setting.FRIENDLY_FIRE_PLAYERS),
-        PEACEFUL_COMBAT(SERVER_PEACEFUL_COMBAT_ID, Setting.PEACEFUL_COMBAT);
+        PEACEFUL_COMBAT(SERVER_PEACEFUL_COMBAT_ID, Setting.PEACEFUL_COMBAT), CINEMATIC(SERVER_CINEMATIC_ID, Setting.CINEMATIC);
         // spotless:on
 
         private final int id;
@@ -300,7 +301,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
         private boolean toggle()
         {
-            return this == PROFILING || this == FREEZE_AI || this == ITEM_DROPS || this == PEACEFUL_COMBAT;
+            return this == PROFILING || this == FREEZE_AI || this == ITEM_DROPS || this == PEACEFUL_COMBAT || this == CINEMATIC;
         }
 
         /** @return the named choices of a row that is one, or none */
@@ -565,7 +566,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         SERVER_SEARCH(Section.SERVER, Scope.ALL, Tab.of(ServerRow.NEAR_INTERVAL, ServerRow.FAR_INTERVAL, ServerRow.SEARCH_BUDGET)),
         SERVER_RULES(Section.SERVER, Scope.ALL,
             Tab.named(SERVER_RANGES_TAB, ServerRow.AGGRO_RANGE, ServerRow.FIRING_RANGE, ServerRow.MODEL_AGGRO_RANGE, ServerRow.MODEL_FIRING_RANGE),
-            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE, ServerRow.ITEM_DROPS, ServerRow.PEACEFUL_COMBAT),
+            Tab.named("rules", ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE, ServerRow.ITEM_DROPS, ServerRow.PEACEFUL_COMBAT, ServerRow.CINEMATIC),
             Tab.named("friendly_fire", ServerRow.FRIENDLY_FIRE_NPCS, ServerRow.FRIENDLY_FIRE_PLAYERS)),
         SERVER_LIMITS(Section.SERVER, Scope.ALL, Tab.of(ServerRow.FREEZE_AI, ServerRow.STAY_ACTIVE_LIMIT, ServerRow.PATH_BUDGET)),
         /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
