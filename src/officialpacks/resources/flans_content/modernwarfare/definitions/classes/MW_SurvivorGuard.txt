@@ -1,0 +1,14 @@
+// Identity
+Name Perimeter Guard
+ShortName MW_SurvivorGuard
+
+// Availability
+AddToTeam zombie:survivors
+
+// Items
+AddItem r870+flanMWFlashlight
+AddItem 12gbuckshotAmmo 24
+AddItem 12gslugAmmo 6
+AddItem usp
+AddItem uspAmmo 2
+AddItem mwKnife

@@ -1,0 +1,12 @@
+// Identity
+Name Rural Lookout
+ShortName MW_SurvivorLookout
+
+// Availability
+AddToTeam zombie:survivors
+
+// Items
+AddItem m14+flanMW4xScope
+AddItem m14Ammo 3
+AddItem mwBinoculars
+AddItem mwKnife

@@ -1,0 +1,11 @@
+// Identity
+Name Criminal Shotgunner
+ShortName Zombie_MWShotgun
+
+// Availability
+AddToTeam modernwarfare:crims
+
+// Items
+AddItem doubleBarrelledShotgun
+AddItem 12gaugeShell 24
+AddItem combatKnife

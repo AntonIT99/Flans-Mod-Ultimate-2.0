@@ -1,0 +1,12 @@
+// Identity
+Name Supply Escort
+ShortName MW_SurvivorSupply
+
+// Availability
+AddToTeam zombie:survivors
+
+// Items
+AddItem m16a4
+AddItem m16a4Ammo 4
+AddItem mwAmmoBag
+AddItem mwKnife

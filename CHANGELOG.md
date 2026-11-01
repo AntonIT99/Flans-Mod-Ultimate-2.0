@@ -2,6 +2,8 @@
 
 ## Highlights
 
+* Cross-pack specialist classes: national WW2 flamethrowers, a Soviet NKVD officer and German support roles including Wolff MG34/MG42 gunners, modern attachment loadouts, survivor rescue and supply roles, and Zombie weapons for modern SWAT and Criminal teams
+* Player classes can use repeatable `AddToTeam <packId>:<teamShortName>` lines to extend another pack's teams without a reverse dependency
 * New companion mod: **Flan's Ultimate 2: NPC Vehicles & Soldiers**, which lets Custom NPCs soldiers use Flan's weapons, vehicles, planes, ships and mechas, crew them and fight Teams rounds, skirmishes and wars (separate download, requires Custom NPCs)
 * Driveable damage and destruction: damaged parts smoke, burn, steam and spark, each machine class dies its own way (tank cook-off, ship magazines and boilers, aircraft fuel, rotor and wing loss, mecha collapse), and parts shot off fly away; destruction bursts stay bounded, ship magazine blasts scale with ammunition rather than hull size, and machine-gun-only boats produce small cook-off pops
 * Destroyed driveables stay as burning wrecks that settle or sink, keep their collision, burn out and can be blown apart (`driveableWreckLifetime`, `NoWreck`)

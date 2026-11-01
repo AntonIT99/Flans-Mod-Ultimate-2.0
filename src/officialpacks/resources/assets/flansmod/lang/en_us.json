@@ -1111,5 +1111,13 @@
   "item.flansmod.nuclearpowercore": "Nuclear Power Core",
   "block.flansmod.flangunrack": "Gun Rack",
   "item.flansmod.buggy": "Buggy",
-  "item.flansmod.nukranium_gauntlet": "Nukranium Gauntlet"
+  "item.flansmod.nukranium_gauntlet": "Nukranium Gauntlet",
+  "class.flansmod.mw_survivorguard": "Perimeter Guard",
+  "class.flansmod.mw_survivorlookout": "Rural Lookout",
+  "class.flansmod.mw_survivormedic": "Evacuation Medic",
+  "class.flansmod.mw_survivorrescue": "Rescue Officer",
+  "class.flansmod.mw_survivorsupply": "Supply Escort",
+  "class.flansmod.zombie_mwdetective": "Plainclothes Detective",
+  "class.flansmod.zombie_mwlookout": "Criminal Lookout (Hunting Rifle)",
+  "class.flansmod.zombie_mwshotgun": "Criminal Shotgunner"
 }
