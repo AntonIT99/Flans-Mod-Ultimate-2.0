@@ -395,10 +395,10 @@ public final class BotSettings
         private static final String NBT_CARRY = "carry";
         private static final String NBT_PAINTJOBS = "paintjobs";
 
-        /** Legacy allocations retain their default paintjob. An empty list explicitly allows every paintjob. */
+        /** New allocations allow every available paintjob by default. */
         public VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry)
         {
-            this(type, count, budget, respawnSeconds, ticketCost, spawner, carry, List.of(0));
+            this(type, count, budget, respawnSeconds, ticketCost, spawner, carry, List.of());
         }
 
         public VehicleEntry
