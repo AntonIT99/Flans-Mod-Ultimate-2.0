@@ -223,6 +223,7 @@ public final class BotFactory
         NpcSkill.write(npc, difficulty.skill());
         ranged.setAccuracy(Math.min(MAX_ACCURACY, scaled(training.getInt(NBT_ACCURACY), difficulty.accuracy(), 0)));
         stats.setAggroRange(scaled(training.getInt(NBT_AGGRO), difficulty.aggro(), 1));
+        FlansTeams.applyBotHealthOverride(npc, false);
         float share = npc.getMaxHealth() > 0F ? npc.getHealth() / npc.getMaxHealth() : 1F;
         stats.setMaxHealth(scaled(training.getInt(NBT_HEALTH), difficulty.health(), 1));
         // A bot trained again in the field keeps the share of its health it had.
@@ -230,6 +231,7 @@ public final class BotFactory
         int fastest = scaled(training.getInt(NBT_DELAY_MIN), difficulty.delay(), 1);
         ranged.setDelay(fastest, Math.max(fastest, scaled(training.getInt(NBT_DELAY_MAX), difficulty.delay(), 1)));
         NpcSuppression.rebase(npc, ranged.getAccuracy());
+        FlansTeams.applyBotHealthOverride(npc, true);
     }
 
     /**

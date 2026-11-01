@@ -57,6 +57,19 @@ class TeamsCommandTest
     }
 
     @Test
+    void globalHealthAndHitZoneRulesAreAvailableWithoutARound()
+    {
+        assertRuns("teams restoreBlocks true");
+        assertRuns("teams bodyPartDamageModifiers false");
+        assertRuns("teams playerHealth 40");
+        assertRuns("teams botHealth 80");
+        assertRuns("teams playerHealth 0");
+        assertRuns("teams botHealth 1024");
+        assertTrue(parse("teams botHealth -1").getReader().canRead());
+        assertTrue(parse("teams playerHealth 1025").getReader().canRead());
+    }
+
+    @Test
     void aRoundIsAddedFromSidesSeparatedByVs()
     {
         assertRuns("teams admin round add arena tdm red vs blue 15 50");

@@ -436,7 +436,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|restoreBlocks|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection> <seconds>"),
+                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -461,7 +461,9 @@ public final class TeamsCommand
      */
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> addRuleCommands(com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        root.then(rule("restoreBlocks", TeamsManager::setRestoreBlocks, enabled -> "Round block restoration set to " + enabled))
+        root.then(rule("bodyPartDamageModifiers", TeamsManager::setBodyPartDamageModifiers, enabled -> "Body-part damage modifiers set to " + enabled))
+            .then(healthSetting("playerHealth", TeamsManager::setPlayerHealth)).then(healthSetting("botHealth", TeamsManager::setBotHealth))
+            .then(rule("restoreBlocks", TeamsManager::setRestoreBlocks, enabled -> "Round block restoration set to " + enabled))
             .then(rule("regeneration", TeamsManager::setRegeneration, enabled -> "Passive regeneration for players and bots set to " + enabled))
             .then(rule("overrideHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? NO_LONGER : "now") + " get hungry during rounds"))
             .then(rule("noHunger", TeamsManager::setOverrideHunger, enabled -> "Players will " + (enabled ? NO_LONGER : "now") + " get hungry during rounds"))
@@ -522,6 +524,17 @@ public final class TeamsCommand
             manager().saveSettings();
             return success(context, message.get(enabled));
         });
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> healthSetting(String name, java.util.function.ObjIntConsumer<TeamsManager> setter)
+    {
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).then(Commands.argument(VALUE, IntegerArgumentType.integer(0, TeamsManager.MAX_HEALTH_OVERRIDE)).executes(context ->
+        {
+            int health = IntegerArgumentType.getInteger(context, VALUE);
+            setter.accept(manager(), health);
+            manager().saveSettings();
+            return success(context, name + (health == 0 ? " uses the entity's own maximum health" : " maximum health set to " + health + " HP"));
+        }));
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> lifeSetting(String name, String what, java.util.function.ObjIntConsumer<TeamsManager> setter)

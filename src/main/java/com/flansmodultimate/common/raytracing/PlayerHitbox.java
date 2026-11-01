@@ -147,6 +147,20 @@ public class PlayerHitbox
         return null;
     }
 
+    static float bodyPartDamageModifier(EnumHitboxType type)
+    {
+        if (!com.flansmodultimate.common.teams.TeamsManager.getInstance().isBodyPartDamageModifiers())
+            return 1F;
+        return switch (type)
+        {
+            case HEAD -> ModCommonConfig.get().headshotDamageModifier();
+            case BODY -> ModCommonConfig.get().chestshotDamageModifier();
+            case LEGS -> ModCommonConfig.get().legshotModifier();
+            case LEFTARM, RIGHTARM -> ModCommonConfig.get().armshotDamageModifier();
+            default -> 1F;
+        };
+    }
+
     public ShootingHelper.HitData hitByBullet(FiredShot shot, ShootingHelper.HitData hitData, @Nullable Bullet bullet)
     {
         float lastHitPenAmount;
@@ -185,23 +199,9 @@ public class PlayerHitbox
 
         lastHitPenAmount = Math.max(hitData.lastHitPenAmount(), damageModifier);
 
+        damageModifier *= bodyPartDamageModifier(type);
         if (type == EnumHitboxType.HEAD)
-        {
-            damageModifier *= ModCommonConfig.get().headshotDamageModifier();
             lastHitHeadshot = true;
-        }
-        else if (type == EnumHitboxType.BODY)
-        {
-            damageModifier *= ModCommonConfig.get().chestshotDamageModifier();
-        }
-        else if (type == EnumHitboxType.LEGS)
-        {
-            damageModifier *= ModCommonConfig.get().legshotModifier();
-        }
-        else if (type == EnumHitboxType.LEFTARM || type == EnumHitboxType.RIGHTARM)
-        {
-            damageModifier *= ModCommonConfig.get().armshotDamageModifier();
-        }
 
         switch (type)
         {

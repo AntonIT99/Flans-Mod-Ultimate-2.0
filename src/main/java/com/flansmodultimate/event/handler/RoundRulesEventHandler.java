@@ -75,7 +75,11 @@ public final class RoundRulesEventHandler
     @SubscribeEvent
     public static void livingTick(LivingEvent.LivingTickEvent event)
     {
-        if (!event.getEntity().level().isClientSide && !(event.getEntity() instanceof net.minecraft.world.entity.player.Player))
+        if (event.getEntity().level().isClientSide)
+            return;
+        if (event.getEntity() instanceof net.minecraft.world.entity.player.Player)
+            TeamsHealth.apply(event.getEntity(), TeamsManager.getInstance().getPlayerHealth());
+        else
             runtime().enforceHomeEntry(event.getEntity());
     }
 

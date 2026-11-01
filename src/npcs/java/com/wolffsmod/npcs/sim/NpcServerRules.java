@@ -1,9 +1,11 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.BotTag;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -32,6 +34,7 @@ public final class NpcServerRules
     public static void refresh(EntityNPCInterface npc, NpcServerSettings server)
     {
         applyHealth(npc, server);
+        FlansTeams.applyBotHealthOverride(npc, BotTag.isBot(npc));
         takeServerSearch(npc, server);
     }
 
@@ -42,7 +45,10 @@ public final class NpcServerRules
         for (ServerLevel level : server.getAllLevels())
             for (Entity entity : level.getAllEntities())
                 if (entity instanceof EntityNPCInterface npc)
+                {
                     applyHealth(npc, settings);
+                    FlansTeams.applyBotHealthOverride(npc, BotTag.isBot(npc));
+                }
     }
 
     /**

@@ -23,6 +23,18 @@ class BotSettingsTest
     }
 
     @Test
+    void regularIsTheDefaultButSavedDifficultiesArePreserved()
+    {
+        assertEquals(BotSettings.Difficulty.REGULAR, new BotSettings().getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, BotSettings.load(new CompoundTag()).getDifficulty());
+        BotSettings saved = new BotSettings();
+        saved.setDifficulty(BotSettings.Difficulty.ELITE);
+        assertEquals(BotSettings.Difficulty.ELITE, BotSettings.load(saved.save()).getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, new Skirmish(UUID.randomUUID(), "test", net.minecraft.world.level.Level.OVERWORLD).getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, new War(UUID.randomUUID(), "test").getDifficulty());
+    }
+
+    @Test
     void classesWeighOneEachUntilOneOfTheTeamsHasAWeight()
     {
         BotSettings.TeamForce force = new BotSettings.TeamForce();
@@ -141,7 +153,7 @@ class BotSettingsTest
         old.remove("difficulty");
         old.remove("player_tickets");
         BotSettings loaded = BotSettings.load(old);
-        assertEquals(BotSettings.Difficulty.ELITE, loaded.getDifficulty());
+        assertEquals(BotSettings.Difficulty.REGULAR, loaded.getDifficulty());
         assertTrue(loaded.isPlayerTickets());
     }
 

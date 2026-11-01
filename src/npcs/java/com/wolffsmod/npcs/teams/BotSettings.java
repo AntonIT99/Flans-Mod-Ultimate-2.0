@@ -100,9 +100,10 @@ public final class BotSettings
         // spotless:off
         /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
         ACE(1F, 1F, 1F, 1F, NpcSkill.Level.ACE),
-        /** Its equipment's full potential, with a human's reaction: about as hard as a skilled player. The default. */
+        /** Its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
         ELITE(1F, 1F, 1F, 1F, NpcSkill.Level.ELITE),
         VETERAN(0.95F, 1F, 1F, 1.1F, NpcSkill.Level.VETERAN),
+        /** The default. */
         REGULAR(0.85F, 0.9F, 1F, 1.2F, NpcSkill.Level.REGULAR),
         RECRUIT(0.6F, 0.75F, 0.8F, 1.5F, NpcSkill.Level.RECRUIT),
         /** Shoots a lot and rarely hits, and never kills a player: for filming battles. Bots still kill each other. */
@@ -180,7 +181,7 @@ public final class BotSettings
     private int abandonChance = 25;
     /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
     private int rubberBand;
-    private Difficulty difficulty = Difficulty.ELITE;
+    private Difficulty difficulty = Difficulty.REGULAR;
     /** Whether players, too, spend their side's tickets when they respawn, once the side has a ticket limit. */
     private boolean playerTickets = true;
     /** Whether bots call out on the radio what happens at the objectives. */
@@ -472,7 +473,7 @@ public final class BotSettings
         settings.squadSize = tag.contains(NBT_SQUAD_SIZE) ? Math.max(1, tag.getInt(NBT_SQUAD_SIZE)) : settings.squadSize;
         settings.abandonChance = tag.contains(NBT_ABANDON) ? Math.max(0, Math.min(100, tag.getInt(NBT_ABANDON))) : settings.abandonChance;
         settings.rubberBand = Math.max(0, tag.getInt(NBT_RUBBER_BAND));
-        settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.ELITE);
+        settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.REGULAR);
         settings.playerTickets = !tag.contains(NBT_PLAYER_TICKETS) || tag.getBoolean(NBT_PLAYER_TICKETS);
         settings.radio = !tag.contains(NBT_RADIO) || tag.getBoolean(NBT_RADIO);
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;

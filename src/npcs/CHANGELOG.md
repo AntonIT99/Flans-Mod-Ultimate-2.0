@@ -40,7 +40,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 ## Teams Bots, Factions & Battles
 
 * NPCs attack players on Peaceful difficulty too, which Custom NPCs otherwise forbids: Teams bots always, other NPCs while `Fight players on Peaceful` (Server > Rules) is on, as it is by default
-* Bot difficulty, set for a round, skirmish or war and independent of the world's difficulty: `ace` (no human limits), `elite` (the default: full use of the equipment with a human's reaction), `veteran`, `regular`, `recruit` and `cinematic`. Lower levels react later to a newly seen target, need longer for their aim to settle, lead moving targets less and make less of their equipment; `cinematic` bots also deal a quarter of their damage to players and never kill them, while still killing each other. A changed level reaches the bots already in the field within a second of saving the settings
+* Bot difficulty, set for a round, skirmish or war and independent of the world's difficulty: `ace` (no human limits), `elite` (full use of the equipment with a human's reaction), `veteran`, `regular` (the default), `recruit` and `cinematic`. Lower levels react later to a newly seen target, need longer for their aim to settle, lead moving targets less and make less of their equipment; `cinematic` bots also deal a quarter of their damage to players and never kill them, while still killing each other. A changed level reaches the bots already in the field within a second of saving the settings
+* Teams, skirmish and war bots follow the global `botHealth` maximum-HP override from the command centre, including bots already in the field; 0 keeps their own health and difficulty scaling
 * Teams soldiers follow the round regeneration rule and heal half a heart every five seconds by default; medical healing and vehicle repairs remain independent
 * Teams bots made from a class fire as far as their weapon and level let them hit, about 128 blocks with an accurate rifle and up to 256 with a scoped one, and call out whoever shoots at them to the bots within 48 blocks, so a player sniping them from afar draws their fire and their marksmen and vehicles
 
@@ -49,7 +50,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Players can join and leave factions; factions are invite-only by default, and operators choose who may join, the leave penalty and the rejoin cooldown
 * `Attack Mobs` in Global > Factions: every NPC of the faction hunts hostile mobs on sight, slimes and ghasts included, without needing the Guard job
 * Skirmishes between factions outside Teams rounds, and endless wars over chunk territory
-* Teams bot editor (`/teams ai editor`): a team's clone, class weights, squads, class roles and vehicle crew classes are chosen in pickers with search, pages and previews of the clone, class loadout or squad leader; the count mode is explained beside each team's count, with the number of soldiers it fields, and every setting explains itself in its tooltip
+* Teams bot editor (`/teams ai editor`): a team's clone, class weights, squads, class roles and vehicle crew classes are chosen in pickers with search, pages and previews of the clone, class loadout or squad leader; the count mode is explained beside each team's count, with the number of soldiers it fields, and every setting explains itself in its tooltip; the Rules tab fits above the round selector
 * Factions, Skirmishes, Wars and Bots pages in the Teams command centre
 * Configurable friendly fire between NPCs, players and allies (`wolffsmodnpcs-common.toml`, `/flansnpcfriendlyfire`, Server > Rules > Friendly fire in the Wolff's Mod tab)
 

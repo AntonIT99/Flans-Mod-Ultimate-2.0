@@ -68,6 +68,22 @@ public final class FlansTeams
     }
 
     /**
+     * Applies the server's global bot maximum-health override, including between rounds, preserving the remaining health
+     * percentage. Call after updating an addon's own health attributes, and when bot membership changes. The modifier is
+     * saved with the entity so health survives loading; passing false removes it and restores the entity's own maximum.
+     * Does nothing off the server thread or without a running server.
+     *
+     * @param entity
+     *            an addon's living bot or former bot
+     * @param bot
+     *            whether the entity currently belongs to the addon's bot forces
+     */
+    public static void applyBotHealthOverride(LivingEntity entity, boolean bot)
+    {
+        manager().ifPresent(manager -> com.flansmodultimate.common.teams.TeamsHealth.apply(entity, bot ? manager.getBotHealth() : 0));
+    }
+
+    /**
      * @return the entries of the rotation in their order, immutable
      */
     public static List<ITeamsRound> getRounds()

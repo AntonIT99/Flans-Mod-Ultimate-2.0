@@ -66,6 +66,11 @@ public final class TeamsManager
     private static final String NBT_AUTO_BALANCE_INTERVAL = "auto_balance_interval";
     private static final String NBT_VOTE_OPTIONS = "vote_options";
     private static final String NBT_ID = "id";
+    private static final String NBT_BODY_PART_DAMAGE = "body_part_damage_modifiers";
+    private static final String NBT_PLAYER_HEALTH = "player_health";
+    private static final String NBT_BOT_HEALTH = "bot_health";
+    /** Largest health override accepted by commands and the command centre, in hit points. */
+    public static final int MAX_HEALTH_OVERRIDE = 1024;
     private static final String NBT_EXPLOSIONS = "explosions";
     private static final String NBT_BREAK_GLASS = "break_glass";
     private static final String NBT_BREAK_GUNS = "break_guns";
@@ -144,6 +149,14 @@ public final class TeamsManager
 
     @Getter
     private boolean explosionsBreakBlocks = true;
+    /** Global hit-zone multipliers, including outside Teams rounds. */
+    @Getter @Setter
+    private boolean bodyPartDamageModifiers = true;
+    /** Global maximum-health overrides in hit points; zero preserves each entity's own maximum. */
+    @Getter
+    private int playerHealth;
+    @Getter
+    private int botHealth;
     @Getter @Setter
     private boolean canBreakGlass = true;
     @Getter @Setter
@@ -591,6 +604,16 @@ public final class TeamsManager
     public boolean setMapImage(String id, @Nullable String image)
     {
         return afterMapChange(getMap(id).map(map -> map.setDeployImage(image)).orElse(false));
+    }
+
+    public void setPlayerHealth(int health)
+    {
+        playerHealth = Mth.clamp(health, 0, MAX_HEALTH_OVERRIDE);
+    }
+
+    public void setBotHealth(int health)
+    {
+        botHealth = Mth.clamp(health, 0, MAX_HEALTH_OVERRIDE);
     }
 
     /**
@@ -2476,6 +2499,9 @@ public final class TeamsManager
         }
 
         restoreBlocks = tag.getBoolean("restore_blocks");
+        bodyPartDamageModifiers = !tag.contains(NBT_BODY_PART_DAMAGE) || tag.getBoolean(NBT_BODY_PART_DAMAGE);
+        setPlayerHealth(tag.getInt(NBT_PLAYER_HEALTH));
+        setBotHealth(tag.getInt(NBT_BOT_HEALTH));
         if (tag.contains(NBT_EXPLOSIONS))
             explosionsBreakBlocks = tag.getBoolean(NBT_EXPLOSIONS);
         if (tag.contains(NBT_BREAK_GLASS))
@@ -2605,6 +2631,9 @@ public final class TeamsManager
 
         tag.put(NBT_VOTE_OPTIONS, voteOptions);
         tag.putBoolean("restore_blocks", restoreBlocks);
+        tag.putBoolean(NBT_BODY_PART_DAMAGE, bodyPartDamageModifiers);
+        tag.putInt(NBT_PLAYER_HEALTH, playerHealth);
+        tag.putInt(NBT_BOT_HEALTH, botHealth);
         tag.putBoolean(NBT_EXPLOSIONS, explosionsBreakBlocks);
         tag.putBoolean(NBT_BREAK_GLASS, canBreakGlass);
         tag.putBoolean(NBT_BREAK_GUNS, canBreakGuns);

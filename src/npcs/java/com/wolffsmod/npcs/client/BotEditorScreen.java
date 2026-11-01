@@ -190,11 +190,11 @@ public final class BotEditorScreen extends Screen
         int width = LABEL_WIDTH + FIELD_WIDTH;
         addRenderableWidget(difficultyButton(left, y(0), width));
         addRenderableWidget(switchButton(left, y(1), width, "player_tickets", settings.isPlayerTickets(), settings::setPlayerTickets));
-        addRenderableWidget(switchButton(left, y(2), width, "radio", settings.isRadio(), settings::setRadio));
-        addRenderableWidget(switchButton(left, y(3), width, "suppression", settings.isSuppression(), settings::setSuppression));
-        addRenderableWidget(switchButton(left, y(4), width, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
-        addField(left, 5, RETREAT, Integer.toString(settings.getRetreatHealth()));
-        addRenderableWidget(switchButton(left, y(6), width, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
+        addRenderableWidget(switchButton(left, y(2), COLUMN_WIDTH, "radio", settings.isRadio(), settings::setRadio));
+        addRenderableWidget(switchButton(left + COLUMN_WIDTH + 4, y(2), COLUMN_WIDTH, "suppression", settings.isSuppression(), settings::setSuppression));
+        addRenderableWidget(switchButton(left, y(3), width, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
+        addField(left, 4, RETREAT, Integer.toString(settings.getRetreatHealth()));
+        addRenderableWidget(switchButton(left, y(5), width, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
     }
 
     private CycleButton<Boolean> switchButton(int x, int y, int width, String key, boolean value, Consumer<Boolean> setter)

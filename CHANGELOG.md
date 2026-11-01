@@ -6,7 +6,7 @@
 * Driveable damage and destruction: damaged parts smoke, burn, steam and spark, each machine class dies its own way (tank cook-off, ship magazines and boilers, aircraft fuel, rotor and wing loss, mecha collapse), and parts shot off fly away; destruction bursts stay bounded, ship magazine blasts scale with ammunition rather than hull size, and machine-gun-only boats produce small cook-off pops
 * Destroyed driveables stay as burning wrecks that settle or sink, keep their collision, burn out and can be blown apart (`driveableWreckLifetime`, `NoWreck`)
 * Driveable repairs and carrier servicing, with repair tools, the Blowtorch, a repair progress display and an operator command to fully repair a driveable
-* New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; arena and survival preset tooltips list every parameter they set
+* New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; arena and survival presets have compact summary tooltips
 * Reimplemented missing features of Flan's Mod Ultimate 1.7.10, including Teams rule commands, lag compensation settings, death drop rules, item spawners, `ShootWithOpenDoor`, kill messages with distance and hit markers
 * New combat effects: screen shake and camera recoil, tracer beams and mixed belts, hold-to-throw grenades with weight-based category speeds and weaker underhand tosses (hold and release attack for overhand, use for underhand), thermal vision scopes, hot rounds and team IFF strobes, explosion shake, fly-by sounds and suppression
 * Large rendering performance improvements and shader pack compatibility (Oculus/Iris)
@@ -14,11 +14,13 @@
 
 ## Teams
 
+* Global rules in the command centre's Rules > Health tab: `bodyPartDamageModifiers` disables hit-zone damage multipliers for players and humanoid NPCs when false (default true), and `playerHealth` / `botHealth` override their maximum HP separately (default 0 keeps existing health); these rules apply outside rounds too, and health changes preserve the remaining percentage
+
 * Opt-in round rules, configurable in the Teams command centre: shared respawn waves, limited lives, objective overtime, per-side vehicle limits and replacement delays, capture restrictions, protected headquarters, warm-up and ready checks, team-switch restrictions, flag-carrier equipment and movement restrictions, and nameplate, kill-message and spectator controls; server defaults and per-round overrides are saved and apply at the next round start
 
 * Conquest and Domination default to `killticketvalue 1`, `scorelimit 60` and `ticketdraininterval 100` (five seconds), preserving the relative value of kills and objective control; saved game type settings and round limits are kept
 
-* Optional `/teams restoreBlocks true` restores changed map blocks and block entities after a round ends, stops or switches, including explosion damage and broken glass; changes are saved across server restarts
+* Optional `/teams restoreBlocks true` (also on Rules > Cleanup in the command centre) restores changed map blocks and block entities after a round ends, stops or switches, including explosion damage and broken glass; changes are saved across server restarts
 
 * Owned flag poles show their team's color or flag texture outside rounds when the rounds configured for their map identify the owner unambiguously
 

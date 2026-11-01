@@ -78,8 +78,9 @@ public final class TeamsSection
      * The boolean rules, by the {@code /teams} command that sets each; {@code noHunger} in the screen is the legacy
      * {@code overrideHunger}.
      */
-    public static final List<String> SWITCHES = List.of("explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles", "survivalCanPlaceVehicles", "forceAdventure",
-        "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp");
+    public static final List<String> SWITCHES = List.of("restoreBlocks", "bodyPartDamageModifiers", "explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles",
+        "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom",
+        "movieProp");
     /** How long abandoned driveables last, by the {@code /teams} command that sets each, in seconds. */
     public static final List<String> LIFETIMES = List.of("mgLife", "planeLife", "vehicleLife", "mechaLife", "aaLife");
 
@@ -246,6 +247,10 @@ public final class TeamsSection
     private static CompoundTag rules(TeamsManager manager)
     {
         CompoundTag tag = new CompoundTag();
+        tag.putBoolean("restoreBlocks", manager.isRestoreBlocks());
+        tag.putBoolean("bodyPartDamageModifiers", manager.isBodyPartDamageModifiers());
+        tag.putInt("playerHealth", manager.getPlayerHealth());
+        tag.putInt("botHealth", manager.getBotHealth());
         tag.putBoolean("explosions", manager.isExplosionsBreakBlocks());
         tag.putBoolean("canBreakGlass", manager.isCanBreakGlass());
         tag.putBoolean("canBreakGuns", manager.isCanBreakGuns());

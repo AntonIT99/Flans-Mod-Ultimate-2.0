@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.combat.NpcSkill;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -75,6 +77,8 @@ public final class BotTag
     {
         entity.getPersistentData().remove(KEY);
         NpcSkill.clear(entity);
+        if (entity instanceof LivingEntity living)
+            FlansTeams.applyBotHealthOverride(living, false);
     }
 
     /** Whether the entity carries bot data at all, from any round. */

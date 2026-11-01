@@ -287,11 +287,13 @@ public final class CommonEventHandler
     {
         AttributeInstance maxHealth = player.getAttribute(Attributes.MAX_HEALTH);
         double configured = ModCommonConfig.maxPlayerHealth();
-        if (maxHealth == null || maxHealth.getBaseValue() == configured)
-            return;
-        maxHealth.setBaseValue(configured);
-        if (player.getHealth() > player.getMaxHealth())
-            player.setHealth(player.getMaxHealth());
+        if (maxHealth != null && maxHealth.getBaseValue() != configured)
+        {
+            maxHealth.setBaseValue(configured);
+            if (player.getHealth() > player.getMaxHealth())
+                player.setHealth(player.getMaxHealth());
+        }
+        com.flansmodultimate.common.teams.TeamsHealth.apply(player, FlansMod.teamsManager.getPlayerHealth());
     }
 
     /** The client builds a new player entity in the new dimension, which stands up. */
