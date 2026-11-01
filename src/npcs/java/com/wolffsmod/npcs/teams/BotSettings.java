@@ -39,6 +39,7 @@ public final class BotSettings
     private static final String NBT_ABANDON = "abandon_chance";
     private static final String NBT_RUBBER_BAND = "rubber_band";
     private static final String NBT_DIFFICULTY = "difficulty";
+    static final String NBT_CUSTOM_DIFFICULTY = "custom_difficulty";
     private static final String NBT_PLAYER_TICKETS = "player_tickets";
     private static final String NBT_RADIO = "radio";
     private static final String NBT_RETREAT = "retreat_health";
@@ -46,6 +47,8 @@ public final class BotSettings
     private static final String NBT_RALLY = "rally_points";
     private static final String NBT_VEHICLE_CREWS = "vehicle_crews";
     private static final String NBT_TEAMS = "teams";
+    /** The custom values a round, skirmish or war starts with: those of Regular. */
+    public static final BotTraining DEFAULT_CUSTOM = Difficulty.REGULAR.training(null);
 
     /** How the number of loose infantry bots per team is set. */
     public enum Mode
@@ -98,9 +101,9 @@ public final class BotSettings
     public enum Difficulty
     {
         // spotless:off
-        /** Shoots a lot and rarely hits, and deals half its damage to players. */
+        /** Shoots a lot and rarely hits, and deals a quarter of its damage to players. */
         TRAINEE(0.45F, 0.65F, NpcSkill.Level.TRAINEE),
-        /** Below Regular, hits on players start to deal less damage. */
+        /** Below Regular, hits on players deal less damage: half of it for a recruit. */
         RECRUIT(0.55F, 0.75F, NpcSkill.Level.RECRUIT),
         /** The default. */
         REGULAR(0.7F, 0.85F, NpcSkill.Level.REGULAR),
@@ -108,7 +111,9 @@ public final class BotSettings
         /** Nearly its equipment's full potential, with a human's reaction: about as hard as a skilled player. */
         ELITE(0.95F, 1F, NpcSkill.Level.ELITE),
         /** Fights to the full potential of its equipment, without any human limit: it fires the moment it sees a target. */
-        ACE(1F, 1F, NpcSkill.Level.ACE);
+        ACE(1F, 1F, NpcSkill.Level.ACE),
+        /** Fights as the custom values of its round, skirmish or war say; the values here stand for none of them. */
+        CUSTOM(1F, 1F, NpcSkill.Level.CUSTOM);
         // spotless:on
 
         private final float accuracy;
@@ -146,6 +151,18 @@ public final class BotSettings
         {
             return aggro;
         }
+
+        /** @return what the level trains bots to; for {@link #CUSTOM}, the custom values given */
+        public BotTraining training(BotTraining custom)
+        {
+            return this == CUSTOM ? custom : new BotTraining(accuracy, aggro, skill());
+        }
+
+        /** @return the preset levels, from the easiest up, without {@link #CUSTOM} */
+        public static List<Difficulty> presets()
+        {
+            return Arrays.stream(values()).filter(level -> level != CUSTOM).toList();
+        }
     }
 
     private boolean enabled = true;
@@ -167,6 +184,8 @@ public final class BotSettings
     /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
     private int rubberBand;
     private Difficulty difficulty = Difficulty.REGULAR;
+    /** What bots are trained to at {@link Difficulty#CUSTOM}; it starts as Regular. */
+    private BotTraining customTraining = DEFAULT_CUSTOM;
     /** Whether players, too, spend their side's tickets when they respawn, once the side has a ticket limit. */
     private boolean playerTickets = true;
     /** Whether bots call out on the radio what happens at the objectives. */
@@ -409,6 +428,18 @@ public final class BotSettings
         return teams.computeIfAbsent(team, ignored -> new TeamForce());
     }
 
+    /** @return what the round's bots are trained to: the values of its difficulty, or its custom ones */
+    public BotTraining training()
+    {
+        return difficulty.training(customTraining);
+    }
+
+    /** @return the name a bot keeps of what it was trained to: the level, or for custom training, its values */
+    public String trainingId()
+    {
+        return difficulty == Difficulty.CUSTOM ? customTraining.id() : difficulty.name();
+    }
+
     public CompoundTag save()
     {
         CompoundTag tag = new CompoundTag();
@@ -425,6 +456,7 @@ public final class BotSettings
         tag.putInt(NBT_ABANDON, abandonChance);
         tag.putInt(NBT_RUBBER_BAND, rubberBand);
         tag.putString(NBT_DIFFICULTY, difficulty.name());
+        tag.put(NBT_CUSTOM_DIFFICULTY, customTraining.save());
         tag.putBoolean(NBT_PLAYER_TICKETS, playerTickets);
         tag.putBoolean(NBT_RADIO, radio);
         tag.putInt(NBT_RETREAT, retreatHealth);
@@ -459,6 +491,7 @@ public final class BotSettings
         settings.abandonChance = tag.contains(NBT_ABANDON) ? Math.max(0, Math.min(100, tag.getInt(NBT_ABANDON))) : settings.abandonChance;
         settings.rubberBand = Math.max(0, tag.getInt(NBT_RUBBER_BAND));
         settings.difficulty = parse(Difficulty.class, tag.getString(NBT_DIFFICULTY), Difficulty.REGULAR);
+        settings.customTraining = BotTraining.load(tag.getCompound(NBT_CUSTOM_DIFFICULTY), DEFAULT_CUSTOM);
         settings.playerTickets = !tag.contains(NBT_PLAYER_TICKETS) || tag.getBoolean(NBT_PLAYER_TICKETS);
         settings.radio = !tag.contains(NBT_RADIO) || tag.getBoolean(NBT_RADIO);
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;

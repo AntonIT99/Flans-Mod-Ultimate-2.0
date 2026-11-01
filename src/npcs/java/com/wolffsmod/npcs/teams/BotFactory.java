@@ -152,7 +152,7 @@ public final class BotFactory
             NpcSkins.markClassSkin(custom);
         }
         enlist.accept(npc);
-        train(npc, order.settings().getDifficulty());
+        train(npc, order.settings());
         if (!added)
             level.addFreshEntity(npc);
         npc.setHealth(npc.getMaxHealth());
@@ -195,7 +195,7 @@ public final class BotFactory
         order.slot().setName(npc.display.getName());
         order.slot().setNameBinding(NpcDisplayNames.of(npc.display).getName());
         join(npc, order, order.position(), Membership.VEHICLE);
-        train(npc, order.settings().getDifficulty());
+        train(npc, order.settings());
         npc.setHealth(npc.getMaxHealth());
         return Optional.of(npc);
     }
@@ -204,8 +204,9 @@ public final class BotFactory
      * Sets how well a bot fights by the round's difficulty: scales its aim and how far it notices enemies, and gives it the
      * level's reaction, aim settling, lead and damage to players. Its health and rate of fire stay as they were given.
      */
-    static void train(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    static void train(EntityNPCInterface npc, BotSettings settings)
     {
+        BotTraining difficulty = settings.training();
         DataStats stats = npc.stats;
         DataRanged ranged = stats.ranged;
         // The stats the loadout or clone gave, kept the first time, so that a later level scales them rather than the last level's.
@@ -218,7 +219,7 @@ public final class BotFactory
             training.putInt(NBT_DELAY_MIN, ranged.getDelayMin());
             training.putInt(NBT_DELAY_MAX, ranged.getDelayMax());
         }
-        training.putString(NBT_LEVEL, difficulty.name());
+        training.putString(NBT_LEVEL, settings.trainingId());
         npc.getPersistentData().put(NBT_TRAINING, training);
         NpcSkill.write(npc, difficulty.skill());
         ranged.setAccuracy(Math.min(MAX_ACCURACY, scaled(training.getInt(NBT_ACCURACY), difficulty.accuracy(), 0)));
@@ -236,14 +237,14 @@ public final class BotFactory
     }
 
     /**
-     * Trains a bot again when its round's difficulty has changed since it was trained, as after its settings are saved.
-     * An NPC that joined as it was and was never trained is left alone.
+     * Trains a bot again when its round's difficulty, or its custom values, have changed since it was trained, as after its
+     * settings are saved. An NPC that joined as it was and was never trained is left alone.
      */
-    static void keepTrained(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    static void keepTrained(EntityNPCInterface npc, BotSettings settings)
     {
         CompoundTag training = npc.getPersistentData().getCompound(NBT_TRAINING);
-        if (training.contains(NBT_LEVEL) && !training.getString(NBT_LEVEL).equals(difficulty.name()))
-            train(npc, difficulty);
+        if (training.contains(NBT_LEVEL) && !training.getString(NBT_LEVEL).equals(settings.trainingId()))
+            train(npc, settings);
     }
 
     /** @return the stat scaled by a level's factor, a factor of 1 leaving it exactly as it was */

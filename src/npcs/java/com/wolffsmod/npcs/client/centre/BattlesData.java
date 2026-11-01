@@ -2,6 +2,8 @@ package com.wolffsmod.npcs.client.centre;
 
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.teams.BattlesSection;
+import com.wolffsmod.npcs.teams.BotSettings;
+import com.wolffsmod.npcs.teams.BotTraining;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
@@ -57,7 +59,7 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     }
 
     /** How a skirmish is fought and ends. */
-    record Rules(String intent, String end, int minutes, boolean respawn, int respawnSeconds, int tickets, String difficulty, boolean protection)
+    record Rules(String intent, String end, int minutes, boolean respawn, int respawnSeconds, int tickets, String difficulty, BotTraining custom, boolean protection)
     {}
 
     /**
@@ -82,7 +84,7 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     record WarInfo(String name, boolean running, List<Integer> factions, List<Integer> holdings, List<String> scope, WarRules rules, List<Engagement> engagements, Territory map)
     {}
 
-    record WarRules(int infantry, int respawn, int tickets, int range, int engagements, int flip, String difficulty)
+    record WarRules(int infantry, int respawn, int tickets, int range, int engagements, int flip, String difficulty, BotTraining custom)
     {}
 
     record Engagement(String name, int first, int second, int x, int z, int progress)
@@ -174,7 +176,7 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     private static SkirmishInfo skirmish(CompoundTag tag)
     {
         Rules rules = new Rules(tag.getString(BattlesSection.INTENT), tag.getString(BattlesSection.END), tag.getInt(BattlesSection.MINUTES), tag.getBoolean(BattlesSection.RESPAWN),
-            tag.getInt(BattlesSection.RESPAWN_SECONDS), tag.getInt(BattlesSection.TICKETS), tag.getString(BattlesSection.DIFFICULTY), tag.getBoolean(BattlesSection.PROTECTION));
+            tag.getInt(BattlesSection.RESPAWN_SECONDS), tag.getInt(BattlesSection.TICKETS), tag.getString(BattlesSection.DIFFICULTY), custom(tag), tag.getBoolean(BattlesSection.PROTECTION));
         List<Side> sides = list(tag, BattlesSection.SIDES, entry ->
         {
             Fight fight = entry.contains(BattlesSection.STANDING)
@@ -187,10 +189,16 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
         return new SkirmishInfo(tag.getString(BattlesSection.NAME), tag.getString(BattlesSection.STATE), rules, tag.getString(BattlesSection.DIMENSION), tag.getBoolean(BattlesSection.WAR), sides);
     }
 
+    /** @return the custom difficulty values of a skirmish or war */
+    private static BotTraining custom(CompoundTag tag)
+    {
+        return BotTraining.load(tag.getCompound(BattlesSection.CUSTOM_DIFFICULTY), BotSettings.DEFAULT_CUSTOM);
+    }
+
     private static WarInfo war(CompoundTag tag)
     {
         WarRules rules = new WarRules(tag.getInt(BattlesSection.INFANTRY), tag.getInt(BattlesSection.RESPAWN_SECONDS), tag.getInt(BattlesSection.TICKETS), tag.getInt(BattlesSection.RANGE),
-            tag.getInt(BattlesSection.MOST_ENGAGEMENTS), tag.getInt(BattlesSection.FLIP), tag.getString(BattlesSection.DIFFICULTY));
+            tag.getInt(BattlesSection.MOST_ENGAGEMENTS), tag.getInt(BattlesSection.FLIP), tag.getString(BattlesSection.DIFFICULTY), custom(tag));
         List<Engagement> engagements = list(tag, BattlesSection.ENGAGEMENTS, entry -> new Engagement(entry.getString(BattlesSection.NAME), entry.getInt(BattlesSection.FIRST),
             entry.getInt(BattlesSection.SECOND), entry.getInt(BattlesSection.X), entry.getInt(BattlesSection.Z), entry.getInt(BattlesSection.PROGRESS)));
         CompoundTag map = tag.getCompound(BattlesSection.MAP);

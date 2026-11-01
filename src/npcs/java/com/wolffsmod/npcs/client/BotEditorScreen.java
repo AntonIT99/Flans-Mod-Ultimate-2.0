@@ -188,7 +188,13 @@ public final class BotEditorScreen extends Screen
     private void initRules(int left)
     {
         int width = LABEL_WIDTH + FIELD_WIDTH;
-        addRenderableWidget(difficultyButton(left, y(0), width));
+        int editWidth = SHORT_FIELD_WIDTH;
+        addRenderableWidget(difficultyButton(left, y(0), width - editWidth - 4));
+        addRenderableWidget(Button
+            .builder(Component.translatable("wolffsmodnpcs.difficulty_editor.edit"),
+                button -> openPicker(() -> new BotDifficultyScreen(this, settings.getCustomTraining(), settings::setCustomTraining)))
+            .bounds(left + width - editWidth, y(0), editWidth, 20).tooltip(Tooltip.create(Component.translatable("wolffsmodnpcs.difficulty_editor.edit.tip"))).build()).active = settings
+                .getDifficulty() == BotSettings.Difficulty.CUSTOM;
         addRenderableWidget(switchButton(left, y(1), width, "player_tickets", settings.isPlayerTickets(), settings::setPlayerTickets));
         addRenderableWidget(switchButton(left, y(2), COLUMN_WIDTH, "radio", settings.isRadio(), settings::setRadio));
         addRenderableWidget(switchButton(left + COLUMN_WIDTH + 4, y(2), COLUMN_WIDTH, "suppression", settings.isSuppression(), settings::setSuppression));
@@ -421,13 +427,18 @@ public final class BotEditorScreen extends Screen
         labels.add(new Label(Component.translatable(PREFIX + key), x, y(row) + 6));
     }
 
-    /** The bot difficulty, whose tooltip details what the chosen level does. */
+    /** The bot difficulty, whose tooltip details what the chosen level does; a change shows the page again, for only the custom level is edited. */
     private CycleButton<BotSettings.Difficulty> difficultyButton(int x, int y, int width)
     {
         return CycleButton.<BotSettings.Difficulty>builder(level -> Component.literal(level.name().toLowerCase(Locale.ROOT))).withValues(BotSettings.Difficulty.values())
             .withInitialValue(settings.getDifficulty())
             .withTooltip(level -> Tooltip.create(Component.translatable("wolffsmodnpcs.centre.difficulty." + level.name().toLowerCase(Locale.ROOT) + ".tip")))
-            .create(x, y, width, 20, Component.translatable(PREFIX + "difficulty"), (button, chosen) -> settings.setDifficulty(chosen));
+            .create(x, y, width, 20, Component.translatable(PREFIX + "difficulty"), (button, chosen) ->
+            {
+                commit();
+                settings.setDifficulty(chosen);
+                rebuildWidgets();
+            });
     }
 
     /**

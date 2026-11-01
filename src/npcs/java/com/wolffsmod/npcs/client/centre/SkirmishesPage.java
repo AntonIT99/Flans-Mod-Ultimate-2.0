@@ -4,6 +4,7 @@ import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
@@ -334,8 +335,13 @@ final class SkirmishesPage extends BattlePage
             choice(view, tr("skirmish.intent"), choices.intents(), keep(choices.intents(), rules.intent(), choices.intents().get(0)), intent -> value("intent", intent), x, y, half,
                 intent -> run(view, SET, name, "intent", intent)).setTooltip(Tooltip.create(tr("skirmish.intent.tip")));
         if (!choices.difficulties().isEmpty())
-            difficultyChoice(view, tr("skirmish.difficulty"), choices.difficulties(), keep(choices.difficulties(), rules.difficulty(), choices.difficulties().get(0)), right, y, half,
+        {
+            int editWidth = 40;
+            difficultyChoice(view, tr("skirmish.difficulty"), choices.difficulties(), keep(choices.difficulties(), rules.difficulty(), choices.difficulties().get(0)), right, y, half - editWidth - GAP,
                 difficulty -> run(view, SET, name, "difficulty", difficulty)).active = skirmish.draft();
+            Button edit = customDifficultyButton(view, rules.difficulty(), rules.custom(), right + half - editWidth, y, editWidth, values -> run(view, SET, name, "difficulty custom", values));
+            edit.active &= skirmish.draft();
+        }
         y += ROW;
         String minutesKey = "minutes@" + skirmish.name();
         if (!choices.ends().isEmpty())

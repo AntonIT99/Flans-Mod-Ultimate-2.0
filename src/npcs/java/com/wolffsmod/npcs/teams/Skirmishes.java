@@ -181,6 +181,7 @@ final class Skirmishes
         settings.setRespawnSeconds(skirmish.getRespawnSeconds());
         settings.setTickets(skirmish.isRespawn() ? skirmish.getTickets() : 0);
         settings.setDifficulty(skirmish.getDifficulty());
+        settings.setCustomTraining(skirmish.getCustomTraining());
         settings.setPlayerTickets(false);
         settings.setRadio(false);
         // A squad leader's rally point is where the squad's fallen come back; coming back there is for round players only.

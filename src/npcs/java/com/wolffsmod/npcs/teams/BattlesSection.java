@@ -71,6 +71,7 @@ public final class BattlesSection
     public static final String RESPAWN_SECONDS = "respawn_seconds";
     public static final String TICKETS = "tickets";
     public static final String DIFFICULTY = "difficulty";
+    public static final String CUSTOM_DIFFICULTY = "custom_difficulty";
     public static final String PROTECTION = "protection";
     public static final String MARKER_MAP = "marker_map";
     public static final String DIMENSION = "dimension";
@@ -249,6 +250,7 @@ public final class BattlesSection
         tag.putInt(RESPAWN_SECONDS, skirmish.getRespawnSeconds());
         tag.putInt(TICKETS, skirmish.getTickets());
         tag.putString(DIFFICULTY, BotCommands.lower(skirmish.getDifficulty()));
+        tag.put(CUSTOM_DIFFICULTY, skirmish.getCustomTraining().save());
         tag.putBoolean(PROTECTION, skirmish.isProtection());
         tag.putString(MARKER_MAP, skirmish.getMarkerMap());
         tag.putString(DIMENSION, skirmish.getDimension().location().toString());
@@ -304,6 +306,7 @@ public final class BattlesSection
         tag.putInt(MOST_ENGAGEMENTS, war.getMostEngagements());
         tag.putInt(FLIP, war.getFlipSeconds());
         tag.putString(DIFFICULTY, BotCommands.lower(war.getDifficulty()));
+        tag.put(CUSTOM_DIFFICULTY, war.getCustomTraining().save());
         SkirmishStore skirmishes = SkirmishStore.get(server);
         ListTag engagements = new ListTag();
         Set<Long> contested = new HashSet<>();

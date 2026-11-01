@@ -4,9 +4,13 @@ import com.flansmodultimate.api.client.commandcentre.ICommandCentrePage;
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.client.BotDifficultyScreen;
 import com.wolffsmod.npcs.teams.BattlesSection;
+import com.wolffsmod.npcs.teams.BotSettings;
+import com.wolffsmod.npcs.teams.BotTraining;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -144,6 +148,23 @@ abstract class BattlePage implements ICommandCentrePage
     {
         return view.addWidget(CycleButton.builder((String level) -> value("difficulty", level)).withValues(values).withInitialValue(value)
             .withTooltip(level -> Tooltip.create(tr("difficulty." + level + ".tip"))).create(x, y, width, WIDGET_HEIGHT, label, (button, chosen) -> onChange.accept(chosen)));
+    }
+
+    /**
+     * A button that opens the editor of the custom difficulty values, usable while the difficulty chosen is custom.
+     *
+     * @param command
+     *            the command, without the values, that sets the custom difficulty
+     */
+    static Button customDifficultyButton(ICommandCentreView view, String difficulty, BotTraining custom, int x, int y, int width, Consumer<String> command)
+    {
+        Button button = button(view, Component.translatable("wolffsmodnpcs.difficulty_editor.edit"), x, y, width, Component.translatable("wolffsmodnpcs.difficulty_editor.edit.tip"), () ->
+        {
+            Minecraft game = Minecraft.getInstance();
+            game.setScreen(new BotDifficultyScreen(game.screen, custom, chosen -> command.accept(chosen.commandArguments())));
+        });
+        button.active = BotSettings.Difficulty.CUSTOM.name().equalsIgnoreCase(difficulty);
+        return button;
     }
 
     /** Runs a command of words joined by spaces. */

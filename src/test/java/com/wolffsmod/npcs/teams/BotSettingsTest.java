@@ -129,15 +129,15 @@ class BotSettingsTest
     @Test
     void difficultiesGoFromTheEasiestUpAndNoneMakesABotBetterThanItsEquipment()
     {
-        BotSettings.Difficulty[] levels = BotSettings.Difficulty.values();
-        assertEquals(BotSettings.Difficulty.TRAINEE, levels[0]);
-        assertEquals(BotSettings.Difficulty.ACE, levels[levels.length - 1]);
+        List<BotSettings.Difficulty> levels = BotSettings.Difficulty.presets();
+        assertEquals(BotSettings.Difficulty.TRAINEE, levels.get(0));
+        assertEquals(BotSettings.Difficulty.ACE, levels.get(levels.size() - 1));
         assertFalse(BotSettings.Difficulty.ACE.scalesStats());
         assertEquals(0, BotSettings.Difficulty.ACE.skill().reactionTicks());
-        for (int index = 1; index < levels.length; index++)
+        for (int index = 1; index < levels.size(); index++)
         {
-            BotSettings.Difficulty better = levels[index];
-            BotSettings.Difficulty level = levels[index - 1];
+            BotSettings.Difficulty better = levels.get(index);
+            BotSettings.Difficulty level = levels.get(index - 1);
             assertTrue(level.skill().reactionTicks() > better.skill().reactionTicks(), level + " reacts slower than " + better);
             assertTrue(level.skill().settleTicks() >= better.skill().settleTicks(), level + " settles its aim no faster than " + better);
             assertTrue(level.skill().lead() <= better.skill().lead(), level + " leads no better than " + better);
@@ -148,6 +148,31 @@ class BotSettingsTest
             assertFalse(level.skill().nonLethal(), level + " leaves sparing players to Cinematic mode");
             assertEquals(level.compareTo(BotSettings.Difficulty.REGULAR) >= 0, level.skill().playerDamage() >= 1F, level + " softens its hits on players only below Regular");
         }
+    }
+
+    @Test
+    void customDifficultyKeepsItsValuesWithinBoundsAndRetrainsWhenTheyChange()
+    {
+        BotSettings settings = new BotSettings();
+        assertEquals(BotSettings.Difficulty.REGULAR.training(null), settings.getCustomTraining(), "custom values start as those of Regular");
+        BotTraining custom = BotTraining.of(60, 80, 12, 30, 6.5F, 40, 50, true);
+        settings.setDifficulty(BotSettings.Difficulty.CUSTOM);
+        settings.setCustomTraining(custom);
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertEquals(BotSettings.Difficulty.CUSTOM, loaded.getDifficulty());
+        assertEquals(custom, loaded.training());
+        assertEquals("60 80 12 30 6.5 40 50 true", custom.commandArguments());
+        String trained = loaded.trainingId();
+        loaded.setCustomTraining(BotTraining.of(60, 80, 12, 30, 6.5F, 40, 50, false));
+        assertNotEquals(trained, loaded.trainingId(), "other custom values train bots again");
+        BotTraining wild = BotTraining.of(500, 0, -5, 9999, 90F, 300, 300, false);
+        assertEquals(100, wild.accuracyPercent());
+        assertEquals(1, wild.aggroPercent());
+        assertEquals(0, wild.skill().reactionTicks());
+        assertEquals(BotTraining.MOST_SETTLE_TICKS, wild.skill().settleTicks());
+        assertEquals(BotTraining.MOST_ERROR, wild.skill().startError());
+        assertEquals(100, wild.leadPercent());
+        assertEquals(100, wild.playerDamagePercent(), "no custom value makes a bot better than its equipment");
     }
 
     @Test

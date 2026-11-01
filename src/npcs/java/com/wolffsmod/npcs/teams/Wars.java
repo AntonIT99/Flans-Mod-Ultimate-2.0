@@ -208,6 +208,7 @@ final class Wars
         skirmish.setRespawnSeconds(war.getRespawnSeconds());
         skirmish.setTickets(war.getTickets());
         skirmish.setDifficulty(war.getDifficulty());
+        skirmish.setCustomTraining(war.getCustomTraining());
         skirmishes.add(skirmish);
         Skirmishes.Outcome outcome = Skirmishes.start(server, skirmish);
         if (!outcome.started())
