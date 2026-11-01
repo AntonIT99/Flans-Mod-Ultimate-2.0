@@ -43,6 +43,8 @@
   "gui.flansmodultimate.apocalypse_choice.save_failed": "Impossible d'enregistrer le choix dans ce monde : %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Dimension Apocalypse de Flan's Mod",
   "gui.flansmodultimate.centre.health.help": "0 = santé d’origine. Les valeurs positives imposent les PV maximum partout, y compris aux bots d’escarmouche et de guerre.",
+  "gui.flansmodultimate.centre.page.round_rules": "Règles de manche",
+  "gui.flansmodultimate.centre.page.round_rules.description": "Valeurs par défaut du serveur et réglages par manche des règles optionnelles",
   "gui.flansmodultimate.centre.preset.arena.tip": "Protéger le terrain, regrouper les armes lâchées et supprimer les véhicules abandonnés après deux minutes. Cliquer pour vérifier.",
   "gui.flansmodultimate.centre.preset.survival.tip": "Autoriser les dégâts au terrain, exiger du carburant et tout lâcher. Les véhicules abandonnés restent. Cliquer pour vérifier.",
   "gui.flansmodultimate.centre.round_rule.aaLimit": "Canons AA par camp",

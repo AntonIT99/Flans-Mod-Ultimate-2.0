@@ -135,6 +135,8 @@
   "gui.flansmodultimate.centre.page.overview.description": "Die laufende Runde; Runden starten und beenden",
   "gui.flansmodultimate.centre.page.rotation": "Rotation",
   "gui.flansmodultimate.centre.page.rotation.description": "Die Runden, die nacheinander gespielt werden: hinzufügen, ordnen und einstellen",
+  "gui.flansmodultimate.centre.page.round_rules": "Rundenregeln",
+  "gui.flansmodultimate.centre.page.round_rules.description": "Servervorgaben und rundenspezifische Werte für optionale Rundenregeln",
   "gui.flansmodultimate.centre.page.rules": "Regeln",
   "gui.flansmodultimate.centre.page.rules.description": "Was in Runden zerstört, benutzt und fallen gelassen werden darf",
   "gui.flansmodultimate.centre.page.server": "Server",

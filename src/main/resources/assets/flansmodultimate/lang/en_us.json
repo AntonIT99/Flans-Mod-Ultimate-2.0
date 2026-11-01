@@ -135,6 +135,8 @@
   "gui.flansmodultimate.centre.page.overview.description": "The round being played; starting and stopping rounds",
   "gui.flansmodultimate.centre.page.rotation": "Rotation",
   "gui.flansmodultimate.centre.page.rotation.description": "The rounds played in turn: add, order and tune them",
+  "gui.flansmodultimate.centre.page.round_rules": "Round Rules",
+  "gui.flansmodultimate.centre.page.round_rules.description": "Server defaults and per-round overrides for optional round rules",
   "gui.flansmodultimate.centre.page.rules": "Rules",
   "gui.flansmodultimate.centre.page.rules.description": "What may be broken, used and dropped during rounds",
   "gui.flansmodultimate.centre.page.server": "Server",

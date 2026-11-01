@@ -18,7 +18,7 @@
 
 * Global rules in the command centre's Rules > Health tab: `bodyPartDamageModifiers` disables hit-zone damage multipliers for players and humanoid NPCs when false (default true), and `playerHealth` / `botHealth` override their maximum HP separately (default 0 keeps existing health); these rules apply outside rounds too, and health changes preserve the remaining percentage
 
-* Opt-in round rules, configurable in the Teams command centre: shared respawn waves, limited lives, objective overtime, per-side vehicle limits and replacement delays, capture restrictions, protected headquarters, warm-up and ready checks, team-switch restrictions, flag-carrier equipment and movement restrictions, and nameplate, kill-message and spectator controls; server defaults and per-round overrides are saved and apply at the next round start
+* Opt-in round rules, configurable in the Teams command centre: shared respawn waves, limited lives, objective overtime, per-side vehicle limits and replacement delays, capture restrictions, protected headquarters, warm-up and ready checks, team-switch restrictions, flag-carrier equipment and movement restrictions, and nameplate, kill-message and spectator controls; server defaults and per-round overrides are saved and apply at the next round start; the Round Rules page name and tooltip are localized
 
 * Conquest and Domination default to `killticketvalue 1`, `scorelimit 60` and `ticketdraininterval 100` (five seconds), preserving the relative value of kills and objective control; saved game type settings and round limits are kept
 

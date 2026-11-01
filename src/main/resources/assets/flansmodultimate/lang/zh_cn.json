@@ -43,6 +43,8 @@
   "gui.flansmodultimate.apocalypse_choice.save_failed": "无法将选择保存到此世界：%s",
   "gui.flansmodultimate.apocalypse_choice.title": "Flan's Mod 末日维度",
   "gui.flansmodultimate.centre.health.help": "0 = 原生命值。正数全局覆盖最大生命值，包括遭遇战和战争中的机器人。",
+  "gui.flansmodultimate.centre.page.round_rules": "回合规则",
+  "gui.flansmodultimate.centre.page.round_rules.description": "可选回合规则的服务器默认值和各回合覆盖设置",
   "gui.flansmodultimate.centre.preset.arena.tip": "保护地形、智能武器掉落，闲置载具两分钟后消失。点击查看确认。",
   "gui.flansmodultimate.centre.preset.survival.tip": "允许地形破坏、消耗燃料、保留全部掉落物，闲置载具不消失。点击查看确认。",
   "gui.flansmodultimate.centre.round_rule.aaLimit": "每方防空炮上限",

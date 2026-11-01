@@ -43,6 +43,8 @@
   "gui.flansmodultimate.apocalypse_choice.save_failed": "Impossibile salvare la scelta in questo mondo: %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Dimensione Apocalisse di Flan's Mod",
   "gui.flansmodultimate.centre.health.help": "0 = salute originale. I valori positivi impostano i PV massimi globalmente, inclusi i bot di schermaglie e guerre.",
+  "gui.flansmodultimate.centre.page.round_rules": "Regole del round",
+  "gui.flansmodultimate.centre.page.round_rules.description": "Valori predefiniti del server e impostazioni per round delle regole opzionali",
   "gui.flansmodultimate.centre.preset.arena.tip": "Protegge il terreno, usa rilasci di armi intelligenti e rimuove i veicoli abbandonati dopo due minuti. Clicca per verificare.",
   "gui.flansmodultimate.centre.preset.survival.tip": "Consente danni al terreno, richiede carburante e rilascia tutto. I veicoli abbandonati restano. Clicca per verificare.",
   "gui.flansmodultimate.centre.round_rule.aaLimit": "Cannoni AA per fazione",

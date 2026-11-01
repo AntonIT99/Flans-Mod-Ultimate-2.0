@@ -43,6 +43,8 @@
   "gui.flansmodultimate.apocalypse_choice.save_failed": "このワールドに選択を保存できませんでした: %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Flan's Mod アポカリプス・ディメンション",
   "gui.flansmodultimate.centre.health.help": "0＝元の体力。正の値で最大HPを全体に適用し、小競り合いや戦争のボットも対象です。",
+  "gui.flansmodultimate.centre.page.round_rules": "ラウンドルール",
+  "gui.flansmodultimate.centre.page.round_rules.description": "任意のラウンドルールのサーバー既定値とラウンドごとの設定",
   "gui.flansmodultimate.centre.preset.arena.tip": "地形を保護し、武器をスマートにドロップ。放置車両は2分後に消滅。クリックで確認。",
   "gui.flansmodultimate.centre.preset.survival.tip": "地形破壊と燃料消費を有効にし、すべてドロップ。放置車両は消滅しません。クリックで確認。",
   "gui.flansmodultimate.centre.round_rule.aaLimit": "陣営ごとの対空砲上限",

@@ -43,6 +43,8 @@
   "gui.flansmodultimate.apocalypse_choice.save_failed": "Не удалось сохранить выбор в этом мире: %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Измерение Апокалипсиса Flan's Mod",
   "gui.flansmodultimate.centre.health.help": "0 = исходное здоровье. Положительные значения задают максимум ОЗ глобально, включая ботов стычек и войн.",
+  "gui.flansmodultimate.centre.page.round_rules": "Правила раунда",
+  "gui.flansmodultimate.centre.page.round_rules.description": "Серверные значения по умолчанию и настройки отдельных раундов для дополнительных правил",
   "gui.flansmodultimate.centre.preset.arena.tip": "Защита ландшафта, умное выпадение оружия и удаление брошенной техники через две минуты. Нажмите для проверки.",
   "gui.flansmodultimate.centre.preset.survival.tip": "Урон ландшафту, расход топлива и выпадение всех предметов. Брошенная техника остаётся. Нажмите для проверки.",
   "gui.flansmodultimate.centre.round_rule.aaLimit": "Зениток на сторону",

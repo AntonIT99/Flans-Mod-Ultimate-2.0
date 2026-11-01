@@ -43,6 +43,8 @@
   "gui.flansmodultimate.apocalypse_choice.save_failed": "이 세계에 선택을 저장하지 못했습니다: %s",
   "gui.flansmodultimate.apocalypse_choice.title": "Flan's Mod 아포칼립스 차원",
   "gui.flansmodultimate.centre.health.help": "0 = 원래 체력. 양수는 전역 최대 HP를 지정하며 교전 및 전쟁 봇도 포함됩니다.",
+  "gui.flansmodultimate.centre.page.round_rules": "라운드 규칙",
+  "gui.flansmodultimate.centre.page.round_rules.description": "선택적 라운드 규칙의 서버 기본값과 라운드별 설정",
   "gui.flansmodultimate.centre.preset.arena.tip": "지형 보호, 스마트 무기 드롭, 방치 차량 2분 후 제거. 클릭하여 확인하세요.",
   "gui.flansmodultimate.centre.preset.survival.tip": "지형 파괴, 연료 소비, 모든 아이템 드롭. 방치 차량은 사라지지 않습니다. 클릭하여 확인하세요.",
   "gui.flansmodultimate.centre.round_rule.aaLimit": "진영별 대공포 제한",
