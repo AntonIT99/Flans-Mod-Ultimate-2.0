@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansModBlocks;
+import com.flansmodultimate.api.teams.SpawnerNpcPolicy;
 import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
@@ -31,6 +32,8 @@ import java.util.*;
 
 public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITeamObject
 {
+    public static final int MAX_SPAWN_DELAY_SECONDS = Integer.MAX_VALUE / 20;
+    private static final String NBT_WAIT_FOR_VEHICLE = "wait_for_vehicle";
     private static final String NBT_SPAWNER = "teams_spawner";
     private static final String NBT_OBJECT_ID = "object_id";
     private static final String NBT_BASE_ID = "base_id";
@@ -61,6 +64,19 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     @Getter
     private int teamColour = UNOWNED_COLOUR;
     private int currentDelay = 10;
+    @Getter
+    private boolean waitForVehicle = true;
+    @Getter
+    private SpawnerNpcPolicy npcPolicy = SpawnerNpcPolicy.ALL;
+
+    public void setVehicleSettings(boolean waitForVehicle, SpawnerNpcPolicy npcPolicy)
+    {
+        if (mode != Mode.VEHICLE)
+            return;
+        this.waitForVehicle = waitForVehicle;
+        this.npcPolicy = npcPolicy;
+        setChangedAndSync();
+    }
 
     public TeamSpawnerBlockEntity(BlockPos pos, BlockState state)
     {
@@ -73,11 +89,11 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         this.mode = mode;
     }
 
-    public void cycleSpawnDelay()
+    public void setSpawnDelaySeconds(int seconds)
     {
-        spawnDelayTicks += 10 * 20;
-        if (spawnDelayTicks > 5 * 60 * 20)
-            spawnDelayTicks = 10 * 20;
+        if (mode == Mode.PLAYER || seconds < 1 || seconds > MAX_SPAWN_DELAY_SECONDS)
+            return;
+        spawnDelayTicks = seconds * 20;
         setChangedAndSync();
     }
 
@@ -100,9 +116,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             return;
         spawner.currentDelay = spawner.spawnDelayTicks;
 
-        AABB nearby = new AABB(pos).inflate(spawner.mode == Mode.VEHICLE ? 8D : 1.5D);
-        if (!serverLevel.getEntities((Entity) null, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER) && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER)))
-            .isEmpty())
+        if (spawner.hasExistingSpawn(serverLevel, pos))
             return;
 
         for (int index = 0; index < spawner.templates.size(); index++)
@@ -112,7 +126,10 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             {
                 Entity spawned = spawner.spawnVehicle(serverLevel, pos, template);
                 if (spawned != null)
+                {
                     spawned.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
+                    SpawnerVehicles.get(serverLevel).observe(spawned);
+                }
                 continue;
             }
 
@@ -132,8 +149,9 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             if (driveableItem.getConfigType().isShip())
             {
                 spawnPosition = TeamsShipSpawns.find(level, spawnPosition).orElse(null);
-                if (spawnPosition == null || !level.getEntities((Entity) null, new AABB(BlockPos.containing(spawnPosition)).inflate(8D),
-                    entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER) && objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
+                if (spawnPosition == null || !waitForVehicle
+                    && !level.getEntities((Entity) null, new AABB(BlockPos.containing(spawnPosition)).inflate(8D), entity -> (mode != Mode.VEHICLE || SpawnerVehicles.operational(entity))
+                        && entity.getPersistentData().hasUUID(NBT_SPAWNER) && objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
                     return null;
             }
             return driveableItem.spawnDriveable(level, spawnPosition.x, spawnPosition.y + driveableItem.getConfigType().getYOffset(), spawnPosition.z, 0F, null, template.copyWithCount(1),
@@ -142,6 +160,20 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         if (template.getItem() instanceof AAGunItem aaGunItem)
             return aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null, getOwningTeam());
         return null;
+    }
+
+    private boolean hasExistingSpawn(ServerLevel level, BlockPos pos)
+    {
+        if (mode == Mode.VEHICLE && waitForVehicle)
+        {
+            TeamsManager manager = TeamsManager.getInstance();
+            ITeamBase base = baseId == null ? null : manager.getBase(baseId).orElse(null);
+            TeamsMap map = base == null ? null : manager.getMap(base.getMapId()).orElse(null);
+            return SpawnerVehicles.get(level).exists(level, objectId, map);
+        }
+        AABB nearby = new AABB(pos).inflate(mode == Mode.VEHICLE ? 8D : 1.5D);
+        return !level.getEntities((Entity) null, nearby, entity -> (mode != Mode.VEHICLE || SpawnerVehicles.operational(entity)) && entity.getPersistentData().hasUUID(NBT_SPAWNER)
+            && objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty();
     }
 
     @Override
@@ -169,6 +201,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         tag.putString(NBT_MODE, mode.name());
         tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks);
         tag.putInt(NBT_CURRENT_DELAY, currentDelay);
+        tag.putBoolean(NBT_WAIT_FOR_VEHICLE, waitForVehicle);
+        tag.put("npc_policy", npcPolicy.save());
         tag.putInt(NBT_TEAM_COLOUR, teamColour);
         ListTag items = new ListTag();
         templates.forEach(stack -> items.add(ItemStackData.save(stack, registries)));
@@ -192,6 +226,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
 
         spawnDelayTicks = Math.max(20, tag.getInt(NBT_SPAWN_DELAY));
         currentDelay = Math.max(0, tag.getInt(NBT_CURRENT_DELAY));
+        waitForVehicle = !tag.contains(NBT_WAIT_FOR_VEHICLE) || tag.getBoolean(NBT_WAIT_FOR_VEHICLE);
+        npcPolicy = SpawnerNpcPolicy.load(tag.getCompound("npc_policy"));
         teamColour = tag.contains(NBT_TEAM_COLOUR) ? tag.getInt(NBT_TEAM_COLOUR) : UNOWNED_COLOUR;
         templates.clear();
 

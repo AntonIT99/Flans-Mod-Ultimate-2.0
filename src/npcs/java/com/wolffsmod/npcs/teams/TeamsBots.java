@@ -449,8 +449,11 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             List<TeamsSpawner> spawners = current.getGround().spawners().stream()
                 .filter(spawner -> spawner.kind() == TeamsSpawner.Kind.VEHICLE && spawner.owner() != null && spawner.owner().getShortName().equals(slot.getTeam()))
                 .filter(spawner -> wanted == null || wanted.equals(spawner.id())).toList();
+            spawners = spawners.stream().filter(spawner -> FlanModelNpcs.type(slot.getRole()).map(type -> spawner.npcPolicy().allows(type.getInfoType())).orElse(false)).toList();
             if (!spawners.isEmpty())
                 return Vec3.atBottomCenterOf(spawners.get(random.nextInt(spawners.size())).position().above());
+            if (current.getGround().round().isPresent())
+                return null;
         }
         List<Vec3> positions = current.getGround().spawnPositions(team);
         if (positions.isEmpty())

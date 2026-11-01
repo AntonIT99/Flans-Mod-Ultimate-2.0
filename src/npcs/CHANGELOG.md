@@ -2,6 +2,8 @@
 
 First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
+* Teams NPC vehicles respect each vehicle spawner's allowed categories and exact definitions; excluded vehicles wait for an eligible spawner instead of appearing at infantry spawn points
+
 ## Soldiers
 
 * Custom NPCs use Flan's guns, grenades, throwables, melee weapons, shields and armour, with reloads, ammunition from their inventory and Flan's sounds and muzzle flashes; the sounds an NPC makes carry as far, and as loudly, as the same weapon in a player's hands

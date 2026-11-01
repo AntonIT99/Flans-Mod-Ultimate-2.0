@@ -3,6 +3,8 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.teams.PacketSpawnerEditState;
 import com.flansmodultimate.platform.block.FlanEntityBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,10 +94,10 @@ public final class TeamSpawnerBlock extends FlanEntityBlock
             spawner.addTemplate(held.copyWithCount(held.getCount()));
             player.displayClientMessage(Component.literal("Added " + held.getHoverName().getString() + " to this spawner"), false);
         }
-        else if (held.isEmpty())
+        else if (held.isEmpty() && spawner.getMode() != TeamSpawnerBlockEntity.Mode.PLAYER)
         {
-            spawner.cycleSpawnDelay();
-            player.displayClientMessage(Component.literal("Spawn delay: " + spawner.getSpawnDelayTicks() / 20 + " seconds"), false);
+            PacketHandler.sendTo(new PacketSpawnerEditState(pos, spawner.getObjectId(), spawner.getSpawnDelayTicks(), spawner.getMode() == TeamSpawnerBlockEntity.Mode.VEHICLE,
+                spawner.isWaitForVehicle(), spawner.getNpcPolicy()), serverPlayer);
         }
         return InteractionResult.CONSUME;
     }

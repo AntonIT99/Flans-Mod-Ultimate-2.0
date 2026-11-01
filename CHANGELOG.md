@@ -14,6 +14,8 @@
 
 ## Teams
 
+* Item and vehicle spawners open a seconds-entry window for their spawn delay (default 20 seconds); player spawners no longer offer the unused delay setting; vehicle spawners support AA guns, default to waiting until their previous vehicle is destroyed or leaves the map, offer a nearby-only replacement mode, and allow NPC vehicles by all, none, multiple categories or exact definitions
+
 * Ship vehicle spawners use the nearest clear water surface within 64 blocks, and wait to spawn when no water is available in loaded chunks
 
 * Global rules in the command centre's Rules > Health tab: `bodyPartDamageModifiers` disables hit-zone damage multipliers for players and humanoid NPCs when false (default true), and `playerHealth` / `botHealth` override their maximum HP separately (default 0 keeps existing health); these rules apply outside rounds too, and health changes preserve the remaining percentage

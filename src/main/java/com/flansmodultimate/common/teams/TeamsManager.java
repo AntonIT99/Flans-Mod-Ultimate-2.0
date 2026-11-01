@@ -2016,7 +2016,7 @@ public final class TeamsManager
                 case ITEM -> TeamsSpawner.Kind.ITEM;
                 case VEHICLE -> TeamsSpawner.Kind.VEHICLE;
             };
-            spawners.add(new TeamsSpawner(spawner.getObjectId(), kind, spawner.getDimension(), spawner.getBlockPos(), base.getObjectId(), getTeamForBase(base)));
+            spawners.add(new TeamsSpawner(spawner.getObjectId(), kind, spawner.getDimension(), spawner.getBlockPos(), base.getObjectId(), getTeamForBase(base), spawner.getNpcPolicy()));
         }
         return List.copyOf(spawners);
     }
