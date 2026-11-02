@@ -98,7 +98,8 @@ import java.util.*;
  * <li>Repairs share driveable rates in part HP, including tools, timed sessions, carrier servicing and resource-backed nanobots.</li>
  * <li>Solid part boxes replace the NPC's rectangular entity collision and both incoming and outgoing pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
- * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.
+ * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit; the walking-speed override applies the
+ * sprint boost too.
  * A falling NPC opens a parachute it carries and steers it toward its target.</li>
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner; crew keep their seat's body heading through rendering.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
@@ -540,6 +541,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             refreshDimensions();
     }
 
+    /** The dependency's walking-speed getter bypasses the vanilla sprint attribute boost. */
+    @Inject(method = {"getSpeed", "m_6113_"}, at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsSprintSpeed(CallbackInfoReturnable<Float> callback)
+    {
+        callback.setReturnValue(NpcSprinting.movementSpeed((EntityNPCInterface) (Object) this, callback.getReturnValue()));
+    }
+
     @Inject(method = {"tick", "m_8119_"}, at = @At("TAIL"))
     private void wolffsmodnpcsEquipmentTick(CallbackInfo callback)
     {
@@ -549,7 +557,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return;
         NpcSkill.watch(npc);
         NpcDuties.tick(npc);
-        NpcSprinting.tick(npc);
+        NpcSprinting.tick(npc, goalSelector.getRunningGoals().anyMatch(goal -> goal.getGoal() == wolffsmodnpcsObjectiveGoal));
         NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
             NpcThrowPresentation.clear(npc);

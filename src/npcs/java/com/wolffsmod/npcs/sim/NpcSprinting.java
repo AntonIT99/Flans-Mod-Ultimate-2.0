@@ -11,6 +11,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.phys.Vec3;
 
 /** Chooses sprint speed each server tick without taking movement away from the goal that owns navigation. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -29,24 +30,36 @@ public final class NpcSprinting
     }
 
     /** Applies the decision after navigation has updated, including on ticks when the goal selector does not consider new goals. */
-    public static void tick(EntityNPCInterface npc)
+    public static void tick(EntityNPCInterface npc, boolean objectiveTravel)
     {
         boolean sprinting = npc.isSprinting();
-        boolean wanted = wantsSprint(npc, sprinting);
+        boolean wanted = wantsSprint(npc, sprinting, objectiveTravel);
         if (wanted != sprinting)
             npc.setSprinting(wanted);
     }
 
-    private static boolean wantsSprint(EntityNPCInterface npc, boolean sprinting)
+    /** Custom NPCs overrides getSpeed with its walking setting, bypassing Minecraft's sprint attribute modifier. */
+    public static float movementSpeed(EntityNPCInterface npc, float walkingSpeed)
+    {
+        return npc.isSprinting() && npc.ais.movementType == 0 && !npc.isPassenger() ? walkingSpeed * 1.3F : walkingSpeed;
+    }
+
+    private static boolean wantsSprint(EntityNPCInterface npc, boolean sprinting, boolean objectiveTravel)
     {
         if (!npc.ais.canSprint || !npc.isAlive() || npc.isKilled() || npc.isNoAi() || npc.isPassenger() || npc.ais.movementType != 0 || npc.isInWater() || npc.isInLava())
             return false;
-        LivingEntity target = npc.getTarget();
-        NpcSafetyState safety = npc instanceof NpcTacticState.Holder holder ? holder.wolffsmodnpcsTacticState().getSafety() : null;
-        Action action = safety != null && safety.active(npc.level().getGameTime()) ? safety.getAction() : Action.NONE;
-        if (!npc.getNavigation().isDone() && (action == Action.EVADE || action == Action.RETREAT || action == Action.HIDE || action == Action.ADVANCE))
+        if (npc.getNavigation().isDone())
+            return false;
+        if (urgentMovement(npc))
             return true;
-        if (target == null || !target.isAlive() || target.level() != npc.level() || npc.getNavigation().isDone())
+        LivingEntity target = npc.getTarget();
+        if (target == null)
+        {
+            var destination = npc.getNavigation().getTargetPos();
+            double distance = sprinting ? CHASE_STOP_DISTANCE : CHASE_START_DISTANCE;
+            return objectiveTravel && destination != null && npc.position().distanceToSqr(Vec3.atBottomCenterOf(destination)) > distance * distance;
+        }
+        if (!target.isAlive() || target.level() != npc.level())
             return false;
         // Start from rest as soon as a path exists; a jump or damage reaction must not repeatedly cancel an ongoing sprint.
         if (!sprinting && !npc.onGround())
@@ -58,5 +71,12 @@ public final class NpcSprinting
             case 2 -> npc.isInRange(target, sprinting ? RETREAT_STOP_DISTANCE : RETREAT_START_DISTANCE);
             default -> false;
         };
+    }
+
+    private static boolean urgentMovement(EntityNPCInterface npc)
+    {
+        NpcSafetyState safety = npc instanceof NpcTacticState.Holder holder ? holder.wolffsmodnpcsTacticState().getSafety() : null;
+        Action action = safety != null && safety.active(npc.level().getGameTime()) ? safety.getAction() : Action.NONE;
+        return action == Action.EVADE || action == Action.RETREAT || action == Action.HIDE || action == Action.ADVANCE || action == Action.FLANK;
     }
 }

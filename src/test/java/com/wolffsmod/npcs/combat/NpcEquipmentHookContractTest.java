@@ -18,6 +18,13 @@ class NpcEquipmentHookContractTest
     private static final String NPC = "noppes/npcs/entity/EntityNPCInterface";
 
     @Test
+    void sprintSpeedHookTargetsTheDependencyWalkingSpeedOverride() throws IOException
+    {
+        MethodNode speed = method(read(NPC), "()F", "getSpeed", "m_6113_");
+        assertEquals(1, calls(speed, "noppes/npcs/entity/data/DataAI", "getWalkingSpeed", "()I"));
+    }
+
+    @Test
     void physicalReturnReplacesTheTickContainingBothAutomaticTeleports() throws IOException
     {
         ClassNode goal = read("noppes/npcs/ai/EntityAIReturn");

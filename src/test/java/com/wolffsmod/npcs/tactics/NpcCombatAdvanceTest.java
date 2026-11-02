@@ -64,7 +64,7 @@ class NpcCombatAdvanceTest
             assertTrue(bound.horizontalDistance() <= scene.tuning.get(Value.ADVANCE_DISTANCE));
             assertTrue(Math.abs(bound.z) < 1D);
             assertTrue(NpcCombatAdvance.holdsFire(scene.npc));
-            NpcSprinting.tick(scene.npc);
+            NpcSprinting.tick(scene.npc, false);
             verify(scene.npc).setSprinting(true);
             scene.position = bound;
             scene.now = 60L;
