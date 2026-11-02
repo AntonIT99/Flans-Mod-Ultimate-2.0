@@ -64,6 +64,11 @@ public final class NpcTuning
         PATH_MARGIN(24, 8, 128),
         /** Distance to the nearest player, in blocks, within which an NPC told to stay active keeps simulating. */
         ACTIVE_RANGE(128, 32, 512),
+        /**
+         * Rounds of one kind put into an inventory slot when an NPC is stocked with ammunition, for ordnance such as a tank
+         * shell whose item stacks only one high; ammunition that stacks higher is stocked a full stack at a time.
+         */
+        AMMO_STOCK(16, 1, 64),
         /** Index into {@link DrivePreset}; choosing one fills in the driving values, which stay editable. */
         DRIVE_PRESET(0, 0, DrivePreset.values().length - 1),
         /** Index into {@link DriveType}. */

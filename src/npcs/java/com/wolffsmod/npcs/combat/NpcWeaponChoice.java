@@ -16,12 +16,23 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 /** Target-aware choices from real carried items. Unknown protection is never treated as immunity. Server thread. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcWeaponChoice
 {
+    /** What a round that beats the plate is worth, so that any such round is preferred to one that does not. */
+    private static final double THROUGH_PLATE = 100D;
+    /** The most a round that stays out of the plate is worth, approached as its penetration nears the plate's thickness. */
+    private static final double SHORT_OF_PLATE = 40D;
+    /** The most a round's blast adds, which decides between two rounds that both go through. */
+    private static final double BLAST_WORTH = 12D;
+    /** The most penetration beyond what the plate needs costs, and the millimetres of it that cost one point. */
+    private static final double OVERKILL_WORTH = 30D;
+    private static final double OVERKILL_MILLIMETRES = 10D;
+
     public enum Effectiveness
     {
         EFFECTIVE, INEFFECTIVE, UNKNOWN
@@ -58,22 +69,46 @@ public final class NpcWeaponChoice
         return FlansEquipment.getArmorPenetration(weapon, ammunition).orElse(0D) >= 40D;
     }
 
+    /** The hardest-hitting round a weapon has, which tells what the NPC could do to armour rather than what it fires now. */
     public static ItemStack ammunition(EntityNPCInterface npc, ItemStack weapon)
     {
-        return FlansEquipment.getLoadedAmmunition(weapon)
-            .or(() -> NpcAmmunition.supplies(npc).stream().filter(ammo -> FlansEquipment.acceptsAmmunition(weapon, ammo))
-                .max(Comparator.comparingDouble(ammo -> FlansProjectiles.getArmorPerformance(ammo, 0).map(AmmunitionArmor::penetrationMm).orElse(0D))))
-            .or(() -> FlansEquipment.createDefaultAmmunition(weapon).filter(ammo -> FlansEquipment.acceptsAmmunition(weapon, ammo))).orElse(ItemStack.EMPTY);
+        return FlansEquipment.getLoadedAmmunition(weapon).or(() -> hardest(NpcAmmunition.supplies(npc).stream().filter(ammo -> FlansEquipment.acceptsAmmunition(weapon, ammo)).toList()))
+            .or(() -> hardest(FlansEquipment.createDefaultAmmunitionChoices(weapon).stream().filter(ammo -> FlansEquipment.acceptsAmmunition(weapon, ammo)).toList())).orElse(ItemStack.EMPTY);
     }
 
-    /** Scores compatible ammunition only; callers remain responsible for compatibility and actual supply. */
+    private static Optional<ItemStack> hardest(List<ItemStack> rounds)
+    {
+        return rounds.stream().max(Comparator.comparingDouble(ammo -> FlansProjectiles.getArmorPerformance(ammo, 0).map(AmmunitionArmor::penetrationMm).orElse(0D)));
+    }
+
+    /**
+     * Scores compatible ammunition only; callers remain responsible for compatibility and actual supply.
+     *
+     * <p>
+     * Against protection the NPC can read, the round that goes through wins, and no more penetration than the plate needs is
+     * asked for: an armour-piercing shell beats a high-explosive one on a tank, while the same shell loses to it on an
+     * unarmoured lorry, whose crew the blast reaches and whose hull the shot would pass through. A round that stays out of
+     * the plate scores by how near it comes, as it can still break tracks and hurt exposed crew. Against anything else the
+     * blast decides, as before. Unknown protection is never treated as immunity and keeps preferring penetration.
+     * </p>
+     */
     public static double ammunitionScore(EntityNPCInterface npc, LivingEntity target, ItemStack ammunition)
     {
         double reach = NpcBlastSafety.reach(ammunition);
         if (reach > 0D && npc.distanceTo(target) < reach + 2D)
             return -1000D;
-        double penetration = FlansProjectiles.getArmorPerformance(ammunition, 0).map(AmmunitionArmor::penetrationMm).orElse(0D);
-        return NpcVehicleThreats.groundVehicle(target) ? penetration : Math.min(20D, reach * 4D) - Math.min(5D, penetration / 100D);
+        Optional<AmmunitionArmor> round = FlansProjectiles.getArmorPerformance(ammunition, 0);
+        double penetration = round.map(AmmunitionArmor::penetrationMm).orElse(0D);
+        if (!NpcVehicleThreats.groundVehicle(target))
+            return Math.min(20D, reach * 4D) - Math.min(5D, penetration / 100D);
+        Optional<PartArmor> armor = NpcVehicleThreats.protection(target, npc.position());
+        if (armor.isEmpty())
+            return penetration;
+        double thickness = round.map(AmmunitionArmor::shapedCharge).orElse(false) ? armor.get().heatThicknessMm() : armor.get().thicknessMm();
+        double blast = Math.min(BLAST_WORTH, reach * 2D);
+        if (penetration < thickness)
+            return Math.min(SHORT_OF_PLATE, SHORT_OF_PLATE * penetration / thickness) + blast;
+        return THROUGH_PLATE + blast - Math.min(OVERKILL_WORTH, (penetration - thickness) / OVERKILL_MILLIMETRES);
     }
 
     private static boolean unusable(EntityNPCInterface npc, ItemStack weapon)

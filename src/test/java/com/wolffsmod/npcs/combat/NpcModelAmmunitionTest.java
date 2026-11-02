@@ -17,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -53,8 +52,9 @@ class NpcModelAmmunitionTest
             throwing.when(() -> NpcThrowing.mainProjectile(npc)).thenReturn(mg);
             projectiles.when(() -> FlansProjectiles.isProjectile(mg)).thenReturn(true);
             equipment.when(() -> NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT)).thenReturn(true);
+            equipment.when(() -> NpcEquipment.enabled(npc, Feature.DEFAULT_AMMO)).thenReturn(true);
             flans.when(() -> FlansEquipment.acceptsAmmunition(tank, false, shell)).thenReturn(true);
-            flans.when(() -> FlansEquipment.createDefaultAmmunition(tank, false)).thenReturn(Optional.of(shell));
+            flans.when(() -> FlansEquipment.createDefaultAmmunitionChoices(tank, false)).thenReturn(List.of(shell));
             ammunition.when(() -> NpcAmmunition.inventory(npc)).thenReturn(List.of(shell));
             assertSame(shell, NpcAmmunition.modelTemplate(npc), "the selected cannon's compatible inventory ammunition must win over MG slot ammunition");
             ammunition.when(() -> NpcAmmunition.inventory(npc)).thenReturn(List.of());
@@ -86,8 +86,8 @@ class NpcModelAmmunitionTest
         try (var models = mockStatic(NpcModels.class); var equipment = mockStatic(FlansEquipment.class))
         {
             models.when(() -> NpcModels.flan(npc)).thenReturn(model);
-            equipment.when(() -> FlansEquipment.createDefaultAmmunition(vehicle, false)).thenReturn(Optional.of(shell));
-            equipment.when(() -> FlansEquipment.createDefaultAmmunition(vehicle, true)).thenReturn(Optional.of(bullet));
+            equipment.when(() -> FlansEquipment.createDefaultAmmunitionChoices(vehicle, false)).thenReturn(List.of(shell));
+            equipment.when(() -> FlansEquipment.createDefaultAmmunitionChoices(vehicle, true)).thenReturn(List.of(bullet));
             options.set(Feature.SECONDARY_BANK, false);
             assertSame(shell, NpcAmmunition.modelTemplate(npc));
             options.set(Feature.SECONDARY_BANK, true);

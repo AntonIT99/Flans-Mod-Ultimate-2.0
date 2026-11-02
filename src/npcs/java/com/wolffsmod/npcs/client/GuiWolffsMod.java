@@ -154,6 +154,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** Room for the lines of a page of read-only lines. */
     private static final int LINE_HEIGHT = 11;
     private static final int MAX_LINES = 14;
+    /** The heading and the weapons the Ammunition page lists its default rounds for, below its switches, and the gap above them. */
+    private static final int AMMUNITION_LINES = 5;
+    private static final int LINES_GAP = 6;
     /** Where the buttons below a page of read-only lines sit, from the top of the GUI. */
     private static final int LINES_BUTTON_TOP = 178;
     /** Client ticks between two requests of what the Diagnosis page shows. */
@@ -407,8 +410,6 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return new Need(parent, Set.of(1));
         }
 
-        // A factory for any switch, beside on() and choice(), though one row needs it so far.
-        @SuppressWarnings("SameParameterValue")
         private static Need off(Feature parent)
         {
             return new Need(parent, Set.of(0));
@@ -440,6 +441,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.AIM_SPEED_PITCH, Need.on(Feature.GRADUAL_AIM)),
         Map.entry(Feature.MODEL_ARMOUR, Need.on(Feature.VEHICLE_DAMAGE)),
         Map.entry(Feature.FLAN_DAMAGE_TYPES, Need.off(Feature.ITEM_ARMOR)),
+        Map.entry(Feature.DEFAULT_AMMO, Need.off(Feature.CONSUME_AMMO)),
+        Map.entry(Value.AMMO_STOCK, Need.on(Feature.CONSUME_AMMO)),
         Map.entry(Feature.PART_HEALTH, Need.on(Feature.PART_HITBOXES)),
         Map.entry(Feature.PART_EFFECTS, Need.on(Feature.PART_HEALTH)),
         Map.entry(Feature.AUTOMATIC_REPAIRS, Need.on(Feature.PART_HEALTH)),
@@ -527,6 +530,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Feature.TACTICAL_WEAPON_SWITCH, Value.WEAPON_SWITCH)),
         FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Value.GRENADE_USE, Feature.NATIVE_THROWABLES, Value.NATIVE_THROWABLE_USE, Value.THROWN_WEAPON_USE,
             Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO)),
+        /** Lists the rounds the NPC falls back on below its ammunition switches, so that holding it to its own supplies is an informed choice. */
+        AMMUNITION(Section.WEAPONS, Scope.ALL, Tab.of(Feature.CONSUME_AMMO, Value.AMMO_STOCK, Feature.DEFAULT_AMMO, Feature.FITTING_SLOT_AMMO)),
         MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS,
             Tab.named("weapon_operation", Feature.SECONDARY_BANK, Feature.ALTERNATE_BARRELS, Feature.RELOAD_CYCLE, Feature.RUN_OVER),
             Tab.named("weapon_crew", Feature.DRIVER_GUNS, Feature.MANNED_GUNS_FIRE, Feature.UNMANNED_GUNS_FIRE, Feature.GUNNER_TARGETS),
@@ -620,6 +625,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             return switch (this)
             {
                 case EQUIPMENT, MODEL_STATS, FIRING -> WEAPONS + "ammo_hint";
+                case AMMUNITION -> WEAPONS + "default_ammo_hint";
                 case DAMAGE, MODEL_ARMOUR, PARTS, ANIMATIONS, EFFECTS, SOUNDS -> PRESENTATION + "hint";
                 case MOVEMENT, VEHICLE_HANDLING -> LOCOMOTION + "tabs_hint";
                 case BOARDING -> LOCOMOTION + "hint";
@@ -1329,7 +1335,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** What a page adds below its rows: links to its sub-pages, or the controls that are not rows. */
     private void initPageExtras(Tab shown, int control, int below)
     {
-        if (category == Category.EQUIPMENT)
+        if (category == Category.AMMUNITION)
+            initAmmunitionLines(below);
+        else if (category == Category.EQUIPMENT)
             combat.initEquipmentLink(loaded, below + 6);
         else if (category == Category.FIRING)
             combat.initProjectileSlotLink(loaded, titleLinkLeft());
@@ -1346,6 +1354,18 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             serverButton(CLIENT_BENCHMARK_ID, "client_benchmark", below + 6);
         else
             initServerActions(shown, below);
+    }
+
+    /**
+     * The rounds the NPC falls back on, below the ammunition switches: a line per weapon of its model, or of the gun in its
+     * hand. They are read from the content definitions, which both sides hold, so the page needs nothing from the server.
+     */
+    private void initAmmunitionLines(int below)
+    {
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.translatable(WEAPONS + "default_ammo_list"));
+        lines.addAll(NpcDefaultAmmo.lines(npc));
+        textLines(lines.subList(0, Math.min(lines.size(), AMMUNITION_LINES)), below + LINES_GAP);
     }
 
     /** The actions of a Server page, below its rows: handing settings to every NPC, or the benchmarks. */

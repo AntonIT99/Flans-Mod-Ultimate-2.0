@@ -6,6 +6,7 @@ import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.teams.*;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcAmmunition;
 import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
@@ -297,7 +298,8 @@ public final class BotFactory
 
     /**
      * Gives a vehicle the default ammunition of every gun it mounts: the first gun's in its projectile slot, the others' in
-     * its inventory, from which it reloads them. The inventory is never dropped.
+     * its inventory, from which it reloads them. Each slot is stocked with as many rounds as {@link NpcAmmunition#stock}
+     * allows, so that a bot which uses its ammunition up carries more than one shell per gun. The inventory is never dropped.
      */
     private static void stockAmmunition(EntityCustomNpc npc, IContentType definition)
     {
@@ -305,7 +307,7 @@ public final class BotFactory
         for (WeaponMount mount : FlansEntityTypes.getMounts(definition))
         {
             mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> NpcPlatform.isSameItemSameData(stock, ammunition)))
-                .ifPresent(stocks::add);
+                .map(ammunition -> NpcAmmunition.stock(npc, ammunition)).ifPresent(stocks::add);
         }
         for (int i = 0; i < stocks.size() && i <= INVENTORY_SLOTS; i++)
         {

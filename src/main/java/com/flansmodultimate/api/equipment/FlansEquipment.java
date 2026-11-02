@@ -25,8 +25,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.Set;
 
 /** Equipment inspection and native Flan weapon actions for addon-controlled living entities. */
 @ApiStatus.Experimental
@@ -147,9 +150,24 @@ public final class FlansEquipment
      */
     public static Optional<ItemStack> createDefaultAmmunition(IContentType gun)
     {
+        return createDefaultAmmunitionChoices(gun).stream().findFirst();
+    }
+
+    /**
+     * Every round a gun is issued with by default: its own default round, the one {@link #createDefaultAmmunition(IContentType)}
+     * returns, followed by the rest of what it takes. A weapon holding none of a round it accepts may fall back on any of
+     * them, so an autocannon offering armour-piercing and high-explosive rounds presents both.
+     *
+     * @param gun
+     *            a gun definition, such as one a driveable mounts
+     * @return new full stacks, without duplicates, or an empty list for another definition or a gun without ammunition;
+     *         either side after content loading
+     */
+    public static List<ItemStack> createDefaultAmmunitionChoices(IContentType gun)
+    {
         if (!(gun instanceof GunType gunType))
-            return Optional.empty();
-        return gunType.getDefaultAmmo().flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
+            return List.of();
+        return stacks(ordered(gunType.getDefaultAmmo(), gunType.getAmmoTypes()));
     }
 
     /**
@@ -165,14 +183,44 @@ public final class FlansEquipment
      */
     public static Optional<ItemStack> createDefaultAmmunition(IContentType vehicle, boolean secondary)
     {
-        Optional<ShootableType> ammo;
+        return createDefaultAmmunitionChoices(vehicle, secondary).stream().findFirst();
+    }
+
+    /**
+     * Every round the selected driver bank of a driveable, or an AA gun, is issued with by default, the one
+     * {@link #createDefaultAmmunition(IContentType, boolean)} returns first. A gun bank lists each mounted gun's default
+     * round followed by the rest of what that gun takes; an ordnance bank lists the kinds the driveable declares. An
+     * accept-all bank that declares no ordnance keeps its single fallback round rather than every round on the server.
+     *
+     * @param vehicle
+     *            the driveable or AA gun definition
+     * @param secondary
+     *            whether to select the secondary bank rather than the primary bank; ignored for an AA gun
+     * @return new full stacks, without duplicates, or an empty list for an unsupported definition or a bank without
+     *         ammunition; either side after content loading
+     */
+    public static List<ItemStack> createDefaultAmmunitionChoices(IContentType vehicle, boolean secondary)
+    {
         if (vehicle instanceof AAGunType aa)
-            ammo = aa.getDefaultAmmo();
-        else if (vehicle instanceof DriveableType type)
-            ammo = DriveableAmmoLoader.defaultBankAmmo(type, secondary);
-        else
-            return Optional.empty();
-        return ammo.flatMap(ModUtils::getItemStack).map(stack -> stack.copyWithCount(stack.getMaxStackSize()));
+            return stacks(ordered(aa.getDefaultAmmo(), aa.getAmmoTypes()));
+        if (vehicle instanceof DriveableType type)
+            return stacks(DriveableAmmoLoader.defaultBankAmmoChoices(type, secondary));
+        return List.of();
+    }
+
+    /** @return the default round first, then every other round the weapon takes, without duplicates */
+    private static List<ShootableType> ordered(Optional<ShootableType> preferred, List<ShootableType> accepted)
+    {
+        Set<ShootableType> ammo = new LinkedHashSet<>();
+        preferred.ifPresent(ammo::add);
+        ammo.addAll(accepted);
+        return List.copyOf(ammo);
+    }
+
+    /** @return a new full stack per round whose item is registered */
+    private static List<ItemStack> stacks(List<ShootableType> ammo)
+    {
+        return ammo.stream().map(ModUtils::getItemStack).flatMap(Optional::stream).map(stack -> stack.copyWithCount(stack.getMaxStackSize())).toList();
     }
 
     /**
@@ -264,6 +312,19 @@ public final class FlansEquipment
     public static Optional<ItemStack> createDefaultAmmunition(ItemStack weapon)
     {
         return weapon.getItem() instanceof com.flansmodultimate.common.item.GunItem gun ? createDefaultAmmunition(gun.getConfigType()) : Optional.empty();
+    }
+
+    /**
+     * Every round a gun someone holds is issued with by default, the one {@link #createDefaultAmmunition(ItemStack)}
+     * returns first.
+     *
+     * @param weapon
+     *            a Flan gun stack
+     * @return new full stacks, without duplicates, or an empty list for another item or a gun without ammunition; either side
+     */
+    public static List<ItemStack> createDefaultAmmunitionChoices(ItemStack weapon)
+    {
+        return weapon.getItem() instanceof com.flansmodultimate.common.item.GunItem gun ? createDefaultAmmunitionChoices(gun.getConfigType()) : List.of();
     }
 
     /** @return what a Flan tool does when used, or empty for another item; either side */

@@ -27,6 +27,12 @@ public final class NpcWeaponOptions
                                             false), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
         /** Flan ammunition in the projectile slot is only fired by a held gun or model that takes it, as ammunition from the inventory always is. */
         FITTING_SLOT_AMMO(false),
+        /**
+         * An NPC with infinite ammunition may fall back on every round its weapon, or its model's selected bank, is issued
+         * with by default, beside what it carries, and chooses between them to suit its target. Turning it off holds the NPC
+         * to the rounds it was actually given.
+         */
+        DEFAULT_AMMO(true),
         /** A vehicle or mecha whose definition squashes mobs runs over everything in its way but its allies. */
         RUN_OVER(true),
         /** Landing gear that retracts while the aircraft flies and comes down near the ground; the gear row shows it as a third choice beside down and up. */

@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.tactics;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.wolffsmod.npcs.combat.NpcAmmoSelection;
 import com.wolffsmod.npcs.combat.NpcArmorEngagement;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,9 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** Short-lived movement intent, independent of the attack target and retained across AI task rebuilds. Server thread. */
 @Getter
@@ -56,6 +60,14 @@ public final class NpcSafetyState
     @Nullable
     private LivingEntity gunnerTarget;
     private long gunnerCheckedAt = Long.MIN_VALUE / 2;
+    /** One remembered round choice per weapon, bounded by the weapons the NPC's model and equipment hold. */
+    private final Map<NpcAmmoSelection.Key, NpcAmmoSelection> ammoSelections = new HashMap<>();
+
+    /** @return the remembered round choice of one weapon, created empty the first time it is asked for */
+    public NpcAmmoSelection ammoSelection(NpcAmmoSelection.Key weapon)
+    {
+        return ammoSelections.computeIfAbsent(weapon, ignored -> new NpcAmmoSelection());
+    }
 
     public boolean active(long now)
     {

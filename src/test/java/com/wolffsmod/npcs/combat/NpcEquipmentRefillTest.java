@@ -26,6 +26,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -141,7 +142,7 @@ class NpcEquipmentRefillTest
             ItemStack slotted = new ItemStack(Items.IRON_NUGGET);
             ItemStack issued = new ItemStack(Items.GOLD_NUGGET, 16);
             inventory.equipped(1, slotted);
-            inventory.equipment.when(() -> FlansEquipment.createDefaultAmmunition(gun)).thenReturn(Optional.of(issued));
+            inventory.equipment.when(() -> FlansEquipment.createDefaultAmmunitionChoices(gun)).thenReturn(List.of(issued));
             inventory.equipment.when(() -> FlansEquipment.acceptsAmmunition(gun, issued)).thenReturn(true);
             assertSame(issued, NpcAmmunition.infiniteTemplate(inventory.npc, gun).orElseThrow());
             assertFalse(NpcAmmunition.nothingToLoad(inventory.npc, gun));

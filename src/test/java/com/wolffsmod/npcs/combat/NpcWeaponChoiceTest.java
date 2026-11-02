@@ -2,6 +2,10 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
+import com.flansmodultimate.api.projectiles.DetonationRadii;
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -18,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -61,6 +66,33 @@ class NpcWeaponChoiceTest
             assertSame(rifleAmmo, npc.inventory.getProjectile().getMCItemStack());
             assertSame(rocket, NpcWeaponChoice.ammunition(npc, launcher));
             assertSame(rocket, NpcAmmunition.infiniteTemplate(npc, launcher).orElseThrow());
+        }
+    }
+
+    @Test
+    void aPiercingRoundWinsAgainstPlateAndLosesToBlastWhereThereIsNone()
+    {
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        when(npc.position()).thenReturn(Vec3.ZERO);
+        LivingEntity target = mock(LivingEntity.class);
+        when(npc.distanceTo(target)).thenReturn(40F);
+        ItemStack piercing = new ItemStack(Items.IRON_NUGGET);
+        ItemStack explosive = new ItemStack(Items.GOLD_NUGGET);
+        try (var projectiles = mockStatic(FlansProjectiles.class); var threats = mockStatic(NpcVehicleThreats.class))
+        {
+            projectiles.when(() -> FlansProjectiles.getArmorPerformance(piercing, 0)).thenReturn(Optional.of(new AmmunitionArmor(120D, false)));
+            projectiles.when(() -> FlansProjectiles.getArmorPerformance(explosive, 0)).thenReturn(Optional.of(new AmmunitionArmor(15D, false)));
+            projectiles.when(() -> FlansProjectiles.getDetonationRadii(explosive)).thenReturn(Optional.of(new DetonationRadii(4D, 4D, 0D, 0D)));
+            threats.when(() -> NpcVehicleThreats.groundVehicle(target)).thenReturn(true);
+            threats.when(() -> NpcVehicleThreats.protection(target, Vec3.ZERO)).thenReturn(Optional.of(new PartArmor(80F, 80F)));
+            assertTrue(NpcWeaponChoice.ammunitionScore(npc, target, piercing) > NpcWeaponChoice.ammunitionScore(npc, target, explosive), "80 mm of plate has to be beaten first");
+            threats.when(() -> NpcVehicleThreats.protection(target, Vec3.ZERO)).thenReturn(Optional.of(new PartArmor(0F, 0F)));
+            assertTrue(NpcWeaponChoice.ammunitionScore(npc, target, explosive) > NpcWeaponChoice.ammunitionScore(npc, target, piercing),
+                "an unarmoured hull calls for the blast, not for penetration no plate needs");
+            threats.when(() -> NpcVehicleThreats.protection(target, Vec3.ZERO)).thenReturn(Optional.empty());
+            assertTrue(NpcWeaponChoice.ammunitionScore(npc, target, piercing) > NpcWeaponChoice.ammunitionScore(npc, target, explosive), "unknown protection is never treated as immunity");
+            when(npc.distanceTo(target)).thenReturn(4F);
+            assertEquals(-1000D, NpcWeaponChoice.ammunitionScore(npc, target, explosive), "a round whose blast would catch the NPC is never chosen");
         }
     }
 
