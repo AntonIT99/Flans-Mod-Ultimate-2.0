@@ -215,6 +215,10 @@ installation when present, so mixins and Minecraft APIs are understood; its
   analyses the file snapshot they were built from, and reports warnings for content that has since been
   edited. What does carry over is the result cache under `build/idea-inspect/cache`, so re-running on an
   unchanged working tree answers instantly; `-Rebuild` ignores it.
+- Capture the launched inspection's process ID and command when starting it, and enforce the timeout
+  on that process only. Verify its parent command and run directory before stopping it; another
+  inspection or the user's open IDE may be running alongside it. Report index failures or timeouts
+  as incomplete validation instead of repeatedly starting fresh inspections during the same task.
 - Output lines are `file:line: [SEVERITY] InspectionId: message`, followed by the problem count and
   how the answer was produced (`cached`, `warm index`, `cold index`).
 - After editing Java, run it on the changed files, and fix warnings you introduced in touched
@@ -239,9 +243,34 @@ and below to run those two checks. Keep formatting checks, scoped diff review, a
 validation appropriate to the change; mention skipped inspections in the final response.
 
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
-`officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Run focused
-tests first. Run a full build after loader setup, registries, networking, entities,
-resources, source sets, or packaging changes. Keep `gradlew` executable.
+`officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Keep `gradlew` executable.
+
+Choose validation from the changed behaviour and its consumers, rather than running `build`
+at the end of every task. `build` assembles and reobfuscates every module, including content packs.
+
+- For ordinary Java logic, AI, or UI changes, compile the affected source sets and run focused
+  tests first. For NPC-only changes, use `compileNpcsJava` and `test --tests '<relevant class or package>'`,
+  plus the required formatting and scoped static analysis. Changing existing entity behaviour alone
+  does not require assembling every pack.
+- For changes to registration, networking, resource loading or an artifact's packaging, include
+  the relevant checks and artifact tasks (`jar`, `npcsJar`, `packsManagerJar`, or the affected pack's
+  jar task). Build packs when their inputs, packaging, or a shared API they consume change; an unchanged
+  pack does not need its jar rebuilt merely because another module changed.
+- Use full `build` for branch-wide ports, loader setup, shared build/source-set changes, release
+  verification, or changes whose effects span modules and cannot be covered confidently by scoped
+  checks. Include affected pack consumers when shared signatures, model classes, or content contracts
+  change, even when the pack files themselves are unchanged.
+- Keep Gradle's required task dependencies. Test filters select tests to execute; they do not prune
+  compilation dependencies. Some analysis tasks also need outputs of other source sets. Use
+  `--dry-run` if the task graph is unexpectedly broad; do not add blanket `-x compile...` exclusions.
+- Batch related Gradle checks into one invocation where practical, and avoid competing Gradle
+  invocations for the same checkout. Run IntelliJ once in the background as described above.
+  In a mixed worktree, scope formatting and analysis to this task's files or validate an isolated
+  checkout when unrelated changes prevent checks; preserve unrelated edits and staged content.
+- Reuse successful validation while its relevant inputs remain unchanged. After comment, formatting,
+  warning-suppression, or documentation-only follow-ups, rerun only the checks affected by that edit;
+  do not repeat a full test suite or rebuild all artifacts automatically. A commit-only request does
+  not require repeating previously completed checks.
 
 Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
 SonarLint on touched source sets, and `git diff --check`,
