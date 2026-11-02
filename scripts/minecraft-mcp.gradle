@@ -35,6 +35,25 @@ def downloadMcp = tasks.register('prepareMinecraftMcp') {
     }
 }
 
+// Register the companion for ordinary Gradle/IDE imports; only its client launch is opt-in.
+repositories.flatDir {
+    dirs mcpJar.get().asFile.parentFile
+    content { includeGroup 'local.minecraft-mcp' }
+}
+repositories.ivy {
+    url = 'https://github.com/langyo/minecraft-mod-mcp/releases/download'
+    patternLayout { artifact 'v[revision]/[artifact].[ext]' }
+    metadataSources { artifact() }
+    content { includeGroup 'local.minecraft-mcp' }
+}
+String mcpDependency = "local.minecraft-mcp:${mcpName.substring(0, mcpName.length() - 4)}:${mcpTarget.modVersion}"
+def mcpDev = sourceSets.create('mcpDev') {
+    compileClasspath += sourceSets.npcs.compileClasspath + sourceSets.npcs.output
+    runtimeClasspath += sourceSets.npcs.runtimeClasspath
+}
+dependencies.add(mcpDev.compileOnlyConfigurationName, fg.deobf(mcpDependency))
+dependencies.add(mcpDev.annotationProcessorConfigurationName, "org.projectlombok:lombok:$version_lombok")
+
 if (project.hasProperty('withMinecraftMcp'))
 {
     // Forge production jars use SRG names; ForgeGradle must remap this mod too.
@@ -44,11 +63,7 @@ if (project.hasProperty('withMinecraftMcp'))
         throw new GradleException('Run gradlew prepareMinecraftMcp without -PwithMinecraftMcp before launching.')
     if (MessageDigest.getInstance('SHA-256').digest(preparedJar.bytes).encodeHex().toString() != mcpHash)
         throw new GradleException('Minecraft MCP jar failed SHA-256 verification; rerun prepareMinecraftMcp --rerun-tasks.')
-    repositories.flatDir {
-        dirs preparedJar.parentFile
-        content { includeGroup 'local.minecraft-mcp' }
-    }
-    dependencies.add('runtimeOnly', fg.deobf("local.minecraft-mcp:${mcpName.substring(0, mcpName.length() - 4)}:${mcpTarget.modVersion}"))
+    dependencies.add('runtimeOnly', fg.deobf(mcpDependency))
     minecraft.runs.configureEach {
         if (name.startsWith('client'))
         {
