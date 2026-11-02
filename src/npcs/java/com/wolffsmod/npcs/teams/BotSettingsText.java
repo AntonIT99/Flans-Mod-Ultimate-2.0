@@ -92,7 +92,7 @@ public final class BotSettingsText
             String carry = values.length > 5 ? values[5].toLowerCase(Locale.ROOT) : "";
             List<Integer> paintjobs = values.length > 6
                 ? parsePaintjobs(values[6])
-                : previous.stream().filter(entry -> entry.type().equals(values[0])).map(BotSettings.VehicleEntry::paintjobs).findFirst().orElse(List.of(0));
+                : previous.stream().filter(entry -> entry.type().equals(values[0])).map(BotSettings.VehicleEntry::paintjobs).findFirst().orElse(List.of());
             vehicles.add(new BotSettings.VehicleEntry(values[0], number(values, 1, 1), number(values, 2, 0), number(values, 3, 0), number(values, 4, 1), spawner, carry, paintjobs));
         }
         return vehicles;
@@ -110,11 +110,8 @@ public final class BotSettingsText
         {
             String entry = String.join(VALUE_SEPARATOR, vehicle.type(), Integer.toString(vehicle.count()), Integer.toString(vehicle.budget()), Integer.toString(vehicle.respawnSeconds()),
                 Integer.toString(vehicle.ticketCost()));
-            if (!vehicle.paintjobs().equals(List.of(0)))
-                joiner.add(
-                    entry + VALUE_SEPARATOR + vehicle.carry() + VALUE_SEPARATOR + (vehicle.paintjobs().isEmpty() ? "*" : String.join("|", vehicle.paintjobs().stream().map(String::valueOf).toList())));
-            else
-                joiner.add(vehicle.carry().isEmpty() ? entry : entry + VALUE_SEPARATOR + vehicle.carry());
+            joiner.add(
+                entry + VALUE_SEPARATOR + vehicle.carry() + VALUE_SEPARATOR + (vehicle.paintjobs().isEmpty() ? "*" : String.join("|", vehicle.paintjobs().stream().map(String::valueOf).toList())));
         }
         return joiner.toString();
     }
