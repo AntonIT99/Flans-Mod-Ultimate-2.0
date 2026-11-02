@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.teams.BotSettings;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -17,23 +18,32 @@ import java.util.*;
 
 /**
  * A picker over the classes of a team, each previewed in its class skin and loadout, with what it carries and the role
- * that suggests. Classes a setting names that the team does not offer are listed after its own, marked. Client side.
+ * that suggests. With no team it offers all installed classes. Classes a setting names that are unavailable are
+ * listed after the offered ones, marked. Client side.
  */
 abstract class BotClassPicker extends BotPickerScreen
 {
     @Nullable
     private final ITeam team;
+    @Nullable
     private final String teamName;
     private final Map<String, IPlayerClass> classes = new LinkedHashMap<>();
     private final Map<String, BotSettings.ClassRole> suggestedRoles = new HashMap<>();
     private final Map<String, LivingEntity> previews = new HashMap<>();
 
-    BotClassPicker(BotEditorScreen parent, String team, Component title, Component hint)
+    BotClassPicker(BotEditorScreen parent, @Nullable String team, Component title, Component hint)
     {
-        super(parent, title, hint);
+        this(parent, parent, team, title, hint);
+    }
+
+    BotClassPicker(BotEditorScreen editor, Screen parent, @Nullable String team, Component title, Component hint)
+    {
+        super(editor, parent, title, hint);
         teamName = team;
-        this.team = FlansModApi.getTeam(team).orElse(null);
-        if (this.team != null)
+        this.team = team == null ? null : FlansModApi.getTeam(team).orElse(null);
+        if (team == null)
+            FlansModApi.getPlayerClasses().stream().sorted(Comparator.comparing(IPlayerClass::getShortName)).forEach(playerClass -> classes.put(playerClass.getShortName(), playerClass));
+        else if (this.team != null)
             this.team.getClasses().forEach(playerClass -> classes.put(playerClass.getShortName(), playerClass));
     }
 
@@ -59,8 +69,8 @@ abstract class BotClassPicker extends BotPickerScreen
     {
         List<Choice> choices = new ArrayList<>();
         classes.values().forEach(playerClass -> choices.add(classChoice(playerClass)));
-        named.stream().filter(playerClass -> !classes.containsKey(playerClass)).distinct()
-            .forEach(playerClass -> choices.add(new Choice(playerClass, Component.literal(playerClass), List.of(Component.translatable(PREFIX + "class.not_offered", teamName)), true)));
+        named.stream().filter(playerClass -> !classes.containsKey(playerClass)).distinct().forEach(playerClass -> choices.add(new Choice(playerClass, Component.literal(playerClass),
+            List.of(teamName == null ? Component.translatable(PREFIX + "class.missing") : Component.translatable(PREFIX + "class.not_offered", teamName)), true)));
         return choices;
     }
 
@@ -108,6 +118,6 @@ abstract class BotClassPicker extends BotPickerScreen
     @Override
     protected List<Component> summary()
     {
-        return team == null ? List.of(Component.translatable(PREFIX + "class.team_missing", teamName).withStyle(ChatFormatting.GOLD)) : List.of();
+        return team == null && teamName != null ? List.of(Component.translatable(PREFIX + "class.team_missing", teamName).withStyle(ChatFormatting.GOLD)) : List.of();
     }
 }

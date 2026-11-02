@@ -4,7 +4,7 @@ import com.flansmodultimate.api.teams.FlansTeams;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.ITeamsListener;
 import com.flansmodultimate.api.teams.ITeamsLiveRound;
-import com.flansmodultimate.api.teams.ITeamsRespawnRule;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule.Reason;
 import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.flansmodultimate.api.teams.TeamsSpawner;
@@ -40,7 +40,7 @@ import java.util.random.RandomGenerator;
  * the bots appear on the scoreboard; and when the round ends, they are removed. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeamsSpawnProvider
+public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
 {
     private static final TeamsBots INSTANCE = new TeamsBots();
     /** Bots added to the level each tick at most, so a large force arrives over a few seconds instead of in one tick. */
@@ -65,7 +65,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     {
         com.flansmodultimate.api.commandcentre.FlansCommandCentre.addPresets(BotSettingsPresets.KEY, new BotSettingsPresets());
         FlansTeams.addListener(INSTANCE);
-        FlansTeams.addRespawnRule(INSTANCE);
         FlansTeams.addSpawnProvider(INSTANCE);
         NpcTargetSearch.setPriority(BotTargeting::rank);
         NpcCombatPolicy.overrides(npc -> BotBattles.of(npc).map(battle -> battle.getSettings().getTacticalProfile()).orElse(NpcTacticalProfile.INHERIT));
@@ -78,29 +77,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         Skirmishes.tick(server);
         Wars.tick(server);
         INSTANCE.tick(server);
-    }
-
-    /**
-     * Players share their side's tickets with its bots, once the round limits them and lets players spend them: each
-     * respawn costs one, and so does joining again after having fought. A side out of tickets keeps its players watching.
-     */
-    @Override
-    public boolean mayRespawn(ITeamsLiveRound live, ServerPlayer player, ITeam team, Reason reason)
-    {
-        BotBattle current = round;
-        if (current == null || !current.getInstance().equals(live.getInstanceId()))
-            return true;
-        boolean first = current.getFieldedPlayers().add(player.getUUID());
-        BotSettings settings = current.getSettings();
-        if (!settings.isEnabled() || !settings.isPlayerTickets() || settings.getTickets() <= 0 || first && reason == Reason.JOINED)
-            return true;
-        int side = live.getRound().getSideOf(team);
-        int left = BotPopulation.ticketsLeft(current, side);
-        if (left <= 0)
-            return false;
-        current.getTickets().put(side, left - 1);
-        current.getSidesThatFought().add(side);
-        return true;
     }
 
     /**
@@ -154,6 +130,18 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         if (duty.isPresent() || BotBattles.isEmpty() || !BotTag.isBot(npc))
             return duty;
         return BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
+    }
+
+    /** Whether this battle allows soldiers to deploy and man placed guns; ordinary NPCs keep their own setting. */
+    public static boolean mayManEmplacements(EntityNPCInterface npc)
+    {
+        return BotTag.read(npc).flatMap(data -> BotBattles.get(data.instance())).map(battle -> battle.getSettings().isEmplacements()).orElse(true);
+    }
+
+    /** Whether allied players may deploy into seats occupied by bots of this battle. */
+    public static boolean playerSeatDeployment(EntityNPCInterface npc)
+    {
+        return BotTag.read(npc).flatMap(data -> BotBattles.get(data.instance())).map(battle -> battle.getSettings().isPlayerSeatDeployment()).orElse(true);
     }
 
     /** Whether this NPC occupies the physical commander slot of its battle. */
@@ -270,7 +258,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             if (current.getSettings().isEnabled() && current.getFactions().isEmpty())
                 current.getFactions().putAll(BotFactions.setUp(live.get().getRound()));
             upkeep(server, level, current, now, random);
-            eliminate(server, level, current);
             // The world saves the round as it is now, whenever it is saved next.
             BotRoundStore.get(server).setDirty();
         }
@@ -307,10 +294,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         BotBattle started = new BotBattle(live.getInstanceId(), new RoundBattleground(live), settings, settings.isEnabled() ? BotFactions.setUp(live.getRound()) : Map.of());
         round = started;
         BotBattles.add(started);
-        // Players placed when the round started took the field for free; coming back later costs them a ticket.
-        for (ServerPlayer player : server.getPlayerList().getPlayers())
-            if (FlansTeams.getTeam(player).isPresent())
-                started.getFieldedPlayers().add(player.getUUID());
         // The same playing resumed after a restart takes back the bots it had; bots of any other playing are removed.
         ServerLevel level = server.getLevel(live.getDimension());
         BotRoundStore.get(server).resume(started, level == null ? 0L : level.getGameTime());
@@ -587,50 +570,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         Map<Vec3, SpawnPoint> byOrigin = new HashMap<>();
         points.forEach(point -> byOrigin.put(point.origin(), point));
         return origins.stream().map(byOrigin::get).toList();
-    }
-
-    // --- Winning by attrition ---
-
-    /**
-     * Ends the round once only one side can still fight, when tickets or budgets are set: a side is worn out when it has
-     * fought, has no player in the round, no bot alive, and nothing left to bring in.
-     */
-    private static void eliminate(MinecraftServer server, ServerLevel level, BotBattle current)
-    {
-        BotSettings settings = current.getSettings();
-        if (!settings.isEnabled() || !limited(current))
-            return;
-        Map<Integer, Integer> players = new HashMap<>();
-        // A player held back as a spectator, out of tickets, no longer fights for the side.
-        for (ServerPlayer player : server.getPlayerList().getPlayers())
-            if (!player.isSpectator())
-                FlansTeams.getTeam(player).ifPresent(team -> players.merge(current.getGround().sideOf(team), 1, Integer::sum));
-        players.keySet().forEach(current.getSidesThatFought()::add);
-        List<Integer> standing = new ArrayList<>();
-        boolean anyOut = false;
-        for (int side = 0; side < current.getGround().sideCount(); side++)
-        {
-            int checked = side;
-            boolean alive = current.getSlots().values().stream()
-                .anyMatch(slot -> current.sideOf(slot.getTeam()) == checked && slot.getEntity() != null && level.getEntity(slot.getEntity()) instanceof LivingEntity living && living.isAlive());
-            boolean out = current.getSidesThatFought().contains(side) && !players.containsKey(side) && !alive && !BotPopulation.canStillField(current, side);
-            if (out)
-                anyOut = true;
-            else
-                standing.add(side);
-        }
-        if (anyOut && standing.size() == 1)
-            current.getGround().teamsOfSide(standing.get(0)).stream().findFirst().ifPresent(FlansTeams::declareWinner);
-    }
-
-    /** Whether the round limits respawns at all, by tickets or by a budget. */
-    private static boolean limited(BotBattle current)
-    {
-        BotSettings settings = current.getSettings();
-        if (settings.getTickets() > 0)
-            return true;
-        return settings.getTeams().values().stream()
-            .anyMatch(force -> force.getBudget() > 0 || force.getSquads().stream().anyMatch(squad -> squad.budget() > 0) || force.getVehicles().stream().anyMatch(vehicle -> vehicle.budget() > 0));
     }
 
     // --- Removing bots ---

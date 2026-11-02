@@ -25,7 +25,7 @@ import java.util.function.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcNetworkPlatform
 {
-    private static final String VERSION = "11";
+    private static final String VERSION = "12";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
     private static int nextId;
 

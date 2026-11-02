@@ -36,6 +36,30 @@ class BotSettingsPresetsTest
     }
 
     @Test
+    void oldPresetsInheritEmplacementSupportWithoutMutatingTheImport()
+    {
+        CompoundTag data = document(new BotSettings());
+        data.getCompound("settings").remove("emplacements");
+        data.getCompound("settings").remove("player_seat_deployment");
+        assertDoesNotThrow(() -> new BotSettingsPresets().validate(data));
+        assertFalse(data.getCompound("settings").contains("emplacements"));
+        assertTrue(BotSettings.load(data.getCompound("settings")).isEmplacements());
+    }
+
+    @Test
+    void oldPlayerTicketSwitchDoesNotPreventPresetImports()
+    {
+        for (boolean value : new boolean[]{false, true})
+        {
+            CompoundTag data = document(new BotSettings());
+            data.getCompound("settings").putBoolean("player_tickets", value);
+            assertDoesNotThrow(() -> new BotSettingsPresets().validate(data));
+            assertEquals(value, data.getCompound("settings").getBoolean("player_tickets"), "validation must not mutate the import");
+            assertFalse(BotSettings.load(data.getCompound("settings")).save().contains("player_tickets"));
+        }
+    }
+
+    @Test
     void completeBotSettingsTravelThroughJsonAndCarryOverToOtherTeams()
     {
         BotSettings settings = new BotSettings();

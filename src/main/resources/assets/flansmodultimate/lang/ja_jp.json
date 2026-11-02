@@ -292,6 +292,7 @@
   "hud.flansmodultimate.driveable.smoke.ready": "煙幕: 準備完了",
   "hud.flansmodultimate.driveable.smoke.reloading": "煙幕: リロード中",
   "hud.flansmodultimate.driveable.speed": "速度: %s %s",
+  "hud.flansmodultimate.driveable.switch_ammo": "弾薬切り替え: %s",
   "hud.flansmodultimate.driveable.throttle": "スロットル: %s%%",
   "hud.flansmodultimate.driveable.vertical_speed": "垂直速度: %s %s",
   "hud.flansmodultimate.driveable.weapon.disabled": "武器: 無効 [%s で有効化]",

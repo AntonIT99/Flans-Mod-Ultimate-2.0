@@ -46,7 +46,6 @@ class BotRoundStoreTest
         round.getCommanders().put(1, UUID.randomUUID());
         round.getDisruptedUntil().put(1, NOW + 400L);
         round.getSidesThatFought().add(1);
-        round.getFieldedPlayers().add(UUID.randomUUID());
         return round;
     }
 
@@ -82,7 +81,6 @@ class BotRoundStoreTest
         assertEquals(before.getCommanders(), after.getCommanders());
         assertEquals(before.getDisruptedUntil(), after.getDisruptedUntil());
         assertEquals(before.getSidesThatFought(), after.getSidesThatFought());
-        assertEquals(before.getFieldedPlayers(), after.getFieldedPlayers());
         assertFalse(after.isOpening());
         assertEquals(before.getNextSlot(), after.getNextSlot(), "new slots do not reuse the ids of restored ones");
         assertEquals(before.getNextSquad(), after.getNextSquad());

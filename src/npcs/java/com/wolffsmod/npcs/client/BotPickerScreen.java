@@ -63,6 +63,7 @@ public abstract class BotPickerScreen extends Screen
     private static final int HINT_COLOUR = 0xA0A0A0;
 
     private final BotEditorScreen parent;
+    private final Screen returnTo;
     private final Component hint;
     private List<Choice> choices = List.of();
     private List<Choice> shown = List.of();
@@ -119,7 +120,13 @@ public abstract class BotPickerScreen extends Screen
 
     protected BotPickerScreen(BotEditorScreen parent, Component title, Component hint)
     {
+        this(parent, parent, title, hint);
+    }
+
+    protected BotPickerScreen(BotEditorScreen parent, Screen returnTo, Component title, Component hint)
+    {
         super(title);
+        this.returnTo = returnTo;
         this.parent = parent;
         this.hint = hint;
     }
@@ -439,7 +446,7 @@ public abstract class BotPickerScreen extends Screen
     private void back()
     {
         if (minecraft != null)
-            minecraft.setScreen(parent);
+            minecraft.setScreen(returnTo);
     }
 
     /** @return the editor the picker returns to */

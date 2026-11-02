@@ -43,8 +43,6 @@ final class BotBattle
     private final Map<Integer, Long> disruptedUntil = new HashMap<>();
     /** Sides that have fielded anyone, the only ones that can be worn out. */
     private final Set<Integer> sidesThatFought = new HashSet<>();
-    /** Players who took the field in this playing; joining again later costs them a ticket. */
-    private final Set<UUID> fieldedPlayers = new HashSet<>();
     /** Where each player leading a squad chose to come back after dying. */
     private final Map<UUID, BotLeaders.SpawnChoice> spawnChoices = new HashMap<>();
     /** Successful deployments per origin, used to spread the next wave across every eligible spawn. */

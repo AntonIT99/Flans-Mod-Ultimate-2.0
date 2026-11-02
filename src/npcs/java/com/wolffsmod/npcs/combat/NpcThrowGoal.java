@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.GrenadeProperties;
 import com.wolffsmod.npcs.combat.NpcThrowing.Choice;
 import com.wolffsmod.npcs.combat.NpcThrowing.Kind;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -32,6 +34,8 @@ public final class NpcThrowGoal extends Goal
     private static final int RETRY_DELAY = 40;
     /** Wind-up of an item without a charge time of its own, such as a potion. */
     private static final int DEFAULT_WINDUP = 6;
+    /** Defensive smoke is conserved even when the grenade strategy is Frequent. */
+    private static final int SMOKE_COOLDOWN = 600;
 
     private final EntityNPCInterface npc;
     /** Game time from which each kind, by ordinal, may be thrown again. */
@@ -119,9 +123,13 @@ public final class NpcThrowGoal extends Goal
         if (--windup > 0)
             return;
         pending = null;
+        boolean smoke = FlansProjectiles.getGrenadeProperties(choice.stack()).map(properties -> properties.use() == GrenadeProperties.Use.SMOKE).orElse(false);
         boolean thrown = NpcItemAttacks.throwCarried(npc, target, choice.stack());
         NpcThrowPresentation.clear(npc);
-        readyAt[choice.kind().ordinal()] = now + (thrown ? NpcThrowing.cooldown(npc, choice.kind()) : RETRY_DELAY);
+        int cooldown = NpcThrowing.cooldown(npc, choice.kind());
+        if (smoke)
+            cooldown = Math.max(cooldown, SMOKE_COOLDOWN);
+        readyAt[choice.kind().ordinal()] = now + (thrown ? cooldown : RETRY_DELAY);
         if (!thrown)
             return;
         if (animated)

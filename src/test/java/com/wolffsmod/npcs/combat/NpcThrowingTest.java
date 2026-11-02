@@ -2,11 +2,14 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.GrenadeProperties;
+import com.flansmodultimate.api.projectiles.GrenadeProperties.Use;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Throwing;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
@@ -61,6 +64,7 @@ class NpcThrowingTest
     {
         ItemStack stack = new ItemStack(Items.FIRE_CHARGE, count);
         projectiles.when(() -> FlansProjectiles.isGrenade(stack)).thenReturn(true);
+        projectiles.when(() -> FlansProjectiles.getGrenadeProperties(stack)).thenReturn(Optional.of(new GrenadeProperties(Use.EXPLOSIVE, 0D)));
         projectiles.when(() -> FlansProjectiles.isProjectile(stack)).thenReturn(true);
         return stack;
     }
@@ -122,6 +126,84 @@ class NpcThrowingTest
             npc.inventory.weapons.put(1, wrapped(bullet));
             // A round in the projectile slot is fired without a gun, before anything the inventory holds.
             assertSame(bullet, NpcThrowing.mainProjectile(npc));
+        }
+    }
+
+    @Test
+    void smokeIsReservedForPinnedOrRecentlyWoundedSoldiers()
+    {
+        try (var projectiles = mockStatic(FlansProjectiles.class); var suppression = mockStatic(NpcSuppression.class))
+        {
+            EntityNPCInterface npc = npc();
+            LivingEntity target = mock(LivingEntity.class);
+            ItemStack smoke = grenade(projectiles, 1);
+            projectiles.when(() -> FlansProjectiles.getGrenadeProperties(smoke)).thenReturn(Optional.of(new GrenadeProperties(Use.SMOKE, 0D)));
+            when(npc.distanceTo(target)).thenReturn(12F);
+            when(npc.getMaxHealth()).thenReturn(20F);
+            when(npc.getHealth()).thenReturn(20F);
+            assertFalse(NpcThrowing.suitableGrenade(npc, target, smoke));
+            suppression.when(() -> NpcSuppression.isPinned(npc)).thenReturn(true);
+            assertTrue(NpcThrowing.suitableGrenade(npc, target, smoke));
+            when(npc.distanceTo(target)).thenReturn(4F);
+            assertFalse(NpcThrowing.suitableGrenade(npc, target, smoke));
+            when(npc.distanceTo(target)).thenReturn(12F);
+            suppression.when(() -> NpcSuppression.isPinned(npc)).thenReturn(false);
+            when(npc.getHealth()).thenReturn(8F);
+            when(npc.getLastHurtByMob()).thenReturn(target);
+            when(npc.getLastHurtByMobTimestamp()).thenReturn(100);
+            npc.tickCount = 150;
+            assertTrue(NpcThrowing.suitableGrenade(npc, target, smoke));
+            npc.tickCount = 201;
+            assertFalse(NpcThrowing.suitableGrenade(npc, target, smoke));
+        }
+    }
+
+    @Test
+    void minesRemoteChargesAndBagsAreSkippedEvenAsMainWeapons()
+    {
+        try (var projectiles = mockStatic(FlansProjectiles.class))
+        {
+            EntityNPCInterface npc = npc();
+            LivingEntity target = mock(LivingEntity.class);
+            ItemStack device = grenade(projectiles, 1);
+            ItemStack frag = grenade(projectiles, 1);
+            npc.inventory.weapons.put(1, wrapped(device));
+            npc.inventory.drops.put(0, wrapped(frag));
+            tuning.set(Value.GRENADE_USE, Throwing.MAIN_WEAPON.ordinal());
+            for (Use use : new Use[]{Use.PLACEABLE, Use.REMOTE, Use.UTILITY})
+            {
+                projectiles.when(() -> FlansProjectiles.getGrenadeProperties(device)).thenReturn(Optional.of(new GrenadeProperties(use, 0D)));
+                assertFalse(NpcThrowing.suitableGrenade(npc, target, device));
+                assertSame(frag, NpcThrowing.mainThrownWeapon(npc));
+                assertSame(frag, NpcThrowing.mainProjectile(npc));
+            }
+        }
+    }
+
+    @Test
+    void flashAndGasReachCountForSafetyAndIncendiariesAvoidBurningTargets()
+    {
+        try (var projectiles = mockStatic(FlansProjectiles.class))
+        {
+            EntityNPCInterface npc = npc();
+            LivingEntity target = mock(LivingEntity.class);
+            ItemStack stack = grenade(projectiles, 1);
+            projectiles.when(() -> FlansProjectiles.getGrenadeProperties(stack)).thenReturn(Optional.of(new GrenadeProperties(Use.FLASH, 8D)));
+            assertEquals(10D, NpcThrowing.safeDistance(stack));
+            assertEquals(11D, NpcThrowing.cautiousDistance(stack));
+            assertTrue(NpcThrowing.suitableGrenade(npc, target, stack));
+            net.minecraft.world.entity.Entity vehicle = mock(net.minecraft.world.entity.Entity.class);
+            when(target.getVehicle()).thenReturn(vehicle);
+            assertFalse(NpcThrowing.suitableGrenade(npc, target, stack));
+            projectiles.when(() -> FlansProjectiles.getGrenadeProperties(stack)).thenReturn(Optional.of(new GrenadeProperties(Use.GAS, 6D)));
+            assertEquals(8D, NpcThrowing.safeDistance(stack));
+            projectiles.when(() -> FlansProjectiles.getGrenadeProperties(stack)).thenReturn(Optional.of(new GrenadeProperties(Use.INCENDIARY, 0D)));
+            assertTrue(NpcThrowing.suitableGrenade(npc, target, stack));
+            when(target.isOnFire()).thenReturn(true);
+            assertFalse(NpcThrowing.suitableGrenade(npc, target, stack));
+            when(target.isOnFire()).thenReturn(false);
+            when(target.fireImmune()).thenReturn(true);
+            assertFalse(NpcThrowing.suitableGrenade(npc, target, stack));
         }
     }
 

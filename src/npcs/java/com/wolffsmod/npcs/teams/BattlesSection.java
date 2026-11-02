@@ -409,7 +409,7 @@ public final class BattlesSection
             entry.putInt(COLOUR, team.getTeamColour());
             entry.putInt(ALIVE, (int) battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && slot.getEntity() != null && slot.getDiedAt() == 0).count());
             entry.putInt(SLOTS, (int) battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && !slot.isRetired()).count());
-            entry.putInt(TICKETS, battle.getSettings().getTickets() > 0 ? BotPopulation.ticketsLeft(battle, battle.getGround().sideOf(team)) : -1);
+            entry.putInt(TICKETS, BotRespawnBudget.limit(battle) > 0 ? BotPopulation.ticketsLeft(battle, battle.getGround().sideOf(team)) : -1);
             teams.add(entry);
         }
         tag.put(TEAMS, teams);

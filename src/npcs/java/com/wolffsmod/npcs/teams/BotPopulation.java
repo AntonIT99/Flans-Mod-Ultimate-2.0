@@ -363,7 +363,7 @@ final class BotPopulation
     static boolean canAfford(BotBattle battle, BotSlot slot)
     {
         int cost = ticketCost(battle, slot);
-        return battle.getSettings().getTickets() <= 0 || cost <= 0 || ticketsLeft(battle, battle.sideOf(slot.getTeam())) >= cost;
+        return BotRespawnBudget.limit(battle) <= 0 || cost <= 0 || ticketsLeft(battle, battle.sideOf(slot.getTeam())) >= cost;
     }
 
     /** Gives the sides that trail on score extra infantry, as the round's rubber band says; never in Assault, scored by losses. */
@@ -386,7 +386,7 @@ final class BotPopulation
     {
         int cost = ticketCost(battle, slot);
         int side = battle.sideOf(slot.getTeam());
-        if (battle.getSettings().getTickets() > 0 && cost > 0)
+        if (BotRespawnBudget.limit(battle) > 0 && cost > 0)
             battle.getTickets().put(side, ticketsLeft(battle, side) - cost);
         if (slot.getSource() == BotSlot.Source.INFANTRY)
             battle.getInfantrySpawns().merge(slot.getTeam(), 1, Integer::sum);

@@ -6,6 +6,7 @@ import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.entity.*;
 import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.parts.*;
+import com.flansmodultimate.api.projectiles.IProximityTarget;
 import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -84,6 +85,7 @@ import java.util.*;
  * <li>Friendly fire: hits from NPCs of the same faction and from players the faction is friendly to land where friendly fire is
  * on, and a hit from a friend never turns the NPC or its faction on that friend.</li>
  * <li>Teams bots take players as targets on Peaceful too, which Custom NPCs otherwise forbids.</li>
+ * <li>Carried mines, remote charges and supply bags have deployment and use goals; machine models trigger vehicle mines.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung. Grenades and
  * other throwables the NPC carries anywhere are thrown as its main weapon or now and then beside its other attacks, as their
  * strategy says, by a goal of their own whose wind-up holds the NPC's other ranged attacks.
@@ -110,6 +112,7 @@ import java.util.*;
  * Crew whose seats let them get out to fight do so near the vehicle's target, jumping by parachute from an aircraft above it.
  * A player on the vehicle's side who uses it without sneaking gets into the empty seat they click or another free seat when using the body, and mans the
  * gun of a gunner's seat.</li>
+ * <li>Soldiers deploy carried guns and man free deployable and AA emplacements, using their own ammunition policy and native mount timing.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
@@ -138,6 +141,7 @@ import java.util.*;
 public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     implements
         IEquipmentPolicy,
+        IProximityTarget,
         IHeldItemPresentation,
         IFlanNpcDistance,
         IFlanSeatOccupant,
@@ -193,6 +197,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private NpcThrowGoal wolffsmodnpcsThrowGoal;
     @Unique
+    private NpcGrenadeDeviceGoal wolffsmodnpcsGrenadeDeviceGoal;
+    @Unique
     private NpcTacticGoal wolffsmodnpcsTacticGoal;
     @Unique
     private NpcCombatApproachGoal wolffsmodnpcsApproachGoal;
@@ -200,6 +206,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private BotObjectiveGoal wolffsmodnpcsObjectiveGoal;
     @Unique
     private NpcBoardingGoal wolffsmodnpcsBoardingGoal;
+    @Unique
+    private NpcEmplacementGoal wolffsmodnpcsEmplacementGoal;
     @Unique
     private NpcSafetyGoal wolffsmodnpcsSafetyGoal;
     @Unique
@@ -447,6 +455,23 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return wolffsmodnpcsItemGoal;
     }
 
+    /** Machine models use vehicle proximity fuses; their living entity base must not make them infantry. */
+    @Override
+    public boolean flansmodultimateDriveableProximityTarget()
+    {
+        return NpcModels.flan((EntityNPCInterface) (Object) this) != null;
+    }
+
+    @Unique
+    private void wolffsmodnpcsRegisterGrenadeDevices(EntityNPCInterface npc)
+    {
+        if (wolffsmodnpcsGrenadeDeviceGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsGrenadeDeviceGoal);
+        else
+            wolffsmodnpcsGrenadeDeviceGoal = new NpcGrenadeDeviceGoal(npc);
+        goalSelector.addGoal(0, wolffsmodnpcsGrenadeDeviceGoal);
+    }
+
     @Override
     public NpcThrowGoal wolffsmodnpcsThrowGoal()
     {
@@ -478,6 +503,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         else
             wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsBoardingGoal);
+        if (wolffsmodnpcsEmplacementGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsEmplacementGoal);
+        else
+            wolffsmodnpcsEmplacementGoal = new NpcEmplacementGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsEmplacementGoal);
+        wolffsmodnpcsRegisterGrenadeDevices(npc);
         if (wolffsmodnpcsSafetyGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsSafetyGoal);
         else
@@ -1214,6 +1245,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public boolean flansmodultimateHasSeatBodyRotation()
     {
         return NpcCrew.vehicleOf(this).isPresent();
+    }
+
+    @Override
+    public boolean flansmodultimateMayYieldSeat(Player player, boolean deployment)
+    {
+        return NpcSeatPriority.mayYield((EntityNPCInterface) (Object) this, player, deployment);
+    }
+
+    @Override
+    public boolean flansmodultimateYieldSeat(Player player, boolean deployment)
+    {
+        return NpcSeatPriority.giveWay((EntityNPCInterface) (Object) this, player, deployment);
     }
 
     @Override

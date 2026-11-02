@@ -651,7 +651,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         if (driveable == null || !driveable.canPlayerAccess(player))
             return InteractionResult.PASS;
-        if (getFirstPassenger() != null && getFirstPassenger() != player)
+        if (!SeatOccupants.canEnter(this, player, false))
             return InteractionResult.sidedSuccess(level().isClientSide);
         if (level().isClientSide)
             return InteractionResult.SUCCESS;
@@ -670,9 +670,18 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
      */
     public boolean tryEnter(@NotNull Player player)
     {
-        if (!FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
+        return tryEnter(player, false);
+    }
+
+    /** Enters after optional cooperative NPC handoff; deployment has its own occupant policy. Server thread. */
+    public boolean tryEnter(@NotNull Player player, boolean deployment)
+    {
+        if (level().isClientSide || player.isSpectator() || driveable == null || !driveable.canPlayerAccess(player) || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER)
+            || !SeatOccupants.canEnter(this, player, deployment))
             return false;
         if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(this, player)))
+            return false;
+        if (!SeatOccupants.makeRoom(this, player, deployment))
             return false;
         if (player.getVehicle() != null)
             player.stopRiding();

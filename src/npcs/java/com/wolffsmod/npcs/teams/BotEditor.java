@@ -220,12 +220,16 @@ public final class BotEditor
     {
         if (!force.getCommanderClass().isEmpty() && !classes.contains(force.getCommanderClass()))
             problems.add(Component.translatable(UNKNOWN_CLASS, team, force.getCommanderClass()));
-        for (CrewPost post : CrewPost.values())
-        {
-            String crew = force.crewClass(post);
-            if (!crew.isEmpty() && !BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(crew) && !classes.contains(crew))
-                problems.add(Component.translatable(PREFIX + "unknown_crew_class", team, crew, post.id()));
-        }
+        Set<String> scopes = new LinkedHashSet<>();
+        scopes.add("");
+        scopes.addAll(force.crewScopes());
+        for (String scope : scopes)
+            for (CrewPost post : CrewPost.values())
+            {
+                String crew = force.crewClass(scope, post);
+                if (crew != null && !crew.isEmpty() && !BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(crew) && !classes.contains(crew))
+                    problems.add(Component.translatable(PREFIX + "unknown_crew_class", team, crew, scope.isEmpty() ? post.id() : scope + "/" + post.id()));
+            }
     }
 
     private static void templateProblems(String team, Set<String> classes, String id, List<Component> problems)
@@ -250,8 +254,8 @@ public final class BotEditor
             shown = FlansTeams.getRunningRound().map(live -> rounds.indexOf(live.getRound())).orElse(0);
             shown = rounds.isEmpty() ? -1 : Math.max(0, shown);
         }
-        List<BotEditorStatePacket.Round> entries = rounds.stream()
-            .map(entry -> new BotEditorStatePacket.Round(entry.getId(), label(rounds.indexOf(entry), entry), entry.getTeams().stream().map(ITeam::getShortName).toList())).toList();
+        List<BotEditorStatePacket.Round> entries = rounds.stream().map(entry -> new BotEditorStatePacket.Round(entry.getId(), label(rounds.indexOf(entry), entry),
+            entry.getTeams().stream().map(ITeam::getShortName).toList(), BotRespawnBudget.available(entry.getGameTypeId()))).toList();
         BotSettings settings = shown < 0 ? new BotSettings() : BotSettings.load(rounds.get(shown).getExtensionData(BotSettings.KEY));
         return new BotEditorStatePacket(entries, shown, settings.save(), SquadTemplates.get().all().stream().map(SquadTemplate::toTag).toList(), List.copyOf(BotPresets.get().names()));
     }

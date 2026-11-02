@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.api.projectiles.IProximityTarget;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.physics.ModPhysics;
@@ -266,7 +267,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
     {
         ShootableType configType = getConfigType();
 
-        if (level.isClientSide)
+        if (level.isClientSide || tickCount < configType.getPrimeDelay())
             return;
 
         // Fuse
@@ -278,51 +279,47 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
             return;
 
         float checkRadius = Math.max(configType.getLivingProximityTrigger(), configType.getDriveableProximityTrigger());
-        double rLivingSq = configType.getLivingProximityTrigger() * configType.getLivingProximityTrigger();
-        double rDriveableSq = configType.getDriveableProximityTrigger() * configType.getDriveableProximityTrigger();
-
         List<Entity> list = ModUtils.queryEntities(level, this, getBoundingBox().inflate(checkRadius, checkRadius, checkRadius));
         for (Entity entity : list)
         {
-            if (isShooterEntity(entity) && tickCount < 10)
-                continue;
-
-            // Living proximity
-            if (entity instanceof LivingEntity living && living.distanceToSqr(this) < rLivingSq)
+            if (triggersProximity(level, configType, entity))
             {
-                if (ignoresAlly(living) || !handleEntityInProximityTriggerRange(level, living))
-                    continue;
-
-                detonate(level);
-                break;
-            }
-
-            // Driveable proximity
-            if (entity instanceof Driveable driveable && entity.distanceToSqr(this) < rDriveableSq)
-            {
-                if (ignoresAlly(driveable) || !handleEntityInProximityTriggerRange(level, driveable))
-                    continue;
-
                 detonate(level);
                 break;
             }
         }
     }
 
+    private boolean triggersProximity(Level level, ShootableType type, Entity entity)
+    {
+        return !(isShooterEntity(entity) && tickCount < 10) && withinProximityTrigger(type, entity) && permitsProximityTrigger(entity) && handleEntityInProximityTriggerRange(level, entity);
+    }
+
+    private boolean withinProximityTrigger(ShootableType type, Entity entity)
+    {
+        boolean driveable = entity instanceof Driveable || entity instanceof IProximityTarget target && target.flansmodultimateDriveableProximityTarget();
+        float radius = 0F;
+        if (driveable)
+            radius = type.getDriveableProximityTrigger();
+        else if (entity instanceof LivingEntity)
+            radius = type.getLivingProximityTrigger();
+        return radius > 0F && entity.distanceToSqr(this) < radius * radius;
+    }
+
     /**
-     * Whether the proximity trigger leaves an ally alone: unless allies may set triggers off, someone the owner's fire spares,
-     * or a driveable carrying such a rider.
+     * Whether proximity rules permit triggering: allies the owner's fire spares and driveables carrying them are excluded
+     * unless proximity friendly fire is enabled.
      */
-    private boolean ignoresAlly(Entity entity)
+    private boolean permitsProximityTrigger(Entity entity)
     {
         LivingEntity owner = getOwner().orElse(null);
         if (owner == null || ModCommonConfig.get().shootableProximityTriggerFriendlyFire())
-            return false;
+            return true;
         if (entity instanceof LivingEntity living)
-            return FriendlyFireRules.spares(living, owner);
+            return !FriendlyFireRules.spares(living, owner);
         if (entity instanceof Driveable driveable && driveable.getSeats() != null)
-            return Arrays.stream(driveable.getSeats()).anyMatch(seat -> seat != null && seat.getRiddenByEntity() instanceof LivingEntity rider && FriendlyFireRules.spares(rider, owner));
-        return false;
+            return Arrays.stream(driveable.getSeats()).noneMatch(seat -> seat != null && seat.getRiddenByEntity() instanceof LivingEntity rider && FriendlyFireRules.spares(rider, owner));
+        return true;
     }
 
     protected abstract boolean handleEntityInProximityTriggerRange(Level level, Entity entity);

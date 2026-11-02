@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.*;
 
 /**
- * Tells what each Flan class does in a squad besides fighting, from what it carries: a medical tool makes a medic, a
+ * Tells what each Flan class does in a squad besides fighting, from what it carries: a dedicated medical kit makes a medic, a
  * repair tool an engineer, a gun that goes through armour or a launcher with a big blast an anti-tank soldier, and a
  * deployable or belt-fed gun a support soldier. A team may set the role of a class by hand instead. Server thread.
  */
@@ -68,6 +68,7 @@ public final class BotRoles
     {
         int heal = 0;
         int repair = 0;
+        boolean medic = false;
         boolean antiTank = false;
         boolean support = false;
         for (ItemStack item : items)
@@ -76,6 +77,7 @@ public final class BotRoles
             if (tool.isPresent())
             {
                 heal = Math.max(heal, amount(tool.get(), tool.get().heals(), DEFAULT_AMOUNT));
+                medic |= tool.get().heals() && dedicatedMedicalTool(item.getItem().builtInRegistryHolder().key().location().getPath(), item.getCount());
                 repair = Math.max(repair, amount(tool.get(), tool.get().repairs(), DEFAULT_REPAIR));
             }
             else
@@ -84,7 +86,13 @@ public final class BotRoles
                 support |= support(item, items);
             }
         }
-        return new Kit(role(heal > 0, repair > 0, antiTank, support), heal, repair);
+        return new Kit(role(medic, repair > 0, antiTank, support), heal, repair);
+    }
+
+    /** A single bandage is common first aid; a supply of them is a medic's kit. */
+    static boolean dedicatedMedicalTool(String itemPath, int count)
+    {
+        return !itemPath.toLowerCase(Locale.ROOT).endsWith("bandage") || count > 1;
     }
 
     /** What a tool gives with each use for one of its jobs: its amount, a default when it names none, or 0 when it does not do the job. */

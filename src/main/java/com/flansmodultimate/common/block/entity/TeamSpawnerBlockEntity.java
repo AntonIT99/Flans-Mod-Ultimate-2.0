@@ -2,11 +2,13 @@ package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.api.teams.SpawnerNpcPolicy;
+import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
@@ -214,8 +216,11 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
                         && entity.getPersistentData().hasUUID(NBT_SPAWNER) && objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
                     return null;
             }
-            return driveableItem.spawnDriveable(level, spawnPosition.x, spawnPosition.y + driveableItem.getConfigType().getYOffset(), spawnPosition.z, 0F, null, template.copyWithCount(1),
-                getOwningTeam());
+            ItemStack suppliedTemplate = template.copyWithCount(1);
+            DriveableData supplies = DriveableData.fromStack(driveableItem.getConfigType(), suppliedTemplate, level.registryAccess());
+            TeamsVehicleSupplies.provision(driveableItem.getConfigType(), supplies, ModCommonConfig.TEAMS_SPAWN_VEHICLES_WITH_FUEL.get(), ModCommonConfig.TEAMS_SPAWN_VEHICLE_AMMO.get());
+            supplies.copyToStack(suppliedTemplate);
+            return driveableItem.spawnDriveable(level, spawnPosition.x, spawnPosition.y + driveableItem.getConfigType().getYOffset(), spawnPosition.z, 0F, null, suppliedTemplate, getOwningTeam());
         }
         if (template.getItem() instanceof AAGunItem aaGunItem)
             return aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null, getOwningTeam());
@@ -241,7 +246,10 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     {
         super.onLoad();
         if (level instanceof ServerLevel)
+        {
             TeamsManager.getInstance().registerObject(this);
+            refreshTeamColour();
+        }
     }
 
     @Override
@@ -273,6 +281,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     @Override
     protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
+        int previousColour = teamColour;
         objectId = tag.hasUUID(NBT_OBJECT_ID) ? tag.getUUID(NBT_OBJECT_ID) : UUID.randomUUID();
         baseId = tag.hasUUID(NBT_BASE_ID) ? tag.getUUID(NBT_BASE_ID) : null;
 
@@ -295,6 +304,10 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
 
         for (Tag item : tag.getList(NBT_ITEMS, Tag.TAG_COMPOUND))
             templates.add(ItemStackData.parse(registries, (CompoundTag) item));
+
+        // The tint is baked into the chunk mesh; receiving block-entity data alone does not rebuild it.
+        if (level != null && level.isClientSide && previousColour != teamColour)
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
     /**

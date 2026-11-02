@@ -84,6 +84,19 @@ public final class FlansProjectiles
         return ExternalProjectileSupport.isGrenade(stack);
     }
 
+    /**
+     * Reads a grenade's purpose and additional effect reach from its definition, without changing the stack.
+     * Readable on either side after content loading.
+     *
+     * @param stack
+     *            item to inspect
+     * @return grenade properties, or empty for another item
+     */
+    public static Optional<GrenadeProperties> getGrenadeProperties(ItemStack stack)
+    {
+        return ExternalProjectileSupport.grenadeProperties(stack);
+    }
+
     /** @return the rounds one item of this Flan ammunition holds when full, or zero for another item; readable on either side */
     public static int getRoundsPerItem(ItemStack stack)
     {

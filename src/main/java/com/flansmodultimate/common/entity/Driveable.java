@@ -4743,11 +4743,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int targetIndex = SeatCycle.nextAvailable(current.getSeatIndex(), seats.length, index ->
         {
             Seat candidate = seats[index];
-            return isUsableSeat(candidate) && candidate.getFirstPassenger() == null;
+            return isUsableSeat(candidate) && SeatOccupants.canEnter(candidate, player, false);
         });
         if (targetIndex < 0)
             return false;
         if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(seats[targetIndex], player)))
+            return false;
+        if (!SeatOccupants.makeRoom(seats[targetIndex], player, false))
             return false;
         setInputMask(0);
         setFlightControls(0F, 0F, isMouseControlEnabled());
@@ -5689,10 +5691,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // Continue the click ray through that hitbox so clicking a passenger
         // position does not silently fall back to the driver seat.
         Seat target = findTargetedSeat(player);
-        if (target != null && target.getFirstPassenger() != null && target.getFirstPassenger() != player)
+        if (target != null && !SeatOccupants.canEnter(target, player, false))
             return InteractionResult.CONSUME;
         if (target == null)
-            target = findPreferredAvailableSeat();
+            target = findPreferredAvailableSeat(player);
         if (target == null)
             return InteractionResult.PASS;
         return target.tryEnter(player) ? InteractionResult.CONSUME : InteractionResult.PASS;
@@ -5726,12 +5728,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     @Nullable
-    private Seat findPreferredAvailableSeat()
+    private Seat findPreferredAvailableSeat(Player player)
     {
         Seat fallback = null;
         for (Seat seat : seats)
         {
-            if (isUsableSeat(seat) && seat.getFirstPassenger() == null)
+            if (isUsableSeat(seat) && SeatOccupants.canEnter(seat, player, false))
             {
                 fallback = seat;
                 if (seat.isDriverSeat())

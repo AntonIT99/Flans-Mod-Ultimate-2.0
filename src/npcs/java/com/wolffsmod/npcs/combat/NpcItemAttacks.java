@@ -332,7 +332,7 @@ public final class NpcItemAttacks
     private static boolean grenade(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
     {
         // A target within the grenade's reach is left to the NPC's other attacks rather than taking the thrower with it.
-        if (!NpcEquipment.enabled(npc, Feature.GRENADES) || NpcThrowing.tooClose(npc, target, weapon))
+        if (!NpcEquipment.enabled(npc, Feature.GRENADES) || NpcThrowing.shouldWithholdGrenade(npc, target, weapon))
             return false;
         var prepared = FlansProjectiles.prepare(npc, weapon, ItemStack.EMPTY, null, null, false, new ProjectileParameters(0, true, 0F, 0F, 1F));
         if (prepared.isEmpty())

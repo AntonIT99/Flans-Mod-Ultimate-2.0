@@ -292,6 +292,7 @@
   "hud.flansmodultimate.driveable.smoke.ready": "Дым: ГОТОВ",
   "hud.flansmodultimate.driveable.smoke.reloading": "Дым: перезарядка",
   "hud.flansmodultimate.driveable.speed": "Скорость: %s %s",
+  "hud.flansmodultimate.driveable.switch_ammo": "Сменить боеприпас: %s",
   "hud.flansmodultimate.driveable.throttle": "Тяга: %s%%",
   "hud.flansmodultimate.driveable.vertical_speed": "Вертикальная скорость: %s %s",
   "hud.flansmodultimate.driveable.weapon.disabled": "Оружие: ОТКЛЮЧЕНО [%s — включить]",

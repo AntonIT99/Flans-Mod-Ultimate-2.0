@@ -37,6 +37,8 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DEFAULT_FLAGPOLE_HEIGHT_VALUE;
     public static final ForgeConfigSpec configSpec;
     public static final IntValue THROWN_GUN_DESPAWN_SECONDS;
+    public static final BooleanValue TEAMS_SPAWN_VEHICLES_WITH_FUEL;
+    public static final IntValue TEAMS_SPAWN_VEHICLE_AMMO;
     public static final BooleanValue FORCE_UNCENSORED_CONTENT;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
@@ -369,6 +371,12 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push(SECTION_TEAMS);
+        TEAMS_SPAWN_VEHICLES_WITH_FUEL = builder.comment("Fill the fuel tank of driveables created by Teams vehicle spawners. Does not affect manually placed vehicles.")
+            .define("teamsSpawnVehiclesWithFuel", true);
+        TEAMS_SPAWN_VEHICLE_AMMO = builder
+            .comment("Load default ammunition into Teams-spawned driveables' weapon slots and supply this many spare ammunition items per default type in free cargo slots.",
+                "Magazines are supplied full. Reserves are limited by cargo space and item stack limits; existing cargo is preserved. Set to 0 to disable all starting ammunition provisioning.")
+            .defineInRange("teamsSpawnVehicleAmmo", 32, 0, 64);
         DEFAULT_FLAGPOLE_HEIGHT_VALUE = builder
             .comment("Default pole height in blocks for Teams bases and capture points, including existing poles without a saved height.",
                 "Each pole keeps its height once saved; edit individual heights with the ownership stick.")

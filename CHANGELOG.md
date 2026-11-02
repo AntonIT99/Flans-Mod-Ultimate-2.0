@@ -19,15 +19,17 @@
 
 ## Teams
 
+* Teams vehicle spawners fill driveable fuel tanks and load default weapon ammunition plus up to 32 spare ammunition items per type in available cargo space; configure `teamsSpawnVehiclesWithFuel` and `teamsSpawnVehicleAmmo` (0 disables ammunition provisioning)
+
 * Round Rules offer `disableClassLimits` in the Teams command centre to bypass player class slot and percentage caps while keeping rank and prestige requirements (default false)
 
 * Players can choose vehicle spawners with template items on the deployment map to spawn aboard a free driver, gunner or passenger seat; vehicle markers show full vehicles, access restrictions and live cooldown countdowns, and the server rechecks the seat before boarding
 
 * During Teams rounds, spawners, capture points and team banners are protected from weapons, explosions, mobs and other indirect destruction; operators can remove them only by directly breaking them or using the Operator Stick, while flags and flagpoles remain damage-proof
 
-* Addon API 1.20 adds server-side blood-effect opt-in through `ILivingVisualEffects` and exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass, per-bank barrel recoil eligibility and confirmed armour-impact callbacks for target-aware AI, plus shared operator preset libraries and client file import/export through the command centre API, mass-scaled external impulses for model entities, server-authored mounted firing effects through `FlansProjectiles.firingEffects`, shared terrain-following model suspension through `FlansEntityTypes.sampleTerrainAttitude`, and shared vehicle spawner cooldown queries and spawn notifications through `FlansTeams`, and lists every default round of a gun, an AA gun or a driveable weapon bank through `FlansEquipment.createDefaultAmmunitionChoices`, without changing damage
+* Addon API 1.21 adds server-side blood-effect opt-in through `ILivingVisualEffects` and exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass, per-bank barrel recoil eligibility and confirmed armour-impact callbacks for target-aware AI, plus shared operator preset libraries and client file import/export through the command centre API, mass-scaled external impulses for model entities, server-authored mounted firing effects through `FlansProjectiles.firingEffects`, shared terrain-following model suspension through `FlansEntityTypes.sampleTerrainAttitude`, and shared vehicle spawner cooldown queries and spawn notifications through `FlansTeams`, and lists every default round of a gun, an AA gun or a driveable weapon bank through `FlansEquipment.createDefaultAmmunitionChoices`, exposes grenade purpose and additional flash/gas reach through `FlansProjectiles.getGrenadeProperties`, without changing damage, and supports server-controlled living operators of placed deployable and AA guns through `IEmplacement`, with validated deployment through `FlansEmplacements`, with grenade-device placement, owned remote detonation and supply-bag use through `FlansGrenadeDevices` and living machine proximity routing through `IProximityTarget` and cooperative allied-player seat handoff through `IFlanSeatOccupant`
 
-* All spawners offer a base-assignment menu and show their base's team color before a round starts; item and vehicle spawners have a spawn delay in seconds (default 20), shared with NPC deployments on vehicle spawners, while vehicle spawners support AA guns, wait for their previous vehicle to be destroyed or leave the map by default, offer a nearby-only replacement mode, allow NPC vehicles by all, none, multiple categories or exact definitions, and select between spawning all ready NPC vehicles into clear nearby spaces (default) or deploying them one after another
+* All spawners offer a base-assignment menu and immediately show their assigned base's team color, including before a round starts and when changing bases; item and vehicle spawners have a spawn delay in seconds (default 20), shared with NPC deployments on vehicle spawners, while vehicle spawners support AA guns, wait for their previous vehicle to be destroyed or leave the map by default, offer a nearby-only replacement mode, allow NPC vehicles by all, none, multiple categories or exact definitions, and select between spawning all ready NPC vehicles into clear nearby spaces (default) or deploying them one after another
 
 * Ship vehicle spawners use the nearest clear water surface within 64 blocks, and wait to spawn when no water is available in loaded chunks
 
@@ -72,6 +74,8 @@
 
 ## Vehicles, Aircraft & Ships
 
+* The vehicle HUD shows the current ammunition-switch key below the ammunition display for drivers with shells, bombs or missiles
+
 * Armour hits on driveables and NPC vehicle models show outward sparks and metallic impacts when blocked, and tighter flashes, metal fragments and smoke when large shells penetrate, with effects scaled to projectile mass
 
 * Ships are now separated from ground vehicles, with improved ship physics; leaving a ship puts the player on top of its hull
@@ -93,6 +97,8 @@
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
 
 ## Weapons
+
+* Supply bags retain their remaining uses across saves and spend a use only on delivered healing, effects or ammunition; mines respect their arming delay before applying trigger damage, and living vehicle models can participate in vehicle proximity fuses
 
 * Fixed a crash when an NPC reloads a gun without a configured reload sound
 * Fixed shots sometimes having no recoil or firing animation when shooting-state updates arrive between client ticks

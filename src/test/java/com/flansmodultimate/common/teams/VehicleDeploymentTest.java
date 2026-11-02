@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.teams;
 
+import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.entity.Driveable;
@@ -17,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -92,13 +94,38 @@ class VehicleDeploymentTest
         when(round.areAllied(team, team)).thenReturn(true);
     }
 
-    private static Seat seat(int index)
+    private Seat seat(int index)
     {
         Seat seat = mock(Seat.class);
+        when(seat.level()).thenReturn(level);
         when(seat.getSeatIndex()).thenReturn(index);
         when(seat.position()).thenReturn(new Vec3(40D, 70D, 30D));
         when(seat.getPassengers()).thenReturn(List.of());
         return seat;
+    }
+
+    @Test
+    void alliedNpcSeatsCanBeOfferedWithoutDisplacingThemAndDisablingTakeoverRechecksAvailability()
+    {
+        Entity npc = mock(Entity.class, withSettings().extraInterfaces(IFlanSeatOccupant.class));
+        when(npc.getPersistentData()).thenReturn(new CompoundTag());
+        IFlanSeatOccupant policy = (IFlanSeatOccupant) npc;
+        ServerPlayer other = mock(ServerPlayer.class);
+        when(driver.getPassengers()).thenReturn(List.of(npc));
+        when(passenger.getPassengers()).thenReturn(List.of(other));
+        when(policy.flansmodultimateMayYieldSeat(player, true)).thenReturn(true);
+        try (var permissions = mockStatic(PermissionAPI.class))
+        {
+            permissions.when(() -> PermissionAPI.getPermission(player, FlanEntityPermissions.DRIVEABLE_ENTER)).thenReturn(true);
+            assertEquals(VehicleDeploySnapshot.Availability.READY, deployment.describe(player, point, List.of(vehicle)).availability());
+            assertEquals(Optional.of(driver), deployment.target(player, List.of(vehicle)));
+            assertTrue(deployment.select(player, point.getObjectId()));
+            verify(policy, never()).flansmodultimateYieldSeat(any(), anyBoolean());
+            when(policy.flansmodultimateMayYieldSeat(player, true)).thenReturn(false);
+            assertFalse(deployment.deploy(player));
+            assertEquals(VehicleDeploySnapshot.Availability.FULL, deployment.describe(player, point, List.of(vehicle)).availability());
+            verify(policy, never()).flansmodultimateYieldSeat(any(), anyBoolean());
+        }
     }
 
     @Test
@@ -125,7 +152,7 @@ class VehicleDeploymentTest
         ServerPlayer respawned = mock(ServerPlayer.class);
         UUID playerId = player.getUUID();
         when(respawned.getUUID()).thenReturn(playerId);
-        when(passenger.tryEnter(respawned)).thenReturn(true);
+        when(passenger.tryEnter(respawned, true)).thenReturn(true);
         try (var permissions = mockStatic(PermissionAPI.class))
         {
             permissions.when(() -> PermissionAPI.getPermission(any(), eq(FlanEntityPermissions.DRIVEABLE_ENTER))).thenReturn(true);
@@ -133,7 +160,7 @@ class VehicleDeploymentTest
             verify(player, never()).teleportTo(any(ServerLevel.class), anyDouble(), anyDouble(), anyDouble(), anyFloat(), anyFloat());
             assertTrue(deployment.deploy(respawned));
             verify(respawned).teleportTo(level, 40D, 70D, 30D, 0F, 0F);
-            verify(passenger).tryEnter(respawned);
+            verify(passenger).tryEnter(respawned, true);
             verify(driver, never()).tryEnter(any());
             verify(point, never()).recordSpawn();
             assertFalse(deployment.deploy(respawned), "Selections are consumed once");

@@ -83,7 +83,7 @@ public enum NpcPresetSetting
     /** Driver guns beside the main weapon. */
     DRIVER_GUNS(Feature.DRIVER_GUNS),
     /** Drive driveables. */
-    DRIVE_DRIVEABLES(Feature.DRIVE_DRIVEABLES),
+    DRIVE_DRIVEABLES(Feature.DRIVE_DRIVEABLES), MAN_EMPLACEMENTS(Feature.MAN_EMPLACEMENTS), PLAYER_SEAT_DEPLOYMENT(Feature.PLAYER_SEAT_DEPLOYMENT),
     /** Temporary ground blood splatters. */
     BLOOD_EFFECTS(npc -> yes(NpcPresentation.of(npc).isBloodEffects()), (npc, value) -> NpcPresentation.of(npc).setBloodEffects(value != 0), Values.NO_YES),
     /** Hurt flash. */

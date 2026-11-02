@@ -2,6 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IEmplacement;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
@@ -45,10 +47,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<GunType>
+public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<GunType>, IEmplacement
 {
+    private final EmplacementControl automation = new EmplacementControl();
     private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
@@ -331,7 +336,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         tag.putInt(NBT_BLOCK_Y, blockPos.getY());
         tag.putInt(NBT_BLOCK_Z, blockPos.getZ());
 
-        if (!ammo.isEmpty())
+        if (!ammo.isEmpty() && !automation.isVirtual(ammo))
         {
             CompoundTag ammoTag = new CompoundTag();
             ItemStackData.save(ammo, level().registryAccess(), ammoTag);
@@ -344,6 +349,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     {
         try
         {
+            ammo = automation.finite(ammo);
             Level level = level();
 
             // Only do "death drops" on the server, and not when the entity is merely being unloaded
@@ -407,7 +413,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         Entity gunner = getFirstPassenger();
 
         // If someone else is mounted, ignore
-        if (player != gunner && gunner != null)
+        if (!SeatOccupants.canEnter(this, player, false))
             return InteractionResult.sidedSuccess(level.isClientSide);
 
         // Client: just return success so the hand animates; server does the logic
@@ -461,6 +467,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         }
 
         // None of the above applied, so mount the gun
+        if (!SeatOccupants.makeRoom(this, player, false))
+            return InteractionResult.CONSUME;
         player.startRiding(this, true);
         // Auto-reload if ammo empty
         reloadGun(level, player);
@@ -477,7 +485,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     @Override
     protected void positionRider(@NotNull Entity passenger, @NotNull MoveFunction move)
     {
-        if (!(passenger instanceof Player p) || configType == null || blockPos == null)
+        if (!(passenger instanceof LivingEntity p) || configType == null || blockPos == null)
             return;
 
         float baseYaw = Direction.from2DDataValue(getGunDirection()).toYRot();
@@ -611,6 +619,13 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
         shootKeyPressed = false;
         prevShootKeyPressed = false;
+        pendingShootPress = false;
+        if (!level().isClientSide)
+        {
+            automation.firing(level().getGameTime(), null, false);
+            ammo = automation.retain(ammo, null);
+            updateAmmoState();
+        }
     }
 
     @Override
@@ -681,6 +696,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
     protected void serverTick(Level level)
     {
+        ammo = automation.retain(ammo, getFirstPassenger());
         // Type must exist
         if (configType == null)
         {
@@ -798,7 +814,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         if (!requestsFire(automaticFire))
             return;
         float shootDelay = ShotCooldown.clampDelay(configType.getShootDelay(null));
-        while (ShotCooldown.isReady(shootTimer))
+        while (ShotCooldown.isReady(shootTimer) && ShootableItem.hasRoundsLeft(ammo))
         {
             ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
             ExternalProjectileSupport.firingEffects(this, configType, getShootingOrigin(), getShootingDirection(), 1F, false);
@@ -813,7 +829,86 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
     private boolean requestsFire(boolean automaticFire)
     {
+        if (!(getFirstPassenger() instanceof Player))
+            return automation.firing(level().getGameTime(), getFirstPassenger());
         return automaticFire ? shootKeyPressed : pendingShootPress || shootKeyPressed && !prevShootKeyPressed;
+    }
+
+    @Override
+    public Optional<IContentType> getEmplacementType()
+    {
+        return Optional.ofNullable(getConfigType());
+    }
+
+    @Override
+    public boolean hasEmplacementAmmunition()
+    {
+        return hasAmmo();
+    }
+
+    @Override
+    public Vec3 getEmplacementOrigin()
+    {
+        return getShootingOrigin();
+    }
+
+    @Override
+    public Vec3 getEmplacementDirection()
+    {
+        return getShootingDirection();
+    }
+
+    @Override
+    public Optional<Vec3> getEmplacementOperatorPosition(LivingEntity operator)
+    {
+        return configType == null || blockPos == null ? Optional.empty() : Optional.ofNullable(getRiderPosition(operator, Direction.from2DDataValue(getGunDirection()).toYRot()));
+    }
+
+    @Override
+    public boolean canEmplacementAimAt(Vec3 point)
+    {
+        if (getConfigType() == null)
+            return false;
+        Vec3 direction = point.subtract(getShootingOrigin());
+        float yaw = ModUtils.getYawFromDirection(direction);
+        float pitch = ModUtils.getPitchFromDirection(direction);
+        float base = Direction.from2DDataValue(getGunDirection()).toYRot();
+        return Math.abs(Mth.wrapDegrees(yaw - base)) <= configType.getSideViewLimit() && pitch >= Math.min(configType.getTopViewLimit(), configType.getBottomViewLimit())
+            && pitch <= Math.max(configType.getTopViewLimit(), configType.getBottomViewLimit());
+    }
+
+    @Override
+    public void aimEmplacement(LivingEntity operator, Vec3 point)
+    {
+        if (level().isClientSide || getFirstPassenger() != operator)
+            return;
+        Vec3 direction = point.subtract(getShootingOrigin());
+        operator.setYRot(ModUtils.getYawFromDirection(direction));
+        operator.setXRot(ModUtils.getPitchFromDirection(direction));
+        positionRider(operator, Entity::setPos);
+    }
+
+    @Override
+    public void setEmplacementFiring(boolean firing)
+    {
+        if (!level().isClientSide)
+            automation.firing(level().getGameTime(), getFirstPassenger(), firing);
+    }
+
+    @Override
+    public void reloadEmplacement(LivingEntity operator, Supplier<ItemStack> ammunition, boolean virtual)
+    {
+        if (level().isClientSide || getFirstPassenger() != operator || !operator.isAlive())
+            return;
+        if (!virtual)
+            ammo = automation.finite(ammo);
+        if (ShootableItem.hasRoundsLeft(ammo) || getReloadTimer() > 0)
+            return;
+        ItemStack supplied = ammunition.get();
+        if (!(supplied.getItem() instanceof ShootableItem shootable) || !configType.getAmmoTypes().contains(shootable.getConfigType()) || !ShootableItem.hasRoundsLeft(supplied))
+            return;
+        reloadGun(level(), operator, supplied);
+        automation.supplied(ammo, operator, virtual);
     }
 
     private void playShootSound(Level level)

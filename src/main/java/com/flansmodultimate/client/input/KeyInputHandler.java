@@ -172,6 +172,12 @@ public final class KeyInputHandler
         return doorKey.getTranslatedKeyMessage();
     }
 
+    /** The current ammunition-switch binding, including whether it is unbound. */
+    public static Component getPreferredAmmoKeyName()
+    {
+        return preferredAmmoKey.getTranslatedKeyMessage();
+    }
+
     /** Whether a key pressed in a screen is the one that opens the Teams command centre, which closes it again. */
     public static boolean isCommandCentreKey(int keyCode, int scanCode)
     {

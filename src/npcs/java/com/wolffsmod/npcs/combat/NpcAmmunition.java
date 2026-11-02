@@ -230,6 +230,31 @@ public final class NpcAmmunition
         return choose(vehicle, gun, false, pool);
     }
 
+    /** Compatible supplies for a placed gun, with the same finite/infinite fallback policy as held weapons. */
+    public static ItemStack emplacementTemplate(EntityNPCInterface npc, IContentType gun)
+    {
+        List<ItemStack> pool = gun instanceof IAAGunType ? carried(npc, gun, false) : carried(npc, gun);
+        if (pool.isEmpty())
+            append(pool, gun instanceof IAAGunType ? NpcDefaultAmmo.forBank(npc, gun, false) : NpcDefaultAmmo.forGun(npc, gun));
+        return choose(npc, gun, false, pool);
+    }
+
+    /** Transfers one magazine to a placed gun, or copies it when ammunition is infinite. Server thread. */
+    public static ItemStack takeEmplacementAmmo(EntityNPCInterface npc, IContentType gun)
+    {
+        ItemStack source = emplacementTemplate(npc, gun);
+        if (source.isEmpty())
+            return ItemStack.EMPTY;
+        ItemStack loaded = source.copyWithCount(1);
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+        {
+            source.shrink(1);
+            clearUsedUp(npc, source);
+            npc.updateClient = true;
+        }
+        return loaded;
+    }
+
     /** @return every round the NPC carries that a mounted gun fires, the projectile slot first, then the inventory in order */
     private static List<ItemStack> carried(EntityNPCInterface npc, IContentType gun)
     {

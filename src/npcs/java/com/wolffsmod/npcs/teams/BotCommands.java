@@ -151,7 +151,6 @@ public final class BotCommands
             if (custom != null)
                 settings.setCustomTraining(custom);
         }, text(SET, "difficulty", shown))));
-        round.then(switchSetting("playertickets", BotSettings::setPlayerTickets));
         round.then(switchSetting("radio", BotSettings::setRadio));
         round.then(switchSetting("commanderbot", BotSettings::setCommanderBot));
         round.then(intSetting("commanderdisruption", 0, BotSettings::setCommanderDisruptionSeconds));
@@ -159,6 +158,8 @@ public final class BotCommands
         round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
         round.then(switchSetting("vehicles", BotSettings::setVehiclesEnabled));
         round.then(switchSetting("vehiclecrews", BotSettings::setVehicleCrews));
+        round.then(switchSetting("emplacements", BotSettings::setEmplacements));
+        round.then(switchSetting("playerseatdeployment", BotSettings::setPlayerSeatDeployment));
         round.then(intSetting("retreat", 0, BotSettings::setRetreatHealth));
         round.then(Commands.literal("copyfrom").then(Commands.argument(SOURCE, StringArgumentType.word()).suggests(ROUNDS).executes(BotCommands::copyFrom)));
         round.then(intSetting("total", 0, BotSettings::setTotal));
@@ -327,14 +328,18 @@ public final class BotCommands
         BotSettings settings = BotSettings.load(round.getExtensionData(BotSettings.KEY));
         List<Component> lines = new ArrayList<>();
         Component tickets = settings.getTickets() == 0 ? text("show.unlimited") : Component.literal(Integer.toString(settings.getTickets()));
+        if (!BotRespawnBudget.available(round.getGameTypeId()))
+            tickets = text("show.match_tickets");
         lines.add(text(settings.isEnabled() ? "show.round_enabled" : "show.round_disabled", round.getGameTypeId(), round.getMapId(), lower(settings.getMode()), settings.getTotal(),
             settings.getRespawnSeconds(), tickets, settings.getSquadSize()));
         lines.add(text("show.look", lower(settings.getNameplates()), lower(settings.getScoreboard()), settings.getInfantryCaptureWeight(), settings.getVehicleCaptureWeight(),
-            lower(settings.getDifficulty()), onOff(settings.isPlayerTickets())));
+            lower(settings.getDifficulty())));
         lines.add(text("show.rules", onOff(settings.isRadio()), onOff(settings.isSuppression()), settings.getRetreatHealth(), onOff(settings.isRallyPoints())));
         lines.add(text("show.vehicles", onOff(settings.isVehiclesEnabled())));
         lines.add(text("show.vehicle_respawn", settings.getVehicleRespawnSeconds()));
         lines.add(text("show.crews", onOff(settings.isVehicleCrews())));
+        lines.add(text("show.emplacements", onOff(settings.isEmplacements())));
+        lines.add(text("show.player_seat_deployment", onOff(settings.isPlayerSeatDeployment())));
         lines.add(text("show.commander", onOff(settings.isCommanderBot()), settings.getCommanderDisruptionSeconds()));
         for (ITeam team : round.getTeams())
             lines.addAll(describe(team, settings.team(team.getShortName())));
@@ -390,7 +395,7 @@ public final class BotCommands
             long alive = battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && slot.getEntity() != null && slot.getDiedAt() == 0).count();
             long slots = battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && !slot.isRetired()).count();
             int side = battle.getGround().sideOf(team);
-            Component tickets = battle.getSettings().getTickets() > 0 ? text("status.tickets", BotPopulation.ticketsLeft(battle, side)) : Component.empty();
+            Component tickets = BotRespawnBudget.limit(battle) > 0 ? text("status.tickets", BotPopulation.ticketsLeft(battle, side)) : Component.empty();
             List<String> tasks = battle.getSquads().values().stream().filter(squad -> squad.getTeam().equals(team.getShortName()) && squad.getTask() != null)
                 .map(squad -> "#" + squad.getId() + " " + lower(squad.getRole()) + " " + lower(squad.getTask().kind())).toList();
             context.getSource().sendSuccess(() -> text("status.team", team.getShortName(), alive, slots, tickets, tasks.toString()), false);

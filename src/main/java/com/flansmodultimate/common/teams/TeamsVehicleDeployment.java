@@ -5,6 +5,7 @@ import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.SeatOccupants;
 import com.flansmodultimate.common.types.Team;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 import java.util.stream.Stream;
 
-/** Resolves template vehicle deployments on the server thread, without reserving or displacing occupants. */
+/** Resolves template vehicle deployments on the server thread, allowing cooperative allied NPC seat handoff. */
 @RequiredArgsConstructor
 public final class TeamsVehicleDeployment
 {
@@ -90,7 +91,7 @@ public final class TeamsVehicleDeployment
         VehicleDeploySnapshot.Availability availability;
         if (vehicles.isEmpty())
             availability = point.getRemainingSpawnDelayTicks() > 0 ? VehicleDeploySnapshot.Availability.COOLDOWN : VehicleDeploySnapshot.Availability.UNAVAILABLE;
-        else if (vehicles.stream().noneMatch(vehicle -> freeSeats(vehicle).findAny().isPresent()))
+        else if (vehicles.stream().noneMatch(vehicle -> availableSeats(player, vehicle).findAny().isPresent()))
             availability = VehicleDeploySnapshot.Availability.FULL;
         else
             availability = target(player, vehicles).isPresent() ? VehicleDeploySnapshot.Availability.READY : VehicleDeploySnapshot.Availability.LOCKED;
@@ -138,14 +139,16 @@ public final class TeamsVehicleDeployment
         Vec3 position = seat.position();
         player.teleportTo(level, position.x, position.y, position.z, player.getYRot(), player.getXRot());
         if (seat instanceof Seat driveableSeat)
-            return driveableSeat.tryEnter(player);
+            return driveableSeat.tryEnter(player, true);
+        if (!SeatOccupants.makeRoom(seat, player, true))
+            return false;
         seat.interact(player, InteractionHand.MAIN_HAND);
         return player.getVehicle() == seat;
     }
 
     Optional<Entity> target(ServerPlayer player, List<Entity> vehicles)
     {
-        return vehicles.stream().filter(vehicle -> accessible(player, vehicle)).flatMap(TeamsVehicleDeployment::freeSeats).findFirst();
+        return vehicles.stream().filter(vehicle -> accessible(player, vehicle)).flatMap(vehicle -> availableSeats(player, vehicle)).findFirst();
     }
 
     private boolean accessible(ServerPlayer player, Entity vehicle)
@@ -169,9 +172,18 @@ public final class TeamsVehicleDeployment
 
     static Stream<Entity> freeSeats(Entity vehicle)
     {
+        return seats(vehicle).filter(seat -> seat.getPassengers().isEmpty());
+    }
+
+    private static Stream<Entity> availableSeats(ServerPlayer player, Entity vehicle)
+    {
+        return seats(vehicle).filter(seat -> SeatOccupants.canEnter(seat, player, true));
+    }
+
+    private static Stream<Entity> seats(Entity vehicle)
+    {
         if (vehicle instanceof Driveable driveable)
-            return Arrays.stream(driveable.getSeats()).filter(driveable::isUsableSeat).filter(seat -> seat.getPassengers().isEmpty()).sorted(Comparator.comparingInt(Seat::getSeatIndex))
-                .map(Entity.class::cast);
-        return vehicle instanceof AAGun gun && gun.getConfigType() != null && !gun.getConfigType().isSentry() && gun.getPassengers().isEmpty() ? Stream.of(gun) : Stream.empty();
+            return Arrays.stream(driveable.getSeats()).filter(driveable::isUsableSeat).sorted(Comparator.comparingInt(Seat::getSeatIndex)).map(Entity.class::cast);
+        return vehicle instanceof AAGun gun && gun.getConfigType() != null && !gun.getConfigType().isSentry() ? Stream.of(gun) : Stream.empty();
     }
 }

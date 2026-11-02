@@ -24,7 +24,7 @@ public final class NpcWeaponOptions
                                 true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(
                                     true), PATH_DEBUG(false), CONSUME_AMMO(false), PART_HITBOXES(true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(
                                         true), HITBOX_OUTLINES(false), SOLID_HITBOXES(true), ARMOR_POTION_EFFECTS(true), MANNED_GUNS_FIRE(true), MELEE_DUAL_WIELD(false), DRIVE_DRIVEABLES(
-                                            false), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
+                                            true), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
         /** Flan ammunition in the projectile slot is only fired by a held gun or model that takes it, as ammunition from the inventory always is. */
         FITTING_SLOT_AMMO(false),
         /**
@@ -116,7 +116,11 @@ public final class NpcWeaponOptions
         /** Retains movement orders in combat and alternates short infantry advances with aimed fire. */
         COMBAT_ADVANCE(true),
         /** Fires from a position while a nearby ally crosses toward the same enemy. */
-        COVERING_FIRE(true);
+        COVERING_FIRE(true),
+        /** A soldier places carried deployable guns and mans free deployable or AA emplacements during combat. */
+        MAN_EMPLACEMENTS(true),
+        /** Allied players may deploy from a vehicle spawner into this NPC's seat in a real Flan driveable. */
+        PLAYER_SEAT_DEPLOYMENT(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

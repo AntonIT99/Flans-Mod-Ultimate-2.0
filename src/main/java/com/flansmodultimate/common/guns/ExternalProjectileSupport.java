@@ -6,6 +6,8 @@ import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
+import com.flansmodultimate.api.projectiles.GrenadeProperties;
+import com.flansmodultimate.api.projectiles.GrenadeProperties.Use;
 import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.api.projectiles.ProjectileSources;
@@ -60,6 +62,43 @@ public final class ExternalProjectileSupport
     public static int roundsPerItem(ItemStack stack)
     {
         return Math.max(0, ShootableItem.getMaxRounds(stack));
+    }
+
+    public static Optional<GrenadeProperties> grenadeProperties(ItemStack stack)
+    {
+        return isGrenade(stack) ? Optional.of(grenadeProperties((GrenadeType) ((ShootableItem) stack.getItem()).getConfigType())) : Optional.empty();
+    }
+
+    static GrenadeProperties grenadeProperties(GrenadeType type)
+    {
+        double effects = Math.max(type.isFlashBang() ? Math.max(0, type.getFlashRange()) : 0, type.getSmokeTime() > 0 && !type.getSmokeEffects().isEmpty() ? Math.max(0F, type.getSmokeRadius()) : 0F);
+        return new GrenadeProperties(grenadeUse(type), effects);
+    }
+
+    private static Use grenadeUse(GrenadeType type)
+    {
+        Use use;
+        if (type.isDeployableBag() || type.isStickToThrower())
+            use = Use.UTILITY;
+        else if (!type.isCanThrow() || type.getLivingProximityTrigger() > 0F || type.getDriveableProximityTrigger() > 0F)
+            use = Use.PLACEABLE;
+        else if (type.isRemote())
+            use = Use.REMOTE;
+        else if (type.getFuse() <= 0 && !type.isExplodeOnImpact())
+            use = Use.UTILITY;
+        else if (type.getFireRadius() > 0F)
+            use = Use.INCENDIARY;
+        else if (type.getExplosionRadius() > 0F || type.getBlastRadius() > 0F || type.getFragRadius() > 0F || type.getExplosiveMass() > 0F)
+            use = Use.EXPLOSIVE;
+        else if (type.isFlashBang())
+            use = Use.FLASH;
+        else if (type.getSmokeTime() > 0 && !type.getSmokeEffects().isEmpty())
+            use = Use.GAS;
+        else if (type.getSmokeTime() > 0)
+            use = Use.SMOKE;
+        else
+            use = Use.UTILITY;
+        return use;
     }
 
     public static Optional<DetonationRadii> detonationRadii(ItemStack stack)

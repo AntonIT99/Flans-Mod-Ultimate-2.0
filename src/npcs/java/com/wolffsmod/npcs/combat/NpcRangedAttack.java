@@ -52,7 +52,7 @@ public final class NpcRangedAttack
             return true;
         // Without a model the NPC fires what it carries itself: it keeps out of its own grenade's reach, and uses its rounds up.
         boolean carried = NpcModels.flan(npc) == null;
-        if (carried && FlansProjectiles.isGrenade(ammo) && NpcThrowing.tooClose(npc, target, ammo))
+        if (carried && FlansProjectiles.isGrenade(ammo) && NpcThrowing.shouldWithholdGrenade(npc, target, ammo))
             return true;
         if (new Attack(npc, target, ammo, options, highArc, sequence).fire() && carried && NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
             NpcAmmunition.consume(npc, ammo);

@@ -68,7 +68,15 @@ public final class BotSettingsPresets implements ISettingsPresets
         if (!data.getAllKeys().equals(Set.of(TEAMS, SETTINGS)) || !data.contains(TEAMS, Tag.TAG_LIST) || !data.contains(SETTINGS, Tag.TAG_COMPOUND) || teams.isEmpty() || teams.size() > 16
             || knownTeams.size() != teams.size() || teams.stream().anyMatch(String::isBlank))
             throw new IllegalArgumentException("Bot preset must contain settings and a unique, ordered team list");
-        CompoundTag settings = data.getCompound(SETTINGS);
+        CompoundTag settings = data.getCompound(SETTINGS).copy();
+        // Old exports may carry the removed player-respawn switch; it no longer affects any battle.
+        if (settings.contains("player_tickets", Tag.TAG_BYTE))
+            settings.remove("player_tickets");
+        // Presets exported before emplacement support inherit its default-on switch.
+        if (!settings.contains("emplacements"))
+            settings.putBoolean("emplacements", true);
+        if (!settings.contains("player_seat_deployment"))
+            settings.putBoolean("player_seat_deployment", true);
         CompoundTag canonical = BotSettings.load(settings).save();
         checkSettings(settings, canonical, SETTINGS);
         if (!knownTeams.containsAll(settings.getCompound(TEAMS).getAllKeys()))

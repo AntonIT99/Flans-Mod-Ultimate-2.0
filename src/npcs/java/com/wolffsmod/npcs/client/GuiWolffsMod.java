@@ -569,7 +569,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("vehicle_cornering", Value.DRIVE_LOOKAHEAD, Value.CORNER_SPEED, Feature.MISALIGNED_THROTTLE, Value.THROTTLE_FLOOR),
             Tab.named("vehicle_reversing", Feature.DRIVE_REVERSE, Value.DRIVE_REVERSE_SPEED, Value.REVERSE_ANGLE, Value.REVERSE_DISTANCE)),
         BOARDING(Section.TRAVEL, Scope.STANDARD,
-            Tab.named("pilot_boarding", Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES),
+            Tab.named("pilot_boarding", Feature.DRIVE_DRIVEABLES, Value.BOARD_RANGE, Value.TAKE_DRIVEABLES, Feature.MAN_EMPLACEMENTS, Feature.PLAYER_SEAT_DEPLOYMENT),
             Tab.folded("pilot_ground", Value.KEEP_DISTANCE),
             Tab.folded("pilot_aircraft", Value.CRUISE_HEIGHT, Value.ATTACK_HEIGHT, Value.CIRCLE_RADIUS, Value.PLANE_LANDING_DELAY, Value.HOVER_HEIGHT, Value.HELICOPTER_LANDING_DELAY, Value.LOW_FUEL)),
         ANIMATIONS(Section.LOOK, Scope.STANDARD,
@@ -1848,7 +1848,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
                 case SLOPE_PHYSICS -> Scope.VEHICLES;
                 case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
-                case DRIVE_DRIVEABLES, LIMB_HITBOXES, WEAPON_FIRING_RANGE, OUTRANGED_COVER, SUPPRESSIBLE, SUITED_TARGETS, COMBAT_ADVANCE, COVERING_FIRE -> Scope.STANDARD;
+                case PLAYER_SEAT_DEPLOYMENT, MAN_EMPLACEMENTS, DRIVE_DRIVEABLES, LIMB_HITBOXES, WEAPON_FIRING_RANGE, OUTRANGED_COVER, SUPPRESSIBLE, SUITED_TARGETS, COMBAT_ADVANCE, COVERING_FIRE ->
+                    Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }

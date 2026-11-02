@@ -292,6 +292,7 @@
   "hud.flansmodultimate.driveable.smoke.ready": "Fumo: PRONTO",
   "hud.flansmodultimate.driveable.smoke.reloading": "Fumo: ricarica",
   "hud.flansmodultimate.driveable.speed": "Velocità: %s %s",
+  "hud.flansmodultimate.driveable.switch_ammo": "Cambia munizioni: %s",
   "hud.flansmodultimate.driveable.throttle": "Manetta: %s%%",
   "hud.flansmodultimate.driveable.vertical_speed": "Velocità verticale: %s %s",
   "hud.flansmodultimate.driveable.weapon.disabled": "Arma: DISATTIVATA [%s per attivare]",
