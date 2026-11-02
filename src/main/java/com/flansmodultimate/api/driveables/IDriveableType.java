@@ -30,6 +30,19 @@ public interface IDriveableType extends IContentType
 {
     DriveableKind getDriveableKind();
 
+    /**
+     * Whether firing the selected bank starts the main barrel's recoil stroke. Readable on either side after content loading.
+     * This describes weapon animation, independently of camera shake and the authored recoil duration.
+     *
+     * @param secondary
+     *            true for the secondary weapon bank, false for the primary bank
+     * @return whether the bank fires shells
+     */
+    default boolean hasBarrelRecoil(boolean secondary)
+    {
+        return false;
+    }
+
     /** @return the definition's model and part scale; readable on either side after content loading */
     @SuppressWarnings("SameReturnValue") // Compatibility default; driveable definitions override this with their authored scale.
     default float getModelScale()

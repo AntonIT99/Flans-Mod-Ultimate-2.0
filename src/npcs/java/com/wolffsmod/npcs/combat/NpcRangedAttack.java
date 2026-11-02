@@ -297,7 +297,7 @@ public final class NpcRangedAttack
         {
             if (modelMuzzles)
                 // Every usual barrel count divides 120, so the remainder still names the barrel after the trip to the client.
-                state.fired(Math.floorMod(sequence, 120));
+                state.fired(Math.floorMod(sequence, 120), definition, secondary);
             if (!soundPlayed)
                 // The NPC's own firing sound stands in for the model's, and carries as far as a gun's.
                 NpcSounds.play(npc, npc.stats.ranged.getSound(0), SoundRange.GUN_FIRE);

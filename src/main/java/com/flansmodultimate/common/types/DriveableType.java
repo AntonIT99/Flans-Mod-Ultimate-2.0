@@ -1663,6 +1663,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return secondaryWeapon ? secondary : primary;
     }
 
+    @Override
+    public boolean hasBarrelRecoil(boolean secondaryWeapon)
+    {
+        return weaponType(secondaryWeapon) == EnumWeaponType.SHELL;
+    }
+
     /**
      * The camera kick a shot from the given bank sends to nearby players, or null when it sends none.
      * Shells and missiles from either bank, and guns on the primary bank, kick like the main gun; guns

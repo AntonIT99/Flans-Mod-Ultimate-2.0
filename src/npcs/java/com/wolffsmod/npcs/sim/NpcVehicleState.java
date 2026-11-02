@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMount;
@@ -316,9 +317,11 @@ public final class NpcVehicleState
         return current != null && !current.turreted();
     }
 
-    /** Records a shot, so clients show the recoil. Server only. */
-    public void fired(int firedBarrel)
+    /** Records a model shot requiring an animation. Vehicle and plane barrels recoil only for shell banks. Server only. */
+    public void fired(int firedBarrel, IContentType definition, boolean secondary)
     {
+        if (definition instanceof IDriveableType driveable && driveable.getDriveableKind() != DriveableKind.MECHA && !driveable.hasBarrelRecoil(secondary))
+            return;
         shots = shots == Integer.MAX_VALUE ? 0 : shots + 1;
         barrel = Math.max(0, firedBarrel);
     }
