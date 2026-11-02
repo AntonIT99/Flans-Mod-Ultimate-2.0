@@ -463,8 +463,19 @@ final class DestructionSequences
                 continue;
             for (int corner = 0; corner < 8; corner++)
                 corners.add(source.pointInPart(part, corner & 1, (corner & 2) >> 1, (corner & 4) >> 2));
+            addFaceCentres(source, part, corners);
         }
         return corners;
+    }
+
+    /** Face centres keep long parts supported when their corners overhang a narrow block or ledge. */
+    private static void addFaceCentres(DamageEffectSource source, DriveablePart part, List<Vec3> corners)
+    {
+        for (int axis = 0; axis < 3; axis++)
+        {
+            for (int side = 0; side < 2; side++)
+                corners.add(source.pointInPart(part, axis == 0 ? side : 0.5D, axis == 1 ? side : 0.5D, axis == 2 ? side : 0.5D));
+        }
     }
 
     @Nullable
