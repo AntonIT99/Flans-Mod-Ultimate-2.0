@@ -218,7 +218,7 @@ public final class ShootingHelper
         else if (bulletHit instanceof PartBodyHit partHit)
         {
             // A stand-in hit by the part meets the armour of the part and face the round struck.
-            HitData entityHitData = onEntityHit(level, shot, bullet, partHit.getEntity(), partHit, hit, ModelArmourDamage.resolve(partHit, shot, bulletType, penetratingPower),
+            HitData entityHitData = onEntityHit(level, shot, bullet, partHit.getEntity(), partHit, hit, shootingMotion, ModelArmourDamage.resolve(partHit, shot, bulletType, penetratingPower),
                 new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
             penetratingPower = entityHitData.penetratingPower();
             lastHitPenAmount = entityHitData.lastHitPenAmount();
@@ -230,7 +230,7 @@ public final class ShootingHelper
         {
             Entity entity = entityHit.getEntity();
             // A stand-in for a driveable meets that driveable's armour instead of soft flesh.
-            HitData entityHitData = onEntityHit(level, shot, bullet, entity, null, hit, ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower),
+            HitData entityHitData = onEntityHit(level, shot, bullet, entity, null, hit, shootingMotion, ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower),
                 new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
             penetratingPower = entityHitData.penetratingPower();
             lastHitPenAmount = entityHitData.lastHitPenAmount();
@@ -265,8 +265,8 @@ public final class ShootingHelper
      */
     // Every argument is one fact of the hit; a holder would only be built to be taken apart again.
     @SuppressWarnings("java:S107")
-    private static HitData onEntityHit(Level level, FiredShot shot, @Nullable Bullet bullet, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Optional<ModelArmourDamage.Result> armoured,
-        HitData hitData)
+    private static HitData onEntityHit(Level level, FiredShot shot, @Nullable Bullet bullet, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Vec3 shootingMotion,
+        Optional<ModelArmourDamage.Result> armoured, HitData hitData)
     {
         BulletType bulletType = shot.getBulletType();
         float penetratingPower = hitData.penetratingPower();
@@ -279,6 +279,8 @@ public final class ShootingHelper
             lastHitPenAmount = 1F;
 
         boolean armourBlocked = armoured.map(ModelArmourDamage.Result::blocked).orElse(false);
+
+        armoured.ifPresent(result -> spawnArmourImpact(level, shot, entity, partHit, hit, shootingMotion, result));
 
         if (!level.isClientSide && !armourBlocked)
         {
@@ -309,6 +311,14 @@ public final class ShootingHelper
             bullet.getPenetrationLosses().add(new PenetrationLoss(Math.max(0F, powerBefore - penetratingPower), PenetrationLoss.EnumType.ENTITY));
 
         return new HitData(penetratingPower, lastHitPenAmount, hitData.lastHitHeadshot());
+    }
+
+    private static void spawnArmourImpact(Level level, FiredShot shot, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Vec3 shootingMotion, ModelArmourDamage.Result result)
+    {
+        Vec3 normal = partHit == null
+            ? ModelArmourDamage.worldDirection(entity, result.armour().virtualNormal())
+            : partHit.getBody().armourDirectionToWorld(partHit.getPart(), result.armour().virtualNormal());
+        ArmourImpactEffects.send(level, hit, shootingMotion, normal, shot.getProjectileMass(), result.armour(), result.blocked());
     }
 
     /**

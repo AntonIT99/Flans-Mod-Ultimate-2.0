@@ -63,6 +63,8 @@
 
 ## Vehicles, Aircraft & Ships
 
+* Armour hits on driveables and NPC vehicle models show outward sparks and metallic impacts when blocked, and tighter flashes, metal fragments and smoke when large shells penetrate, with effects scaled to projectile mass
+
 * Ships are now separated from ground vehicles, with improved ship physics; leaving a ship puts the player on top of its hull
 * Creative players can pick up unoccupied floating ships and airborne driveables by hitting them
 * Vehicle cannon screen shake

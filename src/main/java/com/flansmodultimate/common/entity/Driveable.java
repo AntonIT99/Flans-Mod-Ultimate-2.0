@@ -4901,6 +4901,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
+        Vec3 impactNormal = modelLocalDirectionToWorld(
+            DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(armorHit.virtualNormal()), hit.getPart(), getTurretYaw(), getTurretPitch()));
+        Vec3 impactMotion = modelLocalDirectionToWorld(
+            DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(hit.getLocalProjectileDirection()), hit.getPart(), getTurretYaw(), getTurretPitch()));
+        ArmourImpactEffects.send(level(), hit.getHitPosition(), impactMotion, impactNormal, projectileMass, armorHit, armourBlocked);
         // A wreck's hull only stops the round: there is nothing left to damage, and a warhead's blast breaks it up.
         if (!level().isClientSide && !isWreckHull(hit.getPart()))
         {

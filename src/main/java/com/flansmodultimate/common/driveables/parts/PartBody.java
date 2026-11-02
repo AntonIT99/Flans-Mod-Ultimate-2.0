@@ -600,6 +600,12 @@ public final class PartBody implements IPartBody
         return axisX.scale(local.x).add(axisY.scale(local.y)).add(axisZ.scale(local.z));
     }
 
+    /** World direction of an armour-frame vector, following the posed turret and barrel. */
+    public Vec3 armourDirectionToWorld(EnumDriveablePart part, Vec3 direction)
+    {
+        return directionToWorld(DriveableProjectileCollision.partDirectionToHullLocal(mirror(direction), part, pose.turret().yaw(), pose.turret().pitch()));
+    }
+
     private Vec3 toLocal(Vec3 world)
     {
         return directionToLocal(world.subtract(pose.origin())).scale(1D / pose.scale());

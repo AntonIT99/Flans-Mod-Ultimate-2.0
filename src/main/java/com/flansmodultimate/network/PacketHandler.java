@@ -63,17 +63,17 @@ public final class PacketHandler
         if (prepared)
             return;
 
-        addClientPackets(PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class, PacketCapturePointEditState.class, PacketBlockHitEffect.class,
-            PacketBulletFlyby.class, PacketBulletTrail.class, PacketCombatFeedback.class, PacketCancelGunReloadClient.class, PacketCancelSound.class, PacketCommonConfigValues.class,
-            PacketContentFingerprint.class, PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDistantContacts.class, PacketDistantExplosion.class, PacketDriveableBankFired.class,
-            PacketDriveableCrashFireball.class, PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveableDestroyed.class, PacketDriveableImpact.class,
-            PacketDriveablePassengerFired.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class, PacketDriveableScreenShake.class, PacketExplodeParticles.class, PacketFlak.class,
-            PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class, PacketGunFireModeClient.class, PacketGunHolderAnimation.class,
-            PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class, PacketGunShootClient.class,
-            PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class, PacketHeldItemPresentation.class, PacketHitMarker.class, PacketKillMessage.class,
-            PacketLoadoutState.class, PacketParticle.class, PacketParticles.class, PacketPlayerClassSkins.class, PacketProneState.class, PacketPlaySound.class, PacketSmokeShell.class,
-            PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketRankUp.class, PacketTeamsObjectives.class, PacketTeamsState.class, PacketEditorState.class, PacketCommandCentreState.class,
-            PacketSpawnerEditState.class);
+        addClientPackets(PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketArmourImpact.class, PacketBaseEditState.class, PacketCapturePointEditState.class,
+            PacketBlockHitEffect.class, PacketBulletFlyby.class, PacketBulletTrail.class, PacketCombatFeedback.class, PacketCancelGunReloadClient.class, PacketCancelSound.class,
+            PacketCommonConfigValues.class, PacketContentFingerprint.class, PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDistantContacts.class, PacketDistantExplosion.class,
+            PacketDriveableBankFired.class, PacketDriveableCrashFireball.class, PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveableDestroyed.class,
+            PacketDriveableImpact.class, PacketDriveablePassengerFired.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class, PacketDriveableScreenShake.class,
+            PacketExplodeParticles.class, PacketFlak.class, PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class, PacketGunFireModeClient.class,
+            PacketGunHolderAnimation.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class,
+            PacketGunShootClient.class, PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class, PacketHeldItemPresentation.class, PacketHitMarker.class,
+            PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class, PacketPlayerClassSkins.class, PacketProneState.class, PacketPlaySound.class,
+            PacketSmokeShell.class, PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketRankUp.class, PacketTeamsObjectives.class, PacketTeamsState.class, PacketEditorState.class,
+            PacketCommandCentreState.class, PacketSpawnerEditState.class);
         addServerPackets(PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class, PacketDeployedGunInput.class, PacketDistantSubscription.class, PacketDriveableInput.class,
             PacketBuyWeapon.class, PacketGrenadeThrow.class, PacketGunFireMode.class, PacketGunInput.class, PacketGunPreferredAmmo.class, PacketGunReload.class, PacketGunScopedState.class,
             PacketGunSecondaryMode.class, PacketGunToggle.class, PacketGunVariableZoom.class, PacketRequestPlaySound.class, PacketProneRequest.class, PacketReloadPreferences.class,

@@ -29,7 +29,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 * Ship bots use the nearest clear water surface within 64 blocks of their selected spawn point, and wait to spawn when no water is available in loaded chunks
 
-* NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight, sound and take damage like their driveables, with part hitboxes, armour and HEAT overrides; destroyed planes and helicopters fall under gravity; vehicle muzzle flashes replace the fallback flame particle while preserving authored shooting particles
+* NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight, sound and take damage like their driveables, with part hitboxes, armour and HEAT overrides; armour impacts spark when blocked and show flashes, metal fragments and smoke when large shells penetrate; destroyed planes and helicopters fall under gravity; vehicle muzzle flashes replace the fallback flame particle while preserving authored shooting particles
 * NPCs board, drive and fly the Flan's driveables players place, lead their targets, land planes and watch their fuel
 * Vehicle NPCs carry crews in their seats; seat guns use normal magazine reload delays and sounds, crewed seat guns pick their own targets, and crew can get out to fight or jump by parachute
 * Seated crew keep their body aligned with their seat through rendering and turns across 180 degrees; gunners turn with their gun as players do and, on vehicle NPCs, move round the gun's pivot; NPCs riding normal aircraft inherit pitch and roll like players
