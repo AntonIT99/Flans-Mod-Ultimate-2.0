@@ -4,7 +4,6 @@ import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.common.block.entity.TeamBannerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.platform.block.FlanEntityBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +23,8 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.*;
 
 /** Wall decoration linked to a Teams base; the cloth hangs below its attachment block, like a vanilla wall banner. */
-@SuppressWarnings("deprecation") // These are the supported 1.20.1 block hooks; vanilla deprecates direct calls, not overrides.
-public final class TeamBannerBlock extends FlanEntityBlock
+@SuppressWarnings({"deprecation", "java:S110"}) // Supported 1.20.1 hooks; the shared Teams policy extends Minecraft's existing block hierarchy.
+public final class TeamBannerBlock extends TeamObjectBlock
 {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 

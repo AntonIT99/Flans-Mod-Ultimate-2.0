@@ -19,6 +19,8 @@
 
 ## Teams
 
+* During Teams rounds, spawners, capture points and team banners are protected from weapons, explosions, mobs and other indirect destruction; operators can remove them only by directly breaking them or using the Operator Stick, while flags and flagpoles remain damage-proof
+
 * Addon API 1.18 adds server-side blood-effect opt-in through `ILivingVisualEffects` and exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass, per-bank barrel recoil eligibility and confirmed armour-impact callbacks for target-aware AI, plus mass-scaled external impulses for model entities and server-authored mounted firing effects through `FlansProjectiles.firingEffects`, without changing damage
 
 * All spawners offer a base-assignment menu and show their base's team color before a round starts; item and vehicle spawners have a spawn delay in seconds (default 20), while vehicle spawners support AA guns, wait for their previous vehicle to be destroyed or leave the map by default, offer a nearby-only replacement mode, allow NPC vehicles by all, none, multiple categories or exact definitions, and select between spawning all ready NPC vehicles into clear nearby spaces (default) or deploying them one after another

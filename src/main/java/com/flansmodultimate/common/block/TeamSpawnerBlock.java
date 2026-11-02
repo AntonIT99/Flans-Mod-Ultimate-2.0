@@ -5,7 +5,6 @@ import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketSpawnerEditState;
-import com.flansmodultimate.platform.block.FlanEntityBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +26,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public final class TeamSpawnerBlock extends FlanEntityBlock
+@SuppressWarnings("java:S110") // The shared Teams policy extends Minecraft's existing block hierarchy.
+public final class TeamSpawnerBlock extends TeamObjectBlock
 {
     private static final VoxelShape SHAPE = box(0D, 0D, 0D, 16D, 1D, 16D);
     private final TeamSpawnerBlockEntity.Mode mode;

@@ -58,7 +58,8 @@ final class TeamsBlockJournal
                 if (level == null)
                     continue;
                 Clearable.tryClear(level.getBlockEntity(key.pos()));
-                level.setBlock(key.pos(), entry.getValue().state(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS);
+                TeamsObjectProtection.removeDirectly(level, key.pos(),
+                    () -> level.setBlock(key.pos(), entry.getValue().state(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS));
                 CompoundTag tag = entry.getValue().blockEntity();
                 if (tag != null)
                 {

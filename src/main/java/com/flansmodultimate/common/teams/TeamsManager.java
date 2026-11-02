@@ -2290,7 +2290,14 @@ public final class TeamsManager
                 getBase(baseId).ifPresent(base -> base.removeObject(object.getObjectId()));
             unregisterObject(object.getObjectId());
         }
-        object.destroyTeamObject();
+        if (object instanceof net.minecraft.world.level.block.entity.BlockEntity blockEntity && blockEntity.getLevel() != null)
+            TeamsObjectProtection.removeDirectly(blockEntity.getLevel(), blockEntity.getBlockPos(), () ->
+            {
+                object.destroyTeamObject();
+                return true;
+            });
+        else
+            object.destroyTeamObject();
         markDirty();
     }
 
