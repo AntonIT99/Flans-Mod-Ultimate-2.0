@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcCombatAdvance;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import lombok.Getter;
@@ -139,6 +140,13 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         main.spinSpeed *= 0.9F;
         off.spinSpeed *= 0.9F;
+        if (NpcCombatAdvance.holdsFire(npc))
+        {
+            cancelUse();
+            reloadOnMove(main);
+            reloadOnMove(off);
+            return;
+        }
         npc.getLookControl().setLookAt(target, 30F, 30F);
         if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target))
         {
@@ -160,11 +168,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         if (NpcEquipment.offHandPrimary(npc))
         {
             // The off-hand gun is the NPC's weapon; what the main hand holds is for melee or blocking.
-            if (main.lastWeapon != null)
-            {
-                main.lastWeapon = null;
-                main.reset();
-            }
+            clearMainHand();
             tickOffHand(target, true);
             return;
         }
@@ -206,6 +210,15 @@ public final class NpcEquipmentRangedGoal extends Goal
             return;
         aim(target);
         fire(main, target, weapon, properties.map(value -> value.automaticFire() && !value.throwable()).orElse(false));
+    }
+
+    private void clearMainHand()
+    {
+        if (main.lastWeapon != null)
+        {
+            main.lastWeapon = null;
+            main.reset();
+        }
     }
 
     /**
@@ -331,6 +344,12 @@ public final class NpcEquipmentRangedGoal extends Goal
             reload(hand, hand.lastWeapon);
         else
             hand.reset();
+    }
+
+    private void reloadOnMove(Hand hand)
+    {
+        if (hand.lastWeapon != null && hand.lastWeapon == npc.getItemInHand(hand.side))
+            reload(hand, hand.lastWeapon);
     }
 
     /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */

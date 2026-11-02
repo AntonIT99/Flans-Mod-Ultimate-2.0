@@ -39,6 +39,7 @@ public final class NpcSafetyGoal extends Goal
     private long progressedAt;
     @Nullable
     private Vec3 ordered;
+    private boolean arrived;
 
     public NpcSafetyGoal(EntityNPCInterface npc)
     {
@@ -76,11 +77,6 @@ public final class NpcSafetyGoal extends Goal
         if (point == null || !state.active(npc.level().getGameTime()))
             return;
         long now = npc.level().getGameTime();
-        if (npc.position().distanceToSqr(point) < 0.5D)
-        {
-            npc.getNavigation().stop();
-            return;
-        }
         if (ordered == null || ordered.distanceToSqr(point) > 0.25D)
         {
             npc.getNavigation().stop();
@@ -89,6 +85,12 @@ public final class NpcSafetyGoal extends Goal
             attemptedAt = now - 5L;
             progressAnchor = npc.position();
             progressedAt = now;
+            arrived = false;
+        }
+        if (npc.position().distanceToSqr(point) < 0.5D)
+        {
+            arrive(point, now);
+            return;
         }
         if (progressAnchor == null || npc.position().distanceToSqr(progressAnchor) > 0.25D)
         {
@@ -105,6 +107,18 @@ public final class NpcSafetyGoal extends Goal
             retry(point, now);
     }
 
+    private void arrive(Vec3 point, long now)
+    {
+        npc.getNavigation().stop();
+        if (!arrived)
+        {
+            arrived = true;
+            state.setAdvanceReadyAt(now + NpcCombatAdvance.firePause(npc));
+            if (state.getAction() == Action.ADVANCE)
+                order(Action.FIRE, point, NpcCombatAdvance.firePause(npc));
+        }
+    }
+
     private void retry(Vec3 point, long now)
     {
         unreachable.put(BlockPos.containing(point), now + 200L);
@@ -115,6 +129,7 @@ public final class NpcSafetyGoal extends Goal
         {
             state.clear();
             state.setNextSearch(now + 20L);
+            state.setAdvanceReadyAt(now + NpcCombatAdvance.firePause(npc));
         }
     }
 
@@ -131,15 +146,11 @@ public final class NpcSafetyGoal extends Goal
         if (npc.level().isClientSide || npc.isPassenger() || TacticKind.of(npc) != TacticKind.STANDARD || !NpcCombatMovement.allowed(npc))
         {
             state.clear();
+            state.setAdvanceIntent(null);
             return;
         }
-        Vec3 evade = evasion(npc);
-        if (evade != null && NpcCombatMovement.permits(npc, evade))
-        {
-            order(Action.EVADE, evade, 15L);
-            state.setUrgentUntil(now + 20L);
+        if (evade(now))
             return;
-        }
         if (now < state.getNextSearch())
             return;
         state.setNextSearch(now + 10L);
@@ -152,20 +163,158 @@ public final class NpcSafetyGoal extends Goal
         if (fight == null)
         {
             state.clear();
+            state.setAdvanceIntent(null);
             state.setAnchor(null);
             return;
         }
+        updateIntent(fight, now);
+        if (advance(target, fight, now))
+            return;
         if (fight.seekCover() && takeCover(target, fight, now) || state.active(now))
+            return;
+        if (holdOrder(target))
             return;
         state.setCover(null);
         if (!flank(target, fight, now) && !spread(target))
             state.clear();
     }
 
+    private boolean evade(long now)
+    {
+        Vec3 evade = evasion(npc);
+        if (evade == null)
+            return false;
+        state.setAdvanceIntent(null);
+        if (!NpcCombatMovement.permits(npc, evade))
+            return false;
+        order(Action.EVADE, evade, 15L);
+        state.setUrgentUntil(now + 20L);
+        return true;
+    }
+
+    private void updateIntent(Situation fight, long now)
+    {
+        Vec3 knownEnemy = fight.visible() || !NpcTacticState.of(npc).threats(now).isEmpty() ? fight.position() : null;
+        NpcCombatIntent intent = !fight.outmatched() && NpcCombatAdvance.enabled(npc) ? NpcCombatAdvance.intent(npc, knownEnemy) : null;
+        NpcCombatIntent previous = state.getAdvanceIntent();
+        boolean changed = intent != null && (previous == null || previous.ordered() != intent.ordered() || previous.destination().distanceToSqr(intent.destination()) > 16D);
+        if (intent == null || changed)
+            clearAdvance();
+        if (changed)
+            state.setAdvanceReadyAt(now + NpcCombatAdvance.firePause(npc) + Math.floorMod(npc.getId(), 3) * 5L);
+        state.setAdvanceIntent(intent);
+    }
+
+    private void clearAdvance()
+    {
+        if (state.getAction() == Action.ADVANCE || state.getAction() == Action.FIRE)
+            state.clear();
+    }
+
+    private boolean holdOrder(@Nullable LivingEntity target)
+    {
+        NpcCombatIntent intent = state.getAdvanceIntent();
+        if (intent == null || !intent.ordered() || !intent.reached(npc.position()) || target == null || npc.isInRange(target, Math.max(6D, npc.stats.ranged.getMeleeRange() + 2D)))
+            return false;
+        order(Action.FIRE, npc.position(), 15L);
+        return true;
+    }
+
+    /** Move a short distance, then own MOVE while standing to aim; the equipped firing goal owns no movement flag. */
+    private boolean advance(@Nullable LivingEntity target, Situation fight, long now)
+    {
+        NpcCombatIntent intent = state.getAdvanceIntent();
+        if (intent == null || target == null || NpcDuties.retreating(npc))
+            return false;
+        boolean pinned = NpcSuppression.isPinned(npc);
+        if (continuesMovement(fight, now, pinned))
+            return true;
+        if (intent.reached(npc.position()) || npc.isInRange(target, Math.max(6D, npc.stats.ranged.getMeleeRange() + 2D)))
+            return false;
+        if (pinned)
+            return false; // The cover goal can still choose an escape, including forward cover, while pinned in the open.
+        if (now < state.getAdvanceReadyAt() && !fight.reloading() || NpcCombatAdvance.coversAlly(npc, target, now))
+        {
+            if (fight.seekCover())
+                return false; // Keep the existing hide/peek cycle until it is time to bound again.
+            order(Action.FIRE, npc.position(), 15L);
+            return true;
+        }
+        return chooseAdvance(intent, fight, now);
+    }
+
+    private boolean continuesMovement(Situation fight, long now, boolean pinned)
+    {
+        if (!state.active(now))
+            return false;
+        Action action = state.getAction();
+        Vec3 destination = state.getDestination();
+        if (action == Action.ADVANCE)
+        {
+            if (!pinned || destination != null && NpcCover.hidden(npc, fight.sources(), destination))
+                return true;
+            state.clear();
+            return false;
+        }
+        if (action == Action.HIDE)
+            return destination != null && npc.position().distanceToSqr(destination) >= 0.5D;
+        return action != Action.FIRE && action != Action.PEEK;
+    }
+
+    private boolean chooseAdvance(NpcCombatIntent intent, Situation fight, long now)
+    {
+        int length = NpcCombatPolicy.value(npc, Value.ADVANCE_DISTANCE);
+        unreachable.entrySet().removeIf(entry -> entry.getValue() <= now);
+        List<BlockPos> cover = !fight.sources().isEmpty() && NpcEquipment.enabled(npc, Feature.TACTICAL_COVER)
+            ? NpcCover.safePositions(npc, fight.sources(), Math.min(length, NpcTuning.of(npc).get(Value.COVER_RADIUS)), intent)
+            : List.of();
+        for (BlockPos stand : cover)
+        {
+            Vec3 point = Vec3.atBottomCenterOf(stand);
+            if (!unreachable.containsKey(stand) && intent.progress(npc.position(), point) >= 1D && point.subtract(npc.position()).horizontalDistanceSqr() <= (double) length * length)
+            {
+                orderAdvance(point);
+                return true;
+            }
+        }
+        // Leave room for centring the destination in its block, so a bound never grows beyond its configured length.
+        Vec3 direction = intent.step(npc.position(), length - 0.75D).subtract(npc.position());
+        for (float angle : new float[]{0F, 45F, -45F})
+        {
+            Vec3 step = npc.position().add(direction.yRot((float) Math.toRadians(angle)));
+            if (advanceAt(intent, step))
+                return true;
+        }
+        state.setAdvanceReadyAt(now + 20L);
+        return false;
+    }
+
+    private boolean advanceAt(NpcCombatIntent intent, Vec3 step)
+    {
+        for (int height : new int[]{0, -1, 1})
+        {
+            BlockPos stand = BlockPos.containing(step).offset(0, height, 0);
+            Vec3 point = Vec3.atBottomCenterOf(stand);
+            if (!unreachable.containsKey(stand) && intent.progress(npc.position(), point) > 0.5D && NpcCombatMovement.permits(npc, point) && NpcCover.standable(npc.level(), stand))
+            {
+                orderAdvance(point);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void orderAdvance(Vec3 point)
+    {
+        state.setCover(null);
+        order(Action.ADVANCE, point, 80L);
+    }
+
     private boolean retreatToRefuge()
     {
         if (!NpcDuties.retreating(npc))
             return false;
+        state.setAdvanceIntent(null);
         Optional<Vec3> refuge = NpcDuties.destination(npc).filter(point -> NpcCombatMovement.permits(npc, point));
         if (refuge.isEmpty())
             return false;
@@ -179,6 +328,8 @@ public final class NpcSafetyGoal extends Goal
             return false;
         double minimum = NpcBlastSafety.standoff(npc, NpcBlastSafety.reach(NpcWeaponChoice.ammunition(npc, npc.getMainHandItem())));
         Vec3 away = npc.position().subtract(target.position()).multiply(1D, 0D, 1D).normalize();
+        if (minimum > npc.distanceTo(target))
+            state.setAdvanceIntent(null);
         return minimum > npc.distanceTo(target) && moveAside(Action.RETREAT, away, minimum - npc.distanceTo(target) + 3D);
     }
 
@@ -230,8 +381,9 @@ public final class NpcSafetyGoal extends Goal
             return false;
         state.setCoverReadyAt(now + 40L);
         unreachable.entrySet().removeIf(entry -> entry.getValue() <= now);
-        alternatives = NpcCover.safePositions(npc, fight.sources(), NpcTuning.of(npc).get(Value.COVER_RADIUS)).stream().filter(point -> !unreachable.containsKey(point)).toList();
-        if (fight.outranged() && !fight.outmatched() && NpcCover.hidden(npc, fight.sources(), npc.position()))
+        NpcCombatIntent intent = fight.outmatched() ? null : state.getAdvanceIntent();
+        alternatives = NpcCover.safePositions(npc, fight.sources(), NpcTuning.of(npc).get(Value.COVER_RADIUS), intent).stream().filter(point -> !unreachable.containsKey(point)).toList();
+        if (intent == null && fight.outranged() && !fight.outmatched() && NpcCover.hidden(npc, fight.sources(), npc.position()))
             alternatives = alternatives.stream().filter(point -> Vec3.atBottomCenterOf(point).distanceTo(fight.position()) < npc.position().distanceTo(fight.position()) - 2D).toList();
         if (alternatives.isEmpty())
             return false;

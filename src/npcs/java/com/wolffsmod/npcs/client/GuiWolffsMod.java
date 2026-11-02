@@ -543,6 +543,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("tactic_movement", Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING),
             Tab.named("return_fire", Value.THREAT_MEMORY, Value.ALERT_RADIUS, Feature.OUTRANGED_COVER, Feature.SUPPRESSIBLE),
             Tab.named("survival", Scope.STANDARD, Feature.TACTICAL_COVER, Feature.AVOID_UNWINNABLE_FIGHTS, Feature.VEHICLE_EVASION, Feature.ADAPTIVE_FLANKING),
+            Tab.named("advance", Scope.STANDARD, Feature.COMBAT_ADVANCE, Feature.COVERING_FIRE, Value.ADVANCE_DISTANCE, Value.ADVANCE_FIRE_TICKS),
             Tab.named("movement_limits", Value.TACTICAL_PROFILE, Value.COMBAT_MOVEMENT, Value.MANOEUVRE_RADIUS, Value.WITHDRAW_DISTANCE, Feature.ALLY_SPACING, Value.ALLY_GAP),
             Tab.named("vehicle_tactics", Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS),
             Tab.named("duties", Scope.STANDARD, Value.DUTY, Value.RETREAT_HEALTH, Feature.SUITED_TARGETS)),
@@ -1818,7 +1819,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
                 case SLOPE_PHYSICS -> Scope.VEHICLES;
                 case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
-                case DRIVE_DRIVEABLES, LIMB_HITBOXES, WEAPON_FIRING_RANGE, OUTRANGED_COVER, SUPPRESSIBLE, SUITED_TARGETS -> Scope.STANDARD;
+                case DRIVE_DRIVEABLES, LIMB_HITBOXES, WEAPON_FIRING_RANGE, OUTRANGED_COVER, SUPPRESSIBLE, SUITED_TARGETS, COMBAT_ADVANCE, COVERING_FIRE -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }
@@ -1832,7 +1833,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case HULL_TURN_RATE -> Scope.HULLS;
                 case STEP_HEIGHT -> Scope.GROUND_MACHINES;
                 case COVER_RADIUS, BOARD_RANGE, TAKE_DRIVEABLES, KEEP_DISTANCE, CRUISE_HEIGHT, ATTACK_HEIGHT, CIRCLE_RADIUS, PLANE_LANDING_DELAY, HOVER_HEIGHT, HELICOPTER_LANDING_DELAY, LOW_FUEL,
-                    GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE, DUTY, RETREAT_HEALTH -> Scope.STANDARD;
+                    GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE, DUTY, RETREAT_HEALTH, ADVANCE_DISTANCE, ADVANCE_FIRE_TICKS -> Scope.STANDARD;
                 default -> Scope.ALL;
             };
         }

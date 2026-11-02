@@ -106,7 +106,11 @@ public final class NpcWeaponOptions
         /** Seat gunners look for threats even while the vehicle has no main target. */
         DEFENSIVE_GUNNERS(true),
         /** Only players its faction is friendly to see the NPC's name tag. */
-        ALLY_NAME_TAGS(false);
+        ALLY_NAME_TAGS(false),
+        /** Retains movement orders in combat and alternates short infantry advances with aimed fire. */
+        COMBAT_ADVANCE(true),
+        /** Fires from a position while a nearby ally crosses toward the same enemy. */
+        COVERING_FIRE(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

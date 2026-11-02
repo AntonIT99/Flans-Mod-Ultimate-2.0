@@ -193,7 +193,11 @@ public final class NpcTuning
         /** Blocks between allies at combat positions; 0 disables extra spacing. */
         ALLY_GAP(3, 0, 12),
         /** Behaviour-only preset; INHERIT leaves individual settings as edited. */
-        TACTICAL_PROFILE(0, 0, NpcTacticalProfile.values().length - 1);
+        TACTICAL_PROFILE(0, 0, NpcTacticalProfile.values().length - 1),
+        /** Maximum blocks of one infantry advance before stopping to fire again. */
+        ADVANCE_DISTANCE(6, 2, 12),
+        /** Ticks spent returning fire between infantry advances. */
+        ADVANCE_FIRE_TICKS(40, 10, 120);
 
         private final int fallback;
         private final int minimum;

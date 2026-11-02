@@ -142,6 +142,7 @@ public final class BotFactory
         // rather than saving them for a group the plain NPC default waits for. A clone keeps the strategy its maker chose.
         if (!added)
         {
+            npc.ais.canSprint = true;
             NpcTuning.of(npc).set(Value.GRENADE_USE, NpcTuning.Throwing.FREQUENT.ordinal());
             // Riflemen reach as far as their aim lets them hit, marksmen further, and their level's aim narrows that.
             ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.WEAPON_FIRING_RANGE, true);

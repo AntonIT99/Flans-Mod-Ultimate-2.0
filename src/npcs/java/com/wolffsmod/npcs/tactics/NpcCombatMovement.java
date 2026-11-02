@@ -36,9 +36,19 @@ public final class NpcCombatMovement
     {
         if (!allowed(npc))
             return false;
+        NpcCombatIntent intent = npc instanceof NpcTacticState.Holder holder ? holder.wolffsmodnpcsTacticState().getSafety().getAdvanceIntent() : null;
+        if (intent != null && !intent.permits(npc.position(), point))
+            return false;
+        double radius = NpcCombatPolicy.value(npc, Value.MANOEUVRE_RADIUS);
+        // Following an assigned route may cross successive local areas. Unordered pursuit keeps its original anchor.
+        if (intent != null && intent.ordered() && !intent.reached(npc.position()) && intent.progress(npc.position(), point) > 0D
+            && point.subtract(npc.position()).horizontalDistanceSqr() <= radius * radius)
+            return true;
         if (NpcCombatPolicy.value(npc, Value.COMBAT_MOVEMENT) == MovementFreedom.FREE.ordinal() && npc.getOwner() == null && !npc.ais.returnToStart)
             return true;
-        double radius = NpcCombatPolicy.value(npc, Value.MANOEUVRE_RADIUS);
+        if (intent != null && intent.ordered() && npc.getOwner() == null && !npc.ais.returnToStart)
+            return !intent.reached(npc.position()) && point.subtract(npc.position()).horizontalDistanceSqr() <= radius * radius
+                || point.subtract(intent.centre()).horizontalDistanceSqr() <= Math.max(radius * radius, intent.radius() * intent.radius());
         return point.subtract(anchor(npc)).horizontalDistanceSqr() <= radius * radius;
     }
 }

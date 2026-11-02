@@ -38,6 +38,12 @@ public final class NpcCover
     /** A shortlist of hidden positions. Routes are tried one at a time by the safety goal, including asynchronous results. */
     public static List<BlockPos> safePositions(EntityNPCInterface npc, List<Vec3> sources, int radius)
     {
+        return safePositions(npc, sources, radius, null);
+    }
+
+    /** Scores progress toward an order before taking the shortlist, rather than discarding forward cover afterward. */
+    public static List<BlockPos> safePositions(EntityNPCInterface npc, List<Vec3> sources, int radius, @Nullable NpcCombatIntent intent)
+    {
         record Candidate(BlockPos point, double score)
         {}
         List<Candidate> choices = new ArrayList<>();
@@ -49,6 +55,8 @@ public final class NpcCover
             {
                 Vec3 stand = Vec3.atBottomCenterOf(point);
                 double score = stand.distanceToSqr(npc.position()) + spacing(npc, allies, stand);
+                if (intent != null)
+                    score -= 12D * intent.progress(npc.position(), stand);
                 // A short exposed dash may still be the only route to concealment.
                 if (!hidden(npc, sources, npc.position().lerp(stand, 0.5D)))
                     score += 12D;

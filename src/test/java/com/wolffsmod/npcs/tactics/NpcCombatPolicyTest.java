@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -70,5 +72,28 @@ class NpcCombatPolicyTest
         assertNull(NpcTacticalProfile.AGGRESSIVE.value(Value.LAND_SPEED));
         assertNull(NpcTacticalProfile.CAUTIOUS.value(Value.AIM_ERROR));
         assertNull(NpcTacticalProfile.INHERIT.feature(Feature.TACTICAL_COVER));
+    }
+
+    @Test
+    void aggressionChangesTheAdvanceCycleWithoutChangingCombatAttributes()
+    {
+        assertTrue(Objects.requireNonNull(NpcTacticalProfile.AGGRESSIVE.value(Value.ADVANCE_DISTANCE)) > Objects.requireNonNull(NpcTacticalProfile.CAUTIOUS.value(Value.ADVANCE_DISTANCE)));
+        assertTrue(Objects.requireNonNull(NpcTacticalProfile.AGGRESSIVE.value(Value.ADVANCE_FIRE_TICKS)) < Objects.requireNonNull(NpcTacticalProfile.BALANCED.value(Value.ADVANCE_FIRE_TICKS)));
+        NpcTuning tuning = new NpcTuning();
+        tuning.set(Value.ADVANCE_DISTANCE, 9);
+        tuning.set(Value.ADVANCE_FIRE_TICKS, 30);
+        CompoundTag saved = new CompoundTag();
+        tuning.save(saved);
+        NpcTuning restored = new NpcTuning();
+        restored.load(saved);
+        assertEquals(9, restored.get(Value.ADVANCE_DISTANCE));
+        assertEquals(30, restored.get(Value.ADVANCE_FIRE_TICKS));
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        options.set(Feature.COMBAT_ADVANCE, false);
+        options.save(saved);
+        NpcWeaponOptions loaded = new NpcWeaponOptions();
+        loaded.load(saved);
+        assertFalse(loaded.enabled(Feature.COMBAT_ADVANCE));
+        assertTrue(loaded.enabled(Feature.COVERING_FIRE));
     }
 }

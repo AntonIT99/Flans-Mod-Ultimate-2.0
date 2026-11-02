@@ -18,7 +18,7 @@ public final class NpcSafetyState
     private final NpcArmorEngagement armorEngagement = new NpcArmorEngagement();
     public enum Action
     {
-        NONE, EVADE, RETREAT, HIDE, PEEK, FLANK, SPREAD
+        NONE, EVADE, RETREAT, HIDE, PEEK, FLANK, SPREAD, ADVANCE, FIRE
     }
 
     private Action action = Action.NONE;
@@ -39,6 +39,9 @@ public final class NpcSafetyState
     @Nullable
     private NpcCover.Cover cover;
     private long coverReadyAt;
+    @Nullable
+    private NpcCombatIntent advanceIntent;
+    private long advanceReadyAt;
     @Nullable
     private IContentType bankModel;
     private long bankCheckedAt = Long.MIN_VALUE / 2;

@@ -7,6 +7,7 @@ import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.flansmodultimate.api.teams.TeamsFlag;
 import com.flansmodultimate.api.teams.TeamsScoreEntry;
+import com.wolffsmod.npcs.tactics.NpcCombatIntent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -42,8 +43,20 @@ final class BotCommander
      * @param arrival
      *            blocks from its spot within which the bot counts as there
      */
-    record Order(Vec3 spot, double arrival, BotRole role, SquadTask.Kind kind)
-    {}
+    record Order(Vec3 spot, double arrival, BotRole role, SquadTask.Kind kind, Vec3 centre, double radius)
+    {
+        Order(Vec3 spot, double arrival, BotRole role, SquadTask.Kind kind)
+        {
+            this(spot, arrival, role, kind, spot, arrival);
+        }
+
+        NpcCombatIntent combatIntent()
+        {
+            // Authored defensive posts may intentionally sit outside the capture zone.
+            double offset = spot.subtract(centre).horizontalDistance();
+            return new NpcCombatIntent(spot, arrival, centre, offset > radius ? offset + arrival : radius);
+        }
+    }
 
     /** Gives every squad of every side a task. */
     static void plan(MinecraftServer server, ServerLevel level, BotBattle battle)
@@ -202,7 +215,7 @@ final class BotCommander
         }
         else if (squad.getRole() != BotRole.INFANTRY)
             arrival = 6D;
-        return Optional.of(new Order(spot, arrival, squad.getRole(), task.kind()));
+        return Optional.of(new Order(spot, arrival, squad.getRole(), task.kind(), task.target(), task.radius()));
     }
 
     /** The sniper posts, then the garrison posts, around a defended objective, nearest first. */

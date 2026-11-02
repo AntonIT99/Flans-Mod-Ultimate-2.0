@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.wolffsmod.npcs.tactics.NpcSafetyState;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.AccessLevel;
@@ -41,8 +42,9 @@ public final class NpcSprinting
         if (!npc.ais.canSprint || !npc.isAlive() || npc.isKilled() || npc.isNoAi() || npc.isPassenger() || npc.ais.movementType != 0 || npc.isInWater() || npc.isInLava())
             return false;
         LivingEntity target = npc.getTarget();
-        Action action = npc instanceof NpcTacticState.Holder holder ? holder.wolffsmodnpcsTacticState().getSafety().getAction() : Action.NONE;
-        if (!npc.getNavigation().isDone() && (action == Action.EVADE || action == Action.RETREAT || action == Action.HIDE))
+        NpcSafetyState safety = npc instanceof NpcTacticState.Holder holder ? holder.wolffsmodnpcsTacticState().getSafety() : null;
+        Action action = safety != null && safety.active(npc.level().getGameTime()) ? safety.getAction() : Action.NONE;
+        if (!npc.getNavigation().isDone() && (action == Action.EVADE || action == Action.RETREAT || action == Action.HIDE || action == Action.ADVANCE))
             return true;
         if (target == null || !target.isAlive() || target.level() != npc.level() || npc.getNavigation().isDone())
             return false;

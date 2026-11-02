@@ -11,6 +11,7 @@ import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
+import com.wolffsmod.npcs.tactics.NpcCombatIntent;
 import com.wolffsmod.npcs.tactics.NpcCombatPolicy;
 import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import lombok.AccessLevel;
@@ -152,6 +153,12 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         if (duty.isPresent() || BotBattles.isEmpty() || !BotTag.isBot(npc))
             return duty;
         return BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
+    }
+
+    /** A battle order or ordinary NPC duty retained by the shared infantry combat movement. Server thread. */
+    public static Optional<NpcCombatIntent> combatIntent(EntityNPCInterface npc)
+    {
+        return orderFor(npc).filter(order -> order.role() == BotRole.INFANTRY).map(BotCommander.Order::combatIntent);
     }
 
     /** @return the bots of the round being played, for commands; empty between rounds */

@@ -19,7 +19,7 @@ public enum NpcTacticalProfile
             return null;
         return switch (feature)
         {
-            case TACTICAL_COVER, AVOID_UNWINNABLE_FIGHTS, VEHICLE_EVASION, TACTICAL_WEAPON_SWITCH, ALLY_SPACING, ADAPTIVE_VEHICLE_COMBAT, DEFENSIVE_GUNNERS -> true;
+            case TACTICAL_COVER, AVOID_UNWINNABLE_FIGHTS, VEHICLE_EVASION, TACTICAL_WEAPON_SWITCH, ALLY_SPACING, ADAPTIVE_VEHICLE_COMBAT, DEFENSIVE_GUNNERS, COMBAT_ADVANCE, COVERING_FIRE -> true;
             case ADAPTIVE_FLANKING -> this != CAUTIOUS;
             default -> null;
         };
@@ -41,6 +41,18 @@ public enum NpcTacticalProfile
                 default -> 16;
             };
             case ALLY_GAP -> this == CAUTIOUS ? 4 : 3;
+            case ADVANCE_DISTANCE -> switch (this)
+            {
+                case AGGRESSIVE -> 8;
+                case CAUTIOUS -> 4;
+                default -> 6;
+            };
+            case ADVANCE_FIRE_TICKS -> switch (this)
+            {
+                case AGGRESSIVE -> 20;
+                case CAUTIOUS -> 70;
+                default -> 40;
+            };
             default -> null;
         };
     }
