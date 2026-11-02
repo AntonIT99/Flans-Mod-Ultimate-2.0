@@ -3,10 +3,7 @@ package com.wolffsmod.npcs.gametest;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.NpcTuning;
-import com.wolffsmod.npcs.tactics.NpcSafetyGoal;
-import com.wolffsmod.npcs.tactics.NpcSafetyState;
-import com.wolffsmod.npcs.tactics.NpcTacticState;
-import com.wolffsmod.npcs.tactics.NpcWeaponRange;
+import com.wolffsmod.npcs.tactics.*;
 import com.wolffsmod.npcs.teams.NpcDuties;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -76,10 +73,13 @@ public class NpcServerGameTests
         long now = helper.getLevel().getGameTime();
         NpcTacticState.of(npc).threat(attacker, target, now, now + 100L);
         NpcSafetyGoal goal = new NpcSafetyGoal(npc);
-        helper.assertTrue(goal.canUse(), "A second attacker's incoming fire must trigger cover inside ordinary firing range");
-        helper.assertTrue(NpcTacticState.of(npc).getSafety().getAction() == NpcSafetyState.Action.HIDE, "The shared safety goal must choose cover");
-        helper.assertTrue(npc.getTarget() == target, "Taking cover must not replace the current firing target");
-        helper.succeed();
+        // The cover search samples a bounded number of positions per tick, so the decision arrives a few ticks later.
+        helper.succeedWhen(() ->
+        {
+            helper.assertTrue(goal.canUse(), "A second attacker's incoming fire must trigger cover inside ordinary firing range");
+            helper.assertTrue(NpcTacticState.of(npc).getSafety().getAction() == NpcSafetyState.Action.HIDE, "The shared safety goal must choose cover");
+            helper.assertTrue(npc.getTarget() == target, "Taking cover must not replace the current firing target");
+        });
     }
 
     @GameTest(template = "npc_empty", batch = "npc_safety_settings")
