@@ -19,10 +19,8 @@ import net.minecraft.world.entity.player.Player;
  * <p>
  * Only the decisions are spaced out: the senses, the goal and target selectors, the navigator and the movement controls.
  * Everything else still runs every tick, so a soldier keeps walking where it was steering, keeps falling, keeps taking
- * damage and keeps being drawn exactly as before. What a skipped tick does postpone is anything a goal does on its own
- * tick, a shot among it, so beyond the near distance a shot can be up to one period late. Both sides of a fight are
- * spaced out alike, and the near distance is a good deal farther than infantry fight at, so what a player watches is
- * untouched.
+ * damage and keeps being drawn exactly as before. The equipped-weapon goal continues between decisions, so its shots,
+ * charge, spin-up and reload retain their normal timing. Other goals run on decision ticks.
  * </p>
  *
  * <p>

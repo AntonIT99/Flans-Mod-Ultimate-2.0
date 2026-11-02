@@ -40,6 +40,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     private final Hand main = new Hand(InteractionHand.MAIN_HAND);
     private final Hand off = new Hand(InteractionHand.OFF_HAND);
     private int charging;
+    private boolean running;
     /** Whether the NPC has fired since it took up this engagement, which Custom NPCs' tactics wait for. */
     @Getter
     private boolean fired;
@@ -116,7 +117,28 @@ public final class NpcEquipmentRangedGoal extends Goal
     }
 
     @Override
+    public void start()
+    {
+        running = true;
+    }
+
+    /** Keeps an active weapon running when distance LOD postpones the next AI decision. */
+    public void tickBetweenDecisions()
+    {
+        if (!running)
+            return;
+        // Sensing normally clears its cache in serverAiStep, which LOD skipped. A closed door must still stop a shot.
+        npc.getSensing().tick();
+        tick(false);
+    }
+
+    @Override
     public void tick()
+    {
+        tick(true);
+    }
+
+    private void tick(boolean decisions)
     {
         main.cadence.tick();
         off.cadence.tick();
@@ -172,7 +194,7 @@ public final class NpcEquipmentRangedGoal extends Goal
             tickOffHand(target, true);
             return;
         }
-        tickMainHand(target);
+        tickMainHand(target, decisions);
         if (NpcEquipment.offHandGun(npc))
             tickOffHand(target, false);
         else if (off.lastWeapon != null)
@@ -182,10 +204,10 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
     }
 
-    private void tickMainHand(LivingEntity target)
+    private void tickMainHand(LivingEntity target, boolean decisions)
     {
         // Switching after recovery prevents alternating guns from bypassing cadence or an ongoing reload/charge.
-        if (main.reloading <= 0 && charging <= 0 && main.cadence.ready())
+        if (decisions && main.reloading <= 0 && charging <= 0 && main.cadence.ready())
             NpcWeaponChoice.select(npc, target);
         ItemStack weapon = NpcEquipment.rangedWeapon(npc);
         var properties = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
@@ -377,6 +399,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     @Override
     public void stop()
     {
+        running = false;
         cancelUse();
         main.reloadFailed = false;
         main.spinSpeed = 0F;

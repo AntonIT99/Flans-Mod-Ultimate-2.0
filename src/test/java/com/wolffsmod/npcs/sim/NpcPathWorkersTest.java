@@ -10,11 +10,43 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.pathfinder.*;
 
+import java.util.PriorityQueue;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class NpcPathWorkersTest
 {
+    @Test
+    void urgentRequestsOvertakeRecentWorkWithoutStarvingOlderWork()
+    {
+        Runnable task = () ->
+        {
+        };
+        NpcPathWorkers.Work old = new NpcPathWorkers.Work(task, false);
+        for (int index = 0; index < 40; index++)
+            new NpcPathWorkers.Work(task, false);
+        NpcPathWorkers.Work urgent = new NpcPathWorkers.Work(task, true);
+        NpcPathWorkers.Work recent = new NpcPathWorkers.Work(task, false);
+        PriorityQueue<NpcPathWorkers.Work> queue = new PriorityQueue<>();
+        queue.add(recent);
+        queue.add(urgent);
+        queue.add(old);
+        assertSame(old, queue.remove());
+        assertSame(urgent, queue.remove());
+        assertSame(recent, queue.remove());
+    }
+
+    @Test
+    void ordinaryBacklogsLeaveUrgentCapacityAndEvenUrgentWorkHasAHardQueueLimit()
+    {
+        assertTrue(NpcPathWorkers.queueAllows(223, false));
+        assertFalse(NpcPathWorkers.queueAllows(224, false));
+        assertTrue(NpcPathWorkers.queueAllows(224, true));
+        assertTrue(NpcPathWorkers.queueAllows(255, true));
+        assertFalse(NpcPathWorkers.queueAllows(256, true));
+    }
+
     @BeforeAll
     static void bootstrap() throws ReflectiveOperationException
     {

@@ -10,8 +10,8 @@ import net.minecraft.util.Mth;
 
 /**
  * The share of target and path searches every NPC together may start in one server tick, when an operator limits them. A
- * search over the limit waits for a later tick; one that has waited a second goes ahead regardless, so no NPC is starved
- * while the server keeps above its limit. Server thread.
+ * search over the limit waits for a later tick. Searches waiting a second share a small additional allowance, so overdue
+ * requests make progress without all bypassing the limit together. Server thread.
  *
  * <p>
  * With a tick time target configured the limits are worked out instead of set: while the server stays under the target the
@@ -23,7 +23,7 @@ import net.minecraft.util.Mth;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcBudgets
 {
-    /** Ticks a search may be put off before it goes ahead whatever the limit. */
+    /** Ticks before a deferred search qualifies for the bounded overdue allowance. */
     public static final int MAX_WAIT = 20;
 
     /** Bounds of the worked-out allowances. At the ceiling the allowance counts as no limit. */
@@ -38,6 +38,18 @@ public final class NpcBudgets
     private static int tick = -1;
     private static int targetSearches;
     private static int pathSearches;
+    private static int overdueTargetSearches;
+    private static int overduePathSearches;
+    private static final Priority targetPriority = new Priority();
+    private static final Priority pathPriority = new Priority();
+    private static final Priority coverPriority = new Priority();
+    private static int coverRays;
+    private static int urgentCoverRays;
+    private static int overdueCoverRays;
+    /** Cover planning reserves a conservative upper bound on its raycasts; safety rechecks remain immediate. */
+    private static final int COVER_RAYS = 2048;
+    private static final int URGENT_COVER_RAYS = 512;
+    private static final int OVERDUE_COVER_RAYS = 256;
     private static int targetDeferred;
     private static int pathDeferred;
     private static int lastTargetDeferred;
@@ -48,6 +60,35 @@ public final class NpcBudgets
     private static int targetLimit;
     private static int pathLimit;
 
+    /** Remembers only the oldest denied age, so later NPCs can overtake recently served ones without a request queue. */
+    private static final class Priority
+    {
+        private long oldestDeferred = Long.MAX_VALUE;
+        private long minimumWait = MAX_WAIT;
+
+        private void start(int now)
+        {
+            minimumWait = oldestDeferred == Long.MAX_VALUE ? MAX_WAIT : Math.max(MAX_WAIT, now - oldestDeferred);
+            oldestDeferred = Long.MAX_VALUE;
+        }
+
+        private boolean allows(long waited)
+        {
+            return waited >= minimumWait;
+        }
+
+        private void defer(long waited)
+        {
+            oldestDeferred = Math.min(oldestDeferred, tick - waited);
+        }
+
+        private void clear()
+        {
+            oldestDeferred = Long.MAX_VALUE;
+            minimumWait = MAX_WAIT;
+        }
+    }
+
     /**
      * @param waited
      *            ticks this NPC's search has been put off so far
@@ -56,10 +97,15 @@ public final class NpcBudgets
     public static boolean targetSearch(MinecraftServer server, long waited)
     {
         start(server);
-        if (targetLimit > 0 && targetSearches >= targetLimit && waited < MAX_WAIT)
+        if (targetLimit > 0 && targetSearches >= targetLimit)
         {
-            targetDeferred++;
-            return false;
+            if (!overdue(waited, overdueTargetSearches, targetLimit) || !targetPriority.allows(waited))
+            {
+                targetPriority.defer(waited);
+                targetDeferred++;
+                return false;
+            }
+            overdueTargetSearches++;
         }
         targetSearches++;
         return true;
@@ -73,13 +119,47 @@ public final class NpcBudgets
     public static boolean pathSearch(MinecraftServer server, long waited)
     {
         start(server);
-        if (pathLimit > 0 && pathSearches >= pathLimit && waited < MAX_WAIT)
+        if (pathLimit > 0 && pathSearches >= pathLimit)
         {
-            pathDeferred++;
-            return false;
+            if (!overdue(waited, overduePathSearches, pathLimit) || !pathPriority.allows(waited))
+            {
+                pathPriority.defer(waited);
+                pathDeferred++;
+                return false;
+            }
+            overduePathSearches++;
         }
         pathSearches++;
         return true;
+    }
+
+    /** Older requests get at most a quarter of the limit in extra starts, with one place even at the smallest limit. */
+    static boolean overdue(long waited, int used, int limit)
+    {
+        return waited >= MAX_WAIT && used < Math.max(1, limit / 4);
+    }
+
+    /** Reserves enough rays for one cover candidate, so a deferred candidate is never mistaken for exposed ground. */
+    public static boolean coverSearch(MinecraftServer server, int rays, long waited, boolean urgent)
+    {
+        start(server);
+        if (coverRays + rays <= COVER_RAYS)
+        {
+            coverRays += rays;
+            return true;
+        }
+        if (urgent && urgentCoverRays + rays <= URGENT_COVER_RAYS)
+        {
+            urgentCoverRays += rays;
+            return true;
+        }
+        if (coverPriority.allows(waited) && overdueCoverRays + rays <= OVERDUE_COVER_RAYS)
+        {
+            overdueCoverRays += rays;
+            return true;
+        }
+        coverPriority.defer(waited);
+        return false;
     }
 
     /**
@@ -105,6 +185,9 @@ public final class NpcBudgets
         tick = -1;
         autoTargetAllowance = MAX_AUTO_TARGET_SEARCHES;
         autoPathAllowance = MAX_AUTO_PATH_SEARCHES;
+        targetPriority.clear();
+        pathPriority.clear();
+        coverPriority.clear();
     }
 
     private static void start(MinecraftServer server)
@@ -112,10 +195,18 @@ public final class NpcBudgets
         if (server.getTickCount() == tick)
             return;
         tick = server.getTickCount();
+        targetPriority.start(tick);
+        pathPriority.start(tick);
+        coverPriority.start(tick);
         lastTargetDeferred = targetDeferred;
         lastPathDeferred = pathDeferred;
         targetSearches = 0;
         pathSearches = 0;
+        overdueTargetSearches = 0;
+        overduePathSearches = 0;
+        coverRays = 0;
+        urgentCoverRays = 0;
+        overdueCoverRays = 0;
         targetDeferred = 0;
         pathDeferred = 0;
         chooseLimits(server);

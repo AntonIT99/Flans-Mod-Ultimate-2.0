@@ -265,9 +265,15 @@ public final class NpcSafetyGoal extends Goal
     {
         int length = NpcCombatPolicy.value(npc, Value.ADVANCE_DISTANCE);
         unreachable.entrySet().removeIf(entry -> entry.getValue() <= now);
-        List<BlockPos> cover = !fight.sources().isEmpty() && NpcEquipment.enabled(npc, Feature.TACTICAL_COVER)
+        NpcCover.Result<List<BlockPos>> result = !fight.sources().isEmpty() && NpcEquipment.enabled(npc, Feature.TACTICAL_COVER)
             ? NpcCover.safePositions(npc, fight.sources(), Math.min(length, NpcTuning.of(npc).get(Value.COVER_RADIUS)), intent)
-            : List.of();
+            : new NpcCover.Result<>(true, List.of());
+        if (!result.complete())
+        {
+            state.setNextSearch(now + 1L);
+            return true;
+        }
+        List<BlockPos> cover = Objects.requireNonNull(result.value());
         for (BlockPos stand : cover)
         {
             Vec3 point = Vec3.atBottomCenterOf(stand);
@@ -379,10 +385,16 @@ public final class NpcSafetyGoal extends Goal
     {
         if (now < state.getCoverReadyAt())
             return false;
-        state.setCoverReadyAt(now + 40L);
         unreachable.entrySet().removeIf(entry -> entry.getValue() <= now);
         NpcCombatIntent intent = fight.outmatched() ? null : state.getAdvanceIntent();
-        alternatives = NpcCover.safePositions(npc, fight.sources(), NpcTuning.of(npc).get(Value.COVER_RADIUS), intent).stream().filter(point -> !unreachable.containsKey(point)).toList();
+        NpcCover.Result<List<BlockPos>> result = NpcCover.safePositions(npc, fight.sources(), NpcTuning.of(npc).get(Value.COVER_RADIUS), intent);
+        if (!result.complete())
+        {
+            state.setNextSearch(now + 1L);
+            return true;
+        }
+        state.setCoverReadyAt(now + 40L);
+        alternatives = Objects.requireNonNull(result.value()).stream().filter(point -> !unreachable.containsKey(point)).toList();
         if (intent == null && fight.outranged() && !fight.outmatched() && NpcCover.hidden(npc, fight.sources(), npc.position()))
             alternatives = alternatives.stream().filter(point -> Vec3.atBottomCenterOf(point).distanceTo(fight.position()) < npc.position().distanceTo(fight.position()) - 2D).toList();
         if (alternatives.isEmpty())

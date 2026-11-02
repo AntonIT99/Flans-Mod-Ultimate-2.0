@@ -13,12 +13,18 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
@@ -47,6 +53,80 @@ class NpcAdvancedTargetSearchTest
     static void bootstrap() throws ReflectiveOperationException
     {
         EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked") // Minecraft's generic entity-index callback is erased at the Mockito boundary.
+    void largeLevelsUseTheLiveSpatialIndexForNearbySearches()
+    {
+        Fixture fixture = fixture(1);
+        ServerLevel level = mock(ServerLevel.class);
+        when(level.dimension()).thenReturn(Level.OVERWORLD);
+        when(level.getGameTime()).thenReturn(1L);
+        when(fixture.npc.level()).thenReturn(level);
+        List<Entity> distant = new ArrayList<>();
+        for (int entity = 0; entity < 300; entity++)
+            distant.add(mock(LivingEntity.class));
+        when(level.getAllEntities()).thenReturn(distant);
+        LevelEntityGetter<Entity> index = mock(LevelEntityGetter.class);
+        when(level.getEntities()).thenReturn(index);
+        LivingEntity nearby = mock(LivingEntity.class);
+        when(nearby.isAlive()).thenReturn(true);
+        when(fixture.npc.distanceToSqr(nearby)).thenReturn(100D);
+        doAnswer(call ->
+        {
+            AbortableIterationConsumer<LivingEntity> visitor = call.getArgument(2);
+            visitor.accept(nearby);
+            return null;
+        }).when(index).get(any(EntityTypeTest.class), any(AABB.class), any());
+        TargetingConditions conditions = mock(TargetingConditions.class);
+        when(conditions.test(fixture.npc, nearby)).thenReturn(true);
+        try
+        {
+            assertSame(nearby, fixture.search.find(fixture.npc, conditions, 32D));
+            verify(index).get(any(EntityTypeTest.class), any(AABB.class), any());
+            for (Entity entity : distant)
+                verify(fixture.npc, never()).distanceToSqr(entity);
+        }
+        finally
+        {
+            NpcCombatants.clear();
+        }
+    }
+
+    @Test
+    void rejectedCandidatesAreStillTestedInPriorityAndDistanceOrder()
+    {
+        Fixture fixture = fixture(1);
+        List<LivingEntity> candidates = new ArrayList<>();
+        for (int index = 0; index < 100; index++)
+        {
+            LivingEntity entity = mock(LivingEntity.class);
+            when(entity.isAlive()).thenReturn(true);
+            when(entity.getId()).thenReturn(index);
+            when(fixture.npc.distanceToSqr(entity)).thenReturn(1000D - index);
+            candidates.add(entity);
+        }
+        when(fixture.level.getEntitiesOfClass(eq(LivingEntity.class), any(AABB.class), any())).thenReturn(candidates);
+        List<LivingEntity> expected = candidates.stream().sorted(Comparator.comparingInt((LivingEntity entity) -> entity.getId() % 7).thenComparingDouble(fixture.npc::distanceToSqr)).toList();
+        List<LivingEntity> tested = new ArrayList<>();
+        TargetingConditions conditions = mock(TargetingConditions.class);
+        when(conditions.test(eq(fixture.npc), any())).thenAnswer(call ->
+        {
+            LivingEntity entity = call.getArgument(1);
+            tested.add(entity);
+            return entity == expected.get(expected.size() - 1);
+        });
+        NpcTargetSearch.setPriority((npc, entity) -> entity.getId() % 7);
+        try
+        {
+            assertSame(expected.get(expected.size() - 1), fixture.search.find(fixture.npc, conditions, 32D));
+            assertEquals(expected, tested);
+        }
+        finally
+        {
+            NpcTargetSearch.setPriority((npc, entity) -> 0);
+        }
     }
 
     @Test

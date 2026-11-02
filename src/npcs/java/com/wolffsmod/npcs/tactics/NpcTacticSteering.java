@@ -79,7 +79,9 @@ public final class NpcTacticSteering
         }
         else if (now - memory.getCoverSearchedAt() < COVER_SEARCH_INTERVAL)
             return;
-        memory.cover(NpcCover.find(npc, target, NpcTuning.of(npc).get(Value.COVER_RADIUS), engagement), now);
+        NpcCover.Result<Cover> result = NpcCover.find(npc, target, NpcTuning.of(npc).get(Value.COVER_RADIUS), engagement);
+        if (result.complete())
+            memory.cover(result.value(), now);
     }
 
     private static void follow(EntityNPCInterface npc, Order order, NpcTacticState memory, LivingEntity target, long now)

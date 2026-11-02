@@ -16,10 +16,12 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.level.entity.EntityTypeTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +52,8 @@ public final class NpcTargetSearch
     /** Custom NPCs' tactical variants that add no manoeuvre of their own. */
     private static final int RUSH = 0;
     private static final int NO_TACTIC = 6;
+    private static final int SPATIAL_SEARCH_THRESHOLD = 256;
+    private static final double SPATIAL_SEARCH_RADIUS = 64D;
 
     /** Ranks the candidates of a band ahead of their distance, lower first; set by the Teams bots, which prefer some targets. */
     @FunctionalInterface
@@ -228,9 +232,10 @@ public final class NpcTargetSearch
     {
         int tested = 0;
         int remaining = candidates;
+        boolean heap = false;
         while (remaining > 0)
         {
-            int best = best(remaining);
+            int best = heap ? 0 : best(remaining);
             LivingEntity candidate = scratchEntities[best];
             remaining--;
             scratchEntities[best] = scratchEntities[remaining];
@@ -239,6 +244,16 @@ public final class NpcTargetSearch
             tested++;
             if (conditions.test(npc, candidate))
                 return new Selected(candidate, tested);
+            if (heap)
+                siftDown(0, remaining);
+            else
+            {
+                // Most searches test only one candidate. After a rejection, heapify once rather than repeatedly
+                // scanning the remaining list, which was quadratic when every candidate was friendly or hidden.
+                for (int index = remaining / 2 - 1; index >= 0; index--)
+                    siftDown(index, remaining);
+                heap = true;
+            }
         }
         return new Selected(null, tested);
     }
@@ -249,10 +264,37 @@ public final class NpcTargetSearch
         int best = 0;
         for (int index = 1; index < remaining; index++)
         {
-            if (scratchRanks[index] < scratchRanks[best] || scratchRanks[index] == scratchRanks[best] && scratchDistances[index] < scratchDistances[best])
+            if (before(index, best))
                 best = index;
         }
         return best;
+    }
+
+    private static boolean before(int first, int second)
+    {
+        return scratchRanks[first] < scratchRanks[second] || scratchRanks[first] == scratchRanks[second] && scratchDistances[first] < scratchDistances[second];
+    }
+
+    private static void siftDown(int index, int remaining)
+    {
+        while (index * 2 + 1 < remaining)
+        {
+            int child = index * 2 + 1;
+            if (child + 1 < remaining && before(child + 1, child))
+                child++;
+            if (!before(child, index))
+                return;
+            LivingEntity entity = scratchEntities[index];
+            int rank = scratchRanks[index];
+            double distance = scratchDistances[index];
+            scratchEntities[index] = scratchEntities[child];
+            scratchRanks[index] = scratchRanks[child];
+            scratchDistances[index] = scratchDistances[child];
+            scratchEntities[child] = entity;
+            scratchRanks[child] = rank;
+            scratchDistances[child] = distance;
+            index = child;
+        }
     }
 
     /**
@@ -271,6 +313,18 @@ public final class NpcTargetSearch
         if (npc.level() instanceof ServerLevel level)
         {
             NpcCombatants combatants = NpcCombatants.of(level);
+            if (combatants.size() > SPATIAL_SEARCH_THRESHOLD && outer <= SPATIAL_SEARCH_RADIUS)
+            {
+                // Reuse Minecraft's live section index. A second snapshot grid would miss entities that move or
+                // teleport between buckets during the tick. The callback writes directly into the reusable scratch.
+                int[] count = {0};
+                level.getEntities().get(EntityTypeTest.forClass(LivingEntity.class), npc.getBoundingBox().inflate(outer), entity ->
+                {
+                    count[0] = offer(npc, entity, innerSquared, outerSquared, priority, count[0]);
+                    return AbortableIterationConsumer.Continuation.CONTINUE;
+                });
+                return count[0];
+            }
             for (int index = 0; index < combatants.size(); index++)
                 found = offer(npc, combatants.get(index).entity(), innerSquared, outerSquared, priority, found);
         }

@@ -7,10 +7,13 @@ import com.wolffsmod.npcs.sim.NpcFlightPaths;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcPathWorkers;
 import com.wolffsmod.npcs.sim.NpcPursuit;
+import com.wolffsmod.npcs.tactics.NpcSafetyState;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.core.BlockPos;
@@ -34,10 +37,11 @@ import java.util.Set;
  * counted and the slow ones are recorded; an NPC whose live statistics an editor shows has its own searches counted. A
  * call that keeps its path or may not search is not a search.</li>
  * <li>Limits: with a path search limit set for the whole server, an NPC search over it finds no path this time and is
- * tried again later; one that has waited a second goes ahead regardless.</li>
+ * tried again later; overdue searches share a bounded extra allowance.</li>
  * <li>Worker searches: with {@link NpcPathWorkers} on, an NPC search is handed to a worker thread and its path taken up
  * on a later tick, so the NPC keeps the path it has instead of the server thread waiting for a new one. At most one
- * search of a navigator runs at a time, and one whose worker failed is searched on the server thread instead.</li>
+ * search of a navigator runs at a time, superseded requests are cancelled, and overload defers new work. A worker
+ * failure keeps its synchronous fallback, under the path budget.</li>
  * <li>Aircraft: a plane, and a helicopter that sees its goal, take a straight path to it instead of searching, which is
  * not a search either; see {@link NpcFlightPaths}.</li>
  * <li>Efficient path searches in the air: as on the ground, a search reaches only as far as its goal plus the detour
@@ -122,9 +126,39 @@ public abstract class PathNavigationMixin
             return wolffsmodnpcsWorkerSearch(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes);
         if (!wolffsmodnpcsMaySearch(server))
             return wolffsmodnpcsUntimed(null);
-        wolffsmodnpcsPathSearch = NpcPathWorkers.submit(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes);
+        NpcPathWorkers.Submission submitted = NpcPathWorkers.submit(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes, wolffsmodnpcsUrgentPath());
+        wolffsmodnpcsPathSearch = submitted.search();
         // A search handed to a worker is timed and counted when it is taken up, not now.
-        return wolffsmodnpcsPathSearch != null ? wolffsmodnpcsUntimed(null) : finder.findPath(region, searcher, targets, followRange, accuracy, maxVisitedNodes);
+        return wolffsmodnpcsPathSearch != null || submitted.deferred() ? wolffsmodnpcsPendingPath(targets) : finder.findPath(region, searcher, targets, followRange, accuracy, maxVisitedNodes);
+    }
+
+    @Unique
+    private boolean wolffsmodnpcsUrgentPath()
+    {
+        if (!(mob instanceof NpcTacticState.Holder holder))
+            return false;
+        NpcSafetyState safety = holder.wolffsmodnpcsTacticState().getSafety();
+        return safety.getAction() == NpcSafetyState.Action.EVADE || safety.getAction() == NpcSafetyState.Action.RETREAT || safety.getAction() == NpcSafetyState.Action.HIDE;
+    }
+
+    /** Keep a usable path only when it belongs to the destination still being requested. */
+    @Unique
+    @Nullable
+    private Path wolffsmodnpcsPendingPath(Set<BlockPos> targets)
+    {
+        boolean matches = path != null && !path.isDone() && path.getTarget() != null && targets.contains(path.getTarget());
+        return wolffsmodnpcsUntimed(matches ? path : null);
+    }
+
+    @Inject(method = "stop", at = @At("HEAD"))
+    private void wolffsmodnpcsCancelPathSearch(CallbackInfo callback)
+    {
+        if (wolffsmodnpcsPathSearch != null)
+        {
+            wolffsmodnpcsPathSearch.cancel();
+            wolffsmodnpcsPathSearch = null;
+        }
+        wolffsmodnpcsPathWaitingSince = Long.MIN_VALUE;
     }
 
     /** Marks the call as no path search of this tick, so that nothing is timed, counted or recorded for it. */
@@ -147,23 +181,25 @@ public abstract class PathNavigationMixin
     private Path wolffsmodnpcsWorkerSearch(PathFinder finder, PathNavigationRegion region, Mob searcher, Set<BlockPos> targets, float followRange, int accuracy, float maxVisitedNodes)
     {
         NpcPathWorkers.Search running = wolffsmodnpcsPathSearch;
-        if (running == null || !running.done())
-            return wolffsmodnpcsUntimed(null);
-        wolffsmodnpcsPathSearch = null;
-        boolean precise = searcher instanceof com.wolffsmod.npcs.tactics.NpcTacticState.Holder holder
-            && holder.wolffsmodnpcsTacticState().getSafety().getAction() != com.wolffsmod.npcs.tactics.NpcSafetyState.Action.NONE;
+        if (running == null)
+            return wolffsmodnpcsPendingPath(targets);
+        boolean precise = searcher instanceof NpcTacticState.Holder holder && holder.wolffsmodnpcsTacticState().getSafety().getAction() != NpcSafetyState.Action.NONE;
         if (!running.matches(targets, precise))
         {
-            wolffsmodnpcsPathSearch = NpcPathWorkers.submit(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes);
-            return wolffsmodnpcsPathSearch == null ? finder.findPath(region, searcher, targets, followRange, accuracy, maxVisitedNodes) : wolffsmodnpcsUntimed(null);
+            running.cancel();
+            wolffsmodnpcsPathSearch = null;
+            return wolffsmodnpcsLimitPathSearches(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes);
         }
+        if (!running.done() || running.failed() && !wolffsmodnpcsMaySearch(java.util.Objects.requireNonNull(level.getServer())))
+            return wolffsmodnpcsPendingPath(targets);
+        wolffsmodnpcsPathSearch = null;
         // A worker that failed leaves its search to the server thread, which is timed and counted as usual.
         return running.failed() ? finder.findPath(region, searcher, targets, followRange, accuracy, maxVisitedNodes) : wolffsmodnpcsUntimed(running.path());
     }
 
     /**
      * @return whether the server's path search limit lets this navigator search now; one that may not remembers since when
-     *         it waits, and goes ahead once it has waited a second
+     *         it waits, and qualifies for the bounded overdue allowance after a second
      */
     @Unique
     private boolean wolffsmodnpcsMaySearch(MinecraftServer server)

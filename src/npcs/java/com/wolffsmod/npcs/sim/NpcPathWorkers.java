@@ -19,6 +19,7 @@ import net.minecraft.world.level.pathfinder.PathFinder;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -45,12 +46,42 @@ public final class NpcPathWorkers
     private static final int MAX_WORKERS = 4;
     /** Failures after which every search goes back on the server thread. */
     private static final int MAX_FAILURES = 8;
-    /** Searches waiting at once; over this a search runs on the server thread rather than queue up behind a backlog. */
+    /** Searches waiting at once. Ordinary requests leave room for urgent retreat and evasion paths. */
     private static final int MAX_QUEUED = 256;
+    private static final int RESERVED_URGENT = 32;
 
     private static final AtomicInteger failures = new AtomicInteger();
     private static final AtomicInteger threadNumber = new AtomicInteger();
+    private static final AtomicLong sequence = new AtomicLong();
     private static final AtomicReference<ThreadPoolExecutor> workers = new AtomicReference<>();
+
+    /** An unsupported search runs synchronously; overload waits instead of moving work back onto the server thread. */
+    public record Submission(@Nullable Search search, boolean deferred)
+    {
+        private static final Submission SYNCHRONOUS = new Submission(null, false);
+        private static final Submission WAIT_FOR_CAPACITY = new Submission(null, true);
+    }
+
+    /** Urgent work may overtake recent requests; older ordinary work still advances under sustained urgent demand. */
+    @SuppressWarnings("java:S1210") // Each task's unique sequence preserves identity equality, including queue removal.
+    static final class Work extends FutureTask<Void> implements Comparable<Work>
+    {
+        private final boolean urgent;
+        private final long order = sequence.getAndIncrement();
+
+        Work(Runnable task, boolean urgent)
+        {
+            super(task, null);
+            this.urgent = urgent;
+        }
+
+        @Override
+        public int compareTo(Work other)
+        {
+            int priority = Long.compare(order - (urgent ? RESERVED_URGENT : 0), other.order - (other.urgent ? RESERVED_URGENT : 0));
+            return priority != 0 ? priority : Long.compare(order, other.order);
+        }
+    }
 
     /** One search handed to a worker. Created and read on the server thread, completed by a worker. */
     public static final class Search
@@ -69,6 +100,8 @@ public final class NpcPathWorkers
         /** Set once the search has run; null while it is still running or has failed. */
         private final AtomicReference<Outcome> outcome = new AtomicReference<>();
         private final AtomicReference<Throwable> failure = new AtomicReference<>();
+        @Nullable
+        private Work work;
 
         private Search(Set<BlockPos> targets)
         {
@@ -100,6 +133,19 @@ public final class NpcPathWorkers
             Outcome finished = outcome.get();
             return finished == null ? null : finished.path();
         }
+
+        /** Discards a superseded request and removes it from the backlog if its worker has not started. */
+        public void cancel()
+        {
+            Work task = work;
+            if (task == null)
+                return;
+            // A running finder is allowed to finish; interrupting game code cannot safely cancel its reads.
+            task.cancel(false);
+            ThreadPoolExecutor executor = workers.get();
+            if (executor != null)
+                executor.remove(task);
+        }
     }
 
     /** Moving quarry may drift a few blocks while searched; safety destinations must match exactly. */
@@ -111,33 +157,41 @@ public final class NpcPathWorkers
     /**
      * Hands a search to a worker.
      *
-     * @return the search to read on a later tick, or null when it has to be run on the server thread
+     * @return the search to read later, a deferred request when overloaded, or a synchronous fallback
      */
     // Mirrors the path finder's own call, whose arguments the worker has to pass on unchanged.
     @SuppressWarnings("java:S107")
-    @Nullable
-    public static Search submit(PathFinder finder, PathNavigationRegion region, Mob mob, Set<BlockPos> targets, float followRange, int accuracy, float maxVisitedNodes)
+    public static Submission submit(PathFinder finder, PathNavigationRegion region, Mob mob, Set<BlockPos> targets, float followRange, int accuracy, float maxVisitedNodes, boolean urgent)
     {
         if (!NpcsCommonConfig.asyncPathfinding() || failures.get() >= MAX_FAILURES)
-            return null;
+            return Submission.SYNCHRONOUS;
+        NodeEvaluator evaluator = ((PathFinderAccessor) finder).wolffsmodnpcsNodeEvaluator();
+        if (evaluator.getClass() != NpcWalkNodeEvaluator.class && evaluator.getClass() != FlyNodeEvaluator.class)
+            return Submission.SYNCHRONOUS;
         ThreadPoolExecutor executor = pool();
-        if (executor == null || executor.getQueue().size() >= MAX_QUEUED)
-            return null;
+        if (executor == null || !queueAllows(executor.getQueue().size(), urgent))
+            return Submission.WAIT_FOR_CAPACITY;
         PathFinder isolated = workerFinder(finder, region, mob);
         if (isolated == null)
-            return null;
+            return Submission.SYNCHRONOUS;
         Search search = new Search(targets);
         // The set the navigator built is copied, so nothing it does with it afterwards can reach the worker.
         Set<BlockPos> goals = Set.copyOf(targets);
         try
         {
-            executor.execute(() -> run(search, isolated, region, mob, goals, followRange, accuracy, maxVisitedNodes));
+            search.work = new Work(() -> run(search, isolated, region, mob, goals, followRange, accuracy, maxVisitedNodes), urgent);
+            executor.execute(search.work);
         }
         catch (RejectedExecutionException rejected)
         {
-            return null;
+            return Submission.WAIT_FOR_CAPACITY;
         }
-        return search;
+        return new Submission(search, false);
+    }
+
+    static boolean queueAllows(int queued, boolean urgent)
+    {
+        return queued < MAX_QUEUED - (urgent ? 0 : RESERVED_URGENT);
     }
 
     /** Copies supported evaluator settings on the server thread; unknown evaluators keep their synchronous behavior. */
@@ -200,7 +254,7 @@ public final class NpcPathWorkers
         if (executor != null)
             return executor;
         int threads = Math.max(1, Math.min(MAX_WORKERS, Runtime.getRuntime().availableProcessors() - 1));
-        ThreadPoolExecutor created = new ThreadPoolExecutor(threads, threads, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), NpcPathWorkers::worker);
+        ThreadPoolExecutor created = new ThreadPoolExecutor(threads, threads, 30L, TimeUnit.SECONDS, new PriorityBlockingQueue<>(), NpcPathWorkers::worker);
         created.allowCoreThreadTimeOut(true);
         return workers.compareAndSet(null, created) ? created : workers.get();
     }

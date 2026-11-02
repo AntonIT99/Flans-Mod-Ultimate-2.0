@@ -110,7 +110,13 @@ public final class NpcOutrangedGoal extends Goal
         int radius = NpcTuning.of(npc).get(Value.COVER_RADIUS);
         if (!hidden)
         {
-            BlockPos cover = NpcCover.hide(npc, enemy, npc.blockPosition(), radius, Double.MAX_VALUE);
+            NpcCover.Result<BlockPos> result = NpcCover.hide(npc, enemy, npc.blockPosition(), radius, Double.MAX_VALUE);
+            if (!result.complete())
+            {
+                nextSearch = now + 1L;
+                return;
+            }
+            BlockPos cover = result.value();
             if (cover != null)
             {
                 go(cover, now);
@@ -136,7 +142,13 @@ public final class NpcOutrangedGoal extends Goal
         if (distance < 1D)
             return;
         Vec3 ahead = npc.position().add(toward.scale(Math.min(distance, radius) / distance));
-        BlockPos cover = NpcCover.hide(npc, enemy, BlockPos.containing(ahead), radius, npc.position().distanceTo(enemy.position()) - MIN_ADVANCE);
+        NpcCover.Result<BlockPos> result = NpcCover.hide(npc, enemy, BlockPos.containing(ahead), radius, npc.position().distanceTo(enemy.position()) - MIN_ADVANCE);
+        if (!result.complete())
+        {
+            nextSearch = now + 1L;
+            return;
+        }
+        BlockPos cover = result.value();
         if (cover != null)
         {
             go(cover, now);

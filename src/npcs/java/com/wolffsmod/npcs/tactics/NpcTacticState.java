@@ -84,6 +84,8 @@ public final class NpcTacticState
     private long weaponRangeTick = Long.MIN_VALUE;
     private final List<Threat> threats = new ArrayList<>();
     @Getter
+    private final NpcCover.Searches coverSearches = new NpcCover.Searches();
+    @Getter
     private final NpcSafetyState safety = new NpcSafetyState();
 
     /** A position learned from incoming fire; a hidden attacker's subsequent movement is not followed. */
@@ -96,6 +98,7 @@ public final class NpcTacticState
         if (current == tactic && target == targetId)
             return;
         tactic = current;
+        coverSearches.clear();
         targetId = target;
         enter(Phase.START, now);
         cover = null;

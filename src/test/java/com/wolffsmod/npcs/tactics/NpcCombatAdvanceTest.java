@@ -109,8 +109,12 @@ class NpcCombatAdvanceTest
             scene.options.set(Feature.TACTICAL_COVER, true);
             scene.state.threat(scene.enemy, scene.enemy, 0L, 300L);
             BlockPos cover = new BlockPos(4, 0, 0);
-            scene.cover.when(() -> NpcCover.safePositions(eq(scene.npc), anyList(), anyInt(), any())).thenReturn(List.of(cover));
+            scene.cover.when(() -> NpcCover.safePositions(eq(scene.npc), anyList(), anyInt(), any())).thenReturn(new NpcCover.Result<>(false, null));
             scene.suppression.when(() -> NpcSuppression.isPinned(scene.npc)).thenReturn(true);
+            assertFalse(scene.goal.canUse());
+            verify(scene.navigation, never()).moveTo(anyDouble(), anyDouble(), anyDouble(), anyDouble());
+            scene.now = 1L;
+            scene.cover.when(() -> NpcCover.safePositions(eq(scene.npc), anyList(), anyInt(), any())).thenReturn(new NpcCover.Result<>(true, List.of(cover)));
             assertTrue(scene.goal.canUse());
             scene.goal.start();
             scene.goal.tick();
