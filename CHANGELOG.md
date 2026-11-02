@@ -13,7 +13,7 @@
 * Airborne wound puffs and severe-injury spray accompany temporary ground blood splatters on player and opted-in NPC injuries and deaths, controlled by the default-on Teams `Blood Effects` rule (`/teams bloodEffects true|false`); blocked hits do not bleed and fatal heavy hits do not duplicate splatters
 * New combat effects: screen shake and camera recoil, tracer beams and mixed belts, hold-to-throw grenades with realistic weight-based category speeds (up to 27 m/s) and weaker underhand tosses (hold and release attack for overhand, use for underhand); a quick click throws at full speed, holding longer charges the throw like a bow with a progress bar under the crosshair (`ThrowChargeTime`), thermal vision scopes, hot rounds and team IFF strobes, explosion shake, fly-by sounds and suppression
 * Large rendering performance improvements and shader pack compatibility (Oculus/Iris)
-* Faster content loading and startup
+* Faster content loading and startup, including reuse of model muzzle measurements after equivalent pack rebuilds and unrelated definition edits, with logged cache invalidation reasons
 
 * All 19 additional Labjac particle names resolve, including colored shell smoke, water plumes, blood spray, destruction columns, lock markers, canisters, the Nu muzzle sprites and working world casings; suitable weapon, vehicle and NPC events reuse them, and `flansmod.muzzleflashclassic` selects the dedicated legacy muzzle sprites
 
