@@ -2,9 +2,13 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.flansmodultimate.api.parts.IFlanPartTarget;
+import com.flansmodultimate.api.parts.IPartBody;
 import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.api.parts.PartState;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.sim.NpcSight;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
@@ -32,6 +36,71 @@ class NpcVehicleCombatTest
     static void bootstrap() throws ReflectiveOperationException
     {
         EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    void shieldedNpcCrewUseTheirVehicleArmorForIndependentGunFire()
+    {
+        EntityNPCInterface attacker = mock(EntityNPCInterface.class);
+        EntityNPCInterface tank = mock(EntityNPCInterface.class);
+        LivingEntity crew = mock(LivingEntity.class);
+        var mg = Optional.of(new AmmunitionArmor(0D, false, 12.8D));
+        try (var equipment = mockStatic(NpcEquipment.class); var threats = mockStatic(NpcVehicleThreats.class); var crews = mockStatic(NpcCrew.class); var types = mockStatic(FlansEntityTypes.class))
+        {
+            equipment.when(() -> NpcEquipment.enabled(attacker, NpcWeaponOptions.Feature.ADAPTIVE_VEHICLE_COMBAT)).thenReturn(true);
+            crews.when(() -> NpcCrew.shieldingVehicle(crew)).thenReturn(Optional.of(tank));
+            threats.when(() -> NpcVehicleThreats.groundVehicle(tank)).thenReturn(true);
+            threats.when(() -> NpcVehicleThreats.platform(tank)).thenReturn(tank);
+            threats.when(() -> NpcVehicleThreats.protection(eq(tank), any(Vec3.class), anyString())).thenReturn(Optional.of(new PartArmor(100F, 100F)));
+            assertFalse(NpcVehicleCombat.mayFire(attacker, crew, Vec3.ZERO, mg, false), "an independent gun cannot bypass armour by choosing the protected crew");
+            types.verifyNoInteractions();
+            crews.when(() -> NpcCrew.shieldingVehicle(crew)).thenReturn(Optional.empty());
+            assertTrue(NpcVehicleCombat.mayFire(attacker, crew, Vec3.ZERO, mg, false), "exposed crew remain eligible");
+        }
+    }
+
+    @Test
+    void casemateHullArmorStillStopsMgsWithoutInventingProtectionForAnUnknownTurret()
+    {
+        EntityNPCInterface attacker = mock(EntityNPCInterface.class);
+        LivingEntity casemate = mock(LivingEntity.class, withSettings().extraInterfaces(IFlanPartTarget.class));
+        when(casemate.position()).thenReturn(Vec3.ZERO);
+        IPartBody body = mock(IPartBody.class);
+        when(((IFlanPartTarget) casemate).flansmodultimatePartBody()).thenReturn(Optional.of(body));
+        var mg = Optional.of(new AmmunitionArmor(0D, false, 12.8D));
+        try (var equipment = mockStatic(NpcEquipment.class); var threats = mockStatic(NpcVehicleThreats.class); var types = mockStatic(FlansEntityTypes.class))
+        {
+            equipment.when(() -> NpcEquipment.enabled(attacker, NpcWeaponOptions.Feature.ADAPTIVE_VEHICLE_COMBAT)).thenReturn(true);
+            threats.when(() -> NpcVehicleThreats.groundVehicle(casemate)).thenReturn(true);
+            threats.when(() -> NpcVehicleThreats.platform(casemate)).thenReturn(casemate);
+            threats.when(() -> NpcVehicleThreats.protection(casemate, Vec3.ZERO, "core")).thenReturn(Optional.of(new PartArmor(45F, 45F)));
+            assertFalse(NpcVehicleCombat.mayFire(attacker, casemate, Vec3.ZERO, mg, false), "a turretless SU-85 offers only its known armoured hull");
+            when(body.getPart("turret")).thenReturn(Optional.of(mock(PartState.class)));
+            assertTrue(NpcVehicleCombat.mayFire(attacker, casemate, Vec3.ZERO, mg, false), "an existing turret with unknown protection remains eligible");
+        }
+    }
+
+    @Test
+    void realCasemateVehiclesUseTheKnownPlateAlongTheAimedRay()
+    {
+        EntityNPCInterface attacker = mock(EntityNPCInterface.class);
+        LivingEntity casemate = mock(LivingEntity.class);
+        var mg = Optional.of(new AmmunitionArmor(0D, false, 12.8D));
+        try (var equipment = mockStatic(NpcEquipment.class);
+            var threats = mockStatic(NpcVehicleThreats.class);
+            var types = mockStatic(FlansEntityTypes.class);
+            var states = mockStatic(NpcVehicleState.class))
+        {
+            equipment.when(() -> NpcEquipment.enabled(attacker, NpcWeaponOptions.Feature.ADAPTIVE_VEHICLE_COMBAT)).thenReturn(true);
+            threats.when(() -> NpcVehicleThreats.groundVehicle(casemate)).thenReturn(true);
+            threats.when(() -> NpcVehicleThreats.platform(casemate)).thenReturn(casemate);
+            threats.when(() -> NpcVehicleThreats.protection(casemate, Vec3.ZERO, "core")).thenReturn(Optional.of(new PartArmor(45F, 45F)));
+            states.when(() -> NpcVehicleState.aimPoint(casemate)).thenReturn(Vec3.ZERO);
+            types.when(() -> FlansEntityTypes.getArmorAlongRay(casemate, Vec3.ZERO, Vec3.ZERO)).thenReturn(Optional.of(new PartArmor(45F, 45F)));
+            assertFalse(NpcVehicleCombat.mayFire(attacker, casemate, Vec3.ZERO, mg, false));
+            types.when(() -> FlansEntityTypes.getArmorAlongRay(casemate, Vec3.ZERO, Vec3.ZERO)).thenReturn(Optional.empty());
+            assertTrue(NpcVehicleCombat.mayFire(attacker, casemate, Vec3.ZERO, mg, false), "an unknown ray must not fabricate protection");
+        }
     }
 
     @Test

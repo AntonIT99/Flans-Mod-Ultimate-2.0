@@ -109,7 +109,8 @@ public final class NpcAmmunition
     /**
      * What the NPC fires without an equipped ranged weapon, as {@link NpcThrowing#mainProjectile} chooses it. An NPC wearing an
      * AA gun or driveable model fires what its projectile slot holds, which was put there on purpose, unless it is held to
-     * ammunition its model fires; otherwise the first round in its inventory its model fires, or the AA gun's or selected
+     * ammunition its model fires. Adaptive vehicle combat always uses ammunition compatible with its selected bank, so crew MG
+     * ammunition in the slot cannot replace the cannon's shell. Otherwise the first round in its inventory its model fires, or the AA gun's or selected
      * bank's default when it carries none and consumption is off.
      */
     public static ItemStack modelTemplate(EntityNPCInterface npc)
@@ -128,7 +129,8 @@ public final class NpcAmmunition
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
         boolean secondary = NpcEquipment.secondaryBank(npc, weapon);
         // Anything but Flan ammunition in the projectile slot is the NPC's own Custom NPCs projectile.
-        if (!projectile.isEmpty() && (slotChoice(npc) || !FlansProjectiles.isProjectile(projectile) || FlansEquipment.acceptsAmmunition(weapon, secondary, projectile)))
+        boolean arbitrarySlot = slotChoice(npc) && !(weapon instanceof IDriveableType && NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT));
+        if (!projectile.isEmpty() && (arbitrarySlot || !FlansProjectiles.isProjectile(projectile) || FlansEquipment.acceptsAmmunition(weapon, secondary, projectile)))
             return projectile;
         for (ItemStack candidate : inventory(npc))
             if (FlansEquipment.acceptsAmmunition(weapon, secondary, candidate))

@@ -49,8 +49,9 @@ public final class BotFactory
 {
     /** Custom NPCs' respawn setting for an NPC that stays dead. */
     private static final int NEVER_RESPAWN = 3;
-    /** Custom NPCs' moving type (not its navigation type) for an NPC that stands where it is when idle. */
+    /** Legacy moving type on generated bots, migrated so vehicle combat paths can move their hulls. */
     private static final int STANDING = 0;
+    private static final int WANDERING = 1;
     private static final int SHOW_NAME = 0;
     private static final int HIDE_NAME = 1;
     private static final double SPREAD = 1.5D;
@@ -251,6 +252,13 @@ public final class BotFactory
      */
     static void keepTrained(EntityNPCInterface npc, BotSettings settings)
     {
+        // Migrate generated bots already saved in an active battle, preserving enlisted NPCs and seated crew.
+        if (!npc.isPassenger() && npc.ais.getMovingType() == STANDING && BotTag.read(npc).filter(data -> !data.enlisted()).isPresent())
+        {
+            npc.ais.setMovingType(WANDERING);
+            npc.updateAI = true;
+            npc.updateClient = true;
+        }
         CompoundTag training = npc.getPersistentData().getCompound(NBT_TRAINING);
         if (training.contains(NBT_LEVEL) && !training.getString(NBT_LEVEL).equals(settings.trainingId()))
             train(npc, settings);
@@ -387,7 +395,7 @@ public final class BotFactory
         npc.advanced.attackOtherFactions = true;
         npc.stats.spawnCycle = NEVER_RESPAWN;
         npc.ais.returnToStart = false;
-        npc.ais.setMovingType(STANDING);
+        npc.ais.setMovingType(WANDERING);
         npc.ais.setStartPos(BlockPos.containing(position));
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);

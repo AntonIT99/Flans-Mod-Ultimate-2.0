@@ -6,10 +6,12 @@ import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.parts.IFlanPartTarget;
 import com.flansmodultimate.api.parts.PartArmor;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.sim.NpcSight;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcCombatMovement;
@@ -49,6 +51,10 @@ public final class NpcVehicleCombat
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // Absence explicitly means unknown ammunition, which must remain eligible.
     public static boolean mayFire(EntityNPCInterface npc, LivingEntity target, Vec3 origin, Optional<AmmunitionArmor> round, boolean explosive)
     {
+        // Shielded NPC crew take their vehicle's damage. Independent gunners never call the NPC's setTarget redirection.
+        EntityNPCInterface shielding = NpcCrew.shieldingVehicle(target).orElse(null);
+        if (shielding != null)
+            target = shielding;
         if (!NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || !NpcVehicleThreats.groundVehicle(target) || explosive || round.isEmpty() || !NpcArmorEngagement.smallArms(round.get()))
             return true;
         Entity platform = NpcVehicleThreats.platform(target);
@@ -59,8 +65,19 @@ public final class NpcVehicleCombat
             return FlansEntityTypes.getArmorAlongRay(platform, origin, contact).map(armor -> round.get().penetrationMm() >= thickness(round.get(), armor)).orElse(true);
         }
         Optional<PartArmor> hull = NpcVehicleThreats.protection(target, origin, "core");
-        Optional<PartArmor> turret = NpcVehicleThreats.protection(target, origin, "turret");
+        Optional<PartArmor> turret = turretProtection(target, origin);
         return !blocked(round.get(), hull, turret);
+    }
+
+    /** An absent casemate turret offers no alternative shot; a real hull can also establish protection along the aimed ray. */
+    private static Optional<PartArmor> turretProtection(LivingEntity target, Vec3 origin)
+    {
+        Optional<PartArmor> turret = NpcVehicleThreats.protection(target, origin, "turret");
+        if (turret.isPresent())
+            return turret;
+        if (target instanceof IFlanPartTarget vehicle && vehicle.flansmodultimatePartBody().filter(body -> body.getPart("turret").isEmpty()).isPresent())
+            return NpcVehicleThreats.protection(target, origin, "core");
+        return FlansEntityTypes.getArmorAlongRay(target, origin, NpcVehicleState.aimPoint(target));
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // Unknown plates must remain distinct from known zero-thickness plates.
