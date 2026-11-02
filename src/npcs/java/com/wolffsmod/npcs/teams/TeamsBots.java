@@ -155,6 +155,12 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
     }
 
+    /** Whether this NPC occupies the physical commander slot of its battle. */
+    public static boolean isCommander(EntityNPCInterface npc)
+    {
+        return BotBattles.of(npc).flatMap(battle -> BotBattles.slotOf(battle, npc)).filter(slot -> slot.getSource() == BotSlot.Source.COMMANDER).isPresent();
+    }
+
     /** A battle order or ordinary NPC duty retained by the shared infantry combat movement. Server thread. */
     public static Optional<NpcCombatIntent> combatIntent(EntityNPCInterface npc)
     {
@@ -340,6 +346,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     private static void fallen(BotBattle current, BotSlot slot, long now)
     {
         slot.setDiedAt(now);
+        CommanderBots.fallen(current, slot, now);
         int seconds = current.getSettings().getRespawnSeconds();
         if (slot.isVehicle())
         {

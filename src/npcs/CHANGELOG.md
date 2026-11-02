@@ -61,6 +61,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Teams soldiers follow the round regeneration rule and heal half a heart every five seconds by default; medical healing and vehicle repairs remain independent
 * Teams bots made from a class fire as far as their weapon and level let them hit, about 128 blocks with an accurate rifle and up to 256 with a scoped one, and call out whoever shoots at them to the bots within 48 blocks, so a player sniping them from afar draws their fire and their marksmen and vehicles
 
+* Optional commander bots (`commanderbot`, per-team `commanderclass`) stay behind the front and disrupt AI strategy for configurable `commanderdisruption` seconds when killed; commanders and acting bot squad leaders show leadership titles with their normal name visibility
 * Teams bots: NPC soldiers, squads and vehicles that fight Teams rounds, with player orders (`Squad orders` key, O), a commander seat, transports, class roles (a medic heals and an engineer repairs once every five seconds, and the same ally or vehicle at most every ten seconds), every class of the team fielded in proportion to its weight, grenades thrown at any enemy in safe reach, suppression and squad leading; bots approach CTF flags at ground level even on taller poles
 * Manage Custom NPCs factions for battles: branches of Flan's teams, alliances, wars and peace between factions
 * Players can join and leave factions; factions are invite-only by default, and operators choose who may join, the leave penalty and the rejoin cooldown

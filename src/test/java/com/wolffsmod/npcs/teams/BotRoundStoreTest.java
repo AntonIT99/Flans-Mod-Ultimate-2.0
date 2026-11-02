@@ -44,6 +44,7 @@ class BotRoundStoreTest
         round.getInfantrySpawns().put("Germans", 12);
         round.increment(round.getVehicleSpawns(), "Germans", 2);
         round.getCommanders().put(1, UUID.randomUUID());
+        round.getDisruptedUntil().put(1, NOW + 400L);
         round.getSidesThatFought().add(1);
         round.getFieldedPlayers().add(UUID.randomUUID());
         return round;
@@ -79,6 +80,7 @@ class BotRoundStoreTest
         assertEquals(before.getInfantrySpawns(), after.getInfantrySpawns());
         assertEquals(before.getVehicleSpawns(), after.getVehicleSpawns());
         assertEquals(before.getCommanders(), after.getCommanders());
+        assertEquals(before.getDisruptedUntil(), after.getDisruptedUntil());
         assertEquals(before.getSidesThatFought(), after.getSidesThatFought());
         assertEquals(before.getFieldedPlayers(), after.getFieldedPlayers());
         assertFalse(after.isOpening());

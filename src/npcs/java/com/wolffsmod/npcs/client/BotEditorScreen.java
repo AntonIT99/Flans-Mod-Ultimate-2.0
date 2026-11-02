@@ -60,7 +60,7 @@ public final class BotEditorScreen extends Screen
     /** The pages of the editor. */
     private enum Tab
     {
-        ROUND, RULES, TEAM, FORCES, TEMPLATES, PRESETS
+        ROUND, RULES, TEAM, FORCES, COMMANDER, TEMPLATES, PRESETS
     }
 
     private BotEditorStatePacket state;
@@ -150,6 +150,7 @@ public final class BotEditorScreen extends Screen
         {
             case ROUND -> initRound(left);
             case RULES -> initRules(left);
+            case COMMANDER -> initCommander(left);
             case TEAM -> initTeam(left);
             case FORCES -> initForces(left);
             case TEMPLATES -> initTemplates(left);
@@ -204,6 +205,19 @@ public final class BotEditorScreen extends Screen
         addField(left, 4, RETREAT, Integer.toString(settings.getRetreatHealth()));
         addRenderableWidget(switchButton(left, y(5), COLUMN_WIDTH, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
         addRenderableWidget(enumButton(left + COLUMN_WIDTH + 4, y(5), COLUMN_WIDTH, "tactical_profile", NpcTacticalProfile.values(), settings.getTacticalProfile(), settings::setTacticalProfile));
+    }
+
+    private void initCommander(int left)
+    {
+        addRenderableWidget(switchButton(left, y(0), LABEL_WIDTH + FIELD_WIDTH, "commander_bot", settings.isCommanderBot(), settings::setCommanderBot));
+        addField(left, 1, "commander_disruption", Integer.toString(settings.getCommanderDisruptionSeconds()));
+        if (!teams().isEmpty())
+        {
+            addSelector(left, 2, Component.literal(teams().get(team)), () -> cycleTeam(-1), () -> cycleTeam(1));
+            BotSettings.TeamForce force = settings.team(teams().get(team));
+            addPickerButton(left, 3, "commander_class", Component.literal(force.getCommanderClass().isEmpty() ? NONE : force.getCommanderClass()),
+                () -> new BotCommanderClassPicker(this, teams().get(team), force));
+        }
     }
 
     private CycleButton<Boolean> switchButton(int x, int y, int width, String key, boolean value, Consumer<Boolean> setter)
@@ -531,6 +545,7 @@ public final class BotEditorScreen extends Screen
                 settings.setVehicleCaptureWeight(Math.max(0F, decimal("capture_vehicles", settings.getVehicleCaptureWeight())));
             }
             case RULES -> settings.setRetreatHealth(Math.max(0, Math.min(100, number(RETREAT, settings.getRetreatHealth()))));
+            case COMMANDER -> settings.setCommanderDisruptionSeconds(Math.max(0, number("commander_disruption", settings.getCommanderDisruptionSeconds())));
             case TEAM -> commitTeam();
             case FORCES -> {
                 // Forces are applied by their pickers.

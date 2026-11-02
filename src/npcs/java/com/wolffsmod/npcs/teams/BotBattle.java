@@ -37,6 +37,8 @@ final class BotBattle
     private final Map<String, Map<Integer, Integer>> squadDeployments = new HashMap<>();
     /** The player commanding each side, by side; a side without one is commanded by its AI alone. */
     private final Map<Integer, UUID> commanders = new HashMap<>();
+    /** Game time until each side recovers from losing its commander bot. */
+    private final Map<Integer, Long> disruptedUntil = new HashMap<>();
     /** Sides that have fielded anyone, the only ones that can be worn out. */
     private final Set<Integer> sidesThatFought = new HashSet<>();
     /** Players who took the field in this playing; joining again later costs them a ticket. */

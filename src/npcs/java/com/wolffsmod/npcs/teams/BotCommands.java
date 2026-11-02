@@ -153,6 +153,8 @@ public final class BotCommands
         }, text(SET, "difficulty", shown))));
         round.then(switchSetting("playertickets", BotSettings::setPlayerTickets));
         round.then(switchSetting("radio", BotSettings::setRadio));
+        round.then(switchSetting("commanderbot", BotSettings::setCommanderBot));
+        round.then(intSetting("commanderdisruption", 0, BotSettings::setCommanderDisruptionSeconds));
         round.then(switchSetting("suppression", BotSettings::setSuppression));
         round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
         round.then(switchSetting("vehicles", BotSettings::setVehiclesEnabled));
@@ -331,6 +333,7 @@ public final class BotCommands
         lines.add(text("show.rules", onOff(settings.isRadio()), onOff(settings.isSuppression()), settings.getRetreatHealth(), onOff(settings.isRallyPoints())));
         lines.add(text("show.vehicles", onOff(settings.isVehiclesEnabled())));
         lines.add(text("show.crews", onOff(settings.isVehicleCrews())));
+        lines.add(text("show.commander", onOff(settings.isCommanderBot()), settings.getCommanderDisruptionSeconds()));
         for (ITeam team : round.getTeams())
             lines.addAll(describe(team, settings.team(team.getShortName())));
         BotEditor.problems(round, settings).forEach(problem -> lines.add(problem.copy().withStyle(ChatFormatting.YELLOW)));
@@ -350,6 +353,7 @@ public final class BotCommands
         if (!force.getClassRoles().isEmpty())
             lines.add(text("show.roles", BotSettingsText.formatRoles(force.getClassRoles())));
         lines.add(text("show.crew", BotSettingsText.formatCrew(force)));
+        lines.add(text("show.commander_class", force.getCommanderClass().isEmpty() ? NONE : force.getCommanderClass()));
         force.getSquads().forEach(entry -> lines.add(text("show.squad", entry.template(), entry.count(), budget(entry.budget()))));
         for (BotSettings.VehicleEntry entry : force.getVehicles())
         {

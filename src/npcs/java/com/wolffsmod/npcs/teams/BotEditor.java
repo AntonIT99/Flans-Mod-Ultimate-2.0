@@ -175,7 +175,7 @@ public final class BotEditor
                 if (!entry.carry().isEmpty())
                     templateProblems(name, classes, entry.carry(), problems);
             }
-            crewProblems(name, classes, force, problems);
+            classProblems(name, classes, force, problems);
         }
         return problems;
     }
@@ -201,12 +201,22 @@ public final class BotEditor
                 bots += entry.count() * SquadTemplates.get().find(entry.template()).map(template -> template.roster().size()).orElse(0);
             bots += force.getVehicles().stream().mapToInt(BotSettings.VehicleEntry::count).sum();
         }
+        if (settings.isCommanderBot())
+        {
+            Set<Integer> sides = new HashSet<>();
+            for (ITeam team : round.getTeams())
+                if (team.getClasses().stream().anyMatch(playerClass -> playerClass.getShortName().equals(settings.team(team.getShortName()).getCommanderClass())))
+                    sides.add(round.getSideOf(team));
+            bots += sides.size();
+        }
         return bots;
     }
 
-    /** Crew classes the team does not offer, for which a class is picked by weight instead. */
-    private static void crewProblems(String team, Set<String> classes, BotSettings.TeamForce force, List<Component> problems)
+    /** Commander and crew classes the team does not offer; crews fall back to a class picked by weight. */
+    private static void classProblems(String team, Set<String> classes, BotSettings.TeamForce force, List<Component> problems)
     {
+        if (!force.getCommanderClass().isEmpty() && !classes.contains(force.getCommanderClass()))
+            problems.add(Component.translatable(PREFIX + "unknown_class", team, force.getCommanderClass()));
         for (CrewPost post : CrewPost.values())
         {
             String crew = force.crewClass(post);

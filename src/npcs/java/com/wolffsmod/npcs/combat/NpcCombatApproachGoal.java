@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.combat;
 
 import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import com.wolffsmod.npcs.teams.NpcSuppression;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.entity.LivingEntity;
@@ -28,7 +29,7 @@ public final class NpcCombatApproachGoal extends Goal
     @Override
     public boolean canUse()
     {
-        return NpcEquipmentRangedGoal.engages(npc);
+        return !TeamsBots.isCommander(npc) && NpcEquipmentRangedGoal.engages(npc);
     }
 
     @Override

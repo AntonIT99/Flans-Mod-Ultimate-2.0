@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.tactics.NpcCover.Cover;
 import com.wolffsmod.npcs.tactics.TacticDecision.Order;
 import com.wolffsmod.npcs.tactics.TacticDecision.Situation;
 import com.wolffsmod.npcs.teams.NpcSuppression;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -52,6 +53,8 @@ public final class NpcTacticSteering
             refreshCover(npc, target, memory, engagement, now);
         boolean hit = npc.getLastHurtByMob() != null && npc.tickCount - npc.getLastHurtByMobTimestamp() < HIT_TICKS;
         Vec3 home = new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
+        if (TeamsBots.isCommander(npc))
+            home = TeamsBots.combatIntent(npc).map(NpcCombatIntent::destination).orElse(home);
         Situation situation = new Situation(npc.getSensing().hasLineOfSight(target), npc.position(), target.position(), home, engagement, memory.isReloading(now), hit);
         Order order = TacticDecision.decide(tactic, situation, memory, now);
         // A vehicle without a shot from where it would stand, or close in from, drives to where it has one; one that holds stays put.

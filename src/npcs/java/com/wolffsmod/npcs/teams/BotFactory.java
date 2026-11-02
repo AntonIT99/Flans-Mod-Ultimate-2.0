@@ -100,6 +100,11 @@ public final class BotFactory
         return soldier(level, order, order.slot().getRole(), position, random, npc ->
         {
             name(npc, order, random);
+            if (order.slot().getSource() == BotSlot.Source.COMMANDER)
+            {
+                NpcDisplayNames.literalTitle(npc.display, "Commander");
+                NpcTuning.of(npc).set(Value.TACTIC, Tactic.CUSTOM_NPCS.ordinal());
+            }
             join(npc, order, position, Membership.SOLDIER);
         });
     }

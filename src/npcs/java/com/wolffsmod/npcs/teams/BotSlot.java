@@ -23,6 +23,8 @@ public final class BotSlot
     {
         /** Loose infantry, counted by the team's infantry setting. */
         INFANTRY,
+        /** Extra commander outside infantry counts. */
+        COMMANDER,
         /** A member of a squad of one of the team's squad entries. */
         SQUAD,
         /** A soldier a transport of one of the team's vehicle entries brought to the front; it never comes back. */

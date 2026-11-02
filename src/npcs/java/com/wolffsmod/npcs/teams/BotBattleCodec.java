@@ -90,6 +90,9 @@ final class BotBattleCodec
         CompoundTag commanders = new CompoundTag();
         current.getCommanders().forEach((side, player) -> commanders.putUUID(Integer.toString(side), player));
         tag.put(NBT_COMMANDERS, commanders);
+        CompoundTag disrupted = new CompoundTag();
+        current.getDisruptedUntil().forEach((side, until) -> disrupted.putLong(Integer.toString(side), until));
+        tag.put("disrupted_until", disrupted);
         tag.putIntArray(NBT_FOUGHT, current.getSidesThatFought().stream().mapToInt(Integer::intValue).toArray());
         ListTag fielded = new ListTag();
         current.getFieldedPlayers().forEach(player -> fielded.add(NbtUtils.createUUID(player)));
@@ -204,6 +207,9 @@ final class BotBattleCodec
         infantry.getAllKeys().forEach(team -> current.getInfantrySpawns().put(team, infantry.getInt(team)));
         readEntries(tag.getCompound(NBT_VEHICLE_SPAWNS), current.getVehicleSpawns());
         readEntries(tag.getCompound(NBT_SQUAD_DEPLOYMENTS), current.getSquadDeployments());
+        CompoundTag disrupted = tag.getCompound("disrupted_until");
+        for (String side : disrupted.getAllKeys())
+            side(side).ifPresent(index -> current.getDisruptedUntil().put(index, disrupted.getLong(side)));
         CompoundTag commanders = tag.getCompound(NBT_COMMANDERS);
         for (String side : commanders.getAllKeys())
             side(side).ifPresent(index -> current.getCommanders().put(index, commanders.getUUID(side)));

@@ -18,6 +18,33 @@ import static org.junit.jupiter.api.Assertions.*;
 class BotSettingsTest
 {
     @Test
+    void physicalCommanderIsOptInAndSettingsTravelWithPresets()
+    {
+        BotSettings legacy = BotSettings.load(new CompoundTag());
+        assertFalse(legacy.isCommanderBot());
+        assertEquals(20, legacy.getCommanderDisruptionSeconds());
+        BotSettings settings = new BotSettings();
+        settings.setCommanderBot(true);
+        settings.setCommanderDisruptionSeconds(37);
+        settings.team("red").setCommanderClass("officer");
+        BotSettings copy = BotPresets.carryOver(settings.save(), List.of("red"), List.of("blue"));
+        assertTrue(copy.isCommanderBot());
+        assertEquals(37, copy.getCommanderDisruptionSeconds());
+        assertEquals("officer", copy.team("blue").getCommanderClass());
+        settings.setCommanderDisruptionSeconds(0);
+        assertEquals(0, BotSettings.load(settings.save()).getCommanderDisruptionSeconds());
+    }
+
+    @Test
+    void commanderStaysBehindFrontWithoutGoingBehindHome()
+    {
+        Vec3 home = new Vec3(0D, 64D, 0D);
+        assertEquals(home, CommanderBots.rear(home, new Vec3(20D, 70D, 0D)));
+        assertEquals(new Vec3(52D, 64D, 0D), CommanderBots.rear(home, new Vec3(100D, 80D, 0D)));
+        assertEquals(home, CommanderBots.rear(home, home));
+    }
+
+    @Test
     void vehicleToggleKeepsAllocationsAndDefaultsOnForExistingRounds()
     {
         BotSettings settings = new BotSettings();

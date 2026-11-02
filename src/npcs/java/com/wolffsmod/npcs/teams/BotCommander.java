@@ -72,8 +72,14 @@ final class BotCommander
         flags.stream().map(TeamsFlag::carrier).filter(Objects::nonNull).forEach(carriers::add);
         BotLeaders.tick(server, level, battle);
         applyOrders(server, level, battle);
+        CommanderBots.titles(level, battle);
         for (int side = 0; side < ground.sideCount(); side++)
         {
+            if (CommanderBots.disrupted(battle, side, level.getGameTime()))
+            {
+                CommanderBots.hold(level, battle, side);
+                continue;
+            }
             int ownSide = side;
             List<Vec3> enemies = new ArrayList<>();
             fighters.forEach((fighterSide, positions) ->
@@ -175,7 +181,7 @@ final class BotCommander
         {
             BotSlot slot = battle.getSlots().get(slotId);
             Entity entity = slot == null || slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
-            if (entity != null && entity.isAlive())
+            if (entity != null && entity.isAlive() && (!(entity instanceof EntityNPCInterface npc) || !npc.isKilled()))
                 members.add(entity);
         }
         return members;
@@ -193,6 +199,13 @@ final class BotCommander
     {
         Integer slotId = battle.getSlotOfEntity().get(npc.getUUID());
         BotSlot slot = slotId == null ? null : battle.getSlots().get(slotId);
+        if (slot != null && slot.getSource() == BotSlot.Source.COMMANDER)
+            return Optional.of(CommanderBots.order(battle, slot, npc));
+        return squadOrder(server, battle, slot);
+    }
+
+    private static Optional<Order> squadOrder(MinecraftServer server, BotBattle battle, BotSlot slot)
+    {
         BotSquad squad = slot == null ? null : battle.getSquads().get(slot.getSquad());
         SquadTask task = squad == null ? null : squad.getTask();
         if (task == null)

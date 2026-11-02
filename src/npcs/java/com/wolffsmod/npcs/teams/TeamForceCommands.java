@@ -93,6 +93,8 @@ final class TeamForceCommands
                 force.setCloneTab(IntegerArgumentType.getInteger(context, "tab"));
                 force.setCloneName(StringArgumentType.getString(context, NAME));
             }, text("clone", StringArgumentType.getString(context, NAME)))))));
+        team.then(Commands.literal("commanderclass").then(Commands.argument(CLASS, StringArgumentType.word()).suggests(classes)
+            .executes(context -> target.edit(context, force -> force.setCommanderClass(BotCommands.word(context, CLASS)), text(SET, "commanderclass", StringArgumentType.getString(context, CLASS))))));
         team.then(crewSettings(target, classes));
         team.then(Commands.literal("keepequipment").then(Commands.literal("on").executes(context -> target.edit(context, force -> force.setKeepCloneEquipment(true), text("keep_equipment_on"))))
             .then(Commands.literal("off").executes(context -> target.edit(context, force -> force.setKeepCloneEquipment(false), text("keep_equipment_off")))));

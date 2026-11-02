@@ -43,6 +43,7 @@ final class BotPopulation
             keepSquads(battle, team, force, random);
             keepVehicles(battle, team, force);
         }
+        CommanderBots.keep(battle);
         battle.setOpening(false);
         for (BotSlot slot : battle.getSlots().values())
         {
@@ -301,6 +302,9 @@ final class BotPopulation
         BotSettings.TeamForce force = battle.getSettings().team(slot.getTeam());
         switch (slot.getSource())
         {
+            case COMMANDER -> {
+                return CommanderBots.canSpawn(battle, slot);
+            }
             case INFANTRY -> {
                 if (force.getBudget() > 0 && battle.getInfantrySpawns().getOrDefault(slot.getTeam(), 0) >= force.getBudget())
                     return false;

@@ -44,6 +44,7 @@ public final class BotSettings
     static final String NBT_CUSTOM_DIFFICULTY = "custom_difficulty";
     private static final String NBT_PLAYER_TICKETS = "player_tickets";
     private static final String NBT_RADIO = "radio";
+    private static final String NBT_COMMANDER_DISRUPTION = "commander_disruption";
     private static final String NBT_RETREAT = "retreat_health";
     private static final String NBT_SUPPRESSION = "suppression";
     private static final String NBT_RALLY = "rally_points";
@@ -194,6 +195,9 @@ public final class BotSettings
     private boolean playerTickets = true;
     /** Whether bots call out on the radio what happens at the objectives. */
     private boolean radio = true;
+    /** Spawn a vulnerable commander for each side. */
+    private boolean commanderBot;
+    private int commanderDisruptionSeconds = 20;
     /** Share of its health, in percent, below which a soldier falls back to a medic or its spawn; 0 never. */
     private int retreatHealth = 30;
     /** Whether rounds passing close by make bots aim worse and stop advancing. */
@@ -226,6 +230,7 @@ public final class BotSettings
 
         /** Loose infantry: a count, a share weight or a fill target, depending on the mode. */
         private int count;
+        private String commanderClass = "";
         /** Loose infantry spawns the team may make in all; 0 for no limit. */
         private int budget;
         /** The soldier name list bots are named from, such as {@code german_20th}; empty keeps the template's names. */
@@ -252,6 +257,7 @@ public final class BotSettings
         {
             CompoundTag tag = new CompoundTag();
             tag.putInt(NBT_COUNT, count);
+            tag.putString("commander_class", commanderClass);
             tag.putInt(NBT_BUDGET, budget);
             tag.putString(NBT_NAME_LIST, nameList);
             tag.putInt(NBT_CLONE_TAB, cloneTab);
@@ -279,6 +285,7 @@ public final class BotSettings
         {
             TeamForce force = new TeamForce();
             force.count = Math.max(0, tag.getInt(NBT_COUNT));
+            force.commanderClass = tag.getString("commander_class");
             force.budget = Math.max(0, tag.getInt(NBT_BUDGET));
             force.nameList = tag.getString(NBT_NAME_LIST);
             force.cloneTab = tag.getInt(NBT_CLONE_TAB);
@@ -477,6 +484,8 @@ public final class BotSettings
         tag.put(NBT_CUSTOM_DIFFICULTY, customTraining.save());
         tag.putBoolean(NBT_PLAYER_TICKETS, playerTickets);
         tag.putBoolean(NBT_RADIO, radio);
+        tag.putBoolean("commander_bot", commanderBot);
+        tag.putInt(NBT_COMMANDER_DISRUPTION, commanderDisruptionSeconds);
         tag.putInt(NBT_RETREAT, retreatHealth);
         tag.putBoolean(NBT_SUPPRESSION, suppression);
         tag.putBoolean(NBT_RALLY, rallyPoints);
@@ -514,6 +523,8 @@ public final class BotSettings
         settings.customTraining = BotTraining.load(tag.getCompound(NBT_CUSTOM_DIFFICULTY), DEFAULT_CUSTOM);
         settings.playerTickets = !tag.contains(NBT_PLAYER_TICKETS) || tag.getBoolean(NBT_PLAYER_TICKETS);
         settings.radio = !tag.contains(NBT_RADIO) || tag.getBoolean(NBT_RADIO);
+        settings.commanderBot = tag.getBoolean("commander_bot");
+        settings.commanderDisruptionSeconds = tag.contains(NBT_COMMANDER_DISRUPTION) ? Math.max(0, tag.getInt(NBT_COMMANDER_DISRUPTION)) : 20;
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;
         settings.suppression = !tag.contains(NBT_SUPPRESSION) || tag.getBoolean(NBT_SUPPRESSION);
         settings.rallyPoints = !tag.contains(NBT_RALLY) || tag.getBoolean(NBT_RALLY);
