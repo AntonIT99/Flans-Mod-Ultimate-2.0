@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.common.teams.editor.EditorCatalog;
 import com.flansmodultimate.content.IContentProvider;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,6 +60,7 @@ public class Team extends InfoType implements ITeam
     private ResourceLocation victoryFlagTextureLocation;
     private final Map<EquipmentSlot, String> armour = new LinkedHashMap<>();
     private List<String> classIds = List.of();
+    private List<PlayerClass> contributedClasses = List.of();
 
     private Team(String shortName, String displayName, int colour, ChatFormatting formatting)
     {
@@ -139,11 +141,15 @@ public class Team extends InfoType implements ITeam
     /**
      * The classes this team's {@code AddClass} lines name, resolved against this team's own content
      * pack first so that a shortname another pack also uses cannot pull in the wrong class.
+     * Classes contributed through AddToTeam follow these entries, with editor overrides applied.
      */
     @Override
     public List<PlayerClass> getClasses()
     {
-        return classIds.stream().map(id -> PlayerClass.getPlayerClass(id, contentPack)).filter(java.util.Objects::nonNull).toList();
+        Set<PlayerClass> classes = new LinkedHashSet<>();
+        classIds.stream().map(id -> PlayerClass.getPlayerClass(id, contentPack)).filter(Objects::nonNull).forEach(classes::add);
+        contributedClasses.stream().map(type -> PlayerClass.getPlayerClass(type.getShortName())).filter(Objects::nonNull).forEach(classes::add);
+        return List.copyOf(classes);
     }
 
     @Override
@@ -154,6 +160,39 @@ public class Team extends InfoType implements ITeam
             return ItemStack.EMPTY;
         InfoType type = InfoType.getInfoType(id, contentPack);
         return ModUtils.getItemStack(type).orElse(ItemStack.EMPTY);
+    }
+
+    /** Rebuilt after all packs load, independently of server editor overrides. */
+    public static void resolveClassContributions()
+    {
+        resolveClassContributions(packValues(), PlayerClass.packValues());
+    }
+
+    static void resolveClassContributions(Collection<Team> teams, Collection<PlayerClass> classes)
+    {
+        Map<String, List<Team>> targets = new HashMap<>();
+        Map<Team, Set<PlayerClass>> contributions = new LinkedHashMap<>();
+        for (Team team : teams)
+        {
+            targets.computeIfAbsent(EditorCatalog.key(team).toLowerCase(Locale.ROOT), ignored -> new ArrayList<>()).add(team);
+            contributions.put(team, new LinkedHashSet<>());
+        }
+        for (PlayerClass playerClass : classes)
+        {
+            for (String reference : playerClass.getTeamReferences())
+            {
+                int separator = reference.indexOf(':');
+                String key = separator <= 0 ? "" : "pack/" + reference.substring(0, separator).toLowerCase(Locale.ROOT) + "/" + reference.substring(separator + 1).toLowerCase(Locale.ROOT);
+                List<Team> matches = targets.getOrDefault(key, List.of());
+                if (matches.size() != 1)
+                {
+                    FlansLog.log.warn("Unresolved or ambiguous AddToTeam '{}' in player class {} ({})", reference, playerClass.getOriginalShortName(), playerClass.getFileName());
+                    continue;
+                }
+                contributions.get(matches.get(0)).add(playerClass);
+            }
+        }
+        contributions.forEach((team, added) -> team.contributedClasses = List.copyOf(added));
     }
 
     public static Collection<Team> values()

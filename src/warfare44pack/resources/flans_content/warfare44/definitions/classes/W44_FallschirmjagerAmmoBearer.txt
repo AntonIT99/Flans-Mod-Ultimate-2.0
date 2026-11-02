@@ -1,0 +1,17 @@
+// Identity
+Name MG Ammunition Bearer
+ShortName W44_FallschirmjagerAmmoBearer
+Description Rifleman carrying spare machine-gun ammunition and a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 4
+AddItem 44_Mg34Ammo 2
+AddItem 44_Mg42Ammo 2
+AddItem 44_AmmoBag
+AddItem 44_Bandage
+AddItem 44_Parachute

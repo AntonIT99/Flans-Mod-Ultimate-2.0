@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcCombatAdvance;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import lombok.Getter;
@@ -39,6 +40,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     private final Hand main = new Hand(InteractionHand.MAIN_HAND);
     private final Hand off = new Hand(InteractionHand.OFF_HAND);
     private int charging;
+    private boolean running;
     /** Whether the NPC has fired since it took up this engagement, which Custom NPCs' tactics wait for. */
     @Getter
     private boolean fired;
@@ -115,7 +117,28 @@ public final class NpcEquipmentRangedGoal extends Goal
     }
 
     @Override
+    public void start()
+    {
+        running = true;
+    }
+
+    /** Keeps an active weapon running when distance LOD postpones the next AI decision. */
+    public void tickBetweenDecisions()
+    {
+        if (!running)
+            return;
+        // Sensing normally clears its cache in serverAiStep, which LOD skipped. A closed door must still stop a shot.
+        npc.getSensing().tick();
+        tick(false);
+    }
+
+    @Override
     public void tick()
+    {
+        tick(true);
+    }
+
+    private void tick(boolean decisions)
     {
         main.cadence.tick();
         off.cadence.tick();
@@ -139,6 +162,13 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         main.spinSpeed *= 0.9F;
         off.spinSpeed *= 0.9F;
+        if (NpcCombatAdvance.holdsFire(npc))
+        {
+            cancelUse();
+            reloadOnMove(main);
+            reloadOnMove(off);
+            return;
+        }
         npc.getLookControl().setLookAt(target, 30F, 30F);
         if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target))
         {
@@ -160,15 +190,11 @@ public final class NpcEquipmentRangedGoal extends Goal
         if (NpcEquipment.offHandPrimary(npc))
         {
             // The off-hand gun is the NPC's weapon; what the main hand holds is for melee or blocking.
-            if (main.lastWeapon != null)
-            {
-                main.lastWeapon = null;
-                main.reset();
-            }
+            clearMainHand();
             tickOffHand(target, true);
             return;
         }
-        tickMainHand(target);
+        tickMainHand(target, decisions);
         if (NpcEquipment.offHandGun(npc))
             tickOffHand(target, false);
         else if (off.lastWeapon != null)
@@ -178,8 +204,11 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
     }
 
-    private void tickMainHand(LivingEntity target)
+    private void tickMainHand(LivingEntity target, boolean decisions)
     {
+        // Switching after recovery prevents alternating guns from bypassing cadence or an ongoing reload/charge.
+        if (decisions && main.reloading <= 0 && charging <= 0 && main.cadence.ready())
+            NpcWeaponChoice.select(npc, target);
         ItemStack weapon = NpcEquipment.rangedWeapon(npc);
         var properties = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
         if (weapon != main.lastWeapon)
@@ -203,6 +232,15 @@ public final class NpcEquipmentRangedGoal extends Goal
             return;
         aim(target);
         fire(main, target, weapon, properties.map(value -> value.automaticFire() && !value.throwable()).orElse(false));
+    }
+
+    private void clearMainHand()
+    {
+        if (main.lastWeapon != null)
+        {
+            main.lastWeapon = null;
+            main.reset();
+        }
     }
 
     /**
@@ -330,6 +368,12 @@ public final class NpcEquipmentRangedGoal extends Goal
             hand.reset();
     }
 
+    private void reloadOnMove(Hand hand)
+    {
+        if (hand.lastWeapon != null && hand.lastWeapon == npc.getItemInHand(hand.side))
+            reload(hand, hand.lastWeapon);
+    }
+
     /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */
     private void outOfAmmunition(Hand hand)
     {
@@ -355,6 +399,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     @Override
     public void stop()
     {
+        running = false;
         cancelUse();
         main.reloadFailed = false;
         main.spinSpeed = 0F;

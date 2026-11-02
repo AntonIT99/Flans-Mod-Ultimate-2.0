@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.WeaponSwitch;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.item.IItemStack;
@@ -67,6 +68,25 @@ public final class NpcAmmunition
         return loaded;
     }
 
+    /**
+     * A supply of one kind of round for a single inventory slot of the NPC. Ammunition that stacks is stocked a full stack
+     * at a time, as it always was; ordnance whose item stacks only one high, such as a tank shell, is stocked
+     * {@link NpcTuning.Value#AMMO_STOCK} rounds at a time, so that an NPC which uses its ammunition up can carry a useful
+     * number of shells in its nine slots. An NPC's slots hold what its save says rather than what a container would accept,
+     * and the mod leaves the drop chance of ammunition it stocks at zero.
+     *
+     * @param round
+     *            the ammunition to stock, unchanged
+     * @return a new stack of it; empty for an empty stack
+     */
+    public static ItemStack stock(EntityNPCInterface npc, ItemStack round)
+    {
+        if (round.isEmpty())
+            return ItemStack.EMPTY;
+        int rounds = round.getMaxStackSize() > 1 ? round.getMaxStackSize() : NpcTuning.of(npc).get(NpcTuning.Value.AMMO_STOCK);
+        return round.copyWithCount(Math.max(round.getCount(), rounds));
+    }
+
     /** @return whether the NPC uses its ammunition up and has none left, anywhere, to reload the gun with */
     public static boolean exhausted(EntityNPCInterface npc, ItemStack weapon)
     {
@@ -85,25 +105,30 @@ public final class NpcAmmunition
     }
 
     /**
-     * @return what infinite ammunition copies to reload the gun: the projectile slot when the gun may load what it holds, then the
-     *         first inventory slot it takes, or else the ammunition the gun is issued with by default; never a stack to use up
+     * @return what infinite ammunition copies to reload the gun: the round of those it may load that suits the NPC's target
+     *         best, the projectile slot and the inventory first and the rounds the gun is issued with by default after them;
+     *         never a stack to use up
      */
     public static Optional<ItemStack> infiniteTemplate(EntityNPCInterface npc, ItemStack weapon)
     {
-        ItemStack projectile = stack(npc.inventory.getProjectile());
-        if (FlansEquipment.acceptsAmmunition(weapon, projectile, slotChoice(npc)))
-            return Optional.of(projectile);
-        for (ItemStack candidate : inventory(npc))
-            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
-                return Optional.of(candidate);
-        return FlansEquipment.createDefaultAmmunition(weapon).filter(ammunition -> FlansEquipment.acceptsAmmunition(weapon, ammunition));
+        if (tacticallySelected(npc, weapon))
+        {
+            ItemStack selected = NpcWeaponChoice.ammunition(npc, weapon);
+            return selected.isEmpty() ? Optional.empty() : Optional.of(selected);
+        }
+        List<ItemStack> pool = carried(npc, weapon, slotChoice(npc));
+        append(pool, NpcDefaultAmmo.forWeapon(npc, weapon));
+        // A held gun has no definition the NPC module can key a remembered choice on, so its rounds are scored as needed.
+        ItemStack chosen = choose(npc, null, false, pool);
+        return chosen.isEmpty() ? Optional.empty() : Optional.of(chosen);
     }
 
     /**
      * What the NPC fires without an equipped ranged weapon, as {@link NpcThrowing#mainProjectile} chooses it. An NPC wearing an
      * AA gun or driveable model fires what its projectile slot holds, which was put there on purpose, unless it is held to
-     * ammunition its model fires; otherwise the first round in its inventory its model fires, or the AA gun's or selected
-     * bank's default when it carries none and consumption is off.
+     * ammunition its model fires. Adaptive vehicle combat always uses ammunition compatible with its selected bank, so crew MG
+     * ammunition in the slot cannot replace the cannon's shell. Otherwise the round its model fires that suits its target
+     * best, out of what it carries and the rounds its AA gun or selected bank is issued with by default.
      */
     public static ItemStack modelTemplate(EntityNPCInterface npc)
     {
@@ -119,16 +144,15 @@ public final class NpcAmmunition
         if (weapon == null)
             return projectile;
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        boolean secondary = NpcEquipment.secondaryBank(options, weapon);
+        boolean secondary = NpcEquipment.secondaryBank(npc, weapon);
         // Anything but Flan ammunition in the projectile slot is the NPC's own Custom NPCs projectile.
-        if (!projectile.isEmpty() && (slotChoice(npc) || !FlansProjectiles.isProjectile(projectile) || FlansEquipment.acceptsAmmunition(weapon, secondary, projectile)))
+        boolean arbitrarySlot = slotChoice(npc) && !(weapon instanceof IDriveableType && NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT));
+        if (!projectile.isEmpty() && (arbitrarySlot || !FlansProjectiles.isProjectile(projectile)))
             return projectile;
-        for (ItemStack candidate : inventory(npc))
-            if (FlansEquipment.acceptsAmmunition(weapon, secondary, candidate))
-                return candidate;
-        if (!options.enabled(Feature.PROJECTILES) || NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
-            return ItemStack.EMPTY;
-        return FlansEquipment.createDefaultAmmunition(weapon, secondary).orElse(ItemStack.EMPTY);
+        List<ItemStack> pool = carried(npc, weapon, secondary, projectile);
+        if (options.enabled(Feature.PROJECTILES))
+            append(pool, NpcDefaultAmmo.forBank(npc, weapon, secondary));
+        return choose(npc, weapon, secondary, pool);
     }
 
     /**
@@ -154,7 +178,7 @@ public final class NpcAmmunition
         IContentType weapon = modelWeapon(npc);
         if (weapon == null || FlansProjectiles.isProjectile(fired))
             return fired;
-        boolean secondary = NpcEquipment.secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), weapon);
+        boolean secondary = NpcEquipment.secondaryBank(npc, weapon);
         return FlansEquipment.createDefaultAmmunition(weapon, secondary).orElse(fired);
     }
 
@@ -173,43 +197,169 @@ public final class NpcAmmunition
     }
 
     /**
-     * Ammunition template for a model's driver gun: the projectile slot, then real inventory slots in order, then the
-     * gun's default. Model weapons do not consume these stacks or exchange any inventory entries. Server thread.
+     * Ammunition template for a model's driver gun: the round of those the gun may fire that suits the NPC's target best,
+     * out of the projectile slot, the real inventory slots in order, and the rounds the gun is issued with by default. Model
+     * weapons do not consume these stacks or exchange any inventory entries. Server thread.
      */
     public static ItemStack driverGunTemplate(EntityNPCInterface npc, IContentType gun)
     {
-        return gunTemplate(npc, gun).orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+        List<ItemStack> pool = carried(npc, gun);
+        append(pool, NpcDefaultAmmo.forGun(npc, gun));
+        return choose(npc, gun, false, pool);
     }
 
     /**
-     * Compatible inventory ammunition for a weapon group of the NPC's model that has no gun of its own, such as a tank's shell
-     * bank or a plane's bombs, then that group's default; templates are never consumed.
+     * Ammunition for a weapon group of the NPC's model that has no gun of its own, such as a tank's shell bank or a plane's
+     * bombs: what it carries for that group and the rounds the group is issued with by default, the one that suits its target
+     * best. Templates are never consumed.
      */
     public static ItemStack bankTemplate(EntityNPCInterface npc, IContentType model, boolean secondary)
     {
-        ItemStack projectile = stack(npc.inventory.getProjectile());
-        if (FlansEquipment.acceptsAmmunition(model, secondary, projectile))
-            return projectile;
-        return inventory(npc).stream().filter(candidate -> FlansEquipment.acceptsAmmunition(model, secondary, candidate)).findFirst()
-            .orElseGet(() -> FlansEquipment.createDefaultAmmunition(model, secondary).orElse(ItemStack.EMPTY));
+        List<ItemStack> pool = carried(npc, model, secondary);
+        append(pool, NpcDefaultAmmo.forBank(npc, model, secondary));
+        return choose(npc, model, secondary, pool);
     }
 
-    /** Compatible vehicle ammunition, then an NPC gunner's ammunition, then the seat gun's default; templates are never consumed. */
+    /** Vehicle ammunition, an NPC gunner's own, then the seat gun's default rounds; templates are never consumed. */
     public static ItemStack crewGunTemplate(EntityNPCInterface vehicle, LivingEntity gunner, IContentType gun)
     {
-        return gunTemplate(vehicle, gun).or(() -> gunner instanceof EntityNPCInterface npc ? gunTemplate(npc, gun) : Optional.empty())
-            .orElseGet(() -> FlansEquipment.createDefaultAmmunition(gun).orElse(ItemStack.EMPTY));
+        List<ItemStack> pool = carried(vehicle, gun);
+        if (gunner instanceof EntityNPCInterface npc && npc != vehicle)
+            append(pool, carried(npc, gun));
+        append(pool, NpcDefaultAmmo.forGun(vehicle, gun));
+        return choose(vehicle, gun, false, pool);
     }
 
-    private static Optional<ItemStack> gunTemplate(EntityNPCInterface npc, IContentType gun)
+    /** Compatible supplies for a placed gun, with the same finite/infinite fallback policy as held weapons. */
+    public static ItemStack emplacementTemplate(EntityNPCInterface npc, IContentType gun)
     {
-        if (gun.getItem() == null)
-            return Optional.empty();
-        ItemStack weapon = new ItemStack(gun.getItem());
+        List<ItemStack> pool = gun instanceof IAAGunType ? carried(npc, gun, false) : carried(npc, gun);
+        if (pool.isEmpty())
+            append(pool, gun instanceof IAAGunType ? NpcDefaultAmmo.forBank(npc, gun, false) : NpcDefaultAmmo.forGun(npc, gun));
+        return choose(npc, gun, false, pool);
+    }
+
+    /** Transfers one magazine to a placed gun, or copies it when ammunition is infinite. Server thread. */
+    public static ItemStack takeEmplacementAmmo(EntityNPCInterface npc, IContentType gun)
+    {
+        ItemStack source = emplacementTemplate(npc, gun);
+        if (source.isEmpty())
+            return ItemStack.EMPTY;
+        ItemStack loaded = source.copyWithCount(1);
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+        {
+            source.shrink(1);
+            clearUsedUp(npc, source);
+            npc.updateClient = true;
+        }
+        return loaded;
+    }
+
+    /** @return every round the NPC carries that a mounted gun fires, the projectile slot first, then the inventory in order */
+    private static List<ItemStack> carried(EntityNPCInterface npc, IContentType gun)
+    {
+        return gun.getItem() == null ? new ArrayList<>() : carried(npc, new ItemStack(gun.getItem()), false);
+    }
+
+    /**
+     * @param anyBullet
+     *            whether Flan ammunition in the projectile slot counts whatever the gun takes, as a held gun allows
+     * @return every round the NPC carries that the gun may load, the projectile slot first, then the inventory in order
+     */
+    private static List<ItemStack> carried(EntityNPCInterface npc, ItemStack weapon, boolean anyBullet)
+    {
+        List<ItemStack> pool = new ArrayList<>();
         ItemStack projectile = stack(npc.inventory.getProjectile());
-        if (FlansEquipment.acceptsAmmunition(weapon, projectile))
-            return Optional.of(projectile);
-        return inventory(npc).stream().filter(candidate -> FlansEquipment.acceptsAmmunition(weapon, candidate)).findFirst();
+        if (FlansEquipment.acceptsAmmunition(weapon, projectile, anyBullet))
+            pool.add(projectile);
+        for (ItemStack candidate : inventory(npc))
+            if (FlansEquipment.acceptsAmmunition(weapon, candidate))
+                pool.add(candidate);
+        return pool;
+    }
+
+    /** @return every round the NPC carries that the model's selected bank fires, the projectile slot first */
+    private static List<ItemStack> carried(EntityNPCInterface npc, IContentType model, boolean secondary)
+    {
+        return carried(npc, model, secondary, stack(npc.inventory.getProjectile()));
+    }
+
+    /**
+     * @param projectile
+     *            what the NPC has in its projectile slot, as its model resolved it
+     * @return every round the NPC carries that the model's selected bank fires, the projectile slot first
+     */
+    private static List<ItemStack> carried(EntityNPCInterface npc, IContentType model, boolean secondary, ItemStack projectile)
+    {
+        List<ItemStack> pool = new ArrayList<>();
+        if (FlansEquipment.acceptsAmmunition(model, secondary, projectile))
+            pool.add(projectile);
+        for (ItemStack candidate : inventory(npc))
+            if (FlansEquipment.acceptsAmmunition(model, secondary, candidate))
+                pool.add(candidate);
+        return pool;
+    }
+
+    /** Adds the rounds that are not in the pool already, so that carried ammunition keeps its place ahead of a default round. */
+    private static void append(List<ItemStack> pool, List<ItemStack> rounds)
+    {
+        for (ItemStack round : rounds)
+        {
+            if (!round.isEmpty() && pool.stream().noneMatch(present -> sameRound(present, round)))
+                pool.add(round);
+        }
+    }
+
+    /**
+     * The round of the pool the NPC fires: the one that suits its target best, or the first of the pool, which is the
+     * ammunition it carries before any default round, when it has no target or does not choose its ammunition. The choice is
+     * remembered per weapon on the server, so that the rounds are scored at most every
+     * {@link NpcAmmoSelection#CHECK_INTERVAL} ticks and a weapon does not alternate between two rounds that score alike.
+     *
+     * @param weapon
+     *            the gun or model a remembered choice belongs to, or null for a held gun, whose rounds are scored as needed
+     * @param pool
+     *            the rounds the weapon may fire, carried ammunition first
+     */
+    private static ItemStack choose(EntityNPCInterface npc, @Nullable IContentType weapon, boolean secondary, List<ItemStack> pool)
+    {
+        if (pool.isEmpty())
+            return ItemStack.EMPTY;
+        LivingEntity target = npc.getTarget();
+        if (pool.size() == 1 || target == null || !NpcEquipment.enabled(npc, Feature.TACTICAL_WEAPON_SWITCH))
+            return pool.get(0);
+        if (weapon == null || npc.level().isClientSide || !(npc instanceof NpcTacticState.Holder))
+            return best(npc, target, pool);
+        NpcAmmoSelection selection = NpcTacticState.of(npc).getSafety().ammoSelection(new NpcAmmoSelection.Key(weapon, secondary));
+        long now = npc.level().getGameTime();
+        ItemStack kept = pool.stream().filter(round -> sameRound(round, selection.getAmmunition())).findFirst().orElse(ItemStack.EMPTY);
+        boolean sameTarget = selection.getTarget() == target.getId();
+        if (!kept.isEmpty() && sameTarget && now < selection.getCheckedAt() + NpcAmmoSelection.CHECK_INTERVAL)
+            return kept;
+        selection.setCheckedAt(now);
+        selection.setTarget(target.getId());
+        ItemStack best = best(npc, target, pool);
+        // A round just chosen stands against the same target while a loader would still be busy with it; another target is
+        // engaged with the round that suits it at once.
+        if (!kept.isEmpty() && sameTarget && !sameRound(best, kept) && now < selection.getChangedAt() + NpcAmmoSelection.CHANGE_INTERVAL)
+            return kept;
+        if (!sameRound(best, selection.getAmmunition()))
+            selection.setChangedAt(now);
+        selection.setAmmunition(best.copyWithCount(1));
+        return best;
+    }
+
+    /** @return whether both stacks hold the same kind of round, whatever either holds of it */
+    private static boolean sameRound(ItemStack first, ItemStack second)
+    {
+        return !first.isEmpty() && !second.isEmpty() && first.getItem() == second.getItem();
+    }
+
+    /** @return the round of the pool that scores highest against the target, the first of several that score alike */
+    private static ItemStack best(EntityNPCInterface npc, LivingEntity target, List<ItemStack> pool)
+    {
+        int best = best(pool, round -> NpcWeaponChoice.ammunitionScore(npc, target, round), Double.NEGATIVE_INFINITY);
+        return pool.get(Math.max(0, best));
     }
 
     /**
@@ -219,13 +369,18 @@ public final class NpcAmmunition
     private static boolean supply(EntityNPCInterface npc, ItemStack weapon)
     {
         ItemStack current = stack(npc.inventory.getProjectile());
-        if (FlansEquipment.acceptsAmmunition(weapon, current, slotChoice(npc)))
+        if (FlansEquipment.acceptsAmmunition(weapon, current, !tacticallySelected(npc, weapon) && slotChoice(npc)))
             return true;
         int slot = find(npc, stack -> FlansEquipment.acceptsAmmunition(weapon, stack));
         if (slot < 0)
             return false;
         swap(npc, PROJECTILE_INDEX, slot);
         return true;
+    }
+
+    private static boolean tacticallySelected(EntityNPCInterface npc, ItemStack weapon)
+    {
+        return npc instanceof NpcTacticState.Holder holder && holder.wolffsmodnpcsTacticState().getSafety().getSelectedWeapon() == weapon;
     }
 
     /**
@@ -435,7 +590,7 @@ public final class NpcAmmunition
     }
 
     /** Exchanges a weapon slot with an inventory slot; an empty weapon slot leaves the inventory slot empty. */
-    private static void swap(EntityNPCInterface npc, int weaponSlot, int inventorySlot)
+    static void swap(EntityNPCInterface npc, int weaponSlot, int inventorySlot)
     {
         IItemStack previous = npc.inventory.weapons.get(weaponSlot);
         ItemStack held = stack(previous);

@@ -1,6 +1,10 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.crew.CrewPost;
+import com.wolffsmod.npcs.model.FlanModelKind;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +20,122 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BotSettingsTest
 {
+    @BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    void emplacementsDefaultOnForOldRoundsAndExplicitDisableSurvivesCopies()
+    {
+        BotSettings settings = new BotSettings();
+        assertTrue(settings.isEmplacements());
+        assertTrue(settings.isPlayerSeatDeployment());
+        CompoundTag old = settings.save();
+        old.remove("emplacements");
+        old.remove("player_seat_deployment");
+        assertTrue(BotSettings.load(old).isEmplacements());
+        assertTrue(BotSettings.load(old).isPlayerSeatDeployment());
+        settings.setEmplacements(false);
+        settings.setPlayerSeatDeployment(false);
+        assertFalse(BotSettings.load(settings.save()).isEmplacements());
+        assertFalse(BotSettings.load(settings.save()).isPlayerSeatDeployment());
+        assertFalse(BotPresets.carryOver(settings.save(), List.of("red"), List.of("blue")).isEmplacements());
+    }
+
+    @Test
+    void vehicleRespawnDefaultAndOverridesSurviveSaveAndOldRoundsKeepTheirDelay()
+    {
+        BotSettings settings = new BotSettings();
+        settings.setRespawnSeconds(7);
+        settings.setVehicleRespawnSeconds(45);
+        settings.team("red").getVehicles().add(new BotSettings.VehicleEntry("tank", 2, 0, 0, 1, null, ""));
+        settings.team("red").getVehicles().add(new BotSettings.VehicleEntry("heavy", 1, 0, 120, 1, null, ""));
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertEquals(7, TeamsBots.respawnSeconds(loaded, new BotSlot(1, "red", BotSlot.Source.INFANTRY, -1, true)));
+        assertEquals(45, TeamsBots.respawnSeconds(loaded, new BotSlot(2, "red", BotSlot.Source.VEHICLE, 0, true)));
+        assertEquals(120, TeamsBots.respawnSeconds(loaded, new BotSlot(3, "red", BotSlot.Source.VEHICLE, 1, true)));
+        loaded.setVehicleRespawnSeconds(0);
+        assertEquals(0, BotSettings.load(loaded.save()).getVehicleRespawnSeconds());
+        CompoundTag old = settings.save();
+        old.remove("vehicle_respawn_seconds");
+        assertEquals(7, BotSettings.load(old).getVehicleRespawnSeconds());
+        old.putInt("vehicle_respawn_seconds", -1);
+        assertEquals(0, BotSettings.load(old).getVehicleRespawnSeconds());
+    }
+
+    @Test
+    void physicalCommanderIsOptInAndSettingsTravelWithPresets()
+    {
+        BotSettings legacy = BotSettings.load(new CompoundTag());
+        assertFalse(legacy.isCommanderBot());
+        assertEquals(20, legacy.getCommanderDisruptionSeconds());
+        BotSettings settings = new BotSettings();
+        settings.setCommanderBot(true);
+        settings.setCommanderDisruptionSeconds(37);
+        settings.team("red").setCommanderClass("officer");
+        BotSettings copy = BotPresets.carryOver(settings.save(), List.of("red"), List.of("blue"));
+        assertTrue(copy.isCommanderBot());
+        assertEquals(37, copy.getCommanderDisruptionSeconds());
+        assertEquals("officer", copy.team("blue").getCommanderClass());
+        settings.setCommanderDisruptionSeconds(0);
+        assertEquals(0, BotSettings.load(settings.save()).getCommanderDisruptionSeconds());
+    }
+
+    @Test
+    void commanderStaysBehindFrontWithoutGoingBehindHome()
+    {
+        Vec3 home = new Vec3(0D, 64D, 0D);
+        assertEquals(home, CommanderBots.rear(home, new Vec3(20D, 70D, 0D)));
+        assertEquals(new Vec3(52D, 64D, 0D), CommanderBots.rear(home, new Vec3(100D, 80D, 0D)));
+        assertEquals(home, CommanderBots.rear(home, home));
+    }
+
+    @Test
+    void vehicleToggleKeepsAllocationsAndDefaultsOnForExistingRounds()
+    {
+        BotSettings settings = new BotSettings();
+        BotSettings.VehicleEntry vehicle = new BotSettings.VehicleEntry("tank", 2, 5, 15, 3, UUID.randomUUID(), "squad", List.of(1, 2));
+        settings.team("red").getVehicles().add(vehicle);
+        settings.setVehiclesEnabled(false);
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertFalse(loaded.isVehiclesEnabled());
+        assertTrue(loaded.isEnabled());
+        assertEquals(List.of(vehicle), loaded.team("red").getVehicles());
+        loaded.setVehiclesEnabled(true);
+        assertTrue(BotSettings.load(loaded.save()).isVehiclesEnabled());
+        assertEquals(List.of(vehicle), loaded.team("red").getVehicles());
+        CompoundTag legacy = settings.save();
+        legacy.remove("vehicles_enabled");
+        assertTrue(BotSettings.load(legacy).isVehiclesEnabled());
+        assertTrue(BotSettings.load(new CompoundTag()).isVehiclesEnabled());
+    }
+
+    @Test
+    void battleBehaviourDefaultsToIndividualSettingsAndExplicitOverridesSurviveSaving()
+    {
+        assertEquals(NpcTacticalProfile.INHERIT, BotSettings.load(new CompoundTag()).getTacticalProfile());
+        BotSettings settings = new BotSettings();
+        settings.setTacticalProfile(NpcTacticalProfile.CAUTIOUS);
+        assertEquals(NpcTacticalProfile.CAUTIOUS, BotSettings.load(settings.save()).getTacticalProfile());
+    }
+
+    @Test
+    void vehiclePaintjobChoicesSurviveNbtAndTextAndLegacyAllocationsKeepDefault()
+    {
+        for (List<Integer> jobs : List.of(List.<Integer>of(), List.of(0, 3, 7)))
+        {
+            BotSettings.VehicleEntry entry = new BotSettings.VehicleEntry("tank", 2, 0, 10, 1, null, "", jobs);
+            assertEquals(entry, BotSettings.VehicleEntry.load(entry.save()));
+            assertEquals(List.of(entry), BotSettingsText.parseVehicles(BotSettingsText.formatVehicles(List.of(entry)), List.of()));
+        }
+        BotSettings.VehicleEntry legacy = new BotSettings.VehicleEntry("tank", 1, 0, 0, 1, null, "");
+        CompoundTag old = legacy.save();
+        old.remove("paintjobs");
+        assertEquals(List.of(0), BotSettings.VehicleEntry.load(old).paintjobs());
+    }
+
     @Test
     void aRoundWithoutSettingsHasNoBots()
     {
@@ -114,29 +234,28 @@ class BotSettingsTest
     }
 
     @Test
-    void difficultyPlayerTicketsAndCloneEquipmentSurviveSavingAndLoading()
+    void difficultyAndCloneEquipmentSurviveSavingAndLoading()
     {
         BotSettings settings = new BotSettings();
         settings.setDifficulty(BotSettings.Difficulty.TRAINEE);
-        settings.setPlayerTickets(false);
         settings.team("Germans").setKeepCloneEquipment(true);
         BotSettings loaded = BotSettings.load(settings.save());
         assertEquals(BotSettings.Difficulty.TRAINEE, loaded.getDifficulty());
-        assertFalse(loaded.isPlayerTickets());
         assertTrue(loaded.team("Germans").isKeepCloneEquipment());
     }
 
     @Test
-    void difficultiesGoFromTheBestDownAndNoneMakesABotBetterThanItsEquipment()
+    void difficultiesGoFromTheEasiestUpAndNoneMakesABotBetterThanItsEquipment()
     {
-        BotSettings.Difficulty[] levels = BotSettings.Difficulty.values();
-        assertEquals(BotSettings.Difficulty.ACE, levels[0]);
-        assertFalse(levels[0].scalesStats());
-        assertEquals(0, levels[0].skill().reactionTicks());
-        for (int index = 1; index < levels.length; index++)
+        List<BotSettings.Difficulty> levels = BotSettings.Difficulty.presets();
+        assertEquals(BotSettings.Difficulty.TRAINEE, levels.get(0));
+        assertEquals(BotSettings.Difficulty.ACE, levels.get(levels.size() - 1));
+        assertFalse(BotSettings.Difficulty.ACE.scalesStats());
+        assertEquals(0, BotSettings.Difficulty.ACE.skill().reactionTicks());
+        for (int index = 1; index < levels.size(); index++)
         {
-            BotSettings.Difficulty better = levels[index - 1];
-            BotSettings.Difficulty level = levels[index];
+            BotSettings.Difficulty better = levels.get(index);
+            BotSettings.Difficulty level = levels.get(index - 1);
             assertTrue(level.skill().reactionTicks() > better.skill().reactionTicks(), level + " reacts slower than " + better);
             assertTrue(level.skill().settleTicks() >= better.skill().settleTicks(), level + " settles its aim no faster than " + better);
             assertTrue(level.skill().lead() <= better.skill().lead(), level + " leads no better than " + better);
@@ -145,19 +264,44 @@ class BotSettingsTest
         for (BotSettings.Difficulty level : levels)
         {
             assertFalse(level.skill().nonLethal(), level + " leaves sparing players to Cinematic mode");
-            assertEquals(level.compareTo(BotSettings.Difficulty.REGULAR) <= 0, level.skill().playerDamage() >= 1F, level + " softens its hits on players only below Regular");
+            assertEquals(level.compareTo(BotSettings.Difficulty.REGULAR) >= 0, level.skill().playerDamage() >= 1F, level + " softens its hits on players only below Regular");
         }
     }
 
     @Test
-    void settingsSavedBeforeTheNewOptionsLetPlayersSpendTicketsAtTheDefaultDifficulty()
+    void customDifficultyKeepsItsValuesWithinBoundsAndRetrainsWhenTheyChange()
+    {
+        BotSettings settings = new BotSettings();
+        assertEquals(BotSettings.Difficulty.REGULAR.training(null), settings.getCustomTraining(), "custom values start as those of Regular");
+        BotTraining custom = BotTraining.of(60, 80, 12, 30, 6.5F, 40, 50, true);
+        settings.setDifficulty(BotSettings.Difficulty.CUSTOM);
+        settings.setCustomTraining(custom);
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertEquals(BotSettings.Difficulty.CUSTOM, loaded.getDifficulty());
+        assertEquals(custom, loaded.training());
+        assertEquals("60 80 12 30 6.5 40 50 true", custom.commandArguments());
+        String trained = loaded.trainingId();
+        loaded.setCustomTraining(BotTraining.of(60, 80, 12, 30, 6.5F, 40, 50, false));
+        assertNotEquals(trained, loaded.trainingId(), "other custom values train bots again");
+        BotTraining wild = BotTraining.of(500, 0, -5, 9999, 90F, 300, 300, false);
+        assertEquals(100, wild.accuracyPercent());
+        assertEquals(1, wild.aggroPercent());
+        assertEquals(0, wild.skill().reactionTicks());
+        assertEquals(BotTraining.MOST_SETTLE_TICKS, wild.skill().settleTicks());
+        assertEquals(BotTraining.MOST_ERROR, wild.skill().startError());
+        assertEquals(100, wild.leadPercent());
+        assertEquals(100, wild.playerDamagePercent(), "no custom value makes a bot better than its equipment");
+    }
+
+    @Test
+    void legacyPlayerTicketSettingsAreIgnored()
     {
         CompoundTag old = new BotSettings().save();
         old.remove("difficulty");
-        old.remove("player_tickets");
+        old.putBoolean("player_tickets", true);
         BotSettings loaded = BotSettings.load(old);
         assertEquals(BotSettings.Difficulty.REGULAR, loaded.getDifficulty());
-        assertTrue(loaded.isPlayerTickets());
+        assertFalse(loaded.save().contains("player_tickets"));
     }
 
     @Test
@@ -203,6 +347,14 @@ class BotSettingsTest
     }
 
     @Test
+    void aSingleBandageIsFirstAidRatherThanAMedicKit()
+    {
+        assertFalse(BotRoles.dedicatedMedicalTool("44_bandage", 1));
+        assertTrue(BotRoles.dedicatedMedicalTool("44_bandage", 4));
+        assertTrue(BotRoles.dedicatedMedicalTool("ww2medkit", 1));
+    }
+
+    @Test
     void vehicleCrewsSurviveSavingAndLoading()
     {
         BotSettings settings = new BotSettings();
@@ -217,6 +369,63 @@ class BotSettingsTest
         assertEquals("tank_crewman", loaded.team("germany").crewClass(CrewPost.DRIVER));
         assertEquals("", loaded.team("germany").crewClass(CrewPost.GUNNER), "a blank class is picked by weight");
         assertEquals(BotSettings.TeamForce.NO_CREW, loaded.team("germany").crewClass(CrewPost.PASSENGER));
-        assertFalse(BotSettings.load(new BotSettings().save()).isVehicleCrews(), "vehicles spawn empty unless crews are switched on");
+        assertTrue(new BotSettings().isVehicleCrews(), "vehicles spawn with crews by default");
+        CompoundTag legacy = settings.save();
+        legacy.remove("vehicle_crews");
+        assertTrue(BotSettings.load(legacy).isVehicleCrews(), "missing crew settings use the default");
+        settings.setVehicleCrews(false);
+        assertFalse(BotSettings.load(settings.save()).isVehicleCrews(), "explicitly disabled crews stay disabled");
+    }
+
+    @Test
+    void crewOverridesResolvePerSeatAndSurviveSaving()
+    {
+        BotSettings settings = new BotSettings();
+        BotSettings.TeamForce force = settings.team("blue");
+        String planes = BotSettings.TeamForce.crewScope(FlanModelKind.PLANE);
+        String bomber = BotSettings.TeamForce.crewDefinitionScope("bomber");
+        force.setCrewClass(CrewPost.DRIVER, "crewman");
+        force.setCrewClass(CrewPost.GUNNER, "gunner");
+        force.setCrewClass(CrewPost.PASSENGER, "infantry");
+        force.setCrewClass(planes, CrewPost.DRIVER, "pilot");
+        force.setCrewClass(planes, CrewPost.PASSENGER, BotSettings.TeamForce.NO_CREW);
+        force.setCrewClass(bomber, CrewPost.GUNNER, "air_gunner");
+        force.setCrewClass(bomber, CrewPost.PASSENGER, "");
+
+        BotSettings.TeamForce loaded = BotSettings.load(settings.save()).team("blue");
+        assertEquals("pilot", loaded.effectiveCrewClass("bomber", FlanModelKind.PLANE, CrewPost.DRIVER));
+        assertEquals("air_gunner", loaded.effectiveCrewClass("bomber", FlanModelKind.PLANE, CrewPost.GUNNER));
+        assertEquals("", loaded.effectiveCrewClass("bomber", FlanModelKind.PLANE, CrewPost.PASSENGER), "explicit any overrides no crew");
+        assertEquals("gunner", loaded.effectiveCrewClass("fighter", FlanModelKind.PLANE, CrewPost.GUNNER));
+        assertEquals(BotSettings.TeamForce.NO_CREW, loaded.effectiveCrewClass("fighter", FlanModelKind.PLANE, CrewPost.PASSENGER));
+        assertEquals("crewman", loaded.effectiveCrewClass("tank", FlanModelKind.VEHICLE, CrewPost.DRIVER));
+        assertEquals("crewman", loaded.effectiveCrewClass("unknown", null, CrewPost.DRIVER));
+
+        loaded.setCrewClass(bomber, CrewPost.GUNNER, null);
+        assertEquals("gunner", loaded.effectiveCrewClass("bomber", FlanModelKind.PLANE, CrewPost.GUNNER));
+        loaded.setCrewClass(bomber, CrewPost.PASSENGER, null);
+        assertFalse(loaded.crewScopes().contains(bomber), "removing the last seat removes the definition override");
+    }
+
+    @Test
+    void crewDraftsCopyOverridesWithoutSharingMutableState()
+    {
+        BotSettings.TeamForce force = new BotSettings.TeamForce();
+        String planes = BotSettings.TeamForce.crewScope(FlanModelKind.PLANE);
+        force.setCrewClass(CrewPost.DRIVER, "crewman");
+        force.setCrewClass(planes, CrewPost.DRIVER, "pilot");
+        BotSettings.TeamForce draft = new BotSettings.TeamForce();
+        draft.copyCrewFrom(force);
+        draft.setCrewClass(CrewPost.DRIVER, "replacement");
+        draft.setCrewClass(planes, CrewPost.DRIVER, "ace");
+        assertEquals("crewman", force.crewClass(CrewPost.DRIVER));
+        assertEquals("pilot", force.crewClass(planes, CrewPost.DRIVER));
+
+        force.copyCrewFrom(draft);
+        draft.setCrewClass(planes, CrewPost.DRIVER, null);
+        assertEquals("replacement", force.crewClass(CrewPost.DRIVER));
+        assertEquals("ace", force.crewClass(planes, CrewPost.DRIVER));
+        force.copyCrewFrom(force);
+        assertEquals("ace", force.crewClass(planes, CrewPost.DRIVER));
     }
 }

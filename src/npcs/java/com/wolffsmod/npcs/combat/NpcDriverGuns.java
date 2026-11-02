@@ -107,7 +107,7 @@ public final class NpcDriverGuns
         IContentType current = model == null ? null : model.getInfoType();
         if (!options.enabled(Feature.DRIVER_GUNS) || !(current instanceof IDriveableType) || !(npc.level() instanceof ServerLevel))
             return Optional.empty();
-        boolean other = !NpcEquipment.secondaryBank(options, current);
+        boolean other = !NpcEquipment.secondaryBank(npc, current);
         return FlansProjectiles.getMuzzles(current, other, 0, false).stream().findFirst().flatMap(muzzle ->
         {
             IContentType weapon = muzzle.weapon().orElse(null);
@@ -130,13 +130,13 @@ public final class NpcDriverGuns
         guns.values().forEach(gun -> gun.cooldown = Math.max(0D, gun.cooldown - 1D));
         FlanModelEntity model = NpcModels.flan(npc);
         IContentType current = model == null ? null : model.getInfoType();
-        boolean bank = !NpcEquipment.secondaryBank(options, current);
-        if (definition != current || secondary != bank)
+        boolean bank = !NpcEquipment.secondaryBank(npc, current);
+        if (definition != current)
         {
             guns.clear();
             definition = current;
-            secondary = bank;
         }
+        secondary = bank;
         LivingEntity target = npc.getTarget();
         NpcVehicleState state = NpcVehicleState.of(npc);
         if (!(current instanceof IDriveableType) || !engages(npc, target, state, options))
@@ -262,6 +262,8 @@ public final class NpcDriverGuns
         NpcVehicleState state = context.state();
         NpcWeaponOptions options = context.options();
         Vec3 origin = NpcModels.world(npc, context.model(), muzzle.offset(), state.getHullYaw());
+        if (!NpcVehicleCombat.mayFire(npc, target, origin, FlansProjectiles.getArmorPerformance(ammo, round, muzzle.weapon().orElse(null), definition), NpcBlastSafety.reach(ammo) > 0D))
+            return false;
         Vec3 aimPoint = NpcVehicleState.aimPoint(target);
         NpcTuning tuning = NpcTuning.of(npc);
         int transparent = tuning.sight() == NpcTuning.Sight.SEE_AND_FIRE_THROUGH ? tuning.get(NpcTuning.Value.FIRE_LIMIT) : 0;

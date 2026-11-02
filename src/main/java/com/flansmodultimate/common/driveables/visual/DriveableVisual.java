@@ -31,6 +31,21 @@ public interface DriveableVisual
         return 1F;
     }
 
+    /**
+     * @return ticks since what is drawn was wrecked, or -1 while it still works. A wreck is drawn settling onto its
+     *         springs, its gun drooping and its turret slumped off its bearing, and sinks away at the end of its life.
+     */
+    default int getWreckAge()
+    {
+        return -1;
+    }
+
+    /** @return a side fixed by the wreck's identity, so everyone watching sees the same wreck slump the same way */
+    default boolean isWreckMirrored()
+    {
+        return false;
+    }
+
     /** @return the seat's aim, or {@code null} when the seat is not there: its registered gun is then not drawn */
     @Nullable
     SeatVisual getSeat(int index);

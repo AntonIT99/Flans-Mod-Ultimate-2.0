@@ -1,0 +1,10 @@
+// Identity
+Name Anti-Tank (Panzerschreck)
+ShortName OfficialWW2_GermanSupportPanzerschreck
+
+// Items
+AddItem mp40
+AddItem mp40Ammo 3
+AddItem panzerschreck
+AddItem panzerschreckAmmo 2
+AddItem ww2Knife

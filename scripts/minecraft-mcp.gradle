@@ -35,16 +35,49 @@ def downloadMcp = tasks.register('prepareMinecraftMcp') {
     }
 }
 
-if (project.hasProperty('withMinecraftMcp'))
+// Register the mapped companion for ordinary Gradle/IDE imports; only MCP client runs use it.
+def mcpDev = sourceSets.create('mcpDev') {
+    compileClasspath += sourceSets.npcs.compileClasspath + sourceSets.npcs.output
+}
+dependencies.add(mcpDev.compileOnlyConfigurationName, files(mcpJar).builtBy(downloadMcp))
+
+boolean mcpOnEveryClient = project.hasProperty('withMinecraftMcp')
+if (!project.hasProperty('withoutMinecraftMcp') && (mcpJar.get().asFile.isFile() || mcpOnEveryClient))
 {
-    dependencies.add('localRuntime', files(mcpJar).builtBy(downloadMcp))
-    neoForge.runs.configureEach {
-        if (name.startsWith('client'))
+    // ModDevGradle loads every registered mod in every run; the companion stays idle unless a run sets fmu.mcp.port.
+    neoForge.mods.maybeCreate('flansmcpdev').sourceSet(mcpDev)
+    // Keep the normal client plain; this sibling uses the same account, packs and world directory with MCP.
+    String mcpGameTestNamespace = mod_id
+    neoForge.runs.create('clientMcp') {
+        client()
+        programArguments.addAll('--username', 'Player1')
+        systemProperty 'neoforge.enabledGameTestNamespaces', mcpGameTestNamespace
+    }
+    String captureDir = layout.buildDirectory.dir('minecraft-mcp/captures').get().asFile.absolutePath
+    File testProfile = file('run/mcp-test')
+    File secondTestProfile = file('run/mcp-test-2')
+    String width = providers.gradleProperty('mcpWidth').getOrElse('1280')
+    String height = providers.gradleProperty('mcpHeight').getOrElse('800')
+    boolean useTestProfile = project.hasProperty('mcpTestProfile')
+    def mcpRuntime = dependencies.create(files(mcpJar).builtBy(downloadMcp))
+    neoForge.runs.configureEach { run ->
+        if (run.name == 'clientMcp' || mcpOnEveryClient && run.name.startsWith('client'))
         {
-            systemProperty 'mcp.port', (name == 'client2' ? mcpTarget.secondPort : mcpTarget.port).toString()
+            // Only these runs put the MCP mod on their classpath; servers and the plain client never see it.
+            run.additionalRuntimeClasspathConfiguration.dependencies.add(mcpRuntime)
+            boolean second = run.name == 'client2'
+            systemProperty 'mcp.port', (second ? mcpTarget.secondPort : mcpTarget.port).toString()
             systemProperty 'mcp.background_input', 'true'
             systemProperty 'mcp.mod.version', mcpTarget.modVersion.toString()
             systemProperty 'mcp.mod.loader', mcpTarget.loader.toString()
+            systemProperty 'fmu.mcp.port', (second ? mcpTarget.secondPort + 100 : mcpTarget.port + 100).toString()
+            systemProperty 'fmu.mcp.captureDir', captureDir
+            if (useTestProfile)
+            {
+                gameDirectory = second ? secondTestProfile : testProfile
+                systemProperty 'fmu.mcp.testProfile', 'true'
+                programArguments.addAll('--width', width, '--height', height)
+            }
         }
     }
 }

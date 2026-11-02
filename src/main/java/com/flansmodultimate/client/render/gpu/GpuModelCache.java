@@ -386,9 +386,22 @@ public final class GpuModelCache
     /** Only explicit normal model passes opt in. A context belongs to one nesting depth. */
     public static VertexConsumer begin(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed)
     {
+        return begin(source, pass, texture, translucent, cull, allowed, false);
+    }
+
+    /**
+     * @param armor
+     *            draw through the armour render types, which offset the geometry towards the viewer so that a piece lying
+     *            flush with the body it is worn on wins the depth test. Both the batch and the fallback use them, so a
+     *            batched uniform looks exactly like an unbatched one.
+     */
+    // Mirrors the vanilla render-type selection: pass, texture and the three state flags, plus the scope's own gate.
+    @SuppressWarnings("java:S107")
+    public static VertexConsumer begin(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed, boolean armor)
+    {
         if (depth != 0)
             contexts.get(depth - 1).batch.suspend();
-        RenderType vanilla = pass.getRenderType(texture, translucent, cull);
+        RenderType vanilla = armor ? pass.getArmorRenderType(texture, translucent, cull) : pass.getRenderType(texture, translucent, cull);
         ModClientConfig config = ModClientConfig.get();
         if (!allowed || config == null || !config.enableGpuModelCache || shader == null || failed || pass != EnumRenderPass.DEFAULT || translucent && !config.enableFastTranslucentRendering
             || source.getClass() != MultiBufferSource.BufferSource.class || VehicleThermalRenderer.isRenderingMask() || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
@@ -400,7 +413,7 @@ public final class GpuModelCache
         }
         if (depth == contexts.size())
             contexts.add(new Context());
-        RenderType gpu = CustomRenderType.gpuModel(texture, translucent, cull);
+        RenderType gpu = armor ? CustomRenderType.gpuArmorModel(texture, translucent, cull) : CustomRenderType.gpuModel(texture, translucent, cull);
         Context context = contexts.get(depth);
         context.source = (MultiBufferSource.BufferSource) source;
         context.vanilla = vanilla;

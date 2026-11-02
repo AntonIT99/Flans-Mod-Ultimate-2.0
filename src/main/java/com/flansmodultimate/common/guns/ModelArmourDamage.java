@@ -39,7 +39,7 @@ public final class ModelArmourDamage
      * @param shapedCharge
      *            whether the damage is that of a shaped-charge jet, whose blast then spares what the jet went through
      */
-    public record Result(float damage, boolean blocked, float remainingPower, boolean shapedCharge)
+    public record Result(float damage, boolean blocked, float remainingPower, boolean shapedCharge, ResolvedArmorHit armour)
     {}
 
     /** @return the resolved hit, or empty when the entity does not stand in for an armoured driveable */
@@ -89,7 +89,7 @@ public final class ModelArmourDamage
         float resistance = Math.max(1F, partResistance);
         // Explosive warheads act at the first surface, and a stopped round goes no further.
         float remaining = heat || bulletType.isHesh() || blocked ? 0F : Math.max(0F, previousPower - resistance);
-        return new Result(blocked ? 0F : resolved.damage(), blocked, remaining, resolved.shapedCharge());
+        return new Result(blocked ? 0F : resolved.damage(), blocked, remaining, resolved.shapedCharge(), armour);
     }
 
     /**
@@ -102,6 +102,15 @@ public final class ModelArmourDamage
         Vec3 forward = new Vec3(-Math.sin(yaw), 0D, Math.cos(yaw));
         Vec3 right = new Vec3(-Math.cos(yaw), 0D, -Math.sin(yaw));
         return new Vec3(worldDirection.dot(right), worldDirection.y, -worldDirection.dot(forward));
+    }
+
+    /** Inverse of {@link #localDirection}, for an entity hit as one box. */
+    static Vec3 worldDirection(Entity target, Vec3 localDirection)
+    {
+        double yaw = Math.toRadians(bodyYaw(target));
+        Vec3 forward = new Vec3(-Math.sin(yaw), 0D, Math.cos(yaw));
+        Vec3 right = new Vec3(-Math.cos(yaw), 0D, -Math.sin(yaw));
+        return right.scale(localDirection.x).add(0D, localDirection.y, 0D).subtract(forward.scale(localDirection.z));
     }
 
     private static float bodyYaw(@Nullable Entity target)

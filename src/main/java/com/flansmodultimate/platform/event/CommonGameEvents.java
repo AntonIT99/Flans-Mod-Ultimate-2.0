@@ -1,6 +1,7 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.entity.BloodEffects;
 import com.flansmodultimate.common.raytracing.EntityPositionHistory;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import net.neoforged.bus.api.EventPriority;
@@ -8,6 +9,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
@@ -86,5 +89,18 @@ public final class CommonGameEvents
     {
         if (event.getBlocked() && !event.getEntity().level().isClientSide)
             CommonEventHandler.playMeleeImpactSound(event.getDamageSource(), true);
+    }
+
+    /** Only final, uncancelled damage can produce wound puffs and heavy-hit blood bursts. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onLivingDamagePost(LivingDamageEvent.Post event)
+    {
+        BloodEffects.onDamage(event.getEntity(), event.getSource(), event.getNewDamage());
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onBloodDeath(LivingDeathEvent event)
+    {
+        BloodEffects.onDeath(event.getEntity());
     }
 }

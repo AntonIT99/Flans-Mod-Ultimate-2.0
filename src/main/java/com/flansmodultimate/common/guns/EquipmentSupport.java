@@ -270,7 +270,7 @@ public final class EquipmentSupport
         {
             GunType type = gun.getConfigType();
             String sound = type.getReloadSound(weapon);
-            if (!sound.isBlank())
+            if (StringUtils.isNotBlank(sound))
                 PacketPlaySound.sendSoundPacket(holder, type.getReloadSoundRange(), sound, false);
         }
     }

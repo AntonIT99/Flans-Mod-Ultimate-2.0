@@ -89,6 +89,41 @@ public final class BotPresets
         save();
     }
 
+    /** Writes durably before acknowledging an import; restores the previous library on failure. Server thread. */
+    public void putChecked(Preset preset) throws IOException
+    {
+        Preset previous = presets.put(preset.name(), preset);
+        try
+        {
+            saveChecked();
+        }
+        catch (IOException e)
+        {
+            if (previous == null)
+                presets.remove(preset.name());
+            else
+                presets.put(preset.name(), previous);
+            throw e;
+        }
+    }
+
+    /** Removes an entry durably, restoring it on an I/O failure. Server thread. */
+    public void removeChecked(String name) throws IOException
+    {
+        Preset previous = presets.remove(name);
+        if (previous == null)
+            throw new IllegalArgumentException("Unknown bot preset");
+        try
+        {
+            saveChecked();
+        }
+        catch (IOException e)
+        {
+            presets.put(name, previous);
+            throw e;
+        }
+    }
+
     public boolean remove(String name)
     {
         boolean removed = presets.remove(name.toLowerCase(Locale.ROOT)) != null;
@@ -163,6 +198,18 @@ public final class BotPresets
     /** Writes the file through a temporary one, so an interrupted write never leaves it half written. */
     void save()
     {
+        try
+        {
+            saveChecked();
+        }
+        catch (IOException e)
+        {
+            NpcsMod.log.error("Cannot save bot presets to {}", file, e);
+        }
+    }
+
+    private void saveChecked() throws IOException
+    {
         JsonObject root = new JsonObject();
         JsonArray list = new JsonArray();
         for (Preset preset : presets.values())
@@ -176,17 +223,10 @@ public final class BotPresets
             list.add(entry);
         }
         root.add(PRESETS_KEY, list);
-        try
-        {
-            Files.createDirectories(file.getParent());
-            Path temporary = file.resolveSibling(FILE_NAME + ".tmp");
-            Files.writeString(temporary, JSON.toJson(root), StandardCharsets.UTF_8);
-            replace(temporary);
-        }
-        catch (IOException e)
-        {
-            NpcsMod.log.error("Cannot save bot presets to {}", file, e);
-        }
+        Files.createDirectories(file.getParent());
+        Path temporary = file.resolveSibling(FILE_NAME + ".tmp");
+        Files.writeString(temporary, JSON.toJson(root), StandardCharsets.UTF_8);
+        replace(temporary);
     }
 
     /** Puts the written file in place, atomically where the file system allows. */

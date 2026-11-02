@@ -37,6 +37,13 @@ ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
+modId="jei"
+type="optional"
+versionRange="[19.21,)"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.${mod_id}]]
 modId="distanthorizons"
 type="optional"
 versionRange="[0,)"

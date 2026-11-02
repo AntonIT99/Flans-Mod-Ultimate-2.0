@@ -84,10 +84,10 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
         ELITE(new NpcSkill(5, 12, 3F, 0.95F, 1F, false)),
         VETERAN(new NpcSkill(10, 24, 5F, 0.85F, 1F, false)),
         REGULAR(new NpcSkill(16, 36, 8F, 0.7F, 1F, false)),
-        /** Below Regular, hits on players start to deal less damage. */
-        RECRUIT(new NpcSkill(24, 50, 11F, 0.5F, 0.75F, false)),
-        /** Shoots a lot and rarely hits, and deals half its damage to players. */
-        TRAINEE(new NpcSkill(34, 70, 14F, 0.3F, 0.5F, false));
+        /** Below Regular, hits on players deal less damage: half of it for a recruit. */
+        RECRUIT(new NpcSkill(24, 50, 11F, 0.5F, 0.5F, false)),
+        /** Shoots a lot and rarely hits, and deals a quarter of its damage to players. */
+        TRAINEE(new NpcSkill(34, 70, 14F, 0.3F, 0.25F, false));
         // spotless:on
 
         private final NpcSkill skill;

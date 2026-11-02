@@ -31,6 +31,7 @@ public final class BotEditor
     /** Permission level an operator needs, as for the {@code /teams ai} settings commands. */
     private static final int PERMISSION = 2;
     private static final String PREFIX = "wolffsmodnpcs.editor.";
+    private static final String UNKNOWN_CLASS = PREFIX + "unknown_class";
     /** Keys of the data of preset and copy actions. */
     public static final String NAME = "name";
     public static final String SETTINGS = "settings";
@@ -163,7 +164,9 @@ public final class BotEditor
             String name = team.getShortName();
             Set<String> classes = team.getClasses().stream().map(IContentType::getShortName).collect(Collectors.toSet());
             force.getClassWeights().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
-                .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "unknown_class", name, playerClass)));
+                .forEach(playerClass -> problems.add(Component.translatable(UNKNOWN_CLASS, name, playerClass)));
+            force.getClassLimits().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
+                .forEach(playerClass -> problems.add(Component.translatable(UNKNOWN_CLASS, name, playerClass)));
             force.getClassRoles().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
                 .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "unknown_role_class", name, playerClass)));
             for (BotSettings.SquadEntry entry : force.getSquads())
@@ -175,7 +178,7 @@ public final class BotEditor
                 if (!entry.carry().isEmpty())
                     templateProblems(name, classes, entry.carry(), problems);
             }
-            crewProblems(name, classes, force, problems);
+            classProblems(name, classes, force, problems);
         }
         return problems;
     }
@@ -201,18 +204,32 @@ public final class BotEditor
                 bots += entry.count() * SquadTemplates.get().find(entry.template()).map(template -> template.roster().size()).orElse(0);
             bots += force.getVehicles().stream().mapToInt(BotSettings.VehicleEntry::count).sum();
         }
+        if (settings.isCommanderBot())
+        {
+            Set<Integer> sides = new HashSet<>();
+            for (ITeam team : round.getTeams())
+                if (team.getClasses().stream().anyMatch(playerClass -> playerClass.getShortName().equals(settings.team(team.getShortName()).getCommanderClass())))
+                    sides.add(round.getSideOf(team));
+            bots += sides.size();
+        }
         return bots;
     }
 
-    /** Crew classes the team does not offer, for which a class is picked by weight instead. */
-    private static void crewProblems(String team, Set<String> classes, BotSettings.TeamForce force, List<Component> problems)
+    /** Commander and crew classes the team does not offer; crews fall back to a class picked by weight. */
+    private static void classProblems(String team, Set<String> classes, BotSettings.TeamForce force, List<Component> problems)
     {
-        for (CrewPost post : CrewPost.values())
-        {
-            String crew = force.crewClass(post);
-            if (!crew.isEmpty() && !BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(crew) && !classes.contains(crew))
-                problems.add(Component.translatable(PREFIX + "unknown_crew_class", team, crew, post.id()));
-        }
+        if (!force.getCommanderClass().isEmpty() && !classes.contains(force.getCommanderClass()))
+            problems.add(Component.translatable(UNKNOWN_CLASS, team, force.getCommanderClass()));
+        Set<String> scopes = new LinkedHashSet<>();
+        scopes.add("");
+        scopes.addAll(force.crewScopes());
+        for (String scope : scopes)
+            for (CrewPost post : CrewPost.values())
+            {
+                String crew = force.crewClass(scope, post);
+                if (crew != null && !crew.isEmpty() && !BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(crew) && !classes.contains(crew))
+                    problems.add(Component.translatable(PREFIX + "unknown_crew_class", team, crew, scope.isEmpty() ? post.id() : scope + "/" + post.id()));
+            }
     }
 
     private static void templateProblems(String team, Set<String> classes, String id, List<Component> problems)
@@ -237,8 +254,8 @@ public final class BotEditor
             shown = FlansTeams.getRunningRound().map(live -> rounds.indexOf(live.getRound())).orElse(0);
             shown = rounds.isEmpty() ? -1 : Math.max(0, shown);
         }
-        List<BotEditorStatePacket.Round> entries = rounds.stream()
-            .map(entry -> new BotEditorStatePacket.Round(entry.getId(), label(rounds.indexOf(entry), entry), entry.getTeams().stream().map(ITeam::getShortName).toList())).toList();
+        List<BotEditorStatePacket.Round> entries = rounds.stream().map(entry -> new BotEditorStatePacket.Round(entry.getId(), label(rounds.indexOf(entry), entry),
+            entry.getTeams().stream().map(ITeam::getShortName).toList(), BotRespawnBudget.available(entry.getGameTypeId()))).toList();
         BotSettings settings = shown < 0 ? new BotSettings() : BotSettings.load(rounds.get(shown).getExtensionData(BotSettings.KEY));
         return new BotEditorStatePacket(entries, shown, settings.save(), SquadTemplates.get().all().stream().map(SquadTemplate::toTag).toList(), List.copyOf(BotPresets.get().names()));
     }

@@ -30,10 +30,26 @@ import java.util.UUID;
  *            the base the spawner is connected to, or null when it is connected to none
  * @param owner
  *            the team holding that base, or null when nobody does
+ * @param npcPolicy
+ *            the NPC vehicle definitions permitted to use this spawner
+ * @param npcSpawnAll
+ *            true to deploy vehicles into clear nearby spaces as they become ready; false to wait for the previous
+ *            NPC vehicle to clear the spawner's staging area before deploying the next one (server-side allocation)
  */
 @ApiStatus.Experimental
-public record TeamsSpawner(UUID id, Kind kind, ResourceKey<Level> dimension, BlockPos position, @Nullable UUID baseId, @Nullable ITeam owner)
+public record TeamsSpawner(UUID id, Kind kind, ResourceKey<Level> dimension, BlockPos position, @Nullable UUID baseId, @Nullable ITeam owner, SpawnerNpcPolicy npcPolicy, boolean npcSpawnAll)
 {
+    /** Creates a snapshot with the default of deploying all ready NPC vehicles into clear nearby spaces. */
+    public TeamsSpawner(UUID id, Kind kind, ResourceKey<Level> dimension, BlockPos position, @Nullable UUID baseId, @Nullable ITeam owner, SpawnerNpcPolicy npcPolicy)
+    {
+        this(id, kind, dimension, position, baseId, owner, npcPolicy, true);
+    }
+
+    /** Creates a snapshot with the legacy default of permitting every NPC vehicle. */
+    public TeamsSpawner(UUID id, Kind kind, ResourceKey<Level> dimension, BlockPos position, @Nullable UUID baseId, @Nullable ITeam owner)
+    {
+        this(id, kind, dimension, position, baseId, owner, SpawnerNpcPolicy.ALL, true);
+    }
     /** What a spawner spawns. */
     @ApiStatus.Experimental
     public enum Kind

@@ -27,31 +27,54 @@ public class CustomRenderType
     private record TexCullKey(ResourceLocation texture, boolean cull)
     {}
     private static final LinkedHashMap<ResourceLocation, RenderType[]> GPU_MODELS = new LinkedHashMap<>(64, 0.75F, true);
+    private static final LinkedHashMap<ResourceLocation, RenderType[]> GPU_ARMOR_MODELS = new LinkedHashMap<>(64, 0.75F, true);
+    /** Textures each batched variant keeps a render type for; the least recently used one is dropped beyond it. */
+    private static final int MAX_GPU_MODEL_TEXTURES = 256;
+
+    /** One shared shard, so render types of the same kind compare and sort as one state. */
+    private static final RenderStateShard.TransparencyStateShard GPU_OPAQUE_TRANSPARENCY = new RenderStateShard.TransparencyStateShard("gpu_opaque", RenderSystem::disableBlend, () ->
+    {
+    });
 
     public static RenderType gpuModel(ResourceLocation texture, boolean translucent, boolean cull)
     {
-        RenderType[] variants = GPU_MODELS.get(texture);
+        return gpuModel(GPU_MODELS, texture, translucent, cull, false);
+    }
+
+    /**
+     * The batched render type of a Flan armour model: {@link #gpuModel} plus the armour layer's view offset, so a batched
+     * uniform wins the depth test against the body it is worn on exactly as the unbatched armour types do. The offset is
+     * applied by the layering shard when the batch opens its draws, before the shader reads the model-view matrix.
+     */
+    public static RenderType gpuArmorModel(ResourceLocation texture, boolean translucent, boolean cull)
+    {
+        return gpuModel(GPU_ARMOR_MODELS, texture, translucent, cull, true);
+    }
+
+    private static RenderType gpuModel(LinkedHashMap<ResourceLocation, RenderType[]> cache, ResourceLocation texture, boolean translucent, boolean cull, boolean armor)
+    {
+        RenderType[] variants = cache.get(texture);
         if (variants == null)
         {
-            if (GPU_MODELS.size() >= 256)
+            if (cache.size() >= MAX_GPU_MODEL_TEXTURES)
             {
-                var iterator = GPU_MODELS.keySet().iterator();
+                var iterator = cache.keySet().iterator();
                 iterator.next();
                 iterator.remove();
             }
             variants = new RenderType[4];
-            GPU_MODELS.put(texture, variants);
+            cache.put(texture, variants);
         }
         int variant = (translucent ? 2 : 0) + (cull ? 1 : 0);
         if (variants[variant] == null)
         {
-            RenderType.CompositeState state = RenderType.CompositeState.builder().setShaderState(new RenderStateShard.ShaderStateShard(GpuModelCache::shader))
-                .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-                .setTransparencyState(translucent ? EMISSIVE_ALPHA_TRANSPARENCY : new RenderStateShard.TransparencyStateShard("gpu_opaque", RenderSystem::disableBlend, () ->
-                {
-                })).setCullState(new RenderStateShard.CullStateShard(cull)).setLightmapState(new RenderStateShard.LightmapStateShard(true))
-                .setOverlayState(new RenderStateShard.OverlayStateShard(true)).createCompositeState(false);
-            variants[variant] = RenderType.create("rigid_model", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false, state);
+            RenderType.CompositeState.CompositeStateBuilder builder = RenderType.CompositeState.builder().setShaderState(new RenderStateShard.ShaderStateShard(GpuModelCache::shader))
+                .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false)).setTransparencyState(translucent ? EMISSIVE_ALPHA_TRANSPARENCY : GPU_OPAQUE_TRANSPARENCY)
+                .setCullState(new RenderStateShard.CullStateShard(cull)).setLightmapState(new RenderStateShard.LightmapStateShard(true)).setOverlayState(new RenderStateShard.OverlayStateShard(true));
+            if (armor)
+                builder.setLayeringState(ARMOR_VIEW_OFFSET_LAYERING);
+            variants[variant] = RenderType.create(armor ? "rigid_armor_model" : "rigid_model", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false,
+                builder.createCompositeState(false));
         }
         return variants[variant];
     }

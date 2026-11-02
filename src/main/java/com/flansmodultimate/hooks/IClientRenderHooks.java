@@ -11,6 +11,7 @@ import com.flansmodultimate.platform.client.FlanItemExtensions;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -19,6 +20,18 @@ import java.util.*;
 public interface IClientRenderHooks
 {
     FlanItemExtensions customItemExtensions();
+
+    default void lockMarker(int target, InteractionHand hand)
+    {}
+
+    default void waterImpact(Vec3 position, float strength)
+    {}
+
+    default void heldShotEffects(LivingEntity shooter, InteractionHand hand)
+    {}
+
+    default void weaponShotEffects(String weapon, Vec3 origin, Vec3 direction, float scale, boolean heavy)
+    {}
 
     void spawnParticle(String s, double x, double y, double z, float scale);
 

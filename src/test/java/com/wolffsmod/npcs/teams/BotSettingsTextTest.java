@@ -40,6 +40,26 @@ class BotSettingsTextTest
     }
 
     @Test
+    void omittedPaintjobsAllowAllForNewVehiclesAndPreserveExistingSelections()
+    {
+        BotSettings.VehicleEntry defaultOnly = new BotSettings.VehicleEntry("tiger", 1, 0, 0, 1, null, "", List.of(0));
+        BotSettings.VehicleEntry selected = new BotSettings.VehicleEntry("opel", 1, 0, 0, 1, null, "", List.of(2, 4));
+        List<BotSettings.VehicleEntry> vehicles = BotSettingsText.parseVehicles("tiger, opel, sherman", List.of(defaultOnly, selected));
+        assertEquals(List.of(0), vehicles.get(0).paintjobs());
+        assertEquals(List.of(2, 4), vehicles.get(1).paintjobs());
+        assertTrue(vehicles.get(2).paintjobs().isEmpty(), "New allocations allow every paintjob");
+        assertEquals(vehicles, BotSettingsText.parseVehicles(BotSettingsText.formatVehicles(vehicles), List.of()));
+    }
+
+    @Test
+    void explicitPaintjobsReplaceThePreviousSelection()
+    {
+        BotSettings.VehicleEntry previous = new BotSettings.VehicleEntry("tiger", 1, 0, 0, 1, null, "", List.of(0));
+        assertTrue(BotSettingsText.parseVehicles("tiger:1:0:0:1::*", List.of(previous)).get(0).paintjobs().isEmpty());
+        assertEquals(List.of(2, 4), BotSettingsText.parseVehicles("tiger:1:0:0:1::2|4", List.of(previous)).get(0).paintjobs());
+    }
+
+    @Test
     void textThatIsNoNumberTakesTheFallback()
     {
         assertEquals(7, BotSettingsText.parseNumber("seven", 7));

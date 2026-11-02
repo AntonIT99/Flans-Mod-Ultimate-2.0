@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -102,6 +103,7 @@ public final class TeamsManager
     private static final String NBT_ROUND_INSTANCE = "round_instance";
     private static final String NBT_PACIFISM = "pacifism";
     private static final String NBT_MOVIE_PROP = "movie_prop";
+    private static final String NBT_BLOOD_EFFECTS = "blood_effects";
     private static final String NBT_SEA_LEVEL = "sea_level";
     private static final String NBT_WINNER = "winner";
     private static final String NBT_ROUND_DECIDED = "round_decided";
@@ -146,6 +148,8 @@ public final class TeamsManager
     private RoundRules roundRuleDefaults = new RoundRules();
     @Getter
     private final RoundRuleRuntime roundRuleRuntime = new RoundRuleRuntime(this);
+    @Getter
+    private final TeamsVehicleDeployment vehicleDeployment = new TeamsVehicleDeployment(this);
 
     @Getter
     private boolean explosionsBreakBlocks = true;
@@ -215,6 +219,9 @@ public final class TeamsManager
     /** Labjac "movie prop" rule: driveables run at full throttle on their own and need no fuel, for filming. */
     @Getter
     private boolean movieProp;
+    /** Allows temporary blood splatters for players and entities that opt in, including NPC soldiers. */
+    @Getter
+    private boolean bloodEffects = true;
     /**
      * Whether allied teams come back at each other's bases. A team without a base of its own on the
      * map does so whatever this says.
@@ -308,6 +315,7 @@ public final class TeamsManager
 
     public void detachServer()
     {
+        vehicleDeployment.clear();
         saveRuntime();
         liveBases.clear();
         liveObjects.clear();
@@ -477,6 +485,12 @@ public final class TeamsManager
     public void setPacifism(boolean pacifism)
     {
         this.pacifism = pacifism;
+        saveRuntime();
+    }
+
+    public void setBloodEffects(boolean bloodEffects)
+    {
+        this.bloodEffects = bloodEffects;
         saveRuntime();
     }
 
@@ -877,6 +891,7 @@ public final class TeamsManager
         rotationIndex = index;
         currentRoundId = next.getId();
         roundInstanceId = UUID.randomUUID();
+        vehicleDeployment.clear();
         lastWinnerId = "";
         lastRoundDecided = false;
         outOfBoundsSeconds.clear();
@@ -1028,6 +1043,7 @@ public final class TeamsManager
 
     public void stopRound()
     {
+        vehicleDeployment.clear();
         announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         restoreRoundBlocks();
@@ -1187,6 +1203,7 @@ public final class TeamsManager
     {
         if (!roundRunning)
             return;
+        vehicleDeployment.clear();
         // Decided before anything is cleaned up, while the scores and capture points still tell who won.
         Team winner = declaredWinner == null ? getCurrentGameType().map(type -> type.getWinner(this)).orElse(null) : declaredWinner;
         lastWinnerId = winner == null ? "" : winner.getShortName();
@@ -1486,6 +1503,8 @@ public final class TeamsManager
     /** Slots a limited class has on a team at its present size; {@link ClassLimits#UNLIMITED} when it has no limit. */
     public int getClassCapacity(Team team, PlayerClass playerClass)
     {
+        if (roundRuleRuntime.rules().enabled(RoundRule.DISABLE_CLASS_LIMITS))
+            return ClassLimits.UNLIMITED;
         return ClassLimits.capacity(playerClass.getClassLimit(), playerClass.getClassLimitPercent(), getPlayersChoosing(team).size());
     }
 
@@ -1537,7 +1556,17 @@ public final class TeamsManager
      */
     public boolean selectSpawn(ServerPlayer player, @Nullable UUID capturePointId)
     {
+        vehicleDeployment.forget(player);
         return roundRunning && getCurrentGameType().map(type -> type.selectSpawn(this, player, capturePointId)).orElse(false);
+    }
+
+    /** Selects a template vehicle spawner without moving the player; live availability is checked again on respawn. */
+    public boolean selectVehicleSpawn(ServerPlayer player, UUID spawner)
+    {
+        // A stale vehicle choice falls back to headquarters, rather than retaining an old objective choice.
+        if (!selectSpawn(player, null))
+            return false;
+        return vehicleDeployment.select(player, spawner);
     }
 
     /**
@@ -1699,6 +1728,7 @@ public final class TeamsManager
 
     public void playerLoggedOut(ServerPlayer player)
     {
+        vehicleDeployment.forget(player);
         roundRuleRuntime.loggedOut(player);
         if (roundRunning)
             getCurrentGameType().ifPresent(type -> type.playerQuit(this, player));
@@ -1766,6 +1796,8 @@ public final class TeamsManager
 
     private void teleportToRoundSpawn(ServerPlayer player, Team team, @Nullable ITeamsRespawnRule.Reason reason)
     {
+        if (reason != null && team != Team.SPECTATORS && vehicleDeployment.deploy(player))
+            return;
         spawnPosition(player, team, reason).ifPresent(position ->
         {
             TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
@@ -1998,6 +2030,23 @@ public final class TeamsManager
         return liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName())).filter(usable).map(base -> base.getTeamObjectPosition().add(0D, 1D, 0D)).toList();
     }
 
+    /** Loaded template vehicle plates at bases the player's selected team may use in the current map. */
+    public List<TeamSpawnerBlockEntity> getVehicleDeploymentSpawners(ServerPlayer player)
+    {
+        TeamsRound round = getCurrentRound().orElse(null);
+        TeamsMap map = round == null ? null : getMap(round.getMapId()).orElse(null);
+        int teamId = round == null ? 0 : round.getTeamId(PlayerData.getInstance(player).getNewTeam());
+        if (!roundRunning || map == null || teamId < TeamsRound.FIRST_TEAM_ID)
+            return List.of();
+        Predicate<ITeamBase> usable = spawnBases(round, map, teamId);
+        return liveObjects.values().stream().filter(TeamSpawnerBlockEntity.class::isInstance).map(TeamSpawnerBlockEntity.class::cast)
+            .filter(spawner -> !spawner.isRemoved() && spawner.hasVehicleTemplate() && spawner.getDimension().equals(map.getDimension())).filter(spawner ->
+            {
+                ITeamBase base = spawner.getBaseId() == null ? null : liveBases.get(spawner.getBaseId());
+                return base != null && base.getMapId().equals(map.getShortName()) && usable.test(base);
+            }).sorted(Comparator.comparing(TeamSpawnerBlockEntity::getObjectId)).toList();
+    }
+
     /** The loaded spawners connected to the bases of the map being played, as the API reports them. */
     public List<TeamsSpawner> getSpawners()
     {
@@ -2016,7 +2065,8 @@ public final class TeamsManager
                 case ITEM -> TeamsSpawner.Kind.ITEM;
                 case VEHICLE -> TeamsSpawner.Kind.VEHICLE;
             };
-            spawners.add(new TeamsSpawner(spawner.getObjectId(), kind, spawner.getDimension(), spawner.getBlockPos(), base.getObjectId(), getTeamForBase(base)));
+            spawners.add(new TeamsSpawner(spawner.getObjectId(), kind, spawner.getDimension(), spawner.getBlockPos(), base.getObjectId(), getTeamForBase(base), spawner.getNpcPolicy(),
+                spawner.isNpcSpawnAll()));
         }
         return List.copyOf(spawners);
     }
@@ -2228,6 +2278,21 @@ public final class TeamsManager
         return Optional.ofNullable(liveBases.get(id));
     }
 
+    public List<ITeamBase> getBases(ResourceKey<Level> dimension)
+    {
+        return liveBases.values().stream().filter(base -> base.getDimension().equals(dimension))
+            .sorted(Comparator.comparing(ITeamBase::getMapId).thenComparing(ITeamBase::getBaseName).thenComparing(ITeamBase::getObjectId)).toList();
+    }
+
+    public void disconnectObject(ITeamObject object)
+    {
+        UUID previous = object.getBaseId();
+        if (previous != null)
+            getBase(previous).ifPresent(base -> base.removeObject(object.getObjectId()));
+        object.setBaseId(null);
+        markDirty();
+    }
+
     public Optional<ITeamObject> getObject(UUID id)
     {
         return Optional.ofNullable(liveObjects.get(id));
@@ -2263,7 +2328,14 @@ public final class TeamsManager
                 getBase(baseId).ifPresent(base -> base.removeObject(object.getObjectId()));
             unregisterObject(object.getObjectId());
         }
-        object.destroyTeamObject();
+        if (object instanceof net.minecraft.world.level.block.entity.BlockEntity blockEntity && blockEntity.getLevel() != null)
+            TeamsObjectProtection.removeDirectly(blockEntity.getLevel(), blockEntity.getBlockPos(), () ->
+            {
+                object.destroyTeamObject();
+                return true;
+            });
+        else
+            object.destroyTeamObject();
         markDirty();
     }
 
@@ -2463,6 +2535,7 @@ public final class TeamsManager
 
     private void loadRuntime(CompoundTag tag)
     {
+        bloodEffects = !tag.contains(NBT_BLOOD_EFFECTS) || tag.getBoolean(NBT_BLOOD_EFFECTS);
         if (tag.isEmpty())
             return;
 
@@ -2606,6 +2679,7 @@ public final class TeamsManager
         tag.putBoolean(NBT_ROUND_DECIDED, lastRoundDecided);
         tag.putBoolean(NBT_PACIFISM, pacifism);
         tag.putBoolean(NBT_MOVIE_PROP, movieProp);
+        tag.putBoolean(NBT_BLOOD_EFFECTS, bloodEffects);
         tag.putBoolean(NBT_ALLIED_SPAWN_SHARING, alliedSpawnSharing);
         if (seaLevelOverride == NO_SEA_LEVEL_OVERRIDE)
             tag.remove(NBT_SEA_LEVEL);

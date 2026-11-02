@@ -7,6 +7,7 @@ import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
@@ -650,7 +651,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         if (driveable == null || !driveable.canPlayerAccess(player))
             return InteractionResult.PASS;
-        if (getFirstPassenger() != null && getFirstPassenger() != player)
+        if (!SeatOccupants.canEnter(this, player, false))
             return InteractionResult.sidedSuccess(level().isClientSide);
         if (level().isClientSide)
             return InteractionResult.SUCCESS;
@@ -669,9 +670,18 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
      */
     public boolean tryEnter(@NotNull Player player)
     {
-        if (!FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
+        return tryEnter(player, false);
+    }
+
+    /** Enters after optional cooperative NPC handoff; deployment has its own occupant policy. Server thread. */
+    public boolean tryEnter(@NotNull Player player, boolean deployment)
+    {
+        if (level().isClientSide || player.isSpectator() || driveable == null || !driveable.canPlayerAccess(player) || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER)
+            || !SeatOccupants.canEnter(this, player, deployment))
             return false;
         if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(this, player)))
+            return false;
+        if (!SeatOccupants.makeRoom(this, player, deployment))
             return false;
         if (player.getVehicle() != null)
             player.stopRiding();
@@ -902,6 +912,20 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         Driveable parent = driveable;
         return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponBallistics(secondary));
+    }
+
+    @Override
+    public Optional<AmmunitionArmor> getDriverWeaponArmor(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : parent.getDriverWeaponArmor(secondary);
+    }
+
+    @Override
+    public Optional<AmmunitionArmor> getGunArmor()
+    {
+        Driveable parent = driveable;
+        return parent == null ? Optional.empty() : parent.getSeatGunArmor(this);
     }
 
     @Override

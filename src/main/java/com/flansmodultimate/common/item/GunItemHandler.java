@@ -17,6 +17,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.effects.PacketLockMarker;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.gun.*;
 import com.flansmodultimate.platform.PlatformEvents;
@@ -446,6 +447,8 @@ public class GunItemHandler
             return;
 
         Entity closest = findLockOnTarget(level, player, data, hand);
+        if (!level.isClientSide && player instanceof ServerPlayer operator && level.getGameTime() % 4 == 0)
+            PacketHandler.sendTo(new PacketLockMarker(closest == null ? -1 : closest.getId(), hand), operator);
 
         if (closest != null)
             closest.getPersistentData().putBoolean(GunItem.NBT_ENTITY_LOCK_ON, true);

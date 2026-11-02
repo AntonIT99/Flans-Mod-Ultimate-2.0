@@ -1,0 +1,17 @@
+// Identity
+Name Compact Weapon Specialist (MP7, Balaclava)
+ShortName kskMP7Balaclava
+Description Balaclava variant with reduced head protection; the rest of the uniform is unchanged.
+
+// Availability
+UnlockLevel 0
+
+// Armour override; remaining slots inherit the team uniform.
+Hat balaclava
+
+// Items
+AddItem mp7
+AddItem mp7Ammo 5
+AddItem usp
+AddItem uspAmmo 2
+AddItem mwKnife

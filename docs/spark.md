@@ -1,5 +1,9 @@
 # Agent-driven performance profiling
 
+Use this guide for [on-demand game testing](game-testing.md) when runtime profiling
+is requested. Retain verified capture/analysis lessons here using that guide's
+maintenance protocol. Loading spark in a dev run does not authorize a capture.
+
 [spark](https://spark.lucko.me/) is enabled in the default development runs. It is not
 embedded in published mod jars or content packs. Each checkout pins its matching
 mod and download hash in `tools/spark/target.json`; the analysis MCP dependency
@@ -42,7 +46,8 @@ offline. It does not start the game or take control of it.
 
 1. Read [minecraft-mcp.md](minecraft-mcp.md), call `get_minecraft_status` on the
    matching server, and enter control mode. Use a disposable development world.
-   Check `run/logs/latest.log` for spark startup and command responses.
+   Check the active run directory's `logs/latest.log` for spark startup and
+   command responses (`run/mcp-test/logs/latest.log` for the isolated MCP client).
 2. Warm up the world and reproduce the workload before capturing. Record the
    checkout/commit, entity counts, scene, JVM settings, sample interval and
    duration so a later capture can repeat them.
@@ -77,6 +82,9 @@ offline. It does not start the game or take control of it.
    `run/config/spark`; the second client uses `run/second-client/config/spark`.
    The file locator also checks `run/spark` and `build/spark`. A dedicated
    server console can run the same `/spark` commands without Minecraft MCP.
+   For an isolated MCP profile, check its own `config/spark` or `spark` directory,
+   such as `run/mcp-test/config/spark`. The current locator does not scan these
+   isolated roots; pass the capture's absolute path to `load_profile` instead.
 8. Finish with `exit_control_mode`. Keep captures local unless sharing is
    explicitly part of the task. Local saves need no viewer upload.
 

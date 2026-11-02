@@ -1,0 +1,14 @@
+// Identity
+Name Assault (Suppressed MP5)
+ShortName sasAssaultMP5Suppressed
+Description Suppressed MP5 specialist with a SIG P226 sidearm.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem mp5+flanMWSilencer
+AddItem mp5Ammo 5
+AddItem sigP226
+AddItem sigP226Ammo 2
+AddItem mwKnife

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -25,6 +26,8 @@ final class BotBattle
     private final Map<Integer, BotSlot> slots = new LinkedHashMap<>();
     private final Map<Integer, BotSquad> squads = new LinkedHashMap<>();
     private final Map<UUID, Integer> slotOfEntity = new HashMap<>();
+    /** Strategic reports are deliberately not persisted or reconstructed from hidden enemies after a restart. */
+    private final BotIntelligence intelligence = new BotIntelligence();
     private final Deque<Integer> queue = new ArrayDeque<>();
     /** Tickets each side has left, by side; absent while no ticket limit is set. */
     private final Map<Integer, Integer> tickets = new HashMap<>();
@@ -36,12 +39,15 @@ final class BotBattle
     private final Map<String, Map<Integer, Integer>> squadDeployments = new HashMap<>();
     /** The player commanding each side, by side; a side without one is commanded by its AI alone. */
     private final Map<Integer, UUID> commanders = new HashMap<>();
+    /** Game time until each side recovers from losing its commander bot. */
+    private final Map<Integer, Long> disruptedUntil = new HashMap<>();
     /** Sides that have fielded anyone, the only ones that can be worn out. */
     private final Set<Integer> sidesThatFought = new HashSet<>();
-    /** Players who took the field in this playing; joining again later costs them a ticket. */
-    private final Set<UUID> fieldedPlayers = new HashSet<>();
     /** Where each player leading a squad chose to come back after dying. */
     private final Map<UUID, BotLeaders.SpawnChoice> spawnChoices = new HashMap<>();
+    /** Successful deployments per origin, used to spread the next wave across every eligible spawn. */
+    private final Map<Vec3, Integer> soldierSpawnUses = new HashMap<>();
+    private final Map<Vec3, Integer> vehicleSpawnUses = new HashMap<>();
     @Setter
     private int nextSlot = 1;
     @Setter

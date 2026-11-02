@@ -50,6 +50,8 @@ public class PlayerClass extends InfoType implements IPlayerClass
     private List<SkinOverrideVariant> skinOverrideVariants = List.of();
     private final Map<EquipmentSlot, String> armour = new LinkedHashMap<>();
     private List<StartingItem> startingItems = List.of();
+    @Getter
+    private List<String> teamReferences = List.of();
     private List<ItemStack> previewItems;
 
     @Override
@@ -63,6 +65,7 @@ public class PlayerClass extends InfoType implements IPlayerClass
     protected void read(TypeFile file)
     {
         super.read(file);
+        teamReferences = readValuesInLines("AddToTeam", file, 1).orElse(List.of()).stream().map(values -> values[0]).distinct().toList();
         unlockLevel = Math.max(0, readValue("UnlockLevel", unlockLevel, file));
         requiredPrestigeLevel = Math.max(0, readValue("RequiredPrestigeLevel", requiredPrestigeLevel, file));
         classLimit = Math.max(-1, readValue("ClassLimit", classLimit, file));

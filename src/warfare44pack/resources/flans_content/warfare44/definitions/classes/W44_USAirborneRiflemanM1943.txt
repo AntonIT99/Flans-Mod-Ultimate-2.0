@@ -1,0 +1,18 @@
+// Identity
+Name Rifleman (M1943)
+ShortName W44_USAirborneRiflemanM1943
+Description Late-war airborne loadout wearing the pack standard M1943 jacket and trousers.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_AmericanM1943CombatFieldUniformChest
+Legs 44_AmericanM1943CombatFieldUniformPants
+
+// Items
+AddItem 44_M1Garand
+AddItem 44_M1GarandAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage
+AddItem 44_Parachute

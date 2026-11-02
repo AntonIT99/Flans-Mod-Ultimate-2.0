@@ -146,6 +146,14 @@ public final class DriveableProjectileCollision
         return transformPointFromPartFrame(point, turretYawDeg, DriveableCollisionProfile.isBarrelPart(part) ? turretPitchDeg : 0F, turretPivot, turretOffset);
     }
 
+    /** Rotates a direction using the same part hierarchy as the collision boxes, without translating it. */
+    public static Vec3 partDirectionToHullLocal(Vec3 direction, EnumDriveablePart part, float turretYawDeg, float turretPitchDeg)
+    {
+        if (!DriveableCollisionProfile.isTurretMountedPart(part))
+            return direction;
+        return LegacyDriveableCoordinates.rotateTurretLocal(direction, turretYawDeg, DriveableCollisionProfile.isBarrelPart(part) ? turretPitchDeg : 0F);
+    }
+
     static Vec3 transformPointFromPartFrame(Vec3 point, float yaw, float pitch, Vec3 pivot, Vec3 offset)
     {
         Vec3 safePivot = pivot == null ? Vec3.ZERO : pivot;

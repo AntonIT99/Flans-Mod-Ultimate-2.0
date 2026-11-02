@@ -1,0 +1,17 @@
+// Identity
+Name Assault (MP5, Balaclava)
+ShortName sasAssaultMP5Balaclava
+Description Balaclava variant with reduced head protection; the rest of the uniform is unchanged.
+
+// Availability
+UnlockLevel 0
+
+// Armour override; remaining slots inherit the team uniform.
+Hat balaclava
+
+// Items
+AddItem mp5
+AddItem mp5Ammo 5
+AddItem sigP226
+AddItem sigP226Ammo 2
+AddItem mwKnife

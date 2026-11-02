@@ -11,6 +11,7 @@ import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.entity.ISuppressionListener;
+import com.flansmodultimate.common.guns.ArmorImpactHandler;
 import com.flansmodultimate.common.guns.ExternalProjectileSupport;
 import com.flansmodultimate.common.guns.NearMissHandler;
 import org.jetbrains.annotations.ApiStatus;
@@ -46,6 +47,18 @@ public final class FlansProjectiles
         NearMissHandler.removeListener(listener);
     }
 
+    /** Registers a server armour-impact listener; repeated registration of the same instance has no effect. */
+    public static void addArmorImpactListener(IArmorImpactListener listener)
+    {
+        ArmorImpactHandler.addListener(listener);
+    }
+
+    /** Removes a previously registered armour-impact listener. */
+    public static void removeArmorImpactListener(IArmorImpactListener listener)
+    {
+        ArmorImpactHandler.removeListener(listener);
+    }
+
     /** @return whether the stack represents a Flan bullet or grenade; readable on either side */
     public static boolean isProjectile(ItemStack stack)
     {
@@ -71,6 +84,19 @@ public final class FlansProjectiles
         return ExternalProjectileSupport.isGrenade(stack);
     }
 
+    /**
+     * Reads a grenade's purpose and additional effect reach from its definition, without changing the stack.
+     * Readable on either side after content loading.
+     *
+     * @param stack
+     *            item to inspect
+     * @return grenade properties, or empty for another item
+     */
+    public static Optional<GrenadeProperties> getGrenadeProperties(ItemStack stack)
+    {
+        return ExternalProjectileSupport.grenadeProperties(stack);
+    }
+
     /** @return the rounds one item of this Flan ammunition holds when full, or zero for another item; readable on either side */
     public static int getRoundsPerItem(ItemStack stack)
     {
@@ -86,6 +112,38 @@ public final class FlansProjectiles
     public static Optional<DetonationRadii> getDetonationRadii(ItemStack stack)
     {
         return ExternalProjectileSupport.detonationRadii(stack);
+    }
+
+    /**
+     * Inspects a bullet or a round of a mixed belt. Either side after content loading; does not change the stack.
+     *
+     * @param ammunition
+     *            ammunition stack to inspect
+     * @param sequence
+     *            zero-based shot index, selecting a round of a mixed belt
+     * @return nominal armour performance, or empty for items without bullet statistics
+     */
+    public static Optional<AmmunitionArmor> getArmorPerformance(ItemStack ammunition, int sequence)
+    {
+        return ExternalProjectileSupport.armorPerformance(ammunition, sequence);
+    }
+
+    /**
+     * Reads a belt round's nominal performance including mounted weapon and fallback platform overrides, on either side after loading.
+     *
+     * @param ammunition
+     *            ammunition stack to inspect
+     * @param sequence
+     *            zero-based belt position
+     * @param weapon
+     *            mounted weapon, or null for the platform alone
+     * @param platform
+     *            carrying model, or null when absent
+     * @return performance, or empty for unsupported ammunition
+     */
+    public static Optional<AmmunitionArmor> getArmorPerformance(ItemStack ammunition, int sequence, @Nullable IContentType weapon, @Nullable IContentType platform)
+    {
+        return ExternalProjectileSupport.armorPerformance(ammunition, sequence, weapon, platform);
     }
 
     /**
@@ -330,4 +388,27 @@ public final class FlansProjectiles
     {
         ExternalProjectileSupport.shootParticles(shooter, muzzle, origin, bodyYaw, scale);
     }
+
+    /**
+     * Broadcasts smoke, casing ejection and, for cannons, a layered muzzle blast after a successful shot.
+     * Cosmetic only. Call once per fired barrel on the server thread, independently of authored shooting particles.
+     *
+     * @param shooter
+     *            source entity and dimension
+     * @param weapon
+     *            mounted gun definition, or null for a platform barrel
+     * @param origin
+     *            world muzzle position in blocks
+     * @param direction
+     *            outward barrel direction, normalized by the implementation
+     * @param scale
+     *            positive visual size multiplier, normally 1
+     * @param heavy
+     *            whether this is a cannon discharge with a bright blast
+     */
+    public static void firingEffects(Entity shooter, @Nullable IContentType weapon, Vec3 origin, Vec3 direction, float scale, boolean heavy)
+    {
+        ExternalProjectileSupport.firingEffects(shooter, weapon, origin, direction, scale, heavy);
+    }
+
 }

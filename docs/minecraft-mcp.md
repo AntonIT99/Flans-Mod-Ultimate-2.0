@@ -1,5 +1,8 @@
 # Agent-driven Minecraft testing
 
+Use this guide for [on-demand game testing](game-testing.md). After requested
+tests or tool repairs, apply its maintenance protocol to retain verified lessons.
+
 For optional headless multiplayer test players, see [Mineflayer](mineflayer.md).
 Use real MCP-controlled clients for rendering, GUI and modded-client behavior.
 
@@ -19,15 +22,22 @@ desktop capable of running Minecraft. Run from the checkout root on Windows:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-minecraft-mcp.ps1 -RegisterCodex
-./gradlew.bat runClient -PwithMinecraftMcp
+./gradlew.bat runClientMcp
 ```
 
 The setup installs the bridge with `npm ci`, downloads the mod to the ignored
 `build/minecraft-mcp` directory, and registers this version's server in the user's
-Codex configuration. Run setup in each checkout. Restart the agent session after
-registering servers so it discovers the tools. The game's existing process must
-be restarted with the Gradle flag to load the mod; setup cannot inject it into an
-already running JVM. Ordinary launches without the flag remain available.
+Codex configuration. Run setup in each checkout. Once the verified jar is prepared,
+`runClientMcp` launches the client with MCP and its mapped companion; `runClient`
+launches without them. Both use the normal `run` directory and the same worlds.
+Refresh the Gradle project or run `gradlew genIntellijRuns` to update IntelliJ
+launches. `-PwithMinecraftMcp` remains supported for enabling MCP on the other
+client variants, including `runClient2`; `-PwithoutMinecraftMcp` suppresses MCP
+entirely. An explicit request fails if setup is missing. Servers do not inherit
+the client tool.
+Restart the agent session after registering servers so it discovers the tools.
+The game's existing process must be restarted to load the mod; setup cannot
+inject it into an already running JVM.
 
 Claude Code and other agents supporting project `.mcp.json` can use the checked-in
 configuration after setup. For another MCP client, use `node` as the command and
@@ -41,10 +51,10 @@ register that command in your agent's MCP settings.
 | 1.20.1 | Forge | `minecraft_1_20_1` | 9876 | 9874 |
 | 1.21.1 | NeoForge | `minecraft_1_21_1` | 9875 | 9873 |
 
-On Forge 1.20.1, setup must prepare the jar before launching with the flag.
+On Forge 1.20.1, setup must prepare the jar before launching with MCP.
 ForgeGradle remaps that verified jar through `fg.deobf`; adding the production
 jar directly to the development classpath causes SRG-method startup errors.
-NeoForge uses the downloaded jar through `localRuntime`.
+NeoForge adds the downloaded jar only to the runtime classpath of MCP client runs.
 
 Both versions may run simultaneously. The adapter verifies the expected Minecraft
 MCP mod version, loader and port before every game action and never falls back to another
@@ -53,15 +63,80 @@ resolve the conflict and restart the client rather than letting an agent guess.
 For a second client, launch `runClient2 -PwithMinecraftMcp` and run a separate
 bridge process with `FMU_MCP_PORT` set to that version's second-client port.
 
+## Repeatable UI preflight (mapped companion)
+
+Use the mapped development companion for this checkout's UI tests. It runs only
+in MCP client runs (`runClientMcp`, or every client with `-PwithMinecraftMcp`); its
+source set, metadata and resources never enter published jars. The companion binds
+loopback port MCP port + 100: 9976 (9974 for `runClient2`) on 1.20.1 and 9975 (9973)
+on 1.21.1. The NeoForge 1.21.1 companion is a port of the Forge one and has not yet
+been verified in a live client, so treat its first run as the preflight. The bridge verifies its protocol, Minecraft version, loader and PID against
+the upstream mod before each request. An older running client must be restarted.
+Restart the agent's MCP connection to discover newly added tools; the smoke script
+starts a fresh bridge and works without restarting the agent session.
+
+```powershell
+./gradlew.bat runClient -PwithMinecraftMcp -PmcpTestProfile
+# Once startup reaches the title screen, in another terminal:
+node tools/minecraft-mcp/smoke.mjs --live --fixture
+```
+
+The optional profile uses `run/mcp-test` (`run/mcp-test-2` for the second client),
+a 1280×800 initial window and respects the player's saved GUI scale. Override
+the initial size with `-PmcpWidth=1920 -PmcpHeight=1080` when testing larger layouts.
+`fixture_world` disables pause-on-focus-loss in this isolated profile and creates or reopens the fixed
+`mcp-ui-fixture` flat creative world there. `fixture_editor` reuses a tagged NPC,
+equips the player with the required CustomNPCs wand, establishes the server's
+editing NPC and opens the real Wolff's Mod editor. Fixture operations require
+control mode and the isolated profile. They preserve fixture edits between runs;
+they do not reset NPC settings or delete saves.
+
+The live preflight requires the title screen. It checks readable widgets, enters
+control mode, opens Options and returns using observed widgets, rejects an old
+snapshot, validates PNG dimensions against the framebuffer and checks for a
+uniform image. With `--fixture`, it also opens the world and editor, waits for
+enabled controls, checks Movement → Tactics → Survival and Movement limits,
+then saves and quits to title so the test can run again. It accepts the remembered
+hub selection on repeat runs. Control mode is released in `finally`, including
+after a failed check. Without `--fixture`, no world is opened.
+
+Use these tools for subsequent tests:
+
+- `ui_state`: current screen, unique widget paths, labels and translation keys,
+  enabled/visible state, GUI/framebuffer dimensions and a snapshot revision.
+- `ui_click`: requires that revision, widget path and `expected_screen`; waits
+  for `result_screen` within a bounded timeout. For edits within the same screen,
+  poll `ui_state` for the expected control or value as well.
+- `ui_capture`: captures the complete framebuffer with dimensions and sampled
+  color count. Files must be PNGs directly inside `build/minecraft-mcp/captures`.
+  Open the returned image for actual visual verification; these diagnostics alone
+  do not prove correct layout or rendering.
+- `ui_close`: calls the observed screen's mapped close/save handler and verifies
+  the resulting screen. It avoids upstream Escape injection reporting success
+  while a text field or custom GUI keeps the editor open.
+
+Prefer structured state polling for progress; take screenshots at visual
+checkpoints or on failure. After one failed capture and one recovery attempt,
+diagnose the client log, window state and adapter identity before retrying.
+Do not repeat ambiguous menu clicks. A startup warning/error screen is a failed
+preflight to investigate, rather than a control to dismiss automatically.
+
+If newly registered tools are unavailable in the current agent session, use
+the smoke script or POST `{"cmd":"ui_state"}` to
+`http://127.0.0.1:<MCP port + 100>/api/cmd` (9976 on 1.20.1, 9975 on 1.21.1). Verify both `/api/status` responses and matching
+PIDs first. `FMU_MCP_UI_PORT` overrides the companion port for bridge mock tests;
+normal second-client use derives it from `FMU_MCP_PORT + 100`.
+
 ## Agent workflow
 
-1. Read this guide when a task benefits from in-game UI, rendering or gameplay
+1. Read this guide when the user requests in-game UI, rendering or gameplay
    validation. Use the checkout's Gradle launcher so the current sources and packs
    are loaded. The adapter deliberately omits upstream account, installation and
    launcher tools, which would start a separate game environment.
 2. Call `get_minecraft_status` on the matching server. Check MCP mod version, loader, port
    and PID before proceeding. An offline error is expected until the game starts.
-3. Inspect with `get_screen_buttons`, `enumerate_widgets`, `get_player_info` and
+3. With the mapped companion, prefer `ui_state`, `ui_click` and `ui_capture` above. Otherwise,
+   inspect with `get_screen_buttons`, `enumerate_widgets`, `get_player_info` and
    `get_world_info`. Use `screenshot_to_file` with an absolute path under this
    checkout's `build` directory and open the returned image with your image tool.
    Some custom Flan GUIs draw controls manually, so widget enumeration may be
@@ -82,7 +157,8 @@ bridge process with `FMU_MCP_PORT` set to that version's second-client port.
 5. Test in a disposable development world. Use `execute_command` to arrange items,
    entities and game mode when useful, then exercise the actual input flow with
    `press_key`, `click`, `use_item`, and the configured mod key bindings. Capture
-   the relevant before/after state and check `run/logs/latest.log` for errors.
+   the relevant before/after state and check the active profile's `logs/latest.log`
+   for errors (`run/mcp-test/logs/latest.log` for the isolated primary client).
 6. Finish with `exit_control_mode`. Stop only game processes you started for the
    task; do not kill an existing user's client.
 
@@ -94,9 +170,35 @@ The upstream status `version` field is the MCP mod version (0.4.21), not the
 Minecraft version. The adapter adds `configuredMinecraftVersion` from this
 checkout's target file; this is configuration, not a runtime version probe.
 
+## Tested recovery lessons
+
+These lessons were verified with the Forge 1.20.1 mapped companion; upstream
+and other-version limitations still require their own checks.
+
+| Failure or misleading observation | Recovery and verification |
+| --- | --- |
+| Offline status while Gradle is still starting Minecraft | Poll the pinned status endpoint and active log with a deadline. Run live preflight after the title screen is ready; investigate startup errors instead of treating them as gameplay failures. |
+| The loader warns that `mcpDev` has no valid resource pack info | Keep `src/mcpDev/resources/pack.mcmeta` with the branch's pack format. Restart the owned client and verify the warning is gone; do not merely dismiss it. |
+| Upstream labels are blank or widget IDs repeat | Use mapped `ui_state` labels, translation keys and snapshot/widget references. Do not guess from a stale button index. |
+| A menu action returns success but the expected page is absent | Use `ui_click` with a resulting screen, plus widget/value assertions for changes within `GuiWolffsMod`. Refresh state after changes; old snapshots are deliberately rejected. |
+| NPC editor opens with every control disabled | The fixture needs the server's editing NPC and the CustomNPCs wand in hand. `fixture_editor` supplies both; wait for enabled hub controls before testing. |
+| A repeated run times out waiting for Movement to become enabled | The editor remembers its selected hub; the selected tab is disabled by design. Accept an already selected hub and assert its page controls instead of clicking it again. |
+| Upstream `close_screen` reports success while the editor stays open | Use mapped `ui_close`; its `onClose` path runs close/save hooks. Assert the resulting screen before continuing cleanup. |
+| A reopened flat fixture prompts for the Apocalypse dimension | `fixture_world` records “without Apocalypse” for its fixed disposable world before loading it. Do not apply this fixture policy to a user's world. |
+| The background test pauses immediately after joining | The isolated fixture disables `pauseOnLostFocus`. Verify the world advances without repeatedly dismissing Pause. Keep the window restored for capture. |
+| Controls look unlike the player's setup | Respect saved GUI scale and report actual window/framebuffer sizes. This session used scale 4 at 3440×1351; that is evidence for that layout, not a universal default. |
+| A screenshot saves but is cropped, black or stale | Prefer mapped `ui_capture`, check dimensions and image diagnostics, then open the image. After one failed capture and one recovery, diagnose before retrying; use the native fallback below only when needed. |
+| Restarting cannot open the previous redirected log file | Use a distinct log filename while the previous launcher still owns its file. Stop only identified processes you started. |
+
+The final reused-world NPC editor smoke passed twice consecutively in about
+6–7 seconds per run on this machine, after startup. Treat this as a local
+baseline, not a performance threshold for other hardware or scenarios.
+The lessons above belong here rather than being copied into each testing skill.
+
 ## Screenshot limitations and native fallback
 
-Keep the game window restored, even when it is behind other apps. In testing,
+Use mapped capture first. For upstream capture,
+keep the game window restored, even when it is behind other apps. In testing,
 a minimized 1.21.1 window produced a black MCP screenshot. Restoring it enabled
 capture, but the upstream image could still be cropped to stale/default dimensions.
 Always inspect the actual image; a successful file save does not prove that it
@@ -116,9 +218,10 @@ node tools/minecraft-mcp/smoke.mjs --live
 ```
 
 The first smoke check validates MCP initialization, tool schemas, offline errors,
-wrong-environment rejection and command routing using local mock HTTP servers.
-`--live` checks the configured game's status, ping, GUI query and screenshot save
-through the actual MCP transport. Use `FMU_MCP_PORT` for a second-client test.
+wrong-environment and companion PID rejection, command routing, stale references
+and failed transition reporting using local mock HTTP servers. `--live` runs the
+mapped UI preflight described above through the actual MCP transport. Use
+`FMU_MCP_PORT` for a second-client test.
 
 If the agent cannot load an MCP server until its next session, it can use the
 mod's loopback HTTP API directly. Verify `/api/status` against the table first,

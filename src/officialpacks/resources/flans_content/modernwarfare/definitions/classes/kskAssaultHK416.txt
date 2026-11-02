@@ -1,0 +1,15 @@
+// Identity
+Name Assault (HK416)
+ShortName kskAssaultHK416
+Description Primary weapon, spare ammunition and a sidearm for a focused infantry loadout.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem hk416+flanMWRedDot
+AddItem m16a4Ammo 4
+AddItem usp
+AddItem uspAmmo 2
+AddItem m67 2
+AddItem mwKnife

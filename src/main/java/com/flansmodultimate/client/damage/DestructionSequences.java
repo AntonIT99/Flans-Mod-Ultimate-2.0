@@ -1,8 +1,11 @@
 package com.flansmodultimate.client.damage;
 
+import com.flansmodultimate.client.particle.ParticleHelper;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
+import com.flansmodultimate.common.driveables.damage.DriveableDamageClass;
 import com.flansmodultimate.common.driveables.damage.PartDamageKind;
 import com.flansmodultimate.common.driveables.damage.PartPieces;
 import com.flansmodultimate.common.driveables.damage.WreckLoad;
@@ -103,7 +106,19 @@ final class DestructionSequences
         DamageParticles.burst(centre, (float) Math.max(1D, coreSize(source)), sequence.random);
         // What burns on the ground leaves it black; an aircraft dying in the air scorches where it comes down instead.
         scorch(centre, Math.max(1.5F, source.entity().getBbWidth() * 0.8F));
+        if (DamageParticles.density() > 0D && sequence.load.fireStrength() > 0F && (source.damageClass() != DriveableDamageClass.PLANE && source.damageClass() != DriveableDamageClass.HELICOPTER
+            || source instanceof PartBodyEffectSource && (source.entity().onGround() || source.entity().isInWater())))
+        {
+            String column = source.damageClass() == DriveableDamageClass.SHIP ? FlanParticles.FM_SHIP_DEATH : FlanParticles.FM_TANK_DEATH;
+            ParticleHelper.spawnOwnedColumn(column, source.entity(), centre, Math.min(2F, (float) Math.sqrt(Math.max(1D, coreSize(source)))));
+        }
         ACTIVE.add(sequence);
+    }
+
+    static void cancel(Entity entity)
+    {
+        ACTIVE.removeIf(sequence -> sequence.source.entity() == entity);
+        ParticleHelper.cancelOwnedColumns(entity);
     }
 
     /** Blows a wreck apart: one last blast, and what is still on it thrown in every direction. */
@@ -372,6 +387,8 @@ final class DestructionSequences
         }
         Vec3 at = source.pointInPart(seat, 0.5D, 0.5D, 0.5D);
         DamageParticles.burst(at, sequence.magazineBurstScale, random);
+        if (sequence.magazineBurstScale >= 3F && DamageParticles.density() > 0D)
+            ParticleHelper.spawnOwnedColumn(FlanParticles.FM_NUKE, source.entity(), at, Math.min(3F, sequence.magazineBurstScale));
         explosionSound(source.entity(), 1F + 2F * DamageParticles.burstScale(sequence.magazineBurstScale), 0.6F);
         if (turret != null)
             throwOff(source, Set.of(turret.getType()), at, 0.9D, 0.15D, 1F, true);
@@ -463,8 +480,19 @@ final class DestructionSequences
                 continue;
             for (int corner = 0; corner < 8; corner++)
                 corners.add(source.pointInPart(part, corner & 1, (corner & 2) >> 1, (corner & 4) >> 2));
+            addFaceCentres(source, part, corners);
         }
         return corners;
+    }
+
+    /** Face centres keep long parts supported when their corners overhang a narrow block or ledge. */
+    private static void addFaceCentres(DamageEffectSource source, DriveablePart part, List<Vec3> corners)
+    {
+        for (int axis = 0; axis < 3; axis++)
+        {
+            for (int side = 0; side < 2; side++)
+                corners.add(source.pointInPart(part, axis == 0 ? side : 0.5D, axis == 1 ? side : 0.5D, axis == 2 ? side : 0.5D));
+        }
     }
 
     @Nullable

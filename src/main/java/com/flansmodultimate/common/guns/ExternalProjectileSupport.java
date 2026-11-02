@@ -4,7 +4,10 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
+import com.flansmodultimate.api.projectiles.GrenadeProperties;
+import com.flansmodultimate.api.projectiles.GrenadeProperties.Use;
 import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.api.projectiles.ProjectileSources;
@@ -26,6 +29,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketParticle;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.PacketWeaponShotEffects;
 import com.flansmodultimate.util.ModUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +64,43 @@ public final class ExternalProjectileSupport
         return Math.max(0, ShootableItem.getMaxRounds(stack));
     }
 
+    public static Optional<GrenadeProperties> grenadeProperties(ItemStack stack)
+    {
+        return isGrenade(stack) ? Optional.of(grenadeProperties((GrenadeType) ((ShootableItem) stack.getItem()).getConfigType())) : Optional.empty();
+    }
+
+    static GrenadeProperties grenadeProperties(GrenadeType type)
+    {
+        double effects = Math.max(type.isFlashBang() ? Math.max(0, type.getFlashRange()) : 0, type.getSmokeTime() > 0 && !type.getSmokeEffects().isEmpty() ? Math.max(0F, type.getSmokeRadius()) : 0F);
+        return new GrenadeProperties(grenadeUse(type), effects);
+    }
+
+    private static Use grenadeUse(GrenadeType type)
+    {
+        Use use;
+        if (type.isDeployableBag() || type.isStickToThrower())
+            use = Use.UTILITY;
+        else if (!type.isCanThrow() || type.getLivingProximityTrigger() > 0F || type.getDriveableProximityTrigger() > 0F)
+            use = Use.PLACEABLE;
+        else if (type.isRemote())
+            use = Use.REMOTE;
+        else if (type.getFuse() <= 0 && !type.isExplodeOnImpact())
+            use = Use.UTILITY;
+        else if (type.getFireRadius() > 0F)
+            use = Use.INCENDIARY;
+        else if (type.getExplosionRadius() > 0F || type.getBlastRadius() > 0F || type.getFragRadius() > 0F || type.getExplosiveMass() > 0F)
+            use = Use.EXPLOSIVE;
+        else if (type.isFlashBang())
+            use = Use.FLASH;
+        else if (type.getSmokeTime() > 0 && !type.getSmokeEffects().isEmpty())
+            use = Use.GAS;
+        else if (type.getSmokeTime() > 0)
+            use = Use.SMOKE;
+        else
+            use = Use.UTILITY;
+        return use;
+    }
+
     public static Optional<DetonationRadii> detonationRadii(ItemStack stack)
     {
         if (!isProjectile(stack))
@@ -67,6 +108,25 @@ public final class ExternalProjectileSupport
         ShootableType type = ((ShootableItem) stack.getItem()).getConfigType();
         FlanExplosion.Stats stats = type.getExplosionStats(null);
         return Optional.of(new DetonationRadii(Math.max(0F, stats.explosionRadius()), Math.max(0F, stats.blastRadius()), Math.max(0F, stats.fragRadius()), Math.max(0F, type.getFireRadius())));
+    }
+
+    public static Optional<AmmunitionArmor> armorPerformance(ItemStack stack, int sequence)
+    {
+        return armorPerformance(stack, sequence, null, null);
+    }
+
+    public static Optional<AmmunitionArmor> armorPerformance(ItemStack stack, int sequence, @Nullable IContentType weapon, @Nullable IContentType platform)
+    {
+        if (!(stack.getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bullet))
+            return Optional.empty();
+        InfoType definition = weaponDefinition(weapon, platform, ItemStack.EMPTY, bullet);
+        FireableGun gun = new FireableGun(definition, 1F, 0F, 0F, EnumSpreadPattern.CIRCLE);
+        return Optional.of(armorPerformance(new FiredShot(gun, bullet, null, null, Math.max(0, sequence), platform instanceof InfoType type ? type : null)));
+    }
+
+    public static AmmunitionArmor armorPerformance(FiredShot shot)
+    {
+        return new AmmunitionArmor(Math.max(0F, shot.getPenetrationAt100m()), shot.getBulletType().isHeat(), Math.max(0F, shot.getProjectileMass()));
     }
 
     public static boolean consumeRound(ItemStack stack)
@@ -484,6 +544,13 @@ public final class ExternalProjectileSupport
             return false;
         EnumWeaponType bank = type.weaponType(secondary);
         return gun != null || bank == EnumWeaponType.GUN || bank == EnumWeaponType.SHELL;
+    }
+
+    public static void firingEffects(Entity shooter, @Nullable IContentType weapon, Vec3 origin, Vec3 direction, float scale, boolean heavy)
+    {
+        if (!serverThread(shooter) || !finite(origin) || !finite(direction) || direction.lengthSqr() < 1.0E-8D || !Float.isFinite(scale) || scale <= 0F)
+            return;
+        PacketHandler.sendToAllAround(new PacketWeaponShotEffects(weapon == null ? "" : weapon.getShortName(), origin, direction.normalize(), scale, heavy), origin, 128D, shooter.level().dimension());
     }
 
     public static void shootParticles(Entity shooter, WeaponMuzzle muzzle, Vec3 origin, float bodyYaw, float scale)

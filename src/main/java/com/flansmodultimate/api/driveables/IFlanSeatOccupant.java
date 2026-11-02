@@ -7,6 +7,8 @@ package com.flansmodultimate.api.driveables;
 
 import org.jetbrains.annotations.ApiStatus;
 
+import net.minecraft.world.entity.player.Player;
+
 /**
  * A non-player entity that sits in driveable seats the way a player does. Seats place a player, and an entity that
  * implements this, so that a player-shaped body sits on the seat as the content pack authored it; any other rider sits
@@ -15,6 +17,37 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.Experimental
 public interface IFlanSeatOccupant
 {
+    /**
+     * Read-only availability check on the server thread. An addon may offer an allied player's requested seat even while
+     * occupied. Deployment checks may use a separate setting. Returning false preserves exclusive occupancy.
+     *
+     * @param player
+     *            the requesting player
+     * @param deployment
+     *            whether the request comes from Teams vehicle-spawner deployment rather than direct interaction
+     * @return whether this occupant is willing to move aside; does not move anyone
+     */
+    default boolean flansmodultimateMayYieldSeat(Player player, boolean deployment)
+    {
+        return false;
+    }
+
+    /**
+     * Gives up the requested seat on the server thread, after the mount has checked access and entry permissions.
+     * Move to another free seat or dismount, and prevent automatic immediate reboarding. Called only for an occupant
+     * that offered the seat through {@link #flansmodultimateMayYieldSeat(Player, boolean)}.
+     *
+     * @param player
+     *            the requesting player
+     * @param deployment
+     *            whether this is a Teams vehicle-spawner deployment
+     * @return whether the original seat was vacated
+     */
+    default boolean flansmodultimateYieldSeat(Player player, boolean deployment)
+    {
+        return false;
+    }
+
     /**
      * @return whether the entity is seated like a player at the moment
      */

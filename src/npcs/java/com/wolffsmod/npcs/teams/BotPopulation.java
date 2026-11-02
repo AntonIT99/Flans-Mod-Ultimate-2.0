@@ -43,6 +43,7 @@ final class BotPopulation
             keepSquads(battle, team, force, random);
             keepVehicles(battle, team, force);
         }
+        CommanderBots.keep(battle);
         battle.setOpening(false);
         for (BotSlot slot : battle.getSlots().values())
         {
@@ -66,15 +67,34 @@ final class BotPopulation
     private static void keepInfantry(BotBattle battle, ITeam team, BotSettings.TeamForce force, int target, RandomGenerator random)
     {
         List<BotSlot> active = active(battle, team.getShortName(), BotSlot.Source.INFANTRY, -1);
-        for (int i = active.size(); i < target; i++)
+        retireExtra(active, target);
+        Map<String, Integer> fielded = new HashMap<>();
+        // Keep living, older allocations first when the target shrinks or a cap is lowered.
+        List<BotSlot> retained = active.stream().filter(slot -> !slot.isRetired()).sorted(Comparator.comparing((BotSlot slot) -> slot.getEntity() == null).thenComparingInt(BotSlot::getId)).toList();
+        for (BotSlot slot : retained)
         {
+            int used = fielded.getOrDefault(slot.getRole(), 0);
+            if (used >= force.classCapacity(slot.getRole(), target))
+                slot.setRetired(true);
+            else
+                fielded.merge(slot.getRole(), 1, Integer::sum);
+        }
+        List<String> classes = team.getClasses().stream().map(IPlayerClass::getShortName).toList();
+        int kept = fielded.values().stream().mapToInt(Integer::intValue).sum();
+        for (int i = kept; i < target; i++)
+        {
+            String playerClass = force.getClassLimits().isEmpty()
+                ? pickClass(battle, team, force, random)
+                : pickClass(classes, force.getClassWeights(), fielded, force.getClassLimits(), target, random);
+            if (playerClass.isEmpty())
+                break;
             BotSlot slot = battle.newSlot(team.getShortName(), BotSlot.Source.INFANTRY, -1);
-            slot.setRole(pickClass(battle, team, force, random));
+            slot.setRole(playerClass);
+            fielded.merge(playerClass, 1, Integer::sum);
             BotSquad squad = looseSquad(battle, team.getShortName());
             squad.getSlots().add(slot.getId());
             slot.setSquad(squad.getId());
         }
-        retireExtra(active, target);
         mergeLooseSquads(battle, team.getShortName());
     }
 
@@ -187,10 +207,12 @@ final class BotPopulation
         for (BotSlot slot : battle.getSlots().values())
         {
             boolean outdated = slot.getSource() == BotSlot.Source.VEHICLE && slot.getTeam().equals(name)
-                && (slot.getEntry() >= force.getVehicles().size() || !force.getVehicles().get(slot.getEntry()).type().equals(slot.getRole()));
+                && (!battle.getSettings().isVehiclesEnabled() || slot.getEntry() >= force.getVehicles().size() || !force.getVehicles().get(slot.getEntry()).type().equals(slot.getRole()));
             if (outdated)
                 slot.setRetired(true);
         }
+        if (!battle.getSettings().isVehiclesEnabled())
+            return;
         for (int entry = 0; entry < force.getVehicles().size(); entry++)
         {
             BotSettings.VehicleEntry setting = force.getVehicles().get(entry);
@@ -269,13 +291,19 @@ final class BotPopulation
      */
     static String pickClass(List<String> classes, Map<String, Integer> weights, Map<String, Integer> fielded, RandomGenerator random)
     {
+        return pickClass(classes, weights, fielded, Map.of(), 0, random);
+    }
+
+    /** Picks within bot-only caps without enabling zero-weight classes when every weighted class is full. */
+    static String pickClass(List<String> classes, Map<String, Integer> weights, Map<String, Integer> fielded, Map<String, BotSettings.ClassLimit> limits, int target, RandomGenerator random)
+    {
         boolean weighted = classes.stream().anyMatch(playerClass -> weights.getOrDefault(playerClass, 0) > 0);
         List<String> best = new ArrayList<>();
         double lowest = Double.MAX_VALUE;
         for (String playerClass : classes)
         {
             int weight = weighted ? weights.getOrDefault(playerClass, 0) : 1;
-            if (weight <= 0)
+            if (weight <= 0 || fielded.getOrDefault(playerClass, 0) >= limits.getOrDefault(playerClass, BotSettings.ClassLimit.UNLIMITED).capacity(target))
                 continue;
             double share = (fielded.getOrDefault(playerClass, 0) + 1D) / weight;
             if (share < lowest)
@@ -299,6 +327,9 @@ final class BotPopulation
         BotSettings.TeamForce force = battle.getSettings().team(slot.getTeam());
         switch (slot.getSource())
         {
+            case COMMANDER -> {
+                return CommanderBots.canSpawn(battle, slot);
+            }
             case INFANTRY -> {
                 if (force.getBudget() > 0 && battle.getInfantrySpawns().getOrDefault(slot.getTeam(), 0) >= force.getBudget())
                     return false;
@@ -318,7 +349,7 @@ final class BotPopulation
                     return false;
             }
             case VEHICLE -> {
-                if (slot.getEntry() >= force.getVehicles().size())
+                if (!battle.getSettings().isVehiclesEnabled() || slot.getEntry() >= force.getVehicles().size())
                     return false;
                 int budget = force.getVehicles().get(slot.getEntry()).budget();
                 if (budget > 0 && battle.count(battle.getVehicleSpawns(), slot.getTeam(), slot.getEntry()) >= budget)
@@ -332,7 +363,7 @@ final class BotPopulation
     static boolean canAfford(BotBattle battle, BotSlot slot)
     {
         int cost = ticketCost(battle, slot);
-        return battle.getSettings().getTickets() <= 0 || cost <= 0 || ticketsLeft(battle, battle.sideOf(slot.getTeam())) >= cost;
+        return BotRespawnBudget.limit(battle) <= 0 || cost <= 0 || ticketsLeft(battle, battle.sideOf(slot.getTeam())) >= cost;
     }
 
     /** Gives the sides that trail on score extra infantry, as the round's rubber band says; never in Assault, scored by losses. */
@@ -355,7 +386,7 @@ final class BotPopulation
     {
         int cost = ticketCost(battle, slot);
         int side = battle.sideOf(slot.getTeam());
-        if (battle.getSettings().getTickets() > 0 && cost > 0)
+        if (BotRespawnBudget.limit(battle) > 0 && cost > 0)
             battle.getTickets().put(side, ticketsLeft(battle, side) - cost);
         if (slot.getSource() == BotSlot.Source.INFANTRY)
             battle.getInfantrySpawns().merge(slot.getTeam(), 1, Integer::sum);

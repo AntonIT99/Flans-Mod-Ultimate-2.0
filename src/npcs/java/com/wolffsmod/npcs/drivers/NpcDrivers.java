@@ -4,6 +4,7 @@ import com.flansmodultimate.api.driveables.AircraftMode;
 import com.flansmodultimate.api.driveables.DriveControl;
 import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.IEmplacement;
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
@@ -112,7 +113,8 @@ public final class NpcDrivers
      */
     public static boolean holdsFire(Entity entity)
     {
-        return entity instanceof EntityNPCInterface npc && !npc.level().isClientSide && (enabled(npc) && drivenSeat(npc).isPresent() || DriveableCrew.mansGun(npc));
+        return entity instanceof EntityNPCInterface npc && !npc.level().isClientSide
+            && (npc.getVehicle() instanceof IEmplacement || enabled(npc) && drivenSeat(npc).isPresent() || DriveableCrew.mansGun(npc));
     }
 
     /** Drives for an NPC at the wheel, or gets it out once its switch is turned off. Runs on the NPC's server tick. */
@@ -190,6 +192,28 @@ public final class NpcDrivers
         seat.setAutomatedDriving(EnumSet.noneOf(DriveControl.class));
         seat.setAutomatedTriggers(false, false);
         driver.stopDriving();
+    }
+
+    /** Releases a player's requested seat, moving to a free gunner/passenger seat or safely dismounting. Server thread. */
+    static boolean yieldSeat(EntityNPCInterface npc)
+    {
+        if (!(npc.getVehicle() instanceof ISeat current) || current.getDriveable() == null)
+            return false;
+        Entity driveable = current.getDriveable();
+        NpcDriver driver = NpcDriver.of(npc);
+        release(current, driver);
+        List<Entity> alternatives = seatsOf(driveable).stream()
+            .filter(entity -> entity.isAlive() && entity != npc.getVehicle() && entity instanceof ISeat seat && !seat.isDriverSeat() && seat.getRiddenByEntity() == null)
+            .sorted(Comparator.comparingInt(entity -> ((ISeat) entity).getGunType().isPresent() ? 0 : 1)).toList();
+        npc.stopRiding();
+        boolean reseated = alternatives.stream().anyMatch(entity -> npc.startRiding(entity, true));
+        long now = npc.level().getGameTime();
+        driver.refuse(driveable.getUUID(), now + REFUSAL_TICKS);
+        driver.setBoardAfter(now + BOARD_COOLDOWN);
+        driver.setBoarded(reseated ? driveable.getUUID() : null);
+        if (!reseated)
+            descend(npc);
+        return true;
     }
 
     /**

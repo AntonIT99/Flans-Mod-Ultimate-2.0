@@ -116,3 +116,21 @@ Third-party content, content packs, models, textures, sounds, and other assets
 retain their respective copyrights, licenses, and attribution requirements.
 Their inclusion in this repository does not imply that Flan's Mod Ultimate 2
 owns or relicenses those works.
+
+## Labjac fork
+
+The six ground-blood splatter textures (`ground_blood_0.png` through
+`ground_blood_5.png`) originate from the Labjac Flan's Mod fork
+(`Mr-Monorisu-Brazila`, originally `assets/flansmod/particle/Blood_0.png`
+through `Blood_5.png`). Its temporary ground-blood effect also supplied the
+visual and timing reference for the modern implementation. Credit belongs to
+Labjac and the original asset contributors.
+
+The additional `legacy_*` particle textures and `classic_muzzle1.png` through
+`classic_muzzle4.png` also come from that fork's `assets/flansmod/particle/`
+set: `Blood`, `overkill`, `FMFlame`, `FMSmoke`, `FMSmokeMustard`,
+`FMSmokeChlorine`, `FMSmokeElite`, `FMwater`, `Locked`, `case`, `NuFlash`,
+`NuMuzzle`, `NuSparkle`, and `MuzzleFlash1` through `MuzzleFlash4`.
+The modern implementation shares renderers and bounds their lifetime and cost.
+The world casing uses the existing default bullet brass skin, drawn as a narrow
+case; it does not depend on the fork's missing `Casing1-6.png` files.

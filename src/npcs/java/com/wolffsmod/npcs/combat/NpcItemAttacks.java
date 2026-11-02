@@ -234,6 +234,9 @@ public final class NpcItemAttacks
                 npc.setItemInHand(hand, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
             return thrown;
         }
+        double blast = NpcBlastSafety.reach(FlansEquipment.getLoadedAmmunition(weapon).orElse(ItemStack.EMPTY));
+        if (NpcBlastSafety.tooClose(npc, target, blast))
+            return false;
         Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());
         boolean itemSound = NpcEquipment.inherits(npc, EquipmentProperty.FIRING_SOUND.inHand(hand));
         Vec3 direction = NpcSkill.aimError(npc, target).apply(flanDirection(npc, target, hand, weapon, aim));
@@ -340,7 +343,7 @@ public final class NpcItemAttacks
     private static boolean grenade(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
     {
         // A target within the grenade's reach is left to the NPC's other attacks rather than taking the thrower with it.
-        if (!NpcEquipment.enabled(npc, Feature.GRENADES) || NpcThrowing.tooClose(npc, target, weapon))
+        if (!NpcEquipment.enabled(npc, Feature.GRENADES) || NpcThrowing.shouldWithholdGrenade(npc, target, weapon))
             return false;
         var prepared = FlansProjectiles.prepare(npc, weapon, ItemStack.EMPTY, null, null, false, new ProjectileParameters(0, true, 0F, 0F, 1F));
         if (prepared.isEmpty())

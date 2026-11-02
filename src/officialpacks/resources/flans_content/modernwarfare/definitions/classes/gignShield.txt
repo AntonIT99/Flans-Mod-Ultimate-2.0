@@ -1,0 +1,14 @@
+// Identity
+Name Shield Operator
+ShortName gignShield
+Description Pistol-equipped shield operator for protected advances.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem m1911
+AddItem m1911Ammo 4
+AddItem mwRiotShield
+AddItem mwKnife

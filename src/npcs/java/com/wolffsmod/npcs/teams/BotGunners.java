@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.teams.FlansTeams;
+import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -61,7 +62,7 @@ public final class BotGunners
     private static void man(ServerLevel level, EntityNPCInterface npc, ISeat seat)
     {
         Optional<Vec3> origin = seat.getGunOrigin();
-        LivingEntity target = origin.map(from -> target(level, npc, from)).orElse(null);
+        LivingEntity target = origin.map(from -> target(level, npc, seat, from)).orElse(null);
         if (target == null)
         {
             seat.setAutomatedTriggers(false, false);
@@ -79,21 +80,27 @@ public final class BotGunners
      * search. A target behind cover is given up rather than shot through the terrain.
      */
     @Nullable
-    private static LivingEntity target(ServerLevel level, EntityNPCInterface npc, Vec3 gun)
+    private static LivingEntity target(ServerLevel level, EntityNPCInterface npc, ISeat seat, Vec3 gun)
     {
         LivingEntity own = npc.getTarget();
-        if (own != null && engageable(level, npc, own, gun))
+        if (own != null && useful(npc, seat, own, gun) && engageable(level, npc, own, gun))
             return own;
         UUID kept = TARGETS.get(npc.getUUID());
         Entity remembered = kept == null ? null : level.getEntity(kept);
-        if (npc.tickCount % SEARCH_INTERVAL != 0 && remembered instanceof LivingEntity living && engageable(level, npc, living, gun))
+        if (npc.tickCount % SEARCH_INTERVAL != 0 && remembered instanceof LivingEntity living && useful(npc, seat, living, gun) && engageable(level, npc, living, gun))
             return living;
         AABB area = npc.getBoundingBox().inflate(SEARCH_RANGE);
         Optional<LivingEntity> nearest = level
             .getEntitiesOfClass(LivingEntity.class, area, candidate -> candidate.isAlive() && BotRelations.areEnemies(npc, candidate) && NpcCrew.shieldingVehicle(candidate).isEmpty()).stream()
-            .sorted(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(npc))).filter(candidate -> visible(level, npc, candidate, gun)).findFirst();
+            .filter(candidate -> useful(npc, seat, candidate, gun)).sorted(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(npc)))
+            .filter(candidate -> visible(level, npc, candidate, gun)).findFirst();
         nearest.ifPresentOrElse(found -> TARGETS.put(npc.getUUID(), found.getUUID()), () -> TARGETS.remove(npc.getUUID()));
         return nearest.orElse(null);
+    }
+
+    private static boolean useful(EntityNPCInterface npc, ISeat seat, LivingEntity target, Vec3 origin)
+    {
+        return NpcVehicleCombat.mayFire(npc, target, origin, seat.getGunArmor(), false);
     }
 
     private static boolean engageable(ServerLevel level, EntityNPCInterface npc, LivingEntity target, Vec3 gun)

@@ -43,14 +43,24 @@ public final class DriveableDamageEffects
     private static final Map<Entity, Watched> WATCHED = new WeakHashMap<>();
     /** Parts thrown off entities that are not driveables, which their models stop drawing. */
     private static final Map<Entity, Set<EnumDriveablePart>> DETACHED = new WeakHashMap<>();
-    /** The crackle each burning wreck is playing. */
-    private static final Map<Driveable, WreckFireSound> FIRE_SOUNDS = new WeakHashMap<>();
+    /** The fire each burning wreck is playing. */
+    private static final Map<Driveable, FireLoops> FIRE_SOUNDS = new WeakHashMap<>();
+
+    /** The layers one wreck's fire is played as: a roar that carries and a crackle heard close to. */
+    private record FireLoops(WreckFireSound roar, WreckFireSound crackle)
+    {
+        private boolean isStopped()
+        {
+            return roar.isStopped() && crackle.isStopped();
+        }
+    }
 
     private static final class Watched
     {
         private final EnumSet<EnumDriveablePart> broken = EnumSet.noneOf(EnumDriveablePart.class);
         private boolean seen;
         private boolean dead;
+        private long diedAt;
         private PartBodyEffectSource source;
     }
 
@@ -59,7 +69,10 @@ public final class DriveableDamageEffects
     {
         DriveableEffectSource source = DriveableEffectSource.of(driveable);
         if (source != null)
+        {
+            VehicleAmbientEffects.tick(source);
             DamageEffectEmitter.tick(source);
+        }
         if (driveable.isWreck())
             keepFireSound(driveable);
     }
@@ -119,12 +132,13 @@ public final class DriveableDamageEffects
 
     private static void keepFireSound(Driveable wreck)
     {
-        WreckFireSound playing = FIRE_SOUNDS.get(wreck);
+        FireLoops playing = FIRE_SOUNDS.get(wreck);
         if (playing != null && !playing.isStopped() || wreckFireStrength(wreck) <= 0F)
             return;
-        WreckFireSound sound = new WreckFireSound(wreck);
-        FIRE_SOUNDS.put(wreck, sound);
-        Minecraft.getInstance().getSoundManager().play(sound);
+        FireLoops loops = new FireLoops(WreckFireSound.roar(wreck), WreckFireSound.crackle(wreck));
+        FIRE_SOUNDS.put(wreck, loops);
+        Minecraft.getInstance().getSoundManager().play(loops.roar());
+        Minecraft.getInstance().getSoundManager().play(loops.crackle());
     }
 
     /** Advances deaths, pieces and the entities wearing part bodies. Client tick. */
@@ -188,9 +202,12 @@ public final class DriveableDamageEffects
     /** Gives off the wearer's damage effects and shows what it has lost since the last tick. */
     private static void watch(Entity wearer, PartBodyEffectSource source)
     {
-        Watched watched = WATCHED.computeIfAbsent(wearer, ignored -> new Watched());
-        watched.source = source;
-        DamageEffectEmitter.tick(source);
+        Watched watched = prepareWatched(wearer, source);
+        if (!watched.dead)
+        {
+            VehicleAmbientEffects.tick(source);
+            DamageEffectEmitter.tick(source);
+        }
         List<EnumDriveablePart> lost = new ArrayList<>();
         for (DriveablePart part : source.parts())
         {
@@ -214,6 +231,25 @@ public final class DriveableDamageEffects
         watched.seen = true;
     }
 
+    private static Watched prepareWatched(Entity wearer, PartBodyEffectSource source)
+    {
+        Watched watched = WATCHED.computeIfAbsent(wearer, ignored -> new Watched());
+        if (watched.source != null && watched.source.body() != source.body())
+        {
+            DestructionSequences.cancel(wearer);
+            watched = new Watched();
+            WATCHED.put(wearer, watched);
+            DETACHED.remove(wearer);
+        }
+        if (!watched.seen && wearer instanceof LivingEntity living && living.isDeadOrDying())
+        {
+            watched.dead = true;
+            watched.diedAt = wearer.level().getGameTime() - PartBodyEffectSource.MAX_WRECK_EFFECT_TICKS;
+        }
+        watched.source = source;
+        return watched;
+    }
+
     /** The dying are no longer counted as wearers, so their deaths are found here. */
     private static void findDeaths(ClientLevel level)
     {
@@ -223,14 +259,22 @@ public final class DriveableDamageEffects
             Map.Entry<Entity, Watched> entry = entries.next();
             Entity entity = entry.getKey();
             Watched watched = entry.getValue();
-            if (entity.isRemoved() || entity.level() != level)
+            if (entity.isRemoved() || entity.level() != level || PartBodies.of(entity) != watched.source.body())
+            {
+                DestructionSequences.cancel(entity);
                 entries.remove();
+            }
             else if (entity instanceof LivingEntity living && living.isDeadOrDying())
+            {
                 die(watched);
+                int age = (int) Math.min(PartBodyEffectSource.MAX_WRECK_EFFECT_TICKS, Math.max(0L, level.getGameTime() - watched.diedAt));
+                DamageEffectEmitter.tick(watched.source.atAge(age));
+            }
             else if (watched.dead && !watched.broken.contains(EnumDriveablePart.CORE))
             {
                 // Brought back, as a respawned NPC is: whole again.
                 watched.dead = false;
+                DestructionSequences.cancel(entity);
                 DETACHED.remove(entity);
             }
         }
@@ -241,6 +285,8 @@ public final class DriveableDamageEffects
         if (watched.dead || watched.source == null)
             return;
         watched.dead = true;
+        watched.diedAt = watched.source.entity().level().getGameTime();
+        watched.source = watched.source.atAge(0);
         DestructionSequences.start(watched.source);
     }
 

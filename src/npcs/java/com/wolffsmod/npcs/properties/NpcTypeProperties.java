@@ -36,12 +36,14 @@ public final class NpcTypeProperties
      * not stand for a model switch.
      */
     private static final Set<Feature> UNINHERITED = EnumSet.of(Feature.AUTOMATIC_REPAIRS, Feature.RETURN_WHEN_INACTIVE, Feature.LIMB_HITBOXES, Feature.WEAPON_FIRING_RANGE, Feature.OUTRANGED_COVER,
-        Feature.NON_LETHAL, Feature.SUPPRESSIBLE, Feature.SUITED_TARGETS, Feature.ALLY_NAME_TAGS);
+        Feature.NON_LETHAL, Feature.SUPPRESSIBLE, Feature.SUITED_TARGETS, Feature.ALLY_NAME_TAGS, Feature.TACTICAL_COVER, Feature.AVOID_UNWINNABLE_FIGHTS, Feature.VEHICLE_EVASION,
+        Feature.TACTICAL_WEAPON_SWITCH, Feature.ADAPTIVE_FLANKING, Feature.ALLY_SPACING, Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS);
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
     private LivingEntity lastModel;
     private long lastFlags = -1L;
     private boolean lastNative;
+    private boolean lastSecondary;
     private Optional<MechaMeleeProperties> lastMelee = Optional.empty();
     private int nextInspection;
     @Nullable
@@ -71,17 +73,19 @@ public final class NpcTypeProperties
         Optional<MechaMeleeProperties> melee = NpcMechaTools.properties(npc);
         // There are more switches than fit beside the signature, so the two are mixed rather than packed side by side.
         long flags = flags(options) * 31L + combat.customSignature();
-        if (model != lastModel || selected != lastType || flags != lastFlags || nativeAttack != lastNative || !melee.equals(lastMelee) || npc.tickCount >= nextInspection)
+        boolean secondary = NpcEquipment.secondaryBank(npc, selected);
+        if (model != lastModel || selected != lastType || flags != lastFlags || nativeAttack != lastNative || secondary != lastSecondary || !melee.equals(lastMelee) || npc.tickCount >= nextInspection)
         {
             lastModel = model;
             lastType = selected;
             lastFlags = flags;
             lastNative = nativeAttack;
+            lastSecondary = secondary;
             lastMelee = melee;
             nextInspection = npc.tickCount + 20;
             double modelHealth = model != null && !(model instanceof FlanModelEntity) ? ((NpcModelHealth) ((EntityCustomNpc) npc).modelData).wolffsmodnpcsModelMaxHealth() : Double.NaN;
             ItemStack reference = selected == null ? ammunition : NpcAmmunition.modelReference(npc, ammunition);
-            inspect(options, combat, selected, reference, modelHealth, new ModelRanges(NpcModelRanges.aggro(npc), NpcModelRanges.firing(npc)));
+            inspect(options, combat, selected, reference, modelHealth, new ModelRanges(NpcModelRanges.aggro(npc), NpcModelRanges.firing(npc), secondary));
         }
         boolean server = !npc.level().isClientSide;
         boolean changed = server && carryOutImports(npc, combat);
@@ -101,7 +105,7 @@ public final class NpcTypeProperties
      */
     private void inspect(NpcWeaponOptions options, NpcCombatSettings combat, @Nullable IContentType selected, ItemStack reference, double modelHealth, ModelRanges ranges)
     {
-        boolean secondary = NpcEquipment.secondaryBank(options, selected);
+        boolean secondary = ranges.secondary();
         type = Optional.ofNullable(selected).flatMap(value -> FlansEntityTypes.getProperties(value, secondary, options.enabled(Feature.MODEL_MUZZLES))).orElse(null);
         // Without a round of its own the NPC still bursts and reloads as the model's default ammunition would.
         boolean followsCycle = type != null && FlansProjectiles.isProjectile(reference) && options.enabled(Feature.RELOAD_CYCLE) && type.shootDelay().isPresent();
@@ -363,6 +367,6 @@ public final class NpcTypeProperties
     }
 
     /** The aggro and firing ranges, in blocks, a model lends the NPC. */
-    private record ModelRanges(int aggro, int firing)
+    private record ModelRanges(int aggro, int firing, boolean secondary)
     {}
 }

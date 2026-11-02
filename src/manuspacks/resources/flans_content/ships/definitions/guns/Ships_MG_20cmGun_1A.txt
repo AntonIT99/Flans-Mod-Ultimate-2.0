@@ -9,6 +9,11 @@ DeployedModel Manus_Ships.MG.Ships_MG_20cmGun_1
 DeployedTexture Skin_Ships_MG_20cmGun_1A
 
 // Recipe and Inventory
+Recipe B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Block_Steel P SMP_Part_Misc_Part_Mechanical L SMP_Part_Misc_Seat_Car
+BBB
+MPM
+MLM
+RecipeOutput 1
 Ammo Ships_Shell_German20cmHE
 
 // Weapons

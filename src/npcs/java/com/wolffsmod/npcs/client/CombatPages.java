@@ -227,7 +227,10 @@ final class CombatPages
     /** The button on the Inherit from model page that opens the model properties page. */
     void initPropertiesLink(boolean loaded, int y)
     {
-        link(PROPERTIES_PAGE_ID, "properties", loaded, y);
+        GuiButtonNop button = new GuiButtonNop(gui, PROPERTIES_PAGE_ID, gui.guiLeft + 8, gui.guiTop + y, 160, 20, new String[]{PREFIX + "properties"}, 0);
+        button.setEnabled(loaded);
+        gui.addButton(button);
+        gui.addLabel(new GuiLabel(PROPERTIES_PAGE_ID, PREFIX + "properties.summary", gui.guiLeft + 176, gui.guiTop + y + 6));
     }
 
     /** The buttons on the Equipment page that open the weapon and the armor properties pages, side by side with what they do as tooltips. */
@@ -245,30 +248,30 @@ final class CombatPages
     }
 
     /** Native projectile-slot overrides have their own page, independent of weapons in hand. */
-    void initProjectileSlotLink(boolean loaded, int y)
+    void initProjectileSlotLink(boolean loaded, int left)
     {
-        link(PROJECTILE_SLOT_PAGE_ID, "projectile_slot_properties", loaded, y);
+        titleLink(PROJECTILE_SLOT_PAGE_ID, "projectile_slot_properties", loaded, left);
     }
 
-    /** The button on the Damage & armour page that opens the part hitbox page. */
-    void initPartsLink(boolean loaded)
+    /** The button on the Parts page that opens the part hitbox page. */
+    void initPartsLink(boolean loaded, int left)
     {
-        // The tab is full of switches, so the button sits in the title row, left of Back.
-        GuiButtonNop button = new GuiButtonNop(gui, PARTS_PAGE_ID, gui.guiLeft + 236, gui.guiTop + 4, 114, 20, new String[]{PREFIX + "parts"}, 0);
+        titleLink(PARTS_PAGE_ID, "parts", loaded, left);
+    }
+
+    /**
+     * A link in the title row, left of Back, for a page whose rows reach too far down the window to leave room for a button
+     * below them. Its summary becomes the tooltip, since the row has no space for a label beside it.
+     */
+    private void titleLink(int id, String name, boolean loaded, int left)
+    {
+        GuiButtonNop button = new GuiButtonNop(gui, id, gui.guiLeft + left, gui.guiTop + 4, 350 - left, 20, new String[]{PREFIX + name}, 0);
         button.setEnabled(loaded);
-        button.setTooltip(Tooltip.create(Component.translatable(PREFIX + "parts.summary")));
+        button.setTooltip(Tooltip.create(Component.translatable(PREFIX + name + ".summary")));
         gui.addButton(button);
     }
 
-    private void link(int id, String name, boolean loaded, int y)
-    {
-        GuiButtonNop button = new GuiButtonNop(gui, id, gui.guiLeft + 8, gui.guiTop + y, 160, 20, new String[]{PREFIX + name}, 0);
-        button.setEnabled(loaded);
-        gui.addButton(button);
-        gui.addLabel(new GuiLabel(id, PREFIX + name + ".summary", gui.guiLeft + 176, gui.guiTop + y + 6));
-    }
-
-    /** Knockback handling and the minimum hit damage of each kind, below the General switches of the Damage & armour page and in their column. */
+    /** Knockback handling and the minimum hit damage of each kind, below the switches of the Damage page and in their column. */
     void initProtection(boolean loaded, int control, int y)
     {
         NpcCombatSettings settings = settings();

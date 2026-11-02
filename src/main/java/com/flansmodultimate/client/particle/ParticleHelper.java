@@ -18,6 +18,7 @@ import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,6 +49,8 @@ public final class ParticleHelper
     private static final List<SmokeShell> SMOKE_SHELLS = new ArrayList<>();
     private static long particleBudgetTick = Long.MIN_VALUE;
     private static int particlesCreatedThisTick;
+    private static ClientLevel emissionLevel;
+    private static final Map<Entity, List<Particle>> OWNED_COLUMNS = new HashMap<>();
 
     /**
      * Spawns a sub-particle from inside another particle's tick, honouring this mod's particle
@@ -73,6 +76,24 @@ public final class ParticleHelper
     public static void spawnSubParticle(ParticleOptions options, double x, double y, double z)
     {
         spawnSubParticle(options, x, y, z, 0.0D, 0.0D, 0.0D);
+    }
+
+    /** Starts a column that follows its wreck and can be canceled when an external entity respawns or changes model. */
+    public static void spawnOwnedColumn(String name, Entity owner, Vec3 at, float scale)
+    {
+        Particle particle = createFromString(name, at.x, at.y, at.z, 0D, 0D, 0D, scale, 1F);
+        if (particle instanceof LegacyEffectParticle column)
+        {
+            column.follow(owner);
+            OWNED_COLUMNS.computeIfAbsent(owner, ignored -> new ArrayList<>()).add(column);
+        }
+    }
+
+    public static void cancelOwnedColumns(Entity owner)
+    {
+        List<Particle> particles = OWNED_COLUMNS.remove(owner);
+        if (particles != null)
+            particles.forEach(Particle::remove);
     }
 
     public static void spawnFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
@@ -102,15 +123,17 @@ public final class ParticleHelper
     @SuppressWarnings("java:S107") // Mirrors the existing particle API's position, velocity, scale and lifetime options.
     static Particle createFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
     {
-        if (!shouldSpawn(x, y, z))
-            return null;
-
         String normalized = normalize(s);
         if (normalized == null)
         {
             warnCouldNotParse(s);
             return null;
         }
+
+        boolean landmark = normalized.equals(FlanParticles.FM_NU_FLASH) || normalized.equals(FlanParticles.FM_TANK_DEATH) || normalized.equals(FlanParticles.FM_SHIP_DEATH)
+            || normalized.equals(FlanParticles.FM_NUKE);
+        if (!(landmark ? shouldSpawnLandmark(x, y, z, 320D) : shouldSpawn(x, y, z)))
+            return null;
 
         Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);
         if (legacyRequest.isPresent())
@@ -189,8 +212,24 @@ public final class ParticleHelper
     }
 
     /** Advances every sustained emission, smoke shell and staged explosion. Driven from the client tick. */
+    @SuppressWarnings("java:S2696") // Simulations belong to the active client level.
     public static void tick()
     {
+        ClientLevel activeLevel = Minecraft.getInstance().level;
+        if (emissionLevel != activeLevel)
+        {
+            ACTIVE_EMISSIONS.clear();
+            SMOKE_SHELLS.clear();
+            OWNED_COLUMNS.values().forEach(particles -> particles.forEach(Particle::remove));
+            OWNED_COLUMNS.clear();
+            particleBudgetTick = Long.MIN_VALUE;
+            particlesCreatedThisTick = 0;
+            emissionLevel = activeLevel;
+        }
+        OWNED_COLUMNS.values().forEach(particles -> particles.removeIf(particle -> !particle.isAlive()));
+        OWNED_COLUMNS.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+        LockOnMarkers.tick();
+        LegacyEffectParticle.useLevel(Minecraft.getInstance().level);
         ParticleWind.tick();
         SmokeClouds.tick();
         ExplosionSpectacle.tick();
@@ -270,6 +309,7 @@ public final class ParticleHelper
                     spawnFromString(FlanParticles.FM_SMOKE, x, y, z, 0D, 0D, 0D, 1F);
                 return false;
             }
+            spawnFromString(FlanParticles.FM_SMOKE_SHELL, x, y, z, 0D, 0.01D, 0D, 1F);
             spawnFromString(FlanParticles.FM_SMOKE_BURST, x, y, z, 0D, 0D, 0D, 1F);
             spawnFromString(FlanParticles.FM_BIG_SMOKE, x, y, z, 0D, 0D, 0D, 1F);
             return true;
@@ -586,6 +626,27 @@ public final class ParticleHelper
     {
         return switch (s)
         {
+            case FlanParticles.FM_BLOOD -> Optional.of(FlansModParticles.legacyBloodParticle.get());
+            case FlanParticles.FM_OVERKILL -> Optional.of(FlansModParticles.legacyOverkillParticle.get());
+            case FlanParticles.FM_TANK_DEATH -> Optional.of(FlansModParticles.legacyTankDeathParticle.get());
+            case FlanParticles.FM_SHIP_DEATH -> Optional.of(FlansModParticles.legacyShipDeathParticle.get());
+            case FlanParticles.FM_NUKE -> Optional.of(FlansModParticles.legacyNukeParticle.get());
+            case FlanParticles.FM_SMOKE_SHELL -> Optional.of(FlansModParticles.legacySmokeShellParticle.get());
+            case FlanParticles.FM_MUSTARD -> Optional.of(FlansModParticles.legacyMustardParticle.get());
+            case FlanParticles.FM_CHLORINE -> Optional.of(FlansModParticles.legacyChlorineParticle.get());
+            case FlanParticles.FM_WATER -> Optional.of(FlansModParticles.legacyWaterParticle.get());
+            case FlanParticles.FM_WATER_MINI -> Optional.of(FlansModParticles.legacyWaterMiniParticle.get());
+            case FlanParticles.FM_SHIP_SMOKE -> Optional.of(FlansModParticles.legacyShipSmokeParticle.get());
+            case FlanParticles.FM_GUN_SMOKE -> Optional.of(FlansModParticles.legacyGunSmokeParticle.get());
+            case FlanParticles.FM_LOCKED -> Optional.of(FlansModParticles.legacyLockedParticle.get());
+            case FlanParticles.FM_FLASHER -> Optional.of(FlansModParticles.legacyFlasherParticle.get());
+            case FlanParticles.FM_NU_FLASH -> Optional.of(FlansModParticles.legacyNuFlashParticle.get());
+            case FlanParticles.FM_NU_MUZZLE -> Optional.of(FlansModParticles.legacyNuMuzzleParticle.get());
+            case FlanParticles.FM_NU_SPARK -> Optional.of(FlansModParticles.legacyNuSparkParticle.get());
+            case FlanParticles.FM_CASING -> Optional.of(FlansModParticles.legacyCasingParticle.get());
+            case FlanParticles.FM_TURRET_TEST -> Optional.of(FlansModParticles.legacyTurretTestParticle.get());
+            case FlanParticles.FM_CLASSIC_MUZZLE -> Optional.of(FlansModParticles.classicMuzzleParticle.get());
+            case FlanParticles.FM_GROUND_BLOOD -> Optional.of(FlansModParticles.groundBloodParticle.get());
             case FlanParticles.FM_AFTERBURN -> Optional.of(FlansModParticles.afterburnParticle.get());
             case FlanParticles.FM_BIG_SMOKE -> Optional.of(FlansModParticles.bigSmokeParticle.get());
             case FlanParticles.FM_DEBRIS_1 -> Optional.of(FlansModParticles.debris1Particle.get());

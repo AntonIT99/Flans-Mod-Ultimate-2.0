@@ -19,6 +19,7 @@ import java.util.Optional;
 public final class TeamsClientState
 {
     private static PacketTeamsState snapshot;
+    private static long snapshotReceivedMillis;
     /** Capture points of the running round; refreshed more often than the full snapshot. */
     private static List<ObjectiveSnapshot> objectives = List.of();
     /** Whether the round that just ended still has its result banner to show when the scoreboard comes up. */
@@ -27,6 +28,11 @@ public final class TeamsClientState
     public static PacketTeamsState get()
     {
         return snapshot;
+    }
+
+    public static long snapshotAgeMillis()
+    {
+        return Math.max(0L, net.minecraft.Util.getMillis() - snapshotReceivedMillis);
     }
 
     /** The round clock also names the optional phases whose match clock is stopped. */
@@ -162,6 +168,7 @@ public final class TeamsClientState
         Minecraft minecraft = Minecraft.getInstance();
         boolean roundJustDecided = update.isRoundDecided() && (snapshot == null || !snapshot.isRoundDecided());
         snapshot = update;
+        snapshotReceivedMillis = net.minecraft.Util.getMillis();
         objectives = update.getObjectives();
         if (roundJustDecided)
             TeamsRoundResult.announce(update);

@@ -1,0 +1,14 @@
+// Identity
+Name Shield Officer (Glock)
+ShortName swatPistolShield
+Description Pistol-equipped shield operator for protected advances.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem glock
+AddItem glockAmmo 4
+AddItem mwRiotShield
+AddItem mwKnife

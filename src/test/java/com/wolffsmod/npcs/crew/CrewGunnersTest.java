@@ -16,6 +16,7 @@ import noppes.npcs.ai.selector.NPCAttackSelector;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataRanged;
 import noppes.npcs.entity.data.DataStats;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -316,6 +317,15 @@ class CrewGunnersTest
         assertTrue(leads.get(1).x < -0.4D);
     }
 
+    @Test
+    void defensiveGunnersFindEnemiesWithoutAMainTargetAndRespectTheirOptOut()
+    {
+        Vec3 enemy = new Vec3(0D, 0D, 10D);
+        assertEquals(1, ledAt(true, true, null, enemy).size());
+        assertTrue(ledAt(true, false, null, enemy).isEmpty());
+        assertTrue(ledAt(false, true, null, enemy).isEmpty());
+    }
+
     /**
      * @param targetPoint
      *            where the vehicle's target is aimed at, the vehicle standing at the origin facing +Z
@@ -327,18 +337,23 @@ class CrewGunnersTest
      */
     private static List<Vec3> ledAt(boolean ownTargets, Vec3 targetPoint, Vec3 otherPoint, float... hullYaws)
     {
+        return ledAt(ownTargets, true, targetPoint, otherPoint, hullYaws);
+    }
+
+    private static List<Vec3> ledAt(boolean ownTargets, boolean defensive, @Nullable Vec3 targetPoint, Vec3 otherPoint, float... hullYaws)
+    {
         EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
         EntityNPCInterface gunner = mock(EntityNPCInterface.class);
         LivingEntity aside = mock(LivingEntity.class);
         LivingEntity ahead = mock(LivingEntity.class);
-        when(vehicle.distanceToSqr(aside)).thenReturn(targetPoint.lengthSqr());
+        when(vehicle.distanceToSqr(aside)).thenReturn(targetPoint == null ? 0D : targetPoint.lengthSqr());
         when(vehicle.distanceToSqr(ahead)).thenReturn(otherPoint.lengthSqr());
         ServerLevel level = mock(ServerLevel.class, RETURNS_DEEP_STUBS);
         when(vehicle.level()).thenReturn(level);
         when(vehicle.getRootVehicle()).thenReturn(vehicle);
         when(vehicle.getBoundingBox()).thenReturn(new AABB(-1D, 0D, -1D, 1D, 2D, 1D));
         when(vehicle.isAlive()).thenReturn(true);
-        when(vehicle.getTarget()).thenReturn(aside);
+        when(vehicle.getTarget()).thenReturn(targetPoint == null ? null : aside);
         for (LivingEntity enemy : List.of(aside, ahead))
         {
             when(enemy.level()).thenReturn(level);
@@ -353,6 +368,7 @@ class CrewGunnersTest
         options.set(Feature.FIRE_SOUNDS, false);
         options.set(Feature.SHOOT_PARTICLES, false);
         options.set(Feature.GUNNER_TARGETS, ownTargets);
+        options.set(Feature.DEFENSIVE_GUNNERS, defensive);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
         NpcVehicleState state = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
         when(state.turretAim()).thenReturn(MountAim.REST);

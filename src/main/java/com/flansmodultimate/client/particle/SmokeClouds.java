@@ -103,6 +103,7 @@ public final class SmokeClouds
         {
             case FlanParticles.FM_BIG_SMOKE, FlanParticles.FM_SMOKER, FlanParticles.FM_SMOKER_1, FlanParticles.HUGE_EXPLOSION, FlanParticles.FM_FLARE, FlanParticles.FM_FLAME,
                 FlanParticles.FM_DEBRIS_1, FlanParticles.FM_TRACER, FlanParticles.FM_TRACER_GREEN, FlanParticles.FM_TRACER_RED -> FlanParticles.FM_SMOKER;
+            case FlanParticles.FM_TANK_DEATH, FlanParticles.FM_SHIP_DEATH, FlanParticles.FM_NUKE, FlanParticles.FM_FLASHER -> FlanParticles.FM_SMOKE_SHELL;
             default -> normalized;
         };
     }

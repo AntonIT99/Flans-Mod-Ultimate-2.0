@@ -1,0 +1,17 @@
+// Identity
+Name Anti-Tank Rifleman (RPG-7)
+ShortName spetsnazAntiTank
+Description Rifle-equipped anti-tank specialist with limited launcher ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem ak47
+AddItem ak47Ammo 3
+AddItem rpg
+AddItem rpgAmmo 2
+AddItem makarov
+AddItem makarovAmmo 2
+AddItem mwKnife

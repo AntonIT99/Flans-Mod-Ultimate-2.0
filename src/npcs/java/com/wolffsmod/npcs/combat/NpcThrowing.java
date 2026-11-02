@@ -4,6 +4,7 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.GrenadeProperties;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
@@ -13,6 +14,7 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Throwing;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.TacticKind;
+import com.wolffsmod.npcs.teams.NpcSuppression;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -122,7 +124,7 @@ public final class NpcThrowing
     {
         Kind kind = kind(stack);
         if (kind == Kind.GRENADE)
-            return NpcEquipment.enabled(npc, Feature.GRENADES) ? kind : null;
+            return NpcEquipment.enabled(npc, Feature.GRENADES) && handGrenade(stack) ? kind : null;
         return kind == Kind.THROWN_WEAPON ? kind : null;
     }
 
@@ -141,13 +143,13 @@ public final class NpcThrowing
         if (!projectile.isEmpty())
         {
             Kind kind = managed(npc, projectile);
-            if (kind == null || strategy(npc, kind).mainWeapon(true))
+            if (kind == null || strategy(npc, kind).mainWeapon(true) && (kind != Kind.GRENADE || handGrenade(projectile)))
                 return projectile;
         }
         return firstCarried(npc, carried ->
         {
             Kind kind = managed(npc, carried);
-            boolean fired = kind == Kind.NATIVE && offensive(carried) || kind == Kind.GRENADE && NpcEquipment.enabled(npc, Feature.PROJECTILES);
+            boolean fired = kind == Kind.NATIVE && offensive(carried) || kind == Kind.GRENADE && handGrenade(carried) && NpcEquipment.enabled(npc, Feature.PROJECTILES);
             return fired && strategy(npc, kind).mainWeapon(false);
         });
     }
@@ -209,7 +211,8 @@ public final class NpcThrowing
         if (stack.isEmpty() || !target.isAlive() || target.level() != npc.level() || !carries(npc, stack) || !npc.getSensing().hasLineOfSight(target))
             return false;
         double distance = npc.distanceTo(target);
-        return distance <= reach(choice.kind()) + MIN_THROW_DISTANCE && keepsClear(npc, target, stack, distance, strategy(npc, choice.kind()) == Throwing.CAUTIOUS);
+        return distance <= reach(choice.kind()) + MIN_THROW_DISTANCE && (choice.kind() != Kind.GRENADE || suitableGrenade(npc, target, stack))
+            && keepsClear(npc, target, stack, distance, strategy(npc, choice.kind()) == Throwing.CAUTIOUS);
     }
 
     /**
@@ -234,6 +237,34 @@ public final class NpcThrowing
         return npc.getEyePosition().distanceTo(target.getEyePosition()) < safeDistance(grenade);
     }
 
+    /** Whether a hand-thrown grenade is unsuitable or endangers its thrower or nearby allies. Server thread. */
+    public static boolean shouldWithholdGrenade(EntityNPCInterface npc, LivingEntity target, ItemStack stack)
+    {
+        return !suitableGrenade(npc, target, stack) || !keepsClear(npc, target, stack, npc.distanceTo(target), strategy(npc, Kind.GRENADE) == Throwing.CAUTIOUS);
+    }
+
+    private static boolean handGrenade(ItemStack stack)
+    {
+        return FlansProjectiles.getGrenadeProperties(stack).map(properties -> switch (properties.use())
+        {
+            case PLACEABLE, REMOTE, UTILITY -> false;
+            default -> true;
+        }).orElse(false);
+    }
+
+    static boolean suitableGrenade(EntityNPCInterface npc, LivingEntity target, ItemStack stack)
+    {
+        return FlansProjectiles.getGrenadeProperties(stack).map(properties -> switch (properties.use())
+        {
+            case PLACEABLE, REMOTE, UTILITY -> false;
+            case SMOKE -> npc.distanceTo(target) >= 8F
+                && (NpcSuppression.isPinned(npc) || npc.getHealth() <= npc.getMaxHealth() * 0.5F && npc.getLastHurtByMob() == target && npc.tickCount - npc.getLastHurtByMobTimestamp() < 100);
+            case FLASH, GAS -> NpcModels.flan(target) == null && target.getVehicle() == null;
+            case INCENDIARY -> !target.fireImmune() && !target.isOnFire();
+            case EXPLOSIVE -> true;
+        }).orElse(false);
+    }
+
     /** @return the least distance in blocks from its target at which the NPC throws the item: beyond what it harms where it lands */
     static double safeDistance(ItemStack stack)
     {
@@ -254,19 +285,24 @@ public final class NpcThrowing
     /** @return a grenade's whole reach, its fragments' included, which the cautious strategy also keeps allies out of */
     private static double fullHazard(ItemStack stack)
     {
-        return FlansProjectiles.getDetonationRadii(stack).map(DetonationRadii::largest).orElse(0D);
+        return Math.max(FlansProjectiles.getDetonationRadii(stack).map(DetonationRadii::largest).orElse(0D), effectRadius(stack));
     }
 
     /** @return blocks round where it lands within which the item harms, as far as a thrower needs to keep out of it */
     static double hazard(ItemStack stack)
     {
         if (FlansProjectiles.isProjectile(stack))
-            return FlansProjectiles.getDetonationRadii(stack).map(NpcBlastSafety::reach).orElse(0D);
+            return Math.max(FlansProjectiles.getDetonationRadii(stack).map(NpcBlastSafety::reach).orElse(0D), effectRadius(stack));
         if (stack.getItem() instanceof ThrowablePotionItem)
             return harmful(stack) ? SPLASH_RADIUS : 0D;
         if (stack.is(Items.FIREWORK_ROCKET))
             return NpcPlatform.fireworkExplodes(stack) ? FIREWORK_RADIUS : 0D;
         return 0D;
+    }
+
+    private static double effectRadius(ItemStack stack)
+    {
+        return FlansProjectiles.getGrenadeProperties(stack).map(GrenadeProperties::effectRadius).orElse(0D);
     }
 
     /** @return whether a native throwable from the inventory is worth throwing at an enemy at all: a harmful potion, a fire charge or a firework with stars */
@@ -309,11 +345,14 @@ public final class NpcThrowing
 
     private static boolean worthThrowing(EntityNPCInterface npc, LivingEntity target, ItemStack stack, Kind kind, Throwing strategy, double distance)
     {
+        if (kind == Kind.GRENADE && !suitableGrenade(npc, target, stack))
+            return false;
         if (!keepsClear(npc, target, stack, distance, strategy == Throwing.CAUTIOUS))
             return false;
         return switch (kind)
         {
-            case GRENADE -> tough(target) || enemiesAround(npc, target, Math.max(MIN_GRENADE_DISTANCE, hazard(stack))) >= groupSize(strategy);
+            case GRENADE -> FlansProjectiles.getGrenadeProperties(stack).map(properties -> properties.use() == GrenadeProperties.Use.SMOKE).orElse(false) || tough(target)
+                || enemiesAround(npc, target, Math.max(MIN_GRENADE_DISTANCE, hazard(stack))) >= groupSize(strategy);
             case NATIVE -> useful(target, stack);
             case THROWN_WEAPON -> true;
         };

@@ -2,6 +2,8 @@ package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.wolffsmod.npcs.crew.NpcCrew;
+import com.wolffsmod.npcs.model.FlanModelEntityType;
+import com.wolffsmod.npcs.model.FlanModelNpcs;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -24,9 +26,11 @@ final class BotCrews
     {
         if (!battle.getSettings().isVehicleCrews())
             return;
+        String definition = order.slot().getRole();
+        var kind = FlanModelNpcs.type(definition).map(FlanModelEntityType::getKind).orElse(null);
         NpcCrew.fill(level, vehicle, (crewLevel, crewed, seat) ->
         {
-            String playerClass = playerClass(battle, order, order.force().crewClass(seat.post()), random);
+            String playerClass = playerClass(battle, order, order.force().effectiveCrewClass(definition, kind, seat.post()), random);
             return playerClass.isEmpty() ? Optional.empty() : BotFactory.crewman(crewLevel, order, playerClass, crewed.position(), random);
         });
     }

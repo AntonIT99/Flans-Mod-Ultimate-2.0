@@ -4,12 +4,16 @@ import com.flansmodultimate.api.teams.FlansTeams;
 import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.ITeamsListener;
 import com.flansmodultimate.api.teams.ITeamsLiveRound;
-import com.flansmodultimate.api.teams.ITeamsRespawnRule;
+import com.flansmodultimate.api.teams.ITeamsRespawnRule.Reason;
 import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
+import com.wolffsmod.npcs.tactics.NpcCombatIntent;
+import com.wolffsmod.npcs.tactics.NpcCombatPolicy;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -36,7 +40,7 @@ import java.util.random.RandomGenerator;
  * the bots appear on the scoreboard; and when the round ends, they are removed. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeamsSpawnProvider
+public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
 {
     private static final TeamsBots INSTANCE = new TeamsBots();
     /** Bots added to the level each tick at most, so a large force arrives over a few seconds instead of in one tick. */
@@ -50,8 +54,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     private static final int LOST_TICKS = 100;
     /** Ticks before a spawn that found no spawn point is tried again. */
     private static final int RETRY_TICKS = 200;
-    /** Spawn points nearest its squad's task a soldier may appear at. */
-    private static final int NEAREST_SPAWNS = 3;
     /** Blocks from where its duty sends it within which a bot counts as there. */
     private static final double DUTY_ARRIVAL = 2D;
 
@@ -61,10 +63,11 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     /** Hooks the bots into Teams rounds; called once while the module is constructed. */
     public static void register()
     {
+        com.flansmodultimate.api.commandcentre.FlansCommandCentre.addPresets(BotSettingsPresets.KEY, new BotSettingsPresets());
         FlansTeams.addListener(INSTANCE);
-        FlansTeams.addRespawnRule(INSTANCE);
         FlansTeams.addSpawnProvider(INSTANCE);
         NpcTargetSearch.setPriority(BotTargeting::rank);
+        NpcCombatPolicy.overrides(npc -> BotBattles.of(npc).map(battle -> battle.getSettings().getTacticalProfile()).orElse(NpcTacticalProfile.INHERIT));
     }
 
     public static void serverTick(MinecraftServer server)
@@ -74,29 +77,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         Skirmishes.tick(server);
         Wars.tick(server);
         INSTANCE.tick(server);
-    }
-
-    /**
-     * Players share their side's tickets with its bots, once the round limits them and lets players spend them: each
-     * respawn costs one, and so does joining again after having fought. A side out of tickets keeps its players watching.
-     */
-    @Override
-    public boolean mayRespawn(ITeamsLiveRound live, ServerPlayer player, ITeam team, Reason reason)
-    {
-        BotBattle current = round;
-        if (current == null || !current.getInstance().equals(live.getInstanceId()))
-            return true;
-        boolean first = current.getFieldedPlayers().add(player.getUUID());
-        BotSettings settings = current.getSettings();
-        if (!settings.isEnabled() || !settings.isPlayerTickets() || settings.getTickets() <= 0 || first && reason == Reason.JOINED)
-            return true;
-        int side = live.getRound().getSideOf(team);
-        int left = BotPopulation.ticketsLeft(current, side);
-        if (left <= 0)
-            return false;
-        current.getTickets().put(side, left - 1);
-        current.getSidesThatFought().add(side);
-        return true;
     }
 
     /**
@@ -152,6 +132,85 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
     }
 
+    /** Whether this battle allows soldiers to deploy and man placed guns; ordinary NPCs keep their own setting. */
+    public static boolean mayManEmplacements(EntityNPCInterface npc)
+    {
+        return BotTag.read(npc).flatMap(data -> BotBattles.get(data.instance())).map(battle -> battle.getSettings().isEmplacements()).orElse(true);
+    }
+
+    /** Whether allied players may deploy into seats occupied by bots of this battle. */
+    public static boolean playerSeatDeployment(EntityNPCInterface npc)
+    {
+        return BotTag.read(npc).flatMap(data -> BotBattles.get(data.instance())).map(battle -> battle.getSettings().isPlayerSeatDeployment()).orElse(true);
+    }
+
+    /** Whether this NPC occupies the physical commander slot of its battle. */
+    public static boolean isCommander(EntityNPCInterface npc)
+    {
+        return BotBattles.of(npc).flatMap(battle -> BotBattles.slotOf(battle, npc)).filter(slot -> slot.getSource() == BotSlot.Source.COMMANDER).isPresent();
+    }
+
+    /** Shares a fresh sighting or incoming-fire report with the observer's side, never following a hidden contact. */
+    public static void reportContact(EntityNPCInterface observer, LivingEntity enemy)
+    {
+        if (observer.level().isClientSide || enemy.level() != observer.level())
+            return;
+        BotBattles.of(observer).ifPresent(battle ->
+        {
+            if (!Objects.equals(battle.getGround().dimension(), observer.level().dimension()))
+                return;
+            int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
+            if (side >= 0 && battle.getGround().areEnemies(observer, enemy))
+                battle.getIntelligence().report(side, enemy.getUUID(), enemy.position(), BotTargeting.armoured(battle, enemy), observer.level().getGameTime());
+        });
+    }
+
+    /** A battle order or ordinary NPC duty retained by the shared infantry combat movement. Server thread. */
+    public static Optional<NpcCombatIntent> combatIntent(EntityNPCInterface npc)
+    {
+        return orderFor(npc).filter(order -> order.role() == BotRole.INFANTRY).map(BotCommander.Order::combatIntent);
+    }
+
+    /** A squad member covers its moving or reloading allies; non-battle NPCs retain their existing local coordination. */
+    public static Optional<Boolean> coveringFire(EntityNPCInterface npc, long now)
+    {
+        return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().covers(BotSquadCombat.snapshot(npc, now), entry.members(npc, now), now));
+    }
+
+    /** Whether another member of this squad already occupies or has reserved the candidate cover. */
+    public static boolean coverAvailable(EntityNPCInterface npc, BlockPos point, long now)
+    {
+        return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().available(npc.getUUID(), point, entry.members(npc, now), now)).orElse(true);
+    }
+
+    /** Claims cover until renewed or expired. It cannot displace a squadmate's live reservation. */
+    public static boolean claimCover(EntityNPCInterface npc, BlockPos point, long now)
+    {
+        LivingEntity enemy = npc.getTarget();
+        return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().claim(npc.getUUID(), enemy == null ? -1 : enemy.getId(), point, entry.members(npc, now), now)).orElse(true);
+    }
+
+    public static void releaseCover(EntityNPCInterface npc)
+    {
+        combatSquad(npc).ifPresent(entry -> entry.squad().getCombat().decisions().release(npc.getUUID()));
+    }
+
+    private record CombatSquad(BotBattle battle, BotSquad squad)
+    {
+        List<SquadCombat.Member> members(EntityNPCInterface npc, long now)
+        {
+            return squad.getCombat().members(npc, battle, squad, now);
+        }
+    }
+
+    private static Optional<CombatSquad> combatSquad(EntityNPCInterface npc)
+    {
+        if (npc.level().isClientSide || npc.isPassenger())
+            return Optional.empty();
+        return BotBattles.of(npc).filter(battle -> Objects.equals(battle.getGround().dimension(), npc.level().dimension())).flatMap(battle -> BotBattles.slotOf(battle, npc)
+            .map(slot -> battle.getSquads().get(slot.getSquad())).filter(squad -> squad.getRole() == BotRole.INFANTRY && !squad.isDisbanded()).map(squad -> new CombatSquad(battle, squad)));
+    }
+
     /** @return the bots of the round being played, for commands; empty between rounds */
     static Optional<BotBattle> current()
     {
@@ -169,6 +228,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         current.getSquads().clear();
         current.getQueue().clear();
         current.getSlotOfEntity().clear();
+        current.getIntelligence().clear();
         return removed;
     }
 
@@ -198,7 +258,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             if (current.getSettings().isEnabled() && current.getFactions().isEmpty())
                 current.getFactions().putAll(BotFactions.setUp(live.get().getRound()));
             upkeep(server, level, current, now, random);
-            eliminate(server, level, current);
             // The world saves the round as it is now, whenever it is saved next.
             BotRoundStore.get(server).setDirty();
         }
@@ -235,10 +294,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         BotBattle started = new BotBattle(live.getInstanceId(), new RoundBattleground(live), settings, settings.isEnabled() ? BotFactions.setUp(live.getRound()) : Map.of());
         round = started;
         BotBattles.add(started);
-        // Players placed when the round started took the field for free; coming back later costs them a ticket.
-        for (ServerPlayer player : server.getPlayerList().getPlayers())
-            if (FlansTeams.getTeam(player).isPresent())
-                started.getFieldedPlayers().add(player.getUUID());
         // The same playing resumed after a restart takes back the bots it had; bots of any other playing are removed.
         ServerLevel level = server.getLevel(live.getDimension());
         BotRoundStore.get(server).resume(started, level == null ? 0L : level.getGameTime());
@@ -286,10 +341,10 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             slot.setLastPosition(npc.position());
             boolean dead = !npc.isAlive() || npc.isKilled();
             if (!dead)
-                keepTrained(npc, current.getSettings().getDifficulty());
+                keepTrained(npc, current.getSettings());
             if (dead && slot.getDiedAt() == 0)
                 fallenUnreported(current, slot, now);
-            if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && slot.isRetired())
+            if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && withdrawn(current, slot))
                 removeBody(level, current, slot, npc, dead);
         }
         else if (slot.getDiedAt() > 0)
@@ -302,14 +357,20 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         }
     }
 
-    /** Trains a bot and the crew riding in it again once the round's difficulty has changed, so a saved level takes effect at once. */
-    private static void keepTrained(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    /** Whether a living bot must leave the field after the operator changed the force. */
+    private static boolean withdrawn(BotBattle current, BotSlot slot)
     {
-        BotFactory.keepTrained(npc, difficulty);
+        return slot.isRetired() || slot.isVehicle() && !current.getSettings().isVehiclesEnabled();
+    }
+
+    /** Trains a bot and the crew riding in it again once the round's difficulty has changed, so a saved level takes effect at once. */
+    private static void keepTrained(EntityNPCInterface npc, BotSettings settings)
+    {
+        BotFactory.keepTrained(npc, settings);
         for (Entity passenger : npc.getPassengers())
         {
             if (passenger instanceof EntityNPCInterface crew)
-                BotFactory.keepTrained(crew, difficulty);
+                BotFactory.keepTrained(crew, settings);
         }
     }
 
@@ -325,17 +386,21 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     private static void fallen(BotBattle current, BotSlot slot, long now)
     {
         slot.setDiedAt(now);
-        int seconds = current.getSettings().getRespawnSeconds();
-        if (slot.isVehicle())
-        {
-            List<BotSettings.VehicleEntry> vehicles = current.getSettings().team(slot.getTeam()).getVehicles();
-            if (slot.getEntry() < vehicles.size() && vehicles.get(slot.getEntry()).respawnSeconds() > 0)
-                seconds = vehicles.get(slot.getEntry()).respawnSeconds();
-        }
+        CommanderBots.fallen(current, slot, now);
+        int seconds = respawnSeconds(current.getSettings(), slot);
         slot.setRespawnAt(now + seconds * 20L);
         // A soldier a transport brought never comes back; a new transport brings others.
         if (slot.getSource() == BotSlot.Source.CARGO || slot.getSource() == BotSlot.Source.VOLUNTEER)
             slot.setRetired(true);
+    }
+
+    /** The destroyed slot's delay, independently for each vehicle, with a per-entry override ahead of the default. */
+    static int respawnSeconds(BotSettings settings, BotSlot slot)
+    {
+        if (!slot.isVehicle())
+            return settings.getRespawnSeconds();
+        List<BotSettings.VehicleEntry> vehicles = settings.team(slot.getTeam()).getVehicles();
+        return slot.getEntry() < vehicles.size() && vehicles.get(slot.getEntry()).respawnSeconds() > 0 ? vehicles.get(slot.getEntry()).respawnSeconds() : settings.getVehicleRespawnSeconds();
     }
 
     /**
@@ -376,7 +441,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             if (slot != null)
                 slot.setQueued(false);
             // Settings or spending may have changed since the slot was queued.
-            if (slot != null && slot.getEntity() == null && BotPopulation.canSpawn(current, slot))
+            if (slot != null && slot.getEntity() == null && now >= slot.getRespawnAt() && BotPopulation.canSpawn(current, slot))
             {
                 spawn(level, current, slot, now, random);
                 spawned++;
@@ -398,9 +463,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     static Optional<EntityNPCInterface> spawnAt(ServerLevel level, BotBattle current, BotSlot slot, long now, RandomGenerator random, @Nullable Vec3 at)
     {
         ITeam team = current.team(slot.getTeam()).orElse(null);
-        Vec3 position = team == null || at != null ? at : spawnPoint(current, slot, team, random);
+        Deployment deployment = team == null ? null : deployment(level, current, slot, team, random, at).orElse(null);
         Integer faction = current.getFactions().get(slot.getTeam());
-        if (team == null || position == null || faction == null)
+        if (team == null || deployment == null || faction == null)
         {
             slot.setRespawnAt(now + RETRY_TICKS);
             return Optional.empty();
@@ -410,8 +475,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         String nameList = squad == null || squad.getTemplate().isEmpty()
             ? force.getNameList()
             : SquadTemplates.get().find(squad.getTemplate()).map(SquadTemplate::nameList).filter(list -> !list.isEmpty()).orElse(force.getNameList());
-        BotFactory.Order order = new BotFactory.Order(slot, team, faction, current.getSettings(), force, current.getInstance(), position, nameList, current.getGround().round().isPresent());
-        Optional<EntityNPCInterface> npc = slot.isVehicle() ? BotFactory.vehicle(level, order, random.nextFloat() * 360F, random) : BotFactory.soldier(level, order, random);
+        BotFactory.Order order = new BotFactory.Order(slot, team, faction, current.getSettings(), force, current.getInstance(), deployment.position(), nameList,
+            current.getGround().round().isPresent());
+        Optional<EntityNPCInterface> npc = slot.isVehicle() ? BotFactory.vehicle(level, order, deployment.yaw(), random) : BotFactory.soldier(level, order, random);
         if (npc.isEmpty())
         {
             NpcsMod.log.warn("Teams bot of team {} could not be made as {}", slot.getTeam(), slot.getRole());
@@ -419,6 +485,13 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             return npc;
         }
         BotPopulation.charge(current, slot);
+        Map<Vec3, Integer> uses = slot.isVehicle() ? current.getVehicleSpawnUses() : current.getSoldierSpawnUses();
+        uses.merge(deployment.source().origin(), 1, Integer::sum);
+        if (slot.isVehicle() && deployment.source().spawner() != null)
+        {
+            BotSpawnPlacement.recordSpawner(npc.get(), deployment.source().spawner().id());
+            FlansTeams.recordVehicleSpawnerSpawn(deployment.source().spawner());
+        }
         slot.setSpawns(slot.getSpawns() + 1);
         slot.setEntity(npc.get().getUUID());
         slot.setDiedAt(0);
@@ -432,12 +505,36 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return npc;
     }
 
-    /**
-     * Where a slot's bot appears: a vehicle at a vehicle spawner its team holds, the one its settings name if any; a
-     * soldier at the team's spawn point nearest its squad's task. Null when the team has no spawn point.
-     */
-    @Nullable
-    private static Vec3 spawnPoint(BotBattle current, BotSlot slot, ITeam team, RandomGenerator random)
+    private record SpawnPoint(Vec3 origin, @Nullable TeamsSpawner spawner)
+    {}
+
+    private record Deployment(SpawnPoint source, Vec3 position, float yaw)
+    {}
+
+    private static Optional<Deployment> deployment(ServerLevel level, BotBattle current, BotSlot slot, ITeam team, RandomGenerator random, @Nullable Vec3 at)
+    {
+        float yaw = random.nextFloat() * 360F;
+        List<SpawnPoint> points = at == null ? spawnPoints(level, current, slot, team, random) : List.of(new SpawnPoint(at, null));
+        for (SpawnPoint point : points)
+        {
+            Optional<Vec3> position = position(level, slot, point, yaw);
+            if (position.isPresent())
+                return Optional.of(new Deployment(point, position.get(), yaw));
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Vec3> position(ServerLevel level, BotSlot slot, SpawnPoint point, float yaw)
+    {
+        if (point.spawner() != null && !FlansTeams.isVehicleSpawnerReady(point.spawner()))
+            return Optional.empty();
+        if (point.spawner() != null && !point.spawner().npcSpawnAll() && BotSpawnPlacement.stagingOccupied(level, point.spawner().id(), point.origin()))
+            return Optional.empty();
+        return slot.isVehicle() ? FlanModelNpcs.type(slot.getRole()).flatMap(type -> BotSpawnPlacement.vehicle(level, type, point.origin(), yaw)) : BotSpawnPlacement.soldier(level, point.origin());
+    }
+
+    /** Tries the least-used eligible origins first, retaining explicit assignments and squad rally points. */
+    private static List<SpawnPoint> spawnPoints(ServerLevel level, BotBattle current, BotSlot slot, ITeam team, RandomGenerator random)
     {
         if (slot.isVehicle())
         {
@@ -445,69 +542,34 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             UUID wanted = slot.getEntry() < vehicles.size() ? vehicles.get(slot.getEntry()).spawner() : null;
             List<TeamsSpawner> spawners = current.getGround().spawners().stream()
                 .filter(spawner -> spawner.kind() == TeamsSpawner.Kind.VEHICLE && spawner.owner() != null && spawner.owner().getShortName().equals(slot.getTeam()))
-                .filter(spawner -> wanted == null || wanted.equals(spawner.id())).toList();
+                .filter(spawner -> spawner.dimension().equals(level.dimension())).filter(spawner -> wanted == null || wanted.equals(spawner.id())).toList();
+            spawners = spawners.stream().filter(spawner -> FlanModelNpcs.type(slot.getRole()).map(type -> spawner.npcPolicy().allows(type.getInfoType())).orElse(false)).toList();
             if (!spawners.isEmpty())
-                return Vec3.atBottomCenterOf(spawners.get(random.nextInt(spawners.size())).position().above());
+            {
+                List<SpawnPoint> points = spawners.stream().map(spawner -> new SpawnPoint(Vec3.atBottomCenterOf(spawner.position().above()), spawner)).toList();
+                return orderSpawns(points, current.getVehicleSpawnUses(), null, random);
+            }
+            if (current.getGround().round().isPresent())
+                return List.of();
         }
         List<Vec3> positions = current.getGround().spawnPositions(team);
         if (positions.isEmpty())
-            return null;
+            return List.of();
         BotSquad squad = current.getSquads().get(slot.getSquad());
         // A squad's fallen come back at its rally point while it has one.
         if (squad != null && squad.getRally() != null)
-            return squad.getRally();
+            return List.of(new SpawnPoint(squad.getRally(), null));
         SquadTask task = squad == null ? null : squad.getTask();
-        if (task != null)
-        {
-            // Spread over the few spawn points nearest the task, so a whole squad does not appear on one block.
-            List<Vec3> nearest = positions.stream().sorted(Comparator.comparingDouble(position -> position.distanceToSqr(task.target()))).limit(NEAREST_SPAWNS).toList();
-            return nearest.get(random.nextInt(nearest.size()));
-        }
-        return positions.get(random.nextInt(positions.size()));
+        return orderSpawns(positions.stream().map(position -> new SpawnPoint(position, null)).toList(), slot.isVehicle() ? current.getVehicleSpawnUses() : current.getSoldierSpawnUses(),
+            task == null ? null : task.target(), random);
     }
 
-    // --- Winning by attrition ---
-
-    /**
-     * Ends the round once only one side can still fight, when tickets or budgets are set: a side is worn out when it has
-     * fought, has no player in the round, no bot alive, and nothing left to bring in.
-     */
-    private static void eliminate(MinecraftServer server, ServerLevel level, BotBattle current)
+    private static List<SpawnPoint> orderSpawns(List<SpawnPoint> points, Map<Vec3, Integer> uses, @Nullable Vec3 target, RandomGenerator random)
     {
-        BotSettings settings = current.getSettings();
-        if (!settings.isEnabled() || !limited(current))
-            return;
-        Map<Integer, Integer> players = new HashMap<>();
-        // A player held back as a spectator, out of tickets, no longer fights for the side.
-        for (ServerPlayer player : server.getPlayerList().getPlayers())
-            if (!player.isSpectator())
-                FlansTeams.getTeam(player).ifPresent(team -> players.merge(current.getGround().sideOf(team), 1, Integer::sum));
-        players.keySet().forEach(current.getSidesThatFought()::add);
-        List<Integer> standing = new ArrayList<>();
-        boolean anyOut = false;
-        for (int side = 0; side < current.getGround().sideCount(); side++)
-        {
-            int checked = side;
-            boolean alive = current.getSlots().values().stream()
-                .anyMatch(slot -> current.sideOf(slot.getTeam()) == checked && slot.getEntity() != null && level.getEntity(slot.getEntity()) instanceof LivingEntity living && living.isAlive());
-            boolean out = current.getSidesThatFought().contains(side) && !players.containsKey(side) && !alive && !BotPopulation.canStillField(current, side);
-            if (out)
-                anyOut = true;
-            else
-                standing.add(side);
-        }
-        if (anyOut && standing.size() == 1)
-            current.getGround().teamsOfSide(standing.get(0)).stream().findFirst().ifPresent(FlansTeams::declareWinner);
-    }
-
-    /** Whether the round limits respawns at all, by tickets or by a budget. */
-    private static boolean limited(BotBattle current)
-    {
-        BotSettings settings = current.getSettings();
-        if (settings.getTickets() > 0)
-            return true;
-        return settings.getTeams().values().stream()
-            .anyMatch(force -> force.getBudget() > 0 || force.getSquads().stream().anyMatch(squad -> squad.budget() > 0) || force.getVehicles().stream().anyMatch(vehicle -> vehicle.budget() > 0));
+        List<Vec3> origins = BotSpawnPlacement.order(points.stream().map(SpawnPoint::origin).toList(), uses, target, random);
+        Map<Vec3, SpawnPoint> byOrigin = new HashMap<>();
+        points.forEach(point -> byOrigin.put(point.origin(), point));
+        return origins.stream().map(byOrigin::get).toList();
     }
 
     // --- Removing bots ---

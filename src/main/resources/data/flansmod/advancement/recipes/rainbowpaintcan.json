@@ -1,0 +1,33 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": { "recipe": "flansmod:rainbowpaintcan" }
+    },
+    "has_material": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:bucket",
+              "minecraft:red_dye",
+              "minecraft:orange_dye",
+              "minecraft:yellow_dye",
+              "minecraft:lime_dye",
+              "minecraft:cyan_dye",
+              "minecraft:blue_dye",
+              "minecraft:purple_dye",
+              "minecraft:magenta_dye"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    ["has_the_recipe", "has_material"]
+  ],
+  "rewards": { "recipes": ["flansmod:rainbowpaintcan"] }
+}

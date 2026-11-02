@@ -1,12 +1,16 @@
 package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.combat.NpcBlastSafety;
+import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState.GunReach;
+import com.wolffsmod.npcs.tactics.NpcCombatMovement;
 import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
 import com.wolffsmod.npcs.tactics.ShipBearing;
 import com.wolffsmod.npcs.tactics.ShipBearing.Course;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -80,7 +84,8 @@ public final class NpcFiringPosition
     private static boolean applies(EntityNPCInterface npc, NpcVehicleState state, LivingEntity target)
     {
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        boolean switched = options.enabled(Feature.MANOEUVRE_TO_FIRE) || options.enabled(Feature.BLAST_STANDOFF) || options.enabled(Feature.SHIP_WEAPON_BEARING);
+        boolean switched = options.enabled(Feature.MANOEUVRE_TO_FIRE) || options.enabled(Feature.BLAST_STANDOFF) || options.enabled(Feature.SHIP_WEAPON_BEARING)
+            || NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT);
         return switched && TacticKind.of(npc) == TacticKind.VEHICLE && npc.isAlive() && !npc.isKilled() && target.isAlive() && target.level() == npc.level()
             && !(npc.isVehicle() && npc.ais.mountControl) && !state.getFlight().holdsFire();
     }
@@ -91,6 +96,8 @@ public final class NpcFiringPosition
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
         // Out of the reach of its own rounds first: there is no shot worth lining up from inside its own blast.
         double standoff = NpcBlastSafety.standoff(npc);
+        if (NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) && !NpcVehicleThreats.groundVehicle(target) && NpcCombatMovement.allowed(npc))
+            standoff = Math.max(standoff, NpcVehicleCombat.infantryDistance(npc.stats.ranged.getRange(), standoff));
         double gap = npc.distanceTo(target);
         if (standoff > gap)
         {
@@ -103,6 +110,8 @@ public final class NpcFiringPosition
             return true;
         }
         course = null;
+        if (flank(npc, target))
+            return true;
         if (!options.enabled(Feature.MANOEUVRE_TO_FIRE))
             return false;
         Optional<Vec3> origin = state.fireOrigin();
@@ -125,7 +134,35 @@ public final class NpcFiringPosition
         // A shell lobbed over what stands in the way needs no clear line.
         if (clear(npc, target, origin.get(), aim) || NpcVehicleState.indirect(npc, target))
             return false;
-        closeIn(npc, target);
+        if (!NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || !lateral(npc, target, origin.get()))
+            closeIn(npc, target);
+        return true;
+    }
+
+    /** Follows the armour flank without replacing an ongoing route every tick. */
+    private boolean flank(EntityNPCInterface npc, LivingEntity target)
+    {
+        Vec3 point = NpcVehicleCombat.armorFlank(npc, target);
+        if (point == null)
+            return false;
+        if (!underway(npc, point))
+        {
+            npc.getNavigation().moveTo(point.x, point.y, point.z, 1D);
+            order(npc, point);
+        }
+        return true;
+    }
+
+    /** Tries short sideways positions with a clear shot before committing to an approach through infantry. */
+    private boolean lateral(EntityNPCInterface npc, LivingEntity target, Vec3 muzzle)
+    {
+        if (ordered != null && !npc.getNavigation().isDone())
+            return true;
+        Vec3 point = NpcVehicleCombat.lateralPosition(npc, muzzle, target);
+        if (point == null)
+            return false;
+        npc.getNavigation().moveTo(point.x, point.y, point.z, 1D);
+        order(npc, point);
         return true;
     }
 
@@ -203,7 +240,8 @@ public final class NpcFiringPosition
         for (float angle : BACK_ANGLES)
         {
             Vec3 point = npc.position().add(away.yRot((float) Math.toRadians(angle)).scale(distance));
-            if (navigation.moveTo(point.x, point.y, point.z, 1D))
+            boolean permitted = !NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || NpcCombatMovement.permits(npc, point);
+            if (permitted && navigation.moveTo(point.x, point.y, point.z, 1D))
                 break;
         }
         order(npc, wanted);

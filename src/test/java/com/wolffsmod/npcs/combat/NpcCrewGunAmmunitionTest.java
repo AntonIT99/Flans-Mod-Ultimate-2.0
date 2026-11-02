@@ -7,15 +7,17 @@ import com.wolffsmod.npcs.crew.NpcCrew;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
+import noppes.npcs.entity.data.DataStats;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -35,6 +37,8 @@ class NpcCrewGunAmmunitionTest
         EntityNPCInterface gunner = mock(EntityNPCInterface.class);
         vehicle.inventory = new DataInventory(vehicle);
         gunner.inventory = new DataInventory(gunner);
+        vehicle.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
+        when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(new NpcWeaponOptions());
         IContentType gun = mock(IContentType.class);
         when(gun.getItem()).thenReturn(Items.STICK);
         ItemStack vehicleAmmo = new ItemStack(Items.IRON_NUGGET, 3);
@@ -45,12 +49,9 @@ class NpcCrewGunAmmunitionTest
         gunner.inventory.weapons.put(1, wrapped(gunnerAmmo));
         try (var equipment = mockStatic(FlansEquipment.class))
         {
-            equipment.when(() -> FlansEquipment.acceptsAmmunition(any(), any())).thenAnswer(call ->
-            {
-                ItemStack ammo = call.getArgument(1);
-                return ammo.is(Items.IRON_NUGGET) || ammo.is(Items.GOLD_NUGGET);
-            });
-            equipment.when(() -> FlansEquipment.createDefaultAmmunition(gun)).thenReturn(Optional.of(fallback));
+            equipment.when(() -> FlansEquipment.acceptsAmmunition(any(), any())).thenAnswer(NpcCrewGunAmmunitionTest::fits);
+            equipment.when(() -> FlansEquipment.acceptsAmmunition(any(), any(), anyBoolean())).thenAnswer(NpcCrewGunAmmunitionTest::fits);
+            equipment.when(() -> FlansEquipment.createDefaultAmmunitionChoices(gun)).thenReturn(List.of(fallback));
             assertSame(vehicleAmmo, NpcAmmunition.crewGunTemplate(vehicle, gunner, gun));
             vehicle.inventory.drops.clear();
             assertSame(gunnerAmmo, NpcAmmunition.crewGunTemplate(vehicle, gunner, gun));
@@ -59,7 +60,7 @@ class NpcCrewGunAmmunitionTest
             assertSame(gunnerAmmo, NpcAmmunition.crewGunTemplate(vehicle, gunner, gun));
             gunner.inventory.drops.clear();
             assertSame(fallback, NpcAmmunition.crewGunTemplate(vehicle, gunner, gun));
-            equipment.when(() -> FlansEquipment.createDefaultAmmunition(gun)).thenReturn(Optional.empty());
+            equipment.when(() -> FlansEquipment.createDefaultAmmunitionChoices(gun)).thenReturn(List.of());
             assertTrue(NpcAmmunition.crewGunTemplate(vehicle, gunner, gun).isEmpty());
             assertEquals(3, vehicleAmmo.getCount());
             assertEquals(4, gunnerAmmo.getCount());
@@ -81,6 +82,13 @@ class NpcCrewGunAmmunitionTest
             assertFalse(NpcItemAttacks.ranged(npc, target));
             assertFalse(NpcItemAttacks.throwCarried(npc, target, new ItemStack(Items.SNOWBALL)));
         }
+    }
+
+    /** @return whether the ammunition of the call is a round the seat gun takes, whichever overload asked */
+    private static boolean fits(InvocationOnMock call)
+    {
+        ItemStack ammo = call.getArgument(1);
+        return ammo.is(Items.IRON_NUGGET) || ammo.is(Items.GOLD_NUGGET);
     }
 
     private static IItemStack wrapped(ItemStack stack)

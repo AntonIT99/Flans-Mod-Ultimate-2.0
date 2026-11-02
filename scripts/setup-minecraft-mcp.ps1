@@ -10,7 +10,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Installing Minecraft MCP bridge dependencies f
 
 Push-Location $repo
 try {
-    & ./gradlew.bat prepareMinecraftMcp
+    & ./gradlew.bat prepareMinecraftMcp -PwithoutMinecraftMcp
     if ($LASTEXITCODE -ne 0) { throw 'Preparing the Minecraft MCP mod failed.' }
 }
 finally {
@@ -25,4 +25,5 @@ if ($RegisterCodex) {
 }
 
 Write-Host "Ready: Minecraft $($target.version) / $($target.loader), port $($target.port)."
-Write-Host 'Launch from this checkout: ./gradlew.bat runClient -PwithMinecraftMcp'
+Write-Host 'Refresh the Gradle project or run ./gradlew.bat genIntellijRuns to update IDE launches.'
+Write-Host 'Launch: ./gradlew.bat runClientMcp with MCP, or ./gradlew.bat runClient without it. Both use the normal run directory.'

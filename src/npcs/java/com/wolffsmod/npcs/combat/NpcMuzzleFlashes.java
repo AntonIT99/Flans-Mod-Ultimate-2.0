@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IAAGunType;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
@@ -21,7 +22,14 @@ public final class NpcMuzzleFlashes
 
     public static void fired(EntityNPCInterface npc, WeaponMuzzle muzzle, Vec3 direction, float hullYaw, boolean secondary)
     {
-        if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !hasModelFlash(npc, muzzle, secondary))
+        if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread())
+            return;
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (model != null
+            && (muzzle.weapon().isPresent() || model.getInfoType() instanceof IAAGunType || model.getInfoType() instanceof IDriveableType driveable && driveable.hasCartridgeEjection(secondary)))
+            FlansProjectiles.firingEffects(npc, muzzle.weapon().orElse(null), NpcModels.world(npc, model, muzzle.offset(), hullYaw), direction, NpcModels.scale(npc),
+                muzzle.weapon().isEmpty() && (model.getInfoType() instanceof IAAGunType || model.getInfoType() instanceof IDriveableType driveable && driveable.hasBarrelRecoil(secondary)));
+        if (!hasModelFlash(npc, muzzle, secondary))
             return;
         Vec3 localDirection = direction.normalize().yRot((float) Math.toRadians(hullYaw - 180F));
         NpcNetwork.sendToTracking(npc, new MuzzleFlashPacket(npc.getId(), muzzle.weapon().map(IContentType::getShortName).orElse(""), muzzle.offset(), localDirection));

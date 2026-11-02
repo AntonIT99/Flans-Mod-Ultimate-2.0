@@ -1,8 +1,10 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.driveables.TerrainAttitude;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
@@ -114,7 +116,7 @@ public final class NpcVehicleState
     private boolean bombRun;
     /**
      * Degrees the model is pitched nose down, negative nose up, and rolled to its right, the right side down: the attitude of
-     * a plane in flight, level otherwise.
+     * a plane in flight or a ground vehicle resting on terrain.
      */
     @Getter
     private float attitudePitch;
@@ -316,9 +318,11 @@ public final class NpcVehicleState
         return current != null && !current.turreted();
     }
 
-    /** Records a shot, so clients show the recoil. Server only. */
-    public void fired(int firedBarrel)
+    /** Records a model shot requiring an animation. Vehicle and plane barrels recoil only for shell banks. Server only. */
+    public void fired(int firedBarrel, IContentType definition, boolean secondary)
     {
+        if (definition instanceof IDriveableType driveable && driveable.getDriveableKind() != DriveableKind.MECHA && !driveable.hasBarrelRecoil(secondary))
+            return;
         shots = shots == Integer.MAX_VALUE ? 0 : shots + 1;
         barrel = Math.max(0, firedBarrel);
     }
@@ -417,10 +421,15 @@ public final class NpcVehicleState
         FlanModelKind kind = FlanModelKind.of(definition);
         if (definition == null || kind == null)
             return null;
-        boolean secondary = NpcEquipment.secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), definition);
+        boolean secondary = NpcEquipment.secondaryBank(npc, definition);
         if (layout != null && layout.model() == definition && layout.secondary() == secondary)
             return layout;
         Layout created = Layout.of(definition, kind, secondary);
+        if (layout != null && layout.model() == definition)
+        {
+            solution = null;
+            return created;
+        }
         int seats = created.mounts().stream().mapToInt(WeaponMount::seat).max().orElse(-1) + 1;
         seatYaw = new float[seats];
         seatPitch = new float[seats];
@@ -431,6 +440,8 @@ public final class NpcVehicleState
         targetSeatPitch = seatPitch.clone();
         turretYaw = created.driver() == null ? 0F : created.driver().restYaw();
         turretPitch = 0F;
+        attitudePitch = 0F;
+        attitudeBank = 0F;
         sent = false;
         return created;
     }
@@ -481,13 +492,19 @@ public final class NpcVehicleState
             solution = null;
             solvedFrom = null;
         }
+        // The current terrain pose must already carry the muzzle when the firing solution is computed.
+        terrainAttitude(npc, current);
         Vec3 aim = engaged ? solve(npc, current, target, options) : null;
         attitude(npc, current, aim);
         // Relative to the hull as it is pitched and banked, which the guns are carried with.
         MountAim wanted = aim == null ? null : NpcModels.relative(npc, aim, hullYaw);
         float tolerance = tuning.get(Value.ALIGN_TOLERANCE);
         if (held && wanted != null && current.kind() == FlanModelKind.VEHICLE && options.enabled(Feature.HULL_ASSISTS_AIM) && !driving(npc))
-            wanted = assistWithHull(npc, current, tuning, wanted, tolerance);
+        {
+            assistWithHull(npc, current, tuning, wanted, tolerance);
+            // Turning a tilted hull changes both relative traverse and elevation.
+            wanted = NpcModels.relative(npc, aim, hullYaw);
+        }
         aimTurret(current, options, tuning, wanted, tolerance);
         reachablePitch = wanted != null && !bombing && current.kind() == FlanModelKind.VEHICLE ? reachablePitch(current.driver(), current.turreted(), wanted, tolerance) : Float.NaN;
         gunAligned = aligned;
@@ -524,19 +541,15 @@ public final class NpcVehicleState
     /**
      * Turns a standing vehicle's hull toward a target its gun cannot reach: a gun fixed to the hull, or a turret with a
      * limited traverse.
-     *
-     * @return the wanted aim relative to the turned hull
      */
-    private MountAim assistWithHull(EntityNPCInterface npc, Layout current, NpcTuning tuning, MountAim wanted, float tolerance)
+    private void assistWithHull(EntityNPCInterface npc, Layout current, NpcTuning tuning, MountAim wanted, float tolerance)
     {
         WeaponMount driver = current.driver();
         float rest = current.turreted() && driver != null ? driver.restYaw() : 0F;
         boolean reachable = current.turreted() && (driver == null || MountMotion.error(driver.clamp(wanted), wanted) <= tolerance);
         if (reachable)
-            return wanted;
-        float before = hullYaw;
+            return;
         hullYaw = MountMotion.turn(hullYaw, hullYaw + wanted.yaw() - rest, hullStep(npc, tuning));
-        return new MountAim(Mth.wrapDegrees(wanted.yaw() - Mth.wrapDegrees(hullYaw - before)), wanted.pitch());
     }
 
     /**
@@ -564,13 +577,15 @@ public final class NpcVehicleState
 
     /**
      * Pitches and banks a plane in flight as it flies, and tips a hovering helicopter whose guns are fixed to its hull onto
-     * its shot; any other model stays level.
+     * its shot. Ground vehicles retain their wheel-supported terrain attitude.
      *
      * @param aim
      *            the world direction the shot has to leave in, or null without one
      */
     private void attitude(EntityNPCInterface npc, Layout current, @Nullable Vec3 aim)
     {
+        if (current.kind() == FlanModelKind.VEHICLE && !isShip())
+            return;
         NpcTuning.Flight type = current.kind() == FlanModelKind.PLANE ? NpcFlight.type(npc) : NpcTuning.Flight.NORMAL;
         if (type == NpcTuning.Flight.PLANE)
         {
@@ -580,6 +595,28 @@ public final class NpcVehicleState
         }
         attitudePitch = type == NpcTuning.Flight.HELICOPTER && !current.turreted() && !npc.onGround() ? tip(aim) : 0F;
         attitudeBank = 0F;
+    }
+
+    private void terrainAttitude(EntityNPCInterface npc, Layout current)
+    {
+        if (current.kind() != FlanModelKind.VEHICLE || isShip())
+            return;
+        if (npc.isPassenger() || npc.isInWater())
+        {
+            attitudePitch = 0F;
+            attitudeBank = 0F;
+            return;
+        }
+        // Retain the last support pose across brief airborne gaps instead of snapping flat at every block edge.
+        if (!npc.onGround())
+            return;
+        FlanModelEntity model = NpcModels.flan(npc);
+        if (model == null)
+            return;
+        TerrainAttitude next = FlansEntityTypes.sampleTerrainAttitude(npc, current.model(), point -> NpcModels.world(npc, model, point, hullYaw), NpcModels.scale(npc),
+            new TerrainAttitude(attitudePitch, attitudeBank));
+        attitudePitch = next.pitch();
+        attitudeBank = next.bank();
     }
 
     /**

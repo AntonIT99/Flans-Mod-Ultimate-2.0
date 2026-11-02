@@ -6,6 +6,7 @@ import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.entity.*;
 import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.parts.*;
+import com.flansmodultimate.api.projectiles.IProximityTarget;
 import com.flansmodultimate.api.teams.FlansTeams;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -20,7 +21,7 @@ import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.tactics.CustomNpcTacticGoal;
-import com.wolffsmod.npcs.tactics.NpcOutrangedGoal;
+import com.wolffsmod.npcs.tactics.NpcSafetyGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.teams.*;
@@ -78,18 +79,20 @@ import java.util.*;
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
  * a playing engine sound replaces the Custom NPCs step and idle sounds.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
- * resists knockback while it is a vehicle. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
+ * scales outside pushes by mass while it is a Flan model. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
  * melee against protected riders reaches their vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC. Drawn with the player
  * model it is hit limb by limb by Flan rounds, headshots included, as players are.</li>
  * <li>Friendly fire: hits from NPCs of the same faction and from players the faction is friendly to land where friendly fire is
  * on, and a hit from a friend never turns the NPC or its faction on that friend.</li>
  * <li>Teams bots take players as targets on Peaceful too, which Custom NPCs otherwise forbids.</li>
+ * <li>Carried mines, remote charges and supply bags have deployment and use goals; machine models trigger vehicle mines.</li>
  * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung. Grenades and
  * other throwables the NPC carries anywhere are thrown as its main weapon or now and then beside its other attacks, as their
  * strategy says, by a goal of their own whose wind-up holds the NPC's other ranged attacks.
  * Optional melee dual wield alternates striking hands on one AI cooldown and sends item break feedback for the attacking hand.</li>
  * <li>Throw wind-ups synchronize a temporary displayed main-hand item and the player's throwing pose without moving inventory.</li>
+ * <li>Presentation settings opt the NPC into server-authored ground blood splatters independently of its hurt flash and death rotation.</li>
  * <li>Armor potion effects can be disabled independently of protection. Flan armor invisibility hides the NPC's body on the client, keeping its armor drawn.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
@@ -99,7 +102,8 @@ import java.util.*;
  * <li>Repairs share driveable rates in part HP, including tools, timed sessions, carrier servicing and resource-backed nanobots.</li>
  * <li>Solid part boxes replace the NPC's rectangular entity collision and both incoming and outgoing pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
- * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit.
+ * for a margin beyond aggro range, terrain profiles set land and water speeds, and sprint decisions follow navigation each tick without interrupting pursuit; the walking-speed override applies the
+ * sprint boost too.
  * A falling NPC opens a parachute it carries and steers it toward its target.</li>
  * <li>Seats: the NPC sits in a driveable seat as a player does, so it can man the seat gun as a gunner; crew keep their seat's body heading through rendering.</li>
  * <li>Crew: a vehicle NPC seats its riders in its model's seats, as many as it has, crews itself when it spawns or comes back, and
@@ -109,6 +113,7 @@ import java.util.*;
  * Crew whose seats let them get out to fight do so near the vehicle's target, jumping by parachute from an aircraft above it.
  * A player on the vehicle's side who uses it without sneaking gets into the empty seat they click or another free seat when using the body, and mans the
  * gun of a gunner's seat.</li>
+ * <li>Soldiers deploy carried guns and man free deployable and AA emplacements, using their own ammunition policy and native mount timing.</li>
  * <li>Driving Flan's driveables: an NPC with the switch on walks to a free vehicle, mecha or aircraft nearby, before any other goal
  * moves it, gets in at the controls and drives or flies it where it would walk. It fights with the driveable's weapons, never with
  * its own.</li>
@@ -137,6 +142,7 @@ import java.util.*;
 public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     implements
         IEquipmentPolicy,
+        IProximityTarget,
         IHeldItemPresentation,
         IFlanNpcDistance,
         IFlanSeatOccupant,
@@ -191,7 +197,11 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
     @Unique
+    private final NpcExternalImpulses wolffsmodnpcsExternalImpulses = new NpcExternalImpulses();
+    @Unique
     private NpcThrowGoal wolffsmodnpcsThrowGoal;
+    @Unique
+    private NpcGrenadeDeviceGoal wolffsmodnpcsGrenadeDeviceGoal;
     @Unique
     private NpcTacticGoal wolffsmodnpcsTacticGoal;
     @Unique
@@ -201,7 +211,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private NpcBoardingGoal wolffsmodnpcsBoardingGoal;
     @Unique
-    private NpcOutrangedGoal wolffsmodnpcsOutrangedGoal;
+    private NpcEmplacementGoal wolffsmodnpcsEmplacementGoal;
+    @Unique
+    private NpcSafetyGoal wolffsmodnpcsSafetyGoal;
     @Unique
     private final NpcDriver wolffsmodnpcsDriver = new NpcDriver();
     @Unique
@@ -218,6 +230,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
      */
     @Unique
     private final ItemStack[] wolffsmodnpcsArmorSeen = new ItemStack[4];
+    /**
+     * The very stack objects last compared, by armor slot index, so an unchanged piece is recognized by identity and its
+     * tags are never compared again. Mixin cannot merge an array initializer, hence the empty array.
+     */
+    @Unique
+    private final ItemStack[] wolffsmodnpcsArmorWorn = new ItemStack[4];
     @Unique
     private int wolffsmodnpcsArmorRules = -1;
 
@@ -307,6 +325,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public float flansmodultimateEnginePitch()
     {
         return NpcVehicleSounds.pitch((EntityNPCInterface) (Object) this);
+    }
+
+    @Override
+    public boolean flansmodultimateBloodEffects()
+    {
+        return NpcPresentation.of((EntityNPCInterface) (Object) this).isBloodEffects();
     }
 
     @Override
@@ -435,6 +459,23 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return wolffsmodnpcsItemGoal;
     }
 
+    /** Machine models use vehicle proximity fuses; their living entity base must not make them infantry. */
+    @Override
+    public boolean flansmodultimateDriveableProximityTarget()
+    {
+        return NpcModels.flan((EntityNPCInterface) (Object) this) != null;
+    }
+
+    @Unique
+    private void wolffsmodnpcsRegisterGrenadeDevices(EntityNPCInterface npc)
+    {
+        if (wolffsmodnpcsGrenadeDeviceGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsGrenadeDeviceGoal);
+        else
+            wolffsmodnpcsGrenadeDeviceGoal = new NpcGrenadeDeviceGoal(npc);
+        goalSelector.addGoal(0, wolffsmodnpcsGrenadeDeviceGoal);
+    }
+
     @Override
     public NpcThrowGoal wolffsmodnpcsThrowGoal()
     {
@@ -451,45 +492,55 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
      * The firing goal and the goal that throws now and then beside it claim no flag, so their priority does not matter. A tactic of the mod's own comes first, before the
      * tactical movement Custom NPCs registered. The approach goal takes the priority of Custom NPCs' attack goal: that
      * tactical movement then wins the NPC's movement, and melee, which only starts within melee range where the approach
-     * ends, takes over from it there. Walking to a driveable to board comes before everything else that moves the NPC, and
-     * taking cover from an enemy shooting from beyond the NPC's reach right after it.
+     * ends, takes over from it there. Safety movement interrupts combat and boarding, while retaining the firing target.
      */
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         NpcSprinting.removeLegacyGoal(goalSelector);
+        // Every goal of the mod's own outlives a rebuild of Custom NPCs' tasks: each is re-registered, never replaced, so
+        // that a rebuild in the middle of a battle discards neither an ongoing reload, a throwable's cooldown nor a
+        // tactic's memory, and costs no garbage. Only the approach goal depends on what the rebuild found.
         if (wolffsmodnpcsBoardingGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsBoardingGoal);
-        wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
-        goalSelector.addGoal(0, wolffsmodnpcsBoardingGoal);
-        if (wolffsmodnpcsOutrangedGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsOutrangedGoal);
-        wolffsmodnpcsOutrangedGoal = new NpcOutrangedGoal(npc);
-        goalSelector.addGoal(0, wolffsmodnpcsOutrangedGoal);
+        else
+            wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsBoardingGoal);
+        if (wolffsmodnpcsEmplacementGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsEmplacementGoal);
+        else
+            wolffsmodnpcsEmplacementGoal = new NpcEmplacementGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsEmplacementGoal);
+        wolffsmodnpcsRegisterGrenadeDevices(npc);
+        if (wolffsmodnpcsSafetyGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsSafetyGoal);
+        else
+            wolffsmodnpcsSafetyGoal = new NpcSafetyGoal(npc);
+        goalSelector.addGoal(0, wolffsmodnpcsSafetyGoal);
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
-        if (wolffsmodnpcsThrowGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsThrowGoal);
-        if (wolffsmodnpcsTacticGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsTacticGoal);
-        if (wolffsmodnpcsObjectiveGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsObjectiveGoal);
-        if (wolffsmodnpcsApproachGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
-        // Rebuilding Custom NPCs' tasks must not discard an ongoing reload or a throwable's cooldown.
-        if (wolffsmodnpcsItemGoal == null)
+        else
             wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
-        // Its cooldowns outlast a rebuild too, or a rebuild would let the NPC throw again at once.
-        if (wolffsmodnpcsThrowGoal == null)
+        if (wolffsmodnpcsThrowGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsThrowGoal);
+        else
             wolffsmodnpcsThrowGoal = new NpcThrowGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsThrowGoal);
-        wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
+        if (wolffsmodnpcsTacticGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsTacticGoal);
+        else
+            wolffsmodnpcsTacticGoal = new NpcTacticGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsTacticGoal);
         // It carries a Teams bot to its squad's task, and any NPC to its duty, while it has nobody to fight.
-        wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
+        if (wolffsmodnpcsObjectiveGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsObjectiveGoal);
+        else
+            wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
         goalSelector.addGoal(3, wolffsmodnpcsObjectiveGoal);
+        if (wolffsmodnpcsApproachGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
         wolffsmodnpcsApproachGoal = null;
         goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal() instanceof EntityAIAttackTarget).mapToInt(WrappedGoal::getPriority).findFirst().ifPresent(priority ->
         {
@@ -548,6 +599,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             refreshDimensions();
     }
 
+    /** The dependency's walking-speed getter bypasses the vanilla sprint attribute boost. */
+    @Inject(method = {"getSpeed", "m_6113_"}, at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsSprintSpeed(CallbackInfoReturnable<Float> callback)
+    {
+        callback.setReturnValue(NpcSprinting.movementSpeed((EntityNPCInterface) (Object) this, callback.getReturnValue()));
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void wolffsmodnpcsEquipmentTick(CallbackInfo callback)
     {
@@ -557,7 +615,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return;
         NpcSkill.watch(npc);
         NpcDuties.tick(npc);
-        NpcSprinting.tick(npc);
+        NpcSprinting.tick(npc, goalSelector.getAvailableGoals().stream().anyMatch(goal -> goal.isRunning() && goal.getGoal() == wolffsmodnpcsObjectiveGoal));
         NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
             NpcThrowPresentation.clear(npc);
@@ -597,7 +655,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         wolffsmodnpcsApplyArmorAttributes();
     }
 
-    /** @return whether any armor piece differs from when its attributes were last applied, remembering the pieces worn now */
+    /**
+     * @return whether any armor piece differs from when its attributes were last applied, remembering the pieces worn now.
+     *         The stack the NPC hands back is compared by identity first: it is the same object from tick to tick unless
+     *         something swapped the piece, so a battle of hundreds of soldiers pays for no deep comparison of their armor
+     *         tags every tick. An edit of a worn stack in place is not seen that way, and is picked up by the refresh that
+     *         applies the attributes once a second regardless.
+     */
     @Unique
     private boolean wolffsmodnpcsArmorChanged()
     {
@@ -607,7 +671,10 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             if (!NpcPlatform.isHumanoidArmor(slot))
                 continue;
             ItemStack armor = getItemBySlot(slot);
+            if (wolffsmodnpcsArmorWorn[slot.getIndex()] == armor)
+                continue;
             ItemStack seen = wolffsmodnpcsArmorSeen[slot.getIndex()];
+            wolffsmodnpcsArmorWorn[slot.getIndex()] = armor;
             if (seen == null || !ItemStack.matches(seen, armor))
             {
                 wolffsmodnpcsArmorSeen[slot.getIndex()] = armor.copy();
@@ -991,6 +1058,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         wolffsmodnpcsTickStarted = !npc.level().isClientSide && (NpcProfiler.server() || NpcWatch.watched(npc)) ? System.nanoTime() : 0L;
         if (!npc.level().isClientSide)
         {
+            wolffsmodnpcsExternalImpulses.absorb(npc);
+            NpcProtection.updateKnockback(npc);
             NpcAmmunition.refillEmptySlots(npc);
             ItemStack sword = NpcMechaTools.findSword(npc);
             if (!ItemStack.matches(sword, getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL)))
@@ -1104,6 +1173,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             wolffsmodnpcsDriverGuns.tick(npc);
             NpcDrivers.tick(npc);
         }
+        if (server)
+            wolffsmodnpcsExternalImpulses.settle(npc.getDeltaMovement());
         if (wolffsmodnpcsTickStarted != 0L)
         {
             long nanos = System.nanoTime() - wolffsmodnpcsTickStarted;
@@ -1195,6 +1266,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public boolean flansmodultimateHasSeatBodyRotation()
     {
         return NpcCrew.vehicleOf(this).isPresent();
+    }
+
+    @Override
+    public boolean flansmodultimateMayYieldSeat(Player player, boolean deployment)
+    {
+        return NpcSeatPriority.mayYield((EntityNPCInterface) (Object) this, player, deployment);
+    }
+
+    @Override
+    public boolean flansmodultimateYieldSeat(Player player, boolean deployment)
+    {
+        return NpcSeatPriority.giveWay((EntityNPCInterface) (Object) this, player, deployment);
     }
 
     @Override

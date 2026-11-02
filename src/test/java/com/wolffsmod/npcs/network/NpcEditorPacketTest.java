@@ -34,8 +34,9 @@ class NpcEditorPacketTest
         template.putString("name", "Infantry α");
         template.put("settings", settings.copy());
         roundTrip(new BotEditorActionPacket(BotEditorActionPacket.Action.SAVE_SETTINGS, 2, round, settings), BotEditorActionPacket::write, BotEditorActionPacket::read);
-        roundTrip(new BotEditorStatePacket(List.of(new BotEditorStatePacket.Round(round, "Round α", List.of("blue", "red"))), 0, settings, List.of(template, new CompoundTag()), List.of("Assault α")),
-            BotEditorStatePacket::write, BotEditorStatePacket::read);
+        roundTrip(new BotEditorStatePacket(
+            List.of(new BotEditorStatePacket.Round(round, "Round α", List.of("blue", "red"), false), new BotEditorStatePacket.Round(UUID.randomUUID(), "TDM", List.of("blue", "red"), true)), 0,
+            settings, List.of(template, new CompoundTag()), List.of("Assault α")), BotEditorStatePacket::write, BotEditorStatePacket::read);
         roundTrip(new BotEditorStatePacket(List.of(), -1, new CompoundTag(), List.of(), List.of()), BotEditorStatePacket::write, BotEditorStatePacket::read);
     }
 

@@ -1,0 +1,13 @@
+// Identity
+Name Evacuation Medic
+ShortName MW_SurvivorMedic
+
+// Availability
+AddToTeam zombie:survivors
+
+// Items
+AddItem mp5k
+AddItem mp5kAmmo 3
+AddItem mwMedKit 2
+AddItem mwKnife
+AddItem minecraft:bread 3

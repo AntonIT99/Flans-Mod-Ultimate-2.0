@@ -1225,6 +1225,9 @@ public final class ClientHudOverlays
             addAmmoName(ammoNames, ridden.getGunAmmoName());
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
         boolean hasSmoke = atDriverControls && vehicleType != null && vehicleType.isHasFlare() && !vehicleType.getSmokers().isEmpty();
+        boolean canSwitchAmmo = atDriverControls
+            && (EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(driveable.getConfigType().weaponType(false)) || EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(driveable.getConfigType().weaponType(true)));
+        Component switchAmmoText = Component.translatable("hud.flansmodultimate.driveable.switch_ammo", KeyInputHandler.getPreferredAmmoKeyName());
         String idleSmokeKey = driveable.isCountermeasureReloading() ? "hud.flansmodultimate.driveable.smoke.reloading" : "hud.flansmodultimate.driveable.smoke.ready";
         Component smokeText = Component.translatable(driveable.isVarFlare() ? "hud.flansmodultimate.driveable.smoke.deploying" : idleSmokeKey);
         int idleSmokeColor = driveable.isCountermeasureReloading() ? HUD_GOLD : HUD_GREEN;
@@ -1236,6 +1239,8 @@ public final class ClientHudOverlays
         String weaponArmingKey = driveable.isDoorOpen() ? "hud.flansmodultimate.driveable.weapon.ready" : "hud.flansmodultimate.driveable.weapon.disabled";
         Component weaponArmingText = atDriverControls && vehicleType != null && vehicleType.isShootWithOpenDoor() ? Component.translatable(weaponArmingKey, KeyInputHandler.getDoorKeyName()) : null;
         int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading, rollText, altitudeText, compassText);
+        if (canSwitchAmmo)
+            rightWidth = Math.max(rightWidth, font.width(switchAmmoText));
         if (weaponArmingText != null)
             rightWidth = Math.max(rightWidth, font.width(weaponArmingText));
         for (OrdnanceLine line : ordnanceLines)
@@ -1266,6 +1271,9 @@ public final class ClientHudOverlays
             for (Component ammoName : ammoNames)
                 g.drawString(font, ammoName, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_AMMO_GREEN, false);
         }
+
+        if (canSwitchAmmo)
+            g.drawString(font, switchAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
 
         if (!ModClient.isDebug())
             return;

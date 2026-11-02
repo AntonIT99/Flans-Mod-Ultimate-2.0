@@ -326,8 +326,17 @@ tasks.register('staticAnalysis') {
     dependsOn tasks.withType(SonarLint)
 }
 
-// Distant Horizons publishes its API and mod jars on Modrinth only; ModDevGradle adds the NeoForge repositories.
+// ModDevGradle adds the NeoForge repositories.
 repositories {
+    maven {
+        url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev'
+            includeGroup 'net.mezzdev.config'
+        }
+    }
+    // Distant Horizons publishes its API and mod jars on Modrinth only.
     maven {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
@@ -339,6 +348,12 @@ dependencies {
 
     compileOnly "org.jetbrains:annotations:$version_jetbrains_annotations"
     compileOnly lombokDependency
+
+    // JEI discovers the client plugin only when installed; the API never ships in our jar.
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:$version_jei"
+    // Keep the dev runtime compatible with the JEI hooks in the pinned Custom NPCs mod.
+    if (project.hasProperty('withJei'))
+        runtimeOnly "mezz.jei:jei-1.21.1-neoforge:$version_jei"
 
     testImplementation platform("org.junit:junit-bom:$version_junit")
     testImplementation 'org.junit.jupiter:junit-jupiter'

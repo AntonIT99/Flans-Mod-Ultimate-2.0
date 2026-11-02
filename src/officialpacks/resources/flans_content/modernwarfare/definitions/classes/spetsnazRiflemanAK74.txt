@@ -1,0 +1,15 @@
+// Identity
+Name Rifleman (AK74)
+ShortName spetsnazRiflemanAK74
+Description Primary weapon, spare ammunition and a sidearm for a focused infantry loadout.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem ak74
+AddItem ak74Ammo 4
+AddItem makarov
+AddItem makarovAmmo 2
+AddItem m67 2
+AddItem mwKnife

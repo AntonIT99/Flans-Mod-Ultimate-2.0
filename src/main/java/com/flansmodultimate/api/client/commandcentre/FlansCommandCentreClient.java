@@ -8,6 +8,8 @@ package com.flansmodultimate.api.client.commandcentre;
 import com.flansmodultimate.client.gui.centre.CommandCentreClient;
 import org.jetbrains.annotations.ApiStatus;
 
+import net.minecraft.resources.ResourceLocation;
+
 /**
  * The client side of the Teams command centre: the pages addons add to it, and opening it. Pages read the sections
  * their addon registers with {@link com.flansmodultimate.api.commandcentre.FlansCommandCentre#addSection}. Client only.
@@ -39,5 +41,19 @@ public final class FlansCommandCentreClient
     public static void open(String pageId)
     {
         CommandCentreClient.requestOpen(pageId);
+    }
+
+    /**
+     * Opens the shared preset manager over the current screen, on the client thread. Files are selected on this
+     * computer; the server owns the library and validates uploads and applications.
+     *
+     * @param library
+     *            registered preset library
+     * @param target
+     *            configuration target, such as a round index; empty for global settings
+     */
+    public static void openPresets(ResourceLocation library, String target)
+    {
+        com.flansmodultimate.client.gui.centre.SettingsPresetsScreen.open(library, target);
     }
 }

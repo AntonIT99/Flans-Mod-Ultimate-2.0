@@ -29,7 +29,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
      * @param teams
      *            the short names of its teams, in round order
      */
-    public record Round(UUID id, String label, List<String> teams)
+    public record Round(UUID id, String label, List<String> teams, boolean botRespawnBudget)
     {}
 
     public BotEditorStatePacket
@@ -48,6 +48,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
             out.writeUUID(entry.id());
             out.writeUtf(entry.label(), MAX_TEXT);
             out.writeCollection(entry.teams(), (teamOut, team) -> teamOut.writeUtf(team, MAX_TEXT));
+            out.writeBoolean(entry.botRespawnBudget());
         });
         buffer.writeVarInt(round);
         buffer.writeNbt(settings);
@@ -57,7 +58,7 @@ public record BotEditorStatePacket(List<Round> rounds, int round, CompoundTag se
 
     public static BotEditorStatePacket read(FriendlyByteBuf buffer)
     {
-        List<Round> rounds = buffer.readList(in -> new Round(in.readUUID(), in.readUtf(MAX_TEXT), in.readList(teamIn -> teamIn.readUtf(MAX_TEXT))));
+        List<Round> rounds = buffer.readList(in -> new Round(in.readUUID(), in.readUtf(MAX_TEXT), in.readList(teamIn -> teamIn.readUtf(MAX_TEXT)), in.readBoolean()));
         int round = buffer.readVarInt();
         CompoundTag settings = buffer.readNbt();
         List<CompoundTag> templates = buffer.readList(in -> in.readNbt());

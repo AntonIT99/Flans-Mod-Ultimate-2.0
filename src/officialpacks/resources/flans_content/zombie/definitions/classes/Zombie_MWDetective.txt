@@ -1,0 +1,14 @@
+// Identity
+Name Plainclothes Detective
+ShortName Zombie_MWDetective
+
+// Availability
+AddToTeam modernwarfare:swat
+
+// Uniform
+Chest policeJacket
+
+// Items
+AddItem glock17
+AddItem glockAmmo 4
+AddItem combatKnife

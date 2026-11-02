@@ -71,6 +71,7 @@ public final class BattlesSection
     public static final String RESPAWN_SECONDS = "respawn_seconds";
     public static final String TICKETS = "tickets";
     public static final String DIFFICULTY = "difficulty";
+    public static final String CUSTOM_DIFFICULTY = "custom_difficulty";
     public static final String PROTECTION = "protection";
     public static final String MARKER_MAP = "marker_map";
     public static final String DIMENSION = "dimension";
@@ -105,6 +106,8 @@ public final class BattlesSection
     public static final String INDEX = "index";
     public static final String GAME_TYPE = "game_type";
     public static final String ENABLED = "enabled";
+    public static final String VEHICLES_ENABLED = "vehicles_enabled";
+    public static final String VEHICLE_RESPAWN = "vehicle_respawn_seconds";
     public static final String CONFIGURED = "configured";
     public static final String TOTAL = "total";
     public static final String MODE = "mode";
@@ -249,6 +252,7 @@ public final class BattlesSection
         tag.putInt(RESPAWN_SECONDS, skirmish.getRespawnSeconds());
         tag.putInt(TICKETS, skirmish.getTickets());
         tag.putString(DIFFICULTY, BotCommands.lower(skirmish.getDifficulty()));
+        tag.put(CUSTOM_DIFFICULTY, skirmish.getCustomTraining().save());
         tag.putBoolean(PROTECTION, skirmish.isProtection());
         tag.putString(MARKER_MAP, skirmish.getMarkerMap());
         tag.putString(DIMENSION, skirmish.getDimension().location().toString());
@@ -304,6 +308,7 @@ public final class BattlesSection
         tag.putInt(MOST_ENGAGEMENTS, war.getMostEngagements());
         tag.putInt(FLIP, war.getFlipSeconds());
         tag.putString(DIFFICULTY, BotCommands.lower(war.getDifficulty()));
+        tag.put(CUSTOM_DIFFICULTY, war.getCustomTraining().save());
         SkirmishStore skirmishes = SkirmishStore.get(server);
         ListTag engagements = new ListTag();
         Set<Long> contested = new HashSet<>();
@@ -381,6 +386,8 @@ public final class BattlesSection
             entry.put(TEAMS, strings(round.getTeams().stream().map(ITeam::getShortName).toList()));
             entry.putBoolean(CONFIGURED, !settingsTag.isEmpty());
             entry.putBoolean(ENABLED, settings.isEnabled());
+            entry.putBoolean(VEHICLES_ENABLED, settings.isVehiclesEnabled());
+            entry.putInt(VEHICLE_RESPAWN, settings.getVehicleRespawnSeconds());
             entry.putInt(TOTAL, BotEditor.fielded(round, settings));
             entry.putString(MODE, BotCommands.lower(settings.getMode()));
             entry.putString(DIFFICULTY, BotCommands.lower(settings.getDifficulty()));
@@ -402,7 +409,7 @@ public final class BattlesSection
             entry.putInt(COLOUR, team.getTeamColour());
             entry.putInt(ALIVE, (int) battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && slot.getEntity() != null && slot.getDiedAt() == 0).count());
             entry.putInt(SLOTS, (int) battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && !slot.isRetired()).count());
-            entry.putInt(TICKETS, battle.getSettings().getTickets() > 0 ? BotPopulation.ticketsLeft(battle, battle.getGround().sideOf(team)) : -1);
+            entry.putInt(TICKETS, BotRespawnBudget.limit(battle) > 0 ? BotPopulation.ticketsLeft(battle, battle.getGround().sideOf(team)) : -1);
             teams.add(entry);
         }
         tag.put(TEAMS, teams);

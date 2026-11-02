@@ -3,7 +3,6 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.common.block.entity.CapturePointBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.platform.block.FlanEntityBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +27,8 @@ import net.minecraft.world.phys.shapes.*;
  * The foot of a capture point. The block itself is only something to aim the operator stick at;
  * the pole and flag above it are drawn by the block entity renderer.
  */
-public final class CapturePointBlock extends FlanEntityBlock
+@SuppressWarnings("java:S110") // The shared Teams policy extends Minecraft's existing block hierarchy.
+public final class CapturePointBlock extends TeamObjectBlock
 {
     private static final VoxelShape SHAPE = box(6D, 0D, 6D, 10D, 16D, 10D);
 

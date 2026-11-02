@@ -16,6 +16,21 @@ class DriveableProjectileCollisionTest
     private static final AABB TURRET_BOX = new AABB(-1D, -1D, -4D, 1D, 1D, -3D);
 
     @Test
+    void armourDirectionsFollowTheSameRotationsAsPartContactsWithoutTheirTranslations()
+    {
+        Vec3 direction = new Vec3(0D, 0D, -1D);
+        Vec3 pivot = new Vec3(2D, 3D, 4D);
+        Vec3 offset = new Vec3(-3D, 1D, 2D);
+        for (EnumDriveablePart part : new EnumDriveablePart[]{EnumDriveablePart.CORE, EnumDriveablePart.TURRET, EnumDriveablePart.BARREL})
+        {
+            Vec3 origin = DriveableProjectileCollision.partPointToHullLocal(Vec3.ZERO, part, 70F, 25F, pivot, offset);
+            Vec3 end = DriveableProjectileCollision.partPointToHullLocal(direction, part, 70F, 25F, pivot, offset);
+            Vec3 rotated = DriveableProjectileCollision.partDirectionToHullLocal(direction, part, 70F, 25F);
+            assertEquals(0D, end.subtract(origin).distanceTo(rotated), 1.0E-9D);
+        }
+    }
+
+    @Test
     void turretFrontTracksYawZeroNinetyAndOneEighty()
     {
         assertFront(0F, new Vec3(0D, 0D, -10D), new Vec3(0D, 0D, 20D));

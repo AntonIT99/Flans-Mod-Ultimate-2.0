@@ -114,6 +114,8 @@ final class War
     /** Seconds a side must stand alone in the other's chunk to take it. */
     private int flipSeconds = 60;
     private BotSettings.Difficulty difficulty = BotSettings.Difficulty.REGULAR;
+    /** What bots are trained to at the custom difficulty. */
+    private BotTraining customTraining = BotSettings.DEFAULT_CUSTOM;
     /** Engagements opened so far, to name the next. */
     private int count;
 
@@ -176,6 +178,7 @@ final class War
         tag.putInt(NBT_MOST, mostEngagements);
         tag.putInt(NBT_FLIP, flipSeconds);
         tag.putString(NBT_DIFFICULTY, difficulty.name());
+        tag.put(BotSettings.NBT_CUSTOM_DIFFICULTY, customTraining.save());
         tag.putInt(NBT_COUNT, count);
         return tag;
     }
@@ -234,6 +237,7 @@ final class War
         war.mostEngagements = Math.max(1, tag.getInt(NBT_MOST));
         war.flipSeconds = Math.max(5, tag.getInt(NBT_FLIP));
         war.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.REGULAR);
+        war.customTraining = BotTraining.load(tag.getCompound(BotSettings.NBT_CUSTOM_DIFFICULTY), BotSettings.DEFAULT_CUSTOM);
         war.count = tag.getInt(NBT_COUNT);
         return Optional.of(war);
     }

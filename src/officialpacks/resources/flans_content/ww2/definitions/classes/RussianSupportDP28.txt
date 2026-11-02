@@ -1,0 +1,10 @@
+// Identity
+Name Machine Gunner (DP-28)
+ShortName OfficialWW2_RussianSupportDP28
+
+// Items
+AddItem dp28
+AddItem dp28Ammo 5
+AddItem tt33
+AddItem tt33Ammo 2
+AddItem ww2Knife

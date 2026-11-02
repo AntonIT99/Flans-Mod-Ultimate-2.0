@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.teams.BotTag;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -101,6 +102,8 @@ final class DriveableCrew
     private static void man(EntityNPCInterface npc, ISeat seat, @Nullable LivingEntity target)
     {
         Optional<Vec3> origin = seat.getGunOrigin();
+        if (origin.isPresent())
+            target = NpcVehicleCombat.gunnerTarget(npc, seat, origin.get(), target, Math.max(MIN_FIRE_RANGE, npc.stats.ranged.getRange()));
         if (target == null || origin.isEmpty())
         {
             seat.setAutomatedTriggers(false, false);

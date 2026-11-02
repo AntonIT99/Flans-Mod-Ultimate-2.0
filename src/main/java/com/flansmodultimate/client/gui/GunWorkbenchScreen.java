@@ -76,9 +76,9 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         }
 
         // paintjob click → send packet
-        if (button == 0 && hoveringPaintjob != null && !menu.getGunStack().isEmpty())
+        if (hoveringPaintjob != null && !menu.getGunStack().isEmpty() && (button == 0 || button == 1 && hoveringPaintjob.hasDyeCost()))
         {
-            PacketHandler.sendToServer(new PacketSelectPaintjob(hoveringPaintjob.getId()));
+            PacketHandler.sendToServer(new PacketSelectPaintjob(hoveringPaintjob.getId(), button == 1));
             return true;
         }
 
@@ -166,22 +166,21 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         renderStatBars(gg, targetsPx);
 
         // attachment icons
-        boolean[] allow = new boolean[]{type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(),
-            type.isAllowGadgetAttachments(), type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments()};
+        boolean[] allow = new boolean[]{type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(), type.isAllowGadgetAttachments(),
+            type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments()};
 
         for (int m = 0; m < allow.length; m++)
         {
             if (allow[m])
-                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (m * SLOT_SIZE), topPos + ATTACH_SLOTS_GUI_Y - 1, 340F + (m * SLOT_SIZE), 136F,
-                    SLOT_SIZE, SLOT_SIZE, 512, 256);
+                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (m * SLOT_SIZE), topPos + ATTACH_SLOTS_GUI_Y - 1, 340F + (m * SLOT_SIZE), 136F, SLOT_SIZE, SLOT_SIZE,
+                    512, 256);
         }
 
         // generic attachment slot backgrounds
         for (int x = 0; x < 8; x++)
         {
             if (x < type.getNumGenericAttachmentSlots())
-                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (SLOT_SIZE * x), topPos + GENERIC_SLOTS_GUI_Y - 1, 340F, 100F, SLOT_SIZE,
-                    SLOT_SIZE, 512, 256);
+                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (SLOT_SIZE * x), topPos + GENERIC_SLOTS_GUI_Y - 1, 340F, 100F, SLOT_SIZE, SLOT_SIZE, 512, 256);
         }
 
         List<Paintjob> applicable = type.getApplicablePaintjobs();
@@ -224,8 +223,8 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         GunType type = gunItem.getConfigType();
 
         String[] text = {"Barrel", "Scope", "Stock", "Grip", "Gadget", "Slide", "Pump", "Accessory"};
-        boolean[] allow = {type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(),
-            type.isAllowGadgetAttachments(), type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments()};
+        boolean[] allow = {type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(), type.isAllowGadgetAttachments(),
+            type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments()};
 
         int guiX = mouseX - leftPos;
         int guiY = mouseY - topPos;
@@ -371,6 +370,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         {
             List<Component> lines = new ArrayList<>();
             lines.add(Component.literal("Paintjob: " + hoveringPaintjob.getId()));
+            PaintjobScreenHelper.addPaymentTooltip(lines, hoveringPaintjob);
 
             gg.renderTooltip(this.font, lines, Optional.empty(), mouseX, mouseY);
         }

@@ -12,15 +12,17 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * An entity wearing a part body, such as an NPC drawn as a tank, as the damage effects read it. It never becomes a
- * wreck: it dies as the entity it is.
+ * An entity wearing a part body, such as an NPC drawn as a tank, as the damage effects read it. Its transient wreck age follows
+ * the wearer's observed death and resets on respawn or a different part body.
  */
-record PartBodyEffectSource(Entity entity, PartBody body, DriveableType type, DriveableDamageClass damageClass) implements DamageEffectSource
+record PartBodyEffectSource(Entity entity, PartBody body, DriveableType type, DriveableDamageClass damageClass, int wreckAge) implements DamageEffectSource
 {
+    static final int MAX_WRECK_EFFECT_TICKS = 1200;
+
     @Nullable
     static PartBodyEffectSource of(Entity entity, PartBody body)
     {
-        return body.getType() instanceof DriveableType type ? new PartBodyEffectSource(entity, body, type, DriveableDamageClass.of(type)) : null;
+        return body.getType() instanceof DriveableType type ? new PartBodyEffectSource(entity, body, type, DriveableDamageClass.of(type), -1) : null;
     }
 
     @Override
@@ -41,10 +43,9 @@ record PartBodyEffectSource(Entity entity, PartBody body, DriveableType type, Dr
         return body.partPointToWorld(part, fx, fy, fz);
     }
 
-    @Override
-    public int wreckAge()
+    PartBodyEffectSource atAge(int age)
     {
-        return -1;
+        return new PartBodyEffectSource(entity, body, type, damageClass, age);
     }
 
     @Override

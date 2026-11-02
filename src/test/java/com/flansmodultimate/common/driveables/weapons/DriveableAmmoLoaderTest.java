@@ -31,6 +31,27 @@ class DriveableAmmoLoaderTest
     }
 
     @Test
+    void everyDeclaredRoundOfTheBankIsOfferedWithTheDefaultOneFirst()
+    {
+        DriveableType type = mock(DriveableType.class);
+        BulletType piercing = mock(BulletType.class);
+        BulletType explosive = mock(BulletType.class);
+        BulletType bomb = mock(BulletType.class);
+        when(type.weaponType(false)).thenReturn(EnumWeaponType.SHELL);
+        when(type.weaponType(true)).thenReturn(EnumWeaponType.BOMB);
+        when(piercing.getWeaponType()).thenReturn(EnumWeaponType.SHELL);
+        when(explosive.getWeaponType()).thenReturn(EnumWeaponType.SHELL);
+        when(bomb.getWeaponType()).thenReturn(EnumWeaponType.BOMB);
+        when(type.getAmmoTypes()).thenReturn(List.of(bomb, piercing, explosive));
+        assertEquals(List.of(piercing, explosive), DriveableAmmoLoader.defaultBankAmmoChoices(type, false));
+        assertEquals(List.of(bomb), DriveableAmmoLoader.defaultBankAmmoChoices(type, true));
+        // The first of the choices stays the one round the operator commands and the rearming code load.
+        assertSame(piercing, DriveableAmmoLoader.defaultBankAmmo(type, false).orElseThrow());
+        when(type.weaponType(false)).thenReturn(EnumWeaponType.NONE);
+        assertEquals(List.of(), DriveableAmmoLoader.defaultBankAmmoChoices(type, false));
+    }
+
+    @Test
     void prefersTheWeaponTypeTheDefinitionDeclaresForEachBank()
     {
         assertEquals(List.of(EnumWeaponType.MINE, EnumWeaponType.BOMB), DriveableAmmoLoader.bankWeaponTypes(EnumWeaponType.MINE, EnumWeaponType.GUN, true));

@@ -7,9 +7,11 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
+import com.wolffsmod.npcs.drivers.NpcSeatPriority;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.sim.NpcParachutes;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
@@ -182,7 +184,7 @@ public final class NpcCrew
         for (int step = 1; step < mounts.size(); step++)
         {
             WeaponMount next = mounts.get((from + step) % mounts.size());
-            if (occupied(vehicle, next.seat()))
+            if (!makeRoom(vehicle, player, next.seat()))
                 continue;
             // Pin every rider without a crew seat where it sits, so that none slides into the seat the player leaves.
             CompoundTag seats = new CompoundTag();
@@ -192,6 +194,32 @@ public final class NpcCrew
             return true;
         }
         return false;
+    }
+
+    /** Moves a model's crew member to another free seat, or gets them safely out for an allied player. Server thread. */
+    public static boolean yieldSeat(EntityNPCInterface vehicle, EntityNPCInterface member)
+    {
+        if (member.getVehicle() != vehicle || !(member instanceof NpcCrewHolder holder))
+            return false;
+        WeaponMount replacement = NpcVehicleState.of(vehicle).crewSeats(vehicle).stream().filter(mount -> !occupied(vehicle, mount.seat()))
+            .min(Comparator.comparingInt(mount -> CrewPost.of(mount) == CrewPost.PASSENGER ? 0 : 1)).orElse(null);
+        if (replacement == null)
+            bailOut(vehicle, member);
+        else
+            holder.wolffsmodnpcsCrewSeat(replacement.seat());
+        return true;
+    }
+
+    private static boolean availableTo(EntityNPCInterface vehicle, Player player, int seat)
+    {
+        Entity occupant = seating(vehicle).entrySet().stream().filter(entry -> entry.getValue().seat() == seat).map(Map.Entry::getKey).findFirst().orElse(null);
+        return occupant == null || occupant == player || occupant instanceof EntityNPCInterface npc && NpcSeatPriority.mayYield(npc, player, false);
+    }
+
+    private static boolean makeRoom(EntityNPCInterface vehicle, Player player, int seat)
+    {
+        Entity occupant = seating(vehicle).entrySet().stream().filter(entry -> entry.getValue().seat() == seat).map(Map.Entry::getKey).findFirst().orElse(null);
+        return occupant == null || occupant == player || occupant instanceof EntityNPCInterface npc && NpcSeatPriority.giveWay(npc, player, false);
     }
 
     /**
@@ -265,8 +293,8 @@ public final class NpcCrew
         List<WeaponMount> mounts = NpcVehicleState.of(vehicle).crewSeats(vehicle);
         if (mounts.isEmpty())
             return Optional.empty();
-        if (rider instanceof Player)
-            return Optional.of(mounts.stream().anyMatch(mount -> !occupied(vehicle, mount.seat())));
+        if (rider instanceof Player player)
+            return Optional.of(mounts.stream().anyMatch(mount -> availableTo(vehicle, player, mount.seat())));
         return Optional.of(vehicle.getPassengers().size() < mounts.size());
     }
 
@@ -283,25 +311,31 @@ public final class NpcCrew
             || !canCarry(vehicle, player).orElse(false))
             return false;
         NpcSeatInteraction.Hit clicked = NpcSeatInteraction.pick(vehicle, player).orElse(null);
-        if (clicked != null && (occupied(vehicle, clicked.mount().seat()) || !(vehicle instanceof NpcCrewHolder)))
+        if (clicked != null && !(vehicle instanceof NpcCrewHolder))
+            return false;
+        WeaponMount requested = clicked == null ? preferredSeat(vehicle, player) : clicked.mount();
+        if (requested == null || !makeRoom(vehicle, player, requested.seat()))
             return false;
         player.stopRiding();
         CompoundTag seats = null;
         if (vehicle instanceof NpcCrewHolder holder)
         {
             seats = holder.wolffsmodnpcsRiderSeats().copy();
-            // Keep existing riders in place when a later rider chooses a seat ahead of them in the seat order.
-            if (clicked != null)
-                pinRiders(vehicle, seats);
-            seats.remove(player.getStringUUID());
-            if (clicked != null)
-                seats.putInt(player.getStringUUID(), clicked.mount().seat());
+            pinRiders(vehicle, seats);
+            seats.putInt(player.getStringUUID(), requested.seat());
         }
         if (!player.startRiding(vehicle, true))
             return false;
         if (vehicle instanceof NpcCrewHolder holder)
             holder.wolffsmodnpcsRiderSeats(seats);
         return true;
+    }
+
+    @Nullable
+    private static WeaponMount preferredSeat(EntityNPCInterface vehicle, Player player)
+    {
+        return NpcVehicleState.of(vehicle).crewSeats(vehicle).stream().filter(mount -> availableTo(vehicle, player, mount.seat())).min(Comparator.comparingInt(mount -> rank(player, mount)))
+            .orElse(null);
     }
 
     /** Keeps riders without an assigned crew seat at their current positions before another rider chooses a seat. */
@@ -565,6 +599,7 @@ public final class NpcCrew
         }
         selection = new FlanSoldierSelection(selection.team(), selection.playerClass(), source.chooseSkin(selection.playerClass().getSkinOverrideVariants().size(), level.random));
         EntityCustomNpc npc = new EntityCustomNpc(CustomEntities.entityCustomNpc, level);
+        NpcPresentation.of(npc).setBloodEffects(true);
         npc.moveTo(position.x, position.y, position.z, 0F, 0F);
         FlanSoldierLoadout.apply(npc, selection);
         // Only clients know the class skin and whether it needs the 64x32 model, so each client puts it on.

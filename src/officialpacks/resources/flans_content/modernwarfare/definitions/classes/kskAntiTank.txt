@@ -1,0 +1,15 @@
+// Identity
+Name Anti-Tank Rifleman (Panzerfaust 3)
+ShortName kskAntiTank
+Description Rifle-equipped anti-tank specialist with limited launcher ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem g36
+AddItem g36Ammo 3
+AddItem panzerfaust3
+AddItem panzerfaust3Ammo 1
+AddItem mwKnife

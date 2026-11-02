@@ -1,0 +1,15 @@
+// Identity
+Name Anti-Tank Rifleman (AT4)
+ShortName marineAntiTank
+Description Rifle-equipped anti-tank specialist with limited launcher ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem m16a4
+AddItem m16a4Ammo 3
+AddItem at4
+AddItem at4Ammo 1
+AddItem mwKnife

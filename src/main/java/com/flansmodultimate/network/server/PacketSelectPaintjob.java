@@ -23,22 +23,31 @@ import java.util.List;
 public class PacketSelectPaintjob implements IServerPacket
 {
     private int paintjobId;
+    private boolean useRainbowPaint;
 
     public PacketSelectPaintjob(int paintjobId)
     {
+        this(paintjobId, false);
+    }
+
+    public PacketSelectPaintjob(int paintjobId, boolean useRainbowPaint)
+    {
         this.paintjobId = paintjobId;
+        this.useRainbowPaint = useRainbowPaint;
     }
 
     @Override
     public void encodeInto(PacketBuffer data)
     {
         data.writeInt(paintjobId);
+        data.writeBoolean(useRainbowPaint);
     }
 
     @Override
     public void decodeInto(PacketBuffer data)
     {
         paintjobId = data.readInt();
+        useRainbowPaint = data.readBoolean();
     }
 
     @Override
@@ -66,7 +75,7 @@ public class PacketSelectPaintjob implements IServerPacket
         if (pj == null)
             return;
 
-        if (!InventoryHelper.tryConsumeAll(player.getInventory(), pj.getDyesNeeded(), player.getAbilities().instabuild))
+        if (!InventoryHelper.tryConsumeAll(player.getInventory(), pj.getDyesNeeded(useRainbowPaint), player.getAbilities().instabuild))
             return;
 
         gunType.applyPaintjobToStack(gunStack, pj);
@@ -98,7 +107,7 @@ public class PacketSelectPaintjob implements IServerPacket
         if (pj == null)
             return;
 
-        if (!InventoryHelper.tryConsumeAll(player.getInventory(), menu.getPaintCanStack(), pj.getDyesNeeded(), player.getAbilities().instabuild))
+        if (!InventoryHelper.tryConsumeAll(player.getInventory(), menu.getPaintCanStack(), pj.getDyesNeeded(useRainbowPaint), player.getAbilities().instabuild))
             return;
 
         type.applyPaintjobToStack(paintableStack, pj);

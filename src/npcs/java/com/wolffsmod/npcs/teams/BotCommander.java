@@ -7,6 +7,7 @@ import com.flansmodultimate.api.teams.ITeam;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.flansmodultimate.api.teams.TeamsFlag;
 import com.flansmodultimate.api.teams.TeamsScoreEntry;
+import com.wolffsmod.npcs.tactics.NpcCombatIntent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -42,8 +43,20 @@ final class BotCommander
      * @param arrival
      *            blocks from its spot within which the bot counts as there
      */
-    record Order(Vec3 spot, double arrival, BotRole role, SquadTask.Kind kind)
-    {}
+    record Order(Vec3 spot, double arrival, BotRole role, SquadTask.Kind kind, Vec3 centre, double radius)
+    {
+        Order(Vec3 spot, double arrival, BotRole role, SquadTask.Kind kind)
+        {
+            this(spot, arrival, role, kind, spot, arrival);
+        }
+
+        NpcCombatIntent combatIntent()
+        {
+            // Authored defensive posts may intentionally sit outside the capture zone.
+            double offset = spot.subtract(centre).horizontalDistance();
+            return new NpcCombatIntent(spot, arrival, centre, offset > radius ? offset + arrival : radius);
+        }
+    }
 
     /** Gives every squad of every side a task. */
     static void plan(MinecraftServer server, ServerLevel level, BotBattle battle)
@@ -52,29 +65,31 @@ final class BotCommander
         List<TeamsCapturePoint> points = ground.capturePoints();
         int attacking = ground.attackingSide().orElse(-1);
         List<Vec3> naval = markers(server, battle, BotMarkers.Type.NAVAL);
-        Map<Integer, List<Vec3>> fighters = fightersBySide(server, level, battle);
+        observe(level, battle);
         List<TeamsFlag> flags = ground.flags();
         List<Doctrine.FlagView> flagViews = flags.stream().map(flag -> flagView(server, level, battle, flag)).toList();
         Set<UUID> carriers = new HashSet<>();
         flags.stream().map(TeamsFlag::carrier).filter(Objects::nonNull).forEach(carriers::add);
         BotLeaders.tick(server, level, battle);
         applyOrders(server, level, battle);
+        CommanderBots.titles(level, battle);
         for (int side = 0; side < ground.sideCount(); side++)
         {
-            int ownSide = side;
-            List<Vec3> enemies = new ArrayList<>();
-            fighters.forEach((fighterSide, positions) ->
+            if (CommanderBots.disrupted(battle, side, level.getGameTime()))
             {
-                if (ground.hostile(ownSide, fighterSide))
-                    enemies.addAll(positions);
-            });
+                CommanderBots.hold(level, battle, side);
+                continue;
+            }
+            List<BotIntelligence.Contact> contacts = battle.getIntelligence().contacts(side, level.getGameTime());
+            List<Vec3> enemies = contacts.stream().map(BotIntelligence.Contact::position).toList();
+            List<Vec3> armour = contacts.stream().filter(BotIntelligence.Contact::armoured).map(BotIntelligence.Contact::position).toList();
             List<Vec3> enemySpawns = new ArrayList<>();
             for (ITeam team : ground.teams())
                 if (ground.hostile(side, ground.sideOf(team)))
                     enemySpawns.addAll(ground.spawnPositions(team));
             List<Doctrine.SquadView> views = views(level, battle, side, carriers);
             if (!views.isEmpty())
-                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null)), views)
+                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null), armour), views)
                     .forEach((squadId, task) -> Optional.ofNullable(battle.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
         }
     }
@@ -116,22 +131,19 @@ final class BotCommander
         return new Doctrine.FlagView(owner, flag.atHome() ? flag.home() : flag.position(), flag.home(), flag.atHome(), carrierSide);
     }
 
-    /** Where every living player and bot of the round is, by side. */
-    private static Map<Integer, List<Vec3>> fightersBySide(MinecraftServer server, ServerLevel level, BotBattle battle)
+    /** Reuses each bot's current target and sensing cache, without searching the world for additional enemies. */
+    private static void observe(ServerLevel level, BotBattle battle)
     {
-        Map<Integer, List<Vec3>> fighters = new HashMap<>();
-        for (ServerPlayer player : server.getPlayerList().getPlayers())
-        {
-            if (player.isAlive() && !player.isSpectator() && player.level() == level)
-                battle.sideOfPlayer(player).ifPresent(side -> fighters.computeIfAbsent(side, ignored -> new ArrayList<>()).add(player.position()));
-        }
         for (BotSlot slot : battle.getSlots().values())
         {
             Entity entity = slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
-            if (entity != null && entity.isAlive())
-                fighters.computeIfAbsent(battle.sideOf(slot.getTeam()), ignored -> new ArrayList<>()).add(entity.position());
+            if (entity instanceof EntityNPCInterface npc && npc.isAlive() && !npc.isKilled())
+            {
+                var target = npc.getTarget();
+                if (target != null && target.isAlive() && target.level() == level && npc.getSensing().hasLineOfSight(target))
+                    TeamsBots.reportContact(npc, target);
+            }
         }
-        return fighters;
     }
 
     /**
@@ -149,7 +161,9 @@ final class BotCommander
                 continue;
             BotRole role = squad.getCargo().isEmpty() ? squad.getRole() : BotRole.INFANTRY;
             boolean carrying = members.stream().anyMatch(member -> carriers.contains(member.getUUID()));
-            views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying, squad.getTask() == null ? null : squad.getTask().target()));
+            BotReadiness.Strength strength = BotReadiness.measure(members, squad.getSlots().size(), role, level.getGameTime());
+            views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying, squad.getTask() == null ? null : squad.getTask().target(),
+                strength.readiness(), strength.antiArmour()));
         }
         return views;
     }
@@ -162,7 +176,7 @@ final class BotCommander
         {
             BotSlot slot = battle.getSlots().get(slotId);
             Entity entity = slot == null || slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
-            if (entity != null && entity.isAlive())
+            if (entity != null && entity.isAlive() && (!(entity instanceof EntityNPCInterface npc) || !npc.isKilled()))
                 members.add(entity);
         }
         return members;
@@ -180,6 +194,13 @@ final class BotCommander
     {
         Integer slotId = battle.getSlotOfEntity().get(npc.getUUID());
         BotSlot slot = slotId == null ? null : battle.getSlots().get(slotId);
+        if (slot != null && slot.getSource() == BotSlot.Source.COMMANDER)
+            return Optional.of(CommanderBots.order(battle, slot, npc));
+        return squadOrder(server, battle, slot);
+    }
+
+    private static Optional<Order> squadOrder(MinecraftServer server, BotBattle battle, BotSlot slot)
+    {
         BotSquad squad = slot == null ? null : battle.getSquads().get(slot.getSquad());
         SquadTask task = squad == null ? null : squad.getTask();
         if (task == null)
@@ -202,7 +223,7 @@ final class BotCommander
         }
         else if (squad.getRole() != BotRole.INFANTRY)
             arrival = 6D;
-        return Optional.of(new Order(spot, arrival, squad.getRole(), task.kind()));
+        return Optional.of(new Order(spot, arrival, squad.getRole(), task.kind(), task.target(), task.radius()));
     }
 
     /** The sniper posts, then the garrison posts, around a defended objective, nearest first. */

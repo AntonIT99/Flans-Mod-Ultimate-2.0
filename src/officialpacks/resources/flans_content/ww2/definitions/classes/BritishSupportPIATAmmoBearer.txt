@@ -1,0 +1,9 @@
+// Identity
+Name PIAT Ammunition Bearer
+ShortName OfficialWW2_BritishSupportPIATAmmoBearer
+
+// Items
+AddItem leeEnfield
+AddItem leeEnfieldAmmo 4
+AddItem PIATAmmo 3
+AddItem ww2Knife

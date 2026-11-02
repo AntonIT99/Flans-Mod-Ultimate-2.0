@@ -195,11 +195,12 @@ public final class SkirmishCommands
             }, text(SET, RESPAWN, IntegerArgumentType.getInteger(context, COUNT))))));
         skirmish.then(Commands.literal("tickets").then(Commands.argument(COUNT, IntegerArgumentType.integer(0)).executes(
             context -> edit(context, true, target -> target.setTickets(IntegerArgumentType.getInteger(context, COUNT)), text(SET, "tickets", IntegerArgumentType.getInteger(context, COUNT))))));
-        LiteralArgumentBuilder<CommandSourceStack> difficulty = Commands.literal("difficulty");
-        for (BotSettings.Difficulty value : BotSettings.Difficulty.values())
-            difficulty
-                .then(Commands.literal(BotCommands.lower(value)).executes(context -> edit(context, true, target -> target.setDifficulty(value), text(SET, "difficulty", BotCommands.lower(value)))));
-        skirmish.then(difficulty);
+        skirmish.then(BotCommands.difficulty((context, level, custom, shown) -> edit(context, true, target ->
+        {
+            target.setDifficulty(level);
+            if (custom != null)
+                target.setCustomTraining(custom);
+        }, text(SET, "difficulty", shown))));
         skirmish.then(Commands.literal("markers").then(Commands.literal(BotCommands.NONE).executes(context -> edit(context, false, target -> target.setMarkerMap(""), text("markers_none"))))
             .then(Commands.argument(VALUE, StringArgumentType.word()).executes(
                 context -> edit(context, false, target -> target.setMarkerMap(StringArgumentType.getString(context, VALUE)), text("markers", StringArgumentType.getString(context, VALUE))))));

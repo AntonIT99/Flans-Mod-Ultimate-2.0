@@ -4,6 +4,7 @@ import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
+import com.flansmodultimate.api.projectiles.GrenadeProperties;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -196,6 +197,7 @@ class NpcThrownWeaponTest
             when(target.isAlive()).thenReturn(true);
             when(npc.getEyePosition()).thenReturn(Vec3.ZERO);
             when(target.getEyePosition()).thenReturn(new Vec3(12D, 0D, 0D));
+            when(npc.distanceTo(target)).thenReturn(12F);
             when(target.getDeltaMovement()).thenReturn(Vec3.ZERO);
             LookControl look = mock(LookControl.class);
             PathNavigation navigation = mock(PathNavigation.class);
@@ -250,6 +252,8 @@ class NpcThrownWeaponTest
                 {
                     projectiles.when(() -> FlansProjectiles.isGrenade(throwable)).thenReturn(true);
                     projectiles.when(() -> FlansProjectiles.isGrenade(spare)).thenReturn(true);
+                    projectiles.when(() -> FlansProjectiles.getGrenadeProperties(throwable)).thenReturn(Optional.of(new GrenadeProperties(GrenadeProperties.Use.EXPLOSIVE, 0D)));
+                    projectiles.when(() -> FlansProjectiles.getGrenadeProperties(spare)).thenReturn(Optional.of(new GrenadeProperties(GrenadeProperties.Use.EXPLOSIVE, 0D)));
                     projectiles.when(() -> FlansProjectiles.prepare(eq(npc), eq(throwable), eq(ItemStack.EMPTY), isNull(), isNull(), eq(false), any())).thenReturn(Optional.of(shot));
                     projectiles.when(() -> FlansProjectiles.prepare(eq(npc), eq(spare), eq(ItemStack.EMPTY), isNull(), isNull(), eq(false), any())).thenReturn(Optional.of(shot));
                 }

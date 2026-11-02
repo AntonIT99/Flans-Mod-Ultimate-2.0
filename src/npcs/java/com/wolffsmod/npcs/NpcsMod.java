@@ -4,6 +4,7 @@ import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.mojang.logging.LogUtils;
 import com.wolffsmod.npcs.combat.NpcPosture;
+import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
@@ -42,6 +43,7 @@ public class NpcsMod
         TeamsBots.register();
         FlansProjectiles.addSuppressionListener(NpcThreats.INSTANCE);
         FlansProjectiles.addSuppressionListener(NpcSuppression.INSTANCE);
+        FlansProjectiles.addArmorImpactListener(NpcVehicleCombat::impact);
         FriendlyFire.register();
         NpcPosture.register();
         FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);

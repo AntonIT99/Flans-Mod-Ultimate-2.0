@@ -24,6 +24,8 @@ public final class BotSquad
     /** The squad template it follows, empty for loose infantry and vehicles. */
     private final String template;
     private final List<Integer> slots = new ArrayList<>();
+    /** Transient combat leases; commands and respawns do not persist stale movement or occupied cover. */
+    private final BotSquadCombat combat = new BotSquadCombat();
     @Nullable
     private SquadTask task;
     /** Index of the next route point, for a squad that follows a patrol of several points. */

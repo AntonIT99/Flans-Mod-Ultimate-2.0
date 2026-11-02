@@ -3,12 +3,35 @@ package com.wolffsmod.npcs.tactics;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class NpcTacticStateTest
 {
+    @Test
+    void safetyRemembersOtherAttackersWithoutReplacingTheFiringThreatOrFollowingHiddenMovement()
+    {
+        NpcTacticState state = new NpcTacticState();
+        LivingEntity first = mock(LivingEntity.class);
+        LivingEntity vehicle = mock(LivingEntity.class);
+        when(first.isAlive()).thenReturn(true);
+        when(vehicle.isAlive()).thenReturn(true);
+        when(first.getEyePosition()).thenReturn(Vec3.ZERO);
+        Vec3 reported = new Vec3(20D, 2D, 0D);
+        when(vehicle.getEyePosition()).thenReturn(reported);
+        state.threat(first, first, 0L, 100L);
+        state.threat(vehicle, first, 1L, 101L);
+        when(vehicle.getEyePosition()).thenReturn(new Vec3(30D, 2D, 0D));
+        assertSame(first, state.threat(2L));
+        assertEquals(2, state.threats(2L).size());
+        assertEquals(reported, state.threats(2L).get(1).position());
+        assertEquals(1, state.threats(100L).size());
+        assertTrue(state.threats(101L).isEmpty());
+    }
+
     @Test
     void aThreatIsRememberedUntilItsMemoryRunsOut()
     {

@@ -107,10 +107,10 @@ public final class DriveableImpostorCache
      */
     public static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue,
         PoseStack poseStack, MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset, float entityYaw, float entityPitch, float entityRoll,
-        boolean allowImpostor, boolean wasUsingImpostor)
+        boolean allowImpostor, boolean wasUsingImpostor, float drawTint)
     {
         return renderOrPrepare(model, type, sourceTexture, translucent, cull, red, green, blue, poseStack, buffer, packedLight, projectionPixels, cameraDistance, cameraOffset, entityYaw, entityPitch,
-            entityRoll, null, allowImpostor, wasUsingImpostor, 1F, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+            entityRoll, null, allowImpostor, wasUsingImpostor, 1F, OverlayTexture.NO_OVERLAY, drawTint, drawTint, drawTint, 1F);
     }
 
     /** Neutral-model atlas shared with externally posed instances; tint and damage overlays stay per draw. */

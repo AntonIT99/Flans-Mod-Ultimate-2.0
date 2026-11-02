@@ -113,8 +113,8 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         return ArmorType.class;
     }
 
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
-        float alpha, EnumRenderPass renderPass)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        EnumRenderPass renderPass)
     {
         float modelScale = type != null ? type.getModelScale() : 1F;
 
@@ -144,14 +144,14 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
         }
     }
 
-    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha,
-        float modelScale, EnumRenderPass renderPass)
+    protected void renderHeadModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale,
+        EnumRenderPass renderPass)
     {
         render(headModel, head, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
     }
 
-    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha,
-        float modelScale, EnumRenderPass renderPass)
+    protected void renderBodyModels(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float modelScale,
+        EnumRenderPass renderPass)
     {
         render(bodyModel, body, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         render(leftArmModel, leftArm, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
@@ -163,35 +163,33 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
             mod.rotationPointX = (leftLeg.x + rightLeg.x) / 2F / modelScale;
             mod.rotationPointY = (leftLeg.y + rightLeg.y) / 2F / modelScale;
             mod.rotationPointZ = (leftLeg.z + rightLeg.z) / 2F / modelScale;
-            mod.rotateAngleX = Math.min(leftLeg.xRot, rightLeg.xRot);
-            mod.rotateAngleY = leftLeg.yRot;
-            mod.rotateAngleZ = leftLeg.zRot;
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         }
+        ModelRendererTurbo.renderRotated(skirtFrontModel, Math.min(leftLeg.xRot, rightLeg.xRot), leftLeg.yRot, leftLeg.zRot, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue,
+            pAlpha, modelScale, renderPass, false);
         for (ModelRendererTurbo mod : skirtRearModel)
         {
             mod.rotationPointX = (leftLeg.x + rightLeg.x) / 2F / modelScale;
             mod.rotationPointY = (leftLeg.y + rightLeg.x) / 2F / modelScale;
             mod.rotationPointZ = (leftLeg.z + rightLeg.z) / 2F / modelScale;
-            mod.rotateAngleX = Math.max(leftLeg.xRot, rightLeg.xRot);
-            mod.rotateAngleY = leftLeg.yRot;
-            mod.rotateAngleZ = leftLeg.zRot;
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, modelScale, renderPass);
         }
+        ModelRendererTurbo.renderRotated(skirtRearModel, Math.max(leftLeg.xRot, rightLeg.xRot), leftLeg.yRot, leftLeg.zRot, poseStack, vertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue,
+            pAlpha, modelScale, renderPass, false);
     }
 
-    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen,
-        float pBlue, float pAlpha, float scale, EnumRenderPass renderPass)
+    /**
+     * Draws the pieces of one body part under that part's transform. The array goes to the shared renderer as a whole, so
+     * batched geometry is drawn from its compact per-array cache instead of walking every box again each frame, exactly as
+     * driveable parts are.
+     */
+    public void render(ModelRendererTurbo[] models, ModelPart bodyPart, PoseStack poseStack, VertexConsumer pBuffer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue,
+        float pAlpha, float scale, EnumRenderPass renderPass)
     {
         if (models.length == 0)
             return;
 
         poseStack.pushPose();
         bodyPart.translateAndRotate(poseStack);
-        for (ModelRendererTurbo mod : models)
-        {
-            mod.render(poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale, renderPass);
-        }
+        ModelRendererTurbo.renderArray(models, poseStack, pBuffer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale, renderPass, false);
         poseStack.popPose();
     }
 }

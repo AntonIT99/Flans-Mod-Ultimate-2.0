@@ -24,6 +24,7 @@ AddClass W44_SovietArmyAssaultPPS43
 
 // Automatic rifles and machine guns
 AddClass W44_SovietArmySupport
+AddClass W44_SovietArmyAmmoBearer
 AddClass W44_SovietArmyMachineGunnerDT28
 
 // Reconnaissance and marksmen
@@ -42,6 +43,8 @@ AddClass W44_SovietArmyFieldMedic
 
 // Command
 AddClass W44_SovietArmySquadLeader
+AddClass W44_SovietArmySquadLeaderSVT40
+AddClass W44_SovietArmySquadLeaderMosin
 
 // Vehicle and air crews
 AddClass W44_SovietArmyTankCrew

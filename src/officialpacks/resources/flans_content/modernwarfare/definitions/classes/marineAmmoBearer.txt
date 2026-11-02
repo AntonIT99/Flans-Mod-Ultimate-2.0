@@ -1,0 +1,15 @@
+// Identity
+Name Ammunition Bearer
+ShortName marineAmmoBearer
+Description Rifleman carrying spare M249 ammunition and a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem m16a4
+AddItem m16a4Ammo 3
+AddItem m249Ammo 2
+AddItem mwAmmoBag
+AddItem mwKnife

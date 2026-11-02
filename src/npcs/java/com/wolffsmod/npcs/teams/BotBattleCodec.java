@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,7 +31,6 @@ final class BotBattleCodec
     private static final String NBT_SQUAD_DEPLOYMENTS = "squad_deployments";
     private static final String NBT_COMMANDERS = "commanders";
     private static final String NBT_FOUGHT = "sides_that_fought";
-    private static final String NBT_FIELDED = "fielded_players";
     private static final String NBT_SLOTS = "slots";
     private static final String NBT_SQUADS = "squads";
     private static final String NBT_ID = "id";
@@ -90,10 +88,10 @@ final class BotBattleCodec
         CompoundTag commanders = new CompoundTag();
         current.getCommanders().forEach((side, player) -> commanders.putUUID(Integer.toString(side), player));
         tag.put(NBT_COMMANDERS, commanders);
+        CompoundTag disrupted = new CompoundTag();
+        current.getDisruptedUntil().forEach((side, until) -> disrupted.putLong(Integer.toString(side), until));
+        tag.put("disrupted_until", disrupted);
         tag.putIntArray(NBT_FOUGHT, current.getSidesThatFought().stream().mapToInt(Integer::intValue).toArray());
-        ListTag fielded = new ListTag();
-        current.getFieldedPlayers().forEach(player -> fielded.add(NbtUtils.createUUID(player)));
-        tag.put(NBT_FIELDED, fielded);
         CompoundTag choices = new CompoundTag();
         current.getSpawnChoices().forEach((player, choice) -> choices.putString(player.toString(), choice.name()));
         tag.put(NBT_SPAWN_CHOICES, choices);
@@ -204,12 +202,13 @@ final class BotBattleCodec
         infantry.getAllKeys().forEach(team -> current.getInfantrySpawns().put(team, infantry.getInt(team)));
         readEntries(tag.getCompound(NBT_VEHICLE_SPAWNS), current.getVehicleSpawns());
         readEntries(tag.getCompound(NBT_SQUAD_DEPLOYMENTS), current.getSquadDeployments());
+        CompoundTag disrupted = tag.getCompound("disrupted_until");
+        for (String side : disrupted.getAllKeys())
+            side(side).ifPresent(index -> current.getDisruptedUntil().put(index, disrupted.getLong(side)));
         CompoundTag commanders = tag.getCompound(NBT_COMMANDERS);
         for (String side : commanders.getAllKeys())
             side(side).ifPresent(index -> current.getCommanders().put(index, commanders.getUUID(side)));
         Arrays.stream(tag.getIntArray(NBT_FOUGHT)).forEach(current.getSidesThatFought()::add);
-        for (Tag player : tag.getList(NBT_FIELDED, Tag.TAG_INT_ARRAY))
-            current.getFieldedPlayers().add(NbtUtils.loadUUID(player));
         CompoundTag choices = tag.getCompound(NBT_SPAWN_CHOICES);
         for (String player : choices.getAllKeys())
             player(player).ifPresent(id -> current.getSpawnChoices().put(id, BotSettings.parse(BotLeaders.SpawnChoice.class, choices.getString(player), BotLeaders.SpawnChoice.BASE)));

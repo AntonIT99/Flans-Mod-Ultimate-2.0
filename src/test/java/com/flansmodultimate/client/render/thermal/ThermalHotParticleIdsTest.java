@@ -37,4 +37,15 @@ class ThermalHotParticleIdsTest
         assertTrue(ThermalHotParticleIds.isHot("othermod:hot_smoke", List.of("othermod:hot_smoke")), "an explicit entry wins over the smoke rule");
         assertFalse(ThermalHotParticleIds.isHot("othermod:glow", List.of("othermod:other")));
     }
+
+    @Test
+    void newGasSprayAndCanistersStayColdDespiteHistoricalNames()
+    {
+        for (String name : List.of("flasher", "smoke_shell", "smoke_shell_mustard", "smoke_shell_chlorine", "water_smoke", "water_smoke_mini", "blood", "overkill", "casing"))
+            assertFalse(ThermalHotParticleIds.isHot("flansmod:" + name, List.of()), name);
+        for (String name : List.of("nu_flash", "nu_muzzle", "nu_spark", "classic_muzzle"))
+            assertTrue(ThermalHotParticleIds.isHot("flansmod:" + name, List.of()), name);
+        assertTrue(ThermalHotParticleIds.isHot("flansmod:flasher", List.of("flansmod:flasher")), "explicit user overrides still apply");
+    }
+
 }

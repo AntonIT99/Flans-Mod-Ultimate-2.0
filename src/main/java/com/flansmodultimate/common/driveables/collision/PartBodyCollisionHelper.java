@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.driveables.collision;
 
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.Entity;
@@ -18,7 +19,7 @@ import java.util.function.Predicate;
  * other entities walk into them, stand on them and are carried along as the wearer moves and turns.
  *
  * <p>
- * The wearer itself and whoever rides it pass through, so it still moves by its own bounding box. Boxes are posed where
+ * The wearer itself and whoever rides it pass through. The wearer moves against terrain using these same boxes, posed where
  * the hit detection of the body has them, at the size the body is drawn at.
  * </p>
  */
@@ -41,6 +42,7 @@ public final class PartBodyCollisionHelper
     private DriveableCollisionWorld.LevelHulls registry;
     private int lastTick = Integer.MIN_VALUE;
     private Vec3 lastOrigin = Vec3.ZERO;
+    private Vec3 lastOwnerPosition = Vec3.ZERO;
 
     /**
      * @param live
@@ -57,6 +59,27 @@ public final class PartBodyCollisionHelper
     {
         AABB box = entity.getBoundingBox();
         return geometry != null && geometry.findSupport(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ) >= 0;
+    }
+
+    /** Resolves the wearer's own movement against terrain and solid entities, or leaves an unposed body to vanilla. */
+    @Nullable
+    public Vec3 collideMovement(Vec3 movement)
+    {
+        DriveableHullGeometry current = geometry;
+        if (current == null)
+            return null;
+        if (!current.queryBounds(bounds))
+            return movement;
+        Vec3 offset = owner.position().subtract(lastOwnerPosition);
+        double step = Math.max(0D, EntityPlatform.stepHeight(owner));
+        AABB query = new AABB(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]).move(offset).expandTowards(movement).expandTowards(0D, step, 0D).inflate(CONTACT_SKIN);
+        List<AABB> obstacles = new ArrayList<>();
+        owner.level().getBlockCollisions(owner, query).forEach(shape -> obstacles.addAll(shape.toAabbs()));
+        owner.level().getEntityCollisions(owner, query).forEach(shape -> obstacles.addAll(shape.toAabbs()));
+        var border = owner.level().getWorldBorder();
+        if (border.isInsideCloseToBorder(owner, query))
+            obstacles.addAll(border.getCollisionShape().toAabbs());
+        return PartBodyMovement.collide(current, obstacles, offset, movement, step, owner.onGround());
     }
 
     Entity owner()
@@ -140,6 +163,7 @@ public final class PartBodyCollisionHelper
         boolean continuous = !rebuilt && lastTick == owner.tickCount - 1 && lastOrigin.distanceToSqr(origin) <= MAX_CARRY * MAX_CARRY;
         lastTick = owner.tickCount;
         lastOrigin = origin;
+        lastOwnerPosition = owner.position();
         pose(current, origin, yaw, pitch, roll, scale, turretYaw, turretPitch, turretPivot, turretOffset, standing, continuous);
         register(owner.level());
         if (current.queryBounds(bounds))

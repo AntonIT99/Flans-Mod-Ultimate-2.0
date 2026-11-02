@@ -82,44 +82,68 @@ public final class ModelMuzzleMeasurement
                 aaGunType.setTrustBarrelLines(trustsDefinition(type, correctFlanFolderPacks));
         }
 
-        String key = MuzzleMeasurementCache.key(contentPacks, definitionDigests, correctFlanFolderPacks);
-        MuzzleMeasurementCache.Results cached = MuzzleMeasurementCache.load(key);
-        if (cached != null)
-        {
-            int moved = MuzzleMeasurementCache.apply(cached, types);
-            FlansLog.log.info(
-                "Applied the muzzles measured on {} model(s) in {} ms, since no content pack changed: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s). Delete {} to measure them again.",
-                cached.models, System.currentTimeMillis() - startTime, cached.deployedGuns.size(), cached.aaGuns.size(), moved, cached.driveables.size(), cached.mountCount(),
-                MuzzleMeasurementCache.file());
-            return;
-        }
-
+        MuzzleMeasurementCache.State state = MuzzleMeasurementCache.load();
+        Map<String, MuzzleMeasurementCache.FileHash> previousFiles = new TreeMap<>(state.files);
+        Map<IContentProvider, Map<String, String>> inputs = MuzzleMeasurementCache.inputs(contentPacks, definitionDigests, types, correctFlanFolderPacks, state);
+        long fingerprintMillis = System.currentTimeMillis() - startTime;
+        Map<IContentProvider, List<InfoType>> byPack = new HashMap<>();
+        for (InfoType type : types)
+            byPack.computeIfAbsent(type.getContentPack(), ignored -> new ArrayList<>()).add(type);
+        Map<String, MuzzleMeasurementCache.Entry> next = new TreeMap<>();
         Map<ModelClassLocation, Optional<Object>> models = new HashMap<>();
-        Tally tally = new Tally();
+        int reusedModels = 0;
+        int reusedPacks = 0;
+        int measuredModels = 0;
+        int measuredPacks = 0;
+        int failed = 0;
 
         // Resolving and loading a model class opens its pack archive several times over.
         try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
         {
-            for (InfoType type : types)
-                measure(type, correctFlanFolderPacks, models, tally);
+            for (Map.Entry<IContentProvider, Map<String, String>> packInputs : inputs.entrySet())
+            {
+                IContentProvider pack = packInputs.getKey();
+                List<InfoType> packTypes = byPack.getOrDefault(pack, List.of());
+                MuzzleMeasurementCache.Entry stored = state.packs.get(pack.getName());
+                MuzzleMeasurementCache.Results results = MuzzleMeasurementCache.matching(stored, packInputs.getValue());
+                if (results != null)
+                {
+                    MuzzleMeasurementCache.apply(results, packTypes);
+                    reusedModels += results.models;
+                    reusedPacks++;
+                }
+                else
+                {
+                    FlansLog.log.info("Measuring models for {}: {}.", pack.getName(), MuzzleMeasurementCache.changedInputs(stored, packInputs.getValue()));
+                    Tally tally = new Tally();
+                    for (InfoType type : packTypes)
+                        measure(type, correctFlanFolderPacks, models, tally);
+                    results = tally.results;
+                    results.models = tally.models.size();
+                    results.failed = tally.failed;
+                    measuredModels += results.models;
+                    measuredPacks++;
+                    failed += results.failed;
+                }
+                next.put(pack.getName(), new MuzzleMeasurementCache.Entry(packInputs.getValue(), results));
+            }
         }
-
-        tally.results.models = (int) models.values().stream().filter(Optional::isPresent).count();
-        tally.results.failed = tally.failed;
-        MuzzleMeasurementCache.save(key, tally.results);
+        // An unchanged warm launch only reads the cache; refreshed file stamps are saved after a rebuild.
+        if (measuredPacks > 0 || !next.keySet().equals(state.packs.keySet()) || !previousFiles.equals(state.files))
+        {
+            state.packs.clear();
+            state.packs.putAll(next);
+            MuzzleMeasurementCache.save(state);
+        }
         FlansLog.log.info(
-            "Measured {} model(s) in {} ms: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s), {} type(s) could not be measured.",
-            tally.results.models, System.currentTimeMillis() - startTime, tally.deployedGuns, tally.aaGuns, tally.points, tally.driveables, tally.mounts, tally.failed);
+            "Reused cached measurements of {} model(s) from {} pack(s); measured {} model(s) from {} pack(s) in {} ms (cache checks: {} ms), {} type(s) could not be measured. Delete {} to measure everything again.",
+            reusedModels, reusedPacks, measuredModels, measuredPacks, System.currentTimeMillis() - startTime, fingerprintMillis, failed, MuzzleMeasurementCache.file());
     }
 
     private static final class Tally
     {
         private final MuzzleMeasurementCache.Results results = new MuzzleMeasurementCache.Results();
-        private int deployedGuns;
-        private int aaGuns;
-        private int driveables;
-        private int points;
-        private int mounts;
+        private final Set<ModelClassLocation> models = new HashSet<>();
         private int failed;
     }
 
@@ -136,7 +160,7 @@ public final class ModelMuzzleMeasurement
         String className = type instanceof GunType gunType ? gunType.resolveDeployableModelClassName() : type.resolveModelClassName();
         if (StringUtils.isBlank(className))
             return;
-        Object model = loadModel(type, className, models);
+        Object model = loadModel(type, className, models, tally);
         if (model == null)
         {
             tally.failed++;
@@ -146,22 +170,18 @@ public final class ModelMuzzleMeasurement
         try
         {
             if (type instanceof AAGunType aaGunType && model instanceof ModelAAGun aaGunModel)
-                tally.aaGuns += measureAAGun(aaGunType, aaGunModel, tally.results) ? 1 : 0;
+                measureAAGun(aaGunType, aaGunModel, tally.results);
             else if (type instanceof GunType gunType && model instanceof ModelMG mgModel)
-                tally.deployedGuns += measureDeployedGun(gunType, mgModel, tally.results) ? 1 : 0;
+                measureDeployedGun(gunType, mgModel, tally.results);
             else if (type instanceof DriveableType driveableType && model instanceof ModelDriveable driveableModel)
             {
                 // Trusted points are only reported when they look mirrored, never moved.
                 if (trusted && FlansLog.log.isDebugEnabled())
                     reportMirroredPoints(driveableType, driveableModel);
                 else if (!trusted)
-                {
-                    int moved = correctDriveable(driveableType, driveableModel, tally.results);
-                    tally.points += moved;
-                    tally.driveables += moved > 0 ? 1 : 0;
-                }
+                    correctDriveable(driveableType, driveableModel, tally.results);
                 // After the correction, so a moved point spreads round where it now is.
-                tally.mounts += spreadBarrels(driveableType, driveableModel, tally.results);
+                spreadBarrels(driveableType, driveableModel, tally.results);
                 measureGunPivots(driveableType, driveableModel, tally.results);
             }
         }
@@ -185,10 +205,10 @@ public final class ModelMuzzleMeasurement
 
     /** Loads each model class once for every type that uses it, and drops them all after the pass. */
     @Nullable
-    private static Object loadModel(InfoType type, String className, Map<ModelClassLocation, Optional<Object>> models)
+    private static Object loadModel(InfoType type, String className, Map<ModelClassLocation, Optional<Object>> models, Tally tally)
     {
         ModelClassLocation location = ModelClassResolver.find(type.getContentPack(), className, true);
-        return models.computeIfAbsent(location, key ->
+        Object model = models.computeIfAbsent(location, key ->
         {
             try
             {
@@ -200,6 +220,9 @@ public final class ModelMuzzleMeasurement
                 return Optional.empty();
             }
         }).orElse(null);
+        if (model != null)
+            tally.models.add(location);
+        return model;
     }
 
     /** The innermost cause, which is what a constructor that threw through reflection actually failed on. */
@@ -212,28 +235,26 @@ public final class ModelMuzzleMeasurement
         return cause + (trace.length > 0 ? " at " + trace[0] : StringUtils.EMPTY);
     }
 
-    private static boolean measureAAGun(AAGunType type, ModelAAGun model, MuzzleMeasurementCache.Results results)
+    private static void measureAAGun(AAGunType type, ModelAAGun model, MuzzleMeasurementCache.Results results)
     {
         ModelAAGun.BarrelOriginData data = model.getModelBarrelOriginData(type);
         if (data == null)
-            return false;
+            return;
         type.setMeasuredBarrels(data.pivots(), data.muzzles());
         if (!type.hasMeasuredBarrels())
-            return false;
+            return;
         MuzzleMeasurementCache.recordBarrels(results, type, data.pivots(), data.muzzles());
-        return true;
     }
 
-    private static boolean measureDeployedGun(GunType type, ModelMG model, MuzzleMeasurementCache.Results results)
+    private static void measureDeployedGun(GunType type, ModelMG model, MuzzleMeasurementCache.Results results)
     {
         ModelMG.MuzzleOriginData data = model.getModelMuzzleOriginData();
         if (data == null)
-            return false;
+            return;
         type.setMeasuredDeployableMuzzle(data.pivot(), data.muzzle());
         if (!type.hasMeasuredDeployableMuzzle())
-            return false;
+            return;
         MuzzleMeasurementCache.recordDeployedGunMuzzle(results, type, data.pivot(), data.muzzle());
-        return true;
     }
 
     /** Moves a shoot point and records the move, so a later run on the same content can replay it. */
@@ -266,8 +287,8 @@ public final class ModelMuzzleMeasurement
         return new MuzzleMeasurements.DriveableInputs(type instanceof PlaneType, type.getModelScale(), type.getVehicleGunModelScale(), seatGuns);
     }
 
-    /** @return how many muzzles were moved */
-    private static int correctDriveable(DriveableType type, ModelDriveable model, MuzzleMeasurementCache.Results results)
+    /** Corrects authored muzzles and records their new positions. */
+    private static void correctDriveable(DriveableType type, ModelDriveable model, MuzzleMeasurementCache.Results results)
     {
         MuzzleMeasurements.DriveableInputs inputs = inputs(type);
         List<String> moves = new ArrayList<>();
@@ -302,7 +323,6 @@ public final class ModelMuzzleMeasurement
 
         if (!moves.isEmpty() && FlansLog.log.isDebugEnabled())
             FlansLog.log.debug("Moved muzzles of {} onto its model: {}", type, String.join(", ", moves));
-        return moves.size();
     }
 
     /**
@@ -356,10 +376,8 @@ public final class ModelMuzzleMeasurement
      * Flakpanzer's, and each seat gun with several barrels, as a bomber turret's.
      * The rate of fire is left alone; each shot just leaves from the next barrel.
      * A bank whose points stand apart was placed by its author and is left alone.
-     *
-     * @return how many mounts were given barrels
      */
-    private static int spreadBarrels(DriveableType type, ModelDriveable model, MuzzleMeasurementCache.Results results)
+    private static void spreadBarrels(DriveableType type, ModelDriveable model, MuzzleMeasurementCache.Results results)
     {
         MuzzleMeasurements.DriveableInputs inputs = inputs(type);
         List<String> spreads = new ArrayList<>();
@@ -395,7 +413,6 @@ public final class ModelMuzzleMeasurement
 
         if (!spreads.isEmpty() && FlansLog.log.isDebugEnabled())
             FlansLog.log.debug("Spread the shots of {} over its model's barrels: {}", type, String.join(", ", spreads));
-        return spreads.size();
     }
 
     /**

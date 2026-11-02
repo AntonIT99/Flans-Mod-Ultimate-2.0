@@ -23,13 +23,12 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -88,7 +87,7 @@ public final class DetachedPieces
     {
         private final Capture capture = new Capture();
         private DriveableVisual visual;
-        /** The corners of the geometry the piece draws, relative to its pivot, in world axes at the moment it left. */
+        /** Part-box corners and face centres, relative to the pivot, in world axes at the moment it left. */
         private Vector3f[] corners = new Vector3f[0];
         /** The point the piece spins around, relative to the capture's origin. */
         private Vector3f pivot;
@@ -178,8 +177,22 @@ public final class DetachedPieces
         piece.spin = spin;
         piece.lifetime = MIN_LIFETIME + random.nextInt(LIFETIME_SPREAD);
         piece.burning = burning;
+        if (entity.level() instanceof ClientLevel level)
+            liftFromGround(level, piece);
         PIECES.add(piece);
         return true;
+    }
+
+    /** Recover a part box that already intersected the floor while it was attached to the vehicle. */
+    private static void liftFromGround(ClientLevel level, Piece piece)
+    {
+        Vec3 pivot = worldPivot(piece, piece.offset);
+        double support = PieceGrounding.supportHeight(piece.corners, piece.rotation, pivot, piece.rotation, pivot, (point, ceiling) -> groundBelow(level, point));
+        if (Double.isFinite(support) && pivot.y < support)
+        {
+            piece.offset = piece.offset.add(0D, support - pivot.y, 0D);
+            piece.prevOffset = piece.offset;
+        }
     }
 
     private static void copy(Capture from, Capture to)
@@ -237,8 +250,10 @@ public final class DetachedPieces
         }
         if (piece.burning && piece.age < BURN_TICKS)
             smoke(level, piece, centre);
-        if (piece.resting)
+        PieceGrounding.Surface surface = (point, ceiling) -> groundBelow(level, point, ceiling);
+        if (piece.resting && isSupported(piece, centre, surface))
             return;
+        piece.resting = false;
         boolean water = level.getFluidState(BlockPos.containing(centre)).is(FluidTags.WATER);
         Vec3 velocity = piece.velocity.add(0D, water ? -GRAVITY * 0.2D : -GRAVITY, 0D).scale(water ? 0.8D : AIR_DRAG);
         Vec3 next = piece.offset.add(velocity);
@@ -249,24 +264,41 @@ public final class DetachedPieces
             velocity = new Vec3(-velocity.x * BOUNCE, velocity.y, -velocity.z * BOUNCE);
             piece.spin *= 0.7F;
         }
-        double underside = worldPivot(piece, next).y - drop(piece);
-        double ground = groundBelow(level, new Vec3(worldPivot(piece, next).x, underside, worldPivot(piece, next).z));
-        if (Double.isFinite(ground) && underside <= ground)
+        // Resolve ground contact after rotating: spinning must not move a corner through the floor.
+        piece.rotation.premul(new Quaternionf().rotateAxis(piece.spin, piece.spinAxis)).normalize();
+        Vec3 nextPivot = worldPivot(piece, next);
+        double support = PieceGrounding.supportHeight(piece.corners, piece.rotation, nextPivot, piece.prevRotation, centre, surface);
+        if (Double.isFinite(support) && nextPivot.y <= support + 0.001D)
         {
-            next = new Vec3(next.x, next.y + ground - underside, next.z);
-            velocity = new Vec3(velocity.x * GROUND_FRICTION, -velocity.y * BOUNCE, velocity.z * GROUND_FRICTION);
+            next = next.add(0D, support - nextPivot.y, 0D);
+            velocity = new Vec3(velocity.x * GROUND_FRICTION, Math.max(0D, -velocity.y) * BOUNCE, velocity.z * GROUND_FRICTION);
             piece.spin *= 0.55F;
-            if (Math.abs(velocity.y) < 0.06D && velocity.horizontalDistanceSqr() < 0.004D)
+            if (velocity.y < 0.06D && velocity.horizontalDistanceSqr() < 0.004D && Math.abs(piece.spin) < 0.035F)
             {
-                piece.resting = true;
                 velocity = Vec3.ZERO;
-                DamageParticles.puff(DamageParticles.DUST, worldPivot(piece, next), 0D, 0.01D, 0D, 0.8F, 30, false);
+                next = settle(piece, next, support, surface);
             }
         }
         piece.offset = next;
         piece.velocity = velocity;
-        if (piece.spin != 0F)
-            piece.rotation.premul(new Quaternionf().rotateAxis(piece.spin, piece.spinAxis));
+    }
+
+    private static boolean isSupported(Piece piece, Vec3 pivot, PieceGrounding.Surface surface)
+    {
+        double support = PieceGrounding.supportHeight(piece.corners, piece.rotation, pivot, piece.rotation, pivot, surface);
+        return Double.isFinite(support) && Math.abs(pivot.y - support) < 0.01D;
+    }
+
+    private static Vec3 settle(Piece piece, Vec3 next, double support, PieceGrounding.Surface surface)
+    {
+        piece.spin = 0F;
+        PieceGrounding.Settlement settled = PieceGrounding.settle(piece.corners, piece.rotation, worldPivot(piece, next), surface);
+        piece.rotation.set(settled.rotation());
+        Vec3 offset = next.add(0D, settled.height() - support, 0D);
+        piece.resting = !settled.moved();
+        if (piece.resting)
+            DamageParticles.puff(DamageParticles.DUST, worldPivot(piece, offset), 0D, 0.01D, 0D, 0.8F, 30, false);
+        return offset;
     }
 
     private static void smoke(ClientLevel level, Piece piece, Vec3 centre)
@@ -279,19 +311,6 @@ public final class DetachedPieces
             DamageParticles.puff(DamageParticles.FIRE, centre, 0D, 0.04D, 0D, 0.35F + 0.3F * fade, 12, false);
     }
 
-    /**
-     * @return how far the piece's lowest drawn corner hangs below its pivot as it is turned now,
-     *         so a wing settles on the ground instead of around the point it spins about
-     */
-    private static double drop(Piece piece)
-    {
-        double lowest = 0D;
-        Vector3f corner = new Vector3f();
-        for (Vector3f point : piece.corners)
-            lowest = Math.min(lowest, piece.rotation.transform(corner.set(point)).y);
-        return -lowest;
-    }
-
     private static Vec3 worldPivot(Piece piece, Vec3 offset)
     {
         return piece.capture.origin.add(offset).add(piece.pivot.x, piece.pivot.y, piece.pivot.z);
@@ -302,22 +321,50 @@ public final class DetachedPieces
     {
         BlockPos pos = BlockPos.containing(point);
         VoxelShape shape = level.getBlockState(pos).getCollisionShape(level, pos);
-        return !shape.isEmpty() && shape.bounds().move(pos).contains(point);
+        for (AABB box : shape.toAabbs())
+        {
+            if (box.move(pos).contains(point))
+                return true;
+        }
+        return false;
     }
 
     /** @return the top of the blocks under the point, within two blocks, or NaN when it is falling clear */
     static double groundBelow(ClientLevel level, Vec3 point)
     {
-        BlockPos.MutableBlockPos cursor = BlockPos.containing(point).mutable();
-        for (int i = 0; i < 3; i++)
+        return groundBelow(level, point, Math.floor(point.y) + 1D);
+    }
+
+    private static double groundBelow(ClientLevel level, Vec3 point, double ceiling)
+    {
+        BlockPos.MutableBlockPos cursor = BlockPos.containing(point.x, ceiling, point.z).mutable();
+        int bottom = Math.max(level.getMinBuildHeight(), (int) Math.floor(point.y) - 2);
+        double highest = Double.NaN;
+        for (; cursor.getY() >= bottom; cursor.move(0, -1, 0))
         {
             BlockState state = level.getBlockState(cursor);
             VoxelShape shape = state.getCollisionShape(level, cursor);
-            if (!shape.isEmpty())
-                return cursor.getY() + shape.max(Direction.Axis.Y);
-            cursor.move(0, -1, 0);
+            double height = surfaceHeight(shape, point.x - cursor.getX(), point.z - cursor.getZ(), ceiling - cursor.getY());
+            if (Double.isFinite(height))
+            {
+                highest = Double.isFinite(highest) ? Math.max(highest, cursor.getY() + height) : cursor.getY() + height;
+                if (highest >= cursor.getY())
+                    break;
+            }
         }
-        return Double.NaN;
+        return highest;
+    }
+
+    /** Uses the actual column through a stair, slab or other shape, rather than the shape's overall height. */
+    static double surfaceHeight(VoxelShape shape, double x, double z, double ceiling)
+    {
+        double highest = Double.NaN;
+        for (AABB box : shape.toAabbs())
+        {
+            if (x >= box.minX && x <= box.maxX && z >= box.minZ && z <= box.maxZ && box.maxY <= ceiling)
+                highest = Double.isFinite(highest) ? Math.max(highest, box.maxY) : box.maxY;
+        }
+        return highest;
     }
 
     /** Draws every piece. Render thread, after the entities. */
@@ -393,11 +440,5 @@ public final class DetachedPieces
     {
         double ground = groundBelow(level, point);
         return Double.isFinite(ground) && point.y < ground + 0.1D ? new Vec3(point.x, ground + 0.1D, point.z) : point;
-    }
-
-    /** @return the tilt the wreck of a mecha is drawn falling over with, in degrees */
-    public static float mechaCollapseDegrees(float progress)
-    {
-        return 78F * Mth.clamp(progress, 0F, 1.05F);
     }
 }

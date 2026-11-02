@@ -21,9 +21,10 @@ final class BotsPage extends BattlePage
     /** The command centre's rotation page, where rounds are added. */
     private static final String ROTATION = "flansmodultimate:rotation";
     private static final String MARKER = "teams ai marker";
+    private static final String ROUND = "teams ai round";
+    private static final String VEHICLE_RESPAWN = "bots.vehicle_respawn";
 
     private int selected = -1;
-    private String preset = "";
     private String markerType = "";
     private int listWidth;
 
@@ -73,18 +74,21 @@ final class BotsPage extends BattlePage
         int half = (width - GAP) / 2;
         int y = view.getTop() + 18;
         button(view, tr("bots.editor"), x, y, half, tr("bots.editor.tip"), () -> run(view, "teams ai editor", index));
-        toggle(view, tr("bots.enabled"), round.enabled(), x + half + GAP, y, half, enabled -> run(view, "teams ai round", index, Boolean.TRUE.equals(enabled) ? "enable" : "disable"));
+        toggle(view, tr("bots.enabled"), round.enabled(), x + half + GAP, y, half, enabled -> run(view, ROUND, index, Boolean.TRUE.equals(enabled) ? "enable" : "disable"));
         y += ROW;
-        if (!data.botPresets().isEmpty())
-        {
-            preset = keep(data.botPresets(), preset, "");
-            int buttonWidth = 50;
-            int choiceWidth = width - 2 * buttonWidth - 2 * GAP;
-            choice(view, tr("bots.preset"), data.botPresets(), preset, Component::literal, x, y, choiceWidth, chosen -> preset = chosen);
-            button(view, tr("bots.apply"), x + choiceWidth + GAP, y, buttonWidth, tr("bots.apply.tip"), () -> run(view, "teams ai preset apply", preset, index));
-            button(view, tr("bots.apply_all"), x + width - buttonWidth, y, buttonWidth, tr("bots.apply_all.tip"),
-                () -> view.confirm(tr("bots.apply_all.confirm", preset), () -> run(view, "teams ai preset apply", preset, "all")));
-        }
+        toggle(view, tr("bots.vehicles"), round.vehiclesEnabled(), x, y, width, enabled -> run(view, ROUND, index, "vehicles", Boolean.TRUE.equals(enabled) ? "on" : "off"))
+            .setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("bots.vehicles.tip")));
+        y += ROW;
+        String respawnKey = "vehicle_respawn@" + index;
+        int applyWidth = 50;
+        int fieldWidth = 44;
+        view.addField(respawnKey, x + width - applyWidth - GAP - fieldWidth, y, fieldWidth, Integer.toString(round.vehicleRespawn()), tr(VEHICLE_RESPAWN))
+            .setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("bots.vehicle_respawn.tip")));
+        button(view, tr("bots.apply"), x + width - applyWidth, y, applyWidth,
+            () -> number(view, respawnKey, 0, Integer.MAX_VALUE, tr(VEHICLE_RESPAWN)).ifPresent(seconds -> run(view, ROUND, index, "vehiclerespawn", seconds)));
+        y += ROW;
+        button(view, Component.translatable("gui.flansmodultimate.presets.manage"), x, y, width,
+            () -> com.flansmodultimate.api.client.commandcentre.FlansCommandCentreClient.openPresets(com.wolffsmod.npcs.teams.BotSettingsPresets.KEY, Integer.toString(index)));
         int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT;
         String map = round.map();
         List<String> types = data.choices().markerTypes();
@@ -120,7 +124,8 @@ final class BotsPage extends BattlePage
         }
         BattlesData.RoundInfo round = shown.get();
         view.drawPanel(graphics, panelLeft, view.getTop(), panelWidth, view.getHeight(), tr("bots.round", round.index(), round.gameType(), round.map()));
-        int y = view.getTop() + 18 + 2 * ROW + 2;
+        label(view, graphics, tr(VEHICLE_RESPAWN), x, view.getTop() + 18 + 2 * ROW + 5, width - 102, DIM);
+        int y = view.getTop() + 18 + 4 * ROW + 2;
         if (!round.configured())
             y += paragraph(view, graphics, tr("bots.not_configured"), x, y, width, MUTED) + 3;
         else if (round.enabled() && round.total() == 0)

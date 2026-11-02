@@ -36,6 +36,27 @@ class NpcPresentationTest
     }
 
     @Test
+    void bloodOptInSurvivesTransportButSelectingAnotherModelDisablesIt()
+    {
+        NpcPresentation settings = new NpcPresentation();
+        settings.load(new CompoundTag());
+        assertFalse(settings.isBloodEffects());
+        settings.selectModel("", false);
+        settings.setBloodEffects(true);
+        CompoundTag saved = new CompoundTag();
+        settings.save(saved);
+        NpcPresentation restored = new NpcPresentation();
+        restored.load(saved);
+        assertFalse(restored.selectModel("", false));
+        assertTrue(restored.isBloodEffects());
+        restored.selectModel("wolffsmodnpcs:vehicle_tank", true);
+        assertFalse(restored.isBloodEffects());
+        restored.setBloodEffects(true);
+        assertFalse(restored.selectModel("wolffsmodnpcs:vehicle_tank", true));
+        assertTrue(restored.isBloodEffects());
+    }
+
+    @Test
     void flanSelectionResetsVisualsButExplicitChoicesSurviveTicksAndReloads()
     {
         NpcPresentation settings = new NpcPresentation();

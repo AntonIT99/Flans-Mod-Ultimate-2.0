@@ -6,6 +6,7 @@ import com.flansmodultimate.api.teams.ITeamsLiveRound;
 import com.flansmodultimate.api.teams.ITeamsRound;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -17,6 +18,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -55,6 +57,15 @@ public final class BotCommands
     private static final String REMOVE = "remove";
     private static final String PREFIX = "wolffsmodnpcs.command.";
     private static final String SET = "set";
+    // The values of the custom difficulty.
+    private static final String ACCURACY = "accuracy";
+    private static final String AGGRO = "aggro";
+    private static final String REACTION = "reaction";
+    private static final String SETTLE = "settle";
+    private static final String ERROR = "error";
+    private static final String LEAD = "lead";
+    private static final String PLAYER_DAMAGE = "player_damage";
+    private static final String NON_LETHAL = "non_lethal";
     /** Blocks within which a marker is removed. */
     private static final double MARKER_REACH = 8D;
     private static final SimpleCommandExceptionType NO_ROUND = new SimpleCommandExceptionType(text("no_round"));
@@ -134,16 +145,26 @@ public final class BotCommands
         round.then(enumSetting("mode", BotSettings.Mode.class, BotSettings::setMode));
         round.then(enumSetting("nameplates", BotSettings.Nameplates.class, BotSettings::setNameplates));
         round.then(enumSetting("scoreboard", BotSettings.Scoreboard.class, BotSettings::setScoreboard));
-        round.then(enumSetting("difficulty", BotSettings.Difficulty.class, BotSettings::setDifficulty));
-        round.then(switchSetting("playertickets", BotSettings::setPlayerTickets));
+        round.then(difficulty((context, level, custom, shown) -> edit(context, settings ->
+        {
+            settings.setDifficulty(level);
+            if (custom != null)
+                settings.setCustomTraining(custom);
+        }, text(SET, "difficulty", shown))));
         round.then(switchSetting("radio", BotSettings::setRadio));
+        round.then(switchSetting("commanderbot", BotSettings::setCommanderBot));
+        round.then(intSetting("commanderdisruption", 0, BotSettings::setCommanderDisruptionSeconds));
         round.then(switchSetting("suppression", BotSettings::setSuppression));
         round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
+        round.then(switchSetting("vehicles", BotSettings::setVehiclesEnabled));
         round.then(switchSetting("vehiclecrews", BotSettings::setVehicleCrews));
+        round.then(switchSetting("emplacements", BotSettings::setEmplacements));
+        round.then(switchSetting("playerseatdeployment", BotSettings::setPlayerSeatDeployment));
         round.then(intSetting("retreat", 0, BotSettings::setRetreatHealth));
         round.then(Commands.literal("copyfrom").then(Commands.argument(SOURCE, StringArgumentType.word()).suggests(ROUNDS).executes(BotCommands::copyFrom)));
         round.then(intSetting("total", 0, BotSettings::setTotal));
         round.then(intSetting(RESPAWN, 0, BotSettings::setRespawnSeconds));
+        round.then(intSetting("vehiclerespawn", 0, BotSettings::setVehicleRespawnSeconds));
         round.then(intSetting("tickets", 0, BotSettings::setTickets));
         round.then(intSetting("squadsize", 1, BotSettings::setSquadSize));
         round.then(intSetting("abandon", 0, BotSettings::setAbandonChance));
@@ -307,12 +328,19 @@ public final class BotCommands
         BotSettings settings = BotSettings.load(round.getExtensionData(BotSettings.KEY));
         List<Component> lines = new ArrayList<>();
         Component tickets = settings.getTickets() == 0 ? text("show.unlimited") : Component.literal(Integer.toString(settings.getTickets()));
+        if (!BotRespawnBudget.available(round.getGameTypeId()))
+            tickets = text("show.match_tickets");
         lines.add(text(settings.isEnabled() ? "show.round_enabled" : "show.round_disabled", round.getGameTypeId(), round.getMapId(), lower(settings.getMode()), settings.getTotal(),
             settings.getRespawnSeconds(), tickets, settings.getSquadSize()));
         lines.add(text("show.look", lower(settings.getNameplates()), lower(settings.getScoreboard()), settings.getInfantryCaptureWeight(), settings.getVehicleCaptureWeight(),
-            lower(settings.getDifficulty()), onOff(settings.isPlayerTickets())));
+            lower(settings.getDifficulty())));
         lines.add(text("show.rules", onOff(settings.isRadio()), onOff(settings.isSuppression()), settings.getRetreatHealth(), onOff(settings.isRallyPoints())));
+        lines.add(text("show.vehicles", onOff(settings.isVehiclesEnabled())));
+        lines.add(text("show.vehicle_respawn", settings.getVehicleRespawnSeconds()));
         lines.add(text("show.crews", onOff(settings.isVehicleCrews())));
+        lines.add(text("show.emplacements", onOff(settings.isEmplacements())));
+        lines.add(text("show.player_seat_deployment", onOff(settings.isPlayerSeatDeployment())));
+        lines.add(text("show.commander", onOff(settings.isCommanderBot()), settings.getCommanderDisruptionSeconds()));
         for (ITeam team : round.getTeams())
             lines.addAll(describe(team, settings.team(team.getShortName())));
         BotEditor.problems(round, settings).forEach(problem -> lines.add(problem.copy().withStyle(ChatFormatting.YELLOW)));
@@ -332,6 +360,7 @@ public final class BotCommands
         if (!force.getClassRoles().isEmpty())
             lines.add(text("show.roles", BotSettingsText.formatRoles(force.getClassRoles())));
         lines.add(text("show.crew", BotSettingsText.formatCrew(force)));
+        lines.add(text("show.commander_class", force.getCommanderClass().isEmpty() ? NONE : force.getCommanderClass()));
         force.getSquads().forEach(entry -> lines.add(text("show.squad", entry.template(), entry.count(), budget(entry.budget()))));
         for (BotSettings.VehicleEntry entry : force.getVehicles())
         {
@@ -366,7 +395,7 @@ public final class BotCommands
             long alive = battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && slot.getEntity() != null && slot.getDiedAt() == 0).count();
             long slots = battle.getSlots().values().stream().filter(slot -> slot.getTeam().equals(team.getShortName()) && !slot.isRetired()).count();
             int side = battle.getGround().sideOf(team);
-            Component tickets = battle.getSettings().getTickets() > 0 ? text("status.tickets", BotPopulation.ticketsLeft(battle, side)) : Component.empty();
+            Component tickets = BotRespawnBudget.limit(battle) > 0 ? text("status.tickets", BotPopulation.ticketsLeft(battle, side)) : Component.empty();
             List<String> tasks = battle.getSquads().values().stream().filter(squad -> squad.getTeam().equals(team.getShortName()) && squad.getTask() != null)
                 .map(squad -> "#" + squad.getId() + " " + lower(squad.getRole()) + " " + lower(squad.getTask().kind())).toList();
             context.getSource().sendSuccess(() -> text("status.team", team.getShortName(), alive, slots, tickets, tasks.toString()), false);
@@ -564,5 +593,55 @@ public final class BotCommands
     static String lower(Enum<?> constant)
     {
         return constant.name().toLowerCase(Locale.ROOT);
+    }
+
+    // --- Difficulty, shared with skirmishes and wars ---
+
+    /** Sets the difficulty of a round, skirmish or war. */
+    @FunctionalInterface
+    interface DifficultyEdit
+    {
+        /**
+         * @param custom
+         *            the custom values given with {@code custom}, or null to keep those set
+         * @param shown
+         *            the difficulty as the message names it
+         */
+        int apply(CommandContext<CommandSourceStack> context, BotSettings.Difficulty level, @Nullable BotTraining custom, String shown) throws CommandSyntaxException;
+    }
+
+    /**
+     * {@code difficulty <level>}, and {@code difficulty custom}, which keeps the custom values set or takes new ones: accuracy
+     * and aggro range in percent, reaction and aim settle time in ticks, first-shot error in degrees, lead and damage to
+     * players in percent, and whether hits spare players.
+     */
+    static LiteralArgumentBuilder<CommandSourceStack> difficulty(DifficultyEdit edit)
+    {
+        LiteralArgumentBuilder<CommandSourceStack> node = Commands.literal("difficulty");
+        for (BotSettings.Difficulty level : BotSettings.Difficulty.values())
+        {
+            LiteralArgumentBuilder<CommandSourceStack> choice = Commands.literal(lower(level)).executes(context -> edit.apply(context, level, null, lower(level)));
+            if (level == BotSettings.Difficulty.CUSTOM)
+                choice.then(customTraining(edit));
+            node.then(choice);
+        }
+        return node;
+    }
+
+    private static RequiredArgumentBuilder<CommandSourceStack, Integer> customTraining(DifficultyEdit edit)
+    {
+        int percent = BotTraining.MOST_PERCENT;
+        return Commands.argument(ACCURACY, IntegerArgumentType.integer(BotTraining.LEAST_PERCENT, percent))
+            .then(Commands.argument(AGGRO, IntegerArgumentType.integer(BotTraining.LEAST_PERCENT, percent))
+                .then(Commands.argument(REACTION, IntegerArgumentType.integer(0, BotTraining.MOST_REACTION_TICKS))
+                    .then(Commands.argument(SETTLE, IntegerArgumentType.integer(0, BotTraining.MOST_SETTLE_TICKS))
+                        .then(Commands.argument(ERROR, FloatArgumentType.floatArg(0F, BotTraining.MOST_ERROR)).then(Commands.argument(LEAD, IntegerArgumentType.integer(0, percent))
+                            .then(Commands.argument(PLAYER_DAMAGE, IntegerArgumentType.integer(0, percent)).then(Commands.argument(NON_LETHAL, BoolArgumentType.bool()).executes(context ->
+                            {
+                                BotTraining training = BotTraining.of(IntegerArgumentType.getInteger(context, ACCURACY), IntegerArgumentType.getInteger(context, AGGRO),
+                                    IntegerArgumentType.getInteger(context, REACTION), IntegerArgumentType.getInteger(context, SETTLE), FloatArgumentType.getFloat(context, ERROR),
+                                    IntegerArgumentType.getInteger(context, LEAD), IntegerArgumentType.getInteger(context, PLAYER_DAMAGE), BoolArgumentType.getBool(context, NON_LETHAL));
+                                return edit.apply(context, BotSettings.Difficulty.CUSTOM, training, lower(BotSettings.Difficulty.CUSTOM) + " " + training.commandArguments());
+                            }))))))));
     }
 }

@@ -2,14 +2,17 @@ package com.wolffsmod.npcs.tactics;
 
 import com.flansmodultimate.api.entity.ISuppressionListener;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
+import com.wolffsmod.npcs.sim.NpcCombatants;
 import com.wolffsmod.npcs.sim.NpcSight;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
@@ -87,18 +90,23 @@ public final class NpcThreats implements ISuppressionListener
     private static void remember(EntityNPCInterface npc, LivingEntity enemy, long now)
     {
         NpcTacticState.of(npc).threat(enemy, npc.getTarget(), now, now + (long) NpcTuning.of(npc).get(Value.THREAT_MEMORY) * TICKS_PER_SECOND);
+        TeamsBots.reportContact(npc, enemy);
     }
 
     /** Tells the allies of the NPC, its own faction within its alert radius, who is shooting at it. */
     private static void alert(EntityNPCInterface npc, LivingEntity enemy, long now)
     {
         int radius = NpcTuning.of(npc).get(Value.ALERT_RADIUS);
-        if (radius <= 0 || !NpcTacticState.of(npc).alert(now, ALERT_INTERVAL))
+        if (radius <= 0 || !NpcTacticState.of(npc).alert(now, ALERT_INTERVAL) || !(npc.level() instanceof ServerLevel level))
             return;
         double reach = (double) radius * radius;
-        for (EntityNPCInterface ally : npc.level().getEntitiesOfClass(EntityNPCInterface.class, npc.getBoundingBox().inflate(radius),
-            other -> other != npc && !other.isKilled() && other.faction.id == npc.faction.id && other.distanceToSqr(npc) <= reach))
-            answer(ally, enemy, now);
+        NpcCombatants combatants = NpcCombatants.of(level);
+        for (int index = 0; index < combatants.npcSize(); index++)
+        {
+            EntityNPCInterface ally = combatants.npc(index).npc();
+            if (ally != null && ally != npc && !ally.isKilled() && NpcDrivers.ally(npc, ally) && ally.distanceToSqr(npc) <= reach)
+                answer(ally, enemy, now);
+        }
     }
 
     /**

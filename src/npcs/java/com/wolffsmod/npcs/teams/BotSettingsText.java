@@ -78,7 +78,7 @@ public final class BotSettingsText
     }
 
     /**
-     * {@code type:count[:budget[:respawn[:ticket cost[:carried template]]]]}, a count left out being 1 and a ticket cost 1.
+     * {@code type:count[:budget[:respawn[:ticket cost[:carried template[:paintjobs]]]]]}, a count left out being 1 and a ticket cost 1. Paintjobs are IDs separated by pipes, or * for all.
      *
      * @param previous
      *            the entries before the edit, whose vehicle spawners the entries of the same type keep
@@ -90,9 +90,17 @@ public final class BotSettingsText
         {
             UUID spawner = previous.stream().filter(entry -> entry.type().equals(values[0])).map(BotSettings.VehicleEntry::spawner).filter(Objects::nonNull).findFirst().orElse(null);
             String carry = values.length > 5 ? values[5].toLowerCase(Locale.ROOT) : "";
-            vehicles.add(new BotSettings.VehicleEntry(values[0], number(values, 1, 1), number(values, 2, 0), number(values, 3, 0), number(values, 4, 1), spawner, carry));
+            List<Integer> paintjobs = values.length > 6
+                ? parsePaintjobs(values[6])
+                : previous.stream().filter(entry -> entry.type().equals(values[0])).map(BotSettings.VehicleEntry::paintjobs).findFirst().orElse(List.of());
+            vehicles.add(new BotSettings.VehicleEntry(values[0], number(values, 1, 1), number(values, 2, 0), number(values, 3, 0), number(values, 4, 1), spawner, carry, paintjobs));
         }
         return vehicles;
+    }
+
+    private static List<Integer> parsePaintjobs(String text)
+    {
+        return text.equals("*") ? List.of() : Arrays.stream(text.split("\\|")).map(value -> parseNumber(value, 0)).toList();
     }
 
     public static String formatVehicles(List<BotSettings.VehicleEntry> vehicles)
@@ -102,7 +110,8 @@ public final class BotSettingsText
         {
             String entry = String.join(VALUE_SEPARATOR, vehicle.type(), Integer.toString(vehicle.count()), Integer.toString(vehicle.budget()), Integer.toString(vehicle.respawnSeconds()),
                 Integer.toString(vehicle.ticketCost()));
-            joiner.add(vehicle.carry().isEmpty() ? entry : entry + VALUE_SEPARATOR + vehicle.carry());
+            joiner.add(
+                entry + VALUE_SEPARATOR + vehicle.carry() + VALUE_SEPARATOR + (vehicle.paintjobs().isEmpty() ? "*" : String.join("|", vehicle.paintjobs().stream().map(String::valueOf).toList())));
         }
         return joiner.toString();
     }

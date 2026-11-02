@@ -2,6 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.IEmplacement;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.collision.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
@@ -45,10 +47,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 
 import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity, AAGunVisual
+public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity, AAGunVisual, IEmplacement
 {
+    private final EmplacementControl automation = new EmplacementControl();
     private boolean suppressRemovalDrops;
     @Nullable
     private AAGunCollisionHelper collisionHelper;
@@ -571,7 +576,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         ListTag ammoList = new ListTag();
         for (int i = 0; i < ammo.length; i++)
         {
-            if (ammo[i].isEmpty())
+            if (ammo[i].isEmpty() || automation.isVirtual(ammo[i]))
                 continue;
 
             CompoundTag ammoTag = new CompoundTag();
@@ -600,7 +605,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
                     spawnAtLocation(ModUtils.getItemStack(type).orElse(ItemStack.EMPTY), 0F);
                 for (ItemStack stack : ammo)
                 {
-                    if (!stack.isEmpty())
+                    if (!stack.isEmpty() && !automation.isVirtual(stack))
                         spawnAtLocation(stack.copy(), 0.5F);
                 }
             }
@@ -658,7 +663,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         Level level = level();
         Entity gunner = getFirstPassenger();
 
-        if (player != gunner && gunner != null)
+        if (!SeatOccupants.canEnter(this, player, false))
             return InteractionResult.sidedSuccess(level.isClientSide);
         if (level.isClientSide)
             return InteractionResult.SUCCESS;
@@ -674,6 +679,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         if (!type.isSentry())
         {
+            if (!SeatOccupants.makeRoom(this, player, false))
+                return InteractionResult.CONSUME;
             if (player.getVehicle() != null)
                 player.stopRiding();
             player.startRiding(this, true);
@@ -690,10 +697,25 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     }
 
     @Override
+    protected void removePassenger(@NotNull Entity passenger)
+    {
+        super.removePassenger(passenger);
+        shootKeyPressed = false;
+        prevShootKeyPressed = false;
+        if (!level().isClientSide)
+        {
+            automation.firing(level().getGameTime(), null, false);
+            for (int slot = 0; slot < ammo.length; slot++)
+                ammo[slot] = automation.retain(ammo[slot], null);
+            updateAmmoMask();
+        }
+    }
+
+    @Override
     protected void positionRider(@NotNull Entity passenger, @NotNull MoveFunction move)
     {
         AAGunType type = getConfigType();
-        if (!(passenger instanceof Player player) || type == null)
+        if (!(passenger instanceof LivingEntity player) || type == null)
             return;
 
         Vec3 riderPosition = getGunnerRiderPosition();
@@ -774,6 +796,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     private void serverTick(Level level)
     {
+        for (int slot = 0; slot < ammo.length; slot++)
+            ammo[slot] = automation.retain(ammo[slot], getFirstPassenger());
         AAGunType type = getConfigType();
         if (type == null)
         {
@@ -805,10 +829,11 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         else
             target = null;
 
-        if (getFirstPassenger() instanceof Player player)
+        if (getFirstPassenger() instanceof LivingEntity living)
         {
-            reloadGun(level, player);
-            fireGun(level, player, true);
+            if (living instanceof Player player)
+                reloadGun(level, player);
+            fireGun(level, living, true);
         }
         else if (target != null)
         {
@@ -928,7 +953,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         AAGunType type = getConfigType();
         if (type == null || !ShotCooldown.isReady(shootDelay) || getReloadTimer() > 0)
             return;
-        if (requireInput && !shootKeyPressed)
+        if (requireInput && !(attacker instanceof Player ? shootKeyPressed : automation.firing(level.getGameTime(), attacker)))
             return;
         if (!requireInput && target == null)
             return;
@@ -994,6 +1019,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         barrelRecoil[barrel] = type.getRecoil() * bulletType.getRecoilMultiplier();
         shotsFired++;
+        ExternalProjectileSupport.firingEffects(this, null, barrelOrigin, shootingDir, 1F, true);
 
         if (soundTimer <= 0 && StringUtils.isNotBlank(type.getShootSound()))
         {
@@ -1029,6 +1055,15 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     private void reloadGun(Level level, Player player)
     {
+        reloadGun(level, () ->
+        {
+            int slot = findAmmo(player);
+            return slot < 0 ? ItemStack.EMPTY : takeAmmoStack(player, slot);
+        }, player, false);
+    }
+
+    private void reloadGun(Level level, Supplier<ItemStack> ammunition, LivingEntity operator, boolean virtual)
+    {
         AAGunType type = getConfigType();
         if (level.isClientSide || type == null || getReloadTimer() > 0 || !isFullySpent())
             return;
@@ -1036,26 +1071,17 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         boolean loadedAny = false;
         float reloadFactor = 1F;
         int perItem = 1;
-        for (int i = 0; i < ammo.length; i++)
+        for (int i : IntStream.range(0, ammo.length).filter(slot -> ammo[slot].isEmpty()).toArray())
         {
-            if (!ammo[i].isEmpty())
-                continue;
-
-            int slot = findAmmo(player);
-            if (slot < 0)
+            ItemStack loaded = ammunition.get();
+            if (!type.isAmmo(loaded) || !ShootableItem.hasRoundsLeft(loaded))
                 break;
-
-            ItemStack loaded = takeAmmoStack(player, slot);
-            if (!loaded.isEmpty())
-            {
-                ammo[i] = loaded;
-                loadedAny = true;
-                // A slower round to load holds up the whole reload, so the
-                // heaviest factor among what went in wins.
-                perItem = Math.max(perItem, ShootableItem.getMaxRounds(loaded));
-                if (loaded.getItem() instanceof ShootableItem shootableItem)
-                    reloadFactor = Math.max(reloadFactor, shootableItem.getConfigType().getReloadTimeMultiplier());
-            }
+            ammo[i] = automation.supplied(loaded, operator, virtual);
+            loadedAny = true;
+            // A slower round to load holds up the whole reload, so the heaviest factor among what went in wins.
+            perItem = Math.max(perItem, ShootableItem.getMaxRounds(loaded));
+            if (loaded.getItem() instanceof ShootableItem shootableItem)
+                reloadFactor = Math.max(reloadFactor, shootableItem.getConfigType().getReloadTimeMultiplier());
         }
 
         if (loadedAny)
@@ -1090,6 +1116,72 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
                 return false;
         }
         return true;
+    }
+
+    @Override
+    public Optional<IContentType> getEmplacementType()
+    {
+        return Optional.ofNullable(getConfigType());
+    }
+
+    @Override
+    public boolean hasEmplacementAmmunition()
+    {
+        return level().isClientSide ? getMagazineLeft() > 0 : !isFullySpent();
+    }
+
+    @Override
+    public Vec3 getEmplacementOrigin()
+    {
+        return getBarrelOrigin(getCurrentBarrelIndex(), false);
+    }
+
+    @Override
+    public Vec3 getEmplacementDirection()
+    {
+        return getShootingDirection();
+    }
+
+    @Override
+    public Optional<Vec3> getEmplacementOperatorPosition(LivingEntity operator)
+    {
+        return getConfigType() == null || configType.isSentry() ? Optional.empty() : Optional.of(getGunnerRiderPosition());
+    }
+
+    @Override
+    public boolean canEmplacementAimAt(Vec3 point)
+    {
+        float pitch = ModUtils.getPitchFromDirection(point.subtract(getEmplacementOrigin()));
+        return getConfigType() != null && Math.abs(pitch - clampPitch(pitch)) < 0.01F;
+    }
+
+    @Override
+    public void aimEmplacement(LivingEntity operator, Vec3 point)
+    {
+        if (level().isClientSide || getFirstPassenger() != operator)
+            return;
+        Vec3 direction = point.subtract(getEmplacementOrigin());
+        operator.setYRot(ModUtils.getYawFromDirection(direction));
+        operator.setXRot(ModUtils.getPitchFromDirection(direction));
+    }
+
+    @Override
+    public void setEmplacementFiring(boolean firing)
+    {
+        if (!level().isClientSide)
+            automation.firing(level().getGameTime(), getFirstPassenger(), firing);
+    }
+
+    @Override
+    public void reloadEmplacement(LivingEntity operator, Supplier<ItemStack> ammunition, boolean virtual)
+    {
+        if (level().isClientSide || getFirstPassenger() != operator || !operator.isAlive())
+            return;
+        if (!virtual)
+            for (int slot = 0; slot < ammo.length; slot++)
+                ammo[slot] = automation.finite(ammo[slot]);
+        clearSpentAmmo();
+        reloadGun(level(), ammunition, operator, virtual);
     }
 
     private int findAmmo(Player player)

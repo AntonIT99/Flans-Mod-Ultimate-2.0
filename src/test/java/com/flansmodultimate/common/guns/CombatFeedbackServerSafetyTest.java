@@ -21,6 +21,7 @@ class CombatFeedbackServerSafetyTest
                 if (name.startsWith("net.minecraft.client.") || name.startsWith("com.mojang.blaze3d."))
                     throw new ClassNotFoundException("Client classes are unavailable on a dedicated server: " + name);
                 if (name.startsWith("com.flansmodultimate.network.client.effects.PacketCombatFeedback") || name.startsWith("com.flansmodultimate.network.client.effects.PacketBulletFlyby")
+                    || name.startsWith("com.flansmodultimate.network.client.effects.PacketLockMarker") || name.startsWith("com.flansmodultimate.network.client.effects.PacketWeaponShotEffects")
                     || name.startsWith("com.flansmodultimate.network.client.gun.PacketGunSecondaryModeClient") || name.startsWith("com.flansmodultimate.network.server.gun.PacketGunSecondaryMode")
                     || name.startsWith("com.flansmodultimate.common.guns.GunHandlingTiming") || name.startsWith("com.flansmodultimate.hooks.")
                     || name.startsWith("com.flansmodultimate.common.guns.NearMiss"))
@@ -41,7 +42,8 @@ class CombatFeedbackServerSafetyTest
         {
             assertDoesNotThrow(() -> Class.forName("com.flansmodultimate.common.guns.NearMissHandler", true, loader));
             for (String type : new String[]{"network.client.effects.PacketCombatFeedback", "network.client.effects.PacketBulletFlyby", "hooks.server.ClientRenderHooksNoop",
-                "hooks.server.ClientGunHooksNoop", "network.client.gun.PacketGunSecondaryModeClient", "network.server.gun.PacketGunSecondaryMode"})
+                "hooks.server.ClientGunHooksNoop", "network.client.gun.PacketGunSecondaryModeClient", "network.server.gun.PacketGunSecondaryMode", "network.client.effects.PacketLockMarker",
+                "network.client.effects.PacketWeaponShotEffects"})
                 assertDoesNotThrow(() -> Class.forName("com.flansmodultimate." + type, true, loader).getDeclaredConstructor().newInstance());
         }
     }

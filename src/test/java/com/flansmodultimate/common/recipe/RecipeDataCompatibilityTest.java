@@ -112,6 +112,12 @@ class RecipeDataCompatibilityTest
         Files.writeString(modern, "{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"id\":\"flansmod:example\",\"count\":16}}");
         assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
         Files.writeString(modern, "{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"id\":\"flansmod:example\"}}");
+        assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
+        Path legacyUnlock = Files.createDirectories(dataRoot.resolve("advancements/recipes")).resolve("example_shapeless.json");
+        Path modernUnlock = Files.createDirectories(dataRoot.resolve("advancement/recipes")).resolve("example_shapeless.json");
+        Files.writeString(legacyUnlock, "{}");
+        assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
+        Files.writeString(modernUnlock, "{}");
         assertFalse(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
         Files.delete(legacy);
         assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));

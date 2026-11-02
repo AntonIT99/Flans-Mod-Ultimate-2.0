@@ -101,6 +101,10 @@ public final class ModClientConfig
     public final int driveableImpostorResolution;
     public final int driveableImpostorYawAngles;
     public final int driveableImpostorCacheEntries;
+    public final double minimumArmorPartPixelSize;
+    public final boolean enableArmorLod;
+    public final double maximumArmorLodPartPixelSize;
+    public final double armorLodDetailMultiplier;
     public final double particleDistanceScale;
     public final double fullParticleDensityShare;
     public final double distantParticleDensity;
@@ -235,6 +239,10 @@ public final class ModClientConfig
     private static final IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
     private static final IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
     private static final Supplier<Integer> DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
+    private static final DoubleValue MINIMUM_ARMOR_PART_PIXEL_SIZE;
+    public static final BooleanValue ENABLE_ARMOR_LOD;
+    private static final DoubleValue MAXIMUM_ARMOR_LOD_PART_PIXEL_SIZE;
+    public static final DoubleValue ARMOR_LOD_DETAIL_MULTIPLIER;
     private static final Supplier<Double> PARTICLE_DISTANCE_SCALE;
     private static final Supplier<Double> FULL_PARTICLE_DENSITY_SHARE;
     private static final Supplier<Double> DISTANT_PARTICLE_DENSITY;
@@ -486,6 +494,18 @@ public final class ModClientConfig
             "Base number of horizontal views per driveable impostor, scaled by the square of driveableImpostorQualityMultiplier up to 64. Nine vertical views cover -90 to +90 degrees automatically. Views are captured on demand.")
             .defineInRange("driveableImpostorYawAngles", 8, 4, 64);
         DRIVEABLE_IMPOSTOR_CACHE_ENTRIES = builder.comment("Maximum generated model / paintjob impostor atlases retained in memory.").defineInRange("driveableImpostorCacheEntries", 32, 1, 128);
+        MINIMUM_ARMOR_PART_PIXEL_SIZE = builder.comment(
+            "Skip individual parts of a Flan armour model whose projected bounding diameter is smaller than this many physical screen pixels. Set to 0 to disable. Only affects armour worn in the world, never a menu preview; magnification raises every part's projected size, so a scope restores full detail.")
+            .defineInRange("minimumArmorPartPixelSize", 0.5D, 0D, 16D);
+        ENABLE_ARMOR_LOD = builder.comment(
+            "Enable automatic level of detail for world-rendered Flan armour. Uniforms of distant soldiers use stronger part culling, which is what a battle of hundreds of them costs most frame time on. The complete model is always kept near the camera and under magnification; no armour piece is ever left off entirely.")
+            .define("enableArmorLod", true);
+        MAXIMUM_ARMOR_LOD_PART_PIXEL_SIZE = builder
+            .comment("Far-distance projected part diameter for armour LOD, before armorLodDetailMultiplier. Must exceed minimumArmorPartPixelSize to have an effect.")
+            .defineInRange("maximumArmorLodPartPixelSize", 1.5D, 0D, 32D);
+        ARMOR_LOD_DETAIL_MULTIPLIER = builder.comment(
+            "Multiply the far-distance part-culling threshold for Flan armour. Ramps smoothly from 16 to 64 blocks of camera distance. 1 keeps the configured far threshold; 2 doubles it, dropping more detail from distant uniforms. Does not change the near threshold or enable explicitly disabled part culling.")
+            .defineInRange("armorLodDetailMultiplier", 1D, 1D, 4D);
         builder.pop();
 
         builder.push("Particle Rendering Settings");
@@ -684,6 +704,10 @@ public final class ModClientConfig
         driveableImpostorResolution = DRIVEABLE_IMPOSTOR_RESOLUTION.get();
         driveableImpostorYawAngles = DRIVEABLE_IMPOSTOR_YAW_ANGLES.get();
         driveableImpostorCacheEntries = DRIVEABLE_IMPOSTOR_CACHE_ENTRIES.get();
+        minimumArmorPartPixelSize = MINIMUM_ARMOR_PART_PIXEL_SIZE.get();
+        enableArmorLod = ENABLE_ARMOR_LOD.get();
+        maximumArmorLodPartPixelSize = MAXIMUM_ARMOR_LOD_PART_PIXEL_SIZE.get();
+        armorLodDetailMultiplier = ARMOR_LOD_DETAIL_MULTIPLIER.get();
         particleDistanceScale = PARTICLE_DISTANCE_SCALE.get();
         fullParticleDensityShare = FULL_PARTICLE_DENSITY_SHARE.get();
         distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();

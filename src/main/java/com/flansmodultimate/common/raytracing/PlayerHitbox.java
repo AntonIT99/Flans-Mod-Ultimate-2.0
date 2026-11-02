@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.raytracing;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.entity.BloodEffects;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -12,8 +12,6 @@ import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.effects.PacketParticle;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -25,7 +23,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -163,6 +160,11 @@ public class PlayerHitbox
 
     public ShootingHelper.HitData hitByBullet(FiredShot shot, ShootingHelper.HitData hitData, @Nullable Bullet bullet)
     {
+        return hitByBullet(shot, hitData, bullet, entity.position().add(0D, entity.getBbHeight() * 0.6D, 0D), Vec3.ZERO);
+    }
+
+    public ShootingHelper.HitData hitByBullet(FiredShot shot, ShootingHelper.HitData hitData, @Nullable Bullet bullet, Vec3 wound, Vec3 direction)
+    {
         float lastHitPenAmount;
         float penetratingPower = hitData.penetratingPower();
         boolean lastHitHeadshot = hitData.lastHitHeadshot();
@@ -224,15 +226,12 @@ public class PlayerHitbox
 
                     // Attack the entity!
                     ShootingHelper.clearDamageCooldown(entity);
-                    if (entity.hurt(damagesource, hitDamage))
+                    if (BloodEffects.hurt(entity, wound, direction, () -> entity.hurt(damagesource, hitDamage)))
                     {
                         // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                         entity.hurtTime = Math.min(entity.hurtTime + 1, entity.hurtDuration);
                         entity.invulnerableTime = entity.hurtDuration / 2;
-                        // Humanoid NPCs keep the puff every other entity shows when a round hurts it
-                        if (!(entity instanceof Player))
-                            PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entity.getX(), entity.getY(), entity.getZ(), 0, 0, 0), entity.position(),
-                                ModCommonConfig.entityHitParticleRange(), entity.level().dimension());
+
                     }
                 }
 

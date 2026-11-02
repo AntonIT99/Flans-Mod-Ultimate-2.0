@@ -47,7 +47,7 @@ final class BotDuties
         {
             EntityNPCInterface npc = (EntityNPCInterface) fighter.entity();
             NpcDuties.clearDestination(npc);
-            if (!NpcDuties.retreats(npc, fighter, fighters, now, threshold, () -> spawnRefuge(battle, npc, slot)))
+            if (!NpcDuties.retreats(npc, fighter, fighters, now, threshold, () -> spawnRefuge(battle, npc, slot)) && slot.getSource() != BotSlot.Source.COMMANDER)
                 NpcDuties.serve(level, npc, fighter, fighters, now, rider -> friendly(battle, fighter, rider), entity -> BotTargeting.armoured(battle, entity));
         });
     }

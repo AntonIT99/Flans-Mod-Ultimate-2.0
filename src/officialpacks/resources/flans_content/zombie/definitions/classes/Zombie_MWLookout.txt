@@ -1,0 +1,13 @@
+// Identity
+Name Criminal Lookout (Hunting Rifle)
+ShortName Zombie_MWLookout
+
+// Availability
+AddToTeam modernwarfare:crims
+
+// Items
+AddItem winchesterModel70
+AddItem 3006Bullet 30
+AddItem coltPython
+AddItem 357Magnum 18
+AddItem combatKnife

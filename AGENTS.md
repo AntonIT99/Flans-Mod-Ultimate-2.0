@@ -2,6 +2,22 @@
 
 Nested `AGENTS.md` files add rules for their directories.
 
+## On-demand game testing
+
+When the user requests game testing, reproduction in Minecraft, multiplayer
+verification or runtime profiling, read
+`.agents/skills/flans-game-testing/SKILL.md` and follow its selected mode.
+Do not automatically invoke the skill or launch clients, servers, bots,
+GameTests or profiler captures for ordinary implementation work. This does not
+change required formatting, compilation or unit checks. Creating or maintaining
+testing documentation does not itself authorize a live run.
+
+After requested testing or testing-tool repairs, reconcile confirmed reusable
+lessons into the skill and owning testing guides using the maintenance protocol
+in `docs/game-testing.md`. Correct stale advice and consolidate workarounds;
+do not add session transcripts or duplicate manuals. Maintenance does not schedule
+future testing or expand the user's requested scope.
+
 ## In-game testing with Minecraft MCP
 
 For client UI, rendering or gameplay verification, read `docs/minecraft-mcp.md`.
@@ -187,9 +203,10 @@ installation when present, so mixins and Minecraft APIs are understood; its
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects
   files with uncommitted changes; `-Path <dir>` inspects a directory instead;
   `-MinSeverity WARNING` hides weak warnings; `-Json` gives machine-readable output.
-- Start it in the background right after the last Java edit of a task and read the result before
-  reporting, so it overlaps `spotlessApply`, SonarLint and the build. Run it once per task, not
-  after every edit.
+- Finish source edits and `spotlessApply` before inspecting. Start the inspection through the
+  validation coordinator described below and read its result before reporting. It may run in the
+  background, but queues behind validation of the same checkout. Run it once per task, not after
+  every edit, and do not edit inspected sources while it runs.
 - By default the whole-project inspections (duplicated code, unused declarations, spelling and
   grammar, vulnerable libraries, Javadoc) are disabled: they analyse the whole dependency graph
   however narrow the scope is. `-Full` adds them back; use it when the question
@@ -199,6 +216,10 @@ installation when present, so mixins and Minecraft APIs are understood; its
   analyses the file snapshot they were built from, and reports warnings for content that has since been
   edited. What does carry over is the result cache under `build/idea-inspect/cache`, so re-running on an
   unchanged working tree answers instantly; `-Rebuild` ignores it.
+- Capture the launched inspection's process ID and command when starting it, and enforce the timeout
+  on that process only. Verify its parent command and run directory before stopping it; another
+  inspection or the user's open IDE may be running alongside it. Report index failures or timeouts
+  as incomplete validation instead of repeatedly starting fresh inspections during the same task.
 - Output lines are `file:line: [SEVERITY] InspectionId: message`, followed by the problem count and
   how the answer was produced (`cached`, `warm index`, `cold index`).
 - After editing Java, run it on the changed files, and fix warnings you introduced in touched
@@ -223,10 +244,61 @@ and below to run those two checks. Keep formatting checks, scoped diff review, a
 validation appropriate to the change; mention skipped inspections in the final response.
 
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
-`officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Run focused
-tests first. Run a full build after loader setup, registries, networking, entities,
-resources, source sets, or packaging changes. Keep `gradlew` executable.
+`officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Keep `gradlew` executable.
+
+Choose validation from the changed behaviour and its consumers, rather than running `build`
+at the end of every task. `build` assembles and reobfuscates every module, including content packs.
+
+- For ordinary Java logic, AI, or UI changes, compile the affected source sets and run focused
+  tests first. For NPC-only changes, use `compileNpcsJava` and `test --tests '<relevant class or package>'`,
+  plus the required formatting and scoped static analysis. Changing existing entity behaviour alone
+  does not require assembling every pack.
+- For changes to registration, networking, resource loading or an artifact's packaging, include
+  the relevant checks and artifact tasks (`jar`, `npcsJar`, `packsManagerJar`, or the affected pack's
+  jar task). Build packs when their inputs, packaging, or a shared API they consume change; an unchanged
+  pack does not need its jar rebuilt merely because another module changed.
+- Use full `build` for branch-wide ports, loader setup, shared build/source-set changes, release
+  verification, or changes whose effects span modules and cannot be covered confidently by scoped
+  checks. Include affected pack consumers when shared signatures, model classes, or content contracts
+  change, even when the pack files themselves are unchanged.
+- Keep Gradle's required task dependencies. Test filters select tests to execute; they do not prune
+  compilation dependencies. Some analysis tasks also need outputs of other source sets. Use
+  `--dry-run` if the task graph is unexpectedly broad; do not add blanket `-x compile...` exclusions.
+- Batch related Gradle checks into one invocation where practical. Queue Gradle and IntelliJ through
+  the validation coordinator below instead of starting competing invocations for the same checkout.
+  In a mixed worktree, scope formatting and analysis to this task's files or validate an isolated
+  checkout when unrelated changes prevent checks; preserve unrelated edits and staged content.
+- Reuse successful validation while its relevant inputs remain unchanged. After comment, formatting,
+  warning-suppression, or documentation-only follow-ups, rerun only the checks affected by that edit;
+  do not repeat a full test suite or rebuild all artifacts automatically. A commit-only request does
+  not require repeating previously completed checks.
 
 Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
 SonarLint on touched source sets, and `git diff --check`,
 and report validation that could not be performed.
+
+### Parallel tasks and shared build outputs
+
+- Prefer a separate Git worktree per concurrent implementation task. Each task owns its source edits,
+  `.gradle`, `build`, generated resources, inspection results and temporary logs. Do not redirect
+  different worktrees to the same build or project-cache directory. The normal shared Gradle user home
+  and dependency cache can remain shared; do not create separate dependency caches by default.
+- Within one checkout, run agent build and inspection commands through
+  `powershell -NoProfile -File scripts/run-validation.ps1 Gradle <tasks and options>` or
+  `powershell -NoProfile -File scripts/run-validation.ps1 Idea <inspection options>`.
+  The coordinator holds a checkout-specific mutex for the entire invocation; competing callers wait
+  up to ten minutes by default (`-WaitSeconds` changes the queue timeout). Different worktrees have
+  independent queues. Gradle's parallelism inside one invocation remains enabled.
+  Check coordinator changes with `powershell -NoProfile -File scripts/test-validation-coordinator.ps1`;
+  its process tests use fake tools and launch neither Minecraft nor IntelliJ.
+- Direct `gradlew` and `idea-inspect.ps1` launches, IDE auto-builds, and source edits bypass the queue.
+  Coordinate those explicitly or use another worktree. Do not edit, format, clean, or regenerate a
+  checkout while another task validates it. A queued command sees the files present when it starts;
+  it does not capture or freeze a source snapshot.
+- Never delete another task's outputs/caches, remove Gradle lock files, run global `gradlew --stop`,
+  or terminate processes by name to resolve contention. If cancelling a coordinator, identify its
+  own child processes as well and ensure they have stopped before another validation starts;
+  an orphaned child can outlive the shell that held the mutex. Do not cancel another task's work.
+- Use unique task-specific temporary files and log names. On machines running several worktrees,
+  reduce workers for a heavy invocation if needed (for example `--max-workers=2`) rather than
+  changing project-wide parallelism or stopping other tasks' daemons.

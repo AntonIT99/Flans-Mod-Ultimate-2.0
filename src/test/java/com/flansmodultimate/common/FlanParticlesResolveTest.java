@@ -57,4 +57,21 @@ class FlanParticlesResolveTest
         assertTrue(FlanParticles.resolve("").isEmpty());
         assertTrue(FlanParticles.resolve(null).isEmpty());
     }
+
+    @Test
+    void everyLabjacNameResolvesWithoutChangingVanillaNames()
+    {
+        for (String name : new String[]{"overkill", "blood", "tankDeath", "shipDeath", "FMNuke", "smokeShell", "smokeShellMustard", "smokeShellChlorine", "WaterSmoke", "WaterSmokeMini", "shipSmoke",
+            "gunSmoke", "locked", "flasher", "NuFlash", "NuMuzzle", "NuSpark", "TurretTest"})
+        {
+            String expected = "flansmod." + name.toLowerCase(java.util.Locale.ROOT);
+            assertEquals(Optional.of(expected), FlanParticles.resolve("flansmod." + name));
+            assertEquals(Optional.of(expected), FlanParticles.resolve(name));
+        }
+        assertEquals(Optional.of(FlanParticles.FM_CASING), FlanParticles.resolve("casing"));
+        assertEquals(Optional.of(FlanParticles.FM_CASING), FlanParticles.resolve("flansmod.casing"));
+        assertEquals(Optional.of(FlanParticles.FM_GROUND_BLOOD), FlanParticles.resolve("flansmodultimate:ground_blood"));
+        assertEquals(Optional.of(FlanParticles.FLAME), FlanParticles.resolve("flame"));
+    }
+
 }

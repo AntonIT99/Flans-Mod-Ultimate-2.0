@@ -12,6 +12,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -80,6 +82,15 @@ public final class NpcTacticState
     /** The firing range the NPC's weapon gives it, and the tick it was worked out in. */
     private int weaponRange;
     private long weaponRangeTick = Long.MIN_VALUE;
+    private final List<Threat> threats = new ArrayList<>();
+    @Getter
+    private final NpcCover.Searches coverSearches = new NpcCover.Searches();
+    @Getter
+    private final NpcSafetyState safety = new NpcSafetyState();
+
+    /** A position learned from incoming fire; a hidden attacker's subsequent movement is not followed. */
+    public record Threat(LivingEntity entity, Vec3 position, long until)
+    {}
 
     /** Starts the tactic over when it or the target changes. */
     public void prepare(Tactic current, int target, long now, int defaultSide)
@@ -87,6 +98,7 @@ public final class NpcTacticState
         if (current == tactic && target == targetId)
             return;
         tactic = current;
+        coverSearches.clear();
         targetId = target;
         enter(Phase.START, now);
         cover = null;
@@ -147,10 +159,21 @@ public final class NpcTacticState
      */
     public void threat(LivingEntity enemy, @Nullable LivingEntity current, long now, long until)
     {
+        threats.removeIf(known -> known.until() <= now || known.entity() == enemy || !known.entity().isAlive());
+        if (threats.size() >= 4)
+            threats.remove(0);
+        threats.add(new Threat(enemy, enemy.getEyePosition(), until));
         if (enemy != threat && threat == current && remembers(threat, now))
             return;
         threat = enemy;
         threatUntil = until;
+    }
+
+    /** Recent attackers, independent of the firing target, with expired entries removed. Server thread. */
+    public List<Threat> threats(long now)
+    {
+        threats.removeIf(known -> known.until() <= now || !known.entity().isAlive());
+        return List.copyOf(threats);
     }
 
     /** @return whether the entity is the threat the NPC still remembers */

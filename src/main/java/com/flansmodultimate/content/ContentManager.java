@@ -222,6 +222,7 @@ public class ContentManager
             applyMeasuredSoundLengths(workers);
             PlatformLoadingProgress.message("Flan's Mod: resolving content references");
             resolveDeferredContentReferences();
+            Team.resolveClassContributions();
             PlatformLoadingProgress.message("Flan's Mod: measuring muzzle points");
             applyMeasuredMuzzles();
             long end = System.nanoTime();

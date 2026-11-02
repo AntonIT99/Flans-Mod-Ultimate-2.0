@@ -23,6 +23,7 @@ AddClass W44_JapaneseArmyAssault
 
 // Automatic rifles and machine guns
 AddClass W44_JapaneseArmySupport
+AddClass W44_JapaneseArmyAmmoBearer
 
 // Reconnaissance and marksmen
 AddClass W44_JapaneseArmyScout
@@ -32,6 +33,7 @@ AddClass W44_JapaneseArmyAntiTank
 
 // Engineers and military police
 AddClass W44_JapaneseArmyEngineer
+AddClass W44_JapaneseArmyEngineerType38
 
 // Medical support
 AddClass W44_JapaneseArmyMedic

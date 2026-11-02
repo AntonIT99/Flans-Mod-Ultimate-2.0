@@ -1,0 +1,18 @@
+// Identity
+Name Assault (MP40, Winter Greatcoat)
+ShortName W44_GermanArmyWinterAssault
+Description Winter assault infantry with an MP40, Stahlhelm and greatcoat.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_GermanM42FeldgrauStahlhelm
+Chest 44_GermanM43GreatCoat
+
+// Items
+AddItem 44_Mp40
+AddItem 44_Mp40Ammo 4
+AddItem 44_stielhandgranate
+AddItem 44_Smokestielhandgranate 2
+AddItem 44_Bandage

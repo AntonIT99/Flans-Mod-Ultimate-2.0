@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.teams.FlansTeams;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -82,7 +81,7 @@ final class BotRadio
         boolean attacked = point.contested() || point.capturingSide() >= 0 && point.capturingSide() != owner;
         if (attacked && due(owner, point, "attack", now, ATTACK_REPEAT))
             call(server, level, battle, owner, Component.translatable(PREFIX + "under_attack", label(point)), point.position());
-        if (armourNear(server, level, battle, owner, point) && due(owner, point, "armour", now, ARMOUR_REPEAT))
+        if (armourNear(level, battle, owner, point) && due(owner, point, "armour", now, ARMOUR_REPEAT))
             call(server, level, battle, owner, Component.translatable(PREFIX + "armour", label(point)), point.position());
     }
 
@@ -97,22 +96,10 @@ final class BotRadio
     }
 
     /** Whether enemy armour, bots or players in vehicles, is closing in on a point a side holds. */
-    private static boolean armourNear(MinecraftServer server, ServerLevel level, BotBattle battle, int side, TeamsCapturePoint point)
+    private static boolean armourNear(ServerLevel level, BotBattle battle, int side, TeamsCapturePoint point)
     {
         double reach = point.radius() + ARMOUR_RANGE;
-        for (BotSlot slot : battle.getSlots().values())
-        {
-            Entity entity = slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
-            if (entity != null && entity.isAlive() && battle.sideOf(slot.getTeam()) != side && entity.position().distanceTo(point.position()) <= reach && BotTargeting.armoured(battle, entity))
-                return true;
-        }
-        for (ServerPlayer player : server.getPlayerList().getPlayers())
-        {
-            boolean enemy = FlansTeams.getTeam(player).map(team -> battle.getGround().sideOf(team) != side).orElse(false);
-            if (enemy && player.isAlive() && player.level() == level && player.position().distanceTo(point.position()) <= reach && BotTargeting.armoured(battle, player))
-                return true;
-        }
-        return false;
+        return battle.getIntelligence().contacts(side, level.getGameTime()).stream().anyMatch(contact -> contact.armoured() && contact.position().distanceToSqr(point.position()) <= reach * reach);
     }
 
     /** Sends a call to every player of a side, spoken by the side's bot nearest the place it is about. */

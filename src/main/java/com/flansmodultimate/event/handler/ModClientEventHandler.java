@@ -203,12 +203,33 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerParticles(RegisterParticleProvidersEvent event)
     {
+        event.registerSpriteSet(FlansModParticles.legacyBloodParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.BLOOD));
+        event.registerSpriteSet(FlansModParticles.legacyOverkillParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.OVERKILL));
+        event.registerSpriteSet(FlansModParticles.legacyTankDeathParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.TANK_DEATH));
+        event.registerSpriteSet(FlansModParticles.legacyShipDeathParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.SHIP_DEATH));
+        event.registerSpriteSet(FlansModParticles.legacyNukeParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.NUKE));
+        event.registerSpriteSet(FlansModParticles.legacySmokeShellParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.SMOKE_SHELL));
+        event.registerSpriteSet(FlansModParticles.legacyMustardParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.MUSTARD));
+        event.registerSpriteSet(FlansModParticles.legacyChlorineParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.CHLORINE));
+        event.registerSpriteSet(FlansModParticles.legacyWaterParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.WATER));
+        event.registerSpriteSet(FlansModParticles.legacyWaterMiniParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.WATER_MINI));
+        event.registerSpriteSet(FlansModParticles.legacyShipSmokeParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.SHIP_SMOKE));
+        event.registerSpriteSet(FlansModParticles.legacyGunSmokeParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.GUN_SMOKE));
+        event.registerSpriteSet(FlansModParticles.legacyLockedParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.LOCKED));
+        event.registerSpriteSet(FlansModParticles.legacyFlasherParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.FLASHER));
+        event.registerSpriteSet(FlansModParticles.legacyNuFlashParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.NU_FLASH));
+        event.registerSpriteSet(FlansModParticles.legacyNuMuzzleParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.NU_MUZZLE));
+        event.registerSpriteSet(FlansModParticles.legacyNuSparkParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.NU_SPARK));
+        event.registerSpriteSet(FlansModParticles.legacyCasingParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.CASING));
+        event.registerSpriteSet(FlansModParticles.legacyTurretTestParticle.get(), sprites -> new LegacyEffectParticle.Provider(sprites, LegacyEffectParticle.Style.TURRET_TEST));
+        event.registerSpriteSet(FlansModParticles.classicMuzzleParticle.get(), FmMuzzleFlashParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.afterburnParticle.get(), AfterburnParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.bigSmokeParticle.get(), BigSmokeParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.blastPuffParticle.get(), BlastPuffParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.debris1Particle.get(), Debris1Particle.Provider::new);
         event.registerSpriteSet(FlansModParticles.explodeParticle.get(), LegacyExplodeParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.fireExplosionParticle.get(), FireExplosionParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.groundBloodParticle.get(), GroundBloodParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.flareParticle.get(), FlareParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.flashParticle.get(), FlashParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.fmFlameParticle.get(), FmFlameParticle.Provider::new);

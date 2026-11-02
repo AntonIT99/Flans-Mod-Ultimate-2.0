@@ -179,9 +179,10 @@ final class Skirmishes
         // Name tags only allies see go by Teams teams, which skirmish bots fight without.
         settings.setNameplates(BotSettings.Nameplates.ALWAYS);
         settings.setRespawnSeconds(skirmish.getRespawnSeconds());
+        settings.setVehicleRespawnSeconds(skirmish.getRespawnSeconds());
         settings.setTickets(skirmish.isRespawn() ? skirmish.getTickets() : 0);
         settings.setDifficulty(skirmish.getDifficulty());
-        settings.setPlayerTickets(false);
+        settings.setCustomTraining(skirmish.getCustomTraining());
         settings.setRadio(false);
         // A squad leader's rally point is where the squad's fallen come back; coming back there is for round players only.
         settings.setRallyPoints(true);
@@ -194,8 +195,8 @@ final class Skirmishes
     {
         force.setBudget(force.getCount());
         force.getSquads().replaceAll(squad -> new BotSettings.SquadEntry(squad.template(), squad.count(), squad.count()));
-        force.getVehicles()
-            .replaceAll(vehicle -> new BotSettings.VehicleEntry(vehicle.type(), vehicle.count(), vehicle.count(), vehicle.respawnSeconds(), vehicle.ticketCost(), vehicle.spawner(), vehicle.carry()));
+        force.getVehicles().replaceAll(vehicle -> new BotSettings.VehicleEntry(vehicle.type(), vehicle.count(), vehicle.count(), vehicle.respawnSeconds(), vehicle.ticketCost(), vehicle.spawner(),
+            vehicle.carry(), vehicle.paintjobs()));
         return force;
     }
 

@@ -174,13 +174,62 @@ public final class DriveableAmmoLoader
     /** Default round of exactly the selected driver bank, without creating or filling an inventory. */
     public static Optional<ShootableType> defaultBankAmmo(DriveableType type, boolean secondary)
     {
+        return defaultBankAmmoChoices(type, secondary).stream().findFirst();
+    }
+
+    /**
+     * Every round the selected driver bank is issued with by default, the one {@link #defaultBankAmmo} returns first.
+     *
+     * <p>
+     * A gun bank lists each mounted gun's own default round followed by the rest of what that gun takes, so that a
+     * cannon offering armour-piercing and high-explosive shells presents both. A bomb, mine, missile or shell bank lists
+     * the driveable's own declared ordnance of the bank's kind, in the order the definition states it. A bank that
+     * declares no ordnance at all keeps the single {@code AcceptAllAmmo} fallback, so that an accept-all driveable is
+     * never handed every round registered on the server.
+     * </p>
+     *
+     * @return the rounds, without duplicates, or an empty list for a bank without ammunition
+     */
+    public static List<ShootableType> defaultBankAmmoChoices(DriveableType type, boolean secondary)
+    {
         EnumWeaponType weapon = type.weaponType(secondary);
         if (weapon == EnumWeaponType.NONE)
-            return Optional.empty();
+            return List.of();
         if (weapon == EnumWeaponType.GUN)
-            return type.shootPoints(secondary).stream().filter(point -> point.getRootPos() instanceof PilotGun).map(point -> ((PilotGun) point.getRootPos()).getType()).filter(Objects::nonNull)
-                .map(GunType::getDefaultAmmo).flatMap(Optional::stream).findFirst();
-        return Optional.ofNullable(resolveBankAmmo(type, List.of(weapon)));
+            return gunBankAmmoChoices(type, secondary);
+        return bankAmmoChoices(type, List.of(weapon));
+    }
+
+    /** Each mounted pilot gun's default round first, then the other rounds that gun takes, gun by gun. */
+    private static List<ShootableType> gunBankAmmoChoices(DriveableType type, boolean secondary)
+    {
+        Set<ShootableType> ammo = new LinkedHashSet<>();
+        List<GunType> guns = type.shootPoints(secondary).stream().filter(point -> point.getRootPos() instanceof PilotGun).map(point -> ((PilotGun) point.getRootPos()).getType())
+            .filter(Objects::nonNull).toList();
+        for (GunType gun : guns)
+        {
+            gun.getDefaultAmmo().ifPresent(ammo::add);
+            ammo.addAll(gun.getAmmoTypes());
+        }
+        return List.copyOf(ammo);
+    }
+
+    /** The declared ordnance of the bank's kinds, in definition order, or the single accept-all fallback. */
+    private static List<ShootableType> bankAmmoChoices(DriveableType type, List<EnumWeaponType> candidates)
+    {
+        Set<ShootableType> ammo = new LinkedHashSet<>();
+        for (EnumWeaponType weapon : candidates)
+        {
+            for (BulletType declared : type.getAmmoTypes())
+            {
+                if (declared.getWeaponType() == weapon)
+                    ammo.add(declared);
+            }
+        }
+        if (!ammo.isEmpty())
+            return List.copyOf(ammo);
+        ShootableType fallback = resolveBankAmmo(type, candidates);
+        return fallback == null ? List.of() : List.of(fallback);
     }
 
     /**

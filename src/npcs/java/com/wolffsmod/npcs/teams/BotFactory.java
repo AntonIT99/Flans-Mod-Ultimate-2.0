@@ -6,12 +6,14 @@ import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.teams.*;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcAmmunition;
 import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.*;
 import com.wolffsmod.npcs.names.*;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -49,8 +51,9 @@ public final class BotFactory
 {
     /** Custom NPCs' respawn setting for an NPC that stays dead. */
     private static final int NEVER_RESPAWN = 3;
-    /** Custom NPCs' moving type (not its navigation type) for an NPC that stands where it is when idle. */
+    /** Legacy moving type on generated bots, migrated so vehicle combat paths can move their hulls. */
     private static final int STANDING = 0;
+    private static final int WANDERING = 1;
     private static final int SHOW_NAME = 0;
     private static final int HIDE_NAME = 1;
     private static final double SPREAD = 1.5D;
@@ -94,10 +97,15 @@ public final class BotFactory
     /** @return the new soldier, already in the level, or empty when the team offers no class */
     public static Optional<EntityNPCInterface> soldier(ServerLevel level, Order order, RandomGenerator random)
     {
-        Vec3 position = freeSpot(level, order.position(), random);
+        Vec3 position = order.position();
         return soldier(level, order, order.slot().getRole(), position, random, npc ->
         {
             name(npc, order, random);
+            if (order.slot().getSource() == BotSlot.Source.COMMANDER)
+            {
+                NpcDisplayNames.literalTitle(npc.display, "Commander");
+                NpcTuning.of(npc).set(Value.TACTIC, Tactic.CUSTOM_NPCS.ordinal());
+            }
             join(npc, order, position, Membership.SOLDIER);
         });
     }
@@ -141,6 +149,8 @@ public final class BotFactory
         // rather than saving them for a group the plain NPC default waits for. A clone keeps the strategy its maker chose.
         if (!added)
         {
+            NpcPresentation.of(npc).setBloodEffects(true);
+            npc.ais.canSprint = true;
             NpcTuning.of(npc).set(Value.GRENADE_USE, NpcTuning.Throwing.FREQUENT.ordinal());
             // Riflemen reach as far as their aim lets them hit, marksmen further, and their level's aim narrows that.
             ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.WEAPON_FIRING_RANGE, true);
@@ -152,7 +162,7 @@ public final class BotFactory
             NpcSkins.markClassSkin(custom);
         }
         enlist.accept(npc);
-        train(npc, order.settings().getDifficulty());
+        train(npc, order.settings());
         if (!added)
             level.addFreshEntity(npc);
         npc.setHealth(npc.getMaxHealth());
@@ -163,10 +173,19 @@ public final class BotFactory
     public static Optional<EntityNPCInterface> vehicle(ServerLevel level, Order order, float yaw, RandomGenerator random)
     {
         Optional<FlanModelEntityType> type = FlanModelNpcs.type(order.slot().getRole());
-        Optional<EntityCustomNpc> spawned = FlanModelNpcs.spawn(level, order.slot().getRole(), order.position(), yaw);
+        List<Integer> allowed = order.slot().getEntry() >= 0 && order.slot().getEntry() < order.force().getVehicles().size()
+            ? order.force().getVehicles().get(order.slot().getEntry()).paintjobs()
+            : List.of(0);
+        List<Integer> available = type.map(FlanModelEntityType::getInfoType).map(IContentType::getPaintjobVariants).orElse(List.of()).stream().map(com.flansmodultimate.api.content.PaintjobVariant::id)
+            .filter(id -> allowed.isEmpty() || allowed.contains(id)).toList();
+        int paintjob = available.isEmpty() ? 0 : available.get(random.nextInt(available.size()));
+        Optional<EntityCustomNpc> spawned = FlanModelNpcs.spawn(level, order.slot().getRole(), order.position(), yaw, paintjob);
         if (type.isEmpty() || spawned.isEmpty())
             return Optional.empty();
         EntityCustomNpc npc = spawned.get();
+        // The hull used for clearance must already face its validated yaw before the next bot is placed this tick.
+        npc.setYBodyRot(yaw);
+        npc.yBodyRotO = yaw;
         IContentType definition = type.get().getInfoType();
         BotRole role = BotRole.of(type.get().getKind(), definition);
         NpcTuning tuning = NpcTuning.of(npc);
@@ -195,7 +214,7 @@ public final class BotFactory
         order.slot().setName(npc.display.getName());
         order.slot().setNameBinding(NpcDisplayNames.of(npc.display).getName());
         join(npc, order, order.position(), Membership.VEHICLE);
-        train(npc, order.settings().getDifficulty());
+        train(npc, order.settings());
         npc.setHealth(npc.getMaxHealth());
         return Optional.of(npc);
     }
@@ -204,8 +223,9 @@ public final class BotFactory
      * Sets how well a bot fights by the round's difficulty: scales its aim and how far it notices enemies, and gives it the
      * level's reaction, aim settling, lead and damage to players. Its health and rate of fire stay as they were given.
      */
-    static void train(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    static void train(EntityNPCInterface npc, BotSettings settings)
     {
+        BotTraining difficulty = settings.training();
         DataStats stats = npc.stats;
         DataRanged ranged = stats.ranged;
         // The stats the loadout or clone gave, kept the first time, so that a later level scales them rather than the last level's.
@@ -218,7 +238,7 @@ public final class BotFactory
             training.putInt(NBT_DELAY_MIN, ranged.getDelayMin());
             training.putInt(NBT_DELAY_MAX, ranged.getDelayMax());
         }
-        training.putString(NBT_LEVEL, difficulty.name());
+        training.putString(NBT_LEVEL, settings.trainingId());
         npc.getPersistentData().put(NBT_TRAINING, training);
         NpcSkill.write(npc, difficulty.skill());
         ranged.setAccuracy(Math.min(MAX_ACCURACY, scaled(training.getInt(NBT_ACCURACY), difficulty.accuracy(), 0)));
@@ -236,14 +256,21 @@ public final class BotFactory
     }
 
     /**
-     * Trains a bot again when its round's difficulty has changed since it was trained, as after its settings are saved.
-     * An NPC that joined as it was and was never trained is left alone.
+     * Trains a bot again when its round's difficulty, or its custom values, have changed since it was trained, as after its
+     * settings are saved. An NPC that joined as it was and was never trained is left alone.
      */
-    static void keepTrained(EntityNPCInterface npc, BotSettings.Difficulty difficulty)
+    static void keepTrained(EntityNPCInterface npc, BotSettings settings)
     {
+        // Migrate generated bots already saved in an active battle, preserving enlisted NPCs and seated crew.
+        if (!npc.isPassenger() && npc.ais.getMovingType() == STANDING && BotTag.read(npc).filter(data -> !data.enlisted()).isPresent())
+        {
+            npc.ais.setMovingType(WANDERING);
+            npc.updateAI = true;
+            npc.updateClient = true;
+        }
         CompoundTag training = npc.getPersistentData().getCompound(NBT_TRAINING);
-        if (training.contains(NBT_LEVEL) && !training.getString(NBT_LEVEL).equals(difficulty.name()))
-            train(npc, difficulty);
+        if (training.contains(NBT_LEVEL) && !training.getString(NBT_LEVEL).equals(settings.trainingId()))
+            train(npc, settings);
     }
 
     /** @return the stat scaled by a level's factor, a factor of 1 leaving it exactly as it was */
@@ -271,7 +298,8 @@ public final class BotFactory
 
     /**
      * Gives a vehicle the default ammunition of every gun it mounts: the first gun's in its projectile slot, the others' in
-     * its inventory, from which it reloads them. The inventory is never dropped.
+     * its inventory, from which it reloads them. Each slot is stocked with as many rounds as {@link NpcAmmunition#stock}
+     * allows, so that a bot which uses its ammunition up carries more than one shell per gun. The inventory is never dropped.
      */
     private static void stockAmmunition(EntityCustomNpc npc, IContentType definition)
     {
@@ -279,7 +307,7 @@ public final class BotFactory
         for (WeaponMount mount : FlansEntityTypes.getMounts(definition))
         {
             mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> NpcPlatform.isSameItemSameData(stock, ammunition)))
-                .ifPresent(stocks::add);
+                .map(ammunition -> NpcAmmunition.stock(npc, ammunition)).ifPresent(stocks::add);
         }
         for (int i = 0; i < stocks.size() && i <= INVENTORY_SLOTS; i++)
         {
@@ -377,7 +405,7 @@ public final class BotFactory
         npc.advanced.attackOtherFactions = true;
         npc.stats.spawnCycle = NEVER_RESPAWN;
         npc.ais.returnToStart = false;
-        npc.ais.setMovingType(STANDING);
+        npc.ais.setMovingType(WANDERING);
         npc.ais.setStartPos(BlockPos.containing(position));
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);

@@ -37,6 +37,28 @@ public final class FlanParticles
     public static final String FM_SMOKER = "flansmod.smoker";
     public static final String FM_SMOKER_1 = "flansmod.smoker1";
 
+    public static final String FM_BLOOD = "flansmod.blood";
+    public static final String FM_OVERKILL = "flansmod.overkill";
+    public static final String FM_TANK_DEATH = "flansmod.tankdeath";
+    public static final String FM_SHIP_DEATH = "flansmod.shipdeath";
+    public static final String FM_NUKE = "flansmod.fmnuke";
+    public static final String FM_SMOKE_SHELL = "flansmod.smokeshell";
+    public static final String FM_MUSTARD = "flansmod.smokeshellmustard";
+    public static final String FM_CHLORINE = "flansmod.smokeshellchlorine";
+    public static final String FM_WATER = "flansmod.watersmoke";
+    public static final String FM_WATER_MINI = "flansmod.watersmokemini";
+    public static final String FM_SHIP_SMOKE = "flansmod.shipsmoke";
+    public static final String FM_GUN_SMOKE = "flansmod.gunsmoke";
+    public static final String FM_LOCKED = "flansmod.locked";
+    public static final String FM_FLASHER = "flansmod.flasher";
+    public static final String FM_NU_FLASH = "flansmod.nuflash";
+    public static final String FM_NU_MUZZLE = "flansmod.numuzzle";
+    public static final String FM_NU_SPARK = "flansmod.nuspark";
+    public static final String FM_CASING = "casing";
+    public static final String FM_TURRET_TEST = "flansmod.turrettest";
+    public static final String FM_CLASSIC_MUZZLE = "flansmod.muzzleflashclassic";
+    public static final String FM_GROUND_BLOOD = "flansmod.groundblood";
+
     // Minecraft Legacy Particles
     public static final String RED_DUST = "reddust";
     public static final String HUGE_EXPLOSION = "hugeexplosion";
@@ -92,15 +114,11 @@ public final class FlanParticles
     /** These take a block or item id after an underscore, e.g. "blockcrack_minecraft:stone". */
     private static final List<String> RESOURCE_PARTICLES = List.of(ICON_CRACK, BLOCK_CRACK, BLOCK_DUST);
 
-    private static final Set<String> NAMES = Arrays.stream(FlanParticles.class.getFields())
-        .filter(field -> field.getType() == String.class && Modifier.isStatic(field.getModifiers()))
-        .map(FlanParticles::readName)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toUnmodifiableSet());
+    private static final Set<String> NAMES = Arrays.stream(FlanParticles.class.getFields()).filter(field -> field.getType() == String.class && Modifier.isStatic(field.getModifiers()))
+        .map(FlanParticles::readName).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
 
     /** Short forms of this mod's particles: "flare" for "flansmod.flare". */
-    private static final Map<String, String> SHORT_NAMES = NAMES.stream()
-        .filter(name -> name.startsWith(FLANSMOD_PREFIX))
+    private static final Map<String, String> SHORT_NAMES = NAMES.stream().filter(name -> name.startsWith(FLANSMOD_PREFIX))
         .collect(Collectors.toUnmodifiableMap(name -> name.substring(FLANSMOD_PREFIX.length()), name -> name));
 
     /** Every canonical name in a fixed order, so both ends of a connection number them alike. */
@@ -138,6 +156,10 @@ public final class FlanParticles
             return Optional.empty();
 
         String name = raw.trim().toLowerCase(Locale.ROOT);
+        if (name.equals("flansmod:ground_blood") || name.equals("flansmodultimate:ground_blood"))
+            return Optional.of(FM_GROUND_BLOOD);
+        if (name.equals("flansmod.casing"))
+            return Optional.of(FM_CASING);
         if (NAMES.contains(name))
             return Optional.of(name);
 

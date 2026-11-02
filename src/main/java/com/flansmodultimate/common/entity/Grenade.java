@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.GunItem;
@@ -15,6 +16,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.*;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.*;
 import lombok.EqualsAndHashCode;
@@ -25,10 +27,10 @@ import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -51,10 +53,13 @@ import java.util.*;
 public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 {
     public static final int RENDER_DISTANCE = 64;
+    private static final EntityDataAccessor<Boolean> DATA_STATIONARY_PLACEMENT = SynchedEntityData.defineId(Grenade.class, EntityDataSerializers.BOOLEAN);
 
     public static final String NBT_THROWER = "thrower_uuid";
     public static final String NBT_PITCH = "rotation_pitch";
     public static final String NBT_YAW = "rotation_yaw";
+    public static final String NBT_USES = "supply_uses_remaining";
+    public static final String NBT_SUPPORT = "placed_support";
 
     protected GrenadeType configType;
     /** The entity that threw them */
@@ -92,6 +97,33 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     public Grenade(EntityType<?> entityType, Level level)
     {
         super(entityType, level);
+    }
+
+    @Override
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        super.defineEntityData(data);
+        data.define(DATA_STATIONARY_PLACEMENT, false);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key)
+    {
+        super.onSyncedDataUpdated(key);
+        if (DATA_STATIONARY_PLACEMENT.equals(key))
+        {
+            stuck = entityData.get(DATA_STATIONARY_PLACEMENT);
+            if (stuck)
+            {
+                angularVelocity = Vec3.ZERO;
+                setDeltaMovement(Vec3.ZERO);
+            }
+        }
+    }
+
+    void setStationaryPlacement(boolean placed)
+    {
+        entityData.set(DATA_STATIONARY_PLACEMENT, placed);
     }
 
     public Grenade(Level level, GrenadeType grenadeType, Vec3 position, Vec3 direction, @Nullable LivingEntity entity)
@@ -256,7 +288,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             xRotO = pitch;
             axes.setAngles(yaw, pitch, 0F);
 
-            if (configType.isSpinWhenThrown())
+            if (entityData.get(DATA_STATIONARY_PLACEMENT))
+                angularVelocity = Vec3.ZERO;
+            else if (configType.isSpinWhenThrown())
                 angularVelocity = new Vec3(0, 0, 10);
         }
         catch (Exception e)
@@ -273,6 +307,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (InfoType.getInfoType(shortname) instanceof GrenadeType gType)
         {
             configType = gType;
+            numUsesRemaining = tag.contains(NBT_USES) ? Math.max(0, Math.min(gType.getNumUses(), tag.getInt(NBT_USES))) : gType.getNumUses();
+            if (tag.contains(NBT_SUPPORT))
+            {
+                stuck = true;
+                stuckPos = BlockPos.of(tag.getLong(NBT_SUPPORT));
+                angularVelocity = Vec3.ZERO;
+                setStationaryPlacement(true);
+            }
 
             if (tag.hasUUID(NBT_THROWER))
             {
@@ -305,6 +347,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (throwerUUID != null)
             tag.putUUID(NBT_THROWER, throwerUUID);
 
+        tag.putInt(NBT_USES, numUsesRemaining);
+        if (stuck && stuckPos != null)
+            tag.putLong(NBT_SUPPORT, stuckPos.asLong());
         tag.putFloat(NBT_YAW, axes.getYaw());
         tag.putFloat(NBT_PITCH, axes.getPitch());
     }
@@ -317,84 +362,12 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             return InteractionResult.PASS;
 
         Level level = level();
-
         if (!level.isClientSide)
         {
-            boolean used = false;
-
-            // Heal
-            if (configType.getHealAmount() > 0 && player.getHealth() < player.getMaxHealth())
-            {
-                player.heal(configType.getHealAmount());
-
-                // Hearts around the player (server side)
-                ServerLevel serverLevel = (ServerLevel) level;
-                serverLevel.sendParticles(ParticleTypes.HEART, player.getX(), player.getY() + 1.0, player.getZ(), 5, 0.2, 0.3, 0.2, 0.0);
-                used = true;
-            }
-
-            // Potion effects
-            for (MobEffectInstance effect : configType.getPotionEffects())
-            {
-                // clone to avoid sharing mutable instances
-                player.addEffect(new MobEffectInstance(effect));
-                used = true;
-            }
-
-            // Ammo give
-            if (configType.getNumClips() > 0)
-            {
-                ItemStack gunStack = null;
-                GunItem gunItem = null;
-
-                ItemStack mainHandStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-                ItemStack offHandStack = player.getItemInHand(InteractionHand.OFF_HAND);
-
-                if (!mainHandStack.isEmpty() && mainHandStack.getItem() instanceof GunItem gi && gi.getConfigType().isAllowRearm())
-                {
-                    gunStack = mainHandStack;
-                    gunItem = gi;
-                }
-                else if (!offHandStack.isEmpty() && offHandStack.getItem() instanceof GunItem gi && gi.getConfigType().isAllowRearm())
-                {
-                    gunStack = offHandStack;
-                    gunItem = gi;
-                }
-
-                if (gunStack != null)
-                {
-                    GunType gunType = gunItem.getConfigType();
-                    List<ShootableType> ammoTypes = gunType.getAmmoTypes();
-
-                    if (!ammoTypes.isEmpty())
-                    {
-                        ShootableType bulletToGive = ammoTypes.get(0);
-                        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
-                        if (item != Items.AIR)
-                        {
-                            int totalToGive = configType.getNumClips() * gunType.getNumAmmoItemsInGun(gunStack);
-                            while (totalToGive > 0)
-                            {
-                                int stackSize = Math.min(totalToGive, item.getMaxStackSize(new ItemStack(item)));
-                                ItemStack ammoStack = new ItemStack(item, stackSize);
-                                if (player.getInventory().add(ammoStack))
-                                {
-                                    used = true;
-                                }
-                                totalToGive -= stackSize;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Consume a use and remove when empty
-            if (used)
-            {
-                numUsesRemaining--;
-                if (numUsesRemaining <= 0)
-                    discard();
-            }
+            ItemStack weapon = player.getMainHandItem();
+            if (!(weapon.getItem() instanceof GunItem gun) || !gun.getConfigType().isAllowRearm())
+                weapon = player.getOffhandItem();
+            GrenadeDeviceSupport.useSupply(this, player, weapon, stack -> player.getInventory().add(stack));
         }
 
         return InteractionResult.sidedSuccess(level.isClientSide);
@@ -518,7 +491,10 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     protected void updateStuckState(Level level)
     {
         if (stuck && stuckPos != null && level.isEmptyBlock(stuckPos))
+        {
             stuck = false;
+            setStationaryPlacement(false);
+        }
     }
 
     protected void handlePhysicsAndMotion(Level level)
@@ -803,6 +779,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (!configType.isFlashBang() || level.isClientSide)
             return;
 
+        PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_NU_FLASH, getX(), getY(), getZ(), 0D, 0D, 0D), position(), 128D, level.dimension());
+        PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_FLASHER, getX(), getY(), getZ(), 0D, 0.1D, 0D), position(), 128D, level.dimension());
         double smokeRadius = configType.getSmokeRadius();
         AABB aabb = getBoundingBox().inflate(smokeRadius, smokeRadius, smokeRadius);
 

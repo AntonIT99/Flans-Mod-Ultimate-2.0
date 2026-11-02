@@ -26,36 +26,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Keeps the results of {@link ModelMuzzleMeasurement} between runs, so a client
  * or server restarted on the same content skips loading and measuring every model.
  *
  * <p>
- * The cache is coarse on purpose: one key covers every content pack, the
- * user's categories, the option deciding which packs are corrected, and the code
- * that parses types and measures models. Any change to any of them measures
- * everything again; an unchanged restart takes every result from the file. The
- * results are replayed onto freshly read types, which come out of the same files
- * exactly as they did when the results were recorded.
+ * Each pack keeps its own results, keyed on its category-resolved definitions and
+ * any seat-gun definition providers. Model sources and measurement code remain
+ * shared dependencies because a model can load classes from another pack.
+ * Fingerprints describe content rather than build timestamps.
  * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class MuzzleMeasurementCache
 {
     /** Raised whenever what is recorded, or how it is replayed, changes. */
-    private static final int FORMAT_VERSION = 4;
+    private static final int FORMAT_VERSION = 5;
     private static final String FILE_NAME = "muzzle-measurements.json";
     private static final Gson GSON = new GsonBuilder().create();
 
     /** The code whose changes change what a measurement returns. */
     private static final List<Class<?>> MEASURING_CODE = List.of(ModelMuzzleMeasurement.class, MuzzleMeasurements.class, ModelRendererTurbo.class, ModelBase.class, ModelDriveable.class,
         ModelVehicle.class, ModelPlane.class, ModelMecha.class, ModelAAGun.class, ModelMG.class, LegacyDriveableCoordinates.class, AAGunBarrelGeometry.class, ClassLoaderUtils.class,
-        ModelClassResolver.class, InfoType.class, DriveableType.class, AAGunType.class, GunType.class, TypeFile.class, ShootPoint.class, SeatInfo.class);
+        ModelClassResolver.class, ModelResourceResolver.class, InfoType.class, DriveableType.class, PlaneType.class, VehicleType.class, MechaType.class, AAGunType.class, GunType.class, TypeFile.class,
+        ShootPoint.class, SeatInfo.class);
 
     /** What one measurement pass did, in the order it did it. */
     static final class Results
@@ -72,6 +74,7 @@ final class MuzzleMeasurementCache
         {
             return mounts.values().stream().mapToInt(List::size).sum();
         }
+
     }
 
     /** Measured AA gun barrel pivots and muzzles, in model pixels. */
@@ -95,8 +98,8 @@ final class MuzzleMeasurementCache
     {}
 
     /** The barrels of one shoot point or seat gun, as offsets from its muzzle in type-file pixels. */
-    // Plain data carrier that is never compared or used as a key.
-    @SuppressWarnings("java:S6218")
+    // Plain data carrier; Gson reads secondary from JSON even though current measurements only spread primary banks.
+    @SuppressWarnings({"java:S6218", "SameParameterValue"})
     record Spread(boolean gunOrigin, boolean secondary, int index, float[][] offsets)
     {
         Spread(boolean gunOrigin, boolean secondary, int index, List<Vector3f> offsets)
@@ -110,7 +113,21 @@ final class MuzzleMeasurementCache
         }
     }
 
-    private record Stored(int version, String key, Results results)
+    record Entry(Map<String, String> inputs, Results results)
+    {}
+
+    record FileHash(long size, String modified, String hash)
+    {}
+
+    static final class State
+    {
+        final Map<String, Entry> packs = new TreeMap<>();
+        final Map<String, FileHash> files = new TreeMap<>();
+    }
+
+    // Gson also invokes the constructor with versions read from older cache files.
+    @SuppressWarnings("SameParameterValue")
+    private record Stored(int version, State state)
     {}
 
     static String typeKey(InfoType type)
@@ -193,32 +210,34 @@ final class MuzzleMeasurementCache
         return moved;
     }
 
-    /** The results stored under {@code key}, or {@code null} when there are none or they were stored for other content. */
-    @Nullable
-    static Results load(String key)
+    /** Read once per startup; an old format is deliberately remeasured once. */
+    static State load()
     {
         Path file = file();
         if (!Files.isRegularFile(file))
-            return null;
+        {
+            FlansLog.log.info("No muzzle measurement cache at {}; measuring models once.", file);
+            return new State();
+        }
         try
         {
-            return fromJson(Files.readString(file, StandardCharsets.UTF_8), key);
+            return fromJson(Files.readString(file, StandardCharsets.UTF_8));
         }
         catch (IOException | RuntimeException e)
         {
             FlansLog.log.warn("Ignoring unreadable muzzle measurement cache {}: {}", file, e.toString());
-            return null;
+            return new State();
         }
     }
 
-    static void save(String key, Results results)
+    static void save(State state)
     {
         Path file = file();
         try
         {
             Files.createDirectories(file.getParent());
             Path temp = file.resolveSibling(FILE_NAME + ".tmp");
-            Files.writeString(temp, toJson(key, results), StandardCharsets.UTF_8);
+            Files.writeString(temp, toJson(state), StandardCharsets.UTF_8);
             Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
         catch (IOException | RuntimeException e)
@@ -227,17 +246,41 @@ final class MuzzleMeasurementCache
         }
     }
 
-    static String toJson(String key, Results results)
+    static String toJson(State state)
     {
-        return GSON.toJson(new Stored(FORMAT_VERSION, key, results));
+        return GSON.toJson(new Stored(FORMAT_VERSION, state));
     }
 
-    /** The results in {@code json}, or {@code null} when they were stored for another key or format. */
-    @Nullable
-    static Results fromJson(String json, String key)
+    // Gson can overwrite initialized final fields with explicit JSON nulls.
+    @SuppressWarnings("ConstantValue")
+    static State fromJson(String json)
     {
         Stored stored = GSON.fromJson(json, Stored.class);
-        return stored != null && stored.version() == FORMAT_VERSION && key.equals(stored.key()) ? stored.results() : null;
+        if (stored == null || stored.version() != FORMAT_VERSION || stored.state() == null)
+        {
+            FlansLog.log.info("Muzzle measurement cache format changed; measuring models once.");
+            return new State();
+        }
+        if (stored.state().packs == null || stored.state().files == null || stored.state().packs.values().stream().anyMatch(entry -> entry == null || entry.inputs() == null || entry.results() == null)
+            || stored.state().files.values().stream().anyMatch(hash -> hash == null || hash.modified() == null || hash.hash() == null))
+            throw new IllegalArgumentException("Incomplete muzzle measurement cache");
+        return stored.state();
+    }
+
+    @Nullable
+    static Results matching(@Nullable Entry stored, Map<String, String> inputs)
+    {
+        return stored != null && inputs.equals(stored.inputs()) ? stored.results() : null;
+    }
+
+    /** Names of changed dependencies, rather than an opaque digest mismatch. */
+    static List<String> changedInputs(@Nullable Entry stored, Map<String, String> inputs)
+    {
+        if (stored == null)
+            return List.of("no stored measurements");
+        Set<String> names = new TreeSet<>(inputs.keySet());
+        names.addAll(stored.inputs().keySet());
+        return names.stream().filter(name -> !Objects.equals(inputs.get(name), stored.inputs().get(name))).toList();
     }
 
     static Path file()
@@ -245,95 +288,148 @@ final class MuzzleMeasurementCache
         return ModCachePaths.root().resolve(FILE_NAME);
     }
 
-    /**
-     * A digest of everything a measurement depends on: every content pack, the
-     * user's categories, which packs are corrected, and the measuring code.
-     *
-     * @param definitionDigests
-     *            the digest of each pack's definitions, taken while they were read
-     */
-    static String key(List<IContentProvider> contentPacks, Map<IContentProvider, String> definitionDigests, boolean correctFlanFolderPacks)
+    /** Definition digests already include applied categories and aliases. */
+    static Map<IContentProvider, Map<String, String>> inputs(List<IContentProvider> contentPacks, Map<IContentProvider, String> definitionDigests, List<InfoType> types, boolean correctFlanFolderPacks,
+        State state)
     {
+        Map<IContentProvider, Map<String, String>> result = new LinkedHashMap<>();
         try
         {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            update(digest, "format " + FORMAT_VERSION + " correct " + correctFlanFolderPacks + " defaultCategories " + ContentLoadingConfig.isUseDefaultCategories());
-            for (Class<?> code : MEASURING_CODE)
-                update(digest, code.getName(), classBytes(code));
-            fingerprintPacks(digest, contentPacks, definitionDigests);
-            fingerprint(digest, PlatformPaths.configDir().resolve(FlansMod.MOD_ID), true, true);
-            return HexFormat.of().formatHex(digest.digest());
+            List<IContentProvider> packs = sortedPacks(contentPacks);
+            Map<String, String> shared = sharedInputs(packs, correctFlanFolderPacks, state);
+            Map<IContentProvider, String> definitions = new HashMap<>();
+            for (IContentProvider pack : packs)
+                definitions.put(pack, definitionInput(pack, definitionDigests, state));
+            Map<IContentProvider, Set<IContentProvider>> dependencies = seatGunDependencies(types);
+            for (IContentProvider pack : packs)
+            {
+                Map<String, String> inputs = new TreeMap<>(shared);
+                inputs.put("definitions " + pack.getName(), definitions.get(pack));
+                for (IContentProvider dependency : dependencies.getOrDefault(pack, Set.of()))
+                    inputs.put("seat gun definitions " + dependency.getName(), definitions.get(dependency));
+                result.put(pack, inputs);
+            }
         }
-        catch (NoSuchAlgorithmException | IOException | RuntimeException e)
+        catch (IOException | RuntimeException e)
         {
-            // Without a key nothing can be trusted, so every run measures again.
-            FlansLog.log.warn("Could not fingerprint the content for the muzzle measurement cache: {}", e.toString());
-            return "unkeyed-" + System.nanoTime();
+            // Never replay stale measurements when an input cannot be read.
+            FlansLog.log.warn("Could not fingerprint content for the muzzle measurement cache: {}", e.toString());
+            result.clear();
+            for (IContentProvider pack : contentPacks)
+                result.put(pack, Map.of("unreadable inputs", UUID.randomUUID().toString()));
         }
+        return result;
     }
 
-    /**
-     * The definitions and models of every pack. A pack's definitions were digested
-     * as they were read, so its folder is only read for them when that digest is
-     * missing, and not walked at all when its models are kept elsewhere.
-     */
-    static void fingerprintPacks(MessageDigest digest, List<IContentProvider> contentPacks, Map<IContentProvider, String> definitionDigests) throws IOException
+    private static Map<String, String> sharedInputs(List<IContentProvider> packs, boolean correctFlanFolderPacks, State state) throws IOException
     {
-        // Mods register their packs from their constructors, which run in parallel,
-        // so the packs are taken in an order of their own rather than the load order.
-        List<IContentProvider> packs = contentPacks.stream().sorted(Comparator.comparing(IContentProvider::getName).thenComparing(pack -> pack.getPath().toString())).toList();
-        // Logical packs packaged in one mod share its jar or folder, whose definitions are read unless every one of them was digested.
-        Set<Path> undigested = new HashSet<>();
+        Map<String, String> shared = new TreeMap<>();
+        shared.put("options", "correct " + correctFlanFolderPacks + " defaultCategories " + ContentLoadingConfig.isUseDefaultCategories());
+        for (Class<?> code : MEASURING_CODE)
+        {
+            MessageDigest digest = newDigest();
+            update(digest, code.getName(), classBytes(code));
+            shared.put("code " + code.getName(), hex(digest));
+        }
+        shared.put("pack providers", packs.stream().map(pack -> pack.getName() + " " + pack.isPreprocessed() + " " + pack.getModelSourceId()).toList().toString());
+        Map<Path, String> modelDigests = new HashMap<>();
         for (IContentProvider pack : packs)
         {
-            if (definitionDigests.get(pack) == null)
-                undigested.add(pack.getPath());
+            // Several logical packs can share one archive or compiled model tree.
+            Path models = pack.isArchive() ? pack.getPath() : modelRoot(pack);
+            if (models != null)
+                shared.put("models " + models, modelInput(models, modelDigests, state));
+            if (!pack.isArchive())
+            {
+                Path resources = pack.getAssetsPath().resolve("models");
+                shared.put("model resources " + resources, modelInput(resources, modelDigests, state));
+            }
         }
-        Set<Path> fingerprinted = new HashSet<>();
-        for (IContentProvider pack : packs)
+        // Legacy imported models may also read loose OBJ files outside their pack.
+        for (String root : List.of("resources/models", "resources/mod/models", "Flan", "flan"))
         {
-            update(digest, "pack " + pack.getName() + " " + pack.isPreprocessed());
-            String definitions = definitionDigests.get(pack);
-            if (definitions != null)
-                update(digest, "definitions " + definitions);
-            Path path = pack.getPath();
-            // A packaged pack in development keeps its model classes outside its content root.
-            Path models = modelRoot(pack);
-            boolean readDefinitions = undigested.contains(path);
-            boolean holdsModels = models == null || models.startsWith(path);
-            if ((readDefinitions || holdsModels || !Files.isDirectory(path)) && fingerprinted.add(path))
-                fingerprint(digest, path, readDefinitions, false);
-            if (models != null && !models.startsWith(path) && fingerprinted.add(models))
-                fingerprint(digest, models, false, false);
+            MessageDigest resources = newDigest();
+            fingerprintMeshes(resources, PlatformPaths.gameDir().resolve(root), state);
+            shared.put("loose model resources " + root, hex(resources));
         }
+        return shared;
+    }
+
+    private static String modelInput(Path models, Map<Path, String> modelDigests, State state) throws IOException
+    {
+        String known = modelDigests.get(models);
+        if (known != null)
+            return known;
+        MessageDigest digest = newDigest();
+        fingerprint(digest, models, false, false, state);
+        String hash = hex(digest);
+        modelDigests.put(models, hash);
+        return hash;
+    }
+
+    private static String definitionInput(IContentProvider pack, Map<IContentProvider, String> definitionDigests, State state) throws IOException
+    {
+        String known = definitionDigests.get(pack);
+        if (known != null)
+            return known;
+        MessageDigest digest = newDigest();
+        fingerprint(digest, pack.getPath(), true, false, state);
+        fingerprint(digest, PlatformPaths.configDir().resolve(FlansMod.MOD_ID), true, true, state);
+        return hex(digest);
+    }
+
+    private static Map<IContentProvider, Set<IContentProvider>> seatGunDependencies(List<InfoType> types)
+    {
+        Map<IContentProvider, Set<IContentProvider>> dependencies = new HashMap<>();
+        for (InfoType type : types)
+        {
+            if (!(type instanceof DriveableType driveable))
+                continue;
+            for (int seat = 1; seat <= driveable.getNumPassengers(); seat++)
+            {
+                SeatInfo info = driveable.getSeat(seat);
+                if (info != null && info.getGunType() != null)
+                    dependencies.computeIfAbsent(type.getContentPack(), ignored -> new HashSet<>()).add(info.getGunType().getContentPack());
+            }
+        }
+        return dependencies;
+    }
+
+    private static List<IContentProvider> sortedPacks(List<IContentProvider> packs)
+    {
+        return packs.stream().sorted(Comparator.comparing(IContentProvider::getName).thenComparing(pack -> pack.getPath().toString())).toList();
     }
 
     @Nullable
     private static Path modelRoot(IContentProvider pack)
     {
-        try
-        {
-            return pack.getModelPath("Model", null).getParent();
-        }
-        catch (RuntimeException e)
-        {
-            // An archive-backed pack reads its models from the archive, which its own fingerprint covers.
-            return null;
-        }
+        return pack.getModelPath("Model", null).getParent();
     }
 
-    /**
-     * An archive by its size and time; a folder by the name and content of every
-     * model file in it, of every definition file when {@code definitions} is set,
-     * and of every category file when {@code categories} is set. Content rather
-     * than time, because startup rewrites some of them, such as the default
-     * categories, unchanged.
-     */
-    private static void fingerprint(MessageDigest digest, Path path, boolean definitions, boolean categories) throws IOException
+    /** ZIP central-directory checksums avoid decompressing models on warm runs. */
+    static void fingerprint(MessageDigest digest, Path path, boolean definitions, boolean categories, State state) throws IOException
     {
         if (Files.isRegularFile(path))
         {
-            update(digest, path.getFileName() + " " + Files.size(path) + " " + Files.getLastModifiedTime(path).toMillis());
+            BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            String key = path.toAbsolutePath().normalize() + "!entries " + definitions + " " + categories;
+            FileHash old = state.files.get(key);
+            if (sameStamp(old, attributes))
+            {
+                update(digest, "archive " + old.hash());
+                return;
+            }
+            MessageDigest entriesDigest = newDigest();
+            try (ZipFile archive = new ZipFile(path.toFile()))
+            {
+                List<? extends ZipEntry> entries = archive.stream().filter(entry -> !entry.isDirectory() && relevant(entry.getName(), definitions, categories))
+                    .sorted(Comparator.comparing(ZipEntry::getName)).toList();
+                for (ZipEntry entry : entries)
+                    update(entriesDigest, entry.getName() + " " + entry.getSize() + " " + entry.getCrc());
+            }
+            String hash = hex(entriesDigest);
+            state.files.put(key, new FileHash(attributes.size(), attributes.lastModifiedTime().toString(), hash));
+            update(digest, "archive " + hash);
             return;
         }
         if (!Files.isDirectory(path))
@@ -344,22 +440,88 @@ final class MuzzleMeasurementCache
             {
                 String name = file.getFileName().toString().toLowerCase(Locale.ROOT);
                 if (name.endsWith(".zip") || name.endsWith(".jar"))
-                    update(digest, path.relativize(file) + " " + Files.size(file) + " " + Files.getLastModifiedTime(file).toMillis());
-                else if (definitions && name.endsWith(".txt") || name.endsWith(".class") || name.endsWith(".java") || categories && name.endsWith(".json"))
-                    update(digest, path.relativize(file).toString(), Files.readAllBytes(file));
+                {
+                    update(digest, path.relativize(file).toString());
+                    fingerprint(digest, file, definitions, categories, state);
+                }
+                else if (relevant(name, definitions, categories))
+                    update(digest, path.relativize(file) + " " + fileHash(file, state));
             }
         }
     }
 
-    private static byte[] classBytes(Class<?> type)
+    private static boolean relevant(String name, boolean definitions, boolean categories)
+    {
+        String lower = name.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".class") || lower.endsWith(".java") || mesh(lower) || definitions && lower.endsWith(".txt") || categories && lower.endsWith(".json");
+    }
+
+    private static boolean mesh(String name)
+    {
+        return name.endsWith(".obj") || name.endsWith(".mtl");
+    }
+
+    private static void fingerprintMeshes(MessageDigest digest, Path root, State state) throws IOException
+    {
+        if (!Files.isDirectory(root))
+            return;
+        try (Stream<Path> files = Files.walk(root))
+        {
+            for (Path file : files.filter(Files::isRegularFile).filter(file -> mesh(file.toString().toLowerCase(Locale.ROOT))).sorted().toList())
+                update(digest, root.relativize(file) + " " + fileHash(file, state));
+        }
+    }
+
+    static String fileHash(Path file, State state) throws IOException
+    {
+        BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
+        String key = file.toAbsolutePath().normalize().toString();
+        String modified = attributes.lastModifiedTime().toString();
+        FileHash old = state.files.get(key);
+        if (sameStamp(old, attributes))
+            return old.hash();
+        MessageDigest digest = newDigest();
+        try (InputStream in = Files.newInputStream(file))
+        {
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = in.read(buffer)) != -1)
+                digest.update(buffer, 0, length);
+        }
+        String hash = hex(digest);
+        state.files.put(key, new FileHash(attributes.size(), modified, hash));
+        return hash;
+    }
+
+    private static boolean sameStamp(@Nullable FileHash old, BasicFileAttributes attributes)
+    {
+        return old != null && old.size() == attributes.size() && old.modified().equals(attributes.lastModifiedTime().toString());
+    }
+
+    private static MessageDigest newDigest()
+    {
+        try
+        {
+            return MessageDigest.getInstance("SHA-256");
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String hex(MessageDigest digest)
+    {
+        return HexFormat.of().formatHex(digest.digest());
+    }
+
+    private static byte[] classBytes(Class<?> type) throws IOException
     {
         try (InputStream in = type.getResourceAsStream(type.getSimpleName() + ".class"))
         {
-            return in == null ? new byte[0] : in.readAllBytes();
-        }
-        catch (IOException e)
-        {
-            return new byte[0];
+            if (in == null)
+                throw new IOException("Missing bytecode for " + type.getName());
+            return in.readAllBytes();
         }
     }
 

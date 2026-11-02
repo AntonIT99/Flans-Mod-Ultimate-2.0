@@ -25,6 +25,7 @@ final class WarsPage extends BattlePage
     private static final String RADIUS = "war.radius";
     private static final String SETTING = "war.setting.";
     private static final String SCOPE = "teams war scope";
+    private static final String SET = "teams war set";
     /** The settings given as numbers, with their bounds, by the {@code /teams war set} word that sets each. */
     private static final List<Setting> SETTINGS = List.of(new Setting("infantry", 0, 200), new Setting("respawn", 0, 3600), new Setting("tickets", 0, 100000), new Setting("range", 16, 512),
         new Setting("engagements", 1, 16), new Setting("flip", 5, 3600));
@@ -213,13 +214,17 @@ final class WarsPage extends BattlePage
             view.addField(key, columnRight - setWidth - GAP - fieldWidth, y, fieldWidth, Integer.toString(values[i]), tr(SETTING + setting.name()))
                 .setTooltip(Tooltip.create(tr(SETTING + setting.name() + ".tip")));
             button(view, tr("set"), columnRight - setWidth, y, setWidth,
-                () -> number(view, key, setting.least(), setting.most(), tr(SETTING + setting.name())).ifPresent(value -> run(view, "teams war set", name, setting.name(), value)));
+                () -> number(view, key, setting.least(), setting.most(), tr(SETTING + setting.name())).ifPresent(value -> run(view, SET, name, setting.name(), value)));
         }
         int y = top + 3 * ROW;
         List<String> difficulties = data.choices().difficulties();
         if (!difficulties.isEmpty())
-            difficultyChoice(view, tr("war.difficulty"), difficulties, keep(difficulties, rules.difficulty(), difficulties.get(0)), x, y, half,
-                difficulty -> run(view, "teams war set", name, "difficulty", difficulty));
+        {
+            int editWidth = 40;
+            difficultyChoice(view, tr("war.difficulty"), difficulties, keep(difficulties, rules.difficulty(), difficulties.get(0)), x, y, half - editWidth - GAP,
+                difficulty -> run(view, SET, name, "difficulty", difficulty));
+            customDifficultyButton(view, rules.difficulty(), rules.custom(), x + half - editWidth, y, editWidth, custom -> run(view, SET, name, "difficulty custom", custom));
+        }
         int scopeWidth = (half - GAP) / 2;
         button(view, tr("war.scope_all"), x + half + GAP, y, scopeWidth, tr("war.scope_all.tip"), () -> run(view, SCOPE, name, "all")).active = !war.scope().isEmpty();
         button(view, tr("war.scope_here"), x + half + GAP + scopeWidth + GAP, y, scopeWidth, tr("war.scope_here.tip"), () -> run(view, SCOPE, name, "here"));

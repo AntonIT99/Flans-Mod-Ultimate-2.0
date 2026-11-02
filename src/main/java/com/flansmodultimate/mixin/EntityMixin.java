@@ -1,6 +1,8 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.common.driveables.collision.*;
+import com.flansmodultimate.common.driveables.parts.PartBodies;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -17,6 +19,8 @@ import net.minecraft.world.phys.*;
  * and with other entities' bounding boxes, which cannot describe a rotated, shaped hull. Movement that could reach a
  * hull is resolved by {@link DriveableCollisionWorld} using the same axis order and step-up rules; all other movement
  * runs vanilla unchanged.
+ * Entities wearing a solid part body instead move that body's posed geometry against terrain and solid entities,
+ * so ground and wall contacts use their actual parts rather than their vanilla bounding box.
  * </p>
  *
  * <p>
@@ -40,7 +44,11 @@ public abstract class EntityMixin implements HullCarriedEntity
     @Inject(method = "collide(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", at = @At("HEAD"), cancellable = true)
     private void flansmodultimateCollideWithDriveableHulls(Vec3 movement, CallbackInfoReturnable<Vec3> callback)
     {
-        Vec3 result = DriveableCollisionWorld.collide((Entity) (Object) this, movement);
+        Entity entity = (Entity) (Object) this;
+        PartBody body = PartBodies.of(entity);
+        Vec3 result = body == null || entity.isPassenger() ? null : body.collideMovement(movement);
+        if (result == null)
+            result = DriveableCollisionWorld.collide(entity, movement);
         if (result != null)
             callback.setReturnValue(result);
     }

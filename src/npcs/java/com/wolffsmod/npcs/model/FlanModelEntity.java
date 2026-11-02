@@ -31,6 +31,7 @@ import net.minecraft.world.level.Level;
 public class FlanModelEntity extends Mob implements ILivingVisualEffects
 {
     public static final String PAINTJOB_KEY = "FlanPaintjob";
+    @lombok.Setter
     private int paintjobId;
     private boolean hurtFlash = true;
     private boolean deathRotation = true;

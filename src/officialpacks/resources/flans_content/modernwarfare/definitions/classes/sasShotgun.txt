@@ -1,0 +1,14 @@
+// Identity
+Name Shotgun Specialist (Remington 870)
+ShortName sasShotgun
+Description Close-range specialist carrying buckshot and a sidearm.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem r870
+AddItem 12gbuckshotAmmo 24
+AddItem sigP226
+AddItem sigP226Ammo 2
+AddItem mwKnife

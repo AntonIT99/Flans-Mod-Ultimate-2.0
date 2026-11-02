@@ -1,0 +1,10 @@
+// Identity
+Name Machine Gunner (Bren)
+ShortName OfficialWW2_BritishSupportBren
+
+// Items
+AddItem bren
+AddItem brenAmmo100 4
+AddItem webley
+AddItem webleyAmmo 2
+AddItem ww2Knife

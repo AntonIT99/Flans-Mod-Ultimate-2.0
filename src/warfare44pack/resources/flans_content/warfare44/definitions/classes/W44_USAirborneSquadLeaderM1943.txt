@@ -1,0 +1,23 @@
+// Identity
+Name Squad Leader (M1943)
+ShortName W44_USAirborneSquadLeaderM1943
+Description Late-war airborne loadout wearing the pack standard M1943 jacket and trousers.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_AmericanM1943CombatFieldUniformChest
+Legs 44_AmericanM1943CombatFieldUniformPants
+
+// Items
+AddItem 44_ThompsonM1A1
+AddItem 44_ThompsonM1A1Ammo 4
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
+AddItem 44_Binoculars
+AddItem 44_SmokeM8Smoke 3
+AddItem 44_Bandage
+AddItem 44_Parachute

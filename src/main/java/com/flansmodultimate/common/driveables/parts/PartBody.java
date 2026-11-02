@@ -452,6 +452,13 @@ public final class PartBody implements IPartBody
         return solid && collision != null && collision.supports(entity);
     }
 
+    /** Uses the solid part geometry for the wearer's own movement; null retains vanilla collision. */
+    @Nullable
+    public Vec3 collideMovement(Vec3 movement)
+    {
+        return solid && collision != null ? collision.collideMovement(movement) : null;
+    }
+
     @Override
     public void setHealth(String name, float health)
     {
@@ -598,6 +605,12 @@ public final class PartBody implements IPartBody
     private Vec3 directionToWorld(Vec3 local)
     {
         return axisX.scale(local.x).add(axisY.scale(local.y)).add(axisZ.scale(local.z));
+    }
+
+    /** World direction of an armour-frame vector, following the posed turret and barrel. */
+    public Vec3 armourDirectionToWorld(EnumDriveablePart part, Vec3 direction)
+    {
+        return directionToWorld(DriveableProjectileCollision.partDirectionToHullLocal(mirror(direction), part, pose.turret().yaw(), pose.turret().pitch()));
     }
 
     private Vec3 toLocal(Vec3 world)

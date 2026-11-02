@@ -1,0 +1,19 @@
+// Identity
+Name Support (BAR, Winter Greatcoat)
+ShortName W44_USArmyWinterSupport
+Description BAR gunner in a wool greatcoat with a deployable ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_AmericanGreatCoat
+
+// Items
+AddItem 44_BAR
+AddItem 44_BARAmmo 6
+AddItem 44_Colt
+AddItem 44_ColtAmmo 2
+AddItem 44_AmmoBag
+AddItem 44_Bandage

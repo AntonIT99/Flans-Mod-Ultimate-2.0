@@ -60,8 +60,19 @@ if (Test-Path $marker)
     exit 0
 }
 
-$report = @(& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\idea-inspect.ps1') -MinSeverity WARNING 2>&1)
-if ($LASTEXITCODE -ne 0)
+$previousErrorAction = $ErrorActionPreference
+try
+{
+    # Windows PowerShell treats native stderr as error records, including the coordinator's normal queue notice.
+    $ErrorActionPreference = 'Continue'
+    $report = @(& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\run-validation.ps1') Idea -MinSeverity WARNING 2>&1)
+    $inspectionExit = $LASTEXITCODE
+}
+finally
+{
+    $ErrorActionPreference = $previousErrorAction
+}
+if ($inspectionExit -ne 0)
 {
     # The inspection itself failed (no IntelliJ, a broken index). Do not hold up the turn for it, but say so,
     # otherwise a check that quietly stopped working looks exactly like a clean run.

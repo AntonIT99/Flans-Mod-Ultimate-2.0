@@ -9,8 +9,8 @@ import java.util.List;
 /** Remembers successful generation after the final archive swap, independently for client and data. */
 final class ContentProcessingCache
 {
-    // 2: a fingerprint of the file stamps and the pack's path instead of every stamp.
-    private static final int VERSION = 2;
+    // 3: generated recipes also need hidden recipe-book unlock advancements.
+    private static final int VERSION = 3;
     private record Entry(String source, int version, String files, String definitions, boolean assets, boolean data)
     {}
     private final IContentProvider provider;

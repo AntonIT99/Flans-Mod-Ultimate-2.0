@@ -110,10 +110,12 @@ public final class WarCommands
         war.then(number("range", 16, 512, War::setRange));
         war.then(number("engagements", 1, 16, War::setMostEngagements));
         war.then(number("flip", 5, 3600, War::setFlipSeconds));
-        LiteralArgumentBuilder<CommandSourceStack> difficulty = Commands.literal("difficulty");
-        for (BotSettings.Difficulty value : BotSettings.Difficulty.values())
-            difficulty.then(Commands.literal(BotCommands.lower(value)).executes(context -> edit(context, target -> target.setDifficulty(value), text(SET, "difficulty", BotCommands.lower(value)))));
-        war.then(difficulty);
+        war.then(BotCommands.difficulty((context, level, custom, shown) -> edit(context, target ->
+        {
+            target.setDifficulty(level);
+            if (custom != null)
+                target.setCustomTraining(custom);
+        }, text(SET, "difficulty", shown))));
         return Commands.literal(SET).then(war);
     }
 

@@ -8,6 +8,7 @@ import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
@@ -17,7 +18,9 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.sim.TargetMotion;
+import com.wolffsmod.npcs.tactics.NpcCombatMovement;
 import com.wolffsmod.npcs.tactics.NpcTactics;
+import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
 import com.wolffsmod.npcs.tactics.ShipBearing;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -153,6 +156,9 @@ public final class NpcDriver
     /** What a ship is doing with its target; null while it fights nothing. */
     @Nullable
     private ShipBearing.Course course;
+    @Nullable
+    private Vec3 armorOrdered;
+    private long armorOrderedAt = Long.MIN_VALUE / 2;
     /** What the NPC did at the controls last tick, for the movement debug; null while it does not drive. */
     @Nullable
     private Report report;
@@ -261,22 +267,72 @@ public final class NpcDriver
             return null;
         }
         double distance = horizontal(position, target.position());
-        double standoff = NpcBlastSafety.standoff(npc, blastReach());
+        double standoff = combatDistance(npc, seat, target);
+        boolean adaptive = NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) && NpcCombatMovement.allowed(npc);
         if (standoff > distance)
         {
             course = null;
             double back = standoff - distance + STANDOFF_MARGIN;
-            return new Route(position.add(away(position, target.position(), heading).scale(back)), back);
+            Vec3 point = position.add(away(position, target.position(), heading).scale(back));
+            return !adaptive || NpcCombatMovement.permits(npc, point) ? new Route(point, back) : null;
         }
         if (!NpcEquipment.enabled(npc, Feature.SHIP_WEAPON_BEARING) || !ship(seat) || distance > Math.max(MIN_FIRE_RANGE, npc.stats.ranged.getRange()))
         {
             course = null;
-            return null;
+            return adaptive ? groundCourse(npc, seat, target, position) : null;
         }
         // A ship steams on rather than stopping, so its goal stays a fixed lead ahead of it and it never brakes for it.
         double hold = Math.max(standoff, NpcTactics.engagement(npc).preferred());
         course = ShipBearing.course(bowWeapon, distance, hold, course);
         return new Route(ShipBearing.point(course, position, target.position(), hold, (npc.getId() & 1) == 0 ? 1 : -1), ShipBearing.LEAD);
+    }
+
+    @Nullable
+    private Route groundCourse(EntityNPCInterface npc, ISeat seat, LivingEntity target, Vec3 position)
+    {
+        Route flank = armorCourse(npc, target, position);
+        return flank != null ? flank : lateralCourse(npc, seat, target, position);
+    }
+
+    @Nullable
+    private Route armorCourse(EntityNPCInterface npc, LivingEntity target, Vec3 position)
+    {
+        Vec3 flank = NpcVehicleCombat.armorFlank(npc, target);
+        if (flank == null)
+        {
+            armorOrdered = null;
+            return null;
+        }
+        long now = npc.level().getGameTime();
+        if (armorOrdered == null || armorOrdered.distanceToSqr(flank) > 4D || npc.getNavigation().isDone() && now - armorOrderedAt >= 20L)
+        {
+            npc.getNavigation().moveTo(flank.x, flank.y, flank.z, 1D);
+            armorOrdered = flank;
+            armorOrderedAt = now;
+        }
+        return route(npc, position, LOOKAHEAD + NpcVehicleThreats.platform(npc).getBbWidth() * 0.5D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
+    }
+
+    private double combatDistance(EntityNPCInterface npc, ISeat seat, LivingEntity target)
+    {
+        double standoff = NpcBlastSafety.standoff(npc, blastReach());
+        if (!NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || !NpcCombatMovement.allowed(npc) || ship(seat) || NpcVehicleThreats.groundVehicle(target))
+            return standoff;
+        boolean safeBank = seat.getDriverWeaponOrigin(false).isPresent() && primaryBlast <= 0D || seat.getDriverWeaponOrigin(true).isPresent() && secondaryBlast <= 0D;
+        return NpcVehicleCombat.infantryDistance(npc.stats.ranged.getRange(), safeBank ? 0D : standoff);
+    }
+
+    @Nullable
+    private static Route lateralCourse(EntityNPCInterface npc, ISeat seat, LivingEntity target, Vec3 position)
+    {
+        if (ship(seat) || npc.distanceTo(target) > npc.stats.ranged.getRange())
+            return null;
+        Optional<Vec3> muzzle = seat.getDriverWeaponOrigin(turretBank(seat));
+        if (muzzle.isEmpty()
+            || npc.level().clip(new ClipContext(muzzle.get(), target.getBoundingBox().getCenter(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc)).getType() == HitResult.Type.MISS)
+            return null;
+        Vec3 point = NpcVehicleCombat.lateralPosition(npc, muzzle.get(), target);
+        return point == null ? null : new Route(point, horizontal(position, point));
     }
 
     /** @return the horizontal unit direction from the target to the driveable, or straight back along its heading when it is right on top of it */
@@ -539,8 +595,15 @@ public final class NpcDriver
         track(target, npc.level().getGameTime());
         Vec3 aimPoint = target.getBoundingBox().getCenter();
         boolean secondary = turretBank(seat);
+        if (NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) && !NpcVehicleThreats.groundVehicle(target))
+        {
+            boolean other = !secondary;
+            if (seat.getDriverWeaponOrigin(other).isPresent() && !seat.isDriverWeaponHullFixed(other) && blastReach(other) < blastReach(secondary))
+                secondary = other;
+        }
+        boolean aimedBank = secondary;
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
-        Optional<Vec3> launch = origin.map(from -> launch(npc, seat, secondary, aimPoint.subtract(from)));
+        Optional<Vec3> launch = origin.map(from -> launch(npc, seat, aimedBank, aimPoint.subtract(from)));
         if (origin.isPresent() && launch.isPresent())
             seat.aimAt(origin.get().add(launch.get().scale(aimPoint.distanceTo(origin.get()))));
         else
@@ -589,6 +652,8 @@ public final class NpcDriver
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         Optional<Vec3> direction = seat.getDriverWeaponDirection(secondary);
         if (origin.isEmpty() || direction.isEmpty())
+            return false;
+        if (!NpcVehicleCombat.mayFire(npc, target, origin.get(), seat.getDriverWeaponArmor(secondary), blastReach(secondary) > 0D))
             return false;
         Vec3 aimPoint = target.getBoundingBox().getCenter();
         Vec3 line = aimPoint.subtract(origin.get());

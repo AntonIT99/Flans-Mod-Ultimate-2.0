@@ -3,7 +3,8 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
-import com.flansmodultimate.platform.block.FlanEntityBlock;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.teams.PacketSpawnerEditState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +26,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public final class TeamSpawnerBlock extends FlanEntityBlock
+@SuppressWarnings("java:S110") // The shared Teams policy extends Minecraft's existing block hierarchy.
+public final class TeamSpawnerBlock extends TeamObjectBlock
 {
     private static final VoxelShape SHAPE = box(0D, 0D, 0D, 16D, 1D, 16D);
     private final TeamSpawnerBlockEntity.Mode mode;
@@ -92,10 +94,9 @@ public final class TeamSpawnerBlock extends FlanEntityBlock
             spawner.addTemplate(held.copyWithCount(held.getCount()));
             player.displayClientMessage(Component.literal("Added " + held.getHoverName().getString() + " to this spawner"), false);
         }
-        else if (held.isEmpty())
+        else
         {
-            spawner.cycleSpawnDelay();
-            player.displayClientMessage(Component.literal("Spawn delay: " + spawner.getSpawnDelayTicks() / 20 + " seconds"), false);
+            PacketHandler.sendTo(PacketSpawnerEditState.of(spawner), serverPlayer);
         }
         return InteractionResult.CONSUME;
     }

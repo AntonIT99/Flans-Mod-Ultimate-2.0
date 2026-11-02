@@ -19,3 +19,8 @@ AddClass sasAssault1
 AddClass sasAssault2
 AddClass sasMedic1
 AddClass sasEngineer1
+AddClass sasAssaultMP5
+AddClass sasAssaultMP5Suppressed
+AddClass sasShotgun
+AddClass sasDemolitions
+AddClass sasAssaultMP5Balaclava

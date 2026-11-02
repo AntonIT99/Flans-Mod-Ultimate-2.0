@@ -42,8 +42,9 @@ class NpcLauncherReloadTest
     }
 
     @ParameterizedTest
-    @CsvSource({"MAIN_HAND,80,80", "MAIN_HAND,120,80", "MAIN_HAND,40,80", "OFF_HAND,80,80", "OFF_HAND,120,80", "OFF_HAND,40,80"})
-    void reloadOverlapsCadenceInEitherHand(InteractionHand testedHand, double shotDelay, double reloadTime) throws ReflectiveOperationException
+    @CsvSource({"MAIN_HAND,80,80,1", "MAIN_HAND,120,80,1", "MAIN_HAND,40,80,1", "OFF_HAND,80,80,1", "OFF_HAND,120,80,1", "OFF_HAND,40,80,1", "MAIN_HAND,80,80,4", "MAIN_HAND,120,80,4",
+        "MAIN_HAND,40,80,4", "OFF_HAND,80,80,4", "OFF_HAND,120,80,4", "OFF_HAND,40,80,4"})
+    void reloadOverlapsCadenceInEitherHand(InteractionHand testedHand, double shotDelay, double reloadTime, int decisionPeriod) throws ReflectiveOperationException
     {
         LivingEntity target = mock(LivingEntity.class);
         EntityNPCInterface npc = engagedNpc(target);
@@ -103,8 +104,14 @@ class NpcLauncherReloadTest
                 });
             }
             NpcEquipmentRangedGoal goal = new NpcEquipmentRangedGoal(npc);
+            goal.start();
             for (; tick[0] < 400; tick[0]++)
-                goal.tick();
+            {
+                if (tick[0] % decisionPeriod == 0)
+                    goal.tick();
+                else
+                    goal.tickBetweenDecisions();
+            }
             List<Integer> fired = shots.get(testedHand);
             assertTrue(fired.size() >= 3);
             for (int i = 1; i < fired.size(); i++)
@@ -113,6 +120,11 @@ class NpcLauncherReloadTest
                 assertEquals((int) Math.max(shotDelay, reloadTime), interval);
             }
             feedback.verify(() -> NpcReloadFeedback.reload(npc, testedHand, (int) reloadTime), atLeast(2));
+            verify(npc.getSensing(), times(400 - 400 / decisionPeriod)).tick();
+            goal.stop();
+            clearInvocations(npc.getSensing());
+            goal.tickBetweenDecisions();
+            verifyNoInteractions(npc.getSensing());
         }
     }
 

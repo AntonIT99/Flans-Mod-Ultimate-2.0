@@ -1,0 +1,9 @@
+// Identity
+Name Rifleman (Springfield)
+ShortName OfficialWW2_AmericanRiflemanSpringfield
+
+// Items
+AddItem springfield
+AddItem springfieldAmmo 5
+AddItem mk2Frag 2
+AddItem ww2Knife

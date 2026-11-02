@@ -52,7 +52,7 @@ public final class NpcRangedAttack
             return true;
         // Without a model the NPC fires what it carries itself: it keeps out of its own grenade's reach, and uses its rounds up.
         boolean carried = NpcModels.flan(npc) == null;
-        if (carried && FlansProjectiles.isGrenade(ammo) && NpcThrowing.tooClose(npc, target, ammo))
+        if (carried && FlansProjectiles.isGrenade(ammo) && NpcThrowing.shouldWithholdGrenade(npc, target, ammo))
             return true;
         if (new Attack(npc, target, ammo, options, highArc, sequence).fire() && carried && NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
             NpcAmmunition.consume(npc, ammo);
@@ -123,7 +123,7 @@ public final class NpcRangedAttack
             held = npc.getMainHandItem();
             model = NpcModels.flan(npc);
             definition = model == null ? null : model.getInfoType();
-            secondary = NpcEquipment.secondaryBank(options, definition);
+            secondary = NpcEquipment.secondaryBank(npc, definition);
             this.target = target;
             state = NpcVehicleState.of(npc);
             damage = npc.stats.ranged.getStrength();
@@ -225,6 +225,9 @@ public final class NpcRangedAttack
         private boolean launch(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, @Nullable Weapon adjusted, boolean fixed)
         {
             ItemStack selectedAmmo = ammunition(muzzle);
+            if (target != null && definition instanceof IDriveableType && !NpcVehicleCombat.mayFire(npc, target, origin,
+                FlansProjectiles.getArmorPerformance(selectedAmmo, sequence * shotCount + shotIndex, muzzle.weapon().orElse(null), definition), NpcBlastSafety.reach(selectedAmmo) > 0D))
+                return false;
             var prepared = FlansProjectiles.prepare(npc, selectedAmmo, held, muzzle.weapon().orElse(null), definition, secondary, parameters(shotIndex, adjusted));
             if (prepared.isEmpty())
                 return false;
@@ -294,7 +297,7 @@ public final class NpcRangedAttack
         {
             if (modelMuzzles)
                 // Every usual barrel count divides 120, so the remainder still names the barrel after the trip to the client.
-                state.fired(Math.floorMod(sequence, 120));
+                state.fired(Math.floorMod(sequence, 120), definition, secondary);
             if (!soundPlayed)
                 // The NPC's own firing sound stands in for the model's, and carries as far as a gun's.
                 NpcSounds.play(npc, npc.stats.ranged.getSound(0), SoundRange.GUN_FIRE);

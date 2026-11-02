@@ -98,6 +98,7 @@ public final class NpcInspection
         if (threat != null)
             lines.add(Component.translatable(KEY + (NpcOutrangedGoal.outranged(npc) ? "live_threat_outranged" : "live_threat"), threat.getName(), decimal(Math.sqrt(npc.distanceToSqr(threat)))));
         NpcTacticState tactic = NpcTacticState.of(npc);
+        lines.add(Component.translatable(KEY + "live_safety", tactic.getSafety().getAction().name().toLowerCase(Locale.ROOT)));
         lines.add(Component.translatable(KEY + "live_tactic", tactic.getPhase().name().toLowerCase(Locale.ROOT),
             Component.translatable(KEY + (tactic.isReloading(npc.level().getGameTime()) ? "reloading" : "ready"))));
         NpcFlight flight = NpcVehicleState.of(npc).getFlight();

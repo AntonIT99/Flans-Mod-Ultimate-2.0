@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -116,6 +117,8 @@ public final class PacketTeamsState implements IClientPacket
     private String deployImage = "";
     private TeamsMap.ImageCrop deployImageCrop = TeamsMap.ImageCrop.FULL;
     private List<DeployLayoutEntry> deployLayout = List.of();
+    @Getter
+    private List<VehicleDeploySnapshot> vehicleDeployments = List.of();
     private List<ObjectiveSnapshot> objectives = List.of();
     @Getter
     private List<HeadquartersMarker> headquarters = List.of();
@@ -220,6 +223,7 @@ public final class PacketTeamsState implements IClientPacket
         deployImage = map.getDeployImage();
         deployImageCrop = map.getDeployImageCrop();
         deployLayout = map.getDeployLayout();
+        vehicleDeployments = manager.getVehicleDeployment().snapshots(viewer);
         headquarters = manager.getHeadquartersPositions().entrySet().stream().map(entry -> new HeadquartersMarker(entry.getKey(), entry.getValue().x, entry.getValue().z)).toList();
     }
 
@@ -380,6 +384,7 @@ public final class PacketTeamsState implements IClientPacket
             buf.writeDouble(marker.x());
             buf.writeDouble(marker.z());
         });
+        data.writeCollection(vehicleDeployments, (buf, point) -> point.write(new PacketBuffer((RegistryFriendlyByteBuf) buf)));
     }
 
     private static void writePlayer(PacketBuffer data, PlayerScore player)
@@ -454,6 +459,7 @@ public final class PacketTeamsState implements IClientPacket
         deployLayout = data.readList(buf -> new DeployLayoutEntry(buf.readUtf(DeployLayoutEntry.MAX_KEY_LENGTH), buf.readFloat(), buf.readFloat()));
         objectives = data.readList(ObjectiveSnapshot::read);
         headquarters = data.readList(buf -> new HeadquartersMarker(buf.readVarInt(), buf.readDouble(), buf.readDouble()));
+        vehicleDeployments = data.readList(buf -> VehicleDeploySnapshot.read(new PacketBuffer((RegistryFriendlyByteBuf) buf)));
     }
 
     private static TeamScore readTeamScore(PacketBuffer data)

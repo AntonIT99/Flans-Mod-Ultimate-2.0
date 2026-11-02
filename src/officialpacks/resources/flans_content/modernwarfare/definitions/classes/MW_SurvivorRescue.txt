@@ -1,0 +1,14 @@
+// Identity
+Name Rescue Officer
+ShortName MW_SurvivorRescue
+
+// Availability
+AddToTeam zombie:survivors
+
+// Items
+AddItem mp5+flanMWFlashlight
+AddItem mp5Ammo 4
+AddItem usp
+AddItem uspAmmo 2
+AddItem mwMedKit
+AddItem mwKnife

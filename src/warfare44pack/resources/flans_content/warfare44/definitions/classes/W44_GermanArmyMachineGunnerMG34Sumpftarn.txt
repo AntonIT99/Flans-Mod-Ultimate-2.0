@@ -1,0 +1,18 @@
+// Identity
+Name Machine Gunner (MG34, Sumpftarn M43)
+ShortName W44_GermanArmyMachineGunnerMG34Sumpftarn
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_GermanSumpftarnM43CamoSmock
+
+// Items
+AddItem 44_Mg34
+AddItem 44_Mg34Ammo 6
+AddItem 44_Luger
+AddItem 44_LugerAmmo 2
+AddItem 44_AmmoBag
+AddItem 44_Bandage

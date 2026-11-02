@@ -204,7 +204,7 @@ public final class ShootingHelper
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             float prevPenetratingPower = penetratingPower;
-            HitData playerHitData = playerHit.getHitbox().hitByBullet(shot, hitData, bullet);
+            HitData playerHitData = playerHit.getHitbox().hitByBullet(shot, hitData, bullet, hit, shootingMotion);
             penetratingPower = playerHitData.penetratingPower();
             lastHitPenAmount = playerHitData.lastHitPenAmount();
             lastHitHeadshot = playerHitData.lastHitHeadshot();
@@ -218,7 +218,7 @@ public final class ShootingHelper
         else if (bulletHit instanceof PartBodyHit partHit)
         {
             // A stand-in hit by the part meets the armour of the part and face the round struck.
-            HitData entityHitData = onEntityHit(level, shot, bullet, partHit.getEntity(), partHit, hit, ModelArmourDamage.resolve(partHit, shot, bulletType, penetratingPower),
+            HitData entityHitData = onEntityHit(level, shot, bullet, partHit.getEntity(), partHit, hit, shootingMotion, ModelArmourDamage.resolve(partHit, shot, bulletType, penetratingPower),
                 new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
             penetratingPower = entityHitData.penetratingPower();
             lastHitPenAmount = entityHitData.lastHitPenAmount();
@@ -230,7 +230,7 @@ public final class ShootingHelper
         {
             Entity entity = entityHit.getEntity();
             // A stand-in for a driveable meets that driveable's armour instead of soft flesh.
-            HitData entityHitData = onEntityHit(level, shot, bullet, entity, null, hit, ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower),
+            HitData entityHitData = onEntityHit(level, shot, bullet, entity, null, hit, shootingMotion, ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower),
                 new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
             penetratingPower = entityHitData.penetratingPower();
             lastHitPenAmount = entityHitData.lastHitPenAmount();
@@ -265,8 +265,8 @@ public final class ShootingHelper
      */
     // Every argument is one fact of the hit; a holder would only be built to be taken apart again.
     @SuppressWarnings("java:S107")
-    private static HitData onEntityHit(Level level, FiredShot shot, @Nullable Bullet bullet, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Optional<ModelArmourDamage.Result> armoured,
-        HitData hitData)
+    private static HitData onEntityHit(Level level, FiredShot shot, @Nullable Bullet bullet, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Vec3 shootingMotion,
+        Optional<ModelArmourDamage.Result> armoured, HitData hitData)
     {
         BulletType bulletType = shot.getBulletType();
         float penetratingPower = hitData.penetratingPower();
@@ -280,6 +280,10 @@ public final class ShootingHelper
 
         boolean armourBlocked = armoured.map(ModelArmourDamage.Result::blocked).orElse(false);
 
+        armoured.ifPresent(result -> ArmorImpactHandler.dispatchModel(shot, entity, partHit, result.armour().facing().outwardNormal(), result.blocked()));
+
+        armoured.ifPresent(result -> spawnArmourImpact(level, shot, entity, partHit, hit, shootingMotion, result));
+
         if (!level.isClientSide && !armourBlocked)
         {
             float damage = armoured.map(ModelArmourDamage.Result::damage).orElseGet(() -> ShootingHelper.getDamage(entity, bullet, shot));
@@ -287,10 +291,12 @@ public final class ShootingHelper
             if (partHit != null && armoured.map(ModelArmourDamage.Result::shapedCharge).orElse(false))
                 partHit.getBody().markShapedCharge(partHit.getPart(), partHit.getHitPosition(), level.getGameTime());
 
-            if (damage > 0F && hurt(entity, partHit, shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+            if (damage > 0F && (entity instanceof LivingEntity victim
+                ? BloodEffects.hurt(victim, hit, shootingMotion, () -> hurt(entity, partHit, shot.getDamageSource(level, bullet), damage))
+                : hurt(entity, partHit, shot.getDamageSource(level, bullet), damage)) && entity instanceof LivingEntity living)
             {
-                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entity.getX(), entity.getY(), entity.getZ(), 0, 0, 0), entity.position(),
-                    ModCommonConfig.entityHitParticleRange(), level.dimension());
+                if (!(entity instanceof Player) && !(entity instanceof com.flansmodultimate.api.entity.ILivingVisualEffects))
+                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, hit.x, hit.y, hit.z, 0, 0, 0), hit, ModCommonConfig.entityHitParticleRange(), level.dimension());
                 bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                 // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                 living.invulnerableTime = living.hurtDuration / 2;
@@ -309,6 +315,14 @@ public final class ShootingHelper
             bullet.getPenetrationLosses().add(new PenetrationLoss(Math.max(0F, powerBefore - penetratingPower), PenetrationLoss.EnumType.ENTITY));
 
         return new HitData(penetratingPower, lastHitPenAmount, hitData.lastHitHeadshot());
+    }
+
+    private static void spawnArmourImpact(Level level, FiredShot shot, Entity entity, @Nullable PartBodyHit partHit, Vec3 hit, Vec3 shootingMotion, ModelArmourDamage.Result result)
+    {
+        Vec3 normal = partHit == null
+            ? ModelArmourDamage.worldDirection(entity, result.armour().virtualNormal())
+            : partHit.getBody().armourDirectionToWorld(partHit.getPart(), result.armour().virtualNormal());
+        ArmourImpactEffects.send(level, hit, shootingMotion, normal, shot.getProjectileMass(), result.armour(), result.blocked());
     }
 
     /**

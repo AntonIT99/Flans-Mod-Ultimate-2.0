@@ -26,9 +26,16 @@ public final class FlanModelNpcs
      */
     public static Optional<EntityCustomNpc> spawn(ServerLevel level, String shortName, Vec3 position, float yaw)
     {
+        return spawn(level, shortName, position, yaw, 0);
+    }
+
+    /** Places the vehicle wearing the paintjob chosen by its server-side allocation. */
+    public static Optional<EntityCustomNpc> spawn(ServerLevel level, String shortName, Vec3 position, float yaw, int paintjob)
+    {
         return type(shortName).map(type ->
         {
             FlanModelEntity model = new FlanModelEntity(type, level);
+            model.setPaintjobId(paintjob);
             model.moveTo(position.x, position.y, position.z, yaw, 0F);
             return FlanModelSummons.replace(level, model);
         });

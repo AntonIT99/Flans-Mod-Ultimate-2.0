@@ -24,9 +24,15 @@ public final class NpcWeaponOptions
                                 true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(
                                     true), PATH_DEBUG(false), CONSUME_AMMO(false), PART_HITBOXES(true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(
                                         true), HITBOX_OUTLINES(false), SOLID_HITBOXES(true), ARMOR_POTION_EFFECTS(true), MANNED_GUNS_FIRE(true), MELEE_DUAL_WIELD(false), DRIVE_DRIVEABLES(
-                                            false), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
+                                            true), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
         /** Flan ammunition in the projectile slot is only fired by a held gun or model that takes it, as ammunition from the inventory always is. */
         FITTING_SLOT_AMMO(false),
+        /**
+         * An NPC with infinite ammunition may fall back on every round its weapon, or its model's selected bank, is issued
+         * with by default, beside what it carries, and chooses between them to suit its target. Turning it off holds the NPC
+         * to the rounds it was actually given.
+         */
+        DEFAULT_AMMO(true),
         /** A vehicle or mecha whose definition squashes mobs runs over everything in its way but its allies. */
         RUN_OVER(true),
         /** Landing gear that retracts while the aircraft flies and comes down near the ground; the gear row shows it as a third choice beside down and up. */
@@ -88,9 +94,33 @@ public final class NpcWeaponOptions
          */
         SUPPRESSIBLE(false),
         /** An NPC on foot looks at the enemies its weapons suit first: an anti-tank soldier at armour, any other at infantry. */
-        SUITED_TARGETS(false),
+        SUITED_TARGETS(true),
+        /** Takes cover under effective fire and while reloading, including from enemies within firing range. */
+        TACTICAL_COVER(true),
+        /** Breaks contact with protected vehicles the weapons carried cannot usefully engage. */
+        AVOID_UNWINNABLE_FIGHTS(true),
+        /** Steps out of a moving vehicle's predicted path. */
+        VEHICLE_EVASION(true),
+        /** Chooses a carried weapon and compatible ammunition to suit the target, with either ammunition policy. */
+        TACTICAL_WEAPON_SWITCH(true),
+        /** Approaches protected vehicles from a reachable side when carrying an anti-armour weapon. */
+        ADAPTIVE_FLANKING(true),
+        /** Leaves space between nearby allies when choosing combat positions. */
+        ALLY_SPACING(true),
+        /** Ground vehicles choose firing positions and weapons together instead of closing for the main gun alone. */
+        ADAPTIVE_VEHICLE_COMBAT(true),
+        /** Seat gunners look for threats even while the vehicle has no main target. */
+        DEFENSIVE_GUNNERS(true),
         /** Only players its faction is friendly to see the NPC's name tag. */
-        ALLY_NAME_TAGS(false);
+        ALLY_NAME_TAGS(false),
+        /** Retains movement orders in combat and alternates short infantry advances with aimed fire. */
+        COMBAT_ADVANCE(true),
+        /** Fires from a position while a nearby ally crosses toward the same enemy. */
+        COVERING_FIRE(true),
+        /** A soldier places carried deployable guns and mans free deployable or AA emplacements during combat. */
+        MAN_EMPLACEMENTS(true),
+        /** Allied players may deploy from a vehicle spawner into this NPC's seat in a real Flan driveable. */
+        PLAYER_SEAT_DEPLOYMENT(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

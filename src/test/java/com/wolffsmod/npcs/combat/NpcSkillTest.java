@@ -46,7 +46,7 @@ class NpcSkillTest
         assertEquals(100, tuning.get(Value.LEAD_SHARE));
         assertEquals(100, tuning.get(Value.PLAYER_DAMAGE));
         assertEquals(NpcTuning.Duty.NONE, tuning.duty());
-        assertEquals(0, tuning.get(Value.RETREAT_HEALTH));
+        assertEquals(30, tuning.get(Value.RETREAT_HEALTH));
     }
 
     /** Every level fits the settings it fills in, in tenths of a degree and percent, without losing anything on the way. */

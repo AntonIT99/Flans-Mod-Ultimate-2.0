@@ -51,7 +51,8 @@ public final class TeamsCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(TEAMS).executes(TeamsCommand::help).then(Commands.literal("help").executes(TeamsCommand::help))
+        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(TEAMS).then(com.flansmodultimate.common.teams.centre.SettingsPresets.commands())
+            .executes(TeamsCommand::help).then(Commands.literal("help").executes(TeamsCommand::help))
             .then(Commands.literal("join")
                 .then(Commands.argument("team", StringArgumentType.string())
                     .suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().map(Team::getShortName).map(StringArgumentType::escapeIfRequired), builder))
@@ -91,6 +92,11 @@ public final class TeamsCommand
         {
             manager().stopRound();
             return success(context, "Round stopped");
+        }));
+        root.then(Commands.literal("restart").requires(source -> source.hasPermission(2)).executes(context ->
+        {
+            manager().stopRound();
+            return manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND);
         }));
         root = addRuleCommands(root)
             .then(Commands.literal("start").requires(source -> source.hasPermission(2))
@@ -232,6 +238,7 @@ public final class TeamsCommand
     {
         root.then(Commands.literal("prestige").executes(TeamsCommand::prestige)).then(Commands.literal("deploy").executes(TeamsCommand::openDeployment))
             .then(Commands.literal("listRotation").executes(TeamsCommand::listRounds)).then(rule("pacifism", TeamsManager::setPacifism, enabled -> "Pacifism is now " + (enabled ? ENABLED : DISABLED)))
+            .then(rule("bloodEffects", TeamsManager::setBloodEffects, enabled -> "Blood effects are now " + (enabled ? ENABLED : DISABLED)))
             .then(rule("movieProp", TeamsManager::setMovieProp, enabled -> "Vehicle self-driving movie prop mode is now " + (enabled ? ENABLED : DISABLED)))
             .then(Commands.literal("seaLevel").requires(source -> source.hasPermission(2)).then(Commands.literal("default").executes(context -> setSeaLevel(context, null)))
                 .then(Commands.argument("y", IntegerArgumentType.integer(-2048, 2048)).executes(context -> setSeaLevel(context, IntegerArgumentType.getInteger(context, "y")))))
@@ -436,7 +443,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection> <seconds>"),
+                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|canBreakGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -444,7 +451,7 @@ public final class TeamsCommand
                 "Maps and Labjac rules: /teams <addMap|addMapWithBounds|removeMap|renameMap|setMapImage|addRound|removeRound|listRotation>, /teams <pacifism|movieProp> <true|false>, /teams seaLevel <y|default>, /teams shake <strength>, /teams setRank <rank> [player]"),
                 false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Administration: /teams stop; /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|rankUpdateTime|votingTime|autobalancetime|roundsGenerator|start|next|setnext|stop|arena|survival|kit|map|round|setvariable|ping|bltss>"),
+                "Administration: /teams stop; /teams restart; /teams admin <loadoutpool|xpmultiplier|xp|resetrank|giverewardbox|enabled|voting|scoreDisplayTime|rankUpdateTime|votingTime|autobalancetime|roundsGenerator|start|next|setnext|stop|arena|survival|kit|map|round|setvariable|ping|bltss>"),
                 false);
         }
         return 1;

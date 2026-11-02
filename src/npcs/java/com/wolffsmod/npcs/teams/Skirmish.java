@@ -122,6 +122,8 @@ final class Skirmish
     /** Tickets each side may spend on bringing bots back; 0 for no limit. */
     private int tickets;
     private BotSettings.Difficulty difficulty = BotSettings.Difficulty.REGULAR;
+    /** What bots are trained to at the custom difficulty. */
+    private BotTraining customTraining = BotSettings.DEFAULT_CUSTOM;
     /** Whether its bots cannot be hurt while it rests during a Teams round. */
     private boolean protection = true;
     /** The map whose markers its bots use, such as route points; empty for none. */
@@ -188,6 +190,7 @@ final class Skirmish
         copy.respawnSeconds = respawnSeconds;
         copy.tickets = tickets;
         copy.difficulty = difficulty;
+        copy.customTraining = customTraining;
         copy.protection = protection;
         copy.markerMap = markerMap;
         return copy;
@@ -228,6 +231,7 @@ final class Skirmish
         tag.putInt(NBT_RESPAWN_SECONDS, respawnSeconds);
         tag.putInt(NBT_TICKETS, tickets);
         tag.putString(NBT_DIFFICULTY, difficulty.name());
+        tag.put(BotSettings.NBT_CUSTOM_DIFFICULTY, customTraining.save());
         tag.putBoolean(NBT_PROTECTION, protection);
         tag.putString(NBT_MARKERS, markerMap);
         if (war != null)
@@ -272,6 +276,7 @@ final class Skirmish
         skirmish.respawnSeconds = Math.max(0, tag.getInt(NBT_RESPAWN_SECONDS));
         skirmish.tickets = Math.max(0, tag.getInt(NBT_TICKETS));
         skirmish.difficulty = BotSettings.parse(BotSettings.Difficulty.class, tag.getString(NBT_DIFFICULTY), BotSettings.Difficulty.REGULAR);
+        skirmish.customTraining = BotTraining.load(tag.getCompound(BotSettings.NBT_CUSTOM_DIFFICULTY), BotSettings.DEFAULT_CUSTOM);
         skirmish.protection = tag.getBoolean(NBT_PROTECTION);
         skirmish.markerMap = tag.getString(NBT_MARKERS);
         skirmish.war = tag.hasUUID(NBT_WAR) ? tag.getUUID(NBT_WAR) : null;

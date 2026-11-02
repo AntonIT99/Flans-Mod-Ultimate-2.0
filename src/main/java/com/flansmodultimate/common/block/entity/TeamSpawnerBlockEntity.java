@@ -1,12 +1,14 @@
 package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansModBlocks;
-import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.api.teams.SpawnerNpcPolicy;
+import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
@@ -16,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -24,6 +27,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -32,6 +36,9 @@ import java.util.*;
 
 public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITeamObject
 {
+    public static final int MAX_SPAWN_DELAY_SECONDS = Integer.MAX_VALUE / 20;
+    private static final String NBT_WAIT_FOR_VEHICLE = "wait_for_vehicle";
+    private static final String NBT_NPC_SPAWN_ALL = "npc_spawn_all";
     private static final String NBT_SPAWNER = "teams_spawner";
     private static final String NBT_OBJECT_ID = "object_id";
     private static final String NBT_BASE_ID = "base_id";
@@ -62,6 +69,30 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     @Getter
     private int teamColour = UNOWNED_COLOUR;
     private int currentDelay = 10;
+    private int templateRetryDelay;
+    @Getter
+    private boolean waitForVehicle = true;
+    @Getter
+    private SpawnerNpcPolicy npcPolicy = SpawnerNpcPolicy.ALL;
+    @Getter
+    private boolean npcSpawnAll = true;
+
+    public void setNpcSpawnAll(boolean npcSpawnAll)
+    {
+        if (mode != Mode.VEHICLE)
+            return;
+        this.npcSpawnAll = npcSpawnAll;
+        setChangedAndSync();
+    }
+
+    public void setVehicleSettings(boolean waitForVehicle, SpawnerNpcPolicy npcPolicy)
+    {
+        if (mode != Mode.VEHICLE)
+            return;
+        this.waitForVehicle = waitForVehicle;
+        this.npcPolicy = npcPolicy;
+        setChangedAndSync();
+    }
 
     public TeamSpawnerBlockEntity(BlockPos pos, BlockState state)
     {
@@ -70,15 +101,20 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
 
     public TeamSpawnerBlockEntity(BlockPos pos, BlockState state, Mode mode)
     {
-        super(FlansModBlocks.teamSpawnerBlockEntity.get(), pos, state);
+        this(FlansModBlocks.teamSpawnerBlockEntity.get(), pos, state, mode);
+    }
+
+    TeamSpawnerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Mode mode)
+    {
+        super(type, pos, state);
         this.mode = mode;
     }
 
-    public void cycleSpawnDelay()
+    public void setSpawnDelaySeconds(int seconds)
     {
-        spawnDelayTicks += 10 * 20;
-        if (spawnDelayTicks > 5 * 60 * 20)
-            spawnDelayTicks = 10 * 20;
+        if (mode == Mode.PLAYER || seconds < 1 || seconds > MAX_SPAWN_DELAY_SECONDS)
+            return;
+        spawnDelayTicks = seconds * 20;
         setChangedAndSync();
     }
 
@@ -89,21 +125,58 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         setChangedAndSync();
     }
 
+    /** Whether this plate's shared spawn cooldown has expired. Server thread only. */
+    public boolean isSpawnReady()
+    {
+        return currentDelay <= 0;
+    }
+
+    /** Remaining shared spawn cooldown, in server ticks. */
+    public int getRemainingSpawnDelayTicks()
+    {
+        return Math.max(0, currentDelay);
+    }
+
+    /** Only plates with a real vehicle template are offered as player vehicle deployment points. */
+    public boolean hasVehicleTemplate()
+    {
+        return mode == Mode.VEHICLE && templates.stream().anyMatch(TeamSpawnerBlockEntity::isVehicleTemplate);
+    }
+
+    /** Display name of the first vehicle template; NPC permissions alone never advertise a player deployment point. */
+    public Component getVehicleTemplateName()
+    {
+        return templates.stream().filter(TeamSpawnerBlockEntity::isVehicleTemplate).findFirst().map(ItemStack::getHoverName).orElse(Component.empty());
+    }
+
+    private static boolean isVehicleTemplate(ItemStack stack)
+    {
+        return !stack.isEmpty() && (stack.getItem() instanceof DriveableItem<?, ?> || stack.getItem() instanceof AAGunItem);
+    }
+
+    /** Starts the shared cooldown after a successful template or addon spawn. Server thread only. */
+    public void recordSpawn()
+    {
+        currentDelay = spawnDelayTicks;
+        setChanged();
+    }
+
     // Signature of BlockEntityTicker, which the method is registered as.
     @SuppressWarnings("java:S1172")
     public static void serverTick(Level level, BlockPos pos, BlockState state, TeamSpawnerBlockEntity spawner)
     {
         if (level.getGameTime() % TEAM_COLOUR_REFRESH_TICKS == 0)
             spawner.refreshTeamColour();
-        if (spawner.mode == Mode.PLAYER || spawner.templates.isEmpty() || !(level instanceof ServerLevel serverLevel))
+        if (spawner.mode == Mode.PLAYER || !(level instanceof ServerLevel serverLevel))
             return;
-        if (spawner.currentDelay-- > 0)
+        spawner.currentDelay = Math.max(0, spawner.currentDelay - 1);
+        spawner.templateRetryDelay = Math.max(0, spawner.templateRetryDelay - 1);
+        if (!spawner.isSpawnReady() || spawner.templates.isEmpty() || spawner.templateRetryDelay > 0)
             return;
-        spawner.currentDelay = spawner.spawnDelayTicks;
+        // Failed template attempts must leave the plate available to NPCs without scanning the world every tick.
+        spawner.templateRetryDelay = 20;
 
-        AABB nearby = new AABB(pos).inflate(spawner.mode == Mode.VEHICLE ? 8D : 1.5D);
-        if (!serverLevel.getEntities((Entity) null, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER) && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER)))
-            .isEmpty())
+        if (spawner.hasExistingSpawn(serverLevel, pos))
             return;
 
         for (int index = 0; index < spawner.templates.size(); index++)
@@ -111,25 +184,61 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             ItemStack template = spawner.templates.get(index);
             if (spawner.mode == Mode.VEHICLE)
             {
-                Entity spawned = null;
-                if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
-                {
-                    Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D, pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D, 0F, null,
-                        template.copyWithCount(1), spawner.getOwningTeam());
-                    spawned = driveable;
-                }
-                else if (template.getItem() instanceof AAGunItem aaGunItem)
-                    spawned = aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null, spawner.getOwningTeam());
+                Entity spawned = spawner.spawnVehicle(serverLevel, pos, template);
                 if (spawned != null)
+                {
                     spawned.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
+                    SpawnerVehicles.get(serverLevel).observe(spawned);
+                    spawner.recordSpawn();
+                }
                 continue;
             }
 
             // Spawned items circle the spawner, evenly spaced, until a player of the owning team takes them
             TeamItemEntity item = new TeamItemEntity(level, pos, spawner.objectId, template.copy(), index * Math.PI * 2D / spawner.templates.size());
             item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
-            level.addFreshEntity(item);
+            if (level.addFreshEntity(item))
+                spawner.recordSpawn();
         }
+    }
+
+    @Nullable
+    private Entity spawnVehicle(ServerLevel level, BlockPos pos, ItemStack template)
+    {
+        if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
+        {
+            Vec3 spawnPosition = Vec3.atBottomCenterOf(pos.above());
+            if (driveableItem.getConfigType().isShip())
+            {
+                spawnPosition = TeamsShipSpawns.find(level, spawnPosition).orElse(null);
+                if (spawnPosition == null || !waitForVehicle
+                    && !level.getEntities((Entity) null, new AABB(BlockPos.containing(spawnPosition)).inflate(8D), entity -> (mode != Mode.VEHICLE || SpawnerVehicles.operational(entity))
+                        && entity.getPersistentData().hasUUID(NBT_SPAWNER) && objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
+                    return null;
+            }
+            ItemStack suppliedTemplate = template.copyWithCount(1);
+            DriveableData supplies = DriveableData.fromStack(driveableItem.getConfigType(), suppliedTemplate, level.registryAccess());
+            TeamsVehicleSupplies.provision(driveableItem.getConfigType(), supplies, ModCommonConfig.TEAMS_SPAWN_VEHICLES_WITH_FUEL.get(), ModCommonConfig.TEAMS_SPAWN_VEHICLE_AMMO.get());
+            supplies.copyToStack(suppliedTemplate);
+            return driveableItem.spawnDriveable(level, spawnPosition.x, spawnPosition.y + driveableItem.getConfigType().getYOffset(), spawnPosition.z, 0F, null, suppliedTemplate, getOwningTeam());
+        }
+        if (template.getItem() instanceof AAGunItem aaGunItem)
+            return aaGunItem.spawnAAGun(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, null, getOwningTeam());
+        return null;
+    }
+
+    private boolean hasExistingSpawn(ServerLevel level, BlockPos pos)
+    {
+        if (mode == Mode.VEHICLE && waitForVehicle)
+        {
+            TeamsManager manager = TeamsManager.getInstance();
+            ITeamBase base = baseId == null ? null : manager.getBase(baseId).orElse(null);
+            TeamsMap map = base == null ? null : manager.getMap(base.getMapId()).orElse(null);
+            return SpawnerVehicles.get(level).exists(level, objectId, map);
+        }
+        AABB nearby = new AABB(pos).inflate(mode == Mode.VEHICLE ? 8D : 1.5D);
+        return !level.getEntities((Entity) null, nearby, entity -> (mode != Mode.VEHICLE || SpawnerVehicles.operational(entity)) && entity.getPersistentData().hasUUID(NBT_SPAWNER)
+            && objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty();
     }
 
     @Override
@@ -137,7 +246,10 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     {
         super.onLoad();
         if (level instanceof ServerLevel)
+        {
             TeamsManager.getInstance().registerObject(this);
+            refreshTeamColour();
+        }
     }
 
     @Override
@@ -157,6 +269,9 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         tag.putString(NBT_MODE, mode.name());
         tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks);
         tag.putInt(NBT_CURRENT_DELAY, currentDelay);
+        tag.putBoolean(NBT_WAIT_FOR_VEHICLE, waitForVehicle);
+        tag.put("npc_policy", npcPolicy.save());
+        tag.putBoolean(NBT_NPC_SPAWN_ALL, npcSpawnAll);
         tag.putInt(NBT_TEAM_COLOUR, teamColour);
         ListTag items = new ListTag();
         templates.forEach(stack -> items.add(ItemStackData.save(stack, registries)));
@@ -166,6 +281,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     @Override
     protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
+        int previousColour = teamColour;
         objectId = tag.hasUUID(NBT_OBJECT_ID) ? tag.getUUID(NBT_OBJECT_ID) : UUID.randomUUID();
         baseId = tag.hasUUID(NBT_BASE_ID) ? tag.getUUID(NBT_BASE_ID) : null;
 
@@ -180,11 +296,18 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
 
         spawnDelayTicks = Math.max(20, tag.getInt(NBT_SPAWN_DELAY));
         currentDelay = Math.max(0, tag.getInt(NBT_CURRENT_DELAY));
+        waitForVehicle = !tag.contains(NBT_WAIT_FOR_VEHICLE) || tag.getBoolean(NBT_WAIT_FOR_VEHICLE);
+        npcPolicy = SpawnerNpcPolicy.load(tag.getCompound("npc_policy"));
+        npcSpawnAll = !tag.contains(NBT_NPC_SPAWN_ALL) || tag.getBoolean(NBT_NPC_SPAWN_ALL);
         teamColour = tag.contains(NBT_TEAM_COLOUR) ? tag.getInt(NBT_TEAM_COLOUR) : UNOWNED_COLOUR;
         templates.clear();
 
         for (Tag item : tag.getList(NBT_ITEMS, Tag.TAG_COMPOUND))
             templates.add(ItemStackData.parse(registries, (CompoundTag) item));
+
+        // The tint is baked into the chunk mesh; receiving block-entity data alone does not rebuild it.
+        if (level != null && level.isClientSide && previousColour != teamColour)
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
     /**
@@ -196,7 +319,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     {
         if (level == null || level.isClientSide)
             return;
-        Team team = getOwningTeam();
+        Team team = baseId == null ? null : TeamsManager.getInstance().getDisplayTeamForBase(TeamsManager.getInstance().getBase(baseId).orElse(null));
         int colour = team == null ? UNOWNED_COLOUR : team.getTeamColour();
         if (colour == teamColour)
             return;
@@ -265,6 +388,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     public void setBaseId(@Nullable UUID baseId)
     {
         this.baseId = baseId;
+        refreshTeamColour();
         setChangedAndSync();
     }
 

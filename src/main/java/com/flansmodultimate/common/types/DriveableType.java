@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.parts.PartArmor;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1301,6 +1303,17 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     }
 
     @Override
+    public Optional<PartArmor> getPartArmor(String part, Vec3 outwardNormal)
+    {
+        EnumDriveablePart selected = EnumDriveablePart.getPart(part);
+        EnumArmorFacing facing = EnumArmorFacing.fromOutwardNormal(outwardNormal);
+        if (!resolvedArmor.isPlateConfigured(selected, facing))
+            return Optional.empty();
+        ArmorPlate plate = resolvedArmor.plate(selected, facing).authored();
+        return Optional.of(new PartArmor(plate.thicknessMm(), plate.heatThicknessMm()));
+    }
+
+    @Override
     public float getRestingHeight()
     {
         float lowestAnchor = getLowestWheelAnchor();
@@ -1648,6 +1661,19 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public EnumWeaponType weaponType(boolean secondaryWeapon)
     {
         return secondaryWeapon ? secondary : primary;
+    }
+
+    @Override
+    public boolean hasBarrelRecoil(boolean secondaryWeapon)
+    {
+        return weaponType(secondaryWeapon) == EnumWeaponType.SHELL;
+    }
+
+    @Override
+    public boolean hasCartridgeEjection(boolean secondaryWeapon)
+    {
+        EnumWeaponType weapon = weaponType(secondaryWeapon);
+        return weapon == EnumWeaponType.GUN || weapon == EnumWeaponType.SHELL;
     }
 
     /**
