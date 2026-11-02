@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
+import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.ai.EntityAISprintToTarget;
@@ -39,6 +41,9 @@ public final class NpcSprinting
         if (!npc.ais.canSprint || !npc.isAlive() || npc.isKilled() || npc.isNoAi() || npc.isPassenger() || npc.ais.movementType != 0 || npc.isInWater() || npc.isInLava())
             return false;
         LivingEntity target = npc.getTarget();
+        Action action = npc instanceof NpcTacticState.Holder holder ? holder.wolffsmodnpcsTacticState().getSafety().getAction() : Action.NONE;
+        if (!npc.getNavigation().isDone() && (action == Action.EVADE || action == Action.RETREAT || action == Action.HIDE))
+            return true;
         if (target == null || !target.isAlive() || target.level() != npc.level() || npc.getNavigation().isDone())
             return false;
         // Start from rest as soon as a path exists; a jump or damage reaction must not repeatedly cancel an ongoing sprint.

@@ -223,6 +223,9 @@ public final class NpcItemAttacks
                 npc.setItemInHand(hand, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
             return thrown;
         }
+        double blast = NpcBlastSafety.reach(FlansEquipment.getLoadedAmmunition(weapon).orElse(ItemStack.EMPTY));
+        if (NpcBlastSafety.tooClose(npc, target, blast))
+            return false;
         Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());
         boolean itemSound = NpcEquipment.inherits(npc, EquipmentProperty.FIRING_SOUND.inHand(hand));
         Vec3 direction = NpcSkill.aimError(npc, target).apply(flanDirection(npc, target, hand, weapon, aim));

@@ -6,6 +6,7 @@ import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcServerRules;
+import com.wolffsmod.npcs.tactics.NpcCombatPolicy;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.NpcAPI;
@@ -43,6 +44,12 @@ public final class NpcEquipment
         return model == null ? chosen : secondaryBank(chosen, ARMED_GROUPS.computeIfAbsent(model, NpcEquipment::armedGroups));
     }
 
+    /** Effective bank for a live NPC; the configured preference is preserved while combat chooses a suitable weapon. */
+    public static boolean secondaryBank(EntityNPCInterface npc, @Nullable IContentType model)
+    {
+        return NpcVehicleCombat.bank(npc, model, secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), model));
+    }
+
     /**
      * @param chosen
      *            whether the switch chooses the secondary group
@@ -69,6 +76,7 @@ public final class NpcEquipment
     public static boolean enabled(EntityNPCInterface npc, Feature feature)
     {
         boolean own = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);
+        own = NpcCombatPolicy.feature(npc, feature, own);
         return feature == Feature.CONSUME_AMMO ? NpcServerRules.consumesAmmo(npc, own) : own;
     }
 

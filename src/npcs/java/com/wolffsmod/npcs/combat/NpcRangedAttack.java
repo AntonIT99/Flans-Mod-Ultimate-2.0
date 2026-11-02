@@ -123,7 +123,7 @@ public final class NpcRangedAttack
             held = npc.getMainHandItem();
             model = NpcModels.flan(npc);
             definition = model == null ? null : model.getInfoType();
-            secondary = NpcEquipment.secondaryBank(options, definition);
+            secondary = NpcEquipment.secondaryBank(npc, definition);
             this.target = target;
             state = NpcVehicleState.of(npc);
             damage = npc.stats.ranged.getStrength();

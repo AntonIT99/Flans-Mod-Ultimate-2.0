@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.nbt.CompoundTag;
@@ -166,7 +167,7 @@ public final class NpcTuning
          */
         THREAT_MEMORY(15, 0, 120),
         /** Blocks within which allied NPCs learn who is shooting at the NPC and fight back too; 0 tells nobody. */
-        ALERT_RADIUS(0, 0, 128),
+        ALERT_RADIUS(24, 0, 128),
         /** Index into {@link NpcSkill.Level}; choosing one fills in the human limits, which stay editable. */
         SKILL_LEVEL(NpcSkill.Level.ACE.ordinal(), 0, NpcSkill.Level.values().length - 1),
         /** Ticks between first seeing a target and the first shot at it. */
@@ -182,7 +183,17 @@ public final class NpcTuning
         /** Index into {@link Duty}. */
         DUTY(0, 0, Duty.values().length - 1),
         /** Percent of its health below which a soldier falls back to a medic or its home; 0 never falls back. */
-        RETREAT_HEALTH(0, 0, 90);
+        RETREAT_HEALTH(30, 0, 90),
+        /** Index into MovementFreedom; local manoeuvres keep combat movement within MANOEUVRE_RADIUS of its anchor. */
+        COMBAT_MOVEMENT(1, 0, MovementFreedom.values().length - 1),
+        /** Blocks a local combat manoeuvre may carry the NPC from its guard, follower or engagement anchor. */
+        MANOEUVRE_RADIUS(24, 4, 128),
+        /** Blocks an outmatched soldier tries to gain before reassessing. */
+        WITHDRAW_DISTANCE(16, 4, 64),
+        /** Blocks between allies at combat positions; 0 disables extra spacing. */
+        ALLY_GAP(3, 0, 12),
+        /** Behaviour-only preset; INHERIT leaves individual settings as edited. */
+        TACTICAL_PROFILE(0, 0, NpcTacticalProfile.values().length - 1);
 
         private final int fallback;
         private final int minimum;
@@ -401,6 +412,12 @@ public final class NpcTuning
         {
             return this == STRAFING_RUN || this == ORBIT;
         }
+    }
+
+    /** Movement allowed to the additional safety and adaptive combat behaviours. Saved by ordinal; append new choices. */
+    public enum MovementFreedom
+    {
+        HOLD, LOCAL, FREE
     }
 
     /** What an NPC sees and fires through. */

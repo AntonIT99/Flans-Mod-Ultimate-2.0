@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.teams;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.crew.CrewPost;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -198,6 +199,7 @@ public final class BotSettings
     private boolean rallyPoints = true;
     /** Whether vehicle bots spawn with soldiers of their team in their seats. */
     private boolean vehicleCrews = true;
+    private NpcTacticalProfile tacticalProfile = NpcTacticalProfile.INHERIT;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
     /** What one team fields. */
@@ -475,6 +477,7 @@ public final class BotSettings
         tag.putBoolean(NBT_SUPPRESSION, suppression);
         tag.putBoolean(NBT_RALLY, rallyPoints);
         tag.putBoolean(NBT_VEHICLE_CREWS, vehicleCrews);
+        tag.putString("tactical_profile", tacticalProfile.name());
         CompoundTag teamTag = new CompoundTag();
         teams.forEach((team, force) -> teamTag.put(team, force.save()));
         tag.put(NBT_TEAMS, teamTag);
@@ -510,6 +513,7 @@ public final class BotSettings
         settings.suppression = !tag.contains(NBT_SUPPRESSION) || tag.getBoolean(NBT_SUPPRESSION);
         settings.rallyPoints = !tag.contains(NBT_RALLY) || tag.getBoolean(NBT_RALLY);
         settings.vehicleCrews = !tag.contains(NBT_VEHICLE_CREWS) || tag.getBoolean(NBT_VEHICLE_CREWS);
+        settings.tacticalProfile = parse(NpcTacticalProfile.class, tag.getString("tactical_profile"), NpcTacticalProfile.INHERIT);
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));

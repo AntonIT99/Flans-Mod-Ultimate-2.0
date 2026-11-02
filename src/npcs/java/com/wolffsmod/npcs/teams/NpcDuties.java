@@ -244,6 +244,12 @@ public final class NpcDuties
         DESTINATIONS.remove(npc.getUUID());
     }
 
+    /** Whether falling back, rather than another duty, owns the destination. The combat safety goal may follow it under fire. */
+    public static boolean retreating(Entity npc)
+    {
+        return RETREATING.containsKey(npc.getUUID());
+    }
+
     // --- Falling back ---
 
     /**

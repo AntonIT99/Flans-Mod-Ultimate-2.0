@@ -417,10 +417,15 @@ public final class NpcVehicleState
         FlanModelKind kind = FlanModelKind.of(definition);
         if (definition == null || kind == null)
             return null;
-        boolean secondary = NpcEquipment.secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), definition);
+        boolean secondary = NpcEquipment.secondaryBank(npc, definition);
         if (layout != null && layout.model() == definition && layout.secondary() == secondary)
             return layout;
         Layout created = Layout.of(definition, kind, secondary);
+        if (layout != null && layout.model() == definition)
+        {
+            solution = null;
+            return created;
+        }
         int seats = created.mounts().stream().mapToInt(WeaponMount::seat).max().orElse(-1) + 1;
         seatYaw = new float[seats];
         seatPitch = new float[seats];

@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.NpcsCommonConfig;
+import com.wolffsmod.npcs.tactics.NpcSafetyGoal;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -45,6 +47,8 @@ public final class NpcTickLod
     private static int period(EntityNPCInterface npc)
     {
         if (npc.isPassenger() || TacticKind.of(npc) != TacticKind.STANDARD)
+            return 1;
+        if (NpcSafetyGoal.evasion(npc) != null || NpcTacticState.of(npc).getSafety().getUrgentUntil() > npc.level().getGameTime())
             return 1;
         double near = NpcsCommonConfig.aiTickLodNearDistance();
         double far = Math.max(near, NpcsCommonConfig.aiTickLodFarDistance());

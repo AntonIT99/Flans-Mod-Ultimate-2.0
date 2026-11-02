@@ -17,6 +17,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class DriveableTypeArmorHealthTest
 {
     @Test
+    void publicPlateInspectionDistinguishesFacingHeatAndUnknownProtection()
+    {
+        VehicleType type = vehicle("SetupPart core 1000 0 0 0 16 16 16", "ArmorFrontMm 80 55", "ArmorSideMm 30 0");
+        assertEquals(80F, type.getPartArmor("CORE", new Vec3(0D, 0D, -1D)).orElseThrow().thicknessMm());
+        assertEquals(30F, type.getPartArmor("core", new Vec3(1D, 0D, 0D)).orElseThrow().thicknessMm());
+        assertTrue(type.getPartArmor("unknown", new Vec3(0D, 0D, -1D)).isEmpty());
+        assertTrue(vehicle("SetupPart core 1000 0 0 0 16 16 16").getPartArmor("core", new Vec3(0D, 0D, -1D)).isEmpty());
+    }
+
+    @Test
     void labjacCompositeHitboxSeparatesArmourFromCrewDamageAndResolvesBothWarheads()
     {
         VehicleType type = vehicle("SetupCompositeArmoredPart core 1000 0 0 0 16 16 16 100 400");

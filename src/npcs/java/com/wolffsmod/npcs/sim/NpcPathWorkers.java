@@ -51,6 +51,8 @@ public final class NpcPathWorkers
     /** One search handed to a worker. Created and read on the server thread, completed by a worker. */
     public static final class Search
     {
+        private final Set<BlockPos> targets;
+
         /**
          * What a finished search came to.
          *
@@ -63,6 +65,17 @@ public final class NpcPathWorkers
         /** Set once the search has run; null while it is still running or has failed. */
         private final AtomicReference<Outcome> outcome = new AtomicReference<>();
         private final AtomicReference<Throwable> failure = new AtomicReference<>();
+
+        private Search(Set<BlockPos> targets)
+        {
+            this.targets = Set.copyOf(targets);
+        }
+
+        /** Whether a result belongs to the requested destination, including a small allowance for ordinary pursuit. */
+        public boolean matches(Set<BlockPos> requested, boolean precise)
+        {
+            return sameDestination(targets, requested, precise);
+        }
 
         /** @return whether the search has run, with or without a path, or given up */
         public boolean done()
@@ -85,6 +98,12 @@ public final class NpcPathWorkers
         }
     }
 
+    /** Moving quarry may drift a few blocks while searched; safety destinations must match exactly. */
+    static boolean sameDestination(Set<BlockPos> previous, Set<BlockPos> requested, boolean precise)
+    {
+        return previous.equals(requested) || !precise && requested.stream().anyMatch(point -> previous.stream().anyMatch(old -> old.distSqr(point) <= 16D));
+    }
+
     /**
      * Hands a search to a worker.
      *
@@ -100,7 +119,7 @@ public final class NpcPathWorkers
         ThreadPoolExecutor executor = pool();
         if (executor == null || executor.getQueue().size() >= MAX_QUEUED)
             return null;
-        Search search = new Search();
+        Search search = new Search(targets);
         // The set the navigator built is copied, so nothing it does with it afterwards can reach the worker.
         Set<BlockPos> goals = Set.copyOf(targets);
         try

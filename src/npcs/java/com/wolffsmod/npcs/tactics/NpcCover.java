@@ -1,17 +1,24 @@
 package com.wolffsmod.npcs.tactics;
 
+import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
+import com.wolffsmod.npcs.sim.NpcCombatants;
 import com.wolffsmod.npcs.sim.NpcSight;
+import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -27,6 +34,103 @@ public final class NpcCover
     static final double MIN_TARGET_DISTANCE = 3D;
     /** Steps to the side, along each axis, at which the NPC may step out of cover. */
     private static final int[][] PEEKS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {2, 0}, {-2, 0}, {0, 2}, {0, -2}};
+
+    /** A shortlist of hidden positions. Routes are tried one at a time by the safety goal, including asynchronous results. */
+    public static List<BlockPos> safePositions(EntityNPCInterface npc, List<Vec3> sources, int radius)
+    {
+        record Candidate(BlockPos point, double score)
+        {}
+        List<Candidate> choices = new ArrayList<>();
+        List<Vec3> allies = allies(npc);
+        for (int sample = 0; sample < 128; sample++)
+        {
+            BlockPos point = sample(npc, sample, radius);
+            if (point != null && hidden(npc, sources, Vec3.atBottomCenterOf(point)))
+            {
+                Vec3 stand = Vec3.atBottomCenterOf(point);
+                double score = stand.distanceToSqr(npc.position()) + spacing(npc, allies, stand);
+                // A short exposed dash may still be the only route to concealment.
+                if (!hidden(npc, sources, npc.position().lerp(stand, 0.5D)))
+                    score += 12D;
+                choices.add(new Candidate(point, score));
+            }
+        }
+        return choices.stream().sorted(Comparator.comparingDouble(Candidate::score)).map(Candidate::point).distinct().limit(6).toList();
+    }
+
+    @Nullable
+    private static BlockPos sample(EntityNPCInterface npc, int sample, int radius)
+    {
+        double angle = (sample % 16) * Math.PI / 8D + npc.getId() * 0.1D;
+        int ring = sample / 16;
+        double distance = Math.max(1D, radius * (1 + ring) / 8D);
+        BlockPos point = BlockPos.containing(npc.position().add(Math.cos(angle) * distance, 0D, Math.sin(angle) * distance));
+        for (int height : new int[]{0, -1, 1})
+        {
+            BlockPos stand = point.offset(0, height, 0);
+            if (standable(npc.level(), stand) && NpcCombatMovement.permits(npc, Vec3.atBottomCenterOf(stand)))
+                return stand;
+        }
+        return null;
+    }
+
+    /** Cover must protect both chest and head from every known firing position, including another attacker. */
+    public static boolean hidden(EntityNPCInterface npc, List<Vec3> sources, Vec3 stand)
+    {
+        for (Vec3 source : sources)
+        {
+            if (NpcSight.clear(npc.level(), source, stand.add(0D, npc.getEyeHeight(), 0D), 0, npc) || NpcSight.clear(npc.level(), source, stand.add(0D, npc.getBbHeight() * 0.5D, 0D), 0, npc))
+                return false;
+        }
+        return !sources.isEmpty();
+    }
+
+    @Nullable
+    public static BlockPos peek(EntityNPCInterface npc, BlockPos stand, LivingEntity target)
+    {
+        for (int[] step : PEEKS)
+        {
+            BlockPos point = stand.offset(step[0], 0, step[1]);
+            if (standable(npc.level(), point) && NpcCombatMovement.permits(npc, Vec3.atBottomCenterOf(point))
+                && NpcSight.clear(npc.level(), eyes(point, npc.getEyeHeight()), NpcVehicleThreats.fireOrigin(target), 0, npc))
+                return point;
+        }
+        return null;
+    }
+
+    public static boolean standable(Level level, BlockPos stand)
+    {
+        return level.isLoaded(stand) && !level.getBlockState(stand.below()).getCollisionShape(level, stand.below()).isEmpty() && level.getBlockState(stand).getCollisionShape(level, stand).isEmpty()
+            && level.getBlockState(stand.above()).getCollisionShape(level, stand.above()).isEmpty();
+    }
+
+    private static List<Vec3> allies(EntityNPCInterface npc)
+    {
+        List<Vec3> positions = new ArrayList<>();
+        if (NpcEquipment.enabled(npc, Feature.ALLY_SPACING) && npc.level() instanceof ServerLevel level)
+        {
+            NpcCombatants combatants = NpcCombatants.of(level);
+            for (int index = 0; index < combatants.npcSize(); index++)
+            {
+                EntityNPCInterface ally = combatants.npc(index).npc();
+                if (ally != null && ally != npc && ally.distanceToSqr(npc) < 1024D && NpcDrivers.ally(npc, ally))
+                {
+                    Vec3 destination = NpcTacticState.of(ally).getSafety().getDestination();
+                    positions.add(destination == null ? ally.position() : destination);
+                }
+            }
+        }
+        return positions;
+    }
+
+    private static double spacing(EntityNPCInterface npc, List<Vec3> allies, Vec3 point)
+    {
+        double gap = NpcCombatPolicy.value(npc, Value.ALLY_GAP);
+        double penalty = 0D;
+        for (Vec3 ally : allies)
+            penalty += Math.max(0D, gap * gap - ally.distanceToSqr(point)) * 8D;
+        return penalty;
+    }
 
     /**
      * Where the NPC hides, and where it steps out to fire.

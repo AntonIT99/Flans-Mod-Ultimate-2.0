@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
 import com.wolffsmod.npcs.crew.CrewPost;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +17,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BotSettingsTest
 {
+    @Test
+    void battleBehaviourDefaultsToIndividualSettingsAndExplicitOverridesSurviveSaving()
+    {
+        assertEquals(NpcTacticalProfile.INHERIT, BotSettings.load(new CompoundTag()).getTacticalProfile());
+        BotSettings settings = new BotSettings();
+        settings.setTacticalProfile(NpcTacticalProfile.CAUTIOUS);
+        assertEquals(NpcTacticalProfile.CAUTIOUS, BotSettings.load(settings.save()).getTacticalProfile());
+    }
+
     @Test
     void vehiclePaintjobChoicesSurviveNbtAndTextAndLegacyAllocationsKeepDefault()
     {

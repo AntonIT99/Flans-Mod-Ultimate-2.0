@@ -88,7 +88,23 @@ public final class NpcWeaponOptions
          */
         SUPPRESSIBLE(false),
         /** An NPC on foot looks at the enemies its weapons suit first: an anti-tank soldier at armour, any other at infantry. */
-        SUITED_TARGETS(false),
+        SUITED_TARGETS(true),
+        /** Takes cover under effective fire and while reloading, including from enemies within firing range. */
+        TACTICAL_COVER(true),
+        /** Breaks contact with protected vehicles the weapons carried cannot usefully engage. */
+        AVOID_UNWINNABLE_FIGHTS(true),
+        /** Steps out of a moving vehicle's predicted path. */
+        VEHICLE_EVASION(true),
+        /** Chooses a carried weapon and compatible ammunition to suit the target, with either ammunition policy. */
+        TACTICAL_WEAPON_SWITCH(true),
+        /** Approaches protected vehicles from a reachable side when carrying an anti-armour weapon. */
+        ADAPTIVE_FLANKING(true),
+        /** Leaves space between nearby allies when choosing combat positions. */
+        ALLY_SPACING(true),
+        /** Ground vehicles choose firing positions and weapons together instead of closing for the main gun alone. */
+        ADAPTIVE_VEHICLE_COMBAT(true),
+        /** Seat gunners look for threats even while the vehicle has no main target. */
+        DEFENSIVE_GUNNERS(true),
         /** Only players its faction is friendly to see the NPC's name tag. */
         ALLY_NAME_TAGS(false);
 

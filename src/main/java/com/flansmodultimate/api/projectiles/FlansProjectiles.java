@@ -89,6 +89,20 @@ public final class FlansProjectiles
     }
 
     /**
+     * Inspects a bullet or a round of a mixed belt. Either side after content loading; does not change the stack.
+     *
+     * @param ammunition
+     *            ammunition stack to inspect
+     * @param sequence
+     *            zero-based shot index, selecting a round of a mixed belt
+     * @return nominal armour performance, or empty for items without bullet statistics
+     */
+    public static Optional<AmmunitionArmor> getArmorPerformance(ItemStack ammunition, int sequence)
+    {
+        return ExternalProjectileSupport.armorPerformance(ammunition, sequence);
+    }
+
+    /**
      * Uses up one round of Flan ammunition the shooter fired without a gun: one item, or one round of an item that holds
      * several. A stack left empty is the caller's to remove from where it is kept. Server thread.
      *

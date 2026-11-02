@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +11,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,6 +57,7 @@ public final class NpcCombatants
     private int count;
     private Combatant[] npcs = new Combatant[0];
     private int npcCount;
+    private final List<Entity> vehicles = new ArrayList<>();
 
     private NpcCombatants()
     {}
@@ -95,13 +99,26 @@ public final class NpcCombatants
         return npcs[index];
     }
 
+    public int vehicleSize()
+    {
+        return vehicles.size();
+    }
+
+    public Entity vehicle(int index)
+    {
+        return vehicles.get(index);
+    }
+
     private void take(ServerLevel level)
     {
         taken = level.getGameTime();
         count = 0;
         npcCount = 0;
+        vehicles.clear();
         for (Entity entity : level.getAllEntities())
         {
+            if (!entity.isRemoved() && NpcVehicleThreats.platform(entity) == entity && NpcVehicleThreats.groundVehicle(entity))
+                vehicles.add(entity);
             if (!(entity instanceof LivingEntity living) || living.isRemoved())
                 continue;
             EntityNPCInterface npc = living instanceof EntityNPCInterface fellow ? fellow : null;

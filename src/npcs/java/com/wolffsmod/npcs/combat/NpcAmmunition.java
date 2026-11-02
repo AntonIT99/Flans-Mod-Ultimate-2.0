@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.WeaponSwitch;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.item.IItemStack;
@@ -24,6 +25,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -90,6 +92,11 @@ public final class NpcAmmunition
      */
     public static Optional<ItemStack> infiniteTemplate(EntityNPCInterface npc, ItemStack weapon)
     {
+        if (tacticallySelected(npc, weapon))
+        {
+            ItemStack selected = NpcWeaponChoice.ammunition(npc, weapon);
+            return selected.isEmpty() ? Optional.empty() : Optional.of(selected);
+        }
         ItemStack projectile = stack(npc.inventory.getProjectile());
         if (FlansEquipment.acceptsAmmunition(weapon, projectile, slotChoice(npc)))
             return Optional.of(projectile);
@@ -119,7 +126,7 @@ public final class NpcAmmunition
         if (weapon == null)
             return projectile;
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        boolean secondary = NpcEquipment.secondaryBank(options, weapon);
+        boolean secondary = NpcEquipment.secondaryBank(npc, weapon);
         // Anything but Flan ammunition in the projectile slot is the NPC's own Custom NPCs projectile.
         if (!projectile.isEmpty() && (slotChoice(npc) || !FlansProjectiles.isProjectile(projectile) || FlansEquipment.acceptsAmmunition(weapon, secondary, projectile)))
             return projectile;
@@ -154,7 +161,7 @@ public final class NpcAmmunition
         IContentType weapon = modelWeapon(npc);
         if (weapon == null || FlansProjectiles.isProjectile(fired))
             return fired;
-        boolean secondary = NpcEquipment.secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), weapon);
+        boolean secondary = NpcEquipment.secondaryBank(npc, weapon);
         return FlansEquipment.createDefaultAmmunition(weapon, secondary).orElse(fired);
     }
 
@@ -187,6 +194,9 @@ public final class NpcAmmunition
      */
     public static ItemStack bankTemplate(EntityNPCInterface npc, IContentType model, boolean secondary)
     {
+        Optional<ItemStack> preferred = preferred(npc, candidate -> FlansEquipment.acceptsAmmunition(model, secondary, candidate));
+        if (preferred.isPresent())
+            return preferred.get();
         ItemStack projectile = stack(npc.inventory.getProjectile());
         if (FlansEquipment.acceptsAmmunition(model, secondary, projectile))
             return projectile;
@@ -206,10 +216,23 @@ public final class NpcAmmunition
         if (gun.getItem() == null)
             return Optional.empty();
         ItemStack weapon = new ItemStack(gun.getItem());
+        Optional<ItemStack> preferred = preferred(npc, candidate -> FlansEquipment.acceptsAmmunition(weapon, candidate));
+        if (preferred.isPresent())
+            return preferred;
         ItemStack projectile = stack(npc.inventory.getProjectile());
         if (FlansEquipment.acceptsAmmunition(weapon, projectile))
             return Optional.of(projectile);
         return inventory(npc).stream().filter(candidate -> FlansEquipment.acceptsAmmunition(weapon, candidate)).findFirst();
+    }
+
+    private static Optional<ItemStack> preferred(EntityNPCInterface npc, Predicate<ItemStack> compatible)
+    {
+        LivingEntity target = npc.getTarget();
+        if (target == null || !NpcEquipment.enabled(npc, Feature.TACTICAL_WEAPON_SWITCH))
+            return Optional.empty();
+        List<ItemStack> candidates = new ArrayList<>(inventory(npc));
+        candidates.add(0, stack(npc.inventory.getProjectile()));
+        return candidates.stream().filter(compatible).max(Comparator.comparingDouble(ammo -> NpcWeaponChoice.ammunitionScore(npc, target, ammo)));
     }
 
     /**
@@ -219,13 +242,18 @@ public final class NpcAmmunition
     private static boolean supply(EntityNPCInterface npc, ItemStack weapon)
     {
         ItemStack current = stack(npc.inventory.getProjectile());
-        if (FlansEquipment.acceptsAmmunition(weapon, current, slotChoice(npc)))
+        if (FlansEquipment.acceptsAmmunition(weapon, current, !tacticallySelected(npc, weapon) && slotChoice(npc)))
             return true;
         int slot = find(npc, stack -> FlansEquipment.acceptsAmmunition(weapon, stack));
         if (slot < 0)
             return false;
         swap(npc, PROJECTILE_INDEX, slot);
         return true;
+    }
+
+    private static boolean tacticallySelected(EntityNPCInterface npc, ItemStack weapon)
+    {
+        return npc instanceof NpcTacticState.Holder holder && holder.wolffsmodnpcsTacticState().getSafety().getSelectedWeapon() == weapon;
     }
 
     /**
@@ -435,7 +463,7 @@ public final class NpcAmmunition
     }
 
     /** Exchanges a weapon slot with an inventory slot; an empty weapon slot leaves the inventory slot empty. */
-    private static void swap(EntityNPCInterface npc, int weaponSlot, int inventorySlot)
+    static void swap(EntityNPCInterface npc, int weaponSlot, int inventorySlot)
     {
         IItemStack previous = npc.inventory.weapons.get(weaponSlot);
         ItemStack held = stack(previous);

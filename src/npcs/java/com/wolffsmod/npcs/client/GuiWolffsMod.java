@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.NpcMobility;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import com.wolffsmod.npcs.teams.FriendlyFire;
 import lombok.RequiredArgsConstructor;
 import noppes.npcs.client.NoppesUtil;
@@ -507,7 +508,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         CREW(Section.MODEL, Scope.DRIVEABLES, Tab.named(CrewPage.TAB), Tab.named(CrewPage.RULES_TAB)),
         EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO, Layout.COLUMN,
             Feature.ITEM_ARMOR,
-            Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Value.WEAPON_SWITCH)),
+            Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Feature.TACTICAL_WEAPON_SWITCH, Value.WEAPON_SWITCH)),
         FIRING(Section.WEAPONS, Scope.ALL, Tab.of(Feature.PROJECTILES, Feature.GRENADES, Value.GRENADE_USE, Feature.NATIVE_THROWABLES, Value.NATIVE_THROWABLE_USE, Value.THROWN_WEAPON_USE,
             Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO)),
         MODEL_WEAPONS(Section.WEAPONS, Scope.MODELS,
@@ -527,6 +528,9 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         TACTICS(Section.BEHAVIOUR, Scope.ALL,
             Tab.named("tactic_movement", Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING),
             Tab.named("return_fire", Value.THREAT_MEMORY, Value.ALERT_RADIUS, Feature.OUTRANGED_COVER, Feature.SUPPRESSIBLE),
+            Tab.named("survival", Scope.STANDARD, Feature.TACTICAL_COVER, Feature.AVOID_UNWINNABLE_FIGHTS, Feature.VEHICLE_EVASION, Feature.ADAPTIVE_FLANKING),
+            Tab.named("movement_limits", Value.TACTICAL_PROFILE, Value.COMBAT_MOVEMENT, Value.MANOEUVRE_RADIUS, Value.WITHDRAW_DISTANCE, Feature.ALLY_SPACING, Value.ALLY_GAP),
+            Tab.named("vehicle_tactics", Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS),
             Tab.named("duties", Scope.STANDARD, Value.DUTY, Value.RETREAT_HEALTH, Feature.SUITED_TARGETS)),
         DETECTION(Section.BEHAVIOUR, Scope.ALL, Tab.of(Range.AGGRO_RANGE, Range.FIRING_RANGE, Feature.WEAPON_FIRING_RANGE, Value.SIGHT, Value.VISION_LIMIT, Value.FIRE_LIMIT, Value.TARGET_MARGIN)),
         PATHFINDING(Section.BEHAVIOUR, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
@@ -1654,6 +1658,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             options.set(feature, value == 1);
         if (feature == Feature.NON_LETHAL)
             NpcTuning.of(npc).set(Value.SKILL_LEVEL, NpcSkill.Level.CUSTOM.ordinal());
+        if (NpcTacticalProfile.BALANCED.feature(feature) != null)
+            NpcTuning.of(npc).set(Value.TACTICAL_PROFILE, NpcTacticalProfile.INHERIT.ordinal());
     }
 
     /** @return the landing gear the NPC draws: down, up, or dynamic, by its choice on the gear row */
@@ -1831,6 +1837,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case FLIGHT_TYPE -> NpcTuning.Flight.values();
             case WEAPON_SWITCH -> NpcTuning.WeaponSwitch.values();
             case TACTIC -> NpcTuning.Tactic.values();
+            case COMBAT_MOVEMENT -> NpcTuning.MovementFreedom.values();
+            case TACTICAL_PROFILE -> NpcTacticalProfile.values();
             case TAKE_DRIVEABLES -> NpcTuning.Claim.values();
             case GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> NpcTuning.Throwing.values();
             case SKILL_LEVEL -> NpcSkill.Level.values();
@@ -1856,6 +1864,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             tuning.applyPreset(NpcTuning.DrivePreset.values()[Math.max(0, Math.min(NpcTuning.DrivePreset.values().length - 1, number))]);
         else if (value == Value.SKILL_LEVEL)
             NpcSkill.apply(npc, NpcSkill.Level.values()[Value.SKILL_LEVEL.clamp(number)]);
+        else if (value == Value.TACTICAL_PROFILE)
+        {
+            NpcTacticalProfile.values()[value.clamp(number)].apply(npc);
+            tuning.set(value, number);
+        }
         else
         {
             int before = tuning.get(value);
@@ -1864,6 +1877,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 tuning.set(Value.DRIVE_PRESET, NpcTuning.DrivePreset.CUSTOM.ordinal());
             if (skillValue(value) && tuning.get(value) != before)
                 tuning.set(Value.SKILL_LEVEL, NpcSkill.Level.CUSTOM.ordinal());
+            if (NpcTacticalProfile.BALANCED.value(value) != null)
+                tuning.set(Value.TACTICAL_PROFILE, NpcTacticalProfile.INHERIT.ordinal());
         }
     }
 

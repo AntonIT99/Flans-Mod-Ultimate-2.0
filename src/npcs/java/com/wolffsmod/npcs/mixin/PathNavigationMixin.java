@@ -117,8 +117,7 @@ public abstract class PathNavigationMixin
         Path direct = NpcFlightPaths.direct(searcher, targets);
         if (direct != null)
             return wolffsmodnpcsUntimed(direct);
-        // A search a worker already ran is taken whatever it was asked for: its path leads to where the quarry was a tick
-        // or two ago, which is what keeping a path between searches does anyway.
+        // A pursuit result must never become the path of a retreat requested while that search was running.
         if (wolffsmodnpcsPathSearch != null)
             return wolffsmodnpcsWorkerSearch(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes);
         if (!wolffsmodnpcsMaySearch(server))
@@ -151,6 +150,13 @@ public abstract class PathNavigationMixin
         if (running == null || !running.done())
             return wolffsmodnpcsUntimed(null);
         wolffsmodnpcsPathSearch = null;
+        boolean precise = searcher instanceof com.wolffsmod.npcs.tactics.NpcTacticState.Holder holder
+            && holder.wolffsmodnpcsTacticState().getSafety().getAction() != com.wolffsmod.npcs.tactics.NpcSafetyState.Action.NONE;
+        if (!running.matches(targets, precise))
+        {
+            wolffsmodnpcsPathSearch = NpcPathWorkers.submit(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes);
+            return wolffsmodnpcsPathSearch == null ? finder.findPath(region, searcher, targets, followRange, accuracy, maxVisitedNodes) : wolffsmodnpcsUntimed(null);
+        }
         // A worker that failed leaves its search to the server thread, which is timed and counted as usual.
         return running.failed() ? finder.findPath(region, searcher, targets, followRange, accuracy, maxVisitedNodes) : wolffsmodnpcsUntimed(running.path());
     }

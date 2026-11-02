@@ -11,6 +11,8 @@ import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
+import com.wolffsmod.npcs.tactics.NpcCombatPolicy;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -64,6 +66,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         FlansTeams.addRespawnRule(INSTANCE);
         FlansTeams.addSpawnProvider(INSTANCE);
         NpcTargetSearch.setPriority(BotTargeting::rank);
+        NpcCombatPolicy.overrides(npc -> BotBattles.of(npc).map(battle -> battle.getSettings().getTacticalProfile()).orElse(NpcTacticalProfile.INHERIT));
     }
 
     public static void serverTick(MinecraftServer server)

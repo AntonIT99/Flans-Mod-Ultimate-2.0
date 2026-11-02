@@ -19,7 +19,7 @@ import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
-import com.wolffsmod.npcs.tactics.NpcOutrangedGoal;
+import com.wolffsmod.npcs.tactics.NpcSafetyGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.teams.*;
@@ -197,7 +197,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private NpcBoardingGoal wolffsmodnpcsBoardingGoal;
     @Unique
-    private NpcOutrangedGoal wolffsmodnpcsOutrangedGoal;
+    private NpcSafetyGoal wolffsmodnpcsSafetyGoal;
     @Unique
     private final NpcDriver wolffsmodnpcsDriver = new NpcDriver();
     @Unique
@@ -453,8 +453,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
      * The firing goal and the goal that throws now and then beside it claim no flag, so their priority does not matter. A tactic of the mod's own comes first, before the
      * tactical movement Custom NPCs registered. The approach goal takes the priority of Custom NPCs' attack goal: that
      * tactical movement then wins the NPC's movement, and melee, which only starts within melee range where the approach
-     * ends, takes over from it there. Walking to a driveable to board comes before everything else that moves the NPC, and
-     * taking cover from an enemy shooting from beyond the NPC's reach right after it.
+     * ends, takes over from it there. Safety movement interrupts combat and boarding, while retaining the firing target.
      */
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
@@ -468,12 +467,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             goalSelector.removeGoal(wolffsmodnpcsBoardingGoal);
         else
             wolffsmodnpcsBoardingGoal = new NpcBoardingGoal(npc);
-        goalSelector.addGoal(0, wolffsmodnpcsBoardingGoal);
-        if (wolffsmodnpcsOutrangedGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsOutrangedGoal);
+        goalSelector.addGoal(1, wolffsmodnpcsBoardingGoal);
+        if (wolffsmodnpcsSafetyGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsSafetyGoal);
         else
-            wolffsmodnpcsOutrangedGoal = new NpcOutrangedGoal(npc);
-        goalSelector.addGoal(0, wolffsmodnpcsOutrangedGoal);
+            wolffsmodnpcsSafetyGoal = new NpcSafetyGoal(npc);
+        goalSelector.addGoal(0, wolffsmodnpcsSafetyGoal);
         if (wolffsmodnpcsItemGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsItemGoal);
         else

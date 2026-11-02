@@ -6,9 +6,11 @@
 package com.flansmodultimate.api.driveables;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.parts.PartArmor;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
@@ -27,6 +29,28 @@ import java.util.Optional;
 public interface IDriveableType extends IContentType
 {
     DriveableKind getDriveableKind();
+
+    /** @return the definition's model and part scale; readable on either side after content loading */
+    @SuppressWarnings("SameReturnValue") // Compatibility default; driveable definitions override this with their authored scale.
+    default float getModelScale()
+    {
+        return 1F;
+    }
+
+    /**
+     * Reads an authored plate without simulating a hit. Either side after content loading; no world access.
+     *
+     * @param part
+     *            legacy part name, case insensitive
+     * @param outwardNormal
+     *            direction toward the observer in the part's semantic frame: front is -Z, right +X and roof +Y
+     * @return nominal kinetic and HEAT protection in millimetres on the dominant face, or empty for unknown parts or
+     *         unauthored protection. Does not include slope, impact angle, distance, or live entity overrides
+     */
+    default Optional<PartArmor> getPartArmor(String part, Vec3 outwardNormal)
+    {
+        return Optional.empty();
+    }
 
     /**
      * Minimum incoming melee damage in health points, before armour and resistances. Weaker hits are ignored;

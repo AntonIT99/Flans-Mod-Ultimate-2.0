@@ -4,6 +4,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.api.projectiles.ProjectileParameters;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
@@ -67,6 +68,13 @@ public final class ExternalProjectileSupport
         ShootableType type = ((ShootableItem) stack.getItem()).getConfigType();
         FlanExplosion.Stats stats = type.getExplosionStats(null);
         return Optional.of(new DetonationRadii(Math.max(0F, stats.explosionRadius()), Math.max(0F, stats.blastRadius()), Math.max(0F, stats.fragRadius()), Math.max(0F, type.getFireRadius())));
+    }
+
+    public static Optional<AmmunitionArmor> armorPerformance(ItemStack stack, int sequence)
+    {
+        if (stack.getItem() instanceof ShootableItem item && item.getConfigType() instanceof BulletType bullet)
+            return Optional.of(new AmmunitionArmor(Math.max(0F, bullet.getPenetrationAt100m(Math.max(0, sequence))), bullet.isHeat()));
+        return Optional.empty();
     }
 
     public static boolean consumeRound(ItemStack stack)

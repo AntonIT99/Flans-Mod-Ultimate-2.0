@@ -180,6 +180,9 @@ public final class NpcEquipmentRangedGoal extends Goal
 
     private void tickMainHand(LivingEntity target)
     {
+        // Switching after recovery prevents alternating guns from bypassing cadence or an ongoing reload/charge.
+        if (main.reloading <= 0 && charging <= 0 && main.cadence.ready())
+            NpcWeaponChoice.select(npc, target);
         ItemStack weapon = NpcEquipment.rangedWeapon(npc);
         var properties = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
         if (weapon != main.lastWeapon)

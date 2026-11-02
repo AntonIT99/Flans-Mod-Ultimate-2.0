@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.tactics;
 
 import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -21,6 +22,9 @@ public final class NpcTactics
     public static Tactic of(EntityNPCInterface npc)
     {
         Tactic stored = NpcTuning.of(npc).tactic();
+        if (stored == Tactic.CUSTOM_NPCS && npc.getTarget() != null && TacticKind.of(npc) == TacticKind.VEHICLE && NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT)
+            && NpcCombatMovement.allowed(npc))
+            return Tactic.STAND_OFF;
         // Most NPCs keep Custom NPCs' tactics, which needs neither their kind nor their weapon.
         if (stored == Tactic.CUSTOM_NPCS)
             return stored;

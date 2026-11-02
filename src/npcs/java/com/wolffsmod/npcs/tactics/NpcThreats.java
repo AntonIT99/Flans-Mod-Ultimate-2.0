@@ -102,7 +102,7 @@ public final class NpcThreats implements ISuppressionListener
         for (int index = 0; index < combatants.npcSize(); index++)
         {
             EntityNPCInterface ally = combatants.npc(index).npc();
-            if (ally != null && ally != npc && !ally.isKilled() && ally.faction.id == npc.faction.id && ally.distanceToSqr(npc) <= reach)
+            if (ally != null && ally != npc && !ally.isKilled() && NpcDrivers.ally(npc, ally) && ally.distanceToSqr(npc) <= reach)
                 answer(ally, enemy, now);
         }
     }

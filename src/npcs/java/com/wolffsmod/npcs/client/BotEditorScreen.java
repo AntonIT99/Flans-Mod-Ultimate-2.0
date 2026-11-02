@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.names.SoldierNames;
 import com.wolffsmod.npcs.network.*;
 import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
+import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
 import com.wolffsmod.npcs.teams.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -200,7 +201,8 @@ public final class BotEditorScreen extends Screen
         addRenderableWidget(switchButton(left + COLUMN_WIDTH + 4, y(2), COLUMN_WIDTH, "suppression", settings.isSuppression(), settings::setSuppression));
         addRenderableWidget(switchButton(left, y(3), width, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
         addField(left, 4, RETREAT, Integer.toString(settings.getRetreatHealth()));
-        addRenderableWidget(switchButton(left, y(5), width, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
+        addRenderableWidget(switchButton(left, y(5), COLUMN_WIDTH, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
+        addRenderableWidget(enumButton(left + COLUMN_WIDTH + 4, y(5), COLUMN_WIDTH, "tactical_profile", NpcTacticalProfile.values(), settings.getTacticalProfile(), settings::setTacticalProfile));
     }
 
     private CycleButton<Boolean> switchButton(int x, int y, int width, String key, boolean value, Consumer<Boolean> setter)
