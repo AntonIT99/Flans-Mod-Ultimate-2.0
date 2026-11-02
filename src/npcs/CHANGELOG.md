@@ -32,6 +32,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Vehicles, Aircraft & Mechas
 
+* Ground vehicle NPCs pitch and roll with the terrain beneath their wheels using their model's suspension settings; turret and seat guns compensate for the tilted hull, and muzzles, crew seats and part hitboxes follow it
+
 * Model weapons emit firing smoke, world casings and layered cannon blasts at their barrels; vehicle-shaped NPCs share water spray, machinery exhaust and destruction columns, and retained wreck effects burn out within one minute without replaying on respawn or model changes
 
 * Flan model NPCs, including AA guns, scale projectile and explosion pushes by vehicle mass by default, using the same mass fallbacks and knockback settings as real vehicles; the per-NPC `Immune` option also blocks direct explosion pushes, while `Normal` keeps Custom NPCs behaviour

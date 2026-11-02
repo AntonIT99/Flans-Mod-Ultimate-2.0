@@ -69,4 +69,43 @@ class NpcModelsTest
             assertEquals(0F, MountMotion.error(MountAim.REST, NpcModels.relative(npc, nose, 90F)), DEGREES);
         });
     }
+
+    @Test
+    void aTurretCompensatesForGroundPitchAndBankToHitAWorldTarget()
+    {
+        for (float pitch : new float[]{-25F, 25F})
+        {
+            for (float bank : new float[]{-20F, 20F})
+            {
+                withAttitude(pitch, bank, npc ->
+                {
+                    for (float hull : new float[]{0F, 90F, 179F, -90F})
+                    {
+                        Vec3 target = Vec3.directionFromRotation(-5F, hull + 45F);
+                        MountAim compensated = NpcModels.relative(npc, target, hull);
+                        assertVec(target, NpcModels.direction(npc, compensated, hull));
+                        assertTrue(MountMotion.error(MountAim.REST, compensated) > 1F);
+                        // Keeping the level-ground aim would fire away from the target on this tilted hull.
+                        Vec3 uncompensated = NpcModels.direction(npc, new MountAim(45F, -5F), hull);
+                        assertTrue(target.distanceTo(uncompensated) > 0.05D);
+                    }
+                });
+            }
+        }
+    }
+
+    @Test
+    void turningATiltedHullRequiresRecomputingElevationAsWellAsTraverse()
+    {
+        withAttitude(-20F, 15F, npc ->
+        {
+            Vec3 target = Vec3.directionFromRotation(0F, 60F);
+            MountAim before = NpcModels.relative(npc, target, 0F);
+            MountAim after = NpcModels.relative(npc, target, 30F);
+            assertTrue(Math.abs(after.pitch() - before.pitch()) > 1F);
+            assertVec(target, NpcModels.direction(npc, after, 30F));
+            MountAim yawOnly = new MountAim(before.yaw() - 30F, before.pitch());
+            assertTrue(target.distanceTo(NpcModels.direction(npc, yawOnly, 30F)) > 0.05D);
+        });
+    }
 }

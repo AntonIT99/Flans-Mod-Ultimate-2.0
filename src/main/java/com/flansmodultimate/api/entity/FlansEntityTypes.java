@@ -14,6 +14,7 @@ import com.flansmodultimate.api.driveables.GroundPropulsion;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.MechaMobility;
 import com.flansmodultimate.api.driveables.ReloadCycle;
+import com.flansmodultimate.api.driveables.TerrainAttitude;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.parts.PartArmor;
 import com.flansmodultimate.common.entity.Driveable;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 
 /** Read-only AA and driveable property inspection for addons, without creating a live vehicle. */
 @ApiStatus.Experimental
@@ -43,6 +45,32 @@ public final class FlansEntityTypes
 {
     private FlansEntityTypes()
     {}
+
+    /**
+     * Samples block collision shapes beneath a model's authored wheels and advances its pitch and bank with the normal
+     * driveable suspension smoothing and angle limits. Call once per server tick on the level thread while grounded;
+     * this reads the world without moving the entity. Missing support retains the previous angle. Unsupported definitions
+     * or definitions without wheels return level. Yaw and vertical movement remain with the caller's movement controller.
+     *
+     * @param entity
+     *            entity wearing the model, used for collision context
+     * @param type
+     *            selected content definition
+     * @param modelToWorld
+     *            transforms static preview points (blocks, Y up, forward -Z, right +X) to world positions,
+     *            including the current attitude, model resting height and any body offset
+     * @param scale
+     *            additional uniform entity scale, excluding the definition's ModelScale; must be positive and finite
+     * @param current
+     *            current nose-down pitch and right-down bank, in degrees
+     * @return smoothed ground attitude, respecting the definition's wheel spring strength and roll permission
+     */
+    public static TerrainAttitude sampleTerrainAttitude(Entity entity, IContentType type, UnaryOperator<Vec3> modelToWorld, double scale, TerrainAttitude current)
+    {
+        if (!Double.isFinite(scale) || scale <= 0D)
+            return TerrainAttitude.LEVEL;
+        return com.flansmodultimate.common.driveables.physics.ModelTerrainAttitude.sample(entity, type, modelToWorld, scale, current);
+    }
 
     /**
      * Scales an outside velocity change using the same mass, configuration and dead zone as real driveables and AA guns.
