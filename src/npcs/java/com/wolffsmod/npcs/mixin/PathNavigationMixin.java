@@ -70,8 +70,8 @@ public abstract class PathNavigationMixin
     @Unique
     private long wolffsmodnpcsPathWaitingSince = Long.MIN_VALUE;
     /**
-     * This navigator's search on a worker thread, or null while none runs. At most one, so its path finder and node
-     * evaluator are never used by two threads at once.
+     * This navigator's search on a worker thread, or null while none runs. The worker owns a separate path finder and
+     * evaluator, so path following can keep using the navigator's evaluator on the server thread.
      */
     @Unique @Nullable
     private NpcPathWorkers.Search wolffsmodnpcsPathSearch;

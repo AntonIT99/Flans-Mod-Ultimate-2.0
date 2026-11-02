@@ -34,6 +34,7 @@
       "NpcTypeModelLoadMixin",
       "NpcWalkNodeEvaluatorMixin",
       "NpcWeaponSettingsMixin",
+      "PathFinderAccessor",
       "PathNavigationMixin",
       "PlayerFactionDataMixin",
       "SPacketGuiOpenMixin",

@@ -2,13 +2,17 @@ package com.wolffsmod.npcs.sim;
 
 import com.wolffsmod.npcs.NpcsCommonConfig;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.mixin.PathFinderAccessor;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.ai.NpcWalkNodeEvaluator;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.PathNavigationRegion;
+import net.minecraft.world.level.pathfinder.FlyNodeEvaluator;
+import net.minecraft.world.level.pathfinder.NodeEvaluator;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathFinder;
 
@@ -22,9 +26,9 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <p>
  * The server thread builds the snapshot of the blocks around the search, as it always did, and hands it to a worker with
- * the navigator's own path finder. It then goes on without a path: the NPC keeps the one it has, and takes the new one a
- * tick or two later, which is what a pursuit already does between its own searches. Only one search of a navigator runs
- * at a time, so a path finder and its node evaluator are never used by two threads at once.
+ * an independent path finder and node evaluator. It then goes on without a path: the NPC keeps the one it has, and takes
+ * the new one a tick or two later, which is what a pursuit already does between its own searches. The navigator keeps its
+ * own evaluator on the server thread, where Custom NPCs also uses it to check the path it follows.
  * </p>
  *
  * <p>
@@ -119,18 +123,47 @@ public final class NpcPathWorkers
         ThreadPoolExecutor executor = pool();
         if (executor == null || executor.getQueue().size() >= MAX_QUEUED)
             return null;
+        PathFinder isolated = workerFinder(finder, region, mob);
+        if (isolated == null)
+            return null;
         Search search = new Search(targets);
         // The set the navigator built is copied, so nothing it does with it afterwards can reach the worker.
         Set<BlockPos> goals = Set.copyOf(targets);
         try
         {
-            executor.execute(() -> run(search, finder, region, mob, goals, followRange, accuracy, maxVisitedNodes));
+            executor.execute(() -> run(search, isolated, region, mob, goals, followRange, accuracy, maxVisitedNodes));
         }
         catch (RejectedExecutionException rejected)
         {
             return null;
         }
         return search;
+    }
+
+    /** Copies supported evaluator settings on the server thread; unknown evaluators keep their synchronous behavior. */
+    @Nullable
+    static PathFinder workerFinder(PathFinder finder, PathNavigationRegion region, Mob mob)
+    {
+        PathFinderAccessor access = (PathFinderAccessor) finder;
+        NodeEvaluator original = access.wolffsmodnpcsNodeEvaluator();
+        NodeEvaluator isolated;
+        if (original.getClass() == NpcWalkNodeEvaluator.class)
+        {
+            isolated = new NpcWalkNodeEvaluator();
+            // Custom NPCs follows paths with this evaluator between searches. Refresh its dimensions and region on
+            // the server just as a synchronous search would; its done() retains them but clears the search caches.
+            original.prepare(region, mob);
+            original.done();
+        }
+        else if (original.getClass() == FlyNodeEvaluator.class)
+            isolated = new FlyNodeEvaluator();
+        else
+            return null;
+        isolated.setCanPassDoors(original.canPassDoors());
+        isolated.setCanOpenDoors(original.canOpenDoors());
+        isolated.setCanFloat(original.canFloat());
+        isolated.setCanWalkOverFences(original.canWalkOverFences());
+        return new PathFinder(isolated, access.wolffsmodnpcsMaxVisitedNodes());
     }
 
     /** Stops the workers, as a stopping server does. */
