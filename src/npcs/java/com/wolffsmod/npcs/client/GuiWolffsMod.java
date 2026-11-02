@@ -166,6 +166,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** The tabs of the Diagnosis page, which lay out the lines the server sent rather than rows. */
     private static final String EFFECTIVE_TAB = "effective_values";
     private static final String LIVE_TAB = "live_stats";
+    /** The tab of the Profiling & benchmarks page that holds the profiling switch, and the server benchmark below it. */
+    private static final String PROFILING_TAB = "profiling";
     /** The tab of the Profiling & benchmarks page that sets the latest server benchmark beside the one before. */
     private static final String COMPARISON_TAB = "benchmark_comparison";
     private static final int GOOD_COLOR = 0x55FF55;
@@ -592,7 +594,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         FACTIONS(Section.SERVER_WORLD, Scope.ALL, Tab.named("team_factions")),
         /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
         CENSUS(Section.SERVER_WORLD, Scope.ALL, Tab.of()),
-        DIAGNOSTICS(Section.SERVER_WORLD, Scope.ALL, Tab.named("profiling", ServerRow.PROFILING), Tab.named(COMPARISON_TAB));
+        DIAGNOSTICS(Section.SERVER_WORLD, Scope.ALL, Tab.named(PROFILING_TAB, ServerRow.PROFILING), Tab.named(COMPARISON_TAB));
         // spotless:on
 
         private final Section section;
@@ -824,8 +826,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         boolean matches = presetsLoaded && preset.matches(npc);
         Tooltip tooltip = Tooltip.create(NpcPresetControls.tooltip(npc, preset, presetsLoaded));
         int width = OVERVIEW_COLUMN - OVERVIEW_GAP;
-        presetArrow(PRESET_PREVIOUS_ID, "\u25c0", PRESET + "previous", x, y);
-        presetArrow(PRESET_NEXT_ID, "\u25b6", PRESET + "next", x + width - PRESET_ARROW_WIDTH, y);
+        presetArrow(PRESET_PREVIOUS_ID, "◀", PRESET + "previous", x, y);
+        presetArrow(PRESET_NEXT_ID, "▶", PRESET + "next", x + width - PRESET_ARROW_WIDTH, y);
         String[] names = Arrays.stream(NpcPreset.values()).map(NpcPreset::key).toArray(String[]::new);
         int selectWidth = width - 2 * (PRESET_ARROW_WIDTH + 2);
         GuiButtonNop select = new GuiButtonNop(this, PRESET_ID, x + PRESET_ARROW_WIDTH + 2, y, selectWidth, 20, names, preset.ordinal());
@@ -1222,21 +1224,27 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         List<String> overflowing = new ArrayList<>();
         for (Category page : Category.values())
-        {
-            // The pages whose rows scroll or that the server fills with lines keep themselves inside the window.
-            if (page == Category.BOARDING || page == Category.CENSUS)
-                continue;
-            for (Tab shown : page == Category.ESSENTIALS ? essentialTabs() : page.tabs)
-            {
-                if (LAID_OUT_ELSEWHERE.contains(shown.name()))
-                    continue;
-                int top = page.tabs.size() > 1 ? TABBED_TOP : PAGE_TOP;
-                int bottom = top + rowsHeight(shown.rows()) + reservedBelow(page, shown);
-                if (bottom > HINT_TOP)
-                    overflowing.add(page + (shown.name().isEmpty() ? "" : "/" + shown.name()) + " reaches " + bottom + ", past " + HINT_TOP);
-            }
-        }
+            for (Tab shown : budgetedTabs(page))
+                overflow(page, shown).ifPresent(overflowing::add);
         return overflowing;
+    }
+
+    /** @return the tabs of the page the budget applies to; a page whose rows scroll or that the server fills with lines keeps itself inside the window */
+    private static List<Tab> budgetedTabs(Category page)
+    {
+        if (page == Category.BOARDING || page == Category.CENSUS)
+            return List.of();
+        List<Tab> tabs = page == Category.ESSENTIALS ? essentialTabs() : page.tabs;
+        return tabs.stream().filter(shown -> !LAID_OUT_ELSEWHERE.contains(shown.name())).toList();
+    }
+
+    private static Optional<String> overflow(Category page, Tab shown)
+    {
+        int top = page.tabs.size() > 1 ? TABBED_TOP : PAGE_TOP;
+        int bottom = top + rowsHeight(shown.rows()) + reservedBelow(page, shown);
+        if (bottom <= HINT_TOP)
+            return Optional.empty();
+        return Optional.of(page + (shown.name().isEmpty() ? "" : "/" + shown.name()) + " reaches " + bottom + ", past " + HINT_TOP);
     }
 
     private static List<Tab> essentialTabs()
@@ -1269,7 +1277,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             // The knockback choice and the three minimum hits are rows of their own below the switches.
             case DAMAGE -> 4 * ROW_HEIGHT;
             case EQUIPMENT, MODEL_STATS, DEBUG_OVERLAYS, SERVER_SEARCH, SERVER_RANGES, SERVER_RULES -> BELOW_BUTTON_HEIGHT;
-            case DIAGNOSTICS -> "profiling".equals(shown.name()) ? BELOW_BUTTON_HEIGHT : 0;
+            case DIAGNOSTICS -> PROFILING_TAB.equals(shown.name()) ? BELOW_BUTTON_HEIGHT : 0;
             default -> 0;
         };
     }
@@ -1352,7 +1360,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             serverButton(SERVER_APPLY_RANGES_ID, confirmApplyRanges ? "server_apply_ranges_confirm" : "server_apply_ranges", below + 6).setEnabled(ClientServerSettings.isKnown());
         else if (category == Category.SERVER_SEARCH)
             serverButton(SERVER_APPLY_SEARCH_ID, confirmApplySearch ? "server_apply_search_confirm" : "server_apply_search", below + 6).setEnabled(ClientServerSettings.isKnown());
-        else if (category == Category.DIAGNOSTICS && "profiling".equals(shown.name()))
+        else if (category == Category.DIAGNOSTICS && PROFILING_TAB.equals(shown.name()))
             serverButton(SERVER_BENCHMARK_ID, "server_benchmark", below + 6);
     }
 
