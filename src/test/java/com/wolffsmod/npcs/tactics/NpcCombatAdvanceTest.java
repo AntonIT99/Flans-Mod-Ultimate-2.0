@@ -298,6 +298,8 @@ class NpcCombatAdvanceTest
             threats.when(() -> NpcVehicleThreats.fireOrigin(enemy)).thenReturn(enemyPosition);
             cover.when(() -> NpcCover.standable(eq(level), any())).thenReturn(true);
             orders.when(() -> TeamsBots.combatIntent(npc)).thenReturn(Optional.of(order));
+            orders.when(() -> TeamsBots.coverAvailable(eq(npc), any(), anyLong())).thenReturn(true);
+            orders.when(() -> TeamsBots.claimCover(eq(npc), any(), anyLong())).thenReturn(true);
             goal = new NpcSafetyGoal(npc);
         }
 

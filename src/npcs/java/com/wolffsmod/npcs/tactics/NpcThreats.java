@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.sim.NpcCombatants;
 import com.wolffsmod.npcs.sim.NpcSight;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -89,6 +90,7 @@ public final class NpcThreats implements ISuppressionListener
     private static void remember(EntityNPCInterface npc, LivingEntity enemy, long now)
     {
         NpcTacticState.of(npc).threat(enemy, npc.getTarget(), now, now + (long) NpcTuning.of(npc).get(Value.THREAT_MEMORY) * TICKS_PER_SECOND);
+        TeamsBots.reportContact(npc, enemy);
     }
 
     /** Tells the allies of the NPC, its own faction within its alert radius, who is shooting at it. */

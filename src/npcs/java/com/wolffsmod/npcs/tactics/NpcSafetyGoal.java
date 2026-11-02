@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
 import com.wolffsmod.npcs.teams.NpcDuties;
 import com.wolffsmod.npcs.teams.NpcSuppression;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,7 +66,8 @@ public final class NpcSafetyGoal extends Goal
     @Override
     public void start()
     {
-        stop();
+        npc.getNavigation().stop();
+        ordered = null;
         orderedAt = npc.level().getGameTime();
     }
 
@@ -77,6 +79,8 @@ public final class NpcSafetyGoal extends Goal
         if (point == null || !state.active(npc.level().getGameTime()))
             return;
         long now = npc.level().getGameTime();
+        if (!keepCover(point, now))
+            return;
         if (ordered == null || ordered.distanceToSqr(point) > 0.25D)
         {
             npc.getNavigation().stop();
@@ -119,23 +123,38 @@ public final class NpcSafetyGoal extends Goal
         }
     }
 
+    private boolean keepCover(Vec3 point, long now)
+    {
+        if (state.getAction() != Action.HIDE && state.getAction() != Action.PEEK && state.getAction() != Action.ADVANCE)
+            return true;
+        BlockPos cover = state.getCover() == null ? BlockPos.containing(point) : state.getCover().stand();
+        if (TeamsBots.claimCover(npc, cover, now))
+            return true;
+        retry(point, now);
+        return false;
+    }
+
     private void retry(Vec3 point, long now)
     {
         unreachable.put(BlockPos.containing(point), now + 200L);
         state.setCover(null);
-        if (state.getAction() == Action.HIDE && ++alternative < alternatives.size())
-            order(Action.HIDE, Vec3.atBottomCenterOf(alternatives.get(alternative)), 100L);
-        else
-        {
-            state.clear();
-            state.setNextSearch(now + 20L);
-            state.setAdvanceReadyAt(now + NpcCombatAdvance.firePause(npc));
-        }
+        if (state.getAction() == Action.HIDE)
+            while (++alternative < alternatives.size())
+                if (TeamsBots.claimCover(npc, alternatives.get(alternative), now))
+                {
+                    order(Action.HIDE, Vec3.atBottomCenterOf(alternatives.get(alternative)), 100L);
+                    return;
+                }
+        TeamsBots.releaseCover(npc);
+        state.clear();
+        state.setNextSearch(now + 20L);
+        state.setAdvanceReadyAt(now + NpcCombatAdvance.firePause(npc));
     }
 
     @Override
     public void stop()
     {
+        TeamsBots.releaseCover(npc);
         npc.getNavigation().stop();
         ordered = null;
     }
@@ -277,7 +296,8 @@ public final class NpcSafetyGoal extends Goal
         for (BlockPos stand : cover)
         {
             Vec3 point = Vec3.atBottomCenterOf(stand);
-            if (!unreachable.containsKey(stand) && intent.progress(npc.position(), point) >= 1D && point.subtract(npc.position()).horizontalDistanceSqr() <= (double) length * length)
+            if (!unreachable.containsKey(stand) && intent.progress(npc.position(), point) >= 1D && point.subtract(npc.position()).horizontalDistanceSqr() <= (double) length * length
+                && TeamsBots.claimCover(npc, stand, now))
             {
                 orderAdvance(point);
                 return true;
@@ -301,7 +321,8 @@ public final class NpcSafetyGoal extends Goal
         {
             BlockPos stand = BlockPos.containing(step).offset(0, height, 0);
             Vec3 point = Vec3.atBottomCenterOf(stand);
-            if (!unreachable.containsKey(stand) && intent.progress(npc.position(), point) > 0.5D && NpcCombatMovement.permits(npc, point) && NpcCover.standable(npc.level(), stand))
+            if (!unreachable.containsKey(stand) && intent.progress(npc.position(), point) > 0.5D && NpcCombatMovement.permits(npc, point) && NpcCover.standable(npc.level(), stand)
+                && TeamsBots.claimCover(npc, stand, npc.level().getGameTime()))
             {
                 orderAdvance(point);
                 return true;
@@ -394,13 +415,15 @@ public final class NpcSafetyGoal extends Goal
             return true;
         }
         state.setCoverReadyAt(now + 40L);
-        alternatives = Objects.requireNonNull(result.value()).stream().filter(point -> !unreachable.containsKey(point)).toList();
+        alternatives = Objects.requireNonNull(result.value()).stream().filter(point -> !unreachable.containsKey(point) && TeamsBots.coverAvailable(npc, point, now)).toList();
         if (intent == null && fight.outranged() && !fight.outmatched() && NpcCover.hidden(npc, fight.sources(), npc.position()))
             alternatives = alternatives.stream().filter(point -> Vec3.atBottomCenterOf(point).distanceTo(fight.position()) < npc.position().distanceTo(fight.position()) - 2D).toList();
         if (alternatives.isEmpty())
             return false;
         alternative = 0;
         BlockPos stand = alternatives.get(0);
+        if (!TeamsBots.claimCover(npc, stand, now))
+            return false;
         BlockPos peek = !fight.outmatched() && target != null && npc.isInRange(target, NpcWeaponRange.firing(npc)) ? NpcCover.peek(npc, stand, target) : null;
         state.setCover(peek == null ? null : new NpcCover.Cover(stand, peek));
         order(Action.HIDE, Vec3.atBottomCenterOf(stand), 100L);

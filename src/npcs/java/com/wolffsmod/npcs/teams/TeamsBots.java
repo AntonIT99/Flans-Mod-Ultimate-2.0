@@ -161,10 +161,65 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         return BotBattles.of(npc).flatMap(battle -> BotBattles.slotOf(battle, npc)).filter(slot -> slot.getSource() == BotSlot.Source.COMMANDER).isPresent();
     }
 
+    /** Shares a fresh sighting or incoming-fire report with the observer's side, never following a hidden contact. */
+    public static void reportContact(EntityNPCInterface observer, LivingEntity enemy)
+    {
+        if (observer.level().isClientSide || enemy.level() != observer.level())
+            return;
+        BotBattles.of(observer).ifPresent(battle ->
+        {
+            if (!Objects.equals(battle.getGround().dimension(), observer.level().dimension()))
+                return;
+            int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
+            if (side >= 0 && battle.getGround().areEnemies(observer, enemy))
+                battle.getIntelligence().report(side, enemy.getUUID(), enemy.position(), BotTargeting.armoured(battle, enemy), observer.level().getGameTime());
+        });
+    }
+
     /** A battle order or ordinary NPC duty retained by the shared infantry combat movement. Server thread. */
     public static Optional<NpcCombatIntent> combatIntent(EntityNPCInterface npc)
     {
         return orderFor(npc).filter(order -> order.role() == BotRole.INFANTRY).map(BotCommander.Order::combatIntent);
+    }
+
+    /** A squad member covers its moving or reloading allies; non-battle NPCs retain their existing local coordination. */
+    public static Optional<Boolean> coveringFire(EntityNPCInterface npc, long now)
+    {
+        return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().covers(BotSquadCombat.snapshot(npc, now), entry.members(npc, now), now));
+    }
+
+    /** Whether another member of this squad already occupies or has reserved the candidate cover. */
+    public static boolean coverAvailable(EntityNPCInterface npc, BlockPos point, long now)
+    {
+        return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().available(npc.getUUID(), point, entry.members(npc, now), now)).orElse(true);
+    }
+
+    /** Claims cover until renewed or expired. It cannot displace a squadmate's live reservation. */
+    public static boolean claimCover(EntityNPCInterface npc, BlockPos point, long now)
+    {
+        LivingEntity enemy = npc.getTarget();
+        return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().claim(npc.getUUID(), enemy == null ? -1 : enemy.getId(), point, entry.members(npc, now), now)).orElse(true);
+    }
+
+    public static void releaseCover(EntityNPCInterface npc)
+    {
+        combatSquad(npc).ifPresent(entry -> entry.squad().getCombat().decisions().release(npc.getUUID()));
+    }
+
+    private record CombatSquad(BotBattle battle, BotSquad squad)
+    {
+        List<SquadCombat.Member> members(EntityNPCInterface npc, long now)
+        {
+            return squad.getCombat().members(npc, battle, squad, now);
+        }
+    }
+
+    private static Optional<CombatSquad> combatSquad(EntityNPCInterface npc)
+    {
+        if (npc.level().isClientSide || npc.isPassenger())
+            return Optional.empty();
+        return BotBattles.of(npc).filter(battle -> Objects.equals(battle.getGround().dimension(), npc.level().dimension())).flatMap(battle -> BotBattles.slotOf(battle, npc)
+            .map(slot -> battle.getSquads().get(slot.getSquad())).filter(squad -> squad.getRole() == BotRole.INFANTRY && !squad.isDisbanded()).map(squad -> new CombatSquad(battle, squad)));
     }
 
     /** @return the bots of the round being played, for commands; empty between rounds */
@@ -184,6 +239,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         current.getSquads().clear();
         current.getQueue().clear();
         current.getSlotOfEntity().clear();
+        current.getIntelligence().clear();
         return removed;
     }
 

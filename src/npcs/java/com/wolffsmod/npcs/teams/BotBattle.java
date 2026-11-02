@@ -26,6 +26,8 @@ final class BotBattle
     private final Map<Integer, BotSlot> slots = new LinkedHashMap<>();
     private final Map<Integer, BotSquad> squads = new LinkedHashMap<>();
     private final Map<UUID, Integer> slotOfEntity = new HashMap<>();
+    /** Strategic reports are deliberately not persisted or reconstructed from hidden enemies after a restart. */
+    private final BotIntelligence intelligence = new BotIntelligence();
     private final Deque<Integer> queue = new ArrayDeque<>();
     /** Tickets each side has left, by side; absent while no ticket limit is set. */
     private final Map<Integer, Integer> tickets = new HashMap<>();

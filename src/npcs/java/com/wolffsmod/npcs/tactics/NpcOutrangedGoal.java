@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.TacticKind;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -167,6 +168,8 @@ public final class NpcOutrangedGoal extends Goal
 
     private void go(BlockPos spot, long now)
     {
+        if (!TeamsBots.claimCover(npc, spot, now))
+            return;
         if (!npc.getNavigation().moveTo(spot.getX() + 0.5D, spot.getY(), spot.getZ() + 0.5D, SPEED))
             return;
         destination = spot;

@@ -8,6 +8,7 @@ import com.wolffsmod.npcs.sim.NpcCombatants;
 import com.wolffsmod.npcs.sim.NpcSight;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.teams.NpcSuppression;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -138,7 +139,8 @@ public final class NpcCover
                 if (!slice.reserve(current.size() * 2))
                     return Result.pending();
                 BlockPos point = choices.get(validated++).point();
-                if (!accepted.contains(point) && standable(npc.level(), point) && NpcCombatMovement.permits(npc, Vec3.atBottomCenterOf(point)) && hidden(npc, current, Vec3.atBottomCenterOf(point)))
+                if (!accepted.contains(point) && TeamsBots.coverAvailable(npc, point, npc.level().getGameTime()) && standable(npc.level(), point)
+                    && NpcCombatMovement.permits(npc, Vec3.atBottomCenterOf(point)) && hidden(npc, current, Vec3.atBottomCenterOf(point)))
                     accepted.add(point);
             }
             return new Result<>(true, List.copyOf(accepted));
@@ -197,7 +199,7 @@ public final class NpcCover
             for (int height : new int[]{0, -1, 1})
             {
                 BlockPos stand = point.offset(0, height, 0);
-                if (standable(npc.level(), stand) && NpcCombatMovement.permits(npc, Vec3.atBottomCenterOf(stand)))
+                if (TeamsBots.coverAvailable(npc, stand, npc.level().getGameTime()) && standable(npc.level(), stand) && NpcCombatMovement.permits(npc, Vec3.atBottomCenterOf(stand)))
                     return stand;
             }
             return null;
@@ -455,7 +457,7 @@ public final class NpcCover
         private boolean test(BlockPos stand, Slice slice)
         {
             double distance = Vec3.atBottomCenterOf(stand).distanceTo(target.position());
-            if (distance < MIN_TARGET_DISTANCE || distance > farthest || !standable(stand))
+            if (distance < MIN_TARGET_DISTANCE || distance > farthest || !TeamsBots.coverAvailable(npc, stand, level.getGameTime()) || !standable(stand))
             {
                 index++;
                 blockTests++;

@@ -65,7 +65,7 @@ final class BotCommander
         List<TeamsCapturePoint> points = ground.capturePoints();
         int attacking = ground.attackingSide().orElse(-1);
         List<Vec3> naval = markers(server, battle, BotMarkers.Type.NAVAL);
-        Map<Integer, List<Vec3>> fighters = fightersBySide(server, level, battle);
+        observe(level, battle);
         List<TeamsFlag> flags = ground.flags();
         List<Doctrine.FlagView> flagViews = flags.stream().map(flag -> flagView(server, level, battle, flag)).toList();
         Set<UUID> carriers = new HashSet<>();
@@ -80,20 +80,16 @@ final class BotCommander
                 CommanderBots.hold(level, battle, side);
                 continue;
             }
-            int ownSide = side;
-            List<Vec3> enemies = new ArrayList<>();
-            fighters.forEach((fighterSide, positions) ->
-            {
-                if (ground.hostile(ownSide, fighterSide))
-                    enemies.addAll(positions);
-            });
+            List<BotIntelligence.Contact> contacts = battle.getIntelligence().contacts(side, level.getGameTime());
+            List<Vec3> enemies = contacts.stream().map(BotIntelligence.Contact::position).toList();
+            List<Vec3> armour = contacts.stream().filter(BotIntelligence.Contact::armoured).map(BotIntelligence.Contact::position).toList();
             List<Vec3> enemySpawns = new ArrayList<>();
             for (ITeam team : ground.teams())
                 if (ground.hostile(side, ground.sideOf(team)))
                     enemySpawns.addAll(ground.spawnPositions(team));
             List<Doctrine.SquadView> views = views(level, battle, side, carriers);
             if (!views.isEmpty())
-                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null)), views)
+                Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null), armour), views)
                     .forEach((squadId, task) -> Optional.ofNullable(battle.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
         }
     }
@@ -135,22 +131,19 @@ final class BotCommander
         return new Doctrine.FlagView(owner, flag.atHome() ? flag.home() : flag.position(), flag.home(), flag.atHome(), carrierSide);
     }
 
-    /** Where every living player and bot of the round is, by side. */
-    private static Map<Integer, List<Vec3>> fightersBySide(MinecraftServer server, ServerLevel level, BotBattle battle)
+    /** Reuses each bot's current target and sensing cache, without searching the world for additional enemies. */
+    private static void observe(ServerLevel level, BotBattle battle)
     {
-        Map<Integer, List<Vec3>> fighters = new HashMap<>();
-        for (ServerPlayer player : server.getPlayerList().getPlayers())
-        {
-            if (player.isAlive() && !player.isSpectator() && player.level() == level)
-                battle.sideOfPlayer(player).ifPresent(side -> fighters.computeIfAbsent(side, ignored -> new ArrayList<>()).add(player.position()));
-        }
         for (BotSlot slot : battle.getSlots().values())
         {
             Entity entity = slot.getEntity() == null ? null : level.getEntity(slot.getEntity());
-            if (entity != null && entity.isAlive())
-                fighters.computeIfAbsent(battle.sideOf(slot.getTeam()), ignored -> new ArrayList<>()).add(entity.position());
+            if (entity instanceof EntityNPCInterface npc && npc.isAlive() && !npc.isKilled())
+            {
+                var target = npc.getTarget();
+                if (target != null && target.isAlive() && target.level() == level && npc.getSensing().hasLineOfSight(target))
+                    TeamsBots.reportContact(npc, target);
+            }
         }
-        return fighters;
     }
 
     /**
@@ -168,7 +161,9 @@ final class BotCommander
                 continue;
             BotRole role = squad.getCargo().isEmpty() ? squad.getRole() : BotRole.INFANTRY;
             boolean carrying = members.stream().anyMatch(member -> carriers.contains(member.getUUID()));
-            views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying, squad.getTask() == null ? null : squad.getTask().target()));
+            BotReadiness.Strength strength = BotReadiness.measure(members, squad.getSlots().size(), role, level.getGameTime());
+            views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying, squad.getTask() == null ? null : squad.getTask().target(),
+                strength.readiness(), strength.antiArmour()));
         }
         return views;
     }

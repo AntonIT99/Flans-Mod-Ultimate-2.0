@@ -73,7 +73,7 @@ public final class NpcTacticSteering
         {
             if (now - memory.getCoverSearchedAt() < COVER_CHECK_INTERVAL)
                 return;
-            if (!NpcCover.exposed(npc, target, cover))
+            if (!NpcCover.exposed(npc, target, cover) && TeamsBots.claimCover(npc, cover.stand(), now))
             {
                 // Still hidden: checked again an interval from now.
                 memory.cover(cover, now);
@@ -84,7 +84,10 @@ public final class NpcTacticSteering
             return;
         NpcCover.Result<Cover> result = NpcCover.find(npc, target, NpcTuning.of(npc).get(Value.COVER_RADIUS), engagement);
         if (result.complete())
-            memory.cover(result.value(), now);
+        {
+            Cover found = result.value();
+            memory.cover(found != null && TeamsBots.claimCover(npc, found.stand(), now) ? found : null, now);
+        }
     }
 
     private static void follow(EntityNPCInterface npc, Order order, NpcTacticState memory, LivingEntity target, long now)

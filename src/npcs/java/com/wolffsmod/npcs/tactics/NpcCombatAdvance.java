@@ -63,6 +63,9 @@ public final class NpcCombatAdvance
         if (!NpcEquipment.enabled(npc, Feature.COVERING_FIRE) || !(npc.level() instanceof ServerLevel level) || !npc.getSensing().hasLineOfSight(target)
             || !npc.isInRange(target, NpcWeaponRange.firing(npc)) || NpcTacticState.of(npc).isReloading(now))
             return false;
+        var coordinated = TeamsBots.coveringFire(npc, now);
+        if (coordinated.isPresent())
+            return coordinated.get();
         NpcCombatants combatants = NpcCombatants.of(level);
         for (int index = 0; index < combatants.npcSize(); index++)
         {

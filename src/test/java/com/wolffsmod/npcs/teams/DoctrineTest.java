@@ -42,6 +42,45 @@ class DoctrineTest
     }
 
     @Test
+    void depletedSquadsGuardWhileReadySquadsAssault()
+    {
+        var held = point('A', 0D, US, -1, false);
+        var enemy = point('B', 50D, GERMANY, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(held, enemy), List.of(), List.of(), List.of(), List.of());
+        var depleted = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, Vec3.ZERO, 1, false, null, 0.2D, 0D);
+        var ready = squad(2, BotRole.INFANTRY, 0D);
+        var tasks = Doctrine.plan(field, List.of(depleted, ready));
+        assertEquals(enemy.position(), tasks.get(2).target());
+        assertEquals(SquadTask.Kind.GUARD, tasks.get(1).kind());
+    }
+
+    @Test
+    void armourReportsFavourSquadsThatCanEngageThem()
+    {
+        var armour = point('A', 20D, GERMANY, -1, false);
+        var infantry = point('B', 60D, GERMANY, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(armour, infantry), List.of(armour.position()), List.of(), List.of(), List.of(), true, null, List.of(armour.position()));
+        var riflemen = squad(1, BotRole.INFANTRY, 0D);
+        var antiTank = new Doctrine.SquadView(2, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, riflemen.position(), 4, false, null, 1D, 2D);
+        assertTrue(Doctrine.value(field, armour, antiTank) > Doctrine.value(field, armour, riflemen));
+        assertEquals(infantry.position(), Doctrine.plan(field, List.of(riflemen)).get(1).target());
+        assertEquals(armour.position(), Doctrine.plan(field, List.of(antiTank)).get(2).target());
+    }
+
+    @Test
+    void largeSquadsCountForMoreThanASingleSurvivorWhenSpreadingAssignments()
+    {
+        var first = point('A', 0D, -1, -1, false);
+        var second = point('B', 100D, -1, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(first, second), List.of(), List.of(), List.of(), List.of());
+        var large = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, first.position(), 12, false, null);
+        assertEquals(second.position(), Doctrine.plan(field, List.of(large, squad(2, BotRole.INFANTRY, 0D))).get(2).target());
+        var survivor = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, first.position(), 1, false, null);
+        var follower = new Doctrine.SquadView(2, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, first.position(), 1, false, null);
+        assertEquals(first.position(), Doctrine.plan(field, List.of(survivor, follower)).get(2).target());
+    }
+
+    @Test
     void withoutEnemiesInSightSquadsHeadForTheEnemySpawn()
     {
         Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(), List.of(), List.of(new Vec3(500D, 64D, 0D)), List.of(), List.of());

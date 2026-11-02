@@ -62,9 +62,23 @@ public final class Doctrine
      *            whether one of its members carries an enemy flag
      * @param currentTarget
      *            where its current task sends it, or null; a squad keeps to it unless another point is clearly worth more
+     * @param readiness
+     *            fraction of readiness retained after casualties, injury, ammunition and suppression, from zero to one
+     * @param antiArmour
+     *            readiness-weighted members equipped to engage reported armour
      */
-    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget)
-    {}
+    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget, double readiness, double antiArmour)
+    {
+        public SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget)
+        {
+            this(id, role, posture, position, strength, carrying, currentTarget, 1D, role == BotRole.ARMOR ? strength : 0D);
+        }
+
+        double power()
+        {
+            return Math.max(0.25D, strength * Math.max(0D, Math.min(1D, readiness)));
+        }
+    }
 
     /**
      * A Capture the Flag flag as a commander sees it.
@@ -87,7 +101,7 @@ public final class Doctrine
      * @param points
      *            the capture points in play order; empty in game types without them
      * @param enemies
-     *            where the enemy's players and bots are
+     *            the enemy's reported positions, including unexpired last-known contacts
      * @param navalPoints
      *            the patrol points ships may use
      * @param flags
@@ -98,10 +112,18 @@ public final class Doctrine
      * @param front
      *            where the side's ground squads meet the enemy in a battle without objectives, or null to hunt the enemy
      *            wherever it is
+     * @param armour
+     *            positions of the reports classified as armour
      */
     public record Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags, boolean mayCapture,
-        @Nullable Vec3 front)
+        @Nullable Vec3 front, List<Vec3> armour)
     {
+        public Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags, boolean mayCapture,
+            @Nullable Vec3 front)
+        {
+            this(side, attackingSide, points, enemies, enemySpawns, navalPoints, flags, mayCapture, front, List.of());
+        }
+
         public Battlefield(int side, int attackingSide, List<TeamsCapturePoint> points, List<Vec3> enemies, List<Vec3> enemySpawns, List<Vec3> navalPoints, List<FlagView> flags, boolean mayCapture)
         {
             this(side, attackingSide, points, enemies, enemySpawns, navalPoints, flags, mayCapture, null);
@@ -112,6 +134,10 @@ public final class Doctrine
             this(side, attackingSide, points, enemies, enemySpawns, navalPoints, flags, true);
         }
     }
+
+    /** Calculated once per objective and planning pass, rather than rescanning reports for each squad. */
+    private record Pressure(double power, long armour, boolean threatened)
+    {}
 
     /** @return a task for every squad that has one; squads left out keep theirs */
     public static Map<Integer, SquadTask> plan(Battlefield field, List<SquadView> squads)
@@ -182,12 +208,13 @@ public final class Doctrine
             else
                 free.add(squad);
         }
-        free.sort(Comparator.comparingInt(SquadView::id));
+        free.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
         for (FlagView flag : own)
         {
             if (!flag.atHome())
                 recover(flag, free, tasks);
         }
+        free.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
         int raiders = enemy.isEmpty() ? 0 : (free.size() + 1) / 2;
         for (int i = 0; i < free.size(); i++)
             raidOrGuard(field, free.get(i), i < raiders, own, enemy, tasks);
@@ -239,19 +266,34 @@ public final class Doctrine
         if (field.side() == field.attackingSide())
         {
             for (SquadView squad : squads)
-                tasks.put(squad.id(), new SquadTask(SquadTask.Kind.ATTACK, front.position(), front.radius()));
+                tasks.put(squad.id(), assaultTask(field, squad, front));
             return;
         }
         TeamsCapturePoint second = active + 1 < field.points().size() ? field.points().get(active + 1) : front;
         List<SquadView> ordered = new ArrayList<>(squads);
-        // Defensive squads go to the front first; nearest first within each posture.
-        ordered.sort(Comparator.comparing((SquadView squad) -> squad.posture() != SquadTemplate.Posture.DEFENSE).thenComparingDouble(squad -> squad.position().distanceTo(front.position())));
-        int atFront = (int) Math.ceil(ordered.size() * FRONT_SHARE);
-        for (int i = 0; i < ordered.size(); i++)
+        // Ready squads go to the front first; posture and distance settle equal-strength choices.
+        ordered.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparing(squad -> squad.posture() != SquadTemplate.Posture.DEFENSE)
+            .thenComparingDouble(squad -> squad.position().distanceTo(front.position())));
+        double neededAtFront = ordered.stream().mapToDouble(SquadView::power).sum() * FRONT_SHARE;
+        double atFront = 0D;
+        for (SquadView squad : ordered)
         {
-            TeamsCapturePoint point = i < atFront ? front : second;
-            tasks.put(ordered.get(i).id(), new SquadTask(SquadTask.Kind.DEFEND, point.position(), point.radius()));
+            TeamsCapturePoint point = atFront < neededAtFront ? front : second;
+            if (point == front)
+                atFront += squad.power();
+            tasks.put(squad.id(), new SquadTask(SquadTask.Kind.DEFEND, point.position(), point.radius()));
         }
+    }
+
+    private static SquadTask assaultTask(Battlefield field, SquadView squad, TeamsCapturePoint front)
+    {
+        if (squad.readiness() < 0.5D)
+        {
+            var guarded = field.points().stream().filter(point -> point.ownerSide() == field.side()).min(Comparator.comparingDouble(point -> point.position().distanceToSqr(squad.position())));
+            if (guarded.isPresent())
+                return new SquadTask(kindAt(field, guarded.get()), guarded.get().position(), guarded.get().radius());
+        }
+        return new SquadTask(SquadTask.Kind.ATTACK, front.position(), front.radius());
     }
 
     /**
@@ -265,9 +307,10 @@ public final class Doctrine
             planHunt(field, squads, tasks);
             return;
         }
-        Map<Integer, Integer> assigned = new HashMap<>();
+        Map<Integer, Double> assigned = new HashMap<>();
+        List<Pressure> pressure = field.points().stream().map(point -> pressure(field, point)).toList();
         List<SquadView> ordered = new ArrayList<>(squads);
-        ordered.sort(Comparator.comparingInt(SquadView::id));
+        ordered.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
         for (SquadView squad : ordered)
         {
             int best = -1;
@@ -277,7 +320,8 @@ public final class Doctrine
                 TeamsCapturePoint candidate = field.points().get(i);
                 if (!field.mayCapture() && candidate.ownerSide() != field.side())
                     continue;
-                double value = value(field, candidate, squad) - CROWDING * assigned.getOrDefault(i, 0);
+                double demand = Math.max(4D, pressure.get(i).power());
+                double value = value(field, candidate, squad, pressure.get(i)) - CROWDING * assigned.getOrDefault(i, 0D) / demand;
                 if (value > bestValue)
                 {
                     bestValue = value;
@@ -285,12 +329,31 @@ public final class Doctrine
                 }
             }
             TeamsCapturePoint point = field.points().get(best);
-            assigned.merge(best, 1, Integer::sum);
+            assigned.merge(best, squad.power(), Double::sum);
             tasks.put(squad.id(), new SquadTask(kindAt(field, point), point.position(), point.radius()));
         }
     }
 
     static double value(Battlefield field, TeamsCapturePoint point, SquadView squad)
+    {
+        return value(field, point, squad, pressure(field, point));
+    }
+
+    private static double value(Battlefield field, TeamsCapturePoint point, SquadView squad, Pressure pressure)
+    {
+        double value = baseValue(field, point, squad, pressure.threatened());
+        if (point.position().equals(squad.currentTarget()))
+            value += STAY_BONUS;
+        if (point.ownerSide() != field.side() || pressure.threatened())
+        {
+            value *= Math.max(0.15D, Math.min(1D, squad.readiness()));
+            value -= Math.max(0D, pressure.power() - squad.power());
+            value -= 4D * Math.max(0D, pressure.armour() - squad.antiArmour());
+        }
+        return value - squad.position().distanceTo(point.position()) / DISTANCE_SCALE;
+    }
+
+    private static double baseValue(Battlefield field, TeamsCapturePoint point, SquadView squad, boolean threatened)
     {
         double value;
         boolean ours = point.ownerSide() == field.side();
@@ -304,16 +367,28 @@ public final class Doctrine
         }
         else
         {
-            value = threatened(field, point) ? THREATENED_VALUE : SAFE_VALUE;
+            value = threatened ? THREATENED_VALUE : SAFE_VALUE;
             // A point a defender loses is lost for good, so a quiet one is worth guarding too.
             if (!field.mayCapture())
                 value += DEFENDER_BONUS;
             if (squad.posture() == SquadTemplate.Posture.DEFENSE)
                 value += POSTURE_BONUS;
         }
-        if (point.position().equals(squad.currentTarget()))
-            value += STAY_BONUS;
-        return value - squad.position().distanceTo(point.position()) / DISTANCE_SCALE;
+        return value;
+    }
+
+    private static Pressure pressure(Battlefield field, TeamsCapturePoint point)
+    {
+        long enemies = field.enemies().stream().filter(position -> near(point, position)).count();
+        long armour = field.armour().stream().filter(position -> near(point, position)).count();
+        boolean threatened = enemies > 0 || point.contested() || point.capturingSide() >= 0 && point.capturingSide() != field.side();
+        return new Pressure(enemies + 2D * armour, armour, threatened);
+    }
+
+    private static boolean near(TeamsCapturePoint point, Vec3 position)
+    {
+        double reach = point.radius() * 2D + THREAT_MARGIN;
+        return position.distanceToSqr(point.position()) <= reach * reach;
     }
 
     private static SquadTask.Kind kindAt(Battlefield field, TeamsCapturePoint point)
