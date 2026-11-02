@@ -7,10 +7,12 @@ def prepareMineflayer = tasks.register('prepareMineflayerServer', Exec) {
     commandLine 'node', file('tools/mineflayer/prepare.mjs').absolutePath
 }
 
+// Keep the source set available to IDE imports even when the test server is disabled.
+def development = sourceSets.create('mineflayerdev')
+neoForge.addModdingDependenciesTo(development)
+
 if (project.hasProperty('withMineflayer'))
 {
-    def development = sourceSets.create('mineflayerdev')
-    neoForge.addModdingDependenciesTo(development)
     neoForge.mods.maybeCreate('flansmineflayerdev').sourceSet(development)
     neoForge.runs.named('server') {
         gameDirectory = mineflayerDirectory
