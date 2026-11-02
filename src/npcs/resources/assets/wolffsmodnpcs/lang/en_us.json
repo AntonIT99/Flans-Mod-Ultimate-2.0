@@ -509,7 +509,7 @@
   "wolffsmodnpcs.combat.inherit_all": "Inherit all",
   "wolffsmodnpcs.combat.inherit_all.help": "Switch every value the model offers on this tab back to Inherit. The NPC keeps its own values saved for later.",
   "wolffsmodnpcs.combat.knockback": "Knockback",
-  "wolffsmodnpcs.combat.knockback.help": "By model makes the NPC immune to knockback while it looks like an AA gun, mecha, plane or vehicle. Immune and Normal apply whatever the model. Explosions still push, as they push other heavy mobs.",
+  "wolffsmodnpcs.combat.knockback.help": "By model scales outside pushes, including explosions, by the mass of the Flan vehicle or AA gun. Uses the same mass fallbacks and legacy knockback setting as real vehicles. Immune blocks outside pushes; Normal keeps Custom NPCs knockback, whatever the model.",
   "wolffsmodnpcs.combat.knockback.immune": "Immune",
   "wolffsmodnpcs.combat.knockback.model": "By model",
   "wolffsmodnpcs.combat.knockback.normal": "Normal",

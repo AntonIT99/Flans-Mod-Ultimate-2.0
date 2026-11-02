@@ -44,6 +44,31 @@ public final class FlansEntityTypes
     private FlansEntityTypes()
     {}
 
+    /**
+     * Scales an outside velocity change using the same mass, configuration and dead zone as real driveables and AA guns.
+     * Unsupported definitions and legacy knockback keep the input. Read on the level thread after content loading;
+     * apply the result on the server only.
+     *
+     * @param type
+     *            selected driveable or AA-gun definition
+     * @param impulse
+     *            outside velocity change in blocks per tick, excluding propulsion and gravity
+     * @return the velocity change to retain
+     */
+    public static Vec3 scaleExternalImpulse(IContentType type, Vec3 impulse)
+    {
+        if (com.flansmodultimate.config.ModCommonConfig.forceLegacyVehicleKnockback())
+            return impulse;
+        double mass;
+        if (type instanceof com.flansmodultimate.common.types.DriveableType driveable)
+            mass = driveable.getImpulseMass().massKg();
+        else if (type instanceof com.flansmodultimate.common.types.AAGunType gun)
+            mass = gun.getImpulseMass().massKg();
+        else
+            return impulse;
+        return com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics.scaleExternalImpulse(impulse, mass, com.flansmodultimate.config.ModCommonConfig.vehicleKnockbackReferenceMassKg());
+    }
+
     /** @return a real driveable's turret yaw relative to its hull, in degrees, or empty for another entity; level thread, either side */
     public static OptionalDouble getTurretYaw(Entity entity)
     {

@@ -77,7 +77,7 @@ import java.util.*;
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
  * a playing engine sound replaces the Custom NPCs step and idle sounds.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
- * resists knockback while it is a vehicle. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
+ * scales outside pushes by mass while it is a Flan model. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
  * melee against protected riders reaches their vehicle. Drawn as a driveable it is hit by the part: Flan rounds and blasts meet the model's part boxes,
  * the health a hit takes is handed to the part it struck, and the hit points of the parts are saved with the NPC. Drawn with the player
  * model it is hit limb by limb by Flan rounds, headshots included, as players are.</li>
@@ -186,6 +186,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
+    @Unique
+    private final NpcExternalImpulses wolffsmodnpcsExternalImpulses = new NpcExternalImpulses();
     @Unique
     private NpcThrowGoal wolffsmodnpcsThrowGoal;
     @Unique
@@ -988,6 +990,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         wolffsmodnpcsTickStarted = !npc.level().isClientSide && (NpcProfiler.server() || NpcWatch.watched(npc)) ? System.nanoTime() : 0L;
         if (!npc.level().isClientSide)
         {
+            wolffsmodnpcsExternalImpulses.absorb(npc);
+            NpcProtection.updateKnockback(npc);
             NpcAmmunition.refillEmptySlots(npc);
             ItemStack sword = NpcMechaTools.findSword(npc);
             if (!ItemStack.matches(sword, getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL)))
@@ -1101,6 +1105,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             wolffsmodnpcsDriverGuns.tick(npc);
             NpcDrivers.tick(npc);
         }
+        if (server)
+            wolffsmodnpcsExternalImpulses.settle(npc.getDeltaMovement());
         if (wolffsmodnpcsTickStarted != 0L)
         {
             long nanos = System.nanoTime() - wolffsmodnpcsTickStarted;

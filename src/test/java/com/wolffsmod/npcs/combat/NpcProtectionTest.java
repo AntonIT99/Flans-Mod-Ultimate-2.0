@@ -30,9 +30,9 @@ class NpcProtectionTest
     @Test
     void knockbackFollowsTheModelUnlessTheNpcOverridesIt()
     {
-        assertTrue(NpcProtection.knockbackImmune(Knockback.MODEL, true));
-        assertFalse(NpcProtection.knockbackImmune(Knockback.MODEL, false));
-        assertTrue(NpcProtection.knockbackImmune(Knockback.IMMUNE, false));
-        assertFalse(NpcProtection.knockbackImmune(Knockback.NORMAL, true));
+        assertFalse(NpcProtection.knockbackImmune(Knockback.MODEL));
+
+        assertTrue(NpcProtection.knockbackImmune(Knockback.IMMUNE));
+        assertFalse(NpcProtection.knockbackImmune(Knockback.NORMAL));
     }
 }

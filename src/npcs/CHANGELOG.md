@@ -27,6 +27,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Vehicles, Aircraft & Mechas
 
+* Flan model NPCs, including AA guns, scale projectile and explosion pushes by vehicle mass by default, using the same mass fallbacks and knockback settings as real vehicles; the per-NPC `Immune` option also blocks direct explosion pushes, while `Normal` keeps Custom NPCs behaviour
+
 * Ship bots use the nearest clear water surface within 64 blocks of their selected spawn point, and wait to spawn when no water is available in loaded chunks
 
 * NPCs drawn as Flan's vehicles, planes, helicopters, ships, mechas and AA guns move, fight, sound and take damage like their driveables, with part hitboxes, armour and HEAT overrides; armour impacts spark when blocked and show flashes, metal fragments and smoke when large shells penetrate; destroyed planes and helicopters fall under gravity; vehicle muzzle flashes replace the fallback flame particle while preserving authored shooting particles; vehicle and plane main barrels recoil only when firing shells, so machine guns no longer cycle the main gun

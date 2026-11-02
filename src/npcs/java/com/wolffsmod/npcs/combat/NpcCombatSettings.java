@@ -42,7 +42,7 @@ public final class NpcCombatSettings
     /** How the NPC reacts to being knocked back. */
     public enum Knockback
     {
-        /** Immune while the NPC looks like an AA gun, mecha, plane or vehicle. */
+        /** Mass-scaled outside pushes while the NPC looks like an AA gun or driveable. */
         MODEL,
         /** Never knocked back. */
         IMMUNE,

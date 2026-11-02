@@ -82,12 +82,12 @@ public final class NpcProtection
 
     public static boolean knockbackImmune(EntityNPCInterface npc)
     {
-        return knockbackImmune(settings(npc).getKnockback(), npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity);
+        return knockbackImmune(settings(npc).getKnockback());
     }
 
-    static boolean knockbackImmune(Knockback mode, boolean flanModel)
+    static boolean knockbackImmune(Knockback mode)
     {
-        return mode == Knockback.IMMUNE || mode == Knockback.MODEL && flanModel;
+        return mode == Knockback.IMMUNE;
     }
 
     /**
