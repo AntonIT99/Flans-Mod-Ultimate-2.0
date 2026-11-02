@@ -18,7 +18,9 @@ import com.mojang.math.Axis;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.*;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -30,7 +32,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.lang.Math;
 import java.util.*;
 
 /**
@@ -103,10 +104,10 @@ public final class DriveableImpostorCache
      */
     public static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue,
         PoseStack poseStack, MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset, float entityYaw, float entityPitch, float entityRoll,
-        boolean allowImpostor, boolean wasUsingImpostor)
+        boolean allowImpostor, boolean wasUsingImpostor, float drawTint)
     {
         return renderOrPrepare(model, type, sourceTexture, translucent, cull, red, green, blue, poseStack, buffer, packedLight, projectionPixels, cameraDistance, cameraOffset, entityYaw, entityPitch,
-            entityRoll, null, allowImpostor, wasUsingImpostor, 1F, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+            entityRoll, null, allowImpostor, wasUsingImpostor, 1F, OverlayTexture.NO_OVERLAY, drawTint, drawTint, drawTint, 1F);
     }
 
     /** Neutral-model atlas shared with externally posed instances; tint and damage overlays stay per draw. */

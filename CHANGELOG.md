@@ -6,7 +6,7 @@
 * Player classes can use repeatable `AddToTeam <packId>:<teamShortName>` lines to extend another pack's teams without a reverse dependency
 * New companion mod: **Flan's Ultimate 2: NPC Vehicles & Soldiers**, which lets Custom NPCs soldiers use Flan's weapons, vehicles, planes, ships and mechas, crew them and fight Teams rounds, skirmishes and wars (separate download, requires Custom NPCs)
 * Driveable damage and destruction: damaged parts smoke, burn, steam and spark, each machine class dies its own way (tank cook-off, ship magazines and boilers, aircraft fuel, rotor and wing loss, mecha collapse), and parts shot off fly away; destruction bursts stay bounded, ship magazine blasts scale with ammunition rather than hull size, and machine-gun-only boats produce small cook-off pops
-* Destroyed driveables stay as burning wrecks that settle or sink, keep their collision, burn out and can be blown apart (`driveableWreckLifetime`, `NoWreck`)
+* Destroyed driveables stay as burning wrecks that tumble as they fall, come to rest along the ground they land on, slide down steep slopes, keep their collision, char and settle, burn out and sink away, and can be shoved about or blown apart by explosives (`driveableWreckLifetime`, `NoWreck`)
 * Driveable repairs and carrier servicing, with repair tools, the Blowtorch, a repair progress display and an operator command to fully repair a driveable
 * New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; arena and survival presets have compact summary tooltips
 * Reimplemented missing features of Flan's Mod Ultimate 1.7.10, including Teams rule commands, lag compensation settings, death drop rules, item spawners, `ShootWithOpenDoor`, kill messages with distance and hit markers
@@ -72,6 +72,9 @@
 * Passenger guns mounted on a turret aim relative to the turret
 * The Change Seat key now defaults to Numpad Enter instead of Numpad 0, which Custom NPCs uses to reset scenes (saved key settings are kept)
 * Both mecha guns fire along the mecha's aim from the correct muzzle positions
+* Wrecks lie along the ground they come to rest on instead of staying at the attitude they died at, tumble when shot down in the air or thrown by a blast, slide down slopes too steep for what is left of their running gear, crush and mark the ground where they come down hard, and ships go down at a rate set by their own flotation and stay on the sea bed for the rest of their lifetime
+* A wreck's gun droops and its turret slumps off its bearing as it cools, a collapsed mecha's hull now blocks where its model actually lies, and a burnt-out hull is taken down into the ground over its last seconds instead of vanishing
+* Columns of smoke over a battlefield all lean with one slow drift, stronger in the rain, and burning wrecks are heard as a roar that carries plus a crackle close to
 * Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards, and pieces thrown off a wreck coming to rest in the air instead of on the ground
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
@@ -108,6 +111,7 @@
 * Sodium and Embeddium fast vertex writing, and EntityCulling compatibility
 * Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters
 * Smoke grenades and shells have separate emission and live-particle limits for each source, including existing content packs; `flansmod.smoker` and `flansmod.smoker1` form broad smoke clouds at their origin instead of throwing multiplying smoke emitters away from the detonation; Warfare 44 M8 and Star Wars Smoke Detonator grenades reuse this smoke effect; `SmokeRadius` scales cloud size and the cloud fills the whole radius, positive `SmokeRadius` and `SmokeTime` appear in tooltips, and source packs balance smoke radius and duration by shell size and role, with smaller areas for traps and self-use effects; built-in smoke grenade, gas grenade and smoke shell categories set `SmokeTime` and `SmokeRadius` from real burn times
+* Burnt-out wrecks use the far-distance impostor again once they have charred to one colour, so a field left after a big battle costs what the vehicles in it did
 * Clouds no longer draw over Flan particles
 * Gun attachments such as scopes follow the gun's first-person recoil and sight offset instead of staying in place while the gun kicks back
 * Content caches moved to `.flansmod-cache` (migrated automatically) and temporary files to `.flansmod-temp`

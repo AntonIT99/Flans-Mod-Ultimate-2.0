@@ -35,8 +35,24 @@ public final class DamageVisualCurves
     private static final float SMOULDER = 0.1F;
     /** Ticks a mecha takes to fall once it is wrecked. */
     public static final int COLLAPSE_TICKS = 24;
+    /** How far over a collapsed mecha has gone when it is down, in degrees. */
+    private static final float MECHA_COLLAPSE_DEGREES = 78F;
     /** The least heat a wreck shows on a thermal sight. */
     public static final float MIN_WRECK_HEAT = 0.15F;
+    /** Ticks at the end of a wreck's life over which it sinks away into the ground instead of vanishing. */
+    public static final int SINK_TICKS = 50;
+    /** How deep a wreck has sunk into the ground when it is gone, as a share of its own height. */
+    private static final float SINK_DEPTH = 1.15F;
+    /** How far a cooling hull settles onto what is left of its springs, as a share of its height. */
+    private static final float SAG_DEPTH = 0.035F;
+    /** Ticks over which a fresh wreck settles onto its springs. */
+    private static final int SAG_TICKS = 80;
+    /** The furthest a wrecked gun's barrel droops once nothing holds it up, in degrees. */
+    private static final float MAX_TURRET_DROOP = 9F;
+    /** The furthest a wrecked turret is knocked off its bearing, in degrees. */
+    private static final float MAX_TURRET_SKEW = 11F;
+    /** Ticks over which a wrecked turret droops and slews to where it comes to rest. */
+    private static final int TURRET_SLUMP_TICKS = 50;
 
     /**
      * @param healthFraction
@@ -103,6 +119,71 @@ public final class DamageVisualCurves
     }
 
     /**
+     * How a wreck's burning out reads at a glance, for the one number the server has to send when it changes. A client
+     * counts the age on by itself, which keeps the stages in step within a stage but cannot find a boundary the server
+     * never told it about.
+     *
+     * @return 0 while the fire is at full strength, 1 as it dies down, 2 for the smoke column, 3 for thin smoke and 4
+     *         for smouldering
+     */
+    public static int fireStage(int ageTicks, int lifetimeTicks)
+    {
+        if (ageTicks < 0)
+            return 0;
+        int fire = fireTicks(lifetimeTicks);
+        if (ageTicks < fire)
+            return ageTicks < fire / 2 ? 0 : 1;
+        float smoke = wreckSmoke(ageTicks, lifetimeTicks);
+        if (smoke > 0.6F)
+            return 2;
+        return smoke > SMOULDER * 1.5F ? 3 : 4;
+    }
+
+    /**
+     * How far a wreck has sunk away into the ground, as a share of its own height. A burnt-out hull is dragged off or
+     * buried rather than blinking out of the world, so its last seconds take it down into the ground.
+     *
+     * @param lifetimeTicks
+     *            how long the wreck stays, or 0 or less when it stays until removed and so never sinks away
+     */
+    public static float wreckSink(float ageTicks, int lifetimeTicks)
+    {
+        if (lifetimeTicks <= 0 || ageTicks < 0F)
+            return 0F;
+        int from = Math.max(1, lifetimeTicks - SINK_TICKS);
+        if (ageTicks <= from)
+            return 0F;
+        float t = Mth.clamp((ageTicks - from) / (float) Math.max(1, lifetimeTicks - from), 0F, 1F);
+        // Slow at first, then away: the hull tips in rather than descending like a lift.
+        return SINK_DEPTH * t * t;
+    }
+
+    /** @return how far a cooling wreck has settled onto what is left of its springs, as a share of its height */
+    public static float wreckSag(float ageTicks)
+    {
+        return ageTicks <= 0F ? 0F : SAG_DEPTH * Mth.clamp(ageTicks / SAG_TICKS, 0F, 1F);
+    }
+
+    /** @return the degrees a wrecked gun's barrel has drooped, nothing holding it up any more */
+    public static float turretDroop(float ageTicks)
+    {
+        return ageTicks <= 0F ? 0F : MAX_TURRET_DROOP * slump(ageTicks);
+    }
+
+    /** @return the degrees a wrecked turret has slewed off its bearing, to be taken either way round */
+    public static float turretSkew(float ageTicks)
+    {
+        return ageTicks <= 0F ? 0F : MAX_TURRET_SKEW * slump(ageTicks);
+    }
+
+    /** Eases a wrecked turret from where it was aimed to where it comes to rest. */
+    private static float slump(float ageTicks)
+    {
+        float t = Mth.clamp(ageTicks / TURRET_SLUMP_TICKS, 0F, 1F);
+        return t * t * (3F - 2F * t);
+    }
+
+    /**
      * @param healthFraction
      *            share of the part's hit points left
      * @param burning
@@ -119,6 +200,12 @@ public final class DamageVisualCurves
         if (wreckAge < 0)
             return Mth.clamp(alive, DAMAGED_TINT, 1F);
         return Mth.lerp(Mth.clamp(wreckAge / (float) CHAR_TICKS, 0F, 1F), Math.max(alive, WRECK_TINT), WRECK_TINT);
+    }
+
+    /** @return the degrees a collapsing mecha has toppled over its feet, for a fall this far along */
+    public static float mechaCollapseDegrees(float fallen)
+    {
+        return MECHA_COLLAPSE_DEGREES * Mth.clamp(fallen, 0F, 1.05F);
     }
 
     /** @return how far a wrecked mecha has fallen, from 0 standing to 1 down, with a small settle at the end */

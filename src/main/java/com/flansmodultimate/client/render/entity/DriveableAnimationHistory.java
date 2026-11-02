@@ -3,6 +3,7 @@ package com.flansmodultimate.client.render.entity;
 import com.flansmod.client.model.*;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
 import com.flansmodultimate.common.driveables.visual.*;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
@@ -273,6 +274,15 @@ public final class DriveableAnimationHistory
     {
         float turretYaw = Mth.rotLerp(partialTick, source.getPrevTurretYaw(), source.getTurretYaw());
         float turretPitch = Mth.rotLerp(partialTick, source.getPrevTurretPitch(), source.getTurretPitch());
+        int wreckAge = source.getWreckAge();
+        if (wreckAge >= 0)
+        {
+            // Nothing holds a wrecked gun up or holds its turret on its bearing any more.
+            float slumped = wreckAge + partialTick;
+            float side = source.isWreckMirrored() ? 1F : -1F;
+            turretYaw += DamageVisualCurves.turretSkew(slumped) * side;
+            turretPitch -= DamageVisualCurves.turretDroop(slumped);
+        }
         float steeringAngle = Mth.lerp(partialTick, previousSteering, steering);
         float wheelAngle = 0F;
         float leftTrackProgress = 0F;

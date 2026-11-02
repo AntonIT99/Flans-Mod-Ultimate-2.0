@@ -43,8 +43,17 @@ public final class DriveableDamageEffects
     private static final Map<Entity, Watched> WATCHED = new WeakHashMap<>();
     /** Parts thrown off entities that are not driveables, which their models stop drawing. */
     private static final Map<Entity, Set<EnumDriveablePart>> DETACHED = new WeakHashMap<>();
-    /** The crackle each burning wreck is playing. */
-    private static final Map<Driveable, WreckFireSound> FIRE_SOUNDS = new WeakHashMap<>();
+    /** The fire each burning wreck is playing. */
+    private static final Map<Driveable, FireLoops> FIRE_SOUNDS = new WeakHashMap<>();
+
+    /** The layers one wreck's fire is played as: a roar that carries and a crackle heard close to. */
+    private record FireLoops(WreckFireSound roar, WreckFireSound crackle)
+    {
+        private boolean isStopped()
+        {
+            return roar.isStopped() && crackle.isStopped();
+        }
+    }
 
     private static final class Watched
     {
@@ -119,12 +128,13 @@ public final class DriveableDamageEffects
 
     private static void keepFireSound(Driveable wreck)
     {
-        WreckFireSound playing = FIRE_SOUNDS.get(wreck);
+        FireLoops playing = FIRE_SOUNDS.get(wreck);
         if (playing != null && !playing.isStopped() || wreckFireStrength(wreck) <= 0F)
             return;
-        WreckFireSound sound = new WreckFireSound(wreck);
-        FIRE_SOUNDS.put(wreck, sound);
-        Minecraft.getInstance().getSoundManager().play(sound);
+        FireLoops loops = new FireLoops(WreckFireSound.roar(wreck), WreckFireSound.crackle(wreck));
+        FIRE_SOUNDS.put(wreck, loops);
+        Minecraft.getInstance().getSoundManager().play(loops.roar());
+        Minecraft.getInstance().getSoundManager().play(loops.crackle());
     }
 
     /** Advances deaths, pieces and the entities wearing part bodies. Client tick. */

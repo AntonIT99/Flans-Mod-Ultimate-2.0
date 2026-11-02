@@ -25,6 +25,7 @@ import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -157,11 +158,15 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha ? 180F - yaw : -yaw;
         boolean locallyControlled = Minecraft.getInstance().player != null && Minecraft.getInstance().player.getVehicle() == driveable;
-        boolean intact = !driveable.isWreck();
+        // A burnt-out wreck has charred to one colour all over, which the billboard carries as a per-draw tint, so
+        // the atlas of the clean model still describes it. Until it has, its parts are charring at their own rates.
+        boolean charredWreck = driveable.isWreck() && driveable.getWreckAge() >= DamageVisualCurves.CHAR_TICKS;
+        float impostorTint = charredWreck ? DamageVisualCurves.WRECK_TINT : 1F;
+        boolean intact = !driveable.isWreck() || charredWreck;
         for (EnumDriveablePart part : type.getHealth().keySet())
         {
             // An impostor shows the clean, whole model, so anything shot off or scorched needs the real geometry.
-            if (!intact || !driveable.isPartDrawn(part) || driveable.getPartTint(part) < 0.999F)
+            if (!intact || !driveable.isPartDrawn(part) || !charredWreck && driveable.getPartTint(part) < 0.999F)
             {
                 intact = false;
                 break;
@@ -184,8 +189,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 RenderDiagnostics.countShadowDriveable(true);
                 return;
             }
+            poseStack.pushPose();
+            poseStack.translate(0D, -wreckSettleOffset(driveable, partialTick), 0D);
             lodResult = DriveableImpostorCache.renderOrPrepare(model, type, texture, translucent, cull, red, green, blue, poseStack, buffer, packedLight, projectionPixels, cameraDistance,
-                cameraOffset, entityYawRotation, pitch, roll, !shadowPass && !(driveable instanceof Mecha) && intact, history.usingImpostor);
+                cameraOffset, entityYawRotation, pitch, roll, !shadowPass && !(driveable instanceof Mecha) && intact, history.usingImpostor, impostorTint);
+            poseStack.popPose();
             if (!shadowPass)
                 history.usingImpostor = lodResult.usingImpostor();
             if (lodResult.rendered())
@@ -202,11 +210,12 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         ModelDriveable.RenderState state = history.state(driveable, partialTick, yaw, pitch, roll);
 
         poseStack.pushPose();
+        // A wreck settles onto what is left of its springs, and is taken down into the ground at the end of its life
+        // rather than blinking out of the world. Its toppling, listing and lying along the ground are in its attitude.
+        poseStack.translate(0D, -wreckSettleOffset(driveable, partialTick), 0D);
         poseStack.mulPose(Axis.YP.rotationDegrees(entityYawRotation));
         poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
-        if (driveable instanceof Mecha && driveable.isWreck())
-            applyMechaCollapse(driveable, partialTick, poseStack);
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
 
         // Legacy driveable renderers applied ModelScale to the complete model
@@ -283,16 +292,17 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     }
 
     /**
-     * Topples a wrecked mecha over its feet, the way a walker with nothing left holding it up comes down, and leaves it
-     * lying where it fell. The side it falls to is fixed by its identity, so every player sees the same fall.
+     * How far down a wreck is drawn: settled onto what is left of its springs as it cools, and sinking away into the
+     * ground over its last seconds, so a burnt-out hull is buried rather than blinking out of the world.
      */
-    private static void applyMechaCollapse(Driveable driveable, float partialTick, PoseStack poseStack)
+    private static float wreckSettleOffset(Driveable driveable, float partialTick)
     {
         int age = driveable.getWreckAge();
-        float fallen = DamageVisualCurves.collapse(age + partialTick);
-        boolean backwards = (driveable.getUUID().getLeastSignificantBits() & 1L) != 0L;
-        poseStack.mulPose(Axis.ZP.rotationDegrees(DetachedPieces.mechaCollapseDegrees(fallen) * (backwards ? 1F : -1F)));
-        poseStack.mulPose(Axis.XP.rotationDegrees(12F * fallen * (backwards ? -1F : 1F)));
+        if (age < 0)
+            return 0F;
+        float aged = age + partialTick;
+        float share = DamageVisualCurves.wreckSag(aged) + DamageVisualCurves.wreckSink(aged, ModCommonConfig.driveableWreckLifetimeTicks());
+        return share * driveable.getBbHeight();
     }
 
     private static double modelOriginDistance(PoseStack pose)

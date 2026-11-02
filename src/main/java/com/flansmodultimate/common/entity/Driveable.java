@@ -1,8 +1,10 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.distant.DistantRenderRange;
@@ -56,6 +58,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.*;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
@@ -98,6 +101,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public static final String NBT_WRECK_AGE = "wreck_age";
     public static final String NBT_WRECK_DAMAGE = "wreck_damage";
     public static final String NBT_WRECK_LANDED = "wreck_landed";
+    public static final String NBT_WRECK_SPIN_YAW = "wreck_spin_yaw";
+    public static final String NBT_WRECK_SPIN_PITCH = "wreck_spin_pitch";
+    public static final String NBT_WRECK_SPIN_ROLL = "wreck_spin_roll";
     public static final String NBT_FLAGS = "driveable_flags";
     public static final String NBT_MODE = "driveable_mode";
     public static final String NBT_OWNER = "driveable_owner";
@@ -180,8 +186,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private static final int CHILD_REPAIR_INTERVAL = 20;
     /** Ticks between the wreck ages the server sends; clients count on by themselves in between. */
     private static final int WRECK_AGE_SYNC_INTERVAL = 100;
-    /** Degrees a tick a downed aircraft's wreck rolls and pitches towards level once it lies on the ground. */
-    private static final float WRECK_SETTLE_DEGREES = 3F;
+    /** Blocks above and below a wreck searched for the ground it comes to rest on. */
+    private static final double WRECK_GROUND_SEARCH = 3D;
+    /** The least a wreck's attitude has to be out by before its new orientation is worth sending. */
+    private static final float WRECK_ORIENTATION_EPSILON = 0.05F;
+    /** Ticks after a wreck strikes the ground before another impact counts, so one landing is not reported twice. */
+    private static final int WRECK_IMPACT_COOLDOWN = 10;
+    /** Degrees a tick a collapsing mecha goes over at, which the fall's own curve never needs all of. */
+    private static final float MECHA_COLLAPSE_DEGREES_PER_TICK = 8F;
+    /** The hardest a blast that does not break a wreck up can throw it, in blocks a tick. */
+    private static final double MAX_WRECK_SHOVE = 0.8D;
     /** Matches the radius the server used when it still broadcast emitter particles. */
     private static final double EMITTER_PARTICLE_RANGE = 128D;
     private static final double MAX_SPAWN_COORDINATE = 29_999_984D;
@@ -394,6 +408,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private int wreckTicks = -1;
     /** Server: whether a falling wreck has already struck the ground. */
     private boolean wreckLanded;
+    /** Server: ticks since the wreck last struck the ground, so a bounce is not reported as a second landing. */
+    private int wreckImpactCooldown;
+    /** Server: how fast the wreck is tumbling about its own yaw, pitch and roll, in degrees a tick. */
+    private float wreckSpinYaw;
+    private float wreckSpinPitch;
+    private float wreckSpinRoll;
+    /** Server: the fire stage last sent, so a client is told the moment its wreck's fire changes. */
+    private int wreckStageSent = -1;
     /** Server: what was aboard when the driveable was destroyed. */
     private WreckLoad wreckLoad = WreckLoad.UNKNOWN;
     /** Server: explosive damage the wreck has taken; enough of it blows the wreck apart. */
@@ -1133,6 +1155,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             wreckTicks = Math.max(0, tag.getInt(NBT_WRECK_AGE));
             wreckLoad = WreckLoad.load(tag);
             wreckDamage = tag.getFloat(NBT_WRECK_DAMAGE);
+            wreckSpinYaw = WreckPhysics.clampSpin(tag.getFloat(NBT_WRECK_SPIN_YAW));
+            wreckSpinPitch = WreckPhysics.clampSpin(tag.getFloat(NBT_WRECK_SPIN_PITCH));
+            wreckSpinRoll = WreckPhysics.clampSpin(tag.getFloat(NBT_WRECK_SPIN_ROLL));
             if (!level().isClientSide)
             {
                 entityData.set(DATA_WRECK_LOAD, wreckLoad.pack());
@@ -1244,6 +1269,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             tag.putInt(NBT_WRECK_AGE, wreckTicks);
             tag.putFloat(NBT_WRECK_DAMAGE, wreckDamage);
             tag.putBoolean(NBT_WRECK_LANDED, wreckLanded);
+            if (isTumbling())
+            {
+                tag.putFloat(NBT_WRECK_SPIN_YAW, wreckSpinYaw);
+                tag.putFloat(NBT_WRECK_SPIN_PITCH, wreckSpinPitch);
+                tag.putFloat(NBT_WRECK_SPIN_ROLL, wreckSpinRoll);
+            }
             wreckLoad.save(tag);
         }
         if (!sourceStack.isEmpty())
@@ -5780,6 +5811,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return false;
         wreckTicks = 0;
         wreckLanded = onGround() || isInWater();
+        seedWreckTumble();
         // The wreck burns as a whole from here on; its parts no longer burn away one by one.
         if (driveableData != null)
             driveableData.getParts().values().forEach(DriveablePart::extinguish);
@@ -5790,7 +5822,60 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         clearLockOnTarget();
         entityData.set(DATA_WRECK_LOAD, wreckLoad.pack());
         entityData.set(DATA_WRECK_AGE, 0);
+        wreckStageSent = DamageVisualCurves.fireStage(0, ModCommonConfig.driveableWreckLifetimeTicks());
         return true;
+    }
+
+    /**
+     * Sets the wreck tumbling with whatever was carrying it when it died. One destroyed standing still does not move;
+     * one shot down in the air goes over with its own momentum, and a helicopter that has lost its tail rotor spins
+     * about its mast as it comes down.
+     */
+    private void seedWreckTumble()
+    {
+        if (wreckLanded)
+        {
+            wreckSpinYaw = 0F;
+            wreckSpinPitch = 0F;
+            wreckSpinRoll = 0F;
+            return;
+        }
+        double speed = getDeltaMovement().length();
+        RandomSource random = level().random;
+        float yawWeight = getDamageClass() == DriveableDamageClass.HELICOPTER ? 2.5F : 1F;
+        wreckSpinYaw = WreckPhysics.tumbleFrom(speed, spread(random)) * yawWeight;
+        wreckSpinPitch = WreckPhysics.tumbleFrom(speed, spread(random));
+        wreckSpinRoll = WreckPhysics.tumbleFrom(speed, spread(random));
+    }
+
+    /** @return a signed random from -1 to 1, biased away from nothing happening at all */
+    private static double spread(RandomSource random)
+    {
+        double value = random.nextDouble() * 2D - 1D;
+        return Math.copySign(0.25D + 0.75D * Math.abs(value), value);
+    }
+
+    /** @return whether the wreck still has anything left to roll on, which lets it run on rather than plough to a stop */
+    private boolean hasWreckRunningGear()
+    {
+        if (driveableData == null || configType == null)
+            return false;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            if (!part.isDestroyed() && configType.getPartDamageKind(part.getType()) == PartDamageKind.RUNNING_GEAR)
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return a side fixed by the wreck's identity, so the way its turret slumps and a filling hull lists is the same
+     *         for everyone watching and across a reload
+     */
+    @Override
+    public boolean isWreckMirrored()
+    {
+        return (getUUID().getLeastSignificantBits() & 1L) != 0L;
     }
 
     /** @return whether the driveable is a wreck, on either side */
@@ -5800,6 +5885,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /** @return ticks since the driveable was wrecked, or -1 while it still works */
+    @Override
     public int getWreckAge()
     {
         return level().isClientSide ? clientWreckAge : wreckTicks;
@@ -5872,8 +5958,36 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             PacketHandler.sendToTracking(new PacketDriveableDestroyed(getId(), true, wreckLoad.pack()), this);
             suppressDrops = true;
             discard();
+            return true;
         }
+        shoveWreck(amount / integrity, source.getSourcePosition());
         return true;
+    }
+
+    /**
+     * Throws the wreck about with a blast that did not quite break it up. A burnt-out hull is still only a hull: a
+     * heavy round beside it lifts it, shoves it and sets it tumbling rather than leaving it standing untouched.
+     *
+     * @param share
+     *            how much of what it takes to break the wreck up this blast was
+     * @param from
+     *            where the blast went off, or {@code null} when that is not known
+     */
+    private void shoveWreck(float share, @Nullable Vec3 from)
+    {
+        double force = Mth.clamp(share, 0D, 1D) * MAX_WRECK_SHOVE;
+        if (force < 0.02D)
+            return;
+        Vec3 away = from == null ? Vec3.ZERO : position().subtract(from);
+        // Straight up for a blast underneath the wreck, otherwise away from it and lifted.
+        Vec3 push = away.horizontalDistanceSqr() < 1.0E-4D ? new Vec3(0D, 1D, 0D) : away.normalize().multiply(1D, 0D, 1D).add(0D, 0.6D, 0D).normalize();
+        setDeltaMovement(getDeltaMovement().add(push.scale(force)));
+        hasImpulse = true;
+        wreckLanded = false;
+        RandomSource random = level().random;
+        wreckSpinYaw = WreckPhysics.clampSpin(wreckSpinYaw + WreckPhysics.tumbleFrom(force, spread(random)));
+        wreckSpinPitch = WreckPhysics.clampSpin(wreckSpinPitch + WreckPhysics.tumbleFrom(force, spread(random)));
+        wreckSpinRoll = WreckPhysics.clampSpin(wreckSpinRoll + WreckPhysics.tumbleFrom(force, spread(random)));
     }
 
     private void receiveWreckAge(int age)
@@ -5893,62 +6007,302 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             cosmeticallyDetached.add(part);
     }
 
-    /** The wreck's own small tick: it ages, settles and sinks, and is removed once its lifetime is over. Server side. */
+    /** The wreck's own small tick: it ages, tumbles, settles and sinks, and is removed once its lifetime is over. Server side. */
     protected void tickWreck()
     {
         ++wreckTicks;
-        if (wreckTicks % WRECK_AGE_SYNC_INTERVAL == 0)
-            entityData.set(DATA_WRECK_AGE, wreckTicks);
         int lifetime = ModCommonConfig.driveableWreckLifetimeTicks();
-        // A wreck that has burnt out, or a hull lying on the sea bed, is gone.
-        if (lifetime <= 0 || wreckTicks >= lifetime || isInWater() && isUnderWater() && wreckTicks > 200 && onGround())
+        syncWreckAge(lifetime);
+        // A wreck that has burnt out is gone. One lying on the sea bed stays for its own lifetime like any other.
+        if (lifetime <= 0 || wreckTicks >= lifetime)
         {
             suppressDrops = true;
             discard();
             return;
         }
+        if (wreckImpactCooldown > 0)
+            --wreckImpactCooldown;
+        boolean water = isInWater();
+        // The ground the wreck was resting on at the start of the tick, which both the slide and the settling read.
+        WreckGround ground = !water && onGround() ? sampleWreckGround() : null;
         double fallSpeed = -getDeltaMovement().y;
-        Vec3 velocity = isInWater() ? sinkWreck(getDeltaMovement()) : settleWreck(getDeltaMovement());
+        Vec3 velocity = water ? sinkWreck(getDeltaMovement()) : settleWreck(getDeltaMovement(), ground);
         setDeltaMovement(velocity);
         move(MoverType.SELF, velocity);
         if (verticalCollision)
             setDeltaMovement(getDeltaMovement().multiply(0.6D, 0D, 0.6D));
-        if (!wreckLanded && (onGround() || isInWater()))
-            landWreck(fallSpeed);
+        boolean contact = onGround() || water || verticalCollision;
+        // A wreck blown back into the air, or one that rolls off a ledge after settling, comes down again.
+        if (contact && (!wreckLanded || wreckImpactCooldown <= 0 && fallSpeed > WreckPhysics.MIN_IMPACT_FALL_SPEED))
+            landWreck(fallSpeed, water);
+        tickWreckAttitude(contact, water, ground);
         if (collisionHelper != null)
             collisionHelper.tick(this);
         updateProxyPositions();
         syncChangedPartState();
     }
 
-    /** Holed and without power, every hull goes down: slowly, listing as it fills. */
+    /**
+     * Sends the wreck's age. Clients count the age on by themselves between these, which keeps their fire, smoke and
+     * thermal signature in step cheaply, but only within a stage: a boundary the server never sent would be crossed
+     * seconds late, so the tick the fire changes is always sent as well.
+     */
+    private void syncWreckAge(int lifetime)
+    {
+        int stage = DamageVisualCurves.fireStage(wreckTicks, lifetime);
+        if (wreckTicks % WRECK_AGE_SYNC_INTERVAL != 0 && stage == wreckStageSent)
+            return;
+        wreckStageSent = stage;
+        entityData.set(DATA_WRECK_AGE, wreckTicks);
+    }
+
+    /** Holed and without power, every hull goes down: as fast as its own flotation lets it, listing as it fills. */
     private Vec3 sinkWreck(Vec3 velocity)
     {
-        float roll = getRoll();
-        float list = roll >= 0F ? 0.08F : -0.08F;
-        float listing = Math.abs(roll) < 28F ? roll + list : roll;
-        setOrientation(getYaw(), Mth.clamp(getPitch() + 0.02F, -12F, 12F), listing);
-        return new Vec3(velocity.x * 0.9D, Math.max(velocity.y * 0.9D - 0.006D, -0.05D), velocity.z * 0.9D);
+        double sink = WreckPhysics.sinkSpeed(configType == null ? 0F : configType.getBuoyancy(), configType != null && configType.isFloatOnWater());
+        double drag = ModPhysics.dragRetention(WreckPhysics.waterDragRetention(), level());
+        return new Vec3(velocity.x * drag, Math.max(velocity.y * drag - sink * 0.12D, -sink), velocity.z * drag);
     }
 
     /**
-     * On land a wreck falls under its own weight and drags to a stop. A downed aircraft comes to rest on its belly
-     * rather than stay in the dive or bank it died in.
+     * On land a wreck falls under its own weight and drags to a stop, as far as what is left of its running gear lets
+     * it roll, and slides on any slope steep enough to overcome that.
      */
-    private Vec3 settleWreck(Vec3 velocity)
+    private Vec3 settleWreck(Vec3 velocity, @Nullable WreckGround ground)
     {
-        if (onGround() && getDamageClass().flies() && (getPitch() != 0F || getRoll() != 0F))
-            setOrientation(getYaw(), Mth.approachDegrees(getPitch(), 0F, WRECK_SETTLE_DEGREES), Mth.approachDegrees(getRoll(), 0F, WRECK_SETTLE_DEGREES));
-        double drag = ModPhysics.dragRetention(onGround() ? 0.5D : 0.98D, level());
-        return new Vec3(velocity.x * drag, velocity.y - 0.08D * ModCommonConfig.gravityFactor(level()), velocity.z * drag);
+        double gravity = 0.08D * ModCommonConfig.gravityFactor(level());
+        boolean grounded = ground != null;
+        double drag = ModPhysics.dragRetention(grounded ? WreckPhysics.groundDragRetention(hasWreckRunningGear()) : 0.98D, level());
+        Vec3 settled = new Vec3(velocity.x * drag, velocity.y - gravity, velocity.z * drag);
+        return grounded ? settled.add(ground.slide(gravity)) : settled;
     }
 
-    /** The falling wreck strikes the ground or the water; an aircraft that died in the air goes in burning. */
-    private void landWreck(double fallSpeed)
+    /**
+     * Turns the wreck: a tumbling one goes over with the momentum it was thrown by, and one on the ground is laid
+     * along the slope it has come to rest on rather than kept at the attitude it happened to die at.
+     */
+    private void tickWreckAttitude(boolean contact, boolean water, @Nullable WreckGround ground)
+    {
+        if (isTumbling())
+        {
+            // The entity's pitch cannot pass the vertical, so a tumble pitching that far goes back the other way.
+            // Only a tumble heading further out is turned round, so one that began beyond it still comes back.
+            float nextPitch = getPitch() + wreckSpinPitch;
+            if (Math.abs(nextPitch) > WreckPhysics.MAX_SPIN_PITCH && Math.abs(nextPitch) > Math.abs(getPitch()))
+                wreckSpinPitch = -wreckSpinPitch;
+            setOrientation(getYaw() + wreckSpinYaw, getPitch() + wreckSpinPitch, getRoll() + wreckSpinRoll);
+            wreckSpinYaw = WreckPhysics.dampSpin(wreckSpinYaw, contact);
+            wreckSpinPitch = WreckPhysics.dampSpin(wreckSpinPitch, contact);
+            wreckSpinRoll = WreckPhysics.dampSpin(wreckSpinRoll, contact);
+            return;
+        }
+        if (water)
+            listWreck();
+        else if (getDamageClass() == DriveableDamageClass.MECHA)
+            collapseWreck();
+        else if (ground != null)
+            layWreck(ground);
+    }
+
+    /**
+     * Lays the wreck along the ground it has come to rest on, so a hull on a hillside sits on the hillside rather
+     * than perfectly level, and a downed aircraft comes to rest on its belly instead of keeping the dive or the bank
+     * it died in.
+     */
+    private void layWreck(WreckGround ground)
+    {
+        boolean invert = this instanceof Plane;
+        float pitch = getPitch();
+        float roll = getRoll();
+        if (ground.hasLengthwise())
+            pitch = Mth.approachDegrees(pitch, ground.pitch(invert), WreckPhysics.SETTLE_DEGREES);
+        if (ground.hasAthwart())
+            roll = Mth.approachDegrees(roll, ground.roll(invert), WreckPhysics.SETTLE_DEGREES);
+        orientWreck(getYaw(), pitch, roll);
+    }
+
+    /**
+     * The ground under a wreck: the surface heights found ahead of, behind and to either side of it, the distances
+     * between those samples, and the hull axes they were taken along.
+     */
+    private record WreckGround(double aheadHeight, double behindHeight, double leftHeight, double rightHeight, double length, double width, Vec3 forwardAxis, Vec3 rightAxis)
+    {
+        private boolean hasLengthwise()
+        {
+            return Double.isFinite(aheadHeight) && Double.isFinite(behindHeight);
+        }
+
+        private boolean hasAthwart()
+        {
+            return Double.isFinite(leftHeight) && Double.isFinite(rightHeight);
+        }
+
+        /** @return the attitude along the hull that puts both ends on the ground, clamped as a slope a wreck can lie on */
+        private float pitch(boolean invert)
+        {
+            return Mth.clamp(SuspensionPhysics.supportAngle(aheadHeight - behindHeight, length, 0D, invert), -WreckPhysics.MAX_SETTLE_ANGLE, WreckPhysics.MAX_SETTLE_ANGLE);
+        }
+
+        private float roll(boolean invert)
+        {
+            return Mth.clamp(SuspensionPhysics.supportAngle(rightHeight - leftHeight, width, 0D, invert), -WreckPhysics.MAX_SETTLE_ANGLE, WreckPhysics.MAX_SETTLE_ANGLE);
+        }
+
+        /** @return the pull the wreck feels down the slope it is resting on, in blocks a tick squared */
+        private Vec3 slide(double gravity)
+        {
+            double alongHull = hasLengthwise() ? WreckPhysics.slideAcceleration(WreckPhysics.gradient(aheadHeight, behindHeight, length), gravity) : 0D;
+            double acrossHull = hasAthwart() ? WreckPhysics.slideAcceleration(WreckPhysics.gradient(rightHeight, leftHeight, width), gravity) : 0D;
+            if (alongHull == 0D && acrossHull == 0D)
+                return Vec3.ZERO;
+            // A positive gradient means the ground falls away behind, or to the left, so the wreck slides that way.
+            return forwardAxis.scale(-alongHull).add(rightAxis.scale(-acrossHull));
+        }
+    }
+
+    /** Samples the ground under both ends and both sides of the wreck's hull. Server side. */
+    @Nullable
+    private WreckGround sampleWreckGround()
+    {
+        Vec3 forward = horizontalAxis(getForwardVector());
+        Vec3 right = horizontalAxis(getRightVector());
+        if (forward == null || right == null)
+            return null;
+        Vec3 footprint = wreckFootprint();
+        Vec3 centre = position();
+        double ahead = groundSurfaceY(centre.add(forward.scale(footprint.x)));
+        double behind = groundSurfaceY(centre.subtract(forward.scale(footprint.x)));
+        double starboard = groundSurfaceY(centre.add(right.scale(footprint.z)));
+        double port = groundSurfaceY(centre.subtract(right.scale(footprint.z)));
+        return new WreckGround(ahead, behind, port, starboard, footprint.x * 2D, footprint.z * 2D, forward, right);
+    }
+
+    /** @return the vector flattened onto the horizontal and normalised, or {@code null} when it points straight up */
+    @Nullable
+    private static Vec3 horizontalAxis(Vec3 vector)
+    {
+        Vec3 flat = new Vec3(vector.x, 0D, vector.z);
+        return flat.lengthSqr() < 1.0E-6D ? null : flat.normalize();
+    }
+
+    /**
+     * @return how far the wreck's hull reaches ahead of its position in {@code x} and to its right in {@code z}, in
+     *         blocks, measured from the core box it is drawn with where there is one
+     */
+    private Vec3 wreckFootprint()
+    {
+        double fallback = Math.max(0.6D, getBbWidth() * 0.5D);
+        DriveablePart core = driveableData == null ? null : driveableData.getPart(EnumDriveablePart.CORE);
+        CollisionBox box = core == null ? null : core.getBox();
+        if (box == null)
+            return new Vec3(fallback, 0D, fallback);
+        Vec3 forward = getForwardVector();
+        Vec3 right = getRightVector();
+        Vec3 centre = position();
+        double alongHull = 0D;
+        double acrossHull = 0D;
+        // The box is authored in a frame of its own, so its corners are measured in world space rather than assumed.
+        for (int corner = 0; corner < 8; corner++)
+        {
+            Vec3 at = partFrameToWorld(new Vec3(box.getX() + (corner & 1) * box.getWidth(), box.getY() + ((corner >> 1) & 1) * box.getHeight(), box.getZ() + ((corner >> 2) & 1) * box.getDepth()))
+                .subtract(centre);
+            alongHull = Math.max(alongHull, Math.abs(at.dot(forward)));
+            acrossHull = Math.max(acrossHull, Math.abs(at.dot(right)));
+        }
+        return new Vec3(Math.max(fallback, alongHull), 0D, Math.max(fallback, acrossHull));
+    }
+
+    /** @return the height of the ground under the point, or {@code NaN} when there is none within reach */
+    private double groundSurfaceY(Vec3 at)
+    {
+        Vec3 from = at.add(0D, WRECK_GROUND_SEARCH, 0D);
+        Vec3 to = at.subtract(0D, WRECK_GROUND_SEARCH, 0D);
+        BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+        return hit.getType() == HitResult.Type.BLOCK ? hit.getLocation().y : Double.NaN;
+    }
+
+    /** A filling hull goes over and down by the bow or the stern, the way it does rather than the way it died. */
+    private void listWreck()
+    {
+        boolean starboard = isWreckMirrored();
+        float roll = WreckPhysics.listAngle(getRoll(), starboard);
+        float pitch = WreckPhysics.trimAngle(getPitch(), !starboard);
+        orientWreck(getYaw(), pitch, roll);
+    }
+
+    /** Topples a wrecked mecha over its feet, the way a walker with nothing left holding it up comes down. */
+    private void collapseWreck()
+    {
+        float fallen = DamageVisualCurves.collapse(wreckTicks);
+        float side = isWreckMirrored() ? 1F : -1F;
+        float pitch = DamageVisualCurves.mechaCollapseDegrees(fallen) * side;
+        float roll = 12F * fallen * -side;
+        // Fast enough never to hold the fall itself back, and slow enough that one that tumbled in first eases over
+        // into the pose it ends up in rather than snapping into it.
+        orientWreck(getYaw(), Mth.approachDegrees(getPitch(), pitch, MECHA_COLLAPSE_DEGREES_PER_TICK), Mth.approachDegrees(getRoll(), roll, MECHA_COLLAPSE_DEGREES_PER_TICK));
+    }
+
+    /** Sets the wreck's attitude only when it has actually changed, so a settled wreck costs nothing to keep. */
+    private void orientWreck(float yaw, float pitch, float roll)
+    {
+        if (Math.abs(Mth.wrapDegrees(yaw - getYaw())) < WRECK_ORIENTATION_EPSILON && Math.abs(pitch - getPitch()) < WRECK_ORIENTATION_EPSILON
+            && Math.abs(Mth.wrapDegrees(roll - getRoll())) < WRECK_ORIENTATION_EPSILON)
+            return;
+        setOrientation(yaw, pitch, roll);
+    }
+
+    private boolean isTumbling()
+    {
+        return wreckSpinYaw != 0F || wreckSpinPitch != 0F || wreckSpinRoll != 0F;
+    }
+
+    /**
+     * The falling wreck strikes the ground or the water. An aircraft that died in the air goes in burning, and
+     * anything heavy enough coming down fast enough crushes what is under it and leaves the ground marked.
+     */
+    private void landWreck(double fallSpeed, boolean water)
     {
         wreckLanded = true;
-        if (getDamageClass().flies() && fallSpeed > 0.25D)
-            PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(position(), Math.max(3F, getBbWidth() * 1.5F)), position(), 256D, level().dimension());
+        wreckImpactCooldown = WRECK_IMPACT_COOLDOWN;
+        float severity = WreckPhysics.impactSeverity(fallSpeed);
+        if (severity <= 0F)
+            return;
+        crushUnderWreck(severity);
+        float radius = Math.max(3F, getBbWidth() * 1.5F);
+        if (getDamageClass().flies())
+        {
+            PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(position(), radius), position(), 256D, level().dimension());
+            return;
+        }
+        // Not a fireball: a burnt-out hull coming down is dust, a scorched patch and a great deal of noise.
+        if (!water)
+        {
+            PacketHandler.sendToTracking(new PacketDriveableImpact(position(), radius * (0.4F + 0.6F * severity), severity), this);
+            breakGroundUnderWreck(fallSpeed);
+        }
+        String sound = water ? FlansModSounds.SOUND_IMPACT_WATER : FlansModSounds.SOUND_IMPACT_METAL;
+        PacketPlaySound.sendSoundPacket(position(), 64D * (0.5D + severity), level().dimension(), sound, false, this);
+    }
+
+    /** Anything caught under a wreck coming down is crushed, as it is by a working driveable landing on it. */
+    private void crushUnderWreck(float severity)
+    {
+        float damage = WreckPhysics.crushDamage(severity, shouldSquashEntities());
+        if (damage <= 0F)
+            return;
+        AABB under = getBoundingBox().inflate(0.5D, 0.25D, 0.5D);
+        DamageSource source = FlanDamageSources.vehicleImpact(this, null);
+        for (Entity entity : level().getEntities(this, under, candidate -> candidate instanceof LivingEntity && candidate.isAlive() && !isPartOfThis(candidate)))
+            entity.hurt(source, damage);
+    }
+
+    /** A wreck going in hard breaks up the soft ground it lands on, where the operator allows collisions to. */
+    private void breakGroundUnderWreck(double fallSpeed)
+    {
+        if (!ModCommonConfig.driveableCollisionsBreakBlocks() || !(level() instanceof ServerLevel))
+            return;
+        BlockPos below = BlockPos.containing(getX(), getBoundingBox().minY - 0.1D, getZ());
+        breakCollisionBlock(below, fallSpeed);
     }
 
     protected Vec3 getPartWorldCentre(EnumDriveablePart partType)

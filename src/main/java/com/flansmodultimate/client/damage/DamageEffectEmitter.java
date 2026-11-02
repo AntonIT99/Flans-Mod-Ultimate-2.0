@@ -1,6 +1,8 @@
 package com.flansmodultimate.client.damage;
 
+import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.client.particle.BlastPuffParticle;
+import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
@@ -47,7 +49,9 @@ final class DamageEffectEmitter
     private static final int CREAK_TICKS = 400;
 
     /** Everything one source's parts share for one tick. */
-    private record Tick(DamageEffectSource source, RandomSource random, double density, Vec3 motion, double speed, boolean wreck, float wreckFire, float wreckSmoke, boolean raining)
+    // One tick's shared state, which is as wide as the effects it feeds.
+    @SuppressWarnings("java:S107")
+    private record Tick(DamageEffectSource source, RandomSource random, double density, Vec3 motion, double speed, boolean wreck, float wreckFire, float wreckSmoke, boolean raining, Vec3 wind)
     {}
 
     static void tick(DamageEffectSource source)
@@ -67,7 +71,8 @@ final class DamageEffectEmitter
         boolean raining = isRainingOn(entity);
         // A wreck burns as hard as the fuel it had, and less so in the rain.
         float fire = DamageVisualCurves.wreckFire(wreckAge, lifetime) * source.load().fireStrength() * (raining ? RAIN_DAMPING : 1F);
-        Tick tick = new Tick(source, entity.level().random, density, motion, motion.length(), wreckAge >= 0, fire, DamageVisualCurves.wreckSmoke(wreckAge, lifetime), raining);
+        Tick tick = new Tick(source, entity.level().random, density, motion, motion.length(), wreckAge >= 0, fire, DamageVisualCurves.wreckSmoke(wreckAge, lifetime), raining,
+            SmokeWind.of(entity.level()));
         for (DriveablePart part : source.parts())
             emitPart(tick, part);
         if (tick.wreck())
@@ -135,7 +140,9 @@ final class DamageEffectEmitter
         for (int i = 0; i < count; i++)
         {
             Vec3 at = tick.source().pointInPart(part, random.nextDouble(), vents ? 1D : 0.5D + random.nextDouble() * 0.5D, random.nextDouble());
-            Vec3 velocity = new Vec3((random.nextDouble() - 0.5D) * 0.02D, 0.02D + random.nextDouble() * 0.03D + (vents ? 0.05D : 0D), (random.nextDouble() - 0.5D) * 0.02D);
+            // Smoke leaving a stationary machine is carried off by the same drift as the columns over the field.
+            Vec3 drift = tick.speed() > TRAIL_SPEED ? Vec3.ZERO : tick.wind();
+            Vec3 velocity = new Vec3(drift.x + (random.nextDouble() - 0.5D) * 0.02D, 0.02D + random.nextDouble() * 0.03D + (vents ? 0.05D : 0D), drift.z + (random.nextDouble() - 0.5D) * 0.02D);
             Vec3[] placed = trail(tick, at, velocity);
             DamageParticles.puff(look, placed[0], placed[1].x, placed[1].y, placed[1].z, (0.45F + random.nextFloat() * 0.35F) * scale * (1F + 0.4F * smoke),
                 50 + random.nextInt(40) + Math.round(40F * smoke), false);
@@ -324,11 +331,13 @@ final class DamageEffectEmitter
             return;
         }
         int column = DamageParticles.count(tick.wreckSmoke() * 0.45D * scale * tick.density(), random);
+        Vec3 wind = tick.wind();
         for (int i = 0; i < column; i++)
         {
             Vec3 at = top.add((random.nextDouble() - 0.5D) * scale, 0.2D, (random.nextDouble() - 0.5D) * scale);
-            DamageParticles.puff(tick.wreckFire() > 0F ? DamageParticles.COLUMN_SMOKE : DamageParticles.THIN_SMOKE, at, (random.nextDouble() - 0.5D) * 0.02D, 0.05D + random.nextDouble() * 0.04D,
-                (random.nextDouble() - 0.5D) * 0.02D, (1.0F + random.nextFloat() * 0.8F) * scale * (0.5F + 0.5F * tick.wreckSmoke()), 120 + random.nextInt(60), true);
+            DamageParticles.puff(tick.wreckFire() > 0F ? DamageParticles.COLUMN_SMOKE : DamageParticles.THIN_SMOKE, at, wind.x + (random.nextDouble() - 0.5D) * 0.02D,
+                0.05D + random.nextDouble() * 0.04D, wind.z + (random.nextDouble() - 0.5D) * 0.02D, (1.0F + random.nextFloat() * 0.8F) * scale * (0.5F + 0.5F * tick.wreckSmoke()),
+                120 + random.nextInt(60), true);
         }
         int flames = DamageParticles.count(tick.wreckFire() * 0.8D * scale * tick.density(), random);
         for (int i = 0; i < flames; i++)
@@ -343,9 +352,10 @@ final class DamageEffectEmitter
         // Rain falling into the fire boils off.
         if (tick.raining() && tick.wreckFire() > 0F && random.nextDouble() < 0.4D * tick.density())
             DamageParticles.puff(DamageParticles.STEAM, top.add((random.nextDouble() - 0.5D) * scale, 0.3D, (random.nextDouble() - 0.5D) * scale), 0D, 0.06D, 0D, 0.7F * scale, 40, false);
-        // A fresh wreck groans as it settles and the metal cools.
+        // A fresh wreck groans as it settles and the metal cools: its own hull plate, pitched right down.
         if (source.wreckAge() < CREAK_TICKS && random.nextFloat() < 0.012F)
-            entity.level().playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.IRON_DOOR_OPEN, SoundSource.NEUTRAL, 0.35F, 0.4F + random.nextFloat() * 0.2F, false);
+            SoundHelper.getSoundEvent(FlansModSounds.SOUND_IMPACT_METAL)
+                .ifPresent(creak -> entity.level().playLocalSound(entity.getX(), entity.getY(), entity.getZ(), creak, SoundSource.NEUTRAL, 0.5F, 0.35F + random.nextFloat() * 0.15F, false));
     }
 
     /**

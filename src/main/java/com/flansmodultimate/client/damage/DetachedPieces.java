@@ -26,7 +26,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -393,11 +392,5 @@ public final class DetachedPieces
     {
         double ground = groundBelow(level, point);
         return Double.isFinite(ground) && point.y < ground + 0.1D ? new Vec3(point.x, ground + 0.1D, point.z) : point;
-    }
-
-    /** @return the tilt the wreck of a mecha is drawn falling over with, in degrees */
-    public static float mechaCollapseDegrees(float progress)
-    {
-        return 78F * Mth.clamp(progress, 0F, 1.05F);
     }
 }
