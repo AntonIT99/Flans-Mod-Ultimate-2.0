@@ -22,15 +22,22 @@ desktop capable of running Minecraft. Run from the checkout root on Windows:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-minecraft-mcp.ps1 -RegisterCodex
-./gradlew.bat runClient -PwithMinecraftMcp
+./gradlew.bat runClientMcp
 ```
 
 The setup installs the bridge with `npm ci`, downloads the mod to the ignored
 `build/minecraft-mcp` directory, and registers this version's server in the user's
-Codex configuration. Run setup in each checkout. Restart the agent session after
-registering servers so it discovers the tools. The game's existing process must
-be restarted with the Gradle flag to load the mod; setup cannot inject it into an
-already running JVM. Ordinary launches without the flag remain available.
+Codex configuration. Run setup in each checkout. Once the verified jar is prepared,
+`runClientMcp` launches the client with MCP and its mapped companion; `runClient`
+launches without them. Both use the normal `run` directory and the same worlds.
+Refresh the Gradle project or run `gradlew genIntellijRuns` to update IntelliJ
+launches. `-PwithMinecraftMcp` remains supported for enabling MCP on the other
+client variants, including `runClient2`; `-PwithoutMinecraftMcp` suppresses MCP
+entirely. An explicit request fails if setup is missing. Servers do not inherit
+the client tool.
+Restart the agent session after registering servers so it discovers the tools.
+The game's existing process must be restarted to load the mod; setup cannot
+inject it into an already running JVM.
 
 Claude Code and other agents supporting project `.mcp.json` can use the checked-in
 configuration after setup. For another MCP client, use `node` as the command and
@@ -44,7 +51,7 @@ register that command in your agent's MCP settings.
 | 1.20.1 | Forge | `minecraft_1_20_1` | 9876 | 9874 |
 | 1.21.1 | NeoForge | `minecraft_1_21_1` | 9875 | 9873 |
 
-On Forge 1.20.1, setup must prepare the jar before launching with the flag.
+On Forge 1.20.1, setup must prepare the jar before launching with MCP.
 ForgeGradle remaps that verified jar through `fg.deobf`; adding the production
 jar directly to the development classpath causes SRG-method startup errors.
 NeoForge uses the downloaded jar through `localRuntime`.

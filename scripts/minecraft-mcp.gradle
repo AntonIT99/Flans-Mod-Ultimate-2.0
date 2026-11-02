@@ -1,7 +1,7 @@
 import groovy.json.JsonSlurper
 import java.security.MessageDigest
 
-// Optional developer tool: neither the downloaded jar nor Node dependencies ship.
+// Developer client tool: neither the downloaded jar nor Node dependencies ship.
 def mcpTarget = new JsonSlurper().parse(file('tools/minecraft-mcp/target.json'))
 String mcpName = "minecraft-mcp-${mcpTarget.version}-${mcpTarget.loader}-v${mcpTarget.modVersion}.jar"
 String mcpUrl = "https://github.com/langyo/minecraft-mod-mcp/releases/download/v${mcpTarget.modVersion}/${mcpName}"
@@ -35,7 +35,7 @@ def downloadMcp = tasks.register('prepareMinecraftMcp') {
     }
 }
 
-// Register the companion for ordinary Gradle/IDE imports; only its client launch is opt-in.
+// Register the companion for ordinary Gradle/IDE imports; only MCP client variants load it.
 repositories.flatDir {
     dirs mcpJar.get().asFile.parentFile
     content { includeGroup 'local.minecraft-mcp' }
@@ -54,18 +54,20 @@ def mcpDev = sourceSets.create('mcpDev') {
 dependencies.add(mcpDev.compileOnlyConfigurationName, fg.deobf(mcpDependency))
 dependencies.add(mcpDev.annotationProcessorConfigurationName, "org.projectlombok:lombok:$version_lombok")
 
-if (project.hasProperty('withMinecraftMcp'))
+if (!project.hasProperty('withoutMinecraftMcp') && (mcpJar.get().asFile.isFile() || project.hasProperty('withMinecraftMcp')))
 {
+    // Keep the normal client plain; this sibling uses the same account, packs and world directory with MCP.
+    minecraft.runs.maybeCreate('clientMcp').parent(minecraft.runs.getByName('client'))
     // Forge production jars use SRG names; ForgeGradle must remap this mod too.
     // Use the verified setup output as a named artifact so fg.deobf can process it.
     File preparedJar = mcpJar.get().asFile
     if (!preparedJar.isFile())
-        throw new GradleException('Run gradlew prepareMinecraftMcp without -PwithMinecraftMcp before launching.')
+        throw new GradleException('Run gradlew prepareMinecraftMcp -PwithoutMinecraftMcp before launching.')
     if (MessageDigest.getInstance('SHA-256').digest(preparedJar.bytes).encodeHex().toString() != mcpHash)
-        throw new GradleException('Minecraft MCP jar failed SHA-256 verification; rerun prepareMinecraftMcp --rerun-tasks.')
-    dependencies.add('runtimeOnly', fg.deobf(mcpDependency))
+        throw new GradleException('Minecraft MCP jar failed SHA-256 verification; rerun prepareMinecraftMcp -PwithoutMinecraftMcp --rerun-tasks.')
+    dependencies.add(mcpDev.runtimeOnlyConfigurationName, fg.deobf(mcpDependency))
     minecraft.runs.configureEach {
-        if (name.startsWith('client'))
+        if (name == 'clientMcp' || project.hasProperty('withMinecraftMcp') && name.startsWith('client'))
         {
             property 'mcp.port', (name == 'client2' ? mcpTarget.secondPort : mcpTarget.port).toString()
             property 'mcp.background_input', 'true'
