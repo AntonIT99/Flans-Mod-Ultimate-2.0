@@ -245,6 +245,8 @@ public final class CrewGunners
         {
             WeaponMuzzle muzzle = FlansProjectiles.getSeatMuzzle(context.definition(), mount.seat(), gun.sequence, state.turretAim(), state.seatAim(mount.seat())).orElse(null);
             Vec3 origin = muzzle == null ? null : NpcModels.world(vehicle, context.model(), muzzle.offset(), state.getHullYaw());
+            if (origin != null && aimPoint != null && gun.laidOn != null && !useful(context, mount, origin, gun.laidOn, ammo, gun.fired))
+                return;
             if (origin == null || (aimPoint != null && !clear(vehicle, gun, origin, aimPoint)) || !launch(context, gunner, mount, ammo, gun, origin, muzzle))
                 return;
             effects(context, gunner, weapon, muzzle, origin, state.seatFacing(mount), shot == 0);
@@ -286,7 +288,7 @@ public final class CrewGunners
             gun.chosenAt = vehicle.tickCount;
             gun.reachCheckedAt = vehicle.tickCount;
             LivingEntity kept = lost ? null : current;
-            gun.target = origin == null ? null : choose(context, mount, origin, kept, gun.ammo);
+            gun.target = origin == null ? null : choose(context, mount, origin, kept, gun.ammo, gun.fired);
         }
         return gun.target == null ? context.target() : gun.target;
     }
@@ -315,12 +317,12 @@ public final class CrewGunners
      * @return what the gun fires at; null while it bears on nothing
      */
     @Nullable
-    private static LivingEntity choose(Context context, WeaponMount mount, Vec3 origin, @Nullable LivingEntity last, ItemStack ammo)
+    private static LivingEntity choose(Context context, WeaponMount mount, Vec3 origin, @Nullable LivingEntity last, ItemStack ammo, int round)
     {
         EntityNPCInterface vehicle = context.vehicle();
         // Staying on its target spares the gun turning away mid-burst.
         boolean adaptive = NpcEquipment.enabled(vehicle, Feature.ADAPTIVE_VEHICLE_COMBAT);
-        if (last != null && bears(context, mount, origin, last) && (!adaptive || NpcVehicleCombat.threatRank(vehicle, last) == 0))
+        if (last != null && bears(context, mount, origin, last) && useful(context, mount, origin, last, ammo, round) && (!adaptive || NpcVehicleCombat.threatRank(vehicle, last) == 0))
             return last;
         List<LivingEntity> candidates = candidates(context, mount, origin, last);
         candidates.sort(targetOrder(vehicle, ammo, last, adaptive));
@@ -328,6 +330,8 @@ public final class CrewGunners
         int checked = 0;
         for (LivingEntity candidate : candidates)
         {
+            if (!useful(context, mount, origin, candidate, ammo, round))
+                continue;
             // The vehicle's own rules of whom it attacks, which may look for a line of sight from it; its target it attacks already.
             if (checked < MAX_CANDIDATES && (candidate == context.target() || enemies.isEntityApplicable(candidate)))
             {
@@ -337,6 +341,11 @@ public final class CrewGunners
             }
         }
         return null;
+    }
+
+    private static boolean useful(Context context, WeaponMount mount, Vec3 origin, LivingEntity target, ItemStack ammo, int round)
+    {
+        return NpcVehicleCombat.mayFire(context.vehicle(), target, origin, FlansProjectiles.getArmorPerformance(ammo, round, mount.gun().orElse(null), null), NpcBlastSafety.reach(ammo) > 0D);
     }
 
     private static List<LivingEntity> candidates(Context context, WeaponMount mount, Vec3 origin, @Nullable LivingEntity last)

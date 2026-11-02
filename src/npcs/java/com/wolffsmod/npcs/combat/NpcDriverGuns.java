@@ -262,6 +262,8 @@ public final class NpcDriverGuns
         NpcVehicleState state = context.state();
         NpcWeaponOptions options = context.options();
         Vec3 origin = NpcModels.world(npc, context.model(), muzzle.offset(), state.getHullYaw());
+        if (!NpcVehicleCombat.mayFire(npc, target, origin, FlansProjectiles.getArmorPerformance(ammo, round, muzzle.weapon().orElse(null), definition), NpcBlastSafety.reach(ammo) > 0D))
+            return false;
         Vec3 aimPoint = NpcVehicleState.aimPoint(target);
         NpcTuning tuning = NpcTuning.of(npc);
         int transparent = tuning.sight() == NpcTuning.Sight.SEE_AND_FIRE_THROUGH ? tuning.get(NpcTuning.Value.FIRE_LIMIT) : 0;

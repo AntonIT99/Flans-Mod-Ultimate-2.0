@@ -280,6 +280,8 @@ public final class ShootingHelper
 
         boolean armourBlocked = armoured.map(ModelArmourDamage.Result::blocked).orElse(false);
 
+        armoured.ifPresent(result -> ArmorImpactHandler.dispatchModel(shot, entity, partHit, result.armour().facing().outwardNormal(), result.blocked()));
+
         armoured.ifPresent(result -> spawnArmourImpact(level, shot, entity, partHit, hit, shootingMotion, result));
 
         if (!level.isClientSide && !armourBlocked)

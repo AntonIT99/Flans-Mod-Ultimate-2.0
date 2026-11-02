@@ -16,7 +16,7 @@
 
 ## Teams
 
-* Addon API 1.15 exposes nominal per-face vehicle armour and ammunition penetration and warhead inspection for target-aware AI, without simulating or changing damage
+* Addon API 1.16 exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass and confirmed armour-impact callbacks for target-aware AI, without changing damage
 
 * All spawners offer a base-assignment menu and show their base's team color before a round starts; item and vehicle spawners have a spawn delay in seconds (default 20), while vehicle spawners support AA guns, wait for their previous vehicle to be destroyed or leave the map by default, offer a nearby-only replacement mode, allow NPC vehicles by all, none, multiple categories or exact definitions, and select between spawning all ready NPC vehicles into clear nearby spaces (default) or deploying them one after another
 

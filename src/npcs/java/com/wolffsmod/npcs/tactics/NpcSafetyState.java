@@ -1,10 +1,12 @@
 package com.wolffsmod.npcs.tactics;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.wolffsmod.npcs.combat.NpcArmorEngagement;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -13,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 @Setter
 public final class NpcSafetyState
 {
+    private final NpcArmorEngagement armorEngagement = new NpcArmorEngagement();
     public enum Action
     {
         NONE, EVADE, RETREAT, HIDE, PEEK, FLANK, SPREAD
@@ -47,6 +50,9 @@ public final class NpcSafetyState
     private Vec3 firingPosition;
     private int firingTarget = -1;
     private long firingPositionAt = Long.MIN_VALUE / 2;
+    @Nullable
+    private LivingEntity gunnerTarget;
+    private long gunnerCheckedAt = Long.MIN_VALUE / 2;
 
     public boolean active(long now)
     {

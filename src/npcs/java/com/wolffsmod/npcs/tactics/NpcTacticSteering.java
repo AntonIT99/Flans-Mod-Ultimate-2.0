@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.tactics;
 
+import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.sim.NpcFiringPosition;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
@@ -54,7 +55,7 @@ public final class NpcTacticSteering
         Situation situation = new Situation(npc.getSensing().hasLineOfSight(target), npc.position(), target.position(), home, engagement, memory.isReloading(now), hit);
         Order order = TacticDecision.decide(tactic, situation, memory, now);
         // A vehicle without a shot from where it would stand, or close in from, drives to where it has one; one that holds stays put.
-        if (tactic != Tactic.HOLD && order.move() != TacticDecision.Move.GO_TO && NpcFiringPosition.reposition(npc, target))
+        if (tactic != Tactic.HOLD && (order.move() != TacticDecision.Move.GO_TO || NpcVehicleCombat.armorFlank(npc, target) != null) && NpcFiringPosition.reposition(npc, target))
         {
             memory.order(null, now);
             return;

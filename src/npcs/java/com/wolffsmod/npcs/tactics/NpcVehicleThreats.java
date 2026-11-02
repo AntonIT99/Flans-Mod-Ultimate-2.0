@@ -54,6 +54,12 @@ public final class NpcVehicleThreats
     /** Nominal hull protection from the observer's side. Missing plate data stays unknown. */
     public static Optional<PartArmor> protection(Entity entity, Vec3 observer)
     {
+        return protection(entity, observer, "core");
+    }
+
+    /** Nominal protection of a chosen part, respecting live NPC overrides and the turret's own facing. */
+    public static Optional<PartArmor> protection(Entity entity, Vec3 observer, String part)
+    {
         Entity vehicle = platform(entity);
         // A directly targeted occupant can be exposed; hull protection alone cannot establish that the occupant is safe.
         if (vehicle != entity)
@@ -62,14 +68,19 @@ public final class NpcVehicleThreats
             return Optional.of(new PartArmor(0F, 0F));
         if (vehicle instanceof IFlanPartTarget target)
         {
-            Optional<PartArmor> override = target.flansmodultimatePartBody().flatMap(body -> body.getArmor("core"));
+            Optional<PartArmor> override = target.flansmodultimatePartBody().flatMap(body -> body.getArmor(part));
             if (override.isPresent())
                 return override;
         }
         Vec3 toward = observer.subtract(vehicle.position());
         Vec3 front = front(vehicle);
+        if (part.equals("turret"))
+        {
+            double yaw = vehicle instanceof noppes.npcs.entity.EntityNPCInterface npc ? NpcVehicleState.of(npc).turretAim().yaw() : FlansEntityTypes.getTurretYaw(vehicle).orElse(0D);
+            front = front.yRot((float) -Math.toRadians(yaw));
+        }
         Vec3 normal = new Vec3(toward.dot(front.cross(new Vec3(0D, 1D, 0D))), toward.y, -toward.dot(front));
-        return type(vehicle).flatMap(type -> type.getPartArmor("core", normal));
+        return type(vehicle).flatMap(type -> type.getPartArmor(part, normal));
     }
 
     /** A visible source used for cover tests, rather than a living passenger's displaced eyes. */

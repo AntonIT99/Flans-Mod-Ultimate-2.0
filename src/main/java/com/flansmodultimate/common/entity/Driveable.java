@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.FlanEntityPermissions;
@@ -4493,6 +4494,25 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return selection == null ? null : ExternalProjectileSupport.detonationRadii(selection.stack()).orElse(null);
     }
 
+    public Optional<AmmunitionArmor> getDriverWeaponArmor(boolean secondary)
+    {
+        AmmoSelection selection = selectDriverWeaponAmmo(secondary);
+        if (selection == null || !(selection.stack().getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bullet))
+            return Optional.empty();
+        FiredShot shot = new FiredShot(resolveFireableGun(selection, secondary), bullet, this, null, ShootableItem.getRoundsFired(selection.stack()));
+        return Optional.of(ExternalProjectileSupport.armorPerformance(shot));
+    }
+
+    public Optional<AmmunitionArmor> getSeatGunArmor(Seat seat)
+    {
+        SeatInfo info = seat.getSeatInfo();
+        GunType gun = info == null ? null : info.getGunType();
+        if (gun == null || driveableData == null)
+            return Optional.empty();
+        ItemStack ammo = passengerGunAmmo(info, gun);
+        return ExternalProjectileSupport.armorPerformance(ammo, ShootableItem.getRoundsFired(ammo), gun, configType);
+    }
+
     /**
      * @return whether the bank of the driver's trigger fires along the hull rather than with the turret, as a bow
      *         torpedo tube or a fixed forward gun does; false for a bank the driveable does not have
@@ -4901,6 +4921,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
+        ArmorImpactHandler.dispatch(shot, this, hit.getPart().getShortName(), hit.getFacing().outwardNormal(), armourBlocked);
         Vec3 impactNormal = modelLocalDirectionToWorld(
             DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(armorHit.virtualNormal()), hit.getPart(), getTurretYaw(), getTurretPitch()));
         Vec3 impactMotion = modelLocalDirectionToWorld(

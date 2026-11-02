@@ -72,9 +72,21 @@ public final class ExternalProjectileSupport
 
     public static Optional<AmmunitionArmor> armorPerformance(ItemStack stack, int sequence)
     {
-        if (stack.getItem() instanceof ShootableItem item && item.getConfigType() instanceof BulletType bullet)
-            return Optional.of(new AmmunitionArmor(Math.max(0F, bullet.getPenetrationAt100m(Math.max(0, sequence))), bullet.isHeat()));
-        return Optional.empty();
+        return armorPerformance(stack, sequence, null, null);
+    }
+
+    public static Optional<AmmunitionArmor> armorPerformance(ItemStack stack, int sequence, @Nullable IContentType weapon, @Nullable IContentType platform)
+    {
+        if (!(stack.getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bullet))
+            return Optional.empty();
+        InfoType definition = weaponDefinition(weapon, platform, ItemStack.EMPTY, bullet);
+        FireableGun gun = new FireableGun(definition, 1F, 0F, 0F, EnumSpreadPattern.CIRCLE);
+        return Optional.of(armorPerformance(new FiredShot(gun, bullet, null, null, Math.max(0, sequence), platform instanceof InfoType type ? type : null)));
+    }
+
+    public static AmmunitionArmor armorPerformance(FiredShot shot)
+    {
+        return new AmmunitionArmor(Math.max(0F, shot.getPenetrationAt100m()), shot.getBulletType().isHeat(), Math.max(0F, shot.getProjectileMass()));
     }
 
     public static boolean consumeRound(ItemStack stack)

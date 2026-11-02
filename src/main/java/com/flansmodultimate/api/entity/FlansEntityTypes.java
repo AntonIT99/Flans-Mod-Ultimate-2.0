@@ -15,9 +15,11 @@ import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.MechaMobility;
 import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.parts.PartArmor;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
+import com.flansmodultimate.common.raytracing.hits.DriveableHit;
 import com.flansmodultimate.common.types.DriveableMobilityProfiles;
 import com.flansmodultimate.common.types.EntityTypePropertySupport;
 import com.flansmodultimate.common.types.GroundPropulsionProfiles;
@@ -41,6 +43,31 @@ public final class FlansEntityTypes
 {
     private FlansEntityTypes()
     {}
+
+    /** @return a real driveable's turret yaw relative to its hull, in degrees, or empty for another entity; level thread, either side */
+    public static OptionalDouble getTurretYaw(Entity entity)
+    {
+        return entity instanceof Driveable driveable ? OptionalDouble.of(driveable.getTurretYaw()) : OptionalDouble.empty();
+    }
+
+    /**
+     * Inspects the first intact driveable part on a world-space line segment without applying damage. Either side, on the entity's level thread.
+     *
+     * @param vehicle
+     *            real driveable whose hitboxes are inspected
+     * @param origin
+     *            start of the line in blocks
+     * @param end
+     *            end of the line in blocks; stop at a rider's near surface to test whether armour shields that rider
+     * @return nominal protection on the first struck face, or empty for no intersection, unknown armour or another entity
+     */
+    public static Optional<PartArmor> getArmorAlongRay(Entity vehicle, Vec3 origin, Vec3 end)
+    {
+        if (!(vehicle instanceof Driveable driveable) || driveable.getConfigType() == null)
+            return Optional.empty();
+        return driveable.attackFromBullet(origin, end.subtract(origin)).stream().filter(DriveableHit.class::isInstance).map(DriveableHit.class::cast).findFirst()
+            .flatMap(hit -> driveable.getConfigType().getPartArmor(hit.getPart().getShortName(), hit.getLocalOutwardNormal()));
+    }
 
     /**
      * Creates impact damage attributed to a vehicle or an entity wearing a Flan damage model.

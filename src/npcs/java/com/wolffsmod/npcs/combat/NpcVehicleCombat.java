@@ -2,8 +2,12 @@ package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
+import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.sim.NpcSight;
@@ -14,20 +18,165 @@ import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.ai.selector.NPCAttackSelector;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /** Chooses the useful model bank before its ballistics, turret aim and firing position are calculated. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcVehicleCombat
 {
+    /** Only confirmed heavy-round impacts on the current target can start an armour flank. */
+    public static void impact(LivingEntity attacker, Entity target, String part, Vec3 normal, AmmunitionArmor round, boolean blocked)
+    {
+        if (NpcArmorEngagement.smallArms(round) || !(attacker instanceof EntityNPCInterface npc) || !(npc instanceof NpcTacticState.Holder) || npc.getTarget() == null
+            || NpcVehicleThreats.platform(npc.getTarget()) != target || !NpcVehicleThreats.groundVehicle(npc) || !NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT))
+            return;
+        NpcTacticState.of(npc).getSafety().getArmorEngagement().impact(target.getId(), part, normal, round, blocked, npc.level().getGameTime());
+    }
+
+    /** Unknown armour, exposed occupants and explosive rounds remain eligible. */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // Absence explicitly means unknown ammunition, which must remain eligible.
+    public static boolean mayFire(EntityNPCInterface npc, LivingEntity target, Vec3 origin, Optional<AmmunitionArmor> round, boolean explosive)
+    {
+        if (!NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || !NpcVehicleThreats.groundVehicle(target) || explosive || round.isEmpty() || !NpcArmorEngagement.smallArms(round.get()))
+            return true;
+        Entity platform = NpcVehicleThreats.platform(target);
+        if (platform != target)
+        {
+            Vec3 aim = NpcVehicleState.aimPoint(target);
+            Vec3 contact = target.getBoundingBox().clip(origin, aim).orElse(aim);
+            return FlansEntityTypes.getArmorAlongRay(platform, origin, contact).map(armor -> round.get().penetrationMm() >= thickness(round.get(), armor)).orElse(true);
+        }
+        Optional<PartArmor> hull = NpcVehicleThreats.protection(target, origin, "core");
+        Optional<PartArmor> turret = NpcVehicleThreats.protection(target, origin, "turret");
+        return !blocked(round.get(), hull, turret);
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // Unknown plates must remain distinct from known zero-thickness plates.
+    static boolean blocked(AmmunitionArmor round, Optional<PartArmor> hull, Optional<PartArmor> turret)
+    {
+        return hull.isPresent() && turret.isPresent() && round.penetrationMm() < thickness(round, hull.get()) && round.penetrationMm() < thickness(round, turret.get());
+    }
+
+    private static double thickness(AmmunitionArmor round, PartArmor armor)
+    {
+        return round.shapedCharge() ? armor.heatThicknessMm() : armor.thicknessMm();
+    }
+
+    /** Keeps the main target when useful; an independently aimed gun otherwise searches for another visible enemy. */
+    @Nullable
+    public static LivingEntity gunnerTarget(EntityNPCInterface npc, ISeat seat, Vec3 origin, @Nullable LivingEntity preferred, double range)
+    {
+        if (!NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT))
+            return preferred;
+        if (preferred == null && !NpcEquipment.enabled(npc, Feature.DEFENSIVE_GUNNERS))
+            return null;
+        var armor = seat.getGunArmor();
+        if (preferred != null && preferred.isAlive() && mayFire(npc, preferred, origin, armor, false))
+            return preferred;
+        var state = NpcTacticState.of(npc).getSafety();
+        long now = npc.level().getGameTime();
+        LivingEntity kept = state.getGunnerTarget();
+        if (now - state.getGunnerCheckedAt() < 10L)
+            return kept != null && kept.isAlive() && kept.distanceTo(npc) <= range && mayFire(npc, kept, origin, armor, false)
+                && NpcSight.clear(npc.level(), origin, NpcVehicleState.aimPoint(kept), 0, npc) ? kept : null;
+        state.setGunnerCheckedAt(now);
+        NPCAttackSelector enemies = new NPCAttackSelector(npc);
+        LivingEntity found = npc.level()
+            .getEntitiesOfClass(LivingEntity.class, npc.getBoundingBox().inflate(range),
+                candidate -> candidate != npc && candidate.getRootVehicle() != npc.getRootVehicle() && candidate.isAlive() && candidate.distanceTo(npc) <= range
+                    && mayFire(npc, candidate, origin, armor, false))
+            .stream().filter(enemies::isEntityApplicable).sorted(Comparator.comparingDouble(npc::distanceToSqr))
+            .filter(candidate -> NpcSight.clear(npc.level(), origin, NpcVehicleState.aimPoint(candidate), 0, npc)).findFirst().orElse(null);
+        state.setGunnerTarget(found);
+        return found;
+    }
+
+    /** A reachable arc waypoint toward a side or rear after three frontal shell failures. Searches at most once a second. */
+    @Nullable
+    public static Vec3 armorFlank(EntityNPCInterface npc, LivingEntity target)
+    {
+        if (!(npc instanceof NpcTacticState.Holder))
+            return null;
+        var memory = NpcTacticState.of(npc).getSafety().getArmorEngagement();
+        long now = npc.level().getGameTime();
+        Entity victim = NpcVehicleThreats.platform(target);
+        if (!memory.flanking(victim.getId(), now) || !NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || !NpcCombatMovement.allowed(npc) || !NpcVehicleThreats.groundVehicle(npc)
+            || !NpcVehicleThreats.groundVehicle(target) || NpcVehicleThreats.type(npc).map(IDriveableType::isShip).orElse(false))
+            return null;
+        Vec3 position = NpcVehicleThreats.platform(npc).position();
+        Vec3 radial = position.subtract(victim.position()).multiply(1D, 0D, 1D);
+        // Once at the side, try the gun again. A successful penetration also clears this intent immediately.
+        if (radial.normalize().dot(NpcVehicleThreats.front(victim)) <= 0.1D)
+        {
+            memory.reset(victim.getId());
+            return null;
+        }
+        if (now - memory.getSearchedAt() < 20L)
+            return memory.getWaypoint() != null && NpcCombatMovement.permits(npc, memory.getWaypoint()) ? memory.getWaypoint() : null;
+        memory.setSearchedAt(now);
+        memory.setWaypoint(null);
+        return findArmorFlank(npc, memory, position, victim.position(), radial.horizontalDistance());
+    }
+
+    @Nullable
+    private static Vec3 findArmorFlank(EntityNPCInterface npc, NpcArmorEngagement memory, Vec3 position, Vec3 target, double distance)
+    {
+        if (memory.getSide() == 0)
+            memory.setSide((npc.getId() & 1) == 0 ? 1 : -1);
+        double radius = Math.max(8D, distance);
+        double step = Math.min(Math.toRadians(25D), 12D / radius);
+        for (int side : new int[]{memory.getSide(), -memory.getSide()})
+        {
+            Vec3 point = flankGround(npc, flankStep(position, target, step * side));
+            if (!reachable(npc, point))
+                continue;
+            memory.setSide(side);
+            memory.setWaypoint(point);
+            return point;
+        }
+        return null;
+    }
+
+    private static boolean reachable(EntityNPCInterface npc, @Nullable Vec3 point)
+    {
+        if (point == null)
+            return false;
+        var path = npc.getNavigation().createPath(BlockPos.containing(point), 0);
+        return path != null && path.canReach();
+    }
+
+    static Vec3 flankStep(Vec3 position, Vec3 target, double radians)
+    {
+        Vec3 radial = position.subtract(target).multiply(1D, 0D, 1D);
+        return target.add(radial.yRot((float) radians)).add(0D, position.y - target.y, 0D);
+    }
+
+    @Nullable
+    private static Vec3 flankGround(EntityNPCInterface npc, Vec3 wanted)
+    {
+        BlockPos ground = BlockPos.containing(wanted);
+        for (int rise : new int[]{0, 1, -1, 2, -2, 3, -3})
+        {
+            BlockPos stand = ground.above(rise);
+            Vec3 point = Vec3.atBottomCenterOf(stand);
+            if (NpcCombatMovement.permits(npc, point) && NpcCover.standable(npc.level(), stand))
+                return point;
+        }
+        return null;
+    }
+
     public static boolean bank(EntityNPCInterface npc, @Nullable IContentType model, boolean configured)
     {
         LivingEntity target = npc.getTarget();
@@ -57,7 +206,7 @@ public final class NpcVehicleCombat
         for (WeaponMuzzle muzzle : muzzles)
         {
             ItemStack ammo = muzzle.weapon().map(gun -> NpcAmmunition.driverGunTemplate(npc, gun)).orElseGet(() -> NpcAmmunition.bankTemplate(npc, model, secondary));
-            if (ammo.isEmpty())
+            if (ammo.isEmpty() || !mayFire(npc, target, npc.position(), FlansProjectiles.getArmorPerformance(ammo, 0, muzzle.weapon().orElse(null), model), NpcBlastSafety.reach(ammo) > 0D))
                 continue;
             double value = NpcWeaponChoice.ammunitionScore(npc, target, ammo);
             // Machine guns are the useful default against single infantry; explosives retain their use at a safe distance.

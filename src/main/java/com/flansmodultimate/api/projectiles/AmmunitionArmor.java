@@ -11,10 +11,18 @@ import org.jetbrains.annotations.ApiStatus;
  * Read-only nominal ammunition performance, without tracing a hit or applying damage. Readable on either side after loading.
  *
  * @param penetrationMm
- *            penetration in millimetres at 100 metres; excludes impact angle, distance correction and platform overrides
+ *            penetration in millimetres at 100 metres; excludes impact angle and distance correction
  * @param shapedCharge
  *            whether the round tests the plate's HEAT protection rather than its kinetic protection
+ * @param projectileMassGrams
+ *            projectile mass in grams, or zero when unspecified
  */
 @ApiStatus.Experimental
-public record AmmunitionArmor(double penetrationMm, boolean shapedCharge)
-{}
+public record AmmunitionArmor(double penetrationMm, boolean shapedCharge, double projectileMassGrams)
+{
+    /** Creates performance data with unspecified projectile mass, for compatibility with older callers. */
+    public AmmunitionArmor(double penetrationMm, boolean shapedCharge)
+    {
+        this(penetrationMm, shapedCharge, 0D);
+    }
+}

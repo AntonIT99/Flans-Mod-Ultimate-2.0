@@ -84,7 +84,8 @@ public final class NpcFiringPosition
     private static boolean applies(EntityNPCInterface npc, NpcVehicleState state, LivingEntity target)
     {
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        boolean switched = options.enabled(Feature.MANOEUVRE_TO_FIRE) || options.enabled(Feature.BLAST_STANDOFF) || options.enabled(Feature.SHIP_WEAPON_BEARING);
+        boolean switched = options.enabled(Feature.MANOEUVRE_TO_FIRE) || options.enabled(Feature.BLAST_STANDOFF) || options.enabled(Feature.SHIP_WEAPON_BEARING)
+            || NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT);
         return switched && TacticKind.of(npc) == TacticKind.VEHICLE && npc.isAlive() && !npc.isKilled() && target.isAlive() && target.level() == npc.level()
             && !(npc.isVehicle() && npc.ais.mountControl) && !state.getFlight().holdsFire();
     }
@@ -109,6 +110,8 @@ public final class NpcFiringPosition
             return true;
         }
         course = null;
+        if (flank(npc, target))
+            return true;
         if (!options.enabled(Feature.MANOEUVRE_TO_FIRE))
             return false;
         Optional<Vec3> origin = state.fireOrigin();
@@ -133,6 +136,20 @@ public final class NpcFiringPosition
             return false;
         if (!NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || !lateral(npc, target, origin.get()))
             closeIn(npc, target);
+        return true;
+    }
+
+    /** Follows the armour flank without replacing an ongoing route every tick. */
+    private boolean flank(EntityNPCInterface npc, LivingEntity target)
+    {
+        Vec3 point = NpcVehicleCombat.armorFlank(npc, target);
+        if (point == null)
+            return false;
+        if (!underway(npc, point))
+        {
+            npc.getNavigation().moveTo(point.x, point.y, point.z, 1D);
+            order(npc, point);
+        }
         return true;
     }
 

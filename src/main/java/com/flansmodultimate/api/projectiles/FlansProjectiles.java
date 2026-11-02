@@ -11,6 +11,7 @@ import com.flansmodultimate.api.driveables.ReloadCycle;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.entity.ISuppressionListener;
+import com.flansmodultimate.common.guns.ArmorImpactHandler;
 import com.flansmodultimate.common.guns.ExternalProjectileSupport;
 import com.flansmodultimate.common.guns.NearMissHandler;
 import org.jetbrains.annotations.ApiStatus;
@@ -44,6 +45,18 @@ public final class FlansProjectiles
     public static void removeSuppressionListener(ISuppressionListener listener)
     {
         NearMissHandler.removeListener(listener);
+    }
+
+    /** Registers a server armour-impact listener; repeated registration of the same instance has no effect. */
+    public static void addArmorImpactListener(IArmorImpactListener listener)
+    {
+        ArmorImpactHandler.addListener(listener);
+    }
+
+    /** Removes a previously registered armour-impact listener. */
+    public static void removeArmorImpactListener(IArmorImpactListener listener)
+    {
+        ArmorImpactHandler.removeListener(listener);
     }
 
     /** @return whether the stack represents a Flan bullet or grenade; readable on either side */
@@ -100,6 +113,24 @@ public final class FlansProjectiles
     public static Optional<AmmunitionArmor> getArmorPerformance(ItemStack ammunition, int sequence)
     {
         return ExternalProjectileSupport.armorPerformance(ammunition, sequence);
+    }
+
+    /**
+     * Reads a belt round's nominal performance including mounted weapon and fallback platform overrides, on either side after loading.
+     *
+     * @param ammunition
+     *            ammunition stack to inspect
+     * @param sequence
+     *            zero-based belt position
+     * @param weapon
+     *            mounted weapon, or null for the platform alone
+     * @param platform
+     *            carrying model, or null when absent
+     * @return performance, or empty for unsupported ammunition
+     */
+    public static Optional<AmmunitionArmor> getArmorPerformance(ItemStack ammunition, int sequence, @Nullable IContentType weapon, @Nullable IContentType platform)
+    {
+        return ExternalProjectileSupport.armorPerformance(ammunition, sequence, weapon, platform);
     }
 
     /**

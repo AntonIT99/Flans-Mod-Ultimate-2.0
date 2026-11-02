@@ -7,6 +7,7 @@ package com.flansmodultimate.api.driveables;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -187,6 +188,22 @@ public interface ISeat
      *         for a mecha's hand guns. Server side.
      */
     Optional<WeaponBallistics> getDriverWeaponBallistics(boolean secondary);
+
+    /**
+     * @param secondary
+     *            whether to inspect the secondary driver trigger
+     * @return the next loaded round's armour performance, including weapon/platform overrides, or empty when unknown. Server thread.
+     */
+    default Optional<AmmunitionArmor> getDriverWeaponArmor(boolean secondary)
+    {
+        return Optional.empty();
+    }
+
+    /** @return the seat gun's next loaded round's armour performance, or empty when unknown. Server thread. */
+    default Optional<AmmunitionArmor> getGunArmor()
+    {
+        return Optional.empty();
+    }
 
     /**
      * Reads how far round its point of detonation the round the driveable's weapon of the driver's trigger has loaded

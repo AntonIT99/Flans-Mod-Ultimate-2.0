@@ -225,6 +225,9 @@ public final class NpcRangedAttack
         private boolean launch(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, @Nullable Weapon adjusted, boolean fixed)
         {
             ItemStack selectedAmmo = ammunition(muzzle);
+            if (target != null && definition instanceof IDriveableType && !NpcVehicleCombat.mayFire(npc, target, origin,
+                FlansProjectiles.getArmorPerformance(selectedAmmo, sequence * shotCount + shotIndex, muzzle.weapon().orElse(null), definition), NpcBlastSafety.reach(selectedAmmo) > 0D))
+                return false;
             var prepared = FlansProjectiles.prepare(npc, selectedAmmo, held, muzzle.weapon().orElse(null), definition, secondary, parameters(shotIndex, adjusted));
             if (prepared.isEmpty())
                 return false;

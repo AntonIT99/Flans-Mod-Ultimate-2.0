@@ -7,6 +7,7 @@ import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
@@ -902,6 +903,20 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         Driveable parent = driveable;
         return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponBallistics(secondary));
+    }
+
+    @Override
+    public Optional<AmmunitionArmor> getDriverWeaponArmor(boolean secondary)
+    {
+        Driveable parent = driveable;
+        return parent == null || !parent.isMovementController(this) ? Optional.empty() : parent.getDriverWeaponArmor(secondary);
+    }
+
+    @Override
+    public Optional<AmmunitionArmor> getGunArmor()
+    {
+        Driveable parent = driveable;
+        return parent == null ? Optional.empty() : parent.getSeatGunArmor(this);
     }
 
     @Override
