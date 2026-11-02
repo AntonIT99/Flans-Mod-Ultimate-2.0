@@ -77,6 +77,7 @@
 * The vehicle HUD shows the current ammunition-switch key below the ammunition display for drivers with shells, bombs or missiles
 
 * Armour hits on driveables and NPC vehicle models show outward sparks and metallic impacts when blocked, and tighter flashes, metal fragments and smoke when large shells penetrate, with effects scaled to projectile mass
+* Ricochet star particles default to half as many; configure their base count with `ricochetSparkCount` (0 disables them)
 
 * Ships are now separated from ground vehicles, with improved ship physics; leaving a ship puts the player on top of its hull
 * Creative players can pick up unoccupied floating ships and airborne driveables by hitting them

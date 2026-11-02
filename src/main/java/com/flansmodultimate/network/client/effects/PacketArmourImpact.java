@@ -25,14 +25,16 @@ public class PacketArmourImpact implements IClientPacket
     private Vec3 normal;
     private float scale;
     private boolean blocked;
+    private int ricochetSparkCount;
 
-    public PacketArmourImpact(Vec3 position, Vec3 incoming, Vec3 normal, float scale, boolean blocked)
+    public PacketArmourImpact(Vec3 position, Vec3 incoming, Vec3 normal, float scale, boolean blocked, int ricochetSparkCount)
     {
         this.position = position;
         this.incoming = incoming;
         this.normal = normal;
         this.scale = scale;
         this.blocked = blocked;
+        this.ricochetSparkCount = ricochetSparkCount;
     }
 
     @Override
@@ -49,6 +51,7 @@ public class PacketArmourImpact implements IClientPacket
         data.writeFloat((float) normal.z);
         data.writeFloat(scale);
         data.writeBoolean(blocked);
+        data.writeVarInt(ricochetSparkCount);
     }
 
     @Override
@@ -59,6 +62,7 @@ public class PacketArmourImpact implements IClientPacket
         normal = new Vec3(data.readFloat(), data.readFloat(), data.readFloat()).normalize();
         scale = data.readFloat();
         blocked = data.readBoolean();
+        ricochetSparkCount = data.readVarInt();
     }
 
     @Override
@@ -71,17 +75,17 @@ public class PacketArmourImpact implements IClientPacket
         boolean glancing = blocked && Math.abs(incoming.dot(normal)) < 0.5D;
         float flashScale = size * (blocked ? 0.22F : 0.14F);
         spawn(FlanParticles.FM_FLASH, origin, Vec3.ZERO, flashScale, 0.5F);
-        spawnFragments(level, origin, size, glancing);
+        spawnFragments(level, origin, size, glancing, ricochetSparkCount);
         if (!blocked && size >= 0.5F)
             spawn(FlanParticles.SMOKE, origin, normal.scale(0.035D), size * 0.8F, 0.45F);
         if (blocked)
             ClientHooks.SOUND.playSound(FlansModSounds.SOUND_IMPACT_METAL, position, 16F + 16F * size, true, false, false, UUID.randomUUID(), null);
     }
 
-    private void spawnFragments(Level level, Vec3 origin, float size, boolean glancing)
+    private void spawnFragments(Level level, Vec3 origin, float size, boolean glancing, int ricochetSparkCount)
     {
         Vec3 spray = blocked ? ArmourImpactEffects.reflectedDirection(incoming, normal) : normal;
-        int count = Math.round((blocked ? 8F : 5F) * size);
+        int count = Math.round((blocked ? Mth.clamp(ricochetSparkCount, 0, 64) : 5) * size);
         double scatter = glancing ? 0.07D : 0.16D;
         double speed = glancing ? 0.8D : 0.3D;
         float sparkScale = blocked ? 0.65F : 0.4F;
