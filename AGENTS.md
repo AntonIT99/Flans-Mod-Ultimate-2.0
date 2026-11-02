@@ -203,9 +203,10 @@ installation when present, so mixins and Minecraft APIs are understood; its
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects
   files with uncommitted changes; `-Path <dir>` inspects a directory instead;
   `-MinSeverity WARNING` hides weak warnings; `-Json` gives machine-readable output.
-- Start it in the background right after the last Java edit of a task and read the result before
-  reporting, so it overlaps `spotlessApply`, SonarLint and the build. Run it once per task, not
-  after every edit.
+- Finish source edits and `spotlessApply` before inspecting. Start the inspection through the
+  validation coordinator described below and read its result before reporting. It may run in the
+  background, but queues behind validation of the same checkout. Run it once per task, not after
+  every edit, and do not edit inspected sources while it runs.
 - By default the whole-project inspections (duplicated code, unused declarations, spelling and
   grammar, vulnerable libraries, Javadoc) are disabled: they analyse the whole dependency graph
   however narrow the scope is. `-Full` adds them back; use it when the question
@@ -263,8 +264,8 @@ at the end of every task. `build` assembles and reobfuscates every module, inclu
 - Keep Gradle's required task dependencies. Test filters select tests to execute; they do not prune
   compilation dependencies. Some analysis tasks also need outputs of other source sets. Use
   `--dry-run` if the task graph is unexpectedly broad; do not add blanket `-x compile...` exclusions.
-- Batch related Gradle checks into one invocation where practical, and avoid competing Gradle
-  invocations for the same checkout. Run IntelliJ once in the background as described above.
+- Batch related Gradle checks into one invocation where practical. Queue Gradle and IntelliJ through
+  the validation coordinator below instead of starting competing invocations for the same checkout.
   In a mixed worktree, scope formatting and analysis to this task's files or validate an isolated
   checkout when unrelated changes prevent checks; preserve unrelated edits and staged content.
 - Reuse successful validation while its relevant inputs remain unchanged. After comment, formatting,
@@ -275,3 +276,29 @@ at the end of every task. `build` assembles and reobfuscates every module, inclu
 Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
 SonarLint on touched source sets, and `git diff --check`,
 and report validation that could not be performed.
+
+### Parallel tasks and shared build outputs
+
+- Prefer a separate Git worktree per concurrent implementation task. Each task owns its source edits,
+  `.gradle`, `build`, generated resources, inspection results and temporary logs. Do not redirect
+  different worktrees to the same build or project-cache directory. The normal shared Gradle user home
+  and dependency cache can remain shared; do not create separate dependency caches by default.
+- Within one checkout, run agent build and inspection commands through
+  `powershell -NoProfile -File scripts/run-validation.ps1 Gradle <tasks and options>` or
+  `powershell -NoProfile -File scripts/run-validation.ps1 Idea <inspection options>`.
+  The coordinator holds a checkout-specific mutex for the entire invocation; competing callers wait
+  up to ten minutes by default (`-WaitSeconds` changes the queue timeout). Different worktrees have
+  independent queues. Gradle's parallelism inside one invocation remains enabled.
+  Check coordinator changes with `powershell -NoProfile -File scripts/test-validation-coordinator.ps1`;
+  its process tests use fake tools and launch neither Minecraft nor IntelliJ.
+- Direct `gradlew` and `idea-inspect.ps1` launches, IDE auto-builds, and source edits bypass the queue.
+  Coordinate those explicitly or use another worktree. Do not edit, format, clean, or regenerate a
+  checkout while another task validates it. A queued command sees the files present when it starts;
+  it does not capture or freeze a source snapshot.
+- Never delete another task's outputs/caches, remove Gradle lock files, run global `gradlew --stop`,
+  or terminate processes by name to resolve contention. If cancelling a coordinator, identify its
+  own child processes as well and ensure they have stopped before another validation starts;
+  an orphaned child can outlive the shell that held the mutex. Do not cancel another task's work.
+- Use unique task-specific temporary files and log names. On machines running several worktrees,
+  reduce workers for a heavy invocation if needed (for example `--max-workers=2`) rather than
+  changing project-wide parallelism or stopping other tasks' daemons.
