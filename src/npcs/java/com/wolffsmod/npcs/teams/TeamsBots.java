@@ -298,7 +298,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
                 keepTrained(npc, current.getSettings());
             if (dead && slot.getDiedAt() == 0)
                 fallenUnreported(current, slot, now);
-            if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && slot.isRetired())
+            if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && withdrawn(current, slot))
                 removeBody(level, current, slot, npc, dead);
         }
         else if (slot.getDiedAt() > 0)
@@ -309,6 +309,12 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             fallen(current, slot, now);
             forget(current, slot);
         }
+    }
+
+    /** Whether a living bot must leave the field after the operator changed the force. */
+    private static boolean withdrawn(BotBattle current, BotSlot slot)
+    {
+        return slot.isRetired() || slot.isVehicle() && !current.getSettings().isVehiclesEnabled();
     }
 
     /** Trains a bot and the crew riding in it again once the round's difficulty has changed, so a saved level takes effect at once. */

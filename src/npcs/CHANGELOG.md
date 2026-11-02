@@ -45,6 +45,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Teams Bots, Factions & Battles
 
+* Toggle `NPC vehicles` in the Teams command centre or with `/teams ai round <round> vehicles on|off` to despawn vehicle bots and their crews and allow them to spawn again without changing Forces > Vehicles or infantry
+
 * Battle behaviour profiles can inherit each NPC or clone's settings or temporarily override them with Balanced, Cautious or Aggressive movement and survival choices, without changing combat attributes or saved clone settings
 
 * `Vehicle crews` is enabled by default; vehicle bots spawn with soldiers in their seats unless crews are explicitly disabled

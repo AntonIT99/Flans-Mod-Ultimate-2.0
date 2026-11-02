@@ -155,6 +155,7 @@ public final class BotCommands
         round.then(switchSetting("radio", BotSettings::setRadio));
         round.then(switchSetting("suppression", BotSettings::setSuppression));
         round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
+        round.then(switchSetting("vehicles", BotSettings::setVehiclesEnabled));
         round.then(switchSetting("vehiclecrews", BotSettings::setVehicleCrews));
         round.then(intSetting("retreat", 0, BotSettings::setRetreatHealth));
         round.then(Commands.literal("copyfrom").then(Commands.argument(SOURCE, StringArgumentType.word()).suggests(ROUNDS).executes(BotCommands::copyFrom)));
@@ -328,6 +329,7 @@ public final class BotCommands
         lines.add(text("show.look", lower(settings.getNameplates()), lower(settings.getScoreboard()), settings.getInfantryCaptureWeight(), settings.getVehicleCaptureWeight(),
             lower(settings.getDifficulty()), onOff(settings.isPlayerTickets())));
         lines.add(text("show.rules", onOff(settings.isRadio()), onOff(settings.isSuppression()), settings.getRetreatHealth(), onOff(settings.isRallyPoints())));
+        lines.add(text("show.vehicles", onOff(settings.isVehiclesEnabled())));
         lines.add(text("show.crews", onOff(settings.isVehicleCrews())));
         for (ITeam team : round.getTeams())
             lines.addAll(describe(team, settings.team(team.getShortName())));

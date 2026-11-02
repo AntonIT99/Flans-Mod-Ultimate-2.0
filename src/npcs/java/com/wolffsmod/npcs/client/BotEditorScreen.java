@@ -199,7 +199,8 @@ public final class BotEditorScreen extends Screen
         addRenderableWidget(switchButton(left, y(1), width, "player_tickets", settings.isPlayerTickets(), settings::setPlayerTickets));
         addRenderableWidget(switchButton(left, y(2), COLUMN_WIDTH, "radio", settings.isRadio(), settings::setRadio));
         addRenderableWidget(switchButton(left + COLUMN_WIDTH + 4, y(2), COLUMN_WIDTH, "suppression", settings.isSuppression(), settings::setSuppression));
-        addRenderableWidget(switchButton(left, y(3), width, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
+        addRenderableWidget(switchButton(left, y(3), COLUMN_WIDTH, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
+        addRenderableWidget(switchButton(left + COLUMN_WIDTH + 4, y(3), COLUMN_WIDTH, "vehicles_enabled", settings.isVehiclesEnabled(), settings::setVehiclesEnabled));
         addField(left, 4, RETREAT, Integer.toString(settings.getRetreatHealth()));
         addRenderableWidget(switchButton(left, y(5), COLUMN_WIDTH, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
         addRenderableWidget(enumButton(left + COLUMN_WIDTH + 4, y(5), COLUMN_WIDTH, "tactical_profile", NpcTacticalProfile.values(), settings.getTacticalProfile(), settings::setTacticalProfile));

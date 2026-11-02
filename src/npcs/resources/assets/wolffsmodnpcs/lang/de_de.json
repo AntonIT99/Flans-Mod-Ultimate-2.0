@@ -2410,5 +2410,10 @@
   "wolffsmodnpcs.editor.tactical_profile.cautious.tip": "Überschreibt Verhalten und örtliche Bewegungsabstände vorübergehend für dieses Gefecht. Die gespeicherten Einstellungen des NPCs oder Klons bleiben erhalten.",
   "wolffsmodnpcs.tuning.tactical_profile.aggressive": "Offensiv",
   "wolffsmodnpcs.editor.tactical_profile.aggressive": "Offensiv",
-  "wolffsmodnpcs.editor.tactical_profile.aggressive.tip": "Überschreibt Verhalten und örtliche Bewegungsabstände vorübergehend für dieses Gefecht. Die gespeicherten Einstellungen des NPCs oder Klons bleiben erhalten."
+  "wolffsmodnpcs.editor.tactical_profile.aggressive.tip": "Überschreibt Verhalten und örtliche Bewegungsabstände vorübergehend für dieses Gefecht. Die gespeicherten Einstellungen des NPCs oder Klons bleiben erhalten.",
+  "wolffsmodnpcs.centre.bots.vehicles": "NPC-Fahrzeuge",
+  "wolffsmodnpcs.centre.bots.vehicles.tip": "Aus entfernt NPC-Fahrzeuge samt Besatzungen; ein erlaubt ihr Erscheinen nach den normalen Spawnregeln. Kräfte > Fahrzeuge bleibt gespeichert, Infanterie bleibt aktiv.",
+  "wolffsmodnpcs.editor.vehicles_enabled": "NPC-Fahrzeuge",
+  "wolffsmodnpcs.editor.vehicles_enabled.tip": "Aus entfernt NPC-Fahrzeuge samt Besatzungen; ein erlaubt ihr Erscheinen nach den normalen Spawnregeln. Kräfte > Fahrzeuge bleibt gespeichert, Infanterie bleibt aktiv.",
+  "wolffsmodnpcs.command.show.vehicles": "NPC-Fahrzeuge %s"
 }

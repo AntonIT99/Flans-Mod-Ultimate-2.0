@@ -2460,5 +2460,10 @@
   "wolffsmodnpcs.editor.tactical_profile.cautious.tip": "Temporarily overrides behaviour switches and local movement distances for this battle. The NPC or clone saved settings remain unchanged.",
   "wolffsmodnpcs.tuning.tactical_profile.aggressive": "Aggressive",
   "wolffsmodnpcs.editor.tactical_profile.aggressive": "Aggressive",
-  "wolffsmodnpcs.editor.tactical_profile.aggressive.tip": "Temporarily overrides behaviour switches and local movement distances for this battle. The NPC or clone saved settings remain unchanged."
+  "wolffsmodnpcs.editor.tactical_profile.aggressive.tip": "Temporarily overrides behaviour switches and local movement distances for this battle. The NPC or clone saved settings remain unchanged.",
+  "wolffsmodnpcs.centre.bots.vehicles": "NPC vehicles",
+  "wolffsmodnpcs.centre.bots.vehicles.tip": "Despawn NPC vehicles and their crews when off; allow them to spawn again under the normal spawn rules when on. Keeps Forces > Vehicles saved and infantry active.",
+  "wolffsmodnpcs.editor.vehicles_enabled": "NPC vehicles",
+  "wolffsmodnpcs.editor.vehicles_enabled.tip": "Despawn NPC vehicles and their crews when off; allow them to spawn again under the normal spawn rules when on. Keeps Forces > Vehicles saved and infantry active.",
+  "wolffsmodnpcs.command.show.vehicles": "NPC vehicles %s"
 }

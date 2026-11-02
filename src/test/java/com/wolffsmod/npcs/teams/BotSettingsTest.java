@@ -18,6 +18,26 @@ import static org.junit.jupiter.api.Assertions.*;
 class BotSettingsTest
 {
     @Test
+    void vehicleToggleKeepsAllocationsAndDefaultsOnForExistingRounds()
+    {
+        BotSettings settings = new BotSettings();
+        BotSettings.VehicleEntry vehicle = new BotSettings.VehicleEntry("tank", 2, 5, 15, 3, UUID.randomUUID(), "squad", List.of(1, 2));
+        settings.team("red").getVehicles().add(vehicle);
+        settings.setVehiclesEnabled(false);
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertFalse(loaded.isVehiclesEnabled());
+        assertTrue(loaded.isEnabled());
+        assertEquals(List.of(vehicle), loaded.team("red").getVehicles());
+        loaded.setVehiclesEnabled(true);
+        assertTrue(BotSettings.load(loaded.save()).isVehiclesEnabled());
+        assertEquals(List.of(vehicle), loaded.team("red").getVehicles());
+        CompoundTag legacy = settings.save();
+        legacy.remove("vehicles_enabled");
+        assertTrue(BotSettings.load(legacy).isVehiclesEnabled());
+        assertTrue(BotSettings.load(new CompoundTag()).isVehiclesEnabled());
+    }
+
+    @Test
     void battleBehaviourDefaultsToIndividualSettingsAndExplicitOverridesSurviveSaving()
     {
         assertEquals(NpcTacticalProfile.INHERIT, BotSettings.load(new CompoundTag()).getTacticalProfile());

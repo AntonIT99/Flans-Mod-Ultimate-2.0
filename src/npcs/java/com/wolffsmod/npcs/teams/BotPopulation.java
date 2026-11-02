@@ -187,10 +187,12 @@ final class BotPopulation
         for (BotSlot slot : battle.getSlots().values())
         {
             boolean outdated = slot.getSource() == BotSlot.Source.VEHICLE && slot.getTeam().equals(name)
-                && (slot.getEntry() >= force.getVehicles().size() || !force.getVehicles().get(slot.getEntry()).type().equals(slot.getRole()));
+                && (!battle.getSettings().isVehiclesEnabled() || slot.getEntry() >= force.getVehicles().size() || !force.getVehicles().get(slot.getEntry()).type().equals(slot.getRole()));
             if (outdated)
                 slot.setRetired(true);
         }
+        if (!battle.getSettings().isVehiclesEnabled())
+            return;
         for (int entry = 0; entry < force.getVehicles().size(); entry++)
         {
             BotSettings.VehicleEntry setting = force.getVehicles().get(entry);
@@ -318,7 +320,7 @@ final class BotPopulation
                     return false;
             }
             case VEHICLE -> {
-                if (slot.getEntry() >= force.getVehicles().size())
+                if (!battle.getSettings().isVehiclesEnabled() || slot.getEntry() >= force.getVehicles().size())
                     return false;
                 int budget = force.getVehicles().get(slot.getEntry()).budget();
                 if (budget > 0 && battle.count(battle.getVehicleSpawns(), slot.getTeam(), slot.getEntry()) >= budget)

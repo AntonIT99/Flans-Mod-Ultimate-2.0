@@ -75,6 +75,9 @@ final class BotsPage extends BattlePage
         button(view, tr("bots.editor"), x, y, half, tr("bots.editor.tip"), () -> run(view, "teams ai editor", index));
         toggle(view, tr("bots.enabled"), round.enabled(), x + half + GAP, y, half, enabled -> run(view, "teams ai round", index, Boolean.TRUE.equals(enabled) ? "enable" : "disable"));
         y += ROW;
+        toggle(view, tr("bots.vehicles"), round.vehiclesEnabled(), x, y, width, enabled -> run(view, "teams ai round", index, "vehicles", Boolean.TRUE.equals(enabled) ? "on" : "off"))
+            .setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("bots.vehicles.tip")));
+        y += ROW;
         if (!data.botPresets().isEmpty())
         {
             preset = keep(data.botPresets(), preset, "");
@@ -120,7 +123,7 @@ final class BotsPage extends BattlePage
         }
         BattlesData.RoundInfo round = shown.get();
         view.drawPanel(graphics, panelLeft, view.getTop(), panelWidth, view.getHeight(), tr("bots.round", round.index(), round.gameType(), round.map()));
-        int y = view.getTop() + 18 + 2 * ROW + 2;
+        int y = view.getTop() + 18 + 3 * ROW + 2;
         if (!round.configured())
             y += paragraph(view, graphics, tr("bots.not_configured"), x, y, width, MUTED) + 3;
         else if (round.enabled() && round.total() == 0)

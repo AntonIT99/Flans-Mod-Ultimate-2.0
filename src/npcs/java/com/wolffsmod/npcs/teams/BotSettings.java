@@ -28,6 +28,7 @@ public final class BotSettings
     public static final ResourceLocation KEY = ResourceLocation.fromNamespaceAndPath(NpcsMod.MOD_ID, "bots");
 
     private static final String NBT_ENABLED = "enabled";
+    private static final String NBT_VEHICLES_ENABLED = "vehicles_enabled";
     private static final String NBT_MODE = "mode";
     private static final String NBT_TOTAL = "total";
     private static final String NBT_NAMEPLATES = "nameplates";
@@ -167,6 +168,8 @@ public final class BotSettings
     }
 
     private boolean enabled = true;
+    /** Whether the saved vehicle allocations are fielded. */
+    private boolean vehiclesEnabled = true;
     private Mode mode = Mode.FIXED;
     /** Bots shared out between the teams in {@link Mode#SHARE}. */
     private int total = 32;
@@ -458,6 +461,7 @@ public final class BotSettings
     {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean(NBT_ENABLED, enabled);
+        tag.putBoolean(NBT_VEHICLES_ENABLED, vehiclesEnabled);
         tag.putString(NBT_MODE, mode.name());
         tag.putInt(NBT_TOTAL, total);
         tag.putString(NBT_NAMEPLATES, nameplates.name());
@@ -494,6 +498,7 @@ public final class BotSettings
             return settings;
         }
         settings.enabled = tag.getBoolean(NBT_ENABLED);
+        settings.vehiclesEnabled = !tag.contains(NBT_VEHICLES_ENABLED) || tag.getBoolean(NBT_VEHICLES_ENABLED);
         settings.mode = parse(Mode.class, tag.getString(NBT_MODE), Mode.FIXED);
         settings.total = Math.max(0, tag.getInt(NBT_TOTAL));
         settings.nameplates = parse(Nameplates.class, tag.getString(NBT_NAMEPLATES), Nameplates.ALLIES);
