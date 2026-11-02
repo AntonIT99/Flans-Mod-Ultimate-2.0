@@ -1,5 +1,9 @@
 # Headless multiplayer tests with Mineflayer
 
+Use this guide for [on-demand game testing](game-testing.md). After requested
+tests or tool repairs, update verified protocol/setup lessons here following
+that guide's maintenance protocol. Ordinary code changes do not start bots.
+
 Mineflayer is an optional Node.js test client for the dedicated development
 server. It complements the graphical clients controlled through
 [Minecraft MCP](minecraft-mcp.md). Bots can move, observe health and inventory,

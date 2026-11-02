@@ -2,6 +2,22 @@
 
 Nested `AGENTS.md` files add rules for their directories.
 
+## On-demand game testing
+
+When the user requests game testing, reproduction in Minecraft, multiplayer
+verification or runtime profiling, read
+`.agents/skills/flans-game-testing/SKILL.md` and follow its selected mode.
+Do not automatically invoke the skill or launch clients, servers, bots,
+GameTests or profiler captures for ordinary implementation work. This does not
+change required formatting, compilation or unit checks. Creating or maintaining
+testing documentation does not itself authorize a live run.
+
+After requested testing or testing-tool repairs, reconcile confirmed reusable
+lessons into the skill and owning testing guides using the maintenance protocol
+in `docs/game-testing.md`. Correct stale advice and consolidate workarounds;
+do not add session transcripts or duplicate manuals. Maintenance does not schedule
+future testing or expand the user's requested scope.
+
 ## In-game testing with Minecraft MCP
 
 For client UI, rendering or gameplay verification, read `docs/minecraft-mcp.md`.

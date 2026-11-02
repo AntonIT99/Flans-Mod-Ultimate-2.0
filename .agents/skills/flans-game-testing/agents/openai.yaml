@@ -1,0 +1,6 @@
+interface:
+  display_name: "Flans Game Testing"
+  short_description: "On-demand Minecraft testing and retained lessons"
+  default_prompt: "Use $flans-game-testing to test the requested Minecraft scenario, verify its outcomes, and update the maintained testing guidance with confirmed lessons."
+policy:
+  allow_implicit_invocation: false
