@@ -109,8 +109,8 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     }
 
     /** The bots of a round of the rotation. */
-    record RoundInfo(int index, String map, String gameType, List<String> teams, boolean configured, boolean enabled, boolean vehiclesEnabled, int total, String mode, String difficulty, int markers,
-        boolean current)
+    record RoundInfo(int index, String map, String gameType, List<String> teams, boolean configured, boolean enabled, boolean vehiclesEnabled, int vehicleRespawn, int total, String mode,
+        String difficulty, int markers, boolean current)
     {}
 
     /**
@@ -218,7 +218,8 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     {
         return new RoundInfo(tag.getInt(BattlesSection.INDEX), tag.getString(BattlesSection.MAP), tag.getString(BattlesSection.GAME_TYPE), strings(tag, BattlesSection.TEAMS),
             tag.getBoolean(BattlesSection.CONFIGURED), tag.getBoolean(BattlesSection.ENABLED), !tag.contains(BattlesSection.VEHICLES_ENABLED) || tag.getBoolean(BattlesSection.VEHICLES_ENABLED),
-            tag.getInt(BattlesSection.TOTAL), tag.getString(BattlesSection.MODE), tag.getString(BattlesSection.DIFFICULTY), tag.getInt(BattlesSection.MARKERS), tag.getBoolean(BattlesSection.CURRENT));
+            tag.getInt(BattlesSection.VEHICLE_RESPAWN), tag.getInt(BattlesSection.TOTAL), tag.getString(BattlesSection.MODE), tag.getString(BattlesSection.DIFFICULTY),
+            tag.getInt(BattlesSection.MARKERS), tag.getBoolean(BattlesSection.CURRENT));
     }
 
     private static LiveTeam liveTeam(CompoundTag tag)

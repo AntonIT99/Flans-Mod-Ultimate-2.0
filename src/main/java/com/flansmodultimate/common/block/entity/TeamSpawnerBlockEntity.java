@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -66,6 +67,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     @Getter
     private int teamColour = UNOWNED_COLOUR;
     private int currentDelay = 10;
+    private int templateRetryDelay;
     @Getter
     private boolean waitForVehicle = true;
     @Getter
@@ -121,17 +123,56 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         setChangedAndSync();
     }
 
+    /** Whether this plate's shared spawn cooldown has expired. Server thread only. */
+    public boolean isSpawnReady()
+    {
+        return currentDelay <= 0;
+    }
+
+    /** Remaining shared spawn cooldown, in server ticks. */
+    public int getRemainingSpawnDelayTicks()
+    {
+        return Math.max(0, currentDelay);
+    }
+
+    /** Only plates with a real vehicle template are offered as player vehicle deployment points. */
+    public boolean hasVehicleTemplate()
+    {
+        return mode == Mode.VEHICLE && templates.stream().anyMatch(TeamSpawnerBlockEntity::isVehicleTemplate);
+    }
+
+    /** Display name of the first vehicle template; NPC permissions alone never advertise a player deployment point. */
+    public Component getVehicleTemplateName()
+    {
+        return templates.stream().filter(TeamSpawnerBlockEntity::isVehicleTemplate).findFirst().map(ItemStack::getHoverName).orElse(Component.empty());
+    }
+
+    private static boolean isVehicleTemplate(ItemStack stack)
+    {
+        return !stack.isEmpty() && (stack.getItem() instanceof DriveableItem<?, ?> || stack.getItem() instanceof AAGunItem);
+    }
+
+    /** Starts the shared cooldown after a successful template or addon spawn. Server thread only. */
+    public void recordSpawn()
+    {
+        currentDelay = spawnDelayTicks;
+        setChanged();
+    }
+
     // Signature of BlockEntityTicker, which the method is registered as.
     @SuppressWarnings("java:S1172")
     public static void serverTick(Level level, BlockPos pos, BlockState state, TeamSpawnerBlockEntity spawner)
     {
         if (level.getGameTime() % TEAM_COLOUR_REFRESH_TICKS == 0)
             spawner.refreshTeamColour();
-        if (spawner.mode == Mode.PLAYER || spawner.templates.isEmpty() || !(level instanceof ServerLevel serverLevel))
+        if (spawner.mode == Mode.PLAYER || !(level instanceof ServerLevel serverLevel))
             return;
-        if (spawner.currentDelay-- > 0)
+        spawner.currentDelay = Math.max(0, spawner.currentDelay - 1);
+        spawner.templateRetryDelay = Math.max(0, spawner.templateRetryDelay - 1);
+        if (!spawner.isSpawnReady() || spawner.templates.isEmpty() || spawner.templateRetryDelay > 0)
             return;
-        spawner.currentDelay = spawner.spawnDelayTicks;
+        // Failed template attempts must leave the plate available to NPCs without scanning the world every tick.
+        spawner.templateRetryDelay = 20;
 
         if (spawner.hasExistingSpawn(serverLevel, pos))
             return;
@@ -146,6 +187,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
                 {
                     spawned.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
                     SpawnerVehicles.get(serverLevel).observe(spawned);
+                    spawner.recordSpawn();
                 }
                 continue;
             }
@@ -153,7 +195,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             // Spawned items circle the spawner, evenly spaced, until a player of the owning team takes them
             TeamItemEntity item = new TeamItemEntity(level, pos, spawner.objectId, template.copy(), index * Math.PI * 2D / spawner.templates.size());
             item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
-            level.addFreshEntity(item);
+            if (level.addFreshEntity(item))
+                spawner.recordSpawn();
         }
     }
 

@@ -86,7 +86,7 @@ public final class TeamsDeployScreen extends Screen
         }
     }
 
-    /** One spawn choice on the map: headquarters when {@code objective} is null. */
+    /** One spawn choice on the map: headquarters, a capture point or a template vehicle spawner. */
     private static final class Node
     {
         private final String key;
@@ -94,6 +94,8 @@ public final class TeamsDeployScreen extends Screen
         private final Component name;
         @Nullable
         private ObjectiveSnapshot objective;
+        @Nullable
+        private VehicleDeploySnapshot vehicle;
         private int x;
         private int y;
         private boolean enabled;
@@ -105,6 +107,12 @@ public final class TeamsDeployScreen extends Screen
             this.label = label;
             this.name = name;
             this.objective = objective;
+        }
+
+        private Node(VehicleDeploySnapshot vehicle)
+        {
+            this(DeployLayoutEntry.VEHICLE_PREFIX + vehicle.id(), "V", vehicle.name(), null);
+            this.vehicle = vehicle;
         }
 
         private boolean contains(double mouseX, double mouseY)
@@ -234,6 +242,7 @@ public final class TeamsDeployScreen extends Screen
         }
         StringBuilder signature = new StringBuilder().append(editMode).append(state.getPlayerTeamId()).append(state.getSideIds()).append(width).append('x').append(height);
         objectives.forEach(objective -> signature.append(objective.id()).append(objective.symbol()).append(objective.name()));
+        state.getVehicleDeployments().forEach(vehicle -> signature.append(vehicle.id()).append(vehicle.name()).append(vehicle.x()).append(vehicle.z()));
         state.getDeployLayout().forEach(entry -> signature.append(entry.key()).append(entry.x()).append(entry.y()));
         signature.append(state.getDeployImageCrop());
         if (!signature.toString().equals(layoutSignature) && draggingNode == null)
@@ -275,6 +284,12 @@ public final class TeamsDeployScreen extends Screen
             addNode(state, new Node(DeployLayoutEntry.OBJECTIVE_PREFIX + objective.id(), String.valueOf(objective.symbol()), Component.literal(objective.name()), objective), startX + (i + 1) * gap,
                 y);
         }
+        List<VehicleDeploySnapshot> vehicles = state.getVehicleDeployments();
+        for (int i = 0; i < vehicles.size(); i++)
+        {
+            int x = MAP_LEFT + mapWidth() * (i + 1) / (vehicles.size() + 1);
+            addNode(state, new Node(vehicles.get(i)), x, y + 50);
+        }
     }
 
     private static Component teamName(PacketTeamsState state, int teamId)
@@ -300,6 +315,13 @@ public final class TeamsDeployScreen extends Screen
         }
         node.x = Mth.clamp(x, MAP_LEFT + 8, MAP_LEFT + mapWidth() - 8);
         node.y = Mth.clamp(y, MAP_TOP + 8, MAP_TOP + mapHeight() - 8);
+        if (node.vehicle != null && (terrain != null || saved == null))
+        {
+            DeployMarkerLayout.Point position = DeployMarkerLayout.separate(new DeployMarkerLayout.Point(node.x, node.y),
+                nodes.stream().map(existing -> new DeployMarkerLayout.Point(existing.x, existing.y)).toList(), MAP_LEFT + 8, MAP_TOP + 8, MAP_LEFT + mapWidth() - 8, MAP_TOP + mapHeight() - 8);
+            node.x = position.x();
+            node.y = position.y();
+        }
         nodes.add(node);
     }
 
@@ -307,6 +329,8 @@ public final class TeamsDeployScreen extends Screen
     @Nullable
     private static Vec2 worldPosition(PacketTeamsState state, Node node)
     {
+        if (node.vehicle != null)
+            return new Vec2((float) node.vehicle.x(), (float) node.vehicle.z());
         if (node.objective != null)
             return new Vec2((float) node.objective.x(), (float) node.objective.z());
         return state.getHeadquarters().stream().filter(marker -> node.key.equals(DeployLayoutEntry.HQ_PREFIX + marker.sideId())).findFirst()
@@ -349,6 +373,13 @@ public final class TeamsDeployScreen extends Screen
             maxX = Math.max(maxX, marker.x());
             maxZ = Math.max(maxZ, marker.z());
         }
+        for (VehicleDeploySnapshot marker : state.getVehicleDeployments())
+        {
+            minX = Math.min(minX, marker.x());
+            minZ = Math.min(minZ, marker.z());
+            maxX = Math.max(maxX, marker.x());
+            maxZ = Math.max(maxZ, marker.z());
+        }
         if (minX > maxX || minecraft == null)
             return;
         double padding = Math.max(TERRAIN_MIN_PADDING, Math.max(maxX - minX, maxZ - minZ) * 0.12D);
@@ -384,18 +415,34 @@ public final class TeamsDeployScreen extends Screen
             ObjectiveSnapshot known = node.objective;
             if (known != null)
                 node.objective = objectives.stream().filter(candidate -> candidate.id().equals(known.id())).findFirst().orElse(known);
-            ObjectiveSnapshot objective = node.objective;
-            if (editMode)
-                setState(node, true, Status.MOVE);
-            else if (objective == null)
-                setState(node, ready, ready ? Status.READY : Status.STAND_BY);
-            else if (!ready)
-                setState(node, false, Status.STAND_BY);
-            else if (assault)
-                updateAssaultNode(node, objective, frontline, assaultSpawn);
-            else
-                updateConquestNode(node, objective, state.getPlayerSideId());
+            updateNodeState(node, state, ready, frontline, assaultSpawn);
         }
+    }
+
+    private void updateNodeState(Node node, PacketTeamsState state, boolean ready, @Nullable ObjectiveSnapshot frontline, @Nullable ObjectiveSnapshot assaultSpawn)
+    {
+        ObjectiveSnapshot objective = node.objective;
+        if (editMode)
+            setState(node, true, Status.MOVE);
+        else if (node.vehicle != null)
+        {
+            VehicleDeploySnapshot vehicle = updateVehicle(node.vehicle, state);
+            node.vehicle = vehicle;
+            setState(node, ready && vehicle.availability() == VehicleDeploySnapshot.Availability.READY, ready ? Status.UNAVAILABLE : Status.STAND_BY);
+        }
+        else if (objective == null)
+            setState(node, ready, ready ? Status.READY : Status.STAND_BY);
+        else if (!ready)
+            setState(node, false, Status.STAND_BY);
+        else if (state.getObjectiveMode() == ObjectiveMode.ASSAULT)
+            updateAssaultNode(node, objective, frontline, assaultSpawn);
+        else
+            updateConquestNode(node, objective, state.getPlayerSideId());
+    }
+
+    private static VehicleDeploySnapshot updateVehicle(VehicleDeploySnapshot previous, PacketTeamsState state)
+    {
+        return state.getVehicleDeployments().stream().filter(point -> point.id().equals(previous.id())).findFirst().orElse(previous);
     }
 
     private static void setState(Node node, boolean enabled, Status status)
@@ -584,20 +631,61 @@ public final class TeamsDeployScreen extends Screen
     {
         boolean hover = node == draggingNode || node.enabled && node.contains(mouseX, mouseY);
         int half = NODE_SIZE / 2;
-        int fill = 0x4A4A4A;
-        if (node.enabled && node.objective == null)
-            fill = 0x5E84C4;
-        else if (node.enabled)
-            fill = node.status == Status.UNDER_ATTACK ? 0xB88A32 : 0x4F9D5D;
-        else if (node.status == Status.RETAKE)
-            fill = 0xDCDCDC;
+        int fill = nodeColour(node);
         int alpha = node.enabled ? 0xD2000000 : 0xA5000000;
         int text = node.enabled ? 0xFFFFFF : 0xB0B0B0;
         graphics.fill(node.x - half - 2, node.y - half - 2, node.x + half + 2, node.y + half + 2, hover ? 0xFFEFEFEF : 0xCD111111);
         graphics.fill(node.x - half, node.y - half, node.x + half, node.y + half, alpha | fill);
-        drawScaled(graphics, Component.literal(node.label), node.x, node.y - 4, 0.78F, text);
+        if (node.vehicle == null)
+            drawScaled(graphics, Component.literal(node.label), node.x, node.y - 4, 0.78F, text);
+        else
+            renderVehicleIcon(graphics, node.x, node.y, text);
         drawScaled(graphics, node.name, node.x, node.y + half + 4, 0.7F, text);
-        drawScaled(graphics, Component.translatable(node.status.key), node.x, node.y + half + 13, 0.66F, node.status.colour);
+        drawScaled(graphics, nodeStatus(node), node.x, node.y + half + 13, 0.66F, node.enabled ? STATUS_READY : node.status.colour);
+    }
+
+    private Component nodeStatus(Node node)
+    {
+        if (node.vehicle == null || editMode)
+            return Component.translatable(node.status.key);
+        if (node.vehicle.availability() == VehicleDeploySnapshot.Availability.READY && node.status == Status.STAND_BY)
+            return Component.translatable(Status.STAND_BY.key);
+        return vehicleStatus(node.vehicle);
+    }
+
+    private static int nodeColour(Node node)
+    {
+        if (!node.enabled)
+            return node.status == Status.RETAKE ? 0xDCDCDC : 0x4A4A4A;
+        if (node.vehicle != null)
+            return 0x299BA8;
+        if (node.objective == null)
+            return 0x5E84C4;
+        return node.status == Status.UNDER_ATTACK ? 0xB88A32 : 0x4F9D5D;
+    }
+
+    private static Component vehicleStatus(VehicleDeploySnapshot vehicle)
+    {
+        String prefix = "gui.flansmod.teams.deploy.vehicle.";
+        int seconds = vehicle.remainingSeconds(TeamsClientState.snapshotAgeMillis());
+        return switch (vehicle.availability())
+        {
+            case READY -> Component.translatable(prefix + "ready");
+            case FULL -> Component.translatable(prefix + "full");
+            case LOCKED -> Component.translatable(prefix + "locked");
+            case UNAVAILABLE -> Component.translatable(prefix + "unavailable");
+            case COOLDOWN -> seconds > 0 ? Component.translatable(prefix + "cooldown", seconds) : Component.translatable(prefix + "unavailable");
+        };
+    }
+
+    /** A vehicle silhouette distinguishes boarding points even when colour alone is not readable. */
+    private static void renderVehicleIcon(GuiGraphics graphics, int x, int y, int colour)
+    {
+        int argb = 0xFF000000 | colour;
+        graphics.fill(x - 6, y - 4, x - 4, y + 5, argb);
+        graphics.fill(x + 4, y - 4, x + 6, y + 5, argb);
+        graphics.fill(x - 3, y - 3, x + 3, y + 4, argb);
+        graphics.fill(x - 1, y - 7, x + 1, y, argb);
     }
 
     private void renderCropHandles(GuiGraphics graphics)
@@ -686,7 +774,10 @@ public final class TeamsDeployScreen extends Screen
 
     private void deployAt(Node node)
     {
-        PacketHandler.sendToServer(new PacketDeploySpawnSelect(node.objective == null ? null : node.objective.id()));
+        if (node.vehicle != null)
+            PacketHandler.sendToServer(PacketDeploySpawnSelect.vehicle(node.vehicle.id()));
+        else
+            PacketHandler.sendToServer(new PacketDeploySpawnSelect(node.objective == null ? null : node.objective.id()));
         if (minecraft == null)
             return;
         if (manuallyOpened || minecraft.player == null)
@@ -741,7 +832,11 @@ public final class TeamsDeployScreen extends Screen
     @Nullable
     private Node nodeAt(double mouseX, double mouseY)
     {
-        return nodes.stream().filter(node -> node.contains(mouseX, mouseY)).findFirst().orElse(null);
+        // Custom layouts may deliberately overlap: hit the last-drawn, visible marker first.
+        for (int index = nodes.size() - 1; index >= 0; index--)
+            if (nodes.get(index).contains(mouseX, mouseY))
+                return nodes.get(index);
+        return null;
     }
 
     /** The crop corner under the mouse: 1 top left, 2 top right, 3 bottom left, 4 bottom right, 0 for none. */

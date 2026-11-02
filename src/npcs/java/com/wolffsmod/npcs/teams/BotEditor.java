@@ -31,6 +31,7 @@ public final class BotEditor
     /** Permission level an operator needs, as for the {@code /teams ai} settings commands. */
     private static final int PERMISSION = 2;
     private static final String PREFIX = "wolffsmodnpcs.editor.";
+    private static final String UNKNOWN_CLASS = PREFIX + "unknown_class";
     /** Keys of the data of preset and copy actions. */
     public static final String NAME = "name";
     public static final String SETTINGS = "settings";
@@ -163,7 +164,9 @@ public final class BotEditor
             String name = team.getShortName();
             Set<String> classes = team.getClasses().stream().map(IContentType::getShortName).collect(Collectors.toSet());
             force.getClassWeights().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
-                .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "unknown_class", name, playerClass)));
+                .forEach(playerClass -> problems.add(Component.translatable(UNKNOWN_CLASS, name, playerClass)));
+            force.getClassLimits().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
+                .forEach(playerClass -> problems.add(Component.translatable(UNKNOWN_CLASS, name, playerClass)));
             force.getClassRoles().keySet().stream().filter(playerClass -> !classes.contains(playerClass))
                 .forEach(playerClass -> problems.add(Component.translatable(PREFIX + "unknown_role_class", name, playerClass)));
             for (BotSettings.SquadEntry entry : force.getSquads())
@@ -216,7 +219,7 @@ public final class BotEditor
     private static void classProblems(String team, Set<String> classes, BotSettings.TeamForce force, List<Component> problems)
     {
         if (!force.getCommanderClass().isEmpty() && !classes.contains(force.getCommanderClass()))
-            problems.add(Component.translatable(PREFIX + "unknown_class", team, force.getCommanderClass()));
+            problems.add(Component.translatable(UNKNOWN_CLASS, team, force.getCommanderClass()));
         for (CrewPost post : CrewPost.values())
         {
             String crew = force.crewClass(post);

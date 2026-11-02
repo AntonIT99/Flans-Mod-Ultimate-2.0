@@ -107,6 +107,7 @@ public final class BattlesSection
     public static final String GAME_TYPE = "game_type";
     public static final String ENABLED = "enabled";
     public static final String VEHICLES_ENABLED = "vehicles_enabled";
+    public static final String VEHICLE_RESPAWN = "vehicle_respawn_seconds";
     public static final String CONFIGURED = "configured";
     public static final String TOTAL = "total";
     public static final String MODE = "mode";
@@ -386,6 +387,7 @@ public final class BattlesSection
             entry.putBoolean(CONFIGURED, !settingsTag.isEmpty());
             entry.putBoolean(ENABLED, settings.isEnabled());
             entry.putBoolean(VEHICLES_ENABLED, settings.isVehiclesEnabled());
+            entry.putInt(VEHICLE_RESPAWN, settings.getVehicleRespawnSeconds());
             entry.putInt(TOTAL, BotEditor.fielded(round, settings));
             entry.putString(MODE, BotCommands.lower(settings.getMode()));
             entry.putString(DIFFICULTY, BotCommands.lower(settings.getDifficulty()));

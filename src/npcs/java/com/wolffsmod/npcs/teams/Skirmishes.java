@@ -179,6 +179,7 @@ final class Skirmishes
         // Name tags only allies see go by Teams teams, which skirmish bots fight without.
         settings.setNameplates(BotSettings.Nameplates.ALWAYS);
         settings.setRespawnSeconds(skirmish.getRespawnSeconds());
+        settings.setVehicleRespawnSeconds(skirmish.getRespawnSeconds());
         settings.setTickets(skirmish.isRespawn() ? skirmish.getTickets() : 0);
         settings.setDifficulty(skirmish.getDifficulty());
         settings.setCustomTraining(skirmish.getCustomTraining());

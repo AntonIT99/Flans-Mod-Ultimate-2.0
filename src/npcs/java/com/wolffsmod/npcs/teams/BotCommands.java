@@ -163,6 +163,7 @@ public final class BotCommands
         round.then(Commands.literal("copyfrom").then(Commands.argument(SOURCE, StringArgumentType.word()).suggests(ROUNDS).executes(BotCommands::copyFrom)));
         round.then(intSetting("total", 0, BotSettings::setTotal));
         round.then(intSetting(RESPAWN, 0, BotSettings::setRespawnSeconds));
+        round.then(intSetting("vehiclerespawn", 0, BotSettings::setVehicleRespawnSeconds));
         round.then(intSetting("tickets", 0, BotSettings::setTickets));
         round.then(intSetting("squadsize", 1, BotSettings::setSquadSize));
         round.then(intSetting("abandon", 0, BotSettings::setAbandonChance));
@@ -332,6 +333,7 @@ public final class BotCommands
             lower(settings.getDifficulty()), onOff(settings.isPlayerTickets())));
         lines.add(text("show.rules", onOff(settings.isRadio()), onOff(settings.isSuppression()), settings.getRetreatHealth(), onOff(settings.isRallyPoints())));
         lines.add(text("show.vehicles", onOff(settings.isVehiclesEnabled())));
+        lines.add(text("show.vehicle_respawn", settings.getVehicleRespawnSeconds()));
         lines.add(text("show.crews", onOff(settings.isVehicleCrews())));
         lines.add(text("show.commander", onOff(settings.isCommanderBot()), settings.getCommanderDisruptionSeconds()));
         for (ITeam team : round.getTeams())

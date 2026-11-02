@@ -2,9 +2,12 @@
 
 First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
-* Teams NPC vehicles respect each vehicle spawner's allowed categories, exact definitions and all-at-once or sequential deployment setting; vehicles and soldiers spread across eligible spawners and search for clear nearby spaces, waiting when none are available; excluded vehicles wait for an eligible vehicle spawner instead of appearing at infantry spawn points
+* Teams NPC vehicles respect each vehicle spawner's shared spawn delay, allowed categories, exact definitions and all-at-once or sequential deployment setting; vehicles and soldiers spread across eligible spawners and search for clear nearby spaces, waiting when none are available; excluded vehicles wait for an eligible vehicle spawner instead of appearing at infantry spawn points
+* Teams rounds have a separate NPC vehicle respawn delay through `teams ai round <round> vehiclerespawn <seconds>` and the Command Center; per-vehicle overrides are available in Forces > Vehicles > Settings and through `teams ai round <round> team <team> vehiclerespawn <type> <seconds|inherit>`, preserving the rest of the allocation
 
 ## Soldiers
+
+* Bot settings > Infantry > Class limits offers independent per-class `ClassLimit` and `ClassLimitPercent` overrides for automatically assigned infantry, preserving explicit squads, transport infantry, commanders, crews and player limits; pending respawns reserve slots, and fully capped forces wait for capacity
 
 * `Blood Effects` in Wolff's Mod > Effects enables airborne wound puffs, severe-injury spray and temporary ground splatters; blocked hits do not bleed and fatal heavy hits do not duplicate splatters; the Player and Human NPC presets and generated soldier bots enable it, and the Teams rule can disable it for everyone
 

@@ -5,6 +5,7 @@
  */
 package com.flansmodultimate.api.teams;
 
+import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.teams.TeamsCombatants;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsListeners;
@@ -47,6 +48,39 @@ public final class FlansTeams
 {
     private FlansTeams()
     {}
+
+    /**
+     * Checks the live shared cooldown of a loaded vehicle spawner. A snapshot alone does not track readiness.
+     * This checks only the cooldown; addons must also validate ownership, NPC permissions and placement.
+     * Server thread only.
+     *
+     * @param spawner
+     *            the spawner snapshot to resolve
+     * @return false off the server thread, for an unavailable plate, or while its cooldown runs
+     */
+    public static boolean isVehicleSpawnerReady(TeamsSpawner spawner)
+    {
+        return vehicleSpawner(spawner).map(TeamSpawnerBlockEntity::isSpawnReady).orElse(false);
+    }
+
+    /**
+     * Starts a vehicle spawner's shared cooldown after an addon successfully deploys a vehicle from it.
+     * Call immediately after creating the entity on the server thread. Failed attempts must not call this.
+     *
+     * @param spawner
+     *            the spawner snapshot used for deployment
+     */
+    public static void recordVehicleSpawnerSpawn(TeamsSpawner spawner)
+    {
+        vehicleSpawner(spawner).ifPresent(TeamSpawnerBlockEntity::recordSpawn);
+    }
+
+    private static Optional<TeamSpawnerBlockEntity> vehicleSpawner(TeamsSpawner spawner)
+    {
+        return manager().flatMap(manager -> manager.getObject(spawner.id())).filter(TeamSpawnerBlockEntity.class::isInstance).map(TeamSpawnerBlockEntity.class::cast)
+            .filter(plate -> plate.getMode() == TeamSpawnerBlockEntity.Mode.VEHICLE && !plate.isRemoved() && plate.getDimension().equals(spawner.dimension())
+                && plate.getBlockPos().equals(spawner.position()));
+    }
 
     /**
      * Finds the nearest clear water surface for a Teams ship or ship bot, at most 64 blocks from the requested

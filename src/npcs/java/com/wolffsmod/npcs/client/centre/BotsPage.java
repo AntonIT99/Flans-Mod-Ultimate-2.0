@@ -21,6 +21,8 @@ final class BotsPage extends BattlePage
     /** The command centre's rotation page, where rounds are added. */
     private static final String ROTATION = "flansmodultimate:rotation";
     private static final String MARKER = "teams ai marker";
+    private static final String ROUND = "teams ai round";
+    private static final String VEHICLE_RESPAWN = "bots.vehicle_respawn";
 
     private int selected = -1;
     private String preset = "";
@@ -73,10 +75,18 @@ final class BotsPage extends BattlePage
         int half = (width - GAP) / 2;
         int y = view.getTop() + 18;
         button(view, tr("bots.editor"), x, y, half, tr("bots.editor.tip"), () -> run(view, "teams ai editor", index));
-        toggle(view, tr("bots.enabled"), round.enabled(), x + half + GAP, y, half, enabled -> run(view, "teams ai round", index, Boolean.TRUE.equals(enabled) ? "enable" : "disable"));
+        toggle(view, tr("bots.enabled"), round.enabled(), x + half + GAP, y, half, enabled -> run(view, ROUND, index, Boolean.TRUE.equals(enabled) ? "enable" : "disable"));
         y += ROW;
-        toggle(view, tr("bots.vehicles"), round.vehiclesEnabled(), x, y, width, enabled -> run(view, "teams ai round", index, "vehicles", Boolean.TRUE.equals(enabled) ? "on" : "off"))
+        toggle(view, tr("bots.vehicles"), round.vehiclesEnabled(), x, y, width, enabled -> run(view, ROUND, index, "vehicles", Boolean.TRUE.equals(enabled) ? "on" : "off"))
             .setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("bots.vehicles.tip")));
+        y += ROW;
+        String respawnKey = "vehicle_respawn@" + index;
+        int applyWidth = 50;
+        int fieldWidth = 44;
+        view.addField(respawnKey, x + width - applyWidth - GAP - fieldWidth, y, fieldWidth, Integer.toString(round.vehicleRespawn()), tr(VEHICLE_RESPAWN))
+            .setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("bots.vehicle_respawn.tip")));
+        button(view, tr("bots.apply"), x + width - applyWidth, y, applyWidth,
+            () -> number(view, respawnKey, 0, Integer.MAX_VALUE, tr(VEHICLE_RESPAWN)).ifPresent(seconds -> run(view, ROUND, index, "vehiclerespawn", seconds)));
         y += ROW;
         if (!data.botPresets().isEmpty())
         {
@@ -123,7 +133,8 @@ final class BotsPage extends BattlePage
         }
         BattlesData.RoundInfo round = shown.get();
         view.drawPanel(graphics, panelLeft, view.getTop(), panelWidth, view.getHeight(), tr("bots.round", round.index(), round.gameType(), round.map()));
-        int y = view.getTop() + 18 + 3 * ROW + 2;
+        label(view, graphics, tr(VEHICLE_RESPAWN), x, view.getTop() + 18 + 2 * ROW + 5, width - 102, DIM);
+        int y = view.getTop() + 18 + 4 * ROW + 2;
         if (!round.configured())
             y += paragraph(view, graphics, tr("bots.not_configured"), x, y, width, MUTED) + 3;
         else if (round.enabled() && round.total() == 0)

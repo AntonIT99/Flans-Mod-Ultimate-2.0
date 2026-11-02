@@ -202,7 +202,8 @@ public final class BotEditorScreen extends Screen
         addRenderableWidget(switchButton(left + COLUMN_WIDTH + 4, y(2), COLUMN_WIDTH, "suppression", settings.isSuppression(), settings::setSuppression));
         addRenderableWidget(switchButton(left, y(3), COLUMN_WIDTH, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
         addRenderableWidget(switchButton(left + COLUMN_WIDTH + 4, y(3), COLUMN_WIDTH, "vehicles_enabled", settings.isVehiclesEnabled(), settings::setVehiclesEnabled));
-        addField(left, 4, RETREAT, Integer.toString(settings.getRetreatHealth()));
+        addCompactField(left, 4, RETREAT, Integer.toString(settings.getRetreatHealth()));
+        addCompactField(left + COLUMN_WIDTH + 4, 4, "vehicle_respawn", Integer.toString(settings.getVehicleRespawnSeconds()));
         addRenderableWidget(switchButton(left, y(5), COLUMN_WIDTH, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
         addRenderableWidget(enumButton(left + COLUMN_WIDTH + 4, y(5), COLUMN_WIDTH, "tactical_profile", NpcTacticalProfile.values(), settings.getTacticalProfile(), settings::setTacticalProfile));
     }
@@ -265,6 +266,7 @@ public final class BotEditorScreen extends Screen
         addRenderableWidget(nameListButton(beside, y(2), besideWidth, force.getNameList(), force::setNameList));
         addPickerButton(left, 3, "clone", cloneSummary(force), () -> new BotClonePicker(this, name, force));
         addPickerButton(left, 4, "classes", weightsSummary(force), () -> new BotClassWeightsPicker(this, name, force));
+        addPickerButton(left, 5, "class_limits", Component.translatable(PREFIX + "class_limits.summary", force.getClassLimits().size()), () -> new BotClassLimitsPicker(this, name, force));
     }
 
     /** The team's squads, vehicles, class roles and vehicle crews. */
@@ -544,7 +546,10 @@ public final class BotEditorScreen extends Screen
                 settings.setInfantryCaptureWeight(Math.max(0F, decimal("capture_infantry", settings.getInfantryCaptureWeight())));
                 settings.setVehicleCaptureWeight(Math.max(0F, decimal("capture_vehicles", settings.getVehicleCaptureWeight())));
             }
-            case RULES -> settings.setRetreatHealth(Math.max(0, Math.min(100, number(RETREAT, settings.getRetreatHealth()))));
+            case RULES -> {
+                settings.setRetreatHealth(Math.max(0, Math.min(100, number(RETREAT, settings.getRetreatHealth()))));
+                settings.setVehicleRespawnSeconds(Math.max(0, number("vehicle_respawn", settings.getVehicleRespawnSeconds())));
+            }
             case COMMANDER -> settings.setCommanderDisruptionSeconds(Math.max(0, number("commander_disruption", settings.getCommanderDisruptionSeconds())));
             case TEAM -> commitTeam();
             case FORCES -> {

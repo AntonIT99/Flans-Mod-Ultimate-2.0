@@ -36,6 +36,7 @@ public final class BotSettings
     private static final String NBT_INFANTRY_WEIGHT = "infantry_capture_weight";
     private static final String NBT_VEHICLE_WEIGHT = "vehicle_capture_weight";
     private static final String NBT_RESPAWN = "respawn_seconds";
+    private static final String NBT_VEHICLE_RESPAWN = "vehicle_respawn_seconds";
     private static final String NBT_TICKETS = "tickets";
     private static final String NBT_SQUAD_SIZE = "squad_size";
     private static final String NBT_ABANDON = "abandon_chance";
@@ -180,6 +181,8 @@ public final class BotSettings
     private float vehicleCaptureWeight = 1F;
     /** Seconds a fallen unit waits before it can come back. */
     private int respawnSeconds = 10;
+    /** Seconds each destroyed vehicle waits before replacement, unless its entry overrides this. */
+    private int vehicleRespawnSeconds = 10;
     /** Respawns each side may make, a vehicle counting its ticket cost; 0 for no limit. */
     private int tickets;
     /** How many loose infantry bots form one squad. */
@@ -222,6 +225,7 @@ public final class BotSettings
         private static final String NBT_KEEP_EQUIPMENT = "keep_clone_equipment";
         private static final String NBT_ROLES = "class_roles";
         private static final String NBT_CLASSES = "classes";
+        private static final String NBT_CLASS_LIMITS = "class_limits";
         private static final String NBT_SQUADS = "squads";
         private static final String NBT_VEHICLES = "vehicles";
         private static final String NBT_CREW = "crew";
@@ -242,6 +246,8 @@ public final class BotSettings
         private boolean keepCloneEquipment;
         /** Weight of each class bots are given; a class left out weighs 1 when no class is listed, 0 otherwise. */
         private final Map<String, Integer> classWeights = new LinkedHashMap<>();
+        /** Optional per-class caps for automatically assigned infantry; independent of player caps and explicit rosters. */
+        private final Map<String, ClassLimit> classLimits = new LinkedHashMap<>();
         /** The role of each class set by hand; a class left out gets the role its equipment suggests. */
         private final Map<String, ClassRole> classRoles = new LinkedHashMap<>();
         private final List<SquadEntry> squads = new ArrayList<>();
@@ -266,6 +272,9 @@ public final class BotSettings
             CompoundTag classes = new CompoundTag();
             classWeights.forEach(classes::putInt);
             tag.put(NBT_CLASSES, classes);
+            CompoundTag limits = new CompoundTag();
+            classLimits.forEach((playerClass, limit) -> limits.put(playerClass, limit.save()));
+            tag.put(NBT_CLASS_LIMITS, limits);
             CompoundTag roles = new CompoundTag();
             classRoles.forEach((playerClass, role) -> roles.putString(playerClass, role.name()));
             tag.put(NBT_ROLES, roles);
@@ -294,6 +303,9 @@ public final class BotSettings
             CompoundTag classes = tag.getCompound(NBT_CLASSES);
             for (String name : classes.getAllKeys())
                 force.classWeights.put(name, Math.max(0, classes.getInt(name)));
+            CompoundTag limits = tag.getCompound(NBT_CLASS_LIMITS);
+            for (String name : limits.getAllKeys())
+                force.classLimits.put(name, ClassLimit.load(limits.getCompound(name)));
             CompoundTag roles = tag.getCompound(NBT_ROLES);
             for (String playerClass : roles.getAllKeys())
                 force.classRoles.put(playerClass, parse(ClassRole.class, roles.getString(playerClass), ClassRole.RIFLEMAN));
@@ -337,10 +349,49 @@ public final class BotSettings
             return weights;
         }
 
+        /** Slots of one class within this team's automatically assigned infantry target. */
+        public int classCapacity(String playerClass, int infantryTarget)
+        {
+            return classLimits.getOrDefault(playerClass, ClassLimit.UNLIMITED).capacity(infantryTarget);
+        }
+
         /** Whether bots are made from a Custom NPCs clone rather than as plain NPCs. */
         public boolean usesClone()
         {
             return cloneTab > 0 && !cloneName.isBlank();
+        }
+    }
+
+    /** Bot-only infantry caps; negative values mean unlimited, and percentages round up. */
+    public record ClassLimit(int count, float percent)
+    {
+        private static final String NBT_COUNT = "count";
+        private static final String NBT_PERCENT = "percent";
+        public static final ClassLimit UNLIMITED = new ClassLimit(-1, -1F);
+
+        public ClassLimit
+        {
+            count = Math.max(-1, count);
+            percent = Float.isFinite(percent) && percent >= 0F ? Math.min(100F, percent) : -1F;
+        }
+
+        public int capacity(int infantryTarget)
+        {
+            int capacity = count < 0 ? Integer.MAX_VALUE : count;
+            return percent < 0F ? capacity : Math.min(capacity, (int) Math.ceil(Math.max(0, infantryTarget) * (double) percent / 100D));
+        }
+
+        private CompoundTag save()
+        {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt(NBT_COUNT, count);
+            tag.putFloat(NBT_PERCENT, percent);
+            return tag;
+        }
+
+        private static ClassLimit load(CompoundTag tag)
+        {
+            return new ClassLimit(tag.contains(NBT_COUNT, Tag.TAG_ANY_NUMERIC) ? tag.getInt(NBT_COUNT) : -1, tag.contains(NBT_PERCENT, Tag.TAG_ANY_NUMERIC) ? tag.getFloat(NBT_PERCENT) : -1F);
         }
     }
 
@@ -385,7 +436,7 @@ public final class BotSettings
      * @param budget
      *            vehicles of it the team may field in all, the first included; 0 for no limit
      * @param respawnSeconds
-     *            seconds a destroyed one takes to come back; 0 takes the round's respawn time
+     *            seconds a destroyed one takes to come back; 0 takes the round's vehicle respawn time
      * @param ticketCost
      *            tickets one costs to bring back
      * @param spawner
@@ -476,6 +527,7 @@ public final class BotSettings
         tag.putFloat(NBT_INFANTRY_WEIGHT, infantryCaptureWeight);
         tag.putFloat(NBT_VEHICLE_WEIGHT, vehicleCaptureWeight);
         tag.putInt(NBT_RESPAWN, respawnSeconds);
+        tag.putInt(NBT_VEHICLE_RESPAWN, vehicleRespawnSeconds);
         tag.putInt(NBT_TICKETS, tickets);
         tag.putInt(NBT_SQUAD_SIZE, squadSize);
         tag.putInt(NBT_ABANDON, abandonChance);
@@ -515,6 +567,7 @@ public final class BotSettings
         settings.infantryCaptureWeight = weight(tag, NBT_INFANTRY_WEIGHT);
         settings.vehicleCaptureWeight = weight(tag, NBT_VEHICLE_WEIGHT);
         settings.respawnSeconds = tag.contains(NBT_RESPAWN) ? Math.max(0, tag.getInt(NBT_RESPAWN)) : settings.respawnSeconds;
+        settings.vehicleRespawnSeconds = tag.contains(NBT_VEHICLE_RESPAWN) ? Math.max(0, tag.getInt(NBT_VEHICLE_RESPAWN)) : settings.respawnSeconds;
         settings.tickets = Math.max(0, tag.getInt(NBT_TICKETS));
         settings.squadSize = tag.contains(NBT_SQUAD_SIZE) ? Math.max(1, tag.getInt(NBT_SQUAD_SIZE)) : settings.squadSize;
         settings.abandonChance = tag.contains(NBT_ABANDON) ? Math.max(0, Math.min(100, tag.getInt(NBT_ABANDON))) : settings.abandonChance;

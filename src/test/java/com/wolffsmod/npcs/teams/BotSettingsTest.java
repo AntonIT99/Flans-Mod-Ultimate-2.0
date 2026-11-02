@@ -18,6 +18,27 @@ import static org.junit.jupiter.api.Assertions.*;
 class BotSettingsTest
 {
     @Test
+    void vehicleRespawnDefaultAndOverridesSurviveSaveAndOldRoundsKeepTheirDelay()
+    {
+        BotSettings settings = new BotSettings();
+        settings.setRespawnSeconds(7);
+        settings.setVehicleRespawnSeconds(45);
+        settings.team("red").getVehicles().add(new BotSettings.VehicleEntry("tank", 2, 0, 0, 1, null, ""));
+        settings.team("red").getVehicles().add(new BotSettings.VehicleEntry("heavy", 1, 0, 120, 1, null, ""));
+        BotSettings loaded = BotSettings.load(settings.save());
+        assertEquals(7, TeamsBots.respawnSeconds(loaded, new BotSlot(1, "red", BotSlot.Source.INFANTRY, -1, true)));
+        assertEquals(45, TeamsBots.respawnSeconds(loaded, new BotSlot(2, "red", BotSlot.Source.VEHICLE, 0, true)));
+        assertEquals(120, TeamsBots.respawnSeconds(loaded, new BotSlot(3, "red", BotSlot.Source.VEHICLE, 1, true)));
+        loaded.setVehicleRespawnSeconds(0);
+        assertEquals(0, BotSettings.load(loaded.save()).getVehicleRespawnSeconds());
+        CompoundTag old = settings.save();
+        old.remove("vehicle_respawn_seconds");
+        assertEquals(7, BotSettings.load(old).getVehicleRespawnSeconds());
+        old.putInt("vehicle_respawn_seconds", -1);
+        assertEquals(0, BotSettings.load(old).getVehicleRespawnSeconds());
+    }
+
+    @Test
     void physicalCommanderIsOptInAndSettingsTravelWithPresets()
     {
         BotSettings legacy = BotSettings.load(new CompoundTag());

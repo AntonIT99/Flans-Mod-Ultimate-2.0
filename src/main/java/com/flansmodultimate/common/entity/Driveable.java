@@ -5609,6 +5609,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return bindOrCheckKey(player, player.getMainHandItem()) || bindOrCheckKey(player, player.getOffhandItem());
     }
 
+    /** Reads entry access without binding a blank key or changing ownership, for deployment availability queries. */
+    public boolean canPlayerAccessWithoutBinding(@NotNull Player player)
+    {
+        return !locked || player.getAbilities().instabuild || ownerId != null && ownerId.equals(player.getUUID()) || hasMatchingKey(player.getMainHandItem())
+            || hasMatchingKey(player.getOffhandItem());
+    }
+
+    private boolean hasMatchingKey(ItemStack stack)
+    {
+        return stack.getItem() instanceof ToolItem tool && tool.getConfigType().isKey() && getUUID().toString().equals(ItemStackData.copy(stack).getString(NBT_KEY_ID));
+    }
+
     public boolean canPlayerAccessInventory(@NotNull Player player)
     {
         if (!player.isAlive() || player.distanceToSqr(this) > 64D || !canPlayerAccess(player))
@@ -5729,7 +5741,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return fallback;
     }
 
-    private boolean isUsableSeat(@Nullable Seat seat)
+    public boolean isUsableSeat(@Nullable Seat seat)
     {
         return !destroyed && seat != null && seat.isAlive() && isPartIntact(seat.getSeatInfo() == null ? EnumDriveablePart.CORE : seat.getSeatInfo().getPart());
     }

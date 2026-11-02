@@ -122,6 +122,10 @@ final class TeamForceCommands
                                 IntegerArgumentType.getInteger(context, RESPAWN), IntegerArgumentType.getInteger(context, TICKET_COST)))))))));
         team.then(Commands.literal("carry").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
             .then(Commands.argument(TEMPLATE, StringArgumentType.word()).suggests(TEMPLATES).executes(context -> carry(context, target)))));
+        team.then(Commands.literal("vehiclerespawn")
+            .then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
+                .then(Commands.argument(VALUE, IntegerArgumentType.integer(0)).executes(context -> vehicleRespawn(context, target, IntegerArgumentType.getInteger(context, VALUE))))
+                .then(Commands.literal("inherit").executes(context -> vehicleRespawn(context, target, 0)))));
         team.then(Commands.literal("removevehicle").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES).executes(context -> target.edit(context,
             force -> force.getVehicles().removeIf(entry -> entry.type().equals(StringArgumentType.getString(context, TYPE))), text("vehicle_removed", StringArgumentType.getString(context, TYPE))))));
         return team;
@@ -205,6 +209,18 @@ final class TeamForceCommands
                         new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), entry.respawnSeconds(), entry.ticketCost(), entry.spawner(), template, entry.paintjobs()));
             }
         }, template.isEmpty() ? text("carry_none", type) : text("carry", type, template));
+    }
+
+    /** Changes only the delay, retaining each allocation's count, budget, placement, cargo and paintjobs. */
+    private static int vehicleRespawn(CommandContext<CommandSourceStack> context, Target target, int seconds) throws CommandSyntaxException
+    {
+        String type = StringArgumentType.getString(context, TYPE);
+        return target.edit(context,
+            force -> force.getVehicles()
+                .replaceAll(entry -> entry.type().equals(type)
+                    ? new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), seconds, entry.ticketCost(), entry.spawner(), entry.carry(), entry.paintjobs())
+                    : entry),
+            text("vehicle_respawn", type, seconds));
     }
 
     private static Component text(String key, Object... args)

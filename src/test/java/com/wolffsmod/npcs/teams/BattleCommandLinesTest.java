@@ -1,26 +1,65 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.teams.ITeam;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 /** The Teams command centre's pages for factions, skirmishes, wars and bots run these commands, word for word as they write them. */
 class BattleCommandLinesTest
 {
     private static final CommandDispatcher<CommandSourceStack> DISPATCHER = new CommandDispatcher<>();
+
+    @Test
+    void delayOnlyCommandPreservesTheVehicleAllocation() throws CommandSyntaxException
+    {
+        BotSettings.TeamForce force = new BotSettings.TeamForce();
+        BotSettings.VehicleEntry original = new BotSettings.VehicleEntry("44_Tiger2", 2, 5, 0, 3, UUID.randomUUID(), "squad", List.of(1, 2));
+        force.getVehicles().add(original);
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        dispatcher.register(TeamForceCommands.build(Commands.literal("force"), new TeamForceCommands.Target()
+        {
+            @Override
+            public Optional<ITeam> team(CommandContext<CommandSourceStack> context)
+            {
+                return Optional.empty();
+            }
+
+            @Override
+            public int edit(CommandContext<CommandSourceStack> context, Consumer<BotSettings.TeamForce> change, Component message)
+            {
+                change.accept(force);
+                return 1;
+            }
+        }));
+        CommandSourceStack operator = mock(CommandSourceStack.class);
+        assertEquals(1, dispatcher.execute("force vehiclerespawn 44_Tiger2 120", operator));
+        BotSettings.VehicleEntry changed = force.getVehicles().get(0);
+        assertEquals(new BotSettings.VehicleEntry(original.type(), original.count(), original.budget(), 120, original.ticketCost(), original.spawner(), original.carry(), original.paintjobs()),
+            changed);
+        assertEquals(1, dispatcher.execute("force vehiclerespawn 44_Tiger2 inherit", operator));
+        assertEquals(original, force.getVehicles().get(0));
+    }
 
     @BeforeAll
     static void registerCommands()
@@ -95,8 +134,9 @@ class BattleCommandLinesTest
     @Test
     void botLines()
     {
-        List.of("teams ai editor 2", "teams ai round 2 enable", "teams ai round 2 disable", "teams ai preset apply infantry 2", "teams ai preset apply infantry all",
-            "teams ai marker stalingrad add garrison", "teams ai marker stalingrad remove", "teams ai marker stalingrad show", "teams ai marker stalingrad clear", "teams ai clear")
-            .forEach(BattleCommandLinesTest::assertRuns);
+        List.of("teams ai editor 2", "teams ai round 2 enable", "teams ai round 2 disable", "teams ai round current vehiclerespawn 30", "teams ai round 2 vehiclerespawn 0",
+            "teams ai round 2 team germany vehiclerespawn TigerII 120", "teams ai round 2 team germany vehiclerespawn TigerII inherit", "teams ai preset apply infantry 2",
+            "teams ai preset apply infantry all", "teams ai marker stalingrad add garrison", "teams ai marker stalingrad remove", "teams ai marker stalingrad show", "teams ai marker stalingrad clear",
+            "teams ai clear").forEach(BattleCommandLinesTest::assertRuns);
     }
 }

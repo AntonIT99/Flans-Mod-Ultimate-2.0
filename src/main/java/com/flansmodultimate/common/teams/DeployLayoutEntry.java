@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * <p>
  * Keys are {@code hq_<team id>} for a headquarters and {@code objective_<capture point id>} for a
- * capture point.
+ * capture point, and {@code vehicle_<spawner id>} for a vehicle deployment point.
  * </p>
  */
 public record DeployLayoutEntry(String key, float x, float y)
@@ -16,6 +16,7 @@ public record DeployLayoutEntry(String key, float x, float y)
     public static final int MAX_KEY_LENGTH = 64;
     public static final String HQ_PREFIX = "hq_";
     public static final String OBJECTIVE_PREFIX = "objective_";
+    public static final String VEHICLE_PREFIX = "vehicle_";
 
     public DeployLayoutEntry
     {

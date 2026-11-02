@@ -403,17 +403,20 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     {
         slot.setDiedAt(now);
         CommanderBots.fallen(current, slot, now);
-        int seconds = current.getSettings().getRespawnSeconds();
-        if (slot.isVehicle())
-        {
-            List<BotSettings.VehicleEntry> vehicles = current.getSettings().team(slot.getTeam()).getVehicles();
-            if (slot.getEntry() < vehicles.size() && vehicles.get(slot.getEntry()).respawnSeconds() > 0)
-                seconds = vehicles.get(slot.getEntry()).respawnSeconds();
-        }
+        int seconds = respawnSeconds(current.getSettings(), slot);
         slot.setRespawnAt(now + seconds * 20L);
         // A soldier a transport brought never comes back; a new transport brings others.
         if (slot.getSource() == BotSlot.Source.CARGO || slot.getSource() == BotSlot.Source.VOLUNTEER)
             slot.setRetired(true);
+    }
+
+    /** The destroyed slot's delay, independently for each vehicle, with a per-entry override ahead of the default. */
+    static int respawnSeconds(BotSettings settings, BotSlot slot)
+    {
+        if (!slot.isVehicle())
+            return settings.getRespawnSeconds();
+        List<BotSettings.VehicleEntry> vehicles = settings.team(slot.getTeam()).getVehicles();
+        return slot.getEntry() < vehicles.size() && vehicles.get(slot.getEntry()).respawnSeconds() > 0 ? vehicles.get(slot.getEntry()).respawnSeconds() : settings.getVehicleRespawnSeconds();
     }
 
     /**
@@ -454,7 +457,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
             if (slot != null)
                 slot.setQueued(false);
             // Settings or spending may have changed since the slot was queued.
-            if (slot != null && slot.getEntity() == null && BotPopulation.canSpawn(current, slot))
+            if (slot != null && slot.getEntity() == null && now >= slot.getRespawnAt() && BotPopulation.canSpawn(current, slot))
             {
                 spawn(level, current, slot, now, random);
                 spawned++;
@@ -501,7 +504,10 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
         Map<Vec3, Integer> uses = slot.isVehicle() ? current.getVehicleSpawnUses() : current.getSoldierSpawnUses();
         uses.merge(deployment.source().origin(), 1, Integer::sum);
         if (slot.isVehicle() && deployment.source().spawner() != null)
+        {
             BotSpawnPlacement.recordSpawner(npc.get(), deployment.source().spawner().id());
+            FlansTeams.recordVehicleSpawnerSpawn(deployment.source().spawner());
+        }
         slot.setSpawns(slot.getSpawns() + 1);
         slot.setEntity(npc.get().getUUID());
         slot.setDiedAt(0);
@@ -536,6 +542,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
 
     private static Optional<Vec3> position(ServerLevel level, BotSlot slot, SpawnPoint point, float yaw)
     {
+        if (point.spawner() != null && !FlansTeams.isVehicleSpawnerReady(point.spawner()))
+            return Optional.empty();
         if (point.spawner() != null && !point.spawner().npcSpawnAll() && BotSpawnPlacement.stagingOccupied(level, point.spawner().id(), point.origin()))
             return Optional.empty();
         return slot.isVehicle() ? FlanModelNpcs.type(slot.getRole()).flatMap(type -> BotSpawnPlacement.vehicle(level, type, point.origin(), yaw)) : BotSpawnPlacement.soldier(level, point.origin());
