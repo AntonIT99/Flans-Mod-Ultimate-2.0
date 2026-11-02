@@ -70,9 +70,10 @@ class CommandCentreTest
             }
         })
         {
-            for (String type : new String[]{"common.teams.centre.CommandCentre", "common.teams.centre.TeamsSection", "common.teams.centre.CommandLines"})
+            for (String type : new String[]{"common.teams.centre.CommandCentre", "common.teams.centre.TeamsSection", "common.teams.centre.CommandLines", "common.teams.centre.SettingsPresets"})
                 assertDoesNotThrow(() -> Class.forName("com.flansmodultimate." + type, true, loader));
-            for (String type : new String[]{"network.client.teams.PacketCommandCentreState", "network.server.teams.PacketCommandCentreAction"})
+            for (String type : new String[]{"network.client.teams.PacketCommandCentreState", "network.server.teams.PacketCommandCentreAction", "network.server.teams.PacketPresetAction",
+                "network.client.teams.PacketPresetResult"})
                 assertDoesNotThrow(() -> Class.forName("com.flansmodultimate." + type, true, loader).getDeclaredConstructor().newInstance());
         }
     }

@@ -51,7 +51,8 @@ public final class TeamsCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(TEAMS).executes(TeamsCommand::help).then(Commands.literal("help").executes(TeamsCommand::help))
+        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(TEAMS).then(com.flansmodultimate.common.teams.centre.SettingsPresets.commands())
+            .executes(TeamsCommand::help).then(Commands.literal("help").executes(TeamsCommand::help))
             .then(Commands.literal("join")
                 .then(Commands.argument("team", StringArgumentType.string())
                     .suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().map(Team::getShortName).map(StringArgumentType::escapeIfRequired), builder))

@@ -244,7 +244,7 @@ public final class TeamsSection
         return tag;
     }
 
-    private static CompoundTag rules(TeamsManager manager)
+    static CompoundTag rules(TeamsManager manager)
     {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("restoreBlocks", manager.isRestoreBlocks());

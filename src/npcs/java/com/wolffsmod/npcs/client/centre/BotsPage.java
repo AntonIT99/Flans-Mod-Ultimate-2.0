@@ -25,7 +25,6 @@ final class BotsPage extends BattlePage
     private static final String VEHICLE_RESPAWN = "bots.vehicle_respawn";
 
     private int selected = -1;
-    private String preset = "";
     private String markerType = "";
     private int listWidth;
 
@@ -88,16 +87,8 @@ final class BotsPage extends BattlePage
         button(view, tr("bots.apply"), x + width - applyWidth, y, applyWidth,
             () -> number(view, respawnKey, 0, Integer.MAX_VALUE, tr(VEHICLE_RESPAWN)).ifPresent(seconds -> run(view, ROUND, index, "vehiclerespawn", seconds)));
         y += ROW;
-        if (!data.botPresets().isEmpty())
-        {
-            preset = keep(data.botPresets(), preset, "");
-            int buttonWidth = 50;
-            int choiceWidth = width - 2 * buttonWidth - 2 * GAP;
-            choice(view, tr("bots.preset"), data.botPresets(), preset, Component::literal, x, y, choiceWidth, chosen -> preset = chosen);
-            button(view, tr("bots.apply"), x + choiceWidth + GAP, y, buttonWidth, tr("bots.apply.tip"), () -> run(view, "teams ai preset apply", preset, index));
-            button(view, tr("bots.apply_all"), x + width - buttonWidth, y, buttonWidth, tr("bots.apply_all.tip"),
-                () -> view.confirm(tr("bots.apply_all.confirm", preset), () -> run(view, "teams ai preset apply", preset, "all")));
-        }
+        button(view, Component.translatable("gui.flansmodultimate.presets.manage"), x, y, width,
+            () -> com.flansmodultimate.api.client.commandcentre.FlansCommandCentreClient.openPresets(com.wolffsmod.npcs.teams.BotSettingsPresets.KEY, Integer.toString(index)));
         int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT;
         String map = round.map();
         List<String> types = data.choices().markerTypes();

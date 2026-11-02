@@ -63,6 +63,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsRespawnRule, ITeam
     /** Hooks the bots into Teams rounds; called once while the module is constructed. */
     public static void register()
     {
+        com.flansmodultimate.api.commandcentre.FlansCommandCentre.addPresets(BotSettingsPresets.KEY, new BotSettingsPresets());
         FlansTeams.addListener(INSTANCE);
         FlansTeams.addRespawnRule(INSTANCE);
         FlansTeams.addSpawnProvider(INSTANCE);

@@ -158,6 +158,8 @@
   "wolffsmodnpcs.centre.bots.nothing_fielded": "Bots are on, but no team fields any. Open the bot editor and give each team a count, or a total in share mode.",
   "wolffsmodnpcs.centre.bots.off": "Bots off",
   "wolffsmodnpcs.centre.bots.preset": "Preset",
+  "wolffsmodnpcs.centre.bots.preset_missing_clone": "Missing NPC clone: tab %s, %s",
+  "wolffsmodnpcs.centre.bots.preset_summary": "Mode: %s • Difficulty: %s • Bots: %s",
   "wolffsmodnpcs.centre.bots.rotation_empty": "Bots fight in the rounds of the rotation. Add rounds to it first.",
   "wolffsmodnpcs.centre.bots.round": "#%s %s on %s",
   "wolffsmodnpcs.centre.bots.title": "Bots",

@@ -19,12 +19,13 @@ import java.util.function.Function;
  * it, such as skirmishes and wars fought by bots.
  *
  * <p>
- * The screen does nothing on its own. Everything an operator does in it runs as a {@code /teams} or {@code /gamerule} command on the server,
+ * The screen does nothing on its own. Ordinary actions run as a {@code /teams} or {@code /gamerule} command on the server,
  * with the operator's own permissions, and the command's output is shown in the screen. What the screen shows comes
  * from <em>sections</em>: tag data that the server builds for the operator each time it sends the screen's state, after
  * every command and every few seconds while the screen is open. The main mod sends a section of its own for the Teams
  * game modes; an addon registers its own section here and adds pages that read it through
  * {@code com.flansmodultimate.api.client.commandcentre.FlansCommandCentreClient}.
+ * Preset libraries registered with {@link #addPresets} use structured, operator-checked requests for file transfers and settings application.
  * </p>
  */
 @ApiStatus.Experimental
@@ -51,5 +52,20 @@ public final class FlansCommandCentre
     public static void addSection(ResourceLocation key, Function<ServerPlayer, CompoundTag> section)
     {
         CommandCentre.addSection(key, section);
+    }
+
+    /**
+     * Registers a settings preset library and its file transfers. Call once during setup. The key also determines
+     * the instance-relative folder {@code config/<namespace>/presets/<path>/}; use a single path segment.
+     * The server checks operator permissions for every request. Implementations remain responsible for data validation.
+     *
+     * @param key
+     *            namespaced library identifier
+     * @param presets
+     *            server-thread implementation
+     */
+    public static void addPresets(ResourceLocation key, ISettingsPresets presets)
+    {
+        com.flansmodultimate.common.teams.centre.SettingsPresets.register(key, presets);
     }
 }

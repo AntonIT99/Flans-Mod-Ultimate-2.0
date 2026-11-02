@@ -5,6 +5,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * Teams NPC vehicles respect each vehicle spawner's shared spawn delay, allowed categories, exact definitions and all-at-once or sequential deployment setting; vehicles and soldiers spread across eligible spawners and search for clear nearby spaces, waiting when none are available; excluded vehicles wait for an eligible vehicle spawner instead of appearing at infantry spawn points
 * Teams rounds have a separate NPC vehicle respawn delay through `teams ai round <round> vehiclerespawn <seconds>` and the Command Center; per-vehicle overrides are available in Forces > Vehicles > Settings and through `teams ai round <round> team <team> vehiclerespawn <type> <seconds|inherit>`, preserving the rest of the allocation
 
+* The Teams command centre can save full bot settings as named presets, preview team mapping and missing content, apply them to one or all rounds, and import/export JSON files on the operator's computer
+
 ## Soldiers
 
 * Bot settings > Infantry > Class limits offers independent per-class `ClassLimit` and `ClassLimitPercent` overrides for automatically assigned infantry, preserving explicit squads, transport infantry, commanders, crews and player limits; pending respawns reserve slots, and fully capped forces wait for capacity

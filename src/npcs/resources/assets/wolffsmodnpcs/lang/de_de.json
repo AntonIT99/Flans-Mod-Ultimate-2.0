@@ -143,6 +143,8 @@
   "wolffsmodnpcs.centre.bots.nothing_fielded": "Bots sind an, aber kein Team stellt welche. Öffne den Bot-Editor und gib jedem Team eine Anzahl, oder im Verteilmodus eine Gesamtzahl.",
   "wolffsmodnpcs.centre.bots.off": "Bots aus",
   "wolffsmodnpcs.centre.bots.preset": "Vorlage",
+  "wolffsmodnpcs.centre.bots.preset_missing_clone": "Fehlender NPC-Klon: Reiter %s, %s",
+  "wolffsmodnpcs.centre.bots.preset_summary": "Modus: %s • Schwierigkeit: %s • Bots: %s",
   "wolffsmodnpcs.centre.bots.rotation_empty": "Bots kämpfen in den Runden der Rotation. Füge ihr zuerst Runden hinzu.",
   "wolffsmodnpcs.centre.bots.round": "#%s %s auf %s",
   "wolffsmodnpcs.centre.bots.title": "Bots",

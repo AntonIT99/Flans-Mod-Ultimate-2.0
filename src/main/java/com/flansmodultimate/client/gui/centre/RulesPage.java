@@ -78,9 +78,8 @@ final class RulesPage extends TeamsPage
         }
         if (tab != Tab.GAME_TYPE && tab != Tab.MINECRAFT)
         {
-            int half = (width - GAP) / 2;
-            button(view, tr("preset.arena"), left, bottom, half, tr("preset.arena.tip"), () -> view.confirm(tr("preset.arena.confirm"), () -> run(view, "teams admin arena")));
-            button(view, tr("preset.survival"), left + half + GAP, bottom, half, tr("preset.survival.tip"), () -> view.confirm(tr("preset.survival.confirm"), () -> run(view, "teams admin survival")));
+            button(view, Component.translatable("gui.flansmodultimate.presets.manage"), left, bottom, width,
+                () -> com.flansmodultimate.api.client.commandcentre.FlansCommandCentreClient.openPresets(com.flansmodultimate.common.teams.centre.SettingsPresets.TEAMS, ""));
         }
     }
 
