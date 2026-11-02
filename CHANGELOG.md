@@ -134,7 +134,7 @@
 * Clients disconnect safely, naming the differing content packs, when their content pack registries do not match the server's
 * Fixed bullet damage to players outside Teams rounds
 * Server-side weapon authority and resource accounting fixes
-* Updated to NeoForge 21.1.259 (21.1.248 or newer still supported)
+* Updated to NeoForge 21.1.265 (21.1.248 or newer still supported)
 
 ## Content Packs
 
