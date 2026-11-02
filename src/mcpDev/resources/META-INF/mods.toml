@@ -1,0 +1,9 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="flansmcpdev"
+version="1.0"
+displayName="Mapped Minecraft MCP development adapter"
+description="Development-only UI observations and isolated test fixtures. Never packaged."

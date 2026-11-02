@@ -71,6 +71,15 @@ if (project.hasProperty('withMinecraftMcp'))
             property 'mcp.background_input', 'true'
             property 'mcp.mod.version', mcpTarget.modVersion.toString()
             property 'mcp.mod.loader', mcpTarget.loader.toString()
+            property 'fmu.mcp.port', (name == 'client2' ? mcpTarget.secondPort + 100 : mcpTarget.port + 100).toString()
+            property 'fmu.mcp.captureDir', layout.buildDirectory.dir('minecraft-mcp/captures').get().asFile.absolutePath
+            mods.maybeCreate('flansmcpdev').source(mcpDev)
+            if (project.hasProperty('mcpTestProfile'))
+            {
+                workingDirectory file(name == 'client2' ? 'run/mcp-test-2' : 'run/mcp-test').absolutePath
+                property 'fmu.mcp.testProfile', 'true'
+                args '--width', providers.gradleProperty('mcpWidth').getOrElse('1280'), '--height', providers.gradleProperty('mcpHeight').getOrElse('800')
+            }
         }
     }
 }

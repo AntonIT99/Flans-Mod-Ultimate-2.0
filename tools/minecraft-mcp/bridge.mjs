@@ -5,11 +5,15 @@ import { readFileSync } from "node:fs";
 import { ModClient, TOOLS } from "minecraft-mod-mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
 
 const target = JSON.parse(readFileSync(new URL("target.json", import.meta.url), "utf8"));
 const port = Number(process.env.FMU_MCP_PORT || target.port);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("Invalid FMU_MCP_PORT");
 const baseUrl = `http://127.0.0.1:${port}`;
+const uiPort = Number(process.env.FMU_MCP_UI_PORT || port + 100);
+if (!Number.isInteger(uiPort) || uiPort < 1024 || uiPort > 65535) throw new Error("Invalid FMU_MCP_UI_PORT");
+const uiUrl = `http://127.0.0.1:${uiPort}`;
 const mod = new ModClient();
 const server = new McpServer({ name: `flans-minecraft-${target.version}`, version: "1.0.0" });
 
@@ -48,6 +52,58 @@ const management = new Set([
   "list_supported_versions", "list_installed_versions", "detect_java",
   "create_offline_account", "list_accounts", "install_server", "launch_server", "serve",
 ]);
+
+async function mapped(command, params = {}) {
+  const upstream = await status();
+  const identityResponse = await fetch(`${uiUrl}/api/status`, { signal: AbortSignal.timeout(3000) });
+  const identity = await identityResponse.json();
+  if (!identityResponse.ok || identity.ok !== true || identity.type !== "flans-mcp-dev" || identity.protocol !== 1 ||
+      identity.minecraft !== target.version || identity.loader !== target.loader || identity.port !== uiPort || identity.pid !== upstream.pid) {
+    throw new Error(`Wrong mapped UI companion at ${uiUrl}: ${JSON.stringify(identity)}`);
+  }
+  const response = await fetch(`${uiUrl}/api/cmd`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...params, cmd: command }), signal: AbortSignal.timeout(command === "fixture_editor" ? 35000 : 12000),
+  });
+  const result = await response.json();
+  if (!response.ok || result.error || result.ok === false) throw new Error(JSON.stringify(result));
+  return result;
+}
+
+const mappedTools = [
+  ["fixture_world", "Create or reopen the fixed disposable flat creative world. Requires control mode and -PmcpTestProfile, from title. Poll ui_state until in_world.", {}],
+  ["fixture_editor", "Prepare a reusable NPC and open its real equipment/tactics editor in the isolated fixture world. Requires control mode and -PmcpTestProfile.", {}],
+  ["ui_state", "Read mapped screen, readable widget labels, snapshot IDs and framebuffer/GUI dimensions.", {}],
+  ["ui_capture", "Capture the complete framebuffer. PNG path must be directly inside build/minecraft-mcp/captures. Returns dimensions and image diagnostics.", { path: z.string().optional() }],
+  ["ui_close", "Close the observed screen using its mapped onClose handler (including save hooks), and verify the resulting screen. Requires control mode and a current snapshot.", {
+    snapshot: z.number().int(), expected_screen: z.string(), result_screen: z.string(),
+    timeout_ms: z.number().int().min(100).max(10000).default(5000),
+  }],
+  ["ui_click", "Click a widget from a current UI snapshot and wait for the required resulting screen. Rejects stale references. Requires control mode.", {
+    snapshot: z.number().int(), widget: z.string(), expected_screen: z.string(), result_screen: z.string(),
+    timeout_ms: z.number().int().min(100).max(10000).default(5000),
+  }],
+];
+for (const [name, description, inputSchema] of mappedTools) {
+  server.registerTool(name, { description, inputSchema }, async (params) => {
+    try {
+      let result = await mapped(name, params);
+      if (name === "ui_click" || name === "ui_close") {
+        if (name === "ui_click" && !result.input_consumed) throw new Error(`Widget did not consume input: ${JSON.stringify(result)}`);
+        const deadline = Date.now() + params.timeout_ms;
+        while (result.screen !== params.result_screen && Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          result = await mapped("ui_state");
+        }
+        if (result.screen !== params.result_screen) throw new Error(`Transition timed out; expected ${params.result_screen}: ${JSON.stringify(result)}`);
+        result.transition_verified = true;
+      }
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    } catch (error) {
+      return { isError: true, content: [{ type: "text", text: `${error.message}. Mapped UI requires a client restarted with -PwithMinecraftMcp.` }] };
+    }
+  });
+}
 for (const tool of TOOLS) {
   if (management.has(tool.name)) continue;
   server.registerTool(tool.name, {
