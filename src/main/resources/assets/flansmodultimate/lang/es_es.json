@@ -111,6 +111,8 @@
   "gui.flansmodultimate.centre.round_rules.reset": "Restablecer valor original",
   "gui.flansmodultimate.centre.round_rules.target": "Configurar",
   "gui.flansmodultimate.centre.round_rules.title": "Reglas de ronda",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "Efectos de sangre",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "Permite manchas de sangre temporales en el suelo al morir o recibir golpes fuertes para jugadores y PNJ con efectos de sangre activados. Activado por defecto.",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "Daño por parte del cuerpo",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "Usa los multiplicadores de cabeza, torso, brazos y piernas para jugadores y PNJ humanoides, incluso fuera de rondas Teams. Desactivado: todas las zonas a 1x; la armadura sigue funcionando.",
   "gui.flansmodultimate.centre.rule.botHealth": "PV máximos de bots",

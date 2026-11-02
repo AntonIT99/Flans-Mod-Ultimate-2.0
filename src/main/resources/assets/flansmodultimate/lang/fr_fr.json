@@ -111,6 +111,8 @@
   "gui.flansmodultimate.centre.round_rules.reset": "Réinitialiser",
   "gui.flansmodultimate.centre.round_rules.target": "Configurer",
   "gui.flansmodultimate.centre.round_rules.title": "Règles de manche",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "Effets de sang",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "Autoriser les taches de sang temporaires au sol lors des morts et des coups puissants pour les joueurs et les PNJ dont les effets de sang sont activés. Activé par défaut.",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "Dégâts par partie du corps",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "Appliquer les multiplicateurs de tête, torse, bras et jambes aux joueurs et PNJ humanoïdes, même hors des manches Teams. Désactivé : toutes les zones à 1x ; l’armure reste active.",
   "gui.flansmodultimate.centre.rule.botHealth": "PV maximum des bots",

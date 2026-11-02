@@ -93,6 +93,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int OVERRIDE_REPEAT_ID = 410;
     private static final int CLEAR_SOUND_ID = 411;
     private static final int MODEL_SOUNDS_LINK_ID = 412;
+    private static final int BLOOD_EFFECTS_ID = 413;
     private static final int ENGINE_SOUND_ID = 500;
     private static final int ENGINE_RANGE_ID = 501;
     private static final int ENGINE_REPEAT_ID = 502;
@@ -336,7 +337,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @RequiredArgsConstructor
     private enum Look
     {
-        HURT_FLASH(HURT_FLASH_ID, true), DEATH_ROTATION(DEATH_ROTATION_ID, true), HIDE_BODY(HIDE_BODY_ID, false), KEEP_WRECK(KEEP_WRECK_ID, false);
+        BLOOD_EFFECTS(BLOOD_EFFECTS_ID, false), HURT_FLASH(HURT_FLASH_ID, true), DEATH_ROTATION(DEATH_ROTATION_ID, true), HIDE_BODY(HIDE_BODY_ID, false), KEEP_WRECK(KEEP_WRECK_ID, false);
 
         private final int id;
         private final boolean fallback;
@@ -569,7 +570,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         ANIMATIONS(Section.LOOK, Scope.STANDARD,
             Tab.named("equipment_animation", Value.AIM_POSE, Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
             Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
-        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES, Feature.MUZZLE_FLASHES, Feature.ALLY_NAME_TAGS)),
+        EFFECTS(Section.LOOK, Scope.ALL, Tab.of(Look.BLOOD_EFFECTS, Look.HURT_FLASH, Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.SHOOT_PARTICLES, Feature.MUZZLE_FLASHES, Feature.ALLY_NAME_TAGS)),
         SOUNDS(Section.LOOK, Scope.ALL,
             Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
@@ -1853,6 +1854,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         NpcPresentation settings = NpcPresentation.of(npc);
         return switch (look)
         {
+            case BLOOD_EFFECTS -> settings.isBloodEffects();
             case HURT_FLASH -> settings.isHurtFlash();
             case DEATH_ROTATION -> settings.isDeathRotation();
             case HIDE_BODY -> npc.stats.hideKilledBody;
@@ -2541,6 +2543,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         boolean yes = button.getValue() == 1;
         switch (button.id)
         {
+            case BLOOD_EFFECTS_ID -> settings.setBloodEffects(yes);
             case HURT_FLASH_ID -> settings.setHurtFlash(yes);
             case DEATH_ROTATION_ID -> settings.setDeathRotation(yes);
             case HIDE_BODY_ID -> npc.stats.hideKilledBody = yes;

@@ -6,6 +6,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Soldiers
 
+* `Blood Effects` in Wolff's Mod > Effects enables temporary ground splatters on death and heavy hits; the Player and Human NPC presets and generated soldier bots enable it, and the Teams rule can disable it for everyone
+
 * Custom NPCs use Flan's guns, grenades, throwables, melee weapons, shields and armour, with reloads, ammunition from their inventory and Flan's sounds and muzzle flashes; the sounds an NPC makes carry as far, and as loudly, as the same weapon in a player's hands
 * Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender; NPCs whose random Custom NPCs preset skin is missing wear Steve instead of the missing texture
 * Flan NPC tactics for soldiers, vehicles and aircraft, including cover, peeking and Custom NPCs' own tactics with Flan's weapons

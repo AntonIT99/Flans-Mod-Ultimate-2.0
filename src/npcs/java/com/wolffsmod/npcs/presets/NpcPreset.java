@@ -23,12 +23,12 @@ import static com.wolffsmod.npcs.presets.NpcPresetSetting.*;
  */
 public enum NpcPreset
 {
-    MOB(List.of(), new Target(MOVING_TYPE, Values.WANDERING), new Target(WALKING_RANGE, 0), new Target(NPC_INTERACTING, 0), new Target(RESPAWN, Values.RESPAWN_NO), new Target(HIDE_BODY, 1),
-        new Target(KEEP_WRECK, 0), new Target(DOOR_INTERACT, 2), new Target(CAN_SPRINT, 0), new Target(MOVEMENT, 0), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 0), new Target(TACTIC, 0),
-        new Target(TACTICAL_VARIANT, 0), new Target(SUBMARINE_DEPTH, 0), new Target(LAND_SPEED, 0), new Target(WATER_SPEED, 0), new Target(DRIVE_DRIVEABLES, 0), new Target(ON_ATTACK, 0),
-        new Target(ATTACK_HOSTILE_FACTIONS, Values.YES), new Target(DEFEND_FACTION_MEMBERS, Values.YES)),
+    MOB(List.of(), new Target(BLOOD_EFFECTS, 0), new Target(MOVING_TYPE, Values.WANDERING), new Target(WALKING_RANGE, 0), new Target(NPC_INTERACTING, 0), new Target(RESPAWN, Values.RESPAWN_NO),
+        new Target(HIDE_BODY, 1), new Target(KEEP_WRECK, 0), new Target(DOOR_INTERACT, 2), new Target(CAN_SPRINT, 0), new Target(MOVEMENT, 0), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 0),
+        new Target(TACTIC, 0), new Target(TACTICAL_VARIANT, 0), new Target(SUBMARINE_DEPTH, 0), new Target(LAND_SPEED, 0), new Target(WATER_SPEED, 0), new Target(DRIVE_DRIVEABLES, 0),
+        new Target(ON_ATTACK, 0), new Target(ATTACK_HOSTILE_FACTIONS, Values.YES), new Target(DEFEND_FACTION_MEMBERS, Values.YES)),
     /** A freely roaming person using equipped weapons. */
-    HUMAN(MOB.targets, new Target(DOOR_INTERACT, Values.DOORS_OPEN), new Target(CAN_SPRINT, 1), new Target(ITEM_WEAPONS, 1)),
+    HUMAN(MOB.targets, new Target(BLOOD_EFFECTS, 1), new Target(DOOR_INTERACT, Values.DOORS_OPEN), new Target(CAN_SPRINT, 1), new Target(ITEM_WEAPONS, 1)),
     /** Player movement, respawning and ammunition consumption. */
     PLAYER(HUMAN.targets, new Target(RESPAWN, 0), new Target(CONSUME_AMMO, 1)),
     /** Ground vehicles and mechas, with machine protections and persistent wrecks. */

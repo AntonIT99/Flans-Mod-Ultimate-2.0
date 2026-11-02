@@ -111,6 +111,8 @@
   "gui.flansmodultimate.centre.round_rules.reset": "원래 기본값 복원",
   "gui.flansmodultimate.centre.round_rules.target": "설정 대상",
   "gui.flansmodultimate.centre.round_rules.title": "라운드 규칙",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "혈흔 효과",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "플레이어와 혈흔 효과가 켜진 NPC가 사망하거나 강한 피해를 받으면 바닥에 일시적인 혈흔을 표시합니다. 기본값은 켜짐입니다.",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "신체 부위별 피해 배율",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "플레이어와 인간형 NPC에 머리, 몸통, 팔, 다리 피해 배율을 적용합니다. Teams 라운드 밖에서도 적용됩니다. 끄면 모든 부위가 1배이며 방어구는 계속 적용됩니다.",
   "gui.flansmodultimate.centre.rule.botHealth": "봇 최대 HP",

@@ -89,6 +89,7 @@ import java.util.*;
  * strategy says, by a goal of their own whose wind-up holds the NPC's other ranged attacks.
  * Optional melee dual wield alternates striking hands on one AI cooldown and sends item break feedback for the attacking hand.</li>
  * <li>Throw wind-ups synchronize a temporary displayed main-hand item and the player's throwing pose without moving inventory.</li>
+ * <li>Presentation settings opt the NPC into server-authored ground blood splatters independently of its hurt flash and death rotation.</li>
  * <li>Armor potion effects can be disabled independently of protection. Flan armor invisibility hides the NPC's body on the client, keeping its armor drawn.</li>
  * <li>Vehicle simulation: the NPC carries the moving state of its content-pack model. A vehicle drives where its hull points and
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
@@ -312,6 +313,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public float flansmodultimateEnginePitch()
     {
         return NpcVehicleSounds.pitch((EntityNPCInterface) (Object) this);
+    }
+
+    @Override
+    public boolean flansmodultimateBloodEffects()
+    {
+        return NpcPresentation.of((EntityNPCInterface) (Object) this).isBloodEffects();
     }
 
     @Override

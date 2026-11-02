@@ -111,6 +111,8 @@
   "gui.flansmodultimate.centre.round_rules.reset": "恢复内置默认值",
   "gui.flansmodultimate.centre.round_rules.target": "配置目标",
   "gui.flansmodultimate.centre.round_rules.title": "回合规则",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "血液效果",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "允许玩家及启用血液效果的 NPC 在死亡和受到重击时产生临时地面血迹。默认开启。",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "身体部位伤害倍率",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "对玩家和人形 NPC 使用头部、躯干、手臂和腿部伤害倍率，Teams 回合外也生效。关闭后所有部位均为 1 倍，护甲仍生效。",
   "gui.flansmodultimate.centre.rule.botHealth": "机器人最大生命值",

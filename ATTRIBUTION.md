@@ -116,3 +116,12 @@ Third-party content, content packs, models, textures, sounds, and other assets
 retain their respective copyrights, licenses, and attribution requirements.
 Their inclusion in this repository does not imply that Flan's Mod Ultimate 2
 owns or relicenses those works.
+
+## Labjac fork
+
+The six ground-blood splatter textures (`ground_blood_0.png` through
+`ground_blood_5.png`) originate from the Labjac Flan's Mod fork
+(`Mr-Monorisu-Brazila`, originally `assets/flansmod/particle/Blood_0.png`
+through `Blood_5.png`). Its temporary ground-blood effect also supplied the
+visual and timing reference for the modern implementation. Credit belongs to
+Labjac and the original asset contributors.

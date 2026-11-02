@@ -235,6 +235,8 @@
   "gui.flansmodultimate.centre.rule.alliedSpawns.tip": "Verbündete Teams dürfen an den Basen der anderen spawnen",
   "gui.flansmodultimate.centre.rule.armourDrops": "Rüstung fallen lassen",
   "gui.flansmodultimate.centre.rule.armourDrops.tip": "Spieler lassen beim Tod ihre getragene Rüstung fallen",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "Bluteffekte",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "Erlaubt vorübergehende Blutflecken am Boden bei Tod und schweren Treffern für Spieler und NPCs mit aktivierten Bluteffekten. Standardmäßig an.",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "Körperteil-Schadensfaktoren",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "Konfigurierte Schadensfaktoren für Kopf, Rumpf, Arme und Beine bei Spielern und humanoiden NPCs nutzen, auch außerhalb von Teams-Runden. Aus: alle Zonen 1x; Rüstung wirkt weiterhin.",
   "gui.flansmodultimate.centre.rule.bombs": "Bomben",

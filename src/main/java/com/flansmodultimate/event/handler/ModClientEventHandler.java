@@ -183,6 +183,7 @@ public final class ModClientEventHandler
         event.registerSpriteSet(FlansModParticles.debris1Particle.get(), Debris1Particle.Provider::new);
         event.registerSpriteSet(FlansModParticles.explodeParticle.get(), LegacyExplodeParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.fireExplosionParticle.get(), FireExplosionParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.groundBloodParticle.get(), GroundBloodParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.flareParticle.get(), FlareParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.flashParticle.get(), FlashParticle.Provider::new);
         event.registerSpriteSet(FlansModParticles.fmFlameParticle.get(), FmFlameParticle.Provider::new);

@@ -111,6 +111,8 @@
   "gui.flansmodultimate.centre.round_rules.reset": "Сбросить к исходному",
   "gui.flansmodultimate.centre.round_rules.target": "Настроить",
   "gui.flansmodultimate.centre.round_rules.title": "Правила раунда",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "Эффекты крови",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "Разрешить временные пятна крови на земле при смерти и сильных попаданиях для игроков и NPC с включёнными эффектами крови. Включено по умолчанию.",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "Урон по частям тела",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "Использовать множители урона головы, торса, рук и ног для игроков и человекоподобных NPC, в том числе вне раундов Teams. Выкл.: все зоны 1x; броня по-прежнему действует.",
   "gui.flansmodultimate.centre.rule.botHealth": "Макс. ОЗ ботов",

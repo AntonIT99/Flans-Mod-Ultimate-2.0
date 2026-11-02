@@ -61,6 +61,8 @@ class TeamsCommandTest
     {
         assertRuns("teams restoreBlocks true");
         assertRuns("teams bodyPartDamageModifiers false");
+        assertRuns("teams bloodEffects true");
+        assertRuns("teams bloodEffects false");
         assertRuns("teams playerHealth 40");
         assertRuns("teams botHealth 80");
         assertRuns("teams playerHealth 0");

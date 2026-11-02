@@ -235,6 +235,8 @@
   "gui.flansmodultimate.centre.rule.alliedSpawns.tip": "Allied teams may spawn at each other's bases",
   "gui.flansmodultimate.centre.rule.armourDrops": "Armour drops",
   "gui.flansmodultimate.centre.rule.armourDrops.tip": "Players drop the armour they wear when they die",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "Blood Effects",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "Allow temporary ground blood splatters on deaths and heavy hits for players and NPCs with Blood Effects enabled. On by default.",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "Body-part damage modifiers",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "Use the configured head, torso, arm and leg damage multipliers for players and humanoid NPCs, even outside Teams rounds. Off uses 1x for every hit zone; armour still applies.",
   "gui.flansmodultimate.centre.rule.bombs": "Bombs",

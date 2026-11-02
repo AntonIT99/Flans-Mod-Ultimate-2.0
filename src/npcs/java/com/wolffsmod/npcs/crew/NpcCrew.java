@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.NpcSkins;
 import com.wolffsmod.npcs.names.NpcDisplayNames;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.sim.NpcParachutes;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.soldier.FlanSoldierLoadout;
@@ -565,6 +566,7 @@ public final class NpcCrew
         }
         selection = new FlanSoldierSelection(selection.team(), selection.playerClass(), source.chooseSkin(selection.playerClass().getSkinOverrideVariants().size(), level.random));
         EntityCustomNpc npc = new EntityCustomNpc(CustomEntities.entityCustomNpc, level);
+        NpcPresentation.of(npc).setBloodEffects(true);
         npc.moveTo(position.x, position.y, position.z, 0F, 0F);
         FlanSoldierLoadout.apply(npc, selection);
         // Only clients know the class skin and whether it needs the 64x32 model, so each client puts it on.

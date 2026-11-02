@@ -23,7 +23,7 @@ final class RulesPage extends TeamsPage
 {
     private static final List<String> PROTECTION = List.of("explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles", "survivalCanPlaceVehicles",
         "forceAdventure", "pacifism");
-    private static final List<String> COMBAT = List.of("bombs", "shells", "bullets", "armourDrops", "overrideHunger", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp");
+    private static final List<String> COMBAT = List.of("bombs", "shells", "bullets", "armourDrops", "overrideHunger", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp", "bloodEffects");
     private static final List<String> WEAPON_DROPS = List.of("on", "smart", "off");
     /** The game type variable every game type takes, for the score limit of the round being played. */
     private static final String SCORE_LIMIT = "scorelimit";

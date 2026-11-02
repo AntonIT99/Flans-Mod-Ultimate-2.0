@@ -84,6 +84,8 @@ public enum NpcPresetSetting
     DRIVER_GUNS(Feature.DRIVER_GUNS),
     /** Drive driveables. */
     DRIVE_DRIVEABLES(Feature.DRIVE_DRIVEABLES),
+    /** Temporary ground blood splatters. */
+    BLOOD_EFFECTS(npc -> yes(NpcPresentation.of(npc).isBloodEffects()), (npc, value) -> NpcPresentation.of(npc).setBloodEffects(value != 0), Values.NO_YES),
     /** Hurt flash. */
     HURT_FLASH(npc -> yes(NpcPresentation.of(npc).isHurtFlash()), (npc, value) -> NpcPresentation.of(npc).setHurtFlash(value != 0), Values.NO_YES),
     /** Death rotation. */
@@ -146,7 +148,7 @@ public enum NpcPresetSetting
         return switch (this)
         {
             case RESPAWN, CAN_DROWN, NO_FALL_DAMAGE, POTION_IMMUNE, IGNORE_COBWEB, HEALTH_REGEN, COMBAT_REGEN -> "survival";
-            case KEEP_WRECK, HIDE_BODY, HURT_FLASH, DEATH_ROTATION, MODEL_SOUNDS, ENGINE_IDLE, ENGINE_MOVEMENT -> "appearance";
+            case KEEP_WRECK, HIDE_BODY, BLOOD_EFFECTS, HURT_FLASH, DEATH_ROTATION, MODEL_SOUNDS, ENGINE_IDLE, ENGINE_MOVEMENT -> "appearance";
             case CONSUME_AMMO, ITEM_WEAPONS, MODEL_WEAPON_STATS, ON_ATTACK, ATTACK_HOSTILE_FACTIONS, DEFEND_FACTION_MEMBERS -> "combat";
             default -> "movement";
         };

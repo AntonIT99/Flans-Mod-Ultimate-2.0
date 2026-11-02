@@ -103,6 +103,7 @@ public final class TeamsManager
     private static final String NBT_ROUND_INSTANCE = "round_instance";
     private static final String NBT_PACIFISM = "pacifism";
     private static final String NBT_MOVIE_PROP = "movie_prop";
+    private static final String NBT_BLOOD_EFFECTS = "blood_effects";
     private static final String NBT_SEA_LEVEL = "sea_level";
     private static final String NBT_WINNER = "winner";
     private static final String NBT_ROUND_DECIDED = "round_decided";
@@ -216,6 +217,9 @@ public final class TeamsManager
     /** Labjac "movie prop" rule: driveables run at full throttle on their own and need no fuel, for filming. */
     @Getter
     private boolean movieProp;
+    /** Allows temporary blood splatters for players and entities that opt in, including NPC soldiers. */
+    @Getter
+    private boolean bloodEffects = true;
     /**
      * Whether allied teams come back at each other's bases. A team without a base of its own on the
      * map does so whatever this says.
@@ -478,6 +482,12 @@ public final class TeamsManager
     public void setPacifism(boolean pacifism)
     {
         this.pacifism = pacifism;
+        saveRuntime();
+    }
+
+    public void setBloodEffects(boolean bloodEffects)
+    {
+        this.bloodEffects = bloodEffects;
         saveRuntime();
     }
 
@@ -2480,6 +2490,7 @@ public final class TeamsManager
 
     private void loadRuntime(CompoundTag tag)
     {
+        bloodEffects = !tag.contains(NBT_BLOOD_EFFECTS) || tag.getBoolean(NBT_BLOOD_EFFECTS);
         if (tag.isEmpty())
             return;
 
@@ -2623,6 +2634,7 @@ public final class TeamsManager
         tag.putBoolean(NBT_ROUND_DECIDED, lastRoundDecided);
         tag.putBoolean(NBT_PACIFISM, pacifism);
         tag.putBoolean(NBT_MOVIE_PROP, movieProp);
+        tag.putBoolean(NBT_BLOOD_EFFECTS, bloodEffects);
         tag.putBoolean(NBT_ALLIED_SPAWN_SHARING, alliedSpawnSharing);
         if (seaLevelOverride == NO_SEA_LEVEL_OVERRIDE)
             tag.remove(NBT_SEA_LEVEL);

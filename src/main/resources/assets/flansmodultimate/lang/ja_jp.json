@@ -111,6 +111,8 @@
   "gui.flansmodultimate.centre.round_rules.reset": "初期値に戻す",
   "gui.flansmodultimate.centre.round_rules.target": "設定対象",
   "gui.flansmodultimate.centre.round_rules.title": "ラウンドルール",
+  "gui.flansmodultimate.centre.rule.bloodEffects": "流血エフェクト",
+  "gui.flansmodultimate.centre.rule.bloodEffects.tip": "プレイヤーと流血エフェクトを有効にしたNPCが死亡または強いダメージを受けたとき、地面に一時的な血痕を表示します。初期設定はオンです。",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers": "部位別ダメージ倍率",
   "gui.flansmodultimate.centre.rule.bodyPartDamageModifiers.tip": "プレイヤーと人型NPCに頭・胴・腕・脚のダメージ倍率を適用します。Teamsラウンド外でも有効。オフでは全部位が1倍になり、防具は引き続き有効です。",
   "gui.flansmodultimate.centre.rule.botHealth": "ボット最大HP",

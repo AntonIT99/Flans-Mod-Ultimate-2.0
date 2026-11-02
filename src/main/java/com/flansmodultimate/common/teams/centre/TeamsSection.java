@@ -80,7 +80,7 @@ public final class TeamsSection
      */
     public static final List<String> SWITCHES = List.of("restoreBlocks", "bodyPartDamageModifiers", "explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles",
         "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom",
-        "movieProp");
+        "movieProp", "bloodEffects");
     /** How long abandoned driveables last, by the {@code /teams} command that sets each, in seconds. */
     public static final List<String> LIFETIMES = List.of("mgLife", "planeLife", "vehicleLife", "mechaLife", "aaLife");
 
@@ -269,6 +269,7 @@ public final class TeamsSection
         tag.putBoolean("fuelNeeded", manager.isVehiclesNeedFuelSetting());
         tag.putBoolean("vehiclesCanZoom", manager.isVehiclesCanZoom());
         tag.putBoolean("movieProp", manager.isMovieProp());
+        tag.putBoolean("bloodEffects", manager.isBloodEffects());
         tag.putString(WEAPON_DROPS, switch (manager.getWeaponDrops())
         {
             case NONE -> "off";

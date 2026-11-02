@@ -1,16 +1,20 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.entity.BloodEffects;
 import com.flansmodultimate.common.raytracing.EntityPositionHistory;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.platform.forge.ForgeDamageContext;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -75,6 +79,19 @@ public final class CommonGameEvents
     {
         if (!event.getEntity().level().isClientSide)
             CommonEventHandler.playMeleeImpactSound(event.getDamageSource(), true);
+    }
+
+    /** Only final, uncancelled damage can produce the heavy-hit splatter burst. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onLivingDamage(LivingDamageEvent event)
+    {
+        BloodEffects.onDamage(event.getEntity(), event.getAmount());
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onLivingDeath(LivingDeathEvent event)
+    {
+        BloodEffects.onDeath(event.getEntity());
     }
 
     /** Forge fires this after shields and attack cooldown, before armor; 1.21.1 uses a mixin at that point. */

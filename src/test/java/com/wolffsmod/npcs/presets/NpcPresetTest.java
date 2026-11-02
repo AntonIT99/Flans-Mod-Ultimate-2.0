@@ -34,6 +34,13 @@ class NpcPresetTest
     }
 
     @Test
+    void onlyHumanAndPlayerPresetsEnableBloodEffects()
+    {
+        for (NpcPreset preset : NpcPreset.values())
+            assertTrue(preset.getTargets().contains(new Target(NpcPresetSetting.BLOOD_EFFECTS, preset == NpcPreset.HUMAN || preset == NpcPreset.PLAYER ? 1 : 0)));
+    }
+
+    @Test
     void theMobPresetRoamsFreelyAndStaysDead()
     {
         assertTrue(NpcPreset.MOB.getTargets().contains(new Target(NpcPresetSetting.MOVING_TYPE, 1)));
