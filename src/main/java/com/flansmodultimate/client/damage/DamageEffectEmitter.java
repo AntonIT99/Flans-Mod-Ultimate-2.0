@@ -59,6 +59,8 @@ final class DamageEffectEmitter
         double density = DamageParticles.density();
         Entity entity = source.entity();
         Minecraft minecraft = Minecraft.getInstance();
+        if (source instanceof PartBodyEffectSource && source.wreckAge() >= PartBodyEffectSource.MAX_WRECK_EFFECT_TICKS)
+            return;
         if (density <= 0D || minecraft.level == null || entity.level() != minecraft.level)
             return;
         ModClientConfig config = ModClientConfig.get();
@@ -66,7 +68,7 @@ final class DamageEffectEmitter
         if (entity.position().distanceToSqr(minecraft.gameRenderer.getMainCamera().getPosition()) > reach * reach)
             return;
         int wreckAge = source.wreckAge();
-        int lifetime = ModCommonConfig.driveableWreckLifetimeTicks();
+        int lifetime = source instanceof PartBodyEffectSource ? PartBodyEffectSource.MAX_WRECK_EFFECT_TICKS : ModCommonConfig.driveableWreckLifetimeTicks();
         Vec3 motion = source.motion();
         boolean raining = isRainingOn(entity);
         // A wreck burns as hard as the fuel it had, and less so in the rain.

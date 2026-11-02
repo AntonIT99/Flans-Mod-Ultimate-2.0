@@ -27,6 +27,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketParticle;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.PacketWeaponShotEffects;
 import com.flansmodultimate.util.ModUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -504,6 +505,13 @@ public final class ExternalProjectileSupport
             return false;
         EnumWeaponType bank = type.weaponType(secondary);
         return gun != null || bank == EnumWeaponType.GUN || bank == EnumWeaponType.SHELL;
+    }
+
+    public static void firingEffects(Entity shooter, @Nullable IContentType weapon, Vec3 origin, Vec3 direction, float scale, boolean heavy)
+    {
+        if (!serverThread(shooter) || !finite(origin) || !finite(direction) || direction.lengthSqr() < 1.0E-8D || !Float.isFinite(scale) || scale <= 0F)
+            return;
+        PacketHandler.sendToAllAround(new PacketWeaponShotEffects(weapon == null ? "" : weapon.getShortName(), origin, direction.normalize(), scale, heavy), origin, 128D, shooter.level().dimension());
     }
 
     public static void shootParticles(Entity shooter, WeaponMuzzle muzzle, Vec3 origin, float bodyYaw, float scale)

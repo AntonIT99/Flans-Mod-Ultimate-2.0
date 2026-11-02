@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.projectiles.IBullet;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;
@@ -35,6 +36,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
@@ -1172,6 +1174,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected void clientTick(Level level)
     {
+        if (level.getFluidState(blockPosition()).is(FluidTags.WATER) && !level.getFluidState(BlockPos.containing(xo, yo, zo)).is(FluidTags.WATER))
+            ClientHooks.RENDER.waterImpact(position(), configType.getWeaponType() == EnumWeaponType.SHELL ? 1.5F : 0.35F);
         spawnWaterBubbles(level);
         spawnTracerBeam();
         spawnParticles();

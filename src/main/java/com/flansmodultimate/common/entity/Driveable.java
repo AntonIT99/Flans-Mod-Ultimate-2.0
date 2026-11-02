@@ -3230,7 +3230,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, soundRange, sound, true);
-        if (fired.isEmpty() || !type.isDefaultMuzzleFlash() && (secondary ? type.getShootParticlesSecondary() : type.getShootParticlesPrimary()).isEmpty())
+        if (fired.isEmpty())
             return;
         // The same shot event drives both authored particles and the flash at each fired barrel.
         PacketHandler.sendToAllAround(
@@ -3258,6 +3258,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             ShootPoint point = points.get(pointIndex);
             int barrel = fired < barrels.length ? barrels[fired] : 0;
             Vec3 origin = getShootOrigin(point, barrel);
+            spawnBankShotEffects(secondary, point, origin);
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
             {
@@ -3270,6 +3271,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
     }
 
+    private void spawnBankShotEffects(boolean secondary, ShootPoint point, Vec3 origin)
+    {
+        EnumWeaponType weapon = configType.weaponType(secondary);
+        if (weapon == EnumWeaponType.GUN || weapon == EnumWeaponType.SHELL)
+            ClientHooks.RENDER.weaponShotEffects(point.getRootPos() instanceof PilotGun gun ? gun.getType().getShortName() : "", origin, getDebugShootDirection(point, secondary), 1F,
+                weapon == EnumWeaponType.SHELL);
+    }
+
     /** Client visuals at the same fired barrel and aim used by the passenger projectile. */
     public void spawnPassengerParticles(int seatIndex, int barrel)
     {
@@ -3280,6 +3289,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (seat == null || info == null || info.getGunType() == null || barrel < 0 || barrel >= info.getGunBarrelCount())
             return;
         Vec3 origin = getPassengerShootOrigin(seat, info, barrel);
+        ClientHooks.RENDER.weaponShotEffects(info.getGunType().getShortName(), origin, getPassengerShootDirection(seatIndex), 1F, false);
         for (DriveableType.ShootParticle particle : configType.getShootParticlesPassenger(seatIndex))
         {
             Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
@@ -3432,8 +3442,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
-        if (initializedType().isDefaultMuzzleFlash() || gun.hasMuzzleFlashModel() || !initializedType().getShootParticlesPassenger(index).isEmpty())
-            PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel), position(), 128D, level().dimension());
+        PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel), position(), 128D, level().dimension());
         reloadPassengerGun(index, gun, ammo);
         return true;
     }

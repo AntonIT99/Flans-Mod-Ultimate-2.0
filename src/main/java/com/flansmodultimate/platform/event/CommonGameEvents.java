@@ -81,11 +81,11 @@ public final class CommonGameEvents
             CommonEventHandler.playMeleeImpactSound(event.getDamageSource(), true);
     }
 
-    /** Only final, uncancelled damage can produce the heavy-hit splatter burst. */
+    /** Only final, uncancelled damage can produce wound puffs and heavy-hit blood bursts. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDamage(LivingDamageEvent event)
     {
-        BloodEffects.onDamage(event.getEntity(), event.getAmount());
+        BloodEffects.onDamage(event.getEntity(), event.getSource(), event.getAmount());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

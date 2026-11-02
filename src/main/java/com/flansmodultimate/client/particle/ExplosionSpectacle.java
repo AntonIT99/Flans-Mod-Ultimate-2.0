@@ -57,6 +57,7 @@ public final class ExplosionSpectacle
         if (level == null)
             return;
 
+        WaterEffects.splash(level, position, Math.max(0.5F, craterRadius));
         spawnAfterglow(level, position, craterRadius);
 
         Staged staged = Staged.of(level, position, craterRadius, blastRadius, groundBurst, fiery);

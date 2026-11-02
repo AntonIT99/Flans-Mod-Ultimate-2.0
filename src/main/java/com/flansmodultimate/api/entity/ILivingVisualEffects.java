@@ -12,7 +12,7 @@ import org.jetbrains.annotations.ApiStatus;
 public interface ILivingVisualEffects
 {
     /**
-     * Opts an entity into temporary blood splatters on death and heavy damage. Queried on the server thread;
+     * Opts an entity into airborne wound effects and temporary ground splatters on death and heavy damage. Queried on the server thread;
      * the server's Blood Effects rule must also allow them. Players participate without implementing this interface.
      *
      * @return whether this entity produces blood effects; false unless explicitly enabled

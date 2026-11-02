@@ -3,6 +3,7 @@ package com.flansmodultimate.hooks.client;
 import com.flansmod.client.model.*;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.client.debug.DebugHelper;
@@ -149,6 +150,41 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         ParticleHelper.spawnFromString(s, state, sourcePos, x, y, z, vx, vy, vz, scale);
+    }
+
+    @Override
+    public void lockMarker(int target, InteractionHand hand)
+    {
+        LockOnMarkers.update(target, hand);
+    }
+
+    @Override
+    public void waterImpact(Vec3 position, float strength)
+    {
+        if (Minecraft.getInstance().level != null)
+            WaterEffects.splash(Minecraft.getInstance().level, position, strength);
+    }
+
+    @Override
+    public void heldShotEffects(LivingEntity shooter, InteractionHand hand)
+    {
+        ItemStack stack = shooter.getItemInHand(hand);
+        if (!(stack.getItem() instanceof GunItem item))
+            return;
+        GunType gun = item.getConfigType();
+        Vector3f shoulder = new Vector3f(gun.getMuzzleFlashParticlesShoulderOffset().x, gun.getMuzzleFlashParticlesShoulderOffset().y, gun.getMuzzleFlashParticlesShoulderOffset().z);
+        Vector3f casing = new Vector3f(0.1F, 0.2F, 0F);
+        if (ModelCache.getOrLoadTypeModel(gun) instanceof ModelGun model && model.getCasingAttachPoint() != null)
+            casing = new Vector3f(model.getCasingAttachPoint().x, model.getCasingAttachPoint().y, model.getCasingAttachPoint().z).scale(gun.getModelScale());
+        Vec3 muzzle = getMuzzleFlashPosition(shooter, hand, shoulder, getMuzzleFlashHandOffset(gun, stack));
+        WeaponShotEffects.held(shooter, hand, muzzle, getMuzzleFlashPosition(shooter, hand, shoulder, casing));
+    }
+
+    @Override
+    public void weaponShotEffects(String weapon, Vec3 origin, Vec3 direction, float scale, boolean heavy)
+    {
+        var type = FlansModApi.getType(weapon).orElse(null);
+        WeaponShotEffects.mounted(type instanceof GunType gun ? gun : null, origin, direction, scale, heavy);
     }
 
     @Override

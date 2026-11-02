@@ -375,4 +375,27 @@ public final class FlansProjectiles
     {
         ExternalProjectileSupport.shootParticles(shooter, muzzle, origin, bodyYaw, scale);
     }
+
+    /**
+     * Broadcasts smoke, casing ejection and, for cannons, a layered muzzle blast after a successful shot.
+     * Cosmetic only. Call once per fired barrel on the server thread, independently of authored shooting particles.
+     *
+     * @param shooter
+     *            source entity and dimension
+     * @param weapon
+     *            mounted gun definition, or null for a platform barrel
+     * @param origin
+     *            world muzzle position in blocks
+     * @param direction
+     *            outward barrel direction, normalized by the implementation
+     * @param scale
+     *            positive visual size multiplier, normally 1
+     * @param heavy
+     *            whether this is a cannon discharge with a bright blast
+     */
+    public static void firingEffects(Entity shooter, @Nullable IContentType weapon, Vec3 origin, Vec3 direction, float scale, boolean heavy)
+    {
+        ExternalProjectileSupport.firingEffects(shooter, weapon, origin, direction, scale, heavy);
+    }
+
 }

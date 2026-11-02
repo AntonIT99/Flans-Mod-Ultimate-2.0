@@ -2,6 +2,7 @@ package com.flansmodultimate.client.damage;
 
 import com.flansmodultimate.client.particle.BlastPuffParticle;
 import com.flansmodultimate.client.particle.ParticleHelper;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.config.ModClientConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -117,7 +118,10 @@ final class DamageParticles
             double vx = (random.nextDouble() - 0.5D) * 2D * speed;
             double vy = random.nextDouble() * speed * 1.2D;
             double vz = (random.nextDouble() - 0.5D) * 2D * speed;
-            puff(look, at, vx, vy, vz, 0.08F + random.nextFloat() * 0.08F, 8 + random.nextInt(10), false);
+            if (look == SPARK && density() > 0D)
+                ParticleHelper.spawnFromString(FlanParticles.FM_NU_SPARK, at.x, at.y, at.z, vx, vy, vz, 0.7F);
+            else
+                puff(look, at, vx, vy, vz, 0.08F + random.nextFloat() * 0.08F, 8 + random.nextInt(10), false);
         }
     }
 

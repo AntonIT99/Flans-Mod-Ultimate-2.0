@@ -204,7 +204,7 @@ public final class ShootingHelper
                 PacketPlaySound.sendSoundPacket(hit, bulletType.getHitSoundRange(), level.dimension(), bulletType.getHitSound(), true, null);
 
             float prevPenetratingPower = penetratingPower;
-            HitData playerHitData = playerHit.getHitbox().hitByBullet(shot, hitData, bullet);
+            HitData playerHitData = playerHit.getHitbox().hitByBullet(shot, hitData, bullet, hit, shootingMotion);
             penetratingPower = playerHitData.penetratingPower();
             lastHitPenAmount = playerHitData.lastHitPenAmount();
             lastHitHeadshot = playerHitData.lastHitHeadshot();
@@ -291,10 +291,12 @@ public final class ShootingHelper
             if (partHit != null && armoured.map(ModelArmourDamage.Result::shapedCharge).orElse(false))
                 partHit.getBody().markShapedCharge(partHit.getPart(), partHit.getHitPosition(), level.getGameTime());
 
-            if (damage > 0F && hurt(entity, partHit, shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+            if (damage > 0F && (entity instanceof LivingEntity victim
+                ? BloodEffects.hurt(victim, hit, shootingMotion, () -> hurt(entity, partHit, shot.getDamageSource(level, bullet), damage))
+                : hurt(entity, partHit, shot.getDamageSource(level, bullet), damage)) && entity instanceof LivingEntity living)
             {
-                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entity.getX(), entity.getY(), entity.getZ(), 0, 0, 0), entity.position(),
-                    ModCommonConfig.entityHitParticleRange(), level.dimension());
+                if (!(entity instanceof Player) && !(entity instanceof com.flansmodultimate.api.entity.ILivingVisualEffects))
+                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, hit.x, hit.y, hit.z, 0, 0, 0), hit, ModCommonConfig.entityHitParticleRange(), level.dimension());
                 bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                 // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                 living.invulnerableTime = living.hurtDuration / 2;

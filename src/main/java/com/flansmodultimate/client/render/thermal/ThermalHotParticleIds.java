@@ -38,6 +38,8 @@ final class ThermalHotParticleIds
             if (extra.equals(lower) || extra.indexOf(':') < 0 && extra.equals(path))
                 return true;
         }
+        if (path.equals("flasher") || path.equals("water_smoke") || path.equals("water_smoke_mini") || path.equals("blood") || path.equals("overkill") || path.equals("casing"))
+            return false;
         if (path.contains("smoke"))
             return false;
         for (String keyword : HOT_KEYWORDS)

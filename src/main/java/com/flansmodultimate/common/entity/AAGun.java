@@ -994,6 +994,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         barrelRecoil[barrel] = type.getRecoil() * bulletType.getRecoilMultiplier();
         shotsFired++;
+        ExternalProjectileSupport.firingEffects(this, null, barrelOrigin, shootingDir, 1F, true);
 
         if (soundTimer <= 0 && StringUtils.isNotBlank(type.getShootSound()))
         {

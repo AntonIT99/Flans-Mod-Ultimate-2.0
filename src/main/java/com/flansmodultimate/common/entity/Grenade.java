@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.GunItem;
@@ -803,6 +804,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (!configType.isFlashBang() || level.isClientSide)
             return;
 
+        PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_NU_FLASH, getX(), getY(), getZ(), 0D, 0D, 0D), position(), 128D, level.dimension());
+        PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_FLASHER, getX(), getY(), getZ(), 0D, 0.1D, 0D), position(), 128D, level.dimension());
         double smokeRadius = configType.getSmokeRadius();
         AABB aabb = getBoundingBox().inflate(smokeRadius, smokeRadius, smokeRadius);
 

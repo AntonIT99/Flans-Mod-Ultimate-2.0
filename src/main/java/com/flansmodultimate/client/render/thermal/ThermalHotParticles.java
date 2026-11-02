@@ -49,7 +49,7 @@ public final class ThermalHotParticles
 
     public static void trackByClass(Particle particle)
     {
-        if (particle != null && HOT_CLASSES.contains(particle.getClass()))
+        if (particle != null && (HOT_CLASSES.contains(particle.getClass()) || particle instanceof LegacyEffectParticle legacy && legacy.isHot()))
             track(particle);
     }
 

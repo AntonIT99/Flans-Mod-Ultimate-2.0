@@ -1669,6 +1669,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return weaponType(secondaryWeapon) == EnumWeaponType.SHELL;
     }
 
+    @Override
+    public boolean hasCartridgeEjection(boolean secondaryWeapon)
+    {
+        EnumWeaponType weapon = weaponType(secondaryWeapon);
+        return weapon == EnumWeaponType.GUN || weapon == EnumWeaponType.SHELL;
+    }
+
     /**
      * The camera kick a shot from the given bank sends to nearby players, or null when it sends none.
      * Shells and missiles from either bank, and guns on the primary bank, kick like the main gun; guns

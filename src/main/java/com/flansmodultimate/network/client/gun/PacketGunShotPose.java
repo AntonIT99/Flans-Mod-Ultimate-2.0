@@ -63,6 +63,7 @@ public class PacketGunShotPose implements IClientPacket
             GunArmPoses.recordShot(shooter, hand);
             if (animate)
             {
+                ClientHooks.RENDER.heldShotEffects(shooter, hand);
                 // A shot event cannot be lost when start/stop state updates arrive between client ticks.
                 if (shooter == player)
                     hooks.animateLocalShot(player, hand);

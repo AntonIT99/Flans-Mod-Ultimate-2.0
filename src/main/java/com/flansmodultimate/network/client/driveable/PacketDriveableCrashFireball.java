@@ -68,6 +68,8 @@ public class PacketDriveableCrashFireball implements IClientPacket
             return;
         float size = Math.min(radius, MAX_RADIUS);
         RandomSource random = level.random;
+        ClientHooks.RENDER.waterImpact(position, size);
+        spawn(FlanParticles.FM_TANK_DEATH, position, Vec3.ZERO, Math.min(2F, size * 0.25F));
         // The ground where it went in stays burnt.
         ClientHooks.RENDER.spawnScorchMark(position, size * 0.6F);
 

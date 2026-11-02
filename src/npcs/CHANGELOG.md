@@ -6,7 +6,7 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 
 ## Soldiers
 
-* `Blood Effects` in Wolff's Mod > Effects enables temporary ground splatters on death and heavy hits; the Player and Human NPC presets and generated soldier bots enable it, and the Teams rule can disable it for everyone
+* `Blood Effects` in Wolff's Mod > Effects enables airborne wound puffs, severe-injury spray and temporary ground splatters; blocked hits do not bleed and fatal heavy hits do not duplicate splatters; the Player and Human NPC presets and generated soldier bots enable it, and the Teams rule can disable it for everyone
 
 * Custom NPCs use Flan's guns, grenades, throwables, melee weapons, shields and armour, with reloads, ammunition from their inventory and Flan's sounds and muzzle flashes; the sounds an NPC makes carry as far, and as loudly, as the same weapon in a player's hands
 * Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender; NPCs whose random Custom NPCs preset skin is missing wear Steve instead of the missing texture
@@ -28,6 +28,8 @@ First release. Requires Flan's Mod Ultimate 2.2 or newer and Custom NPCs.
 * `Name tag for allies only` (Effects): only players the NPC's faction is friendly to see its name tag
 
 ## Vehicles, Aircraft & Mechas
+
+* Model weapons emit firing smoke, world casings and layered cannon blasts at their barrels; vehicle-shaped NPCs share water spray, machinery exhaust and destruction columns, and retained wreck effects burn out within one minute without replaying on respawn or model changes
 
 * Flan model NPCs, including AA guns, scale projectile and explosion pushes by vehicle mass by default, using the same mass fallbacks and knockback settings as real vehicles; the per-NPC `Immune` option also blocks direct explosion pushes, while `Normal` keeps Custom NPCs behaviour
 

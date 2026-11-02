@@ -801,6 +801,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         while (ShotCooldown.isReady(shootTimer))
         {
             ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
+            ExternalProjectileSupport.firingEffects(this, configType, getShootingOrigin(), getShootingDirection(), 1F, false);
             entityData.set(DATA_MUZZLE_FLASH_FRAME, random.nextInt(3));
             entityData.set(DATA_MUZZLE_FLASH_TICKS, 2);
             playShootSound(level);

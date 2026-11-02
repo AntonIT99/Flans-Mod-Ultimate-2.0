@@ -43,6 +43,19 @@ public interface IDriveableType extends IContentType
         return false;
     }
 
+    /**
+     * Whether a weapon bank uses gun or shell cartridges, rather than rockets, missiles or dropped ordnance.
+     * Readable on either side after content loading; individual mounted gun definitions may refine ejection behavior.
+     *
+     * @param secondary
+     *            true for the secondary weapon bank, false for the primary bank
+     * @return whether cosmetic cartridge ejection is suitable for the bank
+     */
+    default boolean hasCartridgeEjection(boolean secondary)
+    {
+        return false;
+    }
+
     /** @return the definition's model and part scale; readable on either side after content loading */
     @SuppressWarnings("SameReturnValue") // Compatibility default; driveable definitions override this with their authored scale.
     default float getModelScale()

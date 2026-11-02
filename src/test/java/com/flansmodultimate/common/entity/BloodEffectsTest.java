@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
@@ -112,4 +113,75 @@ class BloodEffectsTest
             packets.verifyNoInteractions();
         }
     }
+
+    @Test
+    void onlyFinalPositiveDamageProducesAnAirborneWoundAtTheTracedPosition()
+    {
+        Player player = mock(Player.class);
+        ServerLevel level = mock(ServerLevel.class);
+        when(player.level()).thenReturn(level);
+        when(player.getRandom()).thenReturn(RandomSource.create(7));
+        when(level.dimension()).thenReturn(Level.OVERWORLD);
+        TeamsManager manager = mock(TeamsManager.class);
+        when(manager.isBloodEffects()).thenReturn(true);
+        DamageSource source = mock(DamageSource.class);
+        Vec3 wound = new Vec3(2D, 4D, 6D);
+        try (var managers = mockStatic(TeamsManager.class); var packets = mockStatic(PacketHandler.class))
+        {
+            managers.when(TeamsManager::getInstance).thenReturn(manager);
+            BloodEffects.hurt(player, wound, new Vec3(1D, 0D, 0D), () ->
+            {
+                BloodEffects.onDamage(player, source, 0F);
+                return true;
+            });
+            packets.verifyNoInteractions();
+            BloodEffects.hurt(player, wound, new Vec3(1D, 0D, 0D), () ->
+            {
+                BloodEffects.onDamage(player, source, 4F);
+                return true;
+            });
+            packets.verify(() -> PacketHandler.sendToAllAround(any(PacketParticle.class), eq(wound), eq(64D), eq(Level.OVERWORLD)));
+            packets.clearInvocations();
+            when(manager.isBloodEffects()).thenReturn(false);
+            BloodEffects.hurt(player, wound, Vec3.ZERO, () ->
+            {
+                BloodEffects.onDamage(player, source, 41F);
+                return true;
+            });
+            packets.verifyNoInteractions();
+        }
+    }
+
+    @Test
+    void nestedWoundsRestoreTheirCallerEvenWhenDamageThrows()
+    {
+        Player player = mock(Player.class);
+        ServerLevel level = mock(ServerLevel.class);
+        when(player.level()).thenReturn(level);
+        when(player.getRandom()).thenReturn(RandomSource.create(8));
+        when(level.dimension()).thenReturn(Level.OVERWORLD);
+        TeamsManager manager = mock(TeamsManager.class);
+        when(manager.isBloodEffects()).thenReturn(true);
+        DamageSource source = mock(DamageSource.class);
+        Vec3 outer = new Vec3(1D, 2D, 3D);
+        Vec3 inner = new Vec3(4D, 5D, 6D);
+        try (var managers = mockStatic(TeamsManager.class); var packets = mockStatic(PacketHandler.class))
+        {
+            managers.when(TeamsManager::getInstance).thenReturn(manager);
+            BloodEffects.hurt(player, outer, Vec3.ZERO, () ->
+            {
+                assertThrows(IllegalStateException.class, () -> BloodEffects.hurt(player, inner, Vec3.ZERO, () ->
+                {
+                    throw new IllegalStateException("Canceled by another damage handler");
+                }));
+                BloodEffects.onDamage(player, source, 2F);
+                return true;
+            });
+            packets.verify(() -> PacketHandler.sendToAllAround(any(PacketParticle.class), eq(outer), eq(64D), eq(Level.OVERWORLD)));
+            packets.clearInvocations();
+            BloodEffects.onDamage(player, source, 2F);
+            packets.verifyNoInteractions();
+        }
+    }
+
 }
