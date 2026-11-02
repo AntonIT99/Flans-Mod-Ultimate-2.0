@@ -237,7 +237,7 @@ simple rendering retains the detached model's scale. Recheck that local-variable
 layout for another Custom NPCs build. The preview and nameplate share the NPC
 module's `FlanModelBounds` helper and the existing public geometry API.
 
-The Teams bot editor's pickers (`BotPickerScreen` and its subclasses) are vanilla
+The Teams bot settings pickers (`BotPickerScreen` and its subclasses) are vanilla
 screens rather than Custom NPCs ones. They draw clone and class previews through
 `NpcClientPlatform.drawNpc(GuiGraphics, LivingEntity, x, y, zoom, mouseX, mouseY)`,
 which calls Custom NPCs' `CustomGuiEntityDisplay.drawEntity` with a zero GUI origin;

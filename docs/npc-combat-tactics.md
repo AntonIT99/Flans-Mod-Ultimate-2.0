@@ -60,7 +60,7 @@ positioning controls apply to NPC models and real Flan vehicles respectively.
 
 ## Teams and diagnosis
 
-The bot editor's Rules page offers a Behaviour profile. **Use NPC settings**
+The bot settings Rules page offers a Behaviour profile. **Use NPC settings**
 is the default. A battle override applies temporarily through the shared
 settings resolver; it does not overwrite a clone's saved settings. Existing
 round suppression and retreat-health rules remain independent.
