@@ -76,7 +76,7 @@ public final class CapturePointBlock extends TeamObjectBlock
     {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide && placer != null && level.getBlockEntity(pos) instanceof CapturePointBlockEntity point)
-            point.setYaw(placer.getYRot());
+            point.setYaw(Math.round(placer.getYRot() / 45F) * 45F);
     }
 
     @Override

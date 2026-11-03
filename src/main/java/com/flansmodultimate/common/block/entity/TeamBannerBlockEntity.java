@@ -1,9 +1,7 @@
 package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansModBlocks;
-import com.flansmodultimate.common.teams.ITeamBase;
-import com.flansmodultimate.common.teams.ITeamObject;
-import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
 import lombok.Getter;
@@ -69,7 +67,7 @@ public final class TeamBannerBlockEntity extends FlanBlockEntity implements ITea
             return;
         TeamsManager manager = TeamsManager.getInstance();
         ITeamBase base = baseId == null ? null : manager.getBase(baseId).orElse(null);
-        Team team = base == null ? null : manager.getTeamForBase(base);
+        Team team = base == null ? null : manager.getDisplayTeamForBase(base);
         int colour = team == null ? UNOWNED_COLOUR : team.getTeamColour();
         String name = team == null ? "" : Objects.toString(team.getShortName(), "");
         if (teamColour != colour || !teamName.equals(name))

@@ -4,6 +4,8 @@ import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.common.block.entity.TeamBannerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.teams.PacketBannerEditState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +20,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.*;
-import net.minecraft.world.level.block.state.*;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.*;
 
@@ -124,12 +127,18 @@ public final class TeamBannerBlock extends TeamObjectBlock
     @Override
     protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
-        ItemStack held = player.getItemInHand(hand);
-        if (!(held.getItem() instanceof ItemOpStick stick) || !(level.getBlockEntity(pos) instanceof TeamBannerBlockEntity banner))
+        if (!(level.getBlockEntity(pos) instanceof TeamBannerBlockEntity banner))
             return InteractionResult.PASS;
-        if (player instanceof ServerPlayer serverPlayer)
+        if (level.isClientSide)
+            return InteractionResult.SUCCESS;
+        if (!(player instanceof ServerPlayer serverPlayer) || !serverPlayer.hasPermissions(2))
+            return InteractionResult.CONSUME;
+        ItemStack held = player.getItemInHand(hand);
+        if (held.getItem() instanceof ItemOpStick stick)
             stick.useOnTeamObject(serverPlayer, banner, held);
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        else
+            PacketHandler.sendTo(PacketBannerEditState.of(banner), serverPlayer);
+        return InteractionResult.CONSUME;
     }
 
     @Override

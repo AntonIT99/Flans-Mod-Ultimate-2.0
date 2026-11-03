@@ -21,6 +21,12 @@
 
 ## Teams
 
+* Newly placed Teams Capture Point Flags snap to the nearest 45-degree rotation
+
+* Renamed the Teams Flagpole and Teams Capture Point items to Teams Base Flag and Teams Capture Point Flag in all supported languages
+
+* Operators can assign Teams banners to bases through a right-click menu, immediately updating their team-colored cloth and flag even outside rounds
+
 * The `destroyableDeployedGuns` round rule lets damage destroy deployed guns during a round (default false); destroyed guns and their ammunition do not drop
 
 * Teams vehicle spawners fill driveable fuel tanks and load default weapon ammunition plus up to 32 spare ammunition items per type in available cargo space; configure `teamsSpawnVehiclesWithFuel` and `teamsSpawnVehicleAmmo` (0 disables ammunition provisioning)
