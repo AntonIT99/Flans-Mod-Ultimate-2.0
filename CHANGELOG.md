@@ -21,6 +21,8 @@
 
 ## Teams
 
+* Newly placed capture points use the first unused letter on their map, reusing freed letters; the editor and saved points support A-Z
+
 * Newly placed Teams Capture Point Flags snap to the nearest 45-degree rotation
 
 * Renamed the Teams Flagpole and Teams Capture Point items to Teams Base Flag and Teams Capture Point Flag in all supported languages

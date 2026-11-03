@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.block.entity;
 
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
@@ -8,10 +9,14 @@ import org.junit.jupiter.api.Test;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class CapturePointHeightTest
@@ -64,6 +69,50 @@ class CapturePointHeightTest
             invalid.putInt("pole_height", 10000);
             point.loadData(invalid, null);
             assertEquals(64, point.getPoleHeight());
+        }
+    }
+
+    @Test
+    void placementUsesFirstFreeLetterAndReusesGaps()
+    {
+        var manager = mock(TeamsManager.class);
+        ServerLevel level = mock(ServerLevel.class);
+        when(level.dimension()).thenReturn(Level.OVERWORLD);
+        when(manager.getMap(anyString())).thenReturn(Optional.empty());
+        CapturePointBlockEntity first = point();
+        first.setLevel(level);
+        CapturePointBlockEntity second = point();
+        second.setLevel(level);
+        CapturePointBlockEntity third = point();
+        third.setLevel(level);
+        try (var managers = mockStatic(TeamsManager.class))
+        {
+            managers.when(TeamsManager::getInstance).thenReturn(manager);
+            first.initialisePlacedSymbol();
+            assertEquals('A', first.getSymbol());
+            when(manager.getBases(Level.OVERWORLD)).thenReturn(List.of(first));
+            second.initialisePlacedSymbol();
+            assertEquals('B', second.getSymbol());
+            when(manager.getBases(Level.OVERWORLD)).thenReturn(List.of(second));
+            third.initialisePlacedSymbol();
+            assertEquals('A', third.getSymbol());
+        }
+    }
+
+    @Test
+    void lettersThroughZSurviveSavingAndClientSync()
+    {
+        for (char symbol = 'A'; symbol <= 'Z'; symbol++)
+        {
+            CapturePointBlockEntity point = point();
+            point.applySettings("Objective", symbol, 16);
+            CompoundTag saved = new CompoundTag();
+            point.saveData(saved, null);
+            CapturePointBlockEntity restored = point();
+            restored.loadData(saved, null);
+            assertEquals(symbol, restored.getSymbol());
+            restored.loadData(point.createUpdateTag(null), null);
+            assertEquals(symbol, restored.getSymbol());
         }
     }
 }

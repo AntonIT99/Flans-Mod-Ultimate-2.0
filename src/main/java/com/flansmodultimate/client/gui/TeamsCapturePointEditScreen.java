@@ -11,9 +11,7 @@ import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -29,7 +27,6 @@ public final class TeamsCapturePointEditScreen extends Screen
     private static final String[] OWNER_KEYS = {"gui.flansmod.teams.capture_point.owner_none", "gui.flansmod.teams.capture_point.owner_first", "gui.flansmod.teams.capture_point.owner_second"};
 
     private final PacketCapturePointEditState state;
-    private final List<Button> symbolButtons = new ArrayList<>();
     private final List<Button> ownerButtons = new ArrayList<>();
     private final List<Button> mapButtons = new ArrayList<>();
     private EditBox nameField;
@@ -54,7 +51,6 @@ public final class TeamsCapturePointEditScreen extends Screen
     @Override
     protected void init()
     {
-        symbolButtons.clear();
         ownerButtons.clear();
         mapButtons.clear();
         int left = width / 2 - 128;
@@ -65,18 +61,11 @@ public final class TeamsCapturePointEditScreen extends Screen
         addRenderableWidget(nameField);
         setInitialFocus(nameField);
 
+        List<Character> symbols = new ArrayList<>();
         for (char symbol = CapturePointBlockEntity.FIRST_SYMBOL; symbol <= CapturePointBlockEntity.LAST_SYMBOL; symbol++)
-        {
-            char choice = symbol;
-            Button button = Button.builder(Component.literal(String.valueOf(symbol)), ignored ->
-            {
-                selectedSymbol = choice;
-                refreshButtons();
-            }).bounds(left + 6 + 50 * (symbol - CapturePointBlockEntity.FIRST_SYMBOL), top + 40, 46, 20).build();
-            symbolButtons.add(button);
-            addRenderableWidget(button);
-        }
-
+            symbols.add(symbol);
+        addRenderableWidget(CycleButton.<Character>builder(symbol -> Component.literal(String.valueOf(symbol))).withValues(symbols).withInitialValue(selectedSymbol).displayOnlyValue().create(left + 6,
+            top + 40, 244, 20, Component.empty(), (button, symbol) -> selectedSymbol = symbol));
         radiusField = new EditBox(font, left + 50, top + 65, 36, 16, Component.translatable("gui.flansmod.teams.capture_point.radius"));
         radiusField.setMaxLength(3);
         radiusField.setFilter(value -> value.chars().allMatch(Character::isDigit));
@@ -134,8 +123,6 @@ public final class TeamsCapturePointEditScreen extends Screen
 
     private void refreshButtons()
     {
-        for (int i = 0; i < symbolButtons.size(); i++)
-            symbolButtons.get(i).active = selectedSymbol != CapturePointBlockEntity.FIRST_SYMBOL + i;
         for (int i = 0; i < ownerButtons.size(); i++)
             ownerButtons.get(i).active = selectedOwner != OWNER_IDS[i];
         for (int i = 0; i < mapButtons.size(); i++)
