@@ -14,3 +14,4 @@ AddItem 44_TT33
 AddItem 44_TT33Ammo 2
 AddItem 44_AmmoBag
 AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

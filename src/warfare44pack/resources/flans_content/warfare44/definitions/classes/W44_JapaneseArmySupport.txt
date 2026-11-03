@@ -14,3 +14,4 @@ AddItem 44_Type14Nambu
 AddItem 44_Type14NambuAmmo 2
 AddItem 44_AmmoBag
 AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

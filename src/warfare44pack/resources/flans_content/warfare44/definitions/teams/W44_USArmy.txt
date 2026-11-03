@@ -43,6 +43,7 @@ AddClass W44_USArmyNightScoutCarbine
 
 // Anti-tank
 AddClass W44_USArmyAntiTank
+AddClass W44_USArmyAntiTankRifle
 
 // Engineers and military police
 AddClass W44_USArmyEngineer

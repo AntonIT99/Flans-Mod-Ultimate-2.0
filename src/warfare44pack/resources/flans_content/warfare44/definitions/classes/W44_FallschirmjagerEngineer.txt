@@ -14,3 +14,4 @@ AddItem 44_SatchelCharge
 AddItem 44_Smokestielhandgranate
 AddItem 44_Bandage
 AddItem 44_Parachute
+AddItem 44_German1915TrenchKnife

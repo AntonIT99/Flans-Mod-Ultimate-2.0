@@ -33,6 +33,7 @@ AddClass W44_SovietArmyMarksmanSVT40
 
 // Anti-tank
 AddClass W44_SovietArmyAntiTank
+AddClass W44_SovietArmyAntiTankRifle
 
 // Engineers and military police
 AddClass W44_SovietArmyEngineer

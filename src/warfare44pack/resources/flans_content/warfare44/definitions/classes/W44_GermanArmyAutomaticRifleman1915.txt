@@ -13,3 +13,4 @@ AddItem 44_Luger
 AddItem 44_LugerAmmo 2
 AddItem 44_stielhandgranate 2
 AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

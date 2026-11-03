@@ -30,6 +30,7 @@ AddClass W44_JapaneseArmyScout
 
 // Anti-tank
 AddClass W44_JapaneseArmyAntiTank
+AddClass W44_JapaneseArmyAntiTankRifle
 
 // Engineers and military police
 AddClass W44_JapaneseArmyEngineer

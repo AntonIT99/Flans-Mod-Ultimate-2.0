@@ -22,3 +22,4 @@ AddItem 44_LugerAmmo 2
 AddItem 44_Binoculars
 AddItem 44_Smokestielhandgranate 3
 AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

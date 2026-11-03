@@ -15,3 +15,4 @@ AddItem 44_G43
 AddItem 44_G43Ammo 6
 AddItem 44_stielhandgranate 2
 AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

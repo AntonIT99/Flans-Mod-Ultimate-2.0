@@ -14,3 +14,4 @@ AddItem 44_Bandage 4
 AddItem 44_Smokestielhandgranate 2
 AddItem 44_Syringe
 AddItem 44_Morphine 5
+AddItem 44_German1915TrenchKnife

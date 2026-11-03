@@ -11,3 +11,4 @@ AddItem 44_Type100
 AddItem 44_Type100Ammo 3
 AddItem 44_RepairTool
 AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

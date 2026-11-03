@@ -31,6 +31,7 @@ AddClass W44_BritishArmyScout
 
 // Anti-tank
 AddClass W44_BritishArmyAntiTank
+AddClass W44_BritishArmyAntiTankRifle
 
 // Engineers and military police
 AddClass W44_BritishArmyEngineer

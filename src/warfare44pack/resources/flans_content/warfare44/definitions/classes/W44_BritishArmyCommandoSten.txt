@@ -12,3 +12,4 @@ AddItem 44_Sten+44_Suppressor
 AddItem 44_StenAmmo 5
 AddItem 44_Mk2Frag
 AddItem 44_Bandage
+AddItem 44_AmericanKaBarKnife

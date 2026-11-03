@@ -11,3 +11,4 @@ AddItem 44_Webley
 AddItem 44_WebleyAmmo 3
 AddItem 44_Parachute
 AddItem 44_Bandage
+AddItem 44_AmericanKaBarKnife
