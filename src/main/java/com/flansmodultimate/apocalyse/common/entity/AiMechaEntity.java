@@ -1,5 +1,6 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
+import com.flansmodultimate.api.driveables.MechaWalking;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
@@ -45,8 +46,6 @@ public class AiMechaEntity extends Mecha
     private static final String NBT_USING_LEFT = "ai_using_left";
     private static final int TARGET_ACQUIRE_INTERVAL = 40;
     private static final double TARGETING_RANGE = 20.0D;
-    /** Below this projection onto a movement axis the input is not worth pressing. */
-    private static final double MOVEMENT_DEADZONE = 0.35D;
     /** Close enough: stop walking so the guard does not trample its target. */
     private static final double APPROACH_STOP_DISTANCE_SQR = 9.0D;
 
@@ -182,27 +181,11 @@ public class AiMechaEntity extends Mecha
     private int walkToward(Vec3 delta)
     {
         Vec3 wanted = new Vec3(delta.x, 0D, delta.z);
-        if (wanted.lengthSqr() < APPROACH_STOP_DISTANCE_SQR)
-            return 0;
-        wanted = wanted.normalize();
-
         float movementYaw = MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw());
-        Vec3 forwardAxis = MechaPhysics.movementIntent(movementYaw, 1F, 0F);
-        Vec3 strafeAxis = MechaPhysics.movementIntent(movementYaw, 0F, 1F);
-
-        int mask = 0;
-        double forward = wanted.dot(forwardAxis);
-        if (forward > MOVEMENT_DEADZONE)
-            mask |= DriveableInput.FORWARD;
-        else if (forward < -MOVEMENT_DEADZONE)
-            mask |= DriveableInput.BACKWARD;
-
-        double strafe = wanted.dot(strafeAxis);
-        if (strafe > MOVEMENT_DEADZONE)
-            mask |= DriveableInput.RIGHT;
-        else if (strafe < -MOVEMENT_DEADZONE)
-            mask |= DriveableInput.LEFT;
-        return mask;
+        Vec3 forward = MechaPhysics.movementIntent(movementYaw, 1F, 0F);
+        Vec3 right = MechaPhysics.movementIntent(movementYaw, 0F, 1F);
+        double off = Math.toDegrees(Math.atan2(wanted.dot(right), wanted.dot(forward)));
+        return DriveableInput.forControls(MechaWalking.toward(off, wanted.length(), Math.sqrt(APPROACH_STOP_DISTANCE_SQR)));
     }
 
     @Nullable

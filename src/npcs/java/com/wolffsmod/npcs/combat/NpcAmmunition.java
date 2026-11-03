@@ -220,6 +220,30 @@ public final class NpcAmmunition
         return choose(npc, model, secondary, pool);
     }
 
+    /**
+     * Whether every weapon of the NPC's vehicle model has run out: neither weapon group, nor any gun mounted in one, has a
+     * round left that it could fire. A vehicle that falls back on the rounds its guns are issued with by default, as one
+     * does unless it really uses its ammunition up, is never out. Server thread.
+     */
+    public static boolean modelDry(EntityNPCInterface npc)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        IContentType definition = model == null ? null : model.getInfoType();
+        if (!(definition instanceof IDriveableType))
+            return false;
+        for (boolean secondary : new boolean[]{false, true})
+        {
+            if (!bankTemplate(npc, definition, secondary).isEmpty())
+                return false;
+            for (var muzzle : FlansProjectiles.getMuzzles(definition, secondary, 0, false))
+            {
+                if (muzzle.weapon().filter(gun -> !driverGunTemplate(npc, gun).isEmpty()).isPresent())
+                    return false;
+            }
+        }
+        return true;
+    }
+
     /** Vehicle ammunition, an NPC gunner's own, then the seat gun's default rounds; templates are never consumed. */
     public static ItemStack crewGunTemplate(EntityNPCInterface vehicle, LivingEntity gunner, IContentType gun)
     {

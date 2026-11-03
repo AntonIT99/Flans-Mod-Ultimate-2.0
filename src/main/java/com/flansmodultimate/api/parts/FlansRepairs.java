@@ -25,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /** Shared repair rules for driveables and entities wearing their parts. Mutating methods require the level's server thread. */
 @ApiStatus.Experimental
@@ -246,12 +247,47 @@ public final class FlansRepairs
         return true;
     }
 
-    /** Naval motion in blocks/tick using shared driveable compartment physics. Either side; does not mutate the entity. */
-    public static Vec3 navalVelocity(IPartBody body, Vec3 previous, Vec3 healthy, double depth)
+    /** The trim and list, in degrees, that a flooding hull settles into, as Minecraft counts an entity's pitch and roll. */
+    public record NavalAttitude(float pitch, float roll)
+    {}
+
+    /**
+     * Naval motion in blocks/tick using shared driveable compartment physics. Either side; does not mutate the entity.
+     *
+     * @param atSea
+     *            whether open water deep enough to make way surrounds the hull, as {@link #atSea} tests it: one that is
+     *            not makes only a fraction of its way, as a driveable ship does in a river or a pond
+     */
+    public static Vec3 navalVelocity(IPartBody body, Vec3 previous, Vec3 healthy, double depth, boolean atSea)
     {
         EpicShipPhysics.Damage damage = navalDamage(body);
-        float limit = EpicShipPhysics.throttleLimit(damage, true, depth);
+        float limit = EpicShipPhysics.throttleLimit(damage, atSea, depth);
         return new Vec3(healthy.x * limit, EpicShipPhysics.verticalVelocity(previous.y, healthy.y, depth > 1D, damage), healthy.z * limit);
+    }
+
+    /**
+     * Whether open water deep enough for a ship to make way surrounds a position, by the same samples a driveable ship
+     * takes. Either side.
+     *
+     * @param water
+     *            whether the given point is inside water
+     */
+    public static boolean atSea(Vec3 origin, Predicate<Vec3> water)
+    {
+        return EpicShipPhysics.atSea(origin, water);
+    }
+
+    /**
+     * The trim and list a flooding hull settles into: bow or stern down as either floods, heeling to the flooded side, and
+     * levelling out again once the compartments hold. Either side; does not mutate the entity.
+     *
+     * @param pitch
+     *            the trim it holds now, in degrees, likewise the roll
+     */
+    public static NavalAttitude navalAttitude(IPartBody body, float pitch, float roll)
+    {
+        EpicShipPhysics.Damage damage = navalDamage(body);
+        return new NavalAttitude(EpicShipPhysics.pitch(pitch, damage), EpicShipPhysics.roll(roll, damage));
     }
 
     /** Whether shared naval compartment rules consider a ship irrecoverably sunk at the given water depth in blocks. Either side. */

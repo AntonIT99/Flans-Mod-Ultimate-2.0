@@ -10,9 +10,16 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -35,6 +42,8 @@ final class DamageParticles
     static final int SCORCH_TICKS = 2400;
     /** Burst puffs already grow over their lifetime; a large hull must not multiply that growth again. */
     private static final float MAX_BURST_SCALE = 1.5F;
+    /** How much of the ground's own colour tinted dust takes; the rest stays the earth tone of {@link #DUST}. */
+    private static final float GROUND_COLOUR_SHARE = 0.45F;
 
     // spotless:off
     static final BlastPuffParticle.Look GREY_SMOKE = new BlastPuffParticle.Look(0.56F, 0.55F, 0.54F, 0.42F, 0.42F, 0.42F, 0.55F, 2.2F, 0.96F, 0.004F, 0F, false, true);
@@ -149,6 +158,31 @@ final class DamageParticles
                 60 + random.nextInt(40), true);
         }
         sparks(SPARK, at, Math.max(4, Math.round(8 * size)), 0.25D * Math.sqrt(size), random);
+    }
+
+    /**
+     * Dust in the colour of the ground it was thrown up from, pulled back toward bare earth, so that a meadow throws
+     * brown dust while sand and snow keep their own colour. Follows the rule an explosion's dust skirt is tinted by.
+     *
+     * @param ground
+     *            the block the dust comes off
+     * @return the tinted look, or plain {@link #DUST} for a block with no colour of its own
+     */
+    static BlastPuffParticle.Look groundDust(BlockState ground, BlockGetter level, BlockPos pos)
+    {
+        BlockState source = ground.is(BlockTags.DIRT) ? Blocks.DIRT.defaultBlockState() : ground;
+        MapColor colour = source.getMapColor(level, pos);
+        if (colour == MapColor.NONE)
+            return DUST;
+        float red = tint(DUST.startR(), (colour.col >> 16) & 0xFF);
+        float green = tint(DUST.startG(), (colour.col >> 8) & 0xFF);
+        float blue = tint(DUST.startB(), colour.col & 0xFF);
+        return new BlastPuffParticle.Look(red, green, blue, red * 0.85F, green * 0.85F, blue * 0.85F, DUST.alpha(), DUST.growth(), DUST.drag(), DUST.buoyancy(), 0F, false, true);
+    }
+
+    private static float tint(float earth, int channel)
+    {
+        return Mth.lerp(GROUND_COLOUR_SHARE, earth, channel / 255F);
     }
 
     /** Keeps small part bursts unchanged and grows larger death and magazine bursts gently, with a shared ceiling. */

@@ -34,6 +34,8 @@ import java.util.function.Consumer;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class TeamForceCommands
 {
+    private static final String SQUAD_SIZE = "squadsize";
+    private static final String INHERIT = "inherit";
     private static final String COUNT = "count";
     private static final String BUDGET = "budget";
     private static final String VALUE = "value";
@@ -86,10 +88,10 @@ final class TeamForceCommands
             .executes(context -> target.edit(context, force -> force.setCount(IntegerArgumentType.getInteger(context, VALUE)), text(SET, COUNT, IntegerArgumentType.getInteger(context, VALUE))))));
         team.then(Commands.literal(BUDGET).then(Commands.argument(VALUE, IntegerArgumentType.integer(0))
             .executes(context -> target.edit(context, force -> force.setBudget(IntegerArgumentType.getInteger(context, VALUE)), text(SET, BUDGET, IntegerArgumentType.getInteger(context, VALUE))))));
-        team.then(Commands.literal("squadsize")
+        team.then(Commands.literal(SQUAD_SIZE)
             .then(Commands.argument(VALUE, IntegerArgumentType.integer(1)).executes(
-                context -> target.edit(context, force -> force.setSquadSize(IntegerArgumentType.getInteger(context, VALUE)), text(SET, "squadsize", IntegerArgumentType.getInteger(context, VALUE)))))
-            .then(Commands.literal("inherit").executes(context -> target.edit(context, force -> force.setSquadSize(0), text(SET, "squadsize", "inherit")))));
+                context -> target.edit(context, force -> force.setSquadSize(IntegerArgumentType.getInteger(context, VALUE)), text(SET, SQUAD_SIZE, IntegerArgumentType.getInteger(context, VALUE)))))
+            .then(Commands.literal(INHERIT).executes(context -> target.edit(context, force -> force.setSquadSize(0), text(SET, SQUAD_SIZE, INHERIT)))));
         team.then(Commands.literal(NAMES).then(Commands.argument(NAME, StringArgumentType.word()).suggests(NAME_LISTS)
             .executes(context -> target.edit(context, force -> force.setNameList(BotCommands.word(context, NAME)), text(SET, NAMES, StringArgumentType.getString(context, NAME))))));
         team.then(Commands.literal("clone").then(Commands.literal(BotCommands.NONE).executes(context -> target.edit(context, force -> force.setCloneTab(0), text("clone_none"))))
@@ -130,7 +132,7 @@ final class TeamForceCommands
         team.then(Commands.literal("vehiclerespawn")
             .then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
                 .then(Commands.argument(VALUE, IntegerArgumentType.integer(0)).executes(context -> vehicleRespawn(context, target, IntegerArgumentType.getInteger(context, VALUE))))
-                .then(Commands.literal("inherit").executes(context -> vehicleRespawn(context, target, 0)))));
+                .then(Commands.literal(INHERIT).executes(context -> vehicleRespawn(context, target, 0)))));
         team.then(Commands.literal("removevehicle").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES).executes(context -> target.edit(context,
             force -> force.getVehicles().removeIf(entry -> entry.type().equals(StringArgumentType.getString(context, TYPE))), text("vehicle_removed", StringArgumentType.getString(context, TYPE))))));
         team.then(Commands.literal("aircraftrole")

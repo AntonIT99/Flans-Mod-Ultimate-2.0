@@ -46,6 +46,28 @@ class NpcPilotTest
     }
 
     @Test
+    void aHoveringRotorcraftBarelyNosesUpOnAGroundTargetAndLaysItsGunsOnAnAircraftAbove()
+    {
+        // A target well below is covered by the forward tilt, airborne or not.
+        assertEquals(-15F, NpcPilot.aimTilt(-40D, 20D, false), 1.0E-3F);
+        assertEquals(-15F, NpcPilot.aimTilt(-40D, 20D, true), 1.0E-3F);
+        // One well above: a target on the ground gets the hover nose-up, an aircraft as far as the attack tilt.
+        assertEquals(5F, NpcPilot.aimTilt(40D, 20D, false), 1.0E-3F);
+        assertEquals(30F, NpcPilot.aimTilt(40D, 20D, true), 1.0E-3F);
+        // Within what its nose reaches, it lays the angle the shot actually needs.
+        assertEquals(26.565F, NpcPilot.aimTilt(10D, 20D, true), 1.0E-2F);
+    }
+
+    @Test
+    void aRotorcraftHoldsItsHoverHeightUnlessItFightsAnAircraftHigherUp()
+    {
+        double hover = NpcPilot.Settings.DEFAULTS.hoverHeight();
+        assertEquals(64D + hover, NpcPilot.hoverAltitude(64D, hover, 200D, false));
+        assertEquals(64D + hover, NpcPilot.hoverAltitude(64D, hover, 70D, true));
+        assertEquals(200D, NpcPilot.hoverAltitude(64D, hover, 200D, true));
+    }
+
+    @Test
     void anIdleAircraftLandsAfterItsDelayUnlessThatIsZero()
     {
         assertFalse(NpcPilot.Settings.landsAfter(600, 600));

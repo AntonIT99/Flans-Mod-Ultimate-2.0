@@ -411,7 +411,8 @@ public final class CrewGunners
         NpcVehicleState state = context.state();
         Vec3 lead = lead(context, gunner, mount.gun().orElseThrow(), ammo, gun, origin, target);
         state.leadSeat(mount.seat(), lead);
-        return gun.cooldown < 1D && target.distanceTo(vehicle) <= vehicle.stats.ranged.getRange() && aligned(context, mount, lead);
+        // The gun is laid on its target while the gunner is still reacting to it; only the trigger waits.
+        return gun.cooldown < 1D && !NpcSkill.holdsFire(gunner, target) && target.distanceTo(vehicle) <= vehicle.stats.ranged.getRange() && aligned(context, mount, lead);
     }
 
     /**
@@ -447,7 +448,7 @@ public final class CrewGunners
         if (Double.isNaN(gun.speed))
             return toTarget.normalize();
         boolean arc = context.options().enabled(Feature.BALLISTIC_AIM);
-        return context.state().lead(toTarget, target, context.options(), gun.speed, arc ? gun.gravity : 0D, arc ? gun.drag : 1D, false);
+        return context.state().lead(gunner, toTarget, target, context.options(), gun.speed, arc ? gun.gravity : 0D, arc ? gun.drag : 1D, false);
     }
 
     /** Whether nothing solid stands between the gun and the target, looked at every few ticks. */
@@ -467,11 +468,23 @@ public final class CrewGunners
         ProjectileShot shot = FlansProjectiles.prepare(gunner, ammo, ItemStack.EMPTY, mount.gun().orElseThrow(), null, false, new ProjectileParameters(gun.fired, true, 0F, 0F, 1F)).orElse(null);
         if (shot == null)
             return false;
-        Vec3 direction = context.state().seatBarrelDirection(context.vehicle(), mount);
+        Vec3 direction = aimError(context, gunner, gun).apply(context.state().seatBarrelDirection(context.vehicle(), mount));
         if (shot.launch(origin, direction, false).isEmpty())
             return false;
         NpcMuzzleFlashes.fired(context.vehicle(), muzzle, direction, context.state().getHullYaw(), false);
         return true;
+    }
+
+    /**
+     * @return how far this round goes astray of the barrel: while the gunner's aim settles on what the gun is laid on, and
+     *         for the motion of the vehicle it rides. Never for a gun a player mans, whose rounds leave exactly where they
+     *         point it.
+     */
+    private static NpcSkill.AimError aimError(Context context, LivingEntity gunner, Gun gun)
+    {
+        if (!(gunner instanceof EntityNPCInterface npc) || gun.laidOn == null)
+            return NpcSkill.AimError.NONE;
+        return NpcSkill.aimError(npc, gun.laidOn).plus(NpcGunSteadiness.spread(context.vehicle(), context.state(), context.options()));
     }
 
     private static void effects(Context context, LivingEntity gunner, IContentType weapon, WeaponMuzzle muzzle, Vec3 origin, float facing, boolean first)

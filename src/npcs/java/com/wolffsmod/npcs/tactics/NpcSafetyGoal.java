@@ -378,8 +378,10 @@ public final class NpcSafetyGoal extends Goal
             return null;
         boolean visible = npc.getSensing().hasLineOfSight(danger);
         boolean vehicle = NpcVehicleThreats.groundVehicle(danger);
-        boolean outmatched = visible && vehicle && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS)
-            && NpcWeaponChoice.effectiveness(npc, danger) == NpcWeaponChoice.Effectiveness.INEFFECTIVE;
+        // A vehicle that has shot itself dry has no fight left to win, whatever is in front of it, so it breaks contact too.
+        boolean spent = NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcVehicleState.of(npc).isOutOfAmmunition(npc, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions());
+        boolean outmatched = spent
+            || visible && vehicle && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcWeaponChoice.effectiveness(npc, danger) == NpcWeaponChoice.Effectiveness.INEFFECTIVE;
         boolean outranged = NpcEquipment.enabled(npc, Feature.OUTRANGED_COVER) && !threats.isEmpty() && !npc.isInRange(danger, NpcWeaponRange.firing(npc));
         boolean underFire = !threats.isEmpty() && NpcEquipment.enabled(npc, Feature.TACTICAL_COVER);
         List<Vec3> sources = new ArrayList<>();

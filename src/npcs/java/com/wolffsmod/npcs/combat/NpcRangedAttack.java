@@ -150,7 +150,7 @@ public final class NpcRangedAttack
         {
             event = new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, damage);
             if (target != null)
-                aimError = NpcSkill.aimError(npc, target);
+                aimError = NpcSkill.aimError(npc, target).plus(NpcGunSteadiness.spread(npc, state, options));
             List<WeaponMuzzle> muzzles = muzzles();
             modelMuzzles = !muzzles.isEmpty();
             if (!modelMuzzles)
@@ -260,13 +260,8 @@ public final class NpcRangedAttack
             Vec3 displacement = NpcVehicleState.aimPoint(aimed).subtract(from);
             double gravity = arc ? shot.gravity() : 0D;
             double drag = arc ? shot.drag() : 1D;
-            Vec3 led = state.lead(displacement, aimed, options, shot.speed(), gravity, drag, highArc);
-            float share = NpcSkill.leadShare(npc);
-            if (share >= 1F)
-                return led;
-            // An NPC that allows for only part of the target's run aims between the full lead and where the target stands.
-            Vec3 still = ProjectileAim.direction(displacement, Vec3.ZERO, shot.speed(), gravity, drag, highArc);
-            return still.lerp(led, share).normalize();
+            // The lead the NPC's own limits allow for is already in what the state works out.
+            return state.lead(npc, displacement, aimed, options, shot.speed(), gravity, drag, highArc);
         }
 
         /** An NPC that fires through transparent blocks launches from beyond them, so the round is not stopped by what it aimed through. */

@@ -58,6 +58,9 @@ public final class NpcMobility
     private static final double AFLOAT_REACH = 0.5D;
     /** Blocks a floating NPC looks upward for the water surface. */
     private static final int SURFACE_SEARCH = 12;
+    /** Blocks of hull per sampled depth column, and the most columns sampled along one side however wide the hull is. */
+    private static final int DEPTH_SAMPLE_SPACING = 3;
+    private static final int MAX_DEPTH_SAMPLES = 5;
     /** Gravity of a mob, in blocks per tick squared, and the share of the ideal rise a jump keeps against air drag. */
     private static final double MOB_GRAVITY = 0.08D;
     private static final double MOB_JUMP_EFFICIENCY = 0.42D / Math.sqrt(2D * 0.08D * 1.25D);
@@ -393,19 +396,48 @@ public final class NpcMobility
         return type == BlockPathTypes.WATER && hasWaterDepth(level, x, y, z, footprint, minimumDepth) ? type : BlockPathTypes.BLOCKED;
     }
 
-    /** Every hull column must meet the minimum; one shallow column rejects the node without scanning the rest. */
+    /**
+     * Every sampled hull column must meet the minimum; one shallow column rejects the node without scanning the rest.
+     *
+     * <p>
+     * A narrow footprint is tested column by column. A wider one is sampled on a grid instead, spread over the whole
+     * footprint so that its corners, sides and middle are all covered: open water otherwise costs a lookup for every
+     * column of the hull and every block of the minimum depth, on every node of a search that visits thousands of them,
+     * and that cost grows with the square of the hull. A shoal narrower than the spacing between samples can slip
+     * through on a hull wide enough to be sampled, and grounding on one is handled like any other obstruction.
+     * </p>
+     */
     static boolean hasWaterDepth(BlockGetter level, int x, int y, int z, int footprint, int minimumDepth)
     {
-        for (int column = 0; column < footprint * footprint; column++)
-            if (depth(level, x + column / footprint, y, z + column % footprint, minimumDepth) < minimumDepth)
+        int samples = samplesPerSide(footprint);
+        for (int column = 0; column < samples * samples; column++)
+            if (depth(level, x + sampleOffset(column / samples, samples, footprint), y, z + sampleOffset(column % samples, samples, footprint), minimumDepth) < minimumDepth)
                 return false;
         return true;
+    }
+
+    /** @return columns sampled along one side of that footprint: every one of a narrow hull, a bounded grid of a wide one */
+    static int samplesPerSide(int footprint)
+    {
+        return Math.max(1, Math.min(footprint, Math.min(MAX_DEPTH_SAMPLES, footprint / DEPTH_SAMPLE_SPACING + 2)));
+    }
+
+    /** @return the column, counted from the footprint's first, that the given sample of that many falls on */
+    static int sampleOffset(int sample, int samples, int footprint)
+    {
+        return samples <= 1 ? footprint / 2 : sample * (footprint - 1) / (samples - 1);
     }
 
     /** @return how many blocks wide the path search takes the mob to be, as vanilla does */
     private static int footprint(Mob mob)
     {
-        return Mth.floor(mob.getBbWidth() + 1F);
+        return footprint(mob.getBbWidth());
+    }
+
+    /** @return how many blocks wide a path search takes a hull of that width to be, as vanilla does */
+    static int footprint(double width)
+    {
+        return Mth.floor(width + 1D);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.combat.ProjectileAim;
 import com.wolffsmod.npcs.sim.TargetMotion;
 import lombok.AccessLevel;
@@ -28,17 +29,21 @@ public final class WeaponAim
      *            whether that motion includes how the target speeds up and turns, rather than its velocity alone
      * @param arc
      *            whether to allow for the round's gravity and drag
+     * @param share
+     *            share, 0 to 1, of the target's run the NPC's human limits let it allow for
      * @return the unit direction to launch along to meet the target
      */
-    static Vec3 launch(Vec3 displacement, TargetMotion motion, WeaponBallistics ballistics, boolean lead, boolean accelerating, boolean arc)
+    static Vec3 launch(Vec3 displacement, TargetMotion motion, WeaponBallistics ballistics, boolean lead, boolean accelerating, boolean arc, float share)
     {
         double gravity = arc ? ballistics.gravity() : 0D;
         double drag = arc ? ballistics.drag() : 1D;
+        Vec3 still = ProjectileAim.direction(displacement, Vec3.ZERO, ballistics.speed(), gravity, drag, false);
         if (!lead)
-            return ProjectileAim.direction(displacement, Vec3.ZERO, ballistics.speed(), gravity, drag, false);
-        if (!accelerating)
-            return ProjectileAim.direction(displacement, motion.velocity(), ballistics.speed(), gravity, drag, false);
-        return ProjectileAim.solve(displacement, motion, ballistics.speed(), gravity, drag, false).direction();
+            return still;
+        Vec3 led = accelerating
+            ? ProjectileAim.solve(displacement, motion, ballistics.speed(), gravity, drag, false).direction()
+            : ProjectileAim.direction(displacement, motion.velocity(), ballistics.speed(), gravity, drag, false);
+        return NpcSkill.partialLead(share, still, led);
     }
 
     /**

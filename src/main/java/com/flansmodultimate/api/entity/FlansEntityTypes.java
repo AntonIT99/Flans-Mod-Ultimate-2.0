@@ -8,6 +8,7 @@ package com.flansmodultimate.api.entity;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.common.driveables.MechaEquipmentSupport;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
@@ -31,6 +32,34 @@ import java.util.function.UnaryOperator;
 @ApiStatus.Experimental
 public final class FlansEntityTypes
 {
+    /** @return authored mecha stomp cadence, or empty for another definition or a silent mecha; either side */
+    public static Optional<MechaGait> getMechaGait(IContentType type)
+    {
+        if (!(type instanceof MechaType mecha) || mecha.getStompSound() == null || mecha.getStompSound().isBlank())
+            return Optional.empty();
+        return Optional.of(new MechaGait(mecha.getStompSound(), Math.max(1, mecha.getStompSoundLength()), mecha.getLegAnimSpeed() > 0F ? mecha.getLegAnimSpeed() : 0.12F, mecha.getStompRangeLower(),
+            mecha.getStompRangeUpper()));
+    }
+
+    /**
+     * Applies a mecha definition's landing block damage for an addon-controlled entity on the server thread.
+     * Respects driveable breaking rules, mob griefing, unbreakable blocks, block entities and protection events.
+     *
+     * @param entity
+     *            live model entity at the landing position
+     * @param type
+     *            selected mecha definition
+     * @param force
+     *            whether a carried addon enables landing block damage
+     * @param descent
+     *            pre-landing vertical velocity in blocks per tick, negative downward
+     */
+    public static void applyMechaLanding(Entity entity, IContentType type, boolean force, double descent)
+    {
+        if (type instanceof MechaType mecha)
+            MechaEquipmentSupport.landing(entity, mecha, force, descent);
+    }
+
     private FlansEntityTypes()
     {}
 

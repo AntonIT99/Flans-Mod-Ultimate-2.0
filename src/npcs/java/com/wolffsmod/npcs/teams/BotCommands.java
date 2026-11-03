@@ -158,6 +158,9 @@ public final class BotCommands
         round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
         round.then(switchSetting("vehicles", BotSettings::setVehiclesEnabled));
         round.then(switchSetting("vehiclecrews", BotSettings::setVehicleCrews));
+        round.then(switchSetting("driverealvehicles", BotSettings::setDriveRealVehicles));
+        round.then(switchSetting("gunrealvehicles", BotSettings::setGunRealVehicles));
+        round.then(switchSetting("riderealvehicles", BotSettings::setRideRealVehicles));
         round.then(switchSetting("emplacements", BotSettings::setEmplacements));
         round.then(switchSetting("playerseatdeployment", BotSettings::setPlayerSeatDeployment));
         round.then(intSetting("retreat", 0, BotSettings::setRetreatHealth));
@@ -338,6 +341,7 @@ public final class BotCommands
         lines.add(text("show.vehicles", onOff(settings.isVehiclesEnabled())));
         lines.add(text("show.vehicle_respawn", settings.getVehicleRespawnSeconds()));
         lines.add(text("show.crews", onOff(settings.isVehicleCrews())));
+        lines.add(text("show.real_vehicles", onOff(settings.isDriveRealVehicles()), onOff(settings.isGunRealVehicles()), onOff(settings.isRideRealVehicles())));
         lines.add(text("show.emplacements", onOff(settings.isEmplacements())));
         lines.add(text("show.player_seat_deployment", onOff(settings.isPlayerSeatDeployment())));
         lines.add(text("show.commander", onOff(settings.isCommanderBot()), settings.getCommanderDisruptionSeconds()));

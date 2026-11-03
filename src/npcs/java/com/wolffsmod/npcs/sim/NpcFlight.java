@@ -56,6 +56,11 @@ public final class NpcFlight
      */
     static final double PLANE_MARGIN = 5D;
     static final double HELICOPTER_MARGIN = 4D;
+    /**
+     * Blocks above the attack altitude a plane setting up a diving gun run holds instead, so that the dive has height to
+     * spend without taking the plane under the altitude it may fire from.
+     */
+    static final double GUN_RUN_MARGIN = 18D;
     /** Blocks an aircraft has to climb past its attack altitude before it fires again, so that it does not flicker. */
     static final double ATTACK_HYSTERESIS = 2D;
     /** Blocks below the height it should hold within which an aircraft no longer climbs. */
@@ -93,7 +98,7 @@ public final class NpcFlight
     static final float MAX_BANK = 45F;
     static final float ROLL_RATE = 3F;
     /** Ticks an orbiting plane circles its target before it turns in for a gun pass, and the longest a pass lasts. */
-    static final int ORBIT_PASS_INTERVAL = 200;
+    static final int ORBIT_PASS_INTERVAL = 120;
     static final int MAX_PASS_TICKS = 300;
     /** Blocks per tick a plane climbs at most, and a helicopter, without a climb rate of their own. */
     static final double PLANE_CLIMB = 0.24D;
@@ -311,11 +316,29 @@ public final class NpcFlight
 
     private double flightHeight(EntityNPCInterface npc, NpcTuning tuning, @Nullable FlightPerformance model, Flight type, @Nullable LivingEntity target, double vertical, int minimum)
     {
-        double height = terrain + minimum + (type == Flight.PLANE ? PLANE_MARGIN : HELICOPTER_MARGIN);
+        double height = terrain + minimum + (type == Flight.PLANE ? planeMargin(npc, target) : HELICOPTER_MARGIN);
         boolean intercept = target != null && NpcAirCombat.airborne(target);
         if (intercept)
             height = Math.max(terrain + minimum + PLANE_MARGIN, target.getBoundingBox().getCenter().y);
         return climb(vertical, height - npc.getY(), type, !intercept && npc.getNavigation().isDone(), maxClimb(tuning, model, type));
+    }
+
+    /**
+     * The attack altitude is the lowest a plane fires from, and its nose goes no lower than that, so a plane holding just
+     * above it has almost no height to spend on a dive and its fixed guns barely bear before it levels off again. One
+     * setting up a gun run therefore holds high enough that the whole dive stays above the altitude it may fire from.
+     *
+     * @return blocks above the attack altitude a plane holds
+     */
+    private static double planeMargin(EntityNPCInterface npc, @Nullable LivingEntity target)
+    {
+        return gunRun(npc, target) ? GUN_RUN_MARGIN : PLANE_MARGIN;
+    }
+
+    /** @return whether the plane is setting up a diving gun run: it fights a target on the ground and is not bombing it */
+    private static boolean gunRun(EntityNPCInterface npc, @Nullable LivingEntity target)
+    {
+        return target != null && target.isAlive() && !NpcAirCombat.airborne(target) && !NpcVehicleState.of(npc).isBombRun();
     }
 
     /**
@@ -409,7 +432,8 @@ public final class NpcFlight
         Vec3 motion = npc.getDeltaMovement();
         // Guns are led at where the target will be; a bomber flies over where its bomb meets the target.
         NpcVehicleState state = NpcVehicleState.of(npc);
-        Vec3 toTarget = target == null ? Vec3.ZERO : state.bombPoint().orElse(target.position()).subtract(npc.position());
+        // Only a bomber steers for the drop point; a plane making a gun run flies at the target, bombs beside its guns or not.
+        Vec3 toTarget = target == null ? Vec3.ZERO : (state.isBombRun() ? state.bombPoint().orElse(target.position()) : target.position()).subtract(npc.position());
         Vec3 aim = target != null && !state.isBombRun() ? state.aimDirection().orElse(toTarget) : toTarget;
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
@@ -445,7 +469,8 @@ public final class NpcFlight
         double horizontal = speed;
         if (target != null && attacks(npc, aim))
         {
-            // The nose goes no lower than lets the plane fly level along its attack altitude.
+            // The nose goes no lower than lets the plane fly level along its attack altitude, which is also the lowest it may
+            // fire from. A plane setting up a gun run holds {@link #GUN_RUN_MARGIN} above that, so the dive has room to spend.
             float dive = Mth.clamp(MountMotion.relative(aim, yaw).pitch(), -MAX_CLIMB, MAX_DIVE);
             if (npc.getY() - terrain <= minimum + 1D)
                 dive = Math.min(dive, 0F);

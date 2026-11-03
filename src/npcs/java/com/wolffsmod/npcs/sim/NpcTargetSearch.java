@@ -243,7 +243,8 @@ public final class NpcTargetSearch
             scratchRanks[best] = scratchRanks[remaining];
             scratchDistances[best] = scratchDistances[remaining];
             tested++;
-            if (conditions.test(npc, candidate))
+            // A submarine running at depth is only picked up well inside the range the same hull is seen at on the surface.
+            if (conditions.test(npc, candidate) && NpcSubmergedContact.detectable(npc, candidate))
                 return new Selected(candidate, tested);
             if (heap)
                 siftDown(0, remaining);

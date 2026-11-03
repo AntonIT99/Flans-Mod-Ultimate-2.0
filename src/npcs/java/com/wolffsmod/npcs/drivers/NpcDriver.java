@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.*;
+import com.wolffsmod.npcs.teams.BotDriveables;
 import lombok.*;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -49,6 +51,8 @@ public final class NpcDriver
 {
     /** Blocks of path ahead the driveable steers for, beyond half its width. */
     private static final double LOOKAHEAD = 6D;
+    /** Hull lengths of path ahead a ship steers for, which it needs to begin a turn early enough to answer it. */
+    private static final double SHIP_LOOKAHEAD_LENGTHS = 1.5D;
     /** Nodes beyond its progress searched for the node nearest the driveable. */
     private static final int PROGRESS_WINDOW = 12;
     /** Fewest blocks from its goal at which a driveable has arrived. */
@@ -71,8 +75,6 @@ public final class NpcDriver
     /** Blocks above its target from which a bomb is dropped, and from its target within which it has to come down. */
     private static final double MIN_BOMB_HEIGHT = 4D;
     private static final double BOMB_RADIUS = 4D;
-    /** Every so many ticks the triggers are let go for a tick, so that a semi-automatic weapon fires again. */
-    private static final int TRIGGER_RELEASE = 30;
     /** Ticks between looks for a driveable ahead to keep a distance to, and degrees off the heading within which one is ahead. */
     private static final int FOLLOW_INTERVAL = 10;
     private static final float FOLLOW_CONE = 35F;
@@ -127,6 +129,12 @@ public final class NpcDriver
     /** Ticks the vehicle has stood waiting behind it, and the game time until which it drives on regardless. */
     private int waited;
     private long passUntil;
+    private final boolean[] triggers = new boolean[2];
+    @Nullable
+    private BlockHitResult mining;
+    @Nullable
+    private BlockPos clearing;
+    private double clearingProgress;
     private final NpcPilot pilot = new NpcPilot();
     /** Shows the front armour of a halted tracked vehicle to the enemy vehicle that threatens it. */
     private final NpcHullAngling angling = new NpcHullAngling();
@@ -140,6 +148,10 @@ public final class NpcDriver
     private double secondaryBlast;
     /** Whether a bank that points along the hull, such as a ship's torpedo tubes, has a round left to fire. */
     private boolean bowWeapon;
+    /** Blocks per tick the round of that bank makes, to lay the bow where it meets a moving target; NaN while that is not known. */
+    private double bowSpeed = Double.NaN;
+    /** Whether a weapon was on the target when the NPC last laid them, which is what a vehicle stands still to shoot for. */
+    private boolean bearing;
     /** What a ship is doing with its target; null while it fights nothing. */
     @Nullable
     private ShipBearing.Course course;
@@ -212,9 +224,12 @@ public final class NpcDriver
         double speed = lastPosition == null ? 0D : position.subtract(lastPosition).dot(heading);
         lastPosition = position;
         double arrival = Math.max(MIN_ARRIVAL, driveable.getBbWidth() * 0.5D + 1.5D);
+        resetClearedObstruction(npc);
+        double meleeReach = mechaReach(seat, mecha);
+        arrival = mechaArrival(npc, meleeReach, arrival);
         Route route = fightingCourse(npc, seat, position, heading);
         if (route == null)
-            route = route(npc, position, LOOKAHEAD + driveable.getBbWidth() * 0.5D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
+            route = route(npc, position, lookahead(driveable, ship(seat)), NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
         if (route == null)
         {
             anchor = null;
@@ -228,9 +243,13 @@ public final class NpcDriver
             return true;
         }
         float off = Mth.wrapDegrees(MountMotion.yaw(route.steer().subtract(position)) - MountMotion.yaw(heading));
-        Set<DriveControl> controls = recovery > 0 ? recover(off, route, arrival, speed, mecha, tracked) : steer(off, route, arrival, speed, mecha, tracked);
+        Set<DriveControl> controls = recovery > 0 ? recover(off, route, arrival, speed, mecha, tracked) : steer(off, route, arrival, speed, mecha, tracked, ship(seat), driveable.getBbWidth());
         if (recovery == 0 && !mecha)
             controls = keepDistance(npc, driveable, heading, speed, controls, now);
+        controls = mechaTraversal(npc, seat, driveable, route, controls, mecha);
+        updateMiningProgress(seat);
+        // A ship steams on; anything else without a stabiliser stands for a moment to shoot, steering on as it does.
+        controls = haltForFire(npc, seat, mecha, meleeReach, controls, speed);
         if (recovery > 0)
             recovery--;
         else if (stuck(position, pushes(controls, mecha), now) && !startRecovery(controls))
@@ -238,6 +257,74 @@ public final class NpcDriver
         report(mecha, route.steer(), controls, off, route.distance(), speed);
         act(npc, seat, driveable, mecha, controls, off);
         return true;
+    }
+
+    private void resetClearedObstruction(EntityNPCInterface npc)
+    {
+        mining = null;
+        if (clearing != null && (!npc.level().hasChunkAt(clearing) || npc.level().getBlockState(clearing).isAir()))
+        {
+            anchor = null;
+            recovery = 0;
+            recoveries = 0;
+            clearing = null;
+            clearingProgress = 0D;
+        }
+    }
+
+    private static double mechaReach(ISeat seat, boolean mecha)
+    {
+        return mecha ? MechaCombat.meleeReach(seat) : 0D;
+    }
+
+    private static double mechaArrival(EntityNPCInterface npc, double meleeReach, double arrival)
+    {
+        LivingEntity enemy = npc.getTarget();
+        return meleeReach > 0D && enemy != null && enemy.isAlive() ? MechaCombat.approach(meleeReach, enemy.getBoundingBox().getCenter().y - npc.getEyeY()) : arrival;
+    }
+
+    private Set<DriveControl> mechaTraversal(EntityNPCInterface npc, ISeat seat, Entity driveable, Route route, Set<DriveControl> controls, boolean mecha)
+    {
+        if (!mecha)
+            return controls;
+        double rise = route.steer().y - driveable.getY();
+        if (path != null && progress + 1 < path.getNodeCount())
+            rise = path.getNodePos(progress + 1).getY() - driveable.getY();
+        double step = seat.getDriveableType().map(type -> FlansEntityTypes.getStepHeight(type).orElse(0.5D)).orElse(0.5D);
+        double jump = seat.getDriveableType().flatMap(FlansEntityTypes::getMechaMobility).map(mobility -> mobility.jumpHeight().orElse(1.25D)).orElse(1.25D);
+        if (MechaCombat.ascend(rise, step, jump, driveable.onGround(), driveable.horizontalCollision && pushes(controls, true), seat.hasDriverRocketPack()))
+        {
+            controls = new HashSet<>(controls);
+            controls.add(DriveControl.ASCEND);
+        }
+        if (pushes(controls, true) && (driveable.horizontalCollision || recovery > 0))
+            mining = miningObstruction(npc, seat, route.steer());
+        return controls;
+    }
+
+    private Set<DriveControl> haltForFire(EntityNPCInterface npc, ISeat seat, boolean mecha, double meleeReach, Set<DriveControl> controls, double speed)
+    {
+        boolean halt = recovery == 0 && (!mecha || meleeReach <= 0D) && mining == null && !ship(seat) && NpcVehicleState.of(npc).getGunnery().haltsToFire(options(npc), bearing);
+        return halt ? DriveSteering.halt(controls, speed) : controls;
+    }
+
+    private void updateMiningProgress(ISeat seat)
+    {
+        if (mining == null)
+            return;
+        if (!mining.getBlockPos().equals(clearing))
+        {
+            clearing = mining.getBlockPos();
+            clearingProgress = 0D;
+        }
+        double completed = seat.getDriverMiningProgress(clearing);
+        if (completed > clearingProgress)
+        {
+            clearingProgress = completed;
+            anchor = null;
+            recovery = 0;
+            recoveries = 0;
+        }
     }
 
     /**
@@ -257,6 +344,8 @@ public final class NpcDriver
             return null;
         }
         double distance = horizontal(position, target.position());
+        if (meleeMecha(seat))
+            return meleeMechaCourse(npc, target, position, distance);
         double standoff = combatDistance(npc, seat, target);
         boolean adaptive = NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) && NpcCombatMovement.allowed(npc);
         if (standoff > distance)
@@ -266,6 +355,8 @@ public final class NpcDriver
             Vec3 point = position.add(away(position, target.position(), heading).scale(back));
             return !adaptive || NpcCombatMovement.permits(npc, point) ? new Route(point, back) : null;
         }
+        if (adaptiveMecha(seat, adaptive))
+            return rangedMechaCourse(npc, seat, target, position, distance, standoff);
         if (!NpcEquipment.enabled(npc, Feature.SHIP_WEAPON_BEARING) || !ship(seat) || distance > Math.max(MIN_FIRE_RANGE, npc.stats.ranged.getRange()))
         {
             course = null;
@@ -274,7 +365,58 @@ public final class NpcDriver
         // A ship steams on rather than stopping, so its goal stays a fixed lead ahead of it and it never brakes for it.
         double hold = Math.max(standoff, NpcTactics.engagement(npc).preferred());
         course = ShipBearing.course(bowWeapon, distance, hold, course);
-        return new Route(ShipBearing.point(course, position, target.position(), hold, (npc.getId() & 1) == 0 ? 1 : -1), ShipBearing.LEAD);
+        Vec3 aim = bowAim(npc, target, position);
+        Entity hull = NpcVehicleThreats.platform(npc);
+        Vec3 point = ShipBearing.clearPoint(course, position, aim, hold, (npc.getId() & 1) == 0 ? 1 : -1, ahead -> ShipWaters.clear(npc, hull, ahead));
+        return new Route(point, ShipBearing.LEAD);
+    }
+
+    private static boolean meleeMecha(ISeat seat)
+    {
+        return seat.getDriveableType().filter(IMechaType.class::isInstance).isPresent() && MechaCombat.meleeReach(seat) > 0D;
+    }
+
+    private static boolean adaptiveMecha(ISeat seat, boolean adaptive)
+    {
+        return seat.getDriveableType().filter(IMechaType.class::isInstance).isPresent() && adaptive;
+    }
+
+    @Nullable
+    private Route meleeMechaCourse(EntityNPCInterface npc, LivingEntity target, Vec3 position, double distance)
+    {
+        course = null;
+        if (!NpcCombatMovement.allowed(npc))
+            return null;
+        Route pursuit = route(npc, position, 2D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
+        Vec3 destination = pursuit == null ? target.position() : pursuit.steer();
+        return NpcCombatMovement.permits(npc, destination) ? new Route(destination, distance) : null;
+    }
+
+    @Nullable
+    private Route rangedMechaCourse(EntityNPCInterface npc, ISeat seat, LivingEntity target, Vec3 position, double distance, double standoff)
+    {
+        course = null;
+        double hold = Math.max(standoff, Math.max(1D, npc.stats.ranged.getRange()) * 0.5D);
+        if (distance > hold && NpcCombatMovement.permits(npc, target.position()))
+            return new Route(target.position(), distance - hold + Math.max(MIN_ARRIVAL, NpcVehicleThreats.platform(npc).getBbWidth() * 0.5D + 1.5D));
+        Route lateral = lateralCourse(npc, seat, target, position);
+        if (lateral != null)
+            return lateral;
+        return distance <= hold ? new Route(position, 0D) : null;
+    }
+
+    /**
+     * @return the point the ship lays its bow on: where the round its hull-fixed bank fires meets the target while it is
+     *         running in to fire one, and the target itself on any other course
+     */
+    private Vec3 bowAim(EntityNPCInterface npc, LivingEntity target, Vec3 position)
+    {
+        if (course != ShipBearing.Course.RUN_IN)
+            return target.position();
+        Optional<TargetMotion> motion = NpcVehicleState.of(npc).motionOf(target);
+        if (motion.isEmpty())
+            return target.position();
+        return ShipBearing.intercept(position, target.position(), bowSpeed, motion.get()::lead);
     }
 
     @Nullable
@@ -306,6 +448,8 @@ public final class NpcDriver
     private double combatDistance(EntityNPCInterface npc, ISeat seat, LivingEntity target)
     {
         double standoff = NpcBlastSafety.standoff(npc, blastReach());
+        if (seat.getDriveableType().filter(IMechaType.class::isInstance).isPresent())
+            return MechaCombat.meleeReach(seat) > 0D ? 0D : standoff;
         if (!NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || !NpcCombatMovement.allowed(npc) || ship(seat) || NpcVehicleThreats.groundVehicle(target))
             return standoff;
         boolean safeBank = seat.getDriverWeaponOrigin(false).isPresent() && primaryBlast <= 0D || seat.getDriverWeaponOrigin(true).isPresent() && secondaryBlast <= 0D;
@@ -349,12 +493,25 @@ public final class NpcDriver
         primaryBlast = seat.getDriverWeaponDetonation(false).map(NpcBlastSafety::reach).orElse(0D);
         secondaryBlast = seat.getDriverWeaponDetonation(true).map(NpcBlastSafety::reach).orElse(0D);
         bowWeapon = bowWeapon(seat, false) || bowWeapon(seat, true);
+        bowSpeed = bowSpeed(seat);
     }
 
     /** @return whether the bank points along the hull and has a round to fire, as a ship's torpedo tubes do until they are spent */
     private static boolean bowWeapon(ISeat seat, boolean secondary)
     {
         return seat.isDriverWeaponHullFixed(secondary) && seat.getDriverWeaponBallistics(secondary).isPresent();
+    }
+
+    /** @return blocks per tick the round of the bank fixed to the hull makes, or NaN while no such bank has one loaded */
+    private static double bowSpeed(ISeat seat)
+    {
+        for (boolean secondary : new boolean[]{false, true})
+        {
+            Optional<WeaponBallistics> ballistics = seat.isDriverWeaponHullFixed(secondary) ? seat.getDriverWeaponBallistics(secondary) : Optional.empty();
+            if (ballistics.isPresent())
+                return ballistics.get().speed();
+        }
+        return Double.NaN;
     }
 
     /**
@@ -434,7 +591,7 @@ public final class NpcDriver
             return true;
         LivingEntity target = npc.getTarget();
         if (target == null || !target.isAlive())
-            seat.setAutomatedTriggers(false, false);
+            setTriggers(seat, false, false);
         else
             fire(npc, seat, aircraft, target, MIN_AIR_FIRE_RANGE);
         return true;
@@ -444,6 +601,9 @@ public final class NpcDriver
     @Nullable
     private static Vec3 goal(EntityNPCInterface npc)
     {
+        Optional<Vec3> mission = BotDriveables.destination(npc);
+        if (mission.isPresent())
+            return mission.get();
         Path current = npc.getNavigation().getPath();
         return current == null || current.isDone() || current.getNodeCount() == 0 ? null : node(current, current.getNodeCount() - 1, 0.5D);
     }
@@ -494,13 +654,26 @@ public final class NpcDriver
         return FlansEntityTypes.getDriveableType(entity).isPresent() && !FlansEntityTypes.isWreck(entity) && NpcDrivers.driverOf(entity) != null;
     }
 
-    private Set<DriveControl> steer(float off, Route route, double arrival, double speed, boolean mecha, boolean tracked)
+    private Set<DriveControl> steer(float off, Route route, double arrival, double speed, boolean mecha, boolean tracked, boolean ship, double length)
     {
         if (mecha)
             return DriveSteering.mecha(off, route.distance(), arrival);
-        DriveSteering.Decision decision = DriveSteering.vehicle(new DriveSteering.Situation(off, route.distance(), arrival, speed, tracked, reversing));
+        DriveSteering.Situation situation = new DriveSteering.Situation(off, route.distance(), arrival, speed, tracked, reversing);
+        DriveSteering.Decision decision = ship ? DriveSteering.ship(situation, length) : DriveSteering.vehicle(situation);
         reversing = decision.reversing();
         return decision.controls();
+    }
+
+    /**
+     * @param ship
+     *            whether the driveable answers its rudder over a length of its own, so that it has to be steered for a
+     *            point much farther along its path than a vehicle, or it turns too late and sways down a channel
+     * @return blocks ahead along its path the driveable steers for
+     */
+    private static double lookahead(Entity driveable, boolean ship)
+    {
+        double ahead = LOOKAHEAD + driveable.getBbWidth() * 0.5D;
+        return ship ? Math.max(ahead, driveable.getBbWidth() * SHIP_LOOKAHEAD_LENGTHS) : ahead;
     }
 
     /** A vehicle backs away from what holds it in a three-point turn; a mecha jumps, or fires its rocket pack, on its way. */
@@ -559,17 +732,25 @@ public final class NpcDriver
      */
     private void fight(EntityNPCInterface npc, ISeat seat, Entity driveable, boolean mecha, @Nullable Float off)
     {
+        if (mining != null)
+        {
+            seat.aimDriverWeapon(!seat.canDriverMineBlock(false, mining.getBlockPos()), mining.getLocation());
+            setTriggers(seat, seat.canDriverMineBlock(false, mining.getBlockPos()), seat.canDriverMineBlock(true, mining.getBlockPos()));
+            bearing = false;
+            return;
+        }
         LivingEntity target = npc.getTarget();
         if (target == null || !target.isAlive())
         {
-            seat.setAutomatedTriggers(false, false);
+            bearing = false;
+            setTriggers(seat, false, false);
             if (!mecha)
                 seat.setAutomatedAim(0F, 0F);
             else if (off != null)
                 seat.setAutomatedAim(seat.getAimYaw() + off, 0F);
             return;
         }
-        fire(npc, seat, driveable, target, MIN_FIRE_RANGE);
+        fire(npc, seat, driveable, target, mecha ? 1D : MIN_FIRE_RANGE);
     }
 
     /**
@@ -588,19 +769,56 @@ public final class NpcDriver
         if (NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) && !NpcVehicleThreats.groundVehicle(target))
         {
             boolean other = !secondary;
-            if (seat.getDriverWeaponOrigin(other).isPresent() && !seat.isDriverWeaponHullFixed(other) && blastReach(other) < blastReach(secondary))
+            if (rangedBank(seat, other) && !seat.isDriverWeaponHullFixed(other) && blastReach(other) < blastReach(secondary))
                 secondary = other;
         }
         boolean aimedBank = secondary;
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
-        Optional<Vec3> launch = origin.map(from -> launch(npc, seat, aimedBank, aimPoint.subtract(from)));
+        // The driveable launches its own rounds along its barrels, so what the NPC's aim is worth has to go into how it lays
+        // them: its own limits, and how steady the hull it rides is. Only the driveable's speed is known here, not its turn.
+        NpcSkill.AimError error = NpcSkill.layingError(npc, target).plus(NpcGunSteadiness.spread(npc, driveable.getDeltaMovement().horizontalDistance(), 0F, options(npc)));
+        Optional<Vec3> launch = origin.map(from -> error.apply(launch(npc, seat, aimedBank, aimPoint.subtract(from))));
         if (origin.isPresent() && launch.isPresent())
-            seat.aimAt(origin.get().add(launch.get().scale(aimPoint.distanceTo(origin.get()))));
+            seat.aimDriverWeapon(secondary, origin.get().add(launch.get().scale(aimPoint.distanceTo(origin.get()))));
         else
             seat.aimAt(aimPoint);
-        boolean release = npc.level().getGameTime() % TRIGGER_RELEASE == 0;
+        // The weapons are laid on the target while the NPC is still reacting to it; only the triggers wait.
+        boolean release = NpcSkill.holdsFire(npc, target);
         double range = Math.max(reach, npc.stats.ranged.getRange());
-        seat.setAutomatedTriggers(!release && readyToFire(npc, seat, driveable, false, target, range), !release && readyToFire(npc, seat, driveable, true, target, range));
+        boolean primaryBears = readyToFire(npc, seat, driveable, false, target, range);
+        boolean secondaryBears = readyToFire(npc, seat, driveable, true, target, range);
+        // Whether a weapon is on the target at all, rather than whether the trigger is down this tick, is what tells the
+        // driving that it is worth standing still for: the triggers are let go of regularly to cycle them.
+        bearing = primaryBears || secondaryBears;
+        setTriggers(seat, !release && primaryBears, !release && secondaryBears);
+    }
+
+    private void setTriggers(ISeat seat, boolean primary, boolean secondary)
+    {
+        triggers[0] = MechaCombat.trigger(primary, triggers[0], seat.getDriverTriggerState(false));
+        triggers[1] = MechaCombat.trigger(secondary, triggers[1], seat.getDriverTriggerState(true));
+        seat.setAutomatedTriggers(triggers[0], triggers[1]);
+    }
+
+    @Nullable
+    private static BlockHitResult miningObstruction(EntityNPCInterface npc, ISeat seat, Vec3 ahead)
+    {
+        for (boolean secondary : new boolean[]{false, true})
+        {
+            OptionalDouble reach = seat.getDriverMiningReach(secondary);
+            Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
+            if (reach.isEmpty() || origin.isEmpty())
+                continue;
+            Entity hull = seat.getDriveable();
+            Vec3 feet = hull == null ? npc.position() : hull.position();
+            Vec3 toward = ahead.subtract(feet).multiply(1D, 0D, 1D).normalize();
+            double probe = hull == null ? 1.5D : hull.getBbWidth() * 0.5D + 1D;
+            Vec3 direction = feet.add(toward.scale(probe)).add(0D, 0.5D, 0D).subtract(origin.get()).normalize();
+            var hit = npc.level().clip(new ClipContext(origin.get(), origin.get().add(direction.scale(reach.getAsDouble())), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc));
+            if (hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().getY() >= Mth.floor(feet.y) && seat.canDriverMineBlock(secondary, hit.getBlockPos()))
+                return hit;
+        }
+        return null;
     }
 
     /**
@@ -608,13 +826,22 @@ public final class NpcDriver
      *         a bank fixed to the hull, such as a ship's torpedo tubes, is laid by turning the whole driveable instead.
      *         The main weapon otherwise, or the other one where the driveable has no main weapon
      */
-    private static boolean turretBank(ISeat seat)
+    static boolean turretBank(ISeat seat)
     {
+        boolean primaryRanged = rangedBank(seat, false);
+        boolean secondaryRanged = rangedBank(seat, true);
+        if (primaryRanged != secondaryRanged)
+            return secondaryRanged;
         boolean primary = seat.getDriverWeaponOrigin(false).isPresent();
         boolean secondary = seat.getDriverWeaponOrigin(true).isPresent();
         if (!primary || !secondary)
             return !primary && secondary;
         return seat.isDriverWeaponHullFixed(false) && !seat.isDriverWeaponHullFixed(true);
+    }
+
+    private static boolean rangedBank(ISeat seat, boolean secondary)
+    {
+        return seat.getDriverWeaponOrigin(secondary).isPresent() && seat.getDriverMeleeProperties(secondary).isEmpty() && seat.getDriverMiningReach(secondary).isEmpty();
     }
 
     /** Follows how the target moves, to lead it; a new target starts afresh. */
@@ -632,13 +859,26 @@ public final class NpcDriver
     private Vec3 launch(EntityNPCInterface npc, ISeat seat, boolean secondary, Vec3 displacement)
     {
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        return seat.getDriverWeaponBallistics(secondary).filter(ballistics -> !ballistics.dropped())
-            .map(ballistics -> WeaponAim.launch(displacement, motion, ballistics, options.enabled(Feature.LEAD_TARGET), options.enabled(Feature.ADVANCED_LEAD), options.enabled(Feature.BALLISTIC_AIM)))
-            .orElse(displacement.normalize());
+        return seat.getDriverWeaponBallistics(secondary).filter(ballistics -> !ballistics.dropped()).map(ballistics -> WeaponAim.launch(displacement, motion, ballistics,
+            options.enabled(Feature.LEAD_TARGET), options.enabled(Feature.ADVANCED_LEAD), options.enabled(Feature.BALLISTIC_AIM), NpcSkill.leadShare(npc))).orElse(displacement.normalize());
     }
 
     private boolean readyToFire(EntityNPCInterface npc, ISeat seat, Entity driveable, boolean secondary, LivingEntity target, double range)
     {
+        if (seat.getDriverMiningReach(secondary).isPresent())
+            return false;
+        var melee = seat.getDriverMeleeProperties(secondary);
+        if (melee.isPresent())
+        {
+            Optional<Vec3> hand = seat.getDriverWeaponOrigin(secondary);
+            if (hand.isEmpty() || !NpcVehicleCombat.mayFire(npc, target, hand.get(), Optional.empty(), false))
+                return false;
+            Vec3 closest = new Vec3(Mth.clamp(hand.get().x, target.getBoundingBox().minX, target.getBoundingBox().maxX),
+                Mth.clamp(hand.get().y, target.getBoundingBox().minY, target.getBoundingBox().maxY), Mth.clamp(hand.get().z, target.getBoundingBox().minZ, target.getBoundingBox().maxZ));
+            return hand.get().distanceToSqr(closest) <= melee.get().reach() * melee.get().reach()
+                && seat.getDriverWeaponDirection(secondary).map(direction -> direction.dot(target.getBoundingBox().getCenter().subtract(hand.get()).normalize()) > 0.8D).orElse(false)
+                && npc.level().clip(new ClipContext(hand.get(), target.getBoundingBox().getCenter(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc)).getType() == HitResult.Type.MISS;
+        }
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         Optional<Vec3> direction = seat.getDriverWeaponDirection(secondary);
         if (origin.isEmpty() || direction.isEmpty())
@@ -661,13 +901,20 @@ public final class NpcDriver
         return npc.level().clip(sight).getType() == HitResult.Type.MISS;
     }
 
+    /** @return the NPC's own weapon switches */
+    private static NpcWeaponOptions options(EntityNPCInterface npc)
+    {
+        return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+    }
+
     /** @return the target's velocity a bomb is led by, as far as the NPC's aiming switches lead targets; none without leading */
     private Vec3 bombLead(EntityNPCInterface npc, LivingEntity target)
     {
-        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        NpcWeaponOptions options = options(npc);
         if (!options.enabled(Feature.LEAD_TARGET))
             return Vec3.ZERO;
-        return options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
+        Vec3 run = options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
+        return run.scale(NpcSkill.leadShare(npc));
     }
 
     /**
@@ -768,6 +1015,10 @@ public final class NpcDriver
     /** Forgets how the NPC drove, once it no longer drives. */
     void stopDriving()
     {
+        Arrays.fill(triggers, false);
+        mining = null;
+        clearing = null;
+        clearingProgress = 0D;
         pilot.reset();
         report = null;
         driverless = 0;

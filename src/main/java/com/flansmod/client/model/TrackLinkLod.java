@@ -114,8 +114,7 @@ public final class TrackLinkLod
 
     private static boolean supported(ModelRendererTurbo part)
     {
-        return part != null && part.getClass() == ModelRendererTurbo.class && part.isVisible() && part.childModels.isEmpty() && !part.glow && !part.glowAdditive
-            && !part.glowNoDepthWrite;
+        return part != null && part.getClass() == ModelRendererTurbo.class && part.isVisible() && part.childModels.isEmpty() && !part.glow && !part.glowAdditive && !part.glowNoDepthWrite;
     }
 
     public boolean select(float projectionPixels, double distance, float modelScale, float threshold, boolean previous)
@@ -141,8 +140,7 @@ public final class TrackLinkLod
 
     static boolean selectDiameter(float diameter, float projectionPixels, double distance, float threshold, boolean previous)
     {
-        if (distance < 32D || threshold <= 0F || projectionPixels <= 0F || diameter <= 0F || !Double.isFinite(distance) || !Float.isFinite(diameter)
-            || !Float.isFinite(projectionPixels))
+        if (distance < 32D || threshold <= 0F || projectionPixels <= 0F || diameter <= 0F || !Double.isFinite(distance) || !Float.isFinite(diameter) || !Float.isFinite(projectionPixels))
             return false;
         double pixels = diameter * projectionPixels / Math.max(0.01D, distance - diameter * 0.5D);
         return pixels <= threshold * (previous ? 1.25F : 1F);
@@ -177,12 +175,15 @@ public final class TrackLinkLod
 
     public static void setActive(boolean active)
     {
-        ACTIVE_GROUP.set(active ? 1 : 0);
+        setGroup(active ? 1 : 0);
     }
 
     public static void setGroup(int group)
     {
-        ACTIVE_GROUP.set(group);
+        if (group == 0)
+            ACTIVE_GROUP.remove();
+        else
+            ACTIVE_GROUP.set(group);
     }
 
     private static void storeTransform(ModelRendererTurbo p, float[] out, int i)

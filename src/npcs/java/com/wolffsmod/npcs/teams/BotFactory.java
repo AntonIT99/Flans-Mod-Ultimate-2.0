@@ -211,6 +211,8 @@ public final class BotFactory
             case PLANE -> Tactic.STRAFING_RUN;
             case HELICOPTER -> Tactic.STRAFE;
             case AA -> Tactic.HOLD;
+            // A ship keeps the water between itself and its target and brings its broadside round, rather than closing in on it.
+            case NAVAL -> Tactic.CIRCLE;
             default -> Tactic.CUSTOM_NPCS;
         };
         tuning.set(Value.TACTIC, tactic.ordinal());

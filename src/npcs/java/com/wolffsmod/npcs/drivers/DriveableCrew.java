@@ -3,7 +3,7 @@ package com.wolffsmod.npcs.drivers;
 import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.combat.NpcVehicleCombat;
-import com.wolffsmod.npcs.teams.BotTag;
+import com.wolffsmod.npcs.teams.BotDriveables;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -22,8 +22,8 @@ import java.util.Optional;
  * NPCs that drive Flan's driveables crew them too. An NPC that follows a player gets into the driveable its owner rides,
  * a gun seat before a passenger seat, and gets out again when its owner does. Any other takes a free gun seat of a
  * driveable an ally of it drives, and gets out once the driveable has gone without a driver for a while. A gunner mans
- * its seat's gun against its target and leaves its own weapons be; a passenger fights on with its own. Teams bots man
- * guns by their own rules. Server thread.
+ * its seat's gun against its target and leaves its own weapons be; a passenger fights on with its own. Teams bots use the same gun controller, with battle rules for recruitment and transport
+ * unloading. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class DriveableCrew
@@ -43,8 +43,10 @@ final class DriveableCrew
      */
     static Optional<Entity> findSeat(EntityNPCInterface npc, double range, long now)
     {
-        return npc.level().getEntities(npc, npc.getBoundingBox().inflate(range), entity -> entity instanceof ISeat seat && crewable(npc, seat, now)).stream()
-            .min(Comparator.<Entity>comparingInt(entity -> ((ISeat) entity).getGunType().isPresent() ? 0 : 1).thenComparingDouble(npc::distanceToSqr));
+        return npc.level()
+            .getEntities(npc, npc.getBoundingBox().inflate(range),
+                entity -> entity instanceof ISeat seat && crewable(npc, seat, now) && BotDriveables.mayRecruit(npc, seat) && NpcDrivers.available(npc, entity))
+            .stream().min(Comparator.<Entity>comparingInt(entity -> ((ISeat) entity).getGunType().isPresent() ? 0 : 1).thenComparingDouble(npc::distanceToSqr));
     }
 
     /**
@@ -54,19 +56,19 @@ final class DriveableCrew
     static boolean crewable(EntityNPCInterface npc, ISeat seat, long now)
     {
         Entity driveable = seat.getDriveable();
-        if (seat.isDriverSeat() || seat.getRiddenByEntity() != null || driveable == null || !driveable.isAlive() || FlansEntityTypes.isWreck(driveable) || BotTag.isBot(npc)
-            || NpcDriver.of(npc).refuses(driveable.getUUID(), now) || !NpcDrivers.noEnemyAboard(npc, driveable))
+        if (seat.isDriverSeat() || seat.getRiddenByEntity() != null || driveable == null || !driveable.isAlive() || FlansEntityTypes.isWreck(driveable)
+            || NpcDriver.of(npc).refuses(driveable.getUUID(), now) || !NpcDrivers.permitted(npc, driveable) || !BotDriveables.mayUse(npc, seat))
             return false;
         if (npc.getOwner() != null)
             return ownerRides(npc, driveable);
         Entity driver = NpcDrivers.driverOf(driveable);
-        return seat.getGunType().isPresent() && driver != null && NpcDrivers.ally(npc, driver);
+        return driver != null && NpcDrivers.ally(npc, driver) && (seat.getGunType().isPresent() || BotDriveables.transport(npc, driveable));
     }
 
     /** @return the seat of another than the driver the NPC crews, as long as its switch is on or it got in by itself */
     static Optional<ISeat> crewSeat(EntityNPCInterface npc)
     {
-        if (!(npc.getVehicle() instanceof ISeat seat) || seat.isDriverSeat() || seat.getDriveable() == null || BotTag.isBot(npc))
+        if (!(npc.getVehicle() instanceof ISeat seat) || seat.isDriverSeat() || seat.getDriveable() == null)
             return Optional.empty();
         return NpcDrivers.enabled(npc) || seat.getDriveable().getUUID().equals(NpcDriver.of(npc).getBoarded()) ? Optional.of(seat) : Optional.empty();
     }
@@ -84,15 +86,20 @@ final class DriveableCrew
      */
     static boolean tick(EntityNPCInterface npc, ISeat seat, Entity driveable, NpcDriver driver)
     {
+        if (!BotDriveables.mayUse(npc, seat) || BotDriveables.unload(npc, seat))
+            return false;
+        Entity operator = NpcDrivers.driverOf(driveable);
+        if (operator != null && !NpcDrivers.ally(npc, operator))
+            return false;
         boolean follower = npc.getOwner() != null;
         if (follower && !ownerRides(npc, driveable))
             return false;
+        LivingEntity target = npc.getTarget() != null && npc.getTarget().isAlive() ? npc.getTarget() : null;
+        driver.crew(seat.getGunType().isPresent() ? "gunner" : "passenger", target == null ? null : target.getBoundingBox().getCenter(), npc.level().getGameTime());
         int driverless = NpcDrivers.driverOf(driveable) == null && !follower ? driver.getDriverless() + 1 : 0;
         driver.setDriverless(driverless);
         if (driverless > DRIVERLESS_TICKS)
             return false;
-        LivingEntity target = npc.getTarget() != null && npc.getTarget().isAlive() ? npc.getTarget() : null;
-        driver.crew(seat.getGunType().isPresent() ? "gunner" : "passenger", target == null ? null : target.getBoundingBox().getCenter(), npc.level().getGameTime());
         if (seat.getGunType().isPresent())
             man(npc, seat, target);
         return true;

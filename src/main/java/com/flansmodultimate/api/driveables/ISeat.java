@@ -6,17 +6,20 @@
 package com.flansmodultimate.api.driveables;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.Set;
 
 /**
@@ -127,6 +130,20 @@ public interface ISeat
     boolean aimAt(Vec3 target);
 
     /**
+     * Aim from the selected driver weapon or tool origin. Server side.
+     *
+     * @param secondary
+     *            whether to use the secondary trigger's origin
+     * @param target
+     *            world position to aim at
+     * @return whether the seat accepted the aim
+     */
+    default boolean aimDriverWeapon(boolean secondary, Vec3 target)
+    {
+        return aimAt(target);
+    }
+
+    /**
      * Holds or releases the seat's triggers for a non-player occupant, under the conditions of
      * {@link #setAutomatedAim}. The seat gun fires on the primary trigger at its own cadence and fire mode for as long
      * as it is held, and only with ammunition in the driveable; the driver's triggers fire the driveable's primary and
@@ -167,10 +184,69 @@ public interface ISeat
      * @param secondary
      *            whether to describe the weapon of the secondary trigger rather than the primary one
      * @return where the driveable's weapon that the driver's trigger fires shoots from now, in world coordinates: the
-     *         first shoot point of that weapon, or the mecha hand holding a gun. Empty for a seat that does not control
-     *         the driveable, and for a driveable without such a weapon. Server side.
+     *         first shoot point of that weapon, the mecha hand holding a gun, or the operator's eyes for a mecha tool.
+     *         Empty for a seat that does not control the driveable or has no such weapon or tool. Server side.
      */
     Optional<Vec3> getDriverWeaponOrigin(boolean secondary);
+
+    /**
+     * @param secondary
+     *            whether to inspect the secondary trigger (right mecha arm)
+     * @return sword statistics including effective reach in blocks, or empty without an intact melee arm; server thread
+     */
+    default Optional<MechaMeleeProperties> getDriverMeleeProperties(boolean secondary)
+    {
+        return Optional.empty();
+    }
+
+    /**
+     * @param secondary
+     *            whether to inspect the secondary trigger (right mecha arm)
+     * @return mining reach in blocks, or empty without an intact mining arm; server thread
+     */
+    default OptionalDouble getDriverMiningReach(boolean secondary)
+    {
+        return OptionalDouble.empty();
+    }
+
+    /**
+     * @param secondary
+     *            whether to inspect the secondary driver trigger
+     * @param position
+     *            loaded block to inspect, in world coordinates
+     * @return whether an intact mining arm can clear this block under the server's breaking rules; server thread.
+     *         Actual removal still checks protection events.
+     */
+    default boolean canDriverMineBlock(boolean secondary, BlockPos position)
+    {
+        return false;
+    }
+
+    /**
+     * @param position
+     *            world position of the block being cleared
+     * @return completed mining fraction, from 0 to 1, or zero when this block is not being mined; server thread
+     */
+    default double getDriverMiningProgress(BlockPos position)
+    {
+        return 0D;
+    }
+
+    /** @return whether this movement controller has a working mecha rocket pack; server thread, fuel still limits thrust */
+    default boolean hasDriverRocketPack()
+    {
+        return false;
+    }
+
+    /**
+     * @param secondary
+     *            whether to inspect the secondary driver trigger
+     * @return fire-mode trigger behaviour and active burst state; server thread
+     */
+    default WeaponTriggerState getDriverTriggerState(boolean secondary)
+    {
+        return new WeaponTriggerState(WeaponTriggerState.Mode.HELD, false);
+    }
 
     /**
      * @param secondary

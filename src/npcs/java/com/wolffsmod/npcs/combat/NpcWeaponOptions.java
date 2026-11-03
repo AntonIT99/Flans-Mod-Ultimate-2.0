@@ -54,6 +54,11 @@ public final class NpcWeaponOptions
          * to it for its turrets once it has none of those left to fire.
          */
         SHIP_WEAPON_BEARING(true),
+        /**
+         * A submarine chooses its own depth: it runs at the depth it was given, comes up to periscope depth to fight, and
+         * goes deep for a moment after it is hit. Without it the submarine holds its running depth whatever happens.
+         */
+        SUBMARINE_TRIM(true),
         /** Each manned seat gun picks its own target within its own arc, whatever the turret and the other guns fire at. */
         GUNNER_TARGETS(true),
         /** A seat gun nobody sits behind aims and fires by itself, as a crew member would man it, credited to the vehicle. */
@@ -124,7 +129,14 @@ public final class NpcWeaponOptions
         /** Occasionally crouches or crawls when holding a firing position or approaching nearby cover. */
         TACTICAL_POSTURES(true),
         /** A halted tracked ground vehicle turns its angled front armour toward the nearest dangerous enemy vehicle. */
-        FRONTAL_ARMOR_ANGLING(true);
+        FRONTAL_ARMOR_ANGLING(true),
+        /**
+         * The motion of a vehicle's hull throws its guns off: rounds fired while it moves and turns scatter, and, without a
+         * stabiliser, it stands still for a moment to shoot before driving on again.
+         */
+        UNSTEADY_GUNS(true),
+        /** The vehicle's guns are stabilised: they stay on target while it moves, so it neither scatters its rounds nor stops to fire. */
+        GUN_STABILISER(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

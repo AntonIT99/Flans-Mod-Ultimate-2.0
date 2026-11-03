@@ -7,8 +7,11 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
+import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -28,6 +31,11 @@ public final class NpcRepairs
     private int remaining;
     private int buoyancyClock;
     private Vec3 navalVelocity = Vec3.ZERO;
+    /** The trim a flooding hull has settled into, in degrees, likewise its list. Server side; synced with the rest of its pose. */
+    @Getter
+    private float navalPitch;
+    @Getter
+    private float navalRoll;
 
     public static boolean active(EntityNPCInterface npc)
     {
@@ -51,6 +59,8 @@ public final class NpcRepairs
         remaining = 0;
         buoyancyClock = 0;
         navalVelocity = Vec3.ZERO;
+        navalPitch = 0F;
+        navalRoll = 0F;
     }
 
     /** Applied after normal floating so flooding can lower a ship instead of the waterline controller cancelling it. */
@@ -59,12 +69,21 @@ public final class NpcRepairs
         if (npc.level().isClientSide || !npc.isAlive() || !FlansRepairs.properties(body.getType()).map(RepairProperties::ship).orElse(false) || !NpcEquipment.enabled(npc, Feature.PART_EFFECTS))
             return;
         int depth = 0;
-        while (depth <= 16 && npc.level().getFluidState(npc.blockPosition().above(depth)).is(net.minecraft.tags.FluidTags.WATER))
+        while (depth <= 16 && npc.level().getFluidState(npc.blockPosition().above(depth)).is(FluidTags.WATER))
             ++depth;
-        navalVelocity = FlansRepairs.navalVelocity(body, navalVelocity, npc.getDeltaMovement(), depth);
+        navalVelocity = FlansRepairs.navalVelocity(body, navalVelocity, npc.getDeltaMovement(), depth, atSea(npc));
         npc.setDeltaMovement(navalVelocity);
+        FlansRepairs.NavalAttitude attitude = FlansRepairs.navalAttitude(body, navalPitch, navalRoll);
+        navalPitch = attitude.pitch();
+        navalRoll = attitude.roll();
         if (FlansRepairs.sunk(body, depth))
             npc.setHealth(0F);
+    }
+
+    /** @return whether the hull sits in open water deep enough to make full way, by the samples a driveable ship takes */
+    private static boolean atSea(EntityNPCInterface npc)
+    {
+        return FlansRepairs.atSea(npc.position(), point -> npc.level().getFluidState(BlockPos.containing(point)).is(FluidTags.WATER));
     }
 
     public boolean start(EntityNPCInterface npc, IPartBody body)

@@ -85,7 +85,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             BotBattles.remove(INSTANCE.round);
         }
         INSTANCE.round = null;
-        BotGunners.forget();
         BotFactions.tearDown();
         forgetDuties(server);
         Skirmishes.serverStopping(server);
@@ -304,7 +303,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             BotRoundStore.get(server).setDirty();
         }
         spawnQueued(level, current, now, random);
-        BotGunners.tick(level, current);
         if (tick % COMMAND_INTERVAL == 0)
         {
             BotCommander.plan(server, level, current);
@@ -352,7 +350,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             removeAll(server, ended);
         }
         BotFactions.tearDown();
-        BotGunners.forget();
         forgetDuties(server);
         BotRoundStore.get(server).forget();
         BotOrders.clearWaypoints(server);

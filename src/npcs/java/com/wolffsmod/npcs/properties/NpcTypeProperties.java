@@ -121,7 +121,7 @@ public final class NpcTypeProperties
             offerMachineValues(offered, kind, selected, secondary, reference, options, ranges);
         if (type != null && kind == FlanModelKind.MECHA)
             offerMeleeValues(offered, lastMelee);
-        // Vehicle engines have their own presentation controller; mecha stomps remain ordinary inherited footsteps.
+        // Vehicle engines have their own presentation controller; mecha stomps use the authored gait while STEP_SOUND is inherited.
         if (kind == FlanModelKind.VEHICLE || kind == FlanModelKind.PLANE)
         {
             offered.remove(NpcTypeProperty.STEP_SOUND);

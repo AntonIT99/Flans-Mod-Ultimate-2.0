@@ -18,7 +18,7 @@ import java.util.UUID;
  * Turns a halted tracked vehicle's front armour toward the most dangerous enemy ground vehicle nearby, angled a little off
  * it so that its plates slope, rather than leaving its side to it. The turret keeps aiming at the target meanwhile.
  */
-final class NpcHullAngling
+public final class NpcHullAngling
 {
     /** Degrees off the threat the hull is held at, to slope its front plates. */
     static final float ANGLE = 25F;
@@ -55,7 +55,7 @@ final class NpcHullAngling
      * @return degrees to turn a halted vehicle to show its front to a threat, positive to the right, or null without one
      */
     @Nullable
-    Float turn(EntityNPCInterface npc, Entity driveable, Vec3 heading)
+    public Float turn(EntityNPCInterface npc, Entity driveable, Vec3 heading)
     {
         Entity danger = threat(npc, driveable);
         if (danger == null)
@@ -69,7 +69,7 @@ final class NpcHullAngling
         return course;
     }
 
-    void reset()
+    public void reset()
     {
         threat = null;
         turning = false;

@@ -22,13 +22,13 @@ class PartBodyRepairsTest
             CollisionBox.inWorldUnits(6000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F), EnumDriveablePart.BOW, CollisionBox.inWorldUnits(1000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F)), Vec3.ZERO, Vec3.ZERO);
         ship.damage("buoyancy", 3000F, false);
         Vec3 healthy = new Vec3(1D, 0D, 1D);
-        assertEquals(0.5D, FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D).x, 1E-5D);
+        assertEquals(0.5D, FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D, true).x, 1E-5D);
         FlansRepairs.repairPart(ship, "buoyancy", 3000F, true);
-        assertEquals(1D, FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D).x, 1E-5D);
+        assertEquals(1D, FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D, true).x, 1E-5D);
         ship.damage("bow", 1000F, false);
         assertFalse(FlansRepairs.sunk(ship, 2D));
         assertTrue(FlansRepairs.sunk(ship, 16D));
-        assertTrue(FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D).y < 0D);
+        assertTrue(FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D, true).y < 0D);
     }
 
     @Test

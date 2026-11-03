@@ -18,6 +18,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -31,6 +32,8 @@ import java.util.Map;
 public final class NpcAirCombat
 {
     private static final long INTERVAL = 20L;
+    /** Share of its search range within which a fighter still leaves a ground target for an aircraft that threatens nobody. */
+    private static final double INTERCEPTION_SHARE = 0.5D;
 
     /** Reported destination and target priority; a patrol with no contact has priority 4. */
     public record Mission(Vec3 position, int priority)
@@ -91,7 +94,11 @@ public final class NpcAirCombat
 
     static AircraftRole automatic(boolean guns, boolean bombs, boolean rotorcraft)
     {
-        return rotorcraft || bombs && !guns ? AircraftRole.BOMBER : AircraftRole.FIGHTER;
+        if (bombs && !guns)
+            return AircraftRole.BOMBER;
+        // A gunship supports the ground, but as an attacker rather than a bomber, which ranks every aircraft last and takes
+        // no notice of one going for its own side. It carries guns to turn on that one, and nothing it drops.
+        return rotorcraft ? AircraftRole.ATTACKER : AircraftRole.FIGHTER;
     }
 
     /** Interception outranks ordinary air combat; a bomber keeps its ground mission while its independent gunners defend it. */
@@ -99,13 +106,36 @@ public final class NpcAirCombat
     {
         boolean air = airborne(candidate);
         boolean threat = air && candidate instanceof Mob mob && mob.getTarget() != null && NpcDrivers.ally(npc, mob.getTarget());
-        return priority(role(npc), air, threat);
+        return rank(role(npc), air, threat, npc.distanceToSqr(candidate) <= Mth.square(interceptionReach(npc)));
+    }
+
+    /**
+     * @param withinReach
+     *            whether the candidate is near enough for a fighter to hope to catch it, as {@link #interceptionReach} says
+     * @return the candidate's priority, the lowest number first
+     */
+    static int rank(AircraftRole role, boolean airborne, boolean threat, boolean withinReach)
+    {
+        // A fighter chases an aircraft that threatens nobody only as far as it could catch it. Beyond that a ground target it
+        // could be supporting now comes first, rather than the fighter crossing the battle after a contact it never reaches.
+        if (airborne && !threat && role == AircraftRole.FIGHTER && !withinReach)
+            return priority(role, false, false) + 1;
+        return priority(role, airborne, threat);
+    }
+
+    /** @return blocks within which a fighter leaves a ground target for an aircraft that threatens nobody */
+    static double interceptionReach(EntityNPCInterface npc)
+    {
+        return NpcTargetSearch.range(npc) * INTERCEPTION_SHARE;
     }
 
     public static int priority(AircraftRole role, boolean airborne, boolean threat)
     {
         if (role == AircraftRole.BOMBER)
             return airborne ? 3 : 0;
+        // A ground-attack aircraft keeps its ground mission, but still turns on an aircraft going for its own side.
+        if (role == AircraftRole.ATTACKER)
+            return airborne ? (threat ? 1 : 2) : 0;
         if (!airborne)
             return 2;
         return threat ? 0 : 1;

@@ -9,6 +9,7 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.common.driveables.EnumMechaItemType;
 import com.flansmodultimate.common.driveables.EnumMechaToolType;
+import com.flansmodultimate.common.driveables.MechaEquipmentSupport;
 import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
 import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.guns.EquipmentSupport;
@@ -46,6 +47,18 @@ public final class FlansEquipment
             return Optional.empty();
         MechaItemType sword = addon.getConfigType();
         return Optional.of(MechaMeleeProperties.of(sword.getSpeed(), sword.getReach(), type.getReach()));
+    }
+
+    /** @return combined passive effects of carried or installed mecha addons; either side, does not mutate stacks */
+    public static MechaUpgrades getMechaUpgrades(Iterable<ItemStack> stacks)
+    {
+        return MechaEquipmentSupport.upgrades(stacks);
+    }
+
+    /** @return whether a stack is a mecha hand tool rather than an upgrade; either side */
+    public static boolean isMechaHandTool(ItemStack stack)
+    {
+        return !stack.isEmpty() && stack.getItem() instanceof MechaAddonItem addon && addon.getConfigType().getMechaItemType() == EnumMechaItemType.TOOL;
     }
 
     private FlansEquipment()

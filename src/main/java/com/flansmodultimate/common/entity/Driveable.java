@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
+import com.flansmodultimate.api.driveables.WeaponTriggerState;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
@@ -2802,6 +2803,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public float getWeaponBankShootDelay(boolean secondary)
     {
         return getConfiguredShootDelay(secondary);
+    }
+
+    /** Trigger state for autonomous controllers; server thread. */
+    public WeaponTriggerState getDriverTriggerState(boolean secondary)
+    {
+        var apiMode = switch (getWeaponBankFireMode(secondary))
+        {
+            case SEMIAUTO -> WeaponTriggerState.Mode.SEMIAUTOMATIC;
+            case BURST -> WeaponTriggerState.Mode.BURST;
+            default -> WeaponTriggerState.Mode.HELD;
+        };
+        return new WeaponTriggerState(apiMode, (secondary ? secondaryBurstRemaining : primaryBurstRemaining) > 0);
     }
 
     public EnumFireMode getWeaponBankFireMode(boolean secondary)

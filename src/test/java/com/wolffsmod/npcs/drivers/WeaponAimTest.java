@@ -24,13 +24,13 @@ class WeaponAimTest
     void withoutLeadOrDropAWeaponAimsStraightAtItsTarget()
     {
         Vec3 displacement = new Vec3(0D, 0D, 60D);
-        assertEquals(0D, WeaponAim.launch(displacement, movingEast(), SHELL, false, false, false).subtract(new Vec3(0D, 0D, 1D)).length(), 1.0E-6D);
+        assertEquals(0D, WeaponAim.launch(displacement, movingEast(), SHELL, false, false, false, 1F).subtract(new Vec3(0D, 0D, 1D)).length(), 1.0E-6D);
     }
 
     @Test
     void aShellIsLaunchedAboveItsTargetToAllowForItsDrop()
     {
-        Vec3 direction = WeaponAim.launch(new Vec3(0D, 0D, 60D), new TargetMotion(), SHELL, false, false, true);
+        Vec3 direction = WeaponAim.launch(new Vec3(0D, 0D, 60D), new TargetMotion(), SHELL, false, false, true, 1F);
         assertTrue(direction.y > 0.01D, "launched " + direction);
         assertEquals(0D, direction.x, 1.0E-6D);
     }
@@ -38,9 +38,9 @@ class WeaponAimTest
     @Test
     void aMovingTargetIsLedTheWayItMoves()
     {
-        Vec3 direction = WeaponAim.launch(new Vec3(0D, 0D, 60D), movingEast(), SHELL, true, false, false);
+        Vec3 direction = WeaponAim.launch(new Vec3(0D, 0D, 60D), movingEast(), SHELL, true, false, false, 1F);
         assertTrue(direction.x > 0.05D, "launched " + direction);
-        assertEquals(direction.x, WeaponAim.launch(new Vec3(0D, 0D, 60D), movingEast(), SHELL, true, true, false).x, 0.02D);
+        assertEquals(direction.x, WeaponAim.launch(new Vec3(0D, 0D, 60D), movingEast(), SHELL, true, true, false, 1F).x, 0.02D);
     }
 
     @Test

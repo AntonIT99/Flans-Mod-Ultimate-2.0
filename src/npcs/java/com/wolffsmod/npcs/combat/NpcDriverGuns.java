@@ -38,6 +38,14 @@ import java.util.*;
 public final class NpcDriverGuns
 {
     private static final int MAX_SHOTS_PER_TICK = 8;
+    /**
+     * Rounds an aircraft gun lets off in a burst, ticks it waits between bursts, ticks of quiet that open a fresh one, and
+     * the shot delay below which a gun is quick enough to need breaking up at all.
+     */
+    private static final int BURST_ROUNDS = 10;
+    private static final double BURST_PAUSE = 10D;
+    private static final int BURST_GAP = 10;
+    private static final double BURST_SHOT_DELAY = 4D;
     /** Seat number of a gun mount in the group, and of the group's muzzles that have no gun of their own. */
     private static final int BANK_GUN = -1;
     private static final int PLATFORM = -2;
@@ -81,8 +89,11 @@ public final class NpcDriverGuns
         private double cooldown;
         private int fired;
         private int sequence;
+        /** Rounds let off since the last pause, while the gun fires in bursts, and the game time of the last of them. */
+        private int burst;
+        private long lastShot = Long.MIN_VALUE;
 
-        private void afterShot(Timing timing, boolean reload)
+        private void afterShot(Timing timing, boolean reload, Burst discipline, long now)
         {
             sequence = sequence >= Integer.MAX_VALUE / 2 ? 0 : sequence + 1;
             fired++;
@@ -93,7 +104,47 @@ public final class NpcDriverGuns
             }
             else
                 cooldown += Math.max(1D / MAX_SHOTS_PER_TICK, timing.shotDelay());
+            if (!discipline.bursts())
+                return;
+            // A gun that has been quiet long enough, such as one between passes, opens a fresh burst.
+            burst = now - lastShot > discipline.gap() ? 1 : burst + 1;
+            lastShot = now;
+            if (burst >= discipline.rounds())
+            {
+                burst = 0;
+                cooldown += discipline.pause();
+            }
         }
+    }
+
+    /**
+     * How a gun breaks its fire up, so that an aircraft walking its rounds across a target lets off bursts rather than one
+     * continuous stream for as long as its nose happens to bear.
+     *
+     * @param rounds
+     *            rounds a burst runs to, or 0 while the gun fires without pausing
+     * @param pause
+     *            ticks the gun waits between bursts
+     * @param gap
+     *            ticks of quiet after which the next round opens a fresh burst instead of continuing the last
+     */
+    record Burst(int rounds, double pause, int gap)
+    {
+        static final Burst NONE = new Burst(0, 0D, 0);
+
+        boolean bursts()
+        {
+            return rounds > 0;
+        }
+    }
+
+    /**
+     * Only an aircraft's own rapid-firing guns fire in bursts. A gun that is already slow enough to pause between rounds
+     * paces itself, and a vehicle, ship or emplacement keeps the cadence its definition states.
+     */
+    static Burst burstDiscipline(boolean aircraft, double shotDelay)
+    {
+        return aircraft && shotDelay < BURST_SHOT_DELAY ? new Burst(BURST_ROUNDS, BURST_PAUSE, BURST_GAP) : Burst.NONE;
     }
 
     /**
@@ -179,7 +230,7 @@ public final class NpcDriverGuns
     {
         return options.enabled(Feature.PROJECTILES) && options.enabled(Feature.MODEL_MUZZLES) && npc.isAlive() && !npc.isKilled() && target != null && target.isAlive() && target.level() == npc.level()
             && target.distanceTo(npc) <= npc.stats.ranged.getRange() && !state.getFlight().holdsFire() && !state.getParts().effects().gunDisabled() && !NpcDrivers.holdsFire(npc)
-            && !NpcCrew.holdsFire(npc);
+            && !NpcCrew.holdsFire(npc) && !NpcSkill.holdsFire(npc, target);
     }
 
     private void fire(Context context, Mount mount, List<WeaponMuzzle> points)
@@ -201,13 +252,15 @@ public final class NpcDriverGuns
         {
             List<WeaponMuzzle> selected = selectedMuzzles(context, mount, gun, points);
             boolean fired = false;
+            // One error for the whole trigger pull, so that the rounds of a volley stay together as a player's pellets do.
+            NpcSkill.AimError error = NpcSkill.aimError(npc, context.target()).plus(NpcGunSteadiness.spread(npc, context.state(), options));
             for (WeaponMuzzle muzzle : selected)
-                fired = launch(context, muzzle, ammo, gun.fired) || fired;
+                fired = launch(context, muzzle, ammo, gun.fired, error) || fired;
             if (!fired)
                 return;
             if (trigger == 0 && options.enabled(Feature.FIRE_SOUNDS))
                 FlansProjectiles.playShootSound(npc, weapon, ItemStack.EMPTY, secondary);
-            gun.afterShot(timing, options.enabled(Feature.RELOAD_CYCLE));
+            gun.afterShot(timing, options.enabled(Feature.RELOAD_CYCLE), burstDiscipline(NpcAirCombat.active(npc), timing.shotDelay()), npc.level().getGameTime());
         }
     }
 
@@ -255,7 +308,11 @@ public final class NpcDriverGuns
         return List.of();
     }
 
-    private boolean launch(Context context, WeaponMuzzle muzzle, ItemStack ammo, int round)
+    /**
+     * @param error
+     *            how far this trigger pull goes astray of the barrels while the NPC's aim settles on its target
+     */
+    private boolean launch(Context context, WeaponMuzzle muzzle, ItemStack ammo, int round, NpcSkill.AimError error)
     {
         EntityNPCInterface npc = context.npc();
         LivingEntity target = context.target();
@@ -283,7 +340,7 @@ public final class NpcDriverGuns
         boolean fixed = context.fixed().contains(muzzle);
         if (fixed && !state.isHullAligned())
             return false;
-        Vec3 direction = state.barrelDirection(npc, fixed);
+        Vec3 direction = error.apply(state.barrelDirection(npc, fixed));
         if (shot.launch(origin, direction, false).isEmpty())
             return false;
         NpcMuzzleFlashes.fired(npc, muzzle, direction, state.getHullYaw(), secondary);

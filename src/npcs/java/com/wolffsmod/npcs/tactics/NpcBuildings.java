@@ -1,6 +1,6 @@
 package com.wolffsmod.npcs.tactics;
 
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import com.wolffsmod.npcs.presets.NpcPresetSetting;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+
 /**
  * Recognizes the inside of buildings: a block with a roof over it and walls round most of it. NPCs that open doors prefer such
  * places as cover, fight from their windows and doorways, and follow enemies into them. Results are cached for a few seconds
@@ -23,8 +25,6 @@ import java.util.WeakHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcBuildings
 {
-    /** Custom NPCs' door interaction value for opening doors. */
-    public static final int DOORS_OPEN = 1;
     /** Highest a roof may be above the floor. */
     private static final int ROOF_HEIGHT = 6;
     /** Farthest a wall may be in each direction. */
@@ -40,7 +40,7 @@ public final class NpcBuildings
     /** @return whether the NPC opens doors, so that it can get into buildings without breaking them */
     public static boolean entersBuildings(EntityNPCInterface npc)
     {
-        return npc.ais.doorInteract == DOORS_OPEN;
+        return npc.ais.doorInteract == NpcPresetSetting.Values.DOORS_OPEN;
     }
 
     public static boolean indoors(Entity entity)

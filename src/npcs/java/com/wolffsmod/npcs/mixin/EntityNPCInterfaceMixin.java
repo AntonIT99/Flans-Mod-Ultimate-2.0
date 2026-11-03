@@ -173,6 +173,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_MECHA_TOOL = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
     @Unique
+    private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_MECHA_LEFT_TOOL = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
+    @Unique
+    private static final EntityDataAccessor<Integer> WOLFFSMODNPCS_MECHA_LIGHT = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.INT);
+    @Unique
+    private final NpcMechaSystems wolffsmodnpcsMechaSystems = new NpcMechaSystems();
+    @Unique
     private static final EntityDataAccessor<Integer> WOLFFSMODNPCS_CREW_SEAT = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.INT);
     @Unique
     private static final String WOLFFSMODNPCS_CREW_SEAT_KEY = "WolffsModCrewSeat";
@@ -344,7 +350,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsEngineReplacesSteps(BlockPos pos, BlockState state, CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        if (NpcPresentation.of(npc).getVehicleSounds().resolve(npc, true).isPresent() || wolffsmodnpcsPlaysFlanSound(npc, 4))
+        if (NpcMechaSystems.stomp(npc) || NpcPresentation.of(npc).getVehicleSounds().resolve(npc, true).isPresent() || wolffsmodnpcsPlaysFlanSound(npc, 4))
             callback.cancel();
     }
 
@@ -755,11 +761,23 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return wolffsmodnpcsMelee;
     }
 
-    /** The selected sword is mounted on the right arm; inventory tools are synchronized independently of held items. */
+    /** Both arms synchronize independently of the humanoid held-item slots. */
     @Override
     public ItemStack flansmodultimateMechaTool(boolean left)
     {
-        return left ? ItemStack.EMPTY : getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL);
+        return getEntityData().get(left ? WOLFFSMODNPCS_MECHA_LEFT_TOOL : WOLFFSMODNPCS_MECHA_TOOL);
+    }
+
+    @Override
+    public int flansmodultimateMechaLightLevel()
+    {
+        return getEntityData().get(WOLFFSMODNPCS_MECHA_LIGHT) & 15;
+    }
+
+    @Override
+    public boolean flansmodultimateMechaForceDark()
+    {
+        return (getEntityData().get(WOLFFSMODNPCS_MECHA_LIGHT) & 16) != 0;
     }
 
     @Override
@@ -811,7 +829,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = {"causeFallDamage", "m_142535_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsArmorFall(float distance, float multiplier, DamageSource source, CallbackInfoReturnable<Boolean> callback)
     {
-        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_FALL, EquippedArmorProperties::negatesFallDamage))
+        if (wolffsmodnpcsMechaSystems.getUpgrades().stopFallDamage()
+            || NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_FALL, EquippedArmorProperties::negatesFallDamage))
             callback.setReturnValue(false);
     }
 
@@ -1076,7 +1095,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             wolffsmodnpcsExternalImpulses.absorb(npc);
             NpcProtection.updateKnockback(npc);
             NpcAmmunition.refillEmptySlots(npc);
-            ItemStack sword = NpcMechaTools.findSword(npc);
+            wolffsmodnpcsMechaSystems.refresh(npc);
+            MechaUpgrades upgrades = wolffsmodnpcsMechaSystems.getUpgrades();
+            getEntityData().set(WOLFFSMODNPCS_MECHA_LIGHT, upgrades.lightLevel() | (upgrades.forceDark() ? 16 : 0));
+            ItemStack left = NpcMechaTools.hand(npc, true);
+            if (!ItemStack.matches(left, getEntityData().get(WOLFFSMODNPCS_MECHA_LEFT_TOOL)))
+                getEntityData().set(WOLFFSMODNPCS_MECHA_LEFT_TOOL, left.copy());
+            ItemStack sword = NpcMechaTools.hand(npc, false);
             if (!ItemStack.matches(sword, getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL)))
                 getEntityData().set(WOLFFSMODNPCS_MECHA_TOOL, sword.copy());
             NpcTypeProperties.of(npc).refresh(npc);
@@ -1176,6 +1201,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (server)
         {
             NpcMobility.tick(npc);
+            if (acting)
+                wolffsmodnpcsMechaSystems.tick(npc);
             state.getParts().body().ifPresent(body -> state.getParts().repairs().shipMotion(npc, body));
             NpcPathDebug.tick(npc, state);
             NpcAimDebug.tick(npc, state);
@@ -1429,6 +1456,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         getEntityData().define(WOLFFSMODNPCS_DISTANCE_DATA, false);
         getEntityData().define(WOLFFSMODNPCS_THROW_DISPLAY, ItemStack.EMPTY);
         getEntityData().define(WOLFFSMODNPCS_MECHA_TOOL, ItemStack.EMPTY);
+        getEntityData().define(WOLFFSMODNPCS_MECHA_LEFT_TOOL, ItemStack.EMPTY);
+        getEntityData().define(WOLFFSMODNPCS_MECHA_LIGHT, 0);
     }
 
     @Inject(method = {"readAdditionalSaveData", "m_7378_"}, at = @At("TAIL"))

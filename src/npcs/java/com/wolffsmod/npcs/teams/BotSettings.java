@@ -49,6 +49,9 @@ public final class BotSettings
     private static final String NBT_VEHICLE_CREWS = "vehicle_crews";
     private static final String NBT_EMPLACEMENTS = "emplacements";
     private static final String NBT_PLAYER_SEAT_DEPLOYMENT = "player_seat_deployment";
+    private static final String NBT_DRIVE_REAL_VEHICLES = "drive_real_vehicles";
+    private static final String NBT_GUN_REAL_VEHICLES = "gun_real_vehicles";
+    private static final String NBT_RIDE_REAL_VEHICLES = "ride_real_vehicles";
     private static final String NBT_TEAMS = "teams";
     /** The custom values a round, skirmish or war starts with: those of Regular. */
     public static final BotTraining DEFAULT_CUSTOM = Difficulty.REGULAR.training(null);
@@ -216,6 +219,10 @@ public final class BotSettings
     private boolean emplacements = true;
     /** Whether allied players may deploy into NPC-occupied seats in real vehicles and AA guns. */
     private boolean playerSeatDeployment = true;
+    /** Whether soldiers drive, gun or travel in real Flan driveables, independently of generated vehicle NPCs. */
+    private boolean driveRealVehicles = true;
+    private boolean gunRealVehicles = true;
+    private boolean rideRealVehicles = true;
     private NpcTacticalProfile tacticalProfile = NpcTacticalProfile.INHERIT;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
@@ -657,6 +664,9 @@ public final class BotSettings
         tag.putBoolean(NBT_VEHICLE_CREWS, vehicleCrews);
         tag.putBoolean(NBT_EMPLACEMENTS, emplacements);
         tag.putBoolean(NBT_PLAYER_SEAT_DEPLOYMENT, playerSeatDeployment);
+        tag.putBoolean(NBT_DRIVE_REAL_VEHICLES, driveRealVehicles);
+        tag.putBoolean(NBT_GUN_REAL_VEHICLES, gunRealVehicles);
+        tag.putBoolean(NBT_RIDE_REAL_VEHICLES, rideRealVehicles);
         tag.putString("tactical_profile", tacticalProfile.name());
         CompoundTag teamTag = new CompoundTag();
         teams.forEach((team, force) -> teamTag.put(team, force.save()));
@@ -698,11 +708,19 @@ public final class BotSettings
         settings.vehicleCrews = !tag.contains(NBT_VEHICLE_CREWS) || tag.getBoolean(NBT_VEHICLE_CREWS);
         settings.emplacements = !tag.contains(NBT_EMPLACEMENTS) || tag.getBoolean(NBT_EMPLACEMENTS);
         settings.playerSeatDeployment = !tag.contains(NBT_PLAYER_SEAT_DEPLOYMENT) || tag.getBoolean(NBT_PLAYER_SEAT_DEPLOYMENT);
+        settings.driveRealVehicles = enabledByDefault(tag, NBT_DRIVE_REAL_VEHICLES);
+        settings.gunRealVehicles = enabledByDefault(tag, NBT_GUN_REAL_VEHICLES);
+        settings.rideRealVehicles = enabledByDefault(tag, NBT_RIDE_REAL_VEHICLES);
         settings.tacticalProfile = parse(NpcTacticalProfile.class, tag.getString("tactical_profile"), NpcTacticalProfile.INHERIT);
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));
         return settings;
+    }
+
+    private static boolean enabledByDefault(CompoundTag tag, String key)
+    {
+        return !tag.contains(key) || tag.getBoolean(key);
     }
 
     private static float weight(CompoundTag tag, String key)

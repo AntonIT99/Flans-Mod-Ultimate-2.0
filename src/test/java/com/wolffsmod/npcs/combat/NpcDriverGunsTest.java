@@ -96,7 +96,7 @@ class NpcDriverGunsTest
                 return new boolean[muzzles == null ? 0 : muzzles.size()];
             });
             when(state.barrelDirection(npc, false)).thenReturn(TURRET_BARREL);
-            when(state.lead(any(), eq(target), eq(options), anyFloat(), anyDouble(), anyDouble(), eq(false))).thenReturn(new Vec3(0D, 0D, -1D));
+            when(state.lead(eq(npc), any(), eq(target), eq(options), anyDouble(), anyDouble(), anyDouble(), eq(false))).thenReturn(new Vec3(0D, 0D, -1D));
             states.when(() -> NpcVehicleState.aimPoint(target)).thenReturn(new Vec3(0D, 0D, -10D));
             sight.when(() -> NpcSight.clear(eq(level), any(), any(), anyInt(), eq(npc))).thenReturn(true);
             when(weapon.getItem()).thenReturn(Items.STICK);

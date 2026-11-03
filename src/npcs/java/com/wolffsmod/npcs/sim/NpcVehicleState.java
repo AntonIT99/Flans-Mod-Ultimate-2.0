@@ -7,6 +7,7 @@ import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.drivers.NpcHullAngling;
 import com.wolffsmod.npcs.drivers.WeaponAim;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
@@ -51,6 +52,8 @@ public final class NpcVehicleState
     /** Degrees a hovering helicopter tips its nose up or down at most to bring guns fixed to its hull onto its target, and per tick. */
     private static final float MAX_HOVER_TIP = 45F;
     private static final float HOVER_TIP_STEP = 3F;
+    /** Degrees added to the firing tolerance of guns an aircraft lays by flying the airframe onto the shot. */
+    private static final float AIRFRAME_TOLERANCE = 3F;
     /** Squared blocks a muzzle has to move by as the turret turns to count as one of the turret's. */
     private static final double TURNING_MUZZLE = 1.0E-6D;
     /** Fewest blocks above its target a bomb is let go from, and blocks from the target within which it may come down. */
@@ -104,8 +107,8 @@ public final class NpcVehicleState
     private double otherGravity;
     private double otherDrag = 1D;
     /**
-     * Whether a plane flies a bomb run at its target, level over it rather than diving on it: its main weapon drops bombs,
-     * or the group beside it does and the target is worth them.
+     * Whether a plane flies a bomb run at its target, level over it rather than diving on it: its main weapon drops bombs.
+     * Bombs in the group beside its guns do not make the run, since the plane would then never point its guns at the target.
      */
     @Getter
     private boolean bombRun;
@@ -120,7 +123,10 @@ public final class NpcVehicleState
     /** Blocks a ground vehicle's model is drawn above, negative below, the NPC's feet so that its wheels rest on the terrain. */
     @Getter
     private float attitudeLift;
-    /** Where a bomb let go now would have to come down to meet the target, while the NPC bombs one. */
+    /**
+     * Where a bomb let go now would have to come down to meet the target, while the NPC bombs one. Set for the bombs
+     * beside the guns as well, so that a plane on a gun run still knows where they would fall.
+     */
     @Nullable
     private Vec3 bombPoint;
     /** Share of its speed the NPC keeps this tick while its hull turns toward where it wants to go. */
@@ -149,12 +155,17 @@ public final class NpcVehicleState
     private final NpcFlight flight = new NpcFlight();
     @Getter
     private final NpcSubmarine submarine = new NpcSubmarine();
+    /** How steady its guns are as it moves, which a vehicle NPC and an NPC at the wheel of a real driveable both go by. */
+    @Getter
+    private final NpcGunSteadiness gunnery = new NpcGunSteadiness();
     /** The part hitboxes of the model, on either side. */
     @Getter
     private final NpcParts parts = new NpcParts();
     /** Where a ground vehicle drives to for a shot its main weapon cannot make from where it stands. */
     @Getter
     private final NpcFiringPosition firingPosition = new NpcFiringPosition();
+    /** Shows a standing hull's front armour to the enemy vehicle that threatens it. */
+    private final NpcHullAngling angling = new NpcHullAngling();
     private int targetId = -1;
     @Nullable
     private Vec3 solution;
@@ -170,6 +181,9 @@ public final class NpcVehicleState
     /** Blocks round where it goes off that the main weapon's round reaches, which the NPC keeps out of; 0 for one that does not. */
     private double shotBlast;
     private int ballisticsAt = Integer.MIN_VALUE;
+    /** Whether every weapon of the model has run out, as last looked at, and when that was: working it out builds templates. */
+    private boolean dry;
+    private int dryAt = Integer.MIN_VALUE;
     private int sentSignature;
     private boolean sent;
     private int shapeSignature = Integer.MIN_VALUE;
@@ -547,11 +561,39 @@ public final class NpcVehicleState
             bombRun = false;
             return;
         }
-        bombRun = bombing;
-        if (bombing)
+        BombPlan plan = bombPlan(bombing, otherBombs, NpcBombTargets.worthBombing(target));
+        bombRun = plan.run();
+        if (plan.run())
             aligned = bombsAway(npc, current, target, options);
-        else if (otherBombs && NpcBombTargets.worthBombing(target))
+        else if (plan.marksDrop())
             bombPoint = bombDrop(npc, npc.position(), otherGravity, otherDrag, target, options).meeting();
+    }
+
+    /**
+     * What a plane does about a ground target it could bomb.
+     *
+     * @param run
+     *            whether it flies the run level, the bombs of its main weapon making the attack
+     * @param marksDrop
+     *            whether it follows where the bombs beside its guns would fall, while its guns make the attack
+     */
+    record BombPlan(boolean run, boolean marksDrop)
+    {}
+
+    /**
+     * Only the weapon group making the attack decides how the plane flies. Bombs beside the guns never make the run: the
+     * plane would fly level at every ground target, and its guns, which point along its flight path, could never bear.
+     *
+     * @param bombing
+     *            whether the main weapon drops bombs
+     * @param otherBombs
+     *            whether the group beside it does
+     * @param worthBombing
+     *            whether the target is worth bombs
+     */
+    static BombPlan bombPlan(boolean bombing, boolean otherBombs, boolean worthBombing)
+    {
+        return new BombPlan(bombing, !bombing && otherBombs && worthBombing);
     }
 
     private static boolean driving(EntityNPCInterface npc)
@@ -569,8 +611,21 @@ public final class NpcVehicleState
         float rest = current.turreted() && driver != null ? driver.restYaw() : 0F;
         boolean reachable = current.turreted() && (driver == null || MountMotion.error(driver.clamp(wanted), wanted) <= tolerance);
         if (reachable)
+        {
+            angleArmour(npc);
             return;
+        }
         hullYaw = MountMotion.turn(hullYaw, hullYaw + wanted.yaw() - rest, hullStep(npc, tuning));
+    }
+
+    /** Turns a standing tracked hull whose turret covers its target so that its angled front faces the nearest enemy vehicle. */
+    private void angleArmour(EntityNPCInterface npc)
+    {
+        if (isShip() || !((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.FRONTAL_ARMOR_ANGLING))
+            return;
+        Float course = angling.turn(npc, npc, Vec3.directionFromRotation(0F, hullYaw));
+        if (course != null && course != 0F)
+            hullYaw = MountMotion.turn(hullYaw, hullYaw + course, hullStep(npc, NpcTuning.of(npc)));
     }
 
     /**
@@ -592,13 +647,26 @@ public final class NpcVehicleState
             turretPitch = current.kind() == FlanModelKind.MECHA ? armPitch(options, tuning, wanted) : 0F;
         }
         boolean check = options.enabled(Feature.FIRE_WHEN_ALIGNED) && wanted != null;
-        aligned = !check || MountMotion.error(turretAim(), wanted) <= tolerance;
-        hullAligned = !check || MountMotion.error(MountAim.REST, wanted) <= tolerance;
+        float firing = firingTolerance(tolerance, current.kind(), current.turreted());
+        aligned = !check || MountMotion.error(turretAim(), wanted) <= firing;
+        hullAligned = !check || MountMotion.error(MountAim.REST, wanted) <= firing;
+    }
+
+    /**
+     * An aircraft lays guns fixed to its hull by flying the whole airframe onto the shot, which it can only do as closely
+     * as its pitch and roll rates allow, so it is given more room than a turret that is pointed straight at its target.
+     *
+     * @return the degrees the guns may point off the target and still fire
+     */
+    static float firingTolerance(float tolerance, @Nullable FlanModelKind kind, boolean turreted)
+    {
+        return !turreted && kind == FlanModelKind.PLANE ? tolerance + AIRFRAME_TOLERANCE : tolerance;
     }
 
     /**
      * Pitches and banks a plane in flight as it flies, and tips a hovering helicopter whose guns are fixed to its hull onto
-     * its shot. Ground vehicles retain their wheel-supported terrain attitude.
+     * its shot. A ship trims and heels with the compartments it has flooded. Ground vehicles retain their wheel-supported
+     * terrain attitude.
      *
      * @param aim
      *            the world direction the shot has to leave in, or null without one
@@ -607,6 +675,13 @@ public final class NpcVehicleState
     {
         if (current.kind() == FlanModelKind.VEHICLE && !isShip())
             return;
+        if (isShip())
+        {
+            // A flooding hull trims and heels; the controller levels it out again once its compartments hold.
+            attitudePitch = parts.repairs().getNavalPitch();
+            attitudeBank = parts.repairs().getNavalRoll();
+            return;
+        }
         NpcTuning.Flight type = current.kind() == FlanModelKind.PLANE ? NpcFlight.type(npc) : NpcTuning.Flight.NORMAL;
         if (type == NpcTuning.Flight.PLANE)
         {
@@ -873,7 +948,7 @@ public final class NpcVehicleState
         else
         {
             boolean arc = options.enabled(Feature.BALLISTIC_AIM);
-            solution = lead(displacement, target, options, shotSpeed, arc ? shotGravity : 0D, arc ? shotDrag : 1D, indirect(npc, target));
+            solution = lead(npc, displacement, target, options, shotSpeed, arc ? shotGravity : 0D, arc ? shotDrag : 1D, indirect(npc, target));
         }
         return solution;
     }
@@ -916,15 +991,37 @@ public final class NpcVehicleState
         };
     }
 
-    /** The launch direction against a target, led the way the NPC's switches ask for. */
-    public Vec3 lead(Vec3 displacement, LivingEntity target, NpcWeaponOptions options, double speed, double gravity, double drag, boolean highArc)
+    /**
+     * The launch direction against a target, led the way the NPC's switches ask for and by as much of the target's run as
+     * its human limits allow for. Laying the gun by it, rather than only the rounds that leave it, is what makes an NPC
+     * that under-leads point where it believes its target will be.
+     */
+    public Vec3 lead(EntityNPCInterface npc, Vec3 displacement, LivingEntity target, NpcWeaponOptions options, double speed, double gravity, double drag, boolean highArc)
     {
+        Vec3 still = ProjectileAim.direction(displacement, Vec3.ZERO, speed, gravity, drag, highArc);
         if (!options.enabled(Feature.LEAD_TARGET))
-            return ProjectileAim.direction(displacement, Vec3.ZERO, speed, gravity, drag, highArc);
+            return still;
         Optional<TargetMotion> tracked = options.enabled(Feature.ADVANCED_LEAD) ? motionOf(target) : Optional.empty();
-        if (tracked.isPresent())
-            return ProjectileAim.solve(displacement, tracked.get(), speed, gravity, drag, highArc).direction();
-        return ProjectileAim.direction(displacement, target.getDeltaMovement(), speed, gravity, drag, highArc);
+        Vec3 led = tracked.isPresent()
+            ? ProjectileAim.solve(displacement, tracked.get(), speed, gravity, drag, highArc).direction()
+            : ProjectileAim.direction(displacement, target.getDeltaMovement(), speed, gravity, drag, highArc);
+        return NpcSkill.partialLead(npc, still, led);
+    }
+
+    /**
+     * @return whether the vehicle has nothing left to fire from any of its weapon groups or their guns, so that staying in
+     *         the fight gains it nothing. Only a vehicle that really uses its ammunition up can run out; one that falls back
+     *         on its default rounds never does. Looked at every so often, since it means building ammunition templates.
+     */
+    public boolean isOutOfAmmunition(EntityNPCInterface npc, NpcWeaponOptions options)
+    {
+        if (!active || !options.enabled(Feature.CONSUME_AMMO) || npc.level().isClientSide)
+            return false;
+        if (npc.tickCount - dryAt < BALLISTICS_INTERVAL && npc.tickCount >= dryAt)
+            return dry;
+        dryAt = npc.tickCount;
+        dry = NpcAmmunition.modelDry(npc);
+        return dry;
     }
 
     private void refreshBallistics(EntityNPCInterface npc)
@@ -942,6 +1039,12 @@ public final class NpcVehicleState
         otherBombs = other.map(ProjectileShot::dropped).orElse(false);
         otherGravity = other.map(ProjectileShot::gravity).orElse(0D);
         otherDrag = other.map(ProjectileShot::drag).orElse(1D);
+    }
+
+    /** @return blocks per tick the round the main weapon has loaded now makes, or NaN while that is not known */
+    public double shotSpeed()
+    {
+        return active ? shotSpeed : Double.NaN;
     }
 
     /**

@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.wolffsmod.npcs.combat.NpcAirCombat;
 import com.wolffsmod.npcs.sim.MountMotion;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -24,7 +25,8 @@ import java.util.*;
  * Flies the aircraft an NPC sits at the controls of, wherever the NPC would walk. A plane takes off along its heading,
  * climbs to a cruising height above the terrain ahead, banks to turn, makes strafing runs on the NPC's target and circles
  * where it has nowhere further to go; parked with nowhere to go, it stays parked. A rotorcraft lifts off on its collective,
- * tilts to fly to its goal, faces the NPC's target and hovers, and lands once it has stayed idle for a while. Either
+ * tilts to fly to its goal, faces the NPC's target and hovers, climbing to the altitude of an aircraft it fights so that
+ * guns fixed to its hull bear on it, and lands once it has stayed idle for a while. Either
  * pulls up whenever the ground comes too close, and either keeps out of the reach of its own rounds: a plane breaks off
  * its run before they could catch it, and a rotorcraft draws off to the edge of their reach rather than hovering inside
  * it. One per NPC, kept by its {@link NpcDriver}. Server thread.
@@ -84,6 +86,12 @@ final class NpcPilot
     private static final float MAX_FORWARD_TILT = 15F;
     private static final float MAX_BACK_TILT = 12F;
     private static final float MAX_SIDE_TILT = 10F;
+    /**
+     * Degrees a hovering rotorcraft noses up to lay guns fixed to its hull: barely at all on a target below it, and as far
+     * as the attack tilt on an aircraft, which it climbs toward rather than standing on its tail for.
+     */
+    private static final float HOVER_NOSE_UP = 5F;
+    private static final float MAX_ATTACK_NOSE_UP = 30F;
     /** Climb wanted per block of height off the hover height, and the fastest climb and descent, in blocks a tick. */
     private static final double CLIMB_PER_BLOCK = 0.04D;
     private static final double MAX_ROTOR_CLIMB = 0.25D;
@@ -492,10 +500,14 @@ final class NpcPilot
         Tilt tilt = tilt(flight, 0D);
         if (target == null)
             return new FlightControl.Command(tilt.pitch(), tilt.bank(), heading, collective(flight, settling));
-        // Hovering on its target, it points its nose at it for its guns.
-        Vec3 line = target.getBoundingBox().getCenter().subtract(flight.position());
-        float pitch = Mth.clamp((float) Math.toDegrees(Math.atan2(line.y, Math.max(1.0E-3D, line.horizontalDistance()))), -MAX_FORWARD_TILT, 5F);
-        return new FlightControl.Command(pitch, tilt.bank(), bearing(flight.position(), target.position()), collective(flight, false));
+        // Hovering on its target, it points its nose at it for its guns. Against an aircraft it holds the altitude it fights
+        // at as well, so that the shot its hull has to make stays within the little its nose comes up.
+        Vec3 aim = target.getBoundingBox().getCenter();
+        boolean airborne = NpcAirCombat.airborne(target);
+        Vec3 line = aim.subtract(flight.position());
+        float pitch = aimTilt(line.y, line.horizontalDistance(), airborne);
+        return new FlightControl.Command(pitch, tilt.bank(), bearing(flight.position(), target.position()),
+            collective(flight, false, hoverAltitude(flight.terrain(), settings.hoverHeight(), aim.y, airborne)));
     }
 
     /**
@@ -524,10 +536,46 @@ final class NpcPilot
         return new Tilt(Mth.clamp((float) (ahead - wantedSpeed) * TILT_PER_SPEED, -MAX_FORWARD_TILT, MAX_BACK_TILT), Mth.clamp((float) -aside * TILT_PER_SPEED, -MAX_SIDE_TILT, MAX_SIDE_TILT));
     }
 
+    /**
+     * @param rise
+     *            blocks the target lies above the rotorcraft, negative below it
+     * @param run
+     *            blocks it lies away across the ground
+     * @param airborne
+     *            whether the target is an aircraft, which the rotorcraft brings its nose further up for
+     * @return the pitch a hovering rotorcraft lays guns fixed to its hull with, positive nose up
+     */
+    static float aimTilt(double rise, double run, boolean airborne)
+    {
+        float angle = (float) Math.toDegrees(Math.atan2(rise, Math.max(1.0E-3D, run)));
+        return Mth.clamp(angle, -MAX_FORWARD_TILT, airborne ? MAX_ATTACK_NOSE_UP : HOVER_NOSE_UP);
+    }
+
+    /**
+     * @param airborne
+     *            whether the rotorcraft fights an aircraft, whose altitude it matches rather than leaving its guns short of it
+     * @return the height a rotorcraft flies at: its hover height over the terrain, or its target's altitude where that is higher
+     */
+    static double hoverAltitude(double terrain, double hoverHeight, double targetY, boolean airborne)
+    {
+        double hold = terrain + hoverHeight;
+        return airborne ? Math.max(hold, targetY) : hold;
+    }
+
     /** @return the collective that climbs a rotorcraft to its hover height and holds it there, or lets it down to land */
     private float collective(Flight flight, boolean settling)
     {
-        double climb = settling ? -LANDING_DESCENT : Mth.clamp((flight.terrain() + settings.hoverHeight() - flight.position().y) * CLIMB_PER_BLOCK, -MAX_ROTOR_DESCENT, MAX_ROTOR_CLIMB);
+        return collective(flight, settling, flight.terrain() + settings.hoverHeight());
+    }
+
+    /**
+     * @param hold
+     *            the height the rotorcraft flies at, above its hover height while it fights an aircraft higher up
+     * @return the collective that climbs a rotorcraft to that height and holds it there, or lets it down to land
+     */
+    private float collective(Flight flight, boolean settling, double hold)
+    {
+        double climb = settling ? -LANDING_DESCENT : Mth.clamp((hold - flight.position().y) * CLIMB_PER_BLOCK, -MAX_ROTOR_DESCENT, MAX_ROTOR_CLIMB);
         if (tooLow(flight) && !settling)
         {
             phase = Phase.PULL_UP;

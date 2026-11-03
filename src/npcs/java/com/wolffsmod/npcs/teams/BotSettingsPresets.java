@@ -77,6 +77,9 @@ public final class BotSettingsPresets implements ISettingsPresets
             settings.putBoolean("emplacements", true);
         if (!settings.contains("player_seat_deployment"))
             settings.putBoolean("player_seat_deployment", true);
+        for (String key : List.of("drive_real_vehicles", "gun_real_vehicles", "ride_real_vehicles"))
+            if (!settings.contains(key))
+                settings.putBoolean(key, true);
         CompoundTag canonical = BotSettings.load(settings).save();
         checkSettings(settings, canonical, SETTINGS);
         if (!knownTeams.containsAll(settings.getCompound(TEAMS).getAllKeys()))

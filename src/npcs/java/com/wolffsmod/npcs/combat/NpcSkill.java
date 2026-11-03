@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.api.driveables.FlansDriveables;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.sim.NpcSight;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -64,6 +65,12 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     /** Steps of the aim error setting per degree, and of the share settings per whole. */
     private static final float ERROR_STEPS = 10F;
     private static final float PERCENT = 100F;
+    /**
+     * Ticks a hand-laid turret holds one offset before it takes the next. A gun that is laid rather than fired round by
+     * round is pointed every tick, so a fresh error each time would only shake it; held for a while, the same error reads
+     * as a gunner who is still correcting.
+     */
+    private static final int DRIFT_TICKS = 10;
     /** What each limited NPC knows about its current target. */
     private static final Map<Entity, Engagement> ENGAGEMENTS = new WeakHashMap<>();
 
@@ -98,11 +105,35 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     {
         public static final AimError NONE = new AimError(0F, 0F);
 
+        /** @return an error of up to the given size in degrees, uniform over its disc, so that most rounds land near the target rather than on its edge */
+        public static AimError random(RandomSource random, float size)
+        {
+            if (size <= 0F)
+                return NONE;
+            double spread = size * Math.sqrt(random.nextDouble());
+            double angle = random.nextDouble() * Math.PI * 2D;
+            return new AimError((float) (spread * Math.cos(angle)), (float) (spread * Math.sin(angle)));
+        }
+
+        /** @return this error with another added, as a gun that is both unsettled and unsteady carries both */
+        public AimError plus(AimError other)
+        {
+            if (other.none())
+                return this;
+            return none() ? other : new AimError(yaw + other.yaw, pitch + other.pitch);
+        }
+
+        /** @return whether the aim carries no error at all, and so leaves a direction as it is */
+        public boolean none()
+        {
+            return yaw == 0F && pitch == 0F;
+        }
+
         /** @return the direction turned by this error, keeping its length */
         public Vec3 apply(Vec3 direction)
         {
             double length = direction.length();
-            if (this == NONE || length < 1.0E-6D)
+            if (none() || length < 1.0E-6D)
                 return direction;
             double yawRadians = Math.atan2(direction.x, direction.z) + Math.toRadians(yaw);
             double pitchRadians = Mth.clamp(Math.atan2(direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)) + Math.toRadians(pitch), -Math.PI / 2D, Math.PI / 2D);
@@ -148,9 +179,11 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     /** @return the limits on how the entity fights: its battle's, or else an NPC's own; {@link #NONE} for anyone else */
     public static NpcSkill of(Entity entity)
     {
-        if (!entity.getPersistentData().contains(KEY, Tag.TAG_COMPOUND))
+        // A real entity always carries persistent data; a bare test double, as {@link #own} also allows for, carries none.
+        CompoundTag data = entity.getPersistentData();
+        if (data == null || !data.contains(KEY, Tag.TAG_COMPOUND))
             return entity instanceof EntityNPCInterface npc ? own(npc) : NONE;
-        CompoundTag tag = entity.getPersistentData().getCompound(KEY);
+        CompoundTag tag = data.getCompound(KEY);
         return new NpcSkill(Math.max(0, tag.getInt(NBT_REACTION)), Math.max(0, tag.getInt(NBT_SETTLE)), Math.max(0F, tag.getFloat(NBT_ERROR)), Mth.clamp(tag.getFloat(NBT_LEAD), 0F, 1F),
             Math.max(0F, tag.getFloat(NBT_PLAYER_DAMAGE)), tag.getBoolean(NBT_NON_LETHAL));
     }
@@ -202,17 +235,34 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     public static AimError aimError(EntityNPCInterface npc, LivingEntity target)
     {
         NpcSkill skill = of(npc);
-        if (skill.startError() <= 0F)
-            return AimError.NONE;
-        long aimed = npc.level().getGameTime() - engage(npc, target).since - skill.reactionTicks();
-        float left = skill.settleTicks() <= 0 ? 0F : 1F - Mth.clamp((float) aimed / skill.settleTicks(), 0F, 1F);
+        float left = unsettled(npc, target, skill);
+        return AimError.random(npc.getRandom(), skill.startError() * left);
+    }
+
+    /**
+     * The error of a gun that is laid at a target rather than fired round by round, such as the weapon of a driveable an
+     * NPC drives, whose rounds leave along a barrel the NPC can only point. It holds each offset for a while, so the
+     * barrel drifts onto the target instead of shaking around it.
+     *
+     * @return the error the NPC's aim carries at the target now, which shrinks as its aim settles
+     */
+    public static AimError layingError(EntityNPCInterface npc, LivingEntity target)
+    {
+        NpcSkill skill = of(npc);
+        float left = unsettled(npc, target, skill);
         if (left <= 0F)
             return AimError.NONE;
-        RandomSource random = npc.getRandom();
-        // Uniform over the disc of the remaining error, so that most first rounds land near the target, not on its edge.
-        double size = skill.startError() * left * Math.sqrt(random.nextDouble());
-        double angle = random.nextDouble() * Math.PI * 2D;
-        return new AimError((float) (size * Math.cos(angle)), (float) (size * Math.sin(angle)));
+        long window = npc.level().getGameTime() / DRIFT_TICKS;
+        return AimError.random(RandomSource.create(window * 31L + (long) npc.getId() * 17L + target.getId()), skill.startError() * left);
+    }
+
+    /** @return the share of its starting aim error the NPC has not yet settled out at the target; 0 once it aims true */
+    private static float unsettled(EntityNPCInterface npc, LivingEntity target, NpcSkill skill)
+    {
+        if (skill.startError() <= 0F)
+            return 0F;
+        long aimed = npc.level().getGameTime() - engage(npc, target).since - skill.reactionTicks();
+        return skill.settleTicks() <= 0 ? 0F : 1F - Mth.clamp((float) aimed / skill.settleTicks(), 0F, 1F);
     }
 
     /** @return the share, 0 to 1, of a moving target's run the NPC allows for */
@@ -222,15 +272,53 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     }
 
     /**
+     * Aims an NPC that allows for only part of a moving target's run between the full lead and where the target stands,
+     * so that its rounds fall behind a crossing target as a hurried gunner's do.
+     *
+     * @param still
+     *            the direction to fire in to hit the target where it stands
+     * @param led
+     *            the direction to fire in to meet it where it is going
+     * @return the direction the NPC actually fires in, of the same length as {@code led}
+     */
+    public static Vec3 partialLead(Entity npc, Vec3 still, Vec3 led)
+    {
+        return partialLead(leadShare(npc), still, led);
+    }
+
+    /** @see #partialLead(Entity, Vec3, Vec3) */
+    public static Vec3 partialLead(float share, Vec3 still, Vec3 led)
+    {
+        if (share >= 1F)
+            return led;
+        if (share <= 0F)
+            return still;
+        return still.lerp(led, share).normalize().scale(led.length());
+    }
+
+    /**
      * @return the damage a player takes from a hit, after armour, as the limits of the NPC behind it allow
      */
     public static float damageTo(LivingEntity victim, DamageSource source, float amount)
     {
-        if (!(victim instanceof Player) || !(source.getEntity() instanceof EntityNPCInterface npc))
+        EntityNPCInterface npc = responsible(source.getEntity());
+        if (!(victim instanceof Player) || npc == null)
             return amount;
         NpcSkill skill = of(npc);
         float dealt = amount * skill.playerDamage();
         return skill.nonLethal() ? Math.min(dealt, Math.max(0F, victim.getHealth() - SPARED_HEALTH)) : dealt;
+    }
+
+    /**
+     * @return the NPC whose limits a hit answers to: the shooter itself, or, for a round a driveable fired, the NPC at its
+     *         wheel, which is the entity credited with the shot; null when no NPC is behind it
+     */
+    @Nullable
+    private static EntityNPCInterface responsible(@Nullable Entity source)
+    {
+        if (source instanceof EntityNPCInterface npc)
+            return npc;
+        return source == null ? null : FlansDriveables.getDriver(source).filter(EntityNPCInterface.class::isInstance).map(EntityNPCInterface.class::cast).orElse(null);
     }
 
     /** Forgets every engagement, as the server stops. */

@@ -206,7 +206,9 @@ public final class NpcTuning
         /** Index into AircraftRole; applies to flying aircraft in and outside battles. */
         AIRCRAFT_ROLE(0, 0, AircraftRole.values().length - 1),
         /** Blocks within which an aircraft evaluates missions across all target-search bands. */
-        AIR_SEARCH_RANGE(192, 32, 512);
+        AIR_SEARCH_RANGE(192, 32, 512),
+        /** Greatest extra spread of a vehicle's guns, in tenths of a degree, while its hull runs at speed and turns hard; 0 keeps them steady. */
+        MOVING_SPREAD(25, 0, 200);
 
         private final int fallback;
         private final int minimum;
@@ -314,10 +316,14 @@ public final class NpcTuning
         }
     }
 
-    /** Mission priorities; AUTO uses a bomb-only armament as a bomber, otherwise a fighter (rotorcraft provide ground support). */
+    /**
+     * Mission priorities; AUTO uses a bomb-only armament as a bomber, a gun-armed rotorcraft as an attacker, and anything
+     * else as a fighter. ATTACKER is the gun-armed counterpart of BOMBER: it supports the ground with whatever it carries
+     * and leaves the air to the fighters, turning on an aircraft only where one threatens its own side.
+     */
     public enum AircraftRole
     {
-        AUTO, FIGHTER, BOMBER
+        AUTO, FIGHTER, BOMBER, ATTACKER
     }
 
     /** How a flying NPC flies. */

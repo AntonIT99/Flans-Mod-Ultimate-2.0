@@ -1273,7 +1273,7 @@ public final class ClientHudOverlays
         }
 
         if (canSwitchAmmo)
-            g.drawString(font, switchAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.drawString(font, switchAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine, HUD_WHITE, false);
 
         if (!ModClient.isDebug())
             return;

@@ -1,5 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.ISeat;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,7 +73,7 @@ public final class BotObjectiveGoal extends Goal
     @Override
     public boolean canContinueToUse()
     {
-        return order != null && free() && horizontalDistance(order.spot()) > order.arrival() * 0.5D;
+        return order != null && free() && horizontalDistance(order.spot()) > arrival(order) * (NpcDrivers.isDriver(npc) ? 1D : 0.5D);
     }
 
     @Override
@@ -108,7 +111,8 @@ public final class BotObjectiveGoal extends Goal
             step = RoutePlanner.detour(position, route.get(routeIndex), detours++);
         }
         double y = step.y;
-        if (!order.role().flies() && order.role() != BotRole.NAVAL)
+        boolean flying = npc.getVehicle() instanceof ISeat seat && seat.getDriveableType().map(type -> type.getDriveableKind() == DriveableKind.PLANE && !type.isShip()).orElse(false);
+        if (!flying && !order.role().flies() && order.role() != BotRole.NAVAL)
             y = npc.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(step.x), (int) Math.floor(step.z));
         npc.getNavigation().moveTo(step.x, y, step.z, 1D);
     }
@@ -142,19 +146,28 @@ public final class BotObjectiveGoal extends Goal
     }
 
     /**
-     * Whether the bot is free to move: alive, not riding, and either not fighting and not pinned down by fire, or a squad
+     * Whether the bot is free to move: alive, on foot or driving, and either not fighting and not pinned down by fire, or a squad
      * soldier still on its way, which fires as it walks on.
      */
     private boolean free()
     {
-        if (!npc.isAlive() || npc.isKilled() || npc.isPassenger())
+        if (!npc.isAlive() || npc.isKilled() || npc.isPassenger() && !NpcDrivers.isDriver(npc))
             return false;
+        if (NpcDrivers.isDriver(npc))
+            return npc.getTarget() == null;
         return npc.getTarget() == null ? !NpcSuppression.isPinned(npc) : TeamsBots.movesUnderFire(npc);
     }
 
     private boolean away(BotCommander.Order current)
     {
-        return horizontalDistance(current.spot()) > current.arrival();
+        return horizontalDistance(current.spot()) > arrival(current);
+    }
+
+    private double arrival(BotCommander.Order current)
+    {
+        if (NpcDrivers.isDriver(npc) && npc.getVehicle() instanceof ISeat seat && seat.getDriveable() != null)
+            return Math.max(current.arrival(), Math.max(6D, seat.getDriveable().getBbWidth() * 0.5D + 4D));
+        return current.arrival();
     }
 
     /** Blocks to a spot on the ground plane: an aircraft is there when it circles above it at any height. */

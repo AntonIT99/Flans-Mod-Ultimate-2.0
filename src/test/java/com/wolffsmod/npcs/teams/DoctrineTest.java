@@ -335,4 +335,26 @@ class DoctrineTest
         Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(), List.of(new Vec3(30D, 64D, 0D)), List.of(), List.of(), List.of(), false, new Vec3(150D, 64D, 0D));
         assertEquals(30D, Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D))).get(1).target().x);
     }
+
+    @Test
+    void armourCoversAnObjectiveFromAStandoffWhileTheInfantryGoIn()
+    {
+        TeamsCapturePoint objective = point('A', 60D, GERMANY, -1, false);
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(objective), List.of(), List.of(), List.of(), List.of());
+        Map<Integer, SquadTask> tasks = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D), squad(2, BotRole.ARMOR, 0D)));
+        SquadTask infantry = tasks.get(1);
+        SquadTask armour = tasks.get(2);
+        assertEquals(SquadTask.Kind.ATTACK, infantry.kind());
+        assertEquals(objective.position(), infantry.target(), "only the infantry can take the point, so they go onto it");
+        assertEquals(SquadTask.Kind.OVERWATCH, armour.kind());
+        assertEquals(30D, armour.target().distanceTo(objective.position()), 1.0E-6D, "the point's radius plus the standoff");
+        assertTrue(armour.target().x < objective.position().x, "and it stands off on the side it is coming from");
+    }
+
+    @Test
+    void armourAlreadyOnAnObjectiveCoversItFromWhereItStands()
+    {
+        TeamsCapturePoint objective = point('A', 60D, GERMANY, -1, false);
+        assertEquals(objective.position(), Doctrine.standoff(objective.position(), objective.position(), objective.radius()));
+    }
 }

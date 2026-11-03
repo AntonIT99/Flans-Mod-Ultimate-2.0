@@ -26,25 +26,41 @@ class NpcAirMissionTest
         EntityTestBootstrap.initialize();
     }
 
+    /** Squared distances to the aircraft inside and outside half of the 192-block search range a fighter intercepts within. */
+    private static final double WITHIN_REACH = 6400D;
+    private static final double BEYOND_REACH = 20800D;
+
     @Test
-    void fighterLeavesANearbyGroundTargetForAVisibleAircraftAcrossSearchBands()
+    void fighterLeavesANearbyGroundTargetForAnAircraftItCouldCatch()
     {
-        mission(NpcTuning.AircraftRole.FIGHTER, true, true);
+        mission(NpcTuning.AircraftRole.FIGHTER, true, WITHIN_REACH, true);
+    }
+
+    @Test
+    void fighterKeepsItsGroundTargetRatherThanChaseAnAircraftItCannotCatch()
+    {
+        mission(NpcTuning.AircraftRole.FIGHTER, true, BEYOND_REACH, false);
     }
 
     @Test
     void bomberKeepsGroundSupportDespiteACloserAircraft()
     {
-        mission(NpcTuning.AircraftRole.BOMBER, true, false);
+        mission(NpcTuning.AircraftRole.BOMBER, true, WITHIN_REACH, false);
+    }
+
+    @Test
+    void groundAttackAircraftKeepGroundSupportDespiteACloserAircraft()
+    {
+        mission(NpcTuning.AircraftRole.ATTACKER, true, WITHIN_REACH, false);
     }
 
     @Test
     void invisibleAircraftCannotDisplaceAVisibleGroundTarget()
     {
-        mission(NpcTuning.AircraftRole.FIGHTER, false, false);
+        mission(NpcTuning.AircraftRole.FIGHTER, false, WITHIN_REACH, false);
     }
 
-    private static void mission(NpcTuning.AircraftRole role, boolean visibleAir, boolean chooseAir)
+    private static void mission(NpcTuning.AircraftRole role, boolean visibleAir, double airDistanceSqr, boolean chooseAir)
     {
         EntityNPCInterface npc = mock(EntityNPCInterface.class);
         ServerLevel level = mock(ServerLevel.class);
@@ -63,7 +79,7 @@ class NpcAirMissionTest
         when(ground.position()).thenReturn(new Vec3(0D, 0D, 20D));
         when(air.position()).thenReturn(new Vec3(0D, 80D, 120D));
         when(npc.distanceToSqr(ground)).thenReturn(400D);
-        when(npc.distanceToSqr(air)).thenReturn(20800D);
+        when(npc.distanceToSqr(air)).thenReturn(airDistanceSqr);
         when(npc.getTarget()).thenReturn(ground);
         NpcCombatants combatants = mock(NpcCombatants.class);
         when(combatants.size()).thenReturn(2);

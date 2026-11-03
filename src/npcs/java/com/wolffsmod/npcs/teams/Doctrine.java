@@ -52,6 +52,17 @@ public final class Doctrine
     private static final double ENGAGE_RANGE = 48D;
     /** Blocks around the front a squad spreads over. */
     private static final double FRONT_RADIUS = 16D;
+    /** Blocks beyond an objective's radius at which armour covering it stands off, out of the reach of hand-held anti-tank weapons. */
+    private static final double OVERWATCH_STANDOFF = 24D;
+    /** Blocks around its standoff an armour squad spreads over, enough for its vehicles to stand apart with their own lines of fire. */
+    private static final double OVERWATCH_RADIUS = 12D;
+    /** Blocks from the objective in play within which a naval squad already supports the battle, rather than making for a patrol point. */
+    private static final double NAVAL_SUPPORT_RANGE = 96D;
+    /** Blocks beyond the overwatch standoff a ship holds off an objective it shells, so that it stays out over its own water. */
+    private static final double NAVAL_STANDOFF = 48D;
+    /** Fewest blocks of water a naval squad spreads over, and the room each of its hulls is given within it. */
+    private static final double NAVAL_RADIUS = 16D;
+    private static final double NAVAL_SPACING = 24D;
 
     /**
      * A squad as the commander sees it.
@@ -318,8 +329,10 @@ public final class Doctrine
         {
             var guarded = field.points().stream().filter(point -> point.ownerSide() == field.side()).min(Comparator.comparingDouble(point -> point.position().distanceToSqr(squad.position())));
             if (guarded.isPresent())
-                return new SquadTask(kindAt(field, guarded.get()), guarded.get().position(), guarded.get().radius());
+                return taskAt(field, squad, guarded.get());
         }
+        if (squad.role() == BotRole.ARMOR)
+            return new SquadTask(SquadTask.Kind.OVERWATCH, standoff(squad.position(), front.position(), front.radius()), OVERWATCH_RADIUS);
         return new SquadTask(SquadTask.Kind.ATTACK, front.position(), front.radius());
     }
 
@@ -349,7 +362,7 @@ public final class Doctrine
             assigned.merge(best, squad.power(), Double::sum);
             if (squad.role() == BotRole.INFANTRY && squad.readiness() >= 0.5D)
                 infantry.merge(best, squad.power(), Double::sum);
-            tasks.put(squad.id(), new SquadTask(kindAt(field, point), point.position(), point.radius()));
+            tasks.put(squad.id(), taskAt(field, squad, point));
         }
     }
 
@@ -465,6 +478,29 @@ public final class Doctrine
         return threatened(field, point) ? SquadTask.Kind.DEFEND : SquadTask.Kind.GUARD;
     }
 
+    /**
+     * @return what the squad does at the point. Armour sent to take one covers it from a standoff rather than driving onto
+     *         it: from there its guns reach the objective while the anti-tank weapons waiting on it do not reach the
+     *         armour, and the infantry who alone can take the point go in under its fire.
+     */
+    private static SquadTask taskAt(Battlefield field, SquadView squad, TeamsCapturePoint point)
+    {
+        SquadTask.Kind kind = kindAt(field, point);
+        if (squad.role() != BotRole.ARMOR || kind != SquadTask.Kind.ATTACK)
+            return new SquadTask(kind, point.position(), point.radius());
+        return new SquadTask(SquadTask.Kind.OVERWATCH, standoff(squad.position(), point.position(), point.radius()), OVERWATCH_RADIUS);
+    }
+
+    /**
+     * @return a point back from the objective along the way the squad is coming, far enough out that it covers the
+     *         objective from beyond it; the objective itself when the squad already stands on it
+     */
+    static Vec3 standoff(Vec3 from, Vec3 point, double radius)
+    {
+        Vec3 back = from.subtract(point).multiply(1D, 0D, 1D);
+        return back.lengthSqr() < 1.0E-4D ? point : point.add(back.normalize().scale(radius + OVERWATCH_STANDOFF));
+    }
+
     /** Whether the enemy is taking a point the side holds, or closing in on it. */
     static boolean threatened(Battlefield field, TeamsCapturePoint point)
     {
@@ -493,11 +529,41 @@ public final class Doctrine
         return votes.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElseGet(() -> centroid(field.enemies()));
     }
 
+    /**
+     * Where a naval squad goes. A squad with fight left in it supports the battle ashore: it makes for the patrol point
+     * nearest the objective in play, and once it is within reach of that objective it holds station off it and shells it
+     * instead of steaming back to the point, since a ship that leaves gun range to patrol takes its guns out of the
+     * battle. A battered squad leaves the line for the patrol point farthest from the enemy. The water it spreads over
+     * grows with the number of hulls in it: ships cannot share a station the way soldiers share a rally point.
+     */
     private static SquadTask naval(Battlefield field, SquadView squad)
     {
+        double radius = navalRadius(squad);
+        if (squad.readiness() < 0.5D)
+            return new SquadTask(SquadTask.Kind.PATROL, navalRefuge(field, squad), radius);
         Vec3 focus = field.points().isEmpty() ? centroid(field.enemies()) : field.points().get(Math.min(activeObjective(field.points(), field.attackingSide()), field.points().size() - 1)).position();
-        Vec3 anchor = focus == null ? squad.position() : focus;
-        return nearest(anchor, field.navalPoints()).map(point -> new SquadTask(SquadTask.Kind.PATROL, point, 16D)).orElse(new SquadTask(SquadTask.Kind.HOLD, squad.position(), 8D));
+        if (focus == null)
+            return nearest(squad.position(), field.navalPoints()).map(point -> new SquadTask(SquadTask.Kind.PATROL, point, radius))
+                .orElseGet(() -> new SquadTask(SquadTask.Kind.HOLD, squad.position(), radius));
+        if (squad.position().distanceTo(focus) <= NAVAL_SUPPORT_RANGE)
+            return new SquadTask(SquadTask.Kind.OVERWATCH, standoff(squad.position(), focus, NAVAL_STANDOFF), radius);
+        Vec3 station = standoff(squad.position(), focus, NAVAL_STANDOFF);
+        return nearest(focus, field.navalPoints()).map(point -> new SquadTask(SquadTask.Kind.PATROL, point, radius)).orElseGet(() -> new SquadTask(SquadTask.Kind.OVERWATCH, station, radius));
+    }
+
+    /** @return blocks a naval squad's line spreads over: room for every hull in it, and never less than one station */
+    static double navalRadius(SquadView squad)
+    {
+        return Math.max(NAVAL_RADIUS, NAVAL_SPACING * Math.max(1, squad.strength()) * 0.5D);
+    }
+
+    /** @return the patrol point farthest from the enemy, where a battered squad goes; its own water without any point */
+    private static Vec3 navalRefuge(Battlefield field, SquadView squad)
+    {
+        Vec3 enemy = centroid(field.enemies());
+        if (enemy == null)
+            return nearest(squad.position(), field.navalPoints()).orElse(squad.position());
+        return field.navalPoints().stream().max(Comparator.comparingDouble(point -> point.distanceToSqr(enemy))).orElse(squad.position());
     }
 
     private static Optional<Vec3> nearest(Vec3 from, List<Vec3> candidates)

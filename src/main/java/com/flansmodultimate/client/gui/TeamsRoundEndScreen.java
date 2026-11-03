@@ -104,7 +104,7 @@ public final class TeamsRoundEndScreen extends Screen
     /** The result in large letters, settling from a little larger as it fades in. */
     private void renderTitle(GuiGraphics graphics, long shown, Component text, int accent, int centreY)
     {
-        float in = Mth.clamp((shown - BANNER_GROW_MILLIS * 0.5F) / (float) TEXT_IN_MILLIS, 0F, 1F);
+        float in = Mth.clamp((shown - BANNER_GROW_MILLIS * 0.5F) / TEXT_IN_MILLIS, 0F, 1F);
         if (in <= 0F)
             return;
         float scale = TITLE_SCALE * (1F + 0.35F * (1F - ease(in)));

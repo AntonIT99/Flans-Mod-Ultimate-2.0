@@ -279,7 +279,6 @@ final class Skirmishes
             decide(server, level, skirmish, now);
         }
         TeamsBots.spawnQueued(level, battle, now, random);
-        BotGunners.tick(level, battle);
         if (tick % COMMAND_INTERVAL == 0)
         {
             BotCommander.plan(server, level, battle);

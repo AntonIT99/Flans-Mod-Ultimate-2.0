@@ -12,12 +12,15 @@ import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Claim;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.teams.BotDriveables;
+import com.wolffsmod.npcs.teams.BotTag;
 import com.wolffsmod.npcs.teams.FactionRelations;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -25,6 +28,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -62,6 +66,8 @@ public final class NpcDrivers
     /** Widest and highest path, in blocks, searched for a driveable: a wider one costs too much to search. */
     private static final int MAX_PATH_SIZE = 3;
 
+    private static final Map<Level, SeatReservations> RESERVATIONS = new WeakHashMap<>();
+
     /** Blocks wide and high a path has to be to take a driveable along it. */
     public record PathSize(int width, int height)
     {}
@@ -69,6 +75,54 @@ public final class NpcDrivers
     public static boolean enabled(EntityNPCInterface npc)
     {
         return NpcEquipment.enabled(npc, Feature.DRIVE_DRIVEABLES);
+    }
+
+    /** Whether the NPC operates a real driveable's controls, rather than riding as crew. Server thread. */
+    public static boolean isDriver(EntityNPCInterface npc)
+    {
+        return drivenSeat(npc).filter(seat -> BotDriveables.mayUse(npc, seat)).isPresent() && enabled(npc);
+    }
+
+    private static SeatReservations reservations(EntityNPCInterface npc)
+    {
+        return RESERVATIONS.computeIfAbsent(npc.level(), ignored -> new SeatReservations());
+    }
+
+    static boolean available(EntityNPCInterface npc, Entity seat)
+    {
+        return reservations(npc).available(seat.getUUID(), npc.getUUID(), npc.level().getGameTime());
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted") // A successful reservation is the natural contract.
+    static boolean reserve(EntityNPCInterface npc, Entity seat)
+    {
+        return reservations(npc).reserve(seat.getUUID(), npc.getUUID(), npc.level().getGameTime());
+    }
+
+    static void releaseReservation(EntityNPCInterface npc)
+    {
+        reservations(npc).release(npc.getUUID());
+    }
+
+    /** The seat occupied or reserved by this NPC, for squad recruitment. Server thread. */
+    public static Optional<ISeat> assignedSeat(EntityNPCInterface npc)
+    {
+        Entity seat = npc.getVehicle();
+        if (seat == null && npc.level() instanceof ServerLevel level)
+            seat = reservations(npc).seatOf(npc.getUUID(), level.getGameTime()).map(level::getEntity).orElse(null);
+        return seat instanceof ISeat found ? Optional.of(found) : Optional.empty();
+    }
+
+    /** Orders a soldier into an eligible crew seat, respecting ownership and battle switches. Server thread. */
+    public static boolean boardOnOrder(EntityNPCInterface npc, Entity seat)
+    {
+        return mayBoard(npc) && seat instanceof ISeat candidate && DriveableCrew.crewable(npc, candidate, npc.level().getGameTime()) && board(npc, seat);
+    }
+
+    /** Gets a soldier out and prevents immediate automatic reboarding. Server thread. */
+    public static void disembark(EntityNPCInterface npc)
+    {
+        leave(npc, true);
     }
 
     /** Whether the NPC may board a driveable now: its switch is on, it is alive and on foot, and it is a soldier rather than a vehicle or crew. */
@@ -131,7 +185,7 @@ public final class NpcDrivers
             crew(npc, crewed, crewed.getDriveable(), driver);
         else if (seat == null || driveable == null || !npc.isAlive() || npc.isKilled())
             stopped(npc, driver);
-        else if (!enabled(npc))
+        else if (!enabled(npc) || !BotDriveables.mayUse(npc, seat))
             switchedOff(npc, seat, driveable, driver);
         else if (!operate(npc, seat, driveable, driver))
             leave(npc, true);
@@ -234,6 +288,7 @@ public final class NpcDrivers
             driver.refuse(driveable.getUUID(), now + REFUSAL_TICKS);
         if (driveable != null)
             note(npc, gaveUp ? "gives up" : "gets out of", driveable);
+        releaseReservation(npc);
         npc.stopRiding();
         descend(npc);
         driver.stopDriving();
@@ -276,8 +331,8 @@ public final class NpcDrivers
 
     /**
      * @return the seat, within the NPC's boarding range, it gets into: for an NPC that follows a player, a seat of the
-     *         driveable its owner rides first; otherwise the free driver seat of the nearest driveable it may take, or else
-     *         a gun seat of one an ally drives
+     *         driveable its owner rides first; bots next prefer compatible crew seats. Otherwise it takes the nearest
+     *         available driver seat, or a gun seat of one an ally drives
      */
     static Optional<Entity> findSeat(EntityNPCInterface npc)
     {
@@ -289,15 +344,22 @@ public final class NpcDrivers
             if (owners.isPresent())
                 return owners;
         }
-        Optional<Entity> wheel = npc.level().getEntities(npc, npc.getBoundingBox().inflate(range), entity -> entity instanceof ISeat seat && boardable(npc, seat, now)).stream()
-            .min(Comparator.comparingDouble(npc::distanceToSqr));
+        if (BotTag.isBot(npc))
+        {
+            Optional<Entity> crew = DriveableCrew.findSeat(npc, range, now);
+            if (crew.isPresent())
+                return crew;
+        }
+        Optional<Entity> wheel = npc.level()
+            .getEntities(npc, npc.getBoundingBox().inflate(range), entity -> entity instanceof ISeat seat && boardable(npc, seat, now) && BotDriveables.mayRecruit(npc, seat) && available(npc, entity))
+            .stream().min(Comparator.comparingDouble(npc::distanceToSqr));
         return wheel.isPresent() || npc.getOwner() != null ? wheel : DriveableCrew.findSeat(npc, range, now);
     }
 
     /** Whether the NPC may get into the seat, at the wheel or as crew. */
     static boolean mayTakeSeat(EntityNPCInterface npc, ISeat seat, long now)
     {
-        return boardable(npc, seat, now) || DriveableCrew.crewable(npc, seat, now);
+        return BotDriveables.mayRecruit(npc, seat) && (boardable(npc, seat, now) || DriveableCrew.crewable(npc, seat, now));
     }
 
     /**
@@ -308,8 +370,13 @@ public final class NpcDrivers
     static boolean boardable(EntityNPCInterface npc, ISeat seat, long now)
     {
         Entity driveable = seat.getDriveable();
-        return seat.isDriverSeat() && seat.getRiddenByEntity() == null && driveable != null && driveable.isAlive() && !FlansEntityTypes.isWreck(driveable) && drivable(seat) && !failing(driveable)
-            && !dry(driveable) && !(aircraft(seat) && shortOfFuel(npc, driveable)) && mayTake(npc, driveable) && !NpcDriver.of(npc).refuses(driveable.getUUID(), now) && noEnemyAboard(npc, driveable);
+        return seat.isDriverSeat() && seat.getRiddenByEntity() == null && driveable != null && driveable.isAlive() && !FlansEntityTypes.isWreck(driveable) && drivable(seat) && !dry(driveable)
+            && !(aircraft(seat) && shortOfFuel(npc, driveable)) && permitted(npc, driveable) && BotDriveables.mayUse(npc, seat) && !NpcDriver.of(npc).refuses(driveable.getUUID(), now);
+    }
+
+    static boolean permitted(EntityNPCInterface npc, Entity driveable)
+    {
+        return !failing(driveable) && mayTake(npc, driveable) && noEnemyAboard(npc, driveable);
     }
 
     /** Whether the NPC may take the driveable by who owns it and whether it is locked, as its choice of driveables says. */
@@ -359,8 +426,9 @@ public final class NpcDrivers
         if (other == npc.getOwner())
             return true;
         Optional<ITeam> team = FlansTeams.getTeam(other);
-        if (team.isPresent() && team.equals(FlansTeams.getTeam(npc)))
-            return true;
+        Optional<ITeam> own = FlansTeams.getTeam(npc);
+        if (team.isPresent() && own.isPresent())
+            return FlansTeams.getRunningRound().map(round -> round.getRound().areTeamsAllied(own.get(), team.get())).orElse(own.equals(team));
         if (other instanceof Player player)
             return npc.faction.isFriendlyToPlayer(player);
         return other instanceof EntityNPCInterface fellow && (fellow.faction.id == npc.faction.id || FactionRelations.allied(npc.faction, fellow.faction));
@@ -397,6 +465,7 @@ public final class NpcDrivers
         Entity driveable = ((ISeat) seat).getDriveable();
         if (driveable == null || !npc.startRiding(seat))
             return false;
+        releaseReservation(npc);
         NpcDriver.of(npc).setBoarded(driveable.getUUID());
         note(npc, "gets into", driveable);
         return true;
@@ -450,6 +519,8 @@ public final class NpcDrivers
     /** Whether the NPC and another entity are enemies, by the NPC's faction or the other NPC's, or because it is a monster. */
     public static boolean hostile(EntityNPCInterface npc, Entity other)
     {
+        if (FlansTeams.getTeam(npc).isPresent() && FlansTeams.getTeam(other).isPresent())
+            return FlansTeams.areEnemies(npc, other);
         if (other == npc.getTarget())
             return true;
         if (other instanceof Player player)

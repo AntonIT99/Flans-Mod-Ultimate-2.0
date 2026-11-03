@@ -38,7 +38,7 @@ public enum NpcPreset
     /** Aircraft flight automatically adapted to helicopters. */
     PLANE(VEHICLE.targets, new Target(MOVEMENT, 1), new Target(TERRAIN, 0), new Target(FLIGHT_TYPE, 1), new Target(TACTIC, NpcTuning.Tactic.STRAFING_RUN.ordinal())),
     /** Surface watercraft. */
-    SHIP(VEHICLE.targets, new Target(MOVEMENT, 2), new Target(TERRAIN, 2)),
+    SHIP(VEHICLE.targets, new Target(MOVEMENT, 2), new Target(TERRAIN, 2), new Target(TACTIC, NpcTuning.Tactic.CIRCLE.ordinal())),
     /** A freely roaming creature that flees. */
     PASSIVE_CREATURE(MOB.targets, new Target(ON_ATTACK, 1), new Target(ITEM_WEAPONS, 0), new Target(ATTACK_HOSTILE_FACTIONS, Values.NO), new Target(DEFEND_FACTION_MEMBERS, Values.NO)),
     /** A static weapon that stands still: it does not walk, whatever its model lends, including when displaced. */

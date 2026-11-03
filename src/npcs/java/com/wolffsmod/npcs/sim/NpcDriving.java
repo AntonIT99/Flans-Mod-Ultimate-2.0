@@ -481,9 +481,12 @@ public final class NpcDriving
         }
         updateTraffic(npc, hullYaw, tuning.get(Value.FOLLOW_DISTANCE), tuning.get(Value.TRAFFIC_STOP_GAP));
         float wanted = MountMotion.yaw(route.steer().subtract(npc.position()));
+        // A vehicle without a stabiliser stands to shoot, so its gun is steady; its hull still turns toward its path meanwhile.
+        NpcVehicleState state = NpcVehicleState.of(npc);
+        float limit = state.getGunnery().haltsToFire(npc, state, options) ? 0F : followLimit;
         // The NPC's own motion is no measure of its speed here: before it moves, ground friction has already been taken off it.
-        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), lookahead, speed, followLimit, route.haltDistance(), topSpeed),
-            settings, tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
+        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), lookahead, speed, limit, route.haltDistance(), topSpeed), settings,
+            tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
         watchProgress(npc, Mth.wrapDegrees(wanted - command.hullYaw()), settings.accelerationAt(speed, topSpeed));
         return command;
     }

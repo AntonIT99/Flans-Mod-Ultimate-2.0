@@ -3,7 +3,9 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.teams.*;
+import com.wolffsmod.npcs.sim.ShipWaters;
 import com.wolffsmod.npcs.tactics.NpcCombatIntent;
+import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -27,8 +29,17 @@ final class BotCommander
     /** Blocks above its target an aircraft patrols at. */
     private static final double PLANE_ALTITUDE = 28D;
     private static final double HELICOPTER_ALTITUDE = 14D;
+    /** Blocks of height between the aircraft of one flight, and the most a wingman keeps above its leader. */
+    private static final double FLIGHT_STEP = 6D;
+    private static final double MAX_FLIGHT_RISE = 24D;
     /** Blocks beyond the radius of a defended objective within which its garrison and sniper posts count. */
     private static final double POST_MARGIN = 24D;
+    /** Fewest blocks a ship keeps astern of the one ahead of it in its squad's line; a wider hull keeps more. */
+    private static final double NAVAL_SPACING = 24D;
+    /** Fewest blocks from its station within which a ship counts as on it: a hull cannot be held to a soldier's accuracy. */
+    private static final double NAVAL_ARRIVAL = 8D;
+    /** Shares of the way out along its line a ship's station is tried at, in turn, until the water there carries its hull. */
+    private static final double[] NAVAL_STATION_SHARES = {1D, 0.75D, 0.5D, 0.25D};
     /** Bots a team may have before the automatic scoreboard sums them up in one row. */
     private static final int INDIVIDUAL_ROWS = 12;
     private static final String ROW_PREFIX = "[AI] ";
@@ -233,10 +244,10 @@ final class BotCommander
         BotSlot slot = slotId == null ? null : battle.getSlots().get(slotId);
         if (slot != null && slot.getSource() == BotSlot.Source.COMMANDER)
             return Optional.of(CommanderBots.order(battle, slot, npc));
-        return squadOrder(server, battle, slot);
+        return squadOrder(server, battle, slot, npc);
     }
 
-    private static Optional<Order> squadOrder(MinecraftServer server, BotBattle battle, BotSlot slot)
+    private static Optional<Order> squadOrder(MinecraftServer server, BotBattle battle, BotSlot slot, EntityNPCInterface npc)
     {
         BotSquad squad = slot == null ? null : battle.getSquads().get(slot.getSquad());
         SquadTask task = squad == null ? null : squad.getTask();
@@ -247,18 +258,18 @@ final class BotCommander
         ServerPlayer followed = playerOrder != null && playerOrder.kind() == PlayerOrder.Kind.FOLLOW ? server.getPlayerList().getPlayer(playerOrder.player()) : null;
         if (followed != null)
             task = playerOrder.task(followed.position());
-        return Optional.of(squadDestination(server, battle, slot, squad, task));
+        return Optional.of(squadDestination(server, battle, slot, squad, task, npc));
     }
 
-    private static Order squadDestination(MinecraftServer server, BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task)
+    private static Order squadDestination(MinecraftServer server, BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task, EntityNPCInterface npc)
     {
         var directed = squad.getOrder() == null ? squad.getTactics().order(task, slot.getEntity()) : null;
         if (directed != null)
             return new Order(directed.spot(), directed.arrival(), squad.getRole(), directed.kind(), directed.spot(), directed.radius());
-        return formationDestination(server, battle, slot, squad, task);
+        return formationDestination(server, battle, slot, squad, task, npc);
     }
 
-    private static Order formationDestination(MinecraftServer server, BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task)
+    private static Order formationDestination(MinecraftServer server, BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task, EntityNPCInterface npc)
     {
         int index = Math.max(0, squad.getSlots().indexOf(slot.getId()));
         List<Vec3> posts = List.of();
@@ -274,8 +285,16 @@ final class BotCommander
         }
         if (squad.getRole() == BotRole.PLANE || squad.getRole() == BotRole.HELICOPTER)
         {
-            spot = spot.add(0D, squad.getRole() == BotRole.PLANE ? PLANE_ALTITUDE : HELICOPTER_ALTITUDE, 0D);
+            // Each aircraft of a flight keeps a height of its own, so that wingmen neither fly through their leader nor
+            // share its air while they all circle the same place.
+            double base = squad.getRole() == BotRole.PLANE ? PLANE_ALTITUDE : HELICOPTER_ALTITUDE;
+            spot = spot.add(0D, base + Math.min(MAX_FLIGHT_RISE, index * FLIGHT_STEP), 0D);
             arrival = task.radius();
+        }
+        else if (squad.getRole() == BotRole.NAVAL)
+        {
+            spot = navalStation(task, npc, index);
+            arrival = Math.max(NAVAL_ARRIVAL, NpcVehicleThreats.platform(npc).getBbWidth());
         }
         else if (squad.getRole() != BotRole.INFANTRY)
             arrival = 6D;
@@ -286,6 +305,26 @@ final class BotCommander
             return new Order(spot, 2.5D, squad.getRole(), task.kind(), approach, 8D);
         }
         return new Order(spot, arrival, squad.getRole(), task.kind(), task.target(), task.radius());
+    }
+
+    /**
+     * Where a ship of a naval squad lies: its place in the squad's line astern, moved back along that line until the water
+     * there is deep enough to carry its hull. A station left over land or shallows would hold the ship off it for the rest
+     * of the round, since no path leads there; the squad's own station is the last resort, being water its squad was sent
+     * to.
+     */
+    private static Vec3 navalStation(SquadTask task, EntityNPCInterface npc, int index)
+    {
+        Entity hull = NpcVehicleThreats.platform(npc);
+        Vec3 from = npc.position();
+        Vec3 station = BotFormation.line(task.target(), from, index, Math.max(NAVAL_SPACING, hull.getBbWidth() * 2D));
+        for (double share : NAVAL_STATION_SHARES)
+        {
+            Vec3 point = task.target().add(station.subtract(task.target()).scale(share));
+            if (ShipWaters.navigable(npc, hull, point))
+                return point;
+        }
+        return task.target();
     }
 
     /** The sniper posts, then the garrison posts, around a defended objective, nearest first. */
